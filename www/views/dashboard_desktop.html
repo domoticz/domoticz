@@ -1,0 +1,182 @@
+﻿<div class="container">
+	<div ng-include="'views/inc_topbar.html'" ng-repeat="tb in [{}]"></div>
+
+	<!-- On the dashboard, Angular's ng-repeat (filter:filterDevices) removes non-matching
+	     items from the DOM entirely. jQuery's WatchLiveSearch must not interfere:
+	     - display:block !important prevents jQuery from hiding .itemBlock (ghost columns)
+	     - float:none !important prevents liveSearchShown from breaking Bootstrap grid
+	     - devicesListFiltered margin override keeps layout stable during search
+	     devicesList class is kept so jQuery's cleanup (removeClass liveSearchShown) still runs. -->
+	<style>
+		#dashcontent .itemBlock          { display: block !important; }
+		#dashcontent .liveSearchShown    { float: none !important; }
+		#dashcontent.devicesListFiltered { margin-left: 0 !important; }
+	</style>
+
+	<!-- Main dashboard content -->
+	<div id="dashcontent" class="devicesList">
+
+		<!-- Loading indicator -->
+		<div ng-if="loading" style="text-align: center; padding: 20px;">
+			<h2 data-i18n="Loading">Loading</h2>...
+		</div>
+
+		<!-- No devices message -->
+		<div ng-if="!loading && !hasDevices" class="no-devices">
+			<h2 data-i18n="No favorite devices defined ... (Or communication Lost!)">::
+				No favorite devices defined ... (Or communication Lost!)
+			</h2>
+			<p>
+				<br>
+				<span data-i18n="If this is your first time here, please setup your">::If this is your first time here, please setup your</span>
+				<a href="javascript:SwitchLayout('Hardware')" data-i18n="Hardware">::Hardware</a>,
+				<span data-i18n="and add some">::and add some</span>
+				<a href="javascript:SwitchLayout('Devices')" data-i18n="Devices">::Devices</a>.
+			</p>
+			<p>
+				<span data-i18n="Visit the Getting Started page at the">::Visit the Getting Started page at the</span>
+				<a href="https://wiki.domoticz.com/Getting_started">Domoticz Wiki</a>.
+			</p>
+		</div>
+
+		<!-- Scenes section -->
+		<section ng-if="!loading && (scenes | filter:filterDevices).length > 0" class="dashCategory" id="dashScenes">
+			<h2>
+				<span data-i18n="Scenes">::Scenes</span>:
+			</h2>
+
+			<!-- Scene items (Desktop grid) -->
+			<div class="row">
+				<dz-scene-widget
+					ng-repeat="scene in scenes | filter:filterDevices track by scene.idx"
+					scene="scene"
+					dashboard-type="dashboardType"
+					id="scene_{{scene.idx}}"
+					class="movable">
+				</dz-scene-widget>
+			</div>
+		</section>
+
+		<!-- Lights/Switches section -->
+		<section ng-if="!loading && (lights | filter:filterDevices).length > 0" class="dashCategory" id="dashLights">
+			<h2>
+				<span data-i18n="Lights/Switches">::Lights/Switches</span>:
+			</h2>
+
+			<!-- Light items (Desktop grid) -->
+			<div class="row">
+				<dz-light-widget
+					ng-repeat="device in lights | filter:filterDevices track by device.idx"
+					device="device"
+					dashboard-type="dashboardType"
+					id="light_{{device.idx}}"
+					class="movable">
+				</dz-light-widget>
+			</div>
+		</section>
+
+		<!-- Temperature section -->
+		<section ng-if="!loading && (temperature | filter:filterDevices).length > 0" class="dashCategory" id="dashTemp">
+			<h2>
+				<span data-i18n="Temperature">::Temperature</span>:
+			</h2>
+
+			<!-- Temperature items (Desktop grid with simple rendering) -->
+			<div class="row">
+				<div ng-repeat="device in temperature | filter:filterDevices track by device.idx"
+					 ng-class="[dashboardType == 1 ? 'span3' : 'span4']" id="temp_{{device.idx}}" class="movable">
+					<div class="item itemBlock" ng-class="$root.GetTempBackgroundStatus(device)">
+						<table ng-attr-id="{{device.SetPoint != undefined ? 'itemtablesmalldoubleicon' : 'itemtablesmall'}}" ng-class="{'itemtablesmalldoubleicon': device.SetPoint != undefined, 'itemtablesmall': device.SetPoint == undefined}" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td id="name" class="item-name" data-idx="{{device.idx}}" data-search="{{device.idx}} {{device.Name}} {{device.Description}} {{device.Type}} {{device.HardwareName}} {{device.SubType}} {{device.HumidityStatus}} {{device.Gust}}">{{device.Name}}</td>
+								<td id="bigtext"><span>
+									<span ng-if="device.SetPoint != undefined">{{device.SetPoint}}&deg; {{config.TempSign}}</span>
+									<span ng-if="device.SetPoint != undefined && device.Temp != undefined"> / </span>
+									<span ng-if="device.Temp != undefined">{{device.Temp}}&deg; {{config.TempSign}}</span>
+									<span ng-if="device.Humidity != undefined"> / {{device.Humidity}}%</span>
+									<span ng-if="device.Barometer != undefined"> / {{device.Barometer}} hPa</span>
+								</span></td>
+								<td id="img" class="img img1">
+									<a ng-href="#/Devices/{{device.idx}}/Log">
+										<img ng-src="{{$root.GetTempIcon(device)}}" height="40" width="40" class="lcursor">
+									</a>
+								</td>
+								<td ng-if="device.SetPoint != undefined" id="img2" class="img2">
+									<img src="images/override.png" class="lcursor" ng-click="showSetpointPopup($event, device.idx, device.Protected, device.SetPoint, false, device.step || 0.5, device.min || -200, device.max || 200)" height="36" width="40" title="Adjust Setpoint">
+								</td>
+								<td id="status" class="status"><span>
+									<span ng-if="device.HumidityStatus">{{device.HumidityStatus}}</span>
+									<span ng-if="device.DewPoint != undefined"><span ng-if="device.HumidityStatus">, </span><span data-i18n="Dew Point">Dew Point</span>: {{device.DewPoint | number:2}}&deg;</span>
+									<span ng-if="device.ForecastStr != undefined"><br>{{device.ForecastStr}}</span>
+								</span></td>
+								<td id="lastupdate" class="lastupdate"><span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: <span>{{device.LastUpdate}}</span></td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Weather section -->
+		<section ng-if="!loading && (weather | filter:filterDevices).length > 0" class="dashCategory" id="dashWeather">
+			<h2>
+				<span data-i18n="Weather">::Weather</span>:
+			</h2>
+
+			<!-- Weather items (Desktop grid with simple rendering) -->
+			<div class="row">
+				<div ng-repeat="device in weather | filter:filterDevices track by device.idx"
+					 ng-class="[dashboardType == 1 ? 'span3' : 'span4']" id="weather_{{device.idx}}" class="movable">
+					<div class="item itemBlock" ng-class="$root.GetItemBackgroundStatus(device)">
+						<table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">
+							<tr>
+								<td id="name" class="item-name" data-idx="{{device.idx}}" data-search="{{device.idx}} {{device.Name}} {{device.Description}} {{device.Type}} {{device.HardwareName}} {{device.SubType}} {{device.HumidityStatus}} {{device.ForecastStr}}">{{device.Name}}</td>
+								<td id="bigtext">
+									<span ng-if="device.Barometer != undefined">{{device.Barometer}} hPa</span>
+									<span ng-if="device.Rain != undefined">{{device.Rain}} mm</span>
+									<span ng-if="device.Visibility != undefined">{{device.Data}}</span>
+									<span ng-if="device.UVI != undefined">UVI: {{device.UVI}}</span>
+									<span ng-if="device.Radiation != undefined">{{device.Data}}</span>
+									<span ng-if="device.Direction != undefined">{{device.DirectionStr}} {{device.Speed}} {{config.WindSign}}</span>
+								</td>
+								<td id="img">
+									<a ng-href="#/Devices/{{device.idx}}/Log{{device.Barometer != undefined ? '?sensor=baro' : ''}}">
+										<img ng-if="device.CustomImage != 0" ng-src="images/{{device.Image}}48_On.png" height="40" width="40" class="lcursor">
+										<img ng-if="device.CustomImage == 0 && device.Barometer != undefined" ng-src="images/baro48.png" height="40" width="40" class="lcursor">
+										<img ng-if="device.CustomImage == 0 && device.Rain != undefined" ng-src="images/Rain48_On.png" height="40" width="40" class="lcursor">
+										<img ng-if="device.CustomImage == 0 && device.Visibility != undefined" ng-src="images/visibility48.png" height="40" width="40" class="lcursor">
+										<img ng-if="device.CustomImage == 0 && device.UVI != undefined" ng-src="images/uv48.png" height="40" width="40" class="lcursor">
+										<img ng-if="device.CustomImage == 0 && device.Radiation != undefined" ng-src="images/radiation48.png" height="40" width="40" class="lcursor">
+										<img ng-if="device.CustomImage == 0 && device.Direction != undefined" ng-src="images/Wind{{device.DirectionStr}}.png" height="40" width="40" class="lcursor">
+									</a>
+								</td>
+								<td id="status"></td>
+								<td id="lastupdate"><span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: {{device.LastUpdate}}</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Utility section -->
+		<section ng-if="!loading && (utility | filter:filterDevices).length > 0" class="dashCategory" id="dashUtility">
+			<h2>
+				<span data-i18n="Utility">::Utility</span>:
+			</h2>
+
+			<!-- Utility items (Desktop grid) -->
+			<div class="row">
+				<dz-utility-widget
+					ng-repeat="device in utility | filter:filterDevices track by device.idx"
+					device="device"
+					dashboard-type="dashboardType"
+					id="utility_{{device.idx}}"
+					class="movable">
+				</dz-utility-widget>
+			</div>
+		</section>
+
+		<br ng-if="hasDevices">
+	</div>
+</div>

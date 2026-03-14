@@ -84,13 +84,13 @@ define(['app', 'livesocket'], function (app) {
 			}
 			ctrl.items.forEach(function (olditem, oldindex, oldarray) {
 				if (olditem.idx == item.idx) {
-					oldarray[oldindex] = item;
+					angular.extend(oldarray[oldindex], item);
 					if (!document.hidden) {
 						if ($scope.config.ShowUpdatedEffect == true) {
-							setTimeout(function() { 
+							setTimeout(function() {
 								$("#weatherwidgets #" + item.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
 							}, 500);
-							
+
 						}
 					}
 				}
@@ -132,7 +132,6 @@ define(['app', 'livesocket'], function (app) {
 
 			$.ajax({
 				url: "json.htm?type=command&param=getdevices&filter=weather&used=true&order=[Order]&plan=" + roomPlanId,
-				async: false,
 				dataType: 'json',
 				success: function (data) {
 					if (typeof data.result != 'undefined') {
@@ -146,18 +145,28 @@ define(['app', 'livesocket'], function (app) {
 					} else {
 						ctrl.items = [];
 					}
+
+					$scope.loading = false;
+
+					if (!$scope.$$phase) {
+						$scope.$apply();
+					}
+
+					$('#modal').hide();
+					$('#weathercontent').html("");
+					$('#weathercontent').i18n();
+					$('#weatherwidgets').show();
+					$('#weatherwidgets').i18n();
+					$('#weathertophtm').show();
+					$('#weathertophtm').i18n();
+
+					$rootScope.RefreshTimeAndSun();
+					RefreshWeathers();
+				},
+				error: function () {
+					$('#modal').hide();
 				}
 			});
-			$('#modal').hide();
-			$('#weathercontent').html("");
-			$('#weathercontent').i18n();
-			$('#weatherwidgets').show();
-			$('#weatherwidgets').i18n();
-			$('#weathertophtm').show();
-			$('#weathertophtm').i18n();
-
-			$rootScope.RefreshTimeAndSun();
-			RefreshWeathers();
 			return false;
 		}
 
@@ -172,7 +181,6 @@ define(['app', 'livesocket'], function (app) {
 			}
 			$.ajax({
 				url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx + "&roomid=" + roomid,
-				async: false,
 				dataType: 'json',
 				success: function (data) {
 					ShowWeathers();
@@ -569,6 +577,8 @@ define(['app', 'livesocket'], function (app) {
 				}
 			];
 
+			ctrl.items = [];
+			$scope.loading = true;
 			ShowWeathers();
 
 			$("dialog-editweatherdevice").keydown(function (event) {
@@ -681,7 +691,7 @@ define(['app', 'livesocket'], function (app) {
 					$('#weatherwidgets').hide(); // TODO delete when multiple views implemented
 					$('#weathertophtm').hide();
 					if (typeof item.Barometer != 'undefined') {
-						return $location.path('/Devices/' + item.idx + '/Log');
+						return $location.path('/Devices/' + item.idx + '/Log').search('sensor', 'baro');
 					}
 					else if (typeof item.Rain != 'undefined') {
 						return $location.path('/Devices/' + item.idx + '/Log');
@@ -732,11 +742,15 @@ define(['app', 'livesocket'], function (app) {
 					if (permissions.hasPermission("User")) {
 						if (window.myglobals.ismobileint == false) {
 							$element.draggable({
+								helper: 'clone',
+								opacity: 0.7,
+								zIndex: 1000,
+								revert: 'invalid',
+								scrollSensitivity: 40,
+								scrollSpeed: 20,
 								drag: function () {
 									$scope.dragwidget({ idx: item.idx });
-									$element.css("z-index", 2);
-								},
-								revert: true
+								}
 							});
 							$element.droppable({
 								drop: function () {

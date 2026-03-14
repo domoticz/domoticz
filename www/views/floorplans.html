@@ -102,8 +102,51 @@
 			position: relative;
 			max-width: 100px;
 		}
+
+		.fp-nav-arrow {
+			position: fixed;
+			top: 50%;
+			transform: translateY(-50%);
+			width: 40px;
+			height: 60px;
+			background: rgba(0, 0, 0, 0.3);
+			color: white;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			border-radius: 4px;
+			opacity: 0;
+			transition: opacity 0.3s ease;
+			z-index: 1000;
+			font-size: 20px;
+			user-select: none;
+		}
+		.fp-nav-arrow:hover {
+			background: rgba(0, 0, 0, 0.6);
+		}
+		.fp-nav-arrow.fp-nav-visible {
+			opacity: 1;
+		}
+		.fp-nav-left {
+			left: 10px;
+		}
+		.fp-nav-right {
+			right: 10px;
+		}
+		@media (hover: none) {
+			.fp-nav-arrow {
+				display: none !important;
+			}
+		}
 	</style>
 	<div id="fpwrapper" class="fpscroller" style="display:inline;"></div>
+	<div id="fpNavLeft" class="fp-nav-arrow fp-nav-left" style="display:none">
+		<i class="fa fa-chevron-left"></i>
+	</div>
+	<div id="fpNavRight" class="fp-nav-arrow fp-nav-right" style="display:none">
+		<i class="fa fa-chevron-right"></i>
+	</div>
 	<div id="BulletGroup" align="center" style="display:none;"> 
 		<div id="BulletImages"></div>
 		<table width="100%">

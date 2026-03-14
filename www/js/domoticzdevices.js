@@ -41,7 +41,11 @@ function makeSVGnode(tag, attrs, text, title) {
     var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
     for (var k in attrs)
         if (k == "xlink:href") el.setAttributeNS('http://www.w3.org/1999/xlink', 'href', attrs[k]);
-        else el.setAttribute(k, attrs[k]);
+        else if ((k === 'ontouchstart' || k === 'ontouchend') && attrs[k]) {
+            // Use addEventListener instead of inline attribute so we can mark as passive.
+            // Neither handler calls preventDefault(), so passive:true is safe.
+            el.addEventListener(k.slice(2), new Function(attrs[k]), { passive: true });
+        } else el.setAttribute(k, attrs[k]);
     if ((typeof text != 'undefined') && (text.length != 0)) {
         el.appendChild(document.createTextNode(text));
     }
@@ -326,7 +330,7 @@ function Slider(event) {
                 async: true,
                 dataType: 'json'
             });
-            setTimeout(function () { eval(Device.switchFunction + "();"); }, 250);
+            setTimeout(function () { Device.switchFunction(); }, 250);
         }
     };
     this.Drag = function (event) {
@@ -801,7 +805,7 @@ Device.count = 0;
 Device.notPositioned = 0;
 Device.useSVGtags = false;
 Device.backFunction = 'DoNothing';
-Device.switchFunction = 'DoNothing';
+Device.switchFunction = DoNothing;
 Device.contentTag = '';
 Device.xImageSize = 1280;
 Device.yImageSize = 720;
@@ -1205,7 +1209,7 @@ Device.MakeFavorite = function (id, isfavorite) {
         dataType: 'json',
         success: function (data) {
             window.myglobals.LastUpdate = 0;
-            eval(Device.switchFunction + "();");
+            Device.switchFunction();
         }
     });
 }

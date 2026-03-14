@@ -336,7 +336,18 @@
 	<gz-back-to-top></gz-back-to-top>
 	<div ng-include="'views/inc_topbar.html'"></div>
 
-	<div id="utilitycontent" class="devicesList"></div>
+	<div id="utilitycontent" class="devicesList">
+		<div id="utilitylist" ng-show="showUtilityList">
+			<div class="row">
+				<dz-utility-widget ng-repeat="device in devices track by device.idx"
+					device="device"
+					view-mode="tab"
+					on-update="refreshUtilities()">
+				</dz-utility-widget>
+			</div>
+			<h2 ng-if="!loading && devices.length === 0" data-i18n="No Utility sensors found or added in the system...">No Utility sensors found or added in the system...</h2>
+		</div>
+	</div>
 </div>
 
 <div id="percentagelog" style="display:none;">

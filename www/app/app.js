@@ -740,6 +740,39 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			}
 			return backgroundClass;
 		}
+		$rootScope.GetTempBackgroundStatus = function (item) {
+			var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
+			var setpointSubTypes = ['Zone', 'Hot Water', 'Temp/Setpoint', 'Temp/Hum/Setpoint', 'Temp/Baro/Setpoint', 'Temp/Hum/Baro/Setpoint'];
+			if (setpointSubTypes.indexOf(item.SubType) !== -1 && typeof item.SetPoint !== 'undefined') {
+				if (item.Status === 'HeatingOff' || item.SetPoint === 325.1) {
+					backgroundClass = 'statusEvoSetPointOff';
+				} else if (item.SetPoint >= 25) {
+					backgroundClass = 'statusEvoSetPoint25';
+				} else if (item.SetPoint >= 22) {
+					backgroundClass = 'statusEvoSetPoint22';
+				} else if (item.SetPoint >= 19) {
+					backgroundClass = 'statusEvoSetPoint19';
+				} else if (item.SetPoint >= 16) {
+					backgroundClass = 'statusEvoSetPoint16';
+				} else {
+					backgroundClass = 'statusEvoSetPointMin';
+				}
+			}
+			return backgroundClass;
+		}
+		$rootScope.GetTempIcon = function (device) {
+			if (device.CustomImage != 0) {
+				return 'images/' + device.Image + '48_On.png';
+			}
+			if (device.Type == 'Humidity') {
+				return 'images/gauge48.png';
+			}
+			var temp = (typeof device.Temp != 'undefined') ? device.Temp : device.Chill;
+			if (typeof temp == 'undefined') {
+				return 'images/temp48.png';
+			}
+			return 'images/' + GetTemp48Item(temp);
+		};
 		$rootScope.DisplayTrend = function (trend) {
 			//0=Unknown, 1=Stable, 2=Up, 3=Down
 			if (typeof trend != 'undefined') {

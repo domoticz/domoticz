@@ -1,0 +1,38 @@
+<div class="item span4 itemBlock" ng-class="ctrl.getBackgroundClass()" id="{{ctrl.scene.idx}}">
+    <section>
+        <table ng-attr-id="{{ctrl.isScene() ? 'itemtablenostatus' : 'itemtabledoubleicon'}}" border="0" cellpadding="0" cellspacing="0">
+            <tr>
+                <td id="name" class="item-name" data-idx="{{ctrl.scene.idx}}" data-desc="{{ctrl.scene.Description}}" data-search="{{ctrl.searchText}}">{{ctrl.scene.Name}}</td>
+                <td id="bigtext">
+                    {{ctrl.getStatusText()}}
+                    <a ng-if="ctrl.scene.UsedByCamera" href="javascript:ShowCameraLiveStream('{{ctrl.scene.Name}}',{{ctrl.scene.CameraIdx}},{{ctrl.scene.CameraAspect}})">
+                        <img src="images/webcam.png" data-i18n="[title]Stream Video" height="16" width="16">
+                    </a>
+                </td>
+                <!-- Scene: single Activate button -->
+                <td ng-if="ctrl.isScene()" id="img1">
+                    <img src="images/Push48_On.png" ng-click="ctrl.switchOn()" class="lcursor" height="48" width="48" data-i18n="[title]Activate scene" title="Activate scene">
+                </td>
+                <!-- Group: On push button -->
+                <td ng-if="ctrl.isGroup()" id="img1">
+                    <img src="images/Push48_On.png" ng-click="ctrl.switchOn()" class="lcursor" ng-class="{'transimg': ctrl.isOn()}" height="48" width="48" data-i18n="[title]Turn On" title="Turn On">
+                </td>
+                <!-- Group: Off push button -->
+                <td ng-if="ctrl.isGroup()" id="img2">
+                    <img src="images/Push48_Off.png" ng-click="ctrl.switchOff()" class="lcursor" ng-class="{'transimg': ctrl.scene.Status === 'Off' || ctrl.scene.Status === 'Group Off'}" height="48" width="48" data-i18n="[title]Turn Off" title="Turn Off">
+                </td>
+                <td id="status">&nbsp;</td>
+                <td id="lastupdate" class="lastupdate"><span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: {{ctrl.scene.LastUpdate}}</td>
+                <td id="type">{{ctrl.getTypeText()}}</td>
+                <td class="options">
+                    <span ng-show="ctrl.scene.Favorite == 0"><img src="images/nofavorite.png" data-i18n="[title]Add to Dashboard" ng-click="ctrl.makeFavorite(1)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span ng-show="ctrl.scene.Favorite != 0"><img src="images/favorite.png" data-i18n="[title]Remove from Dashboard" ng-click="ctrl.makeFavorite(0)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <a class="btnsmall" href="#/Scenes/{{ctrl.scene.idx}}/Log" data-i18n="Log">Log</a>
+                    <a ng-if="ctrl.isAdmin" class="btnsmall" ng-click="ctrl.editScene()" data-i18n="Edit">Edit</a>
+                    <a ng-if="ctrl.isAdmin && ctrl.hasTimers()" class="btnsmall-sel" href="#/Scenes/{{ctrl.scene.idx}}/Timers" data-i18n="Timers">Timers</a>
+                    <a ng-if="ctrl.isAdmin && !ctrl.hasTimers()" class="btnsmall" href="#/Scenes/{{ctrl.scene.idx}}/Timers" data-i18n="Timers">Timers</a>
+                </td>
+            </tr>
+        </table>
+    </section>
+</div>

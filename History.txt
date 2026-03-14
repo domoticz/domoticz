@@ -11,11 +11,10 @@ Version 2026.xxxx
 - Added: Dashboard, setpoint display and editing for all setpoint devices
 - Added: Docker environment variable support for admin provisioning (DOMOTICZ_ADMIN_PASSWORD, DOMOTICZ_ADMIN_USERNAME)
 - Added: dzVents, at_startup trigger for scripts that should run once at Domoticz startup
+- Added: Enever, updated providers and API v3
 - Added: Enphase, battery storage sensors (reserve SOC, available energy, max capacity, storage mode, charge from grid control)
-- Added: SolarEdge, web portal polling for per-optimizer, per-string and per-inverter energy and real-time data
 - Added: Enphase, Encharge battery temperature sensor
 - Added: Enphase, grid status reporting for battery systems
-- Added: Enever, updated providers and API v3
 - Added: EventSystem support for Thermostat 6 devices (Blockly/Lua/Python event triggers)
 - Added: HaveSetPoint JSON API flag for Thermostat 6 and Setpoint devices (third-party app compatibility)
 - Added: LibreHardwareMonitor, cross-platform HTTP support with mode selector and extended sensors
@@ -34,6 +33,7 @@ Version 2026.xxxx
 - Added: OpenWeatherMap, support for free API plan
 - Added: Philips Hue v2 API, just for Door/Window Contacts (state/tamper/battery)
 - Added: PV Output, added consumption
+- Added: Python plugin API, Domoticz.SendNotification() native notification method for plugins
 - Added: Python plugin framework, shared="true" attribute for main interpreter execution
 - Added: Re-added rain report
 - Added: Re-added wind report
@@ -42,9 +42,10 @@ Version 2026.xxxx
 - Added: RFXCOM, Teleinfo 1200/19200 async mode support (Fixes #6495)
 - Added: RTL433, Support UV sensors named 'uvi'
 - Added: Search filter on selected (right) side of user shared devices selector (Fixes #6613)
+- Added: SolarEdge, web portal polling for per-optimizer, per-string and per-inverter energy and real-time data
 - Added: SolarEdge API, battery detection (#6593)
-- Added: SolarEdge API, site overview sensors (current power, energy today/month/year/lifetime)
 - Added: SolarEdge API, energy details sensors (production, consumption, self-consumption, feed-in, purchased)
+- Added: SolarEdge API, site overview sensors (current power, energy today/month/year/lifetime)
 - Added: Support -pidfile without -daemon for process managers like monit under systemd
 - Added: Support for the Model Context Protocol (/mcp) for use with AI Agents
 - Added: Thermostat, combined Temperature/Setpoint display
@@ -93,18 +94,21 @@ Version 2026.xxxx
 - Fixed: Plugin devices, LightingLog User field now shows actual user instead of hardware name (Fixes #6538)
 - Fixed: Python 3.13+ sub-interpreter crash due to missing __builtins__ injection
 - Fixed: Python plugin C extension crash on plugin restart
+- Fixed: Python plugin Domoticz.Debug() and Domoticz.Log() not respecting plugin-level debugging setting (#6636)
 - Fixed: Python plugin custom device option updates not saved to database (#6454)
 - Fixed: Python plugin TCP/TLS connection stability issues
+- Fixed: Python/Lua scripts last_update_string not updating for unchanged-value devices (Fixes #6638)
 - Fixed: RFXCom, uninitialized value in decode_Fan for non-Orcon devices
 - Fixed: RTL433 hangs on stop/update (#6597)
 - Fixed: Scheduler Monthly_Weekday and Yearly_Weekday (Fixes #6452)
 - Fixed: Scene triggering delay caused by event system thread pool saturation
 - Fixed: Segfault when running --help or --version (#6618)
+- Fixed: Service worker not loading when Domoticz is accessed remotely via HTTPS
 - Fixed: Session invalidation race condition during web session renewal
-- Fixed: Python/Lua scripts last_update_string not updating for unchanged-value devices (Fixes #6638)
 - Fixed: SolarEdge API, battery critical sensor using wrong type and grid/storage power direction detection
 - Fixed: SolarEdge API, power readings persisting stale values when idle
 - Fixed: Temperature Compare Chart (Min/Max values)
+- Fixed: Water device log displaying value in incorrect unit
 - Fixed: Web update not restarting properly when Python plugins are active (#6602)
 - Fixed: Web update script not starting due to systemd-run failure (#6622)
 - Fixed: WebSocket thread-safety races in session and log callbacks
@@ -128,6 +132,8 @@ Version 2026.xxxx
 - Changed: Tado, token now refreshed with correct refresh token interval
 - Changed: Viewer users can now change their profile settings
 - Changed: Web Interface, Event editor labels changed from Off/On to Disabled/Enabled
+- Changed: Web Interface, navbar and settings panel redesigned with glassmorphism theme and menu icons
+- Updated: More strings available for translation (e.g. 'Last Seen')
 - Updated: Translations
 
 ### Breaking Changes

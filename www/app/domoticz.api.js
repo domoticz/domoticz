@@ -64,8 +64,18 @@ define(['app.permissions', 'livesocket'], function(appPermissionsModule, websock
         return {
             switchOn: createSwitchCommand('On'),
             switchOff: createSwitchCommand('Off'),
-            renameScene: renameScene
+            renameScene: renameScene,
+            makeFavorite: makeFavorite
         };
+
+        function makeFavorite(sceneIdx, isFavorite) {
+            return dzApiHelper.checkUserPermissions().then(function() {
+                return domoticzApi.sendCommand('makescenefavorite', {
+                    idx: sceneIdx,
+                    isfavorite: isFavorite,
+                });
+            });
+        }
 
         function createSwitchCommand(command) {
             return function(deviceIdx) {

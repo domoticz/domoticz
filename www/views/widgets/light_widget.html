@@ -1,0 +1,128 @@
+<div ng-class="ctrl.getSpanClass()">
+    <div class="item itemBlock" ng-class="ctrl.getBackgroundClass()" id="{{ctrl.device.idx}}">
+        <table id="itemtablesmall" ng-attr-id="{{ctrl.getTableId()}}" border="0" cellpadding="0" cellspacing="0">
+            <tr>
+                <!-- Name -->
+                <td id="name" class="item-name" data-idx="{{ctrl.device.idx}}" data-desc="{{ctrl.device.Description}}" data-search="{{ctrl.searchText}}">
+                    {{ctrl.device.Name}}
+                </td>
+
+                <!-- Big Text (status) -->
+                <td id="bigtext">
+                    <span>{{ctrl.getStatusText()}}</span>
+                    <img ng-if="ctrl.device.UsedByCamera" src="images/webcam.png"
+                         height="16" width="16" data-i18n="[title]Stream Video">
+                </td>
+
+                <!-- Main Icon (single toggling icon) -->
+                <td id="img">
+                    <!-- Evohome -->
+                    <div ng-if="ctrl.isEvohome()" ng-class="ctrl.device.Status == 'Auto' ? 'evoimgnorm' : 'evoimg'" data-i18n="[title]Quick Actions">
+                        <img ng-src="images/evohome/{{ctrl.device.Status}}.png"
+                             class="lcursor" ng-click="ctrl.showEvohomeModal()" height="40" width="40">
+                    </div>
+
+                    <!-- Blinds - Open button -->
+                    <img ng-if="ctrl.isBlinds() && !ctrl.isEvohome()"
+                         ng-src="images/{{ctrl.device.TypeImg}}open48{{ctrl.isBlindsOpen() ? 'sel' : ''}}.png"
+                         ng-click="ctrl.switchLight('Open')" class="lcursor"
+                         height="40" width="40" data-i18n="[title]Open Blinds">
+
+                    <!-- Media Player main icon -->
+                    <img ng-if="ctrl.isMediaPlayer()"
+                         ng-src="{{ctrl.getMediaPlayerIcon()}}"
+                         ng-click="ctrl.switchLight(ctrl.isMediaPlayerActive() ? 'Off' : 'On')"
+                         ng-class="{'lcursor': !ctrl.isMediaPlayerDisconnected()}"
+                         height="40" width="40">
+
+                    <!-- All other devices: single toggling icon -->
+                    <img ng-if="!ctrl.isBlinds() && !ctrl.isEvohome() && !ctrl.isMediaPlayer()"
+                         ng-src="{{ctrl.getDeviceIcon()}}"
+                         ng-click="ctrl.deviceIconClick($event)"
+                         ng-class="{'lcursor': ctrl.isClickable()}"
+                         height="40" width="40">
+                </td>
+
+                <!-- Blinds stop button (td#img2) -->
+                <td ng-if="ctrl.isBlinds() && ctrl.hasStopButton()" id="img2">
+                    <img ng-src="images/{{ctrl.device.TypeImg}}stop.png"
+                         ng-click="ctrl.switchLight('Stop')" class="lcursor"
+                         height="40" width="24" data-i18n="[title]Stop Blinds">
+                </td>
+
+                <!-- Blinds close button -->
+                <td ng-if="ctrl.isBlinds()" ng-attr-id="{{ctrl.hasStopButton() ? 'img3' : 'img2'}}">
+                    <img ng-src="images/{{ctrl.device.TypeImg}}48{{ctrl.isBlindsOpen() ? '' : 'sel'}}.png"
+                         ng-click="ctrl.switchLight('Close')" class="lcursor"
+                         height="40" width="40" data-i18n="[title]Close Blinds">
+                </td>
+
+                <!-- Media Player remote icon (img2) -->
+                <td ng-if="ctrl.isMediaPlayer()" id="img2">
+                    <img ng-if="ctrl.isMediaPlayerActive()"
+                         src="images/remote48.png"
+                         ng-click="ctrl.showMediaRemote()"
+                         class="lcursor" height="40" width="40">
+                    <img ng-if="!ctrl.isMediaPlayerActive()"
+                         src="images/remote48.png"
+                         style="opacity:0.4" height="40" width="40">
+                </td>
+
+                <!-- Status -->
+                <td id="status">
+                    <!-- Selector buttons (SelectorStyle 0) -->
+                    <div ng-if="ctrl.isSelector() && ctrl.device.SelectorStyle === 0" class="btn-group" style="display: block; margin-top: 4px;">
+                        <button ng-repeat="level in ctrl.selectorLevels track by level.value" type="button"
+                                class="btn btn-small"
+                                ng-class="{'btn-selected': level.isActive, 'btn-default': !level.isActive}"
+                                ng-click="ctrl.setSelectorLevel(level.value, level.name)">
+                            {{level.name}}
+                        </button>
+                    </div>
+                    <!-- Selector dropdown (SelectorStyle 1) -->
+                    <div ng-if="ctrl.isSelector() && ctrl.device.SelectorStyle === 1" class="selectorlevels" style="margin-top: 0;">
+                        <select id="selector{{ctrl.device.idx}}"
+                                data-idx="{{ctrl.device.idx}}"
+                                data-isprotected="{{ctrl.device.Protected}}"
+                                style="width: auto;">
+                            <option ng-repeat="level in ctrl.getSelectorLevels()"
+                                    value="{{level.value}}">{{level.name}}</option>
+                        </select>
+                    </div>
+                </td>
+
+                <!-- Last Update -->
+                <td id="lastupdate"><span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: {{ctrl.device.LastUpdate}}</td>
+
+                <!-- Dimmer slider (in separate td, dashboard style) -->
+                <td ng-if="ctrl.isDimmer() && !ctrl.isBlinds() && ctrl.device.DimmerType != 'rel'" class="input">
+                    <div style="margin-left:50px; margin-top: 7px; visibility:hidden;" class="dimslider dimslidernorm" id="slider_{{ctrl.device.idx}}_norm"
+                         data-idx="{{ctrl.device.idx}}" data-type="norm"
+                         data-maxlevel="{{ctrl.device.MaxDimLevel}}"
+                         data-isprotected="{{ctrl.device.Protected}}"
+                         data-svalue="{{ctrl.device.LevelInt}}"
+                         data-isled="{{ctrl.isRGB()}}">
+                    </div>
+                </td>
+                <!-- Blinds Percentage slider -->
+                <td ng-if="ctrl.device.SwitchType == 'Blinds Percentage'" class="input">
+                    <div style="margin-left:94px; margin-top: 7px; visibility:hidden;" class="dimslider dimslidersmalldouble"
+                         id="slider_{{ctrl.device.idx}}_blinds" data-idx="{{ctrl.device.idx}}" data-type="blinds"
+                         data-maxlevel="{{ctrl.device.MaxDimLevel}}"
+                         data-isprotected="{{ctrl.device.Protected}}"
+                         data-svalue="{{ctrl.device.LevelInt}}">
+                    </div>
+                </td>
+                <!-- Blinds % + Stop slider -->
+                <td ng-if="ctrl.device.SwitchType == 'Blinds % + Stop'" class="input">
+                    <div style="margin-left:124px; margin-top: 7px; visibility:hidden;" class="dimslider dimslidersmalltripple"
+                         id="slider_{{ctrl.device.idx}}_blindsstop" data-idx="{{ctrl.device.idx}}" data-type="blinds"
+                         data-maxlevel="{{ctrl.device.MaxDimLevel}}"
+                         data-isprotected="{{ctrl.device.Protected}}"
+                         data-svalue="{{ctrl.device.LevelInt}}">
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>

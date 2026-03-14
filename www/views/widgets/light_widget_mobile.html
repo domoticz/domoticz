@@ -1,0 +1,131 @@
+<div class="item" ng-class="ctrl.getBackgroundClass()">
+    <section>
+        <table class="itemtablemobile">
+            <tr>
+                <!-- Device Icon -->
+                <td class="img">
+                    <img ng-src="{{ctrl.getDeviceIcon()}}"
+                         title="{{ctrl.device.Name}}"
+                         height="40"
+                         width="40">
+                </td>
+
+                <!-- Device Name and Controls -->
+                <td>
+                    <div class="name">
+                        <a href="#/Devices/{{ctrl.device.idx}}/Log">{{ctrl.device.Name}}</a>
+                    </div>
+
+                    <div class="status">
+                        <!-- Doorbell -->
+                        <span ng-if="ctrl.device.SwitchType == 'Doorbell'">
+                            {{ctrl.getStatusText()}}
+                            <button class="btn btn-mini"
+                                    ng-click="ctrl.switchLight('On')"
+                                    data-i18n="Ring">Ring</button>
+                        </span>
+
+                        <!-- Push On Button -->
+                        <span ng-if="ctrl.device.SwitchType == 'Push On Button'">
+                            <button class="btn btn-mini"
+                                    ng-click="ctrl.switchLight('On')"
+                                    data-i18n="On">On</button>
+                        </span>
+
+                        <!-- Push Off Button -->
+                        <span ng-if="ctrl.device.SwitchType == 'Push Off Button'">
+                            <button class="btn btn-mini"
+                                    ng-click="ctrl.switchLight('Off')"
+                                    data-i18n="Off">Off</button>
+                        </span>
+
+                        <!-- Door Contact -->
+                        <span ng-if="ctrl.device.SwitchType == 'Door Contact'">
+                            <button class="btn btn-mini"
+                                    ng-class="{'btn-info': ctrl.device.InternalState == 'Open'}">
+                                {{ctrl.device.InternalState}}
+                            </button>
+                        </span>
+
+                        <!-- Door Lock -->
+                        <span ng-if="ctrl.device.SwitchType == 'Door Lock'">
+                            <button class="btn btn-mini"
+                                    ng-class="{'btn-info': ctrl.device.InternalState == 'Unlocked'}"
+                                    ng-click="ctrl.switchLight('Off')"
+                                    data-i18n="Unlocked">Unlocked</button>
+                            <button class="btn btn-mini"
+                                    ng-class="{'btn-info': ctrl.device.InternalState == 'Locked'}"
+                                    ng-click="ctrl.switchLight('On')"
+                                    data-i18n="Locked">Locked</button>
+                        </span>
+
+                        <!-- Motion Sensor -->
+                        <span ng-if="ctrl.device.SwitchType == 'Motion Sensor'">
+                            <button class="btn btn-mini"
+                                    ng-class="{'btn-info': ctrl.isActive()}">
+                                <span ng-if="ctrl.isActive()" data-i18n="Motion">Motion</span>
+                                <span ng-if="!ctrl.isActive()" data-i18n="No Motion">No Motion</span>
+                            </button>
+                        </span>
+
+                        <!-- Smoke Detector -->
+                        <span ng-if="ctrl.device.SwitchType == 'Smoke Detector'">
+                            <button class="btn btn-mini"
+                                    ng-class="{'btn-info': ctrl.isActive()}">
+                                <span ng-if="ctrl.isActive()" data-i18n="SMOKE">SMOKE</span>
+                                <span ng-if="!ctrl.isActive()" data-i18n="No Smoke">No Smoke</span>
+                            </button>
+                        </span>
+
+                        <!-- Blinds -->
+                        <span ng-if="ctrl.isBlinds()">
+                            <button class="btn btn-mini"
+                                    ng-class="{'btn-info': ctrl.device.Status == 'Open' || ctrl.device.Status.indexOf('Set ') == 0}"
+                                    ng-click="ctrl.switchLight('Open')"
+                                    data-i18n="Open">Open</button>
+                            <button class="btn btn-mini btn-danger"
+                                    ng-if="ctrl.hasStopButton()"
+                                    ng-click="ctrl.switchLight('Stop')"
+                                    data-i18n="Stop">Stop</button>
+                            <button class="btn btn-mini"
+                                    ng-class="{'btn-info': ctrl.device.Status == 'Closed'}"
+                                    ng-click="ctrl.switchLight('Close')">
+                                <span ng-if="ctrl.device.Status == 'Closed'" data-i18n="Closed">Closed</span>
+                                <span ng-if="ctrl.device.Status != 'Closed'" data-i18n="Close">Close</span>
+                            </button>
+                        </span>
+
+                        <!-- Dimmer -->
+                        <span ng-if="ctrl.isDimmer() && !ctrl.isBlinds()">
+                            <button class="btn btn-mini"
+                                    ng-class="{'btn-info': ctrl.isActive()}"
+                                    ng-click="ctrl.switchLight('On')"
+                                    data-i18n="On">On</button>
+                            <button class="btn btn-mini"
+                                    ng-class="{'btn-info': !ctrl.isActive()}"
+                                    ng-click="ctrl.switchLight('Off')"
+                                    data-i18n="Off">Off</button>
+                        </span>
+
+                        <!-- Selector -->
+                        <span ng-if="ctrl.isSelector()">
+                            <span ng-repeat="level in ctrl.getSelectorLevels()">
+                                <button type="button"
+                                        class="btn btn-small"
+                                        ng-class="{'btn-selected': level.isActive, 'btn-default': !level.isActive}"
+                                        ng-click="ctrl.setSelectorLevel(level.value, level.name)">
+                                    {{level.name}}
+                                </button>
+                            </span>
+                        </span>
+
+                        <!-- Standard On/Off -->
+                        <span ng-if="!ctrl.isDimmer() && !ctrl.isBlinds() && !ctrl.isSelector() && ctrl.device.SwitchType != 'Push On Button' && ctrl.device.SwitchType != 'Push Off Button' && ctrl.device.SwitchType != 'Door Contact' && ctrl.device.SwitchType != 'Door Lock' && ctrl.device.SwitchType != 'Motion Sensor' && ctrl.device.SwitchType != 'Smoke Detector' && ctrl.device.SwitchType != 'Doorbell'">
+                            {{ctrl.getStatusText()}}
+                        </span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </section>
+</div>
