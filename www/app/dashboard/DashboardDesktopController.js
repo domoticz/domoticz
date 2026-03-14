@@ -403,7 +403,7 @@ define([
 			/**
 			 * Global: Switch Evohome modal status
 			 */
-			SwitchModal = function (idx, name, status) {
+			window.SwitchModal = function (idx, name, status) {
 				clearInterval($.myglobals.refreshTimer);
 
 				ShowNotify($.t('Setting Evohome ') + ' ' + $.t(name));
@@ -423,14 +423,14 @@ define([
 			/**
 			 * Global: Get Evohome display text
 			 */
-			EvoDisplayTextMode = function (strstatus) {
+			window.EvoDisplayTextMode = function (strstatus) {
 				return dashboardService.getEvohomeDisplayText(strstatus);
 			};
 
 			/**
 			 * Global: Get light status text (handles Evohome, Selector, etc.)
 			 */
-			GetLightStatusText = function (item) {
+			window.GetLightStatusText = function (item) {
 				if (item.SubType == "Evohome") {
 					return EvoDisplayTextMode(item.Status);
 				} else if (item.SwitchType === "Selector") {
@@ -443,21 +443,21 @@ define([
 			/**
 			 * Global: Generate Evohome JavaScript for accordions
 			 */
-			EvohomeAddJS = function () {
+			window.EvohomeAddJS = function () {
 				return "<script type='text/javascript'> function deselect(e,id) { $(id).slideFadeToggle('swing', function() { e.removeClass('selected'); });} $.fn.slideFadeToggle = function(easing, callback) {  return this.animate({ opacity: 'toggle',height: 'toggle' }, 'fast', easing, callback);};</script>";
 			};
 
 			/**
 			 * Global: Generate Evohome image HTML
 			 */
-			EvohomeImg = function (item, strclass) {
+			window.EvohomeImg = function (item, strclass) {
 				return '<div title="Quick Actions" class="' + ((item.Status == "Auto") ? "evoimgnorm " : "evoimg ") + strclass + '"><img src="images/evohome/' + item.Status + '.png" class="lcursor" onclick="if($(this).hasClass(\'selected\')){deselect($(this),\'#evopop_' + item.idx + '\');}else{$(this).addClass(\'selected\');$(\'#evopop_' + item.idx + '\').slideFadeToggle();}return false;"></div>';
 			};
 
 			/**
 			 * Global: Generate Evohome popup menu HTML
 			 */
-			EvohomePopupMenu = function (item, strclass) {
+			window.EvohomePopupMenu = function (item, strclass) {
 				var htm = '\t      <td id="img" class="img img1"><a href="#evohome" id="evohome_' + item.idx + '">' + EvohomeImg(item, strclass) + '</a></td>\n<span class="' + strclass + '"><div id="evopop_' + item.idx + '" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">  <ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow">         <li class="ui-li-divider ui-bar-inherit ui-first-child">Choose an action</li>';
 				$.each([
 					{ "name": "Normal", "data": "Auto" },
@@ -476,7 +476,7 @@ define([
 			/**
 			 * Global: Set color value for RGB devices
 			 */
-			SetColValue = function (idx, color, brightness) {
+			window.SetColValue = function (idx, color, brightness) {
 				clearInterval($.setColValue);
 				if (!permissions.hasPermission("User")) {
 					HideNotify();
@@ -494,19 +494,26 @@ define([
 			 * Global: Switch a light device (called from inline onclick handlers)
 			 * This is a wrapper that delegates to the widget/service layer
 			 */
-			SwitchLight = function (idx, command, isProtected) {
-				if (isProtected === true || isProtected === 1) {
-					// Password protection handled by widgets
+			window.SwitchLight = function (idx, command, isProtectedOrPasscode) {
+				// If third arg is a non-empty string, it's already a passcode
+				if (typeof isProtectedOrPasscode === 'string' && isProtectedOrPasscode !== '') {
+					dashboardService.switchDeviceWithPasscode(idx, command, isProtectedOrPasscode)
+						.catch(function () {
+							bootbox.alert($.t('Problem sending switch command'));
+						});
+					return;
+				}
+				if (isProtectedOrPasscode === true || isProtectedOrPasscode === 1) {
+					// Widget will handle password prompt
 					return;
 				}
 
-				dashboardService.switchDevice(idx, command, isProtected)
+				dashboardService.switchDevice(idx, command)
 					.then(function () {
 						// Device will be updated via WebSocket
 					})
 					.catch(function (error) {
 						if (error.needsPassword) {
-							// Show password dialog
 							ShowNotify($.t('Password required'), 2500, true);
 						} else {
 							bootbox.alert($.t('Problem sending switch command'));
@@ -518,13 +525,21 @@ define([
 			 * Global: Switch a scene (called from inline onclick handlers)
 			 * This is a wrapper that delegates to the widget/service layer
 			 */
-			SwitchScene = function (idx, command, isProtected) {
-				if (isProtected === true || isProtected === 1) {
-					// Password protection handled by widgets
+			window.SwitchScene = function (idx, command, isProtectedOrPasscode) {
+				// If third arg is a non-empty string, it's already a passcode
+				if (typeof isProtectedOrPasscode === 'string' && isProtectedOrPasscode !== '') {
+					dashboardService.switchSceneWithPasscode(idx, command, isProtectedOrPasscode)
+						.catch(function () {
+							bootbox.alert($.t('Problem sending switch command'));
+						});
+					return;
+				}
+				if (isProtectedOrPasscode === true || isProtectedOrPasscode === 1) {
+					// Widget will handle password prompt
 					return;
 				}
 
-				dashboardService.switchScene(idx, command, isProtected)
+				dashboardService.switchScene(idx, command)
 					.then(function () {
 						// Scene will be updated via WebSocket
 					})
@@ -605,7 +620,7 @@ define([
 			/**
 			 * Global: Edit scene (called from legacy templates)
 			 */
-			EditScene = function (idx) {
+			window.EditScene = function (idx) {
 				$location.path('/Scenes/' + idx + '/Edit');
 				$scope.$apply();
 			};
@@ -613,7 +628,7 @@ define([
 			/**
 			 * Global: Edit light (called from legacy templates)
 			 */
-			EditLight = function (idx) {
+			window.EditLight = function (idx) {
 				$location.path('/Devices/' + idx + '/Edit');
 				$scope.$apply();
 			};
@@ -622,7 +637,7 @@ define([
 			 * Global: Refresh a single item (legacy compatibility)
 			 * Now handled automatically via WebSocket subscriptions
 			 */
-			RefreshItem = function (item) {
+			window.RefreshItem = function (item) {
 				// Delegated to onDeviceUpdate and onSceneUpdate
 				if (item.Type && (item.Type.indexOf('Scene') === 0 || item.Type.indexOf('Group') === 0)) {
 					onSceneUpdate(item);
@@ -635,7 +650,7 @@ define([
 			 * Global: Refresh all favorites (legacy polling mechanism)
 			 * Now handled by WebSocket subscriptions, but kept for compatibility
 			 */
-			RefreshFavorites = function () {
+			window.RefreshFavorites = function () {
 				var bFavorites = 1;
 				if (typeof window.myglobals.LastPlanSelected != 'undefined') {
 					if (window.myglobals.LastPlanSelected > 0) {
@@ -664,7 +679,7 @@ define([
 			 * Global: Show favorites (legacy function)
 			 * Now handled by Angular data binding, but kept for compatibility
 			 */
-			ShowFavorites = function () {
+			window.ShowFavorites = function () {
 				loadFavorites();
 			};
 
