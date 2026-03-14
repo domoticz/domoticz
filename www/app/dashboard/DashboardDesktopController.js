@@ -32,9 +32,11 @@ define([
 		'$route',
 		'$routeParams',
 		'$window',
+		'$timeout',
 		'permissions',
 		'livesocket',
 		'dashboardService',
+		'domoticzApi',
 		function (
 			$scope,
 			$rootScope,
@@ -42,9 +44,11 @@ define([
 			$route,
 			$routeParams,
 			$window,
+			$timeout,
 			permissions,
 			livesocket,
-			dashboardService
+			dashboardService,
+			domoticzApi
 		) {
 			var $element = $('#main-view #dashcontent').last();
 			var unsubscribe = null; // Cleanup function for real-time updates
@@ -124,7 +128,7 @@ define([
 						}
 
 						// Initialize UI enhancements after Angular has rendered the template
-						setTimeout(function () {
+						$timeout(function () {
 							initMobileSliders();
 							$scope.ResizeDimSliders();
 							initDragAndDrop();
@@ -228,21 +232,41 @@ define([
 			}
 
 			/**
-			 * Filter devices based on search query
-			 * Returns true if device matches search filter
+			 * Filter devices based on search query.
+			 * Matches against the same fields as GenerateLiveSearchTextDefault
+			 * so the Angular ng-if section visibility stays in sync with jQuery item hiding.
 			 */
 			$scope.filterDevices = function (device) {
 				if (!$scope.searchFilter || $scope.searchFilter.trim() === '') {
 					return true;
 				}
 
-				var searchLower = $scope.searchFilter.toLowerCase();
-				var deviceName = (device.Name || '').toLowerCase();
-				var deviceType = (device.Type || '').toLowerCase();
-
-				return deviceName.indexOf(searchLower) !== -1 ||
-					   deviceType.indexOf(searchLower) !== -1;
+				var q = $scope.searchFilter.toLowerCase();
+				var fields = [
+					device.idx, device.Name, device.Description,
+					device.Type, device.HardwareName, device.SubType,
+					device.HumidityStatus, device.ForecastStr, device.Status
+				];
+				return fields.some(function (f) {
+					return f && String(f).toLowerCase().indexOf(q) !== -1;
+				});
 			};
+
+			/**
+			 * Keep $scope.searchFilter in sync with the jQuery live-search input.
+			 * Uses native capture-phase listeners on document so WatchLiveSearch()'s
+			 * jQuery .off() calls cannot remove them.
+			 */
+			function onCaptureSearch(e) {
+				if (e.target && $(e.target).hasClass('jsLiveSearch')) {
+					var query = e.target.value || '';
+					$scope.$evalAsync(function () {
+						$scope.searchFilter = query;
+					});
+				}
+			}
+			document.addEventListener('keyup', onCaptureSearch, true);
+			document.addEventListener('change', onCaptureSearch, true);
 
 			/**
 			 * Initialize drag-and-drop for widget reordering (desktop only).
@@ -483,10 +507,10 @@ define([
 					ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 					return;
 				}
-				$.ajax({
-					url: "json.htm?type=command&param=setcolbrightnessvalue&idx=" + idx + "&color=" + color + "&brightness=" + brightness,
-					async: false,
-					dataType: 'json'
+				domoticzApi.sendCommand('setcolbrightnessvalue', {
+					idx: idx,
+					color: color,
+					brightness: brightness
 				});
 			};
 
@@ -689,7 +713,7 @@ define([
 
 			function init() {
 				// Setup window resize handler
-				$(window).resize(function () {
+				$(window).on('resize.dashDesktop', function () {
 					$scope.ResizeDimSliders();
 				});
 
@@ -721,7 +745,9 @@ define([
 
 			// Cleanup on destroy
 			$scope.$on('$destroy', function () {
-				$(window).off("resize");
+				$(window).off('resize.dashDesktop');
+				document.removeEventListener('keyup', onCaptureSearch, true);
+			document.removeEventListener('change', onCaptureSearch, true);
 
 				// Cleanup real-time subscriptions
 				if (unsubscribe) {

@@ -1,6 +1,18 @@
 ﻿<div class="container">
 	<div ng-include="'views/inc_topbar.html'" ng-repeat="tb in [{}]"></div>
 
+	<!-- On the dashboard, Angular's ng-repeat (filter:filterDevices) removes non-matching
+	     items from the DOM entirely. jQuery's WatchLiveSearch must not interfere:
+	     - display:block !important prevents jQuery from hiding .itemBlock (ghost columns)
+	     - float:none !important prevents liveSearchShown from breaking Bootstrap grid
+	     - devicesListFiltered margin override keeps layout stable during search
+	     devicesList class is kept so jQuery's cleanup (removeClass liveSearchShown) still runs. -->
+	<style>
+		#dashcontent .itemBlock          { display: block !important; }
+		#dashcontent .liveSearchShown    { float: none !important; }
+		#dashcontent.devicesListFiltered { margin-left: 0 !important; }
+	</style>
+
 	<!-- Main dashboard content -->
 	<div id="dashcontent" class="devicesList">
 
@@ -34,7 +46,7 @@
 			</h2>
 
 			<!-- Scene items (Desktop grid) -->
-			<div class="row divider">
+			<div class="row">
 				<dz-scene-widget
 					ng-repeat="scene in scenes | filter:filterDevices track by scene.idx"
 					scene="scene"
@@ -52,7 +64,7 @@
 			</h2>
 
 			<!-- Light items (Desktop grid) -->
-			<div class="row divider">
+			<div class="row">
 				<dz-light-widget
 					ng-repeat="device in lights | filter:filterDevices track by device.idx"
 					device="device"
@@ -70,13 +82,13 @@
 			</h2>
 
 			<!-- Temperature items (Desktop grid with simple rendering) -->
-			<div class="row divider">
+			<div class="row">
 				<div ng-repeat="device in temperature | filter:filterDevices track by device.idx"
 					 ng-class="[dashboardType == 1 ? 'span3' : 'span4']" id="temp_{{device.idx}}" class="movable">
 					<div class="item itemBlock" ng-class="$root.GetTempBackgroundStatus(device)">
 						<table ng-attr-id="{{device.SetPoint != undefined ? 'itemtablesmalldoubleicon' : 'itemtablesmall'}}" ng-class="{'itemtablesmalldoubleicon': device.SetPoint != undefined, 'itemtablesmall': device.SetPoint == undefined}" border="0" cellpadding="0" cellspacing="0">
 							<tr>
-								<td id="name" class="item-name" data-idx="{{device.idx}}">{{device.Name}}</td>
+								<td id="name" class="item-name" data-idx="{{device.idx}}" data-search="{{device.idx}} {{device.Name}} {{device.Description}} {{device.Type}} {{device.HardwareName}} {{device.SubType}} {{device.HumidityStatus}} {{device.Gust}}">{{device.Name}}</td>
 								<td id="bigtext"><span>
 									<span ng-if="device.SetPoint != undefined">{{device.SetPoint}}&deg; {{config.TempSign}}</span>
 									<span ng-if="device.SetPoint != undefined && device.Temp != undefined"> / </span>
@@ -112,13 +124,13 @@
 			</h2>
 
 			<!-- Weather items (Desktop grid with simple rendering) -->
-			<div class="row divider">
+			<div class="row">
 				<div ng-repeat="device in weather | filter:filterDevices track by device.idx"
 					 ng-class="[dashboardType == 1 ? 'span3' : 'span4']" id="weather_{{device.idx}}" class="movable">
 					<div class="item itemBlock" ng-class="$root.GetItemBackgroundStatus(device)">
 						<table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">
 							<tr>
-								<td id="name" class="item-name" data-idx="{{device.idx}}">{{device.Name}}</td>
+								<td id="name" class="item-name" data-idx="{{device.idx}}" data-search="{{device.idx}} {{device.Name}} {{device.Description}} {{device.Type}} {{device.HardwareName}} {{device.SubType}} {{device.HumidityStatus}} {{device.ForecastStr}}">{{device.Name}}</td>
 								<td id="bigtext">
 									<span ng-if="device.Barometer != undefined">{{device.Barometer}} hPa</span>
 									<span ng-if="device.Rain != undefined">{{device.Rain}} mm</span>
@@ -154,7 +166,7 @@
 			</h2>
 
 			<!-- Utility items (Desktop grid) -->
-			<div class="row divider">
+			<div class="row">
 				<dz-utility-widget
 					ng-repeat="device in utility | filter:filterDevices track by device.idx"
 					device="device"

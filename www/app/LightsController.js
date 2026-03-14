@@ -444,13 +444,8 @@
 							$.LastUpdateTime = parseInt(data.ActTime);
 						}
 						$scope.devices = data.result;
-						$scope.deviceRows = [];
-						for (var i = 0; i < $scope.devices.length; i += 3) {
-							$scope.deviceRows.push($scope.devices.slice(i, i + 3));
-						}
 					} else {
 						$scope.devices = [];
-						$scope.deviceRows = [];
 					}
 
 					$scope.loading = false;
@@ -1513,8 +1508,7 @@
 			$scope.ctrl=ctrl;
 
 			$scope.devices = [];
-			$scope.deviceRows = [];
-			$scope.showLightList = true;
+				$scope.showLightList = true;
 			$scope.loading = true;
 
 			$scope.refreshLights = function() {

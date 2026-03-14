@@ -613,9 +613,7 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 			var htmlcontent = '';
 			htmlcontent += $('#editscene').html();
 			$scope.showSceneList = false;
-			if (!$scope.$$phase) {
-				$scope.$apply();
-			}
+			$timeout(function(){}, 0)
 			$('#sceneeditcontent').html(GetBackbuttonHTMLTable('ShowScenes') + htmlcontent);
 			$('#sceneeditcontent').i18n();
 			$element.find("#LevelDiv").hide();
@@ -804,9 +802,7 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 					$.each(data.result, function (i, item) {
 						RefreshItem(item);
 					});
-					if (!$scope.$$phase) {
-						$scope.$apply();
-					}
+					$timeout(function(){}, 0)
 				}
 			});
 		}
@@ -828,22 +824,13 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 						}
 
 						$scope.scenes = data.result;
-
-						// Group scenes into rows of 3
-						$scope.sceneRows = [];
-						for (var i = 0; i < $scope.scenes.length; i += 3) {
-							$scope.sceneRows.push($scope.scenes.slice(i, i + 3));
-						}
 					} else {
 						$scope.scenes = [];
-						$scope.sceneRows = [];
 					}
 
 					$scope.loading = false;
 
-					if (!$scope.$$phase) {
-						$scope.$apply();
-					}
+					$timeout(function(){}, 0)
 
 					$rootScope.RefreshTimeAndSun();
 
@@ -998,8 +985,7 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 			}
 
 			$scope.scenes = [];
-			$scope.sceneRows = [];
-			$scope.showSceneList = true;
+				$scope.showSceneList = true;
 			$scope.loading = true;
 
 			$scope.refreshScenes = function() {
