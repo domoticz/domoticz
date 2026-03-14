@@ -5784,7 +5784,7 @@ define(['app'], function (app) {
 									}
 									else if (paramType === "boolean") {
 										var checked = (typeof (param.default) != "undefined" && param.default === "true") ? ' checked' : '';
-										PluginParams += '<td><input type="checkbox" id="' + param.field + '"' + checked + ' /></td>';
+										PluginParams += '<td><input type="checkbox" id="' + param.field + '"' + checked + ' /><label for="' + param.field + '"></label></td>';
 									}
 									else if (paramType === "number") {
 										var minAttr = (typeof (param.min) != "undefined") ? ' min="' + param.min + '"' : '';
@@ -5863,48 +5863,56 @@ define(['app'], function (app) {
 								PluginParams += '</table>';
 								$("#divpythonplugin").append(PluginParams);
 
-								// Initialize jQuery UI sliders
-								$("#divpythonplugin #" + item.key + " .dimslider").each(function () {
-									var $slider = $(this);
-									var fieldId = $slider.data("field");
-									var sliderMin = $slider.data("min");
-									var sliderMax = $slider.data("max");
-									var $input = $("#divpythonplugin #" + item.key + " #" + fieldId);
-									var $label = $("#divpythonplugin #" + item.key + " #sliderval_" + fieldId);
-									$slider.slider({
-										range: "min",
-										min: sliderMin,
-										max: sliderMax,
-										value: parseInt($input.val()),
-										slide: function (event, ui) {
-											$input.val(ui.value);
-											$label.text(ui.value);
-										}
-									});
-								});
+								// Initialize jQuery UI sliders and conditional visibility
+							// for ALL tables with this plugin key (handles DOM duplication)
+								$("#divpythonplugin #" + item.key).each(function () {
+									var $table = $(this);
 
-								// Set up conditional visibility
-								$("#divpythonplugin #" + item.key + " tr[data-visible-when]").each(function () {
-									var $row = $(this);
-									var condition = $row.data("visible-when");
-									var parts = condition.split("=");
-									if (parts.length !== 2)
-										return;
-									var depField = parts[0];
-									var depValue = parts[1];
-									var $depInput = $("#divpythonplugin #" + item.key + " #" + depField);
-									if ($depInput.length === 0)
-										return;
-									var updateVisibility = function () {
-										var currentVal = $depInput.is(":checkbox") ? ($depInput.prop("checked") ? "true" : "false") : $depInput.val();
-										if (currentVal === depValue) {
-											$row.show();
-										} else {
-											$row.hide();
-										}
-									};
-									$depInput.on("change", updateVisibility);
-									updateVisibility();
+									// Initialize sliders within this specific table
+									$table.find(".dimslider").each(function () {
+										var $slider = $(this);
+										if ($slider.hasClass("ui-slider"))
+											return; // Already initialized
+										var fieldId = $slider.data("field");
+										var sliderMin = $slider.data("min");
+										var sliderMax = $slider.data("max");
+										var $input = $table.find("#" + fieldId);
+										var $label = $table.find("#sliderval_" + fieldId);
+										$slider.slider({
+											range: "min",
+											min: sliderMin,
+											max: sliderMax,
+											value: parseInt($input.val()),
+											slide: function (event, ui) {
+												$input.val(ui.value);
+												$label.text(ui.value);
+											}
+										});
+									});
+
+									// Set up conditional visibility within this specific table
+									$table.find("tr[data-visible-when]").each(function () {
+										var $row = $(this);
+										var condition = $row.data("visible-when");
+										var parts = condition.split("=");
+										if (parts.length !== 2)
+											return;
+										var depField = parts[0];
+										var depValue = parts[1];
+										var $depInput = $table.find("#" + depField);
+										if ($depInput.length === 0)
+											return;
+										var updateVisibility = function () {
+											var currentVal = $depInput.is(":checkbox") ? ($depInput.prop("checked") ? "true" : "false") : $depInput.val();
+											if (currentVal === depValue) {
+												$row.show();
+											} else {
+												$row.hide();
+											}
+										};
+										$depInput.on("change", updateVisibility);
+										updateVisibility();
+									});
 								});
 							}
 							$("#hardwareparamstable #combotype").append(option);
