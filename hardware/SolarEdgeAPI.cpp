@@ -723,9 +723,10 @@ void SolarEdgeAPI::GetOverview()
 	}
 	const Json::Value& overview = root["overview"];
 
+	float power = 0;
 	if (!overview["currentPower"].empty())
 	{
-		float power = overview["currentPower"]["power"].asFloat();
+		power = overview["currentPower"]["power"].asFloat();
 		SendWattMeter(200, SE_OVERVIEW_CURRENT, 255, power, "Site Current Power");
 	}
 	if (!overview["lastDayData"].empty())
