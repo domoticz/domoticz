@@ -84,16 +84,9 @@
                         <select id="selector{{ctrl.device.idx}}"
                                 data-idx="{{ctrl.device.idx}}"
                                 data-isprotected="{{ctrl.device.Protected}}"
-                                data-level="{{ctrl.device.LevelInt}}"
-                                data-levelnames="{{ctrl.device.LevelNames}}"
-                                data-selectorstyle="{{ctrl.device.SelectorStyle}}"
-                                data-leveloffhidden="{{ctrl.device.LevelOffHidden}}"
-                                data-levelactions="{{ctrl.device.LevelActions}}"
-                                ng-model="ctrl.selectedLevel"
-                                ng-change="ctrl.setSelectorLevel(ctrl.selectedLevel.value, ctrl.selectedLevel.name)"
-                                ng-options="level.name for level in ctrl.getSelectorLevels()"
-                                ng-init="ctrl.initSelectorDropdown()"
                                 style="width: auto;">
+                            <option ng-repeat="level in ctrl.getSelectorLevels()"
+                                    value="{{level.value}}">{{level.name}}</option>
                         </select>
                     </div>
                 </td>
@@ -103,7 +96,7 @@
 
                 <!-- Dimmer slider (in separate td, dashboard style) -->
                 <td ng-if="ctrl.isDimmer() && !ctrl.isBlinds() && ctrl.device.DimmerType != 'rel'" class="input">
-                    <div style="margin-left:50px; margin-top: 7px; visibility:hidden;" class="dimslider dimslidernorm" id="slider"
+                    <div style="margin-left:50px; margin-top: 7px; visibility:hidden;" class="dimslider dimslidernorm" id="slider_{{ctrl.device.idx}}_norm"
                          data-idx="{{ctrl.device.idx}}" data-type="norm"
                          data-maxlevel="{{ctrl.device.MaxDimLevel}}"
                          data-isprotected="{{ctrl.device.Protected}}"
@@ -114,7 +107,7 @@
                 <!-- Blinds Percentage slider -->
                 <td ng-if="ctrl.device.SwitchType == 'Blinds Percentage'" class="input">
                     <div style="margin-left:94px; margin-top: 7px; visibility:hidden;" class="dimslider dimslidersmalldouble"
-                         id="slider" data-idx="{{ctrl.device.idx}}" data-type="blinds"
+                         id="slider_{{ctrl.device.idx}}_blinds" data-idx="{{ctrl.device.idx}}" data-type="blinds"
                          data-maxlevel="{{ctrl.device.MaxDimLevel}}"
                          data-isprotected="{{ctrl.device.Protected}}"
                          data-svalue="{{ctrl.device.LevelInt}}">
@@ -123,7 +116,7 @@
                 <!-- Blinds % + Stop slider -->
                 <td ng-if="ctrl.device.SwitchType == 'Blinds % + Stop'" class="input">
                     <div style="margin-left:124px; margin-top: 7px; visibility:hidden;" class="dimslider dimslidersmalltripple"
-                         id="slider" data-idx="{{ctrl.device.idx}}" data-type="blinds"
+                         id="slider_{{ctrl.device.idx}}_blindsstop" data-idx="{{ctrl.device.idx}}" data-type="blinds"
                          data-maxlevel="{{ctrl.device.MaxDimLevel}}"
                          data-isprotected="{{ctrl.device.Protected}}"
                          data-svalue="{{ctrl.device.LevelInt}}">
