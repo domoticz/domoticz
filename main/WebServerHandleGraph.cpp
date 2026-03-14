@@ -58,9 +58,20 @@ namespace http
 			if (srange.empty() && sgroupby.empty())
 				return;
 
+			result = m_sql.safe_query("SELECT MAX(Date) FROM %s WHERE DeviceRowID==%" PRIu64, dbasetable.c_str(), idx);
+
 			time_t now = mytime(nullptr);
 			struct tm tm1;
-			localtime_r(&now, &tm1);
+
+			if (!result.empty() && !result[0][0].empty())
+			{
+				ParseSQLdatetime(now, tm1, result[0][0], -1);
+			}
+			else
+			{
+				now = time(nullptr);
+				localtime_r(&now, &tm1);
+			}
 
 			result = m_sql.safe_query("SELECT Type, SubType, SwitchType, AddjValue, AddjMulti, AddjValue2, Options FROM DeviceStatus WHERE (ID == %" PRIu64 ")", idx);
 			if (result.empty())
