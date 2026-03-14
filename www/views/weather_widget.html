@@ -26,7 +26,7 @@
 					--><span ng-show="ctrl.displayTempChill()" data-i18n="Temp">Temp</span><span ng-show="ctrl.displayTempChill()">: {{item.Temp}}&#176; {{tempsign}}, </span><!--
 					--><span ng-show="ctrl.displayChill()" data-i18n="Chill">Chill</span><span ng-show="ctrl.displayChill()">: {{item.Chill}}&#176; {{tempsign}}</span>
 				</td>
-				<td id="lastupdate" ng-bind="item.LastUpdate"></td>
+				<td id="lastupdate"><span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: <span ng-bind="item.LastUpdate"></span></td>
 				<td class="options">
 					<img ng-show="item.Favorite == 0" src="images/nofavorite.png" ng-click="ctrl.MakeFavorite(1)" class="lcursor" data-i18n="[title]Add to Dashboard" title="Add to Dashboard">
 					<img ng-show="item.Favorite != 0" src="images/favorite.png" ng-click="ctrl.MakeFavorite(0)" class="lcursor" data-i18n="[title]Remove from Dashboard" title="Remove from Dashboard">
