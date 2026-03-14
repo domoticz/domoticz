@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.directive('dzSceneWidget', function ($rootScope, $location, $uibModal, sceneApi, permissions) {
+	app.directive('dzSceneWidget', function ($rootScope, $location, sceneApi, permissions) {
 		return {
 			restrict: 'E',
 			replace: true,
@@ -135,23 +135,10 @@ define(['app'], function (app) {
 						ShowNotify($.t('You do not have permission to do that!'), 2500, true);
 						return;
 					}
-
-					var modalInstance = $uibModal.open({
-						templateUrl: 'views/scenes/edit_scene.html',
-						controller: 'EditSceneController',
-						size: 'lg',
-						resolve: {
-							scene: function() {
-								return ctrl.scene;
-							}
-						}
-					});
-
-					modalInstance.result.then(function(updatedScene) {
-						if (ctrl.onUpdate) {
-							ctrl.onUpdate();
-						}
-					});
+					// Delegate to parent controller via on-edit binding
+					if (ctrl.onEdit) {
+						ctrl.onEdit();
+					}
 				};
 
 				ctrl.isAdmin = permissions.hasPermission('Admin');
@@ -168,16 +155,6 @@ define(['app'], function (app) {
 					ctrl.searchText = GenerateLiveSearchTextSG(ctrl.scene, bigtext);
 				};
 				ctrl.updateSearchText();
-
-				ctrl.onEditScene = function() {
-					if (!permissions.hasPermission('Admin')) {
-						ShowNotify($.t('You do not have permission to do that!'), 2500, true);
-						return;
-					}
-					if (ctrl.onEdit) {
-						ctrl.onEdit();
-					}
-				};
 
 				$scope.$watch('ctrl.scene', function() {
 					ctrl.updateSearchText();

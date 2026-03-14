@@ -14,6 +14,9 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                     }
                     return 'views/dashboard_desktop.html';
                 },
+                // DashboardDesktopController handles both mobile and desktop templates.
+                // It detects mobile via window.myglobals.ismobile and applies the
+                // appropriate body classes and scope bindings for each template.
                 controllerUrl: 'dashboard/DashboardDesktopController',
                 controller: 'DashboardDesktopController'
             }))
