@@ -1,7 +1,6 @@
 define(['app', 'livesocket'], function (app) {
 	app.controller('FloorplanController', function ($scope, $rootScope, $location, $window, $http, $interval, $timeout, $compile, permissions, livesocket) {
 
-		$scope.debug = 0;
 		$scope.floorPlans;
 		$scope.FloorplanCount;
 		$scope.actFloorplan;
@@ -26,7 +25,6 @@ define(['app', 'livesocket'], function (app) {
 			//  Handle events on navigation elements
 			if (e.target.getAttribute('related') != null) {
 				$("#BulletImages").children().css({ 'display': 'none' });
-				if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Scrolling to: ' + e.target.getAttribute('related') + '</b>', 1000);
 				e.preventDefault();
 				ScrollFloorplans(e.target.getAttribute('related'));
 			}
@@ -38,7 +36,6 @@ define(['app', 'livesocket'], function (app) {
 					$scope.pendingScroll = true;
 					$timeout(function () {
 						if (($scope.isScrolling == false) && ($scope.pendingScroll == true)) {
-							if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Scrolled to: ' + window.pageXOffset + '</b>', 1000);
 							$scope.pendingScroll = false;
 							var nearestFP = $('.imageparent:first');
 							$('.imageparent').each(function () {
@@ -47,7 +44,6 @@ define(['app', 'livesocket'], function (app) {
 									nearestFP = $(this);
 								}
 							});
-							if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Closest is: ' + nearestFP.attr('id') + '</b>', 1000);
 							ScrollFloorplans(nearestFP.attr('id'), true);
 						}
 					}, 50);
@@ -62,7 +58,6 @@ define(['app', 'livesocket'], function (app) {
 					var dx = touchX - $scope.lastTouchX;
 					var dy = touchY - $scope.lastTouchY;
 					var distance = Math.sqrt(dx * dx + dy * dy);
-					if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Tap Delta: ' + delta + ', Dist: ' + Math.round(distance) + '</b>', 1000);
 					if (delta < delay && delta > 0 && distance < 50) {
 						$scope.doubleClick();
 					}
@@ -74,7 +69,6 @@ define(['app', 'livesocket'], function (app) {
 		};
 
 		ScrollFloorplans = function (tagName, animate) {
-			if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Scrolling to: ' + tagName + '</b>', 1000);
 			var allowAnimation = $.myglobals.AnimateTransitions;
 			if (arguments.length > 1) {
 				allowAnimation = animate;
@@ -183,7 +177,6 @@ define(['app', 'livesocket'], function (app) {
 					$("#floorplancontent").offset({ top: 0 });
 				}
 				$("#floorplancontent").width($("#main-view").width()).height(wrpHeight);
-				if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Window: ' + $window.innerWidth + 'x' + $window.innerHeight + '</b><br/><b>View: ' + $("#floorplancontent").width() + 'x' + wrpHeight + '</b>', 1000);
 				$(".imageparent").each(function (i) { $("#" + $(this).attr('id') + '_svg').width($("#floorplancontent").width()).height(wrpHeight); });
 				if ($scope.FloorplanCount > 1) {
 					$("#BulletGroup:first").css("left", ($window.innerWidth - $("#BulletGroup:first").width()) / 2)
@@ -212,12 +205,10 @@ define(['app', 'livesocket'], function (app) {
 		$scope.doubleClick = function () {
 			if ($.myglobals.FullscreenMode == true) {
 				if ($("#fpwrapper").attr('fullscreen') != 'true') {
-					if ($scope.debug > 1) $.cachenoty = generate_noty('info', '<b>Double Click -> Fullscreen!!</b>', 1000);
 					$('#copyright').css({ display: 'none' });
 					$('.navbar').css({ display: 'none' });
 					$("#fpwrapper").css({ position: 'absolute', top: 0, left: 0 }).attr('fullscreen', 'true');
 				} else {
-					if ($scope.debug > 1) $.cachenoty = generate_noty('info', '<b>Double Click <- Fullscreen!!</b>', 1000);
 					$('#copyright').css({ display: 'block' });
 					$('.navbar').css({ display: 'block' });
 					$("#fpwrapper").css({ position: 'relative' }).attr('fullscreen', 'false');
@@ -308,7 +299,6 @@ define(['app', 'livesocket'], function (app) {
 					var dev = Device.create(item);
 					var existing = document.getElementById(dev.uniquename);
 					if (existing != undefined) {
-						if ($scope.debug > 2) $.cachenoty = generate_noty('info', '<b>Refreshing Device ' + dev.name + ((compoundDevice) ? ' - ' + item.Type : '') + '</b>', 2000);
 						dev.htmlMinimum(existing.parentNode);
 					}
 				}
@@ -480,9 +470,6 @@ define(['app', 'livesocket'], function (app) {
 						$scope.browser = "unknown";
 					}
 					
-					if ($scope.debug > 0 && wasPreviouslySet) {
-						$.cachenoty = generate_noty('info', '<b>Floorplan already set to: ' + $scope.actFloorplan + '</b>', 5000);
-					}
 
 					// handle settings
 					if (typeof data.AnimateZoom != 'undefined') {
@@ -595,9 +582,9 @@ define(['app', 'livesocket'], function (app) {
 
 			$(window).resize(function () { $scope.FloorplanResize(); });
 
-			document.addEventListener('touchstart', FPtouchstart, false);
-			document.addEventListener('touchmove', FPtouchmove, false);
-			document.addEventListener('touchend', FPtouchend, false);
+			document.addEventListener('touchstart', FPtouchstart, { passive: true });
+			document.addEventListener('touchmove', FPtouchmove, { passive: true });
+			document.addEventListener('touchend', FPtouchend, { passive: false });
 			$("body").css('overflow', 'hidden')
 				.on('pageexit', function () {
 					document.removeEventListener('touchstart', FPtouchstart);
@@ -620,16 +607,7 @@ define(['app', 'livesocket'], function (app) {
 						$("#floorplancontent").offset({ top: 0 });
 					}
 					$("#copyright").attr("style", "position:absolute");
-					if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>PageExit code executed</b>', 2000);
 				});
-		}
-
-		$scope.debugOn = function () {
-			$scope.debug = 1;
-		}
-		
-		$scope.debugOff = function () {
-			$scope.debug = 0;
 		}
 
 		function init() {
@@ -641,8 +619,6 @@ define(['app', 'livesocket'], function (app) {
 					RefreshItem(deviceData);
 				});
 
-				document.getElementById("cFloorplans").addEventListener("mouseover", $scope.debugOn);
-				document.getElementById("cFloorplans").addEventListener("mouseout", $scope.debugOff);
 			}
 			catch (err) {
 				generate_noty('error', '<b>Error Initialising Page</b><br>' + err, false);
@@ -655,8 +631,6 @@ define(['app', 'livesocket'], function (app) {
 				clearTimeout(refreshDebounceTimer);
 				refreshDebounceTimer = null;
 			}
-			document.getElementById("cFloorplans").removeEventListener("mouseover", $scope.debugOn);
-			document.getElementById("cFloorplans").removeEventListener("mouseout", $scope.debugOff);
 			$("body").trigger("pageexit");
 		});
 
