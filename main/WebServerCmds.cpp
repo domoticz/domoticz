@@ -42,6 +42,8 @@
 
 #ifdef ENABLE_PYTHON
 #include "../hardware/plugins/Plugins.h"
+#include "../hardware/plugins/PluginManager.h"
+#include "../tinyxpath/tinyxml.h"
 #endif
 
 #ifndef WIN32
@@ -4439,6 +4441,66 @@ namespace http
 						Json::Value settingsJson;
 						if (ParseJSon(sd[18], settingsJson) && settingsJson.isObject())
 						{
+#ifdef ENABLE_PYTHON
+							// Strip password-type field values from Settings
+							std::string pluginKey = sd[9]; // Extra holds plugin key
+							Plugins::CPluginSystem PluginMgr;
+							std::map<std::string, std::string> *mPluginXml = PluginMgr.GetManifest();
+							std::string sFind = "key=\"" + pluginKey + "\"";
+							for (const auto &type : *mPluginXml)
+							{
+								if (type.second.find(sFind) != std::string::npos)
+								{
+									TiXmlDocument xmlDoc;
+									xmlDoc.Parse(type.second.c_str());
+									if (!xmlDoc.Error())
+									{
+										TiXmlNode *pPluginNode = xmlDoc.FirstChild("plugin");
+										if (pPluginNode)
+										{
+											TiXmlNode *pParamsNode = pPluginNode->FirstChild("params");
+											if (pParamsNode)
+											{
+												for (TiXmlNode *pChild = pParamsNode->FirstChild(); pChild; pChild = pChild->NextSibling())
+												{
+													TiXmlElement *pEle = pChild->ToElement();
+													if (!pEle)
+														continue;
+													std::string tagName = pEle->Value();
+													if (tagName == "param")
+													{
+														const char *pField = pEle->Attribute("field");
+														const char *pPassword = pEle->Attribute("password");
+														if (pField && pPassword && std::string(pPassword) == "true")
+														{
+															if (settingsJson.isMember(pField))
+																settingsJson[pField] = "";
+														}
+													}
+													else if (tagName == "group")
+													{
+														for (TiXmlNode *pGroupChild = pEle->FirstChild("param"); pGroupChild; pGroupChild = pGroupChild->NextSibling("param"))
+														{
+															TiXmlElement *pGroupEle = pGroupChild->ToElement();
+															if (!pGroupEle)
+																continue;
+															const char *pField = pGroupEle->Attribute("field");
+															const char *pPassword = pGroupEle->Attribute("password");
+															if (pField && pPassword && std::string(pPassword) == "true")
+															{
+																if (settingsJson.isMember(pField))
+																	settingsJson[pField] = "";
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+									break;
+								}
+							}
+#endif
 							root["result"][ii]["Settings"] = settingsJson;
 						}
 						else
