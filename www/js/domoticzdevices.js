@@ -41,7 +41,11 @@ function makeSVGnode(tag, attrs, text, title) {
     var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
     for (var k in attrs)
         if (k == "xlink:href") el.setAttributeNS('http://www.w3.org/1999/xlink', 'href', attrs[k]);
-        else el.setAttribute(k, attrs[k]);
+        else if ((k === 'ontouchstart' || k === 'ontouchend') && attrs[k]) {
+            // Use addEventListener instead of inline attribute so we can mark as passive.
+            // Neither handler calls preventDefault(), so passive:true is safe.
+            el.addEventListener(k.slice(2), new Function(attrs[k]), { passive: true });
+        } else el.setAttribute(k, attrs[k]);
     if ((typeof text != 'undefined') && (text.length != 0)) {
         el.appendChild(document.createTextNode(text));
     }
