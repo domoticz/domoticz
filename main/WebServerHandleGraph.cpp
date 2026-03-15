@@ -81,7 +81,7 @@ namespace http
 			time_t now = mytime(nullptr);
 			struct tm tm1;
 			localtime_r(&now, &tm1);
-			
+
 			result = m_sql.safe_query("SELECT Type, SubType, SwitchType, AddjValue, AddjMulti, AddjValue2, Options FROM DeviceStatus WHERE (ID == %" PRIu64 ")", idx);
 			if (result.empty())
 				return;
