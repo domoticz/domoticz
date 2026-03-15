@@ -3201,12 +3201,11 @@ namespace http
 						}
 						else
 						{
-							sprintf(szTmp, "%.03f", 0.0F);
+							sprintf(szTmp, "%.03f", atof(sValue.c_str()) / divider);
 							root["result"][ii]["Counter"] = szTmp;
+							root["result"][ii]["Data"] = szTmp;
 							sprintf(szTmp, "%.03f m3", 0.0F);
 							root["result"][ii]["CounterToday"] = szTmp;
-							sprintf(szTmp, "%.03f", atof(sValue.c_str()) / divider);
-							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 						}
 					}
