@@ -295,30 +295,30 @@ define(['app'], function (app) {
 
                     if (typeof device.Counter !== 'undefined') {
                         if (device.Type === 'P1 Smart Meter') {
-                            EditUtilityDevice(device.idx, escape(device.Name), escape(device.Description), device.CustomImage);
+                            EditUtilityDevice(device.idx, escape(device.Name), escape(device.Description), device.CustomImage, device.ID, device.Unit);
                         } else {
-                            EditMeterDevice(device.idx, escape(device.Name), escape(device.Description), device.SwitchTypeVal, device.AddjValue, device.AddjValue2, escape(device.ValueQuantity), escape(device.ValueUnits), device.CustomImage);
+                            EditMeterDevice(device.idx, escape(device.Name), escape(device.Description), device.SwitchTypeVal, device.AddjValue, device.AddjValue2, escape(device.ValueQuantity), escape(device.ValueUnits), device.CustomImage, device.ID, device.Unit);
                         }
                     } else if (device.SubType === 'Custom Sensor') {
-                        EditCustomSensorDevice(device.idx, escape(device.Name), escape(device.Description), device.CustomImage, device.SensorType, escape(device.SensorUnit));
+                        EditCustomSensorDevice(device.idx, escape(device.Name), escape(device.Description), device.CustomImage, device.SensorType, escape(device.SensorUnit), device.ID, device.Unit);
                     } else if (device.SubType === 'Text') {
                         var status = ctrl.getStatusText().replaceAll('<br />', '');
-                        EditTextDevice(device.idx, escape(device.Name), escape(status), escape(device.Description), device.CustomImage);
+                        EditTextDevice(device.idx, escape(device.Name), escape(status), escape(device.Description), device.CustomImage, device.ID, device.Unit);
                     } else if ((device.Type === 'Setpoint' && device.SubType === 'SetPoint') || device.Type === 'Radiator 1') {
-                        EditSetPoint(device.idx, escape(device.Name), escape(device.Description), escape(device.vunit), device.step, device.min, device.max, device.Protected, device.CustomImage);
+                        EditSetPoint(device.idx, escape(device.Name), escape(device.Description), escape(device.vunit), device.step, device.min, device.max, device.Protected, device.CustomImage, device.ID, device.Unit);
                     } else if (device.SubType === 'Thermostat Clock') {
-                        EditThermostatClock(device.idx, escape(device.Name), escape(device.Description), device.DayTime, device.Protected, device.CustomImage);
+                        EditThermostatClock(device.idx, escape(device.Name), escape(device.Description), device.DayTime, device.Protected, device.CustomImage, device.ID, device.Unit);
                     } else if (device.SubType === 'Thermostat Mode') {
-                        EditThermostatMode(device.idx, escape(device.Name), escape(device.Description), device.Mode, device.Modes, device.Protected, device.CustomImage);
+                        EditThermostatMode(device.idx, escape(device.Name), escape(device.Description), device.Mode, device.Modes, device.Protected, device.CustomImage, device.ID, device.Unit);
                     } else if (device.SubType === 'Thermostat Fan Mode') {
-                        EditThermostatFanMode(device.idx, escape(device.Name), escape(device.Description), device.Mode, device.Modes, device.Protected, device.CustomImage);
+                        EditThermostatFanMode(device.idx, escape(device.Name), escape(device.Description), device.Mode, device.Modes, device.Protected, device.CustomImage, device.ID, device.Unit);
                     } else if ((device.Type === 'Energy' || device.SubType === 'kWh')) {
                         var energyMeterMode = device.EnergyMeterMode || '0';
-                        EditEnergyDevice(device.idx, escape(device.Name), escape(device.Description), device.SwitchTypeVal, energyMeterMode, device.CustomImage);
+                        EditEnergyDevice(device.idx, escape(device.Name), escape(device.Description), device.SwitchTypeVal, energyMeterMode, device.CustomImage, device.ID, device.Unit);
                     } else if (device.SubType === 'Distance') {
-                        EditDistanceDevice(device.idx, escape(device.Name), escape(device.Description), device.SwitchTypeVal, device.CustomImage);
+                        EditDistanceDevice(device.idx, escape(device.Name), escape(device.Description), device.SwitchTypeVal, device.CustomImage, device.ID, device.Unit);
                     } else {
-                        EditUtilityDevice(device.idx, escape(device.Name), escape(device.Description), device.CustomImage);
+                        EditUtilityDevice(device.idx, escape(device.Name), escape(device.Description), device.CustomImage, device.ID, device.Unit);
                     }
                 };
 

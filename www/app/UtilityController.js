@@ -59,9 +59,11 @@
 			});
 		}
 
-		EditUtilityDevice = function (idx, name, description, customimage) {
+		EditUtilityDevice = function (idx, name, description, customimage, deviceID, unitCode) {
 			$.devIdx = idx;
 			$("#dialog-editutilitydevice #deviceidx").text(idx);
+			$("#dialog-editutilitydevice #deviceid").text(deviceID);
+			$("#dialog-editutilitydevice #deviceunit").text(unitCode);
 			$("#dialog-editutilitydevice #devicename").val(unescape(name));
 			$("#dialog-editutilitydevice #devicedescription").val(unescape(description));
 			$('#dialog-editutilitydevice #combosensoricon').ddslick({
@@ -81,9 +83,11 @@
 			$("#dialog-editutilitydevice").dialog("open");
 		}
 
-		EditTextDevice = function (idx, name, text, description, customimage) {
+		EditTextDevice = function (idx, name, text, description, customimage, deviceID, unitCode) {
 			$.devIdx = idx;
 			$("#dialog-edittextdevice #deviceidx").text(idx);
+			$("#dialog-edittextdevice #deviceid").text(deviceID);
+			$("#dialog-edittextdevice #deviceunit").text(unitCode);
 			$("#dialog-edittextdevice #devicename").val(unescape(name));
 			$("#dialog-edittextdevice #devicetext").val(unescape(text));
 			$("#dialog-edittextdevice #devicedescription").val(unescape(description));
@@ -104,10 +108,12 @@
 			$("#dialog-edittextdevice").dialog("open");
 		}
 
-		EditCustomSensorDevice = function (idx, name, description, customimage, sensortype, axislabel) {
+		EditCustomSensorDevice = function (idx, name, description, customimage, sensortype, axislabel, deviceID, unitCode) {
 			$.devIdx = idx;
 			$.sensorType = sensortype;
 			$("#dialog-editcustomsensordevice #deviceidx").text(idx);
+			$("#dialog-editcustomsensordevice #deviceid").text(deviceID);
+			$("#dialog-editcustomsensordevice #deviceunit").text(unitCode);
 			$("#dialog-editcustomsensordevice #devicename").val(unescape(name));
 			$("#dialog-editcustomsensordevice #sensoraxis").val(unescape(axislabel));
 
@@ -131,9 +137,11 @@
 			$("#dialog-editcustomsensordevice").dialog("open");
 		}
 
-		EditDistanceDevice = function (idx, name, description, switchtype, customimage) {
+		EditDistanceDevice = function (idx, name, description, switchtype, customimage, deviceID, unitCode) {
 			$.devIdx = idx;
 			$("#dialog-editdistancedevice #deviceidx").text(idx);
+			$("#dialog-editdistancedevice #deviceid").text(deviceID);
+			$("#dialog-editdistancedevice #deviceunit").text(unitCode);
 			$("#dialog-editdistancedevice #devicename").val(unescape(name));
 			$("#dialog-editdistancedevice #devicedescription").val(unescape(description));
 			$("#dialog-editdistancedevice #combometertype").val(switchtype);
@@ -154,9 +162,11 @@
 			$("#dialog-editdistancedevice").dialog("open");
 		}
 
-		EditMeterDevice = function (idx, name, description, switchtype, meteroffset, meterdivider, valuequantity, valueunits, customimage) {
+		EditMeterDevice = function (idx, name, description, switchtype, meteroffset, meterdivider, valuequantity, valueunits, customimage, deviceID, unitCode) {
 			$.devIdx = idx;
 			$("#dialog-editmeterdevice #deviceidx").text(idx);
+			$("#dialog-editmeterdevice #deviceid").text(deviceID);
+			$("#dialog-editmeterdevice #deviceunit").text(unitCode);
 			$("#dialog-editmeterdevice #devicename").val(unescape(name));
 			$("#dialog-editmeterdevice #devicedescription").val(unescape(description));
 			$("#dialog-editmeterdevice #combometertype").val(switchtype);
@@ -198,9 +208,11 @@
 			$("#dialog-editmeterdevice").dialog("open");
 		}
 
-		EditEnergyDevice = function (idx, name, description, switchtype, EnergyMeterMode, customimage) {
+		EditEnergyDevice = function (idx, name, description, switchtype, EnergyMeterMode, customimage, deviceID, unitCode) {
 			$.devIdx = idx;
 			$("#dialog-editenergydevice #deviceidx").text(idx);
+			$("#dialog-editenergydevice #deviceid").text(deviceID);
+			$("#dialog-editenergydevice #deviceunit").text(unitCode);
 			$("#dialog-editenergydevice #devicename").val(unescape(name));
 			$("#dialog-editenergydevice #devicedescription").val(unescape(description));
 			$("#dialog-editenergydevice #combometertype").val(switchtype);
@@ -225,10 +237,12 @@
 			$("#dialog-editenergydevice").dialog("open");
 		}
 
-		EditSetPoint = function (idx, name, description, unit, step, min, max, isprotected, customimage) {
+		EditSetPoint = function (idx, name, description, unit, step, min, max, isprotected, customimage, deviceID, unitCode) {
 			HandleProtection(isprotected, function () {
 				$.devIdx = idx;
 				$("#dialog-editsetpointdevice #deviceidx").text(idx);
+				$("#dialog-editsetpointdevice #deviceid").text(deviceID);
+				$("#dialog-editsetpointdevice #deviceunit").text(unitCode);
 				$("#dialog-editsetpointdevice #devicename").val(unescape(name));
 				$("#dialog-editsetpointdevice #devicedescription").val(unescape(description));
 				$('#dialog-editsetpointdevice #protected').prop('checked', (isprotected == true));
@@ -254,11 +268,13 @@
 			});
 		}
 
-		EditThermostatClock = function (idx, name, description, daytime, isprotected, customimage) {
+		EditThermostatClock = function (idx, name, description, daytime, isprotected, customimage, deviceID, unitCode) {
 			HandleProtection(isprotected, function () {
 				var sarray = daytime.split(";");
 				$.devIdx = idx;
 				$("#dialog-editthermostatclockdevice #deviceidx").text(idx);
+				$("#dialog-editthermostatclockdevice #deviceid").text(deviceID);
+				$("#dialog-editthermostatclockdevice #deviceunit").text(unitCode);
 				$("#dialog-editthermostatclockdevice #devicename").val(unescape(name));
 				$("#dialog-editthermostatclockdevice #devicedescription").val(unescape(description));
 				$('#dialog-editthermostatclockdevice #protected').prop('checked', (isprotected == true));
@@ -283,12 +299,14 @@
 			});
 		}
 
-		EditThermostatMode = function (idx, name, description, actmode, modes, isprotected, customimage) {
+		EditThermostatMode = function (idx, name, description, actmode, modes, isprotected, customimage, deviceID, unitCode) {
 			HandleProtection(isprotected, function () {
 				var sarray = modes.split(";");
 				$.devIdx = idx;
 				$.isFan = false;
 				$("#dialog-editthermostatmode #deviceidx").text(idx);
+				$("#dialog-editthermostatmode #deviceid").text(deviceID);
+				$("#dialog-editthermostatmode #deviceunit").text(unitCode);
 				$("#dialog-editthermostatmode #devicename").val(unescape(name));
 				$("#dialog-editthermostatmode #devicedescription").val(unescape(description));
 				$('#dialog-editthermostatmode #protected').prop('checked', (isprotected == true));
@@ -319,12 +337,14 @@
 				$("#dialog-editthermostatmode").dialog("open");
 			});
 		}
-		EditThermostatFanMode = function (idx, name, description, actmode, modes, isprotected, customimage) {
+		EditThermostatFanMode = function (idx, name, description, actmode, modes, isprotected, customimage, deviceID, unitCode) {
 			HandleProtection(isprotected, function () {
 				var sarray = modes.split(";");
 				$.devIdx = idx;
 				$.isFan = true;
 				$("#dialog-editthermostatmode #deviceidx").text(idx);
+				$("#dialog-editthermostatmode #deviceid").text(deviceID);
+				$("#dialog-editthermostatmode #deviceunit").text(unitCode);
 				$("#dialog-editthermostatmode #devicename").val(unescape(name));
 				$("#dialog-editthermostatmode #devicedescription").val(unescape(description));
 				$('#dialog-editthermostatmode #protected').prop('checked', (isprotected == true));

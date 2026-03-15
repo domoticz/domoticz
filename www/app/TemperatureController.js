@@ -10,9 +10,11 @@ define(['app', 'livesocket'], function (app) {
 			});
 		};
 
-		EditTempDevice = function (idx, name, description, addjvalue, unit, step, min, max) {
+		EditTempDevice = function (idx, name, description, addjvalue, unit, step, min, max, deviceID, unitCode) {
 			$.devIdx = idx;
 			$("#dialog-edittempdevice #deviceidx").text(idx);
+			$("#dialog-edittempdevice #deviceid").text(deviceID);
+			$("#dialog-edittempdevice #deviceunit").text(unitCode);
 			$("#dialog-edittempdevice #devicename").val(unescape(name));
 			$("#dialog-edittempdevice #devicedescription").val(unescape(description));
 			$("#dialog-edittempdevice #adjustment").val(addjvalue);
@@ -30,9 +32,11 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-edittempdevice").dialog("open");
 		}
 
-		EditTempDeviceSmall = function (idx, name, description, addjvalue) {
+		EditTempDeviceSmall = function (idx, name, description, addjvalue, deviceID, unitCode) {
 			$.devIdx = idx;
 			$("#dialog-edittempdevicesmall #deviceidx").text(idx);
+			$("#dialog-edittempdevicesmall #deviceid").text(deviceID);
+			$("#dialog-edittempdevicesmall #deviceunit").text(unitCode);
 			$("#dialog-edittempdevicesmall #devicename").val(unescape(name));
 			$("#dialog-edittempdevicesmall #devicedescription").val(unescape(description));
 			$("#dialog-edittempdevicesmall").i18n();
@@ -46,7 +50,7 @@ define(['app', 'livesocket'], function (app) {
 			$(idt).val(''); return false;
 		}
 
-		EditSetPoint = function (idx, name, description, setpoint, mode, until, callback) {
+		EditSetPoint = function (idx, name, description, setpoint, mode, until, callback, deviceID, unitCode) {
 			//HeatingOff does not apply to dhw
 			if (mode == "HeatingOff") {
 				bootbox.alert($.t('Can\'t change zone when the heating is off'));
@@ -54,6 +58,8 @@ define(['app', 'livesocket'], function (app) {
 			}
 			$.devIdx = idx;
 			$("#dialog-editsetpoint #deviceidx").text(idx);
+			$("#dialog-editsetpoint #deviceid").text(deviceID);
+			$("#dialog-editsetpoint #deviceunit").text(unitCode);
 			$("#dialog-editsetpoint #devicename").val(unescape(name));
 			$("#dialog-editsetpoint #devicedescription").val(unescape(description));
 			$("#dialog-editsetpoint #setpoint").val(setpoint);
@@ -69,9 +75,12 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editsetpoint").i18n();
 			$("#dialog-editsetpoint").dialog("open");
 		}
-		EditState = function (idx, name, description, state, mode, until, callback) {
+		EditState = function (idx, name, description, state, mode, until, callback, deviceID, unitCode) {
 			//HeatingOff does not apply to dhw
 			$.devIdx = idx;
+			$("#dialog-editstate #deviceidx").text(idx);
+			$("#dialog-editstate #deviceid").text(deviceID);
+			$("#dialog-editstate #deviceunit").text(unitCode);
 			$("#dialog-editstate #devicename").val(unescape(name));
 			$("#dialog-editstate #devicedescription").val(unescape(description));
 			$("#dialog-editstate #state").val(state);
@@ -686,14 +695,14 @@ define(['app', 'livesocket'], function (app) {
 					};
 
 					ctrl.EditTempDeviceSmall = function () {
-						return EditTempDeviceSmall(item.idx, escape(item.Name), escape(item.Description), item.AddjValue);
+						return EditTempDeviceSmall(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, item.ID, item.Unit);
 					};
 
 					ctrl.EditTempDevice = function () {
 						if (item.Type == 'Thermostat 6') {
-							return EditTempDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, escape(item.vunit), item.step, item.min, item.max);
+							return EditTempDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, escape(item.vunit), item.step, item.min, item.max, item.ID, item.Unit);
 						} else {
-							return EditTempDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue);
+							return EditTempDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, undefined, undefined, undefined, undefined, item.ID, item.Unit);
 						}
 					};
 
@@ -704,7 +713,7 @@ define(['app', 'livesocket'], function (app) {
 					};
 
 					ctrl.EditSetPoint = function (fn) {
-						return EditSetPoint(item.idx, escape(item.Name), escape(item.Description), item.SetPoint, item.Status, item.Until, fn);
+						return EditSetPoint(item.idx, escape(item.Name), escape(item.Description), item.SetPoint, item.Status, item.Until, fn, item.ID, item.Unit);
 					};
 					
 					ctrl.ShowSetpointPopup = function (event) {
@@ -715,7 +724,7 @@ define(['app', 'livesocket'], function (app) {
 					};
 
 					ctrl.EditState = function (fn) {
-						return EditState(item.idx, escape(item.Name), escape(item.Description), item.State, item.Status, item.Until, fn);
+						return EditState(item.idx, escape(item.Name), escape(item.Description), item.State, item.Status, item.Until, fn, item.ID, item.Unit);
 					};
 
 					$element.i18n();

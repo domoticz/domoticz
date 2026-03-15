@@ -9,9 +9,11 @@ define(['app', 'livesocket'], function (app) {
 			});
 		};
 
-		EditRainDevice = function (idx, name, description, addjmulti) {
+		EditRainDevice = function (idx, name, description, addjmulti, deviceID, unitCode) {
 			$.devIdx = idx;
 			$("#dialog-editraindevice #deviceidx").text(idx);
+			$("#dialog-editraindevice #deviceid").text(deviceID);
+			$("#dialog-editraindevice #deviceunit").text(unitCode);
 			$("#dialog-editraindevice #devicename").val(unescape(name));
 			$("#dialog-editraindevice #devicedescription").val(unescape(description));
 			$("#dialog-editraindevice #multiply").val(addjmulti);
@@ -19,9 +21,11 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editraindevice").dialog("open");
 		}
 
-		EditBaroDevice = function (idx, name, description, addjvalue) {
+		EditBaroDevice = function (idx, name, description, addjvalue, deviceID, unitCode) {
 			$.devIdx = idx;
 			$("#dialog-editbarodevice #deviceidx").text(idx);
+			$("#dialog-editbarodevice #deviceid").text(deviceID);
+			$("#dialog-editbarodevice #deviceunit").text(unitCode);
 			$("#dialog-editbarodevice #devicename").val(unescape(name));
 			$("#dialog-editbarodevice #devicedescription").val(unescape(description));
 			$("#dialog-editbarodevice #adjustment").val(addjvalue);
@@ -29,9 +33,11 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editbarodevice").dialog("open");
 		}
 
-		EditVisibilityDevice = function (idx, name, description, switchtype) {
+		EditVisibilityDevice = function (idx, name, description, switchtype, deviceID, unitCode) {
 			$.devIdx = idx;
 			$("#dialog-editvisibilitydevice #deviceidx").text(idx);
+			$("#dialog-editvisibilitydevice #deviceid").text(deviceID);
+			$("#dialog-editvisibilitydevice #deviceunit").text(unitCode);
 			$("#dialog-editvisibilitydevice #devicename").val(unescape(name));
 			$("#dialog-editvisibilitydevice #devicedescription").val(unescape(description));
 			$("#dialog-editvisibilitydevice #combometertype").val(switchtype);
@@ -39,9 +45,11 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editvisibilitydevice").dialog("open");
 		}
 
-		EditWindDevice = function (idx, name, description, addjvalue2, addjmulti) {
+		EditWindDevice = function (idx, name, description, addjvalue2, addjmulti, deviceID, unitCode) {
 			$.devIdx = idx;
 			$("#dialog-editwinddevice #deviceidx").text(idx);
+			$("#dialog-editwinddevice #deviceid").text(deviceID);
+			$("#dialog-editwinddevice #deviceunit").text(unitCode);
 			$("#dialog-editwinddevice #devicename").val(unescape(name));
 			$("#dialog-editwinddevice #devicedescription").val(unescape(description));
 			$("#dialog-editwinddevice #arotation").val(addjvalue2);
@@ -50,9 +58,11 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editwinddevice").dialog("open");
 		}
 
-		EditUviDevice = function (idx, name, description, addjmulti2) {
+		EditUviDevice = function (idx, name, description, addjmulti2, deviceID, unitCode) {
 			$.devIdx = idx;
 			$("#dialog-edituvidevice #deviceidx").text(idx);
+			$("#dialog-edituvidevice #deviceid").text(deviceID);
+			$("#dialog-edituvidevice #deviceunit").text(unitCode);
 			$("#dialog-edituvidevice #devicename").val(unescape(name));
 			$("#dialog-edituvidevice #devicedescription").val(unescape(description));
 			$("#dialog-edituvidevice #multiply").val(addjmulti2);
@@ -60,9 +70,11 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-edituvidevice").dialog("open");
 		}
 
-		EditWeatherDevice = function (idx, name, description, addjvalue, addjmulti) {
+		EditWeatherDevice = function (idx, name, description, addjvalue, addjmulti, deviceID, unitCode) {
 			$.devIdx = idx;
 			$("#dialog-editweatherdevice #deviceidx").text(idx);
+			$("#dialog-editweatherdevice #deviceid").text(deviceID);
+			$("#dialog-editweatherdevice #deviceunit").text(unitCode);
 			$("#dialog-editweatherdevice #devicename").val(unescape(name));
 			$("#dialog-editweatherdevice #devicedescription").val(unescape(description));
 			$("#dialog-editweatherdevice").i18n();
@@ -712,19 +724,19 @@ define(['app', 'livesocket'], function (app) {
 
 				ctrl.EditDevice = function () {
 					if (typeof item.Rain != 'undefined') {
-						return EditRainDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjMulti);
+						return EditRainDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjMulti, item.ID, item.Unit);
 					}
 					else if (typeof item.Direction != 'undefined') {
-						return EditWindDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue2, item.AddjMulti);
+						return EditWindDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue2, item.AddjMulti, item.ID, item.Unit);
 					} else if (typeof item.Visibility != 'undefined') {
-						return EditVisibilityDevice(item.idx, escape(item.Name), escape(item.Description), item.SwitchTypeVal);
+						return EditVisibilityDevice(item.idx, escape(item.Name), escape(item.Description), item.SwitchTypeVal, item.ID, item.Unit);
 					} else if (typeof item.UVI != 'undefined') {
-						return EditUviDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjMulti2);
+						return EditUviDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjMulti2, item.ID, item.Unit);
 					}
 					else if (typeof item.Barometer != 'undefined') {
-						return EditBaroDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue2);
+						return EditBaroDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue2, item.ID, item.Unit);
 					} else {
-						return EditWeatherDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, item.AddjMulti);
+						return EditWeatherDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, item.AddjMulti, item.ID, item.Unit);
 					}
 				};
 
