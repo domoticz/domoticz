@@ -1220,6 +1220,7 @@ namespace Plugins
 				{
 					m_HomeFolder = type.first;
 					sPluginXML = type.second;
+					m_PluginXML = sPluginXML;
 					break;
 				}
 			}
@@ -1666,20 +1667,8 @@ namespace Plugins
 
 					// Build set of XML-defined non-reserved field names and apply defaults
 					std::set<std::string> xmlFields;
-					std::string sFind = "key=\"" + m_PluginKey + "\"";
-					CPluginSystem PluginMgr;
-					std::map<std::string, std::string> *mPluginXml = PluginMgr.GetManifest();
-					std::string sSettingsPluginXML;
-					for (const auto &type : *mPluginXml)
-					{
-						if (type.second.find(sFind) != std::string::npos)
-						{
-							sSettingsPluginXML = type.second;
-							break;
-						}
-					}
 					TiXmlDocument settingsXmlDoc;
-					settingsXmlDoc.Parse(sSettingsPluginXML.c_str());
+					settingsXmlDoc.Parse(m_PluginXML.c_str());
 					if (!settingsXmlDoc.Error())
 					{
 						TiXmlNode *pXmlPluginNode = settingsXmlDoc.FirstChild("plugin");
