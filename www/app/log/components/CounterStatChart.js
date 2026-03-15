@@ -12,15 +12,15 @@ define(['app', 'luxon'], function (app, luxon) {
 
     function CounterStatChartController($scope, $element, $http, $interval, domoticzGlobals, domoticzApi, dzSettings) {
         const self = this;
-		
+
 		self.$element = $element;
-		
+
 		$scope.idx = 1768;//8830;//7953;//1768;
-		
+
 		$scope.actDay = -2;
 		$scope.currentDay = -1;
 		$scope.lastHour = -1;
-		
+
 		$scope.daily_hour_kwh = [];
 		$scope.weekday_hour_kwh = [];
 		$scope.weekday_kwh = [];
@@ -65,7 +65,7 @@ define(['app', 'luxon'], function (app, luxon) {
 		}
 
 		$scope.chartDefinitionDay = {};
-		
+
 		$scope.chartDefinitionBase = {
 			title: {
 				text: 'Hourly Energy Usage'
@@ -115,7 +115,7 @@ define(['app', 'luxon'], function (app, luxon) {
 				}
 			}
 		};
-		
+
 		$scope.chartDefinitionWeek = {
 			title: {
 				text: 'Weekly Energy Usage'
@@ -127,9 +127,9 @@ define(['app', 'luxon'], function (app, luxon) {
 					style: {
 						fontSize: '13px',
 						fontFamily: 'Verdana, sans-serif'
-					}			
+					}
 				}
-			},		
+			},
 			yAxis: {
 				labels: {
 					format: '{value} Watt',
@@ -170,7 +170,7 @@ define(['app', 'luxon'], function (app, luxon) {
 				$scope.setWeekdayInt(actDay);
 			}
 		}
-		
+
 		$scope.setWeekdayInt = function(actDay) {
 			$scope.actDay = actDay;
 			if ($scope.actDay >= 0) {
@@ -200,19 +200,19 @@ define(['app', 'luxon'], function (app, luxon) {
 						$scope.weekday_hour_kwh = data.result.weekday_hour_kwh;
 						$scope.weekday_hour_kwh_raw = data.result.weekday_hour_kwh_raw;
 						$scope.weekday_kwh = data.result.weekday_kwh;
-						
+
 						//average today
 						const today = new Date();
 						$scope.currentDay = today.getDay();
-						
+
 						const total_today = $scope.weekday_hour_kwh_raw.reduce((partialSum, a) => partialSum + a, 0);
-						
+
 						$scope.weekday_kwh[$scope.currentDay] = ($scope.weekday_kwh[$scope.currentDay]!=0) ? ($scope.weekday_kwh[$scope.currentDay] + total_today) / 2 : total_today;
-						
+
 						$.each($scope.weekday_kwh, function (i, item) {
 							$scope.chartDefinitionWeek.series[0].data[i][1] = item;
 						});
-						
+
 						if ($scope.actDay == -2) {
 							$scope.lastHour = today.getHours();
 							$scope.actDay = $scope.currentDay;
@@ -238,7 +238,7 @@ define(['app', 'luxon'], function (app, luxon) {
 				self.parseStats([]);
 			});
 		}
-		
+
 		$scope.OnTimer = function() {
 			const today = new Date();
 			const actHour = today.getHours();
@@ -251,7 +251,7 @@ define(['app', 'luxon'], function (app, luxon) {
 				self.getStats();
 			}
 		}
-		
+
 		self.ResetStats = function() {
 			bootbox.confirm($.t("Are you sure to delete the Log?\n\nThis action can not be undone!"), function (result) {
 				if (result == true) {
@@ -267,7 +267,7 @@ define(['app', 'luxon'], function (app, luxon) {
 				}
 			});
 		}
-		
+
 		self.$onInit = function () {
 			$scope.idx = self.device.idx;
 			$scope.chartDefinitionDay = JSON.parse(JSON.stringify($scope.chartDefinitionBase));
@@ -275,7 +275,7 @@ define(['app', 'luxon'], function (app, luxon) {
 				JSON.parse(JSON.stringify($scope.chartSeriesDailyHour))
 			];
 			$scope.chartDefinitionDay.series[0].data = $scope.chart_weekday_hour_kwh;
-			
+
 			$scope.chart_buttons = Highcharts.getOptions().exporting.buttons.contextButton.menuItems.slice();
 			$scope.chart_buttons.push({
 				separator: true
@@ -288,12 +288,12 @@ define(['app', 'luxon'], function (app, luxon) {
 				separator: false
 			});
 			$scope.chartDefinitionDay.exporting.buttons.contextButton.menuItems = $scope.chart_buttons;
-	
+
 			self.getStats();
-			
+
 			$scope.mytimer = $interval(function () { $scope.OnTimer(); }, 60 *1000);
 		}
-		
+
 		$scope.$on('$destroy', function () {
 			//stop timers and cleanup here
 			if (typeof $scope.mytimer !== "undefined") {

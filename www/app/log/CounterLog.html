@@ -18,6 +18,27 @@
         class="device-log-chart"
         device="::$ctrl.device"></counter-year-chart>
 
+<counter-calendar-heatmap-chart
+        ng-if="::$ctrl.subtype=='energy-used' || $ctrl.subtype=='energy-generated' || $ctrl.subtype=='p1Energy' || $ctrl.subtype=='gas' || $ctrl.subtype=='water'"
+        class="device-log-chart"
+        style="height: auto"
+        subtype="::$ctrl.subtype"
+        device="::$ctrl.device">
+</counter-calendar-heatmap-chart>
+
+<counter-weekly-heatmap-chart
+        ng-if="::$ctrl.subtype=='energy-used' || $ctrl.subtype=='energy-generated' || $ctrl.subtype=='p1Energy' || $ctrl.subtype=='instantAndCounter'"
+        class="device-log-chart"
+        device="::$ctrl.device">
+</counter-weekly-heatmap-chart>
+
+<counter-cumulative-chart
+        ng-if="::$ctrl.subtype=='energy-used' || $ctrl.subtype=='energy-generated' || $ctrl.subtype=='p1Energy' || $ctrl.subtype=='gas' || $ctrl.subtype=='water'"
+        class="device-log-chart"
+        subtype="::$ctrl.subtype"
+        device="::$ctrl.device">
+</counter-cumulative-chart>
+
 <counter-stat-chart
 		ng-if="::$ctrl.subtype=='energy-used' || $ctrl.subtype=='energy-generated' || $ctrl.subtype=='p1Energy' || $ctrl.subtype=='instantAndCounter'"
         class="device-log-chart"

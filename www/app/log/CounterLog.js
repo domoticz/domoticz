@@ -1,4 +1,8 @@
-define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log/CounterLogParams','log/components/CounterStatChart'],
+define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log/CounterLogParams',
+        'log/components/CounterStatChart',
+        'log/components/CounterCalendarHeatmapChart',
+        'log/components/CounterCumulativeChart',
+        'log/components/CounterWeeklyHeatmapChart'],
     function (app, _, RefreshingChart, DataLoader, ChartLoader) {
 
         app.component('deviceCounterLog', {
