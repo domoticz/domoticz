@@ -5853,7 +5853,7 @@ define(['app'], function (app) {
 										var maxAttr = (typeof (param.max) != "undefined") ? ' max="' + param.max + '"' : '';
 										var stepAttr = (typeof (param.step) != "undefined") ? ' step="' + param.step + '"' : '';
 										var defaultVal = (typeof (param.default) != "undefined") ? param.default : '';
-										PluginParams += '<td><input type="number" id="' + param.field + '" style="width:' + paramWidth + '; padding: .2em;" class="text ui-widget-content ui-corner-all"' +
+										PluginParams += '<td><input type="number" id="' + param.field + '" autocomplete="off" style="width:' + paramWidth + '; padding: .2em;" class="text ui-widget-content ui-corner-all"' +
 											minAttr + maxAttr + stepAttr + ' value="' + defaultVal + '"';
 										if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += ' required';
 										PluginParams += ' /></td>';
@@ -5882,7 +5882,7 @@ define(['app'], function (app) {
 										PluginParams += '<td>';
 										var nbRows = parseInt(param.rows);
 										if (nbRows >= 0) {
-											PluginParams += '<textarea id="' + param.field + '" style="width:' + paramWidth + '; padding: .2em;" class="text ui-widget-content ui-corner-all" rows="' + nbRows + '" ';
+											PluginParams += '<textarea id="' + param.field + '" autocomplete="off" style="width:' + paramWidth + '; padding: .2em;" class="text ui-widget-content ui-corner-all" rows="' + nbRows + '" ';
 											if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += 'required';
 											PluginParams += '>';
 											if (typeof (param.default) != "undefined") PluginParams += param.default;
@@ -5892,7 +5892,7 @@ define(['app'], function (app) {
 												PluginParams += '<input type="password" ';
 											else
 												PluginParams += '<input type="text" ';
-											PluginParams += 'id="' + param.field + '" style="width:' + paramWidth + '; padding: .2em;" class="text ui-widget-content ui-corner-all" ';
+											PluginParams += 'id="' + param.field + '" autocomplete="off" style="width:' + paramWidth + '; padding: .2em;" class="text ui-widget-content ui-corner-all" ';
 											if (typeof (param.default) != "undefined") PluginParams += 'value="' + param.default + '"';
 											if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += ' required';
 											PluginParams += ' />';
