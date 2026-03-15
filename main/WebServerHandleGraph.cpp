@@ -58,21 +58,10 @@ namespace http
 			if (srange.empty() && sgroupby.empty())
 				return;
 
-			result = m_sql.safe_query("SELECT MAX(Date) FROM %s WHERE DeviceRowID==%" PRIu64, dbasetable.c_str(), idx);
-
 			time_t now = mytime(nullptr);
 			struct tm tm1;
-
-			if (!result.empty() && !result[0][0].empty())
-			{
-				ParseSQLdatetime(now, tm1, result[0][0], -1);
-			}
-			else
-			{
-				now = time(nullptr);
-				localtime_r(&now, &tm1);
-			}
-
+			localtime_r(&now, &tm1);
+			
 			result = m_sql.safe_query("SELECT Type, SubType, SwitchType, AddjValue, AddjMulti, AddjValue2, Options FROM DeviceStatus WHERE (ID == %" PRIu64 ")", idx);
 			if (result.empty())
 				return;
@@ -201,6 +190,39 @@ namespace http
 					{
 						root["status"] = "OK";
 						root["title"] = "Graph " + sensor + " " + srange;
+
+						// We extract the most recent data, ideally from current time, otherwise we go back to yesterday at midnight
+						// get date of last data
+						result = m_sql.safe_query("SELECT MAX(Date) FROM %s WHERE DeviceRowID==%" PRIu64, dbasetable.c_str(), idx);
+
+						time_t sqlTime = now;
+
+						if (!result.empty() && !result[0][0].empty())
+						{
+							ParseSQLdatetime(sqlTime, tm1, result[0][0], -1);
+						}
+						else
+						{
+							sqlTime = now;
+						}
+
+						// calculate date of yesterday midnight
+						struct tm tm_limit;
+						localtime_r(&now, &tm_limit);
+						tm_limit.tm_hour = 0;
+						tm_limit.tm_min  = 0;
+						tm_limit.tm_sec  = 0;
+						tm_limit.tm_mday -= 1;
+
+						time_t limit = mktime(&tm_limit);
+
+						// limit date to yesterday midnight
+						if (sqlTime < limit)
+						{
+							sqlTime = limit;
+						}
+
+						localtime_r(&sqlTime, &tm1);
 
 						char szDateStart[40];
 						char szDateEnd[40];
