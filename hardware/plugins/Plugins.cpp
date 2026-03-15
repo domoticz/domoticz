@@ -1666,6 +1666,7 @@ namespace Plugins
 					}
 
 					// Build set of XML-defined non-reserved field names and apply defaults
+					bool bSettingsChanged = false;
 					std::set<std::string> xmlFields;
 					TiXmlDocument settingsXmlDoc;
 					settingsXmlDoc.Parse(m_PluginXML.c_str());
@@ -1702,6 +1703,7 @@ namespace Plugins
 												const char *pDefault = pEle->Attribute("default");
 												std::string defaultVal = pDefault ? pDefault : "";
 												settingsJson[pField] = defaultVal;
+												bSettingsChanged = true;
 											}
 										}
 									}
@@ -1727,6 +1729,7 @@ namespace Plugins
 													const char *pDefault = pGroupEle->Attribute("default");
 													std::string defaultVal = pDefault ? pDefault : "";
 													settingsJson[pField] = defaultVal;
+													bSettingsChanged = true;
 												}
 											}
 										}
@@ -1737,7 +1740,6 @@ namespace Plugins
 					}
 
 					// Orphaned key cleanup: remove keys not in XML definition
-					bool bSettingsChanged = false;
 					if (!xmlFields.empty())
 					{
 						Json::Value cleanedSettings(Json::objectValue);
@@ -1751,12 +1753,6 @@ namespace Plugins
 							{
 								bSettingsChanged = true;
 							}
-						}
-						// Check if defaults were added
-						for (const auto &field : xmlFields)
-						{
-							if (!settingsJson.isMember(field))
-								bSettingsChanged = true;
 						}
 						settingsJson = cleanedSettings;
 					}
