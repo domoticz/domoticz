@@ -108,6 +108,14 @@ void CKWHStats::AddHourValue(const int hour, const int wday, const int Watt)
 {
 	if (hour < 0 || hour > 23)
 		return;
+
+	// Skip extreme outliers to prevent corrupting the running averages
+	// (e.g. meter counter resets or bad sensor readings)
+	const bool daily_spike = (daily_hour_kwh[hour] > 0) && (Watt > daily_hour_kwh[hour] * 100);
+	const bool weekly_spike = (weekday_hour_kwh[wday][hour] > 0) && (Watt > weekday_hour_kwh[wday][hour] * 100);
+	if (daily_spike || weekly_spike)
+		return;
+
 	daily_hour_kwh[hour] = (daily_hour_kwh[hour] != 0) ? (daily_hour_kwh[hour] + Watt) / 2 : Watt;
 	weekday_hour_kwh_raw[hour] = Watt;
 
