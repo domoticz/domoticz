@@ -93,6 +93,7 @@ define(['app', 'log/Chart'], function (app) {
                     dataItemKeys: ['v'],
                     convertZeroToNull: true,
                     postprocessDataItemValue: postprocessDataItemValue,
+                    postprocessDatapoints: chart.markSpikeDatapoints,
                     postprocessYaxis: function (yAxis) {
                         if (this.dataSupplier.deviceCounterName !== undefined) {
                             yAxis.options.title.text = this.dataSupplier.deviceCounterName;
@@ -112,7 +113,8 @@ define(['app', 'log/Chart'], function (app) {
                                     + (seriesSupplier.dataSupplier.deviceValueUnit !== undefined
                                         ? seriesSupplier.dataSupplier.deviceValueUnit
                                         : deviceTypeValueUnit(deviceTypeIndex, valueMultiplier)),
-                                valueDecimals: dataItemValueDecimals
+                                valueDecimals: dataItemValueDecimals,
+                                pointFormatter: chart.spikeTooltipPointFormatter
                             },
                             color: 'rgba(3,190,252,0.8)',
                             yAxis: 0

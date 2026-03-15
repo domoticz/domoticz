@@ -103,6 +103,8 @@ define(['app'], function (app) {
         valueUnits: valueUnits,
         aggregateTrendline: aggregateTrendline,
         aggregateTrendlineZoomed: aggregateTrendlineZoomed,
+        markSpikeDatapoints: markSpikeDatapoints,
+        spikeTooltipPointFormatter: spikeTooltipPointFormatter,
         yearColor: yearColor,
 		chartParamsCompare: chartParamsCompare,
 		chartParamsWeekTemplate: chartParamsWeekTemplate,
@@ -153,6 +155,44 @@ define(['app'], function (app) {
             aggregateTrendline(this.datapoints);
             chart.get(this.id).setData(this.datapoints, false);
         }
+    }
+
+    function markSpikeDatapoints(datapoints) {
+        const SPIKE_FACTOR = 20;
+        const values = datapoints
+            .map(function(dp) { return dp[1]; })
+            .filter(function(v) { return v !== null && v > 0; });
+
+        if (values.length < 5) return;
+
+        const sorted = values.slice().sort(function(a, b) { return a - b; });
+        const median = sorted[Math.floor(sorted.length / 2)];
+        if (median <= 0) return;
+
+        const threshold = median * SPIKE_FACTOR;
+        for (let i = 0; i < datapoints.length; i++) {
+            const dp = datapoints[i];
+            const value = dp[1];
+            if (value !== null && value > threshold) {
+                datapoints[i] = { x: dp[0], y: dp[1], color: '#FF4444', custom: { isSpike: true } };
+            }
+        }
+    }
+
+    function spikeTooltipPointFormatter() {
+        const opts = this.series.tooltipOptions;
+        const decimals = opts.valueDecimals != null ? opts.valueDecimals : 2;
+        const suffix = opts.valueSuffix || '';
+        let s = '<span style="color:' + this.color + '">\u25CF</span> '
+            + this.series.name + ': <b>'
+            + Highcharts.numberFormat(this.y, decimals) + suffix
+            + '</b>';
+        if (this.custom && this.custom.isSpike) {
+            s += '<br/><span style="color:#FF4444">\u26A0 '
+                + $.t('Anomalous value — shift+click to delete')
+                + '</span>';
+        }
+        return s + '<br/>';
     }
 
     const colors = [

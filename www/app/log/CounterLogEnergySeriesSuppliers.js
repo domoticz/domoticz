@@ -224,6 +224,7 @@
                     id: 'P1MYSS',
                     dataItemKeys: ['v1', 'v2'],
                     convertZeroToNull: true,
+                    postprocessDatapoints: chart.markSpikeDatapoints,
                     label: 'C',
                     series: {
                         type: 'column',
@@ -231,7 +232,8 @@
                         zIndex: 2,
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000),
-                            valueDecimals: 3
+                            valueDecimals: 3,
+                            pointFormatter: chart.spikeTooltipPointFormatter
                         },
                         color: 'rgba(3,190,252,0.8)',
                         yAxis: 0
@@ -460,6 +462,7 @@
                     id: 'CMYSS',
                     dataItemKeys: ['v', 'v2'],
                     convertZeroToNull: true,
+                    postprocessDatapoints: chart.markSpikeDatapoints,
                     label: 'C',
                     series: {
                         type: 'column',
@@ -467,7 +470,8 @@
                         zIndex: 2,
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000),
-                            valueDecimals: 3
+                            valueDecimals: 3,
+                            pointFormatter: chart.spikeTooltipPointFormatter
                         },
                         color: 'rgba(3,190,252,0.8)',
                         yAxis: 0
