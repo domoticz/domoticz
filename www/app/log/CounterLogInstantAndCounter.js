@@ -1,4 +1,4 @@
-define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesSuppliers'], function (app) {
+define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesSuppliers', 'log/CounterLogSeriesSupplier'], function (app) {
 
     app.directive('registerInstantAndCounter', function (chart, counterLogSubtypeRegistry, counterLogParams, counterLogEnergySeriesSuppliers, counterLogSeriesSupplier) {
         counterLogSubtypeRegistry.register('instantAndCounter', {
@@ -72,7 +72,10 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                     .concat(counterLogEnergySeriesSuppliers.trendlineMonthYearSeriesSuppliers(deviceType))
 					.concat(counterLogEnergySeriesSuppliers.pastMonthYearSeriesSuppliers(deviceType))
 					.concat(counterLogEnergySeriesSuppliers.priceMonthYearSeriesSuppliers(deviceType));
-                    
+
+            },
+            preprocessMonthYearData: function (data) {
+                counterLogSeriesSupplier.fillMissingDays(data);
             },
             extendDataRequestCompare: function (dataRequest) {
                 return dataRequest;
