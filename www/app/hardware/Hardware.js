@@ -5863,7 +5863,9 @@ define(['app'], function (app) {
 										var sliderMax = (typeof (param.max) != "undefined") ? parseInt(param.max) : 100;
 										var sliderDefault = (typeof (param.default) != "undefined") ? parseInt(param.default) : sliderMin;
 										PluginParams += '<td>' +
-											'<div class="dimslider" id="slider_' + param.field + '" data-min="' + sliderMin + '" data-max="' + sliderMax + '" data-field="' + param.field + '" style="width:' + paramWidth + '; display:inline-block; margin-right:10px;"></div>' +
+											'<div style="display:inline-block; width:' + paramWidth + '; position:relative; height:16px; vertical-align:middle; margin-right:10px;">' +
+											'<div class="dimslider" id="slider_' + param.field + '" data-min="' + sliderMin + '" data-max="' + sliderMax + '" data-field="' + param.field + '"></div>' +
+											'</div>' +
 											'<input type="hidden" id="' + param.field + '" class="slider-value" value="' + sliderDefault + '" />' +
 											'<span id="sliderval_' + param.field + '" style="display:inline-block; min-width:30px; text-align:center; vertical-align:middle;">' + sliderDefault + '</span>' +
 											'</td>';
