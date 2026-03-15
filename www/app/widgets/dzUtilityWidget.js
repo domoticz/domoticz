@@ -132,7 +132,11 @@ define(['app'], function (app) {
                         if ((device.SubType === 'Gas') || (device.SubType === 'RFXMeter counter') || (device.SubType === 'Counter Incremental')) {
                             status = device.Counter;
                         } else if (device.SubType !== 'Managed Counter') {
-                            status = $.t('Today') + ': ' + device.CounterToday + ', ' + device.Counter;
+                            if (device.Type === 'P1 Smart Meter') {
+                                status = $.t('Today') + ': ' + device.CounterToday;
+                            } else {
+                                status = $.t('Today') + ': ' + device.CounterToday + ', ' + device.Counter;
+                            }
                         }
                     } else if (ctrl.isEnergy()) {
                         if (typeof device.CounterToday !== 'undefined') {
@@ -149,7 +153,11 @@ define(['app'], function (app) {
                     }
 
                     if (typeof device.CounterDeliv !== 'undefined' && device.CounterDeliv != 0) {
-                        status += '<br>' + $.t('Return') + ': ' + $.t('Today') + ': ' + device.CounterDelivToday + ', ' + device.CounterDeliv;
+                        if (device.Type === 'P1 Smart Meter') {
+                            status += '<br>' + $.t('Return') + ': ' + $.t('Today') + ': ' + device.CounterDelivToday;
+                        } else {
+                            status += '<br>' + $.t('Return') + ': ' + $.t('Today') + ': ' + device.CounterDelivToday + ', ' + device.CounterDeliv;
+                        }
                     }
 
                     return status;

@@ -8,6 +8,8 @@ Version 2026.xxxx
 - Added: Comparing charts, show average across years in tooltip for month/quarter grouping
 - Added: Configurable pricing resolution (15/30/60 minutes) for dynamic energy contracts (with adapted P1 and kWh graphs)
 - Added: Counter hourly chart resolution toggle (1h/15m/30m) when sub-hourly pricing is configured
+- Added: Counter log, anomalous meter spike highlighting in year/month charts
+- Added: Counter log, calendar heatmap, weekly pattern heatmap, and cumulative year-to-date comparison charts
 - Added: Dashboard, setpoint display and editing for all setpoint devices
 - Added: Docker environment variable support for admin provisioning (DOMOTICZ_ADMIN_PASSWORD, DOMOTICZ_ADMIN_USERNAME)
 - Added: dzVents, at_startup trigger for scripts that should run once at Domoticz startup
@@ -41,6 +43,7 @@ Version 2026.xxxx
 - Added: RFXCom, Support Orcon FAN device (#6500)
 - Added: RFXCOM, Teleinfo 1200/19200 async mode support (Fixes #6495)
 - Added: RTL433, Support UV sensors named 'uvi'
+- Added: Scene log, on/off activity charts
 - Added: Search filter on selected (right) side of user shared devices selector (Fixes #6613)
 - Added: SolarEdge, web portal polling for per-optimizer, per-string and per-inverter energy and real-time data
 - Added: SolarEdge API, battery detection (#6593)
@@ -51,11 +54,13 @@ Version 2026.xxxx
 - Added: Thermostat, combined Temperature/Setpoint display
 - Added: Web Interface, Better XSS prevention
 - Added: Web Interface, Close other menu option
+- Added: Web Interface, dark chart theme for log charts
 - Added: Web Interface, Event folders with multi-select drag-and-drop organization
 - Added: Web Interface, First-run setup wizard for admin account creation, replacing default credentials
 - Added: Web Interface, Modernized log viewer with WebSocket live streaming, level filtering, search/regex, render cap, and performance optimizations
 - Added: Web Interface, Passkey (WebAuthn/FIDO2) authentication support - register and sign in with Windows Hello, Touch ID, or security keys
 - Added: Web Interface, Passkey management in My Profile (register, view device info, delete)
+- Added: Web Interface, weather animations for temperature and weather display
 - Fixed: Access denied for non-admin users with no shared devices configured
 - Fixed: Application hang on shutdown when Python event scripts are active
 - Fixed: Buienradar, fallback when station measurements are empty
@@ -87,6 +92,7 @@ Version 2026.xxxx
 - Fixed: Negative rain values at midnight when counter resets (Fixes #6571)
 - Fixed: Open-Meteo, improved validation of API responses and coordinate precision
 - Fixed: OpenZWave setpoint devices
+- Fixed: P1 Gas Counter returning 0.0 when no meter data exists for today
 - Fixed: P1Power hourly graph empty due to incorrect SQL format escaping in pricing resolution grouping
 - Fixed: P1Power hourly graph using wrong price and missing date range filter (Fixes #6181)
 - Fixed: Philips Hue v1 API crashes Domoticz in certain cases since Hue Bridge firmware 1.74 (added extra validations)
