@@ -302,7 +302,7 @@ define(['app'], function (app) {
 						"&extra=" + encodeURIComponent(hardwaretype) +
 						"&enabled=" + bEnabled +
 						"&datatimeout=" + datatimeout +
-						"&settings=" + encodeURIComponent(JSON.stringify(pluginSettings)),
+						"&settings=" + encodeURIComponent(JSON.stringify(pluginSettings || {})),
 						async: false,
 						dataType: 'json',
 						success: function (data) {
@@ -1814,7 +1814,7 @@ define(['app'], function (app) {
 						"&extra=" + encodeURIComponent(hardwaretype) +
 						"&enabled=" + bEnabled +
 						"&datatimeout=" + datatimeout +
-						"&settings=" + encodeURIComponent(JSON.stringify(pluginSettings)),
+						"&settings=" + encodeURIComponent(JSON.stringify(pluginSettings || {})),
 						async: false,
 						dataType: 'json',
 						success: function (data) {
@@ -5865,7 +5865,7 @@ define(['app'], function (app) {
 										PluginParams += '<td>' +
 											'<div class="dimslider" id="slider_' + param.field + '" data-min="' + sliderMin + '" data-max="' + sliderMax + '" data-field="' + param.field + '" style="width:' + paramWidth + '; display:inline-block; margin-right:10px;"></div>' +
 											'<input type="hidden" id="' + param.field + '" class="slider-value" value="' + sliderDefault + '" />' +
-											'<span id="sliderval_' + param.field + '">' + sliderDefault + '</span>' +
+											'<span id="sliderval_' + param.field + '" style="display:inline-block; min-width:30px; text-align:center; vertical-align:middle;">' + sliderDefault + '</span>' +
 											'</td>';
 									}
 									else if (param.field == "SerialPort") {
