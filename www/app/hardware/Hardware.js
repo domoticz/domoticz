@@ -265,24 +265,7 @@ define(['app'], function (app) {
 					return bIsOK;
 				});
 				if (bIsOK) {
-					// Collect non-reserved plugin settings into JSON
-					var reservedFields = ["address", "port", "serialport", "username", "password", "extra", "mode1", "mode2", "mode3", "mode4", "mode5", "mode6"];
-					var pluginSettings = {};
-					$(selector + " input, " + selector + " select, " + selector + " textarea").each(function () {
-						var fieldId = this.id;
-						if (!fieldId || reservedFields.indexOf(fieldId.toLowerCase()) !== -1)
-							return;
-						var $row = $(this).closest("tr");
-						if ($row.length > 0 && $row.css("display") === "none")
-							return;
-						if ($(this).is(":checkbox")) {
-							pluginSettings[fieldId] = this.checked ? "true" : "false";
-						} else if ($(this).is("input[type='hidden']") && $(this).hasClass("slider-value")) {
-							pluginSettings[fieldId] = $(this).val();
-						} else if (!$(this).is("input[type='hidden']")) {
-							pluginSettings[fieldId] = $(this).val();
-						}
-					});
+					var pluginSettings = CollectPluginSettings(selector);
 					$.ajax({
 						url: "json.htm?type=command&param=updatehardware&htype=94" +
 						"&loglevel=" + logLevel +
@@ -1778,24 +1761,7 @@ define(['app'], function (app) {
 					return bIsOK;
 				});
 				if (bIsOK) {
-					// Collect non-reserved plugin settings into JSON
-					var reservedFields = ["address", "port", "serialport", "username", "password", "extra", "mode1", "mode2", "mode3", "mode4", "mode5", "mode6"];
-					var pluginSettings = {};
-					$(selector + " input, " + selector + " select, " + selector + " textarea").each(function () {
-						var fieldId = this.id;
-						if (!fieldId || reservedFields.indexOf(fieldId.toLowerCase()) !== -1)
-							return;
-						var $row = $(this).closest("tr");
-						if ($row.length > 0 && $row.css("display") === "none")
-							return;
-						if ($(this).is(":checkbox")) {
-							pluginSettings[fieldId] = this.checked ? "true" : "false";
-						} else if ($(this).is("input[type='hidden']") && $(this).hasClass("slider-value")) {
-							pluginSettings[fieldId] = $(this).val();
-						} else if (!$(this).is("input[type='hidden']")) {
-							pluginSettings[fieldId] = $(this).val();
-						}
-					});
+					var pluginSettings = CollectPluginSettings(selector);
 					$.ajax({
 						url: "json.htm?type=command&param=addhardware&htype=94" +
 						"&loglevel=" + logLevel +
@@ -4427,28 +4393,44 @@ define(['app'], function (app) {
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Mode4").val(data["Mode4"]);
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Mode5").val(data["Mode5"]);
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Mode6").val(data["Mode6"]);
-							// Restore extended Settings fields
-							if (data["Settings"] && typeof data["Settings"] === "object") {
-								var pluginSelector = "#hardwarecontent #divpythonplugin #" + data["Extra"];
-								$.each(data["Settings"], function (key, value) {
-									var $field = $(pluginSelector + " #" + key);
-									if ($field.length === 0)
-										return;
-									if ($field.is(":checkbox")) {
-										$field.prop("checked", value === "true");
-									} else if ($field.hasClass("slider-value")) {
-										$field.val(value);
-										var $slider = $field.prev(".dimslider");
-										if ($slider.length > 0) {
-											$slider.slider("value", parseInt(value));
-										}
-									} else {
-										$field.val(value);
-									}
-								});
-							}
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Extra").val(data["Extra"]);
 							UpdateHardwareParamControls();
+							// Fetch Settings from API (not available in DataTable row data)
+							// and restore after widgets are initialized
+							var pluginIdx = idx;
+							var pluginExtra = data["Extra"];
+							$.ajax({
+								url: "json.htm?type=command&param=gethardware",
+								async: false,
+								dataType: 'json',
+								success: function (hwData) {
+									if (!hwData.result) return;
+									var hwEntry = hwData.result.find(function (h) { return h.idx == pluginIdx; });
+									if (!hwEntry || !hwEntry.Settings || typeof hwEntry.Settings !== "object") return;
+									var $visibleTable = $("#hardwarecontent #divpythonplugin #" + pluginExtra).filter(":visible").first();
+									if ($visibleTable.length === 0)
+										$visibleTable = $("#hardwarecontent #divpythonplugin #" + pluginExtra).first();
+									$.each(hwEntry.Settings, function (key, value) {
+										var $field = $visibleTable.find("#" + key);
+										if ($field.length === 0)
+											return;
+										if ($field.is(":checkbox")) {
+											$field.prop("checked", value === "true");
+										} else if ($field.hasClass("slider-value")) {
+											$field.val(value);
+											var $slider = $field.prev().find(".dimslider");
+											if ($slider.length > 0 && $slider.data("ui-slider")) {
+												$slider.slider("value", parseInt(value));
+											}
+											$visibleTable.find("#sliderval_" + key).text(value);
+										} else {
+											$field.val(value);
+										}
+									});
+									// Trigger change events to re-evaluate conditional visibility
+									$visibleTable.find("select, input").trigger("change");
+								}
+							});
 							$('#hardwarecontent #hardwareparamstable #loglevelInfo').prop('checked', ((data["LogLevel"] & 1)!=0));
 							$('#hardwarecontent #hardwareparamstable #loglevelStatus').prop('checked', ((data["LogLevel"] & 2)!=0));
 							$('#hardwarecontent #hardwareparamstable #loglevelError').prop('checked', ((data["LogLevel"] & 4)!=0));
@@ -5212,16 +5194,18 @@ define(['app'], function (app) {
 				// Remove stale CSS classes from Angular.js DOM cloning
 				$slider.removeClass("ui-slider ui-corner-all ui-slider-horizontal ui-widget ui-widget-content");
 				$slider.empty(); // Remove any stale slider handle elements
+				var initVal = parseInt($input.val()) || sliderMin;
 				$slider.slider({
 					range: "min",
 					min: sliderMin,
 					max: sliderMax,
-					value: parseInt($input.val()),
+					value: initVal,
 					slide: function (event, ui) {
 						$input.val(ui.value);
 						$label.text(ui.value);
 					}
 				});
+				$label.text(initVal);
 			});
 
 			// Set up conditional visibility within this plugin table
@@ -5251,6 +5235,27 @@ define(['app'], function (app) {
 				$depInput.on("change", updateVisibility);
 				updateVisibility();
 			});
+		}
+
+		CollectPluginSettings = function (selector) {
+			var reservedFields = ["address", "port", "serialport", "username", "password", "extra", "mode1", "mode2", "mode3", "mode4", "mode5", "mode6"];
+			var pluginSettings = {};
+			$(selector + " input, " + selector + " select, " + selector + " textarea").each(function () {
+				var fieldId = this.id;
+				if (!fieldId || reservedFields.indexOf(fieldId.toLowerCase()) !== -1)
+					return;
+				var $row = $(this).closest("tr");
+				if ($row.length > 0 && $row.css("display") === "none")
+					return;
+				if ($(this).is(":checkbox")) {
+					pluginSettings[fieldId] = this.checked ? "true" : "false";
+				} else if ($(this).is("input[type='hidden']") && $(this).hasClass("slider-value")) {
+					pluginSettings[fieldId] = $(this).val();
+				} else if (!$(this).is("input[type='hidden']")) {
+					pluginSettings[fieldId] = $(this).val();
+				}
+			});
+			return pluginSettings;
 		}
 
 		UpdateHardwareParamControls = function () {
