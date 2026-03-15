@@ -8004,13 +8004,6 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				}
 			}
 		}
-		else
-		{
-			//no new meter result received in last day
-			result = safe_query("INSERT INTO Meter_Calendar (DeviceRowID, Value, Price, Date) "
-					    "VALUES ('%" PRIu64 "', '%.2f', '%.4f', '%q')",
-					    ID, 0.0F, 0.0F, szDateStart);
-		}
 	}
 }
 
