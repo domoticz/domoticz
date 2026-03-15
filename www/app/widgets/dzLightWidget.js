@@ -524,7 +524,9 @@ define(['app'], function (app) {
                         ctrl.switchLight(device.InternalState == 'Unlocked' ? 'Off' : 'On');
                     } else if (device.Type == 'Security') {
                         // Security type devices have specialized click logic
-                        if (device.SubType && device.SubType.indexOf('remote') > 0) {
+                        if (device.SubType == 'Security Panel') {
+                            window.location.href = 'secpanel/';
+                        } else if (device.SubType && device.SubType.indexOf('remote') > 0) {
                             if (device.Status.indexOf('Arm') >= 0 || device.Status.indexOf('Panic') >= 0) {
                                 ctrl.switchLight('Off');
                             } else {

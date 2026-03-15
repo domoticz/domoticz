@@ -10,8 +10,9 @@
                 <!-- Big Text (status) -->
                 <td id="bigtext">
                     <span>{{ctrl.getStatusText()}}</span>
-                    <img ng-if="ctrl.device.UsedByCamera" src="images/webcam.png"
-                         height="16" width="16" data-i18n="[title]Stream Video">
+                    <a ng-if="ctrl.device.UsedByCamera" href="javascript:ShowCameraLiveStream('{{ctrl.device.Name}}',{{ctrl.device.CameraIdx}},{{ctrl.device.CameraAspect}})">
+                        <img src="images/webcam.png" height="16" width="16" data-i18n="[title]Stream Video">
+                    </a>
                 </td>
 
                 <!-- Main Icon (single toggling icon) -->
