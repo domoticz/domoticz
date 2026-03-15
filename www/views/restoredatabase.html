@@ -1,3 +1,15 @@
+<style>
+.glass-drop-zone {
+    border: 2px dashed rgba(255,255,255,0.3);
+    border-radius: 8px;
+    padding: 16px;
+    transition: border-color 0.2s, background 0.2s;
+}
+.glass-drop-zone.drag-over {
+    border-color: rgba(255,200,100,0.8);
+    background: rgba(255,200,100,0.08);
+}
+</style>
 <div id="restorecontent">
 	<div class="glass-container">
 		<center>
@@ -14,9 +26,10 @@
 			<div class="glass-card" style="animation-delay: 0.15s;">
 				<h3 class="section-title" data-i18n="Select Database">Select Database</h3>
 				<form ng-submit="onSubmit()">
-					<div class="glass-file-input">
+					<div class="glass-file-input glass-drop-zone" id="drop-zone" ng-class="{'drag-over': isDragOver}">
 						<label for="dbasefile" data-i18n="Select Database File:">Select Database File:</label>
 						<input type="file" file="file" id="dbasefile" name="dbasefile" accept=".db" ng-disabled="uploading">
+						<p class="drop-hint glass-text" style="font-size:0.85em; margin-top:6px; opacity:0.7;" data-i18n="or drag and drop a .db file here">or drag and drop a .db file here</p>
 					</div>
 
 					<button type="submit" class="btn-modern btn-modern-warning" ng-disabled="uploading || !file" data-i18n="Upload &amp; Restore">Upload &amp; Restore</button>

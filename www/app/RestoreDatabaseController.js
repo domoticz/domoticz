@@ -6,6 +6,7 @@ define(['app'], function (app) {
 		$scope.restoring = false;
 		$scope.uploadProgress = 0;
 		$scope.errorMessage = "";
+		$scope.isDragOver = false;
 
 		var restoreHandled = false;
 		var pollTimer = null;
@@ -123,6 +124,32 @@ define(['app'], function (app) {
 
 		function init() {
 			$('#restorecontent').i18n();
+
+			var dropZone = document.getElementById('drop-zone');
+			if (dropZone) {
+				dropZone.addEventListener('dragover', function (e) {
+					e.preventDefault();
+					e.stopPropagation();
+					$scope.$apply(function () { $scope.isDragOver = true; });
+				});
+				dropZone.addEventListener('dragleave', function (e) {
+					e.preventDefault();
+					e.stopPropagation();
+					$scope.$apply(function () { $scope.isDragOver = false; });
+				});
+				dropZone.addEventListener('drop', function (e) {
+					e.preventDefault();
+					e.stopPropagation();
+					$scope.$apply(function () {
+						$scope.isDragOver = false;
+						var files = e.dataTransfer.files;
+						if (files && files.length > 0) {
+							$scope.file = files[0];
+							$scope.selected_file = files[0].name;
+						}
+					});
+				});
+			}
 		};
 	}]);
 });
