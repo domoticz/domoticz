@@ -281,6 +281,19 @@ body table#mobileitem tr td:first-child{
     	background-image: none;
 }
 
+.navbar .nav .dropdown-menu li {
+	line-height: normal;
+}
+
+.navbar .nav .dropdown-menu li a {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 12px;
+	color: #000;
+	white-space: nowrap;
+}
+
 .nav > li > a > img {
   	display: none;
 }

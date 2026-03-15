@@ -212,7 +212,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 			bindings: {
 				device: '<'
 			},
-			template: '<div id="winddirectiongraph" style="height: 400px;"></div>',
+			template: '<div class="chartarea"><div id="winddirectiongraph" style="height: 400px;"></div></div>',
 			controllerAs: 'vm',
 			controller: function ($element, domoticzApi) {
 				const self = this;
@@ -315,7 +315,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 			bindings: {
 				device: '<'
 			},
-			template: '<div id="windspeedfreqgraph" style="height: 400px;"></div>',
+			template: '<div class="chartarea"><div id="windspeedfreqgraph" style="height: 400px;"></div></div>',
 			controllerAs: 'vm',
 			controller: function ($element, domoticzApi) {
 				const self = this;

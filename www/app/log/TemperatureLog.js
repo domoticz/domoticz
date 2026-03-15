@@ -279,7 +279,8 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
             label: 'Te',
             template: {
                 name: $.t('Temperature'),
-                color: 'yellow',
+                color: 'yellow',//'rgba(255, 140, 60, 0.9)',
+				//type: 'spline',
                 yAxis: 0,
                 step: deviceType === 'Setpoint' ? 'left' : undefined,
                 tooltip: {
