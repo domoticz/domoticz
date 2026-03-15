@@ -126,7 +126,6 @@ namespace Plugins {
 	  PyObject* m_ImageDict;
 	  PyObject* m_SettingsDict;
 	  std::string m_HomeFolder;
-	  std::string m_PluginXML;
 	  PluginDebugMask m_bDebug;
 	  bool m_bTracing;
 
@@ -135,6 +134,7 @@ namespace Plugins {
 	  std::string ConsumePendingUser();
 
 	private:
+	  std::string m_PluginXML;
 	  std::string m_pending_user;
 	  time_t m_pending_user_time = 0;
 	  std::mutex m_pending_user_mutex;
