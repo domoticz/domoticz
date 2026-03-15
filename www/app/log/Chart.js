@@ -158,7 +158,6 @@ define(['app'], function (app) {
     }
 
     function markSpikeDatapoints(datapoints) {
-        const SPIKE_FACTOR = 20;
         const values = datapoints
             .map(function(dp) { return dp[1]; })
             .filter(function(v) { return v !== null && v > 0; });
@@ -166,10 +165,12 @@ define(['app'], function (app) {
         if (values.length < 5) return;
 
         const sorted = values.slice().sort(function(a, b) { return a - b; });
-        const median = sorted[Math.floor(sorted.length / 2)];
-        if (median <= 0) return;
+        const q1 = sorted[Math.floor(sorted.length * 0.25)];
+        const q3 = sorted[Math.floor(sorted.length * 0.75)];
+        const iqr = q3 - q1;
+        if (iqr <= 0) return;
 
-        const threshold = median * SPIKE_FACTOR;
+        const threshold = q3 + 3 * iqr;
         for (let i = 0; i < datapoints.length; i++) {
             const dp = datapoints[i];
             const value = dp[1];

@@ -48,6 +48,9 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                     .concat(counterLogCounterSeriesSuppliers.counterTrendlineSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1000))
                     .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex, chart.valueMultipliers.m1000));
             },
+            preprocessMonthYearData: function (data) {
+                counterLogSeriesSupplier.fillMissingDays(data);
+            },
             extendDataRequestCompare: function (dataRequest) {
                 return dataRequest;
             },
@@ -111,6 +114,9 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                     .concat(counterLogCounterSeriesSuppliers.counterTrendlineSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1))
                     .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex, chart.valueMultipliers.m1))
 					.concat(counterLogCounterSeriesSuppliers.counterPriceSeriesSuppliers());
+            },
+            preprocessMonthYearData: function (data) {
+                counterLogSeriesSupplier.fillMissingDays(data);
             },
             extendDataRequestCompare: function (dataRequest) {
                 return dataRequest;
@@ -176,6 +182,9 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                     .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex, chart.valueMultipliers.m1, times1000, 0))
 					.concat(counterLogCounterSeriesSuppliers.counterPriceSeriesSuppliers());
             },
+            preprocessMonthYearData: function (data) {
+                counterLogSeriesSupplier.fillMissingDays(data);
+            },
             extendDataRequestCompare: function (dataRequest) {
                 return dataRequest;
             },
@@ -190,6 +199,7 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
             },
             preprocessMonthYearData: function (data) {
                 preprocessData.call(this, data);
+                counterLogSeriesSupplier.fillMissingDays(data);
             },
             chartParamsDayTemplate: {
 
@@ -236,6 +246,9 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                     .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, decimalPlacesDiv1(divider)))
                     .concat(counterLogCounterSeriesSuppliers.counterTrendlineSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, decimalPlacesDiv1(divider)))
                     .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex, chart.valueMultipliers.m1, undefined, decimalPlacesDiv1(divider)));
+            },
+            preprocessMonthYearData: function (data) {
+                counterLogSeriesSupplier.fillMissingDays(data);
             },
             extendDataRequestCompare: function (dataRequest) {
                 return dataRequest;
@@ -291,6 +304,9 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                     .concat(counterLogCounterSeriesSuppliers.counterSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1000))
                     .concat(counterLogCounterSeriesSuppliers.counterTrendlineSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1000))
                     .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex, chart.valueMultipliers.m1000));
+            },
+            preprocessMonthYearData: function (data) {
+                counterLogSeriesSupplier.fillMissingDays(data);
             },
             extendDataRequestCompare: function (dataRequest) {
                 return dataRequest;

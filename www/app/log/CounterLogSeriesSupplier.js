@@ -4,7 +4,8 @@ define(['app', 'log/Chart'], function (app) {
         return {
             dataItemsKeysPredicatedSeriesSupplier: dataItemsKeysPredicatedSeriesSupplier,
             summingSeriesSupplier: summingSeriesSupplier,
-            counterCompareSeriesSuppliers: counterCompareSeriesSuppliers
+            counterCompareSeriesSuppliers: counterCompareSeriesSuppliers,
+            fillMissingDays: fillMissingDays
         };
 
         function dataItemsKeysPredicatedSeriesSupplier(dataItemValueKey, dataSeriesItemsKeysPredicate, seriesSupplierTemplate) {
@@ -150,6 +151,88 @@ define(['app', 'log/Chart'], function (app) {
                         []
                     );
             }
+        }
+
+        function fillMissingDays(data) {
+            // Fill in missing days and spread zero-value runs in data.result to avoid spikes.
+            // Handles two cases:
+            //   1. Missing date entries (no DB row for a day)
+            //   2. Zero-value entries present in DB (device offline — counter unchanged)
+            // In both cases the accumulated value on the return day is spread evenly.
+            if (!data || !data.result || !Array.isArray(data.result)) return;
+
+            const result = [];
+            let lastNonZeroDate = null;
+            let lastNonZeroItem = null;
+            let pendingZeroItems = []; // zero-value items since last non-zero item
+
+            data.result.forEach(function(item) {
+                if (!item.d) {
+                    result.push(item);
+                    return;
+                }
+
+                const v = parseFloat(item.v);
+                if (!(v > 0)) {
+                    // Zero or NaN value — buffer until we see the next non-zero day
+                    pendingZeroItems.push(item);
+                    return;
+                }
+
+                // Non-zero item: compute gap from last non-zero item (spans missing + zero days)
+                if (lastNonZeroDate !== null) {
+                    const currentDate = new Date(item.d);
+                    const daysDiff = Math.round((currentDate - lastNonZeroDate) / (1000 * 60 * 60 * 24));
+
+                    if (daysDiff > 1) {
+                        const avgValue = v / daysDiff;
+                        const avgV2 = item.v2 ? parseFloat(item.v2) / daysDiff : 0;
+                        const avgPrice = item.p ? parseFloat(item.p) / daysDiff : 0;
+                        const startCounter = parseFloat(lastNonZeroItem.c || 0);
+                        const endCounter = parseFloat(item.c || 0);
+                        const counterIncrement = (endCounter - startCounter) / daysDiff;
+
+                        for (let i = 1; i < daysDiff; i++) {
+                            const fillDate = new Date(lastNonZeroDate);
+                            fillDate.setDate(fillDate.getDate() + i);
+                            const dateStr = fillDate.toISOString().split('T')[0];
+
+                            // Reuse existing zero-value item for this date if available
+                            const existingIdx = pendingZeroItems.findIndex(function(zi) { return zi.d === dateStr; });
+                            let filledItem;
+                            if (existingIdx >= 0) {
+                                filledItem = pendingZeroItems.splice(existingIdx, 1)[0];
+                            } else {
+                                filledItem = { d: dateStr };
+                            }
+                            filledItem.v = avgValue.toFixed(3);
+                            if (item.p) filledItem.p = avgPrice.toFixed(4);
+                            if (item.c) filledItem.c = (startCounter + counterIncrement * i).toFixed(3);
+                            if (item.v2) filledItem.v2 = avgV2.toFixed(3);
+                            result.push(filledItem);
+                        }
+                        item.v = avgValue.toFixed(3);
+                        if (item.p) item.p = avgPrice.toFixed(4);
+                        if (item.v2) item.v2 = avgV2.toFixed(3);
+                    } else {
+                        // No gap — push any buffered zero items unchanged
+                        pendingZeroItems.forEach(function(zi) { result.push(zi); });
+                    }
+                } else {
+                    // No previous non-zero item yet — push buffered zeros unchanged
+                    pendingZeroItems.forEach(function(zi) { result.push(zi); });
+                }
+
+                pendingZeroItems = [];
+                result.push(item);
+                lastNonZeroDate = new Date(item.d);
+                lastNonZeroItem = item;
+            });
+
+            // Flush any trailing zero items
+            pendingZeroItems.forEach(function(zi) { result.push(zi); });
+
+            data.result = result;
         }
     });
 
