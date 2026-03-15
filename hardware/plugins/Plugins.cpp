@@ -1688,7 +1688,13 @@ namespace Plugins
 									if (tagName == "param")
 									{
 										const char *pField = pEle->Attribute("field");
-										if (pField && !IsReservedFieldName(pField))
+										if (!pField)
+										{
+											const char *pLabel = pEle->Attribute("label");
+											Log(LOG_STATUS, "(%s) Parameter with label '%s' has no field attribute, skipping",
+												m_PluginKey.c_str(), pLabel ? pLabel : "(unknown)");
+										}
+										else if (!IsReservedFieldName(pField))
 										{
 											xmlFields.insert(pField);
 											if (!settingsJson.isMember(pField))
@@ -1707,7 +1713,13 @@ namespace Plugins
 											if (!pGroupEle)
 												continue;
 											const char *pField = pGroupEle->Attribute("field");
-											if (pField && !IsReservedFieldName(pField))
+											if (!pField)
+											{
+												const char *pLabel = pGroupEle->Attribute("label");
+												Log(LOG_STATUS, "(%s) Parameter with label '%s' has no field attribute, skipping",
+													m_PluginKey.c_str(), pLabel ? pLabel : "(unknown)");
+											}
+											else if (!IsReservedFieldName(pField))
 											{
 												xmlFields.insert(pField);
 												if (!settingsJson.isMember(pField))
