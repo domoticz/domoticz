@@ -1510,6 +1510,32 @@ namespace http
 			return true;
 		}
 
+		static bool ValidateSettingsJSON(const std::string &settings)
+		{
+			if (settings.empty())
+				return true;
+			if (settings.size() > 65536)
+			{
+				_log.Log(LOG_ERROR, "WebServer: Settings JSON exceeds 64KB limit");
+				return false;
+			}
+			Json::Value settingsJson;
+			if (!ParseJSon(settings, settingsJson) || !settingsJson.isObject())
+			{
+				_log.Log(LOG_ERROR, "WebServer: Settings is not valid JSON");
+				return false;
+			}
+			for (const auto &key : settingsJson.getMemberNames())
+			{
+				if (settingsJson[key].asString().size() > 4096)
+				{
+					_log.Log(LOG_ERROR, "WebServer: Settings value for '%s' exceeds 4KB limit", key.c_str());
+					return false;
+				}
+			}
+			return true;
+		}
+
 		void CWebServer::Cmd_AddHardware(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != URIGHTS_ADMIN)
@@ -1537,29 +1563,8 @@ namespace http
 			stdstring_trim(password);
 			int iDataTimeout = atoi(sdatatimeout.c_str());
 
-			// Validate Settings JSON if provided
-			if (!settings.empty())
-			{
-				if (settings.size() > 65536)
-				{
-					_log.Log(LOG_ERROR, "WebServer: Settings JSON exceeds 64KB limit");
-					return;
-				}
-				Json::Value settingsJson;
-				if (!ParseJSon(settings, settingsJson) || !settingsJson.isObject())
-				{
-					_log.Log(LOG_ERROR, "WebServer: Settings is not valid JSON");
-					return;
-				}
-				for (const auto &key : settingsJson.getMemberNames())
-				{
-					if (settingsJson[key].asString().size() > 4096)
-					{
-						_log.Log(LOG_ERROR, "WebServer: Settings value for '%s' exceeds 4KB limit", key.c_str());
-						return;
-					}
-				}
-			}
+			if (!ValidateSettingsJSON(settings))
+				return;
 
 			int mode1 = 0;
 			int mode2 = 0;
@@ -1731,29 +1736,8 @@ namespace http
 			stdstring_trim(username);
 			stdstring_trim(password);
 
-			// Validate Settings JSON if provided
-			if (!settings.empty())
-			{
-				if (settings.size() > 65536)
-				{
-					_log.Log(LOG_ERROR, "WebServer: Settings JSON exceeds 64KB limit");
-					return;
-				}
-				Json::Value settingsJson;
-				if (!ParseJSon(settings, settingsJson) || !settingsJson.isObject())
-				{
-					_log.Log(LOG_ERROR, "WebServer: Settings is not valid JSON");
-					return;
-				}
-				for (const auto &key : settingsJson.getMemberNames())
-				{
-					if (settingsJson[key].asString().size() > 4096)
-					{
-						_log.Log(LOG_ERROR, "WebServer: Settings value for '%s' exceeds 4KB limit", key.c_str());
-						return;
-					}
-				}
-			}
+			if (!ValidateSettingsJSON(settings))
+				return;
 
 			std::string mode1Str = request::findValue(&req, "Mode1");
 			std::string mode2Str = request::findValue(&req, "Mode2");
