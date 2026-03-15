@@ -12,6 +12,7 @@ DOMOTICZ="$PROJECT_DIR/domoticz"
 DB="/tmp/domoticz-lifecycle-test.db"
 LOG="/tmp/domoticz-lifecycle-test.log"
 PORT=8090
+TEST_PLUGIN_SRC="$PROJECT_DIR/test/plugins/TestExtendedSettings"
 PLUGIN_DIR="$PROJECT_DIR/plugins/TestExtendedSettings"
 PLUGIN_FILE="$PLUGIN_DIR/plugin.py"
 PLUGIN_BACKUP="$PLUGIN_FILE.bak"
@@ -29,6 +30,17 @@ cleanup() {
 	if [ -f "$PLUGIN_BACKUP" ]; then
 		cp "$PLUGIN_BACKUP" "$PLUGIN_FILE"
 		rm -f "$PLUGIN_BACKUP"
+	fi
+	# Remove symlink if we created it
+	if [ -L "$PLUGIN_DIR" ]; then
+		rm -f "$PLUGIN_DIR"
+	fi
+}
+
+setup_test_plugin() {
+	# Symlink test plugin into plugins/ so domoticz discovers it
+	if [ ! -e "$PLUGIN_DIR" ]; then
+		ln -s "$TEST_PLUGIN_SRC" "$PLUGIN_DIR"
 	fi
 }
 
@@ -77,7 +89,8 @@ check() {
 echo "=== Plugin Settings Lifecycle Integration Tests ==="
 echo ""
 
-# Save original plugin
+# Set up test plugin symlink and save original
+setup_test_plugin
 cp "$PLUGIN_FILE" "$PLUGIN_BACKUP"
 
 # --- Test 1: Fresh install persists defaults to DB ---
