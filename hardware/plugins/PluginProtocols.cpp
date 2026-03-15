@@ -604,7 +604,8 @@ namespace Plugins {
 				if (!m_Chunked)
 				{
 					// If full message then return it
-					if ((m_ContentLength == sData.length()) || (Message->m_Buffer.empty()))
+					// Only dispatch on EOF/flush if no Content-Length body is still expected
+					if (((int)sData.length() == m_ContentLength) || (Message->m_Buffer.empty() && m_ContentLength == 0))
 					{
 						PyObject* pDataDict = PyDict_New();
 						PyNewRef pObj(m_Status);
@@ -711,8 +712,8 @@ namespace Plugins {
 			if (sData.substr(0, 2) == "\r\n")
 			{
 				std::string		sPayload = sData.substr(2);
-				// No payload || we have the payload || the connection has closed
-				if ((m_ContentLength == -1) || (m_ContentLength == sPayload.length()) || Message->m_Buffer.empty())
+				// No payload || we have the payload || connection closed with no pending Content-Length body
+				if ((m_ContentLength == -1) || (m_ContentLength == (int)sPayload.length()) || (Message->m_Buffer.empty() && m_ContentLength == 0))
 				{
 					PyObject* DataDict = PyDict_New();
 					std::string		sVerb = sFirstLine.substr(0, sFirstLine.find_first_of(' '));
