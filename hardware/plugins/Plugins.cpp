@@ -1692,7 +1692,7 @@ namespace Plugins
 										if (!pField)
 										{
 											const char *pLabel = pEle->Attribute("label");
-											Log(LOG_STATUS, "(%s) Parameter with label '%s' has no field attribute, skipping",
+											Log(LOG_NORM, "(%s) Parameter with label '%s' has no field attribute, skipping",
 												m_PluginKey.c_str(), pLabel ? pLabel : "(unknown)");
 										}
 										else if (!IsReservedFieldName(pField))
@@ -1718,7 +1718,7 @@ namespace Plugins
 											if (!pField)
 											{
 												const char *pLabel = pGroupEle->Attribute("label");
-												Log(LOG_STATUS, "(%s) Parameter with label '%s' has no field attribute, skipping",
+												Log(LOG_NORM, "(%s) Parameter with label '%s' has no field attribute, skipping",
 													m_PluginKey.c_str(), pLabel ? pLabel : "(unknown)");
 											}
 											else if (!IsReservedFieldName(pField))
