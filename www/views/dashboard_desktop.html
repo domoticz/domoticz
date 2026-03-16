@@ -106,7 +106,7 @@
 								<td id="status" class="status"><span>
 									<span ng-if="device.HumidityStatus">{{device.HumidityStatus}}</span>
 									<span ng-if="device.DewPoint != undefined"><span ng-if="device.HumidityStatus">, </span><span data-i18n="Dew Point">Dew Point</span>: {{device.DewPoint | number:2}}&deg;</span>
-									<span ng-if="device.ForecastStr != undefined"><br>{{device.ForecastStr}}</span>
+									<span ng-if="device.ForecastStr != undefined && device.Barometer == undefined"><br>{{device.ForecastStr}}</span>
 								</span></td>
 								<td id="lastupdate" class="lastupdate"><span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: <span>{{device.LastUpdate}}</span></td>
 							</tr>
@@ -149,7 +149,7 @@
 										<img ng-if="device.CustomImage == 0 && device.Direction != undefined" ng-src="images/Wind{{device.DirectionStr}}.png" height="40" width="40" class="lcursor">
 									</a>
 								</td>
-								<td id="status"></td>
+								<td id="status"><span ng-if="device.ForecastStr != undefined">{{device.ForecastStr}}</span></td>
 								<td id="lastupdate"><span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: {{device.LastUpdate}}</td>
 							</tr>
 						</table>
