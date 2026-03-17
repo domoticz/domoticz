@@ -109,6 +109,9 @@ define(['app'], function (app) {
                     } else if (ctrl.isCounter()) {
                         if ((device.SubType === 'Gas') || (device.SubType === 'RFXMeter counter') || (device.SubType === 'Counter Incremental')) {
                             bigtext = device.CounterToday;
+                            if (device.SwitchTypeVal == 2) {
+                                bigtext += ' m\u00B3';
+                            }
                         } else if (device.SubType === 'Managed Counter') {
                             bigtext = device.Counter;
                         }
@@ -130,7 +133,7 @@ define(['app'], function (app) {
 
                     if (ctrl.isCounter()) {
                         if ((device.SubType === 'Gas') || (device.SubType === 'RFXMeter counter') || (device.SubType === 'Counter Incremental')) {
-                            status = device.Counter;
+                            // counter total value not shown
                         } else if (device.SubType !== 'Managed Counter') {
                             if (device.Type === 'P1 Smart Meter') {
                                 status = $.t('Today') + ': ' + device.CounterToday;
@@ -154,7 +157,7 @@ define(['app'], function (app) {
 
                     if (typeof device.CounterDeliv !== 'undefined' && device.CounterDeliv != 0) {
                         if (device.Type === 'P1 Smart Meter') {
-                            status += '<br>' + $.t('Return') + ': ' + $.t('Today') + ': ' + device.CounterDelivToday;
+                            status += '<br>' + $.t('Return') + ': ' + device.CounterDelivToday;
                         } else {
                             status += '<br>' + $.t('Return') + ': ' + $.t('Today') + ': ' + device.CounterDelivToday + ', ' + device.CounterDeliv;
                         }

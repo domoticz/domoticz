@@ -56,7 +56,7 @@ define(['app'], function (app) {
         W: 'Watt',
         kW: 'kW',
         m3: 'm³',
-        liter: 'liter',
+        liter: 'Liter',
         energy: function (multiplier) {
             if (multiplier === valueMultipliers.m1) {
                 return valueUnits.Wh;
