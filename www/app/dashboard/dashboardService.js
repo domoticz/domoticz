@@ -44,7 +44,10 @@ define(['app', 'domoticz.api', 'livesocket'], function(app) {
                 return domoticzApi.sendRequest(params).then(function(data) {
                     var result = {
                         devices: data.result || [],
-                        lastUpdateTime: data.ActTime ? parseInt(data.ActTime) : 0
+                        lastUpdateTime: data.ActTime ? parseInt(data.ActTime) : 0,
+                        sunrise: data.Sunrise,
+                        sunset: data.Sunset,
+                        serverTime: data.ServerTime
                     };
 
                     return result;

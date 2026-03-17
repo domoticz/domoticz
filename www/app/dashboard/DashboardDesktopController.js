@@ -107,6 +107,10 @@ define([
 					.then(function (result) {
 						$scope.LastUpdateTime = result.lastUpdateTime;
 
+						if (result.sunrise !== undefined && result.sunset !== undefined && result.serverTime !== undefined) {
+							$rootScope.SetTimeAndSun(result.sunrise, result.sunset, result.serverTime);
+						}
+
 						// Categorize devices
 						var categorized = dashboardService.categorizeDevices(result.devices);
 
