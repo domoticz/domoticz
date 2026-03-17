@@ -27,7 +27,8 @@ define(['app'], function (app) {
             return sorted[Math.min(idx, sorted.length - 1)];
         }
 
-        function buildChart(weekday_hour_kwh) {
+        function buildChart(weekday_hour_kwh, deviceType) {
+            var label = (deviceType === 4) ? $.t('Generated') : $.t('Usage');
             var heatData = [];
             var nonZeroValues = [];
             for (var displayDay = 0; displayDay < 7; displayDay++) {
@@ -54,7 +55,7 @@ define(['app'], function (app) {
                     marginBottom: 60
                 },
                 title: {
-                    text: $.t('Weekly Usage Pattern')
+                    text: $.t('Weekly') + ' ' + label + ' ' + $.t('Pattern')
                 },
                 xAxis: {
                     categories: ['00:00','01:00','02:00','03:00','04:00','05:00','06:00',
@@ -88,11 +89,11 @@ define(['app'], function (app) {
                         var hour = this.point.x;
                         return '<b>' + dayName + '</b><br/>' +
                             $.t('Hour') + ': ' + ('0' + hour).slice(-2) + ':00<br/>' +
-                            $.t('Usage') + ': <b>' + Highcharts.numberFormat(this.point.value, 1) + ' Wh</b>';
+                            label + ': <b>' + Highcharts.numberFormat(this.point.value, 1) + ' Wh</b>';
                     }
                 },
                 series: [{
-                    name: $.t('Usage'),
+                    name: label,
                     borderWidth: 1,
                     borderColor: 'rgba(255,255,255,0.05)',
                     nullColor: 'rgba(0,0,0,0.3)',
@@ -111,7 +112,7 @@ define(['app'], function (app) {
             }).then(function (response) {
                 var data = response.data;
                 if (data && data.status === 'OK' && data.result && data.result.weekday_hour_kwh) {
-                    buildChart(data.result.weekday_hour_kwh);
+                    buildChart(data.result.weekday_hour_kwh, self.device.SwitchTypeVal);
                 }
             });
         };
