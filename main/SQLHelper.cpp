@@ -10573,7 +10573,6 @@ void CSQLHelper::RefreshActualPrices()
 		"Type=%d OR " //pTypeYouLess
 		"Type=%d OR " //pTypeENERGY
 		"Type=%d OR " //pTypePOWER
-		"Type=%d OR " //pTypeUsage
 		"(Type=%d AND SubType=%d) OR " //pTypeGeneral,sTypeCounterIncremental
 		"(Type=%d AND SubType=%d)"	 //pTypeGeneral,sTypeKwh
 		")",
@@ -10582,7 +10581,6 @@ void CSQLHelper::RefreshActualPrices()
 		pTypeYouLess,
 		pTypeENERGY,
 		pTypePOWER,
-		pTypeUsage,
 		pTypeGeneral, sTypeCounterIncremental,
 		pTypeGeneral, sTypeKwh
 	);
