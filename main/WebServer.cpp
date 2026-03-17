@@ -4196,6 +4196,7 @@ namespace http
 				queryString.append("         date(mc0.Date) as Date,");
 				queryString.append("         case");
 				queryString.append("            when (" + counter("mc1") + ") <= (" + counter("mc0") + ")");
+				queryString.append("                 AND (" + counter("mc0") + ") - (" + counter("mc1") + ") <= (" + value("mc0") + ") * 2 + 2000000");
 				queryString.append("            then (" + counter("mc0") + ") - (" + counter("mc1") + ")");
 				queryString.append("            else (" + value("mc0") + ")");
 				queryString.append("         end as Difference");
