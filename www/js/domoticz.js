@@ -662,7 +662,7 @@ function SwitchScene(idx, switchcmd, isprotected) {
 	}
 }
 
-function ResetSecurityStatus(idx, switchcmd) {
+function ResetSecurityStatus(idx, switchcmd, callback) {
 	if (window.my_config.userrights == 0) {
 		HideNotify();
 		ShowNotify($.t('You do not have permission to do that!'), 2500, true);
@@ -680,6 +680,9 @@ function ResetSecurityStatus(idx, switchcmd) {
 			//wait 1 second
 			setTimeout(function () {
 				HideNotify();
+				if (typeof callback === 'function') {
+					callback();
+				}
 			}, 1000);
 		},
 		error: function () {
