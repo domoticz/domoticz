@@ -749,6 +749,7 @@ define(['app'], function (app) {
                         var $slider = $(this);
                         if (!$slider.hasClass('ui-slider')) {
                             $slider.css('visibility', 'hidden');
+                            $slider.css('touch-action', 'none');
                             $slider.slider({
                                 range: "min",
                                 min: 0,
