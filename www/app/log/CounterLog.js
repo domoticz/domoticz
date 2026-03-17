@@ -53,7 +53,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                         switch (device.SwitchTypeVal) {
                             case chart.deviceTypes.EnergyUsed:
                             case chart.deviceTypes.EnergyGenerated:
-                                return chart.valueUnits.energy(chart.valueMultipliers.m1);
+                                return chart.valueUnits.energy(chart.valueMultipliers.m1000);
                             case chart.deviceTypes.Gas:
                                 return chart.valueUnits.gas(chart.valueMultipliers.m1);
                             case chart.deviceTypes.Water:
