@@ -39,13 +39,14 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
             controller: function ($element, $scope, domoticzGlobals) {
                 const self = this;
                 self.cards = [];
+                self._deviceCardCount = 0;
 
                 self.$onInit = function () {
                     var device = self.device;
                     var unit = device.getUnit();
                     var valueKey = domoticzGlobals.valueKeyForDevice(device);
 
-                    function rebuildCards() {
+                    function buildDeviceCards() {
                         self.cards.length = 0;
 
                         // Rain Rate card
@@ -90,6 +91,8 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                             });
                         }
 
+                        self._deviceCardCount = self.cards.length;
+
                         if (self.cards.length === 0) {
                             $element.hide();
                         }
@@ -100,7 +103,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                         return self.logCtrl.dayGraphData;
                     }, function (result) {
                         if (result && result.length > 0) {
-                            rebuildCards();
+                            buildDeviceCards();
                         }
                     });
 
@@ -109,8 +112,35 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                         if (updatedDevice.idx === device.idx) {
                             device = updatedDevice;
                             self.device = updatedDevice;
-                            rebuildCards();
+                            var yearCards = self.cards.splice(self._deviceCardCount);
+                            buildDeviceCards();
+                            self.cards.push.apply(self.cards, yearCards);
                         }
+                    });
+
+                    // Watch for year graph data shared by rainLongChart (range=year)
+                    $scope.$watch(function () {
+                        return self.logCtrl.yearGraphData;
+                    }, function (result) {
+                        if (!result || result.length === 0) return;
+
+                        self.cards.splice(self._deviceCardCount);
+
+                        var currentYear = String(new Date().getFullYear());
+                        var yearTotal = 0;
+                        result.forEach(function (item) {
+                            if (item.d.substring(0, 4) === currentYear) {
+                                var v = parseFloat(item.mm || 0);
+                                if (!isNaN(v)) yearTotal += v;
+                            }
+                        });
+
+                        self.cards.push({
+                            label: $.t('This Year'),
+                            value: yearTotal.toFixed(1) + ' ' + unit,
+                            delta: '',
+                            deltaColor: ''
+                        });
                     });
                 };
             }
@@ -216,28 +246,34 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                 const self = this;
 
                 self.$onInit = function () {
+                    var params = chartParams(
+                        domoticzGlobals,
+                        self,
+                        false,
+                        function (dataItem, yearOffset = 0) {
+                            return GetLocalDateFromString(dataItem.d, yearOffset);
+                        },
+                        [
+                            {
+                                id: 'mm',
+                                valueKeySuffix: '',
+                                template: {
+									color: 'rgba(3,190,252,0.8)',
+                                    name: $.t('mm')
+                                }
+                            }
+                        ]
+                    );
+                    if (self.range === 'year') {
+                        params.dataSupplier.preprocessData = function (data) {
+                            self.logCtrl.yearGraphData = data.result;
+                        };
+                    }
                     new RefreshingChart(
                         chart.baseParams($),
                         chart.angularParams($location, $route, $scope, $timeout, $element),
                         chart.domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
-                        chartParams(
-                            domoticzGlobals,
-                            self,
-                            false,
-                            function (dataItem, yearOffset = 0) {
-                                return GetLocalDateFromString(dataItem.d, yearOffset);
-                            },
-                            [
-                                {
-                                    id: 'mm',
-                                    valueKeySuffix: '',
-                                    template: {
-										color: 'rgba(3,190,252,0.8)',
-                                        name: $.t('mm')
-                                    }
-                                }
-                            ]
-                        )
+                        params
                     );
                 }
             }
