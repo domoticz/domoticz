@@ -33,7 +33,7 @@ class MitsubishiWF : public CDomoticzHardwareBase
 
 		double OutdoorTemp = 0.F;
 		double IndoorTemp = 0.F;
-		double Electric_kWh_Used = 0.0F;
+		double Electric_kWh_Used = 0.0;
 
 		bool IsSelfCleanReset = false;
 		bool IsSelfCleanOperation = false;
@@ -75,8 +75,10 @@ private:
 private:
 	int m_poll_interval = 30;
 
+	enum class eConnectionMethod { Unknown, Http, Https };
+	eConnectionMethod m_method = eConnectionMethod::Unknown;
+
 	std::string m_api_version = "1.0";
-	std::string m_timezone = "Europe/Amsterdam";
 	std::string m_operator_id = "4529e305-8472-456f-95f5-8cc47dfb3851";
 	std::string m_device_id = "1234567890ABCDEF";
 	std::string m_airconId;

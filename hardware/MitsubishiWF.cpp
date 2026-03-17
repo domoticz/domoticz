@@ -123,7 +123,6 @@ void MitsubishiWF::Do_Work()
 			catch (const std::exception& e)
 			{
 				Log(LOG_ERROR, "Error getting airco status: %s", e.what());
-				return;
 			}
 		}
 	}
@@ -197,9 +196,6 @@ bool MitsubishiWF::Execute_Command(const std::string& sCommand, const Json::Valu
 #ifdef DEBUG_MitsubishiWF_R
 	sResult = ReadFile(std_format("E:\\MitsubishiWF_%s.json", sCommand.c_str()).c_str());
 #else
-	std::stringstream sURL;
-	sURL << "http://" << m_szIPAddress << ":" << m_usIPPort << "/beaver/command/" << sCommand;
-
 	Json::Value post_data;
 	post_data["apiVer"] = m_api_version;
 	post_data["command"] = sCommand;
@@ -214,11 +210,40 @@ bool MitsubishiWF::Execute_Command(const std::string& sCommand, const Json::Valu
 	std::string szPostData = post_data.toStyledString();
 	stdreplace(szPostData, " : ", ": "); //fix json parsing issue!?!
 
+	auto buildURL = [&](const std::string& scheme) {
+		return scheme + "://" + m_szIPAddress + ":" + std::to_string(m_usIPPort) + "/beaver/command/" + sCommand;
+	};
+
 	std::vector<std::string> ExtraHeaders;
-	if (!HTTPClient::POST(sURL.str(), szPostData, ExtraHeaders, sResult))
+
+	if (m_method == eConnectionMethod::Http || m_method == eConnectionMethod::Https)
 	{
-		Log(LOG_ERROR, "Error executing HTTP command (%s)", sCommand.c_str());
-		return false;
+		std::string scheme = (m_method == eConnectionMethod::Http) ? "http" : "https";
+		if (!HTTPClient::POST(buildURL(scheme), szPostData, ExtraHeaders, sResult))
+		{
+			Log(LOG_ERROR, "Error executing command (%s)", sCommand.c_str());
+			return false;
+		}
+	}
+	else
+	{
+		// Auto-discover HTTP vs HTTPS on first connection
+		if (HTTPClient::POST(buildURL("http"), szPostData, ExtraHeaders, sResult))
+		{
+			Log(LOG_STATUS, "Discovered communication method: HTTP");
+			m_method = eConnectionMethod::Http;
+		}
+		else
+		{
+			Log(LOG_STATUS, "HTTP failed, trying HTTPS...");
+			if (!HTTPClient::POST(buildURL("https"), szPostData, ExtraHeaders, sResult))
+			{
+				Log(LOG_ERROR, "Error executing command (%s): both HTTP and HTTPS failed", sCommand.c_str());
+				return false;
+			}
+			Log(LOG_STATUS, "Discovered communication method: HTTPS");
+			m_method = eConnectionMethod::Https;
+		}
 	}
 #endif
 #ifdef DEBUG_MitsubishiWF_W
@@ -844,7 +869,7 @@ void MitsubishiWF::TranslateAirconStat(const std::string& szStat, _tAircoStatus&
 
 	// get the current ac operation(3th value and with byte 3)
 	//0=Off, 1=On
-	aircoStatus.Operation = (3 & content[2]);
+	aircoStatus.Operation = (1 == (3 & content[2]));
 
 	// get preset temp : 5th byte divided by 2
 	aircoStatus.PresetTemp = double(content[4]) / 2.0; //target_temperature
@@ -881,7 +906,7 @@ void MitsubishiWF::TranslateAirconStat(const std::string& szStat, _tAircoStatus&
 	int8_t* vals = content_byte_array + start_length + 19;// len(content_byte_array) - 2
 	size_t len = szStat.size() - 2 - start_length - 19;
 
-	for (int i = 0; i < (int)len; i += 4)
+	for (int i = 0; i + 4 <= (int)len; i += 4)
 	{
 		if (vals[i] == -128 && vals[i + 1] == 16)
 		{
@@ -895,9 +920,7 @@ void MitsubishiWF::TranslateAirconStat(const std::string& szStat, _tAircoStatus&
 		}
 		else if (vals[i] == -108 && vals[i + 1] == 16)
 		{
-			float Electric_kWh_Used = static_cast<float>(((vals[i + 2] + 256) % 256) + ((vals[i + 3] + 256) % 256) * 256);
-			Electric_kWh_Used *= 0.25;
-			aircoStatus.Electric_kWh_Used = Electric_kWh_Used;
+			aircoStatus.Electric_kWh_Used = static_cast<float>((vals[i + 2] & 0xFF) | ((vals[i + 3] & 0xFF) << 8)) * 0.25f;
 			aircoStatus.bHaveElectric = true;
 		}
 	}
