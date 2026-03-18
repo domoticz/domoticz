@@ -109,9 +109,6 @@ define(['app'], function (app) {
                     } else if (ctrl.isCounter()) {
                         if ((device.SubType === 'Gas') || (device.SubType === 'RFXMeter counter') || (device.SubType === 'Counter Incremental')) {
                             bigtext = device.CounterToday;
-                            if (device.SwitchTypeVal == 2) {
-                                bigtext += ' m\u00B3';
-                            }
                         } else if (device.SubType === 'Managed Counter') {
                             bigtext = device.Counter;
                         }

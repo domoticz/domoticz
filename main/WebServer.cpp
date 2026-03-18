@@ -2849,6 +2849,25 @@ namespace http
 								break;
 							}
 						}
+						else
+						{
+							switch (metertype)
+							{
+							case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
+								sprintf(szTmp, "%.3f kWh", 0.0F);
+								break;
+							case MTYPE_GAS:
+								sprintf(szTmp, "%.3f m3", 0.0F);
+								break;
+							case MTYPE_WATER:
+								sprintf(szTmp, "0 Liter");
+								break;
+							default:
+								strcpy(szTmp, "0");
+								break;
+							}
+						}
 						root["result"][ii]["CounterToday"] = szTmp;
 
 						root["result"][ii]["SwitchTypeVal"] = metertype;
@@ -2950,6 +2969,25 @@ namespace http
 									strcat(szTmp, " ");
 									strcat(szTmp, ValueUnits.c_str());
 								}
+								break;
+							default:
+								strcpy(szTmp, "0");
+								break;
+							}
+						}
+						else
+						{
+							switch (metertype)
+							{
+							case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
+								sprintf(szTmp, "%.3f kWh", 0.0F);
+								break;
+							case MTYPE_GAS:
+								sprintf(szTmp, "%.3f m3", 0.0F);
+								break;
+							case MTYPE_WATER:
+								sprintf(szTmp, "%.3f m3", 0.0F);
 								break;
 							default:
 								strcpy(szTmp, "0");
@@ -3802,6 +3840,25 @@ namespace http
 									break;
 								default:
 									strcpy(szTmp, "0");
+									break;
+								}
+							}
+							else
+							{
+								switch (metertype)
+								{
+								case MTYPE_ENERGY:
+								case MTYPE_ENERGY_GENERATED:
+									sprintf(szTmp, "%.3f kWh", 0.0F);
+									break;
+								case MTYPE_GAS:
+									sprintf(szTmp, "%.3f m3", 0.0F);
+									break;
+								case MTYPE_WATER:
+									sprintf(szTmp, "%.3f m3", 0.0F);
+									break;
+								default:
+									strcpy(szTmp, "0.000");
 									break;
 								}
 							}
