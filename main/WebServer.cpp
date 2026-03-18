@@ -1568,6 +1568,9 @@ namespace http
 
 			for (const auto& sd : result)
 			{
+				std::string sDeviceName("");
+				uint64_t devIDX = -1;
+
 				try
 				{
 					unsigned char favorite = atoi(sd[12].c_str());
@@ -4117,7 +4120,7 @@ namespace http
 				}
 				catch (const std::exception& e)
 				{
-					_log.Log(LOG_ERROR, "GetJSonDevices: exception occurred : '%s'", e.what());
+					_log.Log(LOG_ERROR, "GetJSonDevices: exception occurred: '%s' (%llu/%s)", e.what(), devIDX, sDeviceName.c_str());
 					continue;
 				}
 			}
