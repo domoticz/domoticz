@@ -800,6 +800,7 @@ table.mobileitem {
 }
 
 .dimslider {
+	touch-action: none;
 	z-index: 1;
 	border-width: 1px;
 	border-style: solid;
