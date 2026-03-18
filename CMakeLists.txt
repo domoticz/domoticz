@@ -51,8 +51,12 @@ option(GIT_SUBMODULE "Check submodules during build" ON)
 
 option(ENABLE_ASAN "Build with address sanitizer" NO)
 IF(ENABLE_ASAN)
-add_compile_options(-fsanitize=address)
-add_link_options(-fsanitize=address)
+  IF(NOT MSVC)
+    add_compile_options(-fsanitize=address)
+    add_link_options(-fsanitize=address)
+   ELSE()
+     message(WARNING "ASAN is not supported with MSVC compiler")
+  ENDIF()
 ENDIF()
 
 ### COMPILER SETTINGS
