@@ -110,14 +110,16 @@
 		<room-plan-device-selector
 				ng-if="::$ctrl.devices"
 				devices="::$ctrl.devices"
-				on-select="$ctrl.selectDevice(device)"></room-plan-device-selector>
+				on-select="$ctrl.onDevicesSelected(devices)"></room-plan-device-selector>
 	</div>
 	<div class="modal-footer">
 		<button type="button"
 				class="btn btn-primary"
-				data-i18n="Add"
-				ng-disabled="!$ctrl.selectedDevice"
-				ng-click="$close($ctrl.selectedDevice)"></button>
+				ng-click="$close($ctrl.selectedDevices)"
+				ng-disabled="!$ctrl.selectedDevices.length">
+			<span data-i18n="Add"></span>
+			<span ng-if="$ctrl.selectedDevices.length > 0">&nbsp;({{ $ctrl.selectedDevices.length }})</span>
+		</button>
 
 		<button type="button"
 				class="btn btn-default"
@@ -146,7 +148,7 @@
 			<room-plans-device-selector-table
 					class="device-selector-group"
 					devices="$ctrl.filteredDevices"
-					on-select="$ctrl.selectDevice(value)"></room-plans-device-selector-table>
+					on-select="$ctrl.selectDevices(values)"></room-plans-device-selector-table>
 		</section>
 	</div>
 </script>

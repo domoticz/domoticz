@@ -2225,8 +2225,9 @@ namespace http
 
 			std::vector<std::vector<std::string>> result;
 			std::vector<std::vector<std::string>> result2;
+			// Include all used devices, plus devices from disabled hardware (which may have Used=0)
 			result = m_sql.safe_query("SELECT T1.[ID], T1.[Name], T1.[Type], T1.[SubType], T2.[Name] AS HardwareName FROM DeviceStatus as T1, Hardware as T2 "
-				"WHERE (T1.[Used]==1) AND (T2.[ID]==T1.[HardwareID]) ORDER BY T2.[Name], T1.[Name]");
+				"WHERE (T2.[ID]==T1.[HardwareID]) AND (T1.[Used]==1 OR (T2.[Enabled]==0)) ORDER BY T2.[Name], T1.[Name]");
 			if (!result.empty())
 			{
 				for (const auto& sd : result)

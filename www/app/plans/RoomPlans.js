@@ -106,12 +106,11 @@ define(['app'], function (app) {
 			});
 		}
 
-		function changeDeviceOrder(order, planId, deviceId) {
+		function changeDeviceOrder(planId, orderedIds) {
 			return dzApiHelper.checkAdminPermissions().then(function () {
 				return domoticzApi.sendCommand('changeplandeviceorder', {
-					idx: deviceId,
 					planid: planId,
-					way: order
+					order: orderedIds.join(',')
 				});
 			});
 		}
@@ -172,17 +171,21 @@ define(['app'], function (app) {
 
 					$ctrl.devices = devices.map(function (device) {
 						var result = regex.exec(device.Name);
-
+						if (!result) {
+							return Object.assign({}, device, { Hardware: '(unknown)', Name: device.Name });
+						}
 						return Object.assign({}, device, {
 							Hardware: result[1],
 							Name: result[2],
-						})
+						});
 					});
 				})
 			}
 
-			$ctrl.selectDevice = function(device) {
-				$ctrl.selectedDevice = device;
+			$ctrl.selectedDevices = [];
+
+			$ctrl.onDevicesSelected = function(devices) {
+				$ctrl.selectedDevices = devices || [];
 			};
 		}
 	};
@@ -312,35 +315,38 @@ define(['app'], function (app) {
 			devices: '<',
 			onUpdate: '&',
 		},
-		template:  '<table id="plan-devices-table" class="display" width="100%"></table>',
-		controller: function($element, $scope, bootbox, dzRoomPlanApi, dataTableDefaultSettings) {
+		template: '<div>' +
+		'<div class="btn-panel align-right" ng-show="$ctrl.hasSelection">' +
+			'<button class="btn btn-default js-remove-selected" data-i18n="Remove Selected"></button>' +
+		'</div>' +
+		'<table id="plan-devices-table" class="display" width="100%"></table>' +
+	'</div>',
+		controller: function($element, $scope, $q, bootbox, dzRoomPlanApi, dataTableDefaultSettings) {
 			var $ctrl = this;
 			var table;
+			$ctrl.hasSelection = false;
 
 			$ctrl.$onInit = function () {
 				table = $element.find('table').dataTable(Object.assign({}, dataTableDefaultSettings, {
-					order: [[2, 'asc']],
 					ordering: false,
+					select: { style: 'multi' },
+					createdRow: function(row, data) {
+						$(row).attr('data-idx', data.idx);
+					},
 					columns: [
-						{title: $.t('Idx'), width: '40px', data: 'devidx'},
-						{title: $.t('Name'), data: 'Name'},
-						{title: $.t('Order'), width: '50px', data: 'Order', render: orderRenderer},
+						{ title: '', width: '20px', data: null, orderable: false, render: dragHandleRenderer },
+						{ title: $.t('Idx'), width: '40px', data: 'devidx' },
+						{ title: $.t('Name'), data: 'Name' },
 						{ title: '', className: 'actions-column', width: '40px', data: 'idx', render: actionsRenderer },
 					]
 				}));
 
-				table.on('click', '.js-move-up', function () {
-					var device = table.api().row($(this).closest('tr')).data();
-					dzRoomPlanApi.changeDeviceOrder(0, $ctrl.planId, device.idx).then($ctrl.onUpdate);
-					$scope.$apply();
-					return false;
-				});
+				// Enable drag-to-reorder via jQuery UI Sortable
+				initSortable($element.find('table tbody'));
 
-				table.on('click', '.js-move-down', function () {
-					var device = table.api().row($(this).closest('tr')).data();
-					dzRoomPlanApi.changeDeviceOrder(1, $ctrl.planId, device.idx).then($ctrl.onUpdate);
+				table.on('select.dt deselect.dt', function () {
+					$ctrl.hasSelection = table.api().rows({ selected: true }).count() > 0;
 					$scope.$apply();
-					return false;
 				});
 
 				table.on('click', '.js-remove', function () {
@@ -351,6 +357,27 @@ define(['app'], function (app) {
 							return dzRoomPlanApi.removeDeviceFromPlan(device.idx);
 						})
 						.then($ctrl.onUpdate);
+
+					$scope.$apply();
+					return false;
+				});
+
+				table.on('click', '.js-remove-selected', function () {
+					var selected = table.api().rows({ selected: true }).data().toArray();
+					if (!selected.length) return false;
+
+					bootbox.confirm($.t('Are you sure to delete the selected Active Devices?\n\nThis action can not be undone...?'))
+						.then(function () {
+							return selected.reduce(function(promise, device) {
+								return promise.then(function() {
+									return dzRoomPlanApi.removeDeviceFromPlan(device.idx);
+								});
+							}, $q.when());
+						})
+						.then(function() {
+							$ctrl.hasSelection = false;
+							return $ctrl.onUpdate();
+						});
 
 					$scope.$apply();
 					return false;
@@ -367,27 +394,45 @@ define(['app'], function (app) {
 					table.api().rows
 						.add($ctrl.devices)
 						.draw();
+
+					// Reinitialize sortable after redraw so new rows are draggable
+					var $tbody = $element.find('table tbody');
+					if ($tbody.hasClass('ui-sortable')) {
+						$tbody.sortable('destroy');
+					}
+					initSortable($tbody);
 				}
 			};
 
-			function orderRenderer(value, renderType, plan, record) {
-				var upIcon = '<button class="btn btn-icon js-move-up"><img src="./images/up.png" /></button>';
-				var downIcon = '<button class="btn btn-icon js-move-down"><img src="./images/down.png" /></button>';
-				var emptyIcon = '<img src="./images/empty16.png" width="16" height="16" />';
+			function initSortable($tbody) {
+				$tbody.sortable({
+					axis: 'y',
+					handle: '.drag-handle',
+					helper: function(e, tr) {
+						var $originals = tr.children();
+						var $helper = tr.clone();
+						$helper.children().each(function(index) {
+							$(this).width($originals.eq(index).width());
+						});
+						return $helper;
+					},
+					update: function() {
+						var orderedIds = $element.find('table tbody tr').map(function() {
+							return $(this).attr('data-idx');
+						}).get();
+						dzRoomPlanApi.changeDeviceOrder($ctrl.planId, orderedIds)
+							.then($ctrl.onUpdate);
+						$scope.$apply();
+					}
+				});
+			}
 
-				if (record.row === 0) {
-					return downIcon + emptyIcon;
-				} else if (record.row === $ctrl.devices.length - 1) {
-					return  emptyIcon + upIcon;
-				} else {
-					return downIcon + upIcon;
-				}
+			function dragHandleRenderer() {
+				return '<span class="drag-handle" style="cursor:grab;">&#9776;</span>';
 			}
 
 			function actionsRenderer() {
-				var actions = [];
-				actions.push('<button class="btn btn-icon js-remove" title="' + $.t('Remove') + '"><img src="./images/delete.png" /></button>');
-				return actions.join('&nbsp;');
+				return '<button class="btn btn-icon js-remove" title="' + $.t('Remove') + '"><img src="./images/delete.png" /></button>';
 			}
 		}
 	});
@@ -413,9 +458,9 @@ define(['app'], function (app) {
 				}
 			};
 
-			$ctrl.selectDevice = function(device) {
-				$ctrl.selectedDevice = device;
-				$ctrl.onSelect({device: $ctrl.selectedDevice });
+			$ctrl.selectDevices = function(devices) {
+				$ctrl.selectedDevices = devices;
+				$ctrl.onSelect({ devices: $ctrl.selectedDevices });
 			};
 
 			$ctrl.filterByHardware = function(hardware) {
@@ -448,20 +493,16 @@ define(['app'], function (app) {
 					dom: '<"H"lfrC>t',
 					order: [[1, 'asc']],
 					paging: false,
+					select: { style: 'multi' },
 					columns: [
 						{title: $.t('Idx'), width: '40px', data: 'idx'},
 						{title: $.t('Name'), data: 'Name'},
 					]
 				}));
 
-				table.on('select.dt', function (e, dt, type, indexes) {
-					var item = dt.rows(indexes).data()[0];
-					$ctrl.onSelect({value: item});
-					$scope.$apply();
-				});
-
-				table.on('deselect.dt', function () {
-					$ctrl.onSelect(null);
+				table.on('select.dt deselect.dt', function () {
+					var selected = table.api().rows({ selected: true }).data().toArray();
+					$ctrl.onSelect({ values: selected });
 					$scope.$apply();
 				});
 
@@ -489,7 +530,7 @@ define(['app'], function (app) {
 		}
 	});
 
-	app.controller('RoomPlansController', function ($scope, $uibModal, bootbox, dzRoomPlanApi) {
+	app.controller('RoomPlansController', function ($scope, $uibModal, $q, bootbox, dzRoomPlanApi) {
 		var $ctrl = this;
 
 		$ctrl.addPlan = addPlan;
@@ -539,10 +580,14 @@ define(['app'], function (app) {
 
 			$uibModal
 				.open(Object.assign({ scope: scope }, selectDeviceModal)).result
-				.then(function(selectedDevice) {
-					return dzRoomPlanApi.addDeviceToPlan($ctrl.selectedPlan.idx, selectedDevice.idx, selectedDevice.type)
+				.then(function(selectedDevices) {
+					if (!selectedDevices || !selectedDevices.length) return;
+					return $q.all(selectedDevices.map(function(device) {
+						return dzRoomPlanApi.addDeviceToPlan($ctrl.selectedPlan.idx, device.idx, device.type);
+					}));
 				})
 				.then(refreshPlanDevices)
+				.catch(angular.noop);
 		}
 
 		function refreshPlans() {
