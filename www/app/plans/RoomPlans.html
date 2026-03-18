@@ -7,29 +7,34 @@
 	<page-loading-indicator ng-hide="::$ctrl.plans"></page-loading-indicator>
 
 	<div ng-if="::$ctrl.plans">
-		<section>
-			<div class="btn-panel align-right">
-				<button class="btn btn-default" data-i18n="Add Plan" ng-click="$ctrl.addPlan()"></button>
+		<div class="row">
+			<div class="col-md-5">
+				<section>
+					<div class="btn-panel align-right">
+						<button class="btn btn-default" data-i18n="Add Plan" ng-click="$ctrl.addPlan()"></button>
+					</div>
+
+					<room-plans-table plans="$ctrl.plans" on-update="$ctrl.refreshPlans()" on-select="$ctrl.selectPlan(plan)"></room-plans-table>
+				</section>
 			</div>
+			<div class="col-md-7">
+				<section ng-show="$ctrl.selectedPlan">
+					<div class="page-header-small">
+						<h3 data-i18n="Devices">Devices</h3>
+					</div>
 
-			<room-plans-table plans="$ctrl.plans" on-update="$ctrl.refreshPlans()" on-select="$ctrl.selectPlan(plan)"></room-plans-table>
-		</section>
+					<div class="btn-panel align-right">
+						<button class="btn btn-default" data-i18n="Add" ng-click="$ctrl.addDeviceToPlan()"></button>
+						<button class="btn btn-default" data-i18n="Clear" ng-click="$ctrl.removeAllDevicesFromPlan()"></button>
+					</div>
 
-		<section ng-show="$ctrl.selectedPlan">
-        	<div class="page-header-small">
-                <h3 data-i18n="Devices">Devices</h3>
-            </div>
-
-			<div class="btn-panel align-right">
-				<button class="btn btn-default" data-i18n="Add" ng-click="$ctrl.addDeviceToPlan()"></button>
-				<button	class="btn btn-default" data-i18n="Clear" ng-click="$ctrl.removeAllDevicesFromPlan()"></button>
+					<room-plan-devices-table
+							plan-id="$ctrl.selectedPlan.idx"
+							devices="$ctrl.planDevices"
+							on-update="$ctrl.refreshPlanDevices()"></room-plan-devices-table>
+				</section>
 			</div>
-
-			<room-plan-devices-table
-					plan-id="$ctrl.selectedPlan.idx"
-					devices="$ctrl.planDevices"
-					on-update="$ctrl.refreshPlanDevices()"></room-plan-devices-table>
-		</section>
+		</div>
 	</div>
 </div>
 
@@ -132,14 +137,14 @@
 	<div class="device-selector">
 		<section class="device-selector__section device-selector__section_hardware">
 			<h2 data-i18n="Hardware"></h2>
-			<div class="list-group list-group-sm device-selector-group ">
+		<div class="list-group list-group-sm device-selector-group ">
 				<a href="javascript:void(0)"
 				   class="list-group-item list-group-item-action"
 				   ng-class="{'active': item === $ctrl.hardwareFilter}"
 				   ng-click="$ctrl.filterByHardware(item)"
 				   ng-repeat="item in $ctrl.hardwareItems track by item"
 				>
-					{{ item }}
+					{{ item }} ({{ $ctrl.getHardwareCount(item) }})
 				</a>
 			</div>
 		</section>

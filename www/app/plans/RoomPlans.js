@@ -12,6 +12,7 @@ define(['app'], function (app) {
 			removeDeviceFromPlan: removeDeviceFromPlan,
 			removeAllDevicesFromPlan: removeAllDevicesFromPlan,
 			changePlanOrder: changePlanOrder,
+			changePlanFullOrder: changePlanFullOrder,
 			changeDeviceOrder: changeDeviceOrder
 		};
 
@@ -102,6 +103,14 @@ define(['app'], function (app) {
 				return domoticzApi.sendCommand('changeplanorder', {
 					idx: planId,
 					way: order
+				});
+			});
+		}
+
+		function changePlanFullOrder(orderedIds) {
+			return dzApiHelper.checkAdminPermissions().then(function () {
+				return domoticzApi.sendCommand('changeplanfullorder', {
+					order: orderedIds.join(',')
 				});
 			});
 		}
@@ -203,29 +212,17 @@ define(['app'], function (app) {
 
 			$ctrl.$onInit = function () {
 				table = $element.find('table').dataTable(Object.assign({}, dataTableDefaultSettings, {
-					order: [[2, 'asc']],
 					ordering: false,
+					createdRow: function(row, data) { $(row).attr('data-idx', data.idx); },
 					columns: [
+						{ title: '', width: '20px', data: null, orderable: false, render: function() { return '<span class="drag-handle" style="cursor:grab;">&#9776;</span>'; } },
 						{ title: $.t('Idx'), width: '40px', data: 'idx' },
 						{ title: $.t('Name'), data: 'Name' },
-						{ title: $.t('Order'), className: 'actions-column', width: '50px', data: 'Order', render: orderRenderer},
 						{ title: '', className: 'actions-column', width: '40px', data: 'idx', render: actionsRenderer },
 					]
 				}));
 
-				table.on('click', '.js-move-up', function () {
-					var plan = table.api().row($(this).closest('tr')).data();
-					dzRoomPlanApi.changePlanOrder(0, plan.idx).then($ctrl.onUpdate);
-					$scope.$apply();
-					return false;
-				});
-
-				table.on('click', '.js-move-down', function () {
-					var plan = table.api().row($(this).closest('tr')).data();
-					dzRoomPlanApi.changePlanOrder(1, plan.idx).then($ctrl.onUpdate);
-					$scope.$apply();
-					return false;
-				});
+				initSortable($element.find('table tbody'));
 
 				table.on('click', '.js-rename', function () {
 					var plan = table.api().row($(this).closest('tr')).data();
@@ -283,21 +280,35 @@ define(['app'], function (app) {
 					table.api().rows
 						.add($ctrl.plans)
 						.draw();
+
+					var $tbody = $element.find('table tbody');
+					if ($tbody.hasClass('ui-sortable')) {
+						$tbody.sortable('destroy');
+					}
+					initSortable($tbody);
 				}
 			};
 
-			function orderRenderer(value) {
-				var upIcon = '<button class="btn btn-icon js-move-up"><img src="./images/up.png" /></button>';
-				var downIcon = '<button class="btn btn-icon js-move-down"><img src="./images/down.png" /></button>';
-				var emptyIcon = '<img src="./images/empty16.png" width="16" height="16" />';
-
-				if (value === '1') {
-					return downIcon + emptyIcon;
-				} else if (parseInt(value, 10) === $ctrl.plans.length) {
-					return  emptyIcon + upIcon;
-				} else {
-					return downIcon + upIcon;
-				}
+			function initSortable($tbody) {
+				$tbody.sortable({
+					axis: 'y',
+					handle: '.drag-handle',
+					helper: function(e, tr) {
+						var $originals = tr.children();
+						var $helper = tr.clone();
+						$helper.children().each(function(index) {
+							$(this).width($originals.eq(index).width());
+						});
+						return $helper;
+					},
+					update: function() {
+						var orderedIds = $element.find('table tbody tr').map(function() {
+							return $(this).attr('data-idx');
+						}).get();
+						dzRoomPlanApi.changePlanFullOrder(orderedIds).then($ctrl.onUpdate);
+						$scope.$apply();
+					}
+				});
 			}
 
 			function actionsRenderer() {
@@ -317,7 +328,7 @@ define(['app'], function (app) {
 		},
 		template: '<div>' +
 		'<div class="btn-panel align-right" ng-show="$ctrl.hasSelection">' +
-			'<button class="btn btn-default js-remove-selected" data-i18n="Remove Selected"></button>' +
+			'<button class="btn btn-danger js-remove-selected">{{ "Remove Selected" | translate }} ({{ $ctrl.selectionCount }})</button>' +
 		'</div>' +
 		'<table id="plan-devices-table" class="display" width="100%"></table>' +
 	'</div>',
@@ -325,6 +336,7 @@ define(['app'], function (app) {
 			var $ctrl = this;
 			var table;
 			$ctrl.hasSelection = false;
+			$ctrl.selectionCount = 0;
 
 			$ctrl.$onInit = function () {
 				table = $element.find('table').dataTable(Object.assign({}, dataTableDefaultSettings, {
@@ -345,7 +357,9 @@ define(['app'], function (app) {
 				initSortable($element.find('table tbody'));
 
 				table.on('select.dt deselect.dt', function () {
-					$ctrl.hasSelection = table.api().rows({ selected: true }).count() > 0;
+					var count = table.api().rows({ selected: true }).count();
+					$ctrl.hasSelection = count > 0;
+					$ctrl.selectionCount = count;
 					$scope.$apply();
 				});
 
@@ -362,7 +376,7 @@ define(['app'], function (app) {
 					return false;
 				});
 
-				table.on('click', '.js-remove-selected', function () {
+				$element.on('click', '.js-remove-selected', function () {
 					var selected = table.api().rows({ selected: true }).data().toArray();
 					if (!selected.length) return false;
 
@@ -376,6 +390,7 @@ define(['app'], function (app) {
 						})
 						.then(function() {
 							$ctrl.hasSelection = false;
+							$ctrl.selectionCount = 0;
 							return $ctrl.onUpdate();
 						});
 
@@ -465,13 +480,16 @@ define(['app'], function (app) {
 
 			$ctrl.filterByHardware = function(hardware) {
 				$ctrl.hardwareFilter = $ctrl.hardwareFilter !== hardware ? hardware : '';
-
 				$ctrl.filteredDevices = $filter('filter')($ctrl.devices, {
 					Hardware: $ctrl.hardwareFilter
 				});
 			};
 
-			function updateDevices() {
+			$ctrl.getHardwareCount = function(hardware) {
+				return $ctrl.devices.filter(function(d) { return d.Hardware === hardware; }).length;
+			};
+
+function updateDevices() {
 				$ctrl.hardwareItems = Array.from(new Set($ctrl.devices.map(device => device.Hardware))).sort();
 				$ctrl.filterByHardware($ctrl.hardwareFilter);
 			}

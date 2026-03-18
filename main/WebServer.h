@@ -199,6 +199,7 @@ private:
 	void Cmd_SetPlanDeviceCoords(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteAllPlanDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ChangePlanOrder(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ChangePlanFullOrder(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ChangePlanDeviceOrder(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetVersion(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetAuth(WebEmSession & session, const request& req, Json::Value &root);

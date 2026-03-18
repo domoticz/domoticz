@@ -451,6 +451,7 @@ namespace http
 			RegisterCommandCode("setplandevicecoords", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetPlanDeviceCoords(session, req, root); });
 			RegisterCommandCode("deleteallplandevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteAllPlanDevices(session, req, root); });
 			RegisterCommandCode("changeplanorder", [this](auto&& session, auto&& req, auto&& root) { Cmd_ChangePlanOrder(session, req, root); });
+			RegisterCommandCode("changeplanfullorder", [this](auto&& session, auto&& req, auto&& root) { Cmd_ChangePlanFullOrder(session, req, root); });
 			RegisterCommandCode("changeplandeviceorder", [this](auto&& session, auto&& req, auto&& root) { Cmd_ChangePlanDeviceOrder(session, req, root); });
 
 			RegisterCommandCode("gettimerplans", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTimerPlans(session, req, root); });
