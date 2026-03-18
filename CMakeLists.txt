@@ -49,6 +49,11 @@ ENDIF()
 option(USE_PRECOMPILED_HEADER "Use precompiled header feature to speed up build time " YES)
 option(GIT_SUBMODULE "Check submodules during build" ON)
 
+option(ENABLE_ASAN "Build with address sanitizer" NO)
+IF(ENABLE_ASAN)
+add_compile_options(-fsanitize=address)
+add_link_options(-fsanitize=address)
+ENDIF()
 
 ### COMPILER SETTINGS
 #
