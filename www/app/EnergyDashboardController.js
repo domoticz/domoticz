@@ -614,8 +614,12 @@ define(['app'], function (app) {
 				fSec = 3;
 			else if (aPower < 3000)
 				fSec = 2;
-			else
+			else if (aPower < 5000)
 				fSec = 1.5;
+			else if (aPower < 7000)
+				fSec = 1.2;
+			else
+				fSec = 1.0;
 			return fSec;
 		}
 
@@ -643,6 +647,20 @@ define(['app'], function (app) {
 			let fadeElement = document.getElementById(fadeId);
 			if (fadeElement) {
 				fadeElement.setAttribute('dur', fSec);
+			}
+		}
+
+		$scope.setFlowAnim = function(cacheKey, fPower, lineId, sphereId, isReverse) {
+			isReverse = isReverse || false;
+			let anim = $scope.GetAnim(fPower, isReverse);
+			if ($scope[cacheKey] != anim) {
+				$scope[cacheKey] = anim;
+				if ($scope.flowAsLines == true) {
+					let elem = document.getElementById(lineId);
+					if (elem) elem.style.animation = anim;
+				} else {
+					$scope.SetEclipseAnim(sphereId, fPower, isReverse);
+				}
 			}
 		}
 
@@ -780,7 +798,7 @@ define(['app'], function (app) {
 			if (fActualBattWatt < 0) {
 				//Discharging
 				if (fActualNet < 0) {
-					let total_return = Math.abs(fActualBattWatt) + fActualSolar;
+					let total_return = Math.abs(fActualBattWatt);
 					let house_usage = total_return - Math.abs(fActualNet);
 					if (house_usage<0) {
 						//That's not possible, not enough power to return to the grid
@@ -799,13 +817,13 @@ define(['app'], function (app) {
 			} else if (fActualBattWatt > 0) {
 				//We need power from the grid to charge the battery
 				if (fActualNet > 0) {
-					fBattToNet = -fActualBattWatt;
+					fBattToNet = -Math.min(fActualBattWatt, fActualNet);
 					fActualNet -= Math.abs(fBattToNet);
 				} else {
 					//We have a problem!!! Not enough power to charge the battery!!
 					//The reason is likely that the Solar Wattage is not accurate
 					//Or that the battery is fully charged and not taking any power
-					if ($scope.fBattSoc==100) {
+					if ($scope.fBattSoc >= 99.9) {
 						fActualBattWatt = 0;
 						fSolarToHome += fSolarToBatt;
 						fActualHomeUsage += fSolarToBatt;
@@ -818,12 +836,13 @@ define(['app'], function (app) {
 					}
 				}
 			}
-			if ((fActualNet< 0) && ($scope.idSolar!=-1)) {
+			if (fActualNet < 0) {
 				//It seems we return more Energy then is possible
 				//The reason is likely that the Solar Wattage is not accurate
-				//Add it to the Solar
-				fActualSolar += Math.abs(fActualNet);
-				fSolarToGrid += Math.abs(fActualNet);
+				if ($scope.idSolar != -1) {
+					fActualSolar += Math.abs(fActualNet);
+					fSolarToGrid += Math.abs(fActualNet);
+				}
 				fActualNet = 0;
 			}
 			fGridToHome += fActualNet;
@@ -838,83 +857,23 @@ define(['app'], function (app) {
 			$scope.fBattToHome = fBattToHome;
 			$scope.fGridToHome = fGridToHome;
 			$scope.fActualHomeUsage = fActualHomeUsage;
-			if ($scope.fSolarToHome>=0) {
-				let anim = $scope.GetAnim($scope.fSolarToHome);
-				if ($scope.SolarToHomeflowAnim != anim) {
-					$scope.SolarToHomeflowAnim = anim;
-					if ($scope.flowAsLines == true) {
-						let SolarToHomeflow=document.getElementById('SolarToHome-flow');
-						SolarToHomeflow.style.animation = anim;
-					} else {
-						$scope.SetEclipseAnim("SolarToHome-sphere", $scope.fSolarToHome);
-					}
-				}
-			}
+			if ($scope.fSolarToHome > 0)
+				$scope.setFlowAnim('SolarToHomeflowAnim', $scope.fSolarToHome, 'SolarToHome-flow', 'SolarToHome-sphere');
 
-			if ($scope.fSolarToBatt > 0) {
-				let anim = $scope.GetAnim($scope.fSolarToBatt);
-				if ($scope.SolarToBattflowAnim != anim) {
-					$scope.SolarToBattflowAnim = anim;
-					if ($scope.flowAsLines == true) {
-						let SolarToBattflow=document.getElementById('SolarToBatt-flow');
-						SolarToBattflow.style.animation = anim;
-					} else {
-						$scope.SetEclipseAnim("SolarToBatt-sphere", $scope.fSolarToBatt);
-					}
-				}
-			}
+			if ($scope.fSolarToBatt > 0)
+				$scope.setFlowAnim('SolarToBattflowAnim', $scope.fSolarToBatt, 'SolarToBatt-flow', 'SolarToBatt-sphere');
 
-			if ($scope.fSolarToGrid>=0) {
-				let anim = $scope.GetAnim($scope.fSolarToGrid);
-				if ($scope.SolarToGridflowAnim != anim) {
-					$scope.SolarToGridflowAnim = anim;
-					if ($scope.flowAsLines == true) {
-						let SolarToGridflow=document.getElementById('SolarToGrid-flow');
-						SolarToGridflow.style.animation = anim;	
-					} else {
-						$scope.SetEclipseAnim("SolarToGrid-sphere", $scope.fSolarToGrid);
-					}
-				}
-			}
+			if ($scope.fSolarToGrid > 0)
+				$scope.setFlowAnim('SolarToGridflowAnim', $scope.fSolarToGrid, 'SolarToGrid-flow', 'SolarToGrid-sphere');
 
-			if ($scope.fBattToNet!=0) {
-				let anim = $scope.GetAnim($scope.fBattToNet, ($scope.fBattToNet<0));
-				if ($scope.BattToGridflowAnim != anim) {
-					$scope.BattToGridflowAnim = anim;
-					if ($scope.flowAsLines == true) {
-						let BattNetflow=document.getElementById('BattNet-flow');
-						BattNetflow.style.animation = anim;
-					} else {
-						$scope.SetEclipseAnim("BattNet-sphere", $scope.fBattToNet, ($scope.fBattToNet<0));
-					}
-				}
-			}
+			if ($scope.fBattToNet != 0)
+				$scope.setFlowAnim('BattToGridflowAnim', $scope.fBattToNet, 'BattNet-flow', 'BattNet-sphere', $scope.fBattToNet < 0);
 
-			if ($scope.fBattToHome >= 0) {
-				let anim = $scope.GetAnim($scope.fBattToHome);
-				if ($scope.BattToHomeflowAnim != anim) {
-					$scope.BattToHomeflowAnim = anim;
-					if ($scope.flowAsLines == true) {
-						let BattHomeflow=document.getElementById('BattHome-flow');
-						BattHomeflow.style.animation = anim;
-					} else {
-						$scope.SetEclipseAnim("BattHome-sphere", $scope.fBattToHome);
-					}
-				}
-			}
+			if ($scope.fBattToHome > 0)
+				$scope.setFlowAnim('BattToHomeflowAnim', $scope.fBattToHome, 'BattHome-flow', 'BattHome-sphere');
 
-			if ($scope.fGridToHome>=0) {
-				let anim = $scope.GetAnim($scope.fGridToHome, ($scope.fGridToHome<0));
-				if ($scope.Grid2HomeFlowAnim != anim) {
-					$scope.Grid2HomeFlowAnim = anim;
-					if ($scope.flowAsLines == true) {
-						let Grid2HomeFlow = document.getElementById('GridToHome-flow');
-						Grid2HomeFlow.style.animation = anim;
-					} else {
-						$scope.SetEclipseAnim("GridToHome-sphere", $scope.fGridToHome, ($scope.fGridToHome<0));
-					}
-				}
-			}
+			if ($scope.fGridToHome > 0)
+				$scope.setFlowAnim('Grid2HomeFlowAnim', $scope.fGridToHome, 'GridToHome-flow', 'GridToHome-sphere');
 
 			$scope.finalHomeUsage = $scope.fActualHomeUsage;
 			
