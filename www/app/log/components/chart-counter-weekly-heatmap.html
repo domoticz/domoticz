@@ -1,5 +1,5 @@
 <div class="chart noselect" ng-if="$ctrl.chartDefinition">
     <div class="chartarea">
-        <highchart config="$ctrl.chartDefinition" style="display: block; width: 100%; height: 300px;"></highchart>
+        <highchart id="chart-{{$ctrl.device.idx}}-weekly-heatmap" config="$ctrl.chartDefinition" style="display: block; width: 100%; height: 300px;"></highchart>
     </div>
 </div>
