@@ -24,7 +24,11 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
         self.synchronizeYaxes = params.synchronizeYaxes;
         const chartDefinition = createChartDefinition(params.highchartTemplate);
         chartDefinition.range = params.range;
-        self.chart = self.$element.find('.chartcontainer').highcharts(chartDefinition).highcharts();
+        const containerEl = self.$element.find('.chartcontainer');
+        if (params.device.idx !== undefined && params.device.idx !== null && params.range !== undefined) {
+            containerEl.attr('id', 'chart-' + params.device.idx + '-' + params.range);
+        }
+        self.chart = containerEl.highcharts(chartDefinition).highcharts();
         // Disable the Highcharts Reset Zoom button
         self.chart.showResetZoom = function () {};
         self.autoRefreshIsEnabled = params.autoRefreshIsEnabled;
@@ -324,7 +328,13 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
         function synchronizeYaxes(redraw=false) {
             if (self.synchronizeYaxes) {
-                const yAxes = self.chart.series.map(getYaxisForSeries).reduce(collectToSet, []);
+                const visibleSeries = self.chart.series.filter(function (s) { return s.visible; });
+                const yAxes = visibleSeries.map(getYaxisForSeries).reduce(collectToSet, []);
+
+                if (yAxes.length === 0) {
+                    return;
+                }
+
                 yAxes.forEach(function (yAxis) {
                     yAxis.setExtremes(null, null, false);
                 });
@@ -335,6 +345,9 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
                 const yAxisMinSynchronized = iMin === Infinity ? null : iMin;
                 const yAxisMaxSynchronized = iMax === -Infinity ? null : iMax;
+
+                if (isNaN(yAxisMinSynchronized) || isNaN(yAxisMaxSynchronized)) return;
+
                 self.consoledebug('Synchronizing yAxes to extremes (' + yAxisMinSynchronized + ', ' + yAxisMaxSynchronized + '):');
                 yAxes.forEach(function (yAxis) {
                     self.consoledebug('    yAxis:' + yAxisToString(yAxis));

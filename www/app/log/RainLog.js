@@ -62,26 +62,19 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                             }
                         }
 
-                        // Total Rain card
-                        if (device.Rain !== undefined) {
-                            var rain = parseFloat(device.Rain);
-                            if (!isNaN(rain)) {
-                                self.cards.push({
-                                    label: $.t('Total'),
-                                    value: rain.toFixed(1) + ' ' + unit,
-                                    delta: '',
-                                    deltaColor: ''
-                                });
-                            }
-                        }
-
-                        // Calculate today's total from graph data
+                        // Calculate today's total from graph data (filter to today only)
                         var result = self.logCtrl.dayGraphData;
                         if (result && result.length > 0) {
+                            var now = new Date();
+                            var todayStr = now.getFullYear() + '-' +
+                                String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                                String(now.getDate()).padStart(2, '0');
                             var todayTotal = 0;
                             for (var i = 0; i < result.length; i++) {
-                                var val = parseFloat(result[i][valueKey]);
-                                if (!isNaN(val)) todayTotal += val;
+                                if (result[i].d.substring(0, 10) === todayStr) {
+                                    var val = parseFloat(result[i][valueKey]);
+                                    if (!isNaN(val)) todayTotal += val;
+                                }
                             }
                             self.cards.push({
                                 label: $.t('Today'),
@@ -103,7 +96,9 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                         return self.logCtrl.dayGraphData;
                     }, function (result) {
                         if (result && result.length > 0) {
+                            var yearCards = self.cards.splice(self._deviceCardCount);
                             buildDeviceCards();
+                            self.cards.push.apply(self.cards, yearCards);
                         }
                     });
 
@@ -118,7 +113,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                         }
                     });
 
-                    // Watch for year graph data shared by rainLongChart (range=year)
+                    // Show This Year card when year chart data is available
                     $scope.$watch(function () {
                         return self.logCtrl.yearGraphData;
                     }, function (result) {
@@ -329,6 +324,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 					}
 
 					var chartElement = $element.find('.chartcontainer');
+					chartElement.attr('id', 'chart-' + self.device.idx + '-rain-cumulative');
 					Highcharts.chart(chartElement[0], {
 						chart: { type: 'area', zoomType: 'x' },
 						title: { text: '' },
@@ -405,6 +401,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 					}
 
 					var chartElement = $element.find('.chartcontainer');
+					chartElement.attr('id', 'chart-' + self.device.idx + '-rain-rate');
 					Highcharts.chart(chartElement[0], {
 						chart: { type: 'spline', zoomType: 'x' },
 						title: { text: '' },
@@ -514,6 +511,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 					];
 
 					var chartElement = $element.find('.chartcontainer');
+					chartElement.attr('id', 'chart-' + self.device.idx + '-rain-intensity');
 					self.chartTitle += ' (' + rates.length + ' ' + $.t('rain intervals') + ')';
 
 					Highcharts.chart(chartElement[0], {

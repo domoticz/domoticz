@@ -389,6 +389,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 					}
 
 					var chartElement = $element.find('.chartcontainer');
+					chartElement.attr('id', 'chart-' + self.device.idx + '-baro-change-rate');
 					Highcharts.chart(chartElement[0], {
 						chart: {
 							type: 'column',
@@ -442,11 +443,13 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 						},
 						series: [
 							{
+								id: 'rising',
 								name: $.t('Rising'),
 								color: 'rgba(0,180,0,0.8)',
 								data: positiveData
 							},
 							{
+								id: 'falling',
 								name: $.t('Falling'),
 								color: 'rgba(220,0,0,0.8)',
 								data: negativeData
@@ -530,6 +533,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 
 					var series = [
 						{
+							id: 'pressure',
 							name: $.t('Pressure'),
 							type: 'spline',
 							yAxis: 0,
@@ -542,6 +546,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 
 					if (hasTemp) {
 						series.push({
+							id: 'temperature',
 							name: $.t('Temperature'),
 							type: 'spline',
 							yAxis: 1,
@@ -554,6 +559,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 
 					if (hasHum) {
 						series.push({
+							id: 'humidity',
 							name: $.t('Humidity'),
 							type: 'spline',
 							yAxis: hasTemp ? 2 : 1,
@@ -565,6 +571,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 					}
 
 					var chartElement = $element.find('.chartcontainer');
+					chartElement.attr('id', 'chart-' + self.device.idx + '-baro-weather-overview');
 					Highcharts.chart(chartElement[0], {
 						chart: {
 							zoomType: 'x'
@@ -642,6 +649,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 					});
 
 					var chartElement = $element.find('.chartcontainer');
+					chartElement.attr('id', 'chart-' + self.device.idx + '-baro-vs-temp');
 					Highcharts.chart(chartElement[0], {
 						chart: {
 							type: 'scatter',
@@ -739,6 +747,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 					});
 
 					var chartElement = $element.find('.chartcontainer');
+					chartElement.attr('id', 'chart-' + self.device.idx + '-baro-vs-humidity');
 					Highcharts.chart(chartElement[0], {
 						chart: {
 							type: 'scatter',
@@ -842,6 +851,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 					var ma12h = movingAverage(rawData, 12 * 3600000);
 
 					var chartElement = $element.find('.chartcontainer');
+					chartElement.attr('id', 'chart-' + self.device.idx + '-baro-rolling-avg');
 					Highcharts.chart(chartElement[0], {
 						chart: { zoomType: 'x' },
 						title: { text: null },
@@ -856,6 +866,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 						},
 						series: [
 							{
+								id: 'pressure',
 								name: $.t('Pressure'),
 								type: 'spline',
 								data: rawData,
@@ -863,6 +874,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 								lineWidth: 1
 							},
 							{
+								id: 'ma-3h',
 								name: '3h ' + $.t('Average'),
 								type: 'spline',
 								data: ma3h,
@@ -870,6 +882,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 								lineWidth: 2
 							},
 							{
+								id: 'ma-6h',
 								name: '6h ' + $.t('Average'),
 								type: 'spline',
 								data: ma6h,
@@ -877,6 +890,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 								lineWidth: 2
 							},
 							{
+								id: 'ma-12h',
 								name: '12h ' + $.t('Average'),
 								type: 'spline',
 								data: ma12h,
@@ -947,6 +961,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 					var std6h = rollingStdDev(rawData, 6 * 3600000);
 
 					var chartElement = $element.find('.chartcontainer');
+					chartElement.attr('id', 'chart-' + self.device.idx + '-baro-volatility');
 					Highcharts.chart(chartElement[0], {
 						chart: { zoomType: 'x' },
 						title: { text: null },
@@ -959,6 +974,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 						legend: { enabled: true },
 						series: [
 							{
+								id: 'vol-3h',
 								name: '3h ' + $.t('Volatility'),
 								type: 'area',
 								data: std3h,
@@ -968,6 +984,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 								marker: { enabled: false }
 							},
 							{
+								id: 'vol-6h',
 								name: '6h ' + $.t('Volatility'),
 								type: 'area',
 								data: std6h,
