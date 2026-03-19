@@ -235,6 +235,11 @@ define([
 				}
 			}
 
+		$scope.nl2br = function (text) {
+			if (!text) return text;
+			return text.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+		};
+
 			/**
 			 * Filter devices based on search query.
 			 * Matches against the same fields as GenerateLiveSearchTextDefault

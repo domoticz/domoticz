@@ -519,17 +519,17 @@
 							</span>
 							<!-- Counter with CounterToday -->
 							<span ng-if="(item.Type != 'Setpoint' || item.SubType != 'SetPoint') && item.CounterToday !== undefined && item.CounterDeliv !== undefined && item.CounterDeliv != 0">
-								U: T: {{item.CounterToday}}<span ng-if="item.Usage !== undefined">, A: {{item.Usage}}</span>
-								<br>R: T: {{item.CounterDelivToday}}<span ng-if="item.UsageDeliv !== undefined && item.UsageDeliv.charAt(0) != '0'">, A: -{{item.UsageDeliv}}</span>
+								<span data-i18n="Usage">Usage</span>: {{item.CounterToday}}<span ng-if="item.Usage !== undefined">, <span data-i18n="Actual">Actual</span>: {{item.Usage}}</span>
+								<br><span data-i18n="Return">Return</span>: {{item.CounterDelivToday}}<span ng-if="item.UsageDeliv !== undefined && item.UsageDeliv.charAt(0) != '0'">, <span data-i18n="Actual">Actual</span>: -{{item.UsageDeliv}}</span>
 							</span>
 							<span ng-if="(item.Type != 'Setpoint' || item.SubType != 'SetPoint') && item.CounterToday !== undefined && (item.CounterDeliv === undefined || item.CounterDeliv == 0) && item.SubType != 'Managed Counter'">
-								T: {{item.CounterToday}}<span ng-if="item.Usage !== undefined">, A: {{item.Usage}}</span>
+								<span data-i18n="Today">Today</span>: {{item.CounterToday}}<span ng-if="item.Usage !== undefined">, <span data-i18n="Actual">Actual</span>: {{item.Usage}}</span>
 							</span>
 							<span ng-if="(item.Type != 'Setpoint' || item.SubType != 'SetPoint') && item.SubType == 'Managed Counter'">
 								{{item.Counter}}
 							</span>
 							<!-- Text / Alert (render HTML content) -->
-							<span ng-if="(item.SubType == 'Text' || item.SubType == 'Alert') && item.CounterToday === undefined" ng-bind-html="item.Data"></span>
+							<span ng-if="(item.SubType == 'Text' || item.SubType == 'Alert') && item.CounterToday === undefined" ng-bind-html="nl2br(item.Data)"></span>
 							<!-- Everything else -->
 							<span ng-if="(item.Type != 'Setpoint' || item.SubType != 'SetPoint') && item.CounterToday === undefined && item.SubType != 'Managed Counter' && item.SubType != 'Text' && item.SubType != 'Alert'">
 								{{item.Data}}

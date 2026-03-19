@@ -163,6 +163,41 @@ define(['app'], function (app) {
                     return status;
                 };
 
+                ctrl.getMobileText = function () {
+                    if (ctrl.isText() || ctrl.isAlert()) {
+                        // Render data as HTML: supports <br />, <b>, <a> etc. in device data
+                        // Also convert raw newlines to <br /> for plain-text data
+                        var text = device.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+                        if (ctrl.isAlert()) {
+                            // Alert images exist for levels 0–4 (Alert48_0.png .. Alert48_4.png)
+                            var aLevel = Math.min(parseInt(device.Level) || 0, 4);
+                            text += ' <img src="images/Alert48_' + aLevel + '.png" height="16" width="16">';
+                        }
+                        return text;
+                    }
+                    if (ctrl.isCounter() && device.Type === 'P1 Smart Meter') {
+                        var text = '';
+                        if (typeof device.CounterToday !== 'undefined') {
+                            text = $.t('Usage') + ': ' + device.CounterToday;
+                        }
+                        if (typeof device.CounterDeliv !== 'undefined' && device.CounterDeliv != 0) {
+                            text += '<br />' + $.t('Return') + ': ' + device.CounterDelivToday;
+                        }
+                        if (typeof device.Usage !== 'undefined') {
+                            var actual = device.Usage;
+                            if (typeof device.UsageDeliv !== 'undefined' && parseInt(device.UsageDeliv) > 0) {
+                                actual += ', -' + device.UsageDeliv;
+                            }
+                            text += '<br />' + $.t('Actual') + ': ' + actual;
+                        }
+                        return text;
+                    }
+                    var bigtext = ctrl.getBigText();
+                    var status = ctrl.getStatusText();
+                    if (bigtext && status) return bigtext + '<br />' + status;
+                    return bigtext || status;
+                };
+
                 ctrl.getDeviceIcon = function () {
                     var image = '';
 
