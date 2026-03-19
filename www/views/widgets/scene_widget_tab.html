@@ -5,7 +5,7 @@
                 <td id="name" class="item-name" data-idx="{{ctrl.scene.idx}}" data-desc="{{ctrl.scene.Description}}" data-search="{{ctrl.searchText}}">{{ctrl.scene.Name}}</td>
                 <td id="bigtext">
                     {{ctrl.getStatusText()}}
-                    <a ng-if="ctrl.scene.UsedByCamera" href="javascript:ShowCameraLiveStream('{{ctrl.scene.Name}}',{{ctrl.scene.CameraIdx}},{{ctrl.scene.CameraAspect}})">
+                    <a ng-if="ctrl.scene.UsedByCamera" ng-click="ctrl.showCameraStream()" class="lcursor">
                         <img src="images/webcam.png" data-i18n="[title]Stream Video" height="16" width="16">
                     </a>
                 </td>

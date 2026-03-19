@@ -143,6 +143,10 @@ define(['app'], function (app) {
 
 				ctrl.isAdmin = permissions.hasPermission('Admin');
 
+				ctrl.showCameraStream = function() {
+					ShowCameraLiveStream(escape(ctrl.scene.Name), ctrl.scene.CameraIdx, ctrl.scene.CameraAspect);
+				};
+
 				ctrl.getTypeText = function() {
 					if (!ctrl.scene) return '';
 					return $.t(ctrl.scene.Type);

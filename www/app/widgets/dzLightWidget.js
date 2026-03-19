@@ -582,6 +582,10 @@ define(['app'], function (app) {
                     return device.Status === 'Disconnected';
                 };
 
+                ctrl.showCameraStream = function () {
+                    ShowCameraLiveStream(escape(device.Name), device.CameraIdx, device.CameraAspect);
+                };
+
                 ctrl.showMediaRemote = function () {
                     ShowMediaRemote(escape(device.Name), device.idx, device.HardwareType);
                 };

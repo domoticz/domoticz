@@ -5,7 +5,7 @@
                 <td id="name" class="item-name" data-idx="{{ctrl.device.idx}}" data-desc="{{ctrl.device.Description}}" data-search="{{ctrl.searchText}}">{{ctrl.device.Name}}</td>
                 <td id="bigtext">
                     <span>{{ctrl.getStatusText()}}</span>
-                    <a ng-if="ctrl.device.UsedByCamera" href="javascript:ShowCameraLiveStream('{{ctrl.device.Name}}',{{ctrl.device.CameraIdx}},{{ctrl.device.CameraAspect}})">
+                    <a ng-if="ctrl.device.UsedByCamera" ng-click="ctrl.showCameraStream()" class="lcursor">
                         <img src="images/webcam.png" height="16" width="16" data-i18n="[title]Stream Video">
                     </a>
                     <img ng-if="ctrl.isAdmin && ctrl.isRFY()" src="images/devices.png" data-i18n="[title]Setup" ng-click="ctrl.showRFYSetup($event)" class="lcursor" height="16" width="16">&nbsp;

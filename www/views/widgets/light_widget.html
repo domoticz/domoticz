@@ -10,7 +10,7 @@
                 <!-- Big Text (status) -->
                 <td id="bigtext">
                     <span>{{ctrl.getStatusText()}}</span>
-                    <a ng-if="ctrl.device.UsedByCamera" href="javascript:ShowCameraLiveStream('{{ctrl.device.Name}}',{{ctrl.device.CameraIdx}},{{ctrl.device.CameraAspect}})">
+                    <a ng-if="ctrl.device.UsedByCamera" ng-click="ctrl.showCameraStream()" class="lcursor">
                         <img src="images/webcam.png" height="16" width="16" data-i18n="[title]Stream Video">
                     </a>
                 </td>
