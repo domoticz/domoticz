@@ -179,6 +179,7 @@ Key configuration options:
 **Developer Options:**
 - `USE_PRECOMPILED_HEADER` - Speed up build time (default: YES)
 - `GIT_SUBMODULE` - Check submodules during build (default: ON)
+- `ENABLE_ASAN` - Build with address sanitizer (not supported by MSVC compiler) (default: NO)
 
 ## Common Dependencies
 

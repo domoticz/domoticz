@@ -5533,6 +5533,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 	int nValueBeforeUpdate = -1;
 	std::string sValueBeforeUpdate;
 	_eSwitchType stype = STYPE_OnOff;
+	std::string sValueUpdate;
 
 	if (result.empty())
 	{
@@ -5602,9 +5603,8 @@ uint64_t CSQLHelper::UpdateValueInt(
 			if (!powerAndEnergyUpdate.empty())
 			{
 				const char* powerUpdate = powerAndEnergyUpdate[0].c_str();
-				char sValueUpdate[100];
-				sprintf(sValueUpdate, "%s;%.4f", powerUpdate, energyAfterInterval);
-				sValue = sValueUpdate;
+				sValueUpdate = std_format("%s;%.4f", powerUpdate, energyAfterInterval);
+				sValue = sValueUpdate.c_str();
 			}
 			else
 			{

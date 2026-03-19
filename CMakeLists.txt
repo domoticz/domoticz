@@ -48,7 +48,7 @@ ENDIF()
 # Developer-oriented options
 option(USE_PRECOMPILED_HEADER "Use precompiled header feature to speed up build time " YES)
 option(GIT_SUBMODULE "Check submodules during build" ON)
-
+option(ENABLE_ASAN "Build with address sanitizer" NO)
 
 ### COMPILER SETTINGS
 #
@@ -73,6 +73,14 @@ IF(CMAKE_COMPILER_IS_GNUCXX)
   #ADD_DEFINITIONS( -Wall -O0 -ggdb )
   #ADD_DEFINITIONS( -Wfatal-errors -Wformat=2 -Werror=format-security )
   ADD_DEFINITIONS( -D_FILE_OFFSET_BITS=64 )
+ENDIF()
+IF(ENABLE_ASAN)
+  IF(NOT MSVC)
+    add_compile_options(-fsanitize=address)
+    add_link_options(-fsanitize=address)
+   ELSE()
+     message(WARNING "ASAN is not supported with MSVC compiler")
+  ENDIF()
 ENDIF()
 
 ### VERSIONING SUPPORT

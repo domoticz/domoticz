@@ -1705,7 +1705,7 @@ bool EnphaseAPI::getInverterDetails()
 			// Update
 			UpdateValueInt(szDeviceID.c_str(), 1, devType, subType, 12, 255, nValue, sValue.c_str(), result[0][0]);
 		}
-		}
+	}
 	return true;
 }
 
