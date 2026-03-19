@@ -209,6 +209,26 @@ detect_service_name() {
     fi
 }
 
+# Apply KillMode=process drop-in for the SysV-bridged service so that systemd does
+# not kill this update script when domoticz.service is stopped (cgroup v2 issue).
+# Safe to keep permanently — protects all future update runs automatically.
+# Idempotent: skipped silently if the drop-in already exists.
+_apply_killmode_dropin() {
+    if ! command -v systemctl > /dev/null 2>&1; then
+        return  # Not a systemd system (Docker, BSD, etc.) — nothing to do
+    fi
+    local dropin_dir="/etc/systemd/system/${DETECTED_SERVICE}.service.d"
+    local dropin_file="$dropin_dir/killmode.conf"
+    if [[ -f "$dropin_file" ]]; then
+        return  # Already applied from a previous update run — skip silently
+    fi
+    log_info "Applying KillMode=process override for $DETECTED_SERVICE..."
+    sudo mkdir -p "$dropin_dir"
+    printf '[Service]\nKillMode=process\n' | sudo tee "$dropin_file" > /dev/null
+    sudo systemctl daemon-reload
+    log_info "KillMode=process applied."
+}
+
 # Check if Domoticz service is running
 is_service_running() {
     # Check if domoticz process is running
@@ -233,6 +253,7 @@ is_service_running() {
 stop_service() {
     # Detect service name and the user running domoticz (for fallback direct start)
     detect_service_name
+    _apply_killmode_dropin       # prevent cgroup kill of update script (issue #6640)
     DOMOTICZ_USER=$(ps -o user= -p "$(pgrep -x domoticz 2>/dev/null | head -1)" 2>/dev/null || echo "")
 
     log_info "Stopping Domoticz service..."
