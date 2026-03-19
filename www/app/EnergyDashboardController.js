@@ -62,6 +62,8 @@ define(['app'], function (app) {
 		$scope.h1Price = 1000;
 		$scope.h2Price = 1000;
 		$scope.h3Price = 1000;
+		$scope.battEnergyInPrice = 1000;
+		$scope.battEnergyOutPrice = 1000;
 		$scope.txtItemH1 = "";
 		$scope.txtItemH2 = "";
 		$scope.txtItemH3 = "";
@@ -478,12 +480,18 @@ define(['app'], function (app) {
 			if (item.hasOwnProperty("CounterToday")) {
 				$scope.fBattEnergyIn = parseFloat(item["CounterToday"].replace(' kWh','')) || 0;
 			}
+			if (item.hasOwnProperty("price")) {
+				$scope.battEnergyInPrice = parseFloat(item["price"]) || 0;
+			}
 			return true;
 		}
 
 		$scope.handleBattEnergyOut = function(item) {
 			if (item.hasOwnProperty("CounterToday")) {
 				$scope.fBattEnergyOut = parseFloat(item["CounterToday"].replace(' kWh','')) || 0;
+			}
+			if (item.hasOwnProperty("price")) {
+				$scope.battEnergyOutPrice = parseFloat(item["price"]) || 0;
 			}
 			return true;
 		}
