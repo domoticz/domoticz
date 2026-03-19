@@ -1584,9 +1584,9 @@ namespace http
 							continue;
 					}
 
-					std::string sDeviceName = sd[3];
+					sDeviceName = sd[3];
 
-					uint64_t devIDX = std::stoull(sd[0]);
+					devIDX = std::stoull(sd[0]);
 
 					if (!bDisplayHidden)
 					{
