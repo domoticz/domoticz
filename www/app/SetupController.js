@@ -312,6 +312,7 @@ define(['app'], function (app) {
 						let listBatteryWatt = [];
 						let listBatterySoc = [];
 						let listBatteryVolt = [];
+						let listBatteryEnergy = [];
 						let listText = [];
 						let listExtra = [];
 						let listTemperatureSensors = [];
@@ -325,6 +326,8 @@ define(['app'], function (app) {
 						let $comboEBatteryWatt = $("#comboEBatteryWatt");
 						let $comboEBatterySoc = $("#comboEBatterySoc");
 						let $comboEBatteryVolt = $("#comboEBatteryVolt");
+					let $comboEBatteryEnergyIn = $("#comboEBatteryEnergyIn");
+					let $comboEBatteryEnergyOut = $("#comboEBatteryEnergyOut");
 
 						let $comboEText = $("#comboETextSensor");
 						let $comboEExtra1 = $("#comboEExtra1");
@@ -340,6 +343,7 @@ define(['app'], function (app) {
 
 								if ((item.Type == "P1 Smart Meter")&&(item.SubType == "Energy")) {
 									listP1.push({"idx": item.idx, "name": " " + item.Name});
+									listBatteryEnergy.push({"idx": item.idx, "name": " " + item.Name});
 								}
 								else if ((item.Type == "P1 Smart Meter")&&(item.SubType == "Gas")) {
 									listGas.push({"idx": item.idx, "name": item.Name});
@@ -390,6 +394,7 @@ define(['app'], function (app) {
 										listP1.push({"idx": item.idx, "name": item.Name});
 										listSolar.push({"idx": item.idx, "name": item.Name});
 										listBatteryWatt.push({"idx": item.idx, "name": item.Name});
+										listBatteryEnergy.push({"idx": item.idx, "name": item.Name});
 										listExtra.push({"idx": item.idx, "name": item.Name});
 									} else {
 										listExtra.push({"idx": item.idx, "name": item.Name});
@@ -411,6 +416,7 @@ define(['app'], function (app) {
 						listBatteryWatt.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
 						listBatterySoc.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
 						listBatteryVolt.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
+					listBatteryEnergy.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
 						listText.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
 						listExtra.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
 						listTemperatureSensors.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
@@ -436,6 +442,10 @@ define(['app'], function (app) {
 						$.each(listBatteryVolt, function (i, item) {
 							$comboEBatteryVolt.append($("<option />").val(item.idx).text(item.name));
 						});
+					$.each(listBatteryEnergy, function (i, item) {
+						$comboEBatteryEnergyIn.append($("<option />").val(item.idx).text(item.name));
+						$comboEBatteryEnergyOut.append($("<option />").val(item.idx).text(item.name));
+					});
 						$.each(listText, function (i, item) {
 							$comboEText.append($("<option />").val(item.idx).text(item.name));
 						});
@@ -869,6 +879,12 @@ define(['app'], function (app) {
 						$("#comboEBatterySoc").val(data.ESettings.idBatterySoc);
 						if (typeof data.ESettings.idBatteryVolt != 'undefined') {
 							$("#comboEBatteryVolt").val(data.ESettings.idBatteryVolt);
+						}
+						if (typeof data.ESettings.idBatteryEnergyIn != 'undefined') {
+							$("#comboEBatteryEnergyIn").val(data.ESettings.idBatteryEnergyIn);
+						}
+						if (typeof data.ESettings.idBatteryEnergyOut != 'undefined') {
+							$("#comboEBatteryEnergyOut").val(data.ESettings.idBatteryEnergyOut);
 						}
 						$("#comboETextSensor").val(data.ESettings.idTextSensor);
 						$("#comboEExtra1").val(data.ESettings.idExtra1);

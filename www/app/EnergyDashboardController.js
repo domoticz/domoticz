@@ -10,6 +10,10 @@ define(['app'], function (app) {
 		$scope.idBattSoc = -1;
 		$scope.idBattVolt = -1;
 		$scope.fBattVolt = 0;
+		$scope.idBattEnergyIn = -1;
+		$scope.idBattEnergyOut = -1;
+		$scope.fBattEnergyIn = 0;
+		$scope.fBattEnergyOut = 0;
 		$scope.idTextObj = -1;
 		$scope.idOutsideTemp = -1;
 		$scope.idItemH1 = -1;
@@ -118,6 +122,8 @@ define(['app'], function (app) {
 			if ($scope.idBattWatt != -1) devArray.push($scope.idBattWatt);
 			if ($scope.idBattSoc != -1) devArray.push($scope.idBattSoc);
 			if ($scope.idBattVolt != -1) devArray.push($scope.idBattVolt);
+			if ($scope.idBattEnergyIn != -1) devArray.push($scope.idBattEnergyIn);
+			if ($scope.idBattEnergyOut != -1) devArray.push($scope.idBattEnergyOut);
 			if ($scope.idTextObj != -1) devArray.push($scope.idTextObj);
 			if ($scope.idOutsideTemp != -1) devArray.push($scope.idOutsideTemp);
 			if ($scope.idItemH1 != -1) devArray.push($scope.idItemH1);
@@ -167,6 +173,12 @@ define(['app'], function (app) {
 					if (typeof data.result.ESettings.idBatteryVolt != 'undefined') {
      					$scope.idBattVolt = data.result.ESettings.idBatteryVolt;
  					}
+					if (typeof data.result.ESettings.idBatteryEnergyIn != 'undefined') {
+						$scope.idBattEnergyIn = data.result.ESettings.idBatteryEnergyIn;
+					}
+					if (typeof data.result.ESettings.idBatteryEnergyOut != 'undefined') {
+						$scope.idBattEnergyOut = data.result.ESettings.idBatteryEnergyOut;
+					}
 					$scope.idTextObj = data.result.ESettings.idTextSensor;
 					if (typeof data.result.ESettings.idOutsideTempSensor != 'undefined') {
 						$scope.idOutsideTemp = data.result.ESettings.idOutsideTempSensor;
@@ -245,6 +257,12 @@ define(['app'], function (app) {
 				case $scope.idBattVolt:
      				bHandledData = $scope.handleBattVolt(item);
      				break;
+				case $scope.idBattEnergyIn:
+					bHandledData = $scope.handleBattEnergyIn(item);
+					break;
+				case $scope.idBattEnergyOut:
+					bHandledData = $scope.handleBattEnergyOut(item);
+					break;
 				case $scope.idTextObj:
 					bHandledData = $scope.handleTextObj(item);
 					break;
@@ -453,6 +471,20 @@ define(['app'], function (app) {
 		
 		$scope.handleBattVolt = function(item) {
 			$scope.fBattVolt = parseFloat(item["Data"]) || 0;
+			return true;
+		}
+
+		$scope.handleBattEnergyIn = function(item) {
+			if (item.hasOwnProperty("CounterToday")) {
+				$scope.fBattEnergyIn = parseFloat(item["CounterToday"].replace(' kWh','')) || 0;
+			}
+			return true;
+		}
+
+		$scope.handleBattEnergyOut = function(item) {
+			if (item.hasOwnProperty("CounterToday")) {
+				$scope.fBattEnergyOut = parseFloat(item["CounterToday"].replace(' kWh','')) || 0;
+			}
 			return true;
 		}
 

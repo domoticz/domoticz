@@ -3870,6 +3870,8 @@ namespace http
 				int EBatteryWatt = atoi(request::findValue(&req, "EBatteryWatt").c_str());
 				int EBatterySoc = atoi(request::findValue(&req, "EBatterySoc").c_str());
 				int EBatteryVolt = atoi(request::findValue(&req, "EBatteryVolt").c_str());
+				int EBatteryEnergyIn = atoi(request::findValue(&req, "EBatteryEnergyIn").c_str());
+				int EBatteryEnergyOut = atoi(request::findValue(&req, "EBatteryEnergyOut").c_str());
 				int ETextSensor = atoi(request::findValue(&req, "ETextSensor").c_str());
 				int EOutsideTempSensor = atoi(request::findValue(&req, "EOutsideTempSensor").c_str());
 				int EExtra1 = atoi(request::findValue(&req, "EExtra1").c_str());
@@ -3896,6 +3898,8 @@ namespace http
 				ESettings["idBatteryWatt"] = EBatteryWatt;
 				ESettings["idBatterySoc"] = EBatterySoc;
 				ESettings["idBatteryVolt"] = EBatteryVolt;
+				ESettings["idBatteryEnergyIn"] = EBatteryEnergyIn;
+				ESettings["idBatteryEnergyOut"] = EBatteryEnergyOut;
 				ESettings["idTextSensor"] = ETextSensor;
 				ESettings["idOutsideTempSensor"] = EOutsideTempSensor;
 				ESettings["idExtra1"] = EExtra1;
