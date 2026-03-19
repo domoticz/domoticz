@@ -812,9 +812,8 @@ define(['app'], function (app) {
 						fSolarToBatt = 0;
 					} else {
 						//Add it to the Solar
-						$scope.fActualSolar += Math.abs(fActualBattWatt);
+						fActualSolar += Math.abs(fActualBattWatt);
 						fSolarToBatt += Math.abs(fActualBattWatt);
-						fActualSolar = $scope.fActualSolar;
 						fActualBattWatt = 0;
 					}
 				}
@@ -823,9 +822,8 @@ define(['app'], function (app) {
 				//It seems we return more Energy then is possible
 				//The reason is likely that the Solar Wattage is not accurate
 				//Add it to the Solar
-				$scope.fActualSolar += Math.abs(fActualNet);
+				fActualSolar += Math.abs(fActualNet);
 				fSolarToGrid += Math.abs(fActualNet);
-				fActualSolar = $scope.fActualSolar;
 				fActualNet = 0;
 			}
 			fGridToHome += fActualNet;
