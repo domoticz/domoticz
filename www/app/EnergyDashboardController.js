@@ -4,8 +4,14 @@ define(['app'], function (app) {
 /*
   fTotalHomeUsage (kWh today):
   Grid used + Solar generated − Grid returned
-  (Battery in/out excluded: battery-to-grid and grid_ret cancel each other out)
+    + Battery discharged (if configured)
+    − Battery charged (if configured)
 
+  fHousePrice:
+  (Grid used − Grid returned) × p1Price
+  + Solar generated × solarPrice
+  + Battery discharged × battEnergyOutPrice  (if configured)
+  − Battery charged × battEnergyInPrice      (if configured)
 */
 
 		$scope.debug = false;
@@ -71,6 +77,7 @@ define(['app'], function (app) {
 		$scope.h3Price = 1000;
 		$scope.battEnergyInPrice = 1000;
 		$scope.battEnergyOutPrice = 1000;
+		$scope.fHousePrice = 0;
 		$scope.txtItemH1 = "";
 		$scope.txtItemH2 = "";
 		$scope.txtItemH3 = "";
@@ -729,9 +736,29 @@ define(['app'], function (app) {
 				$scope.waterPrice = 2.34;
 			}
 			
-			// Total Home usage: Calculated (battery excluded - to/from grid cancel via grid_ret)
+			// Total Home usage: Calculated
 			$scope.fTotalHomeUsage = $scope.fDayNetUsage + $scope.fDaySolar - $scope.fDayNetDeliv;
+			if ($scope.idBattEnergyOut != -1) {
+				$scope.fTotalHomeUsage += $scope.fBattEnergyOut;
+			}
+			if ($scope.idBattEnergyIn != -1) {
+				$scope.fTotalHomeUsage -= $scope.fBattEnergyIn;
+			}
 
+			// House price: sum of individual device prices (each price is already the total cost for today)
+			$scope.fHousePrice = 0;
+			if ($scope.p1Price != 1000) {
+				$scope.fHousePrice += $scope.p1Price;
+			}
+			if ($scope.solarPrice != 1000) {
+				$scope.fHousePrice += $scope.solarPrice;
+			}
+			if (($scope.idBattEnergyOut != -1) && ($scope.battEnergyOutPrice != 1000)) {
+				$scope.fHousePrice += $scope.battEnergyOutPrice;
+			}
+			if (($scope.idBattEnergyIn != -1) && ($scope.battEnergyInPrice != 1000)) {
+				$scope.fHousePrice -= $scope.battEnergyInPrice;
+			}
 
 			let fActualNet = $scope.fActualNet;
 			let fActualSolar = $scope.fActualSolar;
