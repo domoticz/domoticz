@@ -254,7 +254,11 @@ stop_service() {
     # Detect service name and the user running domoticz (for fallback direct start)
     detect_service_name
     _apply_killmode_dropin       # prevent cgroup kill of update script (issue #6640)
-    DOMOTICZ_USER=$(ps -o user= -p "$(pgrep -x domoticz 2>/dev/null | head -1)" 2>/dev/null || echo "")
+    DOMOTICZ_USER=$(ps -o user= -p "$(pgrep -x domoticz 2>/dev/null | head -1)" 2>/dev/null | tr -d ' ' || echo "")
+    if [[ -z "$DOMOTICZ_USER" ]]; then
+        # Secondary: parse from SysV init script (requires sudo — file is root-readable only)
+        DOMOTICZ_USER=$(sudo grep -E '^USERNAME=' /etc/init.d/domoticz.sh 2>/dev/null | cut -d= -f2 | tr -d '"' || echo "")
+    fi
 
     log_info "Stopping Domoticz service..."
     if ! sudo service "$DETECTED_SERVICE" stop; then
@@ -300,6 +304,8 @@ start_service() {
         fi
     fi
 
+    sleep 3  # allow process to stabilise before polling (F3, issue #6640)
+
     # Wait up to start_timeout seconds for the process to appear, regardless of
     # whether the service command succeeded (systemd may timeout but the process
     # can still be starting up).
@@ -325,6 +331,17 @@ start_service() {
         die "Domoticz binary not found or not executable at: $SCRIPT_DIR/domoticz"
     fi
     sudo -u "$run_user" "$SCRIPT_DIR/domoticz" -daemon
+
+    # Correct PID file ownership if it was created as the wrong user (F4, issue #6640)
+    local pidfile="/var/run/domoticz.pid"
+    if [[ -f "$pidfile" ]]; then
+        local service_user
+        service_user=$(sudo grep -E '^USERNAME=' /etc/init.d/domoticz.sh 2>/dev/null | cut -d= -f2 | tr -d '"' || echo "")
+        if [[ -n "$service_user" ]] && [[ "$service_user" != "$(stat -c '%U' "$pidfile")" ]]; then
+            sudo chown "$service_user" "$pidfile"
+            log_info "Corrected PID file ownership to '$service_user'."
+        fi
+    fi
 
     wait_count=0
     while [[ $wait_count -lt $fallback_timeout ]]; do
