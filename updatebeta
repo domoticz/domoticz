@@ -209,6 +209,13 @@ detect_service_name() {
     fi
 }
 
+# Parse the USERNAME= field from the SysV init script.
+# Requires sudo because /etc/init.d/domoticz.sh is root-readable only.
+# Returns empty string if the file does not exist or has no USERNAME= line.
+_get_sysv_username() {
+    sudo grep -E '^USERNAME=' /etc/init.d/domoticz.sh 2>/dev/null | cut -d= -f2 | tr -d '"' || echo ""
+}
+
 # Apply KillMode=process drop-in for the SysV-bridged service so that systemd does
 # not kill this update script when domoticz.service is stopped (cgroup v2 issue).
 # Safe to keep permanently — protects all future update runs automatically.
@@ -257,7 +264,7 @@ stop_service() {
     DOMOTICZ_USER=$(ps -o user= -p "$(pgrep -x domoticz 2>/dev/null | head -1)" 2>/dev/null | tr -d ' ' || echo "")
     if [[ -z "$DOMOTICZ_USER" ]]; then
         # Secondary: parse from SysV init script (requires sudo — file is root-readable only)
-        DOMOTICZ_USER=$(sudo grep -E '^USERNAME=' /etc/init.d/domoticz.sh 2>/dev/null | cut -d= -f2 | tr -d '"' || echo "")
+        DOMOTICZ_USER=$(_get_sysv_username)
     fi
 
     log_info "Stopping Domoticz service..."
@@ -304,7 +311,9 @@ start_service() {
         fi
     fi
 
-    sleep 3  # allow process to stabilise before polling (F3, issue #6640)
+    sleep 3  # wait for the daemon to fully initialize before polling; prevents a false
+             # positive from pgrep catching the transient fork of start-stop-daemon -b
+             # before PAM session cleanup kills it (F3, issue #6640)
 
     # Wait up to start_timeout seconds for the process to appear, regardless of
     # whether the service command succeeded (systemd may timeout but the process
@@ -336,7 +345,7 @@ start_service() {
     local pidfile="/var/run/domoticz.pid"
     if [[ -f "$pidfile" ]]; then
         local service_user
-        service_user=$(sudo grep -E '^USERNAME=' /etc/init.d/domoticz.sh 2>/dev/null | cut -d= -f2 | tr -d '"' || echo "")
+        service_user=$(_get_sysv_username)
         if [[ -n "$service_user" ]] && [[ "$service_user" != "$(stat -c '%U' "$pidfile")" ]]; then
             sudo chown "$service_user" "$pidfile"
             log_info "Corrected PID file ownership to '$service_user'."
