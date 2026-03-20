@@ -1170,7 +1170,9 @@ namespace http
 
 											// prevents graph from going crazy if the meter counter resets
 											// removed because it breaks  negative increments
-											double TotalValue = double(actValue - ulFirstValue);
+											// Use ulLastValue (last reading in previous slot) so consumption is attributed
+											// to the slot where the new counter reading arrives, not the prior slot.
+											double TotalValue = double(ulLastValue - ulFirstValue);
 											//if (actValue < ulFirstValue) TotalValue=actValue;
 
 											// if (TotalValue != 0)
@@ -1223,7 +1225,7 @@ namespace http
 										}
 										if (!bIsManagedCounter)
 										{
-											ulFirstValue = actValue;
+											ulFirstValue = ulLastValue;
 										}
 										lastSlot = currentSlot;
 										lastHour = ntime.tm_hour;

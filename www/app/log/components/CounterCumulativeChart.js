@@ -34,9 +34,8 @@ define(['app'], function (app) {
             return Math.floor((date - start) / 86400000);
         }
 
-        function fetchYear(idx, sensor, dateStr) {
-            var url = 'json.htm?type=graph&sensor=' + sensor + '&idx=' + idx + '&range=year';
-            if (dateStr) { url += '&date=' + dateStr; }
+        function fetchYear(idx, sensor, year) {
+            var url = 'json.htm?type=command&param=graph&sensor=' + sensor + '&idx=' + idx + '&range=year&actyear=' + year;
             return $http({ url: url, dataType: 'json' }).then(function (resp) {
                 return (resp.data && resp.data.result) ? resp.data.result : [];
             }, function () { return []; });
@@ -145,8 +144,8 @@ define(['app'], function (app) {
                 if (!currentYearData || currentYearData.length === 0) { return; }
 
                 $q.all([
-                    fetchYear(idx, sensor, (currentYear - 1) + '-06-15'),
-                    fetchYear(idx, sensor, (currentYear - 2) + '-06-15')
+                    fetchYear(idx, sensor, currentYear - 1),
+                    fetchYear(idx, sensor, currentYear - 2)
                 ]).then(function (prevResults) {
                     var allSeries = [];
 
