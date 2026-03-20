@@ -44,6 +44,9 @@ class BasePlugin:
 
     def onStart(self):
         Domoticz.Log("onStart called")
+        Domoticz.Log("Plugin settings:")
+        for key, value in Parameters.items():
+            Domoticz.Log(f"  {key} = {value}")
 
     def onStop(self):
         Domoticz.Log("onStop called")
