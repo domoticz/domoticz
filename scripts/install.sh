@@ -651,6 +651,20 @@ downloadDomoticzWeb() {
 	fi
 }
 
+# Build a space-separated list of hardware-relevant groups that exist on this system.
+# Checks each candidate group with getent so the list is safe across all platforms
+# (e.g. gpio/i2c/spi exist on ARM SBCs but not on x86 Ubuntu/Debian).
+get_supplementary_groups() {
+	local groups=""
+	local candidate
+	for candidate in dialout gpio i2c spi tty video plugdev uucp input; do
+		if getent group "$candidate" > /dev/null 2>&1; then
+			groups="${groups}${groups:+ }${candidate}"
+		fi
+	done
+	echo "$groups"
+}
+
 install_systemd_service() {
 	local http_port="${HTTP_port}"
 	local https_port="${HTTPS_port}"
@@ -660,6 +674,11 @@ install_systemd_service() {
 	if [ "$Enable_https" = false ] ; then
 		https_port="0"
 	fi
+
+	local supplementary_groups
+	supplementary_groups=$(get_supplementary_groups)
+	local supp_line=""
+	[[ -n "$supplementary_groups" ]] && supp_line="SupplementaryGroups=${supplementary_groups}"
 
 	local service_file="/etc/systemd/system/domoticz.service"
 
@@ -674,6 +693,7 @@ Wants=network-online.target
 Type=simple
 User=${Current_user}
 Group=${Current_user}
+${supp_line}
 WorkingDirectory=${Dest_folder}
 # Do NOT add -daemon here. Type=simple requires the process to stay in the foreground.
 # Adding -daemon causes a fork that prevents clean shutdown via systemctl stop.
@@ -683,6 +703,7 @@ AmbientCapabilities=CAP_NET_BIND_SERVICE CAP_NET_RAW
 Restart=on-failure
 RestartSec=5
 TimeoutStopSec=30
+KillMode=process
 
 [Install]
 WantedBy=multi-user.target
