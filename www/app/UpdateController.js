@@ -112,7 +112,9 @@ define(['app'], function (app) {
 					}
 				},
 				function myError(response) {
-					// Service is likely restarting - hide console and show message
+					// Service is restarting - hide the frozen console (last line is always
+					// "Stopping Domoticz service..." which is not a useful final state)
+					// and show a clean status message instead.
 					if (!$scope.serviceRestarting) {
 						$scope.serviceRestarting = true;
 						$scope.showOutput = false;

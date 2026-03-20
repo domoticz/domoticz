@@ -191,9 +191,13 @@ create_backup() {
     log_info "Backup complete."
 }
 
-# Detect whether to use native domoticz.service or legacy domoticz.sh
-# The installer (scripts/install.sh) places a native unit at /etc/systemd/system/domoticz.service
-# Result is cached in DETECTED_SERVICE
+# Detect whether to use native domoticz.service or legacy domoticz.sh.
+# The installer (scripts/install.sh) places a native unit at /etc/systemd/system/domoticz.service.
+# For SysV init scripts, systemd-sysv-generator names the generated unit after the
+# LSB "Provides:" header field:
+#   Ubuntu:        # Provides: domoticz    → unit is domoticz.service   → "service domoticz start"
+#   Debian/DietPi: # Provides: domoticz.sh → unit is domoticz.sh.service → "service domoticz.sh start"
+# Result is cached in DETECTED_SERVICE.
 detect_service_name() {
     # Only run detection once
     if [[ "$SERVICE_DETECTED" == "true" ]]; then
@@ -203,6 +207,20 @@ detect_service_name() {
     if [[ -f /etc/systemd/system/domoticz.service ]]; then
         DETECTED_SERVICE="domoticz"
         log_info "Detected native systemd unit: /etc/systemd/system/domoticz.service"
+    elif [[ -f /etc/init.d/domoticz.sh ]] && command -v systemctl > /dev/null 2>&1; then
+        # Read the LSB Provides: field — that is exactly what systemd-sysv-generator
+        # uses to name the unit.  If the named unit exists in systemd, use it;
+        # otherwise fall back to the init script name "domoticz.sh".
+        local sysv_provides
+        sysv_provides=$(sudo grep -m1 '^# Provides:' /etc/init.d/domoticz.sh 2>/dev/null | awk '{print $3}')
+        if [[ -n "$sysv_provides" ]] && [[ "$sysv_provides" != "domoticz.sh" ]] && \
+           systemctl cat "${sysv_provides}.service" > /dev/null 2>&1; then
+            DETECTED_SERVICE="$sysv_provides"
+            log_info "Detected systemd-wrapped SysV service: $sysv_provides (LSB Provides)"
+        else
+            DETECTED_SERVICE="domoticz.sh"
+            log_info "Using SysV init service: domoticz.sh"
+        fi
     else
         DETECTED_SERVICE="domoticz.sh"
         log_info "Using SysV init service: domoticz.sh"
@@ -214,6 +232,45 @@ detect_service_name() {
 # Returns empty string if the file does not exist or has no USERNAME= line.
 _get_sysv_username() {
     sudo grep -E '^USERNAME=' /etc/init.d/domoticz.sh 2>/dev/null | cut -d= -f2 | tr -d '"' || echo ""
+}
+
+# Reconstruct the final DAEMON_ARGS from the SysV init script by evaluating
+# only the DAEMON_ARGS= assignment lines in a subshell (handles compound
+# assignments like DAEMON_ARGS="$DAEMON_ARGS -www 8090").
+# Returns empty string if the init script is not found or has no DAEMON_ARGS.
+_get_sysv_daemon_args() {
+    [[ -f /etc/init.d/domoticz.sh ]] || { echo ""; return; }
+    local result
+    result=$(sudo bash -c '
+        DAEMON_ARGS=""
+        while IFS= read -r line; do
+            # Stop at case/function blocks — variable section is above these
+            [[ "$line" =~ ^(case[[:space:]]|[a-z_]+[[:space:]]*\(\)) ]] && break
+            if [[ "$line" =~ ^DAEMON_ARGS= ]]; then
+                # Only eval simple assignments; reject lines with command
+                # substitution ($(...)), backticks, or pipes to prevent
+                # unintended code execution if the init script is tampered with.
+                if [[ "$line" =~ [\`\|] ]] || [[ "$line" =~ \$\( ]]; then
+                    continue
+                fi
+                eval "$line"
+            fi
+        done < /etc/init.d/domoticz.sh
+        # Strip any -daemon flag (caller always adds it explicitly)
+        echo "$DAEMON_ARGS" | sed "s/-daemon[[:space:]]*//" | sed "s/[[:space:]]*$//"
+    ' 2>&1) || {
+        log_warn "Failed to read DAEMON_ARGS from init script: $result"
+        echo ""
+        return
+    }
+    echo "$result"
+}
+
+# Parse the User= field from the native systemd unit file.
+# Files in /etc/systemd/system/ are world-readable, so no sudo is needed here.
+# Returns empty string if the file does not exist or has no User= line.
+_get_systemd_user() {
+    grep -E '^User=' /etc/systemd/system/domoticz.service 2>/dev/null | cut -d= -f2 | tr -d '"' || echo ""
 }
 
 # Apply KillMode=process drop-in for the SysV-bridged service so that systemd does
@@ -238,19 +295,20 @@ _apply_killmode_dropin() {
 
 # Check if Domoticz service is running
 is_service_running() {
-    # Check if domoticz process is running
+    # Fast path: pgrep finds the process by name
     if pgrep -x domoticz > /dev/null 2>&1; then
         return 0
     fi
-    # Also check via systemctl if available
-    if command -v systemctl > /dev/null 2>&1; then
-        local status
-        status=$(systemctl is-active "$DETECTED_SERVICE" 2>/dev/null)
-        if [ "$status" = "active" ]; then
-            # Double-check it's not "active (exited)" by verifying process exists
-            if pgrep -x domoticz > /dev/null 2>&1; then
-                return 0
-            fi
+    # Fallback: the double-forked daemon may not be visible to pgrep on some
+    # systems (e.g. WSL with a SysV-wrapped systemd service).  Verify via the
+    # PID file, but also confirm the PID belongs to a process named "domoticz"
+    # to avoid false positives from PID reuse by unrelated processes.
+    if [[ -s /var/run/domoticz.pid ]]; then
+        local pid
+        pid=$(tr -d '[:space:]' < /var/run/domoticz.pid)
+        if [[ "$pid" =~ ^[0-9]+$ ]] && [[ "$pid" -gt 0 ]] && \
+           pgrep -x domoticz | grep -qx "$pid"; then
+            return 0
         fi
     fi
     return 1
@@ -261,10 +319,15 @@ stop_service() {
     # Detect service name and the user running domoticz (for fallback direct start)
     detect_service_name
     _apply_killmode_dropin       # prevent cgroup kill of update script (issue #6640)
-    DOMOTICZ_USER=$(ps -o user= -p "$(pgrep -x domoticz 2>/dev/null | head -1)" 2>/dev/null | tr -d ' ' || echo "")
+    # Prefer the configured user from install-time config files: they are always
+    # correct, whereas the running process may be root from a previous bad fallback.
+    DOMOTICZ_USER=$(_get_sysv_username)
     if [[ -z "$DOMOTICZ_USER" ]]; then
-        # Secondary: parse from SysV init script (requires sudo — file is root-readable only)
-        DOMOTICZ_USER=$(_get_sysv_username)
+        DOMOTICZ_USER=$(_get_systemd_user)
+    fi
+    if [[ -z "$DOMOTICZ_USER" ]]; then
+        # Last resort: use the owner of the currently running process
+        DOMOTICZ_USER=$(ps -o user= -p "$(pgrep -x domoticz 2>/dev/null | head -1)" 2>/dev/null | tr -d ' ' || echo "")
     fi
 
     log_info "Stopping Domoticz service..."
@@ -302,13 +365,31 @@ start_service() {
 
     log_info "Starting Domoticz service (please wait)..."
 
-    # Attempt to start via service manager; capture stderr for diagnostics
-    local start_err
-    if ! start_err=$(sudo service "$DETECTED_SERVICE" start 2>&1); then
-        log_warn "Service start command returned non-zero exit code."
-        if [[ -n "$start_err" ]]; then
-            log_warn "Service manager output: $start_err"
-        fi
+    # Remove any stale PID file before starting.  Do NOT pre-create it here:
+    # start-stop-daemon runs domoticz as root (no --chuid in the actual start
+    # command), so root can create /var/run/domoticz.pid itself.  Pre-creating
+    # an empty file causes domoticz to read PID=0, call kill(0,0) which signals
+    # its own process group and succeeds, conclude another instance is running,
+    # and exit silently.  Only the direct fallback (where domoticz runs as a
+    # non-root user) needs the file pre-created.
+    local pidfile="/var/run/domoticz.pid"
+    local run_user="${DOMOTICZ_USER:-}"
+    if [[ -z "$run_user" ]]; then
+        run_user="$(whoami)"
+    fi
+    sudo rm -f "$pidfile" 2>/dev/null
+
+    # Attempt to start via service manager; use restart so that a stale or
+    # failed unit state (common on WSL) does not prevent the service from starting.
+    local start_out start_rc
+    start_out=$(sudo service "$DETECTED_SERVICE" restart 2>&1)
+    start_rc=$?
+    log_info "Service restart command exited with code $start_rc."
+    if [[ -n "$start_out" ]]; then
+        log_info "Service manager output: $start_out"
+    fi
+    if [[ $start_rc -ne 0 ]]; then
+        log_warn "Service manager returned non-zero exit code — will wait for process anyway."
     fi
 
     sleep 3  # wait for the daemon to fully initialize before polling; prevents a false
@@ -329,28 +410,49 @@ start_service() {
         ((wait_count++))
     done
 
-    # Service didn't come up via the service manager - try a direct fallback
-    local run_user="${DOMOTICZ_USER:-}"
-    if [[ -z "$run_user" ]]; then
-        run_user="$(whoami)"
+    # Diagnostic snapshot: capture what processes and service state exist after timeout
+    log_warn "Domoticz process list after ${start_timeout}s wait:"
+    ps aux 2>/dev/null | grep -E '[d]omoticz' | head -10 || log_warn "  (no domoticz processes found)"
+    if command -v systemctl > /dev/null 2>&1; then
+        log_warn "systemctl status output:"
+        systemctl status "$DETECTED_SERVICE" --no-pager 2>&1 | head -20 | while IFS= read -r line; do log_warn "  $line"; done
+    else
+        log_warn "systemctl not available; skipping service status."
     fi
+
+    # Service didn't come up via the service manager - try a direct fallback
     log_warn "Domoticz did not start within ${start_timeout}s via service manager."
     log_warn "Attempting direct fallback start as user '$run_user'..."
     if [[ ! -x "$SCRIPT_DIR/domoticz" ]]; then
         die "Domoticz binary not found or not executable at: $SCRIPT_DIR/domoticz"
     fi
-    sudo -u "$run_user" "$SCRIPT_DIR/domoticz" -daemon
-
-    # Correct PID file ownership if it was created as the wrong user (F4, issue #6640)
-    local pidfile="/var/run/domoticz.pid"
-    if [[ -f "$pidfile" ]]; then
-        local service_user
-        service_user=$(_get_sysv_username)
-        if [[ -n "$service_user" ]] && [[ "$service_user" != "$(stat -c '%U' "$pidfile")" ]]; then
-            sudo chown "$service_user" "$pidfile"
-            log_info "Corrected PID file ownership to '$service_user'."
-        fi
+    if ! [[ "$run_user" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+        die "Invalid service user name '$run_user' — cannot use for direct start."
     fi
+
+    # Pre-create the PID file owned by the service user.  The direct fallback
+    # runs domoticz as a non-root user (sudo -u $run_user), who cannot create
+    # new files in /var/run (755 root:root).  An already-existing file owned by
+    # the service user lets domoticz write its PID without a permission error.
+    if sudo touch "$pidfile" 2>/dev/null && sudo chown "$run_user" "$pidfile" 2>/dev/null; then
+        log_info "Pre-created PID file owned by '$run_user' for direct fallback."
+    else
+        log_warn "Could not prepare PID file '$pidfile' — domoticz may fail to start."
+    fi
+
+    # Read DAEMON_ARGS from the SysV init script so the fallback uses the same
+    # port, SSL settings, etc. as the normal service start.
+    local sysv_args
+    sysv_args=$(_get_sysv_daemon_args)
+    if [[ -n "$sysv_args" ]]; then
+        log_info "Using DAEMON_ARGS from init script: $sysv_args"
+    fi
+
+    # shellcheck disable=SC2086  # word-splitting of sysv_args is intentional:
+    # sysv_args is built from the admin-configured init script and contains
+    # multiple distinct flags (e.g. "-www 8090 -sslwww 0"), not filenames or
+    # user input, so unquoted expansion is the correct way to pass them.
+    sudo -u "$run_user" "$SCRIPT_DIR/domoticz" -daemon $sysv_args
 
     wait_count=0
     while [[ $wait_count -lt $fallback_timeout ]]; do
