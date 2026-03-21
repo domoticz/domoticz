@@ -20,6 +20,10 @@ define(['app'], function (app) {
         // Display order: 0=Mon(idx 1), 1=Tue(idx 2), ..., 5=Sat(idx 6), 6=Sun(idx 0)
         var displayToApiIndex = [1, 2, 3, 4, 5, 6, 0];
 
+        self.hasReturn = false;
+        self.showUsage = true;
+        self.showReturn = true;
+
         function percentile95(values) {
             if (values.length === 0) { return 0; }
             var sorted = values.slice().sort(function (a, b) { return a - b; });
@@ -29,24 +33,42 @@ define(['app'], function (app) {
 
         function buildChart(weekday_hour_kwh, deviceType) {
             var label = (deviceType === 4) ? $.t('Generated') : $.t('Usage');
-            var heatData = [];
-            var nonZeroValues = [];
+            var usageData = [];
+            var returnData = [];
+            var usageValues = [];
+            var returnValues = [];
+            var hasReturn = false;
+
             for (var displayDay = 0; displayDay < 7; displayDay++) {
                 var apiIdx = displayToApiIndex[displayDay];
                 var dayRow = weekday_hour_kwh[apiIdx];
                 if (!dayRow) { continue; }
                 for (var hour = 0; hour < 24; hour++) {
                     var val = dayRow[hour] || 0;
-                    heatData.push({
-                        x: hour,
-                        y: displayDay,
-                        value: val
-                    });
-                    if (val > 0) { nonZeroValues.push(val); }
+                    if (val >= 0) {
+                        usageData.push({ x: hour, y: displayDay, value: val });
+                        if (val > 0) { usageValues.push(val); }
+                    } else {
+                        returnData.push({ x: hour, y: displayDay, value: -val });
+                        returnValues.push(-val);
+                        hasReturn = true;
+                    }
                 }
             }
 
-            var colorMax = percentile95(nonZeroValues) || 1;
+            var colorMaxUsage = percentile95(usageValues) || 1;
+            var colorMaxReturn = percentile95(returnValues) || 1;
+
+            self.hasReturn = hasReturn;
+            self.showUsage = true;
+            self.showReturn = true;
+            self.usageLabel = label;
+            self.returnLabel = $.t('Return');
+
+            var hourCategories = ['00:00','01:00','02:00','03:00','04:00','05:00','06:00',
+                '07:00','08:00','09:00','10:00','11:00','12:00','13:00',
+                '14:00','15:00','16:00','17:00','18:00','19:00','20:00',
+                '21:00','22:00','23:00'];
 
             self.chartDefinition = {
                 chart: {
@@ -58,10 +80,7 @@ define(['app'], function (app) {
                     text: $.t('Weekly') + ' ' + label + ' ' + $.t('Pattern')
                 },
                 xAxis: {
-                    categories: ['00:00','01:00','02:00','03:00','04:00','05:00','06:00',
-                        '07:00','08:00','09:00','10:00','11:00','12:00','13:00',
-                        '14:00','15:00','16:00','17:00','18:00','19:00','20:00',
-                        '21:00','22:00','23:00'],
+                    categories: hourCategories,
                     title: { text: null }
                 },
                 yAxis: {
@@ -69,11 +88,14 @@ define(['app'], function (app) {
                     title: { text: null },
                     reversed: false
                 },
-                colorAxis: {
+                colorAxis: hasReturn ? [
+                    { min: 0, max: colorMaxUsage, minColor: 'rgba(0,0,0,0.3)', maxColor: '#03BEFC' },
+                    { min: 0, max: colorMaxReturn, minColor: 'rgba(0,0,0,0.3)', maxColor: '#00E676' }
+                ] : {
                     min: 0,
-                    max: colorMax,
+                    max: colorMaxUsage,
                     minColor: 'rgba(0,0,0,0.3)',
-                    maxColor: '#03BFFC'
+                    maxColor: '#03BEFC'
                 },
                 legend: {
                     align: 'right',
@@ -81,29 +103,62 @@ define(['app'], function (app) {
                     margin: 0,
                     verticalAlign: 'top',
                     y: 25,
-                    symbolHeight: 200
+                    symbolHeight: hasReturn ? 100 : 200
                 },
                 tooltip: {
                     formatter: function () {
                         var dayName = dayDisplayNames[this.point.y];
                         var hour = this.point.x;
+                        var seriesLabel = (this.series.colorAxis && hasReturn && this.series.options.colorAxis === 1) ? $.t('Return') : label;
                         return '<b>' + dayName + '</b><br/>' +
                             $.t('Hour') + ': ' + ('0' + hour).slice(-2) + ':00<br/>' +
-                            label + ': <b>' + Highcharts.numberFormat(this.point.value, 1) + ' Wh</b>';
+                            seriesLabel + ': <b>' + Highcharts.numberFormat(this.point.value, 1) + ' Wh</b>';
                     }
                 },
-                series: [{
+                series: hasReturn ? [
+                    {
+                        name: label,
+                        colorAxis: 0,
+                        borderWidth: 1,
+                        borderColor: 'rgba(255,255,255,0.05)',
+                        nullColor: 'rgba(0,0,0,0.3)',
+                        data: usageData
+                    },
+                    {
+                        name: $.t('Return'),
+                        colorAxis: 1,
+                        borderWidth: 1,
+                        borderColor: 'rgba(255,255,255,0.05)',
+                        nullColor: 'rgba(0,0,0,0.3)',
+                        data: returnData
+                    }
+                ] : [{
                     name: label,
                     borderWidth: 1,
                     borderColor: 'rgba(255,255,255,0.05)',
                     nullColor: 'rgba(0,0,0,0.3)',
-                    data: heatData
+                    data: usageData
                 }],
                 plotOptions: {
                     series: { animation: false }
                 }
             };
         }
+
+        self.toggleSeries = function (idx) {
+            if (idx === 0) {
+                self.showUsage = !self.showUsage;
+            } else {
+                self.showReturn = !self.showReturn;
+            }
+            var id = 'chart-' + self.device.idx + '-weekly-heatmap';
+            var chart = Highcharts.charts.find(function (c) {
+                return c && c.renderTo && c.renderTo.id === id;
+            });
+            if (chart && chart.series[idx]) {
+                chart.series[idx].setVisible(idx === 0 ? self.showUsage : self.showReturn, true);
+            }
+        };
 
         self.$onInit = function () {
             $http({

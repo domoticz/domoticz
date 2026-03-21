@@ -1,5 +1,9 @@
 <div class="chart noselect" ng-if="$ctrl.chartDefinition">
     <div class="chartarea">
+        <div class="zoom-buttons-container" ng-if="$ctrl.hasReturn">
+            <button class="zoom-button" ng-class="{'zoom-button-active-blue': $ctrl.showUsage}" ng-click="$ctrl.toggleSeries(0)" ng-bind="$ctrl.usageLabel"></button>
+            <button class="zoom-button" ng-class="{'zoom-button-active': $ctrl.showReturn}" ng-click="$ctrl.toggleSeries(1)" ng-bind="$ctrl.returnLabel"></button>
+        </div>
         <highchart id="chart-{{$ctrl.device.idx}}-calendar-heatmap" config="$ctrl.chartDefinition" style="display: block; width: 100%; height: 220px;"></highchart>
     </div>
 </div>

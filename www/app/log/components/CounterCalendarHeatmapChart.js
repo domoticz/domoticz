@@ -39,6 +39,10 @@ define(['app'], function (app) {
             return 'kWh';
         }
 
+        self.hasReturn = false;
+        self.showUsage = true;
+        self.showReturn = true;
+
         function buildChart(data, deviceType, isP1) {
             var isGenerated = (deviceType === 4);
             var label = isGenerated ? $.t('Generated') : $.t('Usage');
@@ -94,6 +98,12 @@ define(['app'], function (app) {
                 $.t('May'), $.t('Jun'), $.t('Jul'), $.t('Aug'),
                 $.t('Sep'), $.t('Oct'), $.t('Nov'), $.t('Dec')
             ];
+            self.hasReturn = hasReturn;
+            self.showUsage = true;
+            self.showReturn = true;
+            self.usageLabel = label;
+            self.returnLabel = $.t('Return');
+
             var xAxisCategories = [];
             var xAxisTickPositions = [];
             var maxWeek = 0;
@@ -192,6 +202,21 @@ define(['app'], function (app) {
                 }
             };
         }
+
+        self.toggleSeries = function (idx) {
+            if (idx === 0) {
+                self.showUsage = !self.showUsage;
+            } else {
+                self.showReturn = !self.showReturn;
+            }
+            var id = 'chart-' + self.device.idx + '-calendar-heatmap';
+            var chart = Highcharts.charts.find(function (c) {
+                return c && c.renderTo && c.renderTo.id === id;
+            });
+            if (chart && chart.series[idx]) {
+                chart.series[idx].setVisible(idx === 0 ? self.showUsage : self.showReturn, true);
+            }
+        };
 
         self.$onInit = function () {
             var isP1 = (self.subtype === 'p1Energy');
