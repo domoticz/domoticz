@@ -6,11 +6,11 @@
     </div>
     <div class="chartarea">
         <div class="zoom-buttons-container">
-            <button class="zoom-button" ng-click="zoomHours(1)" ng-bind="zoomLabel('1H')"></button>
-            <button class="zoom-button" ng-click="zoomHours(3)" ng-bind="zoomLabel('3H')"></button>
-            <button class="zoom-button" ng-click="zoomDays(1)" ng-bind="zoomLabel('1d')" ng-show="shortLogHistoryMaxDays > 1"></button>
-            <button class="zoom-button" ng-click="zoomDays(3)" ng-bind="zoomLabel('3d')" ng-show="shortLogHistoryMaxDays > 3"></button>
-            <button class="zoom-button" ng-click="zoomToday()" ng-bind="zoomLabel('Day')"></button>
+            <button class="zoom-button" ng-class="{'zoom-button-active': activeZoom === '1H'}" ng-click="zoomHours(1)" ng-bind="zoomLabel('1H')"></button>
+            <button class="zoom-button" ng-class="{'zoom-button-active': activeZoom === '3H'}" ng-click="zoomHours(3)" ng-bind="zoomLabel('3H')"></button>
+            <button class="zoom-button" ng-class="{'zoom-button-active': activeZoom === '1d'}" ng-click="zoomDays(1)" ng-bind="zoomLabel('1d')" ng-show="shortLogHistoryMaxDays > 1"></button>
+            <button class="zoom-button" ng-class="{'zoom-button-active': activeZoom === '3d'}" ng-click="zoomDays(3)" ng-bind="zoomLabel('3d')" ng-show="shortLogHistoryMaxDays > 3"></button>
+            <button class="zoom-button" ng-class="{'zoom-button-active': activeZoom === 'today'}" ng-click="zoomToday()" ng-bind="zoomLabel('Day')"></button>
             <button class="zoom-reset" ng-click="zoomreset()" ng-bind="zoomLabel('Reset')" ng-show="zoomed"></button>
         </div>
         <div class="chartcontainer"></div>

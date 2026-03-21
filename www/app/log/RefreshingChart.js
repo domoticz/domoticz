@@ -570,6 +570,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             }
 
             self.$scope.zoomed = false;
+            self.$scope.activeZoom = null;
 
             self.$scope.shortLogHistoryMaxDays = self.$scope.$root.config.FiveMinuteHistoryDays;
 
@@ -588,6 +589,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             }
 
             self.$scope.zoomHours = function (hours) {
+                self.$scope.activeZoom = hours + 'H';
                 const xAxis = self.chart.xAxis[0];
                 const right = Math.min(xAxis.max, xAxis.dataMax);
 				let cLabel = hours.toString() + ' ';
@@ -599,6 +601,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             }
 
             self.$scope.zoomDays = function (days) {
+                self.$scope.activeZoom = (days % 7 === 0) ? (days / 7) + 'w' : days + 'd';
                 const xAxis = self.chart.xAxis[0];
                 const right = Math.min(xAxis.max, xAxis.dataMax);
 				let cLabel = days.toString() + ' ';
@@ -618,6 +621,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             }
 
             self.$scope.zoomMonths = function (months) {
+                self.$scope.activeZoom = months + 'M';
                 const xAxis = self.chart.xAxis[0];
                 const right = Math.min(xAxis.max, xAxis.dataMax);
 				let cLabel = months.toString() + ' ';
@@ -637,6 +641,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             }
 			
 			self.$scope.zoomToday = function() {
+				self.$scope.activeZoom = 'today';
 				var dstart = new Date();
 				dstart.setHours(0,0,0,0);
 				var dend = new Date();
@@ -645,6 +650,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 			}
 
             self.$scope.zoomreset = function () {
+                self.$scope.activeZoom = null;
                 const xAxis = self.chart.xAxis[0];
                 zoom(xAxis.dataMin, xAxis.dataMax, '');
             }
@@ -679,8 +685,13 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 return $.t(label).toLowerCase();
             }
 
+            if (self.ctrl && self.ctrl.groupingBy !== undefined) {
+                self.$scope.groupingBy = self.ctrl.groupingBy;
+            }
+
             self.$scope.groupBy = function (groupingBy) {
                 self.ctrl.groupingBy = groupingBy;
+                self.$scope.groupingBy = groupingBy;
                 self.chart.update(
                     {
                         plotOptions: {
