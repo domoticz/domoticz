@@ -69,6 +69,9 @@ define(['app', 'luxon'], function (app, luxon) {
 
 		$scope.chartDefinitionBase = {
 			title: null,
+			chart: {
+				marginTop: 45
+			},
 			xAxis: {
 				type: 'datetime',
 				labels: {
