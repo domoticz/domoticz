@@ -2435,6 +2435,14 @@ device-light-log, .device-log-chart:first-child {
 	height: 200px;
 }
 
+.device-log-chart_lg {
+	height: 380px;
+}
+.device-log-chart_lg .chartarea .chartcontainer {
+	height: 380px;
+}
+
+
 .wind-chart-container {
 	background-color: transparent !important;
 	padding: 0 !important;

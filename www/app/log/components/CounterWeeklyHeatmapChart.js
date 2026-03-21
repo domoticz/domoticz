@@ -33,6 +33,7 @@ define(['app'], function (app) {
 
         function buildChart(weekday_hour_kwh, deviceType) {
             var label = (deviceType === 4) ? $.t('Generated') : $.t('Usage');
+            self.chartTitle = $.t('Weekly') + ' ' + label + ' ' + $.t('Pattern');
             var usageData = [];
             var returnData = [];
             var usageValues = [];
@@ -76,9 +77,7 @@ define(['app'], function (app) {
                     marginTop: 40,
                     marginBottom: 60
                 },
-                title: {
-                    text: $.t('Weekly') + ' ' + label + ' ' + $.t('Pattern')
-                },
+                title: null,
                 xAxis: {
                     categories: hourCategories,
                     title: { text: null }

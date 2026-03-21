@@ -77,6 +77,7 @@ define(['app'], function (app) {
             var titleText = isGenerated ? $.t('Cumulative Energy Generated') :
                 (self.subtype === 'gas' ? $.t('Cumulative Gas') :
                 self.subtype === 'water' ? $.t('Cumulative Water') : $.t('Cumulative Energy'));
+            self.chartTitle = titleText;
             var seriesList = [];
 
             allSeries.forEach(function (s, i) {
@@ -100,7 +101,7 @@ define(['app'], function (app) {
 
             self.chartDefinition = {
                 chart: { type: 'spline' },
-                title: { text: titleText },
+                title: null,
                 xAxis: {
                     min: 1,
                     max: leap ? 366 : 365,
