@@ -85,6 +85,7 @@ define(['app'], function (app) {
                         name: String(s.year),
                         type: 'spline',
                         color: seriesColors[i % seriesColors.length],
+                        lineWidth: s.year === currentYear ? 3 : 2,
                         data: s.data,
                         tooltip: { valueDecimals: 3, valueSuffix: ' ' + unit },
                         marker: { enabled: false }
@@ -107,7 +108,8 @@ define(['app'], function (app) {
                     labels: {
                         formatter: function () { return tickLabels[this.value] || ''; }
                     },
-                    title: { text: null }
+                    title: { text: null },
+                    crosshair: true
                 },
                 yAxis: {
                     title: { text: unit },
@@ -115,11 +117,15 @@ define(['app'], function (app) {
                 },
                 legend: { enabled: true },
                 tooltip: {
-                    shared: false,
+                    shared: true,
                     formatter: function () {
-                        return '<b>' + this.point.date + '</b><br/>' +
-                            this.series.name + ': <b>' +
-                            Highcharts.numberFormat(this.y, 3) + ' ' + unit + '</b>';
+                        var date = this.points[0].point.date;
+                        var s = '<b>' + date + '</b><br/>';
+                        this.points.forEach(function (point) {
+                            s += point.series.name + ': <b>' +
+                                Highcharts.numberFormat(point.y, 3) + ' ' + unit + '</b><br/>';
+                        });
+                        return s;
                     }
                 },
                 plotOptions: {

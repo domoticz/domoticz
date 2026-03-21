@@ -15,6 +15,13 @@
     }
 
     app.factory('counterLogEnergySeriesSuppliers', function (chart, counterLogSeriesSupplier) {
+
+        function negateDatapoints(datapoints) {
+            datapoints.forEach(function (dp) {
+                if (dp[1] !== null) { dp[1] = -dp[1]; }
+            });
+        }
+
         return {
             counterDaySeriesSuppliers: counterDaySeriesSuppliers,
             instantAndCounterDaySeriesSuppliers: instantAndCounterDaySeriesSuppliers,
@@ -124,6 +131,7 @@
                     id: 'p1DSSEG',
                     dataItemKeys: ['eg'],
                     showWithoutDatapoints: false,
+                    postprocessDatapoints: negateDatapoints,
                     label: 'K',
                     template: {
                         type: 'area',
@@ -377,6 +385,7 @@
                     },
                     showWithoutDatapoints: false,
                     //convertZeroToNull: true,
+                    postprocessDatapoints: negateDatapoints,
                     label: 'R',
                     template: {
 						type: 'area',
@@ -411,6 +420,7 @@
                         return data.delivered === true;
                     },
                     showWithoutDatapoints: false,
+                    postprocessDatapoints: negateDatapoints,
                     label: 'R',
                     template: {
 						type: 'area',
@@ -435,6 +445,7 @@
                         return data.delivered === true;
                     },
                     showWithoutDatapoints: false,
+                    postprocessDatapoints: negateDatapoints,
                     label: 'S',
                     template: {
 						type: 'area',
