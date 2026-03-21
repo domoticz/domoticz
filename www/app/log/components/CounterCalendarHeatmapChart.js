@@ -144,11 +144,11 @@ define(['app'], function (app) {
                     labels: { step: 1 }
                 },
                 colorAxis: hasReturn ? [
-                    { min: 0, minColor: 'rgba(255,255,255,0.05)', maxColor: '#03BEFC' },
-                    { min: 0, minColor: 'rgba(255,255,255,0.05)', maxColor: '#00E676' }
+                    { min: 0, minColor: 'rgba(3,190,252,0.05)', maxColor: '#03BEFC' },
+                    { min: 0, minColor: 'rgba(0,230,118,0.05)', maxColor: '#00E676' }
                 ] : {
                     min: 0,
-                    minColor: 'rgba(255,255,255,0.05)',
+                    minColor: 'rgba(3,190,252,0.05)',
                     maxColor: '#03BEFC'
                 },
                 legend: {
