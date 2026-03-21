@@ -2732,6 +2732,10 @@ table.display thead th.sorting_disabled div.DataTables_sort_wrapper {
     color: #aaf5aa;
 	font-weight: bold;
 }
+.zoom-button-active-blue {
+    color: #7cb5ec;
+	font-weight: bold;
+}
 
 .zoom-reset {
 	padding-left: 6px;

@@ -695,10 +695,22 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             self.$scope.priceResolution = (self.ctrl && self.ctrl.priceResolution) || 60;
             self.$scope.resolution = (self.ctrl && self.ctrl.resolution) || 60;
 
-            self.$scope.setResolution = function (minutes) {
+            self.$scope.zoomType = 'all';
+
+            function applyZoomType(type) {
+                if (type === 'today') {
+                    self.$scope.zoomToday();
+                } else if (type === '1d') {
+                    self.$scope.zoomDays(1);
+                } else {
+                    self.$scope.zoomreset();
+                }
+            }
+
+            function applyResolution(minutes) {
+                var isSubHour = (minutes < 60);
                 self.ctrl.resolution = minutes;
                 self.$scope.resolution = minutes;
-                var isSubHour = (minutes < 60);
                 self.chart.update({
                     xAxis: {
                         dateTimeLabelFormats: {
@@ -710,7 +722,20 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 }, false);
                 self.chartName = $.t('Usage') + ' / ' + (isSubHour ? minutes + ' ' + $.t('Minutes') : $.t('Hour'));
                 self.$scope.chartTitle = chartTitle();
-                refreshChartData();
+            }
+
+            self.$scope.setResolution = function (minutes) {
+                applyResolution(minutes);
+                refreshChartData(function () {
+                    applyZoomType(self.$scope.zoomType);
+                });
+            };
+
+            self.$scope.setZoomType = function (type) {
+                self.$scope.zoomType = type;
+                refreshChartData(function () {
+                    applyZoomType(type);
+                });
             };
 
             self.$scope.resolutionLabel = function (minutes) {

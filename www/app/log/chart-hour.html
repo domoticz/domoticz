@@ -6,11 +6,11 @@
     </div>
     <div class="chartarea">
         <div class="zoom-buttons-container">
-            <button class="zoom-button" ng-class="{'zoom-button-active': resolution === 60}" ng-click="setResolution(60)" ng-bind="resolutionLabel(60)" ng-show="priceResolution < 60"></button>
-            <button class="zoom-button" ng-class="{'zoom-button-active': resolution < 60}" ng-click="setResolution(priceResolution)" ng-bind="resolutionLabel(priceResolution)" ng-show="priceResolution < 60"></button>
-            <button class="zoom-button" ng-click="zoomDays(1)" ng-bind="zoomLabel('1d')" ng-show="shortLogHistoryMaxDays > 1"></button>
-            <button class="zoom-button" ng-click="zoomDays(3)" ng-bind="zoomLabel('3d')" ng-show="shortLogHistoryMaxDays > 3"></button>
-            <button class="zoom-reset" ng-click="zoomreset()" ng-bind="zoomLabel('Reset')" ng-show="zoomed"></button>
+            <button class="zoom-button" ng-class="{'zoom-button-active-blue': resolution === 60}" ng-click="setResolution(60)" ng-bind="resolutionLabel(60)" ng-show="priceResolution < 60"></button>
+            <button class="zoom-button" ng-class="{'zoom-button-active-blue': resolution < 60}" ng-click="setResolution(priceResolution)" ng-bind="resolutionLabel(priceResolution)" ng-show="priceResolution < 60"></button>
+            <button class="zoom-button" ng-class="{'zoom-button-active': zoomType === 'all'}" ng-click="setZoomType('all')" ng-bind="zoomLabel('All')"></button>
+            <button class="zoom-button" ng-class="{'zoom-button-active': zoomType === '1d'}" ng-click="setZoomType('1d')" ng-bind="zoomLabel('1d')"></button>
+            <button class="zoom-button" ng-class="{'zoom-button-active': zoomType === 'today'}" ng-click="setZoomType('today')" ng-bind="zoomLabel('Day')"></button>
         </div>
         <div class="chartcontainer"></div>
     </div>
