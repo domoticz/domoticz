@@ -154,8 +154,10 @@ function stripHTMLTags(text) {
 
 function sanitizeHTML(text) {
     if (typeof text !== 'string') return text;
-    // Allow only safe formatting tags, strip everything else
-    return text.replace(/<\/?(?!(?:br|b|i|u|em|strong|font|span)\b)[a-zA-Z][^>]*>/gi, '');
+    return DOMPurify.sanitize(text, {
+        ALLOWED_TAGS: ['br', 'b', 'i', 'u', 'em', 'strong', 'font', 'span'],
+        ALLOWED_ATTR: ['color', 'style']
+    });
 }
 
 function Transform(tag) {
