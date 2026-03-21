@@ -414,25 +414,26 @@ start_service() {
         log_warn "Domoticz did not start within ${start_timeout}s via service manager."
         log_warn "Attempting direct fallback start as user '$run_user'..."
     else
-        log_info "SysV init service — starting directly as user '$run_user' (bypasses start-stop-daemon double-fork)."
+        log_info "SysV init service — starting directly (bypasses start-stop-daemon double-fork)."
     fi
 
     # Direct start: primary path for SysV services, fallback for native systemd.
     if [[ ! -x "$SCRIPT_DIR/domoticz" ]]; then
         die "Domoticz binary not found or not executable at: $SCRIPT_DIR/domoticz"
     fi
-    if ! [[ "$run_user" =~ ^[a-zA-Z0-9._-]+$ ]]; then
-        die "Invalid service user name '$run_user' — cannot use for direct start."
-    fi
 
-    # Pre-create the PID file owned by the service user so that domoticz (running
-    # as a non-root user via sudo -u) can write its PID without a permission error.
-    # Not needed for the native systemd path where the service manager handles the
-    # PID file — and pre-creating it there could cause domoticz to read PID=0 and
-    # silently conclude another instance is running.
-    if [[ "$IS_NATIVE_UNIT" != "true" ]]; then
-        if sudo touch "$pidfile" 2>/dev/null && sudo chown "$run_user" "$pidfile" 2>/dev/null; then
-            log_info "Pre-created PID file owned by '$run_user'."
+    # The SysV init script's actual start-stop-daemon call has no --chuid, so
+    # domoticz always ran as root under the service manager.  Mirror that here:
+    # start domoticz as the current user (root when invoked normally via the web
+    # updater).  This keeps the next update script also running as root, avoiding
+    # sudo password prompts that would occur if domoticz were started as a
+    # non-root service user who lacks NOPASSWD sudo access.
+    # Exception: if this script is already running as a non-root user (e.g. a
+    # manually configured setup), pre-create the PID file so domoticz can write
+    # to /var/run, then start as the current user.
+    if [[ "$(id -u)" -ne 0 ]]; then
+        if sudo touch "$pidfile" 2>/dev/null && sudo chown "$(id -un)" "$pidfile" 2>/dev/null; then
+            log_info "Pre-created PID file owned by '$(id -un)'."
         else
             log_warn "Could not prepare PID file '$pidfile' — domoticz may fail to start."
         fi
@@ -450,7 +451,7 @@ start_service() {
     # sysv_args is built from the admin-configured init script and contains
     # multiple distinct flags (e.g. "-www 8090 -sslwww 0"), not filenames or
     # user input, so unquoted expansion is the correct way to pass them.
-    sudo -u "$run_user" "$SCRIPT_DIR/domoticz" -daemon $sysv_args
+    "$SCRIPT_DIR/domoticz" -daemon $sysv_args
 
     wait_count=0
     while [[ $wait_count -lt $start_timeout ]]; do
