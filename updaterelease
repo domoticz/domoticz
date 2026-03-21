@@ -1,61 +1,48 @@
 #!/bin/bash
 
-# Domoticz Update Script
-# Created by GizMoCuz, 2026, version 2.4
-# Usage: ./update_domoticz [--no-backup]
+# Domoticz Update Script - Release channel
+# Usage: ./updaterelease [-nobackup]
 
-readonly SCRIPT_NAME="$(basename "$0")"
-readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-readonly BACKUP_DIR="backups"
-readonly MAX_BACKUPS=5
-readonly DOWNLOAD_URL="https://www.domoticz.com/download.php"
-readonly ARCHIVE_NAME="domoticz_update.tgz"
-readonly CHANNEL_KEYWORD="release"
-readonly STOP_TIMEOUT=60
+lowercase() {
+    echo "$1" | tr '[:upper:]' '[:lower:]'
+}
 
-# Default service name; updated by detect_service_name()
-DETECTED_SERVICE="domoticz.sh"
-SERVICE_DETECTED=false
-IS_NATIVE_UNIT=false
+log_info()  { echo "$(date '+%Y-%m-%d %H:%M:%S.%3N') >> $*"; }
+log_warn()  { echo "$(date '+%Y-%m-%d %H:%M:%S.%3N') >> WARNING: $*"; }
+die()       { echo "$(date '+%Y-%m-%d %H:%M:%S.%3N') >> ERROR: $*" >&2; exit 1; }
 
-# List of required packages (can be extended as needed)
-readonly REQUIRED_PACKAGES=(
+OS=$(lowercase "$(uname -s)")
+MACH=$(uname -m)
+ARCH=$(dpkg --print-architecture)
+OPENSSL_VERSION=$(openssl version | awk '{print $2}' | cut -d. -f1)
+SCRIPT_NAME=$(basename "$0")
+ARCHIVE="domoticz_release.tgz"
+
+if [ "$MACH" = "armv6l" ]; then
+    die "ARMv6 is not supported anymore... Please upgrade your hardware"
+fi
+
+if [ "$ARCH" = "armhf" ]; then
+    MACH="armv7l"
+fi
+
+if [ "$OPENSSL_VERSION" -ne 3 ]; then
+    die "OpenSSL version 3 required!"
+fi
+
+# List of required packages — extend as needed
+REQUIRED_PACKAGES=(
     "libmosquitto1"
-    # Add more packages here as needed
-    #"libusb-0.1"
     #"libcurl4"
     #"libssl3"
 )
 
-# Color output for better readability
-readonly RED='\033[0;31m'
-readonly GREEN='\033[0;32m'
-readonly YELLOW='\033[1;33m'
-readonly NC='\033[0m' # No Color
-
-# Logging functions
-log_info() { echo -e "$(date '+%Y-%m-%d %H:%M:%S.%3N') ${GREEN}>>${NC} $*"; }
-log_warn() { echo -e "$(date '+%Y-%m-%d %H:%M:%S.%3N') ${YELLOW}>>${NC} $*"; }
-log_error() { echo -e "$(date '+%Y-%m-%d %H:%M:%S.%3N') ${RED}>>${NC} $*" >&2; }
-die() {
-    local error_msg="$*"
-    log_error "$error_msg"
-    exit 1
-}
-
-# Returns 0 (true) if script has been updated and re-executed, 1 (false) otherwise
-is_reexecuted() {
-    [[ "${DOMOTICZ_UPDATE_REEXEC:-}" == "1" ]]
-}
-
-# Check and install required package dependencies
 check_dependencies() {
     log_info "Checking package dependencies..."
-    
+
     local missing_packages=()
     local pkg
-    
-    # Check each required package
+
     for pkg in "${REQUIRED_PACKAGES[@]}"; do
         if ! dpkg -l | grep -q "^ii  $pkg"; then
             log_warn "Package '$pkg' is not installed"
@@ -64,481 +51,72 @@ check_dependencies() {
             log_info "Package '$pkg' is already installed"
         fi
     done
-    
-    # Install missing packages if any
+
     if [[ ${#missing_packages[@]} -gt 0 ]]; then
         log_info "Installing missing packages: ${missing_packages[*]}"
-        
-        # Update package list first
         log_info "Updating package list..."
         if ! sudo apt-get update -qq; then
             log_warn "Failed to update package list, continuing anyway..."
         fi
-        
-        # Install missing packages
         if ! sudo apt-get install -y "${missing_packages[@]}"; then
             die "Failed to install required packages: ${missing_packages[*]}"
         fi
-        
         log_info "Successfully installed: ${missing_packages[*]}"
     else
         log_info "All required packages are already installed"
     fi
 }
 
-# Validate prerequisites
-validate_environment() {
-    log_info "Validating environment..."
-    
-    # Check we're in the correct directory
-    [[ "$SCRIPT_DIR" == "$PWD" ]] || die "Script must be run from Domoticz directory!"
-    
-    # Check required commands
-    local required_cmds=(wget tar sudo openssl dpkg uname)
-    for cmd in "${required_cmds[@]}"; do
-        command -v "$cmd" >/dev/null 2>&1 || die "Required command '$cmd' not found!"
-    done
-    
-    # Architecture checks
-    local mach arch openssl_ver
-    mach=$(uname -m)
-    arch=$(dpkg --print-architecture)
-    openssl_ver=$(openssl version | awk '{print $2}' | cut -d. -f1)
-    
-    [[ "$mach" == "armv6l" ]] && die "ARMv6 is not supported. Please upgrade your hardware."
-    [[ "$arch" == "armhf" ]] && mach="armv7l"
-    [[ "$openssl_ver" -eq 3 ]] || die "OpenSSL version 3 required! (Found version $openssl_ver)"
-    
-    # Export for use in download
-    export DETECTED_MACH="$mach"
-    export DETECTED_OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
-    
-    log_info "Environment validation passed (arch: $DETECTED_MACH, OS: $DETECTED_OS)"
-}
-
-# Download latest version
-download_update() {
-    log_info "Downloading latest $CHANNEL_KEYWORD version..."
-    
-    if ! wget -4 -q --show-progress --progress=bar:force -O "$ARCHIVE_NAME" --no-check-certificate \
-        "${DOWNLOAD_URL}?channel=${CHANNEL_KEYWORD}&type=release&system=${DETECTED_OS}&machine=${DETECTED_MACH}"; then
-        die "Failed to download Domoticz $CHANNEL_KEYWORD version!"
+if [ "${DOMOTICZ_UPDATE_REEXEC}" != "1" ]; then
+    log_info "Downloading latest release version..."
+    wget -4 -q --show-progress -O "$ARCHIVE" --no-check-certificate \
+        "https://www.domoticz.com/download.php?channel=release&type=release&system=${OS}&machine=${MACH}"
+    if [ $? -ne 0 ]; then
+        die "Problem downloading new Domoticz version!!"
     fi
-    
-    log_info "Download complete. Verifying archive integrity..."
-    
-    if ! tar tzf "$ARCHIVE_NAME" >/dev/null 2>&1; then
-        rm -f "$ARCHIVE_NAME"
-        die "Downloaded archive is corrupted!"
+    log_info "Checking file integrity..."
+    if ! tar tzf "$ARCHIVE" >/dev/null 2>&1; then
+        rm -f "$ARCHIVE"
+        die "Problem in downloaded Domoticz archive!!"
     fi
-    
-    log_info "Archive integrity verified."
-}
-
-# Extract and re-execute updated script if needed
-reexec_if_outdated() {
-    if is_reexecuted; then
-        return 0
-    fi
-    
     log_info "Checking for updated upgrade script..."
-    
-    # Try to extract the script - use --no-anchored to match filename anywhere in archive
-    local updated_script
-    if ! updated_script=$(tar -zxf "$ARCHIVE_NAME" --no-anchored "$SCRIPT_NAME" -O 2>/dev/null); then
-        log_warn "Could not extract updated script from archive (may not exist)"
-        log_info "Continuing with current script..."
-        return 0
+    updated_script=$(tar -zxf "$ARCHIVE" --no-anchored "$SCRIPT_NAME" -O 2>/dev/null)
+    if [ -n "$updated_script" ] && ! diff <(cat "$0") <(echo "$updated_script") >/dev/null 2>&1; then
+        log_info "Found updated script, re-executing..."
+        export DOMOTICZ_UPDATE_REEXEC=1
+        exec bash -c "$updated_script" "$SCRIPT_NAME" "$@"
     fi
-    
-    # Compare the extracted script with the current one
-    if diff -q <(cat "$0") <(echo "$updated_script") >/dev/null 2>&1; then
-        log_info "Script is already up-to-date, continuing with current version..."
-        return 0
-    fi
-    
-    log_info "Found updated script, re-executing..."
-    
-    # Execute the new script with environment variable set
-    export DOMOTICZ_UPDATE_REEXEC=1
-    exec bash -c "$updated_script" "$SCRIPT_NAME" "$@"
-}
+fi
 
-# Create backup of current installation
-create_backup() {
-    local timestamp
+# Ensure archive exists (re-exec starts a new process; archive file persists on disk)
+if [ ! -f "$ARCHIVE" ]; then
+    log_info "Downloading latest release version..."
+    if ! wget -4 -q --show-progress -O "$ARCHIVE" --no-check-certificate \
+        "https://www.domoticz.com/download.php?channel=release&type=release&system=${OS}&machine=${MACH}"; then
+        die "Failed to download Domoticz archive"
+    fi
+fi
+
+log_info "Stopping Domoticz..."
+sudo service domoticz.sh stop
+
+if [ "$1" != "-nobackup" ]; then
+    log_info "Making backup of current installation..."
+    ls -t backups/domoticz_backup_* 2>/dev/null | tail -n +6 | xargs --no-run-if-empty -I {} rm -- {}
     timestamp=$(date +%Y%m%d_%H%M%S)
-    local backup_file="$BACKUP_DIR/domoticz_backup_$timestamp.tar.gz"
-    
-    log_info "Creating backup: $backup_file"
-    
-    mkdir -p "$BACKUP_DIR"
-    
-    if ! sudo tar --exclude="$BACKUP_DIR" --exclude='*.tgz' --exclude='*.gz' --exclude='update.log' -czf "$backup_file" .; then
-        die "Backup creation failed!"
-    fi
-	
-	sudo chmod 644 "$backup_file"
-    
-    # Cleanup old backups (keep only MAX_BACKUPS)
-    local old_backups
-    old_backups=$(find "$BACKUP_DIR" -name "domoticz_backup_*.tar.gz" -type f | sort -r | tail -n +$((MAX_BACKUPS + 1)))
-    
-    if [[ -n "$old_backups" ]]; then
-        log_info "Removing old backups..."
-        echo "$old_backups" | xargs rm -f
-    fi
-    
-    log_info "Backup complete."
-}
+    mkdir -p backups
+    log_info "Output file: backups/domoticz_backup_${timestamp}.tar.gz"
+    sudo tar --exclude backups --exclude update.log -czf "backups/domoticz_backup_${timestamp}.tar.gz" .
+    log_info "Backup finished..."
+fi
 
-# Detect whether to use native domoticz.service or legacy domoticz.sh.
-# The installer (scripts/install.sh) places a native unit at /etc/systemd/system/domoticz.service.
-# For SysV init scripts, systemd-sysv-generator names the generated unit after the
-# LSB "Provides:" header field:
-#   Ubuntu:        # Provides: domoticz    → unit is domoticz.service   → "service domoticz start"
-#   Debian/DietPi: # Provides: domoticz.sh → unit is domoticz.sh.service → "service domoticz.sh start"
-# Result is cached in DETECTED_SERVICE.
-detect_service_name() {
-    # Only run detection once
-    if [[ "$SERVICE_DETECTED" == "true" ]]; then
-        return 0
-    fi
-    SERVICE_DETECTED=true
-    if [[ -f /etc/systemd/system/domoticz.service ]]; then
-        DETECTED_SERVICE="domoticz"
-        IS_NATIVE_UNIT=true
-        log_info "Detected native systemd unit: /etc/systemd/system/domoticz.service"
-    elif [[ -f /etc/init.d/domoticz.sh ]] && command -v systemctl > /dev/null 2>&1; then
-        # Read the LSB Provides: field — that is exactly what systemd-sysv-generator
-        # uses to name the unit.  If the named unit exists in systemd, use it;
-        # otherwise fall back to the init script name "domoticz.sh".
-        local sysv_provides
-        sysv_provides=$(sudo grep -m1 '^# Provides:' /etc/init.d/domoticz.sh 2>/dev/null | awk '{print $3}')
-        if [[ -n "$sysv_provides" ]] && [[ "$sysv_provides" != "domoticz.sh" ]] && \
-           systemctl cat "${sysv_provides}.service" > /dev/null 2>&1; then
-            DETECTED_SERVICE="$sysv_provides"
-            log_info "Detected systemd-wrapped SysV service: $sysv_provides (LSB Provides)"
-        else
-            DETECTED_SERVICE="domoticz.sh"
-            log_info "Using SysV init service: domoticz.sh"
-        fi
-    else
-        DETECTED_SERVICE="domoticz.sh"
-        log_info "Using SysV init service: domoticz.sh"
-    fi
-}
+check_dependencies
 
-# Parse the USERNAME= field from the SysV init script.
-# Requires sudo because /etc/init.d/domoticz.sh is root-readable only.
-# Returns empty string if the file does not exist or has no USERNAME= line.
-_get_sysv_username() {
-    sudo grep -E '^USERNAME=' /etc/init.d/domoticz.sh 2>/dev/null | cut -d= -f2 | tr -d '"' || echo ""
-}
-
-# Reconstruct the final DAEMON_ARGS from the SysV init script by evaluating
-# only the DAEMON_ARGS= assignment lines in a subshell (handles compound
-# assignments like DAEMON_ARGS="$DAEMON_ARGS -www 8090").
-# Returns empty string if the init script is not found or has no DAEMON_ARGS.
-_get_sysv_daemon_args() {
-    [[ -f /etc/init.d/domoticz.sh ]] || { echo ""; return; }
-    local result
-    result=$(sudo bash -c '
-        DAEMON_ARGS=""
-        while IFS= read -r line; do
-            # Stop at case/function blocks — variable section is above these
-            [[ "$line" =~ ^(case[[:space:]]|[a-z_]+[[:space:]]*\(\)) ]] && break
-            if [[ "$line" =~ ^DAEMON_ARGS= ]]; then
-                # Only eval simple assignments; reject lines with command
-                # substitution ($(...)), backticks, or pipes to prevent
-                # unintended code execution if the init script is tampered with.
-                if [[ "$line" =~ [\`\|] ]] || [[ "$line" =~ \$\( ]]; then
-                    continue
-                fi
-                eval "$line"
-            fi
-        done < /etc/init.d/domoticz.sh
-        # Strip any -daemon flag (caller always adds it explicitly)
-        echo "$DAEMON_ARGS" | sed "s/-daemon[[:space:]]*//" | sed "s/[[:space:]]*$//"
-    ' 2>&1) || {
-        log_warn "Failed to read DAEMON_ARGS from init script: $result"
-        echo ""
-        return
-    }
-    echo "$result"
-}
-
-# Parse the User= field from the native systemd unit file.
-# Files in /etc/systemd/system/ are world-readable, so no sudo is needed here.
-# Returns empty string if the file does not exist or has no User= line.
-_get_systemd_user() {
-    grep -E '^User=' /etc/systemd/system/domoticz.service 2>/dev/null | cut -d= -f2 | tr -d '"' || echo ""
-}
-
-# Apply KillMode=process drop-in for the SysV-bridged service so that systemd does
-# not kill this update script when domoticz.service is stopped (cgroup v2 issue).
-# Safe to keep permanently — protects all future update runs automatically.
-# Idempotent: skipped silently if the drop-in already exists.
-_apply_killmode_dropin() {
-    if ! command -v systemctl > /dev/null 2>&1; then
-        return  # Not a systemd system (Docker, BSD, etc.) — nothing to do
-    fi
-    local dropin_dir="/etc/systemd/system/${DETECTED_SERVICE}.service.d"
-    local dropin_file="$dropin_dir/killmode.conf"
-    if [[ -f "$dropin_file" ]]; then
-        return  # Already applied from a previous update run — skip silently
-    fi
-    log_info "Applying KillMode=process override for $DETECTED_SERVICE..."
-    sudo mkdir -p "$dropin_dir"
-    printf '[Service]\nKillMode=process\n' | sudo tee "$dropin_file" > /dev/null
-    sudo systemctl daemon-reload
-    log_info "KillMode=process applied."
-}
-
-# Check if Domoticz service is running
-is_service_running() {
-    # Fast path: pgrep finds the process by name
-    if pgrep -x domoticz > /dev/null 2>&1; then
-        return 0
-    fi
-    # Fallback: the double-forked daemon may not be visible to pgrep on some
-    # systems (e.g. WSL with a SysV-wrapped systemd service).  Verify via the
-    # PID file, but also confirm the PID belongs to a process named "domoticz"
-    # to avoid false positives from PID reuse by unrelated processes.
-    if [[ -s /var/run/domoticz.pid ]]; then
-        local pid
-        pid=$(tr -d '[:space:]' < /var/run/domoticz.pid)
-        if [[ "$pid" =~ ^[0-9]+$ ]] && [[ "$pid" -gt 0 ]] && \
-           pgrep -x domoticz | grep -qx "$pid"; then
-            return 0
-        fi
-    fi
-    return 1
-}
-
-# Stop Domoticz service
-stop_service() {
-    # Detect service name and the user running domoticz (for fallback direct start)
-    detect_service_name
-    _apply_killmode_dropin       # prevent cgroup kill of update script (issue #6640)
-    # Prefer the configured user from install-time config files: they are always
-    # correct, whereas the running process may be root from a previous bad fallback.
-    DOMOTICZ_USER=$(_get_sysv_username)
-    if [[ -z "$DOMOTICZ_USER" ]]; then
-        DOMOTICZ_USER=$(_get_systemd_user)
-    fi
-    if [[ -z "$DOMOTICZ_USER" ]]; then
-        # Last resort: use the owner of the currently running process
-        DOMOTICZ_USER=$(ps -o user= -p "$(pgrep -x domoticz 2>/dev/null | head -1)" 2>/dev/null | tr -d ' ' || echo "")
-    fi
-
-    log_info "Stopping Domoticz service..."
-    # Use -n (non-interactive) to avoid hanging on a password prompt when running
-    # as a non-root user.  If the service manager stop fails, fall back to a direct
-    # killall which works when domoticz runs as the current user.
-    if ! sudo -n service "$DETECTED_SERVICE" stop 2>/dev/null; then
-        log_warn "Service manager stop failed — trying direct termination..."
-        killall domoticz 2>/dev/null || log_warn "Failed to stop service (may not be running)"
-    fi
-
-    # Wait for process to actually exit (up to STOP_TIMEOUT seconds)
-    local wait_count=0
-    while is_service_running; do
-        if [[ $wait_count -ge $STOP_TIMEOUT ]]; then
-            log_warn "Domoticz process still running after ${STOP_TIMEOUT}s, force killing..."
-            sudo -n killall -9 domoticz 2>/dev/null || killall -9 domoticz 2>/dev/null || true
-            sleep 2
-            if is_service_running; then
-                log_warn "Domoticz process still running after force kill - continuing with update anyway"
-            fi
-            break
-        fi
-        if [[ $((wait_count % 10)) -eq 0 ]] && [[ $wait_count -gt 0 ]]; then
-            log_info "Still waiting for Domoticz to stop... (${wait_count}s)"
-        fi
-        sleep 1
-        ((wait_count++))
-    done
-
-    log_info "Domoticz process stopped."
-}
-
-# Start Domoticz service
-start_service() {
-    local start_timeout=30
-    local wait_count
-    local pidfile="/var/run/domoticz.pid"
-    local run_user="${DOMOTICZ_USER:-}"
-    if [[ -z "$run_user" ]]; then
-        run_user="$(whoami)"
-    fi
-    sudo rm -f "$pidfile" 2>/dev/null
-
-    log_info "Starting Domoticz service (please wait)..."
-
-    # For native systemd units (/etc/systemd/system/domoticz.service), delegate to
-    # the service manager and wait for the process to appear.
-    # For SysV init scripts, skip the service manager entirely: start-stop-daemon
-    # --background combined with domoticz's own -daemon flag causes a double-fork
-    # that makes pgrep unreliable, resulting in a needless 30s delay before the
-    # direct start (which always works) is attempted.
-    if [[ "$IS_NATIVE_UNIT" == "true" ]]; then
-        local start_out start_rc
-        start_out=$(sudo service "$DETECTED_SERVICE" restart 2>&1)
-        start_rc=$?
-        log_info "Service restart command exited with code $start_rc."
-        if [[ -n "$start_out" ]]; then
-            log_info "Service manager output: $start_out"
-        fi
-        if [[ $start_rc -ne 0 ]]; then
-            log_warn "Service manager returned non-zero exit code — will wait for process anyway."
-        fi
-
-        sleep 3  # allow the daemon to fully initialize before polling
-
-        log_info "Waiting up to ${start_timeout}s for Domoticz to start..."
-        wait_count=0
-        while [[ $wait_count -lt $start_timeout ]]; do
-            if is_service_running; then
-                log_info "Service started successfully."
-                return 0
-            fi
-            sleep 1
-            ((wait_count++))
-        done
-
-        # Diagnostic snapshot
-        log_warn "Domoticz process list after ${start_timeout}s wait:"
-        ps aux 2>/dev/null | grep -E '[d]omoticz' | head -10 || log_warn "  (no domoticz processes found)"
-        if command -v systemctl > /dev/null 2>&1; then
-            log_warn "systemctl status output:"
-            systemctl status "$DETECTED_SERVICE" --no-pager 2>&1 | head -20 | while IFS= read -r line; do log_warn "  $line"; done
-        fi
-
-        log_warn "Domoticz did not start within ${start_timeout}s via service manager."
-        log_warn "Attempting direct fallback start as user '$run_user'..."
-    else
-        log_info "SysV init service — starting directly (bypasses start-stop-daemon double-fork)."
-    fi
-
-    # Direct start: primary path for SysV services, fallback for native systemd.
-    if [[ ! -x "$SCRIPT_DIR/domoticz" ]]; then
-        die "Domoticz binary not found or not executable at: $SCRIPT_DIR/domoticz"
-    fi
-
-    # The SysV init script's actual start-stop-daemon call has no --chuid, so
-    # domoticz always ran as root under the service manager.  Mirror that here:
-    # start domoticz as the current user (root when invoked normally via the web
-    # updater).  This keeps the next update script also running as root, avoiding
-    # sudo password prompts that would occur if domoticz were started as a
-    # non-root service user who lacks NOPASSWD sudo access.
-    # Exception: if this script is already running as a non-root user (e.g. a
-    # manually configured setup), pre-create the PID file so domoticz can write
-    # to /var/run, then start as the current user.
-    if [[ "$(id -u)" -ne 0 ]]; then
-        if sudo touch "$pidfile" 2>/dev/null && sudo chown "$(id -un)" "$pidfile" 2>/dev/null; then
-            log_info "Pre-created PID file owned by '$(id -un)'."
-        else
-            log_warn "Could not prepare PID file '$pidfile' — domoticz may fail to start."
-        fi
-    fi
-
-    # Read DAEMON_ARGS from the SysV init script so the start uses the same
-    # port, SSL settings, etc. as the normal service start.
-    local sysv_args
-    sysv_args=$(_get_sysv_daemon_args)
-    if [[ -n "$sysv_args" ]]; then
-        log_info "Using DAEMON_ARGS from init script: $sysv_args"
-    fi
-
-    # shellcheck disable=SC2086  # word-splitting of sysv_args is intentional:
-    # sysv_args is built from the admin-configured init script and contains
-    # multiple distinct flags (e.g. "-www 8090 -sslwww 0"), not filenames or
-    # user input, so unquoted expansion is the correct way to pass them.
-    "$SCRIPT_DIR/domoticz" -daemon $sysv_args
-
-    wait_count=0
-    while [[ $wait_count -lt $start_timeout ]]; do
-        if is_service_running; then
-            log_info "Service started successfully."
-            return 0
-        fi
-        sleep 1
-        ((wait_count++))
-    done
-
-    die "Failed to start Domoticz! Please start manually with: sudo service $DETECTED_SERVICE start"
-}
-
-# Install new version
-install_update() {
-    log_info "Installing new version..."
-    
-    if ! tar xfz "$ARCHIVE_NAME" --checkpoint=.100; then
-        die "Failed to extract update archive!"
-    fi
-    
-    rm -f "$ARCHIVE_NAME"
-    log_info "Installation complete."
-}
-
-# Main execution
-main() {
-    local skip_backup=false
-    
-    # Parse arguments
-    while [[ $# -gt 0 ]]; do
-        case "$1" in
-            --no-backup|-nobackup)
-                skip_backup=true
-                shift
-                ;;
-            *)
-                die "Unknown option: $1"
-                ;;
-        esac
-    done
-    
-    log_info "Starting Domoticz $CHANNEL_KEYWORD Update"
-    log_info "Script: $SCRIPT_NAME (Directory: $SCRIPT_DIR)"
-
-    # Validate environment first
-    validate_environment
-    
-    # Check and install dependencies
-    check_dependencies
-    
-    # Download and re-execute with updated script if needed (only on first run)
-    if ! is_reexecuted; then
-        download_update
-        reexec_if_outdated "$@"
-        # If we reach here, script is up-to-date, continue with installation
-    else
-        log_info "Running updated script - proceeding with installation..."
-    fi
-    
-    # Ensure archive exists for installation
-    if [[ ! -f "$ARCHIVE_NAME" ]]; then
-        log_info "Archive not found, downloading..."
-        download_update
-    fi
-    
-    # Stop service
-    stop_service
-
-    # Create backup unless skipped
-    if [[ "$skip_backup" == false ]]; then
-        create_backup
-    else
-        log_warn "Skipping backup as requested"
-    fi
-    
-    # Install and start
-    install_update
-    start_service
-    
-    log_info "Update completed successfully!"
-}
-
-# Run main function
-main "$@"
+log_info "Installing new version..."
+if ! tar xfz "$ARCHIVE" --checkpoint=.100; then
+    die "Failed to extract Domoticz archive"
+fi
+rm -f "$ARCHIVE"
+log_info "Starting Domoticz... (please standby...)"
+sudo service domoticz.sh start
+log_info "Update completed successfully"
