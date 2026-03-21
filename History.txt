@@ -43,6 +43,7 @@ Version 2026.xxxx
 - Added: RFXCom, Support Orcon FAN device (#6500)
 - Added: RFXCOM, Teleinfo 1200/19200 async mode support (Fixes #6495)
 - Added: RTL433, Support UV sensors named 'uvi'
+- Added: Room plans, allow unused devices to be added to a plan and shown when that plan is selected
 - Added: Scene log, on/off activity charts
 - Added: Search filter on selected (right) side of user shared devices selector (Fixes #6613)
 - Added: SolarEdge, web portal polling for per-optimizer, per-string and per-inverter energy and real-time data
@@ -61,6 +62,7 @@ Version 2026.xxxx
 - Added: Web Interface, Passkey (WebAuthn/FIDO2) authentication support - register and sign in with Windows Hello, Touch ID, or security keys
 - Added: Web Interface, Passkey management in My Profile (register, view device info, delete)
 - Added: Web Interface, weather animations for temperature and weather display
+- Added: Weather tab, room plan selector
 - Fixed: Access denied for non-admin users with no shared devices configured
 - Fixed: Application hang on shutdown when Python event scripts are active
 - Fixed: Buienradar, fallback when station measurements are empty
@@ -70,6 +72,7 @@ Version 2026.xxxx
 - Fixed: Chart logs now using real time values
 - Fixed: Compare chart values displayed incorrectly for multiple sensor types (#6591)
 - Fixed: Crash after device_update when getUnit() returned stale data
+- Fixed: Crash when a live device update arrives while the Devices tab is still loading
 - Fixed: Counter Statistics Chart tooltip showing incorrect day name (Fixes #6542)
 - Fixed: Database backup/restore stability (#6577)
 - Fixed: Deleting a scene/group could accidentally delete a device

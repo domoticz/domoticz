@@ -112,8 +112,9 @@ define(['app', 'livesocket'], function (app) {
 
 		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
 		RefreshWeathers = function () {
-			var roomPlanId = 0;//$routeParams.room || window.myglobals.LastPlanSelected;
-			livesocket.getJson("json.htm?type=command&param=getdevices&filter=weather&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + roomPlanId, function (data) {
+			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+			var usedFilter = roomPlanId > 0 ? 'all' : 'true';
+			livesocket.getJson("json.htm?type=command&param=getdevices&filter=weather&used=" + usedFilter + "&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + roomPlanId, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -140,10 +141,11 @@ define(['app', 'livesocket'], function (app) {
 		ShowWeathers = function () {
 			$('#modal').show();
 
-			var roomPlanId = 0;//$routeParams.room || window.myglobals.LastPlanSelected;
+			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+			var usedFilter = roomPlanId > 0 ? 'all' : 'true';
 
 			$.ajax({
-				url: "json.htm?type=command&param=getdevices&filter=weather&used=true&order=[Order]&plan=" + roomPlanId,
+				url: "json.htm?type=command&param=getdevices&filter=weather&used=" + usedFilter + "&order=[Order]&plan=" + roomPlanId,
 				dataType: 'json',
 				success: function (data) {
 					if (typeof data.result != 'undefined') {
@@ -187,7 +189,7 @@ define(['app', 'livesocket'], function (app) {
 		};
 		$scope.DropWidget = function (idx) {
 			var myid = idx;
-			var roomid = 0;//window.myglobals.LastPlanSelected;
+			var roomid = window.myglobals.LastPlanSelected;
 			if (typeof roomid == 'undefined') {
 				roomid = 0;
 			}
@@ -588,6 +590,21 @@ define(['app', 'livesocket'], function (app) {
 					icon: "cloud-sun-rain"
 				}
 			];
+
+			ctrl.RoomPlans = $rootScope.GetRoomPlans();
+			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+			if (typeof roomPlanId != 'undefined') {
+				ctrl.roomSelected = roomPlanId;
+				window.myglobals.LastPlanSelected = roomPlanId;
+			}
+			ctrl.changeRoom = function () {
+				var idx = ctrl.roomSelected;
+				window.myglobals.LastPlanSelected = idx;
+				$route.updateParams({
+					room: idx >= 0 ? idx : undefined
+				});
+				$location.replace();
+			};
 
 			ctrl.items = [];
 			$scope.loading = true;

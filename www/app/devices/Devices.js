@@ -621,6 +621,7 @@ define(['app', 'livesocket'], function(app) {
         }
 
         function updateItem(event, itemData) {
+            if (!$ctrl.devices) { return; }
             var device = $ctrl.devices.find(function(device) {
                 return device.idx === itemData.idx && device.Type === itemData.Type;
             });

@@ -405,7 +405,8 @@
 		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
 		RefreshLights = function () {
 			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
-			livesocket.getJson("json.htm?type=command&param=getdevices&filter=light&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + roomPlanId, function (data) {
+			var usedFilter = roomPlanId > 0 ? 'all' : 'true';
+			livesocket.getJson("json.htm?type=command&param=getdevices&filter=light&used=" + usedFilter + "&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + roomPlanId, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -434,9 +435,10 @@
 
 			$scope.showLightList = true;
 			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+			var usedFilter = roomPlanId > 0 ? 'all' : 'true';
 
 			$.ajax({
-				url: "json.htm?type=command&param=getdevices&filter=light&used=true&order=[Order]&plan=" + roomPlanId,
+				url: "json.htm?type=command&param=getdevices&filter=light&used=" + usedFilter + "&order=[Order]&plan=" + roomPlanId,
 				dataType: 'json',
 				success: function (data) {
 					if (typeof data.result != 'undefined') {
