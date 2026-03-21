@@ -105,6 +105,11 @@ static void HandleGraphMonthYear_Counter_P1MultiMeter(
 	sql.GetPreferencesVar("T2Name", sT2Name);
 	root["T1Name"] = sT1Name;
 	root["T2Name"] = sT2Name;
+	std::string sR1Name, sR2Name;
+	sql.GetPreferencesVar("R1Name", sR1Name);
+	sql.GetPreferencesVar("R2Name", sR2Name);
+	root["R1Name"] = sR1Name;
+	root["R2Name"] = sR2Name;
 
 	if (!sgroupby.empty()) {
 		if (sensorarea.empty())
@@ -311,6 +316,11 @@ static void HandleGraphMonthYear_Counter_P1MultiMeter(
 		sql.GetPreferencesVar("T2Name", sT2Name);
 		root["T1Name"] = sT1Name;
 		root["T2Name"] = sT2Name;
+		std::string sR1Name, sR2Name;
+		sql.GetPreferencesVar("R1Name", sR1Name);
+		sql.GetPreferencesVar("R2Name", sR2Name);
+		root["R1Name"] = sR1Name;
+		root["R2Name"] = sR2Name;
 
 		std::vector<std::vector<std::string>> result2 = sql.safe_query("SELECT "
 			" MIN(Value1) as levering_laag_min,"

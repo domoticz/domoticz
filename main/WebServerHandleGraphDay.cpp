@@ -78,6 +78,11 @@ static void HandleGraphDay_Counter_P1Power(
 	sql.GetPreferencesVar("T2Name", sT2Name);
 	root["T1Name"] = sT1Name;
 	root["T2Name"] = sT2Name;
+	std::string sR1Name, sR2Name;
+	sql.GetPreferencesVar("R1Name", sR1Name);
+	sql.GetPreferencesVar("R2Name", sR2Name);
+	root["R1Name"] = sR1Name;
+	root["R2Name"] = sR2Name;
 
 	result = sql.safe_query("SELECT Value1, Value2, Value3, Value4, Value5, Value6, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC",
 		dbasetable.c_str(), idx);

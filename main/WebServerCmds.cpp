@@ -3640,7 +3640,11 @@ namespace http
 				m_sql.UpdatePreferencesVar("HourIdxElectricityDevice", atoi(request::findValue(&req, "HourIdxElectricityDevice").c_str())); cntSettings++;
 				m_sql.UpdatePreferencesVar("HourIdxGasDevice", atoi(request::findValue(&req, "HourIdxGasDevice").c_str())); cntSettings++;
 				m_sql.UpdatePreferencesVar("P1DisplayType", atoi(request::findValue(&req, "P1DisplayType").c_str())); cntSettings++;
-			int iPriceResolution = atoi(request::findValue(&req, "PriceResolution").c_str());
+				m_sql.UpdatePreferencesVar("T1Name", request::findValue(&req, "T1Name")); cntSettings++;
+				m_sql.UpdatePreferencesVar("T2Name", request::findValue(&req, "T2Name")); cntSettings++;
+				m_sql.UpdatePreferencesVar("R1Name", request::findValue(&req, "R1Name")); cntSettings++;
+				m_sql.UpdatePreferencesVar("R2Name", request::findValue(&req, "R2Name")); cntSettings++;
+				int iPriceResolution = atoi(request::findValue(&req, "PriceResolution").c_str());
 			if (iPriceResolution != 15 && iPriceResolution != 30 && iPriceResolution != 60)
 				iPriceResolution = 60;
 			m_sql.m_PriceResolution = iPriceResolution;
@@ -6292,6 +6296,22 @@ namespace http
 				else if (Key == "P1DisplayType")
 				{
 					root["P1DisplayType"] = nValue;
+				}
+				else if (Key == "T1Name")
+				{
+					root["T1Name"] = sValue;
+				}
+				else if (Key == "T2Name")
+				{
+					root["T2Name"] = sValue;
+				}
+				else if (Key == "R1Name")
+				{
+					root["R1Name"] = sValue;
+				}
+				else if (Key == "R2Name")
+				{
+					root["R2Name"] = sValue;
 				}
 				else if (Key == "PriceResolution")
 				{

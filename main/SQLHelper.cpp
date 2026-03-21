@@ -3866,6 +3866,14 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("T2Name", std::string(""));
 	}
+	if (!GetPreferencesVar("R1Name", sValue))
+	{
+		UpdatePreferencesVar("R1Name", std::string(""));
+	}
+	if (!GetPreferencesVar("R2Name", sValue))
+	{
+		UpdatePreferencesVar("R2Name", std::string(""));
+	}
 
 	SetUnitsAndScale();
 
