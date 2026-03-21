@@ -132,6 +132,9 @@ Version 2026.xxxx
 - Changed: MQTT, huge speed improvements
 - Changed: MQTT-AD: better initial device naming
 - Changed: Netatmo, using new API scopes/code
+- Changed: P1 Energy log, cumulative year chart shows thicker line for current year with shared crosshair tooltip showing all years simultaneously
+- Changed: P1 Energy log, Return and Energy Returned series in day chart displayed as positive values with y-axis starting at zero
+- Changed: P1 Energy log, Usage/Hour chart redesigned with independent resolution (1h/15m) and range (All/1d/Day) zoom controls
 - Changed: Philips Hue, Added extra validations since Hue Bridge firmware 1.74.1974063020 crashes Domoticz in certain cases
 - Changed: Philips Hue, now used HTTP scheme (HTTP/HTTPS) based on port number (80/443)
 - Changed: Python plugin framework, case-insensitive keyword arguments (#6048)
