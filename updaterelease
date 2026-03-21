@@ -16,6 +16,7 @@ readonly STOP_TIMEOUT=60
 # Default service name; updated by detect_service_name()
 DETECTED_SERVICE="domoticz.sh"
 SERVICE_DETECTED=false
+IS_NATIVE_UNIT=false
 
 # List of required packages (can be extended as needed)
 readonly REQUIRED_PACKAGES=(
@@ -206,6 +207,7 @@ detect_service_name() {
     SERVICE_DETECTED=true
     if [[ -f /etc/systemd/system/domoticz.service ]]; then
         DETECTED_SERVICE="domoticz"
+        IS_NATIVE_UNIT=true
         log_info "Detected native systemd unit: /etc/systemd/system/domoticz.service"
     elif [[ -f /etc/init.d/domoticz.sh ]] && command -v systemctl > /dev/null 2>&1; then
         # Read the LSB Provides: field — that is exactly what systemd-sysv-generator
@@ -360,18 +362,7 @@ stop_service() {
 # Start Domoticz service
 start_service() {
     local start_timeout=30
-    local fallback_timeout=10
     local wait_count
-
-    log_info "Starting Domoticz service (please wait)..."
-
-    # Remove any stale PID file before starting.  Do NOT pre-create it here:
-    # start-stop-daemon runs domoticz as root (no --chuid in the actual start
-    # command), so root can create /var/run/domoticz.pid itself.  Pre-creating
-    # an empty file causes domoticz to read PID=0, call kill(0,0) which signals
-    # its own process group and succeeds, conclude another instance is running,
-    # and exit silently.  Only the direct fallback (where domoticz runs as a
-    # non-root user) needs the file pre-created.
     local pidfile="/var/run/domoticz.pid"
     local run_user="${DOMOTICZ_USER:-}"
     if [[ -z "$run_user" ]]; then
@@ -379,50 +370,54 @@ start_service() {
     fi
     sudo rm -f "$pidfile" 2>/dev/null
 
-    # Attempt to start via service manager; use restart so that a stale or
-    # failed unit state (common on WSL) does not prevent the service from starting.
-    local start_out start_rc
-    start_out=$(sudo service "$DETECTED_SERVICE" restart 2>&1)
-    start_rc=$?
-    log_info "Service restart command exited with code $start_rc."
-    if [[ -n "$start_out" ]]; then
-        log_info "Service manager output: $start_out"
-    fi
-    if [[ $start_rc -ne 0 ]]; then
-        log_warn "Service manager returned non-zero exit code — will wait for process anyway."
-    fi
+    log_info "Starting Domoticz service (please wait)..."
 
-    sleep 3  # wait for the daemon to fully initialize before polling; prevents a false
-             # positive from pgrep catching the transient fork of start-stop-daemon -b
-             # before PAM session cleanup kills it (F3, issue #6640)
-
-    # Wait up to start_timeout seconds for the process to appear, regardless of
-    # whether the service command succeeded (systemd may timeout but the process
-    # can still be starting up).
-    log_info "Waiting up to ${start_timeout}s for Domoticz to start..."
-    wait_count=0
-    while [[ $wait_count -lt $start_timeout ]]; do
-        if is_service_running; then
-            log_info "Service started successfully."
-            return 0
+    # For native systemd units (/etc/systemd/system/domoticz.service), delegate to
+    # the service manager and wait for the process to appear.
+    # For SysV init scripts, skip the service manager entirely: start-stop-daemon
+    # --background combined with domoticz's own -daemon flag causes a double-fork
+    # that makes pgrep unreliable, resulting in a needless 30s delay before the
+    # direct start (which always works) is attempted.
+    if [[ "$IS_NATIVE_UNIT" == "true" ]]; then
+        local start_out start_rc
+        start_out=$(sudo service "$DETECTED_SERVICE" restart 2>&1)
+        start_rc=$?
+        log_info "Service restart command exited with code $start_rc."
+        if [[ -n "$start_out" ]]; then
+            log_info "Service manager output: $start_out"
         fi
-        sleep 1
-        ((wait_count++))
-    done
+        if [[ $start_rc -ne 0 ]]; then
+            log_warn "Service manager returned non-zero exit code — will wait for process anyway."
+        fi
 
-    # Diagnostic snapshot: capture what processes and service state exist after timeout
-    log_warn "Domoticz process list after ${start_timeout}s wait:"
-    ps aux 2>/dev/null | grep -E '[d]omoticz' | head -10 || log_warn "  (no domoticz processes found)"
-    if command -v systemctl > /dev/null 2>&1; then
-        log_warn "systemctl status output:"
-        systemctl status "$DETECTED_SERVICE" --no-pager 2>&1 | head -20 | while IFS= read -r line; do log_warn "  $line"; done
+        sleep 3  # allow the daemon to fully initialize before polling
+
+        log_info "Waiting up to ${start_timeout}s for Domoticz to start..."
+        wait_count=0
+        while [[ $wait_count -lt $start_timeout ]]; do
+            if is_service_running; then
+                log_info "Service started successfully."
+                return 0
+            fi
+            sleep 1
+            ((wait_count++))
+        done
+
+        # Diagnostic snapshot
+        log_warn "Domoticz process list after ${start_timeout}s wait:"
+        ps aux 2>/dev/null | grep -E '[d]omoticz' | head -10 || log_warn "  (no domoticz processes found)"
+        if command -v systemctl > /dev/null 2>&1; then
+            log_warn "systemctl status output:"
+            systemctl status "$DETECTED_SERVICE" --no-pager 2>&1 | head -20 | while IFS= read -r line; do log_warn "  $line"; done
+        fi
+
+        log_warn "Domoticz did not start within ${start_timeout}s via service manager."
+        log_warn "Attempting direct fallback start as user '$run_user'..."
     else
-        log_warn "systemctl not available; skipping service status."
+        log_info "SysV init service — starting directly as user '$run_user' (bypasses start-stop-daemon double-fork)."
     fi
 
-    # Service didn't come up via the service manager - try a direct fallback
-    log_warn "Domoticz did not start within ${start_timeout}s via service manager."
-    log_warn "Attempting direct fallback start as user '$run_user'..."
+    # Direct start: primary path for SysV services, fallback for native systemd.
     if [[ ! -x "$SCRIPT_DIR/domoticz" ]]; then
         die "Domoticz binary not found or not executable at: $SCRIPT_DIR/domoticz"
     fi
@@ -430,17 +425,20 @@ start_service() {
         die "Invalid service user name '$run_user' — cannot use for direct start."
     fi
 
-    # Pre-create the PID file owned by the service user.  The direct fallback
-    # runs domoticz as a non-root user (sudo -u $run_user), who cannot create
-    # new files in /var/run (755 root:root).  An already-existing file owned by
-    # the service user lets domoticz write its PID without a permission error.
-    if sudo touch "$pidfile" 2>/dev/null && sudo chown "$run_user" "$pidfile" 2>/dev/null; then
-        log_info "Pre-created PID file owned by '$run_user' for direct fallback."
-    else
-        log_warn "Could not prepare PID file '$pidfile' — domoticz may fail to start."
+    # Pre-create the PID file owned by the service user so that domoticz (running
+    # as a non-root user via sudo -u) can write its PID without a permission error.
+    # Not needed for the native systemd path where the service manager handles the
+    # PID file — and pre-creating it there could cause domoticz to read PID=0 and
+    # silently conclude another instance is running.
+    if [[ "$IS_NATIVE_UNIT" != "true" ]]; then
+        if sudo touch "$pidfile" 2>/dev/null && sudo chown "$run_user" "$pidfile" 2>/dev/null; then
+            log_info "Pre-created PID file owned by '$run_user'."
+        else
+            log_warn "Could not prepare PID file '$pidfile' — domoticz may fail to start."
+        fi
     fi
 
-    # Read DAEMON_ARGS from the SysV init script so the fallback uses the same
+    # Read DAEMON_ARGS from the SysV init script so the start uses the same
     # port, SSL settings, etc. as the normal service start.
     local sysv_args
     sysv_args=$(_get_sysv_daemon_args)
@@ -455,9 +453,9 @@ start_service() {
     sudo -u "$run_user" "$SCRIPT_DIR/domoticz" -daemon $sysv_args
 
     wait_count=0
-    while [[ $wait_count -lt $fallback_timeout ]]; do
+    while [[ $wait_count -lt $start_timeout ]]; do
         if is_service_running; then
-            log_info "Service started successfully via direct fallback."
+            log_info "Service started successfully."
             return 0
         fi
         sleep 1
