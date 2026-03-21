@@ -42,6 +42,8 @@
 
 #ifdef ENABLE_PYTHON
 #include "../hardware/plugins/Plugins.h"
+#include "../hardware/plugins/PluginManager.h"
+#include "../tinyxpath/tinyxml.h"
 #endif
 
 #ifndef WIN32
@@ -54,6 +56,7 @@
 
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
+#include <set>
 
 // Some Hardware related includes
 #include "../hardware/AccuWeather.h"
@@ -1508,6 +1511,32 @@ namespace http
 			return true;
 		}
 
+		static bool ValidateSettingsJSON(const std::string &settings)
+		{
+			if (settings.empty())
+				return true;
+			if (settings.size() > 65536)
+			{
+				_log.Log(LOG_ERROR, "WebServer: Settings JSON exceeds 64KB limit");
+				return false;
+			}
+			Json::Value settingsJson;
+			if (!ParseJSon(settings, settingsJson) || !settingsJson.isObject())
+			{
+				_log.Log(LOG_ERROR, "WebServer: Settings is not valid JSON");
+				return false;
+			}
+			for (const auto &key : settingsJson.getMemberNames())
+			{
+				if (settingsJson[key].asString().size() > 4096)
+				{
+					_log.Log(LOG_ERROR, "WebServer: Settings value for '%s' exceeds 4KB limit", key.c_str());
+					return false;
+				}
+			}
+			return true;
+		}
+
 		void CWebServer::Cmd_AddHardware(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != URIGHTS_ADMIN)
@@ -1526,6 +1555,7 @@ namespace http
 			std::string password = request::findValue(&req, "password");
 			std::string extra = CURLEncode::URLDecode(request::findValue(&req, "extra"));
 			std::string sdatatimeout = request::findValue(&req, "datatimeout");
+			std::string settings = CURLEncode::URLDecode(request::findValue(&req, "settings"));
 			if ((name.empty()) || (senabled.empty()) || (shtype.empty()))
 				return;
 			_eHardwareTypes htype = (_eHardwareTypes)atoi(shtype.c_str());
@@ -1533,6 +1563,10 @@ namespace http
 			stdstring_trim(username);
 			stdstring_trim(password);
 			int iDataTimeout = atoi(sdatatimeout.c_str());
+
+			if (!ValidateSettingsJSON(settings))
+				return;
+
 			int mode1 = 0;
 			int mode2 = 0;
 			int mode3 = 0;
@@ -1638,9 +1672,10 @@ namespace http
 			{
 				sport = request::findValue(&req, "serialport");
 				m_sql.safe_query("INSERT INTO Hardware (Name, Enabled, Type, LogLevel, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, "
-					"DataTimeout) VALUES ('%q',%d, %d, %d,'%q',%d,'%q','%q','%q','%q','%q','%q', '%q', '%q', '%q', '%q', %d)",
+					"DataTimeout, Settings) VALUES ('%q',%d, %d, %d,'%q',%d,'%q','%q','%q','%q','%q','%q', '%q', '%q', '%q', '%q', %d, '%q')",
 					name.c_str(), (senabled == "true") ? 1 : 0, htype, iLogLevelEnabled, address.c_str(), port, sport.c_str(), username.c_str(), password.c_str(),
-					extra.c_str(), mode1Str.c_str(), mode2Str.c_str(), mode3Str.c_str(), mode4Str.c_str(), mode5Str.c_str(), mode6Str.c_str(), iDataTimeout);
+					extra.c_str(), mode1Str.c_str(), mode2Str.c_str(), mode3Str.c_str(), mode4Str.c_str(), mode5Str.c_str(), mode6Str.c_str(), iDataTimeout,
+					settings.c_str());
 			}
 			else if ((htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868))
 			{
@@ -1694,12 +1729,16 @@ namespace http
 			std::string password = request::findValue(&req, "password");
 			std::string extra = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "extra")));
 			std::string sdatatimeout = request::findValue(&req, "datatimeout");
+			std::string settings = CURLEncode::URLDecode(request::findValue(&req, "settings"));
 
 			if ((name.empty()) || (senabled.empty()) || (shtype.empty()))
 				return;
 
 			stdstring_trim(username);
 			stdstring_trim(password);
+
+			if (!ValidateSettingsJSON(settings))
+				return;
 
 			std::string mode1Str = request::findValue(&req, "Mode1");
 			std::string mode2Str = request::findValue(&req, "Mode2");
@@ -1767,10 +1806,10 @@ namespace http
 				{
 					sport = request::findValue(&req, "serialport");
 					m_sql.safe_query("UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, LogLevel=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', "
-						"Extra='%q', Mode1='%q', Mode2='%q', Mode3='%q', Mode4='%q', Mode5='%q', Mode6='%q', DataTimeout=%d WHERE (ID == '%q')",
+						"Extra='%q', Mode1='%q', Mode2='%q', Mode3='%q', Mode4='%q', Mode5='%q', Mode6='%q', DataTimeout=%d, Settings='%q' WHERE (ID == '%q')",
 						name.c_str(), (senabled == "true") ? 1 : 0, htype, iLogLevelEnabled, address.c_str(), port, sport.c_str(), username.c_str(), password.c_str(),
 						extra.c_str(), mode1Str.c_str(), mode2Str.c_str(), mode3Str.c_str(), mode4Str.c_str(), mode5Str.c_str(), mode6Str.c_str(), iDataTimeout,
-						idx.c_str());
+						settings.c_str(), idx.c_str());
 				}
 				else if ((htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868))
 				{
@@ -4357,9 +4396,61 @@ namespace http
 #endif
 			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout, "
-				"LogLevel FROM Hardware ORDER BY ID ASC");
+				"LogLevel, Settings FROM Hardware ORDER BY ID ASC");
 			if (!result.empty())
 			{
+#ifdef ENABLE_PYTHON
+				// Pre-build password field sets per plugin key to avoid per-entry XML parsing
+				std::map<std::string, std::set<std::string>> pluginPasswordFields;
+				{
+					Plugins::CPluginSystem PluginMgr;
+					std::map<std::string, std::string> *mPluginXml = PluginMgr.GetManifest();
+					for (const auto &type : *mPluginXml)
+					{
+						TiXmlDocument xmlDoc;
+						xmlDoc.Parse(type.second.c_str());
+						if (xmlDoc.Error())
+							continue;
+						TiXmlNode *pPluginNode = xmlDoc.FirstChild("plugin");
+						if (!pPluginNode)
+							continue;
+						TiXmlElement *pPluginEle = pPluginNode->ToElement();
+						if (!pPluginEle)
+							continue;
+						const char *pKey = pPluginEle->Attribute("key");
+						if (!pKey)
+							continue;
+						std::string pluginKey = pKey;
+						TiXmlNode *pParamsNode = pPluginNode->FirstChild("params");
+						if (!pParamsNode)
+							continue;
+						auto checkParam = [&](TiXmlElement *pEle) {
+							const char *pField = pEle->Attribute("field");
+							const char *pPassword = pEle->Attribute("password");
+							if (pField && pPassword && std::string(pPassword) == "true")
+								pluginPasswordFields[pluginKey].insert(pField);
+						};
+						for (TiXmlNode *pChild = pParamsNode->FirstChild(); pChild; pChild = pChild->NextSibling())
+						{
+							TiXmlElement *pEle = pChild->ToElement();
+							if (!pEle)
+								continue;
+							std::string tagName = pEle->Value();
+							if (tagName == "param")
+								checkParam(pEle);
+							else if (tagName == "group")
+							{
+								for (TiXmlNode *pGroupChild = pEle->FirstChild("param"); pGroupChild; pGroupChild = pGroupChild->NextSibling("param"))
+								{
+									TiXmlElement *pGroupEle = pGroupChild->ToElement();
+									if (pGroupEle)
+										checkParam(pGroupEle);
+								}
+							}
+						}
+					}
+				}
+#endif
 				int ii = 0;
 				for (const auto& sd : result)
 				{
@@ -4402,6 +4493,36 @@ namespace http
 					}
 					root["result"][ii]["DataTimeout"] = atoi(sd[16].c_str());
 					root["result"][ii]["LogLevel"] = atoi(sd[17].c_str());
+
+					if (hType == HTYPE_PythonPlugin && !sd[18].empty())
+					{
+						Json::Value settingsJson;
+						if (ParseJSon(sd[18], settingsJson) && settingsJson.isObject())
+						{
+#ifdef ENABLE_PYTHON
+							// Strip password-type field values using pre-built cache
+							std::string pluginKey = sd[9]; // Extra holds plugin key
+							auto itPwdFields = pluginPasswordFields.find(pluginKey);
+							if (itPwdFields != pluginPasswordFields.end())
+							{
+								for (const auto &field : itPwdFields->second)
+								{
+									if (settingsJson.isMember(field))
+										settingsJson[field] = "";
+								}
+							}
+#endif
+							root["result"][ii]["Settings"] = settingsJson;
+						}
+						else
+						{
+							root["result"][ii]["Settings"] = Json::objectValue;
+						}
+					}
+					else
+					{
+						root["result"][ii]["Settings"] = Json::objectValue;
+					}
 
 					CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(sd[0].c_str()));
 					if (pHardware != nullptr)
