@@ -774,6 +774,8 @@
     <ClInclude Include="..\main\TrendCalculator.h" />
     <ClInclude Include="..\main\unzip_iterator.h" />
     <ClInclude Include="..\main\unzip_stream.h" />
+    <ClInclude Include="..\main\WebServerHandleGraphInternals.h" />
+    <ClInclude Include="..\main\WebServerHandleGraphUtils.h" />
     <ClInclude Include="..\main\WebServerHelper.h" />
     <ClInclude Include="..\notifications\NotificationBase.h" />
     <ClInclude Include="..\notifications\NotificationBrowser.h" />
@@ -1106,6 +1108,12 @@
     <ClCompile Include="..\main\WebServerCmds.cpp" />
     <ClCompile Include="..\main\WebServerCommands.cpp" />
     <ClCompile Include="..\main\WebServerHandleGraph.cpp" />
+    <ClCompile Include="..\main\WebServerHandleGraphCustom.cpp" />
+    <ClCompile Include="..\main\WebServerHandleGraphDay.cpp" />
+    <ClCompile Include="..\main\WebServerHandleGraphHour.cpp" />
+    <ClCompile Include="..\main\WebServerHandleGraphMonthYear.cpp" />
+    <ClCompile Include="..\main\WebServerHandleGraphUtils.cpp" />
+    <ClCompile Include="..\main\WebServerHandleGraphWeek.cpp" />
     <ClCompile Include="..\tinyxpath\action_store.cpp" />
     <ClCompile Include="..\tinyxpath\htmlutil.cpp" />
     <ClCompile Include="..\tinyxpath\lex_util.cpp" />

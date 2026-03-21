@@ -1744,6 +1744,12 @@
     <ClInclude Include="..\hardware\SolarMaxTCP.h">
       <Filter>Devices\SolarMax</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\WebServerHandleGraphInternals.h">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\WebServerHandleGraphUtils.h">
+      <Filter>Webserver</Filter>
+    </ClInclude>
     <ClInclude Include="..\main\WebServerHelper.h">
       <Filter>Webserver</Filter>
     </ClInclude>
@@ -3013,6 +3019,24 @@
       <Filter>Webserver</Filter>
     </ClCompile>
     <ClCompile Include="..\main\WebServerHandleGraph.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebServerHandleGraphCustom.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebServerHandleGraphDay.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebServerHandleGraphHour.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebServerHandleGraphMonthYear.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebServerHandleGraphUtils.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebServerHandleGraphWeek.cpp">
       <Filter>Webserver</Filter>
     </ClCompile>
   </ItemGroup>

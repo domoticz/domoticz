@@ -190,6 +190,12 @@ main/WebServer.cpp
 main/WebServerCmds.cpp
 main/WebServerCommands.cpp
 main/WebServerHandleGraph.cpp
+main/WebServerHandleGraphCustom.cpp
+main/WebServerHandleGraphDay.cpp
+main/WebServerHandleGraphHour.cpp
+main/WebServerHandleGraphMonthYear.cpp
+main/WebServerHandleGraphUtils.cpp
+main/WebServerHandleGraphWeek.cpp
 main/WebServerHelper.cpp
 main/WindCalculation.cpp
 mdns/mdns.cpp

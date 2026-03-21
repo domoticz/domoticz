@@ -164,6 +164,7 @@ define(['app'], function (app) {
                         }
                     });
 
+                    allSeries.sort(function (a, b) { return a.year - b.year; });
                     buildChart(allSeries, isGenerated, currentYear);
                 });
             });

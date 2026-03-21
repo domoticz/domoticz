@@ -111,12 +111,12 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void CleanSessions() override;
 	void RemoveUsersSessions(const std::string& username, const WebEmSession & exceptSession);
 	std::string PluginHardwareDesc(int HwdID);
-
-private:
-	bool HandleCommandParam(const std::string &cparam, WebEmSession & session, const request& req, Json::Value &root);
     void GroupBy(Json::Value &root, std::string dbasetable, uint64_t idx, std::string sgroupby, bool bUseValuesOrCounter, std::function<std::string (std::string)> counterExpr, std::function<std::string (std::string)> valueExpr, std::function<std::string (double)> sumToResult);
 	void MakeCompareDataSensor(Json::Value& root, const std::string &sgroupby, const std::string &dbasetable, uint64_t deviceidx, const std::string &dfield, const double divider = 1.0, const bool isCounter = false);
 	void AddTodayValueToResult(Json::Value &root, const std::string &sgroupby, const std::string &today, const double todayValue, const std::string &formatString);
+
+private:
+	bool HandleCommandParam(const std::string &cparam, WebEmSession & session, const request& req, Json::Value &root);
 
 	bool IsIdxForUser(const WebEmSession *pSession, int Idx);
 
