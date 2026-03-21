@@ -2420,7 +2420,6 @@ tspan {
 
 .device-log-chart {
 	display: block;
-	height: 300px;
 	margin-bottom: 38px;
 }
 device-light-log, .device-log-chart:first-child {
@@ -2435,9 +2434,6 @@ device-light-log, .device-log-chart:first-child {
 	height: 200px;
 }
 
-.device-log-chart_lg {
-	height: 380px;
-}
 .device-log-chart_lg .chartarea .chartcontainer {
 	height: 380px;
 }
