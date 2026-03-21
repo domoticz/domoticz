@@ -86,7 +86,47 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                         zoomType: 'x',
                         marginTop: 45,
                         panning: true,
-                        panKey: 'shift'
+                        panKey: 'shift',
+                        events: {
+                            load: function () {
+                                const chart = this;
+
+                                chart.watermarkErrorConfig = {
+                                    text: '',
+                                    visible: false
+                                };
+
+                                function renderWatermarkError() {
+                                    if (chart.watermarkError) {
+                                        chart.watermarkError.attr({ text: chart.watermarkErrorConfig.text });
+                                        return;
+                                    }
+
+                                    if (!chart.watermarkErrorConfig.visible) return;
+
+                                    const x = chart.plotLeft + chart.plotWidth / 2;
+                                    const y = chart.plotTop;
+
+                                    chart.watermarkError = chart.renderer
+                                        .label(chart.watermarkErrorConfig.text, x, y) // can use text instead, lighter but no html
+                                        .addClass('chart-watermark-error')
+                                        .attr({
+                                            align: 'center',
+                                            zIndex: 5,
+                                            r: 5, // radius
+                                            rotation: 0,
+                                            padding: 5,
+                                            fill: 'rgba(255, 0, 0, 0.1)', // need to be here to be able to change it in css
+                                            'stroke-width': 1, // can be changed by css
+                                            stroke: 'red' // can be changed by css
+                                        })
+                                        .add();
+                                }
+
+                                chart.updateWatermarkError = renderWatermarkError;
+                                renderWatermarkError();
+                            }
+                        }
                     },
                     xAxis: {
                         type: 'datetime',
@@ -276,6 +316,12 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 );
         }
 
+        function renderError(errorMessage) {
+            self.chart.watermarkErrorConfig.text = errorMessage;
+            self.chart.watermarkErrorConfig.visible = true;
+            self.chart.updateWatermarkError();
+        }
+
         function refreshChartData(afterRefreshChartData) {
             const dataRequest = createDataRequest();
             const stopwatchDataRequest = stopwatch(function() { return 'sendRequest(' + JSON.stringify(dataRequest) + ')'; });
@@ -286,6 +332,9 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     self.consoledebug(function () { return '[' + Base.dateToString(new Date()) + '] refreshing ' + self; });
 
                     const stopwatchCycle = stopwatch('cycle');
+                    if (data.errormessage !== undefined) {
+                        renderError(data.errormessage)
+                    }
                     loadDataInChart(data);
                     synchronizeYaxes();
                     redrawChart();
