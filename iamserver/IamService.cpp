@@ -643,8 +643,7 @@ namespace http
             reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
             reply::add_header_content_type(&rep, "text/html");
             reply::add_header(&rep, "Cache-Control", "no-store");
-            if (m_pWebEm->m_settings.is_secure())
-                reply::add_security_headers(&rep);
+            reply::add_security_headers(&rep, true);
         }
 
         std::string CWebServer::GenerateOAuth2RefreshToken(const std::string &username, const int refreshexptime)

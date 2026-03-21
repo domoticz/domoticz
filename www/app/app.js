@@ -511,24 +511,30 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 
 						$rootScope.MakeGlobalConfig();
 
-						var customHTML = "";
-						if (typeof data.result.templates != 'undefined')  {
+						var $custommenu = $("#custommenu");
+						$custommenu.empty();
+						var hasItems = false;
+						if (typeof data.result.templates != 'undefined') {
 							$.each(data.result.templates, function (i, item) {
-								var cFile = item.file;
-								var cName = item.name;
-								var cURL = "templates/" + cFile;
-								customHTML += '<li><a href="javascript:SwitchLayout(\'' + cURL + '\')">' + cName + '</a></li>';
+								var $li = $('<li>');
+								var $a = $('<a>')
+									.attr('href', 'javascript:SwitchLayout(' + JSON.stringify('templates/' + item.file) + ')')
+									.text(item.name);
+								$custommenu.append($li.append($a));
+								hasItems = true;
 							});
 						}
-						if (typeof data.result.urls != 'undefined')  {
+						if (typeof data.result.urls != 'undefined') {
 							$.each(data.result.urls, function (name, url) {
+								if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) return;
 								var cName = name.charAt(0).toUpperCase() + name.slice(1);
-								var cURL = url;
-								customHTML += '<li><a target="_blank" href="' + cURL + '">' + cName + '</a></li>';
+								var $li = $('<li>');
+								var $a = $('<a>').attr('target', '_blank').attr('href', url).text(cName);
+								$custommenu.append($li.append($a));
+								hasItems = true;
 							});
 						}
-						if (customHTML != "") {
-							$("#custommenu").html(customHTML);
+						if (hasItems) {
 							$rootScope.config.EnableTabCustom = data.result.EnableTabCustom;
 						}
 						
