@@ -333,8 +333,12 @@ stop_service() {
     fi
 
     log_info "Stopping Domoticz service..."
-    if ! sudo service "$DETECTED_SERVICE" stop; then
-        log_warn "Failed to stop service (may not be running)"
+    # Use -n (non-interactive) to avoid hanging on a password prompt when running
+    # as a non-root user.  If the service manager stop fails, fall back to a direct
+    # killall which works when domoticz runs as the current user.
+    if ! sudo -n service "$DETECTED_SERVICE" stop 2>/dev/null; then
+        log_warn "Service manager stop failed — trying direct termination..."
+        killall domoticz 2>/dev/null || log_warn "Failed to stop service (may not be running)"
     fi
 
     # Wait for process to actually exit (up to STOP_TIMEOUT seconds)
@@ -342,7 +346,7 @@ stop_service() {
     while is_service_running; do
         if [[ $wait_count -ge $STOP_TIMEOUT ]]; then
             log_warn "Domoticz process still running after ${STOP_TIMEOUT}s, force killing..."
-            sudo killall -9 domoticz 2>/dev/null || true
+            sudo -n killall -9 domoticz 2>/dev/null || killall -9 domoticz 2>/dev/null || true
             sleep 2
             if is_service_running; then
                 log_warn "Domoticz process still running after force kill - continuing with update anyway"

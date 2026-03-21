@@ -3407,7 +3407,11 @@ namespace http
 			scriptname += (bIsBetaChannel) ? "updatebeta" : "updaterelease";
 			// run script in new session with setsid + nohup for complete detachment from parent
 			// Use fixed log filename for frontend display (both scripts write to same file)
-			std::string lscript = "setsid nohup " + scriptname + " > " + std::string(szStartupFolder) + "update.log 2>&1 &";
+			// Remove any existing log first: a root-owned log from a prior run would be
+			// unwritable if domoticz is now running as a non-root user, silently preventing
+			// the script from starting.
+			std::string logfile = std::string(szStartupFolder) + "update.log";
+			std::string lscript = "rm -f " + logfile + " 2>/dev/null; setsid nohup " + scriptname + " > " + logfile + " 2>&1 &";
 			int ret = system(lscript.c_str());
 			_log.Log(LOG_STATUS, "Update script started: %s (log: update.log)", scriptname.c_str());
 			root["title"] = "UpdateApplication";
