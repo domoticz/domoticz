@@ -65,11 +65,10 @@ define(['app', 'luxon'], function (app, luxon) {
 		}
 
 		$scope.chartDefinitionDay = {};
+		$scope.chartTitle = '';
 
 		$scope.chartDefinitionBase = {
-			title: {
-				text: 'Hourly Energy Usage'
-			},
+			title: null,
 			xAxis: {
 				type: 'datetime',
 				labels: {
@@ -175,13 +174,13 @@ define(['app', 'luxon'], function (app, luxon) {
 			$scope.actDay = actDay;
 			if ($scope.actDay >= 0) {
 				var dayName = $scope.chartDefinitionWeek.series[0].data[actDay][0];
-				$scope.chartDefinitionDay.title.text = dayName + ' ' + $.t('Hourly Energy') + ' ' + $scope.energyLabel;
+				$scope.chartTitle = dayName + ' ' + $.t('Hourly Energy') + ' ' + $scope.energyLabel;
 				$scope.chartDefinitionDay.tooltip.headerFormat = '<span style="font-size: 10px">' + dayName + ' {point.x:%H:%M}</span><br/>';
 				$scope.chart_weekday_hour_kwh = JSON.parse(JSON.stringify($scope.weekday_hour_kwh[actDay]));
 				$scope.chartDefinitionDay.series[0].data = $scope.chart_weekday_hour_kwh;
 			} else {
 				if ($scope.actDay == -1) {
-					$scope.chartDefinitionDay.title.text = $.t('Hourly Energy') + ' ' + $scope.energyLabel;
+					$scope.chartTitle = $.t('Hourly Energy') + ' ' + $scope.energyLabel;
 					$scope.chartDefinitionDay.tooltip.headerFormat = '<span style="font-size: 10px">{point.x:%H:%M}</span><br/>';
 					$scope.chart_weekday_hour_kwh = JSON.parse(JSON.stringify($scope.daily_hour_kwh));
 					$scope.chartDefinitionDay.series[0].data = $scope.chart_weekday_hour_kwh;
@@ -279,7 +278,7 @@ define(['app', 'luxon'], function (app, luxon) {
 
 			$scope.chartSeriesDailyHour.name = $scope.energyLabel;
 			$scope.chartSeriesWeekday.name = $scope.energyLabel;
-			$scope.chartDefinitionBase.title.text = hourlyTitle;
+			$scope.chartTitle = hourlyTitle;
 			$scope.chartDefinitionBase.yAxis[0].title.text = yAxisTitle;
 			$scope.chartDefinitionWeek.title.text = weeklyTitle;
 			$scope.chartDefinitionWeek.yAxis.title.text = yAxisTitle;

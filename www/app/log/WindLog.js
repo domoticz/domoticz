@@ -212,7 +212,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 			bindings: {
 				device: '<'
 			},
-			template: '<div class="chartarea"><div id="winddirectiongraph" style="height: 400px;"></div></div>',
+			template: '<div class="chart noselect"><div class="chart-title-center"><div class="chart-title-container"><h2 ng-bind="vm.chartTitle"></h2></div></div><div class="chartarea"><div id="winddirectiongraph" style="height: 400px;"></div></div></div>',
 			controllerAs: 'vm',
 			controller: function ($element, domoticzApi) {
 				const self = this;
@@ -220,14 +220,14 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 				self.$onInit = function () {
 					var chartElement = $element.find('#winddirectiongraph');
 
+					self.chartTitle = $.t('Wind') + ' ' + $.t('Direction') + ' ' + Get5MinuteHistoryDaysGraphTitle();
+
 					chartElement.highcharts({
 						chart: {
 							polar: true,
 							type: 'column'
 						},
-						title: {
-							text: $.t('Wind') + ' ' + $.t('Direction') + ' ' + Get5MinuteHistoryDaysGraphTitle()
-						},
+						title: null,
 						pane: {
 							size: '85%'
 						},
@@ -315,7 +315,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 			bindings: {
 				device: '<'
 			},
-			template: '<div class="chartarea"><div id="windspeedfreqgraph" style="height: 400px;"></div></div>',
+			template: '<div class="chart noselect"><div class="chart-title-center"><div class="chart-title-container"><h2 ng-bind="vm.chartTitle"></h2></div></div><div class="chartarea"><div id="windspeedfreqgraph" style="height: 400px;"></div></div></div>',
 			controllerAs: 'vm',
 			controller: function ($element, domoticzApi) {
 				const self = this;
@@ -323,6 +323,8 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 				self.$onInit = function () {
 					var chartElement = $element.find('#windspeedfreqgraph');
 					var unit = self.device.getUnit();
+
+					self.chartTitle = $.t('Wind Speed Frequency') + ' ' + Get5MinuteHistoryDaysGraphTitle();
 
 					domoticzApi.sendCommand('graph', {
 						sensor: 'wind',
@@ -383,9 +385,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 							chart: {
 								type: 'column'
 							},
-							title: {
-								text: $.t('Wind Speed Frequency') + ' ' + Get5MinuteHistoryDaysGraphTitle()
-							},
+							title: null,
 							xAxis: {
 								categories: categories,
 								title: {

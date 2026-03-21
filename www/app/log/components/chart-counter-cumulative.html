@@ -1,4 +1,9 @@
 <div class="chart noselect" ng-if="$ctrl.chartDefinition">
+    <div class="chart-title-center">
+        <div class="chart-title-container">
+            <h2 ng-bind="$ctrl.chartTitle"></h2>
+        </div>
+    </div>
     <div class="chartarea">
         <highchart id="chart-{{$ctrl.device.idx}}-cumulative" config="$ctrl.chartDefinition" style="display: block; width: 100%; height: 300px;"></highchart>
     </div>

@@ -1202,7 +1202,7 @@
 				}
 			});
 			$("#dialog-edittextdevice").keydown(function (event) {
-				if (event.keyCode == 13) {
+				if (event.keyCode == 13 && !$(event.target).is('textarea')) {
 					$(this).siblings('.ui-dialog-buttonpane').find('button:eq(0)').trigger("click");
 					return false;
 				}

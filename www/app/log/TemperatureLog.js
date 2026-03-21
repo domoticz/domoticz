@@ -984,10 +984,11 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
         bindings: {
             device: '<'
         },
-        template: '<div id="dewpointchart" style="width:100%; height:300px; margin-top:10px;"></div>',
+        template: customChartTemplate,
         controllerAs: 'vm',
         controller: function ($element, domoticzApi) {
             const self = this;
+            self.chartTitle = $.t('Dew Point');
 
             self.$onInit = function () {
                 if (self.device.Humidity === undefined) {
@@ -1028,10 +1029,9 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
 
                     if (dewPoints.length === 0) return;
 
-                    Highcharts.chart($element[0].firstChild, {
+                    Highcharts.chart($element.find('.chartcontainer')[0], {
                         chart: { type: 'spline', zoomType: 'x' },
-                        title: { text: $.t('Dew Point') },
-                        credits: { enabled: false },
+                        title: { text: null },
                         xAxis: {
                             type: 'datetime'
                         },
@@ -1077,10 +1077,11 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
         bindings: {
             device: '<'
         },
-        template: '<div style="width:100%; height:300px; margin-top:10px;"></div>',
+        template: customChartTemplate,
         controllerAs: 'vm',
         controller: function ($element, domoticzApi) {
             const self = this;
+            self.chartTitle = $.t('Temperature') + ' vs ' + $.t('Humidity');
 
             self.$onInit = function () {
                 if (self.device.Humidity === undefined) {
@@ -1118,15 +1119,12 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
 
                     if (scatterData.length === 0) return;
 
-                    Highcharts.chart($element[0].firstChild, {
+                    Highcharts.chart($element.find('.chartcontainer')[0], {
                         chart: {
                             type: 'scatter',
                             zoomType: 'xy'
                         },
-                        title: {
-                            text: $.t('Temperature') + ' vs ' + $.t('Humidity')
-                        },
-                        credits: { enabled: false },
+                        title: { text: null },
                         xAxis: {
                             title: { text: $.t('Temperature') + ' ' + degreeSuffix },
                             crosshair: true

@@ -15,16 +15,17 @@
         device="::$ctrl.device"></counter-month-chart>
 
 <counter-year-chart
-        class="device-log-chart"
+        class="device-log-chart device-log-chart_lg"
         device="::$ctrl.device"></counter-year-chart>
 
-<counter-calendar-heatmap-chart
-        ng-if="::$ctrl.subtype=='energy-used' || $ctrl.subtype=='energy-generated' || $ctrl.subtype=='p1Energy' || $ctrl.subtype=='gas' || $ctrl.subtype=='water'"
-        class="device-log-chart"
-        style="height: auto"
-        subtype="::$ctrl.subtype"
-        device="::$ctrl.device">
-</counter-calendar-heatmap-chart>
+<div ng-if="::$ctrl.subtype=='energy-used' || $ctrl.subtype=='energy-generated' || $ctrl.subtype=='p1Energy' || $ctrl.subtype=='gas' || $ctrl.subtype=='water'"
+     class="device-log-chart"
+     style="height: auto;">
+    <counter-calendar-heatmap-chart
+            subtype="::$ctrl.subtype"
+            device="::$ctrl.device">
+    </counter-calendar-heatmap-chart>
+</div>
 
 <counter-weekly-heatmap-chart
         ng-if="::$ctrl.subtype=='energy-used' || $ctrl.subtype=='energy-generated' || $ctrl.subtype=='p1Energy' || $ctrl.subtype=='instantAndCounter'"

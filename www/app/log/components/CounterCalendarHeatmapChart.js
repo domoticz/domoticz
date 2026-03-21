@@ -47,10 +47,11 @@ define(['app'], function (app) {
             var isGenerated = (deviceType === 4);
             var label = isGenerated ? $.t('Generated') : $.t('Usage');
             var titleText = isGenerated ? $.t('Generated Last Year') : $.t('Usage Last Year');
+            self.chartTitle = titleText;
             var unit = unitForSubtype(self.subtype);
 
             if (!data || data.length === 0) {
-                self.chartDefinition = { title: { text: titleText }, series: [] };
+                self.chartDefinition = { title: null, series: [] };
                 return;
             }
 
@@ -125,9 +126,7 @@ define(['app'], function (app) {
                     marginTop: 35,
                     marginBottom: 45
                 },
-                title: {
-                    text: titleText
-                },
+                title: null,
                 xAxis: {
                     categories: xAxisCategories,
                     tickPositions: xAxisTickPositions,
