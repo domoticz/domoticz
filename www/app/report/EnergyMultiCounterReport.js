@@ -39,7 +39,9 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
                 return Object.assign({}, source, {
                     items: month ? source.days : source.months,
-					P1DisplayType: P1DisplayType
+					P1DisplayType: P1DisplayType,
+					T1Name: stats.T1Name || '',
+					T2Name: stats.T2Name || ''
                 });
             });
         }
@@ -262,20 +264,22 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             }
 
 			if (data.P1DisplayType == 0) {
+				var usageT1Label = data.T1Name || $.t('Usage T1');
+				var usageT2Label = data.T2Name || $.t('Usage T2');
 				[
-					['usage1', 'Usage T1', 'Counter T1'],
-					['usage2', 'Usage T2', 'Counter T2'],
-					['return1', 'Return T1', 'Counter R1'],
-					['return2', 'Return T2', 'Counter R2']
+					['usage1', usageT1Label, $.t('Counter T1')],
+					['usage2', usageT2Label, $.t('Counter T2')],
+					['return1', $.t('Return T1'), $.t('Counter R1')],
+					['return2', $.t('Return T2'), $.t('Counter R2')]
 				].forEach(function (item) {
 					if (!checkDataKey(data, item[0])) {
 						return;
 					}
 					if (vm.isMonthView) {
-						columns.push({ title: $.t(item[2]), data: item[0]+'.counter', render: counterRenderer });
+						columns.push({ title: item[2], data: item[0]+'.counter', render: counterRenderer });
 					}
 
-					columns.push({ title: $.t(item[1]), data: item[0]+'.usage', render: counterRenderer });
+					columns.push({ title: item[1], data: item[0]+'.usage', render: counterRenderer });
 					columns.push({ title: $.t('Costs'), data: item[0]+'.cost', render: costRenderer });
 				});
 			} else {
@@ -322,7 +326,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
 			if (P1DisplayType == 0) {
 				series.push({
-					name: hasUsage2 ? $.t('Usage') + ' 1' : $.t('Usage'),
+					name: hasUsage2 ? (data.T1Name || $.t('Usage') + ' 1') : $.t('Usage'),
 					color: hasUsage2 ? 'rgba(60,130,252,0.8)' : 'rgba(3,190,252,0.8)',
 					stack: 'susage',
 					tooltip: {
@@ -338,7 +342,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 				});
 				if (hasUsage2) {
 					series.push({
-						name: $.t('Usage') + ' 2',
+						name: data.T2Name || $.t('Usage') + ' 2',
 						color: 'rgba(3,190,252,0.8)',
 						stack: 'susage',
 						tooltip: {

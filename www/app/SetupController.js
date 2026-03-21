@@ -866,6 +866,12 @@ define(['app'], function (app) {
 					if (typeof data.P1DisplayType != 'undefined') {
 						$("#dpricetable #comboP1DisplayType").val(data.P1DisplayType);
 					}
+					if (typeof data.T1Name != 'undefined') {
+						$("#dpricetable #T1Name").val(data.T1Name);
+					}
+					if (typeof data.T2Name != 'undefined') {
+						$("#dpricetable #T2Name").val(data.T2Name);
+					}
 					if (typeof data.PriceResolution != 'undefined') {
 						$("#dpricetable #comboPriceResolution").val(data.PriceResolution);
 					}

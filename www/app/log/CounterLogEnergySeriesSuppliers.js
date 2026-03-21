@@ -186,6 +186,12 @@
                     dataItemKeys: ['v1'],
                     showWithoutDatapoints: false,
                     label: '<=',
+                    dataIsValid: function (data) {
+                        if (data.T1Name) {
+                            this.template.name = data.T1Name;
+                        }
+                        return true;
+                    },
                     template: {
                         type: 'area',
 						threshold: 0,
@@ -207,6 +213,12 @@
                     dataItemKeys: ['v2'],
                     showWithoutDatapoints: false,
                     label: 'M',
+                    dataIsValid: function (data) {
+                        if (data.T2Name) {
+                            this.template.name = data.T2Name;
+                        }
+                        return true;
+                    },
                     template: {
                         type: 'area',
 						threshold: 0,

@@ -73,6 +73,11 @@ static void HandleGraphDay_Counter_P1Power(
 	int P1DisplayType = 0; //0=Low/High tariff, 1=simple (for dynamic contracts)
 	sql.GetPreferencesVar("P1DisplayType", P1DisplayType);
 	root["P1DisplayType"] = P1DisplayType;
+	std::string sT1Name, sT2Name;
+	sql.GetPreferencesVar("T1Name", sT1Name);
+	sql.GetPreferencesVar("T2Name", sT2Name);
+	root["T1Name"] = sT1Name;
+	root["T2Name"] = sT2Name;
 
 	result = sql.safe_query("SELECT Value1, Value2, Value3, Value4, Value5, Value6, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC",
 		dbasetable.c_str(), idx);

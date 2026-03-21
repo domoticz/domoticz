@@ -3858,6 +3858,14 @@ bool CSQLHelper::OpenDatabase()
 	{
 		UpdatePreferencesVar("P1DisplayType", 0);
 	}
+	if (!GetPreferencesVar("T1Name", sValue))
+	{
+		UpdatePreferencesVar("T1Name", std::string(""));
+	}
+	if (!GetPreferencesVar("T2Name", sValue))
+	{
+		UpdatePreferencesVar("T2Name", std::string(""));
+	}
 
 	SetUnitsAndScale();
 

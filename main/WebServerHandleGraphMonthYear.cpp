@@ -100,6 +100,11 @@ static void HandleGraphMonthYear_Counter_P1MultiMeter(
 	int P1DisplayType = 0; //0=Low/High tariff, 1=simple (for dynamic contracts)
 	sql.GetPreferencesVar("P1DisplayType", P1DisplayType);
 	root["P1DisplayType"] = P1DisplayType;
+	std::string sT1Name, sT2Name;
+	sql.GetPreferencesVar("T1Name", sT1Name);
+	sql.GetPreferencesVar("T2Name", sT2Name);
+	root["T1Name"] = sT1Name;
+	root["T2Name"] = sT2Name;
 
 	if (!sgroupby.empty()) {
 		if (sensorarea.empty())
@@ -301,6 +306,11 @@ static void HandleGraphMonthYear_Counter_P1MultiMeter(
 		int P1DisplayType2 = 0; //0=Low/High tariff, 1=simple (for dynamic contracts)
 		sql.GetPreferencesVar("P1DisplayType", P1DisplayType2);
 		root["P1DisplayType"] = P1DisplayType2;
+		std::string sT1Name, sT2Name;
+		sql.GetPreferencesVar("T1Name", sT1Name);
+		sql.GetPreferencesVar("T2Name", sT2Name);
+		root["T1Name"] = sT1Name;
+		root["T2Name"] = sT2Name;
 
 		std::vector<std::vector<std::string>> result2 = sql.safe_query("SELECT "
 			" MIN(Value1) as levering_laag_min,"

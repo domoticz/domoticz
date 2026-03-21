@@ -132,6 +132,11 @@ void HandleGraphWeek(const GraphContext& ctx, const request& req,
 			int P1DisplayType = 0; //0=Low/High tariff, 1=simple (for dynamic contracts)
 			sql.GetPreferencesVar("P1DisplayType", P1DisplayType);
 			root["P1DisplayType"] = P1DisplayType;
+			std::string sT1Name, sT2Name;
+			sql.GetPreferencesVar("T1Name", sT1Name);
+			sql.GetPreferencesVar("T2Name", sT2Name);
+			root["T1Name"] = sT1Name;
+			root["T2Name"] = sT2Name;
 
 			result = sql.safe_query("SELECT Value1,Value2,Value5,Value6,Price,Date FROM %s WHERE (DeviceRowID==%" PRIu64
 				" AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
@@ -231,6 +236,11 @@ void HandleGraphWeek(const GraphContext& ctx, const request& req,
 			int P1DisplayType = 0; //0=Low/High tariff, 1=simple (for dynamic contracts)
 			sql.GetPreferencesVar("P1DisplayType", P1DisplayType);
 			root["P1DisplayType"] = P1DisplayType;
+			std::string sT1Name, sT2Name;
+			sql.GetPreferencesVar("T1Name", sT1Name);
+			sql.GetPreferencesVar("T2Name", sT2Name);
+			root["T1Name"] = sT1Name;
+			root["T2Name"] = sT2Name;
 
 			result = sql.safe_query("SELECT MIN(Value1), MAX(Value1), MIN(Value2), MAX(Value2),MIN(Value5), MAX(Value5), MIN(Value6), MAX(Value6) FROM "
 				"MultiMeter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
