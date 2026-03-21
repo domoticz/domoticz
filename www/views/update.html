@@ -29,7 +29,7 @@
 	</style>
 	<div ng-show="showOutput" style="margin-top: 20px;">
 		<h4>Update Progress:</h4>
-		<pre id="updateconsole" style="height: 200px; overflow-y: auto; background: rgba(30, 30, 30, 0.5); color: #cccccc; padding: 10px; font-family: 'Courier New', monospace; font-size: 12px; border: 1px solid #444; text-align: left;"><div ng-repeat="line in outputLines track by $index" ng-bind-html="line"></div></pre>
+		<pre id="updateconsole" style="height: 200px; overflow-y: auto; background: rgba(30, 30, 30, 0.5); color: #cccccc; padding: 10px; font-family: 'Courier New', monospace; font-size: 12px; border: 1px solid #444; text-align: left; -webkit-user-select: text; -khtml-user-select: text; -moz-user-select: text; -ms-user-select: text; user-select: text;"><span ng-repeat="line in outputLines track by $index" ng-bind-html="line" style="display:block;"></span></pre>
 	</div>
 	</center>
 </div>
