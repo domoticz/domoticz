@@ -301,6 +301,18 @@ namespace mcp		// Model Context Protocol
 		tool["description"] = "Retrieve the current system status including version, uptime, sunrise/sunset times and device/hardware counts. Use this tool to check if the Domoticz instance is running and healthy.";
 		tool["inputSchema"]["type"] = "object";
 		jsonRPCRep["result"]["tools"].append(tool);
+		// Search Devices tool
+		tool.clear();
+		tool["name"] = "search_devices";
+		tool["title"] = "Search for devices";
+		tool["description"] = "Search for devices whose name, type or subtype contains the given query string (case-insensitive substring match). Use this tool to discover exact device names before using other tools like get_switch_state or toggle_switch_state that require exact names.";
+		tool["inputSchema"]["type"] = "object";
+		tool["inputSchema"]["properties"]["query"]["type"] = "string";
+		tool["inputSchema"]["properties"]["query"]["description"] = "Search string to match against device name, type or subtype (case-insensitive substring match)";
+		tool["inputSchema"]["properties"]["filter"]["type"] = "string";
+		tool["inputSchema"]["properties"]["filter"]["description"] = "Optional device type filter: light, temp, weather, utility (matches Domoticz device categories)";
+		tool["inputSchema"]["required"].append("query");
+		jsonRPCRep["result"]["tools"].append(tool);
 	}
 
 	void McpToolsCall(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
@@ -379,6 +391,15 @@ namespace mcp		// Model Context Protocol
 			{
 				jsonRPCRep["error"]["code"] = JSONRPC_INTERNAL_ERROR;
 				jsonRPCRep["error"]["message"] = "Error getting system status";
+				return;
+			}
+		}
+		else if (sMethodName == "search_devices")
+		{
+			if(!mcp::searchDevices(jsonRequest, jsonRPCRep))
+			{
+				jsonRPCRep["error"]["code"] = JSONRPC_INVALID_PARAMETER;
+				jsonRPCRep["error"]["message"] = "Error searching devices";
 				return;
 			}
 		}
@@ -944,6 +965,80 @@ namespace mcp		// Model Context Protocol
 		auto scResult = m_sql.safe_query("SELECT COUNT(*) FROM Scenes");
 		if (!scResult.empty())
 			sResult += "Scenes/groups: " + scResult[0][0] + "\n";
+
+		Json::Value tool;
+		tool["type"] = "text";
+		tool["text"] = sResult;
+		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
+		jsonRPCRep["result"]["content"].append(tool);
+		jsonRPCRep["result"]["isError"] = false;
+		return true;
+	}
+
+	bool searchDevices(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("query"))
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: searchDevices: Missing required parameter 'query'");
+			return false;
+		}
+		std::string sQuery = jsonRequest["params"]["arguments"]["query"].asString();
+		std::string sFilter;
+		if (jsonRequest["params"]["arguments"].isMember("filter"))
+			sFilter = jsonRequest["params"]["arguments"]["filter"].asString();
+
+		// Lowercase the query for case-insensitive matching
+		std::string sQueryLower = sQuery;
+		stdlower(sQueryLower);
+
+		Json::Value jsonDevices;
+		std::string sUsed = "true";
+		m_webservers.GetJSonDevices(jsonDevices, sUsed, sFilter, "", "", "", "", false, false, false, 0, "", "");
+
+		std::string sResult;
+		int iMatchCount = 0;
+		if (jsonDevices.isObject() && jsonDevices.isMember("result"))
+		{
+			for (const auto &device : jsonDevices["result"])
+			{
+				if (!device.isObject() || !device.isMember("Name"))
+					continue;
+				std::string sName = device["Name"].asString();
+				std::string sNameLower = sName;
+				stdlower(sNameLower);
+				bool bMatch = (sNameLower.find(sQueryLower) != std::string::npos);
+				if (!bMatch && device.isMember("Type"))
+				{
+					std::string sTypeLower = device["Type"].asString();
+					stdlower(sTypeLower);
+					bMatch = (sTypeLower.find(sQueryLower) != std::string::npos);
+				}
+				if (!bMatch && device.isMember("SubType"))
+				{
+					std::string sSubTypeLower = device["SubType"].asString();
+					stdlower(sSubTypeLower);
+					bMatch = (sSubTypeLower.find(sQueryLower) != std::string::npos);
+				}
+				if (!bMatch)
+					continue;
+				iMatchCount++;
+				sResult += "- \"" + sName + "\"";
+				if (device.isMember("Type"))
+					sResult += " [" + device["Type"].asString();
+				if (device.isMember("SubType"))
+					sResult += "/" + device["SubType"].asString();
+				if (device.isMember("Type"))
+					sResult += "]";
+				if (device.isMember("Data"))
+					sResult += " = " + device["Data"].asString();
+				sResult += "\n";
+			}
+		}
+
+		if (iMatchCount == 0)
+			sResult = "No devices found matching \"" + sQuery + "\"" + (sFilter.empty() ? "" : " with filter \"" + sFilter + "\"");
+		else
+			sResult = std::to_string(iMatchCount) + " device(s) found matching \"" + sQuery + "\":\n" + sResult;
 
 		Json::Value tool;
 		tool["type"] = "text";
