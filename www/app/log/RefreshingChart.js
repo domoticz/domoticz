@@ -101,34 +101,73 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                                 };
 
                                 function renderWatermarkError() {
-                                    if (chart.watermarkError) {
-                                        chart.watermarkError.attr({ text: chart.watermarkErrorConfig.text });
+                                    if (!chart.watermarkErrorConfig.visible) {
+                                        if (chart.watermarkError) {
+                                            chart.watermarkError.destroy();
+                                            chart.watermarkError = null;
+                                        }
                                         return;
                                     }
 
-                                    if (!chart.watermarkErrorConfig.visible) return;
+                                    const maxWidth = Math.round(chart.plotWidth * 0.8);
+
+                                    if (chart.watermarkError) {
+                                        chart.watermarkError.attr({ text: `<div class="wm-message" style="maxWidth:${maxWidth}px">${chart.watermarkErrorConfig.text}</div>` });
+                                        return;
+                                    }
 
                                     const x = chart.plotLeft + chart.plotWidth / 2;
                                     const y = chart.plotTop;
 
                                     chart.watermarkError = chart.renderer
-                                        .label(chart.watermarkErrorConfig.text, x, y) // can use text instead, lighter but no html
+                                        .label(`<div class="wm-message" style="maxWidth:${maxWidth}px">${chart.watermarkErrorConfig.text}</div>`, x, y, null, null, null, true) // can use text instead, lighter but no html
                                         .addClass('chart-watermark-error')
                                         .attr({
                                             align: 'center',
-                                            zIndex: 5,
-                                            r: 5, // radius
-                                            rotation: 0,
-                                            padding: 5,
-                                            fill: 'rgba(255, 0, 0, 0.1)', // need to be here to be able to change it in css
-                                            'stroke-width': 1, // can be changed by css
-                                            stroke: 'red' // can be changed by css
+                                            zIndex: 5
                                         })
                                         .add();
                                 }
 
                                 chart.updateWatermarkError = renderWatermarkError;
                                 renderWatermarkError();
+
+                                chart.watermarkWarningConfig = {
+                                    text: '',
+                                    visible: false
+                                };
+
+                                function renderWatermarkWarning() {
+                                    if (!chart.watermarkWarningConfig.visible) {
+                                        if (chart.watermarkWarning) {
+                                            chart.watermarkWarning.destroy();
+                                            chart.watermarkWarning = null;
+                                        }
+                                        return;
+                                    }
+
+                                    const maxWidth = Math.round(chart.plotWidth * 0.8);
+
+                                    if (chart.watermarkWarning) {
+                                        chart.watermarkWarning.attr({ text: `<div class="wm-message" style="maxWidth:${maxWidth}px">${chart.watermarkWarningConfig.text}</div>` });
+                                        return;
+                                    }
+
+                                    const x = chart.plotLeft + chart.plotWidth / 2;
+                                    const y = chart.plotTop;
+
+                                    chart.watermarkWarning = chart.renderer
+                                        .label(`<div class="wm-message" style="maxWidth:${maxWidth}px">${chart.watermarkWarningConfig.text}</div>`, x, y, null, null, null, true) // can use text instead, lighter but no html
+                                        .addClass('chart-watermark-warning')
+                                        .attr({
+                                            align: 'center',
+                                            zIndex: 5
+                                        })
+                                        .add();
+                                }
+
+                                chart.updateWatermarkWarning = renderWatermarkWarning;
+                                renderWatermarkWarning();
                             }
                         }
                     },
@@ -321,9 +360,19 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
         }
 
         function renderError(errorMessage) {
-            self.chart.watermarkErrorConfig.text = errorMessage;
+            self.chart.watermarkErrorConfig.text = $.t(errorMessage);
+            self.chart.watermarkWarningConfig.visible = false;
+            self.chart.updateWatermarkWarning();
             self.chart.watermarkErrorConfig.visible = true;
             self.chart.updateWatermarkError();
+        }
+
+        function renderWarning(warningMessage) {
+            self.chart.watermarkWarningConfig.text = $.t(warningMessage);
+            self.chart.watermarkErrorConfig.visible = false;
+            self.chart.updateWatermarkError();
+            self.chart.watermarkWarningConfig.visible = true;
+            self.chart.updateWatermarkWarning();
         }
 
         function refreshChartData(afterRefreshChartData) {
@@ -338,6 +387,9 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     const stopwatchCycle = stopwatch('cycle');
                     if (data.errormessage !== undefined) {
                         renderError(data.errormessage)
+                    }
+                    else if (data.warningmessage !== undefined) {
+                        renderWarning(data.warningmessage)
                     }
                     loadDataInChart(data);
                     synchronizeYaxes();
