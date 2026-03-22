@@ -513,28 +513,49 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 
 						var $custommenu = $("#custommenu");
 						$custommenu.empty();
-						var hasItems = false;
+						var items = [];
 						if (typeof data.result.templates != 'undefined') {
 							$.each(data.result.templates, function (i, item) {
-								var $li = $('<li>');
-								var $a = $('<a>')
-									.attr('href', 'javascript:SwitchLayout(' + JSON.stringify('templates/' + item.file) + ')')
-									.text(item.name);
-								$custommenu.append($li.append($a));
-								hasItems = true;
+								items.push({
+									href: 'javascript:SwitchLayout(' + JSON.stringify('templates/' + item.file) + ')',
+									text: item.name,
+									target: null
+								});
 							});
 						}
 						if (typeof data.result.urls != 'undefined') {
 							$.each(data.result.urls, function (name, url) {
 								if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) return;
-								var cName = name.charAt(0).toUpperCase() + name.slice(1);
-								var $li = $('<li>');
-								var $a = $('<a>').attr('target', '_blank').attr('href', url).text(cName);
-								$custommenu.append($li.append($a));
-								hasItems = true;
+								items.push({
+									href: url,
+									text: name.charAt(0).toUpperCase() + name.slice(1),
+									target: '_blank'
+								});
 							});
 						}
-						if (hasItems) {
+						if (items.length > 0) {
+							var $custommenuLi = $(".clcustommenu");
+							var $custommenuToggle = $custommenuLi.find('> a');
+							if (items.length === 1) {
+								var item = items[0];
+								$custommenuToggle.attr('href', item.href);
+								if (item.target) $custommenuToggle.attr('target', item.target);
+								$custommenuToggle.find('span').removeAttr('data-i18n').text(item.text);
+							} else {
+								$custommenuLi.addClass('dropdown');
+								$custommenuToggle
+									.addClass('dropdown-toggle')
+									.attr('data-toggle', 'dropdown')
+									.append('<b class="caret hidden-phone hidden-tablet"></b>');
+								$.each(items, function (i, item) {
+									var $li = $('<li>');
+									var $a = $('<a>')
+										.attr('href', item.href)
+										.html('<img src="images/devices.png"> ' + $('<span>').text(item.text).html());
+									if (item.target) $a.attr('target', item.target);
+									$custommenu.append($li.append($a));
+								});
+							}
 							$rootScope.config.EnableTabCustom = data.result.EnableTabCustom;
 						}
 						
