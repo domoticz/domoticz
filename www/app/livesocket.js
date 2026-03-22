@@ -114,6 +114,9 @@ define(['app.notifications', 'angular-websocket'], function (appNotificationsMod
 					sunrise: msg.Sunrise,
 					sunset: msg.Sunset
 				});
+				if (!$rootScope.$$phase) {
+					$rootScope.$digest();
+				}
 			}
 		}
 
