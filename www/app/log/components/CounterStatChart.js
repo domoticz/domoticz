@@ -71,6 +71,85 @@ define(['app', 'luxon'], function (app, luxon) {
 			title: null,
 			chart: {
 				marginTop: 45
+				events: {
+					load: function () {
+						const chart = this;
+
+						$scope.watermarkErrorConfig = {
+							text: '',
+							visible: false
+						};
+
+						function renderWatermarkError() {
+							if (!$scope.watermarkErrorConfig.visible) {
+								if ($scope.watermarkError) {
+									$scope.watermarkError.destroy();
+									$scope.watermarkError = null;
+								}
+								return;
+							}
+
+							const maxWidth = Math.round(chart.plotWidth * 0.8);
+
+							if ($scope.watermarkError) {
+								$scope.watermarkError.attr({ text: `<div class="wm-message" style="maxWidth:${maxWidth}px">${$scope.watermarkErrorConfig.text}</div>` });
+								return;
+							}
+
+							const x = chart.plotLeft + chart.plotWidth / 2;
+							const y = chart.plotTop;
+
+							$scope.watermarkError = chart.renderer
+								.label(`<div class="wm-message" style="maxWidth:${maxWidth}px">${$scope.watermarkErrorConfig.text}</div>`, x, y, null, null, null, true) // can use text instead, lighter but no html
+								.addClass('chart-watermark-error')
+								.attr({
+									align: 'center',
+									zIndex: 5
+								})
+								.add();
+						}
+
+						$scope.updateWatermarkError = renderWatermarkError;
+						renderWatermarkError();
+
+						$scope.watermarkWarningConfig = {
+							text: '',
+							visible: false
+						};
+
+						function renderWatermarkWarning() {
+							if (!$scope.watermarkWarningConfig.visible) {
+								if ($scope.watermarkWarning) {
+									$scope.watermarkWarning.destroy();
+									$scope.watermarkWarning = null;
+								}
+								return;
+							}
+
+							const maxWidth = Math.round(chart.plotWidth * 0.8);
+
+							if ($scope.watermarkWarning) {
+								$scope.watermarkWarning.attr({ text: `<div class="wm-message" style="maxWidth:${maxWidth}px">${$scope.watermarkWarningConfig.text}</div>` });
+								return;
+							}
+
+							const x = chart.plotLeft + chart.plotWidth / 2;
+							const y = chart.plotTop;
+
+							$scope.watermarkWarning = chart.renderer
+								.label(`<div class="wm-message" style="maxWidth:${maxWidth}px">${$scope.watermarkWarningConfig.text}</div>`, x, y, null, null, null, true) // can use text instead, lighter but no html
+								.addClass('chart-watermark-warning')
+								.attr({
+									align: 'center',
+									zIndex: 5
+								})
+								.add();
+						}
+
+						$scope.updateWatermarkWarning = renderWatermarkWarning;
+						renderWatermarkWarning();
+					}
+				}
 			},
 			xAxis: {
 				type: 'datetime',
@@ -194,7 +273,29 @@ define(['app', 'luxon'], function (app, luxon) {
 			return ($scope.actDay == day) ? "zoom-button-active" : "";
 		}
 
+		function renderError(errorMessage) {
+			$scope.watermarkErrorConfig.text = $.t(errorMessage);
+			$scope.watermarkWarningConfig.visible = false;
+			$scope.updateWatermarkWarning();
+			$scope.watermarkErrorConfig.visible = true;
+			$scope.updateWatermarkError();
+		}
+
+		function renderWarning(warningMessage) {
+			$scope.watermarkWarningConfig.text = $.t(warningMessage);
+			$scope.watermarkErrorConfig.visible = false;
+			$scope.updateWatermarkError();
+			$scope.watermarkWarningConfig.visible = true;
+			$scope.updateWatermarkWarning();
+		}
+
 		self.parseStats = function(data) {
+			if (data.errormessage !== undefined) {
+				renderError(data.errormessage)
+			}
+			else if (data.warningmessage !== undefined) {
+				renderWarning(data.warningmessage)
+			}
 			if (typeof data.result != 'undefined') {
 				if (typeof data.status != 'undefined') {
 					if (data.status == "OK") {
@@ -286,7 +387,7 @@ define(['app', 'luxon'], function (app, luxon) {
 			$scope.chartDefinitionWeek.title.text = weeklyTitle;
 			$scope.chartDefinitionWeek.yAxis.title.text = yAxisTitle;
 
-			$scope.chartDefinitionDay = JSON.parse(JSON.stringify($scope.chartDefinitionBase));
+			$scope.chartDefinitionDay = Object.assign([], $scope.chartDefinitionBase); // use Object.assign() instead of JSON.parse(JSON.stringify() to keep methods
 			$scope.chartDefinitionDay.series = [
 				JSON.parse(JSON.stringify($scope.chartSeriesDailyHour))
 			];
