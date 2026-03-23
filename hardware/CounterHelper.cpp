@@ -154,7 +154,10 @@ double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, co
 double CounterHelper::CheckTotalCounter(const double mtotal, bool& bLooped)
 {
 	if (mtotal == 0)
+	{
+		_log.Log(LOG_STATUS, "CounterHelper: Received 0 reading, returning cached value (%.3f) to avoid DB corruption", m_nLastCounterValue);
 		return m_nLastCounterValue; //ignore 0 readings, return last known value to avoid corrupting the DB
+	}
 
 	double rTotal = m_CounterOffset + mtotal;
 
