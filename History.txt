@@ -1,15 +1,17 @@
 Version 2026.xxxx
 - Added: Alexa Smart Home v3 API endpoint (see ALEXA.md)
-- Added: Angular Current sensor log with 3-phase support and compare chart (Fixes #6560)
+- Added: Angular Current sensor log with 3-phase support and compare chart
 - Added: Angular log pages, current conditions KPI cards and advanced charts
 - Added: Angular Wind log, wind speed frequency histogram with Weibull distribution curve
 - Added: Battery SOC mode selection for Energy Dashboard with voltage display
+- Added: Energy Dashboard, Battery Energy In/Out device settings and price tracking (not visible yet)
 - Added: Blinds + Stop type
 - Added: Comparing charts, show average across years in tooltip for month/quarter grouping
 - Added: Configurable pricing resolution (15/30/60 minutes) for dynamic energy contracts (with adapted P1 and kWh graphs)
 - Added: Counter hourly chart resolution toggle (1h/15m/30m) when sub-hourly pricing is configured
 - Added: Counter log, anomalous meter spike highlighting in year/month charts
 - Added: Counter log, calendar heatmap, weekly pattern heatmap, and cumulative year-to-date comparison charts
+- Added: Counter log, cumulative energy chart for kWh instantAndCounter devices
 - Added: Dashboard, setpoint display and editing for all setpoint devices
 - Added: Docker environment variable support for admin provisioning (DOMOTICZ_ADMIN_PASSWORD, DOMOTICZ_ADMIN_USERNAME)
 - Added: dzVents, at_startup trigger for scripts that should run once at Domoticz startup
@@ -21,38 +23,42 @@ Version 2026.xxxx
 - Added: HaveSetPoint JSON API flag for Thermostat 6 and Setpoint devices (third-party app compatibility)
 - Added: LibreHardwareMonitor, cross-platform HTTP support with mode selector and extended sensors
 - Added: Logitech Media Server, SqueezeLite ESP32 support
+- Added: MCP, search_devices tool for device name discovery
 - Added: MQTT-AD, added support for Climate high/low set points
 - Added: MQTT-AD: Added Fan speed-range
-- Added: MQTT-AD: Added support for flow meter reported in l/min (Fixes #6450)
+- Added: MQTT-AD: Added support for flow meter reported in l/min
 - Added: MQTT-AD: Calculate temperature trends for climate devices
 - Added: MQTT-AD: Fan, make it possible to send separate ON/OFF commands
 - Added: MQTT-AD: handling FAN on/off status commands
 - Added: MQTT-AD: Reinstate 'total_increasing' support for kWh sensors
-- Added: MQTT-AD: Thermostat 6, add setpoint timer/schedule support (Fixes #6530)
+- Added: MQTT-AD: Thermostat 6, add setpoint timer/schedule support
 - Added: New update scripts that are able to check if system meets requirements
 - Added: Notification support for Thermostat 6 devices (temperature, humidity, barometer thresholds)
 - Added: Open-Meteo, native weather hardware plugin (no API key required)
 - Added: OpenWeatherMap, support for free API plan
+- Added: P1 log, calendar heatmap with return energy and price display
+- Added: P1 log, return energy shown in Today card when delivery is available
 - Added: Philips Hue v2 API, just for Door/Window Contacts (state/tamper/battery)
 - Added: PV Output, added consumption
 - Added: Python plugin API, Domoticz.SendNotification() native notification method for plugins
+- Added: Python plugin framework, extended settings with number/boolean/slider inputs, groups and conditional visibility (#6674)
 - Added: Python plugin framework, shared="true" attribute for main interpreter execution
 - Added: Re-added rain report
 - Added: Re-added wind report
 - Added: Re-added wind-rose direction chart to Wind sensor log
 - Added: RFXCom, Support Orcon FAN device (#6500)
-- Added: RFXCOM, Teleinfo 1200/19200 async mode support (Fixes #6495)
+- Added: RFXCOM, Teleinfo 1200/19200 async mode support
 - Added: RTL433, Support UV sensors named 'uvi'
 - Added: Room plans, allow unused devices to be added to a plan and shown when that plan is selected
 - Added: Scene log, on/off activity charts
-- Added: Search filter on selected (right) side of user shared devices selector (Fixes #6613)
+- Added: Search filter on selected (right) side of user shared devices selector
 - Added: SolarEdge, web portal polling for per-optimizer, per-string and per-inverter energy and real-time data
 - Added: SolarEdge API, battery detection (#6593)
 - Added: SolarEdge API, energy details sensors (production, consumption, self-consumption, feed-in, purchased)
 - Added: SolarEdge API, site overview sensors (current power, energy today/month/year/lifetime)
-- Added: Support -pidfile without -daemon for process managers like monit under systemd
 - Added: Support for the Model Context Protocol (/mcp) for use with AI Agents
 - Added: Thermostat, combined Temperature/Setpoint display
+- Added: Web Interface, Admin API (FixKwhCounterSpikes) to detect and fix historical kWh counter spikes with dry-run support
 - Added: Web Interface, Better XSS prevention
 - Added: Web Interface, Close other menu option
 - Added: Web Interface, dark chart theme for log charts
@@ -61,6 +67,7 @@ Version 2026.xxxx
 - Added: Web Interface, Modernized log viewer with WebSocket live streaming, level filtering, search/regex, render cap, and performance optimizations
 - Added: Web Interface, Passkey (WebAuthn/FIDO2) authentication support - register and sign in with Windows Hello, Touch ID, or security keys
 - Added: Web Interface, Passkey management in My Profile (register, view device info, delete)
+- Added: Web Interface, single custom template shown as direct navigation link instead of dropdown
 - Added: Web Interface, weather animations for temperature and weather display
 - Added: Weather tab, room plan selector
 - Fixed: Access denied for non-admin users with no shared devices configured
@@ -70,11 +77,13 @@ Version 2026.xxxx
 - Fixed: Chart zoom buttons (notable on iOS devices)
 - Fixed: Barometer compare chart and database normalization
 - Fixed: Chart logs now using real time values
+- Fixed: Chart series visibility not persisting after page reload
 - Fixed: Compare chart values displayed incorrectly for multiple sensor types (#6591)
 - Fixed: Crash after device_update when getUnit() returned stale data
 - Fixed: Crash when a live device update arrives while the Devices tab is still loading
 - Fixed: Counter Statistics Chart tooltip showing incorrect day name (Fixes #6542)
 - Fixed: Database backup/restore stability (#6577)
+- Fixed: Dashboard, sun rise/set times missing on mobile dashboard initial load
 - Fixed: Deleting a scene/group could accidentally delete a device
 - Fixed: dzVents, counterToday/counterDeliveredToday returning stale values after midnight for idle devices (Fixes #6221)
 - Fixed: dzVents Lua table corruption when exception occurs during notification or device data export (Fixes #6030)
@@ -87,6 +96,7 @@ Version 2026.xxxx
 - Fixed: Floorplan, Text Sensor display
 - Fixed: General/kWh device with EnergyMeterMode=1 could never be updated when created from Python plugin with numeric Type/SubType (Fixes #6194)
 - Fixed: Kodi, Possible memory leak in Kodi Notification when destination is unreachable
+- Fixed: kWh counter returning 0 instead of last known value during periods with no readings
 - Fixed: Log rotation via SIGHUP broken under systemd (non-daemon mode)
 - Fixed: Memory leak in Python event scripts caused by missing reference count decrement in user variables (Fixes #5091)
 - Fixed: Missing Passkeys column on fresh Docker installs causing SQL errors (#6601)
@@ -114,9 +124,11 @@ Version 2026.xxxx
 - Fixed: Segfault when running --help or --version (#6618)
 - Fixed: Service worker not loading when Domoticz is accessed remotely via HTTPS
 - Fixed: Session invalidation race condition during web session renewal
+- Fixed: Slider drag on touch devices
 - Fixed: SolarEdge API, battery critical sensor using wrong type and grid/storage power direction detection
 - Fixed: SolarEdge API, power readings persisting stale values when idle
 - Fixed: Temperature Compare Chart (Min/Max values)
+- Fixed: Text sensor edit dialog, Enter key now inserts newlines instead of submitting
 - Fixed: Water device log displaying value in incorrect unit
 - Fixed: Web update not restarting properly when Python plugins are active (#6602)
 - Fixed: Web update script not starting due to systemd-run failure (#6622)
@@ -129,7 +141,6 @@ Version 2026.xxxx
 - Changed: Enphase, start working with correct values from the beginning
 - Changed: FCM/Google Cloud Messaging Notifications, now needed to enter private API from console in settings
 - Changed: In-service/Oauth2, Added Logo to login form
-- Changed: Installer, replaced SysV init script with native systemd service (auto-migrates on update)
 - Changed: Installer, improved package detection and channel reconfigure path
 - Changed: Internal code cleanup/enhancements
 - Changed: MQTT, huge speed improvements
