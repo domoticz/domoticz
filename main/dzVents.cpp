@@ -558,7 +558,8 @@ bool CdzVents::UpdateDevice(lua_State* lua_state, const std::vector<_tLuaTableVa
 	if (idx == -1)
 		return false;
 
-	m_sql.AddTaskItem(_tTaskItem::UpdateDevice(delayTime, idx, nValue, sValue, Protected, bEventTrigger, "dzVents/" + eventName), false);
+	const std::string attribution = eventName.empty() ? "dzVents.lua" : eventName;
+	m_sql.AddTaskItem(_tTaskItem::UpdateDevice(delayTime, idx, nValue, sValue, Protected, bEventTrigger, "dzVents/" + attribution), false);
 	return true;
 }
 
@@ -662,7 +663,8 @@ bool CdzVents::CancelItem(lua_State* lua_state, const std::vector<_tLuaTableValu
 	_tTaskItem tItem;
 	tItem._idx = idx;
 	tItem._DelayTime = 0;
-	tItem._sUser = "dzVents/" + eventName;
+	const std::string attribution = eventName.empty() ? "dzVents.lua" : eventName;
+	tItem._sUser = "dzVents/" + attribution;
 	if (type == "device")
 	{
 		tItem._ItemType = TITEM_SWITCHCMD_EVENT;

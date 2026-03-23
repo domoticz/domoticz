@@ -297,6 +297,7 @@ define(['app', 'events/factories'], function (app) {
                     element.parentNode.appendChild(statusBarEl);
                     element.style.bottom = '21px';
                     new StatusBar(aceEditor, statusBarEl);
+                    $timeout(function () { aceEditor.resize(); }, 0);
 
                     // Debounced change handler
                     aceEditor.on('change', function () {
