@@ -8426,6 +8426,305 @@ void CSQLHelper::VacuumDatabase()
 	query("VACUUM");
 }
 
+bool CSQLHelper::FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dry_run, std::vector<std::string>& results)
+{
+	// Validate the device is a kWh counter
+	auto devresult = safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID='%" PRIu64 "')", idx);
+	if (devresult.empty())
+	{
+		results.push_back("Device not found");
+		return false;
+	}
+	if (atoi(devresult[0][0].c_str()) != pTypeGeneral || atoi(devresult[0][1].c_str()) != sTypeKwh)
+	{
+		results.push_back("Device is not a kWh counter (General/kWh)");
+		return false;
+	}
+
+	double clamped_threshold = std::min(max_daily_kwh, 1e9);
+	int64_t threshold_wh = static_cast<int64_t>(clamped_threshold * 1000.0);
+
+	// --- Phase 1: Detect anomalous days in Meter_Calendar ---
+	//   Positive spike: Value > threshold  — false counter jump upward (e.g. reset artefact)
+	//   Negative spike: Value < -threshold — counter reset stored without offset correction
+	auto calresult = safe_query(
+		"SELECT Date, Value FROM Meter_Calendar WHERE (DeviceRowID='%" PRIu64 "') ORDER BY Date ASC", idx);
+
+	struct SpikeDay
+	{
+		std::string date;
+		int64_t value;       // original Meter_Calendar.Value
+		bool is_positive;    // true = upward spike, false = negative (counter reset)
+	};
+	std::vector<SpikeDay> spikes;
+
+	for (const auto& row : calresult)
+	{
+		int64_t value = 0;
+		try
+		{
+			value = std::stoll(row[1]);
+		}
+		catch (const std::exception&)
+		{
+			continue;
+		}
+		if (value > threshold_wh)
+			spikes.push_back({row[0], value, true});
+		else if (value < -threshold_wh)
+			spikes.push_back({row[0], value, false});
+	}
+
+	// --- Phase 2: Detect spikes in recent Meter short log (current period, not yet in Meter_Calendar) ---
+	// Scans consecutive Meter readings since the last Meter_Calendar date for large jumps.
+	struct MeterSpike
+	{
+		std::string date;    // datetime of the spike reading in Meter
+		int64_t delta;       // the jump amount (Wh)
+		bool is_positive;
+	};
+	std::vector<MeterSpike> meter_spikes;
+
+	auto lastcalrow = safe_query(
+		"SELECT MAX(Date) FROM Meter_Calendar WHERE (DeviceRowID='%" PRIu64 "')", idx);
+	std::string last_cal_date = (!lastcalrow.empty() && !lastcalrow[0][0].empty()) ? lastcalrow[0][0] : "1970-01-01";
+
+	auto meter_recent = safe_query(
+		"SELECT Date, Value FROM Meter WHERE (DeviceRowID='%" PRIu64 "') "
+		"AND (Date >= '%q') ORDER BY Date ASC",
+		idx, last_cal_date.c_str());
+
+	if (meter_recent.size() >= 2)
+	{
+		int64_t prev_val = 0;
+		try
+		{
+			prev_val = std::stoll(meter_recent[0][1]);
+		}
+		catch (const std::exception&)
+		{
+			prev_val = 0;
+		}
+		for (size_t i = 1; i < meter_recent.size(); i++)
+		{
+			int64_t cur_val = 0;
+			try
+			{
+				cur_val = std::stoll(meter_recent[i][1]);
+			}
+			catch (const std::exception&)
+			{
+				prev_val = cur_val;
+				continue;
+			}
+			int64_t delta = cur_val - prev_val;
+			if (delta > threshold_wh)
+				meter_spikes.push_back({meter_recent[i][0], delta, true});
+			else if (delta < -threshold_wh)
+				meter_spikes.push_back({meter_recent[i][0], delta, false});
+			prev_val = cur_val;
+		}
+	}
+
+	if (spikes.empty() && meter_spikes.empty())
+	{
+		results.push_back(std_format("No spikes detected above threshold (%.0f kWh/day)", max_daily_kwh));
+		return true;
+	}
+
+	int64_t total_positive_delta_wh = 0;
+	for (const auto& spike : spikes)
+	{
+		if (spike.is_positive)
+		{
+			total_positive_delta_wh += spike.value;
+			results.push_back(std_format("Positive spike on %s: +%.3f kWh", spike.date.c_str(), spike.value / 1000.0));
+		}
+		else
+		{
+			results.push_back(std_format("Negative spike on %s: %.3f kWh (counter reset without offset)", spike.date.c_str(), spike.value / 1000.0));
+		}
+	}
+	for (const auto& ms : meter_spikes)
+	{
+		if (ms.is_positive)
+		{
+			total_positive_delta_wh += ms.delta;
+			results.push_back(std_format("Positive spike in Meter at %s: +%.3f kWh (current period, not yet in Meter_Calendar)",
+				ms.date.c_str(), ms.delta / 1000.0));
+		}
+		else
+		{
+			results.push_back(std_format("Negative spike in Meter at %s: %.3f kWh (counter reset, current period)",
+				ms.date.c_str(), ms.delta / 1000.0));
+		}
+	}
+	if (total_positive_delta_wh > 0)
+		results.push_back(std_format("Positive spike total correction: -%.3f kWh", total_positive_delta_wh / 1000.0));
+
+	if (dry_run)
+	{
+		results.push_back("Dry run mode: no changes applied");
+		return true;
+	}
+
+	// --- Fix positive spikes in Meter_Calendar ---
+	// Each positive spike inflated the cumulative Counter for all subsequent days.
+	// Process in chronological order; each UPDATE operates on the already-corrected DB,
+	// so sequentially subtracting each spike_delta gives the correct cumulative result.
+	for (const auto& spike : spikes)
+	{
+		if (!spike.is_positive)
+			continue;
+
+		const std::string& spike_date = spike.date;
+
+		// Subtract spike_delta from Counter for spike day and all subsequent days
+		safe_query(
+			"UPDATE Meter_Calendar SET Counter = Counter - %" PRId64 " "
+			"WHERE (DeviceRowID='%" PRIu64 "') AND (Date >= '%q')",
+			spike.value, idx, spike_date.c_str());
+
+		// Zero out Value for the spike day itself
+		safe_query(
+			"UPDATE Meter_Calendar SET Value = 0 "
+			"WHERE (DeviceRowID='%" PRIu64 "') AND (Date = '%q')",
+			idx, spike_date.c_str());
+
+		// Subtract spike_delta from cumulative counter Values in the short log
+		safe_query(
+			"UPDATE Meter SET Value = MAX(0, Value - %" PRId64 ") "
+			"WHERE (DeviceRowID='%" PRIu64 "') AND (Date >= '%q 00:00:00')",
+			spike.value, idx, spike_date.c_str());
+	}
+
+	// --- Fix negative spikes in Meter_Calendar (counter reset stored without offset correction) ---
+	// The Counter values for the reset day and after are already correct (real device state).
+	// Only the Value for the reset day is wrong (negative). Recompute it from the Meter
+	// short log if data is available (sum of positive increments handles mid-day resets),
+	// otherwise fall back to 0.
+	for (const auto& spike : spikes)
+	{
+		if (spike.is_positive)
+			continue;
+
+		const std::string& spike_date = spike.date;
+		int64_t actual_production_wh = 0;
+
+		// Try to compute actual production from the Meter short log
+		auto meter_rows = safe_query(
+			"SELECT Value FROM Meter WHERE (DeviceRowID='%" PRIu64 "') "
+			"AND (Date >= '%q 00:00:00') AND (Date < datetime('%q', '+1 day')) ORDER BY Date ASC",
+			idx, spike_date.c_str(), spike_date.c_str());
+
+		if (!meter_rows.empty())
+		{
+			int64_t prev_val = 0;
+			try
+			{
+				prev_val = std::stoll(meter_rows[0][0]);
+			}
+			catch (const std::exception&)
+			{
+				prev_val = 0;
+			}
+			for (size_t i = 1; i < meter_rows.size(); i++)
+			{
+				int64_t cur_val = 0;
+				try
+				{
+					cur_val = std::stoll(meter_rows[i][0]);
+				}
+				catch (const std::exception&)
+				{
+					prev_val = cur_val;
+					continue;
+				}
+				int64_t delta = cur_val - prev_val;
+				if (delta > 0 && delta < threshold_wh) // positive, non-spike increment
+					actual_production_wh += delta;
+				prev_val = cur_val;
+			}
+			results.push_back(std_format("Reset day %s: recomputed production from Meter = %.3f kWh",
+				spike_date.c_str(), actual_production_wh / 1000.0));
+		}
+		else
+		{
+			results.push_back(std_format("Reset day %s: no Meter data available, setting Value to 0",
+				spike_date.c_str()));
+		}
+
+		safe_query(
+			"UPDATE Meter_Calendar SET Value = %" PRId64 " "
+			"WHERE (DeviceRowID='%" PRIu64 "') AND (Date = '%q')",
+			actual_production_wh, idx, spike_date.c_str());
+	}
+
+	// --- Fix positive spikes found in recent Meter short log (current period, not yet in Meter_Calendar) ---
+	for (const auto& ms : meter_spikes)
+	{
+		if (!ms.is_positive)
+			continue;
+
+		// Subtract spike delta from all Meter entries from the spike row datetime onwards
+		safe_query(
+			"UPDATE Meter SET Value = MAX(0, Value - %" PRId64 ") "
+			"WHERE (DeviceRowID='%" PRIu64 "') AND (Date >= '%q')",
+			ms.delta, idx, ms.date.c_str());
+	}
+
+	// Correct DeviceStatus: fix sValue total and LastLevel for positive spikes only.
+	// Negative spikes do not affect the current sValue (the live counter is already correct).
+	if (total_positive_delta_wh > 0)
+	{
+		auto devstatus = safe_query("SELECT sValue, LastLevel FROM DeviceStatus WHERE (ID='%" PRIu64 "')", idx);
+		if (!devstatus.empty())
+		{
+			const std::string& sValue = devstatus[0][0];
+			int64_t last_level = 0;
+			try
+			{
+				last_level = std::stoll(devstatus[0][1]);
+			}
+			catch (const std::exception&)
+			{
+				last_level = 0;
+			}
+
+			size_t pos = sValue.find(';');
+			if (pos != std::string::npos && pos > 0 && pos < sValue.length() - 1)
+			{
+				double usage = atof(sValue.substr(0, pos).c_str());
+				double total_wh = atof(sValue.substr(pos + 1).c_str());
+				if (usage >= 0 && total_wh >= 0)
+				{
+					double new_total_wh = std::max(0.0, total_wh - static_cast<double>(total_positive_delta_wh));
+					std::string new_svalue = std_format("%.3f;%.3f", usage, new_total_wh);
+
+					// Only correct LastLevel if it was inflated by a post-spike reset confirmation.
+					// If LastLevel > corrected total, it means a counter reset was confirmed using
+					// the inflated post-spike value as the new offset; subtract the spike delta.
+					int64_t new_last_level = last_level;
+					if (last_level > static_cast<int64_t>(std::floor(new_total_wh)))
+						new_last_level = std::max(int64_t(0), last_level - total_positive_delta_wh);
+
+					safe_query(
+						"UPDATE DeviceStatus SET sValue='%q', LastLevel='%" PRId64 "' WHERE (ID='%" PRIu64 "')",
+						new_svalue.c_str(), new_last_level, idx);
+
+					results.push_back(std_format("DeviceStatus: %.3f kWh -> %.3f kWh, LastLevel: %" PRId64 " -> %" PRId64,
+						total_wh / 1000.0, new_total_wh / 1000.0, last_level, new_last_level));
+				}
+			}
+		}
+	}
+
+	_log.Log(LOG_STATUS, "FixKwhCounterSpikes: device %" PRIu64 " corrected %d spike(s), total -%.3f kWh",
+		idx, static_cast<int>(spikes.size() + meter_spikes.size()), total_positive_delta_wh / 1000.0);
+
+	return true;
+}
+
 void CSQLHelper::OptimizeDatabase(sqlite3* dbase)
 {
 	if (dbase == nullptr)

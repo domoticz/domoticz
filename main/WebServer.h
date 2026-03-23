@@ -300,6 +300,7 @@ private:
 	void Cmd_AddLogMessage(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ClearShortLog(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_VacuumDatabase(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_FixKwhCounterSpikes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PanasonicSetMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PanasonicGetNodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PanasonicAddNode(WebEmSession & session, const request& req, Json::Value &root);

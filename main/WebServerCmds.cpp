@@ -5366,6 +5366,55 @@ namespace http
 			_log.Log(logLevel, "%s", smessage.c_str());
 		}
 
+		void CWebServer::Cmd_FixKwhCounterSpikes(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			std::string sidx = request::findValue(&req, "idx");
+			if (sidx.empty())
+			{
+				root["status"] = "ERR";
+				root["message"] = "idx parameter missing";
+				return;
+			}
+			uint64_t idx = 0;
+			try
+			{
+				idx = std::stoull(sidx);
+			}
+			catch (const std::exception&)
+			{
+				root["status"] = "ERR";
+				root["message"] = "Invalid idx format";
+				return;
+			}
+
+			std::string sthreshold = request::findValue(&req, "threshold");
+			double max_daily_kwh = 1000.0;
+			if (!sthreshold.empty())
+			{
+				char* endptr = nullptr;
+				double parsed = strtod(sthreshold.c_str(), &endptr);
+				if (endptr != sthreshold.c_str() && parsed > 0 && parsed <= 1e6)
+					max_daily_kwh = parsed;
+			}
+
+			bool dry_run = (request::findValue(&req, "dryrun") == "1");
+
+			std::vector<std::string> results;
+			bool ok = m_sql.FixKwhCounterSpikes(idx, max_daily_kwh, dry_run, results);
+
+			root["status"] = ok ? "OK" : "ERR";
+			root["title"] = "FixKwhCounterSpikes";
+			root["dryrun"] = dry_run;
+			for (int i = 0; i < static_cast<int>(results.size()); i++)
+				root["result"][i] = results[i];
+		}
+
 		void CWebServer::Cmd_ClearShortLog(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != URIGHTS_ADMIN)
