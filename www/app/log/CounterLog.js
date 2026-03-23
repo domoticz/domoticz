@@ -12,10 +12,45 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
             },
             templateUrl: 'app/log/CounterLog.html',
             controllerAs: '$ctrl',
-            controller: function () {
+            controller: ['domoticzApi', '$window', function (domoticzApi, $window) {
                 const $ctrl = this;
                 $ctrl.autoRefresh = true;
-            }
+
+                $ctrl.fixKwhSpikes = function () {
+                    if (!$ctrl.device || !$ctrl.device.idx) return;
+
+                    var confirmMsg = $.t('Are you sure you want to fix counter spikes for this device?') + '<br><br>' +
+                        '<span style="color:#fff; font-weight:bold;">' + $.t('It is advised to make a database backup before running this operation.') + '</span>';
+
+                    bootbox.confirm(confirmMsg, function (result) {
+                        if (!result) return;
+
+                        domoticzApi.sendCommand('fixkwhcounterspikes', {
+                            idx: $ctrl.device.idx,
+                            dryrun: 0
+                        }).then(function (response) {
+                            var lines = (response.result && response.result.length > 0)
+                                ? response.result
+                                : [$.t('No issues found.')];
+                            var html = '<ul style="text-align:left; margin: 10px 0;">';
+                            lines.forEach(function (line) {
+                                // Safely escape HTML entities from backend result lines
+                                html += '<li>' + $('<div>').text(line).html() + '</li>';
+                            });
+                            html += '</ul>';
+
+                            bootbox.alert(html, function () {
+                                $window.location.reload();
+                            });
+                        }, function (response) {
+                            var msg = (response && response.message)
+                                ? response.message
+                                : $.t('Failed to fix counter spikes. Check the Domoticz log for details.');
+                            bootbox.alert(msg);
+                        });
+                    });
+                };
+            }]
         });
 
         app.component('counterCurrentConditions', {
