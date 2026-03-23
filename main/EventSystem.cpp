@@ -3344,7 +3344,16 @@ bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const
 		}
 		else if ((std::string(luaL_typename(lua_state, -2)) == "number") && lua_istable(lua_state, -1))
 		{
-			scriptTrue = iterateLuaTable(lua_state, tIndex + 2, filename);
+			std::string commandFilename = filename;
+			lua_getfield(lua_state, -1, "_scriptName");
+			if (lua_isstring(lua_state, -1))
+			{
+				const char* sn = lua_tostring(lua_state, -1);
+				if (sn && *sn)
+					commandFilename = std::string(sn);
+			}
+			lua_pop(lua_state, 1);
+			scriptTrue = iterateLuaTable(lua_state, tIndex + 2, commandFilename);
 		}
 		else if (!m_sql.m_bDisableDzVentsSystem && lua_istable(lua_state, -1) && std::string(luaL_typename(lua_state, -2)) == "string")
 		{
@@ -3377,16 +3386,10 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	bool scriptTrue = false;
 	std::string lCommand = std::string(lua_tostring(lua_state, -2));
 
-	// Try to get the actual dzVents script name from the global variable
-	std::string scriptName = filename;
-	lua_getglobal(lua_state, "currentDzVentsScriptName");
-	if (lua_isstring(lua_state, -1))
-	{
-		const char* scriptNamePtr = lua_tostring(lua_state, -1);
-		if (scriptNamePtr != nullptr)
-			scriptName = std::string(scriptNamePtr);
-	}
-	lua_pop(lua_state, 1); // pop the global variable
+	if (!lCommand.empty() && lCommand.front() == '_')
+		return false;
+
+	const std::string& scriptName = filename;
 	if (lCommand == "SendNotification") {
 		std::string luaString = lua_tostring(lua_state, -1);
 		std::string subject, body, priority("0"), sound, subsystem;
