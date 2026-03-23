@@ -106,7 +106,7 @@ if [ "$1" != "-nobackup" ]; then
     timestamp=$(date +%Y%m%d_%H%M%S)
     mkdir -p backups
     log_info "Output file: backups/domoticz_backup_${timestamp}.tar.gz"
-    sudo tar --exclude backups --exclude update.log -czf "backups/domoticz_backup_${timestamp}.tar.gz" .
+    sudo tar -czf "backups/domoticz_backup_${timestamp}.tar.gz" domoticz domoticz.db* History.txt updatebeta updaterelease
     log_info "Backup finished..."
 fi
 
