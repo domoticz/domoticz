@@ -154,7 +154,7 @@ double CounterHelper::CheckTotalCounter(CDomoticzHardwareBase* pHardwareBase, co
 double CounterHelper::CheckTotalCounter(const double mtotal, bool& bLooped)
 {
 	if (mtotal == 0)
-		return 0; //ignore 0 readings
+		return m_nLastCounterValue; //ignore 0 readings, return last known value to avoid corrupting the DB
 
 	double rTotal = m_CounterOffset + mtotal;
 
