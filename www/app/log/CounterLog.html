@@ -34,7 +34,7 @@
 </counter-weekly-heatmap-chart>
 
 <counter-cumulative-chart
-        ng-if="::$ctrl.subtype=='energy-used' || $ctrl.subtype=='energy-generated' || $ctrl.subtype=='p1Energy' || $ctrl.subtype=='gas' || $ctrl.subtype=='water'"
+        ng-if="::$ctrl.subtype=='energy-used' || $ctrl.subtype=='energy-generated' || $ctrl.subtype=='p1Energy' || $ctrl.subtype=='instantAndCounter' || $ctrl.subtype=='gas' || $ctrl.subtype=='water'"
         class="device-log-chart"
         subtype="::$ctrl.subtype"
         device="::$ctrl.device">
@@ -49,3 +49,11 @@
         ng-if="::$ctrl.subtype=='energy-used' || $ctrl.subtype=='gas' || $ctrl.subtype=='water' || $ctrl.subtype=='counter' || $ctrl.subtype=='energy-generated' || $ctrl.subtype=='time' || $ctrl.subtype=='p1Energy' || $ctrl.subtype=='instantAndCounter'"
         class="device-log-chart"
         device="::$ctrl.device"></counter-compare-chart>
+
+<div ng-if="$ctrl.subtype=='energy-used' || $ctrl.subtype=='energy-generated' || $ctrl.subtype=='instantAndCounter'"
+     has-permission="Admin"
+     style="padding: 15px 0; text-align: center;">
+    <button class="btnstyle3" ng-click="$ctrl.fixKwhSpikes()">
+        <i class="fa fa-wrench"></i>&nbsp;<span data-i18n="Fix Counter Spikes"></span>
+    </button>
+</div>
