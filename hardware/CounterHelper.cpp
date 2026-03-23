@@ -10,6 +10,16 @@
 // If no confirming reading arrives within this window, the pending reset is discarded.
 constexpr int PENDING_RESET_TIMEOUT_SECONDS = 300;
 
+// Minimum drop (in kWh) required to treat a decrease in rTotal as a counter reset.
+// This absorbs floating-point rounding from the /1000 divisions in InitInt:
+//   m_CounterOffset    = LastLevel (integer Wh) / 1000.0
+//   m_nLastCounterValue = sValue counter (float Wh string) / 1000.0
+// The two values may differ by up to ~0.001 kWh due to decimal/binary conversion.
+// Devices that report kWh with only 1 decimal place add up to 0.05 kWh of apparent
+// jitter. A tolerance of 0.1 kWh (100 Wh) absorbs all of these cases while being
+// negligible compared to any real counter reset (which goes back towards 0).
+constexpr double COUNTER_RESET_TOLERANCE_KWH = 0.1;
+
 CounterHelper::CounterHelper()
 {
 }
@@ -174,7 +184,7 @@ double CounterHelper::CheckTotalCounter(const double mtotal, bool& bLooped)
 			// Pending reset timed out, discard it and treat current reading normally
 			_log.Log(LOG_STATUS, "CounterHelper: Pending counter reset expired after %d seconds, discarding", static_cast<int>(now - m_pendingResetTime));
 		}
-		else if ((rTotal < m_nLastCounterValue) && (m_nLastCounterValue != 0))
+		else if ((rTotal < m_nLastCounterValue - COUNTER_RESET_TOLERANCE_KWH) && (m_nLastCounterValue != 0))
 		{
 			// Counter is still below the expected value on second consecutive reading
 			// This confirms a genuine counter reset
@@ -190,7 +200,7 @@ double CounterHelper::CheckTotalCounter(const double mtotal, bool& bLooped)
 		}
 		// else: counter recovered to expected value, the drop was temporary - no offset needed
 	}
-	else if ((rTotal < m_nLastCounterValue) && (m_nLastCounterValue != 0))
+	else if ((rTotal < m_nLastCounterValue - COUNTER_RESET_TOLERANCE_KWH) && (m_nLastCounterValue != 0))
 	{
 		// Counter value decreased - potential reset, but wait for next reading to confirm
 		m_bPendingReset = true;
