@@ -21,7 +21,7 @@ class MitsubishiWF : public CDomoticzHardwareBase
 		uint8_t WindDirectionLR = 3; //center-center
 		uint8_t Entrust = 0;
 		bool CoolHotJudge = false;
-		uint8_t ModelNr = 1;
+		uint8_t ModelNr = 1;   // raw model number: 0=Sep2021, 1=Global2022, 2=HiEnd2023, 3=ZT2025, 64=FDT2023
 		bool Vacant = false;
 		uint8_t code = 0;
 
@@ -37,6 +37,11 @@ class MitsubishiWF : public CDomoticzHardwareBase
 
 		bool IsSelfCleanReset = false;
 		bool IsSelfCleanOperation = false;
+
+		double ConsumptionJson = -1.0;  // -1.0 = not present in response
+		int LedStat = 0;               // 0=off, 1=on
+		int AutoHeating = 0;           // 0=off, 1=on
+		bool IsPresetTempAuto = false;
 	};
 
 public:
