@@ -607,6 +607,9 @@ define(['app'], function (app) {
 					if (typeof data.ShortLogAddOnlyNewValues != 'undefined') {
 						$("#shortlogtable #ShortLogAddOnlyNewValues").prop('checked', data.ShortLogAddOnlyNewValues == 1);
 					}
+					if (typeof data.LogUnusedSensors != 'undefined') {
+						$("#shortlogtable #LogUnusedSensors").prop('checked', data.LogUnusedSensors == 1);
+					}
 					if (typeof data.ShortLogInterval != 'undefined') {
 						$scope.ShortLogInterval = data.ShortLogInterval;
 					}
@@ -1028,6 +1031,96 @@ define(['app'], function (app) {
 			});
 		}
 
+		$scope.RefreshUnusedSensorStats = function () {
+			$.ajax({
+				url: "json.htm?type=command&param=getdbstats",
+				dataType: 'json',
+				success: function (data) {
+					if (data.status == 'OK' && typeof data.unuseddevices === 'number' && data.unuseddevices > 0 && typeof data.unusedrecords === 'number') {
+						$("#unused_sensor_stats_row").show();
+						$("#unused_sensor_summary").text(
+							data.unuseddevices + ' ' + $.t('unused sensors have') + ' ' + data.unusedrecords + ' ' + $.t('log records.')
+						);
+					} else {
+						$("#unused_sensor_stats_row").hide();
+					}
+				},
+				error: function () {
+					$("#unused_sensor_stats_row").hide();
+				}
+			});
+		};
+
+		$scope.PruneUnusedSensorLogs = function () {
+			bootbox.confirm($.t("Are you sure to prune log data for all unused sensors?\n\nThis action can not be undone!"), function (result) {
+				if (result == true) {
+					$.ajax({
+						url: "json.htm?type=command&param=pruneunusedsensorlogs",
+						async: false,
+						dataType: 'json',
+						success: function (data) {
+							if (data.status == 'OK') {
+								bootbox.alert(data.rowsdeleted + ' ' + $.t('log records pruned for') + ' ' + data.devicesaffected + ' ' + $.t('unused sensors.'), function () {
+									$scope.VacuumDatabase();
+								});
+								$scope.RefreshUnusedSensorStats();
+							} else {
+								ShowNotify($.t('Problem pruning unused sensor logs!'), 2500, true);
+							}
+						},
+						error: function () {
+							HideNotify();
+							ShowNotify($.t('Problem pruning unused sensor logs!'), 2500, true);
+						}
+					});
+				}
+			});
+		};
+
+		$scope.RefreshDbStats = function () {
+			$.ajax({
+				url: "json.htm?type=command&param=getdbstats",
+				dataType: 'json',
+				success: function (data) {
+					if (data.status == 'OK') {
+						if (typeof data.dbsize === 'number' && data.dbsize >= 0) {
+							$("#dbsize_display").text('~' + formatBytes(data.dbsize));
+						}
+						if (typeof data.freesize === 'number' && data.freesize >= 0) {
+							var freeText = formatBytes(data.freesize);
+							if (data.freesize > 0) {
+								freeText += ' (' + $.t('click Vacuum to free') + ')';
+							}
+							$("#dbfreesize_display").text(freeText);
+						}
+					}
+				}
+			});
+		};
+
+		$scope.VacuumDatabase = function () {
+			bootbox.confirm($.t("Vacuum Database") + "?" + $.t("Are you sure you want to vacuum the database?\n\nThis will briefly pause all sensor updates and API responses while the database is rebuilt.").split("?")[1], function (result) {
+				if (result == true) {
+					ShowNotify($.t('Vacuuming database, please wait...'), 10000);
+					$.ajax({
+						url: "json.htm?type=command&param=vacuumdatabase",
+						async: false,
+						dataType: 'json',
+						success: function (data) {
+							HideNotify();
+							bootbox.alert($.t('Database vacuum completed.'), function () {
+								$scope.RefreshDbStats();
+							});
+						},
+						error: function () {
+							HideNotify();
+							ShowNotify($.t('Problem vacuuming the database!'), 2500, true);
+						}
+					});
+				}
+			});
+		};
+
 		init();
 
 		function init() {
@@ -1040,6 +1133,8 @@ define(['app'], function (app) {
 			$scope.MakeScrollLink("#idfloorplans", "#floorplans");
 			$scope.MakeScrollLink("#idothersettings", "#othersettings");
 			$scope.MakeScrollLink("#idrestoredatabase", "#restoredatabase");
+			$scope.RefreshDbStats();
+			$scope.RefreshUnusedSensorStats();
 
 			$("#dialog-findlatlong").dialog({
 				autoOpen: false,

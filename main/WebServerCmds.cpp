@@ -2558,6 +2558,10 @@ namespace http
 					root["DomoticzUpdateURL"] = m_mainworker.m_szDomoticzUpdateURL;
 					root["SystemName"] = m_mainworker.m_szSystemName;
 					root["Revision"] = m_mainworker.m_iRevision;
+					auto dbresult = m_sql.safe_query(
+						"SELECT (SELECT page_count FROM pragma_page_count()) * (SELECT page_size FROM pragma_page_size())");
+					if (!dbresult.empty())
+						root["db_size"] = atoll(dbresult[0][0].c_str());
 				}
 			}
 		}
@@ -3704,6 +3708,9 @@ namespace http
 
 				m_sql.m_bShortLogAddOnlyNewValues = (request::findValue(&req, "ShortLogAddOnlyNewValues") == "on" ? 1 : 0);
 				m_sql.UpdatePreferencesVar("ShortLogAddOnlyNewValues", m_sql.m_bShortLogAddOnlyNewValues); cntSettings++;
+
+				m_sql.m_bLogUnusedSensors = (request::findValue(&req, "LogUnusedSensors") == "on" ? 1 : 0);
+				m_sql.UpdatePreferencesVar("LogUnusedSensors", m_sql.m_bLogUnusedSensors); cntSettings++;
 
 				m_sql.m_bLogEventScriptTrigger = (request::findValue(&req, "LogEventScriptTrigger") == "on" ? 1 : 0);
 				m_sql.UpdatePreferencesVar("LogEventScriptTrigger", m_sql.m_bLogEventScriptTrigger); cntSettings++;
@@ -5432,6 +5439,47 @@ namespace http
 			_log.Log(LOG_STATUS, "Short Log Cleared!");
 		}
 
+		void CWebServer::Cmd_PruneUnusedSensorLogs(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+			root["status"] = "OK";
+			root["title"] = "PruneUnusedSensorLogs";
+
+			auto result = m_sql.safe_query(
+				"SELECT COUNT(DISTINCT ds.ID) FROM DeviceStatus ds WHERE ds.Used=0 AND ("
+				"EXISTS(SELECT 1 FROM Temperature WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Rain WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Wind WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM UV WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Meter WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM MultiMeter WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Percentage WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Fan WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM LightingLog WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Temperature_Calendar WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Rain_Calendar WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Wind_Calendar WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM UV_Calendar WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Meter_Calendar WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM MultiMeter_Calendar WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Percentage_Calendar WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Fan_Calendar WHERE DeviceRowID=ds.ID)"
+				")");
+
+			int iDeviceCount = (!result.empty() && !result[0].empty()) ? atoi(result[0][0].c_str()) : 0;
+
+			_log.Log(LOG_STATUS, "Pruning log data for unused sensors...");
+			int iTotalDeleted = m_sql.PruneUnusedSensorLogs();
+			_log.Log(LOG_STATUS, "Pruned %d log records for %d unused sensors", iTotalDeleted, iDeviceCount);
+
+			root["rowsdeleted"] = iTotalDeleted;
+			root["devicesaffected"] = iDeviceCount;
+		}
+
 		void CWebServer::Cmd_VacuumDatabase(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != URIGHTS_ADMIN)
@@ -5443,6 +5491,70 @@ namespace http
 			root["title"] = "VacuumDatabase";
 
 			m_sql.VacuumDatabase();
+		}
+
+		void CWebServer::Cmd_GetDbStats(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+			root["status"] = "OK";
+			root["title"] = "GetDbStats";
+
+			auto result = m_sql.safe_query(
+				"SELECT (SELECT page_count FROM pragma_page_count()) * (SELECT page_size FROM pragma_page_size()), "
+				"       (SELECT freelist_count FROM pragma_freelist_count()) * (SELECT page_size FROM pragma_page_size())");
+			if (!result.empty() && result[0].size() >= 2)
+			{
+				root["dbsize"] = atoll(result[0][0].c_str());
+				root["freesize"] = atoll(result[0][1].c_str());
+			}
+
+			auto unused = m_sql.safe_query(
+				"SELECT COUNT(DISTINCT ds.ID),"
+				"  (SELECT COUNT(*) FROM Temperature WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Rain WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Wind WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM UV WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Meter WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM MultiMeter WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Percentage WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Fan WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM LightingLog WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Temperature_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Rain_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Wind_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM UV_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Meter_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM MultiMeter_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Percentage_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Fan_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0))"
+				" FROM DeviceStatus ds WHERE ds.Used=0 AND ("
+				"  EXISTS(SELECT 1 FROM Temperature WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Rain WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Wind WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM UV WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Meter WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM MultiMeter WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Percentage WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Fan WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM LightingLog WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Temperature_Calendar WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Rain_Calendar WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Wind_Calendar WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM UV_Calendar WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Meter_Calendar WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM MultiMeter_Calendar WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Percentage_Calendar WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Fan_Calendar WHERE DeviceRowID=ds.ID)"
+				" )");
+			if (!unused.empty() && unused[0].size() >= 2)
+			{
+				root["unuseddevices"] = atoi(unused[0][0].c_str());
+				root["unusedrecords"] = atoll(unused[0][1].c_str());
+			}
 		}
 
 		void CWebServer::Cmd_AddMobileDevice(WebEmSession& session, const request& req, Json::Value& root)
@@ -6030,6 +6142,10 @@ namespace http
 				else if (Key == "ShortLogInterval")
 				{
 					root["ShortLogInterval"] = nValue;
+				}
+				else if (Key == "LogUnusedSensors")
+				{
+					root["LogUnusedSensors"] = nValue;
 				}
 				else if (Key == "SecPassword")
 				{

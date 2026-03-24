@@ -658,6 +658,7 @@ CSQLHelper::CSQLHelper()
 	m_bDisableDzVentsSystem = false;
 	m_ShortLogInterval = 5;
 	m_bShortLogAddOnlyNewValues = false;
+	m_bLogUnusedSensors = true;
 	m_PriceResolution = 60;
 	m_bPreviousAcceptNewHardware = false;
 	m_bLogEventScriptTrigger = false;
@@ -3804,6 +3805,13 @@ bool CSQLHelper::OpenDatabase()
 	}
 	m_bShortLogAddOnlyNewValues = (nValue != 0);
 
+	nValue = 1;
+	if (!GetPreferencesVar("LogUnusedSensors", nValue))
+	{
+		UpdatePreferencesVar("LogUnusedSensors", nValue);
+	}
+	m_bLogUnusedSensors = (nValue != 0);
+
 	nValue = 60;
 	if (!GetPreferencesVar("PriceResolution", nValue))
 	{
@@ -5717,13 +5725,16 @@ uint64_t CSQLHelper::UpdateValueInt(
 			|| (devType == pTypeSecurity1)
 			)
 		{
-			result = safe_query(
-				"INSERT INTO LightingLog (DeviceRowID, nValue, sValue, User) "
-				"VALUES ('%" PRIu64 "', '%d', '%q', '%q')",
-				ulID,
-				nValue, sValue,
-				(User != nullptr) ? User : ""
-			);
+			if (m_bLogUnusedSensors || bDeviceUsed)
+			{
+				result = safe_query(
+					"INSERT INTO LightingLog (DeviceRowID, nValue, sValue, User) "
+					"VALUES ('%" PRIu64 "', '%d', '%q', '%q')",
+					ulID,
+					nValue, sValue,
+					(User != nullptr) ? User : ""
+				);
+			}
 		}
 		if (!bDeviceUsed)
 			return ulID;	//don't process further as the device is not used
@@ -6375,6 +6386,12 @@ void CSQLHelper::UpdateTemperatureLog()
 		for (const auto &sd : result)
 		{
 			uint64_t ID = std::stoull(sd[0]);
+			if (!m_bLogUnusedSensors)
+			{
+				auto usedResult = safe_query("SELECT Used FROM DeviceStatus WHERE ID='%" PRIu64 "'", ID);
+				if (!usedResult.empty() && atoi(usedResult[0][0].c_str()) == 0)
+					continue;
+			}
 			unsigned char dType = atoi(sd[1].c_str());
 			unsigned char dSubType = atoi(sd[2].c_str());
 			int nValue = atoi(sd[3].c_str());
@@ -6565,6 +6582,12 @@ void CSQLHelper::UpdateRainLog()
 		for (const auto &sd : result)
 		{
 			uint64_t ID = std::stoull(sd[0]);
+			if (!m_bLogUnusedSensors)
+			{
+				auto usedResult = safe_query("SELECT Used FROM DeviceStatus WHERE ID='%" PRIu64 "'", ID);
+				if (!usedResult.empty() && atoi(usedResult[0][0].c_str()) == 0)
+					continue;
+			}
 			//unsigned char dType=atoi(sd[1].c_str());
 			//unsigned char dSubType=atoi(sd[2].c_str());
 			//int nValue=atoi(sd[3].c_str());
@@ -6622,6 +6645,12 @@ void CSQLHelper::UpdateWindLog()
 		for (const auto &sd : result)
 		{
 			uint64_t ID = std::stoull(sd[0]);
+			if (!m_bLogUnusedSensors)
+			{
+				auto usedResult = safe_query("SELECT Used FROM DeviceStatus WHERE ID='%" PRIu64 "'", ID);
+				if (!usedResult.empty() && atoi(usedResult[0][0].c_str()) == 0)
+					continue;
+			}
 
 			unsigned short DeviceID;
 			std::stringstream s_str2(sd[1]);
@@ -6701,6 +6730,12 @@ void CSQLHelper::UpdateUVLog()
 		for (const auto &sd : result)
 		{
 			uint64_t ID = std::stoull(sd[0]);
+			if (!m_bLogUnusedSensors)
+			{
+				auto usedResult = safe_query("SELECT Used FROM DeviceStatus WHERE ID='%" PRIu64 "'", ID);
+				if (!usedResult.empty() && atoi(usedResult[0][0].c_str()) == 0)
+					continue;
+			}
 			//unsigned char dType=atoi(sd[1].c_str());
 			//unsigned char dSubType=atoi(sd[2].c_str());
 			//int nValue=atoi(sd[3].c_str());
@@ -7048,6 +7083,12 @@ void CSQLHelper::UpdateMeter()
 			}
 
 			uint64_t ID = std::stoull(sd[0]);
+			if (!m_bLogUnusedSensors)
+			{
+				auto usedResult = safe_query("SELECT Used FROM DeviceStatus WHERE ID='%" PRIu64 "'", ID);
+				if (!usedResult.empty() && atoi(usedResult[0][0].c_str()) == 0)
+					continue;
+			}
 			std::string devname = sd[1];
 			int hardwareID = atoi(sd[2].c_str());
 			std::string DeviceID = sd[3];
@@ -7365,6 +7406,12 @@ void CSQLHelper::UpdateMultiMeter()
 			}
 
 			uint64_t ID = std::stoull(sd[0]);
+			if (!m_bLogUnusedSensors)
+			{
+				auto usedResult = safe_query("SELECT Used FROM DeviceStatus WHERE ID='%" PRIu64 "'", ID);
+				if (!usedResult.empty() && atoi(usedResult[0][0].c_str()) == 0)
+					continue;
+			}
 			unsigned char dType = atoi(sd[1].c_str());
 			unsigned char dSubType = atoi(sd[2].c_str());
 			//int nValue=atoi(sd[3].c_str());
@@ -7510,6 +7557,12 @@ void CSQLHelper::UpdatePercentageLog()
 		for (const auto &sd : result)
 		{
 			uint64_t ID = std::stoull(sd[0]);
+			if (!m_bLogUnusedSensors)
+			{
+				auto usedResult = safe_query("SELECT Used FROM DeviceStatus WHERE ID='%" PRIu64 "'", ID);
+				if (!usedResult.empty() && atoi(usedResult[0][0].c_str()) == 0)
+					continue;
+			}
 
 			//unsigned char dType=atoi(sd[1].c_str());
 			//unsigned char dSubType=atoi(sd[2].c_str());
@@ -7568,6 +7621,12 @@ void CSQLHelper::UpdateFanLog()
 		for (const auto &sd : result)
 		{
 			uint64_t ID = std::stoull(sd[0]);
+			if (!m_bLogUnusedSensors)
+			{
+				auto usedResult = safe_query("SELECT Used FROM DeviceStatus WHERE ID='%" PRIu64 "'", ID);
+				if (!usedResult.empty() && atoi(usedResult[0][0].c_str()) == 0)
+					continue;
+			}
 
 			//unsigned char dType=atoi(sd[1].c_str());
 			//unsigned char dSubType=atoi(sd[2].c_str());
@@ -7608,9 +7667,10 @@ void CSQLHelper::UpdateFanLog()
 
 void CSQLHelper::AddCalendarTemperature()
 {
+	std::string usedFilter = m_bLogUnusedSensors ? "" : " AND DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=1)";
 	//Get All temperature devices in the Temperature Table
 	std::vector<std::vector<std::string> > resultdevices;
-	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM Temperature ORDER BY DeviceRowID");
+	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM Temperature WHERE 1=1%s ORDER BY DeviceRowID", usedFilter.c_str());
 	if (resultdevices.empty())
 		return; //nothing to do
 
@@ -7676,9 +7736,10 @@ void CSQLHelper::AddCalendarTemperature()
 
 void CSQLHelper::AddCalendarUpdateRain()
 {
-	//Get All UV devices
+	std::string usedFilter = m_bLogUnusedSensors ? "" : " AND DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=1)";
+	//Get All Rain devices
 	std::vector<std::vector<std::string> > resultdevices;
-	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM Rain ORDER BY DeviceRowID");
+	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM Rain WHERE 1=1%s ORDER BY DeviceRowID", usedFilter.c_str());
 	if (resultdevices.empty())
 		return; //nothing to do
 
@@ -7763,6 +7824,7 @@ void CSQLHelper::AddCalendarUpdateRain()
 
 void CSQLHelper::AddCalendarUpdateMeter()
 {
+	std::string usedFilter = m_bLogUnusedSensors ? "" : " AND DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=1)";
 	float EnergyDivider = 1000.0F;
 	float GasDivider = 100.0F;
 	float WaterDivider = 100.0F;
@@ -7783,7 +7845,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 
 	//Get All Meter devices
 	std::vector<std::vector<std::string> > resultdevices;
-	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM Meter ORDER BY DeviceRowID");
+	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM Meter WHERE 1=1%s ORDER BY DeviceRowID", usedFilter.c_str());
 	if (resultdevices.empty())
 		return; //nothing to do
 
@@ -8018,6 +8080,7 @@ void CSQLHelper::AddCalendarUpdateMeter()
 
 void CSQLHelper::AddCalendarUpdateMultiMeter()
 {
+	std::string usedFilter = m_bLogUnusedSensors ? "" : " AND DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=1)";
 	float EnergyDivider = 1000.0F;
 	int tValue;
 	if (GetPreferencesVar("MeterDividerEnergy", tValue))
@@ -8027,7 +8090,7 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 
 	//Get All meter devices
 	std::vector<std::vector<std::string> > resultdevices;
-	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM MultiMeter ORDER BY DeviceRowID");
+	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM MultiMeter WHERE 1=1%s ORDER BY DeviceRowID", usedFilter.c_str());
 	if (resultdevices.empty())
 		return; //nothing to do
 
@@ -8151,9 +8214,10 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 
 void CSQLHelper::AddCalendarUpdateWind()
 {
+	std::string usedFilter = m_bLogUnusedSensors ? "" : " AND DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=1)";
 	//Get All Wind devices
 	std::vector<std::vector<std::string> > resultdevices;
-	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM Wind ORDER BY DeviceRowID");
+	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM Wind WHERE 1=1%s ORDER BY DeviceRowID", usedFilter.c_str());
 	if (resultdevices.empty())
 		return; //nothing to do
 
@@ -8208,9 +8272,10 @@ void CSQLHelper::AddCalendarUpdateWind()
 
 void CSQLHelper::AddCalendarUpdateUV()
 {
+	std::string usedFilter = m_bLogUnusedSensors ? "" : " AND DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=1)";
 	//Get All UV devices
 	std::vector<std::vector<std::string> > resultdevices;
-	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM UV ORDER BY DeviceRowID");
+	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM UV WHERE 1=1%s ORDER BY DeviceRowID", usedFilter.c_str());
 	if (resultdevices.empty())
 		return; //nothing to do
 
@@ -8257,9 +8322,10 @@ void CSQLHelper::AddCalendarUpdateUV()
 
 void CSQLHelper::AddCalendarUpdatePercentage()
 {
+	std::string usedFilter = m_bLogUnusedSensors ? "" : " AND DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=1)";
 	//Get All Percentage devices in the Percentage Table
 	std::vector<std::vector<std::string> > resultdevices;
-	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM Percentage ORDER BY DeviceRowID");
+	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM Percentage WHERE 1=1%s ORDER BY DeviceRowID", usedFilter.c_str());
 	if (resultdevices.empty())
 		return; //nothing to do
 
@@ -8309,9 +8375,10 @@ void CSQLHelper::AddCalendarUpdatePercentage()
 
 void CSQLHelper::AddCalendarUpdateFan()
 {
+	std::string usedFilter = m_bLogUnusedSensors ? "" : " AND DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=1)";
 	//Get All FAN devices in the Fan Table
 	std::vector<std::vector<std::string> > resultdevices;
-	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM Fan ORDER BY DeviceRowID");
+	resultdevices = safe_query("SELECT DISTINCT(DeviceRowID) FROM Fan WHERE 1=1%s ORDER BY DeviceRowID", usedFilter.c_str());
 	if (resultdevices.empty())
 		return; //nothing to do
 
@@ -8419,6 +8486,66 @@ void CSQLHelper::ClearShortLog()
 	query("DELETE FROM Percentage");
 	query("DELETE FROM Fan");
 	VacuumDatabase();
+}
+
+int CSQLHelper::PruneUnusedSensorLogs()
+{
+	int total = 0;
+	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+
+	char* errorMessage = nullptr;
+	int rc = sqlite3_exec(m_dbase, "BEGIN TRANSACTION;", nullptr, nullptr, &errorMessage);
+	if (rc != SQLITE_OK)
+	{
+		_log.Log(LOG_ERROR, "PruneUnusedSensorLogs(): BEGIN TRANSACTION failed: %s", errorMessage ? errorMessage : "unknown error");
+		sqlite3_free(errorMessage);
+		return 0;
+	}
+
+	safe_exec_no_return("DELETE FROM Temperature WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)");
+	total += sqlite3_changes(m_dbase);
+	safe_exec_no_return("DELETE FROM Rain WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)");
+	total += sqlite3_changes(m_dbase);
+	safe_exec_no_return("DELETE FROM Wind WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)");
+	total += sqlite3_changes(m_dbase);
+	safe_exec_no_return("DELETE FROM UV WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)");
+	total += sqlite3_changes(m_dbase);
+	safe_exec_no_return("DELETE FROM Meter WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)");
+	total += sqlite3_changes(m_dbase);
+	safe_exec_no_return("DELETE FROM MultiMeter WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)");
+	total += sqlite3_changes(m_dbase);
+	safe_exec_no_return("DELETE FROM Percentage WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)");
+	total += sqlite3_changes(m_dbase);
+	safe_exec_no_return("DELETE FROM Fan WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)");
+	total += sqlite3_changes(m_dbase);
+	safe_exec_no_return("DELETE FROM LightingLog WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)");
+	total += sqlite3_changes(m_dbase);
+	safe_exec_no_return("DELETE FROM Temperature_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)");
+	total += sqlite3_changes(m_dbase);
+	safe_exec_no_return("DELETE FROM Rain_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)");
+	total += sqlite3_changes(m_dbase);
+	safe_exec_no_return("DELETE FROM Wind_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)");
+	total += sqlite3_changes(m_dbase);
+	safe_exec_no_return("DELETE FROM UV_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)");
+	total += sqlite3_changes(m_dbase);
+	safe_exec_no_return("DELETE FROM Meter_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)");
+	total += sqlite3_changes(m_dbase);
+	safe_exec_no_return("DELETE FROM MultiMeter_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)");
+	total += sqlite3_changes(m_dbase);
+	safe_exec_no_return("DELETE FROM Percentage_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)");
+	total += sqlite3_changes(m_dbase);
+	safe_exec_no_return("DELETE FROM Fan_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)");
+	total += sqlite3_changes(m_dbase);
+
+	errorMessage = nullptr;
+	rc = sqlite3_exec(m_dbase, "END TRANSACTION;", nullptr, nullptr, &errorMessage);
+	if (rc != SQLITE_OK)
+	{
+		_log.Log(LOG_ERROR, "PruneUnusedSensorLogs(): END TRANSACTION failed: %s", errorMessage ? errorMessage : "unknown error");
+		sqlite3_free(errorMessage);
+	}
+
+	return total;
 }
 
 void CSQLHelper::VacuumDatabase()
