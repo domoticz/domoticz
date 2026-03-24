@@ -571,6 +571,10 @@ define(['app', 'livesocket'], function (app) {
 					var ctrl = this;
 					var item = $scope.item;
 
+					$scope.$watch('item', function (newVal) {
+						if (newVal) item = newVal;
+					});
+
 					ctrl.sHeatMode = function () {
 						if (typeof item.Status != 'undefined') { //FIXME only support this for evohome?
 							return item.Status;
@@ -607,6 +611,9 @@ define(['app', 'livesocket'], function (app) {
 					};
 					ctrl.displaySetPoint = function () {
 					return (item.SubType == 'Zone' || item.SubType == 'Hot Water' || item.SubType == 'Temp/Setpoint' || item.SubType == 'Temp/Hum/Setpoint' || item.SubType == 'Temp/Baro/Setpoint' || item.SubType == 'Temp/Hum/Baro/Setpoint') && typeof item.SetPoint != 'undefined';
+					};
+					ctrl.getSetpointUnit = function () {
+						return item.vunit || ('°' + $scope.tempsign);
 					};
 					ctrl.isSetPointOn = function () {
 						return item.SetPoint != 325.1;
