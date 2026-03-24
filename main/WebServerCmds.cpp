@@ -2561,7 +2561,7 @@ namespace http
 					auto dbresult = m_sql.safe_query(
 						"SELECT (SELECT page_count FROM pragma_page_count()) * (SELECT page_size FROM pragma_page_size())");
 					if (!dbresult.empty())
-						root["db_size"] = atoll(dbresult[0][0].c_str());
+						root["db_size"] = (Json::Int64)atoll(dbresult[0][0].c_str());
 				}
 			}
 		}
@@ -5508,8 +5508,8 @@ namespace http
 				"       (SELECT freelist_count FROM pragma_freelist_count()) * (SELECT page_size FROM pragma_page_size())");
 			if (!result.empty() && result[0].size() >= 2)
 			{
-				root["dbsize"] = atoll(result[0][0].c_str());
-				root["freesize"] = atoll(result[0][1].c_str());
+				root["dbsize"] = (Json::Int64)atoll(result[0][0].c_str());
+				root["freesize"] = (Json::Int64)atoll(result[0][1].c_str());
 			}
 
 			auto unused = m_sql.safe_query(
@@ -5553,7 +5553,7 @@ namespace http
 			if (!unused.empty() && unused[0].size() >= 2)
 			{
 				root["unuseddevices"] = atoi(unused[0][0].c_str());
-				root["unusedrecords"] = atoll(unused[0][1].c_str());
+				root["unusedrecords"] = (Json::Int64)atoll(unused[0][1].c_str());
 			}
 		}
 
