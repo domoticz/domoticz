@@ -21,6 +21,7 @@ on:
 
 env:
   PR_NR: ${{ github.event.pull_request.number }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   linux:
