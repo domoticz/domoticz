@@ -296,6 +296,16 @@ bool MitsubishiWF::HandleAircoStatus(const std::string& sResult)
 	//Base64 decode
 	szDecoded = base64_decode(sAircoStat);
 
+	m_AircoStatus.ConsumptionJson = -1.0;
+	m_AircoStatus.LedStat = 0;
+	m_AircoStatus.AutoHeating = 0;
+	if (!root["contents"]["consumption"].empty())
+		m_AircoStatus.ConsumptionJson = root["contents"]["consumption"].asDouble();
+	if (!root["contents"]["ledStat"].empty())
+		m_AircoStatus.LedStat = root["contents"]["ledStat"].asInt();
+	if (!root["contents"]["autoHeating"].empty())
+		m_AircoStatus.AutoHeating = root["contents"]["autoHeating"].asInt();
+
 	TranslateAirconStat(szDecoded, m_AircoStatus);
 	if (m_AircoStatus.PresetTemp != 0)
 	{
@@ -889,16 +899,23 @@ void MitsubishiWF::TranslateAirconStat(const std::string& szStat, _tAircoStatus&
 	aircoStatus.Entrust = 4 == (12 & content[12]);
 	aircoStatus.CoolHotJudge = (content[8] & 8) <= 0;
 
-	int8_t modelMatrix[] = { 0, 1, 2 };
-	aircoStatus.ModelNr = find_match(content[0] & 127, modelMatrix, sizeof(modelMatrix));
+	{
+		uint8_t rawModel = static_cast<uint8_t>(content[0]) & 0x7F;
+		if (rawModel == 1 || rawModel == 2 || rawModel == 3 || rawModel == 64)
+			aircoStatus.ModelNr = rawModel;
+		else
+			aircoStatus.ModelNr = 0;
+	}
 
 	aircoStatus.Vacant = content[10] & 1;
 
 	aircoStatus.code = content[6] & 127;
 
+	aircoStatus.IsPresetTempAuto = (static_cast<uint8_t>(content[7]) & 0x80) != 0;
+
 	if (aircoStatus.code == 0)
 		aircoStatus.szErrorCode = "00";
-	else if ((content[6] & -128) <= 0)
+	else if (content[6] < 0)  // int8_t negative means bit 7 set = M-type error
 		aircoStatus.szErrorCode = "M" + std::to_string(aircoStatus.code);
 	else
 		aircoStatus.szErrorCode = "E" + std::to_string(aircoStatus.code);
@@ -1007,6 +1024,11 @@ void MitsubishiWF::ParseAirconStat(const _tAircoStatus& aircoStatus)
 	{
 		double mtotal = m_kWhCounter.CheckTotalCounter(this, 1, 1, 1, aircoStatus.Electric_kWh_Used);
 		SendKwhMeter(1, 1, 255, 0, mtotal, "Electricity used");
+		if (aircoStatus.ConsumptionJson >= 0.0)
+		{
+			Log(LOG_STATUS, "Energy: binary=%.2f kWh, JSON consumption=%.4f",
+				aircoStatus.Electric_kWh_Used, aircoStatus.ConsumptionJson);
+		}
 	}
 }
 
@@ -1215,6 +1237,9 @@ bool MitsubishiWF::command_to_byte(const _tAircoStatus& aircon_stat, std::string
 	double preset_temp = (aircon_stat.OperationMode == 3) ? 25.0 : aircon_stat.PresetTemp;
 	stat_byte[4] |= int(preset_temp / 0.5) + 128;
 
+	if (aircon_stat.IsPresetTempAuto)
+		stat_byte[9] |= 1;
+
 	// entrust
 	if (aircon_stat.Entrust == 0)
 		stat_byte[12] |= 8;
@@ -1230,18 +1255,15 @@ bool MitsubishiWF::command_to_byte(const _tAircoStatus& aircon_stat, std::string
 			stat_byte[10] |= 1;
 	}
 
-	if (aircon_stat.ModelNr != 1 && aircon_stat.ModelNr != 2)
-	{
-	}
-	else
+	if (aircon_stat.ModelNr == 1 || aircon_stat.ModelNr == 2 || aircon_stat.ModelNr == 3)
 	{
 		if (aircon_stat.IsSelfCleanReset)
 			stat_byte[10] |= 4;
 
 		if (aircon_stat.IsSelfCleanOperation)
-			stat_byte[10] |= 144;
+			stat_byte[12] |= 144;
 		else
-			stat_byte[10] |= 128;
+			stat_byte[12] |= 128;
 	}
 
 	uint16_t crc = crc16ccitt((const uint8_t*)stat_byte, sizeof(stat_byte) - 2);
@@ -1315,6 +1337,9 @@ bool MitsubishiWF::recieve_to_bytes(const _tAircoStatus& aircon_stat, std::strin
 	double preset_temp = (aircon_stat.OperationMode == 3) ? 25.0 : aircon_stat.PresetTemp;
 	stat_byte[4] |= int(preset_temp / 0.5);
 
+	if (aircon_stat.IsPresetTempAuto)
+		stat_byte[7] |= 128;
+
 	// entrust
 	if (aircon_stat.Entrust)
 		stat_byte[12] |= 4;
@@ -1322,10 +1347,7 @@ bool MitsubishiWF::recieve_to_bytes(const _tAircoStatus& aircon_stat, std::strin
 	if (!aircon_stat.CoolHotJudge)
 		stat_byte[8] |= 8;
 
-	if (aircon_stat.ModelNr == 1)
-		stat_byte[0] |= 1;
-	else if (aircon_stat.ModelNr == 2)
-		stat_byte[0] |= 2;
+	stat_byte[0] |= (aircon_stat.ModelNr & 0x7F);
 
 	if (aircon_stat.ModelNr == 1)
 	{
@@ -1333,10 +1355,7 @@ bool MitsubishiWF::recieve_to_bytes(const _tAircoStatus& aircon_stat, std::strin
 			stat_byte[10] |= 1;
 	}
 
-	if (aircon_stat.ModelNr != 1 && aircon_stat.ModelNr != 2)
-	{
-	}
-	else
+	if (aircon_stat.ModelNr == 1 || aircon_stat.ModelNr == 2 || aircon_stat.ModelNr == 3)
 	{
 		if (aircon_stat.IsSelfCleanOperation)
 			stat_byte[15] |= 1;
