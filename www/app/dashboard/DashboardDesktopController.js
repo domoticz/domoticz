@@ -527,6 +527,11 @@ define([
 			 * Global: Switch a light device (called from inline onclick handlers in the mobile template)
 			 */
 			window.SwitchLight = function (idx, command, isProtectedOrPasscode) {
+				if (window.my_config.userrights == 0) {
+					HideNotify();
+					ShowNotify($.t('You do not have permission to do that!'), 2500, true);
+					return;
+				}
 				// If third arg is a non-empty string, it's already a passcode
 				if (typeof isProtectedOrPasscode === 'string' && isProtectedOrPasscode !== '') {
 					SwitchLightInt(idx, command, isProtectedOrPasscode);
@@ -557,6 +562,11 @@ define([
 			 * Global: Switch a scene (called from inline onclick handlers in the mobile template)
 			 */
 			window.SwitchScene = function (idx, command, isProtectedOrPasscode) {
+				if (window.my_config.userrights == 0) {
+					HideNotify();
+					ShowNotify($.t('You do not have permission to do that!'), 2500, true);
+					return;
+				}
 				// If third arg is a non-empty string, it's already a passcode
 				if (typeof isProtectedOrPasscode === 'string' && isProtectedOrPasscode !== '') {
 					SwitchSceneInt(idx, command, isProtectedOrPasscode);
