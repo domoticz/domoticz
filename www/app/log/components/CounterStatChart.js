@@ -14,6 +14,7 @@ define(['app', 'luxon'], function (app, luxon) {
         const self = this;
 		
 		self.$element = $element;
+		self.$scope = $scope;
 		
 		$scope.idx = 1768;//8830;//7953;//1768;
 		
@@ -71,33 +72,34 @@ define(['app', 'luxon'], function (app, luxon) {
 				events: {
 					load: function () {
 						const chart = this;
+						$scope.chartRef = chart;
 
-						$scope.watermarkErrorConfig = {
+						chart.watermarkErrorConfig = {
 							text: '',
 							visible: false
 						};
 
 						function renderWatermarkError() {
-							if (!$scope.watermarkErrorConfig.visible) {
-								if ($scope.watermarkError) {
-									$scope.watermarkError.destroy();
-									$scope.watermarkError = null;
+							if (!chart.watermarkErrorConfig.visible) {
+								if (chart.watermarkError) {
+									chart.watermarkError.destroy();
+									chart.watermarkError = null;
 								}
 								return;
 							}
 
 							const maxWidth = Math.round(chart.plotWidth * 0.8);
 
-							if ($scope.watermarkError) {
-								$scope.watermarkError.attr({ text: `<div class="wm-message" style="maxWidth:${maxWidth}px">${$scope.watermarkErrorConfig.text}</div>` });
+							if (chart.watermarkError) {
+								chart.watermarkError.attr({ text: `<div class="wm-message" style="maxWidth:${maxWidth}px">${chart.watermarkErrorConfig.text}</div>` });
 								return;
 							}
 
 							const x = chart.plotLeft + chart.plotWidth / 2;
 							const y = chart.plotTop;
 
-							$scope.watermarkError = chart.renderer
-								.label(`<div class="wm-message" style="maxWidth:${maxWidth}px">${$scope.watermarkErrorConfig.text}</div>`, x, y, null, null, null, true) // can use text instead, lighter but no html
+							chart.watermarkError = chart.renderer
+								.label(`<div class="wm-message" style="maxWidth:${maxWidth}px">${chart.watermarkErrorConfig.text}</div>`, x, y, null, null, null, true) // can use text instead, lighter but no html
 								.addClass('chart-watermark-error')
 								.attr({
 									align: 'center',
@@ -106,35 +108,44 @@ define(['app', 'luxon'], function (app, luxon) {
 								.add();
 						}
 
-						$scope.updateWatermarkError = renderWatermarkError;
-						renderWatermarkError();
+						chart.updateWatermarkError = renderWatermarkError;
 
-						$scope.watermarkWarningConfig = {
+						function renderError(errorMessage) {
+							chart.watermarkErrorConfig.text = $.t(errorMessage);
+							chart.watermarkWarningConfig.visible = false;
+							chart.updateWatermarkWarning();
+							chart.watermarkErrorConfig.visible = true;
+							chart.updateWatermarkError();
+						}
+
+						chart.renderError = renderError;
+
+						chart.watermarkWarningConfig = {
 							text: '',
 							visible: false
 						};
 
 						function renderWatermarkWarning() {
-							if (!$scope.watermarkWarningConfig.visible) {
-								if ($scope.watermarkWarning) {
-									$scope.watermarkWarning.destroy();
-									$scope.watermarkWarning = null;
+							if (!chart.watermarkWarningConfig.visible) {
+								if (chart.watermarkWarning) {
+									chart.watermarkWarning.destroy();
+									chart.watermarkWarning = null;
 								}
 								return;
 							}
 
 							const maxWidth = Math.round(chart.plotWidth * 0.8);
 
-							if ($scope.watermarkWarning) {
-								$scope.watermarkWarning.attr({ text: `<div class="wm-message" style="maxWidth:${maxWidth}px">${$scope.watermarkWarningConfig.text}</div>` });
+							if (chart.watermarkWarning) {
+								chart.watermarkWarning.attr({ text: `<div class="wm-message" style="maxWidth:${maxWidth}px">${chart.watermarkWarningConfig.text}</div>` });
 								return;
 							}
 
 							const x = chart.plotLeft + chart.plotWidth / 2;
 							const y = chart.plotTop;
 
-							$scope.watermarkWarning = chart.renderer
-								.label(`<div class="wm-message" style="maxWidth:${maxWidth}px">${$scope.watermarkWarningConfig.text}</div>`, x, y, null, null, null, true) // can use text instead, lighter but no html
+							chart.watermarkWarning = chart.renderer
+								.label(`<div class="wm-message" style="maxWidth:${maxWidth}px">${chart.watermarkWarningConfig.text}</div>`, x, y, null, null, null, true) // can use text instead, lighter but no html
 								.addClass('chart-watermark-warning')
 								.attr({
 									align: 'center',
@@ -143,8 +154,17 @@ define(['app', 'luxon'], function (app, luxon) {
 								.add();
 						}
 
-						$scope.updateWatermarkWarning = renderWatermarkWarning;
-						renderWatermarkWarning();
+						chart.updateWatermarkWarning = renderWatermarkWarning;
+
+						function renderWarning(warningMessage) {
+							chart.watermarkWarningConfig.text = $.t(warningMessage);
+							chart.watermarkErrorConfig.visible = false;
+							chart.updateWatermarkError();
+							chart.watermarkWarningConfig.visible = true;
+							chart.updateWatermarkWarning();
+						}
+
+						chart.renderWarning = renderWarning;
 					}
 				}
 			},
@@ -273,28 +293,12 @@ define(['app', 'luxon'], function (app, luxon) {
 			return ($scope.actDay == day) ? "zoom-button-active" : "";
 		}
 
-		function renderError(errorMessage) {
-			$scope.watermarkErrorConfig.text = $.t(errorMessage);
-			$scope.watermarkWarningConfig.visible = false;
-			$scope.updateWatermarkWarning();
-			$scope.watermarkErrorConfig.visible = true;
-			$scope.updateWatermarkError();
-		}
-
-		function renderWarning(warningMessage) {
-			$scope.watermarkWarningConfig.text = $.t(warningMessage);
-			$scope.watermarkErrorConfig.visible = false;
-			$scope.updateWatermarkError();
-			$scope.watermarkWarningConfig.visible = true;
-			$scope.updateWatermarkWarning();
-		}
-
 		self.parseStats = function(data) {
 			if (data.errormessage !== undefined) {
-				renderError(data.errormessage)
+				$scope.chartRef.renderError(data.errormessage)
 			}
 			else if (data.warningmessage !== undefined) {
-				renderWarning(data.warningmessage)
+				$scope.chartRef.renderWarning(data.warningmessage)
 			}
 			if (typeof data.result != 'undefined') {
 				if (typeof data.status != 'undefined') {

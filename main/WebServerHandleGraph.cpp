@@ -224,6 +224,12 @@ namespace http
 
 						localtime_r(&sqlTime, &tm1);
 
+						// check if data are from yesterday or before
+						if (tm1.tm_mday != (tm_limit.tm_mday+1))
+						{
+							root["warningmessage"] = "Warning: data are from yesterday or older";
+						}
+
 						char szDateStart[40];
 						char szDateEnd[40];
 						sprintf(szDateEnd, "%04d-%02d-%02d %02d:%02d:%02d", tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday, tm1.tm_hour, tm1.tm_min, tm1.tm_sec);

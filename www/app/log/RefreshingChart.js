@@ -90,6 +90,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                         events: {
                             load: function () {
                                 const chart = this;
+                                self.$scope.chartRef = chart;
 
                                 chart.watermarkErrorConfig = {
                                     text: '',
@@ -126,7 +127,16 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                                 }
 
                                 chart.updateWatermarkError = renderWatermarkError;
-                                renderWatermarkError();
+
+                                function renderError(errorMessage) {
+                                    chart.watermarkErrorConfig.text = $.t(errorMessage);
+                                    chart.watermarkWarningConfig.visible = false;
+                                    chart.updateWatermarkWarning();
+                                    chart.watermarkErrorConfig.visible = true;
+                                    chart.updateWatermarkError();
+                                }
+
+                                chart.renderError = renderError;
 
                                 chart.watermarkWarningConfig = {
                                     text: '',
@@ -163,7 +173,16 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                                 }
 
                                 chart.updateWatermarkWarning = renderWatermarkWarning;
-                                renderWatermarkWarning();
+
+                                function renderWarning(warningMessage) {
+                                    chart.watermarkWarningConfig.text = $.t(warningMessage);
+                                    chart.watermarkErrorConfig.visible = false;
+                                    chart.updateWatermarkError();
+                                    chart.watermarkWarningConfig.visible = true;
+                                    chart.updateWatermarkWarning();
+                                }
+
+                                chart.renderWarning = renderWarning;
                             }
                         }
                     },
@@ -355,22 +374,6 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 );
         }
 
-        function renderError(errorMessage) {
-            self.chart.watermarkErrorConfig.text = $.t(errorMessage);
-            self.chart.watermarkWarningConfig.visible = false;
-            self.chart.updateWatermarkWarning();
-            self.chart.watermarkErrorConfig.visible = true;
-            self.chart.updateWatermarkError();
-        }
-
-        function renderWarning(warningMessage) {
-            self.chart.watermarkWarningConfig.text = $.t(warningMessage);
-            self.chart.watermarkErrorConfig.visible = false;
-            self.chart.updateWatermarkError();
-            self.chart.watermarkWarningConfig.visible = true;
-            self.chart.updateWatermarkWarning();
-        }
-
         function refreshChartData(afterRefreshChartData) {
             const dataRequest = createDataRequest();
             const stopwatchDataRequest = stopwatch(function() { return 'sendRequest(' + JSON.stringify(dataRequest) + ')'; });
@@ -382,10 +385,10 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
                     const stopwatchCycle = stopwatch('cycle');
                     if (data.errormessage !== undefined) {
-                        renderError(data.errormessage)
+                        self.$scope.chartRef.renderError(data.errormessage)
                     }
                     else if (data.warningmessage !== undefined) {
-                        renderWarning(data.warningmessage)
+                        self.$scope.chartRef.renderWarning(data.warningmessage)
                     }
                     loadDataInChart(data);
                     synchronizeYaxes();
