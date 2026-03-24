@@ -129,7 +129,6 @@ define(['app', 'log/Chart'], function (app) {
                 {
                     id: 'price',
                     dataItemKeys: ['p'],
-                    convertZeroToNull: true,
                     label: '2',
                     template: function (seriesSupplier) {
                         return {

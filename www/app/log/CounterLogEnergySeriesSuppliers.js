@@ -352,7 +352,6 @@
                     id: 'P1PHSS',
                     dataItemKeys: ['p'],
                     label: '2',
-                    convertZeroToNull: true,
                     showWithoutDatapoints: false,
                     template: function (seriesSupplier) {
                         return {
@@ -636,7 +635,6 @@
                     id: 'PRMYSS',
                     valueDecimals: 4,
                     label: 'B',
-                    convertZeroToNull: true,
                     showWithoutDatapoints: false,
                     series: {
                         type: 'spline',
