@@ -1,3 +1,9 @@
+function formatBytes(bytes) {
+	if (bytes < 1024) return bytes + ' B';
+	if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+	return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
 define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.permissions', 'domoticz.api', 'livesocket', 'devices/deviceFactory', 'angular-animate', 'ui-grid', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue'], function (angularAMD, appRoutesModule, appConstantsModule, appNotificationsModule, appPermissionsModule, apiModule, websocketModule, deviceFactory) {
 	var app = angular.module('domoticz', [
 		'ngRoute', 'ngAnimate', 'ui.grid', 'ngSanitize',
@@ -388,6 +394,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			apphash: 0,
 			appdate: 0,
 			pythonversion: "",
+			dbsize: "",
 			versiontooltip: "",
 			ShowUpdatedEffect: true,
 			DateFormat: "yy-mm-dd",
@@ -430,6 +437,9 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 							$rootScope.config.appdate = data.build_time;
 							$rootScope.config.dzventsversion = data.dzvents_version;
 							$rootScope.config.pythonversion = data.python_version;
+							if (typeof data.db_size != 'undefined') {
+								$rootScope.config.dbsize = formatBytes(data.db_size);
+							}
 							$rootScope.config.isproxied = data.isproxied;
 							$rootScope.config.versiontooltip = "'Build Hash: <b>" + $rootScope.config.apphash + "</b><br>" + "Build Date: " + $rootScope.config.appdate + "'";
 						}

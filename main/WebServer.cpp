@@ -527,7 +527,9 @@ namespace http
 
 			RegisterCommandCode("addlogmessage", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddLogMessage(session, req, root); });
 			RegisterCommandCode("clearshortlog", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearShortLog(session, req, root); });
+			RegisterCommandCode("pruneunusedsensorlogs", [this](auto&& session, auto&& req, auto&& root) { Cmd_PruneUnusedSensorLogs(session, req, root); });
 			RegisterCommandCode("vacuumdatabase", [this](auto&& session, auto&& req, auto&& root) { Cmd_VacuumDatabase(session, req, root); });
+			RegisterCommandCode("getdbstats", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDbStats(session, req, root); });
 			RegisterCommandCode("fixkwhcounterspikes", [this](auto&& session, auto&& req, auto&& root) { Cmd_FixKwhCounterSpikes(session, req, root); });
 
 			RegisterCommandCode("addmobiledevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddMobileDevice(session, req, root); });

@@ -394,6 +394,7 @@ public:
 	void ScheduleDay();
 
 	void ClearShortLog();
+	int PruneUnusedSensorLogs();
 	void VacuumDatabase();
 	bool FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dry_run, std::vector<std::string>& results);
 	void OptimizeDatabase(sqlite3 *dbase);
@@ -483,6 +484,7 @@ public:
 	bool m_bEnableEventSystemFullURLLog;
 	int m_ShortLogInterval;
 	bool m_bShortLogAddOnlyNewValues;
+	bool m_bLogUnusedSensors;
 	std::atomic<int> m_PriceResolution;
 	bool m_bLogEventScriptTrigger;
 	bool m_bDisableDzVentsSystem;

@@ -235,6 +235,12 @@
 									<tr>
                   <td><input type="checkbox" id="ShortLogAddOnlyNewValues" name="ShortLogAddOnlyNewValues"> <label for="ShortLogAddOnlyNewValues" data-i18n="ShortLogAddOnlyNewValues"></label></td>
                   </tr>
+								<tr>
+                  <td><input type="checkbox" id="LogUnusedSensors" name="LogUnusedSensors"> <label for="LogUnusedSensors" data-i18n="LogUnusedSensors"></label><br><button data-i18n="Prune" class="btn btn-danger" ng-click="PruneUnusedSensorLogs()">Prune</button></td>
+                  </tr>
+								<tr id="unused_sensor_stats_row">
+                  <td colspan="2"><span id="unused_sensor_summary"></span></td>
+                  </tr>
 									</table>
 								</div>
 							</div>
@@ -1609,9 +1615,21 @@
 						</div>
 							<div class="row-fluid">
 								<div class="span12">
-                                    <br>
-									<center><a data-i18n="Backup Database" class="btn btn-primary" href="backupdatabase.php" download>Backup Database</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a data-i18n="Restore Database" class="btn btn-warning" href="javascript:SwitchLayout('RestoreDatabase')">Restore Database</a></center>
-                                    <br>
+									<br>
+									<center>
+										<span data-i18n="Database Size" style="color:#fff;font-weight:bold"></span>: <strong id="dbsize_display" style="color:#fff"></strong>
+										&nbsp;&nbsp;|&nbsp;&nbsp;
+										<span data-i18n="Reclaimable" style="color:#fff;font-weight:bold"></span>: <strong id="dbfreesize_display" style="color:#fff"></strong>
+									</center>
+									<br>
+								</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span12">
+									<center>
+										<a data-i18n="Backup Database" class="btn btn-primary" href="backupdatabase.php" download>Backup Database</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a data-i18n="Restore Database" class="btn btn-warning" href="javascript:SwitchLayout('RestoreDatabase')">Restore Database</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button data-i18n="Vacuum Database" class="btn btn-danger" ng-click="VacuumDatabase()">Vacuum Database</button>
+									</center>
+									<br>
 								</div>
 							</div>
 						</section>
