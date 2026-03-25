@@ -1328,14 +1328,19 @@ namespace Plugins
 					goto Error;
 				}
 
-				// Ensure sys.stdin/stdout/stderr are set immediately after interpreter creation.
-				// Python 3.13+ sub-interpreters don't inherit stdio from the main interpreter,
-				// causing "RuntimeError: sys.stderr is None" during any subsequent import.
+				// NullStream is only needed on Python 3.13+, where sub-interpreters no longer
+				// inherit sys.stderr/stdout/stdin from the main interpreter, causing
+				// "RuntimeError: sys.stderr is None" during any subsequent import.
 				// Plugins use Domoticz.Log() not print(), so a NullStream is sufficient.
 				// Explicitly inject __builtins__ before PyEval_EvalCode so the class definition
 				// works in fresh sub-interpreters where auto-injection may fail.
-				try
+				const char *pPyVer = Py_GetVersion();
+				int iPyMajor = 0, iPyMinor = 0;
+				if (pPyVer) sscanf(pPyVer, "%d.%d", &iPyMajor, &iPyMinor);
+				if (iPyMajor > 3 || (iPyMajor == 3 && iPyMinor >= 13))
 				{
+					try
+					{
 					PyNewRef	pCode = Py_CompileString(
 						"class _NullStream:\n"
 						"    encoding = 'utf-8'\n"
@@ -1399,10 +1404,11 @@ namespace Plugins
 					}
 					if (PyErr_Occurred()) PyErr_Clear();
 				}
-				catch (...)
-				{
-					Log(LOG_ERROR, "(%s) exception initializing stdio streams, continuing.", m_PluginKey.c_str());
-					if (PyErr_Occurred()) PyErr_Clear();
+					catch (...)
+					{
+						Log(LOG_ERROR, "(%s) exception initializing stdio streams, continuing.", m_PluginKey.c_str());
+						if (PyErr_Occurred()) PyErr_Clear();
+					}
 				}
 
 				// Prepend plugin directory to path so that python will search it early when importing
