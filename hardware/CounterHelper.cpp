@@ -167,7 +167,7 @@ double CounterHelper::CheckTotalCounter(const double mtotal, bool& bLooped)
 {
 	if (mtotal == 0)
 	{
-		if (m_nLastCounterValue != 0)
+		if (m_nLastCounterValue >= 0.0005)
 		{
 			_log.Log(LOG_STATUS, "CounterHelper: Device %d (%s): Received 0 reading, returning cached value (%.3f) to avoid DB corruption", m_DeviceIdx, m_DeviceName.c_str(), m_nLastCounterValue);
 		}
