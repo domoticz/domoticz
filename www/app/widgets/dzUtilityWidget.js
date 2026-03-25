@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-    app.directive('dzUtilityWidget', function ($rootScope, $window, deviceApi, permissions) {
+    app.directive('dzUtilityWidget', function ($rootScope, $window, $sce, deviceApi, permissions) {
         return {
             restrict: 'E',
             replace: true,
@@ -147,9 +147,17 @@ define(['app'], function (app) {
                     } else if (device.SubType === 'Soil Moisture') {
                         status = device.Desc;
                     } else if (ctrl.isText()) {
-                        status = device.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+                        var sanitized = device.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+                        return $sce.trustAsHtml(DOMPurify.sanitize(sanitized, {
+                            ALLOWED_TAGS: ['br', 'span', 'font', 'a', 'b', 'i', 'u'],
+                            ALLOWED_ATTR: ['style', 'color', 'href', 'target']
+                        }));
                     } else if (ctrl.isAlert()) {
-                        status = device.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+                        var sanitized = device.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+                        return $sce.trustAsHtml(DOMPurify.sanitize(sanitized, {
+                            ALLOWED_TAGS: ['br', 'span', 'font', 'a', 'b', 'i', 'u'],
+                            ALLOWED_ATTR: ['style', 'color', 'href', 'target']
+                        }));
                     }
 
                     if (typeof device.CounterDeliv !== 'undefined' && device.CounterDeliv != 0) {
@@ -173,7 +181,16 @@ define(['app'], function (app) {
                             var aLevel = Math.min(parseInt(device.Level) || 0, 4);
                             text += ' <img src="images/Alert48_' + aLevel + '.png" height="16" width="16">';
                         }
-                        return text;
+                        var allowedTags = ['br', 'span', 'font', 'a', 'b', 'i', 'u'];
+                        var allowedAttr = ['style', 'color', 'href', 'target'];
+                        if (ctrl.isAlert()) {
+                            allowedTags.push('img');
+                            allowedAttr.push('src', 'height', 'width');
+                        }
+                        return $sce.trustAsHtml(DOMPurify.sanitize(text, {
+                            ALLOWED_TAGS: allowedTags,
+                            ALLOWED_ATTR: allowedAttr
+                        }));
                     }
                     if (ctrl.isCounter() && device.Type === 'P1 Smart Meter') {
                         var text = '';
@@ -337,8 +354,7 @@ define(['app'], function (app) {
                     } else if (device.SubType === 'Custom Sensor') {
                         EditCustomSensorDevice(device.idx, escape(device.Name), escape(device.Description), device.CustomImage, device.SensorType, escape(device.SensorUnit), device.ID, device.Unit);
                     } else if (device.SubType === 'Text') {
-                        var status = ctrl.getStatusText().replaceAll('<br />', '');
-                        EditTextDevice(device.idx, escape(device.Name), escape(status), escape(device.Description), device.CustomImage, device.ID, device.Unit);
+                        EditTextDevice(device.idx, escape(device.Name), escape(device.Data), escape(device.Description), device.CustomImage, device.ID, device.Unit);
                     } else if ((device.Type === 'Setpoint' && device.SubType === 'SetPoint') || device.Type === 'Radiator 1') {
                         EditSetPoint(device.idx, escape(device.Name), escape(device.Description), escape(device.vunit), device.step, device.min, device.max, device.Protected, device.CustomImage, device.ID, device.Unit);
                     } else if (device.SubType === 'Thermostat Clock') {
