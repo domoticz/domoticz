@@ -1,4 +1,4 @@
-Version 2026.xxxx
+Version 2026.1 (March 25th 2026)
 - Added: Alexa Smart Home v3 API endpoint (see ALEXA.md)
 - Added: Battery SOC mode selection for Energy Dashboard with voltage display
 - Added: Current sensor log with 3-phase support and compare chart
