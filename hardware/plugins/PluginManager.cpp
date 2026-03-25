@@ -68,6 +68,7 @@ namespace Plugins {
 
 	std::map<int, CDomoticzHardwareBase*>	CPluginSystem::m_pPlugins;
 	std::map<std::string, std::string>		CPluginSystem::m_PluginXml;
+	std::map<std::string, void*>			CPluginSystem::m_PreservedInterpreters;
 	void *CPluginSystem::m_InitialPythonThread;
 
 	CPluginSystem::CPluginSystem()
@@ -144,10 +145,13 @@ namespace Plugins {
 
 			Py_Initialize();
 
-			// Initialise threads. Python 3.7+ does this inside Py_Initialize so done here for compatibility
-			if (!PyEval_ThreadsInitialized())
+			// Initialise threads. Python 3.7+ does this inside Py_Initialize.
+			// PyEval_ThreadsInitialized/PyEval_InitThreads were removed in Python 3.13,
+			// so only call them if the function pointers were resolved.
+			if (PyEval_ThreadsInitialized && !PyEval_ThreadsInitialized())
 			{
-				PyEval_InitThreads();
+				if (PyEval_InitThreads)
+					PyEval_InitThreads();
 			}
 
 			m_InitialPythonThread = PyEval_SaveThread();
@@ -176,13 +180,12 @@ namespace Plugins {
 
 		m_pPlugins.clear();
 
-		if (Py_LoadLibrary() && m_InitialPythonThread)
-		{
-			if (Py_IsInitialized()) {
-				PyEval_RestoreThread((PyThreadState*)m_InitialPythonThread);
-				Py_Finalize();
-			}
-		}
+		// Skip Py_Finalize() - the process is shutting down and the OS will
+		// reclaim all resources. Calling Py_Finalize() after sub-interpreters
+		// have been destroyed via Py_EndInterpreter() + PyThreadState_Swap()
+		// leaves the thread state in an inconsistent status that causes
+		// PyEval_RestoreThread() to trigger Py_FatalError/abort() in Python 3.12+.
+		m_InitialPythonThread = nullptr;
 
 		_log.Log(LOG_STATUS, "PluginSystem: Stopped.");
 		return true;
@@ -219,7 +222,7 @@ namespace Plugins {
 #endif
 		if (!createdir(plugin_BaseDir.c_str(), 0755))
 		{
-			_log.Log(LOG_NORM, "%s: Created directory %s", __func__, plugin_BaseDir.c_str());
+			_log.Debug(DEBUG_PYTHON, "%s: Created directory %s", __func__, plugin_BaseDir.c_str());
 		}
 
 		std::vector<std::string> DirEntries, FileEntries;
@@ -292,6 +295,28 @@ namespace Plugins {
 			std::lock_guard<std::mutex> l(PluginMutex);
 			m_pPlugins.erase(HwdID);
 		}
+	}
+
+	void* CPluginSystem::GetPreservedInterpreter(const std::string& pluginKey)
+	{
+		std::lock_guard<std::mutex> l(PluginMutex);
+		auto it = m_PreservedInterpreters.find(pluginKey);
+		if (it != m_PreservedInterpreters.end())
+		{
+			void* pInterpreter = it->second;
+			m_PreservedInterpreters.erase(it);
+			return pInterpreter;
+		}
+		return nullptr;
+	}
+
+	void CPluginSystem::SetPreservedInterpreter(const std::string& pluginKey, void* pInterpreter)
+	{
+		std::lock_guard<std::mutex> l(PluginMutex);
+		if (pInterpreter)
+			m_PreservedInterpreters[pluginKey] = pInterpreter;
+		else
+			m_PreservedInterpreters.erase(pluginKey);
 	}
 
 	void BoostWorkers()
@@ -390,6 +415,7 @@ namespace http {
 							ATTRIBUTE_VALUE(pXmlEle, "author", root[iPluginCnt]["author"]);
 							ATTRIBUTE_VALUE(pXmlEle, "wikilink", root[iPluginCnt]["wikiURL"]);
 							ATTRIBUTE_VALUE(pXmlEle, "externallink", root[iPluginCnt]["externalURL"]);
+							ATTRIBUTE_VALUE(pXmlEle, "shared", root[iPluginCnt]["shared"]);
 
 							TiXmlElement* pXmlDescNode = (TiXmlElement*)pXmlEle->FirstChild("description");
 							std::string		sDescription;
@@ -402,53 +428,89 @@ namespace http {
 
 							TiXmlNode* pXmlParamsNode = pXmlEle->FirstChild("params");
 							int	iParams = 0;
-							if (pXmlParamsNode) pXmlParamsNode = pXmlParamsNode->FirstChild("param");
-							for (pXmlParamsNode; pXmlParamsNode; pXmlParamsNode = pXmlParamsNode->NextSiblingElement())
-							{
-								// <params>
-								//		<param field = "Address" label = "IP/Address" width = "100px" required = "true" default = "127.0.0.1" / >
-								TiXmlElement* pXmlEle = pXmlParamsNode->ToElement();
-								if (pXmlEle)
-								{
-									ATTRIBUTE_VALUE(pXmlEle, "field", root[iPluginCnt]["parameters"][iParams]["field"]);
-									ATTRIBUTE_VALUE(pXmlEle, "label", root[iPluginCnt]["parameters"][iParams]["label"]);
-									ATTRIBUTE_VALUE(pXmlEle, "width", root[iPluginCnt]["parameters"][iParams]["width"]);
-									ATTRIBUTE_VALUE(pXmlEle, "required", root[iPluginCnt]["parameters"][iParams]["required"]);
-									ATTRIBUTE_VALUE(pXmlEle, "default", root[iPluginCnt]["parameters"][iParams]["default"]);
-									ATTRIBUTE_VALUE(pXmlEle, "password", root[iPluginCnt]["parameters"][iParams]["password"]);
-									ATTRIBUTE_VALUE(pXmlEle, "rows", root[iPluginCnt]["parameters"][iParams]["rows"]);
 
-									TiXmlNode* pXmlOptionsNode = pXmlEle->FirstChild("options");
-									int	iOptions = 0;
-									if (pXmlOptionsNode) pXmlOptionsNode = pXmlOptionsNode->FirstChild("option");
-									for (pXmlOptionsNode; pXmlOptionsNode; pXmlOptionsNode = pXmlOptionsNode->NextSiblingElement())
+							// Helper to parse a single <param> element into the JSON output
+							auto parseParam = [&](TiXmlElement* pParamEle, const std::string &groupLabel) {
+								ATTRIBUTE_VALUE(pParamEle, "field", root[iPluginCnt]["parameters"][iParams]["field"]);
+								ATTRIBUTE_VALUE(pParamEle, "label", root[iPluginCnt]["parameters"][iParams]["label"]);
+								ATTRIBUTE_VALUE(pParamEle, "width", root[iPluginCnt]["parameters"][iParams]["width"]);
+								ATTRIBUTE_VALUE(pParamEle, "required", root[iPluginCnt]["parameters"][iParams]["required"]);
+								ATTRIBUTE_VALUE(pParamEle, "default", root[iPluginCnt]["parameters"][iParams]["default"]);
+								ATTRIBUTE_VALUE(pParamEle, "password", root[iPluginCnt]["parameters"][iParams]["password"]);
+								ATTRIBUTE_VALUE(pParamEle, "rows", root[iPluginCnt]["parameters"][iParams]["rows"]);
+								ATTRIBUTE_VALUE(pParamEle, "type", root[iPluginCnt]["parameters"][iParams]["type"]);
+								ATTRIBUTE_VALUE(pParamEle, "min", root[iPluginCnt]["parameters"][iParams]["min"]);
+								ATTRIBUTE_VALUE(pParamEle, "max", root[iPluginCnt]["parameters"][iParams]["max"]);
+								ATTRIBUTE_VALUE(pParamEle, "step", root[iPluginCnt]["parameters"][iParams]["step"]);
+								ATTRIBUTE_VALUE(pParamEle, "visible_when", root[iPluginCnt]["parameters"][iParams]["visible_when"]);
+
+								if (!groupLabel.empty())
+								{
+									root[iPluginCnt]["parameters"][iParams]["group"] = groupLabel;
+								}
+
+								TiXmlNode* pXmlOptionsNode = pParamEle->FirstChild("options");
+								int	iOptions = 0;
+								if (pXmlOptionsNode) pXmlOptionsNode = pXmlOptionsNode->FirstChild("option");
+								for (pXmlOptionsNode; pXmlOptionsNode; pXmlOptionsNode = pXmlOptionsNode->NextSiblingElement())
+								{
+									// <options>
+									//		<option label="Hibernate" value="1" default="true" />
+									TiXmlElement* pXmlOptEle = pXmlOptionsNode->ToElement();
+									if (pXmlOptEle)
 									{
-										// <options>
-										//		<option label="Hibernate" value="1" default="true" />
-										TiXmlElement* pXmlEle = pXmlOptionsNode->ToElement();
-										if (pXmlEle)
+										std::string sDefault;
+										ATTRIBUTE_VALUE(pXmlOptEle, "label", root[iPluginCnt]["parameters"][iParams]["options"][iOptions]["label"]);
+										ATTRIBUTE_VALUE(pXmlOptEle, "value", root[iPluginCnt]["parameters"][iParams]["options"][iOptions]["value"]);
+										ATTRIBUTE_VALUE(pXmlOptEle, "default", sDefault);
+										if (sDefault == "true")
 										{
-											std::string sDefault;
-											ATTRIBUTE_VALUE(pXmlEle, "label", root[iPluginCnt]["parameters"][iParams]["options"][iOptions]["label"]);
-											ATTRIBUTE_VALUE(pXmlEle, "value", root[iPluginCnt]["parameters"][iParams]["options"][iOptions]["value"]);
-											ATTRIBUTE_VALUE(pXmlEle, "default", sDefault);
-											if (sDefault == "true")
+											root[iPluginCnt]["parameters"][iParams]["options"][iOptions]["default"] = sDefault;
+										}
+										iOptions++;
+									}
+								}
+
+								TiXmlNode* pXmlDescNode = pParamEle->FirstChild("description");
+								if (pXmlDescNode)
+								{
+									TiXmlPrinter Xmlprinter;
+									Xmlprinter.SetStreamPrinting();
+									pXmlDescNode->Accept(&Xmlprinter);
+									root[iPluginCnt]["parameters"][iParams]["description"] = Xmlprinter.CStr();
+								}
+								iParams++;
+							};
+
+							if (pXmlParamsNode)
+							{
+								for (TiXmlNode* pChild = pXmlParamsNode->FirstChild(); pChild; pChild = pChild->NextSibling())
+								{
+									TiXmlElement* pChildEle = pChild->ToElement();
+									if (!pChildEle)
+										continue;
+
+									std::string tagName = pChildEle->Value();
+									if (tagName == "param")
+									{
+										parseParam(pChildEle, "");
+									}
+									else if (tagName == "group")
+									{
+										std::string groupLabel;
+										const char* pGroupLabel = pChildEle->Attribute("label");
+										if (pGroupLabel)
+											groupLabel = pGroupLabel;
+
+										for (TiXmlNode* pGroupChild = pChildEle->FirstChild("param"); pGroupChild; pGroupChild = pGroupChild->NextSibling("param"))
+										{
+											TiXmlElement* pGroupParamEle = pGroupChild->ToElement();
+											if (pGroupParamEle)
 											{
-												root[iPluginCnt]["parameters"][iParams]["options"][iOptions]["default"] = sDefault;
+												parseParam(pGroupParamEle, groupLabel);
 											}
-											iOptions++;
 										}
 									}
-
-									TiXmlNode* pXmlDescNode = pXmlEle->FirstChild("description");
-									if (pXmlDescNode)
-									{
-										TiXmlPrinter Xmlprinter;
-										Xmlprinter.SetStreamPrinting();
-										pXmlDescNode->Accept(&Xmlprinter);
-										root[iPluginCnt]["parameters"][iParams]["description"] = Xmlprinter.CStr();
-									}
-									iParams++;
 								}
 							}
 							iPluginCnt++;

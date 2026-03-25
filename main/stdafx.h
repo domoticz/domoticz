@@ -42,8 +42,6 @@ typedef unsigned char       BYTE;
 	#include <netinet/in.h>
 #endif
 
-#define WEBSERVER_DONT_USE_ZIP
-
 // system, runtime, STL
 #include <algorithm>
 #include <iomanip>

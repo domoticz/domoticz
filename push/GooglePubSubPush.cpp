@@ -8,8 +8,8 @@
 #include "../main/SQLHelper.h"
 #include "../main/mainworker.h"
 #include "../main/WebServer.h"
-#include "../webserver/Base64.h"
-#include "../webserver/cWebem.h"
+#include <libwebem/Base64.h>
+#include <libwebem/cWebem.h>
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
@@ -57,7 +57,7 @@ void CGooglePubSubPush::UpdateActive()
 	m_bLinkActive = (fActive == 1);
 }
 
-void CGooglePubSubPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
+void CGooglePubSubPush::OnDeviceReceived(const int HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
 	if (m_bLinkActive)
 	{

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Domoticz: Open Source Home Automation System
-# (c) 2012, 2016 by GizMoCuz
+# (c) 2012-2026 by GizMoCuz
 # Big thanks to Jacob Salmela! (This is based on the excelent Pi-Hole install script ;)
-# http://www.domoticz.com
+# https://www.domoticz.com
 # Installs Domoticz
 #
 # Domoticz is free software: you can redistribute it and/or modify
@@ -29,6 +29,73 @@ Enable_https=true
 HTTP_port="8080"
 HTTPS_port="443"
 Current_user=""
+# Service management method: "sysv" or "systemd"
+SERVICE_METHOD="sysv"
+# Download channel: "release" or "beta"
+DOWNLOAD_CHANNEL="release"
+
+######## COLORS & FORMATTING #########
+if [[ -t 1 ]]; then
+    COL_NC='\e[0m'
+    COL_GREEN='\e[0;32m'
+    COL_RED='\e[0;31m'
+    COL_YELLOW='\e[0;33m'
+    COL_BLUE='\e[0;34m'
+    COL_BOLD='\e[1m'
+else
+    COL_NC=''
+    COL_GREEN=''
+    COL_RED=''
+    COL_YELLOW=''
+    COL_BLUE=''
+    COL_BOLD=''
+fi
+
+TICK="[${COL_GREEN}\xE2\x9C\x93${COL_NC}]"
+CROSS="[${COL_RED}\xE2\x9C\x97${COL_NC}]"
+INFO="[${COL_BLUE}i${COL_NC}]"
+WARN="[${COL_YELLOW}\xE2\x9A\xA0${COL_NC}]"
+
+msg_info() {
+    printf "  ${INFO} %s\n" "$@"
+}
+
+msg_ok() {
+    printf "  ${TICK} %s\n" "$@"
+}
+
+msg_error() {
+    printf "  ${CROSS} %s\n" "$@"
+}
+
+msg_warn() {
+    printf "  ${WARN} %s\n" "$@"
+}
+
+msg_header() {
+    local term_width=60
+    local line
+    line=$(printf '%*s' "$term_width" '' | tr ' ' '─')
+    printf "\n  ${COL_BOLD}%s${COL_NC}\n" "$@"
+    printf "  %s\n\n" "$line"
+}
+
+show_banner() {
+    printf "${COL_BLUE}"
+    cat << 'BANNER'
+
+    ____                        __  _
+   / __ \____  ____ ___  ____  / /_(_)_______
+  / / / / __ \/ __ `__ \/ __ \/ __/ / ___/_  /
+ / /_/ / /_/ / / / / / / /_/ / /_/ / /__  / /_
+/_____/\____/_/ /_/ /_/\____/\__/_/\___/ /___/
+
+   Home Automation System Installer
+
+BANNER
+    printf "${COL_NC}"
+    printf "  ────────────────────────────────────────────────────────────\n\n"
+}
 
 lowercase(){
     echo "$1" | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/"
@@ -36,14 +103,24 @@ lowercase(){
 
 OS=`lowercase \`uname -s\``
 MACH=`uname -m`
-ARCH=`dpkg --print-architecture`
-if [ ${MACH} = "armv6l" ] || [ ${ARCH} = "armhf" ]
+ARCH=""
+if [ -x "$(command -v dpkg)" ]; then
+    ARCH=$(dpkg --print-architecture)
+fi
+OPENSSL_VERSION=$(openssl version -v | awk '{print $2}' | sed 's/\..*//')
+
+if [ "${MACH}" = "armv6l" ] || [ "${ARCH}" = "armhf" ]
 then
  MACH="armv7l"
 fi
 
+if [  ${OPENSSL_VERSION} -ne 3 ]; then
+ msg_error "OpenSSL version 3 required!"
+ exit 1
+fi
+
 # Find the rows and columns will default to 80x24 is it can not be detected
-screen_size=$(stty size 2>/dev/null || echo 24 80) 
+screen_size=$(stty size 2>/dev/null || echo 24 80)
 rows=$(echo $screen_size | awk '{print $1}')
 columns=$(echo $screen_size | awk '{print $2}')
 
@@ -60,22 +137,22 @@ reconfigure=false
 
 ######## FIRST CHECK ########
 # Must be root to install
-echo ":::"
+show_banner
 if [[ ${EUID} -eq 0 ]]; then
-	echo "::: You are root."
+	msg_ok "Running as root"
 else
-	echo "::: Script called with non-root privileges. The Domoticz installs server packages and configures"
-	echo "::: system networking, it requires elevated rights. Please check the contents of the script for"
-	echo "::: any concerns with this requirement. Please be sure to download this script from a trusted source."
-	echo ":::"
-	echo "::: Detecting the presence of the sudo utility for continuation of this install..."
+	msg_error "Script called with non-root privileges."
+	msg_info "The Domoticz installer needs elevated rights to install packages"
+	msg_info "and configure system networking."
+	msg_info "Detecting the presence of the sudo utility..."
 
 	if [ -x "$(command -v sudo)" ]; then
-		echo "::: Utility sudo located."
-		exec curl -sSL https://install.domoticz.com | sudo bash "$@"
+		msg_ok "Utility sudo located"
+		exec curl -sSL https://install.domoticz.com | sudo bash -s -- "$@"
 		exit $?
 	else
-		echo "::: sudo is needed for the Web interface to run domoticz commands.  Please run this script as root and it will be automatically installed."
+		msg_error "sudo is needed for the Web interface to run domoticz commands."
+		msg_error "Please run this script as root and it will be automatically installed."
 		exit 1
 	fi
 fi
@@ -93,21 +170,16 @@ if [ -x "$(command -v apt-get)" ]; then
 	# grep -c will return 1 retVal on 0 matches, block this throwing the set -e with an OR TRUE
 	PKG_COUNT="${PKG_MANAGER} -s -o Debug::NoLocking=true upgrade | grep -c ^Inst || true"
 	INSTALLER_DEPS=( apt-utils whiptail git)
-	domoticz_DEPS=( curl unzip wget sudo cron libudev-dev libssl1.1 )
+	domoticz_DEPS=( curl unzip wget sudo cron libudev-dev libmosquitto1)
 
         DEBIAN_ID=$(grep -oP '(?<=^ID=).+' /etc/*-release | tr -d '"')
         DEBIAN_VERSION=$(grep -oP '(?<=^VERSION_ID=).+' /etc/*-release | tr -d '"')
 
-	if test ${DEBIAN_VERSION} -lt 10
-	then
-		domoticz_DEPS=( ${domoticz_DEPS[@]} libcurl3 )
-	else
-		domoticz_DEPS=( ${domoticz_DEPS[@]} libcurl4 libusb-0.1)
-	fi;
-
-	package_check_install() {
-		dpkg-query -W -f='${Status}' "${1}" 2>/dev/null | grep -c "ok installed" || ${PKG_INSTALL} "${1}"
-	}
+	if test ${DEBIAN_VERSION} -lt 12; then
+		msg_error "Debian Bookworm (12) or later is required!"
+		exit 1
+	fi
+	domoticz_DEPS=( ${domoticz_DEPS[@]} libcurl4 libusb-0.1)
 elif [ -x "$(command -v rpm)" ]; then
 	# Fedora Family
 	if [ -x "$(command -v dnf)" ]; then
@@ -121,38 +193,38 @@ elif [ -x "$(command -v rpm)" ]; then
 	PKG_INSTALL="${PKG_MANAGER} install -y"
 	PKG_COUNT="${PKG_MANAGER} check-update | egrep '(.i686|.x86|.noarch|.arm|.src)' | wc -l"
 	INSTALLER_DEPS=( procps-ng newt git )
-	domoticz_DEPS=( curl libcurl4 unzip wget findutils cronie sudo domoticz_DEP)
+	domoticz_DEPS=( curl libcurl unzip wget findutils cronie sudo mosquitto)
 	if grep -q 'Fedora' /etc/redhat-release; then
 		remove_deps=(epel-release);
 		domoticz_DEPS=( ${domoticz_DEPS[@]/$remove_deps} );
 	fi
-	package_check_install() {
-		rpm -qa | grep ^"${1}"- > /dev/null || ${PKG_INSTALL} "${1}"
-	}
 else
-	echo "OS distribution not supported"
-	exit
+	msg_error "OS distribution not supported"
+	exit 1
 fi
 
 ####### FUNCTIONS ##########
 spinner() {
 	local pid=$1
-	local delay=0.50
-	local spinstr='/-\|'
-	while [ "$(ps a | awk '{print $1}' | grep "${pid}")" ]; do
-		local temp=${spinstr#?}
-		printf " [%c]  " "${spinstr}"
-		local spinstr=${temp}${spinstr%"$temp"}
+	local msg="${2:-}"
+	local delay=0.1
+	local spinchars='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+	local i=0
+	local len=${#spinchars}
+	while kill -0 "$pid" 2>/dev/null; do
+		local char="${spinchars:$i:1}"
+		printf "\r  [${COL_BLUE}%s${COL_NC}] %s" "$char" "$msg"
+		i=$(( (i + 1) % len ))
 		sleep ${delay}
-		printf "\b\b\b\b\b\b"
 	done
-	printf "    \b\b\b\b"
+	wait "$pid" 2>/dev/null || true
+	printf "\r  ${TICK} %s\n" "$msg"
 }
 
 find_current_user() {
 	# Find current user
 	Current_user=${SUDO_USER:-$USER}
-	echo "::: Current User: ${Current_user}"
+	msg_ok "Current user: ${Current_user}"
 }
 
 find_IPv4_information() {
@@ -164,66 +236,78 @@ find_IPv4_information() {
 
 welcomeDialogs() {
 	# Display the welcome dialog
-	whiptail --msgbox --backtitle "Welcome" --title "Domoticz automated installer" "\n\nThis installer will transform your device into a Home Automation System!\n\n
-Domoticz is free, but powered by your donations at:  http://www.domoticz.com\n\n
-Domoticz is a SERVER so it needs a STATIC IP ADDRESS to function properly.
-	" ${r} ${c}
+	whiptail --msgbox --backtitle "Domoticz Installer" --title "Welcome to Domoticz" "\
+This installer will transform your device into a powerful Home Automation System!
+
+Domoticz is free and open source, powered by your donations at:
+  https://www.domoticz.com
+
+NOTE: Domoticz is a server application and requires a STATIC IP ADDRESS to function properly.\
+" ${r} ${c}
 }
 
 displayFinalMessage() {
-	# Final completion message to user
-	whiptail --msgbox --backtitle "Ready..." --title "Installation Complete!" "Point your browser to either:
+	local http_line=""
+	local https_line=""
+	if [ "$Enable_http" = true ]; then
+		http_line="  HTTP  :  ${IPv4_address%/*}:${HTTP_port%/*}"
+	fi
+	if [ "$Enable_https" = true ]; then
+		https_line="  HTTPS :  ${IPv4_address%/*}:${HTTPS_port}"
+	fi
 
-HTTP:	${IPv4_address%/*}:${HTTP_port%/*}
-HTTPS:	${IPv4_address%/*}:${HTTPS_port}
-User/Password:   admin/domoticz 
-Modify password asap in menu Setup - MyProfile
+	whiptail --msgbox --backtitle "Domoticz Installer" --title "Installation Complete!" "\
+Point your browser to:
+${http_line}
+${https_line}
 
-Wiki:  https://wiki.domoticz.com
-Forum: https://forum.domoticz.com
+Default credentials:
+  User     :  admin
+  Password :  domoticz
+  (Change your password in Setup > My Profile)
 
-The install log is in /etc/domoticz." ${r} ${c}
+Resources:
+  Wiki  :  https://www.domoticz.com/wiki
+  Forum :  https://www.domoticz.com/forum
+
+The install log is saved in /etc/domoticz.\
+" ${r} ${c}
 }
 
 verifyFreeDiskSpace() {
 
 	# 50MB is the minimum space needed
-	# - Fourdee: Local ensures the variable is only created, and accessible within this function/void. Generally considered a "good" coding practice for non-global variables.
-	echo "::: Verifying free disk space..."
+	msg_info "Verifying free disk space..."
 	local required_free_kilobytes=51200
 	local existing_free_kilobytes=$(df -Pk | grep -m1 '\/$' | awk '{print $4}')
 
 	# - Unknown free disk space , not a integer
 	if ! [[ "${existing_free_kilobytes}" =~ ^([0-9])+$ ]]; then
-		echo "::: Unknown free disk space!"
-		echo "::: We were unable to determine available free disk space on this system."
-		echo "::: You may override this check and force the installation, however, it is not recommended"
-		echo "::: To do so, pass the argument '--i_do_not_follow_recommendations' to the install script"
-		echo "::: eg. curl -L https://install.domoticz.com | bash /dev/stdin --i_do_not_follow_recommendations"
+		msg_error "Unknown free disk space!"
+		msg_error "We were unable to determine available free disk space on this system."
+		msg_warn "You may override this check with the '--i_do_not_follow_recommendations' flag"
+		msg_info "eg. curl -L https://install.domoticz.com | bash /dev/stdin --i_do_not_follow_recommendations"
 		exit 1
 	# - Insufficient free disk space
 	elif [[ ${existing_free_kilobytes} -lt ${required_free_kilobytes} ]]; then
-		echo "::: Insufficient Disk Space!"
-		echo "::: Your system appears to be low on disk space. Domoticz recommends a minimum of $required_free_kilobytes KiloBytes."
-		echo "::: You only have ${existing_free_kilobytes} KiloBytes free."
-		echo "::: If this is a new install you may need to expand your disk."
-		echo "::: Try running 'sudo raspi-config', and choose the 'expand file system option'"
-		echo "::: After rebooting, run this installation again. (curl -L https://install.domoticz.com | bash)"
-
-		echo "Insufficient free space, exiting..."
+		msg_error "Insufficient disk space!"
+		msg_error "Domoticz requires a minimum of $required_free_kilobytes KiloBytes."
+		msg_error "You only have ${existing_free_kilobytes} KiloBytes free."
+		msg_warn "If this is a new install you may need to expand your disk."
+		msg_info "Try running 'sudo raspi-config' and choose 'expand file system'"
+		msg_info "After rebooting, run this installation again."
 		exit 1
-
 	fi
-
+	msg_ok "Sufficient disk space available"
 }
 
 chooseServices() {
 	Enable_http=false;
 	Enable_https=false;
-	# Let use enable HTTP and/or HTTPS
-	cmd=(whiptail --separate-output --checklist "Select Services (press space to select)" ${r} ${c} 2)
-	options=(HTTP "Enables HTTP access" on
-	HTTPS "Enabled HTTPS access" on)
+	# Let user enable HTTP and/or HTTPS
+	cmd=(whiptail --separate-output --checklist "Select the protocols to enable (use Space to toggle):" ${r} ${c} 2)
+	options=(HTTP "Enable HTTP access" on
+	HTTPS "Enable HTTPS access" on)
 	choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
 	if [[ $? = 0 ]];then
 		for choice in ${choices}
@@ -233,78 +317,267 @@ chooseServices() {
 			HTTPS  )   Enable_https=true;;
 			esac
 		done
-		if [ ! ${Enable_http} ] && [ ! ${Enable_https} ]; then
-			echo "::: Cannot continue, neither HTTP or HTTPS selected"
-			echo "::: Exiting"
+		if [ "${Enable_http}" = false ] && [ "${Enable_https}" = false ]; then
+			msg_error "Cannot continue: neither HTTP nor HTTPS selected"
 			exit 1
 		fi
 	else
-		echo "::: Cancel selected. Exiting..."
+		msg_warn "Cancel selected. Exiting..."
 		exit 1
 	fi
 	# Configure the port(s)
 	if [ "$Enable_http" = true ] ; then
-		HTTP_port=$(whiptail --inputbox "HTTP Port number:" ${r} ${c} ${HTTP_port} --title "Configure HTTP" 3>&1 1>&2 2>&3)
+		HTTP_port=$(whiptail --inputbox "Enter the HTTP port number:" ${r} ${c} ${HTTP_port} --title "HTTP Port Configuration" 3>&1 1>&2 2>&3)
 		exitstatus=$?
 		if [ $exitstatus = 0 ]; then
-			echo "HTTP Port: " $HTTP_port
+			msg_ok "HTTP port: ${HTTP_port}"
 		else
-			echo "::: Cancel selected. Exiting..."
+			msg_warn "Cancel selected. Exiting..."
 			exit 1
-		fi	
-	fi    
+		fi
+	fi
 	if [ "$Enable_https" = true ] ; then
-		HTTPS_port=$(whiptail --inputbox "HTTPS Port number:" ${r} ${c} ${HTTPS_port} --title "Configure HTTPS" 3>&1 1>&2 2>&3)
+		HTTPS_port=$(whiptail --inputbox "Enter the HTTPS port number:" ${r} ${c} ${HTTPS_port} --title "HTTPS Port Configuration" 3>&1 1>&2 2>&3)
 		exitstatus=$?
 		if [ $exitstatus = 0 ]; then
-			echo "HTTPS Port: " $HTTPS_port
+			msg_ok "HTTPS port: ${HTTPS_port}"
 		else
-			echo "::: Cancel selected. Exiting..."
+			msg_warn "Cancel selected. Exiting..."
 			exit 1
-		fi	
+		fi
 	fi
 }
 
 chooseDestinationFolder() {
-	Dest_folder=$(whiptail --inputbox "Installation Folder:" ${r} ${c} ${Dest_folder} --title "Destination" 3>&1 1>&2 2>&3)
+	Dest_folder=$(whiptail --inputbox "Enter the installation folder:" ${r} ${c} ${Dest_folder} --title "Installation Destination" 3>&1 1>&2 2>&3)
 	exitstatus=$?
 	if [ $exitstatus = 0 ]; then
-		echo ":::"
+		msg_ok "Destination folder: ${Dest_folder}"
 	else
-		echo "::: Cancel selected. Exiting..."
+		msg_warn "Cancel selected. Exiting..."
 		exit 1
-	fi	
+	fi
+}
+
+displaySummary() {
+	local http_status="Disabled"
+	local https_status="Disabled"
+	local http_detail=""
+	local https_detail=""
+
+	if [ "$Enable_http" = true ]; then
+		http_status="Enabled (port ${HTTP_port})"
+	fi
+	if [ "$Enable_https" = true ]; then
+		https_status="Enabled (port ${HTTPS_port})"
+	fi
+
+	whiptail --yesno --backtitle "Domoticz Installer" --title "Installation Summary" "\
+Please review your settings before installation begins:
+
+  Install folder :  ${Dest_folder}
+  HTTP           :  ${http_status}
+  HTTPS          :  ${https_status}
+  User           :  ${Current_user}
+
+Proceed with installation?" ${r} ${c}
+
+	if [[ $? -ne 0 ]]; then
+		msg_warn "Installation cancelled by user."
+		exit 1
+	fi
 }
 
 stop_service() {
-	# Stop service passed in as argument.
-	echo ":::"
-	echo -n "::: Stopping ${1} service..."
-	if [ -x "$(command -v service)" ]; then
-		service "${1}" stop &> /dev/null & spinner $! || true
+	# Stop service passed in as argument
+	if [[ "${SERVICE_METHOD}" == "systemd" ]]; then
+		if systemctl is-active --quiet "${1}" 2>/dev/null; then
+			systemctl stop "${1}" &> /dev/null & spinner $! "Stopping ${1} service..."
+		else
+			msg_ok "Service ${1} is not running"
+		fi
+	else
+		if [ -x "$(command -v service)" ]; then
+			if service "${1}" status &> /dev/null; then
+				service "${1}" stop &> /dev/null & spinner $! "Stopping ${1} service..."
+			else
+				msg_ok "Service ${1} is not running"
+			fi
+		else
+			msg_ok "Service ${1} is not running"
+		fi
 	fi
-	echo " done."
 }
 
 start_service() {
 	# Start/Restart service passed in as argument
-	# This should not fail, it's an error if it does
-	echo ":::"
-	echo -n "::: Starting ${1} service..."
-	if [ -x "$(command -v service)" ]; then
-		service "${1}" restart &> /dev/null  & spinner $!
+	if [[ "${SERVICE_METHOD}" == "systemd" ]]; then
+		systemctl restart "${1}" &> /dev/null & spinner $! "Starting ${1} service..."
+	else
+		if [ -x "$(command -v service)" ]; then
+			service "${1}" restart &> /dev/null & spinner $! "Starting ${1} service..."
+		else
+			msg_ok "Starting ${1} service... done"
+		fi
 	fi
-	echo " done."
 }
 
 enable_service() {
 	# Enable service so that it will start with next reboot
-	echo ":::"
-	echo -n "::: Enabling ${1} service to start on reboot..."
-	if [ -x "$(command -v service)" ]; then
-		update-rc.d "${1}" defaults &> /dev/null  & spinner $!
+	if [[ "${SERVICE_METHOD}" == "systemd" ]]; then
+		systemctl enable "${1}" &> /dev/null & spinner $! "Enabling ${1} to start on boot..."
+	else
+		if [ -x "$(command -v update-rc.d)" ]; then
+			update-rc.d "${1}" defaults &> /dev/null & spinner $! "Enabling ${1} to start on boot..."
+		elif [ -x "$(command -v chkconfig)" ]; then
+			chkconfig "${1}" on &> /dev/null & spinner $! "Enabling ${1} to start on boot..."
+		else
+			msg_ok "Enabling ${1} to start on boot... done"
+		fi
 	fi
-	echo " done."
+}
+
+detect_current_channel() {
+	# Detect if the currently installed Domoticz is beta or stable
+	# by running ./domoticz --version and checking for "-beta" in the output.
+	# Returns 0 if beta was positively detected, 1 otherwise (unknown/stable).
+	# Does NOT set DOWNLOAD_CHANNEL — caller is responsible for that.
+	local domoticz_bin="${Dest_folder}/domoticz"
+	if [[ -x "${domoticz_bin}" ]]; then
+		local version_output
+		version_output=$("${domoticz_bin}" --version 2>&1 || true)
+		if [[ "${version_output}" == *"-beta"* ]]; then
+			return 0
+		fi
+	fi
+	return 1
+}
+
+chooseChannel() {
+	# Ask the user which download channel they want
+	local choice
+	choice=$(whiptail --title "Update Channel" --radiolist \
+		"Select the download channel:" ${r} ${c} 2 \
+		"Stable" "Latest stable release (recommended)" "ON" \
+		"Beta" "Latest beta release (development)" "OFF" \
+		3>&1 1>&2 2>&3)
+
+	if [[ $? -ne 0 ]]; then
+		msg_warn "Cancel selected. Exiting..."
+		exit 1
+	fi
+
+	case "${choice}" in
+		Stable) DOWNLOAD_CHANNEL="release" ;;
+		Beta)   DOWNLOAD_CHANNEL="beta" ;;
+	esac
+}
+
+migrate_from_sysv() {
+	# Migrate from legacy SysV init script to systemd service
+	local sysv_script="/etc/init.d/domoticz.sh"
+
+	if [[ ! -f "${sysv_script}" ]]; then
+		return 0
+	fi
+
+	msg_info "Legacy SysV init script detected, migrating to systemd..."
+
+	# Stop the old SysV service if running
+	if service domoticz.sh status &> /dev/null; then
+		service domoticz.sh stop &> /dev/null & spinner $! "Stopping legacy SysV service..."
+	fi
+
+	# Remove SysV boot links (Debian/Ubuntu)
+	if [ -x "$(command -v update-rc.d)" ]; then
+		update-rc.d -f domoticz.sh remove &> /dev/null || true
+	fi
+
+	# Remove SysV boot links (RPM-based: CentOS, Fedora, RHEL)
+	if [ -x "$(command -v chkconfig)" ]; then
+		chkconfig domoticz.sh off &> /dev/null || true
+		chkconfig --del domoticz.sh &> /dev/null || true
+	fi
+
+	# Remove the old init script
+	rm -f "${sysv_script}"
+	msg_ok "Legacy SysV init script removed"
+
+	# Reload systemd so it picks up the removal
+	systemctl daemon-reload &> /dev/null || true
+	msg_ok "Migrated to systemd service"
+}
+
+migrate_from_systemd() {
+	# Migrate from systemd service back to SysV init script
+	local service_file="/etc/systemd/system/domoticz.service"
+
+	if [[ ! -f "${service_file}" ]]; then
+		return 0
+	fi
+
+	msg_info "Systemd service detected, migrating to SysV init script..."
+
+	# Stop the systemd service if running
+	if systemctl is-active --quiet domoticz.service 2>/dev/null; then
+		systemctl stop domoticz.service &> /dev/null & spinner $! "Stopping systemd service..."
+	fi
+
+	# Disable the systemd service
+	systemctl disable domoticz.service &> /dev/null || true
+
+	# Remove the systemd service file
+	if ! rm -f "${service_file}"; then
+		msg_error "Failed to remove systemd service file: ${service_file}"
+		exit 1
+	fi
+
+	# Reload systemd so it picks up the removal
+	systemctl daemon-reload &> /dev/null || true
+	msg_ok "Systemd service removed"
+}
+
+makeStartupScript() {
+	local src_script="${Dest_folder}/domoticz.sh"
+	if [[ ! -f "${src_script}" ]]; then
+		msg_error "Source startup script not found: ${src_script}"
+		exit 1
+	fi
+
+	local tmp1=$(mktemp)
+	local tmp2=$(mktemp)
+	# Clean up temp files on all exit paths
+	trap "rm -f '${tmp1}' '${tmp2}'" RETURN
+
+	cp "${src_script}" "$tmp1"
+
+	#configure the script
+	sed -e "s/USERNAME=pi/USERNAME=${Current_user}/" "$tmp1" > "$tmp2" || { msg_error "Failed to configure username in startup script"; exit 1; }
+
+	local http_port="${HTTP_port}"
+	local https_port="${HTTPS_port}"
+	if [ "$Enable_http" = false ] ; then
+		http_port="0"
+	fi
+	if [ "$Enable_https" = false ] ; then
+		https_port="0"
+	fi
+
+	sed -e "s/-www 8080/-www ${http_port}/" "$tmp2" > "$tmp1" || { msg_error "Failed to configure HTTP port in startup script"; exit 1; }
+	sed -e "s/-sslwww 443/-sslwww ${https_port}/" "$tmp1" > "$tmp2" || { msg_error "Failed to configure HTTPS port in startup script"; exit 1; }
+	sed -e "s%/home/\$USERNAME/domoticz%${Dest_folder}%" "$tmp2" > "$tmp1" || { msg_error "Failed to configure install path in startup script"; exit 1; }
+
+	mv "$tmp1" /etc/init.d/domoticz.sh
+	chmod +x /etc/init.d/domoticz.sh
+
+	if [ -x "$(command -v update-rc.d)" ]; then
+		update-rc.d domoticz.sh defaults
+	elif [ -x "$(command -v chkconfig)" ]; then
+		chkconfig --add domoticz.sh
+		chkconfig domoticz.sh on
+	else
+		msg_warn "Neither update-rc.d nor chkconfig found. Service may not start on boot."
+	fi
 }
 
 update_package_cache() {
@@ -319,46 +592,29 @@ update_package_cache() {
 
 	if [ ! "${today}" == "${timestampAsDate}" ]; then
 		#update package lists
-		echo ":::"
-		echo -n "::: ${PKG_MANAGER} update has not been run today. Running now..."
-		${UPDATE_PKG_CACHE} &> /dev/null & spinner $!
-		echo " done!"
+		${UPDATE_PKG_CACHE} &> /dev/null & spinner $! "Updating package cache (${PKG_MANAGER})..."
+	else
+		msg_ok "Package cache is up to date"
 	fi
 }
 
 notify_package_updates_available() {
   # Let user know if they have outdated packages on their system and
   # advise them to run a package update at soonest possible.
-	echo ":::"
-	echo -n "::: Checking ${PKG_MANAGER} for upgraded packages...."
+	msg_info "Checking ${PKG_MANAGER} for available upgrades..."
 	updatesToInstall=$(eval "${PKG_COUNT}")
-	echo " done!"
-	echo ":::"
 	if [[ ${updatesToInstall} -eq "0" ]]; then
-		echo "::: Your system is up to date! Continuing with Domoticz installation..."
+		msg_ok "System is up to date"
 	else
-		echo "::: There are ${updatesToInstall} updates available for your system!"
-		echo "::: We recommend you run '${PKG_UPDATE}' after installing Domoticz! "
-		echo ":::"
+		msg_warn "${updatesToInstall} updates available for your system"
+		msg_info "We recommend running '${PKG_UPDATE}' after installing Domoticz"
 	fi
-}
-
-install_dependent_packages() {
-	# Install packages passed in via argument array
-	# No spinner - conflicts with set -e
-	declare -a argArray1=("${!1}")
-
-	for i in "${argArray1[@]}"; do
-		echo -n ":::    Checking for $i..."
-		package_check_install "${i}" &> /dev/null
-		echo " installed!"
-	done
 }
 
 finalExports() {
 	#If it already exists, lets overwrite it with the new values.
 	if [[ -f ${setupVars} ]]; then
-		rm ${setupVars}
+		rm "${setupVars}"
 	fi
     {
 	echo "Dest_folder=${Dest_folder}"
@@ -370,116 +626,346 @@ finalExports() {
 }
 
 downloadDomoticzWeb() {
-	echo "::: Destination folder=${Dest_folder}"
-	if [[ ! -e $Dest_folder ]]; then
-		echo "::: Creating ${Dest_folder}"
-		mkdir $Dest_folder
-		chown "${Current_user}":"${Current_user}" $Dest_folder
+	msg_info "Destination folder: ${Dest_folder}"
+	if [[ ! -e "$Dest_folder" ]]; then
+		msg_info "Creating ${Dest_folder}"
+		mkdir "$Dest_folder"
+		chown "${Current_user}":"${Current_user}" "$Dest_folder"
+		msg_ok "Created ${Dest_folder}"
 	fi
-	cd $Dest_folder
-	wget -O domoticz_release.tgz "http://www.domoticz.com/download.php?channel=release&type=release&system=${OS}&machine=${MACH}"
-	echo "::: Unpacking Domoticz..."
-	tar xvfz domoticz_release.tgz
+	cd "$Dest_folder"
+	msg_info "Downloading Domoticz release..."
+	wget -q -O domoticz_release.tgz "https://www.domoticz.com/download.php?channel=${DOWNLOAD_CHANNEL}&type=release&system=${OS}&machine=${MACH}"
+	msg_ok "Download complete"
+	msg_info "Unpacking Domoticz..."
+	tar xfz domoticz_release.tgz
 	rm domoticz_release.tgz
+	msg_ok "Domoticz unpacked"
 	Database_file="${Dest_folder}/domoticz.db"
-	if [ ! -f $Database_file ]; then
-		echo "Creating database..."
-		touch $Database_file
-		chmod 644 $Database_file
-		chown "${Current_user}":"${Current_user}" $Database_file
+	if [ ! -f "$Database_file" ]; then
+		msg_info "Creating database..."
+		touch "$Database_file"
+		chmod 644 "$Database_file"
+		chown "${Current_user}":"${Current_user}" "$Database_file"
+		msg_ok "Database created"
 	fi
 }
 
-makeStartupScript() {
-	cp "${Dest_folder}/domoticz.sh" /tmp/domoticz_tmp_ss1
+# Build a space-separated list of hardware-relevant groups that exist on this system.
+# Checks each candidate group with getent so the list is safe across all platforms
+# (e.g. gpio/i2c/spi exist on ARM SBCs but not on x86 Ubuntu/Debian).
+get_supplementary_groups() {
+	local groups=""
+	local candidate
+	for candidate in dialout gpio i2c spi tty video plugdev uucp input; do
+		if getent group "$candidate" > /dev/null 2>&1; then
+			groups="${groups}${groups:+ }${candidate}"
+		fi
+	done
+	echo "$groups"
+}
 
-    #configure the script
-    cat /tmp/domoticz_tmp_ss1 | sed -e "s/USERNAME=pi/USERNAME=${Current_user}/" > /tmp/domoticz_tmp_ss2
-    rm /tmp/domoticz_tmp_ss1
-    
-    local http_port="${HTTP_port}"
-    local https_port="${HTTPS_port}"
+install_systemd_service() {
+	local http_port="${HTTP_port}"
+	local https_port="${HTTPS_port}"
 	if [ "$Enable_http" = false ] ; then
 		http_port="0"
-	fi    
+	fi
 	if [ "$Enable_https" = false ] ; then
 		https_port="0"
-	fi    
-    
-    cat /tmp/domoticz_tmp_ss2 | sed -e "s/-www 8080/-www ${http_port}/" > /tmp/domoticz_tmp_ss1
-    rm /tmp/domoticz_tmp_ss2
-    cat /tmp/domoticz_tmp_ss1 | sed -e "s/-sslwww 443/-sslwww ${https_port}/" > /tmp/domoticz_tmp_ss2
-    rm /tmp/domoticz_tmp_ss1
-    cat /tmp/domoticz_tmp_ss2 | sed -e "s%/home/\$USERNAME/domoticz%${Dest_folder}%" > /tmp/domoticz_tmp_ss1
-    rm /tmp/domoticz_tmp_ss2
-    
-    mv /tmp/domoticz_tmp_ss1 /etc/init.d/domoticz.sh
-	chmod +x /etc/init.d/domoticz.sh
-	update-rc.d domoticz.sh defaults
+	fi
+
+	local supplementary_groups
+	supplementary_groups=$(get_supplementary_groups)
+	local supp_line=""
+	[[ -n "$supplementary_groups" ]] && supp_line="SupplementaryGroups=${supplementary_groups}"
+
+	local service_file="/etc/systemd/system/domoticz.service"
+
+	cat > "${service_file}" << EOF
+[Unit]
+Description=Domoticz Home Automation System
+Documentation=https://www.domoticz.com/wiki
+After=network-online.target time-sync.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=${Current_user}
+Group=${Current_user}
+${supp_line}
+WorkingDirectory=${Dest_folder}
+# Do NOT add -daemon here. Type=simple requires the process to stay in the foreground.
+# Adding -daemon causes a fork that prevents clean shutdown via systemctl stop.
+ExecStart=${Dest_folder}/domoticz -www ${http_port} -sslwww ${https_port}
+ExecReload=/bin/kill -HUP \$MAINPID
+AmbientCapabilities=CAP_NET_BIND_SERVICE CAP_NET_RAW
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+	chmod 644 "${service_file}"
+	systemctl daemon-reload
 }
 
 installdomoticz() {
+	msg_header "Installing Domoticz"
+	# Detect current channel if an existing binary is present (reconfigure case).
+	# Fresh installs have no binary, so detect_current_channel returns 1
+	# and DOWNLOAD_CHANNEL stays at the default "release".
+	if detect_current_channel; then
+		DOWNLOAD_CHANNEL="beta"
+		msg_ok "Beta version detected, using beta channel"
+	elif [[ -x "${Dest_folder}/domoticz" ]]; then
+		# Existing install but can't detect beta (old version) — ask user
+		chooseChannel
+	fi
+	msg_ok "Download channel: ${DOWNLOAD_CHANNEL}"
 	# Install base files
 	downloadDomoticzWeb
-	makeStartupScript
+	if [[ "${SERVICE_METHOD}" == "systemd" ]]; then
+		# Migrate from SysV init if upgrading from an older installation
+		migrate_from_sysv
+		install_systemd_service
+		msg_ok "Systemd service installed"
+	else
+		# Migrate from systemd if a previous install used it
+		migrate_from_systemd
+		makeStartupScript
+		msg_ok "Startup script created"
+	fi
 	finalExports
+	msg_ok "Configuration saved"
 }
 
 updatedomoticz() {
 	# Source ${setupVars} for use in the rest of the functions.
 	. ${setupVars}
-	# Install base files
-	downloadDomoticzWeb
+	msg_header "Updating Domoticz"
+
+	# Detect current channel (beta/stable) before stopping.
+	# If beta is positively detected, use it automatically (can't downgrade).
+	# If not detected (old version without -beta tag), ask the user.
+	if detect_current_channel; then
+		DOWNLOAD_CHANNEL="beta"
+		msg_ok "Beta version detected, updating from beta channel"
+	elif [[ "${runUnattended}" == true ]]; then
+		DOWNLOAD_CHANNEL="release"
+		msg_ok "Unattended mode, defaulting to stable channel"
+	else
+		chooseChannel
+	fi
+	msg_ok "Download channel: ${DOWNLOAD_CHANNEL}"
+
+	# Stop both possible services to ensure clean update regardless of
+	# which method was previously used
+	if [[ -f /etc/systemd/system/domoticz.service ]] && systemctl is-active --quiet domoticz.service 2>/dev/null; then
+		systemctl stop domoticz.service &> /dev/null & spinner $! "Stopping systemd service..."
+	fi
+	if [[ -f /etc/init.d/domoticz.sh ]] && service domoticz.sh status &> /dev/null; then
+		service domoticz.sh stop &> /dev/null & spinner $! "Stopping SysV service..."
+	fi
+
+	if [[ "${SERVICE_METHOD}" == "systemd" ]]; then
+		# Migrate from SysV init if present from a previous installation
+		migrate_from_sysv
+		# Install base files
+		downloadDomoticzWeb
+		# Ensure systemd service is installed and up to date
+		install_systemd_service
+		msg_ok "Systemd service updated"
+	else
+		# Migrate from systemd if a previous install used it
+		migrate_from_systemd
+		# Install base files
+		downloadDomoticzWeb
+		# Ensure SysV startup script is installed and up to date
+		makeStartupScript
+		msg_ok "Startup script updated"
+	fi
+}
+
+uninstall_domoticz() {
+	if ! whiptail --yesno --backtitle "Domoticz Uninstaller" --title "Confirm Uninstall" "\
+Are you sure you want to uninstall Domoticz?
+
+This will:
+  - Stop the Domoticz service
+  - Remove the startup script
+  - Remove the installation folder
+  - Remove /etc/domoticz configuration
+
+This action cannot be undone!" ${r} ${c}; then
+		msg_info "Uninstall cancelled"
+		exit 0
+	fi
+
+	msg_header "Uninstalling Domoticz"
+
+	# Source setupVars to find install folder
+	if [[ -f ${setupVars} ]]; then
+		. ${setupVars}
+	fi
+
+	# Stop and remove systemd service if present
+	if [[ -f /etc/systemd/system/domoticz.service ]]; then
+		msg_info "Stopping domoticz service..."
+		systemctl stop domoticz.service &> /dev/null || true
+		systemctl disable domoticz.service &> /dev/null || true
+		rm -f /etc/systemd/system/domoticz.service
+		systemctl daemon-reload &> /dev/null || true
+		msg_ok "Systemd service removed"
+	fi
+
+	# Remove SysV init script if present
+	if [[ -f /etc/init.d/domoticz.sh ]]; then
+		service domoticz.sh stop &> /dev/null || true
+		if [ -x "$(command -v update-rc.d)" ]; then
+			update-rc.d -f domoticz.sh remove &> /dev/null || true
+		fi
+		if [ -x "$(command -v chkconfig)" ]; then
+			chkconfig domoticz.sh off &> /dev/null || true
+			chkconfig --del domoticz.sh &> /dev/null || true
+		fi
+		rm -f /etc/init.d/domoticz.sh
+		msg_ok "SysV init script removed"
+	fi
+
+	# Remove install folder
+	if [[ -n "${Dest_folder}" && -d "${Dest_folder}" ]]; then
+		rm -rf "${Dest_folder}"
+		msg_ok "Installation folder removed (${Dest_folder})"
+	else
+		msg_warn "Installation folder not found or not set"
+	fi
+
+	# Remove config
+	if [[ -d /etc/domoticz ]]; then
+		rm -rf /etc/domoticz
+		msg_ok "Configuration removed (/etc/domoticz)"
+	fi
+
+	msg_ok "Domoticz has been uninstalled"
 }
 
 update_dialogs() {
 	# reconfigure
 	if [ "${reconfigure}" = true ]; then
 		opt1a="Repair"
-		opt1b="This will retain existing settings"
-		strAdd="You will remain on the same version"
+		opt1b="Retain existing settings, same version"
+		strAdd="You will remain on the same version."
 	else
 		opt1a="Update"
-		opt1b="This will retain existing settings."
+		opt1b="Retain existing settings, update to latest"
 		strAdd="You will be updated to the latest version."
 	fi
 	opt2a="Reconfigure"
-	opt2b="This will allow you to enter new settings"
+	opt2b="Enter new settings for your installation"
+	opt3a="Uninstall"
+	opt3b="Remove Domoticz from this system"
 
-	UpdateCmd=$(whiptail --title "Existing Install Detected!" --menu "\n\nWe have detected an existing install.\n\nPlease choose from the following options: \n($strAdd)" ${r} ${c} 2 \
+	UpdateCmd=$(whiptail --title "Existing Install Detected" --menu "\
+An existing Domoticz installation was found.
+${strAdd}
+
+Choose an option:" ${r} ${c} 3 \
 	"${opt1a}"  "${opt1b}" \
-	"${opt2a}"  "${opt2b}" 3>&2 2>&1 1>&3)
+	"${opt2a}"  "${opt2b}" \
+	"${opt3a}"  "${opt3b}" 3>&2 2>&1 1>&3)
 
 	if [[ $? = 0 ]];then
 		case ${UpdateCmd} in
 			${opt1a})
-				echo "::: ${opt1a} option selected."
+				msg_ok "${opt1a} option selected"
 				useUpdateVars=true
 				;;
 			${opt2a})
-				echo "::: ${opt2a} option selected"
+				msg_ok "${opt2a} option selected"
 				useUpdateVars=false
+				;;
+			${opt3a})
+				uninstall_domoticz
+				exit 0
 				;;
 		esac
 	else
-		echo "::: Cancel selected. Exiting..."
+		msg_warn "Cancel selected. Exiting..."
 		exit 1
 	fi
 
 }
 
-install_packages() {
-	# Update package cache
-	update_package_cache
+is_package_installed() {
+	# Check if a package is installed without installing it.
+	# Tries exact match first, then checks for versioned transitional
+	# packages (e.g. libusb-0.1 provided by libusb-0.1-4).
+	if [ -x "$(command -v dpkg-query)" ]; then
+		# Exact match
+		dpkg-query -W -f='${Status}\n' "${1}" 2>/dev/null | grep -q "ok installed" && return 0
+		# Versioned transitional match (name-<version> pattern)
+		dpkg-query -W -f='${Status}\n' "${1}-*" 2>/dev/null | grep -q "ok installed" && return 0
+		return 1
+	elif [ -x "$(command -v rpm)" ]; then
+		rpm -q "${1}" &> /dev/null && return 0
+		return 1
+	else
+		return 1
+	fi
+}
 
-	# Notify user of package availability
+find_missing_packages() {
+	# Output the list of packages (passed as arguments) that are not installed
+	local missing=()
+	for pkg in "$@"; do
+		if ! is_package_installed "${pkg}"; then
+			missing+=("${pkg}")
+		fi
+	done
+	echo "${missing[@]}"
+}
+
+install_packages() {
+	msg_header "Package Installation"
+
+	# Check which packages are missing before touching the network
+	msg_info "Checking installed packages..."
+	local missing
+	missing=$(find_missing_packages "${INSTALLER_DEPS[@]}" "${domoticz_DEPS[@]}")
+
+	if [[ -z "${missing}" ]]; then
+		msg_ok "All required packages are already installed"
+		return
+	fi
+
+	msg_info "Missing packages: ${missing}"
+
+	# Only update cache and install if there are missing packages
+	update_package_cache
 	notify_package_updates_available
 
-	# Install packages used by this installation script
-	install_dependent_packages INSTALLER_DEPS[@]
+	# Install only the missing packages
+	local missing_array=(${missing})
+	local total=${#missing_array[@]}
+	local current=0
 
-	# Install packages used by the Domoticz
-	install_dependent_packages domoticz_DEPS[@]
+	{
+	for pkg in "${missing_array[@]}"; do
+		current=$((current + 1))
+		local pct=$(( current * 100 / total ))
+		echo "XXX"
+		echo "${pct}"
+		echo "Installing: ${pkg}"
+		echo "XXX"
+		${PKG_INSTALL} "${pkg}" &> /dev/null
+	done
+	} | whiptail --title "Installing Packages" --gauge "Preparing..." ${r} ${c} 0
+
+	msg_ok "All required packages installed"
 }
 
 main() {
@@ -487,14 +973,15 @@ main() {
 	for var in "$@"; do
 		case "$var" in
 			"--reconfigure"  ) reconfigure=true;;
-			"--i_do_not_follow_recommendations"   ) skipSpaceCheck=false;;
+			"--i_do_not_follow_recommendations"   ) skipSpaceCheck=true;;
 			"--unattended"     ) runUnattended=true;;
+			"--uninstall"      ) uninstall_domoticz; exit 0;;
 		esac
 	done
 
 	if [[ -f ${setupVars} ]]; then
 		if [[ "${runUnattended}" == true ]]; then
-			echo "::: --unattended passed to install script, no whiptail dialogs will be displayed"
+			msg_info "Unattended mode: skipping dialogs"
 			useUpdateVars=true
 		else
 			update_dialogs
@@ -504,7 +991,7 @@ main() {
 	# Start the installer
 	# Verify there is enough disk space for the install
 	if [[ "${skipSpaceCheck}" == true ]]; then
-		echo "::: --i_do_not_follow_recommendations passed to script, skipping free disk space verification!"
+		msg_warn "Skipping free disk space verification (--i_do_not_follow_recommendations)"
 	else
 		verifyFreeDiskSpace
 	fi
@@ -512,15 +999,15 @@ main() {
 	install_packages
 
 	if [[ "${reconfigure}" == true ]]; then
-		echo "::: --reconfigure passed to install script. Not downloading/updating local installation"
+		msg_info "Reconfigure mode: skipping download/update"
 	else
-		echo "::: Downloading Domoticz"
+		msg_info "Preparing Domoticz installation..."
 	fi
-	
+
 	find_current_user
-	
+
 	Dest_folder="/home/${Current_user}/domoticz"
-	
+
 	find_IPv4_information
 
 	if [[ ${useUpdateVars} == false ]]; then
@@ -531,6 +1018,8 @@ main() {
 		# Install and log everything to a file
 		chooseServices
 		chooseDestinationFolder
+		# Show summary before installing
+		displaySummary
 		installdomoticz
 	else
 		updatedomoticz
@@ -540,20 +1029,29 @@ main() {
 	    displayFinalMessage
 	fi
 
-	echo "::: Restarting services..."
+	msg_header "Finalizing"
 	# Start services
-	enable_service domoticz.sh
-	start_service domoticz.sh
-	echo "::: done."
-
-	echo ":::"
-	if [[ "${useUpdateVars}" == false ]]; then
-		echo "::: Installation Complete! Configure your browser to use the Domoticz using:"
-		echo ":::     ${IPv4_address%/*}:${HTTP_port}"
-		echo ":::     ${IPv4_address%/*}:${HTTPS_port}"
+	if [[ "${SERVICE_METHOD}" == "systemd" ]]; then
+		enable_service domoticz.service
+		start_service domoticz.service
 	else
-		echo "::: Update complete!"
+		enable_service domoticz.sh
+		start_service domoticz.sh
 	fi
+
+	if [[ "${useUpdateVars}" == false ]]; then
+		msg_ok "Installation complete!"
+		msg_info "Access your Domoticz server at:"
+		if [ "$Enable_http" = true ]; then
+			msg_info "  HTTP  : ${IPv4_address%/*}:${HTTP_port}"
+		fi
+		if [ "$Enable_https" = true ]; then
+			msg_info "  HTTPS : ${IPv4_address%/*}:${HTTPS_port}"
+		fi
+	else
+		msg_ok "Update complete!"
+	fi
+	echo ""
 }
 
 main "$@"

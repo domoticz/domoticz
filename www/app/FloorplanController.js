@@ -1,7 +1,6 @@
 define(['app', 'livesocket'], function (app) {
 	app.controller('FloorplanController', function ($scope, $rootScope, $location, $window, $http, $interval, $timeout, $compile, permissions, livesocket) {
 
-		$scope.debug = 0;
 		$scope.floorPlans;
 		$scope.FloorplanCount;
 		$scope.actFloorplan;
@@ -10,6 +9,9 @@ define(['app', 'livesocket'], function (app) {
 		$scope.isScrolling = false;		// used on tablets & phones
 		$scope.pendingScroll = false;	// used on tablets & phones
 		$scope.lastTouch = 0;			// used on tablets & phones
+		$scope.lastTouchX = 0;			// used on tablets & phones
+		$scope.lastTouchY = 0;			// used on tablets & phones
+		var refreshDebounceTimer = null;
 
 		$scope.makeHTMLnode = function (tag, attrs) {
 			var el = document.createElement(tag);
@@ -23,7 +25,6 @@ define(['app', 'livesocket'], function (app) {
 			//  Handle events on navigation elements
 			if (e.target.getAttribute('related') != null) {
 				$("#BulletImages").children().css({ 'display': 'none' });
-				if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Scrolling to: ' + e.target.getAttribute('related') + '</b>', 1000);
 				e.preventDefault();
 				ScrollFloorplans(e.target.getAttribute('related'));
 			}
@@ -35,7 +36,6 @@ define(['app', 'livesocket'], function (app) {
 					$scope.pendingScroll = true;
 					$timeout(function () {
 						if (($scope.isScrolling == false) && ($scope.pendingScroll == true)) {
-							if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Scrolled to: ' + window.pageXOffset + '</b>', 1000);
 							$scope.pendingScroll = false;
 							var nearestFP = $('.imageparent:first');
 							$('.imageparent').each(function () {
@@ -44,26 +44,31 @@ define(['app', 'livesocket'], function (app) {
 									nearestFP = $(this);
 								}
 							});
-							if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Closest is: ' + nearestFP.attr('id') + '</b>', 1000);
 							ScrollFloorplans(nearestFP.attr('id'), true);
 						}
 					}, 50);
 				}
 				else  // if not scrolling look for double tap
 				{
+					var touch = e.changedTouches ? e.changedTouches[0] : null;
+					var touchX = touch ? touch.pageX : 0;
+					var touchY = touch ? touch.pageY : 0;
 					var delta = (new Date()).getTime() - $scope.lastTouch;
 					var delay = 500;
-					if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Tap Delta: ' + delta + '</b>', 1000);
-					if (delta < delay && delta > 0) {
+					var dx = touchX - $scope.lastTouchX;
+					var dy = touchY - $scope.lastTouchY;
+					var distance = Math.sqrt(dx * dx + dy * dy);
+					if (delta < delay && delta > 0 && distance < 50) {
 						$scope.doubleClick();
 					}
 					$scope.lastTouch = (new Date()).getTime();
+					$scope.lastTouchX = touchX;
+					$scope.lastTouchY = touchY;
 				}
 			}
 		};
 
 		ScrollFloorplans = function (tagName, animate) {
-			if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Scrolling to: ' + tagName + '</b>', 1000);
 			var allowAnimation = $.myglobals.AnimateTransitions;
 			if (arguments.length > 1) {
 				allowAnimation = animate;
@@ -85,11 +90,29 @@ define(['app', 'livesocket'], function (app) {
 							bullet.setAttribute('class', 'bulletSelected');
 						}
 						$scope.actFloorplan = i;
+						updateNavArrows();
 						break;
 					}
 				}
 			}
 			$("#copyright").attr("style", "position:fixed");
+		}
+
+		function updateNavArrows() {
+			if ($scope.FloorplanCount <= 1) return;
+			$("#fpNavLeft").css('display', $scope.actFloorplan > 0 ? 'flex' : 'none');
+			$("#fpNavRight").css('display', $scope.actFloorplan < $scope.FloorplanCount - 1 ? 'flex' : 'none');
+		}
+
+		function FPkeydown(e) {
+			if ($scope.FloorplanCount <= 1) return;
+			if (e.keyCode === 37 && $scope.actFloorplan > 0) {
+				$scope.actFloorplan--;
+				ScrollFloorplans($scope.floorPlans[$scope.actFloorplan].tagName);
+			} else if (e.keyCode === 39 && $scope.actFloorplan < $scope.FloorplanCount - 1) {
+				$scope.actFloorplan++;
+				ScrollFloorplans($scope.floorPlans[$scope.actFloorplan].tagName);
+			}
 		}
 
 		ImgLoaded = function (tagName) {
@@ -154,7 +177,6 @@ define(['app', 'livesocket'], function (app) {
 					$("#floorplancontent").offset({ top: 0 });
 				}
 				$("#floorplancontent").width($("#main-view").width()).height(wrpHeight);
-				if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Window: ' + $window.innerWidth + 'x' + $window.innerHeight + '</b><br/><b>View: ' + $("#floorplancontent").width() + 'x' + wrpHeight + '</b>', 1000);
 				$(".imageparent").each(function (i) { $("#" + $(this).attr('id') + '_svg').width($("#floorplancontent").width()).height(wrpHeight); });
 				if ($scope.FloorplanCount > 1) {
 					$("#BulletGroup:first").css("left", ($window.innerWidth - $("#BulletGroup:first").width()) / 2)
@@ -183,12 +205,10 @@ define(['app', 'livesocket'], function (app) {
 		$scope.doubleClick = function () {
 			if ($.myglobals.FullscreenMode == true) {
 				if ($("#fpwrapper").attr('fullscreen') != 'true') {
-					if ($scope.debug > 1) $.cachenoty = generate_noty('info', '<b>Double Click -> Fullscreen!!</b>', 1000);
 					$('#copyright').css({ display: 'none' });
 					$('.navbar').css({ display: 'none' });
 					$("#fpwrapper").css({ position: 'absolute', top: 0, left: 0 }).attr('fullscreen', 'true');
 				} else {
-					if ($scope.debug > 1) $.cachenoty = generate_noty('info', '<b>Double Click <- Fullscreen!!</b>', 1000);
 					$('#copyright').css({ display: 'block' });
 					$('.navbar').css({ display: 'block' });
 					$("#fpwrapper").css({ position: 'relative' }).attr('fullscreen', 'false');
@@ -279,7 +299,6 @@ define(['app', 'livesocket'], function (app) {
 					var dev = Device.create(item);
 					var existing = document.getElementById(dev.uniquename);
 					if (existing != undefined) {
-						if ($scope.debug > 2) $.cachenoty = generate_noty('info', '<b>Refreshing Device ' + dev.name + ((compoundDevice) ? ' - ' + item.Type : '') + '</b>', 2000);
 						dev.htmlMinimum(existing.parentNode);
 					}
 				}
@@ -288,6 +307,16 @@ define(['app', 'livesocket'], function (app) {
 				}
 			});
 		}
+
+		DebouncedRefreshFPDevices = function () {
+			if (refreshDebounceTimer) {
+				clearTimeout(refreshDebounceTimer);
+			}
+			refreshDebounceTimer = setTimeout(function () {
+				refreshDebounceTimer = null;
+				RefreshFPDevices();
+			}, 100);
+		};
 
 		RefreshFPDevices = function () {
 			if (typeof $scope.mytimer != 'undefined') {
@@ -412,7 +441,7 @@ define(['app', 'livesocket'], function (app) {
 
 			Device.useSVGtags = true;
 			Device.backFunction = 'ShowFloorplans';
-			Device.switchFunction = 'RefreshFPDevices';
+			Device.switchFunction = DebouncedRefreshFPDevices;
 			Device.contentTag = 'floorplancontent';
 			Device.xImageSize = 1280;
 			Device.yImageSize = 720;
@@ -424,14 +453,23 @@ define(['app', 'livesocket'], function (app) {
 			}).then(function successCallback(response) {
 				var data = response.data;
 				if (typeof data.result != 'undefined') {
-					if (typeof $scope.actFloorplan == "undefined") {
-						$scope.FloorplanCount = data.result.length;
-						$scope.floorPlans = data.result;
-						$scope.actFloorplan = 0;
-						$scope.browser = "unknown";
-					} else {
-						if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>Floorplan already set to: ' + $scope.actFloorplan + '</b>', 5000);
+					// Preserve the current floorplan index if it's already set
+					var savedFloorplanIdx = (typeof $scope.actFloorplan != "undefined") ? $scope.actFloorplan : 0;
+					var wasPreviouslySet = (typeof $scope.actFloorplan != "undefined");
+					
+					$scope.FloorplanCount = data.result.length;
+					$scope.floorPlans = data.result;
+					
+					// Ensure saved index is valid (in case floorplans were added/removed)
+					if (savedFloorplanIdx < 0 || data.result.length === 0 || savedFloorplanIdx >= data.result.length) {
+						savedFloorplanIdx = 0;
 					}
+					$scope.actFloorplan = savedFloorplanIdx;
+					
+					if (typeof $scope.browser == "undefined") {
+						$scope.browser = "unknown";
+					}
+					
 
 					// handle settings
 					if (typeof data.AnimateZoom != 'undefined') {
@@ -486,6 +524,29 @@ define(['app', 'livesocket'], function (app) {
 					});
 
 					RefreshFPDevices();
+
+					if ($scope.FloorplanCount > 1) {
+						document.addEventListener('keydown', FPkeydown, false);
+						$("#fpNavLeft").click(function () {
+							if ($scope.actFloorplan > 0) {
+								$scope.actFloorplan--;
+								ScrollFloorplans($scope.floorPlans[$scope.actFloorplan].tagName);
+							}
+						});
+						$("#fpNavRight").click(function () {
+							if ($scope.actFloorplan < $scope.FloorplanCount - 1) {
+								$scope.actFloorplan++;
+								ScrollFloorplans($scope.floorPlans[$scope.actFloorplan].tagName);
+							}
+						});
+						$("#fpwrapper").on('mouseenter', function () {
+							updateNavArrows();
+							$(".fp-nav-arrow").addClass("fp-nav-visible");
+						}).on('mouseleave', function () {
+							$(".fp-nav-arrow").removeClass("fp-nav-visible");
+						});
+						updateNavArrows();
+					}
 				}
 
 				$(".bulletcell").hover(function () {
@@ -521,14 +582,16 @@ define(['app', 'livesocket'], function (app) {
 
 			$(window).resize(function () { $scope.FloorplanResize(); });
 
-			document.addEventListener('touchstart', FPtouchstart, false);
-			document.addEventListener('touchmove', FPtouchmove, false);
-			document.addEventListener('touchend', FPtouchend, false);
+			document.addEventListener('touchstart', FPtouchstart, { passive: true });
+			document.addEventListener('touchmove', FPtouchmove, { passive: true });
+			document.addEventListener('touchend', FPtouchend, { passive: false });
 			$("body").css('overflow', 'hidden')
 				.on('pageexit', function () {
 					document.removeEventListener('touchstart', FPtouchstart);
 					document.removeEventListener('touchmove', FPtouchmove);
 					document.removeEventListener('touchend', FPtouchend);
+					document.removeEventListener('keydown', FPkeydown);
+					$(".fp-nav-arrow").hide();
 					$(window).off('resize');
 					$("body").off('pageexit').css('overflow', '');
 
@@ -544,16 +607,7 @@ define(['app', 'livesocket'], function (app) {
 						$("#floorplancontent").offset({ top: 0 });
 					}
 					$("#copyright").attr("style", "position:absolute");
-					if ($scope.debug > 0) $.cachenoty = generate_noty('info', '<b>PageExit code executed</b>', 2000);
 				});
-		}
-
-		$scope.debugOn = function () {
-			$scope.debug = 1;
-		}
-		
-		$scope.debugOff = function () {
-			$scope.debug = 0;
 		}
 
 		function init() {
@@ -565,8 +619,6 @@ define(['app', 'livesocket'], function (app) {
 					RefreshItem(deviceData);
 				});
 
-				document.getElementById("cFloorplans").addEventListener("mouseover", $scope.debugOn);
-				document.getElementById("cFloorplans").addEventListener("mouseout", $scope.debugOff);
 			}
 			catch (err) {
 				generate_noty('error', '<b>Error Initialising Page</b><br>' + err, false);
@@ -575,8 +627,10 @@ define(['app', 'livesocket'], function (app) {
 		$scope.$on('$destroy', function () {
 			$interval.cancel($scope.mytimer);
 			$scope.mytimer = undefined;
-			document.getElementById("cFloorplans").removeEventListener("mouseover", $scope.debugOn);
-			document.getElementById("cFloorplans").removeEventListener("mouseout", $scope.debugOff);
+			if (refreshDebounceTimer) {
+				clearTimeout(refreshDebounceTimer);
+				refreshDebounceTimer = null;
+			}
 			$("body").trigger("pageexit");
 		});
 

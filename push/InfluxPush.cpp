@@ -10,8 +10,8 @@
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
 #include "../main/WebServer.h"
-#include "../webserver/Base64.h"
-#include "../webserver/cWebem.h"
+#include <libwebem/Base64.h>
+#include <libwebem/cWebem.h>
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
@@ -21,6 +21,11 @@ CInfluxPush::CInfluxPush()
 {
 	m_PushType = PushType::PUSHTYPE_INFLUXDB;
 	m_bLinkActive = false;
+}
+
+CInfluxPush::~CInfluxPush()
+{
+	Stop();
 }
 
 bool CInfluxPush::Start()
@@ -108,7 +113,7 @@ void CInfluxPush::UpdateSettings()
 	m_szURL = sURL.str();
 }
 
-void CInfluxPush::OnDeviceReceived(int m_HwdID, uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
+void CInfluxPush::OnDeviceReceived(int HwdID, uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
 	DoInfluxPush(DeviceRowIdx);
 }

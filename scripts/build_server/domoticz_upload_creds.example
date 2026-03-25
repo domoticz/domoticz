@@ -1,0 +1,9 @@
+# Domoticz upload credentials
+# Copy this file to ~/.domoticz_upload_creds on the build server
+# and fill in the actual values.
+# chmod 600 ~/.domoticz_upload_creds
+
+UPLOAD_USER="your_username"
+UPLOAD_PASSWORD="your_password"
+UPLOAD_SERVER="your_server_ip"
+UPLOAD_PORT=22

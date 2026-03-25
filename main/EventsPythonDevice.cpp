@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "EventsPythonDevice.h"
+#include "../hardware/plugins/PythonPluginUtils.h"
 
 #ifdef ENABLE_PYTHON
     namespace Plugins {
@@ -77,7 +78,7 @@
 	      static char *kwlist[] = { "id",	   "name",    "type",		"sub_type",	      "switch_type",
 					"s_value", "n_value", "n_value_string", "last_update_string", nullptr };
 
-	      if (!PyArg_ParseTupleAndKeywords(args, kwds, "|iOiiiOiOO", kwlist, &self->id, &name, &self->type, &self->sub_type,
+	      if (!PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "|iOiiiOiOO", kwlist, &self->id, &name, &self->type, &self->sub_type,
 					       &self->switch_type, &s_value, &self->n_value, &n_value_string, &last_update_string))
 		      return -1;
 

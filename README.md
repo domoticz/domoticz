@@ -1,17 +1,18 @@
-# Domoticz
+# Domoticz — Free Open Source Home Automation System
 
-Domoticz is a Home Automation System that lets you monitor and configure various devices like: Lights, Switches, various sensors/meters like Temperature, Rain, Wind, UV, Electra, Gas, Water and much more. Notifications/Alerts can be sent to any mobile device
+Domoticz is a free, open source home automation system for Linux, Windows, macOS, and Raspberry Pi. Monitor and control lights, switches, and sensors for temperature, rain, wind, UV, energy, gas, water and much more. Supports 150+ hardware devices including Z-Wave, Zigbee, MQTT, Philips Hue, and RFXCOM. Notifications and alerts can be sent to any mobile device.
 
-## Multi platform: Linux/Windows/Embedded Devices
+## Multi platform: Linux/Windows/macOS/Raspberry Pi
 
-This system is designed to operate in various operating systems.
-The user-interface is a scalable HTML5 web frontend, and is automatically adapted for Desktop and Mobile Devices.
-Compatible with all recent browsers
+Runs on Linux, Windows, macOS, FreeBSD, and embedded devices like Raspberry Pi and other ARM boards.
+The user-interface is a scalable HTML5 web frontend, automatically adapted for desktop and mobile devices.
+Compatible with all modern browsers.
 
-Some Information
-- Hardware: RFXCOM Transceiver, Zigbee, Z-Wave, P1 Smart Meter, YouLess Meter, Pulse Counters, 1-Wire, Philips Hue and a lot more....
+### Features
+- 150+ supported hardware types: Z-Wave, Zigbee, MQTT, RFXCOM, P1 Smart Meter, YouLess Meter, Pulse Counters, 1-Wire, Philips Hue and more
+- Event scripting with dzVents (Lua) and Python plugins
 - Extended logging
-- iPhone / Android / Windows 10 (Phone & Desktop) push notifications
+- Push notifications for iPhone, Android and desktop
 - Auto learning sensors/switches
 - Manual creation of switch codes
 - Share / Use external devices
@@ -19,9 +20,7 @@ Some Information
 
 ## Support
 
-By default Domoticz is protected by a username (admin) and password (domoticz).
-
-Please either change the password as soon as possible or create a different admin user and remove the default (admin) user.
+On first run, Domoticz will present a setup wizard to create your admin account. For Docker deployments, you can set the `DOMOTICZ_ADMIN_PASSWORD` and optionally `DOMOTICZ_ADMIN_USERNAME` environment variables to provision the admin account automatically.
 
 More information on securing your Domoticz setup can be found in the [SECURITY SETUP](SECURITY_SETUP.md) documentation.
 
@@ -40,20 +39,16 @@ If you like the product or encourage the development, please use the link:
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=6S2CXM772QY84&currency_code=EUR&source=url)
 
 # More information
-* Website: http://www.domoticz.com
-* Forum https://forum.domoticz.com/
-* Wiki https://wiki.domoticz.com/
-
-<p>
-  <a href="https://www.digitalocean.com/?refcode=323b5500715a&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge">
-    <img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/PoweredByDO/DO_Powered_by_Badge_blue.svg" width="201px">
-  </a>
-</p>
+* Website: https://www.domoticz.com
+* Forum: https://forum.domoticz.com/
+* Wiki: https://wiki.domoticz.com/
+* Build from source: https://wiki.domoticz.com/Build_Domoticz_from_source
 
 ### Build Status
 
 Status | Operating system
 ------------ | -------------
-![Status Linux](https://github.com/domoticz/domoticz/actions/workflows/development.yml/badge.svg) | Linux x86_64
-[![Status Windows](https://ci.appveyor.com/api/projects/status/fskiwvjs1q7svwq9?svg=true)](https://ci.appveyor.com/project/gizmocuz/domoticz) | Windows
+[![Status Linux](https://github.com/domoticz/domoticz/actions/workflows/development.yml/badge.svg)](https://github.com/domoticz/domoticz/actions/workflows/development.yml) | Linux x86_64
+[![Status Windows](https://github.com/domoticz/domoticz/actions/workflows/windows-development-build.yml/badge.svg)](https://github.com/domoticz/domoticz/actions/workflows/windows-development-build.yml) | Windows x86
+[![Status Windows (Appveyor)](https://ci.appveyor.com/api/projects/status/fskiwvjs1q7svwq9?svg=true)](https://ci.appveyor.com/project/gizmocuz/domoticz) | Windows (Appveyor)
 

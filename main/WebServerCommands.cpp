@@ -38,7 +38,7 @@
 #include "../hardware/SysfsGpio.h"
 #include "../hardware/EnOceanESP2.h"
 #include "../hardware/EnOceanESP3.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #ifdef WITH_GPIO
 #include "../hardware/Gpio.h"
 #include "../hardware/GpioPin.h"
@@ -240,6 +240,7 @@ namespace http
 
 							bool bIsBlinds = (
 								switchtype == STYPE_Blinds
+								|| switchtype == STYPE_BlindsWithStop
 								|| switchtype == STYPE_BlindsPercentage
 								|| switchtype == STYPE_BlindsPercentageWithStop
 								|| switchtype == STYPE_VenetianBlindsEU
@@ -407,116 +408,84 @@ namespace http
 							int used = atoi(sd[4].c_str());
 							_eSwitchType switchtype = (_eSwitchType)atoi(sd[5].c_str());
 							std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[6]);
-							bool bdoAdd = false;
-							switch (Type)
+							bool bdoAdd = (IsLightOrSwitch(Type, SubType)
+							               || (Type == pTypeEvohome)
+							               || (Type == pTypeEvohomeRelay));
+							if (bdoAdd && !used)
 							{
-							case pTypeLighting1:
-							case pTypeLighting2:
-							case pTypeLighting3:
-							case pTypeLighting4:
-							case pTypeLighting5:
-							case pTypeLighting6:
-							case pTypeFan:
-							case pTypeColorSwitch:
-							case pTypeSecurity1:
-							case pTypeSecurity2:
-							case pTypeEvohome:
-							case pTypeEvohomeRelay:
-							case pTypeCurtain:
-							case pTypeBlinds:
-							case pTypeRFY:
-							case pTypeChime:
-							case pTypeThermostat2:
-							case pTypeThermostat3:
-							case pTypeThermostat4:
-							case pTypeRemote:
-							case pTypeRadiator1:
-							case pTypeGeneralSwitch:
-							case pTypeHomeConfort:
-							case pTypeFS20:
-							case pTypeHunter:
-							case pTypeDDxxxx:
-							case pTypeHoneywell_AL:
-								bdoAdd = true;
-								if (!used)
-								{
-									bdoAdd = false;
-									std::vector<std::vector<std::string>> resultSD;
-									resultSD = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q')", sd[0].c_str());
-									if (!resultSD.empty())
-										bdoAdd = true;
-								}
-								if ((Type == pTypeRadiator1) && (SubType != sTypeSmartwaresSwitchRadiator))
-									bdoAdd = false;
-								if (bdoAdd)
-								{
-									int idx = atoi(ID.c_str());
-									if (!IsIdxForUser(&session, idx))
-										continue;
-									root["result"][ii]["idx"] = ID;
-									root["result"][ii]["Name"] = Name;
-									root["result"][ii]["Type"] = RFX_Type_Desc(Type, 1);
-									root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(Type, SubType);
-									bool bIsDimmer = (
-										(switchtype == STYPE_Dimmer)
-										|| (switchtype == STYPE_BlindsPercentage)
-										|| (switchtype == STYPE_BlindsPercentageWithStop)
-										|| (switchtype == STYPE_Selector)
-										);
-									root["result"][ii]["IsDimmer"] = bIsDimmer;
+								bdoAdd = false;
+								std::vector<std::vector<std::string>> resultSD;
+								resultSD = m_sql.safe_query("SELECT ID FROM LightSubDevices WHERE (DeviceRowID=='%q')", sd[0].c_str());
+								if (!resultSD.empty())
+									bdoAdd = true;
+							}
+							if (bdoAdd)
+							{
+								int idx = atoi(ID.c_str());
+								if (!IsIdxForUser(&session, idx))
+									continue;
+								root["result"][ii]["idx"] = ID;
+								root["result"][ii]["Name"] = Name;
+								root["result"][ii]["Type"] = RFX_Type_Desc(Type, 1);
+								root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(Type, SubType);
+								bool bIsDimmer = (
+									(switchtype == STYPE_Dimmer)
+									|| (switchtype == STYPE_BlindsPercentage)
+									|| (switchtype == STYPE_BlindsPercentageWithStop)
+									|| (switchtype == STYPE_Selector)
+									);
+								root["result"][ii]["IsDimmer"] = bIsDimmer;
 
-									std::string dimmerLevels = "none";
+								std::string dimmerLevels = "none";
 
-									if (bIsDimmer)
+								if (bIsDimmer)
+								{
+									std::stringstream ss;
+
+									if (switchtype == STYPE_Selector)
 									{
-										std::stringstream ss;
-
-										if (switchtype == STYPE_Selector)
+										std::map<std::string, std::string> selectorStatuses;
+										GetSelectorSwitchStatuses(options, selectorStatuses);
+										bool levelOffHidden = (options["LevelOffHidden"] == "true");
+										for (int i = 0; i < (int)selectorStatuses.size(); i++)
 										{
-											std::map<std::string, std::string> selectorStatuses;
-											GetSelectorSwitchStatuses(options, selectorStatuses);
-											bool levelOffHidden = (options["LevelOffHidden"] == "true");
-											for (int i = 0; i < (int)selectorStatuses.size(); i++)
+											if (levelOffHidden && (i == 0))
 											{
-												if (levelOffHidden && (i == 0))
-												{
-													continue;
-												}
-												if ((levelOffHidden && (i > 1)) || (i > 0))
-												{
-													ss << ",";
-												}
-												ss << i * 10;
+												continue;
 											}
-										}
-										else
-										{
-											int nValue = 0;
-											std::string sValue;
-											std::string lstatus;
-											int llevel = 0;
-											bool bHaveDimmer = false;
-											int maxDimLevel = 0;
-											bool bHaveGroupCmd = false;
-
-											GetLightStatus(Type, SubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel,
-												bHaveGroupCmd);
-
-											for (int i = 0; i <= maxDimLevel; i++)
+											if ((levelOffHidden && (i > 1)) || (i > 0))
 											{
-												if (i != 0)
-												{
-													ss << ",";
-												}
-												ss << (int)float((100.0F / float(maxDimLevel)) * i);
+												ss << ",";
 											}
+											ss << i * 10;
 										}
-										dimmerLevels = ss.str();
 									}
-									root["result"][ii]["DimmerLevels"] = dimmerLevels;
-									ii++;
+									else
+									{
+										int nValue = 0;
+										std::string sValue;
+										std::string lstatus;
+										int llevel = 0;
+										bool bHaveDimmer = false;
+										int maxDimLevel = 0;
+										bool bHaveGroupCmd = false;
+
+										GetLightStatus(Type, SubType, switchtype, nValue, sValue, lstatus, llevel, bHaveDimmer, maxDimLevel,
+											bHaveGroupCmd);
+
+										for (int i = 0; i <= maxDimLevel; i++)
+										{
+											if (i != 0)
+											{
+												ss << ",";
+											}
+											ss << (int)float((100.0F / float(maxDimLevel)) * i);
+										}
+									}
+									dimmerLevels = ss.str();
 								}
-								break;
+								root["result"][ii]["DimmerLevels"] = dimmerLevels;
+								ii++;
 							}
 						}
 					}
@@ -539,51 +508,12 @@ namespace http
 							int Type = atoi(sd[2].c_str());
 							int SubType = atoi(sd[3].c_str());
 							int used = atoi(sd[4].c_str());
-							if (used)
+							if (used && (IsLightOrSwitch(Type, SubType) || (Type == pTypeEvohome) || (Type == pTypeEvohomeRelay)))
 							{
-								switch (Type)
-								{
-								case pTypeLighting1:
-								case pTypeLighting2:
-								case pTypeLighting3:
-								case pTypeLighting4:
-								case pTypeLighting5:
-								case pTypeLighting6:
-								case pTypeFan:
-								case pTypeColorSwitch:
-								case pTypeSecurity1:
-								case pTypeSecurity2:
-								case pTypeEvohome:
-								case pTypeEvohomeRelay:
-								case pTypeCurtain:
-								case pTypeBlinds:
-								case pTypeRFY:
-								case pTypeChime:
-								case pTypeThermostat2:
-								case pTypeThermostat3:
-								case pTypeThermostat4:
-								case pTypeRemote:
-								case pTypeGeneralSwitch:
-								case pTypeHomeConfort:
-								case pTypeFS20:
-								case pTypeHunter:
-								case pTypeDDxxxx:
-								case pTypeHoneywell_AL:
-									root["result"][ii]["type"] = 0;
-									root["result"][ii]["idx"] = ID;
-									root["result"][ii]["Name"] = "[Light/Switch] " + Name;
-									ii++;
-									break;
-								case pTypeRadiator1:
-									if (SubType == sTypeSmartwaresSwitchRadiator)
-									{
-										root["result"][ii]["type"] = 0;
-										root["result"][ii]["idx"] = ID;
-										root["result"][ii]["Name"] = "[Light/Switch] " + Name;
-										ii++;
-									}
-									break;
-								}
+								root["result"][ii]["type"] = 0;
+								root["result"][ii]["idx"] = ID;
+								root["result"][ii]["Name"] = "[Light/Switch] " + Name;
+								ii++;
 							}
 						}
 					} // end light/switches
@@ -685,6 +615,11 @@ namespace http
 					{
 						m_sql.safe_query("UPDATE DeviceStatus SET nValue=%d WHERE (ID == '%q')", nValue, idx.c_str());
 						m_sql.UpdateLastUpdate(idx);
+						uint64_t ulID = std::stoull(idx.c_str());
+						m_sql.safe_query(
+							"INSERT INTO LightingLog (DeviceRowID, nValue, User) "
+							"VALUES ('%" PRIu64 "', '%d', '%q')",ulID,nValue, szSwitchUser.c_str());
+						m_mainworker.m_eventsystem.GetCurrentStates();
 					}
 					root["status"] = "OK";
 					break;
@@ -2573,13 +2508,12 @@ namespace http
 					unsigned char switchtype = atoi(result[0][2].c_str());
 
 					int ii = 0;
-					if (
-						(dType == pTypeLighting1) || (dType == pTypeLighting2) || (dType == pTypeLighting3) || (dType == pTypeLighting4) || (dType == pTypeLighting5) ||
-						(dType == pTypeLighting6) || (dType == pTypeColorSwitch) || (dType == pTypeSecurity1) || (dType == pTypeSecurity2) || (dType == pTypeEvohome) ||
-						(dType == pTypeEvohomeRelay) || (dType == pTypeCurtain) || (dType == pTypeBlinds) || (dType == pTypeRFY) || (dType == pTypeChime) || (dType == pTypeThermostat2) ||
-						(dType == pTypeThermostat3) || (dType == pTypeThermostat4) || (dType == pTypeRemote) || (dType == pTypeGeneralSwitch) || (dType == pTypeHomeConfort) ||
-						(dType == pTypeFS20) || ((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator)) || (dType == pTypeDDxxxx) || (dType == pTypeHoneywell_AL)
-						)
+					if ((IsLightOrSwitch(dType, dSubType)
+					     || (dType == pTypeEvohome)
+					     || (dType == pTypeEvohomeRelay))
+					    && (dType != pTypeFan)
+					    && (dType != pTypeHunter)
+					    )
 					{
 						if (switchtype != STYPE_PushOff)
 						{
@@ -2991,10 +2925,7 @@ namespace http
 						bool bIsUser = false;
 						if (iUser != -1)
 						{
-							if (m_users[iUser].userrights != URIGHTS_ADMIN)
-								bIsUser = true;
-							else
-								bIsUser = (m_users[iUser].TotSensors > 0); //admin users with devices are also allowed
+							bIsUser = (m_users[iUser].TotSensors > 0);
 						}
 						if (bIsUser)
 						{
@@ -3389,19 +3320,14 @@ namespace http
 					unsigned char dType = atoi(result[0][0].c_str());
 					unsigned char dSubType = atoi(result[0][1].c_str());
 
-					if (
-						(dType != pTypeLighting1) && (dType != pTypeLighting2) && (dType != pTypeLighting3) && (dType != pTypeLighting4) && (dType != pTypeLighting5) &&
-						(dType != pTypeLighting6) && (dType != pTypeFan) && (dType != pTypeColorSwitch) && (dType != pTypeSecurity1) && (dType != pTypeSecurity2) &&
-						(dType != pTypeEvohome) && (dType != pTypeEvohomeRelay) && (dType != pTypeCurtain) && (dType != pTypeBlinds) && (dType != pTypeRFY) && (dType != pTypeChime) &&
-						(dType != pTypeThermostat2) && (dType != pTypeThermostat4) && (dType != pTypeThermostat4) && (dType != pTypeRemote) && (dType != pTypeGeneralSwitch) &&
-						(dType != pTypeHomeConfort) && (dType != pTypeFS20) && (!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))) &&
-						(!((dType == pTypeGeneral) && (dSubType == sTypeTextStatus))) && (!((dType == pTypeGeneral) && (dSubType == sTypeAlert))) && (dType != pTypeHunter) && (dType != pTypeDDxxxx) && (dType != pTypeHoneywell_AL)
-						)
+					if ((IsLightOrSwitch(dType, dSubType) || (dType == pTypeEvohome) || (dType == pTypeEvohomeRelay))
+					    || ((dType == pTypeGeneral) && ((dSubType == sTypeTextStatus) || (dSubType == sTypeAlert))))
+					{
+						result = m_sql.safe_query("DELETE FROM LightingLog WHERE (DeviceRowID=='%q')", idx.c_str());
+						root["status"] = "OK";
+					}
+					else
 						return false; // no light device! we should not be here!
-
-
-					result = m_sql.safe_query("DELETE FROM LightingLog WHERE (DeviceRowID=='%q')", idx.c_str());
-					root["status"] = "OK";
 					break;
 				}
 				case "clearscenelog"_sh:
@@ -3461,10 +3387,7 @@ namespace http
 					bool bIsUser = false;
 					if (iUser != -1)
 					{
-						if (m_users[iUser].userrights != URIGHTS_ADMIN)
-							bIsUser = true;
-						else
-							bIsUser = (m_users[iUser].TotSensors > 0); //admin users with devices are also allowed
+						bIsUser = (m_users[iUser].TotSensors > 0);
 					}
 					root["status"] = "OK";
 					if ((bIsUser) && (m_users[iUser].ID != 0xFFFF))

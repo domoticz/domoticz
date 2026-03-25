@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
 
@@ -11,11 +12,12 @@ namespace Json
 class Enever : public CDomoticzHardwareBase
 {
 public:
-	Enever(int ID, const std::string& szToken, const std::string& szProvider);
+	Enever(int ID, const std::string& szToken, const std::string& szProvider, const bool bUseQuarterPrices);
 	~Enever() override = default;
 	void ActualizePrices();
 	bool WriteToHardware(const char* pdata, unsigned char length) override;
 	std::string m_szSoftwareVersion;
+	std::atomic<bool> m_bUseQuarterPrices = false;
 private:
 	bool StartHardware() override;
 	bool StopHardware() override;

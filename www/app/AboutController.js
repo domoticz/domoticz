@@ -38,69 +38,140 @@ define(['app'], function (app) {
 			$scope.MakeGlobalConfig();
 			$scope.RefreshUptime();
 
-			// The canvas element we are drawing into.
-			// Credits to http://www.professorcloud.com/    
-			var $canvas = $('#canvas');
-			var $canvas2 = $('#canvas2');
-			var $canvas3 = $('#canvas3');
-			var ctx2 = $canvas2[0].getContext('2d');
-			var ctx = $canvas[0].getContext('2d');
-			var w = $canvas[0].width;
-			var h = $canvas[0].height;
-			var img = new Image();
+			// Particle Constellation Animation
+			var canvas = document.getElementById('canvas2');
+			var ctx = canvas.getContext('2d');
+			var particles = [];
+			var particleCount = 80;
+			var connectionDistance = 120;
+			var mouse = { x: null, y: null, radius: 150 };
 
-			// A puff.
-			var Puff = function (p) {
-				var opacity,
-					sy = (Math.random() * 285) >> 0,
-					sx = (Math.random() * 285) >> 0;
+			// Set canvas size
+			function resizeCanvas() {
+				canvas.width = window.innerWidth;
+				canvas.height = window.innerHeight;
+			}
+			resizeCanvas();
+			window.addEventListener('resize', resizeCanvas);
 
-				this.p = p;
+			// Track mouse
+			window.addEventListener('mousemove', function(e) {
+				mouse.x = e.x;
+				mouse.y = e.y;
+			});
+			window.addEventListener('mouseout', function() {
+				mouse.x = null;
+				mouse.y = null;
+			});
 
-				this.move = function (timeFac) {
-					p = this.p + 0.3 * timeFac;
-					opacity = (Math.sin(p * 0.05) * 0.5);
-					if (opacity < 0) {
-						p = opacity = 0;
-						sy = (Math.random() * 285) >> 0;
-						sx = (Math.random() * 285) >> 0;
+			// Particle class
+			function Particle() {
+				this.x = Math.random() * canvas.width;
+				this.y = Math.random() * canvas.height;
+				this.vx = (Math.random() - 0.5) * 0.8;
+				this.vy = (Math.random() - 0.5) * 0.8;
+				this.radius = Math.random() * 2 + 1;
+				this.color = 'rgba(100, 200, 255, ' + (Math.random() * 0.5 + 0.5) + ')';
+			}
+
+			Particle.prototype.draw = function() {
+				ctx.beginPath();
+				ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+				ctx.fillStyle = this.color;
+				ctx.fill();
+
+				// Glow effect
+				ctx.shadowBlur = 15;
+				ctx.shadowColor = 'rgba(100, 200, 255, 0.5)';
+			};
+
+			Particle.prototype.update = function() {
+				// Mouse interaction - particles move away from cursor
+				if (mouse.x !== null && mouse.y !== null) {
+					var dx = this.x - mouse.x;
+					var dy = this.y - mouse.y;
+					var dist = Math.sqrt(dx * dx + dy * dy);
+					if (dist < mouse.radius) {
+						var force = (mouse.radius - dist) / mouse.radius;
+						this.vx += (dx / dist) * force * 0.5;
+						this.vy += (dy / dist) * force * 0.5;
 					}
-					this.p = p;
-					ctx.globalAlpha = opacity;
-					ctx.drawImage($canvas3[0], sy + p, sy + p, 285 - (p * 2), 285 - (p * 2), 0, 0, w, h);
-				};
+				}
+
+				// Apply velocity with damping
+				this.vx *= 0.99;
+				this.vy *= 0.99;
+
+				// Ensure minimum movement
+				var speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+				if (speed < 0.2) {
+					this.vx += (Math.random() - 0.5) * 0.1;
+					this.vy += (Math.random() - 0.5) * 0.1;
+				}
+
+				this.x += this.vx;
+				this.y += this.vy;
+
+				// Wrap around edges
+				if (this.x < 0) this.x = canvas.width;
+				if (this.x > canvas.width) this.x = 0;
+				if (this.y < 0) this.y = canvas.height;
+				if (this.y > canvas.height) this.y = 0;
 			};
 
-			var puffs = [];
-			var sortPuff = function (p1, p2) { return p1.p - p2.p; };
-			puffs.push(new Puff(0));
-			puffs.push(new Puff(20));
-			puffs.push(new Puff(40));
+			// Create particles
+			for (var i = 0; i < particleCount; i++) {
+				particles.push(new Particle());
+			}
 
-			var newTime, oldTime = 0, timeFac;
+			// Draw connections between nearby particles
+			function drawConnections() {
+				for (var i = 0; i < particles.length; i++) {
+					for (var j = i + 1; j < particles.length; j++) {
+						var dx = particles[i].x - particles[j].x;
+						var dy = particles[i].y - particles[j].y;
+						var dist = Math.sqrt(dx * dx + dy * dy);
 
-			var loop = function () {
-				newTime = new Date().getTime();
-				if (oldTime === 0) {
-					oldTime = newTime;
+						if (dist < connectionDistance) {
+							var opacity = 1 - (dist / connectionDistance);
+							ctx.beginPath();
+							ctx.moveTo(particles[i].x, particles[i].y);
+							ctx.lineTo(particles[j].x, particles[j].y);
+							ctx.strokeStyle = 'rgba(100, 200, 255, ' + (opacity * 0.4) + ')';
+							ctx.lineWidth = 1;
+							ctx.stroke();
+						}
+					}
 				}
-				timeFac = (newTime - oldTime) * 0.1;
-				if (timeFac > 3) { timeFac = 3; }
-				oldTime = newTime;
-				puffs.sort(sortPuff);
+			}
 
-				for (var i = 0; i < puffs.length; i++) {
-					puffs[i].move(timeFac);
+			// Animation loop
+			function animate() {
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+				// Draw gradient background
+				var gradient = ctx.createRadialGradient(
+					canvas.width / 2, canvas.height / 2, 0,
+					canvas.width / 2, canvas.height / 2, canvas.width * 0.7
+				);
+				gradient.addColorStop(0, '#1a1a2e');
+				gradient.addColorStop(0.5, '#16213e');
+				gradient.addColorStop(1, '#0f0f23');
+				ctx.fillStyle = gradient;
+				ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+				ctx.shadowBlur = 0;
+				drawConnections();
+
+				for (var i = 0; i < particles.length; i++) {
+					particles[i].update();
+					particles[i].draw();
 				}
-				ctx2.drawImage($canvas[0], 0, 0, 570, 570);
-				setTimeout(loop, 10);
-			};
-			// Turns out Chrome is much faster doing bitmap work if the bitmap is in an existing canvas rather
-			// than an IMG, VIDEO etc. So draw the big nebula image into canvas3
-			var $canvas3 = $('#canvas3');
-			var ctx3 = $canvas3[0].getContext('2d');
-			$(img).bind('load', null, function () { ctx3.drawImage(img, 0, 0, 570, 570); loop(); });
-			img.src = 'images/nebula.jpg';
+
+				requestAnimationFrame(animate);
+			}
+
+			animate();
 		};
 
 		$("#aboutcontent").i18n();

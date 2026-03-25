@@ -1,0 +1,545 @@
+<div class="container dashboardMobile">
+	<div ng-include="'views/inc_topbar.html'" ng-repeat="tb in [{hideSearch:true}]"></div>
+
+	<!-- Loading indicator -->
+	<div ng-if="loading">
+		<h2 data-i18n="Loading">Loading</h2>...
+	</div>
+
+	<!-- No devices message -->
+	<div ng-if="!loading && !hasDevices" class="no-devices">
+		<h2 data-i18n="No favorite devices defined ... (Or communication Lost!)">::
+			No favorite devices defined ... (Or communication Lost!)
+		</h2>
+		<p>
+			<span data-i18n="If this is your first time here, please setup your">::If this is your first time here, please setup your</span>
+			<a href="javascript:SwitchLayout('Hardware')" data-i18n="Hardware">::Hardware</a>,
+			<span data-i18n="and add some">::and add some</span>
+			<a href="javascript:SwitchLayout('Devices')" data-i18n="Devices">::Devices</a>.
+		</p>
+		<p>
+			<span data-i18n="Visit the Getting Started page at the">::Visit the Getting Started page at the</span>
+			<a href="https://wiki.domoticz.com/Getting_started" target="_blank">Domoticz Wiki</a>.
+		</p>
+	</div>
+
+	<!-- Main dashboard content -->
+	<div id="dashcontent" ng-if="!loading && hasDevices">
+
+		<!-- Scenes section -->
+		<section ng-if="scenes.length > 0" class="dashCategory" id="dashScenes">
+			<table class="mobileitem">
+				<thead>
+					<tr>
+						<th data-i18n="Scenes">Scenes</th>
+						<th style="text-align:right"><a href="javascript:SwitchLayout('Scenes')"><img src="images/next.png"></a></th>
+					</tr>
+				</thead>
+				<tr ng-repeat="item in scenes track by item.idx" id="scene_{{item.idx}}">
+					<td id="name" class="name item-name" data-idx="{{item.idx}}" data-desc="{{item.Description}}">{{item.Name}}</td>
+					<td id="status" class="status nowrap">
+						<!-- Scene type: On button only -->
+						<span ng-if="item.Type.indexOf('Scene') === 0">
+							<button class="btn btn-mini" type="button"
+									ng-click="switchScene(item.idx, 'On', item.Protected)"
+									data-i18n="On">On</button>
+						</span>
+						<!-- Group type: On + Off buttons with active state highlighting -->
+						<span ng-if="item.Type.indexOf('Group') === 0">
+							<button class="btn btn-mini"
+									ng-class="{'btn-info': item.Status == 'On' || item.Status == 'Group On'}"
+									type="button"
+									ng-click="switchScene(item.idx, 'On', item.Protected)"
+									data-i18n="On">On</button>
+							<button class="btn btn-mini"
+									ng-class="{'btn-info': item.Status == 'Off' || item.Status == 'Group Off'}"
+									type="button"
+									ng-click="switchScene(item.idx, 'Off', item.Protected)"
+									data-i18n="Off">Off</button>
+						</span>
+					</td>
+				</tr>
+			</table>
+		</section>
+
+		<!-- Lights/Switches section -->
+		<br ng-if="scenes.length > 0 && lights.length > 0">
+		<section ng-if="lights.length > 0" class="dashCategory" id="dashSwitches">
+			<table class="mobileitem">
+				<thead>
+					<tr>
+						<th data-i18n="Light/Switch Devices">Light/Switch Devices</th>
+						<th style="text-align:right"><a href="javascript:SwitchLayout('LightSwitches')"><img src="images/next.png"></a></th>
+					</tr>
+				</thead>
+				<tbody ng-repeat="item in lights track by item.idx">
+					<tr id="light_{{item.idx}}">
+						<td id="name" class="name item-name" data-idx="{{item.idx}}" data-desc="{{item.Description}}">{{item.Name}}</td>
+						<td id="status" class="status nowrap">
+
+							<!-- Doorbell -->
+							<span ng-if="item.SwitchType == 'Doorbell'">
+								{{item.Status}}
+								<button class="btn btn-mini" type="button"
+										ng-click="switchLight(item.idx, 'On', item.Protected)"
+										data-i18n="Ring">Ring</button>
+							</span>
+
+							<!-- Push On Button -->
+							<span ng-if="item.SwitchType == 'Push On Button'">
+								<button class="btn btn-mini" type="button"
+										ng-click="switchLight(item.idx, 'On', item.Protected)"
+										data-i18n="On">On</button>
+							</span>
+
+							<!-- Push Off Button -->
+							<span ng-if="item.SwitchType == 'Push Off Button'">
+								<button class="btn btn-mini" type="button"
+										ng-click="switchLight(item.idx, 'Off', item.Protected)"
+										data-i18n="Off">Off</button>
+							</span>
+
+							<!-- Door Contact -->
+							<span ng-if="item.SwitchType == 'Door Contact'">
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.InternalState == 'Open'}"
+										type="button">{{item.InternalState}}</button>
+							</span>
+
+							<!-- Door Lock -->
+							<span ng-if="item.SwitchType == 'Door Lock'">
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.InternalState == 'Unlocked'}"
+										type="button"
+										ng-click="switchLight(item.idx, 'Off', item.Protected)"
+										data-i18n="Unlocked">Unlocked</button>
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.InternalState == 'Locked'}"
+										type="button"
+										ng-click="switchLight(item.idx, 'On', item.Protected)"
+										data-i18n="Locked">Locked</button>
+							</span>
+
+							<!-- Door Lock Inverted -->
+							<span ng-if="item.SwitchType == 'Door Lock Inverted'">
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.InternalState == 'Unlocked'}"
+										type="button"
+										ng-click="switchLight(item.idx, 'On', item.Protected)"
+										data-i18n="Unlocked">Unlocked</button>
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.InternalState == 'Locked'}"
+										type="button"
+										ng-click="switchLight(item.idx, 'Off', item.Protected)"
+										data-i18n="Locked">Locked</button>
+							</span>
+
+							<!-- Motion Sensor -->
+							<span ng-if="item.SwitchType == 'Motion Sensor'">
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'On' || item.Status == 'Chime' || item.Status == 'Group On'}"
+										type="button"
+										data-i18n="Motion">Motion</button>
+							</span>
+
+							<!-- Smoke Detector -->
+							<span ng-if="item.SwitchType == 'Smoke Detector'">
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'Panic' || item.Status == 'On'}"
+										type="button"
+										data-i18n="SMOKE">SMOKE</button>
+							</span>
+
+							<!-- Dusk Sensor -->
+							<span ng-if="item.SwitchType == 'Dusk Sensor'">
+								<button class="btn btn-mini" type="button">
+									<span ng-if="item.Status == 'On'" data-i18n="Dark">Dark</span>
+									<span ng-if="item.Status != 'On'" data-i18n="Sunny">Sunny</span>
+								</button>
+							</span>
+
+							<!-- Blinds (SwitchType contains 'Blind') -->
+							<span ng-if="(item.SwitchType || '').indexOf('Blind') >= 0 || (item.SwitchType || '').indexOf('blind') >= 0">
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'Open' || (item.Status || '').indexOf('Set ') === 0}"
+										type="button"
+										ng-click="switchLight(item.idx, 'Open', item.Protected)"
+										data-i18n="Open">Open</button>
+								<button class="btn btn-mini btn-danger"
+										ng-if="item.SubType == 'RAEX' || (item.SubType || '').indexOf('A-OK') === 0 || (item.SubType || '').indexOf('Hasta') >= 0 || (item.SubType || '').indexOf('Media Mount') === 0 || (item.SubType || '').indexOf('Forest') === 0 || (item.SubType || '').indexOf('Chamberlain') === 0 || (item.SubType || '').indexOf('Sunpery') === 0 || (item.SubType || '').indexOf('Dolat') === 0 || (item.SubType || '').indexOf('ASP') === 0 || item.SubType == 'Harrison' || (item.SubType || '').indexOf('RFY') === 0 || (item.SubType || '').indexOf('ASA') === 0 || (item.SubType || '').indexOf('DC106') === 0 || (item.SubType || '').indexOf('Confexx') === 0 || (item.SwitchType || '').indexOf('Venetian Blinds') === 0 || (item.SwitchType || '').indexOf('Stop') >= 0"
+										type="button"
+										ng-click="switchLight(item.idx, 'Stop', item.Protected)"
+										data-i18n="Stop">Stop</button>
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'Closed'}"
+										type="button"
+										ng-click="switchLight(item.idx, 'Close', item.Protected)"
+										data-i18n="Close">Close</button>
+							</span>
+
+							<!-- X10 Siren -->
+							<span ng-if="item.SwitchType == 'X10 Siren'">
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'On' || item.Status == 'Chime' || item.Status == 'Group On' || item.Status == 'All On'}"
+										type="button">
+									<span ng-if="item.Status == 'On' || item.Status == 'Chime' || item.Status == 'Group On' || item.Status == 'All On'" data-i18n="SIREN">SIREN</span>
+									<span ng-if="item.Status != 'On' && item.Status != 'Chime' && item.Status != 'Group On' && item.Status != 'All On'" data-i18n="Silence">Silence</span>
+								</button>
+							</span>
+
+							<!-- Contact -->
+							<span ng-if="item.SwitchType == 'Contact'">
+								<a class="btn btn-mini"
+								   ng-class="{'btn-info': item.Status != 'Closed'}"
+								   href="#/Devices/{{item.idx}}/Log">
+									<span ng-if="item.Status == 'Closed'" data-i18n="Closed">Closed</span>
+									<span ng-if="item.Status != 'Closed'" data-i18n="Open">Open</span>
+								</a>
+							</span>
+
+							<!-- Selector (buttons) -->
+							<span ng-if="item.SwitchType == 'Selector' && item.SelectorStyle === 0">
+								<span ng-repeat="level in getSelectorLevels(item)">
+									<button type="button"
+											class="btn btn-mini"
+											ng-class="{'btn-selected': level.isActive, 'btn-default': !level.isActive}"
+											ng-click="switchSelectorLevel(item.idx, level.value, level.name, item.Protected)">
+										{{level.name}}
+									</button>
+								</span>
+							</span>
+							<!-- Selector (dropdown) -->
+							<span ng-if="item.SwitchType == 'Selector' && item.SelectorStyle === 1" class="selectorlevels-mobile-wrap">
+								<select ng-model="selectorModels[item.idx]"
+										ng-init="getSelectorModel(item)"
+										ng-options="level.name for level in getSelectorLevels(item) track by level.value"
+										ng-change="switchSelectorLevel(item.idx, selectorModels[item.idx].value, selectorModels[item.idx].name, item.Protected)"
+										class="selectorlevels-mobile">
+								</select>
+							</span>
+
+							<!-- Dimmer -->
+							<span ng-if="item.SwitchType == 'Dimmer'">
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'On' || item.Status == 'Chime' || item.Status == 'Group On' || (item.Status || '').indexOf('Set ') === 0}"
+										type="button"
+										ng-click="switchLight(item.idx, 'On', item.Protected)"
+										data-i18n="On">On</button>
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': !(item.Status == 'On' || item.Status == 'Chime' || item.Status == 'Group On' || (item.Status || '').indexOf('Set ') === 0)}"
+										type="button"
+										ng-click="switchLight(item.idx, 'Off', item.Protected)"
+										data-i18n="Off">Off</button>
+							</span>
+
+							<!-- TPI -->
+							<span ng-if="item.SwitchType == 'TPI'">
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'On'}"
+										ng-disabled="item.Unit < 64 || item.Unit > 95"
+										type="button"
+										ng-click="switchLight(item.idx, 'On', item.Protected)"
+										data-i18n="On">On</button>
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status != 'On'}"
+										ng-disabled="item.Unit < 64 || item.Unit > 95"
+										type="button"
+										ng-click="switchLight(item.idx, 'Off', item.Protected)"
+										data-i18n="Off">Off</button>
+							</span>
+
+							<!-- Itho (SubType check, falls through SwitchType chain) -->
+							<span ng-if="item.SwitchType != 'Doorbell' && item.SwitchType != 'Push On Button' && item.SwitchType != 'Push Off Button' && item.SwitchType != 'Door Contact' && item.SwitchType != 'Door Lock' && item.SwitchType != 'Door Lock Inverted' && item.SwitchType != 'X10 Siren' && item.SwitchType != 'Contact' && item.SwitchType != 'Motion Sensor' && item.SwitchType != 'Smoke Detector' && item.SwitchType != 'Dusk Sensor' && (item.SwitchType || '').indexOf('Blind') < 0 && (item.SwitchType || '').indexOf('blind') < 0 && item.SwitchType != 'Selector' && item.SwitchType != 'Dimmer' && item.SwitchType != 'TPI' && (item.SubType || '').indexOf('Itho') === 0">
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == '1'}"
+										type="button"
+										ng-click="switchLight(item.idx, '1', item.Protected)"
+										data-i18n="1">1</button>
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == '2'}"
+										type="button"
+										ng-click="switchLight(item.idx, '2', item.Protected)"
+										data-i18n="2">2</button>
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == '3'}"
+										type="button"
+										ng-click="switchLight(item.idx, '3', item.Protected)"
+										data-i18n="3">3</button>
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'timer'}"
+										type="button"
+										ng-click="switchLight(item.idx, 'timer', item.Protected)"
+										data-i18n="Timer">Timer</button>
+							</span>
+
+							<!-- Lucci / Westinghouse (SubType check) -->
+							<span ng-if="item.SwitchType != 'Doorbell' && item.SwitchType != 'Push On Button' && item.SwitchType != 'Push Off Button' && item.SwitchType != 'Door Contact' && item.SwitchType != 'Door Lock' && item.SwitchType != 'Door Lock Inverted' && item.SwitchType != 'X10 Siren' && item.SwitchType != 'Contact' && item.SwitchType != 'Motion Sensor' && item.SwitchType != 'Smoke Detector' && item.SwitchType != 'Dusk Sensor' && (item.SwitchType || '').indexOf('Blind') < 0 && (item.SwitchType || '').indexOf('blind') < 0 && item.SwitchType != 'Selector' && item.SwitchType != 'Dimmer' && item.SwitchType != 'TPI' && (item.SubType || '').indexOf('Itho') < 0 && ((item.SubType || '').indexOf('Lucci') === 0 || (item.SubType || '').indexOf('Westinghouse') === 0) && (item.SubType || '').indexOf('Lucci Air DC') < 0">
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'hi'}"
+										type="button"
+										ng-click="switchLight(item.idx, 'hi', item.Protected)"
+										data-i18n="hi">hi</button>
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'med'}"
+										type="button"
+										ng-click="switchLight(item.idx, 'med', item.Protected)"
+										data-i18n="med">med</button>
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'low'}"
+										type="button"
+										ng-click="switchLight(item.idx, 'low', item.Protected)"
+										data-i18n="low">low</button>
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'off'}"
+										type="button"
+										ng-click="switchLight(item.idx, 'off', item.Protected)"
+										data-i18n="Off">Off</button>
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'light'}"
+										type="button"
+										ng-click="switchLight(item.idx, 'light', item.Protected)"
+										data-i18n="Light">Light</button>
+							</span>
+
+							<!-- Lucci Air DC (SubType check; must come before Lucci) -->
+							<span ng-if="item.SwitchType != 'Doorbell' && item.SwitchType != 'Push On Button' && item.SwitchType != 'Push Off Button' && item.SwitchType != 'Door Contact' && item.SwitchType != 'Door Lock' && item.SwitchType != 'Door Lock Inverted' && item.SwitchType != 'X10 Siren' && item.SwitchType != 'Contact' && item.SwitchType != 'Motion Sensor' && item.SwitchType != 'Smoke Detector' && item.SwitchType != 'Dusk Sensor' && (item.SwitchType || '').indexOf('Blind') < 0 && (item.SwitchType || '').indexOf('blind') < 0 && item.SwitchType != 'Selector' && item.SwitchType != 'Dimmer' && item.SwitchType != 'TPI' && (item.SubType || '').indexOf('Itho') < 0 && (item.SubType || '').indexOf('Lucci Air DC') === 0">
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'pow'}"
+										type="button"
+										ng-click="switchLight(item.idx, 'pow', item.Protected)"
+										data-i18n="pow">pow</button>
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'plus'}"
+										type="button"
+										ng-click="switchLight(item.idx, 'plus', item.Protected)"
+										data-i18n="plus">plus</button>
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'min'}"
+										type="button"
+										ng-click="switchLight(item.idx, 'min', item.Protected)"
+										data-i18n="min">min</button>
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'light'}"
+										type="button"
+										ng-click="switchLight(item.idx, 'light', item.Protected)"
+										data-i18n="light">light</button>
+							</span>
+
+							<!-- Falmec (SubType check) -->
+							<span ng-if="item.SwitchType != 'Doorbell' && item.SwitchType != 'Push On Button' && item.SwitchType != 'Push Off Button' && item.SwitchType != 'Door Contact' && item.SwitchType != 'Door Lock' && item.SwitchType != 'Door Lock Inverted' && item.SwitchType != 'X10 Siren' && item.SwitchType != 'Contact' && item.SwitchType != 'Motion Sensor' && item.SwitchType != 'Smoke Detector' && item.SwitchType != 'Dusk Sensor' && (item.SwitchType || '').indexOf('Blind') < 0 && (item.SwitchType || '').indexOf('blind') < 0 && item.SwitchType != 'Selector' && item.SwitchType != 'Dimmer' && item.SwitchType != 'TPI' && (item.SubType || '').indexOf('Itho') < 0 && (item.SubType || '').indexOf('Lucci Air DC') < 0 && ((item.SubType || '').indexOf('Lucci') < 0 && (item.SubType || '').indexOf('Westinghouse') < 0) && (item.SubType || '').indexOf('Falmec') === 0">
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'light on'}"
+										type="button"
+										ng-click="switchLight(item.idx, 'light on', item.Protected)"
+										data-i18n="On">On</button>
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'light off'}"
+										type="button"
+										ng-click="switchLight(item.idx, 'light off', item.Protected)"
+										data-i18n="Off">Off</button>
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'speed 1'}"
+										type="button"
+										ng-click="switchLight(item.idx, 'speed 1', item.Protected)"
+										data-i18n="1">1</button>
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'speed 2'}"
+										type="button"
+										ng-click="switchLight(item.idx, 'speed 2', item.Protected)"
+										data-i18n="2">2</button>
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'speed 3'}"
+										type="button"
+										ng-click="switchLight(item.idx, 'speed 3', item.Protected)"
+										data-i18n="3">3</button>
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'speed 4'}"
+										type="button"
+										ng-click="switchLight(item.idx, 'speed 4', item.Protected)"
+										data-i18n="4">4</button>
+							</span>
+
+							<!-- Default switch (everything not matched above) -->
+							<span ng-if="item.SwitchType != 'Doorbell' && item.SwitchType != 'Push On Button' && item.SwitchType != 'Push Off Button' && item.SwitchType != 'Door Contact' && item.SwitchType != 'Door Lock' && item.SwitchType != 'Door Lock Inverted' && item.SwitchType != 'X10 Siren' && item.SwitchType != 'Contact' && item.SwitchType != 'Motion Sensor' && item.SwitchType != 'Smoke Detector' && item.SwitchType != 'Dusk Sensor' && (item.SwitchType || '').indexOf('Blind') < 0 && (item.SwitchType || '').indexOf('blind') < 0 && item.SwitchType != 'Selector' && item.SwitchType != 'Dimmer' && item.SwitchType != 'TPI' && (item.SubType || '').indexOf('Itho') < 0 && (item.SubType || '').indexOf('Lucci Air DC') < 0 && (item.SubType || '').indexOf('Lucci') < 0 && (item.SubType || '').indexOf('Westinghouse') < 0 && (item.SubType || '').indexOf('Falmec') < 0">
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': item.Status == 'On' || item.Status == 'Chime' || item.Status == 'Group On' || (item.Status || '').indexOf('Down') != -1 || (item.Status || '').indexOf('Up') != -1 || (item.Status || '').indexOf('Set ') === 0}"
+										type="button"
+										ng-click="switchLight(item.idx, 'On', item.Protected)"
+										data-i18n="On">On</button>
+								<button class="btn btn-mini"
+										ng-class="{'btn-info': !(item.Status == 'On' || item.Status == 'Chime' || item.Status == 'Group On' || (item.Status || '').indexOf('Down') != -1 || (item.Status || '').indexOf('Up') != -1 || (item.Status || '').indexOf('Set ') === 0)}"
+										type="button"
+										ng-click="switchLight(item.idx, 'Off', item.Protected)"
+										data-i18n="Off">Off</button>
+							</span>
+
+						</td>
+					</tr>
+					<!-- Dimmer slider row -->
+					<tr ng-if="item.SwitchType == 'Dimmer'">
+						<td colspan="2" style="border:0px solid red; padding-top:10px; padding-bottom:10px;">
+							<div style="margin-top: -11px; margin-left: 24px;"
+								 class="dimslider dimslidernorm"
+								 id="light_{{item.idx}}_slider"
+								 data-idx="{{item.idx}}"
+								 data-type="norm"
+								 data-maxlevel="{{item.MaxDimLevel}}"
+								 data-isprotected="{{item.Protected}}"
+								 data-svalue="{{item.LevelInt}}"></div>
+						</td>
+					</tr>
+					<!-- TPI slider row -->
+					<tr ng-if="item.SwitchType == 'TPI'">
+						<td colspan="2" style="border:0px solid red; padding-top:10px; padding-bottom:10px;">
+							<div style="margin-top: -11px; margin-left: 24px;"
+								 class="dimslider dimslidernorm"
+								 id="light_{{item.idx}}_slider"
+								 data-idx="{{item.idx}}"
+								 data-type="relay"
+								 data-maxlevel="{{item.MaxDimLevel}}"
+								 data-isprotected="{{item.Protected}}"
+								 data-svalue="{{item.LevelInt}}"
+								 ng-attr-data-disabled="{{(item.Unit < 64 || item.Unit > 95) ? 'true' : undefined}}"></div>
+						</td>
+					</tr>
+					<!-- Blinds Percentage / Blinds % + Stop slider row -->
+					<tr ng-if="item.SwitchType == 'Blinds Percentage' || item.SwitchType == 'Blinds % + Stop'">
+						<td colspan="2" style="border:0px solid red; padding-top:10px; padding-bottom:10px;">
+							<div style="margin-top: -11px; margin-left: 24px;"
+								 class="dimslider dimslidersmall"
+								 id="light_{{item.idx}}_slider"
+								 data-idx="{{item.idx}}"
+								 data-type="blinds"
+								 data-maxlevel="{{item.MaxDimLevel}}"
+								 data-isprotected="{{item.Protected}}"
+								 data-svalue="{{item.LevelInt}}"></div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</section>
+
+		<!-- Temperature section -->
+		<br ng-if="(scenes.length > 0 || lights.length > 0) && temperature.length > 0">
+		<section ng-if="temperature.length > 0" class="dashCategory" id="dashTemperature">
+			<table class="mobileitem">
+				<thead>
+					<tr>
+						<th data-i18n="Temperature Sensors">Temperature Sensors</th>
+						<th style="text-align:right"><a href="javascript:SwitchLayout('Temperature')"><img src="images/next.png"></a></th>
+					</tr>
+				</thead>
+				<tr ng-repeat="item in temperature track by item.idx" id="temp_{{item.idx}}">
+					<td id="name" class="name item-name" data-idx="{{item.idx}}" data-desc="{{item.Description}}">
+						<a href="#/Devices/{{item.idx}}/Log"><img src="images/next.png" height="16" width="16"></a> {{item.Name}}
+					</td>
+					<td id="status" class="status">
+						<!-- SetPoint button -->
+						<span ng-if="item.SetPoint !== undefined">
+							<button class="btn btn-mini btn-info" type="button"
+									ng-click="showSetpointPopup($event, item.idx, item.Protected, item.SetPoint, true, item.step || 0.5, item.min || -200, item.max || 200)">{{item.SetPoint}}&deg; {{$parent.config.TempSign}}</button>
+						</span>
+						<!-- Temperature -->
+						<span ng-if="item.SetPoint !== undefined && item.Temp !== undefined">, </span>
+						<img ng-if="item.trend > 1" ng-src="images/arrow_{{item.trend == 2 ? 'up' : 'down'}}.png" width="14" height="15">
+						<span ng-if="item.Temp !== undefined">{{item.Temp}}&deg; {{$parent.config.TempSign}}</span>
+						<!-- Chill -->
+						<span ng-if="(item.SetPoint !== undefined || item.Temp !== undefined) && item.Chill !== undefined">, </span>
+						<span ng-if="item.Chill !== undefined"><span data-i18n="Chill">Chill</span>: {{item.Chill}}&deg; {{$parent.config.TempSign}}</span>
+						<!-- Humidity -->
+						<span ng-if="(item.SetPoint !== undefined || item.Temp !== undefined || item.Chill !== undefined) && item.Humidity !== undefined">, </span>
+						<span ng-if="item.Humidity !== undefined">{{item.Humidity}} %</span>
+						<span ng-if="item.HumidityStatus !== undefined"> ({{item.HumidityStatus}})</span>
+						<span ng-if="item.ForecastStr !== undefined && item.Barometer === undefined"> ({{item.ForecastStr}})</span>
+						<!-- Dew Point -->
+						<span ng-if="item.DewPoint !== undefined"><br><span data-i18n="Dew Point">Dew Point</span>: {{item.DewPoint | number:2}}&deg; {{$parent.config.TempSign}}</span>
+					</td>
+				</tr>
+			</table>
+		</section>
+
+		<!-- Weather section -->
+		<br ng-if="(scenes.length > 0 || lights.length > 0 || temperature.length > 0) && weather.length > 0">
+		<section ng-if="weather.length > 0" class="dashCategory" id="dashWeather">
+			<table class="mobileitem">
+				<thead>
+					<tr>
+						<th data-i18n="Weather Sensors">Weather Sensors</th>
+						<th style="text-align:right"><a href="javascript:SwitchLayout('Weather')"><img src="images/next.png"></a></th>
+					</tr>
+				</thead>
+				<tr ng-repeat="item in weather track by item.idx" id="weather_{{item.idx}}">
+					<td id="name" class="name item-name" data-idx="{{item.idx}}" data-desc="{{item.Description}}">
+						<a href="#/Devices/{{item.idx}}/Log{{item.Barometer != undefined ? '?sensor=baro' : ''}}"><img src="images/next.png" height="16" width="16"></a> {{item.Name}}
+					</td>
+					<td id="status" class="status">
+						<!-- Rain -->
+						<span ng-if="item.Rain !== undefined">
+							{{item.Rain}} mm<span ng-if="item.RainRate !== undefined">, <span data-i18n="Rain rate">Rain rate</span>: {{item.RainRate}} mm/h</span>
+						</span>
+						<!-- Visibility -->
+						<span ng-if="item.Rain === undefined && item.Visibility !== undefined">{{item.Data}}</span>
+						<!-- UVI -->
+						<span ng-if="item.Rain === undefined && item.Visibility === undefined && item.UVI !== undefined">{{item.UVI}} UVI</span>
+						<!-- Radiation -->
+						<span ng-if="item.Rain === undefined && item.Visibility === undefined && item.UVI === undefined && item.Radiation !== undefined">{{item.Data}}</span>
+						<!-- Wind/Direction -->
+						<span ng-if="item.Rain === undefined && item.Visibility === undefined && item.UVI === undefined && item.Radiation === undefined && item.Direction !== undefined">
+							{{item.Direction}} {{item.DirectionStr}}<span ng-if="item.Speed !== undefined">, <span data-i18n="Speed">Speed</span>: {{item.Speed}} {{$parent.config.WindSign}}</span><span ng-if="item.Gust !== undefined">, <span data-i18n="Gust">Gust</span>: {{item.Gust}} {{$parent.config.WindSign}}</span>
+						</span>
+						<!-- Barometer -->
+						<span ng-if="item.Rain === undefined && item.Visibility === undefined && item.UVI === undefined && item.Radiation === undefined && item.Direction === undefined && item.Barometer !== undefined">
+							{{item.Barometer}} hPa<span ng-if="item.ForecastStr !== undefined">, <span data-i18n="Prediction">Prediction</span>: {{item.ForecastStr}}</span>
+						</span>
+					</td>
+				</tr>
+			</table>
+		</section>
+
+		<!-- Utility section -->
+		<br ng-if="(scenes.length > 0 || lights.length > 0 || temperature.length > 0 || weather.length > 0) && utility.length > 0">
+		<section ng-if="utility.length > 0" class="dashCategory" id="dashUtility">
+			<table class="mobileitem">
+				<thead>
+					<tr>
+						<th data-i18n="Utility Sensors">Utility Sensors</th>
+						<th style="text-align:right"><a href="javascript:SwitchLayout('Utility')"><img src="images/next.png"></a></th>
+					</tr>
+				</thead>
+				<tr ng-repeat="item in utility track by item.idx" id="utility_{{item.idx}}">
+					<td id="name" class="name item-name" data-idx="{{item.idx}}" data-desc="{{item.Description}}">
+						<a href="#/Devices/{{item.idx}}/Log"><img src="images/next.png" height="16" width="16"></a> {{item.Name}}
+					</td>
+					<td id="status" class="status">
+						<span>
+							<!-- SetPoint type -->
+							<span ng-if="item.Type == 'Setpoint' && item.SubType == 'SetPoint'">
+								<button class="btn btn-mini btn-info" type="button"
+										ng-click="showSetpointPopup($event, item.idx, item.Protected, item.Data, true, item.step, item.min, item.max)">{{item.Data}} {{item.vunit}}</button>
+							</span>
+							<!-- Counter with CounterToday -->
+							<span ng-if="(item.Type != 'Setpoint' || item.SubType != 'SetPoint') && item.CounterToday !== undefined && item.CounterDeliv !== undefined && item.CounterDeliv != 0">
+								<span data-i18n="Usage">Usage</span>: {{item.CounterToday}}<span ng-if="item.Usage !== undefined">, <span data-i18n="Actual">Actual</span>: {{item.Usage}}</span>
+								<br><span data-i18n="Return">Return</span>: {{item.CounterDelivToday}}<span ng-if="item.UsageDeliv !== undefined && item.UsageDeliv.charAt(0) != '0'">, <span data-i18n="Actual">Actual</span>: -{{item.UsageDeliv}}</span>
+							</span>
+							<span ng-if="(item.Type != 'Setpoint' || item.SubType != 'SetPoint') && item.CounterToday !== undefined && (item.CounterDeliv === undefined || item.CounterDeliv == 0) && item.SubType != 'Managed Counter'">
+								<span data-i18n="Today">Today</span>: {{item.CounterToday}}<span ng-if="item.Usage !== undefined">, <span data-i18n="Actual">Actual</span>: {{item.Usage}}</span>
+							</span>
+							<span ng-if="(item.Type != 'Setpoint' || item.SubType != 'SetPoint') && item.SubType == 'Managed Counter'">
+								{{item.Counter}}
+							</span>
+							<!-- Text / Alert (render HTML content) -->
+							<span ng-if="(item.SubType == 'Text' || item.SubType == 'Alert') && item.CounterToday === undefined" ng-bind-html="nl2br(item.Data)"></span>
+							<!-- Everything else -->
+							<span ng-if="(item.Type != 'Setpoint' || item.SubType != 'SetPoint') && item.CounterToday === undefined && item.SubType != 'Managed Counter' && item.SubType != 'Text' && item.SubType != 'Alert'">
+								{{item.Data}}
+							</span>
+						</span>
+					</td>
+				</tr>
+			</table>
+		</section>
+
+		<br ng-if="hasDevices">
+	</div>
+</div>

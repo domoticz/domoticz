@@ -35,6 +35,7 @@ void CKWHStats::ExitGlobal()
 		g_kwhstats_task.RequestStop();
 		g_kwhstats_saver_thread.join();
 	}
+	g_kwhstats.clear();
 }
 
 void CKWHStats::PeriodicSaveKWHStats(const int interval_seconds) // default: every 5 minutes
@@ -107,6 +108,17 @@ void CKWHStats::AddHourValue(const int hour, const int wday, const int Watt)
 {
 	if (hour < 0 || hour > 23)
 		return;
+
+	// Skip extreme outliers to prevent corrupting the running averages
+	// (e.g. meter counter resets or bad sensor readings)
+	const bool daily_spike = (daily_hour_kwh[hour] > 0) && (Watt > daily_hour_kwh[hour] * 100);
+	const bool weekly_spike = (weekday_hour_kwh[wday][hour] > 0) && (Watt > weekday_hour_kwh[wday][hour] * 100);
+	// Absolute cap: >100 kWh in a single hour is physically unrealistic for typical home/building devices.
+	// This guards against corrupt first readings when no prior average is available yet.
+	const bool absolute_spike = (Watt > 100000);
+	if (daily_spike || weekly_spike || absolute_spike)
+		return;
+
 	daily_hour_kwh[hour] = (daily_hour_kwh[hour] != 0) ? (daily_hour_kwh[hour] + Watt) / 2 : Watt;
 	weekday_hour_kwh_raw[hour] = Watt;
 
@@ -245,8 +257,12 @@ void CKWHStats::HandleKWHStatsHour()
 	const int hour = last_hour.tm_hour;
 	const int wday = last_hour.tm_wday;
 
-	char szStartTime[30];
-	snprintf(szStartTime, sizeof(szStartTime), "%04d-%02d-%02d %02d:%02d:%02d", last_hour.tm_year + 1900, last_hour.tm_mon + 1, last_hour.tm_mday, last_hour.tm_hour, 0, 0);
+	char szStartTime[32];
+	if (strftime(szStartTime, sizeof(szStartTime), "%Y-%m-%d %H:%M:%S", &last_hour) == 0) {
+    	// fallback (shouldn't normally happen, but keep a sensible default)
+    	strncpy(szStartTime, "1970-01-01 00:00:00", sizeof(szStartTime));
+    	szStartTime[sizeof(szStartTime) - 1] = '\0';
+	}
 
 	//First handle all P1 meters
 	auto result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (Type=%d)", pTypeP1Power);
@@ -305,8 +321,15 @@ void CKWHStats::HandleKWHStatsHour()
 		const uint64_t device_id = std::stoull(itt[0]);
 
 		//Get the total kWh usage for the last hour
-		auto result2 = m_sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 ") AND ([Date] > '%q')", device_id, szStartTime);
-		if (!result2.empty())
+		// Use FIRST/LAST instead of MIN/MAX to correctly handle counter resets:
+		// if a meter was replaced mid-hour, MIN/MAX would produce a huge spurious difference.
+		// With FIRST/LAST, a reset (last < first) is detected and treated as zero consumption.
+		auto result2 = m_sql.safe_query(
+			"SELECT "
+			"(SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 ") AND ([Date] > '%q') ORDER BY [Date] ASC, rowid ASC LIMIT 1),"
+			"(SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 ") AND ([Date] > '%q') ORDER BY [Date] DESC, rowid DESC LIMIT 1)",
+			device_id, szStartTime, device_id, szStartTime);
+		if (!result2.empty() && !result2[0][0].empty() && !result2[0][1].empty())
 		{
 			std::unique_lock<std::mutex> lock(m_task_mutex);
 
@@ -318,10 +341,11 @@ void CKWHStats::HandleKWHStatsHour()
 				g_kwhstats[device_id] = kwhs;
 			}
 
-			const int64_t minUsage = std::stoll(result2[0][0]);
-			const int64_t maxUsage = std::stoll(result2[0][1]);
+			const int64_t firstUsage = std::stoll(result2[0][0]);
+			const int64_t lastUsage = std::stoll(result2[0][1]);
 
-			const int64_t actUsage = (maxUsage - minUsage);
+			// If last < first, a counter reset occurred this hour — treat as zero consumption
+			const int64_t actUsage = (lastUsage >= firstUsage) ? (lastUsage - firstUsage) : 0;
 
 			const int Wh = static_cast<int>(actUsage);
 

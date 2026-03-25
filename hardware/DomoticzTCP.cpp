@@ -229,13 +229,14 @@ bool DomoticzTCP::SwitchLight(const uint64_t idx, const std::string& switchcmd, 
 	return WriteToHardware(szEncrypted);
 }
 
-bool DomoticzTCP::SetSetPoint(const std::string& idx, const float TempValue)
+bool DomoticzTCP::SetSetPoint(const std::string& idx, const float TempValue, const std::string& User)
 {
 	Json::Value root;
 	if (!AssambleDeviceInfo(idx, root))
 		return false;
 	root["action"] = "SetSetpoint";
 	root["TempValue"] = TempValue;
+	root["User"] = User;
 
 	std::string szSend = JSonToRawString(root);
 	std::vector<char> uhash = HexToBytes(m_password);
@@ -244,7 +245,7 @@ bool DomoticzTCP::SetSetPoint(const std::string& idx, const float TempValue)
 	return WriteToHardware(szEncrypted);
 }
 
-bool DomoticzTCP::SetSetPointEvo(const std::string& idx, float TempValue, const std::string& newMode, const std::string& until)
+bool DomoticzTCP::SetSetPointEvo(const std::string& idx, float TempValue, const std::string& newMode, const std::string& until, const std::string& User)
 {
 	Json::Value root;
 	if (!AssambleDeviceInfo(idx, root))
@@ -253,6 +254,7 @@ bool DomoticzTCP::SetSetPointEvo(const std::string& idx, float TempValue, const 
 	root["TempValue"] = TempValue;
 	root["newMode"] = newMode;
 	root["until"] = until;
+	root["User"] = User;
 
 	std::string szSend = JSonToRawString(root);
 	std::vector<char> uhash = HexToBytes(m_password);

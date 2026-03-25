@@ -1,4 +1,4 @@
-define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesSuppliers'], function (app) {
+define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesSuppliers', 'log/CounterLogSeriesSupplier'], function (app) {
 
     app.directive('registerP1Energy', function (chart, counterLogSubtypeRegistry, counterLogParams, counterLogEnergySeriesSuppliers, counterLogSeriesSupplier) {
         counterLogSubtypeRegistry.register('p1Energy', {
@@ -19,7 +19,7 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                     plotOptions: {
                     },
                     tooltip: {
-						headerFormat: '{point.x:%A, %B %d, %Y %H:00}<br/>',
+						headerFormat: '{point.x:%A, %B %d, %Y %H:%M}<br/>',
                         outside: true,
 						crosshairs: true,
 						shared: true,
@@ -85,6 +85,7 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
                         title: {
                             text: $.t('Power') + ' (' + chart.valueUnits.power(chart.valueMultipliers.m1) + ')'
                         },
+                        min: 0,
                         opposite: true
                     }
                 ];
@@ -158,6 +159,9 @@ define(['app', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogEnergySeriesS
 					.concat(counterLogEnergySeriesSuppliers.p1PastMonthYearSeriesSuppliers(deviceType))
 					.concat(counterLogEnergySeriesSuppliers.powerPastReturnedMonthYearSeriesSuppliers(deviceType))
                     .concat(counterLogEnergySeriesSuppliers.p1PriceSeriesSuppliers(deviceType));
+            },
+            preprocessMonthYearData: function (data) {
+                counterLogSeriesSupplier.fillMissingDays(data);
             },
             preprocessCompareData: function (data) {
                 this.dataContainsDelivery = data.delivered ? true : false;

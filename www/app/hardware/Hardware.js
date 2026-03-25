@@ -265,6 +265,7 @@ define(['app'], function (app) {
 					return bIsOK;
 				});
 				if (bIsOK) {
+					var pluginSettings = CollectPluginSettings(selector);
 					$.ajax({
 						url: "json.htm?type=command&param=updatehardware&htype=94" +
 						"&loglevel=" + logLevel +
@@ -283,7 +284,8 @@ define(['app'], function (app) {
 						"&Mode6=" + encodeURIComponent(($(selector + " #Mode6").length == 0) ? "" : $(selector + " #Mode6").val()) +
 						"&extra=" + encodeURIComponent(hardwaretype) +
 						"&enabled=" + bEnabled +
-						"&datatimeout=" + datatimeout,
+						"&datatimeout=" + datatimeout +
+						"&settings=" + encodeURIComponent(JSON.stringify(pluginSettings || {})),
 						async: false,
 						dataType: 'json',
 						success: function (data) {
@@ -329,12 +331,12 @@ define(['app'], function (app) {
 				(text.indexOf("System Alive") >= 0) ||
 				(text.indexOf("PiFace") >= 0) ||
 				(text.indexOf("I2C ") >= 0) ||
-				(text.indexOf("Motherboard") >= 0) ||
 				(text.indexOf("Kodi Media") >= 0) ||
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("YeeLight") >= 0) ||
 				(text.indexOf("Arilux AL-LC0x") >= 0) ||
-				(text.indexOf("sysfs GPIO") >= 0)
+				(text.indexOf("sysfs GPIO") >= 0) ||
+				(text.indexOf("Open-Meteo") >= 0)
 				)
 			 {
 				// if hardwaretype == 1000 => I2C sensors grouping
@@ -519,6 +521,49 @@ define(['app'], function (app) {
 						} else {
 							RefreshHardwareTable();
 						}
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+			}
+			else if (text.indexOf("Motherboard") >= 0) {
+				var mbMode = $("#hardwarecontent #divmotherboardmode #combomotherboardmode").val();
+				var mbExtended = $("#hardwarecontent #divlhmextendedsensors #combolhmextendedsensors").val();
+				var address = "";
+				var port = "";
+				var username = "";
+				var password = "";
+				if (mbMode == "1") {
+					address = $("#hardwarecontent #divremote #tcpaddress").val();
+					if (address == "") {
+						ShowNotify($.t('Please enter an Address!'), 2500, true);
+						return;
+					}
+					port = $("#hardwarecontent #divremote #tcpport").val();
+					if (port == "") {
+						ShowNotify($.t('Please enter a Port!'), 2500, true);
+						return;
+					}
+					username = $("#hardwarecontent #divlogin #username").val();
+					password = $("#hardwarecontent #divlogin #password").val();
+				}
+				$.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&address=" + encodeURIComponent(address) +
+					"&port=" + encodeURIComponent(port) +
+					"&username=" + encodeURIComponent(username) +
+					"&password=" + encodeURIComponent(password) +
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled +
+					"&idx=" + idx +
+					"&datatimeout=" + datatimeout +
+					"&Mode1=" + mbMode + "&Mode2=" + mbExtended + "&Mode3=0&Mode4=0&Mode5=0&Mode6=0",
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
 					},
 					error: function () {
 						ShowNotify($.t('Problem updating hardware!'), 2500, true);
@@ -1135,11 +1180,19 @@ define(['app'], function (app) {
 					ShowNotify($.t('Please enter an API Key!'), 2500, true);
 					return;
 				}
+				var webusername = $("#hardwarecontent #divsolaredgeapi #webusername").val();
+				var webpassword = $("#hardwarecontent #divsolaredgeapi #webpassword").val();
+				var siteid = $("#hardwarecontent #divsolaredgeapi #siteid").val();
+				var polloptimizers = $("#hardwarecontent #divsolaredgeapi #polloptimizers").prop("checked") ? 1 : 0;
+				var extra = encodeURIComponent(webusername + "|" + siteid);
 
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(apikey) +
+					"&password=" + encodeURIComponent(webpassword) +
+					"&extra=" + extra +
+					"&Mode1=" + polloptimizers +
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
@@ -1708,6 +1761,7 @@ define(['app'], function (app) {
 					return bIsOK;
 				});
 				if (bIsOK) {
+					var pluginSettings = CollectPluginSettings(selector);
 					$.ajax({
 						url: "json.htm?type=command&param=addhardware&htype=94" +
 						"&loglevel=" + logLevel +
@@ -1725,7 +1779,8 @@ define(['app'], function (app) {
 						"&Mode6=" + encodeURIComponent(($(selector + " #Mode6").length == 0) ? "" : $(selector + " #Mode6").val()) +
 						"&extra=" + encodeURIComponent(hardwaretype) +
 						"&enabled=" + bEnabled +
-						"&datatimeout=" + datatimeout,
+						"&datatimeout=" + datatimeout +
+						"&settings=" + encodeURIComponent(JSON.stringify(pluginSettings || {})),
 						async: false,
 						dataType: 'json',
 						success: function (data) {
@@ -1913,6 +1968,48 @@ define(['app'], function (app) {
 					}
 				});
 			}
+			else if (text.indexOf("Motherboard") >= 0) {
+				var mbMode = $("#hardwarecontent #divmotherboardmode #combomotherboardmode").val();
+				var mbExtended = $("#hardwarecontent #divlhmextendedsensors #combolhmextendedsensors").val();
+				var address = "";
+				var port = "";
+				var username = "";
+				var password = "";
+				if (mbMode == "1") {
+					address = $("#hardwarecontent #divremote #tcpaddress").val();
+					if (address == "") {
+						ShowNotify($.t('Please enter an Address!'), 2500, true);
+						return;
+					}
+					port = $("#hardwarecontent #divremote #tcpport").val();
+					if (port == "") {
+						ShowNotify($.t('Please enter a Port!'), 2500, true);
+						return;
+					}
+					username = $("#hardwarecontent #divlogin #username").val();
+					password = $("#hardwarecontent #divlogin #password").val();
+				}
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&address=" + encodeURIComponent(address) +
+					"&port=" + encodeURIComponent(port) +
+					"&username=" + encodeURIComponent(username) +
+					"&password=" + encodeURIComponent(password) +
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled +
+					"&datatimeout=" + datatimeout +
+					"&Mode1=" + mbMode + "&Mode2=" + mbExtended,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					}
+				});
+			}
 			else if (
 				(text.indexOf("Panasonic") >= 0) ||
 				(text.indexOf("BleBox") >= 0) ||
@@ -1924,9 +2021,9 @@ define(['app'], function (app) {
 				(text.indexOf("PiFace") >= 0) ||
 				(text.indexOf("Evohome") >= 0 && text.indexOf("script") >= 0) ||
 				(text.indexOf("Tellstick") >= 0) ||
-				(text.indexOf("Motherboard") >= 0) ||
 				(text.indexOf("YeeLight") >= 0) ||
-				(text.indexOf("Arilux AL-LC0x") >= 0)
+				(text.indexOf("Arilux AL-LC0x") >= 0) ||
+				(text.indexOf("Open-Meteo") >= 0)
 			) {
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
@@ -2364,13 +2461,20 @@ define(['app'], function (app) {
 					ShowNotify($.t('Please enter a username!'), 2500, true);
 					return;
 				}
+				var pollinterval = $("#hardwarecontent #hardwareparamsphilipshue #pollinterval").val();
+				if (pollinterval == "") {
+					ShowNotify($.t('Please enter poll interval!'), 2500, true);
+					return;
+				}
+				Mode1 = pollinterval;
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
 					"&address=" + address +
 					"&port=" + port +
 					"&username=" + encodeURIComponent(username) +
-					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
+					"&Mode1=" + Mode1,
 					async: false,
 					dataType: 'json',
 					success: function (data) {
@@ -2797,11 +2901,20 @@ define(['app'], function (app) {
 					ShowNotify($.t('Please enter an API Key!'), 2500, true);
 					return;
 				}
+				var webusername = $("#hardwarecontent #divsolaredgeapi #webusername").val();
+				var webpassword = $("#hardwarecontent #divsolaredgeapi #webpassword").val();
+				var siteid = $("#hardwarecontent #divsolaredgeapi #siteid").val();
+				var polloptimizers = $("#hardwarecontent #divsolaredgeapi #polloptimizers").prop("checked") ? 1 : 0;
+				var extra = encodeURIComponent(webusername + "|" + siteid);
+
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
 					"&name=" + encodeURIComponent(name) +
 					"&username=" + encodeURIComponent(apikey) +
+					"&password=" + encodeURIComponent(webpassword) +
+					"&extra=" + extra +
+					"&Mode1=" + polloptimizers +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
 					"&datatimeout=" + datatimeout,
@@ -3991,7 +4104,11 @@ define(['app'], function (app) {
 							else if ((item.Type == 14) || (item.Type == 25) || (item.Type == 28) || (item.Type == 30) || (item.Type == 34)) {
 								SerialName = "WWW";
 							}
-							else if ((item.Type == 15) || (item.Type == 23) || (item.Type == 26) || (item.Type == 27) || (item.Type == 51) || (item.Type == 54)) {
+							else if (item.Type == 23) {
+								// Motherboard/System: show port for LHM mode, WWW for local
+								SerialName = (item.Mode1 == 1) ? item.Port : "WWW";
+							}
+							else if ((item.Type == 15) || (item.Type == 26) || (item.Type == 27) || (item.Type == 51) || (item.Type == 54)) {
 								SerialName = "";
 							}
 							else if ((item.Type == 16) || (item.Type == 32)) {
@@ -4278,6 +4395,42 @@ define(['app'], function (app) {
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Mode6").val(data["Mode6"]);
 							$("#hardwarecontent #divpythonplugin #" + data["Extra"] + " #Extra").val(data["Extra"]);
 							UpdateHardwareParamControls();
+							// Fetch Settings from API (not available in DataTable row data)
+							// and restore after widgets are initialized
+							var pluginIdx = idx;
+							var pluginExtra = data["Extra"];
+							$.ajax({
+								url: "json.htm?type=command&param=gethardware",
+								async: false,
+								dataType: 'json',
+								success: function (hwData) {
+									if (!hwData.result) return;
+									var hwEntry = hwData.result.find(function (h) { return h.idx == pluginIdx; });
+									if (!hwEntry || !hwEntry.Settings || typeof hwEntry.Settings !== "object") return;
+									var $visibleTable = $("#hardwarecontent #divpythonplugin #" + pluginExtra).filter(":visible").first();
+									if ($visibleTable.length === 0)
+										$visibleTable = $("#hardwarecontent #divpythonplugin #" + pluginExtra).first();
+									$.each(hwEntry.Settings, function (key, value) {
+										var $field = $visibleTable.find("#" + key);
+										if ($field.length === 0)
+											return;
+										if ($field.is(":checkbox")) {
+											$field.prop("checked", value === "true");
+										} else if ($field.hasClass("slider-value")) {
+											$field.val(value);
+											var $slider = $field.prev().find(".dimslider");
+											if ($slider.length > 0 && $slider.data("ui-slider")) {
+												$slider.slider("value", parseInt(value));
+											}
+											$visibleTable.find("#sliderval_" + key).text(value);
+										} else {
+											$field.val(value);
+										}
+									});
+									// Trigger change events to re-evaluate conditional visibility
+									$visibleTable.find("select, input").trigger("change");
+								}
+							});
 							$('#hardwarecontent #hardwareparamstable #loglevelInfo').prop('checked', ((data["LogLevel"] & 1)!=0));
 							$('#hardwarecontent #hardwareparamstable #loglevelStatus').prop('checked', ((data["LogLevel"] & 2)!=0));
 							$('#hardwarecontent #hardwareparamstable #loglevelError').prop('checked', ((data["LogLevel"] & 4)!=0));
@@ -4302,7 +4455,8 @@ define(['app'], function (app) {
 							(data["Type"].indexOf("PiFace") >= 0) ||
 							(data["Type"].indexOf("Tellstick") >= 0) ||
 							(data["Type"].indexOf("Yeelight") >= 0) ||
-							(data["Type"].indexOf("Arilux AL-LC0x") >= 0)
+							(data["Type"].indexOf("Arilux AL-LC0x") >= 0) ||
+							(data["Type"].indexOf("Open-Meteo") >= 0)
 						) {
 							//nothing to be set
 						}
@@ -4481,6 +4635,17 @@ define(['app'], function (app) {
 								}
 							}
 						}
+						else if (data["Type"].indexOf("Motherboard") >= 0) {
+							$("#hardwarecontent #divmotherboardmode #combomotherboardmode").val(data["Mode1"]);
+							$("#hardwarecontent #divlhmextendedsensors #combolhmextendedsensors").val(data["Mode2"]);
+							if (data["Mode1"] == 1) {
+								$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
+								$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
+								$("#hardwarecontent #divlogin #username").val(data["Username"]);
+								$("#hardwarecontent #divlogin #password").val(data["Password"]);
+							}
+							$("#hardwarecontent #divmotherboardmode #combomotherboardmode").trigger("change");
+						}
 						else if ((data["Type"].indexOf("Underground") >= 0) || (data["Type"].indexOf("DarkSky") >= 0) || (data["Type"].indexOf("Visual Crossing") >= 0) || (data["Type"].indexOf("AccuWeather") >= 0)) {
 							$("#hardwarecontent #hardwareparamsunderground #apikey").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
@@ -4534,6 +4699,16 @@ define(['app'], function (app) {
 						}
 						else if (data["Type"].indexOf("SolarEdge via") >= 0) {
 							$("#hardwarecontent #hardwareparamssolaredgeapi #apikey").val(data["Username"]);
+							$("#hardwarecontent #hardwareparamssolaredgeapi #webpassword").val(data["Password"]);
+							$("#hardwarecontent #hardwareparamssolaredgeapi #polloptimizers").prop('checked', parseInt(data["Mode1"]) != 0);
+							var extra = data["Extra"] || "";
+							var parts = extra.split("|");
+							if (parts.length >= 1) {
+								$("#hardwarecontent #hardwareparamssolaredgeapi #webusername").val(parts[0]);
+							}
+							if (parts.length >= 2) {
+								$("#hardwarecontent #hardwareparamssolaredgeapi #siteid").val(parts[1]);
+							}
 						}
 						else if (data["Type"].indexOf("Nest Th") >= 0 && data["Type"].indexOf("OAuth") >= 0) {
 							$("#hardwarecontent #hardwareparamsnestoauthapi #apikey").val(data["Username"]);
@@ -4763,20 +4938,22 @@ define(['app'], function (app) {
 		}
 
 		expandScope = function (scopeArray, separator) {
+			//Netatmo Scopes
 			var scopeGroups = { 
-				station_R :			'read_station',
-				thermostat_RW :			'read_thermostat write_thermostat',
-				camera_RWA :			'read_camera write_camera access_camera',
-				doorbell_RA :			'read_doorbell access_doorbell',
-				presence_RWA :			'read_presence write_presence access_presence',
+				station_R :					'read_station',
+				thermostat_RW :				'read_thermostat write_thermostat',
+				camera_RWA :				'read_camera write_camera access_camera',
+				doorbell_RA :				'read_doorbell access_doorbell',
+				presence_RWA :				'read_presence write_presence access_presence',
 				carbonmonoxidedetector_R :	'read_carbonmonoxidedetector',
-				smokedetector_R :		'read_smokedetector',
-				homecoach_R :			'read_homecoach',
-				magellan_RW :			'read_magellan write_magellan',
-				bubendorff_RW :			'read_bubendorff write_bubendorff',
-				smarther_RW :			'read_smarther write_smarther',
-				mx_RW :				'read_mx write_mx',
-				mhs1_RW :			'read_mhs1 write_mhs1'
+				smokedetector_R :			'read_smokedetector',
+				homecoach_R :				'read_homecoach',
+				magellan_RW :				'read_magellan write_magellan',
+				bubendorff_RW :				'read_bubendorff write_bubendorff',
+				smarther_RW :				'read_smarther write_smarther',
+				mx_RW :						'read_mx write_mx',
+				mhs1_RW :					'read_mhs1 write_mhs1',
+				camerapro_RWA :				'read_camerapro write_camerapro access_camerapro'
 			};
 
 			var result = "";
@@ -5002,6 +5179,85 @@ define(['app'], function (app) {
 			}, 200);
 		}
 
+		InitPluginWidgets = function ($table) {
+			// Initialize jQuery UI sliders within this plugin table
+			$table.find(".dimslider").each(function () {
+				var $slider = $(this);
+				// Skip if widget already initialized (check jQuery UI data, not CSS class)
+				if ($slider.data("ui-slider"))
+					return;
+				var fieldId = $slider.data("field");
+				var sliderMin = $slider.data("min");
+				var sliderMax = $slider.data("max");
+				var $input = $table.find("#" + fieldId);
+				var $label = $table.find("#sliderval_" + fieldId);
+				// Remove stale CSS classes from Angular.js DOM cloning
+				$slider.removeClass("ui-slider ui-corner-all ui-slider-horizontal ui-widget ui-widget-content");
+				$slider.empty(); // Remove any stale slider handle elements
+				var initVal = parseInt($input.val()) || sliderMin;
+				$slider.slider({
+					range: "min",
+					min: sliderMin,
+					max: sliderMax,
+					value: initVal,
+					slide: function (event, ui) {
+						$input.val(ui.value);
+						$label.text(ui.value);
+					}
+				});
+				$label.text(initVal);
+			});
+
+			// Set up conditional visibility within this plugin table
+			$table.find("tr[data-visible-when]").each(function () {
+				var $row = $(this);
+				// Skip if already set up
+				if ($row.data("visibility-bound"))
+					return;
+				$row.data("visibility-bound", true);
+				var condition = $row.data("visible-when");
+				var parts = condition.split("=");
+				if (parts.length !== 2)
+					return;
+				var depField = parts[0];
+				var depValue = parts[1];
+				var $depInput = $table.find("#" + depField);
+				if ($depInput.length === 0)
+					return;
+				var updateVisibility = function () {
+					var currentVal = $depInput.is(":checkbox") ? ($depInput.prop("checked") ? "true" : "false") : $depInput.val();
+					if (currentVal === depValue) {
+						$row.show();
+					} else {
+						$row.hide();
+					}
+				};
+				$depInput.on("change", updateVisibility);
+				updateVisibility();
+			});
+		}
+
+		CollectPluginSettings = function (selector) {
+			var reservedFields = ["address", "port", "serialport", "username", "password", "extra", "mode1", "mode2", "mode3", "mode4", "mode5", "mode6"];
+			var pluginSettings = {};
+			$(selector + " input, " + selector + " select, " + selector + " textarea").each(function () {
+				var fieldId = this.id;
+				if (!fieldId || reservedFields.indexOf(fieldId.toLowerCase()) !== -1)
+					return;
+				var $row = $(this).closest("tr");
+				if ($row.length > 0 && $row.css("display") === "none")
+					return;
+				if ($(this).is(":checkbox")) {
+					pluginSettings[fieldId] = this.checked ? "true" : "false";
+				} else if ($(this).is("input[type='hidden']") && $(this).hasClass("slider-value")) {
+					pluginSettings[fieldId] = $(this).val();
+				} else if (!$(this).is("input[type='hidden']")) {
+					pluginSettings[fieldId] = $(this).val();
+				}
+			});
+			return pluginSettings;
+		}
+
 		UpdateHardwareParamControls = function () {
 			var oTable = $('#hardwaretable').dataTable();
 			var anSelected = fnGetSelected(oTable);
@@ -5067,6 +5323,8 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divbuienradar").hide();
 			$("#hardwarecontent #divmeteorologisk").hide();
 			$("#hardwarecontent #divserial").hide();
+			$("#hardwarecontent #divmotherboardmode").hide();
+			$("#hardwarecontent #divlhmextendedsensors").hide();
 			$("#hardwarecontent #divremote").hide();
 			$("#hardwarecontent #divlogin").hide();
 			$("#hardwarecontent #divhttppoller").hide();
@@ -5080,7 +5338,13 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divextrahwparams").hide();
 				$("#hardwarecontent #divpythonplugin .plugin").hide();
 				var plugin = $("#hardwarecontent #hardwareparamstable #combotype option:selected").attr("id");
-				$("#hardwarecontent #divpythonplugin .plugin").each(function () { if ($(this).attr("id") === plugin) $(this).show(); });
+				$("#hardwarecontent #divpythonplugin .plugin").each(function () {
+					if ($(this).attr("id") === plugin) {
+						$(this).show();
+						// Initialize sliders and conditional visibility on the visible table
+						InitPluginWidgets($(this));
+					}
+				});
 				$("#hardwarecontent #divpythonplugin").show();
 				return;
 			}
@@ -5256,6 +5520,26 @@ define(['app'], function (app) {
 							$("#hardwarecontent #lblusername").hide();
 						}
 			}
+			else if (text.indexOf("Motherboard") >= 0) {
+				$("#hardwarecontent #divmotherboardmode").show();
+				$("#hardwarecontent #divmotherboardmode #combomotherboardmode").off("change").on("change", function () {
+					var mode = $(this).val();
+					if (mode == "1") {
+						$("#hardwarecontent #divremote").show();
+						$("#hardwarecontent #divlogin").show();
+						$("#hardwarecontent #divlhmextendedsensors").show();
+						if ($("#hardwarecontent #hardwareparamsremote #tcpaddress").val() == "")
+							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val("127.0.0.1");
+						if ($("#hardwarecontent #hardwareparamsremote #tcpport").val() == "")
+							$("#hardwarecontent #hardwareparamsremote #tcpport").val(8085);
+					} else {
+						$("#hardwarecontent #divremote").hide();
+						$("#hardwarecontent #divlogin").hide();
+						$("#hardwarecontent #divlhmextendedsensors").hide();
+					}
+				});
+				$("#hardwarecontent #divmotherboardmode #combomotherboardmode").trigger("change");
+			}
 			else if (text.indexOf("Domoticz") >= 0) {
 				$("#hardwarecontent #divremote").show();
 				$("#hardwarecontent #divlogin").show();
@@ -5410,6 +5694,12 @@ define(['app'], function (app) {
 				"oTableTools": {
 					"sRowSelect": "single",
 				},
+				columnDefs: [
+					{
+					targets: 1, // first column (0-based index)
+					render: $.fn.dataTable.render.text()
+					}
+				],
 				"aaSorting": [[0, "desc"]],
 				"bSortClasses": false,
 				"bProcessing": true,
@@ -5538,43 +5828,20 @@ define(['app'], function (app) {
 								if (item.description.length > 0) {
 									PluginParams += '<tr><td></td><td>' + item.description + '</td></tr>';
 								}
-								$.each(item.parameters, function (i, param) {
+								var currentGroup = "";
+								var renderParam = function (param) {
 									if (typeof (param.description) != "undefined") {
 										PluginParams += '<tr><td></td><td>' + param.description + '</td></tr>';
 									}
-									PluginParams += '<tr><td align="right" style="width:110px"><label id="lbl' + param.field + '"><span data-i18n="' + param.label + '">' + param.label + '</span>:</label></td>';
-									if (typeof (param.options) == "undefined") {
-										if (param.field == "SerialPort") {
-											PluginParams += '<td><select id="' + param.field + '" style="width:' + param.width + '" class="combobox ui-corner-all">';
-											$.each($("#hardwareparamsserial #comboserialport > option"), function (i, option) {
-												PluginParams += '<option data-i18n="' + option.innerText + '" value="' + option.innerText + '"';
-												PluginParams += '>' + option.innerText + '</option>';
-											});
-											PluginParams += '</select></td>';
-										} else {
-											PluginParams += '<td>'
-											var nbRows=parseInt(param.rows);
-											if (nbRows >= 0) {
-												PluginParams += '<textarea id="' + param.field + '" style="width:' + param.width + '; padding: .2em;" class="text ui-widget-content ui-corner-all" rows="' + nbRows + '" ';
-												if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += 'required';
-												PluginParams += '>';
-												if (typeof (param.default) != "undefined") PluginParams += param.default;
-												PluginParams +='</textarea>';
-											} else {
-												if ((typeof (param.password) != "undefined") && (param.password == "true"))
-													PluginParams += '<input type="password" ';
-												else
-													PluginParams += '<input type="text" ';
-												PluginParams += 'id="' + param.field + '" style="width:' + param.width + '; padding: .2em;" class="text ui-widget-content ui-corner-all" '
-												if (typeof (param.default) != "undefined") PluginParams += 'value="' + param.default + '"';
-												if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += ' required';
-												PluginParams += ' />';
-											}
-											PluginParams += '</td>';
-										}
-									}
-									else {
-										PluginParams += '<td><select id="' + param.field + '" style="width:' + param.width + '" class="combobox ui-corner-all">';
+									var visibleWhen = (typeof (param.visible_when) != "undefined") ? param.visible_when : "";
+									var trStyle = visibleWhen ? ' style="display:none"' : '';
+									var trAttr = visibleWhen ? ' data-visible-when="' + param.visible_when + '"' : '';
+									PluginParams += '<tr' + trStyle + trAttr + '><td align="right" style="width:110px"><label id="lbl' + param.field + '"><span data-i18n="' + param.label + '">' + param.label + '</span>:</label></td>';
+									var paramType = (typeof (param.type) != "undefined") ? param.type : "";
+									var paramWidth = (typeof (param.width) != "undefined") ? param.width : "200px";
+									if (typeof (param.options) != "undefined") {
+										// Select dropdown
+										PluginParams += '<td><select id="' + param.field + '" style="width:' + paramWidth + '" class="combobox ui-corner-all">';
 										$.each(param.options, function (i, option) {
 											PluginParams += '<option data-i18n="' + option.label + '" value="' + option.value + '"';
 											if ((typeof (option.default) != "undefined") && (option.default == "true")) PluginParams += ' selected';
@@ -5582,8 +5849,86 @@ define(['app'], function (app) {
 										});
 										PluginParams += '</select></td>';
 									}
+									else if (paramType === "boolean") {
+										var checked = (typeof (param.default) != "undefined" && param.default === "true") ? ' checked' : '';
+										PluginParams += '<td><input type="checkbox" id="' + param.field + '"' + checked + ' /><label for="' + param.field + '"></label></td>';
+									}
+									else if (paramType === "number") {
+										var minAttr = (typeof (param.min) != "undefined") ? ' min="' + param.min + '"' : '';
+										var maxAttr = (typeof (param.max) != "undefined") ? ' max="' + param.max + '"' : '';
+										var stepAttr = (typeof (param.step) != "undefined") ? ' step="' + param.step + '"' : '';
+										var defaultVal = (typeof (param.default) != "undefined") ? param.default : '';
+										PluginParams += '<td><input type="number" id="' + param.field + '" autocomplete="off" style="width:' + paramWidth + '; padding: .2em;" class="text ui-widget-content ui-corner-all"' +
+											minAttr + maxAttr + stepAttr + ' value="' + defaultVal + '"';
+										if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += ' required';
+										PluginParams += ' /></td>';
+									}
+									else if (paramType === "slider") {
+										var sliderMin = (typeof (param.min) != "undefined") ? parseInt(param.min) : 0;
+										var sliderMax = (typeof (param.max) != "undefined") ? parseInt(param.max) : 100;
+										var sliderDefault = (typeof (param.default) != "undefined") ? parseInt(param.default) : sliderMin;
+										PluginParams += '<td>' +
+											'<div style="display:inline-block; width:' + paramWidth + '; position:relative; height:16px; vertical-align:middle; margin-right:10px;">' +
+											'<div class="dimslider" id="slider_' + param.field + '" data-min="' + sliderMin + '" data-max="' + sliderMax + '" data-field="' + param.field + '"></div>' +
+											'</div>' +
+											'<input type="hidden" id="' + param.field + '" class="slider-value" value="' + sliderDefault + '" />' +
+											'<span id="sliderval_' + param.field + '" style="display:inline-block; min-width:30px; text-align:center; vertical-align:middle;">' + sliderDefault + '</span>' +
+											'</td>';
+									}
+									else if (param.field == "SerialPort") {
+										PluginParams += '<td><select id="' + param.field + '" style="width:' + paramWidth + '" class="combobox ui-corner-all">';
+										$.each($("#hardwareparamsserial #comboserialport > option"), function (i, option) {
+											PluginParams += '<option data-i18n="' + option.innerText + '" value="' + option.innerText + '"';
+											PluginParams += '>' + option.innerText + '</option>';
+										});
+										PluginParams += '</select></td>';
+									}
+									else {
+										PluginParams += '<td>';
+										var nbRows = parseInt(param.rows);
+										if (nbRows >= 0) {
+											PluginParams += '<textarea id="' + param.field + '" autocomplete="off" style="width:' + paramWidth + '; padding: .2em;" class="text ui-widget-content ui-corner-all" rows="' + nbRows + '" ';
+											if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += 'required';
+											PluginParams += '>';
+											if (typeof (param.default) != "undefined") PluginParams += param.default;
+											PluginParams += '</textarea>';
+										} else {
+											if ((typeof (param.password) != "undefined") && (param.password == "true"))
+												PluginParams += '<input type="password" ';
+											else
+												PluginParams += '<input type="text" ';
+											PluginParams += 'id="' + param.field + '" autocomplete="off" style="width:' + paramWidth + '; padding: .2em;" class="text ui-widget-content ui-corner-all" ';
+											if (typeof (param.default) != "undefined") PluginParams += 'value="' + param.default + '"';
+											if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += ' required';
+											PluginParams += ' />';
+										}
+										PluginParams += '</td>';
+									}
 									PluginParams += '</tr>';
+								};
+
+								$.each(item.parameters, function (i, param) {
+									var paramGroup = (typeof (param.group) != "undefined") ? param.group : "";
+									if (paramGroup !== currentGroup) {
+										if (currentGroup !== "") {
+											// Close previous group table
+											PluginParams += '</table></div></td></tr>';
+										}
+										if (paramGroup !== "") {
+											// Open new collapsible group
+											PluginParams += '<tr><td colspan="2">' +
+												'<div class="plugin-group" style="margin:5px 0; cursor:pointer;" onclick="var t=$(this).next(); t.toggle(); $(this).find(\'.fa\').toggleClass(\'fa-chevron-right fa-chevron-down\');">' +
+												'<i class="fa fa-chevron-right" style="margin-right:5px;"></i><b>' + paramGroup + '</b></div>' +
+												'<div style="display:none;"><table class="display" border="0" cellpadding="0" cellspacing="5">';
+										}
+										currentGroup = paramGroup;
+									}
+									renderParam(param);
 								});
+								if (currentGroup !== "") {
+									// Close last group table
+									PluginParams += '</table></div></td></tr>';
+								}
 								PluginParams += '</table>';
 								$("#divpythonplugin").append(PluginParams);
 							}

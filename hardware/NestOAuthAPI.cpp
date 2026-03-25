@@ -13,7 +13,7 @@
 #include "../httpclient/HTTPClient.h"
 #include "../main/mainworker.h"
 #include "../main/json_helper.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 
 // Base URL of API including trailing slash
 const std::string NEST_OAUTHAPI_BASE = "https://developer-api.nest.com/";

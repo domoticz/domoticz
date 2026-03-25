@@ -13,7 +13,7 @@
 #include <sstream>
 #include <algorithm>
 #include <iostream>
-#include "../webserver/cWebem.h"
+#include <libwebem/cWebem.h>
 #include <json/json.h>
 
 #define MAX_PAYLOAD_LENGTH 25 //https://www.mysensors.org/download/serial_api_20
@@ -491,6 +491,40 @@ void MySensorsBase::UpdateNodeHeartbeat(const uint8_t nodeID)
 				case V_RGBW:
 					if (child.GetValue(vType, intValue))
 						UpdateRGBWSwitchLastUpdate(nodeID, child.childID);
+					break;
+				// Temperature, humidity, and other sensor types use (NodeID << 8) | ChildID format for DeviceID
+				// Unlike switches which use hex-formatted NodeID, these sensors need special handling
+				case V_TEMP:
+				case V_HUM:
+				case V_PRESSURE:
+				case V_FORECAST:
+				case V_RAIN:
+				case V_RAINRATE:
+				case V_WIND:
+				case V_GUST:
+				case V_DIRECTION:
+				case V_UV:
+				case V_WEIGHT:
+				case V_DISTANCE:
+				case V_IMPEDANCE:
+				case V_WATT:
+				case V_KWH:
+				case V_LIGHT_LEVEL:
+				case V_FLOW:
+				case V_VOLUME:
+				case V_LEVEL:
+				case V_VOLTAGE:
+				case V_CURRENT:
+				case V_TEXT:
+				case V_CUSTOM:
+				case V_POSITION:
+				case V_PH:
+				case V_ORP:
+				case V_EC:
+				case V_VAR:
+				case V_VA:
+				case V_POWER_FACTOR:
+					UpdateSensorLastUpdate(nodeID, child.childID);
 					break;
 				}
 			}
@@ -1075,7 +1109,7 @@ void MySensorsBase::UpdateSwitchLastUpdate(const unsigned char NodeID, const int
 void MySensorsBase::UpdateBlindSensorLastUpdate(const int NodeID, const int ChildID)
 {
 	char szIdx[10];
-	sprintf(szIdx, "%02X%02X%02X", 0, 0, NodeID);
+	sprintf(szIdx, "%02X%02X%02X%02X", 0, 0, NodeID, 0);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, ChildID);
 	if (result.empty())
@@ -1089,8 +1123,21 @@ void MySensorsBase::UpdateRGBWSwitchLastUpdate(const int NodeID, const int Child
 	if (NodeID == 1)
 		sprintf(szIdx, "%d", 1);
 	else
-		sprintf(szIdx, "%08x", (unsigned int)NodeID);
+		sprintf(szIdx, "%08X", (unsigned int)NodeID);
 
+	std::vector<std::vector<std::string> > result;
+	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, ChildID);
+	if (result.empty())
+		return;
+	m_sql.UpdateLastUpdate(result[0][0]);
+}
+
+void MySensorsBase::UpdateSensorLastUpdate(int NodeID, int ChildID)
+{
+	// For temperature and other sensors, DeviceID is stored as decimal: (NodeID << 8) | ChildID
+	int deviceID = (NodeID << 8) | ChildID;
+	char szIdx[16];
+	sprintf(szIdx, "%d", deviceID);
 	std::vector<std::vector<std::string> > result;
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d)", m_HwdID, szIdx, ChildID);
 	if (result.empty())

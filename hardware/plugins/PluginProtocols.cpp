@@ -11,7 +11,7 @@
 #include "../../main/Helper.h"
 #include "../../main/json_helper.h"
 #include "../../main/Logger.h"
-#include "../../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #include "icmp_header.hpp"
 #include "ipv4_header.hpp"
 
@@ -604,7 +604,8 @@ namespace Plugins {
 				if (!m_Chunked)
 				{
 					// If full message then return it
-					if ((m_ContentLength == sData.length()) || (Message->m_Buffer.empty()))
+					// Only dispatch on EOF/flush if no Content-Length body is still expected
+					if (((int)sData.length() == m_ContentLength) || (Message->m_Buffer.empty() && m_ContentLength == 0))
 					{
 						PyObject* pDataDict = PyDict_New();
 						PyNewRef pObj(m_Status);
@@ -711,8 +712,8 @@ namespace Plugins {
 			if (sData.substr(0, 2) == "\r\n")
 			{
 				std::string		sPayload = sData.substr(2);
-				// No payload || we have the payload || the connection has closed
-				if ((m_ContentLength == -1) || (m_ContentLength == sPayload.length()) || Message->m_Buffer.empty())
+				// No payload || we have the payload || connection closed with no pending Content-Length body
+				if ((m_ContentLength == -1) || (m_ContentLength == (int)sPayload.length()) || (Message->m_Buffer.empty() && m_ContentLength == 0))
 				{
 					PyObject* DataDict = PyDict_New();
 					std::string		sVerb = sFirstLine.substr(0, sFirstLine.find_first_of(' '));
@@ -2544,14 +2545,21 @@ namespace Plugins {
 			{
 				retVal.push_back((bMaskBit | lPayloadLength) & 0xFF); // Short length
 			}
-			else
+			else if (lPayloadLength <= 0xFFFF)
 			{
 				retVal.push_back(bMaskBit | 126);
-				uint32_t dwPL = static_cast<uint32_t>(lPayloadLength);
-				retVal.push_back(dwPL >> 24);
-				retVal.push_back((dwPL >> 16) & 0xFF);
-				retVal.push_back((dwPL >> 8) & 0xFF);
-				retVal.push_back(dwPL & 0xFF); // Longer length
+				uint16_t wPL = static_cast<uint16_t>(lPayloadLength);
+				retVal.push_back((wPL >> 8) & 0xFF);
+				retVal.push_back(wPL & 0xFF); // 16-bit extended length (RFC 6455)
+			}
+			else
+			{
+				retVal.push_back(bMaskBit | 127);
+				uint64_t qwPL = static_cast<uint64_t>(lPayloadLength);
+				for (int i = 7; i >= 0; i--)
+				{
+					retVal.push_back((qwPL >> (i * 8)) & 0xFF); // 64-bit extended length (RFC 6455)
+				}
 			}
 
 			byte* pbMask = nullptr;

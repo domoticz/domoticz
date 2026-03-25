@@ -17,7 +17,12 @@
 #include "../main/SQLHelper.h"
 #include "../httpclient/UrlEncode.h"
 #include "../main/WebServer.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
+#include "../main/GZipHelper.h"
+#include <openssl/evp.h>
+#include <openssl/core_names.h>
+
+extern std::string szWWWFolder;
 
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
@@ -26,6 +31,17 @@ namespace http
 {
 	namespace server
 	{
+
+		std::string GetIssuerFromRequest(const request &req, const std::string &configured_realm)
+		{
+			// Use Host header to determine the issuer
+			const char *host_header = request::get_req_header(&req, "Host");
+			if (host_header != nullptr)
+			{
+				return "https://" + std::string(host_header) + "/";
+			}
+			return configured_realm;
+		}
 
 		void CWebServer::GetOauth2AuthCode(WebEmSession &session, const request &req, reply &rep)
 		{
@@ -79,7 +95,6 @@ namespace http
 								{	// POST request, so maybe we have the data from the Login form
 									std::string sConsent = request::findValue(&req, "consent");
 									std::string sPWD = request::findValue(&req, "psw");
-									std::string sTOTP = request::findValue(&req, "totp");
 									Username = request::findValue(&req, "uname");
 									iUser = FindUser(Username.c_str());
 									bAuthenticated = (iUser != -1 ? (m_users[iUser].Password == GenerateMD5Hash(sPWD)) : false);
@@ -93,12 +108,19 @@ namespace http
 											return;
 										}
 										error = "User credentials do not match!";
+										goto exitfunc;
 									}
 									else
 									{
 										// User/pass matches.. now check TOTP if required
 										if (!m_users[iUser].Mfatoken.empty())
 										{
+											std::string sTOTP = request::findValue(&req, "totp");
+											if (sTOTP.empty())
+											{
+												error = "Enter the One-Time Passcode!";
+												goto exitfunc;
+											}
 											std::string sTotpKey = "";
 											bAuthenticated = false;
 											if(base32_decode(m_users[iUser].Mfatoken, sTotpKey))
@@ -117,11 +139,13 @@ namespace http
 														return;
 													}
 													error = "TOTP Verification for a user has failed!";
+													goto exitfunc;
 												}
 											}
 											else
 											{
 												error = "TOTP key is not valid base32 encoded!";
+												goto exitfunc;
 											}
 										}
 									}
@@ -178,7 +202,7 @@ namespace http
 				error = "missing or wrong redirect_uri";
 				_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Wrong/Missing redirect_uri (%s)!", redirect_uri.c_str());
 			}
-
+		exitfunc:
 			// Redirect the User back to origin using the redirect_uri
 			std::stringstream result;
 			if(redirect_uri.find("?") != std::string::npos)
@@ -217,291 +241,322 @@ namespace http
 			std::string code_verifier = request::findValue(&req, "code_verifier");
 			std::string redirect_uri = CURLEncode::URLDecode(request::findValue(&req, "redirect_uri"));
 
+			// Check for client credentials in Basic Auth header (client_secret_basic method)
+			if (request::get_req_header(&req, "Authorization") != nullptr)
+			{
+				std::string auth_header = request::get_req_header(&req, "Authorization");
+				size_t npos = auth_header.find("Basic ");
+				if (npos != std::string::npos)
+				{
+					std::string encoded = auth_header.substr(6);
+					std::string decoded = base64_decode(encoded);
+					npos = decoded.find(':');
+					if (npos != std::string::npos)
+					{
+						std::string basic_client_id = decoded.substr(0, npos);
+						std::string basic_client_secret = decoded.substr(npos + 1);
+						// Use Basic auth credentials if client_id matches or is empty
+						if (client_id.empty() || client_id == basic_client_id)
+						{
+							client_id = basic_client_id;
+							client_secret = basic_client_secret;
+							_log.Debug(DEBUG_AUTH, "[Basic] Found Basic Auth credentials for client '%s'", client_id.c_str());
+						}
+						else
+						{
+							_log.Debug(DEBUG_AUTH, "[Basic] client_id mismatch: body='%s' vs Basic='%s'", client_id.c_str(), basic_client_id.c_str());
+						}
+					}
+				}
+			}
+
 			if (!state.empty())
 			{
 				root["state"] = state;
 			}
 
+			// Validate client credentials once for all grant types
+			int iClient = -1;
+			if (!client_id.empty())
+			{
+				iClient = FindClient(client_id.c_str());
+				if (iClient != -1)
+				{
+					// Public clients (ActiveTabs == 1) don't require client_secret
+					bool bPublicClient = (m_users[iClient].ActiveTabs == 1);
+					if (!bPublicClient || !client_secret.empty())
+					{
+						std::string hashedsecret = client_secret;
+						if (!(client_secret.length() == 32 && isHexRepresentation(client_secret)))
+						{
+							hashedsecret = GenerateMD5Hash(client_secret);
+						}
+						if (hashedsecret != m_users[iClient].Password)
+						{
+							_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Client secret validation failed for '%s'", client_id.c_str());
+							iClient = -1;
+						}
+					}
+				}
+				else
+				{
+					_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: No match for client ID '%s'", client_id.c_str());
+				}
+			}
+			else
+			{
+				_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: No client ID provided");
+			}
+
 			if (req.method == "POST")
 			{
-				bool bValidGrantType = false;
-				if(!grant_type.empty())
+				if (iClient != -1)
 				{
-					if (grant_type.compare("authorization_code") == 0 )
+					bool bValidGrantType = false;
+					if (!grant_type.empty())
 					{
-						bValidGrantType = true;
-						int iClient = -1;
-						int iUser = -1;
-						if (!client_id.empty())
+						if (grant_type.compare("authorization_code") == 0 )
 						{
-							iClient = FindClient(client_id.c_str());
-							if (iClient != -1)
+							bValidGrantType = true;
+							int iUser = -1;
+
+							// Let's find the user for this client with the right auth_code, if any
+							iUser = 0;
+							for (const auto &ac : m_accesscodes)
 							{
-								// Let's find the user for this client with the right auth_code, if any
-								iUser = 0;
-								for (const auto &ac : m_accesscodes)
+								if (ac.AuthCode.compare(auth_code.c_str()) == 0)
 								{
-									if (ac.AuthCode.compare(auth_code.c_str()) == 0)
-									{
-										if (ac.clientID == iClient || (ac.clientID == -1 && iUser == iClient))
-											break;
-									}
-									iUser++;
+									if (ac.clientID == iClient || (ac.clientID == -1 && iUser == iClient))
+										break;
 								}
+								iUser++;
+							}
 
-								if ((iUser < static_cast<int>(m_accesscodes.size())) && (m_accesscodes[iUser].AuthCode.compare(auth_code.c_str()) == 0))
+							if ((iUser < static_cast<int>(m_accesscodes.size())) && (m_accesscodes[iUser].AuthCode.compare(auth_code.c_str()) == 0))
+							{
+								_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Found Authorization Code (%s) for user (%d)!", m_accesscodes[iUser].AuthCode.c_str(), iUser);
+
+								std::string acRedirectUri = m_accesscodes[iUser].RedirectUri;
+								std::string acScope = m_accesscodes[iUser].Scope;
+								std::string CodeChallenge = m_accesscodes[iUser].CodeChallenge;
+								uint64_t AuthTime = m_accesscodes[iUser].AuthTime;
+								uint64_t CodeTime = m_accesscodes[iUser].ExpTime;
+								uint64_t CurTime = (uint64_t) std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+
+								m_accesscodes[iUser].AuthCode = "";	// Once used, make sure it cannot be used again
+								m_accesscodes[iUser].RedirectUri = "";
+								m_accesscodes[iUser].Scope = "";
+								m_accesscodes[iUser].clientID = -1;
+								m_accesscodes[iUser].AuthTime = 0;
+								m_accesscodes[iUser].ExpTime = 0;
+								m_accesscodes[iUser].CodeChallenge = "";
+
+								if(acRedirectUri.compare(redirect_uri.c_str()) == 0)
 								{
-									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Found Authorization Code (%s) for user (%d)!", m_accesscodes[iUser].AuthCode.c_str(), iUser);
-
-									std::string acRedirectUri = m_accesscodes[iUser].RedirectUri;
-									std::string acScope = m_accesscodes[iUser].Scope;
-									std::string CodeChallenge = m_accesscodes[iUser].CodeChallenge;
-									uint64_t AuthTime = m_accesscodes[iUser].AuthTime;
-									uint64_t CodeTime = m_accesscodes[iUser].ExpTime;
-									uint64_t CurTime = (uint64_t) std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-
-									m_accesscodes[iUser].AuthCode = "";	// Once used, make sure it cannot be used again
-									m_accesscodes[iUser].RedirectUri = "";
-									m_accesscodes[iUser].Scope = "";
-									m_accesscodes[iUser].clientID = -1;
-									m_accesscodes[iUser].AuthTime = 0;
-									m_accesscodes[iUser].ExpTime = 0;
-									m_accesscodes[iUser].CodeChallenge = "";
-
-									// For so-called (registered) 'public' clients, it is not mandatory to send the client_secret as it is never a real secret with public clients
-									// So in those cases, we use the registered secret
-									if(m_users[iClient].ActiveTabs == 1 && client_secret.empty())
+									if (CodeTime > CurTime)
 									{
-										client_secret = m_users[iClient].Password;
-									}
-
-									std::string hashedsecret = client_secret;
-									if (!(client_secret.length() == 32 && isHexRepresentation(client_secret)))	// 2 * MD5_DIGEST_LENGTH
-									{
-										hashedsecret = GenerateMD5Hash(client_secret);
-									}
-
-									if(hashedsecret == m_users[iClient].Password)		// The client_secrets should match (for public clients we just took the secret itself so will always match)
-									{
-										if(acRedirectUri.compare(redirect_uri.c_str()) == 0)
+										bool bPKCE = false;
+										if(!(code_verifier.empty() || CodeChallenge.empty()))
 										{
-											if (CodeTime > CurTime)
+											// We have a code_challenge from the Auth request and now also a code_verifier.. let's see if they match
+											_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Verifiying PKCE Code Challenge (%s) using provided verifyer!", CodeChallenge.c_str());
+											if (CodeChallenge.compare(base64url_encode(sha256raw(code_verifier))) == 0)
 											{
-												bool bPKCE = false;
-												if(!(code_verifier.empty() || CodeChallenge.empty()))
-												{
-													// We have a code_challenge from the Auth request and now also a code_verifier.. let's see if they match
-													_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Verifiying PKCE Code Challenge (%s) using provided verifyer!", CodeChallenge.c_str());
-													if (CodeChallenge.compare(base64url_encode(sha256raw(code_verifier))) == 0)
-													{
-														bPKCE = true;
-													}
-												}
-												if(code_verifier.empty() || bPKCE)
-												{
-													Json::Value jwtpayload;
-													jwtpayload["auth_time"] = AuthTime;
-													jwtpayload["preferred_username"] = m_users[iUser].Username;
-													jwtpayload["name"] = m_users[iUser].Username;
-													jwtpayload["roles"][0] = m_users[iUser].userrights;
+												bPKCE = true;
+											}
+										}
+										if(code_verifier.empty() || bPKCE)
+										{
+											Json::Value jwtpayload;
+											jwtpayload["auth_time"] = AuthTime;
+											jwtpayload["preferred_username"] = m_users[iUser].Username;
+											jwtpayload["name"] = m_users[iUser].Username;
+											jwtpayload["roles"][0] = m_users[iUser].userrights;
 
-													if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, client_secret, m_users[iUser].Username, exptime, jwtpayload))
-													{
-														std::string username = std::to_string(iClient) + ";" + std::to_string(iUser);
-														root["access_token"] = jwttoken;
-														root["token_type"] = "Bearer";
-														root["expires_in"] = exptime;
-														root["refresh_token"] = GenerateOAuth2RefreshToken(username, refreshexptime);
+											std::string issuer = GetIssuerFromRequest(req, m_pWebEm->m_DigistRealm);
+											if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, m_users[iUser].Username, exptime, jwtpayload, issuer))
+											{
+												std::string username = std::to_string(iClient) + ";" + std::to_string(iUser);
+												root["access_token"] = jwttoken;
+												root["token_type"] = "Bearer";
+												root["expires_in"] = exptime;
+												uint32_t client_refreshexptime = (m_users[iClient].RefreshExpire > 0) ? m_users[iClient].RefreshExpire : refreshexptime;
+												root["refresh_token"] = GenerateOAuth2RefreshToken(username, client_refreshexptime);
 
-														_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated a Refresh Token.");
+												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated a Refresh Token (lifetime: %u seconds).", client_refreshexptime);
 
-														m_sql.safe_query("UPDATE Applications SET LastSeen=datetime('now') WHERE (Applicationname == '%s')", m_users[iClient].Username.c_str());
-														_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated an Access Token.");
-														rep.status = reply::ok;
-													}
-													else
-													{
-														root["error"] = "server_error";
-														_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Something went wrong! Unable to generate Access Token!");
-														iUser = -1;
-													}
-												}
-												else
-												{
-													_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: PKCE Code verification failed!");
-													iUser = -1;
-												}
+												m_sql.safe_query("UPDATE Applications SET LastSeen=datetime('now') WHERE (Applicationname == '%s')", m_users[iClient].Username.c_str());
+												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated an Access Token.");
+												rep.status = reply::ok;
 											}
 											else
 											{
-												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Authorization code has expired (%" PRIu64 ") (%" PRIu64 ")!", CodeTime, CurTime);
+												root["error"] = "server_error";
+												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Something went wrong! Unable to generate Access Token!");
 												iUser = -1;
 											}
 										}
 										else
 										{
-											_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Redirect URI does not match (%s) (%s)!", acRedirectUri.c_str(), redirect_uri.c_str());
+											root["error"] = "access_denied";
+											_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: PKCE Code verification failed!");
 											iUser = -1;
 										}
 									}
 									else
 									{
-										_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Client Secret does not match for client (%s)!", m_users[iClient].Username.c_str());
+										root["error"] = "access_denied";
+										_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Authorization code has expired (%" PRIu64 ") (%" PRIu64 ")!", CodeTime, CurTime);
 										iUser = -1;
 									}
 								}
 								else
 								{
-									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Cannot find valid access code (%s) for user!", auth_code.c_str());
+									root["error"] = "invalid_request";
+									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Redirect URI does not match (%s) (%s)!", acRedirectUri.c_str(), redirect_uri.c_str());
 									iUser = -1;
 								}
 							}
-						}
-						if(iUser == -1)
-						{
-							root["error"] = "unauthorized_client";
-							_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Unauthorized/Unknown client_id (%s)!", client_id.c_str());
-						}
-					} // end 'authorization_code' grant_type
-					if (grant_type.compare("password") == 0 )
-					{
-						bValidGrantType = true;
-
-						// Maybe we should only allow this when in a safe 'local' network? So check if request comes from local networks?
-						int iUser = -1;
-						int iClient = -1;
-						if (request::get_req_header(&req, "Authorization") != nullptr)
-						{
-							std::string auth_header = request::get_req_header(&req, "Authorization");
-							// Basic Auth header
-							size_t npos = auth_header.find("Basic ");
-							if (npos != std::string::npos)
+							else
 							{
-								std::string decoded = base64_decode(auth_header.substr(6));
-								npos = decoded.find(':');
-								if (npos != std::string::npos)
+								root["error"] = "access_denied";
+								_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Cannot find valid access code (%s) for user!", auth_code.c_str());
+								iUser = -1;
+							}
+						} // end 'authorization_code' grant_type
+						if (grant_type.compare("password") == 0 )
+						{
+							bValidGrantType = true;
+
+							// Maybe we should only allow this when in a safe 'local' network? So check if request comes from local networks?
+							int iUser = -1;
+							std::string username = request::findValue(&req, "username");
+							std::string password = request::findValue(&req, "password");
+							if (!username.empty() && !password.empty())
+							{
+								_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Password grant for user (%s)", username.c_str());
+								iUser = FindUser(username.c_str());
+								if(iUser != -1)
 								{
-									std::string user = decoded.substr(0, npos);
-									std::string passwd = decoded.substr(npos + 1);
-									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Found a Basic Auth Header for User (%s)", user.c_str());
-
-									iUser = FindUser(user.c_str());
-									if(iUser != -1)
+									if (GenerateMD5Hash(password).compare(m_users[iUser].Password) == 0)
 									{
-										if (GenerateMD5Hash(passwd).compare(m_users[iUser].Password) == 0)
-										{
-											iClient = FindClient(client_id.c_str());
-											if (iClient != -1)
-											{
-												Json::Value jwtpayload;
-												jwtpayload["preferred_username"] = m_users[iUser].Username;
-												jwtpayload["name"] = m_users[iUser].Username;
-												jwtpayload["roles"][0] = m_users[iUser].userrights;
+										Json::Value jwtpayload;
+										jwtpayload["preferred_username"] = m_users[iUser].Username;
+										jwtpayload["name"] = m_users[iUser].Username;
+										jwtpayload["roles"][0] = m_users[iUser].userrights;
 
-												if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, m_users[iClient].Password, user, exptime, jwtpayload))
-												{
-													root["access_token"] = jwttoken;
-													root["token_type"] = "Bearer";
-													root["expires_in"] = exptime;
-													rep.status = reply::ok;
-												}
-												else
-												{
-													root["error"] = "server_error";
-													_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Something went wrong! Unable to generate Access Token!");
-													iUser = -1;
-												}
-											}
-											else
-											{
-												_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Invalid client_id (%s)(%d) for user (%s) for Password grant flow!", client_id.c_str(), iClient, user.c_str());
-												iUser = -1;
-											}
+										std::string issuer = GetIssuerFromRequest(req, m_pWebEm->m_DigistRealm);
+										if (m_pWebEm->GenerateJwtToken(jwttoken, client_id, username, exptime, jwtpayload, issuer))
+										{
+											root["access_token"] = jwttoken;
+											root["token_type"] = "Bearer";
+											root["expires_in"] = exptime;
+											rep.status = reply::ok;
 										}
 										else
 										{
-											_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Invalid credentials for user (%s) for Password grant flow!", user.c_str());
+											root["error"] = "server_error";
+											_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Something went wrong! Unable to generate Access Token!");
 											iUser = -1;
 										}
 									}
 									else
 									{
-										_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Could not find user (%s) for Password grant flow!", user.c_str());
+										root["error"] = "access_denied";
+										_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Invalid credentials for user (%s) for Password grant flow!", username.c_str());
+										iUser = -1;
 									}
 								}
-							}
-						}
-						if (iUser == -1)
-						{
-							root["error"] = "invalid_client";
-							rep.status = reply::unauthorized;
-							_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Password grant flow failed!");
-						}
-					} // end 'password' grant_type
-					if (grant_type.compare("refresh_token") == 0 )
-					{
-						bValidGrantType = true;
-						std::string refresh_token = request::findValue(&req, "refresh_token");
-						if (!refresh_token.empty())
-						{
-							std::string usernamefromtoken;
-							if (ValidateOAuth2RefreshToken(refresh_token, usernamefromtoken))
-							{
-								std::vector<std::string> strarray;
-								StringSplit(usernamefromtoken,";", strarray);
-								if(strarray.size() == 2)
+								else
 								{
-									int iClient = std::atoi(strarray[0].c_str());
-									int iUser = std::atoi(strarray[1].c_str());
-									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Found valid Refresh token (%s) (c:%d,u:%d)!", refresh_token.c_str(), iClient, iUser);
+									root["error"] = "access_denied";
+									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Could not find user (%s) for Password grant flow!", username.c_str());
+								}
+							}
+							else
+							{
+								root["error"] = "access_denied";
+								_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Missing username or password in request body for Password grant flow!");
+							}
 
-									Json::Value jwtpayload;
-									jwtpayload["preferred_username"] = m_users[iUser].Username;
-									jwtpayload["name"] = m_users[iUser].Username;
-									jwtpayload["roles"][0] = m_users[iUser].userrights;
-
-									if (m_pWebEm->GenerateJwtToken(jwttoken, m_users[iClient].Username, m_users[iClient].Password, m_users[iUser].Username, exptime, jwtpayload))
+							if (iUser == -1)
+							{
+								rep.status = reply::unauthorized;
+								_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Password grant flow failed!");
+							}
+						} // end 'password' grant_type
+						if (grant_type.compare("refresh_token") == 0 )
+						{
+							bValidGrantType = true;
+							std::string refresh_token = request::findValue(&req, "refresh_token");
+							if (!refresh_token.empty())
+							{
+								std::string usernamefromtoken;
+								if (ValidateOAuth2RefreshToken(refresh_token, usernamefromtoken))
+								{
+									std::vector<std::string> strarray;
+									StringSplit(usernamefromtoken,";", strarray);
+									if(strarray.size() == 2)
 									{
-										std::string username = std::to_string(iClient) + ";" + std::to_string(iUser);
-										root["access_token"] = jwttoken;
-										root["token_type"] = "Bearer";
-										root["expires_in"] = exptime;
-										root["refresh_token"] = GenerateOAuth2RefreshToken(username, refreshexptime);
-										rep.status = reply::ok;
+										int iClient = std::atoi(strarray[0].c_str());
+										int iUser = std::atoi(strarray[1].c_str());
+										_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Found valid Refresh token (%s) (c:%d,u:%d)!", refresh_token.c_str(), iClient, iUser);
+
+										Json::Value jwtpayload;
+										jwtpayload["preferred_username"] = m_users[iUser].Username;
+										jwtpayload["name"] = m_users[iUser].Username;
+										jwtpayload["roles"][0] = m_users[iUser].userrights;
+
+										std::string issuer = GetIssuerFromRequest(req, m_pWebEm->m_DigistRealm);
+										if (m_pWebEm->GenerateJwtToken(jwttoken, m_users[iClient].Username, m_users[iUser].Username, exptime, jwtpayload, issuer))
+										{
+											std::string username = std::to_string(iClient) + ";" + std::to_string(iUser);
+											root["access_token"] = jwttoken;
+											root["token_type"] = "Bearer";
+											root["expires_in"] = exptime;
+											uint32_t client_refreshexptime = (m_users[iClient].RefreshExpire > 0) ? m_users[iClient].RefreshExpire : refreshexptime;
+											root["refresh_token"] = GenerateOAuth2RefreshToken(username, client_refreshexptime);
+											_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Succesfully generated a Refresh Token (lifetime: %u seconds).", client_refreshexptime);
+											rep.status = reply::ok;
+										}
+										else
+										{
+											root["error"] = "server_error";
+											_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Something went wrong! Unable to generate new Access Token from Resfreshtoken!");
+										}
 									}
 									else
 									{
-										root["error"] = "server_error";
-										_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Something went wrong! Unable to generate new Access Token from Resfreshtoken!");
+										root["error"] = "access_denied";
+										rep.status = reply::unauthorized;
+										_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Refresh token (%s) does not contain valid reference to client/user (%s)!", refresh_token.c_str(), usernamefromtoken.c_str());
 									}
 								}
 								else
 								{
 									root["error"] = "access_denied";
 									rep.status = reply::unauthorized;
-									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Refresh token (%s) does not contain valid reference to client/user (%s)!", refresh_token.c_str(), usernamefromtoken.c_str());
+									_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Refresh token (%s) is not valid or expired!", refresh_token.c_str());
 								}
+								InvalidateOAuth2RefreshToken(refresh_token);
 							}
 							else
 							{
-								root["error"] = "access_denied";
-								rep.status = reply::unauthorized;
-								_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Refresh token (%s) is not valid or expired!", refresh_token.c_str());
+								root["error"] = "invalid_request";
+								rep.status = reply::bad_request;
+								_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Unable to process refresh token request!");
 							}
-							InvalidateOAuth2RefreshToken(refresh_token);
-						}
-						else
-						{
-							root["error"] = "invalid_request";
-							rep.status = reply::bad_request;
-							_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Unable to process refresh token request!");
-						}
-					} // end 'refresh_token' grant_type
+						} // end 'refresh_token' grant_type
+					}
+					if(!bValidGrantType)
+					{
+						root["error"] = "unsupported_grant_type";
+						_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Invalid/unsupported grant_type (%s)!", grant_type.c_str());
+					}
 				}
-				if(!bValidGrantType)
+				else
 				{
-					root["error"] = "unsupported_grant_type";
-					_log.Debug(DEBUG_AUTH, "OAuth2 Access Token: Invalid/unsupported grant_type (%s)!", grant_type.c_str());
+					root["error"] = "unauthorized_client";
 				}
 			}
 			else
@@ -520,9 +575,10 @@ namespace http
 			reply::add_header_content_type(&rep, "application/json;charset=UTF-8");
 			rep.status = reply::bad_request;
 
-			std::string base_url = m_pWebEm->m_DigistRealm.substr(0, m_pWebEm->m_DigistRealm.size()-1);
+			std::string issuer = GetIssuerFromRequest(req, m_pWebEm->m_DigistRealm);
+			std::string base_url = issuer.substr(0, issuer.size()-1);
 
-			root["issuer"] = m_pWebEm->m_DigistRealm;
+			root["issuer"] = issuer;
 			root["authorization_endpoint"] = base_url + m_iamsettings.auth_url;
 			root["token_endpoint"] = base_url + m_iamsettings.token_url;
 			jaRTS.append("code");
@@ -550,9 +606,33 @@ namespace http
         {
 			std::string sTOTP = "";	// required
 
+			std::string full_path = szWWWFolder + "/views/iam_auth.html";
+			std::ifstream is;
+			std::string szContent;
+			std::string full_path_withgz = full_path + ".gz";
+			is.open(full_path_withgz.c_str(), std::ios::in | std::ios::binary);
+			if (is.is_open())
+			{
+				std::string gzcontent((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
+				CGZIP2AT<> decompress((LPGZIP)gzcontent.c_str(), static_cast<int>(gzcontent.size()));
+				szContent.assign(decompress.psz, decompress.Length);
+			}
+			else
+			{
+				is.open(full_path.c_str(), std::ios::in | std::ios::binary);
+				if (is.is_open())
+					szContent.assign((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
+			}
+
+			if (szContent.empty())
+			{
+				rep = reply::stock_reply(reply::not_found);
+				return;
+			}
+
 			rep = reply::stock_reply(reply::ok);
 
-            reply::set_content(&rep, m_iamsettings.getAuthPageContent());
+			reply::set_content(&rep, szContent);
 
 			stdreplace(rep.content, "###REPLACE_APP###", sApp);
 			stdreplace(rep.content, "###REPLACE_ERROR###", sError);
@@ -563,8 +643,7 @@ namespace http
             reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
             reply::add_header_content_type(&rep, "text/html");
             reply::add_header(&rep, "Cache-Control", "no-store");
-            if (m_pWebEm->m_settings.is_secure())
-                reply::add_security_headers(&rep);
+            reply::add_security_headers(&rep, true);
         }
 
         std::string CWebServer::GenerateOAuth2RefreshToken(const std::string &username, const int refreshexptime)
@@ -620,9 +699,29 @@ namespace http
 				std::reverse((uint8_t*)&intCounter, (uint8_t*)&intCounter + sizeof(intCounter));
 			}
 
-			char md[20];
-			unsigned int mdLen;
-			HMAC(EVP_sha1(), key.c_str(), static_cast<int>(key.size()), (const unsigned char*)&intCounter, sizeof(intCounter), (unsigned char*)&md, &mdLen);
+			unsigned char md[20];
+			size_t mdLen = 0;
+			EVP_MAC* mac = EVP_MAC_fetch(nullptr, "HMAC", nullptr);
+			EVP_MAC_CTX* mctx = mac ? EVP_MAC_CTX_new(mac) : nullptr;
+			if (!mctx)
+			{
+				EVP_MAC_free(mac);
+				return false;
+			}
+			OSSL_PARAM macParams[] = {
+				OSSL_PARAM_construct_utf8_string(OSSL_MAC_PARAM_DIGEST, const_cast<char*>("SHA1"), 0),
+				OSSL_PARAM_construct_end()
+			};
+			if (EVP_MAC_init(mctx, reinterpret_cast<const unsigned char*>(key.c_str()), key.size(), macParams) != 1 ||
+			    EVP_MAC_update(mctx, reinterpret_cast<const unsigned char*>(&intCounter), sizeof(intCounter)) != 1 ||
+			    EVP_MAC_final(mctx, md, &mdLen, sizeof(md)) != 1)
+			{
+				EVP_MAC_CTX_free(mctx);
+				EVP_MAC_free(mac);
+				return false;
+			}
+			EVP_MAC_CTX_free(mctx);
+			EVP_MAC_free(mac);
 
 			int offset = md[19] & 0x0f;
 			int bin_code = (md[offset] & 0x7f) << 24

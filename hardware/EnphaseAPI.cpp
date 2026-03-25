@@ -10,7 +10,7 @@
 #include "../main/SQLHelper.h"
 #include "../notifications/NotificationHelper.h"
 #include "../tinyxpath/tinyxml.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #include "hardwaretypes.h"
 #include <iostream>
 
@@ -26,7 +26,8 @@ Example
 {"production":[{"type":"inverters","activeCount":9,"readingTime":1568991780,"wNow":712,"whLifetime":1448651},{"type":"eim","activeCount":1,"measurementType":"production","readingTime":1568991966,"wNow":624.315,"whLifetime":1455843.527,"varhLeadLifetime":0.001,"varhLagLifetime":311039.158,"vahLifetime":1619431.681,"rmsCurrent":2.803,"rmsVoltage":233.289,"reactPwr":137.092,"apprntPwr":654.245,"pwrFactor":0.95,"whToday":4295.527,"whLastSevenDays":74561.527,"vahToday":5854.681,"varhLeadToday":0.001,"varhLagToday":2350.158}],"consumption":[{"type":"eim","activeCount":1,"measurementType":"total-consumption","readingTime":1568991966,"wNow":1260.785,"whLifetime":2743860.336,"varhLeadLifetime":132372.858,"varhLagLifetime":273043.125,"vahLifetime":3033001.948,"rmsCurrent":5.995,"rmsVoltage":233.464,"reactPwr":437.269,"apprntPwr":1399.886,"pwrFactor":0.9,"whToday":11109.336,"whLastSevenDays":129007.336,"vahToday":13323.948,"varhLeadToday":895.858,"varhLagToday":3700.125},{"type":"eim","activeCount":1,"measurementType":"net-consumption","readingTime":1568991966,"wNow":636.47,"whLifetime":0.0,"varhLeadLifetime":132372.857,"varhLagLifetime":-37996.033,"vahLifetime":3033001.948,"rmsCurrent":3.191,"rmsVoltage":233.376,"reactPwr":574.361,"apprntPwr":744.807,"pwrFactor":0.85,"whToday":0,"whLastSevenDays":0,"vahToday":0,"varhLeadToday":0,"varhLagToday":0}],"storage":[{"type":"acb","activeCount":0,"readingTime":0,"wNow":0,"whNow":0,"state":"idle"}]}
 */
 
-#define ENPHASE_API_INFO "http://{ip}/info.xml" //needs to be http
+#define ENPHASE_API_INFO "{ip}/info.xml"
+#define ENPHASE_API_INFO_OLD "http://{ip}/info.xml" //needs to be http
 #define ENPHASE_API_HOME "{ip}/home.json"
 #define ENPHASE_API_CHECK_JWT "{ip}/auth/check_jwt"
 #define ENPHASE_API_PRODUCTION "{ip}/production.json?details=1"
@@ -39,6 +40,8 @@ Example
 #define ENPAHSE_API_REPORT_PRODUCTION "{ip}/ivp/meters/reports/production"
 #define ENPAHSE_API_REPORT_CONSUMPTION "{ip}/ivp/meters/reports/consumption"
 #define ENPAHSE_API_LIVEDATA_STATUS "{ip}/ivp/livedata/status"
+#define ENPHASE_API_ENSEMBLE_POWER "{ip}/ivp/ensemble/power"
+#define ENPHASE_API_TARIFF "{ip}/admin/lib/tariff"
 
 /*
 #define ENPAHSE_API_LIMIT_POWER "{ip}/ivp/ss/dpel"
@@ -161,9 +164,6 @@ EnphaseAPI::EnphaseAPI(
 		m_szTokenInstaller = result[0][1];
 	}
 	//(We can probably not use them both at the same time)
-
-	//Init Production counter
-	m_ProductionCounter.Init("EnphaseOffset_Production_" + std::to_string(m_HwdID), this);
 }
 
 bool EnphaseAPI::StartHardware()
@@ -292,7 +292,7 @@ void EnphaseAPI::Do_Work()
 					}
 					else
 					{
-						//getGridStatus();
+						getGridStatus();
 					}
 
 					if (
@@ -305,6 +305,27 @@ void EnphaseAPI::Do_Work()
 						if (getInventoryDetails(inventory_result))
 						{
 							parseInventory(inventory_result);
+						}
+					}
+
+					if (m_bHaveStorage || m_bHaveInventory)
+					{
+						if (
+							(!m_bCheckedEnsemblePower)
+							|| (m_bHaveEnsemblePower)
+							)
+						{
+							m_bCheckedEnsemblePower = true;
+							getEnsemblePowerDetails();
+						}
+
+						if (
+							(!m_bCheckedTariff)
+							|| (m_bHaveTariff)
+							)
+						{
+							m_bCheckedTariff = true;
+							getTariffDetails();
 						}
 					}
 
@@ -335,6 +356,13 @@ bool EnphaseAPI::WriteToHardware(const char* pdata, const unsigned char length)
 	{
 		//Power on/off
 		SetPowerActive(command == light2_sOn);
+		return true;
+	}
+
+	if (Unit == 3)
+	{
+		//Charge from Grid on/off
+		SetChargeFromGrid(command == light2_sOn);
 		return true;
 	}
 
@@ -452,8 +480,12 @@ bool EnphaseAPI::GetSerialSoftwareVersion()
 #else
 	if (!HTTPClient::GET(MakeURL(ENPHASE_API_INFO), sResult))
 	{
-		Log(LOG_ERROR, "Error getting http data! (info)");
-		return false;
+		//could be an old firmware
+		if (!HTTPClient::GET(MakeURL(ENPHASE_API_INFO_OLD), sResult))
+		{
+			Log(LOG_ERROR, "Error getting http data! (info)");
+			return false;
+		}
 	}
 #ifdef DEBUG_EnphaseAPI_W
 	SaveString2Disk(sResult, "E:\\EnphaseAPI_info.xml");
@@ -847,11 +879,9 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 	if (musage < 0)
 		musage = 0; //seems sometimes the production value is negative??
 
-	uint64_t mtotal = reading["whLifetime"].asUInt64();
-	if (mtotal != 0)
-	{
-		m_ProductionCounter.SendKwhMeter(m_HwdID, 1, 255, musage, mtotal / 1000.0, "Enphase kWh Production");
-	}
+	double mtotal = reading["whLifetime"].asDouble() / 1000.0;
+
+	SendKwhMeter(m_HwdID, 1, 255, musage, mtotal, "Enphase kWh Production");
 }
 
 void EnphaseAPI::parseConsumption(const Json::Value& root)
@@ -861,7 +891,6 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 		return;
 	}
 
-	int iIndex = 2;
 	for (const auto& itt : root["consumption"])
 	{
 		int activeCount = itt["activeCount"].asInt();
@@ -870,12 +899,20 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 
 		m_bHaveConsumption = true;
 
-		std::string szName = "Enphase " + itt["measurementType"].asString();
+		std::string measurementType = itt["measurementType"].asString();
+		std::string szName = "Enphase " + measurementType;
 		int musage = itt["wNow"].asInt();
-		int mtotal = itt["whLifetime"].asInt();
-		if (mtotal != 0)
+		double mtotal = itt["whLifetime"].asDouble() / 1000.0;
+
+		// Use fixed indices for each consumption type
+		if (measurementType == "total-consumption")
 		{
-			SendKwhMeter(m_HwdID, iIndex++, 255, musage, mtotal / 1000.0, szName);
+			SendKwhMeter(m_HwdID, 2, 255, musage, mtotal, szName);
+		}
+		else if (measurementType == "net-consumption")
+		{
+			m_bHaveNetConsumption = true;
+			SendKwhMeter(m_HwdID, 3, 255, musage, mtotal, szName);
 		}
 	}
 }
@@ -982,6 +1019,12 @@ void EnphaseAPI::parseInventory(const Json::Value& root)
 
 				szName = "Encharge " + serial_num + " Percent Full";
 				SendPercentageSensor(NodeID + iDeviceIndex, 1, 255, static_cast<float>(std::stod(percentFull)), szName);
+
+				if (!temperature.empty())
+				{
+					szName = "Encharge " + serial_num + " Temperature";
+					SendTempSensor(200 + iDeviceIndex, 255, static_cast<float>(std::stod(temperature)), szName);
+				}
 
 				szName = "Encharge " + serial_num + " Current Capacity";
 				SendWattMeter(NodeID, iDeviceIndex + 1, 255, static_cast<float>(dCurrentCapacity), szName);
@@ -1327,6 +1370,218 @@ bool EnphaseAPI::SetPowerActive(const bool bActive)
 	return true;
 }
 
+bool EnphaseAPI::getEnsemblePowerDetails()
+{
+	if (m_szTokenInstaller.empty())
+		return false;
+
+	std::string sResult;
+
+#ifdef DEBUG_EnphaseAPI_R
+	sResult = ReadFile("E:\\EnphaseAPI_ensemble_power.json");
+#else
+	if (!CheckAuthJWT(m_szTokenInstaller, false))
+	{
+		if (!GetInstallerToken())
+			return false;
+		if (!CheckAuthJWT(m_szTokenInstaller, true))
+			return false;
+	}
+
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Authorization: Bearer " + m_szTokenInstaller);
+	ExtraHeaders.push_back("Content-Type:application/json");
+
+	if (!HTTPClient::GET(MakeURL(ENPHASE_API_ENSEMBLE_POWER), ExtraHeaders, sResult))
+	{
+		Log(LOG_ERROR, "Error getting http data! (ensemble/power)");
+		return false;
+	}
+#ifdef DEBUG_EnphaseAPI_W
+	SaveString2Disk(sResult, "E:\\EnphaseAPI_ensemble_power.json");
+#endif
+#endif
+	Debug(DEBUG_RECEIVED, "ensemble/power: %s", sResult.c_str());
+
+	Json::Value result;
+	bool ret = ParseJSon(sResult, result);
+	if (!ret)
+	{
+		Log(LOG_ERROR, "Invalid data received! (ensemble/power/json)");
+		return false;
+	}
+
+	// The response may be an object directly or nested in an array
+	const Json::Value* pData = nullptr;
+	if (result.isObject() && !result["available_energy"].empty())
+	{
+		pData = &result;
+	}
+	else if (result.isArray() && !result.empty() && !result[0]["available_energy"].empty())
+	{
+		pData = &result[0];
+	}
+
+	if (pData == nullptr)
+	{
+		// No battery aggregate data available
+		return false;
+	}
+
+	int available_energy = (*pData)["available_energy"].asInt();
+	int max_available_capacity = (*pData)["max_available_capacity"].asInt();
+
+	SendCustomSensor(51, 2, 255, static_cast<float>(available_energy), "Enphase Battery Available Energy", "Wh");
+	SendCustomSensor(51, 3, 255, static_cast<float>(max_available_capacity), "Enphase Battery Max Capacity", "Wh");
+
+	m_bHaveEnsemblePower = true;
+	return true;
+}
+
+bool EnphaseAPI::getTariffDetails()
+{
+	if (m_szTokenInstaller.empty())
+		return false;
+
+	std::string sResult;
+
+#ifdef DEBUG_EnphaseAPI_R
+	sResult = ReadFile("E:\\EnphaseAPI_tariff.json");
+#else
+	if (!CheckAuthJWT(m_szTokenInstaller, false))
+	{
+		if (!GetInstallerToken())
+			return false;
+		if (!CheckAuthJWT(m_szTokenInstaller, true))
+			return false;
+	}
+
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Authorization: Bearer " + m_szTokenInstaller);
+	ExtraHeaders.push_back("Content-Type:application/json");
+
+	if (!HTTPClient::GET(MakeURL(ENPHASE_API_TARIFF), ExtraHeaders, sResult))
+	{
+		Log(LOG_ERROR, "Error getting http data! (tariff)");
+		return false;
+	}
+#ifdef DEBUG_EnphaseAPI_W
+	SaveString2Disk(sResult, "E:\\EnphaseAPI_tariff.json");
+#endif
+#endif
+	Debug(DEBUG_RECEIVED, "tariff: %s", sResult.c_str());
+
+	Json::Value result;
+	bool ret = ParseJSon(sResult, result);
+	if ((!ret) || (!result.isObject()))
+	{
+		Log(LOG_ERROR, "Invalid data received! (tariff/json)");
+		return false;
+	}
+
+	// Store the raw tariff JSON for later PUT operations
+	m_szLastTariffData = sResult;
+
+	// Navigate to storage_settings: may be at root or under tariff.storage_settings
+	const Json::Value* pStorage = nullptr;
+	if (!result["tariff"]["storage_settings"].empty())
+	{
+		pStorage = &result["tariff"]["storage_settings"];
+	}
+	else if (!result["storage_settings"].empty())
+	{
+		pStorage = &result["storage_settings"];
+	}
+
+	if (pStorage == nullptr)
+	{
+		// No storage settings available
+		return false;
+	}
+
+	std::string szMode = (*pStorage)["mode"].asString();
+	float fReservedSoc = (*pStorage)["reserved_soc"].asFloat();
+	bool bChargeFromGrid = (*pStorage)["charge_from_grid"].asBool();
+
+	SendTextSensor(52, 1, 255, szMode, "Enphase Storage Mode");
+	SendPercentageSensor(51, 1, 255, fReservedSoc, "Enphase Battery Reserve SOC");
+	SendSwitch(1, 3, 255, bChargeFromGrid, 0, "Charge from Grid", "EnphaseAPI");
+
+	m_bHaveTariff = true;
+	return true;
+}
+
+bool EnphaseAPI::SetChargeFromGrid(const bool bEnable)
+{
+	if (m_szTokenInstaller.empty())
+	{
+		GetInstallerToken();
+	}
+	if (m_szTokenInstaller.empty())
+	{
+		Log(LOG_ERROR, "Problem with (no) installer token! Could not execute command! (charge_from_grid)");
+		return false;
+	}
+
+	if (!CheckAuthJWT(m_szTokenInstaller, false))
+	{
+		if (!GetInstallerToken())
+			return false;
+		if (!CheckAuthJWT(m_szTokenInstaller, true))
+			return false;
+	}
+
+	if (m_szLastTariffData.empty())
+	{
+		// Fetch current tariff data first
+		if (!getTariffDetails())
+		{
+			Log(LOG_ERROR, "Could not retrieve tariff data for update! (charge_from_grid)");
+			return false;
+		}
+	}
+
+	Json::Value tariff;
+	if (!ParseJSon(m_szLastTariffData, tariff) || !tariff.isObject())
+	{
+		Log(LOG_ERROR, "Invalid cached tariff data! (charge_from_grid)");
+		return false;
+	}
+
+	// Update charge_from_grid in the appropriate location
+	if (!tariff["tariff"]["storage_settings"].empty())
+	{
+		tariff["tariff"]["storage_settings"]["charge_from_grid"] = bEnable;
+	}
+	else if (!tariff["storage_settings"].empty())
+	{
+		tariff["storage_settings"]["charge_from_grid"] = bEnable;
+	}
+	else
+	{
+		Log(LOG_ERROR, "Could not find storage_settings in tariff data! (charge_from_grid)");
+		return false;
+	}
+
+	std::string szPutdata = JSonToRawString(tariff);
+
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Accept: application/json");
+	ExtraHeaders.push_back("Authorization: Bearer " + m_szTokenInstaller);
+	ExtraHeaders.push_back("Content-Type: application/json");
+
+	std::string sResult;
+	if (!HTTPClient::PUT(MakeURL(ENPHASE_API_TARIFF), szPutdata, ExtraHeaders, sResult, true))
+	{
+		Log(LOG_ERROR, "Error setting http data! (charge_from_grid)");
+		return false;
+	}
+
+	// Clear cached tariff so next poll re-reads from device
+	m_szLastTariffData.clear();
+	return true;
+}
+
 uint64_t EnphaseAPI::UpdateValueInt(const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
 	const char* sValue, std::string& devname, bool bUseOnOffAction, const std::string& user)
 {
@@ -1450,7 +1705,7 @@ bool EnphaseAPI::getInverterDetails()
 			// Update
 			UpdateValueInt(szDeviceID.c_str(), 1, devType, subType, 12, 255, nValue, sValue.c_str(), result[0][0]);
 		}
-		}
+	}
 	return true;
 }
 

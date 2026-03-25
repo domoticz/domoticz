@@ -1,8 +1,38 @@
-/*  
+/* Apply dark theme to all Highcharts charts */
+if (typeof Highcharts !== 'undefined') {
+  Highcharts.setOptions({
+    chart: {
+      backgroundColor: 'transparent',
+      plotBackgroundColor: 'transparent',
+      style: { fontFamily: 'inherit' }
+    },
+    title: { style: { color: '#c0cfe0' } },
+    legend: {
+      itemStyle: { color: '#9ab' },
+      itemHoverStyle: { color: '#e0e0e0' }
+    },
+    tooltip: {
+      backgroundColor: 'rgba(0,20,45,0.92)',
+      borderColor: '#43A4D3',
+      style: { color: '#e0e0e0' }
+    },
+    xAxis: {
+      lineColor: '#2a3f55',
+      tickColor: '#2a3f55',
+      labels: { style: { color: '#7a9ab5' } }
+    },
+    yAxis: {
+      gridLineColor: '#1e3248',
+      labels: { style: { color: '#7a9ab5' } }
+    }
+  });
+}
 
-Dear themer 
+/*
 
-You can use this file to add your own javascript functions to your theme. 
+Dear themer
+
+You can use this file to add your own javascript functions to your theme.
 
 Some useful things to get you started:
 

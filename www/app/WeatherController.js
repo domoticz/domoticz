@@ -9,9 +9,11 @@ define(['app', 'livesocket'], function (app) {
 			});
 		};
 
-		EditRainDevice = function (idx, name, description, addjmulti) {
+		EditRainDevice = function (idx, name, description, addjmulti, deviceID, unitCode) {
 			$.devIdx = idx;
 			$("#dialog-editraindevice #deviceidx").text(idx);
+			$("#dialog-editraindevice #deviceid").text(deviceID);
+			$("#dialog-editraindevice #deviceunit").text(unitCode);
 			$("#dialog-editraindevice #devicename").val(unescape(name));
 			$("#dialog-editraindevice #devicedescription").val(unescape(description));
 			$("#dialog-editraindevice #multiply").val(addjmulti);
@@ -19,9 +21,11 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editraindevice").dialog("open");
 		}
 
-		EditBaroDevice = function (idx, name, description, addjvalue) {
+		EditBaroDevice = function (idx, name, description, addjvalue, deviceID, unitCode) {
 			$.devIdx = idx;
 			$("#dialog-editbarodevice #deviceidx").text(idx);
+			$("#dialog-editbarodevice #deviceid").text(deviceID);
+			$("#dialog-editbarodevice #deviceunit").text(unitCode);
 			$("#dialog-editbarodevice #devicename").val(unescape(name));
 			$("#dialog-editbarodevice #devicedescription").val(unescape(description));
 			$("#dialog-editbarodevice #adjustment").val(addjvalue);
@@ -29,9 +33,11 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editbarodevice").dialog("open");
 		}
 
-		EditVisibilityDevice = function (idx, name, description, switchtype) {
+		EditVisibilityDevice = function (idx, name, description, switchtype, deviceID, unitCode) {
 			$.devIdx = idx;
 			$("#dialog-editvisibilitydevice #deviceidx").text(idx);
+			$("#dialog-editvisibilitydevice #deviceid").text(deviceID);
+			$("#dialog-editvisibilitydevice #deviceunit").text(unitCode);
 			$("#dialog-editvisibilitydevice #devicename").val(unescape(name));
 			$("#dialog-editvisibilitydevice #devicedescription").val(unescape(description));
 			$("#dialog-editvisibilitydevice #combometertype").val(switchtype);
@@ -39,9 +45,11 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editvisibilitydevice").dialog("open");
 		}
 
-		EditWindDevice = function (idx, name, description, addjvalue2, addjmulti) {
+		EditWindDevice = function (idx, name, description, addjvalue2, addjmulti, deviceID, unitCode) {
 			$.devIdx = idx;
 			$("#dialog-editwinddevice #deviceidx").text(idx);
+			$("#dialog-editwinddevice #deviceid").text(deviceID);
+			$("#dialog-editwinddevice #deviceunit").text(unitCode);
 			$("#dialog-editwinddevice #devicename").val(unescape(name));
 			$("#dialog-editwinddevice #devicedescription").val(unescape(description));
 			$("#dialog-editwinddevice #arotation").val(addjvalue2);
@@ -50,9 +58,11 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editwinddevice").dialog("open");
 		}
 
-		EditUviDevice = function (idx, name, description, addjmulti2) {
+		EditUviDevice = function (idx, name, description, addjmulti2, deviceID, unitCode) {
 			$.devIdx = idx;
 			$("#dialog-edituvidevice #deviceidx").text(idx);
+			$("#dialog-edituvidevice #deviceid").text(deviceID);
+			$("#dialog-edituvidevice #deviceunit").text(unitCode);
 			$("#dialog-edituvidevice #devicename").val(unescape(name));
 			$("#dialog-edituvidevice #devicedescription").val(unescape(description));
 			$("#dialog-edituvidevice #multiply").val(addjmulti2);
@@ -60,9 +70,11 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-edituvidevice").dialog("open");
 		}
 
-		EditWeatherDevice = function (idx, name, description, addjvalue, addjmulti) {
+		EditWeatherDevice = function (idx, name, description, addjvalue, addjmulti, deviceID, unitCode) {
 			$.devIdx = idx;
 			$("#dialog-editweatherdevice #deviceidx").text(idx);
+			$("#dialog-editweatherdevice #deviceid").text(deviceID);
+			$("#dialog-editweatherdevice #deviceunit").text(unitCode);
 			$("#dialog-editweatherdevice #devicename").val(unescape(name));
 			$("#dialog-editweatherdevice #devicedescription").val(unescape(description));
 			$("#dialog-editweatherdevice").i18n();
@@ -75,12 +87,22 @@ define(['app', 'livesocket'], function (app) {
 
 		RefreshItem = function (item) {
 			item.searchText = GenerateLiveSearchTextW(item);
+			var query = $('.jsLiveSearch').val();
+			if (query && query.length > 0) {
+				var match = item.searchText.toLowerCase().indexOf(query.toLowerCase()) !== -1;
+				if (!match) {
+					return; // Don't update items that don't match the filter
+				}
+			}
 			ctrl.items.forEach(function (olditem, oldindex, oldarray) {
 				if (olditem.idx == item.idx) {
-					oldarray[oldindex] = item;
+					angular.extend(oldarray[oldindex], item);
 					if (!document.hidden) {
 						if ($scope.config.ShowUpdatedEffect == true) {
-							$("#weatherwidgets #" + item.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+							setTimeout(function() {
+								$("#weatherwidgets #" + item.idx + " #name").effect("highlight", { color: '#EEFFEE' }, 1000);
+							}, 500);
+
 						}
 					}
 				}
@@ -90,8 +112,9 @@ define(['app', 'livesocket'], function (app) {
 
 		//We only call this once. After this the widgets are being updated automatically by used of the 'jsonupdate' broadcast event.
 		RefreshWeathers = function () {
-			var roomPlanId = 0;//$routeParams.room || window.myglobals.LastPlanSelected;
-			livesocket.getJson("json.htm?type=command&param=getdevices&filter=weather&used=true&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + roomPlanId, function (data) {
+			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+			var usedFilter = roomPlanId > 0 ? 'all' : 'true';
+			livesocket.getJson("json.htm?type=command&param=getdevices&filter=weather&used=" + usedFilter + "&order=[Order]&lastupdate=" + $.LastUpdateTime + "&plan=" + roomPlanId, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -118,11 +141,11 @@ define(['app', 'livesocket'], function (app) {
 		ShowWeathers = function () {
 			$('#modal').show();
 
-			var roomPlanId = 0;//$routeParams.room || window.myglobals.LastPlanSelected;
+			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+			var usedFilter = roomPlanId > 0 ? 'all' : 'true';
 
 			$.ajax({
-				url: "json.htm?type=command&param=getdevices&filter=weather&used=true&order=[Order]&plan=" + roomPlanId,
-				async: false,
+				url: "json.htm?type=command&param=getdevices&filter=weather&used=" + usedFilter + "&order=[Order]&plan=" + roomPlanId,
 				dataType: 'json',
 				success: function (data) {
 					if (typeof data.result != 'undefined') {
@@ -136,18 +159,28 @@ define(['app', 'livesocket'], function (app) {
 					} else {
 						ctrl.items = [];
 					}
+
+					$scope.loading = false;
+
+					if (!$scope.$$phase) {
+						$scope.$apply();
+					}
+
+					$('#modal').hide();
+					$('#weathercontent').html("");
+					$('#weathercontent').i18n();
+					$('#weatherwidgets').show();
+					$('#weatherwidgets').i18n();
+					$('#weathertophtm').show();
+					$('#weathertophtm').i18n();
+
+					$rootScope.RefreshTimeAndSun();
+					RefreshWeathers();
+				},
+				error: function () {
+					$('#modal').hide();
 				}
 			});
-			$('#modal').hide();
-			$('#weathercontent').html("");
-			$('#weathercontent').i18n();
-			$('#weatherwidgets').show();
-			$('#weatherwidgets').i18n();
-			$('#weathertophtm').show();
-			$('#weathertophtm').i18n();
-
-			$rootScope.RefreshTimeAndSun();
-			RefreshWeathers();
 			return false;
 		}
 
@@ -156,13 +189,12 @@ define(['app', 'livesocket'], function (app) {
 		};
 		$scope.DropWidget = function (idx) {
 			var myid = idx;
-			var roomid = 0;//window.myglobals.LastPlanSelected;
+			var roomid = window.myglobals.LastPlanSelected;
 			if (typeof roomid == 'undefined') {
 				roomid = 0;
 			}
 			$.ajax({
 				url: "json.htm?type=command&param=switchdeviceorder&idx1=" + myid + "&idx2=" + $.devIdx + "&roomid=" + roomid,
-				async: false,
 				dataType: 'json',
 				success: function (data) {
 					ShowWeathers();
@@ -559,6 +591,23 @@ define(['app', 'livesocket'], function (app) {
 				}
 			];
 
+			ctrl.RoomPlans = $rootScope.GetRoomPlans();
+			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+			if (typeof roomPlanId != 'undefined') {
+				ctrl.roomSelected = roomPlanId;
+				window.myglobals.LastPlanSelected = roomPlanId;
+			}
+			ctrl.changeRoom = function () {
+				var idx = ctrl.roomSelected;
+				window.myglobals.LastPlanSelected = idx;
+				$route.updateParams({
+					room: idx >= 0 ? idx : undefined
+				});
+				$location.replace();
+			};
+
+			ctrl.items = [];
+			$scope.loading = true;
 			ShowWeathers();
 
 			$("dialog-editweatherdevice").keydown(function (event) {
@@ -671,16 +720,16 @@ define(['app', 'livesocket'], function (app) {
 					$('#weatherwidgets').hide(); // TODO delete when multiple views implemented
 					$('#weathertophtm').hide();
 					if (typeof item.Barometer != 'undefined') {
-						return ShowBaroLog('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name));
+						return $location.path('/Devices/' + item.idx + '/Log').search('sensor', 'baro');
 					}
 					else if (typeof item.Rain != 'undefined') {
-						return ShowRainLog('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name));
+						return $location.path('/Devices/' + item.idx + '/Log');
 					}
 					else if (typeof item.UVI != 'undefined') {
-						return ShowUVLog('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name));
+						return $location.path('/Devices/' + item.idx + '/Log');
 					}
 					else if (typeof item.Direction != 'undefined') {
-						return ShowWindLog('#weathercontent', 'ShowWeathers', item.idx, escape(item.Name));
+						return $location.path('/Devices/' + item.idx + '/Log');
 					}
 					else if (typeof item.Visibility != 'undefined') {
 						return $location.path('/Devices/' + item.idx + '/Log');
@@ -692,19 +741,19 @@ define(['app', 'livesocket'], function (app) {
 
 				ctrl.EditDevice = function () {
 					if (typeof item.Rain != 'undefined') {
-						return EditRainDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjMulti);
+						return EditRainDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjMulti, item.ID, item.Unit);
 					}
 					else if (typeof item.Direction != 'undefined') {
-						return EditWindDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue2, item.AddjMulti);
+						return EditWindDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue2, item.AddjMulti, item.ID, item.Unit);
 					} else if (typeof item.Visibility != 'undefined') {
-						return EditVisibilityDevice(item.idx, escape(item.Name), escape(item.Description), item.SwitchTypeVal);
+						return EditVisibilityDevice(item.idx, escape(item.Name), escape(item.Description), item.SwitchTypeVal, item.ID, item.Unit);
 					} else if (typeof item.UVI != 'undefined') {
-						return EditUviDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjMulti2);
+						return EditUviDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjMulti2, item.ID, item.Unit);
 					}
 					else if (typeof item.Barometer != 'undefined') {
-						return EditBaroDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue2);
+						return EditBaroDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue2, item.ID, item.Unit);
 					} else {
-						return EditWeatherDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, item.AddjMulti);
+						return EditWeatherDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, item.AddjMulti, item.ID, item.Unit);
 					}
 				};
 
@@ -722,11 +771,15 @@ define(['app', 'livesocket'], function (app) {
 					if (permissions.hasPermission("User")) {
 						if (window.myglobals.ismobileint == false) {
 							$element.draggable({
+								helper: 'clone',
+								opacity: 0.7,
+								zIndex: 1000,
+								revert: 'invalid',
+								scrollSensitivity: 40,
+								scrollSpeed: 20,
 								drag: function () {
 									$scope.dragwidget({ idx: item.idx });
-									$element.css("z-index", 2);
-								},
-								revert: true
+								}
 							});
 							$element.droppable({
 								drop: function () {

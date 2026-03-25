@@ -1,0 +1,95 @@
+/* ── CSS weather animations (ported from CodePen QgeYEb) ── */
+
+/* Scene container — place inside a position:relative parent.
+   Use .fcw-bg to make it a full-bleed background (like a card):
+     parent: position:relative; overflow:hidden;
+     .fcw-bg:  position:absolute; inset:0; opacity:0.3; pointer-events:none; z-index:0;
+*/
+.fcw-scene { position: absolute; top: 50%; left: 50%; width: 200px; height: 200px; transform: translate(-50%, -45%) scale(0.8); }
+
+/* Rays */
+.fcw-scene .fcw-rays { background: #FEC601; position: absolute; z-index: 0; transform: rotate(20deg); animation: fcwSunRotate 10s infinite linear; }
+.fcw-scene .fcw-rays:after { content: ""; background: #FEC601; position: absolute; z-index: 0; transform: rotate(40deg); }
+/* Sun */
+.fcw-scene .fcw-sun { background: linear-gradient(#FEC601, #EA7317); border-radius: 50px; position: absolute; z-index: 1; }
+/* Cloud base */
+.fcw-scene .fcw-cloud { border-radius: 50px; position: relative; z-index: 2; }
+.fcw-scene .fcw-cloud:before { content: ""; border-radius: 50px; position: absolute; z-index: 2; }
+.fcw-scene .fcw-cloud:after  { content: ""; border-radius: 50px; position: absolute; z-index: 3; }
+/* Raindrop */
+.fcw-scene .fcw-raindrop { width: 5px; height: 5px; border-radius: 80% 0 55% 50% / 55% 0 80% 50%; border: 3px solid #0A81D1; background: #0A81D1; display: inline-block; transform: rotate(-45deg); position: relative; backface-visibility: hidden; }
+/* Snowdot */
+.fcw-snowdot { width: 9px; height: 9px; border-radius: 50%; background: #d8eeff; display: inline-block; position: relative; backface-visibility: hidden; }
+/* Star */
+.fcw-scene .fcw-star { margin: 50px 0; position: relative; display: block; width: 0; height: 0; border-left: 100px solid transparent; border-right: 100px solid transparent; border-bottom: 70px solid #ECE4B7; transform: rotate(35deg) scale(.15); }
+.fcw-scene .fcw-star:before { content: ""; border-left: 30px solid transparent; border-right: 30px solid transparent; border-bottom: 80px solid #ECE4B7; position: absolute; height: 0; width: 0; top: -45px; left: -60px; display: block; transform: rotate(-35deg); }
+.fcw-scene .fcw-star:after  { content: ""; position: absolute; display: block; top: 3px; left: -105px; width: 0; height: 0; border-right: 100px solid transparent; border-bottom: 70px solid #ECE4B7; border-left: 100px solid transparent; transform: rotate(-70deg); }
+
+/* ── Sunny ── */
+.fcw-rays-main { width: 100px; height: 100px; top: 35px; left: 25px; }
+.fcw-rays-main:after { height: 100px; width: 100px; top: 0; left: 0; }
+.fcw-sun-main  { width: 100px; height: 100px; top: 35px; left: 25px; }
+/* ── Partly Cloudy / Some Clouds ── */
+.fcw-rays-mini { width: 75px; height: 75px; top: 25px; left: 75px; }
+.fcw-rays-mini:after { height: 75px; width: 75px; top: 0; left: 0; }
+.fcw-sun-mini  { width: 75px; height: 75px; top: 25px; left: 75px; }
+.fcw-cloud-light { background: #DBE4EE; width: 75px; height: 75px; top: 40px; animation: fcwCloudFloat 5s infinite linear; }
+.fcw-cloud-light:before { background: #DBE4EE; width: 50px; height: 50px; top: 17px; left: 55px; }
+.fcw-cloud-light:after  { background: linear-gradient(#DBE4EE, #A9BBCF); width: 140px; height: 60px; top: 40px; left: -15px; }
+/* ── Cloudy ── */
+.fcw-cloud-dark-sm { background: #90A7BF; width: 75px; height: 75px; top: -10px; left: 75px; transform: scale(0.75); animation: fcwCloudFloatOpposite 5s infinite linear; }
+.fcw-cloud-dark-sm:before { background: #90A7BF; width: 50px; height: 50px; top: 17px; left: 55px; }
+.fcw-cloud-dark-sm:after  { background: linear-gradient(#90A7BF, #7792AF); width: 140px; height: 60px; top: 40px; left: -15px; }
+.fcw-cloud-lg { background: #DBE4EE; width: 75px; height: 75px; top: -50px; transform: scale(1.25); animation: fcwCloudFloat 5s infinite linear; }
+.fcw-cloud-lg:before { background: #DBE4EE; width: 50px; height: 50px; top: 17px; left: 55px; }
+.fcw-cloud-lg:after  { background: linear-gradient(#DBE4EE, #A9BBCF); width: 140px; height: 60px; top: 40px; left: -15px; }
+/* ── Rain ── */
+.fcw-rd1 { left: -72px; animation: fcwRaindrop 2s infinite linear, fcwRaindropFade 2s infinite linear; }
+.fcw-rd2 { left: -48px; animation: fcwRaindropAlt 2s infinite linear, fcwRaindropFade 2s infinite linear; }
+.fcw-rd3 { left: -24px; animation: fcwRaindrop 2s infinite linear, fcwRaindropFade 2s infinite linear; }
+.fcw-rd4 { left:   0px; animation: fcwRaindropAlt 2s infinite linear, fcwRaindropFade 2s infinite linear; }
+.fcw-cloud-rain { background: #90A7BF; width: 75px; height: 75px; top: 0; animation: fcwCloudFloat 5s infinite linear; }
+.fcw-cloud-rain:before { background: #90A7BF; width: 50px; height: 50px; top: 17px; left: 55px; }
+.fcw-cloud-rain:after  { background: linear-gradient(#90A7BF, #7792AF); width: 140px; height: 60px; top: 40px; left: -15px; }
+/* ── Heavy Rain ── */
+.fcw-rd5 { left:  24px; animation: fcwRaindrop 2s infinite linear, fcwRaindropFade 2s infinite linear; }
+.fcw-rd6 { left:  48px; animation: fcwRaindropAlt 2s infinite linear, fcwRaindropFade 2s infinite linear; }
+.fcw-rd7 { left: -96px; animation: fcwRaindrop 1.5s infinite linear, fcwRaindropFade 1.5s infinite linear; }
+.fcw-rd8 { left:  72px; animation: fcwRaindropAlt 1.5s infinite linear, fcwRaindropFade 1.5s infinite linear; }
+.fcw-cloud-heavyrain { background: #607890; width: 90px; height: 90px; top: 0; animation: fcwCloudFloat 5s infinite linear; }
+.fcw-cloud-heavyrain:before { background: #607890; width: 60px; height: 60px; top: 17px; left: 65px; }
+.fcw-cloud-heavyrain:after  { background: linear-gradient(#607890, #486070); width: 160px; height: 70px; top: 50px; left: -20px; }
+/* ── Snow ── */
+.fcw-sd1 { left: -72px; animation: fcwSnowfall 3s   0.0s infinite linear, fcwRaindropFade 3s   0.0s infinite linear; }
+.fcw-sd2 { left: -48px; animation: fcwSnowfallAlt 3.5s 0.5s infinite linear, fcwRaindropFade 3.5s 0.5s infinite linear; }
+.fcw-sd3 { left: -24px; animation: fcwSnowfall 4s   1.0s infinite linear, fcwRaindropFade 4s   1.0s infinite linear; }
+.fcw-sd4 { left:   0px; animation: fcwSnowfallAlt 3s   1.5s infinite linear, fcwRaindropFade 3s   1.5s infinite linear; }
+.fcw-cloud-snow { background: #90A7BF; width: 75px; height: 75px; top: 0; animation: fcwCloudFloat 5s infinite linear; }
+.fcw-cloud-snow:before { background: #90A7BF; width: 50px; height: 50px; top: 17px; left: 55px; }
+.fcw-cloud-snow:after  { background: linear-gradient(#90A7BF, #7792AF); width: 140px; height: 60px; top: 40px; left: -15px; }
+/* ── Heavy Snow ── */
+.fcw-sd5 { left:  24px; animation: fcwSnowfall 3.5s 0.3s infinite linear, fcwRaindropFade 3.5s 0.3s infinite linear; }
+.fcw-sd6 { left:  48px; animation: fcwSnowfallAlt 4s  0.8s infinite linear, fcwRaindropFade 4s  0.8s infinite linear; }
+.fcw-sd7 { left: -96px; animation: fcwSnowfall 3s  1.2s infinite linear, fcwRaindropFade 3s  1.2s infinite linear; }
+.fcw-sd8 { left:  72px; animation: fcwSnowfallAlt 3.5s 1.7s infinite linear, fcwRaindropFade 3.5s 1.7s infinite linear; }
+.fcw-cloud-heavysnow { background: #7090B0; width: 90px; height: 90px; top: 0; animation: fcwCloudFloat 5s infinite linear; }
+.fcw-cloud-heavysnow:before { background: #7090B0; width: 60px; height: 60px; top: 17px; left: 65px; }
+.fcw-cloud-heavysnow:after  { background: linear-gradient(#7090B0, #506080); width: 160px; height: 70px; top: 50px; left: -20px; }
+/* ── Night ── */
+.fcw-moon { width: 100px; height: 100px; top: -150px; left: 55px; border-radius: 50px; position: relative; box-shadow: 30px 15px 0 0 #ECE4B7; transform: rotate(130deg); animation: fcwMoonSwing 3s infinite linear; }
+.fcw-star1 { top: 35px;   left: -100px; animation: fcwStarFadeIn  5s infinite linear; }
+.fcw-star2 { top: -300px; left:   15px; animation: fcwStarFadeOut 6s infinite linear; }
+.fcw-star3 { top: -375px; left:   50px; animation: fcwStarFadeIn  7s infinite linear; }
+
+/* ── Keyframes ── */
+@keyframes fcwSunRotate { from { transform: rotate(0deg); } to { transform: rotate(359deg); } }
+@keyframes fcwCloudFloat { 0%,100% { left: 0; } 50% { left: 20px; } }
+@keyframes fcwCloudFloatOpposite { 0%,100% { left: 75px; transform: scale(0.75); } 50% { left: 50px; transform: scale(0.75); } }
+@keyframes fcwRaindrop    { from { top: 100px; } to { top: 175px; } }
+@keyframes fcwRaindropAlt { from { top:  75px; } to { top: 150px; } }
+@keyframes fcwRaindropFade { 75% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes fcwSnowfall    { from { top: 100px; } to { top: 185px; } }
+@keyframes fcwSnowfallAlt { from { top:  80px; } to { top: 165px; } }
+@keyframes fcwMoonSwing   { 0%,100% { transform: rotate(125deg); } 50% { transform: rotate(135deg); } }
+@keyframes fcwStarFadeIn  { 0%,100% { opacity: 0; } 50% { opacity: 1; } }
+@keyframes fcwStarFadeOut { 0%,100% { opacity: 1; } 50% { opacity: 0; } }

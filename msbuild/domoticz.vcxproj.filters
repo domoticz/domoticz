@@ -345,6 +345,9 @@
     <Filter Include="Devices\AccuWeather">
       <UniqueIdentifier>{3a086069-f89a-44b7-b3a8-19cb9b7509eb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Alexa">
+      <UniqueIdentifier>{4b8294bc-714f-458e-9a88-5e5b20672ea8}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Pushers">
       <UniqueIdentifier>{b669cde0-9cf1-43ae-a5c0-5f01851e9b45}</UniqueIdentifier>
     </Filter>
@@ -486,6 +489,9 @@
     <Filter Include="Devices\Meteorologisk">
       <UniqueIdentifier>{54d3120a-1deb-4a3c-959d-7f89f33a1fd3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\OpenMeteo">
+      <UniqueIdentifier>{a1b2c3d4-e5f6-7890-abcd-ef1234567890}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Plugin Framework">
       <UniqueIdentifier>{343e8e43-c7ac-4839-a9a2-6b5f78f95b6d}</UniqueIdentifier>
     </Filter>
@@ -509,6 +515,9 @@
     </Filter>
     <Filter Include="Devices\ZWave\ControlPanel">
       <UniqueIdentifier>{dd597942-82d6-4aaf-aba7-da17ce1f9392}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Webserver\IamService">
+      <UniqueIdentifier>{81a998bf-9440-48ed-acad-561718cb579e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1427,7 +1436,6 @@
     <None Include="..\www\app\devices\Devices.js">
       <Filter>www\app\devices</Filter>
     </None>
-    <None Include="packages.config" />
     <None Include="..\www\manifest.json">
       <Filter>www</Filter>
     </None>
@@ -1448,36 +1456,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\webserver\Base64.h">
-      <Filter>Webserver</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\connection.hpp">
-      <Filter>Webserver</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\connection_manager.hpp">
-      <Filter>Webserver</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\cWebem.h">
-      <Filter>Webserver</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\mime_types.hpp">
-      <Filter>Webserver</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\reply.hpp">
-      <Filter>Webserver</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\request.hpp">
-      <Filter>Webserver</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\request_handler.hpp">
-      <Filter>Webserver</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\request_parser.hpp">
-      <Filter>Webserver</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\server.hpp">
-      <Filter>Webserver</Filter>
-    </ClInclude>
     <ClInclude Include="..\tcpserver\TCPClient.h">
       <Filter>TCPServer</Filter>
     </ClInclude>
@@ -1511,19 +1489,7 @@
     <ClInclude Include="..\httpclient\UrlEncode.h">
       <Filter>HTTPClient</Filter>
     </ClInclude>
-    <ClInclude Include="..\webserver\header.hpp">
-      <Filter>Webserver</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\server_settings.hpp">
-      <Filter>Webserver</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\utf.hpp">
-      <Filter>Webserver</Filter>
-    </ClInclude>
     <ClInclude Include="..\main\appversion.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\Helper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\main\mainworker.h">
@@ -1545,9 +1511,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\main\stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\main\WebServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WindowsHelper.h">
@@ -1643,6 +1606,12 @@
     <ClInclude Include="..\hardware\HardwareMonitor.h">
       <Filter>Devices\HardwareMonitor</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\HardwareMonitorLHM.h">
+      <Filter>Devices\HardwareMonitor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\HardwareMonitorUnix.h">
+      <Filter>Devices\HardwareMonitor</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\WOL.h">
       <Filter>Devices\WOL</Filter>
     </ClInclude>
@@ -1692,6 +1661,9 @@
       <Filter>Devices\Philips Hue</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\PhilipsHue\PhilipsHueSensors.h">
+      <Filter>Devices\Philips Hue</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\PhilipsHue\PhilipsHueV2Sensors.h">
       <Filter>Devices\Philips Hue</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\EvohomeBase.h">
@@ -1772,6 +1744,12 @@
     <ClInclude Include="..\hardware\SolarMaxTCP.h">
       <Filter>Devices\SolarMax</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\WebServerHandleGraphInternals.h">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\WebServerHandleGraphUtils.h">
+      <Filter>Webserver</Filter>
+    </ClInclude>
     <ClInclude Include="..\main\WebServerHelper.h">
       <Filter>Webserver</Filter>
     </ClInclude>
@@ -1792,9 +1770,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\P1MeterTCP.h">
       <Filter>Devices\P1 Smart Meter</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\GZipHelper.h">
-      <Filter>Webserver</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\Kodi.h">
       <Filter>Devices\Kodi</Filter>
@@ -1876,9 +1851,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\AtagOne.h">
       <Filter>Devices\AtagOne</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\fastcgi.hpp">
-      <Filter>Webserver</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\Sterbox.h">
       <Filter>Devices\Sterbox</Filter>
@@ -2003,9 +1975,6 @@
     <ClInclude Include="..\notifications\NotificationBrowser.h">
       <Filter>Notifications</Filter>
     </ClInclude>
-    <ClInclude Include="..\webserver\Websockets.hpp">
-      <Filter>Webserver</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\eHouseTCP.h">
       <Filter>Devices\eHouse</Filter>
     </ClInclude>
@@ -2041,9 +2010,6 @@
     </ClInclude>
     <ClInclude Include="..\hardware\DenkoviDevices.h">
       <Filter>Devices\Denkovi</Filter>
-    </ClInclude>
-    <ClInclude Include="..\webserver\WebsocketHandler.h">
-      <Filter>Webserver</Filter>
     </ClInclude>
     <ClInclude Include="..\tinyxpath\xpath_processor.h">
       <Filter>XML</Filter>
@@ -2162,6 +2128,9 @@
     <ClInclude Include="..\hardware\Meteorologisk.h">
       <Filter>Devices\Meteorologisk</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\OpenMeteo.h">
+      <Filter>Devices\OpenMeteo</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\serial\impl\win.h">
       <Filter>Devices\SerialTCP\Serial\impl</Filter>
     </ClInclude>
@@ -2169,6 +2138,9 @@
       <Filter>Devices\eVehicles</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\plugins\PythonObjects.h">
+      <Filter>Plugin Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PythonPluginUtils.h">
       <Filter>Plugin Framework</Filter>
     </ClInclude>
     <ClInclude Include="..\hardware\plugins\PythonObjectEx.h">
@@ -2210,9 +2182,6 @@
     <ClInclude Include="..\hardware\VisualCrossing.h">
       <Filter>Devices\VisualCrossing</Filter>
     </ClInclude>
-    <ClInclude Include="..\iamserver\iam_settings.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\AlfenEve.h">
       <Filter>Devices\AlfenEve</Filter>
     </ClInclude>
@@ -2222,11 +2191,8 @@
     <ClInclude Include="..\hardware\MitsubishiWF.h">
       <Filter>Devices\Mitsubishi_WF_RAC</Filter>
     </ClInclude>
-    <ClInclude Include="..\main\mosquitto_helper.h">
+    <ClInclude Include="..\main\mqtt_helper.h">
       <Filter>Devices\MQTT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\hardware\CounterHelper.h">
-      <Filter>Devices</Filter>
     </ClInclude>
     <ClInclude Include="..\push\MQTTPush.h">
       <Filter>Pushers\MQTT</Filter>
@@ -2255,35 +2221,29 @@
     <ClInclude Include="..\main\KWHStats.h">
       <Filter>Helpers</Filter>
     </ClInclude>
+    <ClInclude Include="..\mcpserver\McpService.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\iamserver\iam_settings.hpp">
+      <Filter>Webserver\IamService</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\CounterHelper.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\Helper.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\DomoticzWebsocketHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\WebServer.h">
+      <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\WebServerLoggerAdapter.h">
+      <Filter>Webserver</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\webserver\Base64.cpp">
-      <Filter>Webserver</Filter>
-    </ClCompile>
-    <ClCompile Include="..\webserver\connection.cpp">
-      <Filter>Webserver</Filter>
-    </ClCompile>
-    <ClCompile Include="..\webserver\connection_manager.cpp">
-      <Filter>Webserver</Filter>
-    </ClCompile>
-    <ClCompile Include="..\webserver\cWebem.cpp">
-      <Filter>Webserver</Filter>
-    </ClCompile>
-    <ClCompile Include="..\webserver\mime_types.cpp">
-      <Filter>Webserver</Filter>
-    </ClCompile>
-    <ClCompile Include="..\webserver\reply.cpp">
-      <Filter>Webserver</Filter>
-    </ClCompile>
-    <ClCompile Include="..\webserver\request_handler.cpp">
-      <Filter>Webserver</Filter>
-    </ClCompile>
-    <ClCompile Include="..\webserver\request_parser.cpp">
-      <Filter>Webserver</Filter>
-    </ClCompile>
-    <ClCompile Include="..\webserver\server.cpp">
-      <Filter>Webserver</Filter>
-    </ClCompile>
     <ClCompile Include="..\tcpserver\TCPClient.cpp">
       <Filter>TCPServer</Filter>
     </ClCompile>
@@ -2314,9 +2274,6 @@
     <ClCompile Include="..\main\domoticz.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\main\Helper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\main\mainworker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -2330,21 +2287,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\main\stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\WebServer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\WebServerCmds.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\WebServerCommands.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\main\WebServerHandleGraph.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\iamserver\IamService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WindowsHelper.cpp">
@@ -2431,6 +2373,12 @@
     <ClCompile Include="..\hardware\HardwareMonitor.cpp">
       <Filter>Devices\HardwareMonitor</Filter>
     </ClCompile>
+    <ClCompile Include="..\hardware\HardwareMonitorLHM.cpp">
+      <Filter>Devices\HardwareMonitor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\HardwareMonitorUnix.cpp">
+      <Filter>Devices\HardwareMonitor</Filter>
+    </ClCompile>
     <ClCompile Include="..\hardware\WOL.cpp">
       <Filter>Devices\WOL</Filter>
     </ClCompile>
@@ -2480,6 +2428,9 @@
       <Filter>Devices\Philips Hue</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueSensors.cpp">
+      <Filter>Devices\Philips Hue</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueV2Sensors.cpp">
       <Filter>Devices\Philips Hue</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\EvohomeBase.cpp">
@@ -2710,9 +2661,6 @@
     <ClCompile Include="..\hardware\AtagOne.cpp">
       <Filter>Devices\AtagOne</Filter>
     </ClCompile>
-    <ClCompile Include="..\webserver\fastcgi.cpp">
-      <Filter>Webserver</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\Sterbox.cpp">
       <Filter>Devices\Sterbox</Filter>
     </ClCompile>
@@ -2833,9 +2781,6 @@
     <ClCompile Include="..\notifications\NotificationBrowser.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
-    <ClCompile Include="..\webserver\Websockets.cpp">
-      <Filter>Webserver</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\eHouseTCP.cpp">
       <Filter>Devices\eHouse</Filter>
     </ClCompile>
@@ -2869,9 +2814,6 @@
     <ClCompile Include="..\hardware\DenkoviDevices.cpp">
       <Filter>Devices\Denkovi</Filter>
     </ClCompile>
-    <ClCompile Include="..\webserver\WebsocketHandler.cpp">
-      <Filter>Webserver</Filter>
-    </ClCompile>
     <ClCompile Include="..\hardware\TTNMQTT.cpp">
       <Filter>Devices\The Things Network</Filter>
     </ClCompile>
@@ -2883,6 +2825,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\DenkoviUSBDevices.cpp">
       <Filter>Devices\Denkovi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\Alexa.cpp">
+      <Filter>Alexa</Filter>
     </ClCompile>
     <ClCompile Include="..\main\BaroForecastCalculator.cpp">
       <Filter>Helpers</Filter>
@@ -2965,6 +2910,9 @@
     <ClCompile Include="..\hardware\Meteorologisk.cpp">
       <Filter>Devices\Meteorologisk</Filter>
     </ClCompile>
+    <ClCompile Include="..\hardware\OpenMeteo.cpp">
+      <Filter>Devices\OpenMeteo</Filter>
+    </ClCompile>
     <ClCompile Include="..\hardware\eVehicles\TestcarApi.cpp">
       <Filter>Devices\eVehicles</Filter>
     </ClCompile>
@@ -3016,11 +2964,8 @@
     <ClCompile Include="..\hardware\MitsubishiWF.cpp">
       <Filter>Devices\Mitsubishi_WF_RAC</Filter>
     </ClCompile>
-    <ClCompile Include="..\main\mosquitto_helper.cpp">
+    <ClCompile Include="..\main\mqtt_helper.cpp">
       <Filter>Devices\MQTT</Filter>
-    </ClCompile>
-    <ClCompile Include="..\hardware\CounterHelper.cpp">
-      <Filter>Devices</Filter>
     </ClCompile>
     <ClCompile Include="..\push\MQTTPush.cpp">
       <Filter>Pushers\MQTT</Filter>
@@ -3045,6 +2990,54 @@
     </ClCompile>
     <ClCompile Include="..\main\KWHStats.cpp">
       <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mcpserver\McpService.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\iamserver\IamService.cpp">
+      <Filter>Webserver\IamService</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\CounterHelper.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\StoppableTask.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\Helper.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\DomoticzWebsocketHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebServer.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebServerCmds.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebServerCommands.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebServerHandleGraph.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebServerHandleGraphCustom.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebServerHandleGraphDay.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebServerHandleGraphHour.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebServerHandleGraphMonthYear.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebServerHandleGraphUtils.cpp">
+      <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebServerHandleGraphWeek.cpp">
+      <Filter>Webserver</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -32,21 +32,21 @@ namespace
 
 MQTT::MQTT()
 {
-	mosqdz::lib_init();
+	mdz::lib_init();
 	threaded_set(true);
 	m_bPreventLoop = true;
 }
 
 MQTT::MQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilenameExtra,
 	   const int TLS_Version, const int PublishScheme, const std::string &MQTTClientID, const bool PreventLoop)
-	: mosqdz::mosquittodz(MQTTClientID.c_str())
+	: mdz::mqttdz(MQTTClientID.c_str())
 	, m_szIPAddress(IPAddress)
 	, m_UserName(Username)
 	, m_Password(Password)
 	, m_CAFilename(CAfilenameExtra)
 {
 	m_HwdID = ID;
-	mosqdz::lib_init();
+	mdz::lib_init();
 
 	m_usIPPort = usIPPort;
 	m_bRetain = (PublishScheme & RETAIN_BIT);
@@ -80,7 +80,7 @@ MQTT::MQTT(const int ID, const std::string &IPAddress, const unsigned short usIP
 
 MQTT::~MQTT()
 {
-	mosqdz::lib_cleanup();
+	mdz::lib_cleanup();
 }
 
 bool MQTT::StartHardware()
@@ -119,7 +119,6 @@ bool MQTT::StopHardware()
 	StopHeartbeatThread();
 	if (m_thread)
 	{
-		RequestStop();
 		m_thread->join();
 		m_thread.reset();
 	}
@@ -191,10 +190,12 @@ void MQTT::on_connect(int rc)
 void MQTT::on_message(const struct mosquitto_message *message)
 {
 	std::string topic = message->topic;
-	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
+	std::string qMessage;
+	if (message->payload != nullptr && message->payloadlen > 0)
+		qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
 
 	Debug(DEBUG_HARDWARE, "Topic: %s, Message: %s", topic.c_str(), qMessage.c_str());
-	
+
 	if (qMessage.empty())
 		return;
 
@@ -579,6 +580,7 @@ void MQTT::on_disconnect(int rc)
 	{
 		if (!IsStopRequested(0))
 		{
+			disconnect();
 			if (rc == 5)
 			{
 				Log(LOG_ERROR, "Disconnected, Invalid Username/Password (rc=%d)", rc);
@@ -596,6 +598,12 @@ void MQTT::on_disconnect(int rc)
 //called when hardware is stopped
 void MQTT::on_going_down()
 {
+	RequestStop();
+	if (isConnected())
+	{
+		m_IsConnected = false;
+		disconnect();
+	}
 }
 
 bool MQTT::ReconnectNow()
@@ -671,80 +679,21 @@ bool MQTT::ConnectIntEx()
 
 void MQTT::Do_Work()
 {
-	bool bFirstTime = true;
-	int msec_counter = 0;
-	int sec_counter = 0;
-
 	set_callbacks();
 
-	while (!IsStopRequested(100))
+	int wait_time = 5;
+
+	while (!IsStopRequested(wait_time))
 	{
-		if (!bFirstTime)
+		if (!ConnectInt())
 		{
-			try
-			{
-				int rc = loop();
-				if (rc)
-				{
-					if (rc != MOSQ_ERR_NO_CONN)
-					{
-						if (!IsStopRequested(0))
-						{
-							if (!m_bDoReconnect)
-							{
-								reconnect();
-							}
-						}
-					}
-				}
-			}
-			catch (const std::exception &)
-			{
-				if (!IsStopRequested(0))
-				{
-					if (!m_bDoReconnect)
-					{
-						reconnect();
-					}
-				}
-			}
+			continue;
 		}
-
-		msec_counter++;
-		if (msec_counter == 10)
-		{
-			msec_counter = 0;
-
-			sec_counter++;
-
-			if (sec_counter % 12 == 0)
-			{
-				m_LastHeartbeat = mytime(nullptr);
-			}
-
-			if (bFirstTime)
-			{
-				bFirstTime = false;
-				ConnectInt();
-			}
-			else
-			{
-				if (sec_counter % 30 == 0)
-				{
-					if (m_bDoReconnect)
-						ConnectIntEx();
-				}
-				if (isConnected() && sec_counter % 10 == 0)
-				{
-					SendHeartbeat();
-				}
-			}
-		}
+		loop_forever();
+		wait_time = 30 * 1000;
 	}
-	clear_callbacks();
 
-	if (isConnected())
-		disconnect();
+	clear_callbacks();
 
 	if (m_sDeviceReceivedConnection.connected())
 		m_sDeviceReceivedConnection.disconnect();

@@ -61,6 +61,7 @@ namespace Plugins {
 
 		bool m_bIsStarting;
 		bool m_bIsStopped;
+		bool m_bShared;
 
 		void Do_Work();
 
@@ -101,6 +102,7 @@ namespace Plugins {
 	  void Stop();
 
 	  void WriteDebugBuffer(const std::vector<byte> &Buffer, bool Incoming);
+	  void LogInterpreterState(const char* context);
 
 	  bool WriteToHardware(const char *pdata, unsigned char length) override;
 	  void SendCommand(const std::string &DeviceID, int Unit, const std::string &command, int level, _tColor color);
@@ -126,6 +128,17 @@ namespace Plugins {
 	  std::string m_HomeFolder;
 	  PluginDebugMask m_bDebug;
 	  bool m_bTracing;
+
+	  // User tracking for LightingLog
+	  void SetPendingUser(const std::string& user);
+	  std::string ConsumePendingUser();
+
+	private:
+	  std::string m_PluginXML;
+	  std::string m_pending_user;
+	  time_t m_pending_user_time = 0;
+	  std::mutex m_pending_user_mutex;
+	  static constexpr int PENDING_USER_TIMEOUT_SECONDS = 120;
 	};
 
 	class CPluginNotifier : public CNotificationBase
@@ -355,6 +368,42 @@ namespace Plugins {
 		AccessPython(CPlugin* pPlugin, const char* sWhat);
 		~AccessPython();
 	};
+
+	// Copy a Python dict's entries as stringified key/value pairs into a target dict.
+	// Clears the target dict first. Returns true on success, false if OptionsIn is null/not a dict/empty or on error.
+	static bool CopyPythonDictOptions(PyObject *OptionsIn, PyObject *OptionsOut, CPlugin *pPlugin, int Unit)
+	{
+		if (!OptionsIn || !PyBorrowedRef(OptionsIn).IsDict() || PyDict_Size(OptionsIn) <= 0)
+			return false;
+
+		PyObject *pKey, *pValue;
+		Py_ssize_t pos = 0;
+		PyDict_Clear(OptionsOut);
+		while (PyDict_Next(OptionsIn, &pos, &pKey, &pValue))
+		{
+			PyNewRef	pKeyDict = PyObject_Str(pKey);
+			PyNewRef	pValueDict = PyObject_Str(pValue);
+
+			if (pKeyDict && pValueDict)
+			{
+				if (PyDict_SetItem(OptionsOut, pKeyDict, pValueDict) == -1)
+				{
+					pPlugin->Log(LOG_ERROR, "(%s) Failed to initialize Options dictionary for Hardware/Unit combination (%d:%d).",
+						pPlugin->m_Name.c_str(), pPlugin->m_HwdID, Unit);
+					return false;
+				}
+			}
+			else
+			{
+				pPlugin->Log(
+					LOG_ERROR,
+					"(%s) Failed to initialize Options dictionary for Hardware / Unit combination(%d:%d): Unable to convert to string.)",
+					pPlugin->m_Name.c_str(), pPlugin->m_HwdID, Unit);
+			}
+		}
+
+		return true;
+	}
 
 } // namespace Plugins
 

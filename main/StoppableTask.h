@@ -3,56 +3,58 @@
 #ifndef _STOPPABLETASK_BB60A0DF_BADC_4384_8978_B7403659030F
 #define _STOPPABLETASK_BB60A0DF_BADC_4384_8978_B7403659030F
 
-#include <future>
-
-//borrowed and modified from Varun (https://thispointer.com/c11-how-to-stop-or-terminate-a-thread/)
+/*
+ * StoppableTask provides a mechanism for worker threads to efficiently wait
+ * for stop requests alongside other events.
+ *
+ * Usage mode 1: Timed events only
+ *   If your thread only needs to wake at scheduled times, use IsStopRequested()
+ *   with the milliseconds until the next wakeup:
+ *
+ *     while (!IsStopRequested(5000)) {
+ *         // Do periodic work every 5 seconds
+ *     }
+ *
+ *   Note: The problem with this approach is that when real work arrives, it
+ *   doesn't get processed until the thread has finished waiting to see if it's
+ *   time to die. Use mode 2 for responsive event handling.
+ *
+ * Usage mode 2: Event-driven with select()
+ *   If your thread needs to wake promptly on I/O events, use GetStopFd() in
+ *   a select() call alongside your work file descriptors:
+ *
+ *     int stop_fd = GetStopFd();
+ *     while (true) {
+ *         fd_set rfds;
+ *         FD_ZERO(&rfds);
+ *         FD_SET(stop_fd, &rfds);
+ *         FD_SET(socket_fd, &rfds);
+ *         int maxfd = (stop_fd > socket_fd) ? stop_fd : socket_fd;
+ *
+ *         struct timeval tv = {5, 0};  // 5 second timeout
+ *         if (select(maxfd + 1, &rfds, nullptr, nullptr, &tv) > 0) {
+ *             if (FD_ISSET(stop_fd, &rfds))
+ *                 break;  // Stop requested
+ *             if (FD_ISSET(socket_fd, &rfds))
+ *                 // Handle incoming data
+ *         }
+ *         // Handle timeout for periodic work
+ *     }
+ */
 
 class StoppableTask
 {
 public:
-	template<typename R>
-	bool is_ready(std::future<R> const& f)
-	{
-		return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
-	}
-	StoppableTask() :
-		m_futureObj(m_exitSignal.get_future())
-	{
-	}
-	StoppableTask(StoppableTask &&obj) noexcept
-		: m_exitSignal(std::move(obj.m_exitSignal))
-		, m_futureObj(std::move(obj.m_futureObj))
-	{
-	}
-	StoppableTask &operator=(StoppableTask &&obj) noexcept
-	{
-		m_exitSignal = std::move(obj.m_exitSignal);
-		m_futureObj = std::move(obj.m_futureObj);
-		return *this;
-	}
-	//Checks if thread is requested to stop
-	bool IsStopRequested(const int timeMS)
-	{
-		// checks if value in future object is available
-		return (m_futureObj.wait_for(std::chrono::milliseconds(timeMS)) != std::future_status::timeout);
-	}
-	// Request the thread to stop by setting value in promise object
-	void RequestStop()
-	{
-		if (!is_ready(m_futureObj))
-			m_exitSignal.set_value();
-	}
-	void RequestStart()
-	{
-		if (is_ready(m_futureObj))
-		{
-			m_exitSignal = std::promise<void>();
-			m_futureObj = m_exitSignal.get_future();
-		}
-	}
+	StoppableTask();
+	StoppableTask(StoppableTask &&obj) noexcept;
+	StoppableTask &operator=(StoppableTask &&obj) noexcept;
+	~StoppableTask();
+	bool IsStopRequested(const int timeMS = 0);
+	void RequestStop();
+	void RequestStart();
+	int GetStopFd();
 private:
-	std::promise<void> m_exitSignal;
-	std::future<void> m_futureObj;
+	SOCKET m_stopfd[2];
 };
 
 #endif //_STOPPABLETASK_BB60A0DF_BADC_4384_8978_B7403659030F

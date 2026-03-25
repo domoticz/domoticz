@@ -20,6 +20,12 @@ class CRtl433 : public CDomoticzHardwareBase
       private:
 	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_pipe_mutex;
+#ifdef WIN32
+	FILE *m_pipe;
+#else
+	int m_pipe_fd; // read end of pipe, -1 when not open
+	int m_pid;     // child process PID, 0 when no child
+#endif
 	std::string m_cmdline;
 	std::string m_sLastLine;
 };

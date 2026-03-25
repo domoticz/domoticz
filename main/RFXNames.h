@@ -24,8 +24,9 @@ enum _eSwitchType
 	STYPE_DoorLock = 19,
 	STYPE_DoorLockInverted = 20,
 	STYPE_BlindsPercentageWithStop = 21,
+	STYPE_BlindsWithStop = 22,
 
-	STYPE_END = STYPE_BlindsPercentageWithStop + 1 //always set this to highest numer + 1
+	STYPE_END = STYPE_BlindsWithStop + 1 //always set this to highest numer + 1
 };
 
 enum _eMeterType
@@ -120,7 +121,7 @@ enum _eHardwareTypes {
 	HTYPE_System,				//23
 	HTYPE_EnOceanESP2,			//24
 	HTYPE_DarkSky,				//25
-	HTYPE_SolarEdgeTCP,			//26
+	HTYPE_FREE2USE,				//26 (Old deprecated hardware, use this enum for your next project if you want to have a free to use hardware type for your plugin)
 	HTYPE_SBFSpot,				//27
 	HTYPE_ICYTHERMOSTAT,		//28
 	HTYPE_WOL,					//29
@@ -147,7 +148,7 @@ enum _eHardwareTypes {
 	HTYPE_KMTronic433,			//50
 	HTYPE_Pinger,				//51
 	HTYPE_NEST,					//52
-	HTYPE_NOT_USED,				//53
+	HTYPE_OpenMeteo,			//53
 	HTYPE_Netatmo,				//54
 	HTYPE_Kodi,					//55
 	HTYPE_ANNATHERMOSTAT,		//56

@@ -8,11 +8,10 @@
 #include "../main/Noncopyable.h"
 #include "../main/WebServer.h"
 #include "../main/mainworker.h"
-#include "../webserver/cWebem.h"
+#include <libwebem/cWebem.h>
 #include <json/json.h>
 
 #include <boost/asio.hpp>
-#include <boost/asio/deadline_timer.hpp>
 
 #include "pinger/icmp_header.h"
 #include "pinger/ipv4_header.h"
@@ -68,11 +67,11 @@ private:
 		os << echo_request << body;
 
 		// Send the request.
-		time_sent_ = boost::posix_time::microsec_clock::universal_time();
+		time_sent_ = std::chrono::steady_clock::now();
 		socket_.send_to(request_buffer.data(), destination_);
 
 		num_replies_ = 0;
-		timer_.expires_at(time_sent_ + boost::posix_time::milliseconds(PingTimeoutms_));
+		timer_.expires_at(time_sent_ + std::chrono::milliseconds(PingTimeoutms_));
 		timer_.async_wait([this](auto err) { handle_timeout(err); });
 	}
 
@@ -83,7 +82,7 @@ private:
 			if (num_replies_ == 0)
 			{
 				m_PingState = false;
-				timer_.expires_at(time_sent_ + boost::posix_time::milliseconds(PingTimeoutms_));
+				timer_.expires_at(time_sent_ + std::chrono::milliseconds(PingTimeoutms_));
 				num_tries_++;
 				if (num_tries_ > 4)
 				{
@@ -150,14 +149,13 @@ private:
 	boost::asio::ip::icmp::resolver resolver_;
 	boost::asio::ip::icmp::endpoint destination_;
 	boost::asio::ip::icmp::socket socket_;
-	boost::asio::deadline_timer timer_;
+	boost::asio::steady_timer timer_;
 	unsigned short sequence_number_;
-	boost::posix_time::ptime time_sent_;
+	std::chrono::time_point<std::chrono::steady_clock> time_sent_;
 	boost::asio::streambuf reply_buffer_;
 };
 
-CPinger::CPinger(const int ID, const int PollIntervalsec, const int PingTimeoutms) :
-	m_iThreadsRunning(0)
+CPinger::CPinger(const int ID, const int PollIntervalsec, const int PingTimeoutms)
 {
 	m_HwdID = ID;
 	m_bSkipReceiveCheck = true;
@@ -177,8 +175,6 @@ bool CPinger::StartHardware()
 
 	m_bIsStarted = true;
 	sOnConnected(this);
-	m_iThreadsRunning = 0;
-
 	StartHeartbeatThread();
 
 	ReloadNodes();
@@ -353,18 +349,12 @@ void CPinger::Do_Ping_Worker(const PingNode &Node)
 		bPingOK = false;
 	}
 	UpdateNodeStatus(Node, bPingOK);
-	if (m_iThreadsRunning > 0) m_iThreadsRunning--;
 }
 
 void CPinger::UpdateNodeStatus(const PingNode &Node, const bool bPingOK)
 {
-	//Log(LOG_STATUS, "%s = %s", Node.Name.c_str(), (bPingOK == true) ? "OK" : "Error");
-	if (!bPingOK)
-	{
-		//Log(LOG_STATUS, "Could not ping host: %s", Node.Name.c_str());
-	}
-
 	//Find out node, and update it's status
+	std::lock_guard<std::mutex> l(m_mutex);
 	for (auto &node : m_nodes)
 	{
 		if (node.ID == Node.ID)
@@ -391,18 +381,16 @@ void CPinger::UpdateNodeStatus(const PingNode &Node, const bool bPingOK)
 
 void CPinger::DoPingHosts()
 {
-	std::lock_guard<std::mutex> l(m_mutex);
-	for (const auto &node : m_nodes)
+	std::vector<PingNode> nodes;
+	{
+		std::lock_guard<std::mutex> l(m_mutex);
+		nodes = m_nodes;
+	}
+	for (const auto &node : nodes)
 	{
 		if (IsStopRequested(0))
 			return;
-		if (m_iThreadsRunning < 1000)
-		{
-			//m_iThreadsRunning++;
-			boost::thread t([this, node] { Do_Ping_Worker(node); });
-			SetThreadName(t.native_handle(), "PingerWorker");
-			t.join();
-		}
+		Do_Ping_Worker(node);
 	}
 }
 
@@ -426,11 +414,6 @@ void CPinger::Do_Work()
 				DoPingHosts();
 			}
 		}
-	}
-	//Make sure all our background workers are stopped
-	while (m_iThreadsRunning > 0)
-	{
-		sleep_milliseconds(150);
 	}
 	Log(LOG_STATUS, "Worker stopped...");
 }

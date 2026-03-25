@@ -6,8 +6,19 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
 
         $routeProvider
             .when('/Dashboard', angularAMD.route({
-                templateUrl: 'views/dashboard.html',
-                controller: 'DashboardController'
+                templateUrl: function() {
+                    var dt = (window.myglobals && window.myglobals.DashboardType) || 0;
+                    var isMobile = window.myglobals && window.myglobals.ismobile;
+                    if (dt == 2 || isMobile) {
+                        return 'views/dashboard_mobile.html';
+                    }
+                    return 'views/dashboard_desktop.html';
+                },
+                // DashboardDesktopController handles both mobile and desktop templates.
+                // It detects mobile via window.myglobals.ismobile and applies the
+                // appropriate body classes and scope bindings for each template.
+                controllerUrl: 'dashboard/DashboardDesktopController',
+                controller: 'DashboardDesktopController'
             }))
             .when('/Devices', angularAMD.route({
                 templateUrl: 'app/devices/Devices.html',
@@ -127,6 +138,11 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
             .when('/Login', angularAMD.route({
                 templateUrl: 'views/login.html',
                 controller: 'LoginController'
+            }))
+            .when('/SetupWizard', angularAMD.route({
+                templateUrl: 'views/setup-wizard.html',
+                controller: 'SetupWizardController',
+                controllerUrl: 'app/SetupWizardController.js'
             }))
             .when('/Logout', angularAMD.route({
                 templateUrl: 'views/logout.html',

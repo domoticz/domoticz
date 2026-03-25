@@ -1,0 +1,116 @@
+name: Domoticz Release Windows
+
+concurrency:
+  group: windows-release-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - 'tools/**'
+      - '**.md'
+      - '**.txt'
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    if: github.repository == 'domoticz/domoticz'
+
+    env:
+      CONFIGURATION: Release
+      PLATFORM: x86
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.3
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1
+
+      - name: Install InnoSetup
+        shell: powershell
+        run: nuget install Tools.InnoSetup
+
+      - name: Download WindowsLibraries
+        shell: powershell
+        run: |
+          cd msbuild
+          Invoke-WebRequest `
+            -Uri "https://raw.githubusercontent.com/domoticz/win32-libraries/master/WindowsLibraries.7z" `
+            -OutFile "WindowsLibraries.7z"
+          7z x WindowsLibraries.7z | Out-Null
+          cd ..
+
+      - name: Configure libwebem build paths
+        shell: powershell
+        run: |
+          $propsContent = @"
+          <Project>
+            <ItemDefinitionGroup>
+              <ClCompile>
+                <AdditionalIncludeDirectories>${{ github.workspace }}\msbuild\Windows Libraries\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+              </ClCompile>
+            </ItemDefinitionGroup>
+          </Project>
+          "@
+          $propsContent | Out-File -FilePath "extern\libwebem\Directory.Build.props" -Encoding utf8
+
+      - name: Build Domoticz
+        shell: cmd
+        run: msbuild msbuild\domoticz.sln /m /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /verbosity:minimal
+
+      - name: Create installer and package
+        shell: cmd
+        run: |
+          copy appversion.h version_windows_x86.h
+          copy History.txt history_windows_x86.txt
+          move Tools.InnoSetup.* Tools.InnoSetup
+          Tools.InnoSetup\tools\ISCC msbuild\WindowsInstaller\DomoticzSetup.iss
+          msbuild msbuild\package.proj
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-x86
+          retention-days: 400
+          path: |
+            domoticz_windows_x86.zip
+            version_windows_x86.h
+            history_windows_x86.txt
+            History.txt
+
+      - name: Deploy to SFTP
+        if: github.ref == 'refs/heads/master'
+        shell: powershell
+        env:
+          SFTP_HOST: ${{ secrets.FTP_HOST }}
+          SFTP_USER: ${{ secrets.FTP_USER }}
+          SFTP_PASS: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          Set-Content -Path "$env:TEMP\askpass.ps1" -Value 'Write-Output $env:SFTP_PASS'
+          Set-Content -Path "$env:TEMP\askpass.bat" -Value '@powershell -ExecutionPolicy Bypass -File "%TEMP%\askpass.ps1"'
+          $env:SSH_ASKPASS = "$env:TEMP\askpass.bat"
+          $env:SSH_ASKPASS_REQUIRE = "force"
+          $files = @(
+            "domoticz_windows_x86.zip",
+            "version_windows_x86.h",
+            "history_windows_x86.txt",
+            "History.txt"
+          )
+          foreach ($file in $files) {
+            Write-Host "Uploading $file..."
+            scp -P 10222 -o StrictHostKeyChecking=no $file "$($env:SFTP_USER)@$($env:SFTP_HOST):release/"
+            if ($LASTEXITCODE -ne 0) { throw "SCP upload failed for $file" }
+          }

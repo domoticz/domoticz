@@ -249,7 +249,7 @@ void CLogitechMediaServer::UpdateNodeStatus(const LogitechMediaServerNode &Node,
 				{
 					m_notifications.CheckAndHandleNotification(node.ID, sDevName, NotificationType(nStatus), sStatus);
 					m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, node.ID, 1, int(pTypeLighting2), int(sTypeAC), 12,
-										 100, int(nStatus), sStatus.c_str());
+										 100, int(nStatus), sStatus.c_str(), sLastUpdate);
 				}
 
 				node.nStatus = nStatus;
@@ -459,6 +459,7 @@ void CLogitechMediaServer::GetPlayerInfo()
 						(model == "iPengiPod") ||			//iPeng iPhone App
 						(model == "iPengiPad") ||			//iPeng iPad App
 						(model == "squeezelite") ||			//Max2Play SqueezePlug
+						(model == "squeezeesp32") ||		//Squeezelite ESP32
 						(model == "daphile")				//Audiophile Music Server & Player OS
 						)
 					{

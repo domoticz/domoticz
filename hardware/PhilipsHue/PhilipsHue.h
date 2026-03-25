@@ -1,7 +1,9 @@
 #pragma once
 
+#include <memory>
 #include "../DomoticzHardware.h"
 #include "PhilipsHueSensors.h"
+#include "PhilipsHueV2Sensors.h" // NEW: include V2 helper
 
 namespace Json
 {
@@ -28,14 +30,16 @@ class CPhilipsHue : public CDomoticzHardwareBase
 	};
 	struct _tHueLightState
 	{
-		bool on;
-		_eHueColorMode mode;
-		int level;
-		int hue;
-		int sat;
-		int ct;
-		double x;
-		double y;
+		bool on = false;
+		_eHueColorMode mode = HLMODE_NONE;	// Indicates the color mode in which the light is working, this is the last command type it received. Values
+											// are "hs" for Hue and Saturation, "xy" for XY and "ct" for Color Temperature.
+		int level = 0;						// Brightness of the light. This is a scale from the minimum brightness the light is capable of, 1, to the maximum capable brightness, 254.
+		int hue = 0;						// Hue of the light. This is a wrapping value between 0 and 65535.
+		int sat = 0;						// Saturation of the light. 254 is the most saturated (colored) and 0 is the least saturated (white).
+		int ct = 0;							// The Mired Color temperature of the light. 2012 connected lights are capable of 153 (6500K) to 500 (2000K).
+		double x = 0;						// The x and y coordinates of a color in CIE color space.
+		double y = 0;						// The first entry is the x coordinate and the second entry is the y coordinate. Both x and y must be between 0 and 1.
+											// If the specified coordinates are not in the CIE color space, the closest color to the coordinates will be chosen.
 	};
 	struct _tHueGroup
 	{
@@ -65,6 +69,7 @@ private:
 	bool GetGroups(const Json::Value& root);
 	bool GetScenes(const Json::Value& root);
 	bool GetSensors(const Json::Value& root);
+	bool GetV2Sensors(); // NEW: v2 sensors integration
 	void InsertUpdateLamp(int NodeID, _eHueLightType LType, _tHueLightState tstate, const std::string& Name, const std::string& Options, const std::string& modelid, bool AddMissingDevice);
 	bool InsertUpdateSelectorSwitch(int NodeID, uint8_t Unitcode, uint8_t selectorLevel, const std::string& Name, uint8_t BatteryLevel);
 	void InsertUpdateSwitch(int NodeID, uint8_t Unitcode, _eSwitchType SType, bool bIsOn, const std::string& Name, uint8_t BatteryLevel);
@@ -74,6 +79,10 @@ private:
 	static void RgbFromXY(double x, double y, double bri, const std::string& modelid, uint8_t& r8, uint8_t& g8, uint8_t& b8);
 	static void RgbToXY(const std::string& bulbModel, uint8_t red, uint8_t green, uint8_t blue, double& x, double& y);
 	static bool StatesSimilar(const _tHueLightState& s1, const _tHueLightState& s2);
+
+	// Helper: generate deterministic numeric NodeID from a v2 UUID/rid
+	static int NodeIDFromRid(const std::string& rid);
+
 private:
 	int m_poll_interval;
 	bool m_add_groups;
@@ -81,11 +90,20 @@ private:
 	std::string m_IPAddress;
 	unsigned short m_Port;
 	std::string m_UserName;
+	std::string m_html_schema = "http";
 	std::shared_ptr<std::thread> m_thread;
 	std::map<int, _tHueLightState> m_lights;
 	std::map<int, _tHueGroup> m_groups;
 	std::map<std::string, _tHueScene> m_scenes;
 	std::map<int, CPHSensor> m_sensors;
 	std::map<int, std::string> m_lightModels;
+private:
+	bool m_use_v2_sensors = false;
+	std::unique_ptr<CPhilipsHueV2Sensors> m_v2sensors; // constructed when enabled
+	// v2 state caches to avoid updating Domoticz every poll when nothing changed
+	std::map<std::string, std::string> m_v2_contact_state;    // owner_rid -> last seen contact state (e.g. "contact"/"no_contact")
+	std::map<std::string, std::string> m_v2_contact_changed;  // owner_rid -> last seen changed timestamp
+	std::map<std::string, std::string> m_v2_tamper_state;     // owner_rid -> last seen tamper state
+	std::map<std::string, std::string> m_v2_tamper_changed;   // owner_rid -> last seen tamper changed timestamp
+	std::map<std::string, int> m_v2_battery_level;            // owner_rid -> last known battery level (0..100), 255=unknown/not-set
 };
-

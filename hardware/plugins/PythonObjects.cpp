@@ -18,6 +18,7 @@
 #include "PluginProtocols.h"
 #include "PluginTransports.h"
 #include <datetime.h>
+#include "PythonPluginUtils.h"
 
 namespace Plugins {
 
@@ -95,7 +96,7 @@ namespace Plugins {
 	int CImage_init(CImage *self, PyObject *args, PyObject *kwds)
 	{
 		char *szFileName = nullptr;
-		static char *kwlist[] = { "Filename", nullptr };
+		static char *kwlist[] = { "filename", nullptr };
 
 		try
 		{
@@ -123,7 +124,7 @@ namespace Plugins {
 				return 0;
 			}
 
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &szFileName))
+			if (PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "|s", kwlist, &szFileName))
 			{
 				std::string	sFileName = szFileName ? szFileName : "";
 
@@ -137,7 +138,7 @@ namespace Plugins {
 			}
 			else
 			{
-				pModState->pPlugin->Log(LOG_ERROR, "Expected: myVar = Domoticz.Image(Filename=\"MyImages.zip\")");
+				pModState->pPlugin->Log(LOG_ERROR, "Expected: myVar = Domoticz.Image(Filename=\"MyImages.zip\"). Note: Parameter names are case-insensitive.");
 				pModState->pPlugin->LogPythonException(__func__);
 			}
 		}
@@ -165,7 +166,7 @@ namespace Plugins {
 				{
 					if (self->pPlugin->m_bDebug & PDM_IMAGE)
 					{
-						_log.Log(LOG_NORM, "(%s) Creating images from file '%s'.", self->pPlugin->m_Name.c_str(), sFilename.c_str());
+						_log.Debug(DEBUG_PYTHON, "(%s) Creating images from file '%s'.", self->pPlugin->m_Name.c_str(), sFilename.c_str());
 					}
 
 					//
@@ -233,7 +234,7 @@ namespace Plugins {
 			{
 				if (self->pPlugin->m_bDebug & PDM_IMAGE)
 				{
-					_log.Log(LOG_NORM, "Deleting Image '%s'.", sName.c_str());
+					_log.Debug(DEBUG_PYTHON, "Deleting Image '%s'.", sName.c_str());
 				}
 
 				std::vector<std::vector<std::string> > result;
@@ -376,113 +377,116 @@ namespace Plugins {
 	{
 		Type = pTypeGeneral;
 
-		if (sTypeName == "Pressure")					SubType = sTypePressure;
-		else if (sTypeName == "Percentage")				SubType = sTypePercentage;
-		else if (sTypeName == "Fan")					SubType = sTypeFan;
-		else if (sTypeName == "Gas")
+		std::string sTypeNameLower = sTypeName;
+		std::transform(sTypeNameLower.begin(), sTypeNameLower.end(), sTypeNameLower.begin(), ::tolower);
+
+		if (sTypeNameLower == "pressure")					SubType = sTypePressure;
+		else if (sTypeNameLower == "percentage")			SubType = sTypePercentage;
+		else if (sTypeNameLower == "fan")					SubType = sTypeFan;
+		else if (sTypeNameLower == "gas")
 		{
 			Type = pTypeP1Gas;
 			SubType = sTypeP1Gas;
 		}
-		else if (sTypeName == "Voltage")				SubType = sTypeVoltage;
-		else if (sTypeName == "Text")					SubType = sTypeTextStatus;
-		else if (sTypeName == "Switch")
+		else if (sTypeNameLower == "voltage")				SubType = sTypeVoltage;
+		else if (sTypeNameLower == "text")					SubType = sTypeTextStatus;
+		else if (sTypeNameLower == "switch")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 		}
-		else if (sTypeName == "Alert")
+		else if (sTypeNameLower == "alert")
 		{
 			sValue = "No Alert!";
 			SubType = sTypeAlert;
 		}
-		else if (sTypeName == "Current/Ampere")
+		else if (sTypeNameLower == "current/ampere")
 		{
 			sValue = "0.0;0.0;0.0";
 			Type = pTypeCURRENT;
 			SubType = sTypeELEC1;
 		}
-		else if (sTypeName == "Sound Level")			SubType = sTypeSoundLevel;
-		else if (sTypeName == "Barometer")
+		else if (sTypeNameLower == "sound level")			SubType = sTypeSoundLevel;
+		else if (sTypeNameLower == "barometer")
 		{
 			sValue = "1021.34;0";
 			SubType = sTypeBaro;
 		}
-		else if (sTypeName == "Visibility")				SubType = sTypeVisibility;
-		else if (sTypeName == "Distance")				SubType = sTypeDistance;
-		else if (sTypeName == "Counter Incremental")	SubType = sTypeCounterIncremental;
-		else if (sTypeName == "Soil Moisture")			SubType = sTypeSoilMoisture;
-		else if (sTypeName == "Leaf Wetness")			SubType = sTypeLeafWetness;
-		else if (sTypeName == "kWh")
+		else if (sTypeNameLower == "visibility")			SubType = sTypeVisibility;
+		else if (sTypeNameLower == "distance")				SubType = sTypeDistance;
+		else if (sTypeNameLower == "counter incremental")	SubType = sTypeCounterIncremental;
+		else if (sTypeNameLower == "soil moisture")			SubType = sTypeSoilMoisture;
+		else if (sTypeNameLower == "leaf wetness")			SubType = sTypeLeafWetness;
+		else if (sTypeNameLower == "kwh")
 		{
 			sValue = "0;0.0";
 			SubType = sTypeKwh;
 		}
-		else if (sTypeName == "Current (Single)")		SubType = sTypeCurrent;
-		else if (sTypeName == "Solar Radiation")		SubType = sTypeSolarRadiation;
-		else if (sTypeName == "Temperature")
+		else if (sTypeNameLower == "current (single)")		SubType = sTypeCurrent;
+		else if (sTypeNameLower == "solar radiation")		SubType = sTypeSolarRadiation;
+		else if (sTypeNameLower == "temperature")
 		{
 			Type = pTypeTEMP;
 			SubType = sTypeTEMP5;
 		}
-		else if (sTypeName == "Humidity")
+		else if (sTypeNameLower == "humidity")
 		{
 			Type = pTypeHUM;
 			SubType = sTypeHUM1;
 		}
-		else if (sTypeName == "Temp+Hum")
+		else if (sTypeNameLower == "temp+hum")
 		{
 			sValue = "0.0;50;1";
 			Type = pTypeTEMP_HUM;
 			SubType = sTypeTH1;
 		}
-		else if (sTypeName == "Temp+Hum+Baro")
+		else if (sTypeNameLower == "temp+hum+baro")
 		{
 			sValue = "0.0;50;1;1010;1";
 			Type = pTypeTEMP_HUM_BARO;
 			SubType = sTypeTHB1;
 		}
-		else if (sTypeName == "Wind")
+		else if (sTypeNameLower == "wind")
 		{
 			sValue = "0;N;0;0;0;0";
 			Type = pTypeWIND;
 			SubType = sTypeWIND1;
 		}
-		else if (sTypeName == "Rain")
+		else if (sTypeNameLower == "rain")
 		{
 			sValue = "0;0";
 			Type = pTypeRAIN;
 			SubType = sTypeRAIN3;
 		}
-		else if (sTypeName == "UV")
+		else if (sTypeNameLower == "uv")
 		{
 			sValue = "0;0";
 			Type = pTypeUV;
 			SubType = sTypeUV1;
 		}
-		else if (sTypeName == "Air Quality")
+		else if (sTypeNameLower == "air quality")
 		{
 			Type = pTypeAirQuality;
 			SubType = sTypeVoc;
 		}
-		else if (sTypeName == "Usage")
+		else if (sTypeNameLower == "usage")
 		{
 			Type = pTypeUsage;
 			SubType = sTypeElectric;
 		}
-		else if (sTypeName == "Illumination")
+		else if (sTypeNameLower == "illumination")
 		{
 			Type = pTypeLux;
 			SubType = sTypeLux;
 		}
-		else if (sTypeName == "Waterflow")				SubType = sTypeWaterflow;
-		else if (sTypeName == "Wind+Temp+Chill")
+		else if (sTypeNameLower == "waterflow")				SubType = sTypeWaterflow;
+		else if (sTypeNameLower == "wind+temp+chill")
 		{
 			sValue = "0;N;0;0;0;0";
 			Type = pTypeWIND;
 			SubType = sTypeWIND4;
 		}
-		else if (sTypeName == "Selector Switch")
+		else if (sTypeNameLower == "selector switch")
 		{
 			if (!OptionsIn || !PyBorrowedRef(OptionsIn).IsDict()) {
 				PyDict_Clear(OptionsOut);
@@ -495,43 +499,43 @@ namespace Plugins {
 			SubType = sSwitchTypeSelector;
 			SwitchType = STYPE_Selector;
 		}
-		else if (sTypeName == "On/Off")
+		else if (sTypeNameLower == "on/off")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_OnOff;
 		}
-		else if (sTypeName == "Push On")
+		else if (sTypeNameLower == "push on")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_PushOn;
 		}
-		else if (sTypeName == "Push Off")
+		else if (sTypeNameLower == "push off")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_PushOff;
 		}
-		else if (sTypeName == "Contact")
+		else if (sTypeNameLower == "contact")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_Contact;
 		}
-		else if (sTypeName == "Dimmer")
+		else if (sTypeNameLower == "dimmer")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_Dimmer;
 		}
-		else if (sTypeName == "Motion")
+		else if (sTypeNameLower == "motion")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_Motion;
 		}
-		else if (sTypeName == "Custom")
+		else if (sTypeNameLower == "custom")
 		{
 			SubType = sTypeCustom;
 			if (!OptionsIn || !PyBorrowedRef(OptionsIn).IsDict()) {
@@ -539,43 +543,49 @@ namespace Plugins {
 				PyDict_SetItemString(OptionsOut, "Custom", PyUnicode_FromString("1"));
 			}
 		}
-		else if (sTypeName == "Security Panel")
+		else if (sTypeNameLower == "security panel")
 		{
 			Type = pTypeSecurity1;
 			SubType = sTypeDomoticzSecurity;
 		}
-		else if (sTypeName == "Set Point" || sTypeName == "Setpoint" || sTypeName == "Thermostat")
+		else if (sTypeNameLower == "set point" || sTypeNameLower == "setpoint" || sTypeNameLower == "thermostat")
 		{
 			Type = pTypeSetpoint;
 			SubType = sTypeSetpoint;
 		}
 
 		// Venetian and Blinds
-		else if (sTypeName == "Blinds")
+		else if (sTypeNameLower == "blinds")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_Blinds;
 		}
-		else if (sTypeName == "BlindsPercentage")
+		else if (sTypeNameLower == "blindswithstop")
+		{
+			Type = pTypeGeneralSwitch;
+			SubType = sSwitchGeneralSwitch;
+			SwitchType = STYPE_BlindsWithStop;
+			}
+		else if (sTypeNameLower == "blindspercentage")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_BlindsPercentage;
 		}
-		else if (sTypeName == "VenetianBlindsUS")
+		else if (sTypeNameLower == "venetianblindsus")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_VenetianBlindsUS;
 		}
-		else if (sTypeName == "VenetianBlindsEU")
+		else if (sTypeNameLower == "venetianblindseu")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
 			SwitchType = STYPE_VenetianBlindsEU;
 		}
-		else if (sTypeName == "BlindsPercentageWithStop")
+		else if (sTypeNameLower == "blindspercentagewithstop")
 		{
 			Type = pTypeGeneralSwitch;
 			SubType = sSwitchGeneralSwitch;
@@ -583,49 +593,49 @@ namespace Plugins {
 		}
 
 		// Color Switch
-		else if (sTypeName == "WW")
+		else if (sTypeNameLower == "ww")
 		{
 			Type = pTypeColorSwitch;
 			SubType = sTypeColor_RGB_W; // RGB + white, either RGB or white can be lit
 			SwitchType = 7;
 		}
-		else if (sTypeName == "RGB")
+		else if (sTypeNameLower == "rgb")
 		{
 			Type = pTypeColorSwitch;
 			SubType = sTypeColor_RGB; // RGB
 			SwitchType = 7;
 		}
-		else if (sTypeName == "White")
+		else if (sTypeNameLower == "white")
 		{
 			Type = pTypeColorSwitch;
 			SubType = sTypeColor_White; // Monochrome white
 			SwitchType = 7;
 		}
-		else if (sTypeName == "RGB_CW_WW")
+		else if (sTypeNameLower == "rgb_cw_ww")
 		{
 			Type = pTypeColorSwitch;
 			SubType = sTypeColor_RGB_CW_WW; // RGB + cold white + warm white, either RGB or white can be lit
 			SwitchType = 7;
 		}
-		else if (sTypeName == "LivCol")
+		else if (sTypeNameLower == "livcol")
 		{
 			Type = pTypeColorSwitch;
 			SubType = sTypeColor_LivCol;
 			SwitchType = 7;
 		}
-		else if (sTypeName == "RGB_W_Z")
+		else if (sTypeNameLower == "rgb_w_z")
 		{
 			Type = pTypeColorSwitch;
 			SubType = sTypeColor_RGB_W_Z; // Like RGBW, but allows combining RGB and white
 			SwitchType = 7;
 		}
-		else if (sTypeName == "RGB_CW_WW_Z")
+		else if (sTypeNameLower == "rgb_cw_ww_z")
 		{
 			Type = pTypeColorSwitch;
 			SubType = sTypeColor_RGB_CW_WW_Z; // Like RGBWW, but allows combining RGB and white
 			SwitchType = 7;
 		}
-		else if (sTypeName == "CW_WW")
+		else if (sTypeNameLower == "cw_ww")
 		{
 			Type = pTypeColorSwitch;
 			SubType = sTypeColor_CW_WW; // Cold white + Warm white
@@ -646,8 +656,9 @@ namespace Plugins {
 		PyObject *Options = nullptr;
 		int			Used = -1;
 		char *Description = nullptr;
-		static char *kwlist[] = { "Name",  "Unit",    "TypeName", "Type",     "Subtype",     "Switchtype",
-					  "Image", "Options", "Used",	  "DeviceID", "Description", nullptr };
+		// All parameter names in lowercase for case-insensitive matching
+		static char *kwlist[] = { "name",  "unit",    "typename", "type",     "subtype",     "switchtype",
+					  "image", "options", "used",	  "deviceid", "description", nullptr };
 
 		try
 		{
@@ -671,7 +682,7 @@ namespace Plugins {
 				return 0;
 			}
 
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "si|siiiiOiss", kwlist, &Name, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &DeviceID, &Description))
+			if (PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "si|siiiiOiss", kwlist, &Name, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &DeviceID, &Description))
 			{
 				self->pPlugin = pModState->pPlugin;
 				self->PluginKey = PyUnicode_FromString(pModState->pPlugin->m_PluginKey.c_str());
@@ -712,40 +723,24 @@ namespace Plugins {
 				if ((Type != -1) && Type) self->Type = Type;
 				if ((SubType != -1) && SubType) self->SubType = SubType;
 				if (SwitchType != -1) self->SwitchType = SwitchType;
-				if (Image != -1) self->Image = Image;
-				if (Used == 1) self->Used = Used;
-				if (Options && PyBorrowedRef(Options).IsDict() && PyDict_Size(Options) > 0) {
-					PyObject *pKey, *pValue;
-					Py_ssize_t pos = 0;
-					PyDict_Clear(self->Options);
-					while (PyDict_Next(Options, &pos, &pKey, &pValue))
+				// Set default sValue for device types that require non-empty initial values
+				// when created by numeric Type/SubType (bypassing maptypename)
+				if (self->Type == pTypeGeneral && self->SubType == sTypeKwh)
+				{
+					std::string currentSValue = PyUnicode_AsUTF8(self->sValue);
+					if (currentSValue.empty())
 					{
-						PyNewRef	pKeyDict = PyObject_Str(pKey);
-						PyNewRef	pValueDict = PyObject_Str(pValue);
-
-						if (pKeyDict && pValueDict)
-						{
-							if (PyDict_SetItem(self->Options, pKeyDict, pValueDict) == -1)
-							{
-								pModState->pPlugin->Log(LOG_ERROR, "(%s) Failed to initialize Options dictionary for Hardware/Unit combination (%d:%d).",
-									pModState->pPlugin->m_Name.c_str(), pModState->pPlugin->m_HwdID, self->Unit);
-								break;
-							}
-						}
-						else
-						{
-							PyNewRef	pName = PyObject_GetAttrString((PyObject*)pValue->ob_type, "__name__");
-							pModState->pPlugin->Log(
-								LOG_ERROR,
-								"(%s) Failed to initialize Options dictionary for Hardware / Unit combination(%d:%d): Unable to convert to string.)",
-								pModState->pPlugin->m_Name.c_str(), pModState->pPlugin->m_HwdID, self->Unit);
-						}
+						Py_DECREF(self->sValue);
+						self->sValue = PyUnicode_FromString("0;0.0");
 					}
 				}
+				if (Image != -1) self->Image = Image;
+				if (Used == 1) self->Used = Used;
+				CopyPythonDictOptions(Options, self->Options, pModState->pPlugin, self->Unit);
 			}
 			else
 			{
-				pModState->pPlugin->Log(LOG_ERROR, R"(Expected: myVar = Domoticz.Device(Name="myDevice", Unit=0, TypeName="", Type=0, Subtype=0, Switchtype=0, Image=0, Options={}, Used=1))");
+				pModState->pPlugin->Log(LOG_ERROR, R"(Expected: myVar = Domoticz.Device(Name="myDevice", Unit=0, TypeName="", Type=0, SubType=0, SwitchType=0, Image=0, Options={}, Used=1). Note: Parameter names are case-insensitive.)");
 				pModState->pPlugin->LogPythonException(__func__);
 			}
 		}
@@ -843,7 +838,7 @@ namespace Plugins {
 			{
 				if (self->pPlugin->m_bDebug & PDM_DEVICE)
 				{
-					self->pPlugin->Log(LOG_NORM, "Creating device '%s'.", sName.c_str());
+					self->pPlugin->Debug(DEBUG_PYTHON, "Creating device '%s'.", sName.c_str());
 				}
 
 				if (!m_sql.m_bAcceptNewHardware)
@@ -964,15 +959,16 @@ namespace Plugins {
 			std::string	sName = PyUnicode_AsUTF8(self->Name);
 			std::string	sDeviceID = PyUnicode_AsUTF8(self->DeviceID);
 			std::string	sDescription = PyUnicode_AsUTF8(self->Description);
+			// All parameter names in lowercase for case-insensitive matching
 			static char *kwlist[]
-				= { "nValue", "sValue",		  "Image", "SignalLevel", "BatteryLevel", "Options", "TimedOut",
-				    "Name",   "TypeName",	  "Type",  "Subtype",	  "Switchtype",	  "Used",    "Description",
-				    "Color",  "SuppressTriggers", nullptr };
+				= { "nvalue", "svalue",		  "image", "signallevel", "batterylevel", "options", "timedout",
+				    "name",   "typename",	  "type",  "subtype",	  "switchtype",	  "used",    "description",
+				    "color",  "suppresstriggers", nullptr };
 
 			// Try to extract parameters needed to update device settings
-			if (!PyArg_ParseTupleAndKeywords(args, kwds,   "is|iiiOissiiiissp", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iUsed, &Description, &Color, &SuppressTriggers))
+			if (!PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "is|iiiOissiiiissp", kwlist, &nValue, &sValue, &iImage, &iSignalLevel, &iBatteryLevel, &pOptionsDict, &iTimedOut, &Name, &TypeName, &iType, &iSubType, &iSwitchType, &iUsed, &Description, &Color, &SuppressTriggers))
 			{
-				self->pPlugin->Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'Image', 'SignalLevel', 'BatteryLevel', 'Options', 'TimedOut', 'Name', 'TypeName', 'Type', 'Subtype', 'Switchtype', 'Used', 'Description', 'Color' or 'SuppressTriggers' expected.", __func__, sName.c_str());
+				self->pPlugin->Log(LOG_ERROR, "(%s) %s: Failed to parse parameters: 'nValue', 'sValue', 'Image', 'SignalLevel', 'BatteryLevel', 'Options', 'TimedOut', 'Name', 'TypeName', 'Type', 'SubType', 'SwitchType', 'Used', 'Description', 'Color' or 'SuppressTriggers' expected. Note: Parameter names are case-insensitive.", __func__, sName.c_str());
 				self->pPlugin->LogPythonException(__func__);
 				Py_RETURN_NONE;
 			}
@@ -985,15 +981,20 @@ namespace Plugins {
 				self->TimedOut = iTimedOut;
 			}
 
+			// Always consume pending_user to prevent leaking to later updates
+			std::string effectiveUser = self->pPlugin->ConsumePendingUser();
+			if (effectiveUser.empty())
+				effectiveUser = self->pPlugin->m_Name;
+
 			// Suppress Triggers updates non-key fields only (specifically NOT nValue or sValue)
 			if (!SuppressTriggers)
 			{
 				if (self->pPlugin->m_bDebug & PDM_DEVICE)
 				{
-					_log.Log(LOG_NORM, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
+					_log.Debug(DEBUG_PYTHON, "(%s) Updating device from %d:'%s' to have values %d:'%s'.", sName.c_str(), self->nValue, PyUnicode_AsUTF8(self->sValue), nValue, sValue);
 				}
 				Py_BEGIN_ALLOW_THREADS
-				DevRowIdx = m_sql.UpdateValue(self->HwdID, 0, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)iType, (const unsigned char)iSubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName, true);
+				DevRowIdx = m_sql.UpdateValue(self->HwdID, 0, sDeviceID.c_str(), (const unsigned char)self->Unit, (const unsigned char)iType, (const unsigned char)iSubType, iSignalLevel, iBatteryLevel, nValue, sValue, sName, true, effectiveUser.c_str());
 				Py_END_ALLOW_THREADS
 				// if this is an internal Security Panel then there are some extra updates required if state has changed
 				if ((self->Type == pTypeSecurity1) && (self->SubType == sTypeDomoticzSecurity) && (self->nValue != nValue))
@@ -1192,7 +1193,7 @@ namespace Plugins {
 			{
 				if (self->pPlugin->m_bDebug & PDM_DEVICE)
 				{
-					self->pPlugin->Log(LOG_NORM, "Deleting device '%s'.", sName.c_str());
+					self->pPlugin->Debug(DEBUG_PYTHON, "Deleting device '%s'.", sName.c_str());
 				}
 
 				std::vector<std::vector<std::string> > result;
@@ -1258,7 +1259,7 @@ namespace Plugins {
 		}
 		if (pPlugin && (pPlugin->m_bDebug & PDM_CONNECTION))
 		{
-			pPlugin->Log(LOG_NORM, "Deallocating connection object '%s' (%s:%s).", PyUnicode_AsUTF8(self->Name), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
+			pPlugin->Debug(DEBUG_PYTHON, "Deallocating connection object '%s' (%s:%s).", PyUnicode_AsUTF8(self->Name), PyUnicode_AsUTF8(self->Address), PyUnicode_AsUTF8(self->Port));
 		}
 
 		Py_XDECREF(self->Name);
@@ -1364,11 +1365,11 @@ namespace Plugins {
 		char *pAddress = nullptr;
 		char *pPort = nullptr;
 		int			iBaud = -1;
-		static char *kwlist[] = { "Name", "Transport", "Protocol", "Address", "Port", "Baud", nullptr };
+		static char *kwlist[] = { "name", "transport", "protocol", "address", "port", "baud", nullptr };
 
 		try
 		{
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "ss|sssi", kwlist, &pName, &pTransport, &pProtocol, &pAddress, &pPort, &iBaud))
+				if (PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "ss|sssi", kwlist, &pName, &pTransport, &pProtocol, &pAddress, &pPort, &iBaud))
 			{
 				if (pName) {
 					Py_XDECREF(self->Name);
@@ -1397,7 +1398,7 @@ namespace Plugins {
 			else
 			{
 				_log.Log(LOG_ERROR,
-					 R"(Expected: myVar = Domoticz.Connection(Name="<Name>", Transport="<Transport>", Protocol="<Protocol>", Address="<IP-Address>", Port="<Port>", Baud=0))");
+					 R"(Expected: myVar = Domoticz.Connection(Name="<Name>", Transport="<Transport>", Protocol="<Protocol>", Address="<IP-Address>", Port="<Port>", Baud=0). Note: Parameter names are case-insensitive.)");
 			}
 		}
 		catch (std::exception *e)
@@ -1428,7 +1429,7 @@ namespace Plugins {
 		//	Add connect command to message queue unless already connected
 		if (pPlugin->IsStopRequested(0))
 		{
-			pPlugin->Log(LOG_NORM, "%s, connect request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
+			pPlugin->Debug(DEBUG_PYTHON, "%s, connect request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
 			Py_RETURN_NONE;
 		}
 
@@ -1446,8 +1447,8 @@ namespace Plugins {
 
 		PyObject *pTarget = NULL;
 		int iTimeout = 0;
-		static char *kwlist[] = { "Target", "Timeout", NULL };
-		if (PyArg_ParseTupleAndKeywords(args, kwds, "|OI", kwlist, &pTarget, &iTimeout))
+		static char *kwlist[] = { "target", "timeout", NULL };
+		if (PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "|OI", kwlist, &pTarget, &iTimeout))
 		{
 			if (pTarget)
 			{
@@ -1493,7 +1494,7 @@ namespace Plugins {
 		//	Add connect command to message queue unless already connected
 		if (pPlugin->IsStopRequested(0))
 		{
-			pPlugin->Log(LOG_NORM, "%s, listen request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
+			pPlugin->Debug(DEBUG_PYTHON, "%s, listen request from '%s' ignored. Plugin is stopping.", __func__, self->pPlugin->m_Name.c_str());
 			Py_RETURN_NONE;
 		}
 
@@ -1510,8 +1511,8 @@ namespace Plugins {
 		}
 
 		PyObject *pTarget = NULL;
-		static char *kwlist[] = { "Target", NULL };
-		if (PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &pTarget))
+		static char *kwlist[] = { "target", NULL };
+		if (PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "|O", kwlist, &pTarget))
 		{
 			if (pTarget)
 			{
@@ -1541,14 +1542,14 @@ namespace Plugins {
 		
 		if (pPlugin->IsStopRequested(0))
 		{
-			pPlugin->Log(LOG_NORM, "%s, send request from '%s' ignored. Plugin is stopping.", __func__, pPlugin->m_Name.c_str());
+			pPlugin->Debug(DEBUG_PYTHON, "%s, send request from '%s' ignored. Plugin is stopping.", __func__, pPlugin->m_Name.c_str());
 		}
 		else
 		{
 			PyObject *pData = nullptr;
 			int			iDelay = 0;
-			static char *kwlist[] = { "Message", "Delay", nullptr };
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|i", kwlist, &pData, &iDelay))
+			static char *kwlist[] = { "message", "delay", nullptr };
+			if (!PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "O|i", kwlist, &pData, &iDelay))
 			{
 				pPlugin->Log(LOG_ERROR, "(%s) failed to parse parameters, Message or Message, Delay expected.", pPlugin->m_Name.c_str());
 				pPlugin->LogPythonException(__func__);

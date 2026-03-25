@@ -2,8 +2,8 @@
 	<div class="page-header-small page-header-with-button">
 		<h1><span data-i18n="Log">Log</span>: {{ ::vm.pageName }}</h1>
         <div>
-            <a class="btnstyle3" back-button><i class="fa fa-reply" title="Back"></i> {{ ::'Back' | translate }}</a>
-            <a class="btnstyle3" ng-if="::vm.isReportAvailable()" ng-href="#/Devices/{{ ::vm.deviceIdx }}/Report">{{ ::'Report' | translate }} <i class="fa fa-arrow-right" title="Report"></i></a>
+            <a class="btnstyle3" back-button><i class="fa fa-reply" title="Back"></i>&nbsp;<span data-i18n="Back"></span></a>
+            <a class="btnstyle3" ng-if="::vm.isReportAvailable()" ng-href="#/Devices/{{ ::vm.deviceIdx }}/Report"><span data-i18n="Report"></span>&nbsp;<i class="fa fa-share" title="Report"></i></a>
         </div>
 	</div>
 
@@ -17,6 +17,12 @@
     <device-setpoint-log ng-if="::vm.isSetpointLog()" device="::vm.device"></device-setpoint-log>
     <device-graph-log ng-if="::vm.isGraphLog()" device="::vm.device"></device-graph-log>
     <device-rain-log ng-if="::vm.isRainLog()" device="::vm.device"></device-rain-log>
+	<device-airquality-log ng-if="::vm.isAirQualityLog()" device="::vm.device"></device-airquality-log>
+	<device-barometer-log ng-if="::vm.isBarometerLog()" device="::vm.device"></device-barometer-log>
+	<device-wind-log ng-if="::vm.isWindLog()" device="::vm.device"></device-wind-log>
+	<device-uv-log ng-if="::vm.isUvLog()" device="::vm.device"></device-uv-log>
+	<device-fan-log ng-if="::vm.isFanLog()" device="::vm.device"></device-fan-log>
+	<device-current-log ng-if="::vm.isCurrentLog()" device="::vm.device"></device-current-log>
     <device-counter-log ng-if="::vm.isInstantAndCounterLog()" device="::vm.device" subtype="'instantAndCounter'"></device-counter-log>
     <device-counter-log ng-if="::vm.isP1EnergyLog()" device="::vm.device" subtype="'p1Energy'"></device-counter-log>
     <device-counter-log ng-if="::vm.isCounterLog() && vm.isEnergyUsedDevice()" device="::vm.device" subtype="'energy-used'"></device-counter-log>

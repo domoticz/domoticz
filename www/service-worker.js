@@ -1,69 +1,108 @@
 // #BuildHash //forces a cache refresh on every new build
 
-const CACHE_NAME = 'offline';
-// Customize this with a different URL if needed.
-const OFFLINE_URL = 'views/offline.html';
+importScripts('js/workbox/workbox-sw.js');
 
-self.addEventListener('install', (event) => {
-  event.waitUntil((async () => {
-    const cache = await caches.open(CACHE_NAME);
-    // Setting {cache: 'reload'} in the new request will ensure that the response
-    // isn't fulfilled from the HTTP cache; i.e., it will be from the network.
-    await cache.add(new Request(OFFLINE_URL, {cache: 'reload'}));
-  })());
-});
+workbox.setConfig({ modulePathPrefix: 'js/workbox/' });
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil((async () => {
-    // Enable navigation preload if it's supported.
-    // See https://developers.google.com/web/updates/2017/02/navigation-preload
-    if ('navigationPreload' in self.registration) {
-      await self.registration.navigationPreload.enable();
-    }
-  })());
-
-  // Tell the active service worker to take control of the page immediately.
-  self.clients.claim();
-});
-
-self.addEventListener('fetch', (event) => {
-  // We only want to call event.respondWith() if this is a navigation request
-  // for an HTML page.
-  if (event.request.mode === 'navigate') {
-    event.respondWith((async () => {
-      try {
-        // First, try to use the navigation preload response if it's supported.
-        const preloadResponse = await event.preloadResponse;
-        if (preloadResponse) {
-          return preloadResponse;
-        }
-
-        const networkResponse = await fetch(event.request);
-        return networkResponse;
-      } catch (error) {
-        // catch is only triggered if an exception is thrown, which is likely
-        // due to a network error.
-        // If fetch() returns a valid HTTP response with a response code in
-        // the 4xx or 5xx range, the catch() will NOT be called.
-        console.log('Fetch failed; returning offline page instead.', error);
-
-        const cache = await caches.open(CACHE_NAME);
-        const cachedResponse = await cache.match(OFFLINE_URL);
-        return cachedResponse;
-      }
-    })());
-  }
-});
-
-self.importScripts('js/sw-toolbox.js');
-
-// Turn on debug logging, visible in the Developer Tools' console.
-self.toolbox.options.debug = true;
-
-self.toolbox.precache([
-  'css/images/img01.jpg'
+// ─── Precache ───
+// Offline fallback page (self-contained HTML)
+workbox.precaching.precacheAndRoute([
+  { url: 'views/offline-standalone.html', revision: null },
+  { url: 'views/offline.html', revision: null },
+  { url: 'app/OfflineController.js', revision: null },
+  { url: 'images/logo/57.png', revision: null },
+  { url: 'css/images/img01.jpg', revision: null },
 ]);
-self.toolbox.router.get('/*', toolbox.networkFirst);
-self.toolbox.router.get('/json.htm', toolbox.networkOnly);
-self.toolbox.router.get('/index.html', toolbox.networkOnly);
-self.toolbox.router.get('/ozwcp/cp.html', toolbox.networkOnly);
+// revision: null is fine because #BuildHash changes the SW on every build,
+// which triggers a full precache update
+
+// ─── API: Always network, never cache ───
+workbox.routing.registerRoute(
+  ({ url }) => url.pathname === '/json.htm',
+  new workbox.strategies.NetworkOnly()
+);
+
+// ─── WebSocket/live endpoints: Network only ───
+workbox.routing.registerRoute(
+  ({ url }) => url.pathname === '/ozwcp/cp.html',
+  new workbox.strategies.NetworkOnly()
+);
+
+// ─── HTML pages (index.html, SPA navigation): Network first ───
+// Falls back to cache if offline, ultimate fallback to offline.html
+workbox.routing.registerRoute(
+  ({ request }) => request.mode === 'navigate',
+  new workbox.strategies.NetworkFirst({
+    cacheName: 'pages',
+    plugins: [
+      new workbox.expiration.ExpirationPlugin({ maxEntries: 50 }),
+    ],
+  })
+);
+
+// ─── Static JS & CSS: StaleWhileRevalidate ───
+// Serve from cache instantly, update in background.
+// Safe because #BuildHash forces SW update on new builds,
+// and these files have stable URLs with no content hashing.
+workbox.routing.registerRoute(
+  ({ request }) => request.destination === 'script' || request.destination === 'style',
+  new workbox.strategies.StaleWhileRevalidate({
+    cacheName: 'static-assets',
+    plugins: [
+      new workbox.cacheableResponse.CacheableResponsePlugin({ statuses: [200] }),
+      new workbox.expiration.ExpirationPlugin({ maxEntries: 200 }),
+    ],
+  })
+);
+
+// ─── Images: StaleWhileRevalidate ───
+// Serve cached image instantly, refresh in background.
+// Users can upload custom device icons that replace existing URLs,
+// so CacheFirst would serve stale images indefinitely.
+workbox.routing.registerRoute(
+  ({ request }) => request.destination === 'image',
+  new workbox.strategies.StaleWhileRevalidate({
+    cacheName: 'images',
+    plugins: [
+      new workbox.cacheableResponse.CacheableResponsePlugin({ statuses: [200] }),
+      new workbox.expiration.ExpirationPlugin({
+        maxEntries: 500,
+        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+      }),
+    ],
+  })
+);
+
+// ─── Fonts: Cache first with long TTL ───
+workbox.routing.registerRoute(
+  ({ request }) => request.destination === 'font',
+  new workbox.strategies.CacheFirst({
+    cacheName: 'fonts',
+    plugins: [
+      new workbox.cacheableResponse.CacheableResponsePlugin({ statuses: [200] }),
+      new workbox.expiration.ExpirationPlugin({
+        maxEntries: 30,
+        maxAgeSeconds: 365 * 24 * 60 * 60, // 1 year
+      }),
+    ],
+  })
+);
+
+// ─── i18n locale files: StaleWhileRevalidate ───
+workbox.routing.registerRoute(
+  ({ url }) => url.pathname.startsWith('/i18n/'),
+  new workbox.strategies.StaleWhileRevalidate({
+    cacheName: 'i18n',
+    plugins: [
+      new workbox.expiration.ExpirationPlugin({ maxEntries: 40 }),
+    ],
+  })
+);
+
+// ─── Offline navigation fallback ───
+workbox.routing.setCatchHandler(async ({ event }) => {
+  if (event.request.mode === 'navigate') {
+    return caches.match(workbox.precaching.getCacheKeyForURL('views/offline-standalone.html'));
+  }
+  return Response.error();
+});

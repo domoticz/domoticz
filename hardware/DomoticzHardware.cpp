@@ -70,15 +70,14 @@ void CDomoticzHardwareBase::EnableOutputLog(const bool bEnableLog)
 
 void CDomoticzHardwareBase::StartHeartbeatThread()
 {
-	StartHeartbeatThread("Domoticz_HBWork");
+	StartHeartbeatThread(std::string("Domoticz_" + m_Name + "_HBWork").c_str());
 }
 
-void CDomoticzHardwareBase::StartHeartbeatThread(const char* ThreadName)
+void CDomoticzHardwareBase::StartHeartbeatThread(const std::string& szThreadName)
 {
 	m_Heartbeatthread = std::make_shared<std::thread>([this] { Do_Heartbeat_Work(); });
-	SetThreadName(m_Heartbeatthread->native_handle(), ThreadName);
+	SetThreadName(m_Heartbeatthread->native_handle(), szThreadName.c_str());
 }
-
 
 void CDomoticzHardwareBase::StopHeartbeatThread()
 {
@@ -94,19 +93,9 @@ void CDomoticzHardwareBase::StopHeartbeatThread()
 
 void CDomoticzHardwareBase::Do_Heartbeat_Work()
 {
-	int secCounter = 0;
-	int hbCounter = 0;
-	while (!IsStopRequested(200))
+	while (!IsStopRequested(12 * 1000))
 	{
-		secCounter++;
-		if (secCounter == 5)
-		{
-			secCounter = 0;
-			hbCounter++;
-			if (hbCounter % 12 == 0) {
-				mytime(&m_LastHeartbeat);
-			}
-		}
+		mytime(&m_LastHeartbeat);
 	}
 }
 
@@ -1168,7 +1157,7 @@ int CDomoticzHardwareBase::MigrateSelectorSwitch(const int NodeID, const uint8_t
  *
  * @param  {int} NodeID              : As normal, device ID
  * @param  {uint8_t} ChildID         : As normal, device unit code
- * @param  {_eSwitchType} switchtype : Blind switch type (STYPE_Blinds, STYPE_BlindsPercentage, STYPE_VenetianBlindsUS, STYPE_VenetianBlindsEU or STYPE_BlindsPercentageWithStop)
+ * @param  {_eSwitchType} switchtype : Blind switch type (STYPE_Blinds, STYPE_BlindsPercentage, STYPE_VenetianBlindsUS, STYPE_VenetianBlindsEU or STYPE_BlindsPercentageWithStop, or STYPE_BlindsWithStop)
  * @param  {bool} bDeviceUsed        : true : device appeard on switches screen
  * @param  {bool} bReversePosition   : true : reverse slider position
  * @param  {bool} bReverseState      : true : reverse Open/Closed state
@@ -1181,7 +1170,14 @@ int CDomoticzHardwareBase::MigrateSelectorSwitch(const int NodeID, const uint8_t
  */
 void CDomoticzHardwareBase::CreateBlindSwitch(int NodeID, uint8_t ChildID, _eSwitchType switchtype, bool bDeviceUsed, bool bReversePosition, bool bReverseState, uint8_t cmnd, uint8_t level, const std::string &defaultName, const std::string &userName, int32_t batteryLevel, uint8_t rssiLevel)
 {
-	if (switchtype != STYPE_Blinds && switchtype != STYPE_BlindsPercentage && switchtype != STYPE_VenetianBlindsUS && switchtype != STYPE_VenetianBlindsEU && switchtype != STYPE_BlindsPercentageWithStop)
+	if (
+		switchtype != STYPE_Blinds
+		&& switchtype != STYPE_BlindsWithStop
+		&& switchtype != STYPE_BlindsPercentage
+		&& switchtype != STYPE_VenetianBlindsUS
+		&& switchtype != STYPE_VenetianBlindsEU
+		&& switchtype != STYPE_BlindsPercentageWithStop
+		)
 	{
 	   Log(LOG_ERROR, "Node %08X (%s), invalid switch type %u", NodeID, defaultName.c_str(), uint32_t(switchtype));
 	   return;

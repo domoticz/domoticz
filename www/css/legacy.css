@@ -54,6 +54,34 @@
 	border: 1px solid #ff0000 !important;
 }
 
+body table#itemtable,
+body table#itemtable tbody {
+	display: block;
+	width: 100%;
+}
+
+body table#itemtable tbody tr {
+	display: block;
+	width: 98%;
+	padding: 5px 5px 5px 5px;
+	margin: 2px 100% 5px 0;
+	border-style: none;
+	border-radius: 5px;
+	color: #0D161F;
+	background-color: #F1F5FA;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+body table#itemtable thead {
+	display: none;
+}
+
+body table#itemtable tr > * {
+	display: block;
+	padding: 0;
+	margin: 0;
+}
+
 /* I am using the :first-child as a way to style each column by itself*/
 /* First column */
 body table#itemtable tr td:first-child {
@@ -105,10 +133,6 @@ body table#itemtable tr td:first-child {
 					font-size: 80%;
 				}
 
-					body table#itemtable tr td:first-child + td + td + td + td:before {
-						content: "Last Seen: ";
-						font-style: italic;
-					}
 
 					/* Sixth column */
 					body table#itemtable tr td:first-child + td + td + td + td + td {
@@ -220,10 +244,6 @@ body table#itemtablenotype tr td:first-child {
 					font-size: 80%;
 				}
 
-					body table#itemtablenotype tr td:first-child + td + td + td + td:before {
-						content: "Last Seen: ";
-						font-style: italic;
-					}
 
 					/* Sixth column (bottom text)*/
 					body table#itemtablenotype tr td:first-child + td + td + td + td + td {
@@ -331,10 +351,6 @@ body table#itemtablenostatus tr td:first-child {
 					font-size: 80%;
 				}
 
-					body table#itemtablenostatus tr td:first-child + td + td + td + td:before {
-						content: "Last Seen: ";
-						font-style: italic;
-					}
 
 					/* Sixth column */
 					body table#itemtablenostatus tr td:first-child + td + td + td + td + td {
@@ -456,10 +472,6 @@ body table#itemtablesmall tr td:first-child {
 					line-height: 86%;
 				}
 
-					body table#itemtablesmall tr td:first-child + td + td + td + td:before {
-						content: "Last Seen: ";
-						font-style: italic;
-					}
 
 /* Hover state*/
 body table#itemtablesmall tbody tr:hover {
@@ -563,10 +575,6 @@ body table#itemtabledoubleicon tr td:first-child {
 						font-size: 80%;
 					}
 
-						body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td:before {
-							content: "Last Seen: ";
-							font-style: italic;
-						}
 
 						/* Seventh column */
 						body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td {
@@ -700,10 +708,6 @@ body table#itemtabletrippleicon tr td:first-child {
 							font-size: 80%;
 						}
 
-							body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td:before {
-								content: "Last Seen: ";
-								font-style: italic;
-							}
 
 							/* Eighth column */
 							body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td + td {
@@ -834,10 +838,6 @@ body table#itemtablesmalldoubleicon tr td:first-child {
 						line-height: 86%;
 					}
 
-						body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td + td:before {
-							content: "Last Seen: ";
-							font-style: italic;
-						}
 
 /* Hover state*/
 body table#itemtablesmalldoubleicon tbody tr:hover {
@@ -961,10 +961,6 @@ body table#itemtablesmalltrippleicon tr td:first-child {
 							line-height: 86%;
 						}
 
-							body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td + td + td:before {
-								content: "Last Seen: ";
-								font-style: italic;
-							}
 
 /* Hover state*/
 body table#itemtablesmalltrippleicon tbody tr:hover {
@@ -1013,6 +1009,13 @@ div.item.statusEvoSetPoint16 td#name{
 }
 div.item.statusEvoSetPointMin td#name{
     background-color:#6ca5fd;
+}
+
+/* Widget directive elements - ensure they don't break grid layout */
+dz-light-widget,
+dz-scene-widget,
+dz-utility-widget {
+	display: contents;
 }
 
 .selectorlevels {

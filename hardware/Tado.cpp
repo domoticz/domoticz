@@ -19,7 +19,7 @@
 #include "../httpclient/UrlEncode.h"
 #include "../main/mainworker.h"
 #include "../main/json_helper.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #include "Tado.h"
 
 #define TADO_CLIENT_ID "1bb50063-6b0c-4d11-bd99-387f4a91cc46"
@@ -38,8 +38,6 @@
 #define TADO_API_GET_TOKEN "https://login.tado.com/oauth2/token"
 
 #define TADO_POLL_LOGIN_INTERVAL 10
-#define TADO_TOKEN_MAXLOOPS 12		// Default token validity is 600 seconds before it needs to be refreshed.
-									// Each cycle takes 30-35 seconds, so let's stay a bit on the safe side.
 
 CTado::CTado(const int ID, const int PollInterval)
 {
@@ -52,7 +50,9 @@ CTado::CTado(const int ID, const int PollInterval)
 		m_szRefreshToken = result[0][0];
 	}
 	if ((PollInterval > 10) && (PollInterval < 3600))
+	{
 		m_iPollInterval = PollInterval;
+	}
 }
 
 bool CTado::StartHardware()
@@ -200,6 +200,24 @@ void CTado::SetSetpoint(const int id2, const int id3, const int id4, const float
 	CreateOverlay(_idx, temp, true, "TADO_MODE");
 }
 
+// Check for refresh of Access token
+bool CTado::RefreshAccessToken()
+{
+	//set token expire time in epoch - pollinterval - 10 secs
+	//Also check if the m_token_expire_time is in the future, otherwise the poll interval is to big.
+
+	m_token_expire_time = time(nullptr) + (m_iTokenExpiresIn) - m_iPollInterval - 10;
+	if (m_token_expire_time <= time(nullptr))
+	{
+		//Token refresh time is in the past, most  likely pollinterval is too big
+		//Log error and exit
+		Log(LOG_ERROR, "Pollinterval (%d sec) > token expire time.", m_iPollInterval);
+		return false;
+	}
+
+	return true;
+}
+
 // Requests a new Access token
 bool CTado::GetAccessToken()
 {
@@ -228,6 +246,11 @@ bool CTado::GetAccessToken()
 	{
 		Log(LOG_ERROR, "Failed to get a Refresh Token");
 		return false;
+	}
+	else
+	{
+		//Mainly for debug reasons
+		Log(LOG_NORM, "Access Token refreshed.");
 	}
 
 	Json::Value root;
@@ -260,7 +283,12 @@ bool CTado::GetAccessToken()
 
 	m_szAccessToken = root["access_token"].asString();
 	m_szRefreshToken = root["refresh_token"].asString();
-
+	//If we got a new token, we can safely expect we also got an expire time
+	m_iTokenExpiresIn = std::stoi(root["expires_in"].asString());
+	
+	if (!RefreshAccessToken())
+	   return false;
+	
 	//Store refresh_token
 	m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID==%d)", m_szRefreshToken.c_str(), m_HwdID);
 
@@ -599,6 +627,11 @@ bool CTado::Do_Login_Work()
 
 			m_szAccessToken = root["access_token"].asString();
 			m_szRefreshToken = root["refresh_token"].asString();
+			//If we got a new token, we can safely expect we also got an expire time
+			m_iTokenExpiresIn = std::stoi(root["expires_in"].asString());
+
+			if (!RefreshAccessToken())
+                 return false;
 
 			//Store refresh_token
 			m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID==%d)", m_szRefreshToken.c_str(), m_HwdID);
@@ -646,15 +679,15 @@ void CTado::Do_Work()
 				continue;
 			}
 		}
+		//Get present time (epoch) for token refresh check
+		time_t atime=time(nullptr);
 		if (
 			(m_szAccessToken.empty())
-			|| (iTokenCycleCount++ > TADO_TOKEN_MAXLOOPS)
-			)
+			|| (atime >= m_token_expire_time)
+		   )
 		{
 			GetAccessToken();
-			iTokenCycleCount = 0;
 		}
-		iTokenCycleCount++;
 
 		if (m_szAccessToken.empty())
 			continue; //no need to continue if we don't have an access token

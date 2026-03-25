@@ -168,7 +168,7 @@ void CPVOutputInput::GetMeterDetails()
 	sstr.clear();
 	sstr.str("");
 
-	sstr << "https://pvoutput.org/service/r2/getstatistic.jsp?sid=" << m_SID << "&key=" << m_KEY;
+	sstr << "https://pvoutput.org/service/r2/getstatistic.jsp?sid=" << m_SID << "&key=" << m_KEY << "&c=1";
 	if (!HTTPClient::GET(sstr.str(), sResult))
 	{
 		Log(LOG_ERROR, "Error login!");

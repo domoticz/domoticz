@@ -331,6 +331,15 @@ table.display tr.odd.row_selected td {
 	background-color: #9FAFD1;
 }
 
+/* DataTables Select extension — selected row highlight */
+table.display tr.selected td {
+	background-color: #B0BED9;
+}
+
+table.display tr.odd.selected td {
+	background-color: #9FAFD1;
+}
+
 
 /*
  * Sorting classes for columns

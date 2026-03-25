@@ -6,7 +6,7 @@
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 #include "../main/json_helper.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #include "cayenne_lpp/CayenneLPP_Dec.h"
 #include <sstream>
 
@@ -51,7 +51,7 @@ std::string ReadFile(std::string filename)
 
 
 CTTNMQTT::CTTNMQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAfilename) :
-	mosqdz::mosquittodz((std::string("Domoticz-TTN") +  std::string(GenerateUUID())).c_str()),
+	mdz::mqttdz((std::string("Domoticz-TTN") +  std::string(GenerateUUID())).c_str()),
 	m_szIPAddress(IPAddress),
 	m_UserName(Username),
 	m_Password(Password),
@@ -69,12 +69,12 @@ CTTNMQTT::CTTNMQTT(const int ID, const std::string &IPAddress, const unsigned sh
 
 	m_AliassesFile = TTNMQTT_ALIASSES_FILE;
 
-	mosqdz::lib_init();
+	mdz::lib_init();
 }
 
 CTTNMQTT::~CTTNMQTT()
 {
-	mosqdz::lib_cleanup();
+	mdz::lib_cleanup();
 }
 
 bool CTTNMQTT::StartHardware()
@@ -649,7 +649,9 @@ void CTTNMQTT::on_message(const struct mosquitto_message *message)
 	if (topic.find("/up/") != std::string::npos)
 		return; //not interested in sub-topics
 
-	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
+	std::string qMessage;
+	if (message->payload != nullptr && message->payloadlen > 0)
+		qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
 
 #ifdef DEBUG_TTN_W
 	SaveString2Disk(qMessage, "ttn_mqtt.json");

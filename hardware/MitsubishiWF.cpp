@@ -10,7 +10,7 @@
 #include "../main/SQLHelper.h"
 #include "../notifications/NotificationHelper.h"
 #include "../tinyxpath/tinyxml.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #include "hardwaretypes.h"
 #include <iostream>
 
@@ -73,8 +73,6 @@ MitsubishiWF::MitsubishiWF(const int ID, const std::string& IPAddress, const uns
 	if (PollInterval > 300)
 		PollInterval = 300;
 	m_poll_interval = PollInterval;
-
-	m_kWhCounter.Init("MitsubishiWF_kWh_" + std::to_string(ID), this);
 }
 
 bool MitsubishiWF::StartHardware()
@@ -125,7 +123,6 @@ void MitsubishiWF::Do_Work()
 			catch (const std::exception& e)
 			{
 				Log(LOG_ERROR, "Error getting airco status: %s", e.what());
-				return;
 			}
 		}
 	}
@@ -199,9 +196,6 @@ bool MitsubishiWF::Execute_Command(const std::string& sCommand, const Json::Valu
 #ifdef DEBUG_MitsubishiWF_R
 	sResult = ReadFile(std_format("E:\\MitsubishiWF_%s.json", sCommand.c_str()).c_str());
 #else
-	std::stringstream sURL;
-	sURL << "http://" << m_szIPAddress << ":" << m_usIPPort << "/beaver/command/" << sCommand;
-
 	Json::Value post_data;
 	post_data["apiVer"] = m_api_version;
 	post_data["command"] = sCommand;
@@ -216,11 +210,40 @@ bool MitsubishiWF::Execute_Command(const std::string& sCommand, const Json::Valu
 	std::string szPostData = post_data.toStyledString();
 	stdreplace(szPostData, " : ", ": "); //fix json parsing issue!?!
 
+	auto buildURL = [&](const std::string& scheme) {
+		return scheme + "://" + m_szIPAddress + ":" + std::to_string(m_usIPPort) + "/beaver/command/" + sCommand;
+	};
+
 	std::vector<std::string> ExtraHeaders;
-	if (!HTTPClient::POST(sURL.str(), szPostData, ExtraHeaders, sResult))
+
+	if (m_method == eConnectionMethod::Http || m_method == eConnectionMethod::Https)
 	{
-		Log(LOG_ERROR, "Error executing HTTP command (%s)", sCommand.c_str());
-		return false;
+		std::string scheme = (m_method == eConnectionMethod::Http) ? "http" : "https";
+		if (!HTTPClient::POST(buildURL(scheme), szPostData, ExtraHeaders, sResult))
+		{
+			Log(LOG_ERROR, "Error executing command (%s)", sCommand.c_str());
+			return false;
+		}
+	}
+	else
+	{
+		// Auto-discover HTTP vs HTTPS on first connection
+		if (HTTPClient::POST(buildURL("http"), szPostData, ExtraHeaders, sResult))
+		{
+			Log(LOG_STATUS, "Discovered communication method: HTTP");
+			m_method = eConnectionMethod::Http;
+		}
+		else
+		{
+			Log(LOG_STATUS, "HTTP failed, trying HTTPS...");
+			if (!HTTPClient::POST(buildURL("https"), szPostData, ExtraHeaders, sResult))
+			{
+				Log(LOG_ERROR, "Error executing command (%s): both HTTP and HTTPS failed", sCommand.c_str());
+				return false;
+			}
+			Log(LOG_STATUS, "Discovered communication method: HTTPS");
+			m_method = eConnectionMethod::Https;
+		}
 	}
 #endif
 #ifdef DEBUG_MitsubishiWF_W
@@ -272,6 +295,16 @@ bool MitsubishiWF::HandleAircoStatus(const std::string& sResult)
 	sAircoStat = root["contents"]["airconStat"].asString();
 	//Base64 decode
 	szDecoded = base64_decode(sAircoStat);
+
+	m_AircoStatus.ConsumptionJson = -1.0;
+	m_AircoStatus.LedStat = 0;
+	m_AircoStatus.AutoHeating = 0;
+	if (!root["contents"]["consumption"].empty())
+		m_AircoStatus.ConsumptionJson = root["contents"]["consumption"].asDouble();
+	if (!root["contents"]["ledStat"].empty())
+		m_AircoStatus.LedStat = root["contents"]["ledStat"].asInt();
+	if (!root["contents"]["autoHeating"].empty())
+		m_AircoStatus.AutoHeating = root["contents"]["autoHeating"].asInt();
 
 	TranslateAirconStat(szDecoded, m_AircoStatus);
 	if (m_AircoStatus.PresetTemp != 0)
@@ -846,7 +879,7 @@ void MitsubishiWF::TranslateAirconStat(const std::string& szStat, _tAircoStatus&
 
 	// get the current ac operation(3th value and with byte 3)
 	//0=Off, 1=On
-	aircoStatus.Operation = (3 & content[2]);
+	aircoStatus.Operation = (1 == (3 & content[2]));
 
 	// get preset temp : 5th byte divided by 2
 	aircoStatus.PresetTemp = double(content[4]) / 2.0; //target_temperature
@@ -866,16 +899,23 @@ void MitsubishiWF::TranslateAirconStat(const std::string& szStat, _tAircoStatus&
 	aircoStatus.Entrust = 4 == (12 & content[12]);
 	aircoStatus.CoolHotJudge = (content[8] & 8) <= 0;
 
-	int8_t modelMatrix[] = { 0, 1, 2 };
-	aircoStatus.ModelNr = find_match(content[0] & 127, modelMatrix, sizeof(modelMatrix));
+	{
+		uint8_t rawModel = static_cast<uint8_t>(content[0]) & 0x7F;
+		if (rawModel == 1 || rawModel == 2 || rawModel == 3 || rawModel == 64)
+			aircoStatus.ModelNr = rawModel;
+		else
+			aircoStatus.ModelNr = 0;
+	}
 
 	aircoStatus.Vacant = content[10] & 1;
 
 	aircoStatus.code = content[6] & 127;
 
+	aircoStatus.IsPresetTempAuto = (static_cast<uint8_t>(content[7]) & 0x80) != 0;
+
 	if (aircoStatus.code == 0)
 		aircoStatus.szErrorCode = "00";
-	else if ((content[6] & -128) <= 0)
+	else if (content[6] < 0)  // int8_t negative means bit 7 set = M-type error
 		aircoStatus.szErrorCode = "M" + std::to_string(aircoStatus.code);
 	else
 		aircoStatus.szErrorCode = "E" + std::to_string(aircoStatus.code);
@@ -883,7 +923,7 @@ void MitsubishiWF::TranslateAirconStat(const std::string& szStat, _tAircoStatus&
 	int8_t* vals = content_byte_array + start_length + 19;// len(content_byte_array) - 2
 	size_t len = szStat.size() - 2 - start_length - 19;
 
-	for (int i = 0; i < (int)len; i += 4)
+	for (int i = 0; i + 4 <= (int)len; i += 4)
 	{
 		if (vals[i] == -128 && vals[i + 1] == 16)
 		{
@@ -897,9 +937,7 @@ void MitsubishiWF::TranslateAirconStat(const std::string& szStat, _tAircoStatus&
 		}
 		else if (vals[i] == -108 && vals[i + 1] == 16)
 		{
-			float Electric_kWh_Used = static_cast<float>(((vals[i + 2] + 256) % 256) + ((vals[i + 3] + 256) % 256) * 256);
-			Electric_kWh_Used *= 0.25;
-			aircoStatus.Electric_kWh_Used = Electric_kWh_Used;
+			aircoStatus.Electric_kWh_Used = static_cast<float>((vals[i + 2] & 0xFF) | ((vals[i + 3] & 0xFF) << 8)) * 0.25f;
 			aircoStatus.bHaveElectric = true;
 		}
 	}
@@ -984,7 +1022,13 @@ void MitsubishiWF::ParseAirconStat(const _tAircoStatus& aircoStatus)
 	
 	if (aircoStatus.bHaveElectric)
 	{
-		m_kWhCounter.SendKwhMeter(1, 1, 255, 0, aircoStatus.Electric_kWh_Used, "Electricity used");
+		double mtotal = m_kWhCounter.CheckTotalCounter(this, 1, 1, 1, aircoStatus.Electric_kWh_Used);
+		SendKwhMeter(1, 1, 255, 0, mtotal, "Electricity used");
+		if (aircoStatus.ConsumptionJson >= 0.0)
+		{
+			Log(LOG_STATUS, "Energy: binary=%.2f kWh, JSON consumption=%.4f",
+				aircoStatus.Electric_kWh_Used, aircoStatus.ConsumptionJson);
+		}
 	}
 }
 
@@ -1193,6 +1237,9 @@ bool MitsubishiWF::command_to_byte(const _tAircoStatus& aircon_stat, std::string
 	double preset_temp = (aircon_stat.OperationMode == 3) ? 25.0 : aircon_stat.PresetTemp;
 	stat_byte[4] |= int(preset_temp / 0.5) + 128;
 
+	if (aircon_stat.IsPresetTempAuto)
+		stat_byte[9] |= 1;
+
 	// entrust
 	if (aircon_stat.Entrust == 0)
 		stat_byte[12] |= 8;
@@ -1208,18 +1255,15 @@ bool MitsubishiWF::command_to_byte(const _tAircoStatus& aircon_stat, std::string
 			stat_byte[10] |= 1;
 	}
 
-	if (aircon_stat.ModelNr != 1 && aircon_stat.ModelNr != 2)
-	{
-	}
-	else
+	if (aircon_stat.ModelNr == 1 || aircon_stat.ModelNr == 2 || aircon_stat.ModelNr == 3)
 	{
 		if (aircon_stat.IsSelfCleanReset)
 			stat_byte[10] |= 4;
 
 		if (aircon_stat.IsSelfCleanOperation)
-			stat_byte[10] |= 144;
+			stat_byte[12] |= 144;
 		else
-			stat_byte[10] |= 128;
+			stat_byte[12] |= 128;
 	}
 
 	uint16_t crc = crc16ccitt((const uint8_t*)stat_byte, sizeof(stat_byte) - 2);
@@ -1293,6 +1337,9 @@ bool MitsubishiWF::recieve_to_bytes(const _tAircoStatus& aircon_stat, std::strin
 	double preset_temp = (aircon_stat.OperationMode == 3) ? 25.0 : aircon_stat.PresetTemp;
 	stat_byte[4] |= int(preset_temp / 0.5);
 
+	if (aircon_stat.IsPresetTempAuto)
+		stat_byte[7] |= 128;
+
 	// entrust
 	if (aircon_stat.Entrust)
 		stat_byte[12] |= 4;
@@ -1300,10 +1347,7 @@ bool MitsubishiWF::recieve_to_bytes(const _tAircoStatus& aircon_stat, std::strin
 	if (!aircon_stat.CoolHotJudge)
 		stat_byte[8] |= 8;
 
-	if (aircon_stat.ModelNr == 1)
-		stat_byte[0] |= 1;
-	else if (aircon_stat.ModelNr == 2)
-		stat_byte[0] |= 2;
+	stat_byte[0] |= (aircon_stat.ModelNr & 0x7F);
 
 	if (aircon_stat.ModelNr == 1)
 	{
@@ -1311,10 +1355,7 @@ bool MitsubishiWF::recieve_to_bytes(const _tAircoStatus& aircon_stat, std::strin
 			stat_byte[10] |= 1;
 	}
 
-	if (aircon_stat.ModelNr != 1 && aircon_stat.ModelNr != 2)
-	{
-	}
-	else
+	if (aircon_stat.ModelNr == 1 || aircon_stat.ModelNr == 2 || aircon_stat.ModelNr == 3)
 	{
 		if (aircon_stat.IsSelfCleanOperation)
 			stat_byte[15] |= 1;

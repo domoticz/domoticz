@@ -29,7 +29,7 @@
  *  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  Last-modified: Sat 06 Jun 2009 16:45:00 JST
+ *  Last-modified: Sun 09 Nov 2025 14:50:00 CET
  */
 /* ------------------------------------------------------------------------- */
 #ifndef CLX_UNZIP_ITERATOR_H
@@ -37,7 +37,10 @@
 
 //#include "config.h"
 #include <iterator>
+#include <cstddef>
+#include <memory>
 #include <string>
+#include <cstdlib>
 #include <minizip/unzip.h>
 #include <zlib.h>
 #include "unzip_stream.h"
@@ -50,23 +53,46 @@ namespace clx {
 		class CharT,
 		class Traits = std::char_traits<CharT>
 	>
-	class basic_unzip_iterator : public std::iterator<std::input_iterator_tag, basic_unzip_stream<CharT, Traits> > {
+	class basic_unzip_iterator {
 	public:
-		typedef basic_unzip_stream<CharT, Traits> stream_type;
-		typedef std::shared_ptr<stream_type> stream_ptr;
-		typedef unzFile handler_type;
-		typedef std::basic_string<CharT, Traits> string_type;
+		// Replace deprecated std::iterator inheritance with explicit typedefs
+		using iterator_category = std::input_iterator_tag;
+		using value_type        = basic_unzip_stream<CharT, Traits>;
+		using difference_type   = std::ptrdiff_t;
+		// The iterator stores and returns shared_ptr to the underlying stream object.
+		// This matches the implementation below which maintains stream_ptr instances.
+		using pointer           = std::shared_ptr<value_type>;
+		using reference         = value_type&;
 
-		basic_unzip_iterator()
-			: cur_()
-			, pass_()
-		{
+		// convenience aliases used in the implementation
+		using stream_type = value_type;
+		using stream_ptr = pointer;
+		using handler_type = unzFile;
+		using string_type = std::basic_string<CharT>;
+
+		basic_unzip_iterator() noexcept : cur_(), m_stream_ptr(nullptr), handler_(nullptr), pass_() {}
+		
+		reference operator*() const {
+			return *m_stream_ptr;
+		}
+
+		pointer operator->() const {
+			return m_stream_ptr;
+		}
+
+		// non-const accessors (preserve original overloads)
+		stream_type& operator*() {
+			return *cur_;
+		}
+		stream_ptr operator->() {
+			return cur_;
 		}
 
 		basic_unzip_iterator(const basic_unzip_iterator& cp) :
-			cur_(cp.cur_), handler_(cp.handler_), pass_(cp.pass_) {}
+			cur_(cp.cur_), m_stream_ptr(cp.m_stream_ptr), handler_(cp.handler_), pass_(cp.pass_) {}
 		
 		basic_unzip_iterator& operator=(const basic_unzip_iterator& cp) {
+			m_stream_ptr = cp.m_stream_ptr;
 			handler_ = cp.handler_;
 			cur_ = cp.cur_;
 			pass_ = cp.pass_;
@@ -75,13 +101,10 @@ namespace clx {
 		
 		template <class Unzip>
 		basic_unzip_iterator(const Unzip& cp) :
-			cur_(), handler_(cp.handler()), pass_(cp.password()) {
+			cur_(), m_stream_ptr(), handler_(cp.handler()), pass_(cp.password()) {
 			this->create();
 		}
 		
-		stream_type& operator*() { return *cur_; }
-		stream_ptr& operator->() { return cur_; }
-
 		//End-user needs to call "free" on return object
 		//returns NULL when error, or a pointer to the buffer and file_size
 		void *Extract(uLong &file_size, const int ExtraAllocBytes=0) {
@@ -128,21 +151,28 @@ namespace clx {
 			if (cur_ && !cur_->path().empty()) {
 				if (unzLocateFile(handler_, cur_->path().c_str(), 0) != UNZ_OK) {
 					cur_ = stream_ptr();
+					m_stream_ptr = nullptr;
 					return *this;
 				}
 			}
 			
-			if (unzGoToNextFile(handler_) == UNZ_OK) return this->create();
-			else cur_ = stream_ptr();
+			if (unzGoToNextFile(handler_) == UNZ_OK) {
+				return this->create();
+			} else {
+				cur_ = stream_ptr();
+				m_stream_ptr = nullptr;
+			}
 			return *this;
 		}
 		
 		basic_unzip_iterator operator++(int) {
-			return ++(*this);
+			basic_unzip_iterator tmp = *this;
+			++(*this);
+			return tmp;
 		}
 		
 		friend bool operator==(const basic_unzip_iterator& lhs, const basic_unzip_iterator& rhs) {
-			return lhs.cur_ == rhs.cur_;
+			return lhs.m_stream_ptr == rhs.m_stream_ptr;
 		}
 		
 		friend bool operator!=(const basic_unzip_iterator& lhs, const basic_unzip_iterator& rhs) {
@@ -151,6 +181,7 @@ namespace clx {
 		
 	private:
 		stream_ptr cur_;
+		pointer m_stream_ptr;
 		handler_type handler_{ nullptr };
 		string_type pass_;
 		
@@ -161,7 +192,13 @@ namespace clx {
 				int status = UNZ_OK;
 				if (!pass_.empty()) status = unzOpenCurrentFilePassword(handler_, pass_.c_str());
 				else status = unzOpenCurrentFile(handler_);
-				if (status == UNZ_OK) cur_ = stream_ptr(new stream_type(handler_));
+				if (status == UNZ_OK) {
+					cur_ = stream_ptr(new stream_type(handler_));
+					m_stream_ptr = cur_;
+				} else {
+					cur_ = stream_ptr();
+					m_stream_ptr = nullptr;
+				}
 			}
 			return *this;
 		}

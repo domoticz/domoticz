@@ -1,0 +1,33 @@
+<wind-current-conditions
+        device="::$ctrl.device">
+</wind-current-conditions>
+<wind-short-chart
+        class="device-log-chart"
+        device="::$ctrl.device"></wind-short-chart>
+<br/>
+<div class="row-fluid">
+    <div class="span6 wind-chart-container">
+        <wind-direction-chart
+                device="::$ctrl.device"></wind-direction-chart>
+    </div>
+    <div class="span6 wind-chart-container">
+        <wind-speed-frequency-chart
+                device="::$ctrl.device"></wind-speed-frequency-chart>
+    </div>
+</div>
+<br/>
+<wind-long-chart
+        class="device-log-chart"
+        device="::$ctrl.device"
+        range="month"></wind-long-chart>
+<br/>
+<wind-long-chart
+        class="device-log-chart"
+        device="::$ctrl.device"
+        range="year"></wind-long-chart>
+<br/>
+<wind-compare-chart
+        class="device-log-chart"
+        device="::$ctrl.device"
+        range="compare">
+</wind-compare-chart>

@@ -315,7 +315,8 @@ void CPanasonicNode::UpdateStatus(bool forceupdate)
 	if (m_CurrentStatus.Status() != m_PreviousStatus.Status() || forceupdate)
 	{
 		m_notifications.CheckAndHandleNotification(m_ID, m_Name, m_CurrentStatus.NotificationType(), sLogText);
-		m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, m_ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(m_CurrentStatus.Status()), m_CurrentStatus.StatusMessage().c_str());
+		// Use current time: this driver updates device state directly without going through SQLHelper
+		m_mainworker.m_eventsystem.ProcessDevice(m_HwdID, m_ID, 1, int(pTypeLighting2), int(sTypeAC), 12, 100, int(m_CurrentStatus.Status()), m_CurrentStatus.StatusMessage().c_str(), TimeToString(nullptr, TF_DateTime));
 	}
 
 	m_PreviousStatus = m_CurrentStatus;

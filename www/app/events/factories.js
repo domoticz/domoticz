@@ -9,7 +9,11 @@ define(['app'], function (app) {
             deleteEvent: deleteEvent,
 			loadRecents: loadRecents,
 			storeRecents: storeRecents,
-            getTemplate: getTemplate
+            getTemplate: getTemplate,
+            createFolder: createFolder,
+            renameFolder: renameFolder,
+            deleteFolder: deleteFolder,
+            moveEvent: moveEvent
         };
 
         function fetchCurrentStates() {
@@ -28,7 +32,8 @@ define(['app'], function (app) {
             }).then(function (data) {
                 return {
                     events: data.result || [],
-                    interpreters: data.interpreters ? data.interpreters.split(':') : []
+                    interpreters: data.interpreters ? data.interpreters.split(':') : [],
+                    folders: data.folders || []
                 }
             });
         }
@@ -97,6 +102,36 @@ define(['app'], function (app) {
             return domoticzApi.sendCommand('events', {
                 evparam: 'store_recents',
 				recent_list: arrStr
+            });
+        }
+
+        function createFolder(name) {
+            return domoticzApi.sendCommand('events', {
+                evparam: 'create_folder',
+                name: name
+            });
+        }
+
+        function renameFolder(folderId, name) {
+            return domoticzApi.sendCommand('events', {
+                evparam: 'rename_folder',
+                folder: folderId,
+                name: name
+            });
+        }
+
+        function deleteFolder(folderId) {
+            return domoticzApi.sendCommand('events', {
+                evparam: 'delete_folder',
+                folder: folderId
+            });
+        }
+
+        function moveEvent(eventId, folderId) {
+            return domoticzApi.sendCommand('events', {
+                evparam: 'move_event',
+                event: eventId,
+                folder: folderId
             });
         }
     });

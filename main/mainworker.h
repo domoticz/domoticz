@@ -10,7 +10,7 @@
 #include "WindCalculation.h"
 #include "TrendCalculator.h"
 #include "../tcpserver/TCPServer.h"
-#include "../webserver/server_settings.hpp"
+#include <libwebem/server_settings.h>
 #include "../iamserver/iam_settings.hpp"
 #ifdef ENABLE_PYTHON
 #	include "../hardware/plugins/PluginManager.h"
@@ -25,7 +25,7 @@ public:
 	bool Start();
 	bool Stop();
 
-	void AddAllDomoticzHardware();
+	void AddAllDomoticzHardware(bool bScheduleStart = true);
 	void StopDomoticzHardware();
 	void StartDomoticzHardware();
 	void AddDomoticzHardware(CDomoticzHardwareBase *pHardware);
@@ -68,9 +68,9 @@ public:
 	void CheckSceneCode(uint64_t DevRowIdx, uint8_t dType, uint8_t dSubType, int nValue, const char *sValue, const std::string &User);
 	bool DoesDeviceActiveAScene(uint64_t DevRowIdx, int Cmnd);
 
-	bool SetSetPoint(const std::string &idx, float TempValue);
-	bool SetSetPointInt(const std::vector<std::string> &sd, float TempValue);
-	bool SetSetPointEvo(const std::string& idx, float TempValue, const std::string& newMode, const std::string& until);
+	bool SetSetPoint(const std::string &idx, float TempValue, const std::string& User = "");
+	bool SetSetPointInt(const std::vector<std::string> &sd, float TempValue, const std::string& User = "");
+	bool SetSetPointEvo(const std::string& idx, float TempValue, const std::string& newMode, const std::string& until, const std::string& User = "");
 	bool SetThermostatState(const std::string &idx, int newState);
 
 	bool SetTextDevice(const std::string& idx, const std::string & text);
@@ -120,10 +120,6 @@ public:
 	std::string m_szDomoticzUpdateURL;
 
 	bool IsUpdateAvailable(bool bIsForced = false);
-	bool StartDownloadUpdate();
-	bool m_bHaveDownloadedDomoticzUpdate;
-	bool m_bHaveDownloadedDomoticzUpdateSuccessFull;
-	std::string m_UpdateStatusMessage;
 
 	void GetAvailableWebThemes();
 
@@ -165,8 +161,9 @@ private:
 	std::mutex m_devicemutex;
 
 	std::string m_szDomoticzUpdateChecksumURL;
-	bool m_bDoDownloadDomoticzUpdate;
 	bool m_bStartHardware;
+	bool m_bStarted{ false };
+	bool m_bStopped{ false };
 	uint8_t m_hardwareStartCounter;
 
 	std::vector<CDomoticzHardwareBase*> m_hardwaredevices;
@@ -281,6 +278,7 @@ private:
 	void decode_GeneralSwitch(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_HomeConfort(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Thermostat(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
+	void decode_Thermostat6(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Chime(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_BBQ(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);
 	void decode_Power(const CDomoticzHardwareBase *pHardware, const tRBUF *pResponse, _tRxMessageProcessingResult & procResult);

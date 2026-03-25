@@ -15,6 +15,13 @@
     }
 
     app.factory('counterLogEnergySeriesSuppliers', function (chart, counterLogSeriesSupplier) {
+
+        function negateDatapoints(datapoints) {
+            datapoints.forEach(function (dp) {
+                if (dp[1] !== null) { dp[1] = -dp[1]; }
+            });
+        }
+
         return {
             counterDaySeriesSuppliers: counterDaySeriesSuppliers,
             instantAndCounterDaySeriesSuppliers: instantAndCounterDaySeriesSuppliers,
@@ -124,6 +131,7 @@
                     id: 'p1DSSEG',
                     dataItemKeys: ['eg'],
                     showWithoutDatapoints: false,
+                    postprocessDatapoints: negateDatapoints,
                     label: 'K',
                     template: {
                         type: 'area',
@@ -224,6 +232,7 @@
                     id: 'P1MYSS',
                     dataItemKeys: ['v1', 'v2'],
                     convertZeroToNull: true,
+                    postprocessDatapoints: chart.markSpikeDatapoints,
                     label: 'C',
                     series: {
                         type: 'column',
@@ -231,7 +240,8 @@
                         zIndex: 2,
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000),
-                            valueDecimals: 3
+                            valueDecimals: 3,
+                            pointFormatter: chart.spikeTooltipPointFormatter
                         },
                         color: 'rgba(3,190,252,0.8)',
                         yAxis: 0
@@ -342,7 +352,6 @@
                     id: 'P1PHSS',
                     dataItemKeys: ['p'],
                     label: '2',
-                    convertZeroToNull: true,
                     showWithoutDatapoints: false,
                     template: function (seriesSupplier) {
                         return {
@@ -375,6 +384,7 @@
                     },
                     showWithoutDatapoints: false,
                     //convertZeroToNull: true,
+                    postprocessDatapoints: negateDatapoints,
                     label: 'R',
                     template: {
 						type: 'area',
@@ -409,6 +419,7 @@
                         return data.delivered === true;
                     },
                     showWithoutDatapoints: false,
+                    postprocessDatapoints: negateDatapoints,
                     label: 'R',
                     template: {
 						type: 'area',
@@ -433,6 +444,7 @@
                         return data.delivered === true;
                     },
                     showWithoutDatapoints: false,
+                    postprocessDatapoints: negateDatapoints,
                     label: 'S',
                     template: {
 						type: 'area',
@@ -460,6 +472,7 @@
                     id: 'CMYSS',
                     dataItemKeys: ['v', 'v2'],
                     convertZeroToNull: true,
+                    postprocessDatapoints: chart.markSpikeDatapoints,
                     label: 'C',
                     series: {
                         type: 'column',
@@ -467,7 +480,8 @@
                         zIndex: 2,
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000),
-                            valueDecimals: 3
+                            valueDecimals: 3,
+                            pointFormatter: chart.spikeTooltipPointFormatter
                         },
                         color: 'rgba(3,190,252,0.8)',
                         yAxis: 0
@@ -621,7 +635,6 @@
                     id: 'PRMYSS',
                     valueDecimals: 4,
                     label: 'B',
-                    convertZeroToNull: true,
                     showWithoutDatapoints: false,
                     series: {
                         type: 'spline',

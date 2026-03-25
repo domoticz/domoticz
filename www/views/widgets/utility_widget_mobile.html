@@ -1,0 +1,40 @@
+<div class="item" ng-class="ctrl.getBackgroundClass()">
+    <section>
+        <table class="itemtablerowsmall">
+            <tr>
+                <!-- Device Icon -->
+                <td class="img">
+                    <img ng-if="!ctrl.isSetpoint() && ctrl.device.Type != 'Radiator 1'"
+                         ng-src="{{ctrl.getDeviceIcon()}}"
+                         title="{{ctrl.device.Name}}"
+                         height="48"
+                         width="48">
+                    <img ng-if="ctrl.isSetpoint() || ctrl.device.Type == 'Radiator 1'"
+                         ng-src="{{ctrl.getDeviceIcon()}}"
+                         title="{{ctrl.device.Name}}"
+                         class="lcursor"
+                         ng-click="ctrl.showSetpointPopup($event)"
+                         height="48"
+                         width="48">
+                </td>
+
+                <!-- Device Name -->
+                <td class="name">
+                    <a ng-href="#/Devices/{{ctrl.device.idx}}/Log">{{ctrl.device.Name}}</a>
+                </td>
+
+                <!-- Value Text (bigtext + status stacked) -->
+                <td class="bigtext">
+                    <img ng-show="ctrl.displayTrend(ctrl.device.trend)" height="12"
+                         ng-src="images/arrow_{{ctrl.trendState(ctrl.device.trend)}}.png">
+                    <span ng-bind-html="ctrl.getMobileText()"></span>
+                </td>
+
+                <!-- Last Update -->
+                <td class="lastupdate">
+                    <span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: <span>{{ctrl.device.LastUpdate}}</span>
+                </td>
+            </tr>
+        </table>
+    </section>
+</div>

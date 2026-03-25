@@ -32,7 +32,7 @@ define(['app', 'luxon'], function (app, luxon) {
         function getFilteredData(data) {
             var min = getMinValue();
 
-            var firstIndex = min === undefined
+            var firstIndex = min !== undefined
                 ? data.findIndex(function (point) {
                     return DateTime.fromFormat(point.Date, dzSettings.serverDateFormat).valueOf() >= min
                 })
@@ -52,9 +52,10 @@ define(['app', 'luxon'], function (app, luxon) {
             var chartData = [];
 
             getFilteredData(data).forEach(function (point, index, points) {
-                if (point.Status === 'On'
-                    || (point.Status.includes('Set Level') && point.Level > 0)
-                    || (point.Status.includes('Set Color'))
+                var status = point.Status || point.Data || '';
+                if (status === 'On'
+                    || (status.includes('Set Level') && point.Level > 0)
+                    || status.includes('Set Color')
                 ) {
                     chartData.push({
                         x: DateTime.fromFormat(point.Date, dzSettings.serverDateFormat).valueOf(),

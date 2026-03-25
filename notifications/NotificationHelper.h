@@ -1,6 +1,6 @@
 #pragma once
 #include "NotificationBase.h"
-#include "../webserver/cWebem.h"
+#include <libwebem/cWebem.h>
 
 #include <string>
 

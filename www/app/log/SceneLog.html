@@ -1,9 +1,15 @@
 <div class="container">
 	<div class="page-header-small page-header-with-button">
 		<h1><span data-i18n="Log">Log</span>: {{ ::vm.pageName }}</h1>
-        <div><a class="btnstyle3" back-button><i class="fa fa-reply" title="Back"></i> {{ ::'Back' | translate }}</a></div>
+		<div><a class="btnstyle3" back-button><i class="fa fa-reply" title="Back"></i>&nbsp;<span data-i18n="Back"></span></a></div>
 	</div>
  
+    <h2>{{:: 'Today' | translate }}</h2>
+    <device-on-off-chart class="device-log-chart device-log-chart_sm" log="vm.log" view="daily"></device-on-off-chart>
+
+    <h2>{{:: 'Last 7 days' | translate }}</h2>
+    <device-on-off-chart class="device-log-chart device-log-chart_sm" log="vm.log" view="weekly"></device-on-off-chart>
+
     <device-text-log-table log="vm.log"></device-text-log-table>
 
     <table id="updelclr" border="0" cellpadding="0" cellspacing="0" width="100%">

@@ -28,6 +28,9 @@ define(['angular'], function () {
             hasLogin: function (isloggedin) {
                 return (permissionList.isloggedin == isloggedin);
             },
+            canLogout: function () {
+                return (permissionList.canlogout === true);
+            },
             isAuthenticated: function () {
                 return (permissionList.rights != -1);
             }
@@ -64,6 +67,22 @@ define(['angular'], function () {
 
                 function toggleVisibilityBasedOnPermission() {
                     if (permissions.hasLogin(bvalue))
+                        element.show();
+                    else
+                        element.hide();
+                }
+
+                toggleVisibilityBasedOnPermission();
+                scope.$on('permissionsChanged', toggleVisibilityBasedOnPermission);
+            }
+        };
+    });
+
+    module.directive('canLogout', function (permissions) {
+        return {
+            link: function (scope, element, attrs) {
+                function toggleVisibilityBasedOnPermission() {
+                    if (permissions.hasLogin(true) && permissions.canLogout())
                         element.show();
                     else
                         element.hide();

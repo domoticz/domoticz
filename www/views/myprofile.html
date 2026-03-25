@@ -59,15 +59,21 @@
 					<input type="checkbox" id="EnableMFA" name="EnableMFA" ng-model="myprofile.enableMFA" ng-change="onMFAChange()"> <label for="EnableMFA" data-i18n="Enabled">Enabled</label>
 				</td>
 			</tr>
-			<tr ng-show="myprofile.enableMFA">
+			<tr ng-show="myprofile.enableMFA && wasMFAEnabled && !newMFAEnabled">
+				<td></td>
+				<td>
+					<span data-i18n="Two-factor authentication is currently active">Two-factor authentication is currently active.</span>
+				</td>
+			</tr>
+			<tr ng-show="newMFAEnabled">
 				<td></td>
 				<td>
 					<div id="qrcode">QR-code</div>
 					<input type="hidden" id="TotpSecret" autocomplete="off" name="TotpSecret" ng-model="myprofile.totpsecret" ng-change="changeTOTP();" style="width: 350px;" class="text ui-widget-content ui-corner-all"><br />
-					Using an authenticator app like <b>Google Authenticator</b> or <b>Authy</b>, scan the QR code. It will display a 6 digit code which you need to enter below.
+					Using an authenticator app like <b>Bitwarden</b> or <b>Google Authenticator</b>, scan the QR code. It will display a 6 digit code which you need to enter below.
 				</td>
 			</tr>
-			<tr ng-show="myprofile.enableMFA">
+			<tr ng-show="newMFAEnabled">
 				<td>
 					<label for="TotpCode"><span data-i18n="Code">Code</span>:</label>
 				</td>
@@ -76,16 +82,53 @@
 				</td>
 			</tr>
 		</table>
+		<table class="display table-details" id="passkeytable">
+			<tr>
+				<td colspan="2" style="text-align: left;">
+					<h3 data-i18n="Passkeys">Passkeys</h3>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<span data-i18n="Register a passkey to sign in without a password">Register a passkey to sign in without a password using Windows Hello, Touch ID, or a security key.</span>
+					<br><small style="color: #888;" data-i18n="Passkeys require a domain name">Note: Passkeys require access via a domain name (e.g. <b>localhost</b> or <b>myserver.local</b>). IP addresses (e.g. 192.168.0.1) are not supported by the WebAuthn standard.</small>
+				</td>
+			</tr>
+			<!-- List existing passkeys -->
+			<tr ng-repeat="passkey in passkeys">
+				<td>
+					<b>{{passkey.name}}</b>
+					<br><small style="color: #888;">{{passkey.device}}<span ng-show="passkey.device && passkey.created"> &middot; </span>{{passkey.created}}</small>
+				</td>
+				<td>
+					<button type="button" class="btnstyle3" ng-click="deletePasskey(passkey.id)">
+						<span data-i18n="Delete">Delete</span>
+					</button>
+				</td>
+			</tr>
+			<tr ng-show="passkeys.length === 0">
+				<td colspan="2" style="color: #888;">
+					<span data-i18n="No passkeys registered">No passkeys registered</span>
+				</td>
+			</tr>
+			<!-- Register new passkey -->
+			<tr>
+				<td>
+					<input type="text" ng-model="newPasskeyName" placeholder="Passkey name (e.g., Windows Hello)" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all">
+				</td>
+				<td>
+					<button type="button" class="btnstyle3" ng-click="registerPasskey()" ng-disabled="registeringPasskey">
+						<span data-i18n="Register Passkey">Register Passkey</span>
+					</button>
+				</td>
+			</tr>
+		</table>
 		<table class="display table-details" id="profiletable">
 			<tr>
 				<td></td>
 				<td>
-					<button type="button" class="btnstyle3" ng-click="updateMyProfile()">
-						{{ :: 'Update' | translate}}
-					</button>
-					<button type="button" class="btnstyle3" ng-click="btnCancel()">
-						{{ :: 'Cancel' | translate}}
-					</button>
+					<button type="button" class="btnstyle3" data-i18n="Update" ng-click="updateMyProfile()"></button>
+					<button type="button" class="btnstyle3" data-i18n="Cancel" ng-click="btnCancel()"></button>
 				</td>
 			</tr>
 		</table>

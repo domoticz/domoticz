@@ -28,7 +28,7 @@ local function EventHelpers(domoticz, mainMethod)
 			package.path
 	end
 
-	local validEventTypes = 'devices,timer,security,customEvents,system,httpResponses,shellCommandResponses,scenes,groups,variables'
+	local validEventTypes = 'devices,timer,security,customEvents,system,httpResponses,shellCommandResponses,scenes,groups,variables,at_startup'
 	local inValidEventTypes = 'on,logging,active,data,execute'
 
 	-- defaults
@@ -350,39 +350,27 @@ local function EventHelpers(domoticz, mainMethod)
 
 	function self.scandir(directory, type)
 		local pos, len
-		local i, t, popen = 0, {}, io.popen
-		local cmd
 		local namesLookup = {}
 
 		if (directory == nil) then
 			return {}
 		end
 
-		if (sep == '/') then
-			cmd = 'ls -a "' .. directory .. '"'
-		else
-			-- assume windows for now
-			cmd = 'dir "' .. directory .. '" /B'
-		end
+		local t = {}
+		local files = dz_scandir(directory)
 
-		t = {}
-		local pfile = popen(cmd)
-		for filename in pfile:lines() do
+		for _, filename in ipairs(files) do
 			pos, len = string.find(filename, '.lua', 1, true)
 			if (pos and pos > 0 and filename:sub(1, 1) ~= '.' and len == string.len(filename)) then
-
 				local name = string.sub(filename, 1, pos - 1)
 				table.insert(t, {
 					['type'] = type,
 					['name'] = name
 				})
-
-				namesLookup[name] = true -- for quick lookup for filename
-
-				--utils.log('Found module in ' .. directory .. ' folder: ' .. t[#t].name, utils.LOG_DEBUG)
+				namesLookup[name] = true
 			end
 		end
-		pfile:close()
+
 		return t, namesLookup
 	end
 
@@ -476,6 +464,10 @@ local function EventHelpers(domoticz, mainMethod)
 			if (_G.logLevel <= utils.LOG_MODULE_EXEC_INFO) then
 				utils.log('------ Start ' .. scriptType .. moduleLabel ..':' .. moduleLabelInfo .. triggerInfo, utils.LOG_MODULE_EXEC_INFO)
 			end
+
+			-- Store current script name globally so C++ can read it for log attribution
+			_G.currentDzVentsScriptName = eventHandler.name
+			if dz_reportScriptName then dz_reportScriptName(eventHandler.name) end
 
 			self.callEventHandler(eventHandler, subject)
 
@@ -713,6 +705,7 @@ local function EventHelpers(domoticz, mainMethod)
 		local bindings = {}
 		local ok, i, event, j, device, err
 		local modules = {}
+		local timerBound = {} -- track scripts already bound to prevent at_startup/timer duplicates
 
 		if not self.scripts then
 			self.scripts, self.errModules = loadEventScripts()
@@ -725,7 +718,7 @@ local function EventHelpers(domoticz, mainMethod)
 			local logScript = (module.type == 'external' and 'Script ' or 'Internal script ')
 
 			for j, event in pairs(module.on) do
-				if type(j) ~= 'string' or type(event) ~= 'table' or validEventTypes:find(j) == nil then
+				if type(j) ~= 'string' or validEventTypes:find(j) == nil or (j == 'at_startup' and type(event) ~= 'boolean') or (j ~= 'at_startup' and type(event) ~= 'table') then
 					if not self.scripts[i].invalidOnSection then
 						self.scripts[i].invalidOnSection = true
 						if type(j) == "string" and validEventTypes:find(j) == nil then
@@ -752,10 +745,11 @@ local function EventHelpers(domoticz, mainMethod)
 						end
 
 						local triggered, def = self.processTimeRules(event)
-						if (triggered) then
-							-- this one can be executed
+						if (triggered and not timerBound[module.name]) then
+							-- this one can be executed (skip if already triggered via at_startup)
 							module.trigger = def
 							event.type = 'timer'
+							timerBound[module.name] = true
 							table.insert(bindings, module)
 						end
 					elseif (mode == 'device' and j == 'devices') then
@@ -842,6 +836,15 @@ local function EventHelpers(domoticz, mainMethod)
 								addBindingEvent(bindings, customEventName, module)
 							end
 						end
+					elseif (mode == 'timer' and j == 'at_startup' and event == true) then
+						-- at_startup fires on the first timer tick after Domoticz starts
+						-- Uses 2-minute window because timer ticks occur once per minute
+						-- and startup may take time before the first tick
+						if (self.domoticz.startTime.minutesAgo >= 0 and self.domoticz.startTime.minutesAgo < 2 and not timerBound[module.name]) then
+							module.trigger = 'at_startup'
+							timerBound[module.name] = true
+							table.insert(bindings, module)
+						end
 					end
 				end
 			end
@@ -922,14 +925,14 @@ local function EventHelpers(domoticz, mainMethod)
 				utils.log('Script name: ' .. scripts[1].name  .. '.lua, has a malformed on = section. The trigger = ' .. utils.toStr(scriptTrigger) , utils.LOG_ERROR)
 				allEventScripts[scriptTrigger] = ''
 			elseif res then -- a wild-card was used
-				scriptTrigger = ('^' .. scriptTrigger:gsub("[%^$]","."):gsub("*", ".*") .. '$')
+				local triggerPattern = ('^' .. scriptTrigger:gsub("[%^$]","."):gsub("*", ".*") .. '$')
 
 				local function sMatch(text, match) -- specialized sanitized match function to allow combination of Lua magic chars in wildcards
 					local sanitizedMatch = match:gsub("([%%%(%)%[%]%+%-%?])", "%%%1") -- escaping all 'magic' chars except *, ., ^ and $
 					return text:match(sanitizedMatch)
 				end
 
-				if sMatch(target, scriptTrigger) then
+				if sMatch(target, triggerPattern) then
 					if modules == nil then modules = {} end
 
 					for i, mod in pairs(scripts) do

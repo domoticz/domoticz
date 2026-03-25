@@ -11,6 +11,7 @@
 #include "../main/SQLHelper.h"
 #include <sstream>
 #include <iomanip>
+#include <locale>
 
 #define BUIENRADAR_URL "https://data.buienradar.nl/2.0/feed/json"
 #define BUIENRADAR_ACTUAL_URL "https://observations.buienradar.nl/1.0/actual/weatherstation/" //station_id
@@ -23,6 +24,20 @@
 #define RAINSHOWER_DURATION 4
 #define RAINSHOWER_AVERAGE_MMH 5
 #define RAINSHOWER_MAX_MMH 6
+
+namespace
+{
+	// Format a coordinate value as a string with '.' as decimal separator,
+	// independent of the process locale (std::to_string is locale-dependent and
+	// may use a comma as decimal separator on some platforms/configurations).
+	std::string FormatCoordinate(double value)
+	{
+		std::ostringstream oss;
+		oss.imbue(std::locale::classic());
+		oss << std::fixed << std::setprecision(6) << value;
+		return oss.str();
+	}
+} // namespace
 
 #ifdef _DEBUG
  //#define DEBUG_BUIENRADARR
@@ -100,8 +115,8 @@ void CBuienRadar::Init()
 		}
 		else if (strarray.size() == 2)
 		{
-			m_szMyLatitude = strarray[0];
-			m_szMyLongitude = strarray[1];
+			m_szMyLatitude = stdstring_trim(strarray[0]);
+			m_szMyLongitude = stdstring_trim(strarray[1]);
 		}
 		else
 		{
@@ -258,8 +273,43 @@ bool CBuienRadar::GetStationDetails()
 	}
 	if (root["actual"]["stationmeasurements"].empty() == true)
 	{
-		Log(LOG_ERROR, "Invalid data received (station measurement empty), or no data returned!");
-		return false;
+		// Main feed has empty stationmeasurements (known Buienradar server-side issue).
+		// If we already have a station ID, try the individual station API as fallback.
+		if (m_iStationID != 0)
+		{
+			Log(LOG_STATUS, "Main feed stationmeasurements empty, trying individual station API for station %d...", m_iStationID);
+
+			std::string szStationUrl = std::string(BUIENRADAR_ACTUAL_URL) + std::to_string(m_iStationID);
+			std::string sStationResult;
+
+			if (HTTPClient::GET(szStationUrl, sStationResult))
+			{
+				Json::Value stationRoot;
+				if (ParseJSon(sStationResult, stationRoot) && stationRoot.isObject() && !stationRoot["temperature"].empty())
+				{
+					if (m_sStationName.empty())
+					{
+						m_sStationName = stationRoot["stationname"].asString();
+						m_sStationRegion = stationRoot["regio"].asString();
+						m_szMyLatitude = FormatCoordinate(stationRoot["lat"].asDouble());
+						m_szMyLongitude = FormatCoordinate(stationRoot["lon"].asDouble());
+						Log(LOG_STATUS, "Using Station: %s (%s), ID: %d, Lat/Lon: %g,%g",
+							m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID,
+							atof(m_szMyLatitude.c_str()), atof(m_szMyLongitude.c_str()));
+					}
+					Log(LOG_STATUS, "Successfully retrieved data from individual station API (fallback)");
+					ParseMeterDetails(stationRoot);
+					return true;
+				}
+			}
+			Log(LOG_ERROR, "Fallback to individual station API also failed for station %d", m_iStationID);
+			return false;
+		}
+		else
+		{
+			Log(LOG_ERROR, "Main feed stationmeasurements empty and no station ID known yet - cannot fall back!");
+			return false;
+		}
 	}
 
 	if (m_iStationID == 0)
@@ -318,15 +368,58 @@ bool CBuienRadar::GetStationDetails()
 				//set name and region
 				m_sStationName = measurement["stationname"].asString();
 				m_sStationRegion = measurement["regio"].asString();
-				m_szMyLatitude = std::to_string(measurement["lat"].asDouble());
-				m_szMyLongitude = std::to_string(measurement["lon"].asDouble());
+				m_szMyLatitude = FormatCoordinate(measurement["lat"].asDouble());
+				m_szMyLongitude = FormatCoordinate(measurement["lon"].asDouble());
 				Log(LOG_STATUS, "Using Station: %s (%s), ID: %d, Lat/Lon: %g,%g", m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID, atof(m_szMyLatitude.c_str()), atof(m_szMyLongitude.c_str()));
 			}
 			ParseMeterDetails(measurement);
 			return true;
 		}
 	}
-	Log(LOG_ERROR, "Configured StationID (%d) not found at Buienradar site (or does not contain a temperature sensor), please check Hardware setup!", m_iStationID);
+	// Station not found in main feed, try individual station API as fallback
+	Log(LOG_STATUS, "Station %d not found in main feed, trying individual station API...", m_iStationID);
+	{
+		std::string szStationUrl = std::string(BUIENRADAR_ACTUAL_URL) + std::to_string(m_iStationID);
+		std::string sStationResult;
+
+		if (HTTPClient::GET(szStationUrl, sStationResult))
+		{
+			Json::Value stationRoot;
+			if (ParseJSon(sStationResult, stationRoot) && stationRoot.isObject() && !stationRoot["temperature"].empty())
+			{
+				if (m_sStationName.empty())
+				{
+					m_sStationName = stationRoot["stationname"].asString();
+					m_sStationRegion = stationRoot["regio"].asString();
+					m_szMyLatitude = FormatCoordinate(stationRoot["lat"].asDouble());
+					m_szMyLongitude = FormatCoordinate(stationRoot["lon"].asDouble());
+					Log(LOG_STATUS, "Using Station: %s (%s), ID: %d, Lat/Lon: %g,%g",
+						m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID,
+						atof(m_szMyLatitude.c_str()), atof(m_szMyLongitude.c_str()));
+				}
+				Log(LOG_STATUS, "Successfully retrieved data from individual station API (fallback)");
+				ParseMeterDetails(stationRoot);
+				return true;
+			}
+		}
+	}
+
+	// Individual station API also failed
+	if (m_stationidprovided)
+	{
+		Log(LOG_ERROR, "Configured StationID (%d) not found at Buienradar site (or does not contain a temperature sensor), please check Hardware setup!", m_iStationID);
+	}
+	else
+	{
+		// Station was auto-detected, reset so next cycle re-discovers nearest available station
+		Log(LOG_ERROR, "Auto-detected station %d (%s) temporarily unavailable, will re-detect nearest station on next cycle",
+			m_iStationID, m_sStationName.c_str());
+		m_iStationID = 0;
+		m_sStationName.clear();
+		m_sStationRegion.clear();
+		m_szMyLatitude.clear();
+		m_szMyLongitude.clear();
+	}
 	return false;
 }
 
@@ -446,7 +539,7 @@ void CBuienRadar::ParseMeterDetails(const Json::Value& root)
 
 void CBuienRadar::GetRainPrediction()
 {
-	if (m_szMyLatitude.empty() || m_szMyLongitude.empty() ||  std::stoi(m_szMyLatitude)<1 || std::stoi(m_szMyLongitude)<1)
+	if (m_szMyLatitude.empty() || m_szMyLongitude.empty())
 		return;
 
 	std::string sResult;

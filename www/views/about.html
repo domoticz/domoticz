@@ -1,60 +1,148 @@
 <div id="aboutcontent" class="force-select">
 	<style>
-#canvas2{
- position: fixed;
- margin: 0 0 0 0;
- margin-left: -20px;
- margin-top: -40px;
- width: 100%;
- height: 100%;
- z-index: -1;
-}
-body, #foreground, #midground{
- background: none;
-}
-	</style>
-	<canvas style="display:none" id="canvas" width="285" height="285"></canvas>
-	<canvas style="display:none" id="canvas3" width="570" height="570"></canvas>
-	<canvas id="canvas2" width="570" height="570"></canvas>
-	<center>
-	<div class="page-header-small">
-		<h1 data-i18n="About Domoticz">About Domoticz</h1>
-	</div>
-	<span>Version</span>: {{config.appversion}}<br>
-	<span>Build Hash</span>: {{config.apphash}}<br>
-	<span>Compile Date</span>: {{config.appdate}}<br>
-	<span>dzVents Version</span>: {{config.dzventsversion}}<br>
-	<span>Python Version</span>: {{config.pythonversion}}<br>
-	<span>Active User</span>: {{config.userName}}<br>
-	<br>
-	<span>Uptime</span>: {{strupptime}}
-	<br>
-	<br>
-	<br>
-	<div class="page-header-small">
-		<h3 data-i18n="Links">Links</h3>
-	</div>
-	<a data-i18n="Website" class="btn btn-info" role="button" href="https://www.domoticz.com" target="_blank">Website</a>
-	<a data-i18n="Forum" class="btn btn-info" role="button" href="https://forum.domoticz.com" target="_blank">Forum</a>
-	<a data-i18n="Wiki" class="btn btn-info" role="button" href="https://wiki.domoticz.com" target="_blank">Wiki</a>
-	<a data-i18n="Source Code" class="btn btn-info" role="button" href="https://github.com/domoticz/domoticz" target="_blank">Source Code</a>
-	<a data-i18n="Manual" class="btn btn-info" role="button" href="https://www.domoticz.com/DomoticzManual.pdf" target="_blank">Manual</a>
-	<br>
-	<br>
-	<div class="page-header-small">
-		<h3 data-i18n="Donations">Donations</h3>
-	</div>
-	<span data-i18n="Donations are more than welcome and will be used to buy new hardware, devices and sensors.">Donations are more than welcome and will be used to buy new hardware, devices and sensors.</span><br>
-	<span data-i18n="If you like the product or encourage the development, please use the button below.">If you like the product or encourage the development, please use the button below.</span>
+		#canvas2 {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			z-index: -1;
+		}
+		body, #foreground, #midground {
+			background: none;
+		}
 
-	<p>
-		<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
-		<input type="hidden" name="cmd" value="_s-xclick">
-		<input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----
-		">
-		<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-		<img alt="" border="0" src="https://www.paypalobjects.com/nl_NL/i/scr/pixel.gif" width="1" height="1">
-		</form>
-	</p>
-	</center>
+		/* About-specific styles (shared glass styles are in css/style.css) */
+		.about-title {
+			font-size: 2.5em;
+			font-weight: 300;
+			color: #fff;
+			text-shadow: 0 0 30px rgba(100, 200, 255, 0.5);
+			margin-bottom: 10px;
+			letter-spacing: 3px;
+		}
+
+		.info-item {
+			display: flex;
+			justify-content: space-between;
+			padding: 8px 0;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+			color: rgba(255, 255, 255, 0.85);
+			font-size: 0.95em;
+		}
+
+		.info-item:last-child {
+			border-bottom: none;
+		}
+
+		.info-label {
+			color: rgba(100, 200, 255, 0.9);
+			font-weight: 500;
+			white-space: nowrap;
+		}
+
+		.info-value {
+			color: rgba(255, 255, 255, 0.95);
+			font-family: 'Courier New', monospace;
+			text-align: right;
+		}
+
+		.version-badge {
+			display: inline-block;
+			background: linear-gradient(135deg, rgba(100, 200, 255, 0.3), rgba(100, 150, 255, 0.2));
+			padding: 8px 20px;
+			border-radius: 30px;
+			font-size: 1.1em;
+			color: #fff;
+			border: 1px solid rgba(100, 200, 255, 0.4);
+			margin: 15px 0;
+			animation: pulse 2s ease-in-out infinite;
+		}
+
+		@keyframes pulse {
+			0%, 100% { box-shadow: 0 0 10px rgba(100, 200, 255, 0.3); }
+			50% { box-shadow: 0 0 25px rgba(100, 200, 255, 0.6); }
+		}
+
+		.donation-text {
+			color: rgba(255, 255, 255, 0.75);
+			font-size: 0.9em;
+			line-height: 1.6;
+			margin-bottom: 20px;
+		}
+
+		.uptime-value {
+			font-size: 1.1em;
+			color: rgba(100, 255, 180, 0.95);
+			font-weight: 500;
+		}
+	</style>
+
+	<canvas id="canvas2"></canvas>
+
+	<div class="glass-container">
+		<center>
+			<!-- Header -->
+			<div class="glass-card" style="animation-delay: 0s;">
+				<h1 class="about-title" data-i18n="About Domoticz">About Domoticz</h1>
+				<div class="version-badge">v{{config.appversion}}</div>
+			</div>
+
+			<!-- System Info -->
+			<div class="glass-card" style="animation-delay: 0.15s;">
+				<h3 class="section-title" data-i18n="System Information">System Information</h3>
+				<div class="info-item">
+					<span class="info-label" data-i18n="Build Hash">Build Hash</span>
+					<span class="info-value">{{config.apphash}}</span>
+				</div>
+				<div class="info-item">
+					<span class="info-label" data-i18n="Compile Date">Compile Date</span>
+					<span class="info-value">{{config.appdate}}</span>
+				</div>
+				<div class="info-item">
+					<span class="info-label" data-i18n="dzVents Version">dzVents Version</span>
+					<span class="info-value">{{config.dzventsversion}}</span>
+				</div>
+				<div class="info-item">
+					<span class="info-label" data-i18n="Python Version">Python Version</span>
+					<span class="info-value">{{config.pythonversion}}</span>
+				</div>
+				<div class="info-item" ng-show="config.dbsize">
+					<span class="info-label" data-i18n="Database Size">Database Size</span>
+					<span class="info-value">{{config.dbsize}}</span>
+				</div>
+				<div class="info-item">
+					<span class="info-label" data-i18n="Active User">Active User</span>
+					<span class="info-value">{{config.userName}}</span>
+				</div>
+				<div class="info-item">
+					<span class="info-label" data-i18n="Uptime">Uptime</span>
+					<span class="info-value uptime-value">{{strupptime}}</span>
+				</div>
+			</div>
+
+			<!-- Links -->
+			<div class="glass-card" style="animation-delay: 0.3s;">
+				<h3 class="section-title" data-i18n="Links">Links</h3>
+				<a data-i18n="Website" class="btn-modern" href="https://www.domoticz.com" target="_blank">Website</a>
+				<a data-i18n="Forum" class="btn-modern" href="https://forum.domoticz.com" target="_blank">Forum</a>
+				<a data-i18n="Wiki" class="btn-modern" href="https://wiki.domoticz.com" target="_blank">Wiki</a>
+				<a data-i18n="Source Code" class="btn-modern" href="https://github.com/domoticz/domoticz" target="_blank">Source Code</a>
+			</div>
+
+			<!-- Donations -->
+			<div class="glass-card" style="animation-delay: 0.45s;">
+				<h3 class="section-title" data-i18n="Donations">Donations</h3>
+				<p class="donation-text">
+					<span data-i18n="Donations are more than welcome and will be used to buy new hardware, devices and sensors.">Donations are more than welcome and will be used to buy new hardware, devices and sensors.</span><br>
+					<span data-i18n="If you like the product or encourage the development, please use the button below.">If you like the product or encourage the development, please use the button below.</span>
+				</p>
+				<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
+					<input type="hidden" name="cmd" value="_s-xclick">
+					<input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----MIIHPwYJKoZIhvcNAQcEoIIHMDCCBywCAQExggEwMIIBLAIBADCBlDCBjjELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAkNBMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRQwEgYDVQQKEwtQYXlQYWwgSW5jLjETMBEGA1UECxQKbGl2ZV9jZXJ0czERMA8GA1UEAxQIbGl2ZV9hcGkxHDAaBgkqhkiG9w0BCQEWDXJlQHBheXBhbC5jb20CAQAwDQYJKoZIhvcNAQEBBQAEgYAe8Qcd5BVDR5uJCBtKvsBsCnSpCEzDXX6ztiB67n03uIX1WESQCLid8Dx6ow5spE8tfh1wusrph0qGw6Ix6k9e8sQKfvKidMnb6xYRQKgm20JzW2KCe1BfA47wLExabvAuBlRF8eiciH/xOJtxnsRqjE0pblxJyqJx7d3fGvW6PDELMAkGBSsOAwIaBQAwgbwGCSqGSIb3DQEHATAUBggqhkiG9w0DBwQIPcoLgPfc87OAgZiKyXsF3bATMu8qj5b9y4h10twyfHfE/9jD+oWakOCCCVNar2Q4fVw6aLaDbqBAJT0sCTSbKr0PCgpHs+tjC6pVg119zIDYGAbjoHmisM67K/wWydsLG9lAFNsaLiftdA4eS5ux+7bcmF3LZC0ysAsMdngHanJzIbIbvBsxjU4di+ObPFSUiSe73myQ2Q8dR1BCxXY3MOpBSqCCA4cwggODMIIC7KADAgECAgEAMA0GCSqGSIb3DQEBBQUAMIGOMQswCQYDVQQGEwJVUzELMAkGA1UECBMCQ0ExFjAUBgNVBAcTDU1vdW50YWluIFZpZXcxFDASBgNVBAoTC1BheVBhbCBJbmMuMRMwEQYDVQQLFApsaXZlX2NlcnRzMREwDwYDVQQDFAhsaXZlX2FwaTEcMBoGCSqGSIb3DQEJARYNcmVAcGF5cGFsLmNvbTAeFw0wNDAyMTMxMDEzMTVaFw0zNTAyMTMxMDEzMTVaMIGOMQswCQYDVQQGEwJVUzELMAkGA1UECBMCQ0ExFjAUBgNVBAcTDU1vdW50YWluIFZpZXcxFDASBgNVBAoTC1BheVBhbCBJbmMuMRMwEQYDVQQLFApsaXZlX2NlcnRzMREwDwYDVQQDFAhsaXZlX2FwaTEcMBoGCSqGSIb3DQEJARYNcmVAcGF5cGFsLmNvbTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAwUdO3fxEzEtcnI7ZKZL412XvZPugoni7i7D7prCe0AtaHTc97CYgm7NsAtJyxNLixmhLV8pyIEaiHXWAh8fPKW+R017+EmXrr9EaquPmsVvTywAAE1PMNOKqo2kl4Gxiz9zZqIajOm1fZGWcGS0f5JQ2kBqNbvbg2/Za+GJ/qwUCAwEAAaOB7jCB6zAdBgNVHQ4EFgQUlp98u8ZvF71ZP1LXChvsENZklGswgbsGA1UdIwSBszCBsIAUlp98u8ZvF71ZP1LXChvsENZklGuhgZSkgZEwgY4xCzAJBgNVBAYTAlVTMQswCQYDVQQIEwJDQTEWMBQGA1UEBxMNTW91bnRhaW4gVmlldzEUMBIGA1UEChMLUGF5UGFsIEluYy4xEzARBgNVBAsUCmxpdmVfY2VydHMxETAPBgNVBAMUCGxpdmVfYXBpMRwwGgYJKoZIhvcNAQkBFg1yZUBwYXlwYWwuY29tggEAMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEFBQADgYEAgV86VpqAWuXvX6Oro4qJ1tYVIT5DgWpE692Ag422H7yRIr/9j/iKG4Thia/Oflx4TdL+IFJBAyPK9v6zZNZtBgPBynXb048hsP16l2vi0k5Q2JKiPDsEfBhGI+HnxLXEaUWAcVfCsQFvd2A1sxRr67ip5y2wwBelUecP3AjJ+YcxggGaMIIBlgIBATCBlDCBjjELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAkNBMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRQwEgYDVQQKEwtQYXlQYWwgSW5jLjETMBEGA1UECxQKbGl2ZV9jZXJ0czERMA8GA1UEAxQIbGl2ZV9hcGkxHDAaBgkqhkiG9w0BCQEWDXJlQHBheXBhbC5jb20CAQAwCQYFKw4DAhoFAKBdMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTEyMTIwMjA4NDMxM1owIwYJKoZIhvcNAQkEMRYEFGmetEW3rW6WBtkJuGo8A7GFBrrHMA0GCSqGSIb3DQEBAQUABIGAr71g65Ux8OufW3nO6fuBMdG7M4GJoIGzfmlKZL/WFj7tvvvNIwfmM5XxhQi8FzBsziwQSuj0bqJAjqtRcAJrKeVTz8NZCvIliirMP+Q8L3F8yPpe+k9HPj+ONw4QhMuVSWqMPfiTxbI45C/loBS1YxVbsFjwgtKXguNRuVE+GH0=-----END PKCS7-----">
+					<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!" style="border-radius: 8px;">
+				</form>
+			</div>
+		</center>
+	</div>
 </div>

@@ -67,6 +67,12 @@ define(['app', 'livesocket'], function(app) {
                         className: 'row_selected',
                         selector: '.js-select-row'
                     },
+					columnDefs: [
+						{
+						targets: 6, // first column (0-based index)
+						render: $.fn.dataTable.render.text()
+						}
+					],
                     order: [[13, 'desc']],
                     columns: [
                         {
@@ -167,6 +173,16 @@ define(['app', 'livesocket'], function(app) {
                     bootbox.confirm('Are you sure to delete this Device?\n\nThis action can not be undone...')
                         .then(function() {
                             return deviceApi.removeDevice(device.idx);
+                        })
+                        .then($ctrl.onUpdate);
+                });
+
+                table.on('click', '.js-remove-scene', function() {
+                    var device = table.api().row($(this).closest('tr')).data();
+
+                    bootbox.confirm('Are you sure to delete this Scene?\n\nThis action can not be undone...')
+                        .then(function() {
+                            return deviceApi.removeScene(device.idx);
                         })
                         .then($ctrl.onUpdate);
                 });
@@ -348,10 +364,14 @@ define(['app', 'livesocket'], function(app) {
                 } else if (logLink) {
                     actions.push('<a class="btn btn-icon" href="' + logLink + '" title="' + $.t('Log') + '"><img src="images/log.png" /></a>');
                 } else if (isCustomLog) {
-					actions.push('<button class="btn btn-icon js-show-log" title="' + $.t('Log') + '"><img src="images/log.png" /></button>');
+                    actions.push('<button class="btn btn-icon js-show-log" title="' + $.t('Log') + '"><img src="images/log.png" /></button>');
                 }
 
-                actions.push('<button class="btn btn-icon js-remove-device" title="' + $.t('Remove') + '"><img src="images/delete.png" /></button>');
+                if (isScene) {
+                    actions.push('<button class="btn btn-icon js-remove-scene" title="' + $.t('Remove') + '"><img src="images/delete.png" /></button>');
+                } else {
+                    actions.push('<button class="btn btn-icon js-remove-device" title="' + $.t('Remove') + '"><img src="images/delete.png" /></button>');
+                }
 
                 return actions.join('&nbsp;');
             }
@@ -601,6 +621,7 @@ define(['app', 'livesocket'], function(app) {
         }
 
         function updateItem(event, itemData) {
+            if (!$ctrl.devices) { return; }
             var device = $ctrl.devices.find(function(device) {
                 return device.idx === itemData.idx && device.Type === itemData.Type;
             });

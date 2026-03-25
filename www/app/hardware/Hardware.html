@@ -793,6 +793,32 @@
                 </tr>
             </table>
         </div>
+        <div id="divmotherboardmode">
+            <table class="display" id="hardwareparamsmotherboardmode" border="0" cellpadding="0" cellspacing="20">
+                <tr>
+                    <td align="right" style="width:110px"><label id="lblmotherboardmode" for="name"><span data-i18n="Sensor Mode">Sensor Mode</span>: </label></td>
+                    <td>
+                        <select id="combomotherboardmode" style="width:260px" class="combobox ui-corner-all">
+                            <option value="0">Local System Sensors (Linux/BSD)</option>
+                            <option value="1">Libre Hardware Monitor (HTTP)</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="divlhmextendedsensors">
+            <table class="display" id="hardwareparamslhmextendedsensors" border="0" cellpadding="0" cellspacing="20">
+                <tr>
+                    <td align="right" style="width:110px"><label id="lbllhmextendedsensors"><span data-i18n="Extended Sensors">Extended Sensors</span>: </label></td>
+                    <td>
+                        <select id="combolhmextendedsensors" style="width:260px" class="combobox ui-corner-all">
+                            <option value="0">Disabled</option>
+                            <option value="1">Enabled</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+        </div>
         <div id="divremote">
             <table class="display" id="hardwareparamsremote" border="0" cellpadding="0" cellspacing="20">
                 <tr>
@@ -991,9 +1017,10 @@
                 <tr>
                     <td align="right" style="width:110px"><label for="comboapiversion"><span data-i18n="API Version"></span>:</label></td>
                     <td>
-                        <select id="comboapiversion" style="width:60px" class="combobox ui-corner-all">
-                            <option value="0">2.5</option>
-                            <option value="1" selected="selected">3.0</option>
+                        <select id="comboapiversion" style="width:200px" class="combobox ui-corner-all">
+                            <option value="0">2.5 OneCall (Paid)</option>
+                            <option value="1">3.0 OneCall (Paid)</option>
+                            <option value="2" selected="selected">2.5 Current Weather (Free)</option>
                         </select>
                     </td>
                 </tr>
@@ -1071,8 +1098,48 @@
             <br>
             <table class="display" id="hardwareparamssolaredgeapi" border="0" cellpadding="0" cellspacing="20">
                 <tr>
+                    <td align="right" style="width:110px"></td>
+                    <td>
+                        <b>Monitoring API</b><br>
+                        <span>Provides: inverter telemetry, site overview (current power, today/month/year/lifetime energy), energy details (production/consumption/feed-in), battery status and power flow.</span>
+                    </td>
+                </tr>
+                <tr>
                     <td align="right" style="width:110px"><label><span data-i18n="API Key"></span>:</label></td>
                     <td><input type="text" id="apikey" style="width: 280px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"></td>
+                    <td>
+                        <b>Web Portal</b> (optional)<br>
+                        <span>Provides: per-optimizer, per-string and per-inverter energy data from the SolarEdge monitoring portal. Uses your monitoring.solaredge.com login credentials.</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Site ID">Site ID</span>:</label></td>
+                    <td>
+                        <input type="text" id="siteid" style="width: 280px; padding: .2em;" class="text ui-widget-content ui-corner-all"><br>
+                        <span>Leave empty to auto-detect from API or web portal.</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Web Username">Web Username</span>:</label></td>
+                    <td><input type="text" id="webusername" style="width: 280px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Web Password">Web Password</span>:</label></td>
+                    <td><input type="password" id="webpassword" style="width: 280px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+                </tr>
+                <tr>
+                    <td align="right" style="vertical-align:top;"><span data-i18n="Poll Optimizers">Poll Optimizers</span>:</td>
+                    <td>
+                        <input type="checkbox" id="polloptimizers" name="polloptimizers"><label for="polloptimizers"></label><br>
+                        <span>Additionally polls real-time power, voltage and current per optimizer (1 request per optimizer every 10 minutes, only between sunrise and sunset).</span>
+                    </td>
                 </tr>
             </table>
         </div>
@@ -1263,7 +1330,7 @@
             <table class="display" id="hardwareparamsphilipshue" border="0" cellpadding="0" cellspacing="20">
                 <tr>
                     <td align="right" style="width:110px"><label for="pollinterval"><span data-i18n="Poll Interval"></span>:</label></td>
-                    <td><input type="text" id="pollinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all">&nbsp;(<span data-i18n="Seconds">Seconds</span>)</td>
+                    <td><input type="text" id="pollinterval" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all">&nbsp;(<span data-i18n="Seconds">Seconds</span>) Default = 10, Philips minimum = 5.</td>
                 </tr>
                 <tr>
                     <td align="right" style="width:110px"><label for="addgroups"><span data-i18n="Add Groups">Add Groups</span>:</label></td>
@@ -1350,24 +1417,30 @@
                     <td>
                         <select id="providerAC" name="providerAC" style="width:200px" class="combobox ui-corner-all">
                             <option value="Stock">Stock</option>
-                            <option value="AA">Atoom Alliantie</option>
-                            <option value="AIP">All in power</option>
                             <option value="ANWB">ANWB Energie</option>
                             <option value="BE">Budget Energie</option>
-                            <option value="EE">EasyEnergy</option>
+                            <option value="CB">Coolblue Energie</option>
+                            <option value="ED">Energiedirect</option>
+                            <option value="EE">Easy Energy</option>
+                            <option value="EG">Energiek</option>
                             <option value="EN">Eneco</option>
+                            <option value="ES">Essent</option>
                             <option value="EVO">Energie van Ons</option>
                             <option value="EZ">Energy Zero</option>
                             <option value="FR">Frank Energie</option>
                             <option value="GSL">Groenestroom Lokaal</option>
+                            <option value="HE">Hegg Energy</option>
+                            <option value="IN">Innova Energie</option>
                             <option value="MDE">Mijndomein Energie</option>
                             <option value="NE">NextEnergy</option>
                             <option value="PE">Pure Energy</option>
+                            <option value="QU">Quatt</option>
+                            <option value="SS">SamSam</option>
                             <option value="TI">Tibber</option>
                             <option value="VDB">Vandebron</option>
+                            <option value="VF">Vattenfall</option>
                             <option value="VON">Vrij op naam</option>
                             <option value="WE">Wout Energie</option>
-                            <option value="ZG">ZonderGas</option>
                             <option value="ZP">Zonneplan</option>
                         </select>
                     </td>
@@ -1379,16 +1452,25 @@
                             <option value="EGSI">Stock EGSI</option>
                             <option value="ANWB">ANWB Energie</option>
                             <option value="BE">Budget Energie</option>
-                            <option value="EE">EasyEnergy</option>
+                            <option value="ED">Energiedirect</option>
+                            <option value="EE">Easy Energy</option>
+                            <option value="EG">Energiek</option>
                             <option value="EN">Eneco</option>
+                            <option value="ES">Essent</option>
                             <option value="EVO">Energie van Ons</option>
                             <option value="EZ">Energy Zero</option>
                             <option value="FR">Frank Energie</option>
                             <option value="GSL">Groenestroom Lokaal</option>
+                            <option value="HE">Hegg Energy</option>
+                            <option value="IN">Innova Energie</option>
                             <option value="MDE">Mijndomein Energie</option>
                             <option value="NE">NextEnergy</option>
                             <option value="PE">Pure Energy</option>
+                            <option value="QU">Quatt</option>
+                            <option value="SS">SamSam</option>
+                            <option value="TI">Tibber</option>
                             <option value="VDB">Vandebron</option>
+                            <option value="VF">Vattenfall</option>
                             <option value="VON">Vrij op naam</option>
                             <option value="WE">Wout Energie</option>
                             <option value="ZP">Zonneplan</option>
@@ -1455,12 +1537,13 @@
                         <select id="scope" name="Scope" onchange="javascript:NetatmoEnableLogin()" size="6" style="width:255px" class="combobox ui-corner-all" multiple >
                             <option value="station_R">Weather Station</option>
                             <option value="thermostat_RW">Thermostat </option>
-                            <option value="camera_RWA">Indoor Camera</option>
+                            <option value="camera_RWA">Indoor Camera Welcome</option>
                             <option value="doorbell_RA">Doorbell *</option>
                             <option value="presence_RWA">Presence</option>
                             <option value="carbonmonoxidedetector_R">CO2 Detector</option>
                             <option value="smokedetector_R">Smoke Detector</option>
                             <option value="homecoach_R">Home Coach</option>
+							<option value="camerapro_RWA">Indoor Camera Advance</option>
                             <option value="magellan_RW">Magellan</option>
                             <option value="bubendorff_RW">Bubendorff *</option>
                             <option value="smarther_RW">Smarther *</option>
@@ -1721,6 +1804,10 @@
 						<option value="0xF701" data-i18n="Temp+Baro">Temp+Baro</option>
 						<option value="0xF313" data-i18n="Text">Text</option>
 						<option value="0xF201" data-i18n="Thermostat Setpoint">Thermostat Setpoint</option>
+						<option value="0x4900" data-i18n="Thermostat (Temperature/Setpoint)">Thermostat (Temperature/Setpoint)</option>
+						<option value="0x4901" data-i18n="Thermostat (Temperature/Humidity/Setpoint)">Thermostat (Temperature/Humidity/Setpoint)</option>
+						<option value="0x4902" data-i18n="Thermostat (Temperature/Barometer/Setpoint)">Thermostat (Temperature/Barometer/Setpoint)</option>
+						<option value="0x4903" data-i18n="Thermostat (Temperature/Humidity/Barometer/Setpoint)">Thermostat (Temperature/Humidity/Barometer/Setpoint)</option>
 						<option value="0xF801" data-i18n="Usage (Electric)">Usage (Electric)</option>
 						<option value="0x5701" data-i18n="UV">UV</option>
 						<option value="0xF301" data-i18n="Visibility">Visibility</option>

@@ -24,7 +24,11 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
         self.synchronizeYaxes = params.synchronizeYaxes;
         const chartDefinition = createChartDefinition(params.highchartTemplate);
         chartDefinition.range = params.range;
-        self.chart = self.$element.find('.chartcontainer').highcharts(chartDefinition).highcharts();
+        const containerEl = self.$element.find('.chartcontainer');
+        if (params.device.idx !== undefined && params.device.idx !== null && params.range !== undefined) {
+            containerEl.attr('id', 'chart-' + params.device.idx + '-' + params.range);
+        }
+        self.chart = containerEl.highcharts(chartDefinition).highcharts();
         // Disable the Highcharts Reset Zoom button
         self.chart.showResetZoom = function () {};
         self.autoRefreshIsEnabled = params.autoRefreshIsEnabled;
@@ -324,7 +328,13 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
         function synchronizeYaxes(redraw=false) {
             if (self.synchronizeYaxes) {
-                const yAxes = self.chart.series.map(getYaxisForSeries).reduce(collectToSet, []);
+                const visibleSeries = self.chart.series.filter(function (s) { return s.visible; });
+                const yAxes = visibleSeries.map(getYaxisForSeries).reduce(collectToSet, []);
+
+                if (yAxes.length === 0) {
+                    return;
+                }
+
                 yAxes.forEach(function (yAxis) {
                     yAxis.setExtremes(null, null, false);
                 });
@@ -335,6 +345,9 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
                 const yAxisMinSynchronized = iMin === Infinity ? null : iMin;
                 const yAxisMaxSynchronized = iMax === -Infinity ? null : iMax;
+
+                if (isNaN(yAxisMinSynchronized) || isNaN(yAxisMaxSynchronized)) return;
+
                 self.consoledebug('Synchronizing yAxes to extremes (' + yAxisMinSynchronized + ', ' + yAxisMaxSynchronized + '):');
                 yAxes.forEach(function (yAxis) {
                     self.consoledebug('    yAxis:' + yAxisToString(yAxis));
@@ -557,6 +570,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             }
 
             self.$scope.zoomed = false;
+            self.$scope.activeZoom = null;
 
             self.$scope.shortLogHistoryMaxDays = self.$scope.$root.config.FiveMinuteHistoryDays;
 
@@ -575,6 +589,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             }
 
             self.$scope.zoomHours = function (hours) {
+                self.$scope.activeZoom = hours + 'H';
                 const xAxis = self.chart.xAxis[0];
                 const right = Math.min(xAxis.max, xAxis.dataMax);
 				let cLabel = hours.toString() + ' ';
@@ -586,6 +601,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             }
 
             self.$scope.zoomDays = function (days) {
+                self.$scope.activeZoom = (days % 7 === 0) ? (days / 7) + 'w' : days + 'd';
                 const xAxis = self.chart.xAxis[0];
                 const right = Math.min(xAxis.max, xAxis.dataMax);
 				let cLabel = days.toString() + ' ';
@@ -605,6 +621,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             }
 
             self.$scope.zoomMonths = function (months) {
+                self.$scope.activeZoom = months + 'M';
                 const xAxis = self.chart.xAxis[0];
                 const right = Math.min(xAxis.max, xAxis.dataMax);
 				let cLabel = months.toString() + ' ';
@@ -624,6 +641,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             }
 			
 			self.$scope.zoomToday = function() {
+				self.$scope.activeZoom = 'today';
 				var dstart = new Date();
 				dstart.setHours(0,0,0,0);
 				var dend = new Date();
@@ -632,6 +650,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 			}
 
             self.$scope.zoomreset = function () {
+                self.$scope.activeZoom = null;
                 const xAxis = self.chart.xAxis[0];
                 zoom(xAxis.dataMin, xAxis.dataMax, '');
             }
@@ -666,8 +685,13 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 return $.t(label).toLowerCase();
             }
 
+            if (self.ctrl && self.ctrl.groupingBy !== undefined) {
+                self.$scope.groupingBy = self.ctrl.groupingBy;
+            }
+
             self.$scope.groupBy = function (groupingBy) {
                 self.ctrl.groupingBy = groupingBy;
+                self.$scope.groupingBy = groupingBy;
                 self.chart.update(
                     {
                         plotOptions: {
@@ -677,6 +701,57 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                         }
                     }, false);
                 refreshChartData();
+            };
+
+            self.$scope.priceResolution = (self.ctrl && self.ctrl.priceResolution) || 60;
+            self.$scope.resolution = (self.ctrl && self.ctrl.resolution) || 60;
+
+            self.$scope.zoomType = 'all';
+
+            function applyZoomType(type) {
+                if (type === 'today') {
+                    self.$scope.zoomToday();
+                } else if (type === '1d') {
+                    self.$scope.zoomDays(1);
+                } else {
+                    self.$scope.zoomreset();
+                }
+            }
+
+            function applyResolution(minutes) {
+                var isSubHour = (minutes < 60);
+                self.ctrl.resolution = minutes;
+                self.$scope.resolution = minutes;
+                self.chart.update({
+                    xAxis: {
+                        dateTimeLabelFormats: {
+                            hour: isSubHour ? '%H:%M' : '%H:00',
+                            day: isSubHour ? '%H:%M' : '%H:00'
+                        },
+                        tickInterval: isSubHour ? (minutes * 60 * 1000) : 3600000
+                    }
+                }, false);
+                self.chartName = $.t('Usage') + ' / ' + (isSubHour ? minutes + ' ' + $.t('Minutes') : $.t('Hour'));
+                self.$scope.chartTitle = chartTitle();
+            }
+
+            self.$scope.setResolution = function (minutes) {
+                applyResolution(minutes);
+                refreshChartData(function () {
+                    applyZoomType(self.$scope.zoomType);
+                });
+            };
+
+            self.$scope.setZoomType = function (type) {
+                self.$scope.zoomType = type;
+                refreshChartData(function () {
+                    applyZoomType(type);
+                });
+            };
+
+            self.$scope.resolutionLabel = function (minutes) {
+                if (minutes >= 60) return '1' + $.t('Hour').substring(0, 1).toLowerCase();
+                return minutes + $.t('Minute').substring(0, 1).toLowerCase();
             };
 
             self.$element.find('.chart-title-container').on('click', function (e) {

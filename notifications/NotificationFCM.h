@@ -14,6 +14,9 @@ public:
 	std::string m_GAPI_FCM_PostURL;
 	std::string m_GAPI_FCM_issuer;
 	std::string m_GAPI_FCM_privkey;
+		std::string m_FCMClientEmail;
+		std::string m_FCMPrivateKey;
+		std::string m_FCMProjectId;
 
 	std::string m_slAccesToken_cached;
 	uint64_t m_slAccessToken_exp_time;

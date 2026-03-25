@@ -106,11 +106,11 @@ public:
 	~CEventSystem();
 
 	void StartEventSystem();
-	void StopEventSystem();
+	void StopEventSystem(bool bDestroyPythonInterpreter = true);
 
 	void LoadEvents();
 	void ProcessDevice(int HardwareID, uint64_t ulDevID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
-			   const char *sValue);
+			   const char *sValue, const std::string &lastUpdate);
 	void UpdateBatteryLevel(uint64_t ulDevID, unsigned char batteryLevel);
 
 	void RemoveSingleState(uint64_t ulDevID, _eReason reason);
@@ -157,16 +157,16 @@ private:
 
 	struct _tEventQueue
 	{
-		_eReason reason;
-		uint64_t id;
+		_eReason reason = REASON_DEVICE;
+		uint64_t id = 0;
 		std::string devname;
-		int nValue;
+		int nValue = 0;
 		std::string sValue;
 		std::string nValueWording;
 		std::string lastUpdate;
 		std::string errorText;
-		bool timeoutOccurred;
-		uint8_t lastLevel;
+		bool timeoutOccurred = false;
+		uint8_t lastLevel = 0;
 		std::vector<std::string> vData;
 		std::map<uint8_t, int> JsonMapInt;
 		std::map<uint8_t, float> JsonMapFloat;
@@ -189,6 +189,7 @@ private:
 	std::shared_ptr<std::thread> m_eventqueuethread;
 	StoppableTask m_TaskQueue;
 	int m_SecStatus;
+	int m_LastRefreshDay = -1;
 	std::string m_lua_Dir;
 	std::string m_szStartTime;
 
@@ -225,6 +226,7 @@ private:
 	std::string ParseBlocklyString(const std::string &oString);
 	void ParseActionString( const std::string &oAction_, _tActionParseResults &oResults_ );
 	void UpdateJsonMap(_tDeviceStatus &item, uint64_t ulDevID);
+	void RefreshCounterJsonMaps();
 	void EventQueueThread();
 	void UnlockEventQueueThread();
 	void ExportDeviceStatesToLua(lua_State *lua_state, const _tEventQueue &item);

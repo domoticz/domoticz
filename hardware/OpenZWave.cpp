@@ -5,6 +5,17 @@
 #ifdef WITH_OPENZWAVE
 #include "OpenZWave.h"
 
+//OpenZWave includes
+#include <Options.h>
+#include <Manager.h>
+#include <platform/Log.h>
+#include <ValueIDIndexesDefines.h>
+
+// OpenZWave's Defs.h defines snprintf as sprintf_s for legacy MSVC compat,
+// which breaks std::snprintf in Boost 1.90+ headers. Modern MSVC has proper
+// snprintf support so the macro is no longer needed.
+#undef snprintf
+
 #include <sstream>      // std::stringstream
 #include <ctype.h>
 #include <algorithm>
@@ -14,20 +25,14 @@
 #include "../main/RFXtrx.h"
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #include "hardwaretypes.h"
 
 #include "../main/WebServer.h"
-#include "../webserver/cWebem.h"
+#include <libwebem/cWebem.h>
 #include "../main/mainworker.h"
 
 #include <json/json.h>
-
-//OpenZWave includes
-#include <Options.h>
-#include <Manager.h>
-#include <platform/Log.h>
-#include <ValueIDIndexesDefines.h>
 
 #include "ZWaveCommands.h"
 

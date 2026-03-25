@@ -1,6 +1,9 @@
 #pragma once
 
 #include "MQTT.h"
+#include "CounterHelper.h"
+#include <atomic>
+#include <deque>
 
 class MQTTAutoDiscover : public MQTT
 {
@@ -37,6 +40,9 @@ class MQTTAutoDiscover : public MQTT
 		std::string percentage_command_template;
 		std::string percentage_state_topic;
 		std::string percentage_value_template;
+
+		int speed_range_max = 100; //The maximum of numeric output range (representing 100 %). The percentage_step is defined by 100 / the number of speeds within the speed range.
+		int speed_range_min = 1; //The minimum of numeric output range (off not included, so speed_range_min - 1 represents 0 %). The percentage_step is defined by 100 / the number of speeds within the speed range.
 
 		std::string unit_of_measurement;
 
@@ -101,6 +107,17 @@ class MQTTAutoDiscover : public MQTT
 		std::string temperature_unit = "C";
 		std::string current_temperature_topic;
 		std::string current_temperature_template;
+		std::string current_humidity_topic;
+		std::string current_humidity_template;
+
+		std::string temperature_high_command_topic;
+		std::string temperature_high_command_template;
+		std::string temperature_high_state_template;
+		std::string temperature_high_state_topic;
+		std::string temperature_low_command_topic;
+		std::string temperature_low_command_template;
+		std::string temperature_low_state_template;
+		std::string temperature_low_state_topic;
 
 		std::vector<std::string> preset_modes;
 		std::string preset_mode_command_topic;
@@ -142,8 +159,10 @@ class MQTTAutoDiscover : public MQTT
 		std::map<std::string, std::string> keys;
 
 		bool bOnline = false;
+		bool bUseLegacyClimate = false;
 		time_t last_received = 0;
 		std::string last_value;
+		double prev_value = 0;
 		std::string last_topic;
 		bool bIsJSON = false;
 		bool bIsNull = false;
@@ -153,6 +172,8 @@ class MQTTAutoDiscover : public MQTT
 		uint8_t devUnit = 1;
 		int nValue = 0;
 		std::string sValue;
+		std::string pending_user;
+		time_t pending_user_time = 0;
 		std::string szOptions;
 		int SignalLevel = 12;
 		int BatteryLevel = 255;
@@ -172,6 +193,15 @@ class MQTTAutoDiscover : public MQTT
 		std::map<std::string, bool> sensor_ids;
 	};
 
+	struct _tIncommingMsg
+	{
+		int mid;
+		std::string topic;
+		std::string payload;
+		int qos;
+		bool retain;
+	};
+
 public:
 	MQTTAutoDiscover(int ID, const std::string &Name, const std::string &IPAddress, unsigned short usIPPort, const std::string &Username, const std::string &Password,
 		      const std::string &CAfilenameExtra, int TLS_Version);
@@ -181,7 +211,7 @@ public:
 		const char* sValue, std::string& devname, bool bUseOnOffAction = true, const std::string& user = "");
 	bool SendSwitchCommand(const std::string& DeviceID, const std::string& DeviceName, int Unit, std::string command, int level, _tColor color, const std::string& user);
 	bool SendIRCommand(const std::string& DeviceID, const std::string& DeviceName, int Unit, std::string command, int level, _tColor color, const std::string& user);
-	bool SetSetpoint(const std::string& DeviceID, const float Temp);
+	bool SetSetpoint(const std::string& DeviceID, const uint8_t Unit, const float Temp, const std::string& user = "");
 	bool SetTextDevice(const std::string& DeviceID, const std::string& text);
 
 	void GetConfig(Json::Value& root);
@@ -204,6 +234,15 @@ private:
 	bool SetValueWithTemplate(Json::Value& root, std::string szValueTemplate, std::string szValue);
 	bool GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& devType, uint8_t& subType, std::string& szOptions, int& nValue, std::string& sValue);
 	void ApplySignalLevelDevice(const _tMQTTASensor* pSensor);
+
+	bool InsertUpdateSetpoint(
+		_tMQTTASensor* pSensor,
+		const std::string& command_topic,
+		const std::string& state_topic,
+		const std::string& state_template,
+		const int Unit,
+		const struct mosquitto_message* message
+		);
 
 	void on_auto_discovery_message(const struct mosquitto_message* message);
 	void handle_auto_discovery_sensor_message(const struct mosquitto_message* message,const std::string &subscribed_topic);
@@ -230,9 +269,21 @@ private:
 	_tMQTTASensor* get_auto_discovery_sensor_unit(const _tMQTTASensor* pSensor, const uint8_t devType, const int subType = -1, const int devUnit = -1);
 	_tMQTTASensor* get_auto_discovery_sensor_WATT_unit(const _tMQTTASensor* pSensor);
 	bool HaveSingleTempHumBaro(const std::string &device_identifiers);
+
+	void Do_Work();
+protected:
+	bool StartHardware() override;
+	bool StopHardware() override;
 private:
 	std::string m_TopicDiscoveryPrefix;
 
 	std::map<std::string, _tMQTTADevice> m_discovered_devices;
 	std::map<std::string, _tMQTTASensor> m_discovered_sensors;
+
+	std::map<std::string, CounterHelper> m_kwh_counter_helper;
+
+	std::deque<_tIncommingMsg> m_incoming_messages;
+	std::mutex m_inc_msg_mutex;
+	std::shared_ptr<std::thread> m_worker_thread;
+	std::atomic<bool> m_bDisconnected{ false };
 };

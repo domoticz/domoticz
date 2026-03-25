@@ -5,13 +5,19 @@
 #include "../main/Logger.h"
 #include "../main/RFXNames.h"
 #include "../main/WebServerHelper.h"
-#include "../webserver/server_settings.hpp"
+#include <libwebem/server_settings.h>
 #include "../main/LuaTable.h"
 #include "../main/json_helper.h"
 #include "dzVents.h"
+#include "Helper.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
+#ifdef WIN32
+#include "../main/dirent_windows.h"
+#else
+#include <dirent.h>
+#endif
 
 extern "C" {
 #include <lua.h>
@@ -38,7 +44,7 @@ enum edzVentsLogLevel
 };
 
 CdzVents::CdzVents()
-	: m_version("3.1.8")
+	: m_version("3.1.11")
 {
 	m_bdzVentsExist = false;
 }
@@ -54,6 +60,9 @@ void CdzVents::EvaluateDzVents(lua_State* lua_state, const std::vector<CEventSys
 	luaL_openlibs(lua_state);
 	lua_pushcfunction(lua_state, l_domoticz_print);
 	lua_setglobal(lua_state, "print");
+
+	lua_pushcfunction(lua_state, l_domoticz_scandir);
+	lua_setglobal(lua_state, "dz_scandir");
 
 	bool reasonTime = false;
 	bool reasonURL = false;
@@ -103,33 +112,40 @@ void CdzVents::ProcessNotificationItem(CLuaTable& luaTable, int& index, const CE
 		{
 			luaTable.AddString("message", "");
 			luaTable.OpenSubTableEntry("data", 0, 0);
-			if (item.nValue >= Notification::HW_TIMEOUT && item.nValue <= Notification::HW_THREAD_ENDED)
+			try
 			{
-				Json::Value eventdata;
-				if (ParseJSon(item.sValue, eventdata))
+				if (item.nValue >= Notification::HW_TIMEOUT && item.nValue <= Notification::HW_THREAD_ENDED)
 				{
-					luaTable.AddInteger("id", eventdata["m_HwdID"].asInt());
-					luaTable.AddString("name", eventdata["m_Name"].asString());
+					Json::Value eventdata;
+					if (ParseJSon(item.sValue, eventdata))
+					{
+						luaTable.AddInteger("id", eventdata["m_HwdID"].asInt());
+						luaTable.AddString("name", eventdata["m_Name"].asString());
+					}
+				}
+				else if (item.nValue == Notification::DZ_BACKUP_DONE)
+				{
+					Json::Value eventdata;
+					if (ParseJSon(item.sValue, eventdata))
+					{
+						type = type + eventdata["type"].asString();
+						luaTable.AddNumber("duration", eventdata["duration"].asFloat());
+						luaTable.AddString("location", eventdata["location"].asString());
+					}
+				}
+				else if (item.nValue == Notification::DZ_CUSTOM)
+				{
+					Json::Value eventdata;
+					if (ParseJSon(item.sValue, eventdata))
+					{
+						luaTable.AddString("name", eventdata["name"].asString());
+						luaTable.AddString("data", eventdata["data"].asString());
+					}
 				}
 			}
-			else if (item.nValue == Notification::DZ_BACKUP_DONE)
+			catch (const std::exception& e)
 			{
-				Json::Value eventdata;
-				if (ParseJSon(item.sValue, eventdata))
-				{
-					type = type + eventdata["type"].asString();
-					luaTable.AddNumber("duration", eventdata["duration"].asFloat());
-					luaTable.AddString("location", eventdata["location"].asString());
-				}
-			}
-			else if (item.nValue == Notification::DZ_CUSTOM)
-			{
-				Json::Value eventdata;
-				if (ParseJSon(item.sValue, eventdata))
-				{
-					luaTable.AddString("name", eventdata["name"].asString());
-					luaTable.AddString("data", eventdata["data"].asString());
-				}
+				_log.Log(LOG_ERROR, "dzVents: Error in ProcessNotificationItem data: %s", e.what());
 			}
 			luaTable.CloseSubTableEntry();
 		}
@@ -542,7 +558,8 @@ bool CdzVents::UpdateDevice(lua_State* lua_state, const std::vector<_tLuaTableVa
 	if (idx == -1)
 		return false;
 
-	m_sql.AddTaskItem(_tTaskItem::UpdateDevice(delayTime, idx, nValue, sValue, Protected, bEventTrigger, "dzVents/" + eventName), false);
+	const std::string attribution = eventName.empty() ? "dzVents.lua" : eventName;
+	m_sql.AddTaskItem(_tTaskItem::UpdateDevice(delayTime, idx, nValue, sValue, Protected, bEventTrigger, "dzVents/" + attribution), false);
 	return true;
 }
 
@@ -646,7 +663,8 @@ bool CdzVents::CancelItem(lua_State* lua_state, const std::vector<_tLuaTableValu
 	_tTaskItem tItem;
 	tItem._idx = idx;
 	tItem._DelayTime = 0;
-	tItem._sUser = "dzVents/" + eventName;
+	const std::string attribution = eventName.empty() ? "dzVents.lua" : eventName;
+	tItem._sUser = "dzVents/" + attribution;
 	if (type == "device")
 	{
 		tItem._ItemType = TITEM_SWITCHCMD_EVENT;
@@ -755,6 +773,30 @@ void CdzVents::IterateTable(lua_State* lua_state, const int tIndex, std::vector<
 
 		lua_pop(lua_state, 1);
 	}
+}
+
+int CdzVents::l_domoticz_scandir(lua_State* lua_state)
+{
+	// Takes a directory path as argument, returns a table of filenames
+	const char* dirpath = luaL_checkstring(lua_state, 1);
+
+	lua_newtable(lua_state);
+	int idx = 1;
+
+	DIR* d = opendir(dirpath);
+	if (d != nullptr)
+	{
+		struct dirent* ent;
+		while ((ent = readdir(d)) != nullptr)
+		{
+			lua_pushinteger(lua_state, idx++);
+			lua_pushstring(lua_state, ent->d_name);
+			lua_settable(lua_state, -3);
+		}
+		closedir(d);
+	}
+
+	return 1; // returns the table
 }
 
 int CdzVents::l_domoticz_print(lua_State* lua_state)
@@ -997,53 +1039,59 @@ void CdzVents::ExportDomoticzDataToLua(lua_State* lua_state, const std::vector<C
 			luaTable.AddInteger("signalLevel", sitem.signalLevel);
 
 			luaTable.OpenSubTableEntry("data", 0, 0);
-			luaTable.AddString("_state", sitem.nValueWording);
-			luaTable.AddInteger("_nValue", sitem.nValue);
-			luaTable.AddInteger("hardwareID", sitem.hardwareID);
-			if (sitem.devType == pTypeGeneral && sitem.subType == sTypeKwh)
+			try
 			{
-				long double value = 0.0F;
-				if (strarray.size() > 1)
-					value = atof(strarray[1].c_str());
-				luaTable.AddNumber("whTotal", value);
-				value = 0.0F;
-				if (!strarray.empty())
-					value = atof(strarray[0].c_str());
-				luaTable.AddNumber("whActual", value);
-			}
-
-			// Now see if we have additional fields from the JSON data
-			if (!sitem.JsonMapString.empty())
-			{
-				for (const auto& item : sitem.JsonMapString)
+				luaTable.AddString("_state", sitem.nValueWording);
+				luaTable.AddInteger("_nValue", sitem.nValue);
+				luaTable.AddInteger("hardwareID", sitem.hardwareID);
+				if (sitem.devType == pTypeGeneral && sitem.subType == sTypeKwh)
 				{
-					if (strcmp(m_mainworker.m_eventsystem.JsonMap[item.first].szOriginal, "LevelNames") == 0
-						|| strcmp(m_mainworker.m_eventsystem.JsonMap[item.first].szOriginal, "LevelActions") == 0)
-						luaTable.AddString(m_mainworker.m_eventsystem.JsonMap[item.first].szNew,
-							base64_decode(item.second));
-					else
-						luaTable.AddString(m_mainworker.m_eventsystem.JsonMap[item.first].szNew, item.second);
+					long double value = 0.0F;
+					if (strarray.size() > 1)
+						value = atof(strarray[1].c_str());
+					luaTable.AddNumber("whTotal", value);
+					value = 0.0F;
+					if (!strarray.empty())
+						value = atof(strarray[0].c_str());
+					luaTable.AddNumber("whActual", value);
+				}
+
+				// Now see if we have additional fields from the JSON data
+				if (!sitem.JsonMapString.empty())
+				{
+					for (const auto& item : sitem.JsonMapString)
+					{
+						if (strcmp(m_mainworker.m_eventsystem.JsonMap[item.first].szOriginal, "LevelNames") == 0
+							|| strcmp(m_mainworker.m_eventsystem.JsonMap[item.first].szOriginal, "LevelActions") == 0)
+							luaTable.AddString(m_mainworker.m_eventsystem.JsonMap[item.first].szNew,
+								base64_decode(item.second));
+						else
+							luaTable.AddString(m_mainworker.m_eventsystem.JsonMap[item.first].szNew, item.second);
+					}
+				}
+
+				if (!sitem.JsonMapFloat.empty())
+				{
+					for (const auto& item : sitem.JsonMapFloat)
+						luaTable.AddNumber(m_mainworker.m_eventsystem.JsonMap[item.first].szNew, item.second);
+				}
+
+				if (!sitem.JsonMapInt.empty())
+				{
+					for (const auto& item : sitem.JsonMapInt)
+						luaTable.AddInteger(m_mainworker.m_eventsystem.JsonMap[item.first].szNew, item.second);
+				}
+
+				if (!sitem.JsonMapBool.empty())
+				{
+					for (const auto& item : sitem.JsonMapBool)
+						luaTable.AddBool(m_mainworker.m_eventsystem.JsonMap[item.first].szNew, item.second);
 				}
 			}
-
-			if (!sitem.JsonMapFloat.empty())
+			catch (const std::exception& e)
 			{
-				for (const auto& item : sitem.JsonMapFloat)
-					luaTable.AddNumber(m_mainworker.m_eventsystem.JsonMap[item.first].szNew, item.second);
+				_log.Log(LOG_ERROR, "dzVents: Error exporting device data for '%s': %s", sitem.deviceName.c_str(), e.what());
 			}
-
-			if (!sitem.JsonMapInt.empty())
-			{
-				for (const auto& item : sitem.JsonMapInt)
-					luaTable.AddInteger(m_mainworker.m_eventsystem.JsonMap[item.first].szNew, item.second);
-			}
-
-			if (!sitem.JsonMapBool.empty())
-			{
-				for (const auto& item : sitem.JsonMapBool)
-					luaTable.AddBool(m_mainworker.m_eventsystem.JsonMap[item.first].szNew, item.second);
-			}
-
 			luaTable.CloseSubTableEntry();
 			luaTable.CloseSubTableEntry();
 			index++;

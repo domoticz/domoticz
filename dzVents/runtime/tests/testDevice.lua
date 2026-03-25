@@ -6,9 +6,9 @@ package.path = "../?.lua;" .. scriptPath .. '/?.lua;../device-adapters/?.lua;../
 
 local testData = require('tstData')
 
-local LOG_INFO = 2
-local LOG_DEBUG = 3
-local LOG_ERROR = 1
+local LOG_INFO = 3
+local LOG_DEBUG = 1
+local LOG_ERROR = 5
 
 local utils = require('Utils')
 local function values(t)
@@ -625,6 +625,7 @@ describe('device', function()
 					"updateTempHumBaro",
 					"updateTemperature",
 					"updateText",
+					"updateThermostat",
 					"updateUV",
 					"updateVisibility",
 					"updateVoltage",
@@ -1680,6 +1681,92 @@ describe('device', function()
 			device.updateMode('Cooling')
 			assert.is_same({ { ['UpdateDevice'] = { ['_trigger'] = true, ['idx'] = 1, ['nValue'] = 1, ['sValue'] = 'cooling' } }  }, commandArray)
 
+		end)
+
+		it('should detect a Thermostat 6 device (Temp/Setpoint)', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myThermostat6',
+				['type'] = 'Thermostat 6',
+				['subType'] = 'Temp/Setpoint',
+				['rawData'] = { [1] = '22.5', [2] = '21.0' }
+			})
+
+			assert.is_same(21.0, device.setPoint)
+
+			commandArray = {}
+			device.updateSetPoint(23)
+			assert.is_same({ { ['SetSetPoint:1'] = '23' } }, commandArray)
+
+			commandArray = {}
+			device.updateThermostat(22.5, 21.0)
+			assert.is_same({ { ['UpdateDevice'] = { idx = 1, nValue = 0, sValue = '22.5;21.0', _trigger = true } } }, commandArray)
+		end)
+
+		it('should detect a Thermostat 6 device (Temp/Hum/Setpoint)', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myThermostat6Hum',
+				['type'] = 'Thermostat 6',
+				['subType'] = 'Temp/Hum/Setpoint',
+				['rawData'] = { [1] = '22.5', [2] = '21.0' },
+				['additionalDataData'] = {
+					['humidityStatus'] = 'Comfortable',
+					['humidity'] = 55
+				}
+			})
+
+			assert.is_same(21.0, device.setPoint)
+			assert.is_same(1, device.humidityStatusValue)
+
+			commandArray = {}
+			device.updateThermostat(22.5, 21.0, 55, 1)
+			assert.is_same({ { ['UpdateDevice'] = { idx = 1, nValue = 0, sValue = '22.5;21.0;55;1', _trigger = true } } }, commandArray)
+
+			commandArray = {}
+			device.updateThermostat(22.5, 21.0, 55)
+			assert.is_same({ { ['UpdateDevice'] = { idx = 1, nValue = 0, sValue = '22.5;21.0;55;1', _trigger = true } } }, commandArray)
+		end)
+
+		it('should detect a Thermostat 6 device (Temp/Baro/Setpoint)', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myThermostat6Baro',
+				['type'] = 'Thermostat 6',
+				['subType'] = 'Temp/Baro/Setpoint',
+				['rawData'] = { [1] = '22.5', [2] = '21.0' }
+			})
+
+			assert.is_same(21.0, device.setPoint)
+
+			commandArray = {}
+			device.updateThermostat(22.5, 21.0, nil, nil, 1013, 'sunny')
+			assert.is_same({ { ['UpdateDevice'] = { idx = 1, nValue = 0, sValue = '22.5;21.0;1013;1', _trigger = true } } }, commandArray)
+
+			commandArray = {}
+			device.updateThermostat(22.5, 21.0, nil, nil, 1013, 'rain')
+			assert.is_same({ { ['UpdateDevice'] = { idx = 1, nValue = 0, sValue = '22.5;21.0;1013;4', _trigger = true } } }, commandArray)
+		end)
+
+		it('should detect a Thermostat 6 device (Temp/Hum/Baro/Setpoint)', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myThermostat6Full',
+				['type'] = 'Thermostat 6',
+				['subType'] = 'Temp/Hum/Baro/Setpoint',
+				['rawData'] = { [1] = '22.5', [2] = '21.0' },
+				['additionalDataData'] = {
+					['humidityStatus'] = 'Wet',
+					['humidity'] = 80
+				}
+			})
+
+			assert.is_same(21.0, device.setPoint)
+			assert.is_same(3, device.humidityStatusValue)
+
+			commandArray = {}
+			device.updateThermostat(22.5, 21.0, 80, 3, 1013, 'cloudy')
+			assert.is_same({ { ['UpdateDevice'] = { idx = 1, nValue = 0, sValue = '22.5;21.0;80;3;1013;3', _trigger = true } } }, commandArray)
+
+			commandArray = {}
+			device.updateThermostat(22.5, 21.0, 65, nil, 1013, 'partlycloudy')
+			assert.is_same({ { ['UpdateDevice'] = { idx = 1, nValue = 0, sValue = '22.5;21.0;65;1;1013;2', _trigger = true } } }, commandArray)
 		end)
 
 		it('should detect a youless device', function()

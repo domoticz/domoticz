@@ -35,7 +35,6 @@ class CPinger : public CDomoticzHardwareBase
 	void ReloadNodes();
 
       private:
-	int m_iThreadsRunning;
 	int m_iPollInterval;
 	int m_iPingTimeoutms;
 	std::vector<PingNode> m_nodes;

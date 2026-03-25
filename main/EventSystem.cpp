@@ -17,17 +17,32 @@
 #include "../notifications/NotificationHelper.h"
 #include "WebServer.h"
 #include "../main/WebServerHelper.h"
-#include "../webserver/cWebem.h"
+#include <libwebem/cWebem.h>
 #include "../main/json_helper.h"
 #include "../main/NotificationSystem.h"
 #include "../main/LuaTable.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
-
+#include <future>
+#include <memory>
 extern "C" {
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
+}
+
+struct ScriptNameReport {
+	std::mutex mtx;
+	std::string name;
+};
+
+static int l_reportScriptName(lua_State *L)
+{
+	auto *report = static_cast<ScriptNameReport *>(lua_touserdata(L, lua_upvalueindex(1)));
+	const char *name = luaL_checkstring(L, 1);
+	std::lock_guard<std::mutex> lock(report->mtx);
+	report->name = name;
+	return 0;
 }
 
 bool g_bUseEventTrigger = true;
@@ -52,7 +67,8 @@ const std::string CEventSystem::m_szReason[] =
 	"time",				// 3
 	"security",			// 4
 	"url",				// 5
-	"notification"			// 6
+	"notification",			// 6
+	"shellcommand"			// 7
 };
 
 // Security status
@@ -128,12 +144,18 @@ CEventSystem::CEventSystem()
 
 CEventSystem::~CEventSystem()
 {
-	StopEventSystem();
+	// Pass false: never call Py_EndInterpreter from the destructor.
+	// Py_EndInterpreter blocks if any Python thread still holds the GIL
+	// (e.g. a plugin callback in flight during shutdown), causing a hang.
+	// The OS releases all Python resources when the process exits.
+	StopEventSystem(false);
 }
 
 void CEventSystem::StartEventSystem()
 {
-	StopEventSystem();
+	// Preserve the Python sub-interpreter across restarts to avoid the
+	// Py_EndInterpreter / Py_NewInterpreter cycle that crashes on Python 3.13.
+	StopEventSystem(false);
 	m_mainworker.m_notificationsystem.Register(this);
 
 	if (!m_bEnabled)
@@ -159,7 +181,7 @@ void CEventSystem::StartEventSystem()
 	m_szStartTime = TimeToString(&m_StartTime, TF_DateTime);
 }
 
-void CEventSystem::StopEventSystem()
+void CEventSystem::StopEventSystem(bool bDestroyPythonInterpreter /*= true*/)
 {
 	RequestStop();
 	m_TaskQueue.RequestStop();
@@ -178,7 +200,7 @@ void CEventSystem::StopEventSystem()
 	}
 
 #ifdef ENABLE_PYTHON
-	Plugins::PythonEventsStop();
+	Plugins::PythonEventsStop(bDestroyPythonInterpreter);
 #endif
 }
 
@@ -316,32 +338,40 @@ void CEventSystem::Do_Work()
 	m_python_Dir = szUserDataFolder + "scripts/python/";
 #endif
 #endif
-	time_t lasttime = mytime(nullptr);
-	struct tm tmptime;
+	time_t atime = mytime(nullptr);
 	struct tm ltime;
 
-	localtime_r(&lasttime, &tmptime);
-	int _LastMinute = tmptime.tm_min;
+	localtime_r(&atime, &ltime);
+	int _LastMinute = ltime.tm_min;
+	m_LastRefreshDay = ltime.tm_mday;
 
 	_log.Log(LOG_STATUS, "EventSystem: Started");
-	while (!IsStopRequested(500))
+	while (true)
 	{
-		time_t atime = mytime(nullptr);
+		// Calculate sleep time until next 12-second heartbeat
+		// Handle leap seconds (tm_sec can be 60 or 61) by clamping to 59
+		int current_sec = (ltime.tm_sec > 59) ? 59 : ltime.tm_sec;
+		int next_wake_sec = ((current_sec / 12) + 1) * 12;
+		int sleep_ms = (next_wake_sec - current_sec) * 1000;
 
-		if (atime != lasttime)
+		if (IsStopRequested(sleep_ms))
+			break;
+
+		atime = mytime(nullptr);
+		localtime_r(&atime, &ltime);
+
+		if (ltime.tm_sec % 12 == 0) {
+			m_mainworker.HeartbeatUpdate("EventSystem");
+		}
+		if (ltime.tm_mday != m_LastRefreshDay)
 		{
-			lasttime = atime;
-
-			localtime_r(&atime, &ltime);
-
-			if (ltime.tm_sec % 12 == 0) {
-				m_mainworker.HeartbeatUpdate("EventSystem");
-			}
-			if (ltime.tm_min != _LastMinute)
-			{
-				_LastMinute = ltime.tm_min;
-				ProcessMinute();
-			}
+			m_LastRefreshDay = ltime.tm_mday;
+			RefreshCounterJsonMaps();
+		}
+		if (ltime.tm_min != _LastMinute)
+		{
+			_LastMinute = ltime.tm_min;
+			ProcessMinute();
 		}
 	}
 	_log.Log(LOG_STATUS, "EventSystem: Stopped...");
@@ -423,6 +453,37 @@ void CEventSystem::UpdateJsonMap(_tDeviceStatus &item, const uint64_t ulDevID)
 				}
 			}
 			index++;
+		}
+	}
+}
+
+void CEventSystem::RefreshCounterJsonMaps()
+{
+	if (m_sql.m_bDisableDzVentsSystem)
+		return;
+
+	// Find the indices of daily counter fields in the JsonMap array
+	std::vector<int> counterTodayIndices;
+	for (int i = 0; JsonMap[i].szOriginal != nullptr; i++)
+	{
+		if (strcmp(JsonMap[i].szOriginal, "CounterToday") == 0 || strcmp(JsonMap[i].szOriginal, "CounterDelivToday") == 0)
+			counterTodayIndices.push_back(i);
+	}
+	if (counterTodayIndices.empty())
+		return;
+
+	_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: Refreshing counter device JsonMaps for new day");
+
+	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+	for (auto& state : m_devicestates)
+	{
+		for (int idx : counterTodayIndices)
+		{
+			if (state.second.JsonMapString.find(idx) != state.second.JsonMapString.end())
+			{
+				UpdateJsonMap(state.second, state.first);
+				break;
+			}
 		}
 	}
 }
@@ -686,6 +747,66 @@ void CEventSystem::GetCurrentMeasurementStates()
 			{
 				temp = static_cast<float>(atof(splitresults[0].c_str()));
 				isTemp = true;
+			}
+			break;
+		case pTypeThermostat6:
+			// Thermostat 6 combines temperature + setpoint (+ optional humidity/baro)
+			// sValue formats:
+			//   sTypeThermostat6Temp (0x00): "temp;setpoint"
+			//   sTypeThermostat6TempHum (0x01): "temp;setpoint;humidity;humidity_status"
+			//   sTypeThermostat6TempBaro (0x02): "temp;setpoint;barometer;forecast"
+			//   sTypeThermostat6TempHumBaro (0x03): "temp;setpoint;humidity;humidity_status;barometer;forecast"
+			if (sitem.subType == sTypeThermostat6Temp)
+			{
+				if (splitresults.size() >= 2)
+				{
+					temp = static_cast<float>(atof(splitresults[0].c_str()));
+					utilityval = static_cast<float>(atof(splitresults[1].c_str())); // setpoint
+					isTemp = true;
+					isUtility = true;
+				}
+			}
+			else if (sitem.subType == sTypeThermostat6TempHum)
+			{
+				if (splitresults.size() >= 4)
+				{
+					temp = static_cast<float>(atof(splitresults[0].c_str()));
+					utilityval = static_cast<float>(atof(splitresults[1].c_str())); // setpoint
+					humidity = ground(atof(splitresults[2].c_str()));
+					dewpoint = (float)CalculateDewPoint(temp, humidity);
+					isTemp = true;
+					isUtility = true;
+					isHum = true;
+					isDew = true;
+				}
+			}
+			else if (sitem.subType == sTypeThermostat6TempBaro)
+			{
+				if (splitresults.size() >= 4)
+				{
+					temp = static_cast<float>(atof(splitresults[0].c_str()));
+					utilityval = static_cast<float>(atof(splitresults[1].c_str())); // setpoint
+					barometer = static_cast<float>(atof(splitresults[2].c_str()));
+					isTemp = true;
+					isUtility = true;
+					isBaro = true;
+				}
+			}
+			else if (sitem.subType == sTypeThermostat6TempHumBaro)
+			{
+				if (splitresults.size() >= 6)
+				{
+					temp = static_cast<float>(atof(splitresults[0].c_str()));
+					utilityval = static_cast<float>(atof(splitresults[1].c_str())); // setpoint
+					humidity = ground(atof(splitresults[2].c_str()));
+					barometer = static_cast<float>(atof(splitresults[4].c_str()));
+					dewpoint = (float)CalculateDewPoint(temp, humidity);
+					isTemp = true;
+					isUtility = true;
+					isHum = true;
+					isBaro = true;
+					isDew = true;
+				}
 			}
 			break;
 		case pTypeHUM:
@@ -958,7 +1079,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 					{
 						float total_min = static_cast<float>(atof(sd2[0].c_str()));
 						float total_max = static_cast<float>(atof(splitresults[1].c_str()));
-						total_real = total_max - total_min;
+						total_real = std::max(0.0, static_cast<double>(total_max - total_min));
 					}
 					rainmm = float(total_real);
 				}
@@ -1395,69 +1516,97 @@ void CEventSystem::UnlockEventQueueThread()
 void CEventSystem::EventQueueThread()
 {
 	_log.Log(LOG_STATUS, "EventSystem: Queue thread started...");
-	_tEventQueue item;
-	std::vector<_tEventQueue> items;
 
 	while (!m_TaskQueue.IsStopRequested(0))
 	{
-		bool hasPopped = m_eventqueue.timed_wait_and_pop<std::chrono::duration<int> >(item, std::chrono::duration<int>(5)); // timeout after 5 sec
-		if (!hasPopped)
+		std::vector<_tEventQueue> items;
+
+		// Block until at least one event arrives (or 5 sec timeout)
+		_tEventQueue item;
+		if (!m_eventqueue.timed_wait_and_pop<std::chrono::duration<int>>(item, std::chrono::duration<int>(5)))
 			continue;
 
 		if (m_TaskQueue.IsStopRequested(0))
 			break;
 
-		for (const auto &i : items)
+		items.push_back(item); // push the first event in the batch
+
+		try
 		{
-			if (i.id == item.id && i.reason <= REASON_SCENEGROUP && i.reason == item.reason)
+			// Drain all remaining queued events into the batch
+			while (m_eventqueue.try_pop(item))
+			{
+				if (m_TaskQueue.IsStopRequested(0))
+					break;
+				items.push_back(item);
+			}
+
+			if (!items.empty())
 			{
 				EvaluateEvent(items);
-				items.clear();
-				break;
 			}
 		}
-		items.push_back(item);
-		if (!m_eventqueue.empty())
-			continue;
-
-		EvaluateEvent(items);
-		items.clear();
+		catch (const std::exception &e)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Exception during event processing: %s", e.what());
+		}
+		catch (...)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: Unknown exception during event processing");
+		}
 	}
+
 	m_eventqueue.clear();
 
 	_log.Log(LOG_STATUS, "EventSystem: Queue thread stopped...");
 }
 
 void CEventSystem::ProcessDevice(
-	const int HardwareID, 
-	const uint64_t ulDevID, 
-	const unsigned char unit, 
-	const unsigned char devType, 
-	const unsigned char subType, 
-	const unsigned char signallevel, 
-	const unsigned char batterylevel, 
-	const int nValue, 
-	const char* sValue)
+	const int HardwareID,
+	const uint64_t ulDevID,
+	const unsigned char unit,
+	const unsigned char devType,
+	const unsigned char subType,
+	const unsigned char signallevel,
+	const unsigned char batterylevel,
+	const int nValue,
+	const char* sValue,
+	const std::string& lastUpdate)
 {
 	if (!m_bEnabled)
 		return;
 
+	if (!IsEventSwitchLike(devType, subType))
+	{
+		//Check for duplicates (faulty sensors could send 10+ messages a second)
+		// unique_lock required: we write lastUpdate to m_devicestates on duplicate detection
+		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+		auto itt = m_devicestates.find(ulDevID);
+		if (sValue && itt != m_devicestates.end()
+			&& itt->second.nValue == nValue
+			&& itt->second.sValue == sValue)
+		{
+			// Value unchanged: still update lastUpdate so scripts can detect last received time
+			itt->second.lastUpdate = lastUpdate;
+			return; // Nothing changed, skip event triggering
+		}
+	}
+
 	std::vector<std::vector<std::string> > result;
-	result = m_sql.safe_query("SELECT SwitchType, LastUpdate, LastLevel, Options, Name FROM DeviceStatus WHERE (ID==%" PRIu64 ")", ulDevID);
+	result = m_sql.safe_query("SELECT SwitchType, LastLevel, Options, Name FROM DeviceStatus WHERE (ID==%" PRIu64 ")", ulDevID);
 	if (result.empty())
 	{
 		//impossible as we just updated it
 		_log.Log(LOG_ERROR, "EventSystem: Could not find device in system: (idx %" PRIu64 ")",  ulDevID);
-		return; 
+		return;
 	}
 
 	std::vector<std::string> sd = result[0];
 
 	_eSwitchType switchType = (_eSwitchType)std::stoi(sd[0]);
-	std::string lastUpdate = sd[1];
-	uint8_t lastLevel = (uint8_t)std::stoi(sd[2]);
-	std::string dev_options = sd[3];
-	std::string devname = sd[4];
+	uint8_t lastLevel = (uint8_t)atoi(sd[1].c_str());
+	std::string dev_options = sd[2];
+	std::string devname = sd[3];
 
 	std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(dev_options);
 
@@ -2254,7 +2403,7 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 				mode = ParseBlocklyString(aParam[1]);
 			case 1:
 				temp = ParseBlocklyString(aParam[0]);
-				m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5F, idx, temp, mode, until));
+				m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5F, idx, temp, mode, until, "Blockly/" + item.Name));
 				actionsDone = true;
 				break;
 
@@ -2556,7 +2705,7 @@ bool CEventSystem::PythonScheduleEvent(const std::string &ID, const std::string 
 			mode = aParam[1];
 		case 1:
 			temp = aParam[0];
-			m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5F, idx, temp, mode, until));
+			m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5F, idx, temp, mode, until, "Python/" + eventName));
 			break;
 
 		default:
@@ -2993,7 +3142,12 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	lua_pushcfunction(lua_state, l_domoticz_applyXPath);
 	lua_setglobal(lua_state, "domoticz_applyXPath");
 
-	_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: script %s trigger (%s)", m_szReason[items[0].reason].c_str(), filename.c_str());
+	// For dzVents, log the runtime entry point; actual script names will be logged during execution
+	std::string displayName = filename;
+	CdzVents* dzventsCheck = CdzVents::GetInstance();
+	if (!m_sql.m_bDisableDzVentsSystem && filename == dzventsCheck->m_runtimeDir + "dzVents.lua")
+		displayName = "dzVents runtime";
+	_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: script %s trigger (%s) [%d event(s)]", m_szReason[items[0].reason].c_str(), displayName.c_str(), (int)items.size());
 
 	int sunTimers[10];
 	if (m_mainworker.m_SunRiseSetMins.size() == 10)
@@ -3067,12 +3221,42 @@ void CEventSystem::EvaluateLua(const std::vector<_tEventQueue> &items, const std
 	{
 		lua_sethook(lua_state, luaStop, LUA_MASKCOUNT, 10000000);
 
-		boost::thread aluaThread([this, lua_state, filename] { luaThread(lua_state, filename); });
+		auto scriptNameReport = std::make_shared<ScriptNameReport>();
+		bool isDzVents = !m_sql.m_bDisableDzVentsSystem && filename == dzvents->m_runtimeDir + "dzVents.lua";
+		if (isDzVents)
+		{
+			lua_pushlightuserdata(lua_state, scriptNameReport.get());
+			lua_pushcclosure(lua_state, l_reportScriptName, 1);
+			lua_setglobal(lua_state, "dz_reportScriptName");
+		}
+
+		std::promise<void> completion_promise;
+		std::future<void> completion_future = completion_promise.get_future();
+
+		std::thread aluaThread([this, lua_state, filename, promise = std::move(completion_promise), scriptNameReport]() mutable {
+			luaThread(lua_state, filename);
+			promise.set_value();
+		});
 		SetThreadName(aluaThread.native_handle(), "luaThread");
 
-		if (!aluaThread.timed_join(boost::posix_time::seconds(10)))
+		if (completion_future.wait_for(std::chrono::seconds(10)) == std::future_status::timeout)
 		{
-			_log.Log(LOG_ERROR, "EventSystem: Warning!, lua script %s has been running for more than 10 seconds", filename.c_str());
+			aluaThread.detach();
+
+			std::string displayName = filename;
+			if (isDzVents)
+			{
+				std::lock_guard<std::mutex> lock(scriptNameReport->mtx);
+				if (!scriptNameReport->name.empty())
+					displayName = "dzVents/" + scriptNameReport->name;
+				else
+					displayName = "dzVents script (unknown - still executing)";
+			}
+			_log.Log(LOG_ERROR, "EventSystem: Warning!, lua script %s has been running for more than 10 seconds", displayName.c_str());
+		}
+		else
+		{
+			aluaThread.join();
 		}
 	}
 	else
@@ -3100,14 +3284,36 @@ void CEventSystem::luaThread(lua_State *lua_state, const std::string &filename)
 	{
 		if (status == 0)
 		{
-			_log.Log(LOG_ERROR, "EventSystem: Lua script %s did not return a commandArray", filename.c_str());
+			// Try to get actual dzVents script name for better error message
+			std::string displayName = filename;
+			lua_getglobal(lua_state, "currentDzVentsScriptName");
+			if (lua_isstring(lua_state, -1))
+			{
+				const char* scriptNamePtr = lua_tostring(lua_state, -1);
+				if (scriptNamePtr != nullptr)
+					displayName = "dzVents/" + std::string(scriptNamePtr);
+			}
+			lua_pop(lua_state, 1);
+			_log.Log(LOG_ERROR, "EventSystem: Lua script %s did not return a commandArray", displayName.c_str());
 		}
 	}
 
 	if (scriptTrue)
 	{
 		if (m_sql.m_bLogEventScriptTrigger)
-			_log.Log(LOG_STATUS, "EventSystem: Script event triggered: %s", filename.c_str());
+		{
+			// Try to get actual dzVents script name for better log message
+			std::string displayName = filename;
+			lua_getglobal(lua_state, "currentDzVentsScriptName");
+			if (lua_isstring(lua_state, -1))
+			{
+				const char* scriptNamePtr = lua_tostring(lua_state, -1);
+				if (scriptNamePtr != nullptr)
+					displayName = "dzVents/" + std::string(scriptNamePtr);
+			}
+			lua_pop(lua_state, 1);
+			_log.Log(LOG_STATUS, "EventSystem: Script event triggered: %s", displayName.c_str());
+		}
 	}
 
 	lua_close(lua_state);
@@ -3138,7 +3344,16 @@ bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const
 		}
 		else if ((std::string(luaL_typename(lua_state, -2)) == "number") && lua_istable(lua_state, -1))
 		{
-			scriptTrue = iterateLuaTable(lua_state, tIndex + 2, filename);
+			std::string commandFilename = filename;
+			lua_getfield(lua_state, -1, "_scriptName");
+			if (lua_isstring(lua_state, -1))
+			{
+				const char* sn = lua_tostring(lua_state, -1);
+				if (sn && *sn)
+					commandFilename = std::string(sn);
+			}
+			lua_pop(lua_state, 1);
+			scriptTrue = iterateLuaTable(lua_state, tIndex + 2, commandFilename);
 		}
 		else if (!m_sql.m_bDisableDzVentsSystem && lua_istable(lua_state, -1) && std::string(luaL_typename(lua_state, -2)) == "string")
 		{
@@ -3146,7 +3361,17 @@ bool CEventSystem::iterateLuaTable(lua_State *lua_state, const int tIndex, const
 		}
 		else
 		{
-			_log.Log(LOG_ERROR, "EventSystem: commandArray in script %s should only return ['string']='actionstring' or [integer]={['string']='actionstring'}", filename.c_str());
+			// Try to get actual dzVents script name for better error message
+			std::string displayName = filename;
+			lua_getglobal(lua_state, "currentDzVentsScriptName");
+			if (lua_isstring(lua_state, -1))
+			{
+				const char* scriptNamePtr = lua_tostring(lua_state, -1);
+				if (scriptNamePtr != nullptr)
+					displayName = "dzVents/" + std::string(scriptNamePtr);
+			}
+			lua_pop(lua_state, 1);
+			_log.Log(LOG_ERROR, "EventSystem: commandArray in script %s should only return ['string']='actionstring' or [integer]={['string']='actionstring'}", displayName.c_str());
 		}
 		// removes 'value'; keeps 'key' for next iteration
 		lua_pop(lua_state, 1);
@@ -3160,6 +3385,11 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 {
 	bool scriptTrue = false;
 	std::string lCommand = std::string(lua_tostring(lua_state, -2));
+
+	if (!lCommand.empty() && lCommand.front() == '_')
+		return false;
+
+	const std::string& scriptName = filename;
 	if (lCommand == "SendNotification") {
 		std::string luaString = lua_tostring(lua_state, -1);
 		std::string subject, body, priority("0"), sound, subsystem;
@@ -3272,7 +3502,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		//if (strarray.size() > 3 && !strarray[3].empty())
 			//Protected = atoi(strarray[3].c_str()); //GizMoCuz: this should not be able to be changed via events!
 
-		m_mainworker.UpdateDevice(idx, nValue, sValue, "EventSystem/" + filename, 12, 255, false);
+		m_mainworker.UpdateDevice(idx, nValue, sValue, "EventSystem/" + scriptName, 12, 255, false);
 		scriptTrue = true;
 	}
 	else if (lCommand.find("Variable:") == 0)
@@ -3324,7 +3554,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 		case 1:
 			idx = atoi(SetPointIdx.c_str());
 			temp = aParam[0];
-			m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5F, idx, temp, mode, until));
+			m_sql.AddTaskItem(_tTaskItem::SetSetPoint(0.5F, idx, temp, mode, until, "Script/" + scriptName));
 			break;
 
 		default:
@@ -3344,7 +3574,7 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 	}
 	else
 	{
-		if (ScheduleEvent(lua_tostring(lua_state, -2), lua_tostring(lua_state, -1), filename)) {
+		if (ScheduleEvent(lua_tostring(lua_state, -2), lua_tostring(lua_state, -1), scriptName)) {
 			scriptTrue = true;
 		}
 	}
@@ -3354,7 +3584,18 @@ bool CEventSystem::processLuaCommand(lua_State *lua_state, const std::string &fi
 void CEventSystem::report_errors(lua_State *L, int status, const std::string &filename)
 {
 	if (status != 0) {
-		_log.Log(LOG_ERROR, "EventSystem: in %s: %s", filename.c_str(), lua_tostring(L, -1));
+		// Try to get actual dzVents script name for better error message
+		std::string displayName = filename;
+		lua_getglobal(L, "currentDzVentsScriptName");
+		if (lua_isstring(L, -1))
+		{
+			const char* scriptNamePtr = lua_tostring(L, -1);
+			if (scriptNamePtr != nullptr)
+				displayName = "dzVents/" + std::string(scriptNamePtr);
+		}
+		lua_pop(L, 1); // pop the global variable
+
+		_log.Log(LOG_ERROR, "EventSystem: in %s: %s", displayName.c_str(), lua_tostring(L, -1));
 		lua_pop(L, 1); // remove error message
 	}
 }
@@ -3632,13 +3873,16 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 		if (!oParseResults.bEventTrigger)
 			SetEventTrigger(deviceID, (!isScene ? REASON_DEVICE : REASON_SCENEGROUP), fDelayTime);
 
+		// If eventName doesn't already have a prefix (e.g., "dzVents/..."), add "EventSystem/"
+		std::string userString = (eventName.find('/') != std::string::npos) ? eventName : ("EventSystem/" + eventName);
+
 		if (isScene) {
 
 			if (
 				oParseResults.sCommand == "On"
 				|| oParseResults.sCommand == "Off"
 				) {
-				tItem = _tTaskItem::SwitchSceneEvent(fDelayTime, deviceID, oParseResults.sCommand, eventName, "EventSystem/" + eventName);
+				tItem = _tTaskItem::SwitchSceneEvent(fDelayTime, deviceID, oParseResults.sCommand, eventName, userString);
 			}
 			else if (oParseResults.sCommand == "Active") {
 				std::vector<std::vector<std::string> > result;
@@ -3655,7 +3899,7 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 		else {
 			if (oParseResults.sCommand == "Closed")
 				oParseResults.sCommand = "Close";
-			tItem = _tTaskItem::SwitchLightEvent(fDelayTime, deviceID, oParseResults.sCommand, level, NoColor, eventName, "EventSystem/" + eventName);
+			tItem = _tTaskItem::SwitchLightEvent(fDelayTime, deviceID, oParseResults.sCommand, level, NoColor, eventName, userString);
 		}
 		m_sql.AddTaskItem(tItem);
 		_log.Debug(DEBUG_EVENTSYSTEM, "EventSystem: Scheduled %s after %0.2f.", tItem._command.c_str(), tItem._DelayTime);
@@ -3675,14 +3919,14 @@ bool CEventSystem::ScheduleEvent(int deviceID, const std::string &Action, bool i
 			_tTaskItem tDelayedtItem;
 			if (isScene) {
 				if (oParseResults.sCommand == "On") {
-					tDelayedtItem = _tTaskItem::SwitchSceneEvent(fDelayTime, deviceID, "Off", eventName, "EventSystem/" + eventName);
+					tDelayedtItem = _tTaskItem::SwitchSceneEvent(fDelayTime, deviceID, "Off", eventName, userString);
 				}
 				else if (oParseResults.sCommand == "Off") {
-					tDelayedtItem = _tTaskItem::SwitchSceneEvent(fDelayTime, deviceID, "On", eventName, "EventSystem/" + eventName);
+					tDelayedtItem = _tTaskItem::SwitchSceneEvent(fDelayTime, deviceID, "On", eventName, userString);
 				}
 			}
 			else {
-				tDelayedtItem = _tTaskItem::SwitchLightEvent(fDelayTime, deviceID, previousState, previousLevel, NoColor, eventName, "EventSystem/" + eventName);
+				tDelayedtItem = _tTaskItem::SwitchLightEvent(fDelayTime, deviceID, previousState, previousLevel, NoColor, eventName, userString);
 			}
 			m_sql.AddTaskItem(tDelayedtItem);
 
@@ -3774,6 +4018,7 @@ std::string CEventSystem::nValueToWording(const uint8_t dType, const uint8_t dSu
 	}
 	else if (
 		(switchtype == STYPE_Blinds)
+		|| (switchtype == STYPE_BlindsWithStop)
 		|| (switchtype == STYPE_BlindsPercentage)
 		|| (switchtype == STYPE_BlindsPercentageWithStop)
 		|| (switchtype == STYPE_VenetianBlindsUS)
@@ -4002,6 +4247,7 @@ namespace http {
 		{
 			std::string ID;
 			std::string eventstatus;
+			std::string folderid;
 		};
 
 		void CWebServer::Cmd_Events(WebEmSession & session, const request& req, Json::Value &root)
@@ -4027,7 +4273,7 @@ namespace http {
 				root["interpreters"] = "Blockly:Lua:dzVents";
 #endif
 
-				result = m_sql.safe_query("SELECT ID, Name, XMLStatement, Status FROM EventMaster ORDER BY ID ASC");
+				result = m_sql.safe_query("SELECT ID, Name, XMLStatement, Status, FolderID FROM EventMaster ORDER BY ID ASC");
 				if (!result.empty())
 				{
 					std::map<std::string, _tSortedEventsInt> _levents;
@@ -4036,9 +4282,11 @@ namespace http {
 						std::string ID = sd[0];
 						std::string Name = sd[1];
 						std::string eventStatus = sd[3];
+						std::string folderID = sd[4];
 						_tSortedEventsInt eitem;
 						eitem.ID = ID;
 						eitem.eventstatus = eventStatus;
+						eitem.folderid = folderID;
 						if (_levents.find(Name) != _levents.end())
 						{
 							//Duplicate event name, add the ID
@@ -4055,6 +4303,21 @@ namespace http {
 						root["result"][ii]["name"] = event.first;
 						root["result"][ii]["id"] = event.second.ID;
 						root["result"][ii]["eventstatus"] = event.second.eventstatus;
+						root["result"][ii]["folderid"] = event.second.folderid;
+						ii++;
+					}
+				}
+
+				// Also return folders
+				result = m_sql.safe_query("SELECT ID, Name, [Order] FROM EventFolder ORDER BY [Order] ASC, Name ASC");
+				if (!result.empty())
+				{
+					int ii = 0;
+					for (const auto &sd : result)
+					{
+						root["folders"][ii]["id"] = sd[0];
+						root["folders"][ii]["name"] = sd[1];
+						root["folders"][ii]["order"] = atoi(sd[2].c_str());
 						ii++;
 					}
 				}
@@ -4268,6 +4531,53 @@ namespace http {
 				root["title"] = "StoreRecentEvents";
 				std::string recent_list = request::findValue(&req, "recent_list");
 				m_sql.UpdatePreferencesVar("events_recent_list", recent_list);
+				root["status"] = "OK";
+			}
+			else if (cparam == "create_folder")
+			{
+				root["title"] = "CreateEventFolder";
+				std::string foldername = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+				if (foldername.empty())
+					return;
+				m_sql.safe_query("INSERT INTO EventFolder (Name, [Order]) VALUES ('%q', 0)", foldername.c_str());
+				root["status"] = "OK";
+			}
+			else if (cparam == "rename_folder")
+			{
+				root["title"] = "RenameEventFolder";
+				std::string idx = request::findValue(&req, "folder");
+				if (idx.empty())
+					return;
+				std::string foldername = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+				if (foldername.empty())
+					return;
+				m_sql.safe_query("UPDATE EventFolder SET Name='%q' WHERE (ID == '%q')", foldername.c_str(), idx.c_str());
+				root["status"] = "OK";
+			}
+			else if (cparam == "delete_folder")
+			{
+				root["title"] = "DeleteEventFolder";
+				std::string idx = request::findValue(&req, "folder");
+				if (idx.empty())
+					return;
+				// Delete all events in the folder
+				result = m_sql.safe_query("SELECT ID FROM EventMaster WHERE (FolderID == '%q')", idx.c_str());
+				for (const auto &sd : result)
+				{
+					m_sql.DeleteEvent(sd[0]);
+				}
+				m_sql.safe_query("DELETE FROM EventFolder WHERE (ID == '%q')", idx.c_str());
+				m_mainworker.m_eventsystem.LoadEvents();
+				root["status"] = "OK";
+			}
+			else if (cparam == "move_event")
+			{
+				root["title"] = "MoveEvent";
+				std::string idx = request::findValue(&req, "event");
+				if (idx.empty())
+					return;
+				std::string folderid = request::findValue(&req, "folder");
+				m_sql.safe_query("UPDATE EventMaster SET FolderID='%q' WHERE (ID == '%q')", folderid.c_str(), idx.c_str());
 				root["status"] = "OK";
 			}
 			else if (cparam == "currentstates")

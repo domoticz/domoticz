@@ -5,7 +5,19 @@
             <td align="right" style="width:120px">
                 <label>Idx: </label>
             </td>
-			<td><span id="deviceidx"></span></td>
+			<td><span id="deviceidx" style="user-select: all; cursor: pointer;"></span></td>
+        </tr>
+        <tr>
+            <td align="right" style="width:120px">
+                <label data-i18n="ID">ID</label>:
+            </td>
+			<td><span id="deviceid" style="user-select: all; cursor: pointer;"></span></td>
+        </tr>
+        <tr>
+            <td align="right" style="width:120px">
+                <label data-i18n="Unit Code">Unit Code</label>:
+            </td>
+			<td><span id="deviceunit" style="user-select: all; cursor: pointer;"></span></td>
         </tr>
         <tr>
           <td align="right"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
@@ -19,7 +31,27 @@
           <td align="right"><label for="adjustment"><span data-i18n="Adjustment">Adjustment</span>: </label></td>
           <td><input type="text" id="adjustment" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all"> &deg; <span id="tempcf">C</span></td>
         </tr>
-		</table>
+        </table>
+        <div id="setpointfields">
+        <table class="display" id="edittable" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td align="right" style="width:120px"><label for="unit"><span data-i18n="Unit">Unit</span>: </label></td>
+          <td><input type="text" id="unit" style="width: 100px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+        </tr>
+        <tr>
+          <td align="right"><label for="step"><span data-i18n="Step">Step</span>: </label></td>
+          <td><input type="text" id="step" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+        </tr>
+        <tr>
+          <td align="right"><label for="min"><span data-i18n="Min">Min</span>: </label></td>
+          <td><input type="text" id="min" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+        </tr>
+        <tr>
+          <td align="right"><label for="max"><span data-i18n="Max">Max</span>: </label></td>
+          <td><input type="text" id="max" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+        </tr>
+        </table>
+        </div>
     </form>
 </div>
 <div id="dialog-edittempdevicesmall">
@@ -29,7 +61,19 @@
             <td align="right" style="width:120px">
                 <label>Idx: </label>
             </td>
-			<td><span id="deviceidx"></span></td>
+			<td><span id="deviceidx" style="user-select: all; cursor: pointer;"></span></td>
+        </tr>
+        <tr>
+            <td align="right" style="width:120px">
+                <label data-i18n="ID">ID</label>:
+            </td>
+			<td><span id="deviceid" style="user-select: all; cursor: pointer;"></span></td>
+        </tr>
+        <tr>
+            <td align="right" style="width:120px">
+                <label data-i18n="Unit Code">Unit Code</label>:
+            </td>
+			<td><span id="deviceunit" style="user-select: all; cursor: pointer;"></span></td>
         </tr>
         <tr>
           <td align="right"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
@@ -49,7 +93,19 @@
             <td align="right" style="width:120px">
                 <label>Idx: </label>
             </td>
-			<td><span id="deviceidx"></span></td>
+			<td><span id="deviceidx" style="user-select: all; cursor: pointer;"></span></td>
+        </tr>
+        <tr>
+            <td align="right" style="width:120px">
+                <label data-i18n="ID">ID</label>:
+            </td>
+			<td><span id="deviceid" style="user-select: all; cursor: pointer;"></span></td>
+        </tr>
+        <tr>
+            <td align="right" style="width:120px">
+                <label data-i18n="Unit Code">Unit Code</label>:
+            </td>
+			<td><span id="deviceunit" style="user-select: all; cursor: pointer;"></span></td>
         </tr>
         <tr>
           <td align="right"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
@@ -77,7 +133,19 @@
             <td align="right" style="width:120px">
                 <label>Idx: </label>
             </td>
-			<td><span id="deviceidx"></span></td>
+			<td><span id="deviceidx" style="user-select: all; cursor: pointer;"></span></td>
+        </tr>
+        <tr>
+            <td align="right" style="width:120px">
+                <label data-i18n="ID">ID</label>:
+            </td>
+			<td><span id="deviceid" style="user-select: all; cursor: pointer;"></span></td>
+        </tr>
+        <tr>
+            <td align="right" style="width:120px">
+                <label data-i18n="Unit Code">Unit Code</label>:
+            </td>
+			<td><span id="deviceunit" style="user-select: all; cursor: pointer;"></span></td>
         </tr>
         <tr>
           <td align="right"><label for="devicename"><span data-i18n="Name">Name</span>: </label></td>
@@ -109,8 +177,8 @@
   </div>
   <div class="devicesList">
     <div id="tempwidgets" class="row divider">
-      <h2 ng-show="ctrl.temperatures.length == 0" data-i18n="No Temperature sensors found or added in the system...">No Temperature sensors found or added in the system...</h2>
-      <div ng-repeat-start="t in ctrl.temperatures" class="clearfix" ng-if="$index % 3 == 0 && !$first"></div>
+      <h2 ng-show="!loading && ctrl.temperatures.length == 0" data-i18n="No Temperature sensors found or added in the system...">No Temperature sensors found or added in the system...</h2>
+      <div ng-repeat-start="t in ctrl.temperatures track by t.idx" class="clearfix" ng-if="$index % 3 == 0 && !$first"></div>
       <dztemperaturewidget ng-repeat-end class="span4 itemBlock" id="{{t.idx}}" item="t" tempsign="config.TempSign" windsign="config.WindSign" ordering="config.AllowWidgetOrdering" dragwidget="DragWidget(idx)" dropwidget="DropWidget(idx)"></dztemperaturewidget>
     </div>
   </div>

@@ -56,6 +56,8 @@
 #endif
 #endif
 
+const std::string WHITESPACE = " \n\r\t\f\v";
+
 namespace
 {
 	constexpr std::array<uint8_t, 256> crc8_tab{
@@ -1116,6 +1118,19 @@ bool IsLightOrSwitch(const int dType, const int dSubType)
 	return bIsLightSwitch;
 }
 
+bool IsEventSwitchLike(const int dType, const int dSubType)
+{
+	if (IsLightOrSwitch(dType, dSubType))
+		return true;
+	if ((dType == pTypeEvohome) || (dType == pTypeEvohomeRelay))
+		return true;
+	if ((dType == pTypeGeneral) && ((dSubType == sTypeTextStatus) || (dSubType == sTypeAlert)))
+		return true;
+	if ((dType == pTypeRego6XXValue) && (dSubType == sTypeRego6XXStatus))
+		return true;
+	return false;
+}
+
 bool IsTemp(const int dType, const int dSubType)
 {
 	return (
@@ -1132,6 +1147,7 @@ bool IsTemp(const int dType, const int dSubType)
 		|| (dType == pTypeThermostat1)
 		|| ((dType == pTypeRFXSensor) && (dSubType == sTypeRFXSensorTemp))
 		|| (dType == pTypeRego6XXTemp)
+		|| (dType == pTypeThermostat6)
 		);
 }
 
@@ -1300,7 +1316,7 @@ std::string GenerateUserAgent()
 	int mversion = distrib_FFFF(gen) % 3;
 	int sversion = distrib_FFFF(gen) % 3;
 	std::stringstream sstr;
-	sstr << "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/" << (601 + sversion) << "." << (36 + mversion) << " (KHTML, like Gecko) Chrome/" << (53 + mversion) << ".0." << cversion << ".0 Safari/" << (601 + sversion) << "." << (36 + sversion);
+	sstr << "Mozilla/5.0 (Windows NT 10.0; WOW64; x64) AppleWebKit/" << (605 + sversion) << "." << (36 + mversion) << " (KHTML, like Gecko) Chrome/" << (26 + mversion) << ".0." << cversion << ".0 Safari/" << (604 + sversion) << "." << (36 + sversion);
 	return sstr.str();
 }
 
@@ -1856,8 +1872,6 @@ bool AESEncryptData(const std::string& szInputBuffer, std::string& szOutputBuffe
 	if (!ctx)
 		return false;
 
-	EVP_CIPHER_CTX_init(ctx);
-
 	fOk = EVP_EncryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, aes_key, iv_enc);
 	if (!fOk)
 	{
@@ -1880,7 +1894,6 @@ bool AESEncryptData(const std::string& szInputBuffer, std::string& szOutputBuffe
 		goto exit_sub;
 	}
 exit_sub:
-	EVP_CIPHER_CTX_cleanup(ctx);
 	EVP_CIPHER_CTX_free(ctx);
 
 	if (!fOk)
@@ -1940,3 +1953,60 @@ exit_sub:
 	return true;
 }
 
+// Helper function to check and replace illegal characters in filenames
+std::string sanitizeFilename(const std::string& filename) {
+	// Common illegal filename characters across Windows and Unix/Linux, plus dot (.)
+	const std::string illegalChars = "\\/:*?\"<>|%.";
+	std::string cleanedFilename;
+
+	for (char c : filename) {
+		if (illegalChars.find(c) != std::string::npos) {
+			cleanedFilename += '_';
+		}
+		else {
+			cleanedFilename += c;
+		}
+	}
+
+	// Convert to lowercase (for consistency)
+	std::transform(cleanedFilename.begin(), cleanedFilename.end(),
+		cleanedFilename.begin(), ::tolower);
+
+	return cleanedFilename;
+}
+// Helper function in hardware classes to save/load the HTTP respnse
+// Convert URL to a filename and save it to appropriate directory based on OS
+std::string urlToFilename(const std::string& base, const std::string& url)
+{
+	// Detect operating system
+#ifdef _WIN32
+	const std::string basePath = "E:\\";
+#else
+	const std::string basePath = "/tmp/";
+#endif
+	// Strip http:// or https:// from the beginning of the URL if found
+	std::string strippedUrl = url;
+	size_t pos = strippedUrl.find("http://");
+	if (pos == 0) {
+		strippedUrl = strippedUrl.substr(7);
+	}
+	else {
+		pos = strippedUrl.find("https://");
+		if (pos == 0) {
+			strippedUrl = strippedUrl.substr(8);
+		}
+	}
+
+	pos = strippedUrl.find("/");
+	if (pos != std::string::npos) {
+		strippedUrl = strippedUrl.substr(pos + 1);
+	}
+
+	// Sanitize filename and append .txt
+	std::string cleanedFilename = sanitizeFilename(strippedUrl) + ".txt";
+
+	// Combine base path with filename
+	std::string filePath = basePath + base + "_" + cleanedFilename;
+
+	return filePath;
+}

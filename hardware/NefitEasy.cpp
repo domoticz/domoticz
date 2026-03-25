@@ -8,7 +8,7 @@
 #include "../main/json_helper.h"
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 
 /*
 We need HTTP server to access Nefit/Bosch XMPP backend over HTTP written by Robert Klep (https://github.com/robertklep/nefit-easy-http-server)

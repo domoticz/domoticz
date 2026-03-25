@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <string>
 #include "RFXNames.h"
 #include "../hardware/hardwaretypes.h"
@@ -277,7 +278,7 @@ struct _tTaskItem
 			getclock(&tItem._DelayTimeBegin);
 		return tItem;
 	}
-	static _tTaskItem SetSetPoint(const float DelayTime, const uint64_t idx, const std::string &varvalue, const std::string &mode = std::string(), const std::string &until = std::string())
+	static _tTaskItem SetSetPoint(const float DelayTime, const uint64_t idx, const std::string &varvalue, const std::string &mode = std::string(), const std::string &until = std::string(), const std::string& User = std::string())
 	{
 		_tTaskItem tItem;
 		tItem._ItemType = TITEM_SET_SETPOINT;
@@ -286,6 +287,7 @@ struct _tTaskItem
 		tItem._sValue = varvalue;
 		tItem._command = mode;
 		tItem._sUntil = until;
+		tItem._sUser = User;
 
 		if (DelayTime)
 			getclock(&tItem._DelayTimeBegin);
@@ -329,6 +331,7 @@ public:
 
 	bool BackupDatabase(const std::string &OutputFile);
 	bool RestoreDatabase(const std::string &dbase);
+	bool RestoreDatabaseFromFile(const std::string &sourceFilePath);
 
 	// Returns DeviceRowID
 	uint64_t UpdateValue(int HardwareID, int OrgHardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
@@ -391,7 +394,9 @@ public:
 	void ScheduleDay();
 
 	void ClearShortLog();
+	int PruneUnusedSensorLogs();
 	void VacuumDatabase();
+	bool FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dry_run, std::vector<std::string>& results);
 	void OptimizeDatabase(sqlite3 *dbase);
 	void DeleteHardware(const std::string &idx);
 
@@ -479,6 +484,8 @@ public:
 	bool m_bEnableEventSystemFullURLLog;
 	int m_ShortLogInterval;
 	bool m_bShortLogAddOnlyNewValues;
+	bool m_bLogUnusedSensors;
+	std::atomic<int> m_PriceResolution;
 	bool m_bLogEventScriptTrigger;
 	bool m_bDisableDzVentsSystem;
 	double m_max_kwh_usage;
@@ -503,6 +510,7 @@ private:
 	bool StartThread();
 	void StopThread();
 	void Do_Work();
+	bool CopyFileBinary(const std::string &src, const std::string &dst);
 #ifndef WIN32
 	void ManageExecuteScriptTimeout(std::string szCommand, int pid, int timeout, bool *stillRunning, bool *timeoutOccurred);
 #endif

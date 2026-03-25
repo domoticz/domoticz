@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MySensorsBase.h"
-#include "../main/mosquitto_helper.h"
+#include "../main/mqtt_helper.h"
 #include "../main/BaroForecastCalculator.h"
 
 namespace Json
@@ -9,7 +9,7 @@ namespace Json
 	class Value;
 } // namespace Json
 
-class CTTNMQTT : public MySensorsBase, mosqdz::mosquittodz
+class CTTNMQTT : public MySensorsBase, mdz::mqttdz
 {
       public:
 	CTTNMQTT(int ID, const std::string &IPAddress, unsigned short usIPPort, const std::string &Username, const std::string &Password, const std::string &CAFile);

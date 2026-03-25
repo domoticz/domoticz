@@ -1,4 +1,4 @@
-define(['app', 'log/components/DeviceTextLogTable'], function (app) {
+define(['app', 'log/components/DeviceOnOffChart', 'log/components/DeviceTextLogTable'], function (app) {
     app.controller('SceneLogController', function ($scope, $routeParams, domoticzApi, dzTimeAndSun, permissions) {
         var vm = this;
 
@@ -74,7 +74,9 @@ define(['app', 'log/components/DeviceTextLogTable'], function (app) {
 
         function refreshLog() {
             getSceneLog(vm.sceneIdx).then(function (data) {
-                vm.log = data
+                vm.log = (data || []).sort(function (a, b) {
+                    return a.Date < b.Date ? -1 : 1;
+                });
             });
         }
 

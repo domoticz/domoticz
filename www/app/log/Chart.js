@@ -56,7 +56,7 @@ define(['app'], function (app) {
         W: 'Watt',
         kW: 'kW',
         m3: 'm³',
-        liter: 'liter',
+        liter: 'Liter',
         energy: function (multiplier) {
             if (multiplier === valueMultipliers.m1) {
                 return valueUnits.Wh;
@@ -103,6 +103,8 @@ define(['app'], function (app) {
         valueUnits: valueUnits,
         aggregateTrendline: aggregateTrendline,
         aggregateTrendlineZoomed: aggregateTrendlineZoomed,
+        markSpikeDatapoints: markSpikeDatapoints,
+        spikeTooltipPointFormatter: spikeTooltipPointFormatter,
         yearColor: yearColor,
 		chartParamsCompare: chartParamsCompare,
 		chartParamsWeekTemplate: chartParamsWeekTemplate,
@@ -153,6 +155,52 @@ define(['app'], function (app) {
             aggregateTrendline(this.datapoints);
             chart.get(this.id).setData(this.datapoints, false);
         }
+    }
+
+    function markSpikeDatapoints(datapoints) {
+        const values = datapoints
+            .map(function(dp) { return dp[1]; })
+            .filter(function(v) { return v !== null && v > 0; });
+
+        if (values.length < 5) return;
+
+        const sorted = values.slice().sort(function(a, b) { return a - b; });
+        const q1 = sorted[Math.floor(sorted.length * 0.25)];
+        const q3 = sorted[Math.floor(sorted.length * 0.75)];
+        const iqr = q3 - q1;
+        if (iqr <= 0) return;
+
+        const threshold = q3 + 3 * iqr;
+        const extremeThreshold = q3 * 10;
+        for (let i = 0; i < datapoints.length; i++) {
+            const dp = datapoints[i];
+            const value = dp[1];
+            if (value !== null && value > threshold) {
+                const isExtreme = value > extremeThreshold;
+                if (!isExtreme) {
+                    const prevVal = i > 0 ? datapoints[i - 1][1] : null;
+                    const nextVal = i < datapoints.length - 1 ? datapoints[i + 1][1] : null;
+                    if (prevVal && nextVal) continue;
+                }
+                datapoints[i] = { x: dp[0], y: dp[1], color: '#FF4444', custom: { isSpike: true } };
+            }
+        }
+    }
+
+    function spikeTooltipPointFormatter() {
+        const opts = this.series.tooltipOptions;
+        const decimals = opts.valueDecimals != null ? opts.valueDecimals : 2;
+        const suffix = opts.valueSuffix || '';
+        let s = '<span style="color:' + this.color + '">\u25CF</span> '
+            + this.series.name + ': <b>'
+            + Highcharts.numberFormat(this.y, decimals) + suffix
+            + '</b>';
+        if (this.custom && this.custom.isSpike) {
+            s += '<br/><span style="color:#FF4444">\u26A0 '
+                + $.t('Anomalous value — shift+click to delete')
+                + '</span>';
+        }
+        return s + '<br/>';
     }
 
     const colors = [
@@ -284,9 +332,18 @@ define(['app'], function (app) {
 				tooltip: {
 					useHTML: true,
 					formatter: function () {
+						var averageHtml = '';
+						if (ctrl.groupingBy !== 'year' && this.points.length > 0) {
+							var validPoints = this.points.filter(function (p) { return p.y !== null && p.y !== undefined; });
+							if (validPoints.length > 0) {
+								var sum = validPoints.reduce(function (acc, p) { return acc + p.y; }, 0);
+								var avg = sum / validPoints.length;
+								averageHtml = ' (' + $.t('Average') + ': ' + Highcharts.numberFormat(avg) + (deviceUnit ? '&nbsp;' + deviceUnit : '') + ')';
+							}
+						}
 						return ''
 							+ '<table>'
-							+ '<tr><td colspan="2"><b>' + categoryKeyToStringEx(this.x) + '</b></td></tr>'
+							+ '<tr><td colspan="4"><b>' + categoryKeyToStringEx(this.x) + averageHtml + '</b></td></tr>'
 							+ this.points.reduce(
 								function (rowsHtml, point) {
 									return rowsHtml

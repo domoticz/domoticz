@@ -9,7 +9,7 @@
 
 #include "../main/mainworker.h"
 #include "../main/WebServer.h"
-#include "../webserver/cWebem.h"
+#include <libwebem/cWebem.h>
 #include <json/json.h>
 
 #ifdef _DEBUG
@@ -294,6 +294,7 @@ bool CRFLinkBase::WriteToHardware(const char *pdata, const unsigned char length)
 			if (
 				(m_SwitchType == STYPE_VenetianBlindsEU)
 				|| (m_SwitchType == STYPE_Blinds)
+				|| (m_SwitchType == STYPE_BlindsWithStop)
 				)
 			{
 				switchcmnd = GetGeneralRFLinkFromInt(rfblindcommands, pSwitch->cmnd);

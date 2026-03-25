@@ -159,6 +159,14 @@ define(['app'], function (app) {
 					extraparams = 'LmsPlayerMac=' + $("#lmstable #LmsPlayerMac").val() + '&LmsDuration=' + $("#lmstable #LmsDuration").val();
 					break;
 				case "fcm":
+					var FCMClientEmail = encodeURIComponent($("#gcmtable #FCMClientEmail").val());
+					var FCMPrivateKey = encodeURIComponent($("#gcmtable #FCMPrivateKey").val());
+					var FCMProjectId = encodeURIComponent($("#gcmtable #FCMProjectId").val());
+					if (FCMClientEmail == "" || FCMPrivateKey == "" || FCMProjectId == "") {
+						ShowNotify($.t('All Firebase fields are required!...'), 3500, true);
+						return;
+					}
+					extraparams = "FCMClientEmail=" + FCMClientEmail + "&FCMPrivateKey=" + FCMPrivateKey + "&FCMProjectId=" + FCMProjectId;
 					break;
 				default:
 					return;
@@ -303,6 +311,8 @@ define(['app'], function (app) {
 						let listSolar = [];
 						let listBatteryWatt = [];
 						let listBatterySoc = [];
+						let listBatteryVolt = [];
+						let listBatteryEnergy = [];
 						let listText = [];
 						let listExtra = [];
 						let listTemperatureSensors = [];
@@ -315,6 +325,9 @@ define(['app'], function (app) {
 
 						let $comboEBatteryWatt = $("#comboEBatteryWatt");
 						let $comboEBatterySoc = $("#comboEBatterySoc");
+						let $comboEBatteryVolt = $("#comboEBatteryVolt");
+					let $comboEBatteryEnergyIn = $("#comboEBatteryEnergyIn");
+					let $comboEBatteryEnergyOut = $("#comboEBatteryEnergyOut");
 
 						let $comboEText = $("#comboETextSensor");
 						let $comboEExtra1 = $("#comboEExtra1");
@@ -330,6 +343,7 @@ define(['app'], function (app) {
 
 								if ((item.Type == "P1 Smart Meter")&&(item.SubType == "Energy")) {
 									listP1.push({"idx": item.idx, "name": " " + item.Name});
+									listBatteryEnergy.push({"idx": item.idx, "name": " " + item.Name});
 								}
 								else if ((item.Type == "P1 Smart Meter")&&(item.SubType == "Gas")) {
 									listGas.push({"idx": item.idx, "name": item.Name});
@@ -368,6 +382,10 @@ define(['app'], function (app) {
 										listBatterySoc.push({"idx": item.idx, "name": item.Name});
 										listExtra.push({"idx": item.idx, "name": item.Name});
 									}
+									else if (item.SubType == "Voltage") {
+										listBatteryVolt.push({"idx": item.idx, "name": item.Name});
+										listExtra.push({"idx": item.idx, "name": item.Name});
+									}
 									else if (item.SubType == "Text") {
 										listText.push({"idx": item.idx, "name": item.Name});
 										listExtra.push({"idx": item.idx, "name": item.Name});
@@ -376,6 +394,7 @@ define(['app'], function (app) {
 										listP1.push({"idx": item.idx, "name": item.Name});
 										listSolar.push({"idx": item.idx, "name": item.Name});
 										listBatteryWatt.push({"idx": item.idx, "name": item.Name});
+										listBatteryEnergy.push({"idx": item.idx, "name": item.Name});
 										listExtra.push({"idx": item.idx, "name": item.Name});
 									} else {
 										listExtra.push({"idx": item.idx, "name": item.Name});
@@ -396,6 +415,8 @@ define(['app'], function (app) {
 						listSolar.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
 						listBatteryWatt.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
 						listBatterySoc.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
+						listBatteryVolt.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
+					listBatteryEnergy.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
 						listText.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
 						listExtra.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
 						listTemperatureSensors.sort((a,b) => (a.name.toLowerCase() > b.name.toLowerCase()) ? 1 : ((b.name.toLowerCase() > a.name.toLowerCase()) ? -1 : 0));
@@ -418,6 +439,13 @@ define(['app'], function (app) {
 						$.each(listBatterySoc, function (i, item) {
 							$comboEBatterySoc.append($("<option />").val(item.idx).text(item.name));
 						});
+						$.each(listBatteryVolt, function (i, item) {
+							$comboEBatteryVolt.append($("<option />").val(item.idx).text(item.name));
+						});
+					$.each(listBatteryEnergy, function (i, item) {
+						$comboEBatteryEnergyIn.append($("<option />").val(item.idx).text(item.name));
+						$comboEBatteryEnergyOut.append($("<option />").val(item.idx).text(item.name));
+					});
 						$.each(listText, function (i, item) {
 							$comboEText.append($("<option />").val(item.idx).text(item.name));
 						});
@@ -561,6 +589,15 @@ define(['app'], function (app) {
 					if (typeof data.FCMEnabled != 'undefined') {
 						$("#gcmtable #FCMEnabled").prop('checked', data.FCMEnabled == 1);
 					}
+					if (typeof data.FCMClientEmail != 'undefined') {
+						$("#gcmtable #FCMClientEmail").val(data.FCMClientEmail);
+					}
+					if (typeof data.FCMPrivateKey != 'undefined') {
+						$("#gcmtable #FCMPrivateKey").val(atob(data.FCMPrivateKey));
+					}
+					if (typeof data.FCMProjectId != 'undefined') {
+						$("#gcmtable #FCMProjectId").val(data.FCMProjectId);
+					}
 					if (typeof data.LightHistoryDays != 'undefined') {
 						$("#lightlogtable #LightHistoryDays").val(data.LightHistoryDays);
 					}
@@ -570,8 +607,23 @@ define(['app'], function (app) {
 					if (typeof data.ShortLogAddOnlyNewValues != 'undefined') {
 						$("#shortlogtable #ShortLogAddOnlyNewValues").prop('checked', data.ShortLogAddOnlyNewValues == 1);
 					}
+					if (typeof data.LogUnusedSensors != 'undefined') {
+						$("#shortlogtable #LogUnusedSensors").prop('checked', data.LogUnusedSensors == 1);
+					}
 					if (typeof data.ShortLogInterval != 'undefined') {
-						$("#shortlogtable #comboshortloginterval").val(data.ShortLogInterval);
+						$scope.ShortLogInterval = data.ShortLogInterval;
+					}
+					if (typeof data.DebugLevel != 'undefined') {
+						var dl = data.DebugLevel;
+						$("#debugleveltable #DebugNormal").prop('checked', (dl & 0x01) != 0);
+						$("#debugleveltable #DebugHardware").prop('checked', (dl & 0x02) != 0);
+						$("#debugleveltable #DebugReceived").prop('checked', (dl & 0x04) != 0);
+						$("#debugleveltable #DebugWebServer").prop('checked', (dl & 0x08) != 0);
+						$("#debugleveltable #DebugEventSystem").prop('checked', (dl & 0x10) != 0);
+						$("#debugleveltable #DebugPython").prop('checked', (dl & 0x20) != 0);
+						$("#debugleveltable #DebugThreadIDs").prop('checked', (dl & 0x40) != 0);
+						$("#debugleveltable #DebugSQL").prop('checked', (dl & 0x80) != 0);
+						$("#debugleveltable #DebugAuth").prop('checked', (dl & 0x100) != 0);
 					}
 					if (typeof data.DashboardType != 'undefined') {
 						$("#settingscontent #combosdashtype").val(data.DashboardType);
@@ -816,7 +868,10 @@ define(['app'], function (app) {
 					}
 					if (typeof data.P1DisplayType != 'undefined') {
 						$("#dpricetable #comboP1DisplayType").val(data.P1DisplayType);
-					}					
+					}
+					if (typeof data.PriceResolution != 'undefined') {
+						$("#dpricetable #comboPriceResolution").val(data.PriceResolution);
+					}
 
 					if (typeof data.ESettings != 'undefined') {
 						$("#comboEP1").val(data.ESettings.idP1);
@@ -825,6 +880,15 @@ define(['app'], function (app) {
 						$("#comboESolar").val(data.ESettings.idSolar);
 						$("#comboEBatteryWatt").val(data.ESettings.idBatteryWatt);
 						$("#comboEBatterySoc").val(data.ESettings.idBatterySoc);
+						if (typeof data.ESettings.idBatteryVolt != 'undefined') {
+							$("#comboEBatteryVolt").val(data.ESettings.idBatteryVolt);
+						}
+						if (typeof data.ESettings.idBatteryEnergyIn != 'undefined') {
+							$("#comboEBatteryEnergyIn").val(data.ESettings.idBatteryEnergyIn);
+						}
+						if (typeof data.ESettings.idBatteryEnergyOut != 'undefined') {
+							$("#comboEBatteryEnergyOut").val(data.ESettings.idBatteryEnergyOut);
+						}
 						$("#comboETextSensor").val(data.ESettings.idTextSensor);
 						$("#comboEExtra1").val(data.ESettings.idExtra1);
 						$("#comboEExtra2").val(data.ESettings.idExtra2);
@@ -901,6 +965,25 @@ define(['app'], function (app) {
 				}
 			}
 
+			// Check ShortLogInterval vs PriceResolution compatibility
+			var priceRes = parseInt($("#dpricetable #comboPriceResolution").val());
+			var shortLogInterval = $scope.ShortLogInterval || 5;
+			if (!isNaN(priceRes) && !isNaN(shortLogInterval) && priceRes < 60 && shortLogInterval > priceRes) {
+				ShowNotify($.t('Warning: ShortLog Interval is greater than the selected pricing resolution. For accurate pricing, the ShortLog Interval should be ' + priceRes + ' minutes or less.'), 5000, true);
+			}
+
+			var debugLevel = 0;
+			if ($("#debugleveltable #DebugNormal").prop("checked")) debugLevel |= 0x01;
+			if ($("#debugleveltable #DebugHardware").prop("checked")) debugLevel |= 0x02;
+			if ($("#debugleveltable #DebugReceived").prop("checked")) debugLevel |= 0x04;
+			if ($("#debugleveltable #DebugWebServer").prop("checked")) debugLevel |= 0x08;
+			if ($("#debugleveltable #DebugEventSystem").prop("checked")) debugLevel |= 0x10;
+			if ($("#debugleveltable #DebugPython").prop("checked")) debugLevel |= 0x20;
+			if ($("#debugleveltable #DebugThreadIDs").prop("checked")) debugLevel |= 0x40;
+			if ($("#debugleveltable #DebugSQL").prop("checked")) debugLevel |= 0x80;
+			if ($("#debugleveltable #DebugAuth").prop("checked")) debugLevel |= 0x100;
+			$("#settings #DebugLevel").val(debugLevel);
+
 			$http.post('json.htm?type=command&param=storesettings', new FormData(document.querySelector("#settings")), {
 				transformRequest: angular.identity,
 				headers: { 'Content-Type': undefined }
@@ -948,6 +1031,96 @@ define(['app'], function (app) {
 			});
 		}
 
+		$scope.RefreshUnusedSensorStats = function () {
+			$.ajax({
+				url: "json.htm?type=command&param=getdbstats",
+				dataType: 'json',
+				success: function (data) {
+					if (data.status == 'OK' && typeof data.unuseddevices === 'number' && data.unuseddevices > 0 && typeof data.unusedrecords === 'number') {
+						$("#unused_sensor_stats_row").show();
+						$("#unused_sensor_summary").text(
+							data.unuseddevices + ' ' + $.t('unused sensors have') + ' ' + data.unusedrecords + ' ' + $.t('log records.')
+						);
+					} else {
+						$("#unused_sensor_stats_row").hide();
+					}
+				},
+				error: function () {
+					$("#unused_sensor_stats_row").hide();
+				}
+			});
+		};
+
+		$scope.PruneUnusedSensorLogs = function () {
+			bootbox.confirm($.t("Are you sure to prune log data for all unused sensors?\n\nThis action can not be undone!"), function (result) {
+				if (result == true) {
+					$.ajax({
+						url: "json.htm?type=command&param=pruneunusedsensorlogs",
+						async: false,
+						dataType: 'json',
+						success: function (data) {
+							if (data.status == 'OK') {
+								bootbox.alert(data.rowsdeleted + ' ' + $.t('log records pruned for') + ' ' + data.devicesaffected + ' ' + $.t('unused sensors.'), function () {
+									$scope.VacuumDatabase();
+								});
+								$scope.RefreshUnusedSensorStats();
+							} else {
+								ShowNotify($.t('Problem pruning unused sensor logs!'), 2500, true);
+							}
+						},
+						error: function () {
+							HideNotify();
+							ShowNotify($.t('Problem pruning unused sensor logs!'), 2500, true);
+						}
+					});
+				}
+			});
+		};
+
+		$scope.RefreshDbStats = function () {
+			$.ajax({
+				url: "json.htm?type=command&param=getdbstats",
+				dataType: 'json',
+				success: function (data) {
+					if (data.status == 'OK') {
+						if (typeof data.dbsize === 'number' && data.dbsize >= 0) {
+							$("#dbsize_display").text('~' + formatBytes(data.dbsize));
+						}
+						if (typeof data.freesize === 'number' && data.freesize >= 0) {
+							var freeText = formatBytes(data.freesize);
+							if (data.freesize > 0) {
+								freeText += ' (' + $.t('click Vacuum to free') + ')';
+							}
+							$("#dbfreesize_display").text(freeText);
+						}
+					}
+				}
+			});
+		};
+
+		$scope.VacuumDatabase = function () {
+			bootbox.confirm($.t("Vacuum Database") + "?" + $.t("Are you sure you want to vacuum the database?\n\nThis will briefly pause all sensor updates and API responses while the database is rebuilt.").split("?")[1], function (result) {
+				if (result == true) {
+					ShowNotify($.t('Vacuuming database, please wait...'), 10000);
+					$.ajax({
+						url: "json.htm?type=command&param=vacuumdatabase",
+						async: false,
+						dataType: 'json',
+						success: function (data) {
+							HideNotify();
+							bootbox.alert($.t('Database vacuum completed.'), function () {
+								$scope.RefreshDbStats();
+							});
+						},
+						error: function () {
+							HideNotify();
+							ShowNotify($.t('Problem vacuuming the database!'), 2500, true);
+						}
+					});
+				}
+			});
+		};
+
 		init();
 
 		function init() {
@@ -960,6 +1133,8 @@ define(['app'], function (app) {
 			$scope.MakeScrollLink("#idfloorplans", "#floorplans");
 			$scope.MakeScrollLink("#idothersettings", "#othersettings");
 			$scope.MakeScrollLink("#idrestoredatabase", "#restoredatabase");
+			$scope.RefreshDbStats();
+			$scope.RefreshUnusedSensorStats();
 
 			$("#dialog-findlatlong").dialog({
 				autoOpen: false,
@@ -1027,6 +1202,39 @@ define(['app'], function (app) {
 					$(this).dialog("close");
 				}
 			});
+			
+			// Handle FCM Service Account JSON file upload
+			$('#FCMServiceAccountJSONFile').on('change', function(event) {
+				var file = event.target.files[0];
+				if (file) {
+					if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
+						ShowNotify($.t('Please select a valid JSON file'), 2500, true);
+						return;
+					}
+					var reader = new FileReader();
+					reader.onload = function(e) {
+						try {
+							// Parse JSON and extract required fields
+							var jsonContent = e.target.result;
+							var jsonObj = JSON.parse(jsonContent);
+							if (!jsonObj.client_email || !jsonObj.private_key || !jsonObj.project_id) {
+								ShowNotify($.t('Invalid Firebase JSON - missing required fields (client_email, private_key, project_id)'), 2500, true);
+								return;
+							}
+							$('#gcmtable #FCMClientEmail').val(jsonObj.client_email);
+							$('#gcmtable #FCMPrivateKey').val(jsonObj.private_key);
+							$('#gcmtable #FCMProjectId').val(jsonObj.project_id);
+						} catch (error) {
+							ShowNotify($.t('Invalid JSON file format'), 2500, true);							
+						}
+					}
+					reader.onerror = function() {
+						ShowNotify($.t('Error reading file'), 2500, true);
+					};
+					reader.readAsText(file);
+				}
+			});
+			
 			$("#maindiv").i18n();
 			$scope.ShowSettings();
 		};

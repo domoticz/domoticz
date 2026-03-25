@@ -1,11 +1,11 @@
 <div class="container">
 	<div class="page-header-small page-header-with-button">
 		<h1><span data-i18n="Log">Report</span>: {{ ::vm.pageName }}</h1>
-        <div><a class="btnstyle3" back-button><i class="fa fa-reply" title="Back"></i> {{ ::'Back' | translate }}</a></div>
+		<div><a class="btnstyle3" back-button><i class="fa fa-reply" title="Back"></i>&nbsp;<span data-i18n="Back"></span></a></div>
 	</div>
 
     <div class="pull-right">
-        <label for="comboyear">{{ :: 'Year' | translate }}: </label>
+        <label for="comboyear" data-i18n="Year"></label>:
         <select
                 id="comboyear"
                 class="combobox ui-corner-all"
@@ -35,7 +35,19 @@
             selected-year="::vm.selectedYear"
             selected-month="::vm.selectedMonth"></device-temperature-report>
 
+    <device-rain-report
+            ng-if="::vm.isRainReport()"
+            device="::vm.device"
+            selected-year="::vm.selectedYear"
+            selected-month="::vm.selectedMonth"></device-rain-report>
+
+    <device-wind-report
+            ng-if="::vm.isWindReport()"
+            device="::vm.device"
+            selected-year="::vm.selectedYear"
+            selected-month="::vm.selectedMonth"></device-wind-report>
+
     <div class="no-data" ng-if="::vm.isNoReport()">
-        {{ ::'This device does not have any reports.' | translate}}
+        <span data-i18n="This device does not have any reports"></span>
     </div>
 </div>

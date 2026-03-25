@@ -1,4 +1,8 @@
-name: Domoticz Development (Beta)
+name: Domoticz Development (Beta) Unix
+
+concurrency:
+  group: linux-dev-${{ github.ref }}
+  cancel-in-progress: true
 
 on:
   push:
@@ -14,18 +18,21 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
     #runs-on: ubuntu-latest
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: true
@@ -46,8 +53,7 @@ jobs:
           echo 'APT::Get::Always-Include-Phased-Updates "false";' | sudo tee /etc/apt/apt.conf.d/99-phased-updates
           sudo apt-mark hold grub-efi-amd64-signed
           sudo apt-get update --fix-missing
-          sudo apt-get update || true
-          sudo apt-get install make gcc cmake g++ libssl-dev git libcurl4-gnutls-dev libusb-dev python3-dev zlib1g-dev liblua5.3-dev uthash-dev libsqlite3-dev
+          sudo apt-get install make gcc cmake g++ libssl-dev git libcurl4-gnutls-dev libusb-dev libmosquitto-dev python3-dev zlib1g-dev liblua5.3-dev uthash-dev libsqlite3-dev
           sudo apt-get install libboost-chrono-dev libboost-system-dev libboost-thread-dev
           sudo apt-get install python3-pytest python3-pytest-bdd
 
@@ -66,24 +72,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           cmake -DCMAKE_BUILD_TYPE=Release CMakeLists.txt
-          make
-
-      # Run automated tests (disabled March 2022)
-      #- name: unit-tests domoticz-dzVents
-      #  run: |
-      #    cd $GITHUB_WORKSPACE/dzVents/runtime/tests
-      #    busted --coverage -o TAP *
-      #    luacov
-      #    tail -19 luacov.report.out
-      #  continue-on-error: true
-      - name: functional-tests domoticz
-        run: |
-          cd $GITHUB_WORKSPACE
-          ln -s ../test/gherkin/resources/testwebcontent www/test
-          sudo ./domoticz -sslwww 0 -wwwroot www -pidfile /var/run/domoticz.pid -daemon
-          pytest-3 -rA --tb=no test/gherkin/
-          sudo kill -s TERM `sudo cat /var/run/domoticz.pid`
-        continue-on-error: false
+          make -j$(nproc)
 
       # Packaging
       - name: package domoticz
@@ -101,5 +90,5 @@ jobs:
         with:
           name: domoticz_linux_x86_64-${{ env.BUILDNR }}
           path: package/
-          retention-days: 7
+          retention-days: 400
           if-no-files-found: error

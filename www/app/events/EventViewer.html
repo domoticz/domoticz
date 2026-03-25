@@ -1,34 +1,57 @@
 <div class="events-editor-file__header">
     <form class="form-inline">
-        <div class="btn-group">
-            <button class="btn btn-default"
-                    ng-class="{
-                        'btn-default': $ctrl.eventData.eventstatus === '0',
-                        'btn-success active': $ctrl.eventData.eventstatus === '1'
-                    }"
-                    ng-click="$ctrl.setEventState(true)"
-            >
-                {{:: 'On' | translate }}
-            </button>
-
-            <button class="btn btn-default"
-                    ng-class="{
-                        'btn-default': $ctrl.eventData.eventstatus === '1',
-                        'btn-danger active': $ctrl.eventData.eventstatus === '0'
-                    }"
-                    ng-click="$ctrl.setEventState(false)"
-            >
-                {{:: 'Off' | translate }}
-            </button>
-        </div>
-
         <input id="eventName"
                class="events-editor-file__name"
                ng-model="$ctrl.eventData.name"
                ng-change="$ctrl.markEventAsUpdated()"
         >
 
+        <div class="btn-group" style="margin-left: 8px;" ng-if="$ctrl.eventData">
+            <button type="button" class="btn btn-default"
+                    ng-class="{active: $ctrl.eventData.eventstatus == '0'}"
+                    ng-click="$ctrl.setEventState(false)"
+            >
+                {{:: 'Disabled' | translate }}
+            </button>
+
+            <button type="button" class="btn btn-default"
+                    ng-class="{active: $ctrl.eventData.eventstatus == '1'}"
+                    ng-click="$ctrl.setEventState(true)"
+            >
+                {{:: 'Enabled' | translate }}
+            </button>
+        </div>
+
         <div class="pull-right">
+            <div class="ace-settings" ng-if="$ctrl.eventData.interpreter !== 'Blockly'">
+                <select class="ace-settings__theme"
+                        ng-model="$ctrl.aceSettings.theme"
+                        ng-options="t.id as ((t.dark ? '● ' : '○ ') + t.name) for t in $ctrl.themes"
+                        ng-change="$ctrl.setTheme($ctrl.aceSettings.theme)"
+                        title="Theme">
+                </select>
+
+                <button class="btn btn-default btn-xs" type="button"
+                        ng-click="$ctrl.decreaseFontSize()"
+                        title="Decrease font size">
+                    <b>A</b><small>-</small>
+                </button>
+                <span class="ace-settings__font-size">{{$ctrl.aceSettings.fontSize}}</span>
+                <button class="btn btn-default btn-xs" type="button"
+                        ng-click="$ctrl.increaseFontSize()"
+                        title="Increase font size">
+                    <b>A</b><small>+</small>
+                </button>
+
+                <button class="btn btn-default btn-xs" type="button"
+                        ng-class="{'active': $ctrl.aceSettings.wordWrap}"
+                        ng-click="$ctrl.toggleWordWrap()"
+                        title="Word wrap">
+                    <i class="icon-align-justify"></i>
+                </button>
+
+            </div>
+
             <div class="events-editor-file__type input-prepend" ng-show="$ctrl.isTriggerAvailable()">
                 <label class="add-on" for="trigger">{{:: 'Trigger' | translate }}</label>
                 <select id="trigger"

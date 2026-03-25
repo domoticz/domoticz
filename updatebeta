@@ -1,65 +1,122 @@
-#!/bin/sh
+#!/bin/bash
 
-# This script can be used to upgrade to the latest beta version
-# To skip making a backup, use -nobackup as commandline argument
+# Domoticz Update Script - Beta channel
+# Usage: ./updatebeta [-nobackup]
 
-lowercase(){
-    echo "$1" | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/"
+lowercase() {
+    echo "$1" | tr '[:upper:]' '[:lower:]'
 }
 
-OS=`lowercase \`uname -s\``
-MACH=`uname -m`
-ARCH=`dpkg --print-architecture`
-OPENSSL_VERSION=$(openssl version -v | awk '{print $2}' | sed 's/\..*//')
+log_info()  { echo "$(date '+%Y-%m-%d %H:%M:%S.%3N') >> $*"; }
+log_warn()  { echo "$(date '+%Y-%m-%d %H:%M:%S.%3N') >> WARNING: $*"; }
+die()       { echo "$(date '+%Y-%m-%d %H:%M:%S.%3N') >> ERROR: $*" >&2; exit 1; }
 
-if [ ${MACH} = "armv6l" ]
-then
- echo "ARMv6 is not supported anymore... Please upgrade your hardware"
- exit 1
+OS=$(lowercase "$(uname -s)")
+MACH=$(uname -m)
+ARCH=$(dpkg --print-architecture)
+OPENSSL_VERSION=$(openssl version | awk '{print $2}' | cut -d. -f1)
+SCRIPT_NAME=$(basename "$0")
+ARCHIVE="domoticz_beta.tgz"
+
+if [ "$MACH" = "armv6l" ]; then
+    die "ARMv6 is not supported anymore... Please upgrade your hardware"
 fi
 
-if [ ${ARCH} = "armhf" ]
-then
- MACH="armv7l"
+if [ "$ARCH" = "armhf" ]; then
+    MACH="armv7l"
 fi
 
-if [  ${OPENSSL_VERSION} -ne 3 ]; then
- echo "OpenSSL version 3 required!"
- exit 1
+if [ "$OPENSSL_VERSION" -ne 3 ]; then
+    die "OpenSSL version 3 required!"
 fi
 
-echo "Stopping Domoticz..."
+# List of required packages — extend as needed
+REQUIRED_PACKAGES=(
+    "libmosquitto1"
+    #"libcurl4"
+    #"libssl3"
+)
+
+check_dependencies() {
+    log_info "Checking package dependencies..."
+
+    local missing_packages=()
+    local pkg
+
+    for pkg in "${REQUIRED_PACKAGES[@]}"; do
+        if ! dpkg -l | grep -q "^ii  $pkg"; then
+            log_warn "Package '$pkg' is not installed"
+            missing_packages+=("$pkg")
+        else
+            log_info "Package '$pkg' is already installed"
+        fi
+    done
+
+    if [[ ${#missing_packages[@]} -gt 0 ]]; then
+        log_info "Installing missing packages: ${missing_packages[*]}"
+        log_info "Updating package list..."
+        if ! sudo apt-get update -qq; then
+            log_warn "Failed to update package list, continuing anyway..."
+        fi
+        if ! sudo apt-get install -y "${missing_packages[@]}"; then
+            die "Failed to install required packages: ${missing_packages[*]}"
+        fi
+        log_info "Successfully installed: ${missing_packages[*]}"
+    else
+        log_info "All required packages are already installed"
+    fi
+}
+
+if [ "${DOMOTICZ_UPDATE_REEXEC}" != "1" ]; then
+    log_info "Downloading latest beta version..."
+    wget -4 -q --show-progress -O "$ARCHIVE" --no-check-certificate \
+        "https://www.domoticz.com/download.php?channel=beta&type=release&system=${OS}&machine=${MACH}"
+    if [ $? -ne 0 ]; then
+        die "Problem downloading new Domoticz version!!"
+    fi
+    log_info "Checking file integrity..."
+    if ! tar tzf "$ARCHIVE" >/dev/null 2>&1; then
+        rm -f "$ARCHIVE"
+        die "Problem in downloaded Domoticz archive!!"
+    fi
+    log_info "Checking for updated upgrade script..."
+    updated_script=$(tar -zxf "$ARCHIVE" --no-anchored "$SCRIPT_NAME" -O 2>/dev/null)
+    if [ -n "$updated_script" ] && ! diff <(cat "$0") <(echo "$updated_script") >/dev/null 2>&1; then
+        log_info "Found updated script, re-executing..."
+        export DOMOTICZ_UPDATE_REEXEC=1
+        exec bash -c "$updated_script" "$SCRIPT_NAME" "$@"
+    fi
+fi
+
+# Ensure archive exists (re-exec starts a new process; archive file persists on disk)
+if [ ! -f "$ARCHIVE" ]; then
+    log_info "Downloading latest beta version..."
+    if ! wget -4 -q --show-progress -O "$ARCHIVE" --no-check-certificate \
+        "https://www.domoticz.com/download.php?channel=beta&type=release&system=${OS}&machine=${MACH}"; then
+        die "Failed to download Domoticz archive"
+    fi
+fi
+
+log_info "Stopping Domoticz..."
 sudo service domoticz.sh stop
+
 if [ "$1" != "-nobackup" ]; then
-    echo "Making backup of current installation..."
-    # first remove oldest files (we keep 5 backups)
-    ls -t backups/domoticz_backup_* | tail -n +5 | xargs --no-run-if-empty -I {} rm -- {}
-    # create backup in parent folder (mostly home)
+    log_info "Making backup of current installation..."
+    ls -t backups/domoticz_backup_* 2>/dev/null | tail -n +6 | xargs --no-run-if-empty -I {} rm -- {}
     timestamp=$(date +%Y%m%d_%H%M%S)
-    echo "Output file: backups/domoticz_backup_$timestamp.tar.gz"
     mkdir -p backups
-    sudo tar --exclude backups -czf backups/domoticz_backup_$timestamp.tar.gz .
-    echo "Backup finished..."
+    log_info "Output file: backups/domoticz_backup_${timestamp}.tar.gz"
+    sudo tar -czf "backups/domoticz_backup_${timestamp}.tar.gz" domoticz domoticz.db* History.txt updatebeta updaterelease
+    log_info "Backup finished..."
 fi
-echo "Downloading latest beta version..."
-wget -4 -q -O domoticz_beta.tgz --no-check-certificate "https://www.domoticz.com/download.php?channel=beta&type=release&system=${OS}&machine=${MACH}"
-if [ $? -ne 0 ]
-then
- echo "Problem downloading new Domoticz version!!. Restarting current version..."
- sudo service domoticz.sh start
- exit 1
+
+check_dependencies
+
+log_info "Installing new version..."
+if ! tar xfz "$ARCHIVE" --checkpoint=.100; then
+    die "Failed to extract Domoticz archive"
 fi
-echo "Checking file integrity..."
-tar tzf domoticz_beta.tgz >/dev/null
-if [ $? -ne 0 ]
-then
- echo "Problem in downloaded Domoticz archive!!. Stopping and restarting current version..."
- sudo service domoticz.sh start
- exit 1
-fi
-echo "Installing new version..."
-tar xfz domoticz_beta.tgz --checkpoint=.100
-rm domoticz_beta.tgz
-echo "\nStarting Domoticz... (please standby...)"
+rm -f "$ARCHIVE"
+log_info "Starting Domoticz... (please standby...)"
 sudo service domoticz.sh start
-echo "Done..."
+log_info "Update completed successfully"

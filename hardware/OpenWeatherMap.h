@@ -17,7 +17,7 @@ class COpenWeatherMap : public CDomoticzHardwareBase
 		const int addhourforecast,
 		const int adddescdev,
 		const int owmforecastscreen,
-		const bool bUseAPIv3);
+		const int apiMode);
 	~COpenWeatherMap() override = default;
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 	std::string GetForecastURL();
@@ -28,6 +28,8 @@ class COpenWeatherMap : public CDomoticzHardwareBase
 	bool StopHardware() override;
 	void Do_Work();
 	void GetMeterDetails();
+	void ProcessOneCallAPI(const Json::Value& root);
+	void ProcessCurrentWeatherAPI(const Json::Value& root);
 	int GetForecastFromBarometricPressure(float pressure, float temp = -999.9F);
 	std::string GetDayFromUTCtimestamp(uint8_t daynr, const std::string &UTCtimestamp);
 	std::string GetHourFromUTCtimestamp(uint8_t hournr, const std::string &UTCtimestamp);
@@ -46,7 +48,7 @@ class COpenWeatherMap : public CDomoticzHardwareBase
 	bool m_add_hourforecast = false;
 	bool m_add_descriptiondevices = false;
 	bool m_use_owminforecastscreen = false;
-	bool m_bUseAPIv3 = false;
+	int m_apiMode = 1; // 0=2.5 OneCall, 1=3.0 OneCall, 2=2.5 Current Weather Only
 	double m_Lat = 0;
 	double m_Lon = 0;
 	uint32_t m_CityID = 0;

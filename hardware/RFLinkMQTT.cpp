@@ -68,7 +68,7 @@ extern std::string szRandomUUID;
 CRFLinkMQTT::CRFLinkMQTT(const int ID, const std::string &IPAddress, const unsigned short usIPPort ,
 						const std::string &Username, const std::string &Password , const std::string &CAfilenameExtra,
 						const int TLS_Version, const int PublishScheme, const bool Multidomonodesync ):
-	mosqdz::mosquittodz((std::string("RFLINKMQTT") + std::string(GenerateUUID())).c_str()),
+	mdz::mqttdz((std::string("RFLINKMQTT") + std::string(GenerateUUID())).c_str()),
 	m_szIPAddressList(IPAddress),
 	m_usIPPort(usIPPort),
 	m_UserName(Username),
@@ -100,7 +100,7 @@ CRFLinkMQTT::CRFLinkMQTT(const int ID, const std::string &IPAddress, const unsig
 	selectNextIPAdress();
 
 	// Init MQTT
-	mosqdz::lib_init();
+	mdz::lib_init();
 
 	threaded_set(true);
 
@@ -109,7 +109,7 @@ CRFLinkMQTT::CRFLinkMQTT(const int ID, const std::string &IPAddress, const unsig
 
 CRFLinkMQTT::~CRFLinkMQTT(void)
 {
-	mosqdz::lib_cleanup();
+	mdz::lib_cleanup();
 }
 
 // this function is select the MQTT target IP round-robin from the defined pool
@@ -246,7 +246,9 @@ void CRFLinkMQTT::on_message(const struct mosquitto_message *message)
 {
 	// Message on MQTT
 	std::string topic = message->topic;
-	std::string qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
+	std::string qMessage;
+	if (message->payload != nullptr && message->payloadlen > 0)
+		qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
 
 	_log.Log(LOG_NORM, "Topic: %s, Message: %s", topic.c_str(), qMessage.c_str());
 	// Add newwline to end of the buffer

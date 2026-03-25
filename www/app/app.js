@@ -1,3 +1,9 @@
+function formatBytes(bytes) {
+	if (bytes < 1024) return bytes + ' B';
+	if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+	return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
 define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.permissions', 'domoticz.api', 'livesocket', 'devices/deviceFactory', 'angular-animate', 'ui-grid', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue'], function (angularAMD, appRoutesModule, appConstantsModule, appNotificationsModule, appPermissionsModule, apiModule, websocketModule, deviceFactory) {
 	var app = angular.module('domoticz', [
 		'ngRoute', 'ngAnimate', 'ui.grid', 'ngSanitize',
@@ -132,7 +138,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
     	return {
     		confirm: confirm,
             confirmDecorator: confirmDecorator,
-            alert: alert
+            alert: alert,
+            prompt: prompt
 		};
 
 		function confirm(message) {
@@ -159,6 +166,22 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		function alert(message) {
 			return bootbox.alert($.t(message));
         }
+
+		function prompt(message, defaultValue) {
+			return $q(function(resolve, reject) {
+				bootbox.prompt({
+					title: message,
+					value: defaultValue || '',
+					callback: function (result) {
+						if (result === null) {
+							reject();
+						} else {
+							resolve(result);
+						}
+					}
+				});
+			});
+		}
 	});
 
     app.factory('dzNotification', function($q) {
@@ -204,13 +227,17 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 				},
 				responseError: function (response) {
 					if (response && response.status === 401) {
-						var permissionList = {
-							isloggedin: false,
-							rights: -1,
-							user: ''
-						};
-						permissions.setPermissions(permissionList);
-						$location.path('/Login');
+						if (window.needsSetup) {
+							$location.path('/SetupWizard');
+						} else {
+							var permissionList = {
+								isloggedin: false,
+								rights: -1,
+								user: ''
+							};
+							permissions.setPermissions(permissionList);
+							$location.path('/Login');
+						}
 						return $q.reject(response);
 					}
 					return $q.reject(response);
@@ -290,7 +317,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		var permissionList = {
 			isloggedin: false,
 			rights: -1,
-			user: ''
+			user: '',
+			canlogout: true
 		};
 		permissions.setPermissions(permissionList);
 
@@ -329,6 +357,11 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			if (typeof $rootScope.config.DegreeDaysBaseTemperature != 'undefined') {
 				$.myglobals.DegreeDaysBaseTemperature = $rootScope.config.DegreeDaysBaseTemperature;
 			}
+			if (typeof $rootScope.config.PriceResolution != 'undefined') {
+				$.myglobals.PriceResolution = parseInt($rootScope.config.PriceResolution) || 60;
+			} else {
+				$.myglobals.PriceResolution = 60;
+			}
 			if (typeof $rootScope.config.CurrencySign != 'undefined') {
 				$.myglobals.currencysign = $rootScope.config.CurrencySign;
 			}
@@ -349,6 +382,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			MobileType: 0,
 			TempScale: 1.0,
 			DegreeDaysBaseTemperature: 18.0,
+			PriceResolution: 60,
 			TempSign: "C",
 			WindScale: 3.600000143051148,
 			WindSign: "km/h",
@@ -360,6 +394,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			apphash: 0,
 			appdate: 0,
 			pythonversion: "",
+			dbsize: "",
 			versiontooltip: "",
 			ShowUpdatedEffect: true,
 			DateFormat: "yy-mm-dd",
@@ -386,6 +421,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.language = data.language;
 						$rootScope.config.CurrencySign = data.CurrencySign;
 						$rootScope.config.DegreeDaysBaseTemperature = data.DegreeDaysBaseTemperature;
+						$rootScope.config.PriceResolution = data.PriceResolution;
 						$rootScope.config.EnableTabDashboard = data.result.EnableTabDashboard,
 						$rootScope.config.EnableTabFloorplans = data.result.EnableTabFloorplans;
 						$rootScope.config.EnableTabLights = data.result.EnableTabLights;
@@ -401,6 +437,9 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 							$rootScope.config.appdate = data.build_time;
 							$rootScope.config.dzventsversion = data.dzvents_version;
 							$rootScope.config.pythonversion = data.python_version;
+							if (typeof data.db_size != 'undefined') {
+								$rootScope.config.dbsize = formatBytes(data.db_size);
+							}
 							$rootScope.config.isproxied = data.isproxied;
 							$rootScope.config.versiontooltip = "'Build Hash: <b>" + $rootScope.config.apphash + "</b><br>" + "Build Date: " + $rootScope.config.appdate + "'";
 						}
@@ -482,24 +521,51 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 
 						$rootScope.MakeGlobalConfig();
 
-						var customHTML = "";
-						if (typeof data.result.templates != 'undefined')  {
+						var $custommenu = $("#custommenu");
+						$custommenu.empty();
+						var items = [];
+						if (typeof data.result.templates != 'undefined') {
 							$.each(data.result.templates, function (i, item) {
-								var cFile = item.file;
-								var cName = item.name;
-								var cURL = "templates/" + cFile;
-								customHTML += '<li><a href="javascript:SwitchLayout(\'' + cURL + '\')">' + cName + '</a></li>';
+								items.push({
+									href: 'javascript:SwitchLayout(' + JSON.stringify('templates/' + item.file) + ')',
+									text: item.name,
+									target: null
+								});
 							});
 						}
-						if (typeof data.result.urls != 'undefined')  {
+						if (typeof data.result.urls != 'undefined') {
 							$.each(data.result.urls, function (name, url) {
-								var cName = name.charAt(0).toUpperCase() + name.slice(1);
-								var cURL = url;
-								customHTML += '<li><a target="_blank" href="' + cURL + '">' + cName + '</a></li>';
+								if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) return;
+								items.push({
+									href: url,
+									text: name.charAt(0).toUpperCase() + name.slice(1),
+									target: '_blank'
+								});
 							});
 						}
-						if (customHTML != "") {
-							$("#custommenu").html(customHTML);
+						if (items.length > 0) {
+							var $custommenuLi = $(".clcustommenu");
+							var $custommenuToggle = $custommenuLi.find('> a');
+							if (items.length === 1) {
+								var item = items[0];
+								$custommenuToggle.attr('href', item.href);
+								if (item.target) $custommenuToggle.attr('target', item.target);
+								$custommenuToggle.find('span').removeAttr('data-i18n').text(item.text);
+							} else {
+								$custommenuLi.addClass('dropdown');
+								$custommenuToggle
+									.addClass('dropdown-toggle')
+									.attr('data-toggle', 'dropdown')
+									.append('<b class="caret hidden-phone hidden-tablet"></b>');
+								$.each(items, function (i, item) {
+									var $li = $('<li>');
+									var $a = $('<a>')
+										.attr('href', item.href)
+										.html('<img src="images/devices.png"> ' + $('<span>').text(item.text).html());
+									if (item.target) $a.attr('target', item.target);
+									$custommenu.append($li.append($a));
+								});
+							}
 							$rootScope.config.EnableTabCustom = data.result.EnableTabCustom;
 						}
 						
@@ -526,7 +592,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			success: function (data) {
 				isOnline = true;
 				if (data.status == "OK") {
-					if (data.user !== "") {
+					permissionList.canlogout = data.canlogout;
+					if (data.user && data.user !== "") {
 						permissionList.isloggedin = true;
 						permissionList.rights = parseInt(data.rights);
 						permissionList.user = data.user;
@@ -535,6 +602,18 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			},
 			error: function () {
 				isOnline = false;
+			}
+		});
+
+		// Check if initial setup is required (no admin user exists)
+		$.ajax({
+			url: 'json.htm?type=command&param=getsetuprequired',
+			async: false,
+			dataType: 'json',
+			success: function (data) {
+				if (data.SetupRequired) {
+					window.needsSetup = true;
+				}
 			}
 		});
 
@@ -557,7 +636,13 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 				//	return;
 				//}
 
-				if ((!permissions.isAuthenticated()) && (next.templateUrl != "views/login.html")) {
+				// If setup wizard is needed, redirect there instead of login
+				if (window.needsSetup && next.templateUrl !== "views/setup-wizard.html") {
+					$location.path('/SetupWizard');
+					return;
+				}
+
+				if ((!permissions.isAuthenticated()) && (next.templateUrl != "views/login.html") && (next.templateUrl !== "views/setup-wizard.html")) {
 					$location.path('/Login');
 					//$window.location = '/#Login';
 					//$window.location.reload();
@@ -692,6 +777,39 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			}
 			return backgroundClass;
 		}
+		$rootScope.GetTempBackgroundStatus = function (item) {
+			var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
+			var setpointSubTypes = ['Zone', 'Hot Water', 'Temp/Setpoint', 'Temp/Hum/Setpoint', 'Temp/Baro/Setpoint', 'Temp/Hum/Baro/Setpoint'];
+			if (setpointSubTypes.indexOf(item.SubType) !== -1 && typeof item.SetPoint !== 'undefined') {
+				if (item.Status === 'HeatingOff' || item.SetPoint === 325.1) {
+					backgroundClass = 'statusEvoSetPointOff';
+				} else if (item.SetPoint >= 25) {
+					backgroundClass = 'statusEvoSetPoint25';
+				} else if (item.SetPoint >= 22) {
+					backgroundClass = 'statusEvoSetPoint22';
+				} else if (item.SetPoint >= 19) {
+					backgroundClass = 'statusEvoSetPoint19';
+				} else if (item.SetPoint >= 16) {
+					backgroundClass = 'statusEvoSetPoint16';
+				} else {
+					backgroundClass = 'statusEvoSetPointMin';
+				}
+			}
+			return backgroundClass;
+		}
+		$rootScope.GetTempIcon = function (device) {
+			if (device.CustomImage != 0) {
+				return 'images/' + device.Image + '48_On.png';
+			}
+			if (device.Type == 'Humidity') {
+				return 'images/gauge48.png';
+			}
+			var temp = (typeof device.Temp != 'undefined') ? device.Temp : device.Chill;
+			if (typeof temp == 'undefined') {
+				return 'images/temp48.png';
+			}
+			return 'images/' + GetTemp48Item(temp);
+		};
 		$rootScope.DisplayTrend = function (trend) {
 			//0=Unknown, 1=Stable, 2=Up, 3=Down
 			if (typeof trend != 'undefined') {

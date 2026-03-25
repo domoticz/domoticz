@@ -42,7 +42,7 @@ define(function () {
             this.icon = new DeviceIcon(this);
 
             this.isDimmer = function () {
-                return ['Dimmer', 'Blinds Percentage', 'Blinds + Stop', 'TPI'].includes(this.SwitchType);
+                return ['Dimmer', 'Blinds Percentage', 'Blinds % + Stop', 'TPI'].includes(this.SwitchType);
             };
 
             this.isSelector = function () {
@@ -165,8 +165,12 @@ define(function () {
                     return '%';
                 } else if (this.Type === 'Weight') {
                     return this.SwitchTypeVal === 0 ? 'kg' : 'lbs';
+                } else if (this.Type === 'Current') {
+                    return 'A';
                 } else if (this.Type === 'Rain') {
                     return 'mm';
+                } else if (this.Direction !== undefined && /Wind/i.test(this.Type)) {
+                    return (typeof $.myglobals !== 'undefined' && $.myglobals.windsign) ? $.myglobals.windsign : 'm/s';
                 } else {
                     return '?';
                 }
@@ -176,12 +180,12 @@ define(function () {
                 var deviceType = this.Type;
                 var logLink = '#/Devices/' + this.idx + '/Log';
 
-                var deviceTypes = ['Light', 'Color Switch', 'Chime', 'Security', 'RFY', 'ASA', 'Usage', 'Energy', 'Heating'];
+                var deviceTypes = ['Light', 'Color Switch', 'Chime', 'Security', 'RFY', 'ASA', 'Usage', 'Energy', 'Heating', 'Air Quality', 'Rain', 'Wind', 'UV', 'Current'];
                 var deviceSubTypes = [
                     'Voltage', 'Current', 'Pressure', 'Custom Sensor', 'kWh',
                     'Sound Level', 'Solar Radiation', 'Visibility', 'Distance',
                     'Soil Moisture', 'Leaf Wetness', 'Waterflow', 'Lux', 'Percentage',
-                    'Text', 'Alert', 'Temperature', 'SetPoint'
+                    'Text', 'Alert', 'Temperature', 'SetPoint', 'Barometer', 'Fan'
                 ];
 
                 if (deviceTypes.some(function(item) {
@@ -204,8 +208,8 @@ define(function () {
             };
 
             this.isCustomLog = function () {
-				var deviceTypes = ['Air Quality','UV','Rain','Current','Wind'];
-				var deviceSubTypes = ['Barometer'];
+				var deviceTypes = [];
+				var deviceSubTypes = [];
 
 				if (deviceTypes.includes(this.Type)) {
 					return true;
@@ -218,20 +222,7 @@ define(function () {
 
             this.openCustomLog = function (container, backFn) {
                 GlobalBackFn = backFn;
-
-                if (this.Direction !== undefined) {
-                    ShowWindLog(container, 'GlobalBackFn', this.idx, this.Name);
-                } else if (this.UVI !== undefined) {
-                    ShowUVLog(container, 'GlobalBackFn', this.idx, this.Name);
-                } else if (this.Rain !== undefined) {
-                    ShowRainLog(container, 'GlobalBackFn', this.idx, this.Name);
-                } else if (this.Type.indexOf('Current') === 0) {
-                    ShowCurrentLog(container, 'GlobalBackFn', this.idx, this.Name);
-                } else if (this.Type === 'Air Quality') {
-                    ShowAirQualityLog(container, 'GlobalBackFn', this.idx, this.Name);
-                } else if (this.SubType === 'Barometer') {
-                    ShowBaroLog(container, 'GlobalBackFn', this.idx, this.Name);
-                }
+                // All sensors now use Angular log components
             };
 
         }

@@ -78,7 +78,11 @@ local function Domoticz(settings)
 		if delay and tonumber(delay) then
 			self.emitEvent('___' .. command .. '__' , value ).afterSec(delay)
 		else
-			table.insert(self.commandArray, { [command] = value })
+			local entry = { [command] = value }
+			if _G.currentDzVentsScriptName then
+				entry._scriptName = _G.currentDzVentsScriptName
+			end
+			table.insert(self.commandArray, entry)
 		end
 		-- return a reference to the newly added item
 		return self.commandArray[#self.commandArray], command, value, delay

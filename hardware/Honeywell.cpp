@@ -9,7 +9,7 @@
 #include "../httpclient/HTTPClient.h"
 #include "../main/mainworker.h"
 #include "../main/json_helper.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 
 constexpr auto HONEYWELL_DEFAULT_APIKEY = "atD3jtzXC5z4X8WPbzvo0CBqWi7S81Nh";
 constexpr auto HONEYWELL_DEFAULT_APISECRET = "TXDzy2aHpAJw6YiO";

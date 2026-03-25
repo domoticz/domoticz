@@ -57,6 +57,7 @@ private:
 	void ProcessNotification(lua_State* lua_state, const std::vector<CEventSystem::_tEventQueue>& items);
 	void ProcessNotificationItem(CLuaTable& luaTable, int& index, const CEventSystem::_tEventQueue& item);
 	static int l_domoticz_print(lua_State* lua_state);
+	static int l_domoticz_scandir(lua_State* lua_state);
 	static CdzVents m_dzvents;
 	std::string m_version;
 };

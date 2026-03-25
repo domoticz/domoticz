@@ -59,7 +59,7 @@ namespace tcp {
 			// Post a call to the stop function so that server::stop() is safe to call
 			// from any thread.
 			flghandle_stop_Completed=false;
-			boost::asio::post([this] { handle_stop(); });
+			boost::asio::post(io_context_, [this] { handle_stop(); });
 		}
 
 		void CTCPServerInt::handle_stop()
@@ -419,14 +419,16 @@ namespace tcp {
 			else if (szAction == "SetSetpoint")
 			{
 				float TempValue = root["TempValue"].asFloat();
-				m_mainworker.SetSetPoint(szIdx, TempValue);
+				std::string szUser = root["User"].asString();
+				m_mainworker.SetSetPoint(szIdx, TempValue, szUser);
 			}
 			else if (szAction == "SetSetPointEvo")
 			{
 				float TempValue = root["TempValue"].asFloat();
 				std::string newMode = root["newMode"].asString();
 				std::string until = root["until"].asString();
-				m_mainworker.SetSetPointEvo(szIdx, TempValue, newMode, until);
+				std::string szUser = root["User"].asString();
+				m_mainworker.SetSetPointEvo(szIdx, TempValue, newMode, until, szUser);
 			}
 			else if (szAction == "SetThermostatState")
 			{

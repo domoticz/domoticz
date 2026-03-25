@@ -6,9 +6,9 @@
 #include "../hardware/hardwaretypes.h"
 #include "../main/RFXtrx.h"
 #include "../main/SQLHelper.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #include "../main/WebServer.h"
-#include "../webserver/cWebem.h"
+#include <libwebem/cWebem.h>
 #include "../main/mainworker.h"
 #include <json/json.h>
 #define __STDC_FORMAT_MACROS
@@ -43,7 +43,7 @@ void CHttpPush::UpdateActive()
 	m_bLinkActive = (fActive == 1);
 }
 
-void CHttpPush::OnDeviceReceived(const int m_HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
+void CHttpPush::OnDeviceReceived(const int HwdID, const uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand)
 {
 	if (m_bLinkActive)
 	{

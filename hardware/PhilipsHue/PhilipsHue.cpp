@@ -1,13 +1,14 @@
 #include "stdafx.h"
 #include "PhilipsHue.h"
 #include "PhilipsHueSensors.h"
+#include "PhilipsHueV2Sensors.h"
 #include "../../main/Helper.h"
 #include "../../main/Logger.h"
 #include "../../main/RFXtrx.h"
 #include "../../main/SQLHelper.h"
 #include "../../main/mainworker.h"
 #include "../../main/WebServer.h"
-#include "../../webserver/cWebem.h"
+#include <libwebem/cWebem.h>
 #include "../../httpclient/HTTPClient.h"
 #include "../../main/json_helper.h"
 #include "../hardwaretypes.h"
@@ -15,6 +16,7 @@
 #define HUE_DEFAULT_POLL_INTERVAL 10
 #define HUE_NOT_ADD_GROUPS 0x01
 #define HUE_NOT_ADD_SCENES 0x02
+#define HUE_USE_V2_SENSORS 0x04
 
 #define SensorTypeDaylight "Daylight"
 #define SensorTypeZGPSwitch "ZGPSwitch"
@@ -24,9 +26,26 @@
 #define SensorTypeZLLLightLevel "ZLLLightLevel"
 #define SensorTypeGeofence "Geofence"
 
-//#define DEBUG_PhilipsHue
+#define SAFE_TYPE_CHECK(obj, check, fieldname) \
+    do { \
+        if (!((obj).check())) { \
+            _log.Log(LOG_DEBUG_INT, "PhilipsHue: JSON field '%s' has unexpected type", (fieldname)); \
+        } \
+    } while (0)
 
-#ifdef DEBUG_PhilipsHue
+#ifdef _DEBUG
+//#define DEBUG_PhilipsHue_R
+//#define DEBUG_PhilipsHue_W
+#endif
+
+#ifdef DEBUG_PhilipsHue_W
+extern void SaveString2Disk(std::string str, std::string filename);
+#endif
+#ifdef DEBUG_PhilipsHue_R
+std::string ReadFile(std::string filename)
+#endif
+
+#ifdef DEBUG_PhilipsHue_W
 void SaveString2Disk(std::string str, std::string filename)
 {
 	FILE* fOut = fopen(filename.c_str(), "wb+");
@@ -36,6 +55,9 @@ void SaveString2Disk(std::string str, std::string filename)
 		fclose(fOut);
 	}
 }
+#endif
+
+#ifdef DEBUG_PhilipsHue_R
 std::string ReadFile(std::string filename)
 {
 	std::ifstream file;
@@ -61,25 +83,56 @@ CPhilipsHue::CPhilipsHue(const int ID, const std::string& IPAddress, const unsig
 	m_HwdID = ID;
 	m_Port = Port;
 	m_poll_interval = PollInterval;
-	m_add_groups = (Options & HUE_NOT_ADD_GROUPS) != 0;
-	m_add_scenes = (Options & HUE_NOT_ADD_SCENES) != 0;
-
-	// Catch uninitialised Mode1 entry.
-	if (m_poll_interval < 1)
+	if (m_poll_interval < 5)
 	{
 		m_poll_interval = HUE_DEFAULT_POLL_INTERVAL;
-		Log(LOG_STATUS, "Using default poll interval of %d secs.", m_poll_interval);
+		Log(LOG_STATUS, "Poll interval too short. Using default interval of %d seconds.", m_poll_interval);
 	}
 	else
 	{
-		Log(LOG_STATUS, "Using poll interval of %d secs.", m_poll_interval);
+		Log(LOG_STATUS, "Using poll interval of %d seconds.", m_poll_interval);
 	}
+
+	// Force-enable V2 sensors by default by OR-ing the option in here.
+	// This keeps callers unchanged but makes the behavior default-on.
+	int effectiveOptions = Options | HUE_USE_V2_SENSORS;
+
+	m_add_groups = (effectiveOptions & HUE_NOT_ADD_GROUPS) != 0;
+	m_add_scenes = (effectiveOptions & HUE_NOT_ADD_SCENES) != 0;
+
+	m_use_v2_sensors = (effectiveOptions & HUE_USE_V2_SENSORS) != 0;
+
+	if (Port == 443)
+		m_html_schema = "https";
+	else
+		m_html_schema = "http";
 
 	Init();
 }
 
 void CPhilipsHue::Init()
 {
+	// instantiate V2 sensors helper when Port is 443 (HTTPS) and if enabled
+	if (m_Port == 443) {
+		if (m_use_v2_sensors) {
+			// Use m_UserName as hue-application-key for now (same field used for v1 username).
+			try {
+				m_v2sensors = std::make_unique<CPhilipsHueV2Sensors>(m_html_schema, m_IPAddress, std::to_string(m_Port), m_UserName);
+				Log(LOG_STATUS, "PhilipsHue: v2 sensors support enabled (Port==443).");
+			}
+			catch (const std::exception& e) {
+				Log(LOG_ERROR, "PhilipsHue: failed to create v2 sensors helper: %s", e.what());
+				m_use_v2_sensors = false;
+			}
+		} else {
+			// no v2 sensors when disabled/false
+			Log(LOG_STATUS, "PhilipsHue: v2 sensors support disabled.");
+		}
+	} else {
+		// no v2 sensors on non-HTTPS connections
+		Log(LOG_STATUS, "PhilipsHue: v2 sensors support disabled (Port<>443).");
+		m_use_v2_sensors = false;
+	}
 }
 
 bool CPhilipsHue::StartHardware()
@@ -133,148 +186,168 @@ void CPhilipsHue::Do_Work()
 
 bool CPhilipsHue::WriteToHardware(const char* pdata, const unsigned char /*length*/)
 {
-	const tRBUF* pSen = reinterpret_cast<const tRBUF*>(pdata);
-
-	unsigned char packettype = pSen->ICMND.packettype;
-
-	int svalue = 0;
-	int svalue2 = 0;
-	int svalue3 = 0;
-	std::string LCmd;
-	int nodeID = 0;
-
-	if (packettype == pTypeGeneralSwitch)
+	try
 	{
-		const _tGeneralSwitch* pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pSen);
-		//light command
-		nodeID = static_cast<int>(pSwitch->id);
-		if ((pSwitch->cmnd == gswitch_sOff) || (pSwitch->cmnd == gswitch_sGroupOff))
-		{
-			LCmd = "Off";
-			svalue = 0;
-		}
-		else if ((pSwitch->cmnd == gswitch_sOn) || (pSwitch->cmnd == gswitch_sGroupOn))
-		{
-			LCmd = "On";
-			svalue = 254;
-		}
-		else if (pSwitch->cmnd == gswitch_sSetLevel)
-		{
-			// From Philips Hue API documentation:
-			// Brightness is a scale from 1 (the minimum the light is capable of) to 254 (the maximum). Note: a brightness of 1 is not off.
-			LCmd = "Set Level";
-			float fvalue = (254.0F / 100.0F) * float(pSwitch->level);
-			if (fvalue > 254.0F)
-				fvalue = 254.0F;
-			svalue = ground(fvalue);
-		}
-		SwitchLight(nodeID, LCmd, svalue);
-	}
-	else if (packettype == pTypeColorSwitch)
-	{
-		const _tColorSwitch* pLed = reinterpret_cast<const _tColorSwitch*>(pSen);
-		nodeID = static_cast<int>(pLed->id);
+		const tRBUF* pSen = reinterpret_cast<const tRBUF*>(pdata);
 
-		if (pLed->command == Color_LedOff)
+		unsigned char packettype = pSen->ICMND.packettype;
+
+		int svalue = 0;
+		int svalue2 = 0;
+		int svalue3 = 0;
+		std::string LCmd;
+		int nodeID = 0;
+
+		if (packettype == pTypeGeneralSwitch)
 		{
-			LCmd = "Off";
-			svalue = 0;
-			SwitchLight(nodeID, LCmd, svalue);
-			return true;
-		}
-		if (pLed->command == Color_LedOn)
-		{
-			LCmd = "On";
-			svalue = 254;
-			SwitchLight(nodeID, LCmd, svalue);
-			return true;
-		}
-		if (pLed->command == Color_SetBrightnessLevel)
-		{
-			if (pLed->value == 0)
+			const _tGeneralSwitch* pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pSen);
+			//light command
+			nodeID = static_cast<int>(pSwitch->id);
+			if ((pSwitch->cmnd == gswitch_sOff) || (pSwitch->cmnd == gswitch_sGroupOff))
 			{
-				//Off
 				LCmd = "Off";
 				svalue = 0;
-				SwitchLight(nodeID, LCmd, svalue);
 			}
-			else
+			else if ((pSwitch->cmnd == gswitch_sOn) || (pSwitch->cmnd == gswitch_sGroupOn))
+			{
+				LCmd = "On";
+				svalue = 254;
+			}
+			else if (pSwitch->cmnd == gswitch_sSetLevel)
 			{
 				// From Philips Hue API documentation:
 				// Brightness is a scale from 1 (the minimum the light is capable of) to 254 (the maximum). Note: a brightness of 1 is not off.
 				LCmd = "Set Level";
+				float fvalue = (254.0F / 100.0F) * float(pSwitch->level);
+				if (fvalue > 254.0F)
+					fvalue = 254.0F;
+				svalue = ground(fvalue);
+			}
+			SwitchLight(nodeID, LCmd, svalue);
+		}
+		else if (packettype == pTypeColorSwitch)
+		{
+			const _tColorSwitch* pLed = reinterpret_cast<const _tColorSwitch*>(pSen);
+			nodeID = static_cast<int>(pLed->id);
+
+			if (pLed->command == Color_LedOff)
+			{
+				LCmd = "Off";
+				svalue = 0;
+				SwitchLight(nodeID, LCmd, svalue);
+				return true;
+			}
+			if (pLed->command == Color_LedOn)
+			{
+				LCmd = "On";
+				svalue = 254;
+				SwitchLight(nodeID, LCmd, svalue);
+				return true;
+			}
+			if (pLed->command == Color_SetBrightnessLevel)
+			{
+				if (pLed->value == 0)
+				{
+					//Off
+					LCmd = "Off";
+					svalue = 0;
+					SwitchLight(nodeID, LCmd, svalue);
+				}
+				else
+				{
+					// From Philips Hue API documentation:
+					// Brightness is a scale from 1 (the minimum the light is capable of) to 254 (the maximum). Note: a brightness of 1 is not off.
+					LCmd = "Set Level";
+					float fvalue = (254.0F / 100.0F) * float(pLed->value);
+					if (fvalue > 254.0F)
+						fvalue = 254.0F;
+					svalue = ground(fvalue);
+					SwitchLight(nodeID, LCmd, svalue);
+				}
+				return true;
+			}
+			if (pLed->command == Color_SetColorToWhite)
+			{
+				LCmd = "Set White";
+				SwitchLight(nodeID, LCmd, 0);
+				return true;
+			}
+			if (pLed->command == Color_SetColor)
+			{
+				// From Philips Hue API documentation:
+				// bri: Brightness is a scale from 1 (the minimum the light is capable of) to 254 (the maximum). Note: a brightness of 1 is not off.
+				// hue: The hue value is a wrapping value between 0 and 65535. Both 0 and 65535 are red, 25500 is green and 46920 is blue.
+				// sat: Saturation of the light. 254 is the most saturated (colored) and 0 is the least saturated (white).
+				// ct: The Mired Color temperature of the light. 2012 connected lights are capable of 153 (6500K) to 500 (2000K).
+				if (pLed->value == 0)
+				{
+					//Off
+					LCmd = "Off";
+					svalue = 0;
+					SwitchLight(nodeID, LCmd, svalue);
+				}
+				else if (pLed->color.mode == ColorModeWhite)
+				{
+					LCmd = "Set Hue";
+					//TODO: Is this correct way to turn off RGB LED and turn on white LED?
+					svalue2 = 0; // Hue
+					svalue3 = 0; // sat
+				}
+				else if (pLed->color.mode == ColorModeTemp)
+				{
+					LCmd = "Set CT";
+					svalue2 = ground(float(pLed->color.t) * (500.0F - 153.0F) / 255.0F + 153.0F);
+				}
+				else if (pLed->color.mode == ColorModeRGB)
+				{
+					//get the xy color
+					double x = 0;
+					double y = 0;
+					RgbToXY(m_lightModels[nodeID], pLed->color.r, pLed->color.g, pLed->color.b, x, y);
+					LCmd = "Set XY";
+					svalue2 = ground(x * 1000);
+					svalue3 = ground(y * 1000);
+
+					/*
+					float hsb[3];
+					rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
+					float cHue = (65535.0F) * hsb[0]; // Scale hue from 0..1 to 0..65535
+					float cSat = (254.0F) * hsb[1];	  // Scale saturation from 0..1 to 0..254
+					LCmd = "Set Hue";
+					svalue2 = ground(cHue);
+					svalue3 = ground(cSat);
+					*/
+				}
+				else {
+					Log(LOG_STATUS, "SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
+				}
 				float fvalue = (254.0F / 100.0F) * float(pLed->value);
 				if (fvalue > 254.0F)
 					fvalue = 254.0F;
 				svalue = ground(fvalue);
-				SwitchLight(nodeID, LCmd, svalue);
+				SwitchLight(nodeID, LCmd, svalue, svalue2, svalue3);
+				return true;
 			}
-			return true;
-		}
-		if (pLed->command == Color_SetColorToWhite)
-		{
-			LCmd = "Set White";
-			SwitchLight(nodeID, LCmd, 0);
-			return true;
-		}
-		if (pLed->command == Color_SetColor)
-		{
-			// From Philips Hue API documentation:
-			// bri: Brightness is a scale from 1 (the minimum the light is capable of) to 254 (the maximum). Note: a brightness of 1 is not off.
-			// hue: The hue value is a wrapping value between 0 and 65535. Both 0 and 65535 are red, 25500 is green and 46920 is blue.
-			// sat: Saturation of the light. 254 is the most saturated (colored) and 0 is the least saturated (white).
-			// ct: The Mired Color temperature of the light. 2012 connected lights are capable of 153 (6500K) to 500 (2000K).
-			if (pLed->value == 0)
-			{
-				//Off
-				LCmd = "Off";
-				svalue = 0;
-				SwitchLight(nodeID, LCmd, svalue);
-			}
-			else if (pLed->color.mode == ColorModeWhite)
-			{
-				LCmd = "Set Hue";
-				//TODO: Is this correct way to turn off RGB LED and turn on white LED?
-				svalue2 = 0; // Hue
-				svalue3 = 0; // sat
-			}
-			else if (pLed->color.mode == ColorModeTemp)
-			{
-				LCmd = "Set CT";
-				svalue2 = ground(float(pLed->color.t) * (500.0F - 153.0F) / 255.0F + 153.0F);
-			}
-			else if (pLed->color.mode == ColorModeRGB)
-			{
-				//get the xy color
-				double x = 0;
-				double y = 0;
-				RgbToXY(m_lightModels[nodeID], pLed->color.r, pLed->color.g, pLed->color.b, x, y);
-				LCmd = "Set XY";
-				svalue2 = ground(x * 1000);
-				svalue3 = ground(y * 1000);
-
-				/*
-				float hsb[3];
-				rgb2hsb(pLed->color.r, pLed->color.g, pLed->color.b, hsb);
-				float cHue = (65535.0F) * hsb[0]; // Scale hue from 0..1 to 0..65535
-				float cSat = (254.0F) * hsb[1];	  // Scale saturation from 0..1 to 0..254
-				LCmd = "Set Hue";
-				svalue2 = ground(cHue);
-				svalue3 = ground(cSat);
-				*/
-			}
-			else {
-				Log(LOG_STATUS, "SetRGBColour - Color mode %d is unhandled, if you have a suggestion for what it should do, please post on the Domoticz forum", pLed->color.mode);
-			}
-			float fvalue = (254.0F / 100.0F) * float(pLed->value);
-			if (fvalue > 254.0F)
-				fvalue = 254.0F;
-			svalue = ground(fvalue);
-			SwitchLight(nodeID, LCmd, svalue, svalue2, svalue3);
-			return true;
 		}
 	}
+	catch (const std::exception& e)
+	{
+		Log(LOG_ERROR, "WriteToHardware Error: %s", e.what());
+		return false;
+	}
 	return true;
+}
+
+std::string hue_errorDescription(const Json::Value& root)
+{
+	if (root.isObject() && root.isMember("error"))
+		return root["error"]["description"].asString();
+
+	if (root.isArray() && !root.empty() &&
+		root[0].isObject() && root[0].isMember("error"))
+		return root[0]["error"]["description"].asString();
+
+	return "Unknown!?"; // layout not recognised
 }
 
 bool CPhilipsHue::SwitchLight(const int nodeID, const std::string& LCmd, const int svalue, const int svalue2 /*= 0*/, const int svalue3 /*= 0*/)
@@ -382,7 +455,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string& LCmd, const i
 	if (nodeID < 1000)
 	{
 		//Light
-		sstr2 << "https://" << m_IPAddress
+		sstr2 << m_html_schema << "://" << m_IPAddress
 			<< ":" << m_Port
 			<< "/api/" << m_UserName
 			<< "/lights/" << nodeID << "/state";
@@ -390,7 +463,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string& LCmd, const i
 	else if (nodeID < 2000)
 	{
 		//Group
-		sstr2 << "https://" << m_IPAddress
+		sstr2 << m_html_schema << "://" << m_IPAddress
 			<< ":" << m_Port
 			<< "/api/" << m_UserName
 			<< "/groups/" << nodeID - 1000 << "/action";
@@ -411,7 +484,7 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string& LCmd, const i
 		sPostData.clear();
 		sPostData.str("");
 		sPostData << R"({"scene": ")" << result[0][0] << "\"}";
-		sstr2 << "https://" << m_IPAddress
+		sstr2 << m_html_schema << "://" << m_IPAddress
 			<< ":" << m_Port
 			<< "/api/" << m_UserName
 			<< "/groups/0/action";
@@ -422,22 +495,25 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string& LCmd, const i
 		Log(LOG_ERROR, "Error connecting to Hue bridge (Switch Light/Scene), (Check IPAddress/Username)");
 		return false;
 	}
+#ifdef DEBUG_PhilipsHue_W
+	SaveString2Disk(sResult, urlToFilename("PhilipsHue", sURL));
+#endif
 
 	Json::Value root;
-
 	bool ret = ParseJSon(sResult, root);
 	if (!ret)
 	{
-		Log(LOG_ERROR, "Invalid data received (Switch Light/Scene), or invalid IPAddress/Username!");
+		Log(LOG_ERROR, "Error sending switch command. Invalid (json) data retuned.");
 		return false;
 	}
 
-	if (sResult.find("error") != std::string::npos)
+	if (sResult.find("\"error\":") != std::string::npos)
 	{
 		//We had an error
-		Log(LOG_ERROR, "Error received: %s", root[0]["error"]["description"].asString().c_str());
+		Log(LOG_ERROR, "SwitchLight Error received: %s", hue_errorDescription(root).c_str());
 		return false;
 	}
+
 	return true;
 }
 
@@ -453,7 +529,14 @@ std::string CPhilipsHue::RegisterUser(const std::string& IPAddress, const unsign
 	sPostData = R"({ "devicetype": "domoticz" })";
 
 	std::stringstream sstr2;
-	sstr2 << "https://" << IPAddress
+
+	std::string html_schema;
+	if (Port == 443)
+		html_schema = "https";
+	else
+		html_schema = "http";
+
+	sstr2 << html_schema << "://" << IPAddress
 		<< ":" << Port
 		<< "/api";
 	std::string sURL = sstr2.str();
@@ -463,6 +546,9 @@ std::string CPhilipsHue::RegisterUser(const std::string& IPAddress, const unsign
 		retStr = "Error;Error connecting to Hue bridge:";
 		return retStr;
 	}
+#ifdef DEBUG_PhilipsHue_W
+	SaveString2Disk(sResult, urlToFilename("PhilipsHue", sURL));
+#endif
 
 	Json::Value root;
 
@@ -472,15 +558,19 @@ std::string CPhilipsHue::RegisterUser(const std::string& IPAddress, const unsign
 		retStr = "Error;Registration failed (Wrong IPAddress?)";
 		return retStr;
 	}
-
-	if (sResult.find("error") != std::string::npos)
+	if (sResult.find("\"error\":") != std::string::npos)
 	{
-		retStr = "Error;" + root[0]["error"]["description"].asString();
-		return retStr;
+		retStr = "Error;" + hue_errorDescription(root);
+	 	return retStr;
+	 }
+
+	if (root.isArray() && root.size() > 0 && root[0].isObject() && root[0].isMember("success")) {
+		std::string new_username = root[0]["success"]["username"].asString();
+		retStr = "OK;" + new_username;
+	} else {
+		retStr = "Error;Unexpected response format (no success node)";
 	}
 
-	std::string new_username = root[0]["success"]["username"].asString();
-	retStr = "OK;" + new_username;
 	return retStr;
 }
 
@@ -712,143 +802,184 @@ void CPhilipsHue::InsertUpdateLamp(const int NodeID, const _eHueLightType LType,
 	}
 }
 
+static bool hue_http_get(const std::string& url, const std::vector<std::string>& ExtraHeaders, std::string& outBody)
+{
+#ifdef DEBUG_PhilipsHue_R
+	outBody = ReadFile(urlToFilename("PhilipsHue", url));
+#endif
+	bool ret = HTTPClient::GET(url, ExtraHeaders, outBody);
+#ifdef DEBUG_PhilipsHue_W
+	SaveString2Disk(outBody, urlToFilename("PhilipsHue", url));
+#endif
+	return ret;
+}
+
 bool CPhilipsHue::GetStates()
 {
 	std::string sResult;
-
-#ifdef DEBUG_PhilipsHue
-	sResult = ReadFile("E:\\philipshue.json");
-#else
 	std::stringstream sstr2;
-	sstr2 << "https://" << m_IPAddress
+	sstr2 << m_html_schema << "://" << m_IPAddress
 		<< ":" << m_Port
 		<< "/api/" << m_UserName;
 	//Get Data
 	std::string sURL = sstr2.str();
 	std::vector<std::string> ExtraHeaders;
-	if (!HTTPClient::GET(sURL, ExtraHeaders, sResult))
+	if (!hue_http_get(sURL, ExtraHeaders, sResult))
 	{
 		Log(LOG_ERROR, "Error getting Light States, (Check IPAddress/Username)");
 		return false;
 	}
-#endif
-#ifdef DEBUG_PhilipsHue2
-	SaveString2Disk(sResult, "E:\\philipshue.json");
-#endif
-
 	Json::Value root;
-
 	bool ret = ParseJSon(sResult, root);
-	if ((!ret) || (!root.isObject()))
+	if (!ret) 
 	{
-		Log(LOG_ERROR, "Invalid data received, or invalid IPAddress/Username!");
+		Log(LOG_ERROR, "Invalid data received! (login/json)");
 		return false;
 	}
-
 	if (sResult.find("\"error\":") != std::string::npos)
 	{
 		//We had an error
-		Log(LOG_ERROR, "Error received: %s", root[0]["error"]["description"].asString().c_str());
+		Log(LOG_ERROR, "Error received: %s", hue_errorDescription(root).c_str());
 		return false;
 	}
 
-
-	if (!GetLights(root))
+	if (!root.isObject())
 	{
-		//Log(LOG_ERROR, "No Lights found!");
+		Log(LOG_ERROR, "Invalid data received! (unknown json payload)");
 		return false;
 	}
 
-	GetGroups(root);
-	GetScenes(root);
-	GetSensors(root);
+	try
+	{
+		if (!GetLights(root))
+		{
+			//Log(LOG_ERROR, "No Lights found!");
+			return false;
+		}
+	}
+	catch (const std::exception& e)
+	{
+		Log(LOG_ERROR, "Error processing Lights: %s", e.what());
+	}
+	try
+	{
+		GetGroups(root);
+	}
+	catch (const std::exception& e)
+	{
+		Log(LOG_ERROR, "Error processing Groups: %s", e.what());
+	}
+	try
+	{
+		GetScenes(root);
+	}
+	catch (const std::exception& e)
+	{
+		Log(LOG_ERROR, "Error processing Scenes: %s", e.what());
+	}
+	try
+	{
+		GetSensors(root);
+	}
+	catch (const std::exception& e)
+	{
+		Log(LOG_ERROR, "Error processing Sensors: %s", e.what());
+	}
+	try
+	{
+		GetV2Sensors();
+	}
+	catch (const std::exception& e)
+	{
+		Log(LOG_ERROR, "Error processing V2 Sensors: %s", e.what());
+	}
 
 	return true;
 }
 
+// NEW: deterministic conversion from v2 uuid/rid string to numeric node ID
+int CPhilipsHue::NodeIDFromRid(const std::string& rid)
+{
+	// Stable non-cryptographic hash -> 32-bit int. Guaranteed deterministic across restarts.
+	std::hash<std::string> hasher;
+	uint32_t h = static_cast<uint32_t>(hasher(rid));
+	// Keep it in a safe positive range; mask off sign bit
+	const uint32_t safe = h & 0x7FFFFFFF;
+	// Limit to a range so NodeIDs are not ridiculously large (optional)
+	return static_cast<int>(safe % 2000000); // produces 0 .. 1_999_999
+}
+
 void CPhilipsHue::LightStateFromJSON(const Json::Value& lightstate, _tHueLightState& tlight, _eHueLightType& LType)
 {
-	if (lightstate.isObject())
+	if (!lightstate.isObject())
+		return;
+
+	bool hasBri = false;
+	bool hasHueSat = false;
+	bool hasTemp = false;
+
+	LType = HLTYPE_NORMAL;
+
+	if (!lightstate["on"].empty())
 	{
-		tlight.level = 0;          // Brightness of the light. This is a scale from the minimum brightness the light is capable of, 1,
-								   // to the maximum capable brightness, 254.
-		tlight.sat = 0;            // Saturation of the light. 254 is the most saturated (colored) and 0 is the least saturated (white).
-		tlight.hue = 0;            // Hue of the light. This is a wrapping value between 0 and 65535.
-		tlight.ct = 0;             // The Mired Color temperature of the light. 2012 connected lights are capable of 153 (6500K) to 500 (2000K).
-		tlight.mode = HLMODE_NONE; // Indicates the color mode in which the light is working, this is the last command type it received. Values
-								   // are "hs" for Hue and Saturation, "xy" for XY and "ct" for Color Temperature.
-		tlight.x = 0.0;            // The x and y coordinates of a color in CIE color space.
-		tlight.y = 0.0;            // The first entry is the x coordinate and the second entry is the y coordinate. Both x and y must be between 0 and 1.
-								   // If the specified coordinates are not in the CIE color space, the closest color to the coordinates will be chosen.
-		tlight.on = false;
-
-		bool hasBri = false;
-		bool hasHueSat = false;
-		bool hasTemp = false;
-
-		LType = HLTYPE_NORMAL;
-
-		if (!lightstate["on"].empty())
-		{
-			tlight.on = lightstate["on"].asBool();
-		}
-		if (!lightstate["colormode"].empty())
-		{
-			std::string sMode = lightstate["colormode"].asString();
-			if (sMode == "hs") tlight.mode = HLMODE_HS;
-			if (sMode == "xy") tlight.mode = HLMODE_XY;
-			if (sMode == "ct") tlight.mode = HLMODE_CT;
-		}
-		if (!lightstate["bri"].empty())
-		{
-			//Lamp with brightness control
-			hasBri = true;
-			int tbri = lightstate["bri"].asInt();
-			// Clamp to conform to HUE API
-			tbri = std::max(1, tbri);
-			tbri = std::min(254, tbri);
-			tlight.level = int(std::ceil((100.0F / 254.0F) * float(tbri)));
-		}
-		if (!lightstate["sat"].empty())
-		{
-			//Lamp with color control
-			hasHueSat = true;
-			tlight.sat = lightstate["sat"].asInt();
-			// Clamp to conform to HUE API
-			tlight.sat = std::max(0, tlight.sat);
-			tlight.sat = std::min(254, tlight.sat);
-		}
-		if (!lightstate["hue"].empty())
-		{
-			//Lamp with color control
-			hasHueSat = true;
-			tlight.hue = lightstate["hue"].asInt();
-			// Clamp to conform to HUE API
-			tlight.hue = std::max(0, tlight.hue);
-			tlight.hue = std::min(65535, tlight.hue);
-		}
-		if (!lightstate["ct"].empty())
-		{
-			//Lamp with color temperature control
-			hasTemp = true;
-			tlight.ct = lightstate["ct"].asInt();
-			// Clamp to conform to HUE API
-			tlight.ct = std::max(153, tlight.ct);
-			tlight.ct = std::min(500, tlight.ct);
-		}
-		if (!lightstate["xy"].empty())
-		{
-			//Lamp with color control
-			hasHueSat = true;
-			tlight.x = lightstate["xy"][0].asDouble();
-			tlight.y = lightstate["xy"][1].asDouble();
-		}
-
-		if (hasBri) LType = HLTYPE_DIM;
-		if (hasBri && hasHueSat && !hasTemp) LType = HLTYPE_RGB_W;
-		if (hasBri && !hasHueSat && hasTemp) LType = HLTYPE_CW_WW;
-		if (hasBri && hasHueSat && hasTemp) LType = HLTYPE_RGB_CW_WW;
+		tlight.on = lightstate["on"].asBool();
 	}
+	if (!lightstate["colormode"].empty())
+	{
+		std::string sMode = lightstate["colormode"].asString();
+		if (sMode == "hs") tlight.mode = HLMODE_HS;
+		if (sMode == "xy") tlight.mode = HLMODE_XY;
+		if (sMode == "ct") tlight.mode = HLMODE_CT;
+	}
+	if (!lightstate["bri"].empty())
+	{
+		//Lamp with brightness control
+		hasBri = true;
+		int tbri = lightstate["bri"].asInt();
+		// Clamp to conform to HUE API
+		tbri = std::max(1, tbri);
+		tbri = std::min(254, tbri);
+		tlight.level = int(std::ceil((100.0F / 254.0F) * float(tbri)));
+	}
+	if (!lightstate["sat"].empty())
+	{
+		//Lamp with color control
+		hasHueSat = true;
+		tlight.sat = lightstate["sat"].asInt();
+		// Clamp to conform to HUE API
+		tlight.sat = std::max(0, tlight.sat);
+		tlight.sat = std::min(254, tlight.sat);
+	}
+	if (!lightstate["hue"].empty())
+	{
+		//Lamp with color control
+		hasHueSat = true;
+		tlight.hue = lightstate["hue"].asInt();
+		// Clamp to conform to HUE API
+		tlight.hue = std::max(0, tlight.hue);
+		tlight.hue = std::min(65535, tlight.hue);
+	}
+	if (!lightstate["ct"].empty())
+	{
+		//Lamp with color temperature control
+		hasTemp = true;
+		tlight.ct = lightstate["ct"].asInt();
+		// Clamp to conform to HUE API
+		tlight.ct = std::max(153, tlight.ct);
+		tlight.ct = std::min(500, tlight.ct);
+	}
+	if (!lightstate["xy"].empty())
+	{
+		//Lamp with color control
+		hasHueSat = true;
+		tlight.x = lightstate["xy"][0].asDouble();
+		tlight.y = lightstate["xy"][1].asDouble();
+	}
+
+	if (hasBri) LType = HLTYPE_DIM;
+	if (hasBri && hasHueSat && !hasTemp) LType = HLTYPE_RGB_W;
+	if (hasBri && !hasHueSat && hasTemp) LType = HLTYPE_CW_WW;
+	if (hasBri && hasHueSat && hasTemp) LType = HLTYPE_RGB_CW_WW;
 }
 
 bool CPhilipsHue::GetLights(const Json::Value& root)
@@ -859,24 +990,39 @@ bool CPhilipsHue::GetLights(const Json::Value& root)
 	for (auto iLight = root["lights"].begin(); iLight != root["lights"].end(); ++iLight)
 	{
 		Json::Value light = *iLight;
-		if (light.isObject())
-		{
-			int lID = atoi(iLight.key().asString().c_str());
+		if (!light.isObject())
+			continue;
+		int lID = atoi(iLight.key().asString().c_str());
 
-			_tHueLightState tlight;
-			_eHueLightType LType;
-			bool bDoSend = true;
-			LightStateFromJSON(light["state"], tlight, LType);
-
-			auto myLight = m_lights.find(lID);
-			if (myLight != m_lights.end())
+		_tHueLightState tlight;
+		_eHueLightType LType;
+		bool bDoSend = true;
+		try {
+			if (!light["state"].empty())
 			{
-				if (StatesSimilar(myLight->second, tlight))
-					bDoSend = false;
+				LightStateFromJSON(light["state"], tlight, LType);
 			}
-			if (bDoSend)
+		}
+		catch (const std::exception& ex) {
+			Log(LOG_ERROR, "PhilipsHue: exception parsing light %s state: %s. Skipping this light.", iLight.key().asString().c_str(), ex.what());
+			continue;
+		}
+		catch (...) {
+			Log(LOG_ERROR, "PhilipsHue: unknown exception parsing light %s state. Skipping this light.", iLight.key().asString().c_str());
+			continue;
+		}
+
+		auto myLight = m_lights.find(lID);
+		if (myLight != m_lights.end())
+		{
+			if (StatesSimilar(myLight->second, tlight))
+				bDoSend = false;
+		}
+		if (bDoSend)
+		{
+			//Log(LOG_STATUS, "HueBridge state change: tbri = %d, level = %d", tbri, tlight.level);
+			if (!light["modelid"].empty())
 			{
-				//Log(LOG_STATUS, "HueBridge state change: tbri = %d, level = %d", tbri, tlight.level);
 				m_lights[lID] = tlight;
 				std::string modelid = light["modelid"].asString();
 				m_lightModels[lID] = modelid;
@@ -904,7 +1050,17 @@ bool CPhilipsHue::GetGroups(const Json::Value& root)
 			_tHueLightState tstate;
 			_eHueLightType LType;
 			bool bDoSend = true;
-			LightStateFromJSON(group["action"], tstate, LType); //TODO: Verify there is no crash with "bad" key
+
+			if (!group["action"].empty())
+			{
+				try {
+					LightStateFromJSON(group["action"], tstate, LType);
+				}
+				catch (const std::exception& e) {
+					Log(LOG_ERROR, "Exception while parsing Hue group %d action: %s", gID, e.what());
+					continue;
+				}
+			}
 
 			auto myGroup = m_groups.find(gID);
 			if (myGroup != m_groups.end())
@@ -915,20 +1071,21 @@ bool CPhilipsHue::GetGroups(const Json::Value& root)
 			if (bDoSend)
 			{
 				m_groups[gID].gstate = tstate;
-				std::string Name = "Group " + group["name"].asString();
+				std::string oname = (!group["name"].empty()) ? group["name"].asString() : "??";
+				std::string Name = "Group " + oname;
 				InsertUpdateLamp(1000 + gID, LType, tstate, Name, "", "", m_add_groups);
 			}
 		}
 	}
 	//Special Request for Group0 (All Lights)
 	std::stringstream sstr2;
-	sstr2 << "https://" << m_IPAddress
+	sstr2 << m_html_schema << "://" << m_IPAddress
 		<< ":" << m_Port
 		<< "/api/" << m_UserName
 		<< "/groups/0";
 	std::string sResult;
 	std::vector<std::string> ExtraHeaders;
-	if (!HTTPClient::GET(sstr2.str(), ExtraHeaders, sResult))
+	if (!hue_http_get(sstr2.str(), ExtraHeaders, sResult))
 	{
 		//No group all(0)
 		return true;
@@ -941,12 +1098,12 @@ bool CPhilipsHue::GetGroups(const Json::Value& root)
 		return false;
 	}
 
-	if (sResult.find("\"error\":") != std::string::npos)
-	{
-		//We had an error
-		Log(LOG_ERROR, "Error received: %s", root2[0]["error"]["description"].asString().c_str());
-		return false;
-	}
+	 if (sResult.find("\"error\":") != std::string::npos)
+	 {
+	 	//We had an error
+		Log(LOG_ERROR, "Error received: %s", hue_errorDescription(root).c_str());
+	 	return false;
+	 }
 
 	if (sResult.find("lights") == std::string::npos)
 	{
@@ -964,27 +1121,30 @@ bool CPhilipsHue::GetGroups(const Json::Value& root)
 
 	_eHueLightType LType = HLTYPE_RGB_W;// HLTYPE_NORMAL;
 
-	if (!root2["action"]["on"].empty())
+	if (!root2["action"].empty())
 	{
-		tstate.on = root2["action"]["on"].asBool();
-		if (tstate.on) tstate.level = 100; // Set default full brightness for non dimmable group
-	}
-	if (!root2["action"]["bri"].empty())
-	{
-		int tbri = root2["action"]["bri"].asInt();
-		if ((tbri != 0) && (tbri < 3))
-			tbri = 3;
-		tstate.level = int((100.0F / 254.0F) * float(tbri));
-	}
-	if (!root2["action"]["sat"].empty())
-	{
-		tstate.sat = root2["action"]["sat"].asInt();
-		//LType = HLTYPE_RGB_W;
-	}
-	if (!root2["action"]["hue"].empty())
-	{
-		tstate.hue = root2["action"]["hue"].asInt();
-		//LType = HLTYPE_RGB_W;
+		if (!root2["action"]["on"].empty())
+		{
+			tstate.on = root2["action"]["on"].asBool();
+			if (tstate.on) tstate.level = 100; // Set default full brightness for non dimmable group
+		}
+		if (!root2["action"]["bri"].empty())
+		{
+			int tbri = root2["action"]["bri"].asInt();
+			if ((tbri != 0) && (tbri < 3))
+				tbri = 3;
+			tstate.level = int((100.0F / 254.0F) * float(tbri));
+		}
+		if (!root2["action"]["sat"].empty())
+		{
+			tstate.sat = root2["action"]["sat"].asInt();
+			//LType = HLTYPE_RGB_W;
+		}
+		if (!root2["action"]["hue"].empty())
+		{
+			tstate.hue = root2["action"]["hue"].asInt();
+			//LType = HLTYPE_RGB_W;
+		}
 	}
 
 	int gID = 0;
@@ -997,6 +1157,9 @@ bool CPhilipsHue::GetGroups(const Json::Value& root)
 			std::string Name = "Group All Lights";
 			InsertUpdateLamp(1000 + gID, LType, tstate, Name, "", "", m_add_groups);
 		}
+	}
+	else {
+		//Should we add Group 0? Seems we are not doing anything with Group 0
 	}
 	return true;
 }
@@ -1075,6 +1238,201 @@ bool CPhilipsHue::GetScenes(const Json::Value& root)
 	return true;
 }
 
+bool CPhilipsHue::GetV2Sensors()
+{
+	// call v2 sensors UpdateAll() and map to Domoticz devices (change-aware)
+	if (!m_use_v2_sensors || !m_v2sensors)
+		return false;
+	
+	try
+	{
+		if (m_v2sensors->UpdateAll())
+		{
+			// Build map device id -> device data for name lookup
+			std::map<std::string, HueV2Device> deviceById;
+			for (const auto& d : m_v2sensors->GetDevices())
+				deviceById[d.id] = d;
+
+			// Map contact resources to Domoticz switches (one device per owner/device), but only when changed
+			for (const auto& c : m_v2sensors->GetContacts())
+			{
+				const std::string ownerRid = c.owner_rid;
+				if (ownerRid.empty())
+					continue;
+
+				// Name lookup
+				std::string friendlyName;
+				auto dit = deviceById.find(ownerRid);
+				if (dit != deviceById.end() && !dit->second.name.empty())
+					friendlyName = dit->second.name + " (Contact)";
+				else
+					friendlyName = "Hue V2 Contact";
+
+				// Compute Domoticz node for device (owner-based)
+				int nodeID = NodeIDFromRid(ownerRid);
+				int domoticzNodeID = nodeID + 3000;
+
+				// Check previous state: skip if state and changed timestamp are identical to last poll
+				bool doUpdate = true;
+				auto itPrevState = m_v2_contact_state.find(ownerRid);
+				auto itPrevChanged = m_v2_contact_changed.find(ownerRid);
+				if (itPrevState != m_v2_contact_state.end() && itPrevChanged != m_v2_contact_changed.end())
+				{
+					if (itPrevState->second == c.state && itPrevChanged->second == c.changed)
+						doUpdate = false;
+				}
+
+				if (!doUpdate)
+					continue;
+
+				// contact_report.state: "contact" => closed (not alarmed). "no_contact" => open
+				bool isOpen = (c.state == "no_contact");
+
+				// Update/create Domoticz device and record state
+				InsertUpdateSwitch(domoticzNodeID, 1, STYPE_DoorContact, isOpen, friendlyName, 0);
+
+				// Store last-seen state and changed timestamp
+				m_v2_contact_state[ownerRid] = c.state;
+				m_v2_contact_changed[ownerRid] = c.changed;
+			}
+
+			// Map tamper resources similarly, only update when changed
+			for (const auto& t : m_v2sensors->GetTampers())
+			{
+				const std::string ownerRid = t.owner_rid;
+				if (ownerRid.empty())
+					continue;
+
+				std::string friendlyName;
+				auto dit = deviceById.find(ownerRid);
+				if (dit != deviceById.end() && !dit->second.name.empty())
+					friendlyName = dit->second.name + " (Tamper)";
+				else
+					friendlyName = "Hue V2 Tamper";
+
+				int nodeID = NodeIDFromRid(ownerRid);
+				int domoticzNodeID = nodeID + 4000;
+
+				// If there is no tamper report changed timestamp and no state, treat as no change
+				bool doUpdate = true;
+				auto itPrevState = m_v2_tamper_state.find(ownerRid);
+				auto itPrevChanged = m_v2_tamper_changed.find(ownerRid);
+				if (itPrevState != m_v2_tamper_state.end() && itPrevChanged != m_v2_tamper_changed.end())
+				{
+					if (itPrevState->second == t.state && itPrevChanged->second == t.changed)
+						doUpdate = false;
+				}
+
+				if (!doUpdate)
+					continue;
+
+				bool isTampered = (t.state == "tampered");
+
+				InsertUpdateSwitch(domoticzNodeID, 1, STYPE_OnOff, isTampered, friendlyName, 0);
+
+				m_v2_tamper_state[ownerRid] = t.state;
+				m_v2_tamper_changed[ownerRid] = t.changed;
+			}
+
+			// Map device_power to battery updates; only update existing devices and only when battery level changed
+			for (const auto& p : m_v2sensors->GetDevicePowers())
+			{
+				const std::string ownerRid = p.owner_rid;
+				if (ownerRid.empty())
+					continue;
+
+				// Only update battery for devices discovered in v2 device list
+				auto dit = deviceById.find(ownerRid);
+				if (dit == deviceById.end())
+					continue;
+
+				// Determine numeric batteryLevel: prefer explicit numeric; otherwise map battery_state heuristically.
+				int batteryLevel = p.battery_level; // parsed (-1 if missing)
+				if (batteryLevel < 0)
+				{
+					if (p.battery_state == "full" || p.battery_state == "normal")
+						batteryLevel = 100;
+					else if (p.battery_state == "high")
+						batteryLevel = 90;
+					else if (p.battery_state == "low")
+						batteryLevel = 20;
+					else if (p.battery_state == "critical")
+						batteryLevel = 5;
+					else
+						batteryLevel = 255; // unknown
+				}
+				if (batteryLevel > 100 && batteryLevel != 255)
+					batteryLevel = 100;
+				if (batteryLevel == 255)
+					continue;
+
+				// Determine the Domoticz node IDs (owner-based)
+				int baseNode = NodeIDFromRid(ownerRid);
+				int domoticzNodeID_contact = baseNode + 3000;
+				int domoticzNodeID_tamper = baseNode + 4000;
+
+				// Only update contact device if it exists; update only when battery changed
+				char szID[16];
+				std::vector<std::vector<std::string>> result;
+
+				sprintf(szID, "%08X", domoticzNodeID_contact);
+				result = m_sql.safe_query("SELECT ID, BatteryLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d)",
+					m_HwdID, szID, 1);
+				if (!result.empty())
+				{
+					int deviceRowId = atoi(result[0][0].c_str());
+					int prevBattery = atoi(result[0][1].c_str());
+					if (prevBattery != batteryLevel)
+					{
+						// preserve current nValue for push
+						int nValue = 0;
+						auto res2 = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE ID=%d", deviceRowId);
+						if (!res2.empty()) nValue = atoi(res2[0][0].c_str());
+						bool contactIsOn = (nValue != 0);
+						std::string contactName = (dit != deviceById.end() && !dit->second.name.empty()) ? (dit->second.name + " (Contact)") : "Hue V2 Contact";
+
+						InsertUpdateSwitch(domoticzNodeID_contact, 1, STYPE_DoorContact, contactIsOn, contactName, (uint8_t)batteryLevel);
+						m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d, LastUpdate=datetime('now','localtime') WHERE ID=%d", batteryLevel, deviceRowId);
+						m_v2_battery_level[ownerRid] = batteryLevel;
+					}
+				}
+
+				// Tamper device (same approach)
+				sprintf(szID, "%08X", domoticzNodeID_tamper);
+				result = m_sql.safe_query("SELECT ID, BatteryLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d)",
+					m_HwdID, szID, 1);
+				if (!result.empty())
+				{
+					int deviceRowId = atoi(result[0][0].c_str());
+					int prevBattery = atoi(result[0][1].c_str());
+					if (prevBattery != batteryLevel)
+					{
+						int nValue = 0;
+						auto res2 = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE ID=%d", deviceRowId);
+						if (!res2.empty()) nValue = atoi(res2[0][0].c_str());
+						bool tamperIsOn = (nValue != 0);
+						std::string tamperName = (dit != deviceById.end() && !dit->second.name.empty()) ? (dit->second.name + " (Tamper)") : "Hue V2 Tamper";
+
+						InsertUpdateSwitch(domoticzNodeID_tamper, 1, STYPE_OnOff, tamperIsOn, tamperName, (uint8_t)batteryLevel);
+						m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d, LastUpdate=datetime('now','localtime') WHERE ID=%d", batteryLevel, deviceRowId);
+						m_v2_battery_level[ownerRid] = batteryLevel;
+					}
+				}
+			}
+		}
+		else
+		{
+			_log.Debug(DEBUG_HARDWARE, "PhilipsHue: v2 sensors fetch returned no data or failed.");
+		}
+	}
+	catch (const std::exception& e)
+	{
+		_log.Log(LOG_ERROR, "PhilipsHue: exception in v2 sensor handling: %s", e.what());
+	}
+	
+	return true;
+}
+
 bool CPhilipsHue::GetSensors(const Json::Value& root)
 {
 	if (root["sensors"].empty())
@@ -1083,102 +1441,100 @@ bool CPhilipsHue::GetSensors(const Json::Value& root)
 	for (auto iSensor = root["sensors"].begin(); iSensor != root["sensors"].end(); ++iSensor)
 	{
 		Json::Value sensor = *iSensor;
-		if (sensor.isObject())
+		if (!sensor.isObject())
+			continue;
+		bool bNewSensor = false;
+		int sID = atoi(iSensor.key().asString().c_str());
+
+		CPHSensor current_sensor(sensor);
+		CPHSensor previous_sensor;
+		// Check if sensor exists and whether last update is changed
+		if (m_sensors.find(sID) != m_sensors.end())
 		{
-			bool bNewSensor = false;
-			int sID = atoi(iSensor.key().asString().c_str());
-
-			CPHSensor current_sensor(sensor);
-			CPHSensor previous_sensor;
-			// Check if sensor exists and whether last update is changed
-			if (m_sensors.find(sID) != m_sensors.end())
+			previous_sensor = m_sensors[sID];
+			if (previous_sensor.m_state == current_sensor.m_state)
 			{
-				previous_sensor = m_sensors[sID];
-				if (previous_sensor.m_state == current_sensor.m_state)
-				{
-					//Nothing changed
-					continue;
-				}
-			}
-			else
-			{
-				// New sensor found, always update it's value
-				previous_sensor = CPHSensor();
-				bNewSensor = true;
-			}
-			m_sensors[sID] = current_sensor;
-			uint8_t unitcode = 1;
-
-			sID += 3000;
-			std::string device_name = current_sensor.m_type + " " + current_sensor.m_name;
-			if (current_sensor.m_type == SensorTypeDaylight)
-			{
-			}
-			else if (
-				(current_sensor.m_type == SensorTypeZGPSwitch)
-				|| (current_sensor.m_type == SensorTypeZLLSwitch))
-			{
-				int32_t selectorLevel = current_sensor.m_state.GetSelectorLevel(previous_sensor.m_state);
-				if (selectorLevel >= 0)
-				{
-					if (InsertUpdateSelectorSwitch(sID, unitcode, selectorLevel, device_name, current_sensor.m_config.m_battery))
-					{
-						//New switch. Set levels and options for selector
-						SetSwitchOptions(sID, unitcode, current_sensor.m_state.GetButtonOptions());
-					}
-				}
-			}
-			else if (current_sensor.m_type == SensorTypeZLLPresence)
-			{
-				if ((previous_sensor.m_state.m_presence != current_sensor.m_state.m_presence)
-					|| (bNewSensor))
-				{
-					InsertUpdateSwitch(sID, unitcode, STYPE_Motion, current_sensor.m_state.m_presence, device_name, current_sensor.m_config.m_battery);
-				}
-			}
-			else if (current_sensor.m_type == SensorTypeGeofence)
-			{
-				if ((previous_sensor.m_state.m_presence != current_sensor.m_state.m_presence)
-					|| (bNewSensor))
-				{
-					InsertUpdateSwitch(sID, unitcode, STYPE_Motion, current_sensor.m_state.m_presence, device_name, current_sensor.m_config.m_battery);
-				}
-			}
-			else if (current_sensor.m_type == SensorTypeZLLTemperature)
-			{
-				if ((previous_sensor.m_state.m_temperature != current_sensor.m_state.m_temperature)
-					|| (bNewSensor))
-				{
-					SendTempSensor(sID, current_sensor.m_config.m_battery, float(current_sensor.m_state.m_temperature / 100.0F), device_name);
-				}
-			}
-			else if (current_sensor.m_type == SensorTypeZLLLightLevel)
-			{
-				if ((previous_sensor.m_state.m_dark != current_sensor.m_state.m_dark)
-					|| (bNewSensor))
-				{
-					InsertUpdateSwitch(sID, unitcode, STYPE_Dusk, current_sensor.m_state.m_dark, device_name, current_sensor.m_config.m_battery);
-				}
-
-				if ((previous_sensor.m_state.m_lightlevel != current_sensor.m_state.m_lightlevel)
-					|| (bNewSensor))
-				{
-					double lux = 0.00001;
-					if (current_sensor.m_state.m_lightlevel != 0)
-					{
-						float convertedLightLevel = float((current_sensor.m_state.m_lightlevel - 1) / 10000.00F);
-						lux = pow(10, convertedLightLevel);
-					}
-					SendLuxSensor(sID, 0, current_sensor.m_config.m_battery, (const float)lux, current_sensor.m_type + " Lux " + current_sensor.m_name);
-				}
-			}
-			else
-			{
-				//Log(LOG_STATUS, "Ignoring Philips Hue CLIP Sensors: (%s)", device_name.c_str());
+				//Nothing changed
+				continue;
 			}
 		}
-	}
+		else
+		{
+			// New sensor found, always update it's value
+			previous_sensor = CPHSensor();
+			bNewSensor = true;
+		}
+		m_sensors[sID] = current_sensor;
+		uint8_t unitcode = 1;
 
+		sID += 3000;
+		std::string device_name = current_sensor.m_type + " " + current_sensor.m_name;
+		if (current_sensor.m_type == SensorTypeDaylight)
+		{
+		}
+		else if (
+			(current_sensor.m_type == SensorTypeZGPSwitch)
+			|| (current_sensor.m_type == SensorTypeZLLSwitch))
+		{
+			int32_t selectorLevel = current_sensor.m_state.GetSelectorLevel(previous_sensor.m_state);
+			if (selectorLevel >= 0)
+			{
+				if (InsertUpdateSelectorSwitch(sID, unitcode, selectorLevel, device_name, current_sensor.m_config.m_battery))
+				{
+					//New switch. Set levels and options for selector
+					SetSwitchOptions(sID, unitcode, current_sensor.m_state.GetButtonOptions());
+				}
+			}
+		}
+		else if (current_sensor.m_type == SensorTypeZLLPresence)
+		{
+			if ((previous_sensor.m_state.m_presence != current_sensor.m_state.m_presence)
+				|| (bNewSensor))
+			{
+				InsertUpdateSwitch(sID, unitcode, STYPE_Motion, current_sensor.m_state.m_presence, device_name, current_sensor.m_config.m_battery);
+			}
+		}
+		else if (current_sensor.m_type == SensorTypeGeofence)
+		{
+			if ((previous_sensor.m_state.m_presence != current_sensor.m_state.m_presence)
+				|| (bNewSensor))
+			{
+				InsertUpdateSwitch(sID, unitcode, STYPE_Motion, current_sensor.m_state.m_presence, device_name, current_sensor.m_config.m_battery);
+			}
+		}
+		else if (current_sensor.m_type == SensorTypeZLLTemperature)
+		{
+			if ((previous_sensor.m_state.m_temperature != current_sensor.m_state.m_temperature)
+				|| (bNewSensor))
+			{
+				SendTempSensor(sID, current_sensor.m_config.m_battery, float(current_sensor.m_state.m_temperature / 100.0F), device_name);
+			}
+		}
+		else if (current_sensor.m_type == SensorTypeZLLLightLevel)
+		{
+			if ((previous_sensor.m_state.m_dark != current_sensor.m_state.m_dark)
+				|| (bNewSensor))
+			{
+				InsertUpdateSwitch(sID, unitcode, STYPE_Dusk, current_sensor.m_state.m_dark, device_name, current_sensor.m_config.m_battery);
+			}
+
+			if ((previous_sensor.m_state.m_lightlevel != current_sensor.m_state.m_lightlevel)
+				|| (bNewSensor))
+			{
+				double lux = 0.00001;
+				if (current_sensor.m_state.m_lightlevel != 0)
+				{
+					float convertedLightLevel = float((current_sensor.m_state.m_lightlevel - 1) / 10000.00F);
+					lux = pow(10, convertedLightLevel);
+				}
+				SendLuxSensor(sID, 0, current_sensor.m_config.m_battery, (const float)lux, current_sensor.m_type + " Lux " + current_sensor.m_name);
+			}
+		}
+		else
+		{
+			//Log(LOG_STATUS, "Ignoring Philips Hue CLIP Sensors: (%s)", device_name.c_str());
+		}
+	}
 	return true;
 }
 

@@ -30,7 +30,7 @@
 extern MainWorker m_mainworker;
 
 extern std::string logfile;
-extern bool g_bStopApplication;
+extern std::atomic<bool> g_bStopApplication;
 extern bool g_bUseSyslog;
 extern bool g_bRunAsDaemon;
 
@@ -404,8 +404,9 @@ void signal_handler(int sig_num
 	{
 #ifndef WIN32
 	case SIGHUP:
-		if (!logfile.empty())
-			_log.SetOutputFile(logfile.c_str());
+		// Only set atomic flag - defer actual log reopen to main thread
+		// SetOutputFile() uses mutex and C++ streams, not async-signal-safe
+		g_bReopenLogFile.store(true, std::memory_order_release);
 		break;
 #endif
 	case SIGINT:
@@ -524,6 +525,7 @@ static void heartbeat_check()
 }
 
 bool g_stop_watchdog = false;
+std::atomic<bool> g_bReopenLogFile{false};
 
 void Do_Watchdog_Work()
 {
@@ -534,6 +536,8 @@ void Do_Watchdog_Work()
 	while(!g_stop_watchdog)
 	{
 		sleep_milliseconds(1000);
+		if (g_stop_watchdog)
+			break;
 		heartbeat_check();
 	}
 }

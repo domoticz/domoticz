@@ -75,7 +75,6 @@ class CDomoticzHardwareBase : public StoppableTask
 
 	// Heartbeat thread for classes that can not provide this themselves
 	void StartHeartbeatThread();
-	void StartHeartbeatThread(const char *ThreadName);
 	void StopHeartbeatThread();
 
 	// Sensor Helpers
@@ -137,6 +136,7 @@ class CDomoticzHardwareBase : public StoppableTask
 	bool m_bIsStarted = { false };
 
       private:
+	void StartHeartbeatThread(const std::string& szThreadName);
 	void Do_Heartbeat_Work();
 
 	volatile bool m_stopHeartbeatrequested = { false };

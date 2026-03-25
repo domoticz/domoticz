@@ -15,6 +15,12 @@
 #include <stdarg.h>
 #include <json/json.h>
 #include <algorithm>
+#include <openssl/sha.h>
+#include <openssl/evp.h>
+#include <openssl/rand.h>
+#include <openssl/bn.h>
+#include <openssl/param_build.h>
+#include <openssl/core_names.h>
 #include "WebServer.h"
 #include "WebServerHelper.h"
 #include "mainworker.h"
@@ -29,13 +35,15 @@
 #include "KWHStats.h"
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #include "../smtpclient/SMTPClient.h"
 #include "../push/BasePush.h"
 #include "../notifications/NotificationHelper.h"
 
 #ifdef ENABLE_PYTHON
 #include "../hardware/plugins/Plugins.h"
+#include "../hardware/plugins/PluginManager.h"
+#include "../tinyxpath/tinyxml.h"
 #endif
 
 #ifndef WIN32
@@ -48,6 +56,7 @@
 
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
+#include <set>
 
 // Some Hardware related includes
 #include "../hardware/AccuWeather.h"
@@ -265,6 +274,1063 @@ namespace http
 			}
 		}
 
+		// ---------------------------------------------------------------------------
+		// WebAuthn / Passkey helper: minimal CBOR value reader
+		// Returns false on parse error; advances 'pos' past the item.
+		// When the item is a byte-string the raw bytes are written to 'out_bytes'.
+		// ---------------------------------------------------------------------------
+		namespace {
+
+			// Skip a single CBOR item (any type), advancing pos.  Returns false on error.
+			static bool cbor_skip(const std::vector<uint8_t>& buf, size_t& pos);
+
+			static bool cbor_read_length(const std::vector<uint8_t>& buf, size_t& pos, uint8_t addl, uint64_t& out_len)
+			{
+				if (addl <= 23) { out_len = addl; return true; }
+				if (addl == 24) {
+					if (pos >= buf.size()) return false;
+					out_len = buf[pos++]; return true;
+				}
+				if (addl == 25) {
+					if (pos + 2 > buf.size()) return false;
+					out_len = (uint64_t(buf[pos]) << 8) | buf[pos + 1]; pos += 2; return true;
+				}
+				if (addl == 26) {
+					if (pos + 4 > buf.size()) return false;
+					out_len = (uint64_t(buf[pos]) << 24) | (uint64_t(buf[pos+1]) << 16) |
+					          (uint64_t(buf[pos+2]) << 8)  | buf[pos+3]; pos += 4; return true;
+				}
+				if (addl == 27) {
+					if (pos + 8 > buf.size()) return false;
+					out_len = (uint64_t(buf[pos])   << 56) | (uint64_t(buf[pos+1]) << 48) |
+					          (uint64_t(buf[pos+2]) << 40) | (uint64_t(buf[pos+3]) << 32) |
+					          (uint64_t(buf[pos+4]) << 24) | (uint64_t(buf[pos+5]) << 16) |
+					          (uint64_t(buf[pos+6]) << 8)  |  uint64_t(buf[pos+7]);
+					pos += 8; return true;
+				}
+				return false;
+			}
+
+			static bool cbor_skip(const std::vector<uint8_t>& buf, size_t& pos)
+			{
+				if (pos >= buf.size()) return false;
+				uint8_t first = buf[pos++];
+				uint8_t major = first >> 5;
+				uint8_t addl  = first & 0x1f;
+				uint64_t len = 0;
+
+				if (major == 0) { // unsigned int – already consumed
+					if (!cbor_read_length(buf, pos, addl, len)) return false;
+					// integer itself is encoded in the additional-info bytes; nothing more to skip
+					return true;
+				}
+				if (major == 1) { // negative int
+					if (!cbor_read_length(buf, pos, addl, len)) return false;
+					return true;
+				}
+				if (major == 2 || major == 3) { // byte string or text string
+					if (!cbor_read_length(buf, pos, addl, len)) return false;
+					if (pos + len > buf.size()) return false;
+					pos += (size_t)len;
+					return true;
+				}
+				if (major == 4) { // array
+					if (!cbor_read_length(buf, pos, addl, len)) return false;
+					for (uint64_t i = 0; i < len; i++)
+						if (!cbor_skip(buf, pos)) return false;
+					return true;
+				}
+				if (major == 5) { // map
+					if (!cbor_read_length(buf, pos, addl, len)) return false;
+					for (uint64_t i = 0; i < len * 2; i++)
+						if (!cbor_skip(buf, pos)) return false;
+					return true;
+				}
+				if (major == 7) { // simple / float
+					if (addl <= 23) return true;
+					if (addl == 24) { pos++; return pos <= buf.size(); }
+					if (addl == 25) { pos += 2; return pos <= buf.size(); }
+					if (addl == 26) { pos += 4; return pos <= buf.size(); }
+					if (addl == 27) { pos += 8; return pos <= buf.size(); }
+					return true;
+				}
+				return false;
+			}
+
+			// Read a CBOR text string into out_str; advances pos.
+			static bool cbor_read_tstr(const std::vector<uint8_t>& buf, size_t& pos, std::string& out_str)
+			{
+				if (pos >= buf.size()) return false;
+				uint8_t first = buf[pos++];
+				if ((first >> 5) != 3) return false;
+				uint64_t len = 0;
+				if (!cbor_read_length(buf, pos, first & 0x1f, len)) return false;
+				if (pos + len > buf.size()) return false;
+				out_str.assign(reinterpret_cast<const char*>(buf.data() + pos), (size_t)len);
+				pos += (size_t)len;
+				return true;
+			}
+
+			// Read a CBOR byte string into out; advances pos.
+			static bool cbor_read_bstr(const std::vector<uint8_t>& buf, size_t& pos, std::vector<uint8_t>& out)
+			{
+				if (pos >= buf.size()) return false;
+				uint8_t first = buf[pos++];
+				if ((first >> 5) != 2) return false;
+				uint64_t len = 0;
+				if (!cbor_read_length(buf, pos, first & 0x1f, len)) return false;
+				if (pos + len > buf.size()) return false;
+				out.assign(buf.data() + pos, buf.data() + pos + (size_t)len);
+				pos += (size_t)len;
+				return true;
+			}
+
+			// Read a CBOR integer (positive or negative) into out_val; advances pos.
+			static bool cbor_read_int(const std::vector<uint8_t>& buf, size_t& pos, int64_t& out_val)
+			{
+				if (pos >= buf.size()) return false;
+				uint8_t first = buf[pos++];
+				uint8_t major = first >> 5;
+				uint8_t addl  = first & 0x1f;
+				if (major != 0 && major != 1) return false;
+				uint64_t len = 0;
+				if (!cbor_read_length(buf, pos, addl, len)) return false;
+				if (major == 0)
+					out_val = static_cast<int64_t>(len);
+				else
+					out_val = -1 - static_cast<int64_t>(len);
+				return true;
+			}
+
+			// Extract authData byte-string from a "none"-attestation CBOR map.
+			// The map has keys "fmt", "attStmt", "authData".
+			static bool cbor_extract_authdata(const std::vector<uint8_t>& buf, std::vector<uint8_t>& authData)
+			{
+				size_t pos = 0;
+				if (pos >= buf.size()) return false;
+				uint8_t first = buf[pos++];
+				if ((first >> 5) != 5) return false; // must be a map
+				uint64_t mapLen = 0;
+				if (!cbor_read_length(buf, pos, first & 0x1f, mapLen)) return false;
+
+				for (uint64_t i = 0; i < mapLen; i++) {
+					std::string key;
+					if (!cbor_read_tstr(buf, pos, key)) return false;
+					if (key == "authData") {
+						if (!cbor_read_bstr(buf, pos, authData)) return false;
+						return true;
+					}
+					// skip the value
+					if (!cbor_skip(buf, pos)) return false;
+				}
+				return false;
+			}
+
+			// Parse a COSE_Key (CBOR map) and extract ES256 or RS256 key material.
+			struct CoseKey {
+				int64_t kty  = 0; // 1
+				int64_t alg  = 0; // 3
+				int64_t crv  = 0; // -1 (EC only)
+				std::vector<uint8_t> x; // -2
+				std::vector<uint8_t> y; // -3
+				std::vector<uint8_t> n; // -1 (RSA)
+				std::vector<uint8_t> e; // -2 (RSA)
+			};
+
+			static bool cbor_parse_cose_key(const std::vector<uint8_t>& buf, CoseKey& key)
+			{
+				size_t pos = 0;
+				if (pos >= buf.size()) return false;
+				uint8_t first = buf[pos++];
+				if ((first >> 5) != 5) return false;
+				uint64_t mapLen = 0;
+				if (!cbor_read_length(buf, pos, first & 0x1f, mapLen)) return false;
+
+				for (uint64_t i = 0; i < mapLen; i++) {
+					int64_t k = 0;
+					if (!cbor_read_int(buf, pos, k)) return false;
+					if (k == 1 || k == 3) {
+						int64_t v = 0;
+						if (!cbor_read_int(buf, pos, v)) return false;
+						if (k == 1) key.kty = v;
+						else        key.alg = v;
+					} else if (k == -1) {
+						// EC: crv (int) or RSA: n (bstr)
+						if (pos >= buf.size()) return false;
+						uint8_t peek = buf[pos];
+						uint8_t major = peek >> 5;
+						if (major == 0 || major == 1) {
+							if (!cbor_read_int(buf, pos, key.crv)) return false;
+						} else {
+							if (!cbor_read_bstr(buf, pos, key.n)) return false;
+						}
+					} else if (k == -2) {
+						// EC: x (bstr) or RSA: e (bstr)
+						std::vector<uint8_t> tmp;
+						if (!cbor_read_bstr(buf, pos, tmp)) return false;
+						if (key.kty == 2 || key.x.empty()) key.x = tmp;
+						key.e = tmp;
+					} else if (k == -3) {
+						// EC: y (bstr)
+						if (!cbor_read_bstr(buf, pos, key.y)) return false;
+					} else {
+						if (!cbor_skip(buf, pos)) return false;
+					}
+				}
+				return true;
+			}
+
+		// Extract the WebAuthn RP ID from the HTTP Host header.
+		// WebAuthn requires a domain name as RP ID; the server's local socket address
+		// (session.local_host) may be a raw IP which browsers reject.
+		// The Host header contains exactly what the browser used to connect.
+		static std::string GetWebAuthnRpId(const WebEmSession& session, const request& req)
+		{
+			const char* hostHeader = request::get_req_header(&req, "Host");
+			if (hostHeader != nullptr)
+			{
+				std::string host(hostHeader);
+				// Strip port number if present (e.g., "localhost:8080" -> "localhost")
+				auto colonPos = host.find(':');
+				if (colonPos != std::string::npos)
+					host = host.substr(0, colonPos);
+				// For IPv6 addresses in brackets like [::1], strip brackets
+				if (!host.empty() && host.front() == '[')
+				{
+					auto bracketEnd = host.find(']');
+					if (bracketEnd != std::string::npos)
+						host = host.substr(1, bracketEnd - 1);
+				}
+				if (!host.empty())
+					return host;
+			}
+			return session.local_host;
+		}
+
+		// Parse a User-Agent string into a concise "OS / Browser" description.
+		static std::string ParseUserAgent(const std::string& ua)
+		{
+			if (ua.empty())
+				return "Unknown device";
+
+			// Detect OS
+			std::string os;
+			if (ua.find("iPhone") != std::string::npos || ua.find("iPad") != std::string::npos)
+				os = "iOS";
+			else if (ua.find("Android") != std::string::npos)
+				os = "Android";
+			else if (ua.find("Windows NT") != std::string::npos)
+				os = "Windows";
+			else if (ua.find("Macintosh") != std::string::npos || ua.find("Mac OS X") != std::string::npos)
+				os = "macOS";
+			else if (ua.find("X11") != std::string::npos || ua.find("Linux") != std::string::npos)
+				os = "Linux";
+			else
+				os = "Unknown OS";
+
+			// Detect browser — check Edge before Chrome since Edge UA also contains "Chrome"
+			std::string browser;
+			if (ua.find("Edg/") != std::string::npos)
+				browser = "Edge";
+			else if (ua.find("Firefox/") != std::string::npos)
+				browser = "Firefox";
+			else if (ua.find("Chrome/") != std::string::npos)
+				browser = "Chrome";
+			else if (ua.find("Safari/") != std::string::npos)
+				browser = "Safari";
+			else
+				browser = "Unknown browser";
+
+			return os + " / " + browser;
+		}
+
+		} // anonymous namespace
+
+		// ---------------------------------------------------------------------------
+		// Cmd_HasPasskeys
+		// ---------------------------------------------------------------------------
+		void CWebServer::Cmd_HasPasskeys(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "OK";
+			root["title"] = "haspasskeys";
+			root["hasPasskeys"] = HasAnyPasskeys();
+		}
+
+		// ---------------------------------------------------------------------------
+		// Cmd_GetMyPasskeys
+		// ---------------------------------------------------------------------------
+		void CWebServer::Cmd_GetMyPasskeys(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.username.empty())
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			int iUser = FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			root["status"] = "OK";
+			root["title"] = "getmypasskeys";
+
+			Json::Value passkeys = ParsePasskeys(m_users[iUser].Passkeys);
+			Json::Value result(Json::arrayValue);
+			for (Json::ArrayIndex i = 0; i < passkeys.size(); i++)
+			{
+				Json::Value entry;
+				entry["id"]      = passkeys[i]["id"];
+				entry["name"]    = passkeys[i]["name"];
+				entry["created"] = passkeys[i]["created"];
+				if (passkeys[i].isMember("device"))
+					entry["device"] = passkeys[i]["device"].asString();
+				result.append(entry);
+			}
+			root["result"] = result;
+		}
+
+		// ---------------------------------------------------------------------------
+		// Cmd_DeletePasskey
+		// ---------------------------------------------------------------------------
+		void CWebServer::Cmd_DeletePasskey(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.username.empty())
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			std::string credentialId = request::findValue(&req, "credentialId");
+			if (credentialId.empty())
+			{
+				root["status"] = "ERR";
+				root["message"] = "Missing credentialId";
+				return;
+			}
+
+			int iUser = FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			// Verify the credential belongs to this user
+			Json::Value passkeys = ParsePasskeys(m_users[iUser].Passkeys);
+			bool found = false;
+			for (Json::ArrayIndex i = 0; i < passkeys.size(); i++)
+			{
+				if (passkeys[i]["id"].asString() == credentialId)
+				{
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+			{
+				root["status"] = "ERR";
+				root["message"] = "Credential not found for this user";
+				return;
+			}
+
+			if (!RemovePasskeyFromUser(m_users[iUser].ID, credentialId))
+			{
+				root["status"] = "ERR";
+				root["message"] = "Failed to delete passkey";
+				return;
+			}
+
+			_log.Log(LOG_STATUS, "Passkey deleted for user '%s' (credentialId: %.16s...)", session.username.c_str(), credentialId.c_str());
+			root["status"] = "OK";
+			root["title"] = "deletepasskey";
+		}
+
+		// ---------------------------------------------------------------------------
+		// Cmd_RegisterPasskeyBegin
+		// ---------------------------------------------------------------------------
+		void CWebServer::Cmd_RegisterPasskeyBegin(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.username.empty())
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			int iUser = FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			// Generate 32-byte random challenge
+			uint8_t challengeBytes[32];
+			if (RAND_bytes(challengeBytes, sizeof(challengeBytes)) != 1)
+			{
+				root["status"] = "ERR";
+				root["message"] = "Failed to generate challenge";
+				return;
+			}
+			std::string challengeB64 = base64url_encode_buf(challengeBytes, sizeof(challengeBytes));
+
+			// Store challenge in map
+			{
+				std::lock_guard<std::mutex> lock(m_webauthn_mutex);
+				WebAuthnChallenge wac;
+				wac.challenge = challengeB64;
+				wac.userID    = std::to_string(m_users[iUser].ID);
+				wac.created   = mytime(nullptr);
+				m_webauthn_challenges[session.id] = wac;
+			}
+
+			// Build excludeCredentials from existing passkeys
+			Json::Value excludeCredentials(Json::arrayValue);
+			Json::Value existingPasskeys = ParsePasskeys(m_users[iUser].Passkeys);
+			for (Json::ArrayIndex i = 0; i < existingPasskeys.size(); i++)
+			{
+				Json::Value cred;
+				cred["type"] = "public-key";
+				cred["id"]   = existingPasskeys[i]["id"];
+				excludeCredentials.append(cred);
+			}
+
+			// User ID for WebAuthn = base64url of the numeric user ID as string
+			std::string userIdStr = std::to_string(m_users[iUser].ID);
+			std::string userIdB64 = base64url_encode(userIdStr);
+
+			root["status"]              = "OK";
+			root["title"]               = "registerpasskey-begin";
+			root["challenge"]           = challengeB64;
+			root["timeout"]             = 300000;
+			root["attestation"]         = "none";
+			root["excludeCredentials"]  = excludeCredentials;
+
+			Json::Value rp;
+			rp["name"] = "Domoticz";
+			rp["id"]   = GetWebAuthnRpId(session, req);
+			root["rp"] = rp;
+
+			Json::Value user;
+			user["id"]          = userIdB64;
+			user["name"]        = m_users[iUser].Username;
+			user["displayName"] = m_users[iUser].Username;
+			root["user"] = user;
+
+			Json::Value pubKeyCredParams(Json::arrayValue);
+			Json::Value alg1, alg2;
+			alg1["type"] = "public-key"; alg1["alg"] = -7;    // ES256
+			alg2["type"] = "public-key"; alg2["alg"] = -257;  // RS256
+			pubKeyCredParams.append(alg1);
+			pubKeyCredParams.append(alg2);
+			root["pubKeyCredParams"] = pubKeyCredParams;
+
+			Json::Value authenticatorSelection;
+			authenticatorSelection["residentKey"]       = "preferred";
+			authenticatorSelection["userVerification"]  = "required";
+			root["authenticatorSelection"] = authenticatorSelection;
+		}
+
+		// ---------------------------------------------------------------------------
+		// Cmd_RegisterPasskeyComplete
+		// ---------------------------------------------------------------------------
+		void CWebServer::Cmd_RegisterPasskeyComplete(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.username.empty())
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			int iUser = FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			// Retrieve and validate the stored challenge
+			std::string storedChallenge;
+			{
+				std::lock_guard<std::mutex> lock(m_webauthn_mutex);
+				auto it = m_webauthn_challenges.find(session.id);
+				if (it == m_webauthn_challenges.end())
+				{
+					root["status"]  = "ERR";
+					root["message"] = "No pending challenge for this session";
+					return;
+				}
+				time_t now = mytime(nullptr);
+				if (now - it->second.created > 300)
+				{
+					m_webauthn_challenges.erase(it);
+					root["status"]  = "ERR";
+					root["message"] = "Challenge expired";
+					return;
+				}
+				storedChallenge = it->second.challenge;
+				m_webauthn_challenges.erase(it);
+			}
+
+			// Read request parameters
+			std::string clientDataJSONb64  = request::findValue(&req, "clientDataJSON");
+			std::string attestationObjb64  = request::findValue(&req, "attestationObject");
+			std::string credentialId       = request::findValue(&req, "credentialId");
+			std::string credentialName     = request::findValue(&req, "credentialName");
+
+			if (clientDataJSONb64.empty() || attestationObjb64.empty() || credentialId.empty())
+			{
+				root["status"]  = "ERR";
+				root["message"] = "Missing required parameters";
+				return;
+			}
+			if (credentialName.empty())
+				credentialName = "Passkey";
+
+			// Decode and verify clientDataJSON
+			std::string clientDataJSONraw = base64url_decode(clientDataJSONb64);
+			if (clientDataJSONraw.empty())
+			{
+				root["status"]  = "ERR";
+				root["message"] = "Invalid clientDataJSON encoding";
+				return;
+			}
+			Json::Value clientData;
+			if (!ParseJSon(clientDataJSONraw, clientData))
+			{
+				root["status"]  = "ERR";
+				root["message"] = "Failed to parse clientDataJSON";
+				return;
+			}
+			if (clientData["type"].asString() != "webauthn.create")
+			{
+				root["status"]  = "ERR";
+				root["message"] = "Invalid clientDataJSON type";
+				return;
+			}
+			if (clientData["challenge"].asString() != storedChallenge)
+			{
+				root["status"]  = "ERR";
+				root["message"] = "Challenge mismatch";
+				return;
+			}
+			// Origin check – log mismatch but don't reject (users may access via different URLs)
+			{
+				std::string rpId = GetWebAuthnRpId(session, req);
+				std::string origin = clientData["origin"].asString();
+				if (origin.find(rpId) == std::string::npos)
+				{
+					_log.Log(LOG_STATUS, "WebAuthn registration: origin '%s' does not contain expected host '%s' (non-fatal)",
+					         origin.c_str(), rpId.c_str());
+				}
+			}
+
+			// Decode attestationObject (CBOR)
+			std::string attObjRaw = base64url_decode(attestationObjb64);
+			if (attObjRaw.empty())
+			{
+				root["status"]  = "ERR";
+				root["message"] = "Invalid attestationObject encoding";
+				return;
+			}
+			std::vector<uint8_t> attObjBuf(attObjRaw.begin(), attObjRaw.end());
+
+			// Extract authData from CBOR attestation object
+			std::vector<uint8_t> authData;
+			if (!cbor_extract_authdata(attObjBuf, authData))
+			{
+				root["status"]  = "ERR";
+				root["message"] = "Failed to parse attestationObject CBOR";
+				return;
+			}
+
+			// Parse authData binary structure
+			// [rpIdHash(32)] [flags(1)] [signCount(4)] [aaguid(16)] [credIdLen(2)] [credId(credIdLen)] [credPublicKey(...)]
+			if (authData.size() < 37)
+			{
+				root["status"]  = "ERR";
+				root["message"] = "authData too short";
+				return;
+			}
+
+			// Verify rpIdHash = SHA-256(rpId)
+			{
+				uint8_t expectedHash[SHA256_DIGEST_LENGTH];
+				std::string rpId = GetWebAuthnRpId(session, req);
+				SHA256(reinterpret_cast<const uint8_t*>(rpId.data()), rpId.size(), expectedHash);
+				if (memcmp(authData.data(), expectedHash, SHA256_DIGEST_LENGTH) != 0)
+				{
+					_log.Log(LOG_STATUS, "WebAuthn registration: rpIdHash mismatch (non-fatal, host may differ)");
+				}
+			}
+
+			// Verify UP flag (bit 0 of byte 32)
+			uint8_t flags = authData[32];
+			if (!(flags & 0x01))
+			{
+				root["status"]  = "ERR";
+				root["message"] = "User presence flag not set";
+				return;
+			}
+
+			// Check AT flag (bit 6) – attested credential data present
+			if (!(flags & 0x40))
+			{
+				root["status"]  = "ERR";
+				root["message"] = "Attested credential data not present";
+				return;
+			}
+
+			size_t adPos = 37; // after rpIdHash(32) + flags(1) + signCount(4)
+
+			// aaguid: 16 bytes
+			if (adPos + 16 + 2 > authData.size())
+			{
+				root["status"]  = "ERR";
+				root["message"] = "authData truncated before credIdLen";
+				return;
+			}
+			adPos += 16;
+
+			// credIdLen: 2 bytes big-endian
+			uint16_t credIdLen = (uint16_t(authData[adPos]) << 8) | authData[adPos + 1];
+			adPos += 2;
+
+			if (adPos + credIdLen > authData.size())
+			{
+				root["status"]  = "ERR";
+				root["message"] = "authData truncated in credId";
+				return;
+			}
+			adPos += credIdLen;
+
+			// Remaining bytes = credentialPublicKey (COSE)
+			if (adPos >= authData.size())
+			{
+				root["status"]  = "ERR";
+				root["message"] = "No public key data in authData";
+				return;
+			}
+			std::vector<uint8_t> credPubKeyBytes(authData.begin() + adPos, authData.end());
+
+			// Base64-encode the COSE public key for storage
+			std::string pubKeyB64 = base64_encode_buf(credPubKeyBytes.data(), (unsigned int)credPubKeyBytes.size());
+
+			// Capture device/browser info from the User-Agent header
+			std::string deviceInfo;
+			const char* ua = request::get_req_header(&req, "User-Agent");
+			if (ua != nullptr)
+				deviceInfo = ParseUserAgent(std::string(ua));
+
+			// Store the passkey
+			if (!AddPasskeyToUser(m_users[iUser].ID, credentialId, pubKeyB64, credentialName, deviceInfo))
+			{
+				root["status"]  = "ERR";
+				root["message"] = "Failed to store passkey";
+				return;
+			}
+
+			_log.Log(LOG_STATUS, "Passkey registered for user '%s' (credentialId: %.16s...)", session.username.c_str(), credentialId.c_str());
+			root["status"] = "OK";
+			root["title"]  = "registerpasskey-complete";
+		}
+
+		// ---------------------------------------------------------------------------
+		// Cmd_PasskeyLoginBegin
+		// ---------------------------------------------------------------------------
+		void CWebServer::Cmd_PasskeyLoginBegin(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			// Generate 32-byte random challenge
+			uint8_t challengeBytes[32];
+			if (RAND_bytes(challengeBytes, sizeof(challengeBytes)) != 1)
+			{
+				root["status"]  = "ERR";
+				root["message"] = "Failed to generate challenge";
+				return;
+			}
+			std::string challengeB64 = base64url_encode_buf(challengeBytes, sizeof(challengeBytes));
+
+			// Store challenge (no userID at this point – we find the user during complete)
+			{
+				std::lock_guard<std::mutex> lock(m_webauthn_mutex);
+				WebAuthnChallenge wac;
+				wac.challenge = challengeB64;
+				wac.userID    = "";
+				wac.created   = mytime(nullptr);
+				m_webauthn_challenges[session.id] = wac;
+			}
+
+			// Collect all credential IDs from all users
+			Json::Value allowCredentials(Json::arrayValue);
+			for (const auto& user : m_users)
+			{
+				if (user.Passkeys.empty()) continue;
+				Json::Value passkeys = ParsePasskeys(user.Passkeys);
+				for (Json::ArrayIndex i = 0; i < passkeys.size(); i++)
+				{
+					Json::Value cred;
+					cred["type"] = "public-key";
+					cred["id"]   = passkeys[i]["id"];
+					allowCredentials.append(cred);
+				}
+			}
+
+			root["status"]           = "OK";
+			root["title"]            = "passkeylogin-begin";
+			root["challenge"]        = challengeB64;
+			root["timeout"]          = 300000;
+			root["rpId"]             = GetWebAuthnRpId(session, req);
+			root["userVerification"] = "required";
+			root["allowCredentials"] = allowCredentials;
+		}
+
+		// ---------------------------------------------------------------------------
+		// Cmd_PasskeyLoginComplete
+		// ---------------------------------------------------------------------------
+		void CWebServer::Cmd_PasskeyLoginComplete(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			// Retrieve and validate the stored challenge
+			std::string storedChallenge;
+			{
+				std::lock_guard<std::mutex> lock(m_webauthn_mutex);
+				auto it = m_webauthn_challenges.find(session.id);
+				if (it == m_webauthn_challenges.end())
+				{
+					root["status"]  = "ERR";
+					root["message"] = "No pending challenge for this session";
+					return;
+				}
+				time_t now = mytime(nullptr);
+				if (now - it->second.created > 300)
+				{
+					m_webauthn_challenges.erase(it);
+					root["status"]  = "ERR";
+					root["message"] = "Challenge expired";
+					return;
+				}
+				storedChallenge = it->second.challenge;
+				m_webauthn_challenges.erase(it);
+			}
+
+			// Read request parameters
+			std::string credentialId      = request::findValue(&req, "credentialId");
+			std::string authenticatorDatab64 = request::findValue(&req, "authenticatorData");
+			std::string clientDataJSONb64    = request::findValue(&req, "clientDataJSON");
+			std::string signatureb64         = request::findValue(&req, "signature");
+			std::string rememberme           = request::findValue(&req, "rememberme");
+
+			if (credentialId.empty() || authenticatorDatab64.empty() || clientDataJSONb64.empty() || signatureb64.empty())
+			{
+				root["status"]  = "ERR";
+				root["message"] = "Missing required parameters";
+				return;
+			}
+
+			// Find user by credential ID
+			int iUser = FindUserByPasskeyCredentialID(credentialId);
+			if (iUser == -1)
+			{
+				_log.Log(LOG_ERROR, "Passkey login failed from %s: unknown credentialId", session.remote_host.c_str());
+				root["status"]  = "ERR";
+				root["message"] = "Unknown credential";
+				return;
+			}
+
+			// Find the specific passkey entry
+			Json::Value passkeys = ParsePasskeys(m_users[iUser].Passkeys);
+			Json::Value passkeyEntry;
+			bool found = false;
+			for (Json::ArrayIndex i = 0; i < passkeys.size(); i++)
+			{
+				if (passkeys[i]["id"].asString() == credentialId)
+				{
+					passkeyEntry = passkeys[i];
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+			{
+				root["status"]  = "ERR";
+				root["message"] = "Credential not found";
+				return;
+			}
+
+			// Decode clientDataJSON
+			std::string clientDataJSONraw = base64url_decode(clientDataJSONb64);
+			if (clientDataJSONraw.empty())
+			{
+				root["status"]  = "ERR";
+				root["message"] = "Invalid clientDataJSON encoding";
+				return;
+			}
+			Json::Value clientData;
+			if (!ParseJSon(clientDataJSONraw, clientData))
+			{
+				root["status"]  = "ERR";
+				root["message"] = "Failed to parse clientDataJSON";
+				return;
+			}
+			if (clientData["type"].asString() != "webauthn.get")
+			{
+				root["status"]  = "ERR";
+				root["message"] = "Invalid clientDataJSON type";
+				return;
+			}
+			if (clientData["challenge"].asString() != storedChallenge)
+			{
+				root["status"]  = "ERR";
+				root["message"] = "Challenge mismatch";
+				return;
+			}
+			// Origin check – log but don't reject
+			{
+				std::string rpId = GetWebAuthnRpId(session, req);
+				std::string origin = clientData["origin"].asString();
+				if (origin.find(rpId) == std::string::npos)
+				{
+					_log.Log(LOG_STATUS, "WebAuthn login: origin '%s' does not contain expected host '%s' (non-fatal)",
+					         origin.c_str(), rpId.c_str());
+				}
+			}
+
+			// Decode authenticatorData
+			std::string authDataRaw = base64url_decode(authenticatorDatab64);
+			if (authDataRaw.size() < 37)
+			{
+				root["status"]  = "ERR";
+				root["message"] = "authenticatorData too short";
+				return;
+			}
+			std::vector<uint8_t> authDataBytes(authDataRaw.begin(), authDataRaw.end());
+
+			// Verify rpIdHash
+			{
+				uint8_t expectedHash[SHA256_DIGEST_LENGTH];
+				std::string rpId = GetWebAuthnRpId(session, req);
+				SHA256(reinterpret_cast<const uint8_t*>(rpId.data()), rpId.size(), expectedHash);
+				if (memcmp(authDataBytes.data(), expectedHash, SHA256_DIGEST_LENGTH) != 0)
+				{
+					_log.Log(LOG_STATUS, "WebAuthn login: rpIdHash mismatch (non-fatal, host may differ)");
+				}
+			}
+
+			// Verify UP flag
+			if (!(authDataBytes[32] & 0x01))
+			{
+				root["status"]  = "ERR";
+				root["message"] = "User presence flag not set";
+				return;
+			}
+
+			// Extract signCount (bytes 33-36, big-endian)
+			uint32_t newSignCount = (uint32_t(authDataBytes[33]) << 24) |
+			                        (uint32_t(authDataBytes[34]) << 16) |
+			                        (uint32_t(authDataBytes[35]) << 8)  |
+			                         uint32_t(authDataBytes[36]);
+
+			// Compute hash of clientDataJSON
+			uint8_t clientDataHash[SHA256_DIGEST_LENGTH];
+			SHA256(reinterpret_cast<const uint8_t*>(clientDataJSONraw.data()), clientDataJSONraw.size(), clientDataHash);
+
+			// signedData = authenticatorData || hash
+			std::vector<uint8_t> signedData(authDataBytes);
+			signedData.insert(signedData.end(), clientDataHash, clientDataHash + SHA256_DIGEST_LENGTH);
+
+			// Decode the stored COSE public key (base64-encoded in passkeyEntry["key"])
+			std::string pubKeyB64 = passkeyEntry["key"].asString();
+			std::string pubKeyRaw = base64_decode(pubKeyB64);
+			if (pubKeyRaw.empty())
+			{
+				root["status"]  = "ERR";
+				root["message"] = "Invalid stored public key";
+				return;
+			}
+			std::vector<uint8_t> coseBuf(pubKeyRaw.begin(), pubKeyRaw.end());
+
+			CoseKey coseKey;
+			if (!cbor_parse_cose_key(coseBuf, coseKey))
+			{
+				root["status"]  = "ERR";
+				root["message"] = "Failed to parse COSE public key";
+				return;
+			}
+
+			// Decode the signature
+			std::string sigRaw = base64url_decode(signatureb64);
+			if (sigRaw.empty())
+			{
+				root["status"]  = "ERR";
+				root["message"] = "Invalid signature encoding";
+				return;
+			}
+
+			bool sigValid = false;
+
+			if (coseKey.alg == -7) // ES256 – ECDSA-P256-SHA256
+			{
+				if (coseKey.x.size() != 32 || coseKey.y.size() != 32)
+				{
+					root["status"]  = "ERR";
+					root["message"] = "Invalid EC key coordinates";
+					return;
+				}
+
+				// Build uncompressed EC point: 0x04 || X || Y
+				std::vector<uint8_t> pubPoint;
+				pubPoint.reserve(65);
+				pubPoint.push_back(0x04);
+				pubPoint.insert(pubPoint.end(), coseKey.x.begin(), coseKey.x.end());
+				pubPoint.insert(pubPoint.end(), coseKey.y.begin(), coseKey.y.end());
+
+				OSSL_PARAM_BLD* bld = OSSL_PARAM_BLD_new();
+				if (!bld)
+				{
+					root["status"]  = "ERR";
+					root["message"] = "Failed to create EC key";
+					return;
+				}
+				OSSL_PARAM_BLD_push_utf8_string(bld, OSSL_PKEY_PARAM_GROUP_NAME, "prime256v1", 0);
+				OSSL_PARAM_BLD_push_octet_string(bld, OSSL_PKEY_PARAM_PUB_KEY, pubPoint.data(), pubPoint.size());
+				OSSL_PARAM* params = OSSL_PARAM_BLD_to_param(bld);
+				OSSL_PARAM_BLD_free(bld);
+
+				EVP_PKEY_CTX* pctx = EVP_PKEY_CTX_new_from_name(nullptr, "EC", nullptr);
+				EVP_PKEY* pkey = nullptr;
+				if (!pctx || EVP_PKEY_fromdata_init(pctx) != 1 || EVP_PKEY_fromdata(pctx, &pkey, EVP_PKEY_PUBLIC_KEY, params) != 1)
+				{
+					EVP_PKEY_CTX_free(pctx);
+					OSSL_PARAM_free(params);
+					root["status"]  = "ERR";
+					root["message"] = "Failed to set EC public key";
+					return;
+				}
+				EVP_PKEY_CTX_free(pctx);
+				OSSL_PARAM_free(params);
+
+				EVP_MD_CTX* mdCtx = EVP_MD_CTX_new();
+				if (mdCtx &&
+				    EVP_DigestVerifyInit(mdCtx, nullptr, EVP_sha256(), nullptr, pkey) == 1 &&
+				    EVP_DigestVerifyUpdate(mdCtx, signedData.data(), signedData.size()) == 1 &&
+				    EVP_DigestVerifyFinal(mdCtx, reinterpret_cast<const uint8_t*>(sigRaw.data()), sigRaw.size()) == 1)
+				{
+					sigValid = true;
+				}
+				EVP_MD_CTX_free(mdCtx);
+				EVP_PKEY_free(pkey);
+			}
+			else if (coseKey.alg == -257) // RS256 – RSASSA-PKCS1-v1_5-SHA256
+			{
+				if (coseKey.n.empty() || coseKey.e.empty())
+				{
+					root["status"]  = "ERR";
+					root["message"] = "Invalid RSA key parameters";
+					return;
+				}
+
+				BIGNUM* bnN = BN_bin2bn(coseKey.n.data(), (int)coseKey.n.size(), nullptr);
+				BIGNUM* bnE = BN_bin2bn(coseKey.e.data(), (int)coseKey.e.size(), nullptr);
+				if (!bnN || !bnE)
+				{
+					BN_free(bnN);
+					BN_free(bnE);
+					root["status"]  = "ERR";
+					root["message"] = "Failed to create RSA BIGNUMs";
+					return;
+				}
+
+				OSSL_PARAM_BLD* bld = OSSL_PARAM_BLD_new();
+				if (!bld)
+				{
+					BN_free(bnN);
+					BN_free(bnE);
+					root["status"]  = "ERR";
+					root["message"] = "Failed to create RSA key";
+					return;
+				}
+				OSSL_PARAM_BLD_push_BN(bld, OSSL_PKEY_PARAM_RSA_N, bnN);
+				OSSL_PARAM_BLD_push_BN(bld, OSSL_PKEY_PARAM_RSA_E, bnE);
+				OSSL_PARAM* params = OSSL_PARAM_BLD_to_param(bld);
+				OSSL_PARAM_BLD_free(bld);
+				BN_free(bnN);
+				BN_free(bnE);
+
+				EVP_PKEY_CTX* pctx = EVP_PKEY_CTX_new_from_name(nullptr, "RSA", nullptr);
+				EVP_PKEY* pkey = nullptr;
+				if (!pctx || EVP_PKEY_fromdata_init(pctx) != 1 || EVP_PKEY_fromdata(pctx, &pkey, EVP_PKEY_PUBLIC_KEY, params) != 1)
+				{
+					EVP_PKEY_CTX_free(pctx);
+					OSSL_PARAM_free(params);
+					root["status"]  = "ERR";
+					root["message"] = "Failed to create RSA key";
+					return;
+				}
+				EVP_PKEY_CTX_free(pctx);
+				OSSL_PARAM_free(params);
+
+				EVP_MD_CTX* mdCtx = EVP_MD_CTX_new();
+				if (!mdCtx)
+				{
+					EVP_PKEY_free(pkey);
+					root["status"]  = "ERR";
+					root["message"] = "Failed to create MD context";
+					return;
+				}
+				if (EVP_DigestVerifyInit(mdCtx, nullptr, EVP_sha256(), nullptr, pkey) == 1 &&
+				    EVP_DigestVerifyUpdate(mdCtx, signedData.data(), signedData.size()) == 1 &&
+				    EVP_DigestVerifyFinal(mdCtx, reinterpret_cast<const uint8_t*>(sigRaw.data()), sigRaw.size()) == 1)
+				{
+					sigValid = true;
+				}
+				EVP_MD_CTX_free(mdCtx);
+				EVP_PKEY_free(pkey);
+			}
+			else
+			{
+				root["status"]  = "ERR";
+				root["message"] = "Unsupported key algorithm";
+				return;
+			}
+
+			if (!sigValid)
+			{
+				_log.Log(LOG_ERROR, "Passkey login: signature verification failed from %s for user '%s'",
+				         session.remote_host.c_str(), m_users[iUser].Username.c_str());
+				root["status"]  = "ERR";
+				root["message"] = "Signature verification failed";
+				return;
+			}
+
+			// Verify sign count (reject replay if counter is not zero and hasn't advanced)
+			uint32_t storedCount = passkeyEntry["cnt"].asUInt();
+			if (storedCount > 0 && newSignCount <= storedCount)
+			{
+				_log.Log(LOG_ERROR, "Passkey login: sign count replay detected for user '%s' (stored=%u, new=%u)",
+				         m_users[iUser].Username.c_str(), storedCount, newSignCount);
+				root["status"]  = "ERR";
+				root["message"] = "Sign count replay detected";
+				return;
+			}
+
+			// Update sign count
+			UpdatePasskeySignCount(m_users[iUser].ID, credentialId, newSignCount);
+
+			// Create session
+			_log.Log(LOG_STATUS, "Passkey login successful from %s for user '%s'",
+			         session.remote_host.c_str(), m_users[iUser].Username.c_str());
+			root["status"]  = "OK";
+			root["version"] = szAppVersion;
+			root["title"]   = "passkeylogin-complete";
+			session.isnew     = true;
+			session.username  = m_users[iUser].Username;
+			session.rights    = m_users[iUser].userrights;
+			session.rememberme = (rememberme == "true");
+			root["user"]   = session.username;
+			root["rights"] = session.rights;
+		}
+
 		void CWebServer::Cmd_GetHardwareTypes(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != URIGHTS_ADMIN)
@@ -431,7 +1497,7 @@ namespace http
 					|| (htype == HTYPE_PiFace) || (htype == HTYPE_HTTPPOLLER) || (htype == HTYPE_BleBox) || (htype == HTYPE_HEOS) || (htype == HTYPE_Yeelight) || (htype == HTYPE_XiaomiGateway)
 					|| (htype == HTYPE_Arilux) || (htype == HTYPE_USBtinGateway) || (htype == HTYPE_BuienRadar) || (htype == HTYPE_Honeywell) ||(htype == HTYPE_RaspberryGPIO)
 					|| (htype == HTYPE_SysfsGpio) || (htype == HTYPE_OpenWebNetTCP) || (htype == HTYPE_Daikin) || (htype == HTYPE_PythonPlugin) || (htype == HTYPE_RaspberryPCF8574)
-					|| (htype == HTYPE_OpenWebNetUSB) || (htype == HTYPE_IntergasInComfortLAN2RF) || (htype == HTYPE_EnphaseAPI) || (htype == HTYPE_EcoCompteur) || (htype == HTYPE_Meteorologisk)
+					|| (htype == HTYPE_OpenWebNetUSB) || (htype == HTYPE_IntergasInComfortLAN2RF) || (htype == HTYPE_EnphaseAPI) || (htype == HTYPE_EcoCompteur) || (htype == HTYPE_Meteorologisk) || (htype == HTYPE_OpenMeteo)
 					|| (htype == HTYPE_AirconWithMe) || (htype == HTYPE_EneverPriceFeeds) || (htype == HTYPE_Tado))
 			{
 				return true;
@@ -442,6 +1508,32 @@ namespace http
 				return false;
 			}
 
+			return true;
+		}
+
+		static bool ValidateSettingsJSON(const std::string &settings)
+		{
+			if (settings.empty())
+				return true;
+			if (settings.size() > 65536)
+			{
+				_log.Log(LOG_ERROR, "WebServer: Settings JSON exceeds 64KB limit");
+				return false;
+			}
+			Json::Value settingsJson;
+			if (!ParseJSon(settings, settingsJson) || !settingsJson.isObject())
+			{
+				_log.Log(LOG_ERROR, "WebServer: Settings is not valid JSON");
+				return false;
+			}
+			for (const auto &key : settingsJson.getMemberNames())
+			{
+				if (settingsJson[key].asString().size() > 4096)
+				{
+					_log.Log(LOG_ERROR, "WebServer: Settings value for '%s' exceeds 4KB limit", key.c_str());
+					return false;
+				}
+			}
 			return true;
 		}
 
@@ -463,6 +1555,7 @@ namespace http
 			std::string password = request::findValue(&req, "password");
 			std::string extra = CURLEncode::URLDecode(request::findValue(&req, "extra"));
 			std::string sdatatimeout = request::findValue(&req, "datatimeout");
+			std::string settings = CURLEncode::URLDecode(request::findValue(&req, "settings"));
 			if ((name.empty()) || (senabled.empty()) || (shtype.empty()))
 				return;
 			_eHardwareTypes htype = (_eHardwareTypes)atoi(shtype.c_str());
@@ -470,6 +1563,10 @@ namespace http
 			stdstring_trim(username);
 			stdstring_trim(password);
 			int iDataTimeout = atoi(sdatatimeout.c_str());
+
+			if (!ValidateSettingsJSON(settings))
+				return;
+
 			int mode1 = 0;
 			int mode2 = 0;
 			int mode3 = 0;
@@ -575,9 +1672,10 @@ namespace http
 			{
 				sport = request::findValue(&req, "serialport");
 				m_sql.safe_query("INSERT INTO Hardware (Name, Enabled, Type, LogLevel, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, "
-					"DataTimeout) VALUES ('%q',%d, %d, %d,'%q',%d,'%q','%q','%q','%q','%q','%q', '%q', '%q', '%q', '%q', %d)",
+					"DataTimeout, Settings) VALUES ('%q',%d, %d, %d,'%q',%d,'%q','%q','%q','%q','%q','%q', '%q', '%q', '%q', '%q', %d, '%q')",
 					name.c_str(), (senabled == "true") ? 1 : 0, htype, iLogLevelEnabled, address.c_str(), port, sport.c_str(), username.c_str(), password.c_str(),
-					extra.c_str(), mode1Str.c_str(), mode2Str.c_str(), mode3Str.c_str(), mode4Str.c_str(), mode5Str.c_str(), mode6Str.c_str(), iDataTimeout);
+					extra.c_str(), mode1Str.c_str(), mode2Str.c_str(), mode3Str.c_str(), mode4Str.c_str(), mode5Str.c_str(), mode6Str.c_str(), iDataTimeout,
+					settings.c_str());
 			}
 			else if ((htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868))
 			{
@@ -631,12 +1729,16 @@ namespace http
 			std::string password = request::findValue(&req, "password");
 			std::string extra = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "extra")));
 			std::string sdatatimeout = request::findValue(&req, "datatimeout");
+			std::string settings = CURLEncode::URLDecode(request::findValue(&req, "settings"));
 
 			if ((name.empty()) || (senabled.empty()) || (shtype.empty()))
 				return;
 
 			stdstring_trim(username);
 			stdstring_trim(password);
+
+			if (!ValidateSettingsJSON(settings))
+				return;
 
 			std::string mode1Str = request::findValue(&req, "Mode1");
 			std::string mode2Str = request::findValue(&req, "Mode2");
@@ -704,10 +1806,10 @@ namespace http
 				{
 					sport = request::findValue(&req, "serialport");
 					m_sql.safe_query("UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, LogLevel=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', "
-						"Extra='%q', Mode1='%q', Mode2='%q', Mode3='%q', Mode4='%q', Mode5='%q', Mode6='%q', DataTimeout=%d WHERE (ID == '%q')",
+						"Extra='%q', Mode1='%q', Mode2='%q', Mode3='%q', Mode4='%q', Mode5='%q', Mode6='%q', DataTimeout=%d, Settings='%q' WHERE (ID == '%q')",
 						name.c_str(), (senabled == "true") ? 1 : 0, htype, iLogLevelEnabled, address.c_str(), port, sport.c_str(), username.c_str(), password.c_str(),
 						extra.c_str(), mode1Str.c_str(), mode2Str.c_str(), mode3Str.c_str(), mode4Str.c_str(), mode5Str.c_str(), mode6Str.c_str(), iDataTimeout,
-						idx.c_str());
+						settings.c_str(), idx.c_str());
 				}
 				else if ((htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868))
 				{
@@ -1163,7 +2265,7 @@ namespace http
 			std::vector<std::vector<std::string>> result;
 			std::vector<std::vector<std::string>> result2;
 			result = m_sql.safe_query("SELECT T1.[ID], T1.[Name], T1.[Type], T1.[SubType], T2.[Name] AS HardwareName FROM DeviceStatus as T1, Hardware as T2 "
-				"WHERE (T1.[Used]==1) AND (T2.[ID]==T1.[HardwareID]) ORDER BY T2.[Name], T1.[Name]");
+				"WHERE (T2.[ID]==T1.[HardwareID]) ORDER BY T2.[Name], T1.[Name]");
 			if (!result.empty())
 			{
 				for (const auto& sd : result)
@@ -1382,45 +2484,57 @@ namespace http
 
 		void CWebServer::Cmd_ChangePlanDeviceOrder(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
 			std::string planid = request::findValue(&req, "planid");
-			std::string idx = request::findValue(&req, "idx");
-			std::string sway = request::findValue(&req, "way");
-			if ((planid.empty()) || (idx.empty()) || (sway.empty()))
+			std::string sorder = request::findValue(&req, "order");
+			if (planid.empty() || sorder.empty())
 				return;
-			bool bGoUp = (sway == "0");
 
-			std::string aOrder, oID, oOrder;
-
-			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT [Order] FROM DeviceToPlansMap WHERE ((ID=='%q') AND (PlanID=='%q'))", idx.c_str(), planid.c_str());
-			if (result.empty())
-				return;
-			aOrder = result[0][0];
-
-			if (!bGoUp)
+			std::stringstream ss(sorder);
+			std::string token;
+			int pos = 1;
+			while (std::getline(ss, token, ','))
 			{
-				// Get next device order
-				result = m_sql.safe_query("SELECT ID, [Order] FROM DeviceToPlansMap WHERE (([Order]>'%q') AND (PlanID=='%q')) ORDER BY [Order] ASC", aOrder.c_str(), planid.c_str());
-				if (result.empty())
-					return;
-				oID = result[0][0];
-				oOrder = result[0][1];
+				if (!token.empty())
+				{
+					m_sql.safe_query("UPDATE DeviceToPlansMap SET [Order] = %d WHERE (ID='%q') AND (PlanID='%q')", pos, token.c_str(), planid.c_str());
+					++pos;
+				}
 			}
-			else
-			{
-				// Get previous device order
-				result = m_sql.safe_query("SELECT ID, [Order] FROM DeviceToPlansMap WHERE (([Order]<'%q') AND (PlanID=='%q')) ORDER BY [Order] DESC", aOrder.c_str(), planid.c_str());
-				if (result.empty())
-					return;
-				oID = result[0][0];
-				oOrder = result[0][1];
-			}
-			// Swap them
+
 			root["status"] = "OK";
-			root["title"] = "ChangePlanOrder";
+			root["title"] = "ChangePlanDeviceOrder";
+		}
 
-			m_sql.safe_query("UPDATE DeviceToPlansMap SET [Order] = '%q' WHERE (ID='%q')", oOrder.c_str(), idx.c_str());
-			m_sql.safe_query("UPDATE DeviceToPlansMap SET [Order] = '%q' WHERE (ID='%q')", aOrder.c_str(), oID.c_str());
+		void CWebServer::Cmd_ChangePlanFullOrder(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+			std::string sorder = request::findValue(&req, "order");
+			if (sorder.empty())
+				return;
+
+			std::stringstream ss(sorder);
+			std::string token;
+			int pos = 1;
+			while (std::getline(ss, token, ','))
+			{
+				if (!token.empty())
+				{
+					m_sql.safe_query("UPDATE Plans SET [Order] = %d WHERE (ID='%q')", pos, token.c_str());
+					++pos;
+				}
+			}
+
+			root["status"] = "OK";
+			root["title"] = "ChangePlanFullOrder";
 		}
 
 		void CWebServer::Cmd_GetVersion(WebEmSession& session, const request& req, Json::Value& root)
@@ -1444,6 +2558,10 @@ namespace http
 					root["DomoticzUpdateURL"] = m_mainworker.m_szDomoticzUpdateURL;
 					root["SystemName"] = m_mainworker.m_szSystemName;
 					root["Revision"] = m_mainworker.m_iRevision;
+					auto dbresult = m_sql.safe_query(
+						"SELECT (SELECT page_count FROM pragma_page_count()) * (SELECT page_size FROM pragma_page_size())");
+					if (!dbresult.empty())
+						root["db_size"] = (Json::Int64)atoll(dbresult[0][0].c_str());
 				}
 			}
 		}
@@ -1452,6 +2570,7 @@ namespace http
 		{
 			root["status"] = "OK";
 			root["title"] = "GetAuth";
+			root["canlogout"] = !session.istrustednetwork || !session.id.empty();
 			if (session.rights != URIGHTS_NONE)
 			{
 				root["user"] = session.username;
@@ -1460,11 +2579,65 @@ namespace http
 			}
 		}
 
+		void CWebServer::Cmd_GetSetupRequired(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "OK";
+			root["title"] = "GetSetupRequired";
+			root["SetupRequired"] = !FindAdminUser();
+		}
+
+		void CWebServer::Cmd_SetupWizardCreateAdmin(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "SetupWizardCreateAdmin";
+
+			static std::mutex setupMutex;
+			std::lock_guard<std::mutex> lock(setupMutex);
+
+			// Security: only allow when no admin user exists
+			if (FindAdminUser())
+			{
+				_log.Log(LOG_ERROR, "Setup wizard attempt blocked: admin account already exists (IP: %s)", session.remote_host.c_str());
+				root["status"] = "ERR";
+				root["message"] = "Setup has already been completed";
+				return;
+			}
+
+			std::string username = CURLEncode::URLDecode(request::findValue(&req, "username"));
+			std::string password = CURLEncode::URLDecode(request::findValue(&req, "password"));
+
+			if (username.empty() || password.empty())
+			{
+				root["status"] = "ERR";
+				root["message"] = "Username and password are required";
+				return;
+			}
+
+			if (username.length() > 128)
+			{
+				root["status"] = "ERR";
+				root["message"] = "Username is too long";
+				return;
+			}
+
+			// Username is sent as plaintext, we base64 encode for storage
+			// Password is sent as MD5 hash from the frontend (same as login flow)
+			m_sql.safe_query(
+				"INSERT INTO Users (Active, Username, Password, Rights, TabsEnabled) VALUES (1, '%q', '%q', %d, 0x1F)",
+				base64_encode(username).c_str(), password.c_str(), http::server::URIGHTS_ADMIN);
+
+			_log.Log(LOG_STATUS, "Admin user '%s' created via setup wizard", username.c_str());
+
+			// Reload users so the new admin is immediately available for login
+			LoadUsers();
+
+			root["status"] = "OK";
+		}
+
 		void CWebServer::Cmd_GetMyProfile(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["status"] = "ERR";
 			root["title"] = "GetMyProfile";
-			if (session.rights == URIGHTS_VIEWER || session.rights == URIGHTS_NONE)	// Viewer cannot change his profile
+			if (session.rights == URIGHTS_NONE)	// Viewer cannot change his profile
 			{
 				return;
 			}
@@ -1485,7 +2658,7 @@ namespace http
 			root["status"] = "ERR";
 			root["title"] = "UpdateMyProfile";
 
-			if (req.method != "POST" || session.rights == URIGHTS_VIEWER || session.rights == URIGHTS_NONE)	// Viewer cannot change his profile
+			if (req.method != "POST" || session.rights == URIGHTS_NONE)	// Viewer cannot change his profile
 			{
 				return;
 			}
@@ -1586,6 +2759,10 @@ namespace http
 			root["title"] = "GetActualHistory";
 
 			std::string historyfile = szUserDataFolder + "History.txt";
+			if (szStartupFolder != szUserDataFolder)
+			{
+				historyfile = szStartupFolder + "History.txt";
+			}
 
 			std::ifstream infile;
 			int ii = 0;
@@ -1706,6 +2883,7 @@ namespace http
 			root["TempScale"] = m_sql.m_tempscale;
 			root["TempSign"] = m_sql.m_tempsign;
 			root["CurrencySign"] = m_sql.m_currencysign;
+			root["PriceResolution"] = m_sql.m_PriceResolution.load();
 
 			int iUser = -1;
 			if (!session.username.empty() && (iUser = FindUser(session.username.c_str())) != -1)
@@ -2231,9 +3409,15 @@ namespace http
 
 			std::string scriptname(szStartupFolder);
 			scriptname += (bIsBetaChannel) ? "updatebeta" : "updaterelease";
-			// run script in background
-			std::string lscript = scriptname + " &";
+			// run script in new session with setsid + nohup for complete detachment from parent
+			// Use fixed log filename for frontend display (both scripts write to same file)
+			// Remove any existing log first: a root-owned log from a prior run would be
+			// unwritable if domoticz is now running as a non-root user, silently preventing
+			// the script from starting.
+			std::string logfile = std::string(szStartupFolder) + "update.log";
+			std::string lscript = "rm -f " + logfile + " 2>/dev/null; setsid nohup " + scriptname + " > " + logfile + " 2>&1 &";
 			int ret = system(lscript.c_str());
+			_log.Log(LOG_STATUS, "Update script started: %s (log: update.log)", scriptname.c_str());
 			root["title"] = "UpdateApplication";
 			root["status"] = "OK";
 		}
@@ -2368,23 +3552,6 @@ namespace http
 			root["Revision"] = m_mainworker.m_iRevision;
 		}
 
-		void CWebServer::Cmd_DownloadUpdate(WebEmSession& session, const request& req, Json::Value& root)
-		{
-			if (!m_mainworker.StartDownloadUpdate())
-				return;
-			root["status"] = "OK";
-			root["title"] = "DownloadUpdate";
-		}
-
-		void CWebServer::Cmd_DownloadReady(WebEmSession& session, const request& req, Json::Value& root)
-		{
-			if (!m_mainworker.m_bHaveDownloadedDomoticzUpdate)
-				return;
-			root["status"] = "OK";
-			root["title"] = "DownloadReady";
-			root["downloadok"] = (m_mainworker.m_bHaveDownloadedDomoticzUpdateSuccessFull) ? true : false;
-		}
-
 		void CWebServer::Cmd_DeleteDateRange(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != URIGHTS_ADMIN)
@@ -2477,6 +3644,11 @@ namespace http
 				m_sql.UpdatePreferencesVar("HourIdxElectricityDevice", atoi(request::findValue(&req, "HourIdxElectricityDevice").c_str())); cntSettings++;
 				m_sql.UpdatePreferencesVar("HourIdxGasDevice", atoi(request::findValue(&req, "HourIdxGasDevice").c_str())); cntSettings++;
 				m_sql.UpdatePreferencesVar("P1DisplayType", atoi(request::findValue(&req, "P1DisplayType").c_str())); cntSettings++;
+			int iPriceResolution = atoi(request::findValue(&req, "PriceResolution").c_str());
+			if (iPriceResolution != 15 && iPriceResolution != 30 && iPriceResolution != 60)
+				iPriceResolution = 60;
+			m_sql.m_PriceResolution = iPriceResolution;
+			m_sql.UpdatePreferencesVar("PriceResolution", iPriceResolution); cntSettings++;
 
 
 				/* More complex ones that need additional processing */
@@ -2536,6 +3708,9 @@ namespace http
 
 				m_sql.m_bShortLogAddOnlyNewValues = (request::findValue(&req, "ShortLogAddOnlyNewValues") == "on" ? 1 : 0);
 				m_sql.UpdatePreferencesVar("ShortLogAddOnlyNewValues", m_sql.m_bShortLogAddOnlyNewValues); cntSettings++;
+
+				m_sql.m_bLogUnusedSensors = (request::findValue(&req, "LogUnusedSensors") == "on" ? 1 : 0);
+				m_sql.UpdatePreferencesVar("LogUnusedSensors", m_sql.m_bLogUnusedSensors); cntSettings++;
 
 				m_sql.m_bLogEventScriptTrigger = (request::findValue(&req, "LogEventScriptTrigger") == "on" ? 1 : 0);
 				m_sql.UpdatePreferencesVar("LogEventScriptTrigger", m_sql.m_bLogEventScriptTrigger); cntSettings++;
@@ -2743,6 +3918,9 @@ namespace http
 				int ESolar = atoi(request::findValue(&req, "ESolar").c_str());
 				int EBatteryWatt = atoi(request::findValue(&req, "EBatteryWatt").c_str());
 				int EBatterySoc = atoi(request::findValue(&req, "EBatterySoc").c_str());
+				int EBatteryVolt = atoi(request::findValue(&req, "EBatteryVolt").c_str());
+				int EBatteryEnergyIn = atoi(request::findValue(&req, "EBatteryEnergyIn").c_str());
+				int EBatteryEnergyOut = atoi(request::findValue(&req, "EBatteryEnergyOut").c_str());
 				int ETextSensor = atoi(request::findValue(&req, "ETextSensor").c_str());
 				int EOutsideTempSensor = atoi(request::findValue(&req, "EOutsideTempSensor").c_str());
 				int EExtra1 = atoi(request::findValue(&req, "EExtra1").c_str());
@@ -2768,6 +3946,9 @@ namespace http
 				ESettings["idSolar"] = ESolar;
 				ESettings["idBatteryWatt"] = EBatteryWatt;
 				ESettings["idBatterySoc"] = EBatterySoc;
+				ESettings["idBatteryVolt"] = EBatteryVolt;
+				ESettings["idBatteryEnergyIn"] = EBatteryEnergyIn;
+				ESettings["idBatteryEnergyOut"] = EBatteryEnergyOut;
 				ESettings["idTextSensor"] = ETextSensor;
 				ESettings["idOutsideTempSensor"] = EOutsideTempSensor;
 				ESettings["idExtra1"] = EExtra1;
@@ -2799,6 +3980,25 @@ namespace http
 				// Signal plugins to update Settings dictionary
 				PluginLoadConfig();
 #endif
+
+				std::string sDebugLevel = request::findValue(&req, "DebugLevel");
+				if (!sDebugLevel.empty())
+				{
+					uint32_t iDebugLevel = static_cast<uint32_t>(atoi(sDebugLevel.c_str()));
+					_log.SetDebugFlags(iDebugLevel);
+					if (iDebugLevel != 0)
+					{
+						// Enable debug log level when any debug flags are set
+						_log.SetLogFlags(_log.GetLogFlags() | LOG_DEBUG_INT);
+					}
+					else
+					{
+						// Disable debug log level when no debug flags are set
+						_log.SetLogFlags(_log.GetLogFlags() & ~LOG_DEBUG_INT);
+					}
+					cntSettings++;
+				}
+
 				root["status"] = "OK";
 			}
 			catch (const std::exception& e)
@@ -3206,9 +4406,61 @@ namespace http
 #endif
 			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT ID, Name, Enabled, Type, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout, "
-				"LogLevel FROM Hardware ORDER BY ID ASC");
+				"LogLevel, Settings FROM Hardware ORDER BY ID ASC");
 			if (!result.empty())
 			{
+#ifdef ENABLE_PYTHON
+				// Pre-build password field sets per plugin key to avoid per-entry XML parsing
+				std::map<std::string, std::set<std::string>> pluginPasswordFields;
+				{
+					Plugins::CPluginSystem PluginMgr;
+					std::map<std::string, std::string> *mPluginXml = PluginMgr.GetManifest();
+					for (const auto &type : *mPluginXml)
+					{
+						TiXmlDocument xmlDoc;
+						xmlDoc.Parse(type.second.c_str());
+						if (xmlDoc.Error())
+							continue;
+						TiXmlNode *pPluginNode = xmlDoc.FirstChild("plugin");
+						if (!pPluginNode)
+							continue;
+						TiXmlElement *pPluginEle = pPluginNode->ToElement();
+						if (!pPluginEle)
+							continue;
+						const char *pKey = pPluginEle->Attribute("key");
+						if (!pKey)
+							continue;
+						std::string pluginKey = pKey;
+						TiXmlNode *pParamsNode = pPluginNode->FirstChild("params");
+						if (!pParamsNode)
+							continue;
+						auto checkParam = [&](TiXmlElement *pEle) {
+							const char *pField = pEle->Attribute("field");
+							const char *pPassword = pEle->Attribute("password");
+							if (pField && pPassword && std::string(pPassword) == "true")
+								pluginPasswordFields[pluginKey].insert(pField);
+						};
+						for (TiXmlNode *pChild = pParamsNode->FirstChild(); pChild; pChild = pChild->NextSibling())
+						{
+							TiXmlElement *pEle = pChild->ToElement();
+							if (!pEle)
+								continue;
+							std::string tagName = pEle->Value();
+							if (tagName == "param")
+								checkParam(pEle);
+							else if (tagName == "group")
+							{
+								for (TiXmlNode *pGroupChild = pEle->FirstChild("param"); pGroupChild; pGroupChild = pGroupChild->NextSibling("param"))
+								{
+									TiXmlElement *pGroupEle = pGroupChild->ToElement();
+									if (pGroupEle)
+										checkParam(pGroupEle);
+								}
+							}
+						}
+					}
+				}
+#endif
 				int ii = 0;
 				for (const auto& sd : result)
 				{
@@ -3251,6 +4503,36 @@ namespace http
 					}
 					root["result"][ii]["DataTimeout"] = atoi(sd[16].c_str());
 					root["result"][ii]["LogLevel"] = atoi(sd[17].c_str());
+
+					if (hType == HTYPE_PythonPlugin && !sd[18].empty())
+					{
+						Json::Value settingsJson;
+						if (ParseJSon(sd[18], settingsJson) && settingsJson.isObject())
+						{
+#ifdef ENABLE_PYTHON
+							// Strip password-type field values using pre-built cache
+							std::string pluginKey = sd[9]; // Extra holds plugin key
+							auto itPwdFields = pluginPasswordFields.find(pluginKey);
+							if (itPwdFields != pluginPasswordFields.end())
+							{
+								for (const auto &field : itPwdFields->second)
+								{
+									if (settingsJson.isMember(field))
+										settingsJson[field] = "";
+								}
+							}
+#endif
+							root["result"][ii]["Settings"] = settingsJson;
+						}
+						else
+						{
+							root["result"][ii]["Settings"] = Json::objectValue;
+						}
+					}
+					else
+					{
+						root["result"][ii]["Settings"] = Json::objectValue;
+					}
 
 					CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(sd[0].c_str()));
 					if (pHardware != nullptr)
@@ -3380,7 +4662,7 @@ namespace http
 			else
 			{
 				std::vector<std::vector<std::string>> result;
-				result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile, LastSeen FROM Applications ORDER BY ID ASC");
+				result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile, RefreshExpire, SigningSecret, LastSeen FROM Applications ORDER BY ID ASC");
 				if (!result.empty())
 				{
 					int ii = 0;
@@ -3392,7 +4674,9 @@ namespace http
 						root["result"][ii]["Applicationname"] = sd[3];
 						root["result"][ii]["Secret"] = sd[4];
 						root["result"][ii]["Pemfile"] = sd[5];
-						root["result"][ii]["LastSeen"] = sd[6];
+						root["result"][ii]["RefreshExpire"] = atoi(sd[6].c_str());
+						root["result"][ii]["SigningSecret"] = sd[7];
+						root["result"][ii]["LastSeen"] = sd[8];
 						ii++;
 					}
 				}
@@ -3414,6 +4698,12 @@ namespace http
 				std::string applicationname = request::findValue(&req, "applicationname");
 				std::string secret = request::findValue(&req, "secret");
 				std::string pemfile = request::findValue(&req, "pemfile");
+				std::string srefreshexpire = request::findValue(&req, "refreshexpire");
+				uint32_t refreshexpire = (srefreshexpire.empty()) ? 0 : static_cast<uint32_t>(atol(srefreshexpire.c_str()));
+				std::string signingsecret = request::findValue(&req, "signingsecret");
+				// Auto-generate signing secret if not provided
+				if (signingsecret.empty())
+					signingsecret = GenerateUUID();
 				if (senabled.empty() || applicationname.empty() || spublic.empty())
 				{
 					session.reply_status = reply::bad_request;
@@ -3439,8 +4729,8 @@ namespace http
 				}
 
 				// Insert the new application
-				m_sql.safe_query("INSERT INTO Applications (Active, Public, Applicationname, Secret, Pemfile) VALUES (%d,%d,'%q','%q','%q')",
-					(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str());
+				m_sql.safe_query("INSERT INTO Applications (Active, Public, Applicationname, Secret, Pemfile, RefreshExpire, SigningSecret) VALUES (%d,%d,'%q','%q','%q',%u,'%q')",
+					(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str(), refreshexpire, signingsecret.c_str());
 
 				// Reload the applications (and users)
 				LoadUsers();
@@ -3463,6 +4753,12 @@ namespace http
 				std::string secret = request::findValue(&req, "secret");
 				std::string pemfile = request::findValue(&req, "pemfile");
 				std::string idx = request::findValue(&req, "idx");
+				std::string srefreshexpire = request::findValue(&req, "refreshexpire");
+				uint32_t refreshexpire = (srefreshexpire.empty()) ? 0 : static_cast<uint32_t>(atol(srefreshexpire.c_str()));
+				std::string signingsecret = request::findValue(&req, "signingsecret");
+				// Auto-generate signing secret if not provided
+				if (signingsecret.empty())
+					signingsecret = GenerateUUID();
 				if (idx.empty() || senabled.empty() || applicationname.empty() || spublic.empty())
 				{
 					session.reply_status = reply::bad_request;
@@ -3492,8 +4788,8 @@ namespace http
 				}
 
 				// Update the application
-				m_sql.safe_query("UPDATE Applications SET Active=%d, Public=%d, Applicationname='%q', Secret='%q', Pemfile='%q' WHERE (ID == '%q')",
-					(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str(), idx.c_str());
+				m_sql.safe_query("UPDATE Applications SET Active=%d, Public=%d, Applicationname='%q', Secret='%q', Pemfile='%q', RefreshExpire=%u, SigningSecret='%q' WHERE (ID == '%q')",
+					(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str(), refreshexpire, signingsecret.c_str(), idx.c_str());
 
 				// Reload the applications (and users)
 				LoadUsers();
@@ -3582,11 +4878,13 @@ namespace http
 				return;
 			root["status"] = "OK";
 			root["title"] = "SetSetpoint";
+			std::string szSwitchUser;
 			if (iUser != -1)
 			{
+				szSwitchUser = m_users[iUser].Username + " (IP: " + session.remote_host + ")";
 				_log.Log(LOG_STATUS, "User: %s initiated a SetPoint command", m_users[iUser].Username.c_str());
 			}
-			m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setpoint.c_str())));
+			m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setpoint.c_str())), szSwitchUser);
 		}
 
 		void CWebServer::Cmd_GetSceneActivations(WebEmSession& session, const request& req, Json::Value& root)
@@ -4075,6 +5373,55 @@ namespace http
 			_log.Log(logLevel, "%s", smessage.c_str());
 		}
 
+		void CWebServer::Cmd_FixKwhCounterSpikes(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			std::string sidx = request::findValue(&req, "idx");
+			if (sidx.empty())
+			{
+				root["status"] = "ERR";
+				root["message"] = "idx parameter missing";
+				return;
+			}
+			uint64_t idx = 0;
+			try
+			{
+				idx = std::stoull(sidx);
+			}
+			catch (const std::exception&)
+			{
+				root["status"] = "ERR";
+				root["message"] = "Invalid idx format";
+				return;
+			}
+
+			std::string sthreshold = request::findValue(&req, "threshold");
+			double max_daily_kwh = 1000.0;
+			if (!sthreshold.empty())
+			{
+				char* endptr = nullptr;
+				double parsed = strtod(sthreshold.c_str(), &endptr);
+				if (endptr != sthreshold.c_str() && parsed > 0 && parsed <= 1e6)
+					max_daily_kwh = parsed;
+			}
+
+			bool dry_run = (request::findValue(&req, "dryrun") == "1");
+
+			std::vector<std::string> results;
+			bool ok = m_sql.FixKwhCounterSpikes(idx, max_daily_kwh, dry_run, results);
+
+			root["status"] = ok ? "OK" : "ERR";
+			root["title"] = "FixKwhCounterSpikes";
+			root["dryrun"] = dry_run;
+			for (int i = 0; i < static_cast<int>(results.size()); i++)
+				root["result"][i] = results[i];
+		}
+
 		void CWebServer::Cmd_ClearShortLog(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != URIGHTS_ADMIN)
@@ -4092,6 +5439,47 @@ namespace http
 			_log.Log(LOG_STATUS, "Short Log Cleared!");
 		}
 
+		void CWebServer::Cmd_PruneUnusedSensorLogs(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+			root["status"] = "OK";
+			root["title"] = "PruneUnusedSensorLogs";
+
+			auto result = m_sql.safe_query(
+				"SELECT COUNT(DISTINCT ds.ID) FROM DeviceStatus ds WHERE ds.Used=0 AND ("
+				"EXISTS(SELECT 1 FROM Temperature WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Rain WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Wind WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM UV WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Meter WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM MultiMeter WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Percentage WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Fan WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM LightingLog WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Temperature_Calendar WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Rain_Calendar WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Wind_Calendar WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM UV_Calendar WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Meter_Calendar WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM MultiMeter_Calendar WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Percentage_Calendar WHERE DeviceRowID=ds.ID) OR "
+				"EXISTS(SELECT 1 FROM Fan_Calendar WHERE DeviceRowID=ds.ID)"
+				")");
+
+			int iDeviceCount = (!result.empty() && !result[0].empty()) ? atoi(result[0][0].c_str()) : 0;
+
+			_log.Log(LOG_STATUS, "Pruning log data for unused sensors...");
+			int iTotalDeleted = m_sql.PruneUnusedSensorLogs();
+			_log.Log(LOG_STATUS, "Pruned %d log records for %d unused sensors", iTotalDeleted, iDeviceCount);
+
+			root["rowsdeleted"] = iTotalDeleted;
+			root["devicesaffected"] = iDeviceCount;
+		}
+
 		void CWebServer::Cmd_VacuumDatabase(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != URIGHTS_ADMIN)
@@ -4103,6 +5491,70 @@ namespace http
 			root["title"] = "VacuumDatabase";
 
 			m_sql.VacuumDatabase();
+		}
+
+		void CWebServer::Cmd_GetDbStats(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+			root["status"] = "OK";
+			root["title"] = "GetDbStats";
+
+			auto result = m_sql.safe_query(
+				"SELECT (SELECT page_count FROM pragma_page_count()) * (SELECT page_size FROM pragma_page_size()), "
+				"       (SELECT freelist_count FROM pragma_freelist_count()) * (SELECT page_size FROM pragma_page_size())");
+			if (!result.empty() && result[0].size() >= 2)
+			{
+				root["dbsize"] = (Json::Int64)atoll(result[0][0].c_str());
+				root["freesize"] = (Json::Int64)atoll(result[0][1].c_str());
+			}
+
+			auto unused = m_sql.safe_query(
+				"SELECT COUNT(DISTINCT ds.ID),"
+				"  (SELECT COUNT(*) FROM Temperature WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Rain WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Wind WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM UV WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Meter WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM MultiMeter WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Percentage WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Fan WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM LightingLog WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Temperature_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Rain_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Wind_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM UV_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Meter_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM MultiMeter_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Percentage_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0)) +"
+				"  (SELECT COUNT(*) FROM Fan_Calendar WHERE DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=0))"
+				" FROM DeviceStatus ds WHERE ds.Used=0 AND ("
+				"  EXISTS(SELECT 1 FROM Temperature WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Rain WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Wind WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM UV WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Meter WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM MultiMeter WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Percentage WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Fan WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM LightingLog WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Temperature_Calendar WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Rain_Calendar WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Wind_Calendar WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM UV_Calendar WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Meter_Calendar WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM MultiMeter_Calendar WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Percentage_Calendar WHERE DeviceRowID=ds.ID) OR"
+				"  EXISTS(SELECT 1 FROM Fan_Calendar WHERE DeviceRowID=ds.ID)"
+				" )");
+			if (!unused.empty() && unused[0].size() >= 2)
+			{
+				root["unuseddevices"] = atoi(unused[0][0].c_str());
+				root["unusedrecords"] = (Json::Int64)atoll(unused[0][1].c_str());
+			}
 		}
 
 		void CWebServer::Cmd_AddMobileDevice(WebEmSession& session, const request& req, Json::Value& root)
@@ -4414,7 +5866,35 @@ namespace http
 				}
 				sprintf(szTmp, "%.2f", tempcelcius);
 
-				if (dType != pTypeEvohomeZone && dType != pTypeEvohomeWater) // sql update now done in setsetpoint for evohome devices
+				if (dType == pTypeThermostat6)
+				{
+					// For Thermostat6, preserve existing temperature and mode, only update setpoint
+					std::vector<std::vector<std::string>> currentResult;
+					currentResult = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID == '%q')", idx.c_str());
+					if (!currentResult.empty())
+					{
+						std::vector<std::string> strarray;
+						StringSplit(currentResult[0][0], ";", strarray);
+						if (dSubType == sTypeThermostat6Temp && strarray.size() >= 2)
+						{
+							sprintf(szTmp, "%s;%.2f", strarray[0].c_str(), tempcelcius);
+						}
+						else if (dSubType == sTypeThermostat6TempHum && strarray.size() >= 4)
+						{
+							sprintf(szTmp, "%s;%.2f;%s;%s", strarray[0].c_str(), tempcelcius, strarray[2].c_str(), strarray[3].c_str());
+						}
+						else if (dSubType == sTypeThermostat6TempBaro && strarray.size() >= 4)
+						{
+							sprintf(szTmp, "%s;%.2f;%s;%s", strarray[0].c_str(), tempcelcius, strarray[2].c_str(), strarray[3].c_str());
+						}
+						else if (dSubType == sTypeThermostat6TempHumBaro && strarray.size() >= 6)
+						{
+							sprintf(szTmp, "%s;%.2f;%s;%s;%s;%s", strarray[0].c_str(), tempcelcius, strarray[2].c_str(), strarray[3].c_str(), strarray[4].c_str(), strarray[5].c_str());
+						}
+						m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, sValue='%q' WHERE (ID == '%q')", used, szTmp, idx.c_str());
+					}
+				}
+				else if (dType != pTypeEvohomeZone && dType != pTypeEvohomeWater) // sql update now done in setsetpoint for evohome devices
 				{
 					m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, sValue='%q' WHERE (ID == '%q')", used, szTmp, idx.c_str());
 				}
@@ -4457,23 +5937,25 @@ namespace http
 			if (!setPoint.empty() || !state.empty())
 			{
 				int urights = 3;
+				std::string szSwitchUser;
 				if (bHaveUser)
 				{
 					int iUser = FindUser(session.username.c_str());
 					if (iUser != -1)
 					{
 						urights = static_cast<int>(m_users[iUser].userrights);
+						szSwitchUser = m_users[iUser].Username + " (IP: " + session.remote_host + ")";
 						_log.Log(LOG_STATUS, "User: %s initiated a SetPoint command", m_users[iUser].Username.c_str());
 					}
 				}
 				if (urights < 1)
 					return;
 				if (dType == pTypeEvohomeWater)
-					m_mainworker.SetSetPointEvo(idx, (state == "On") ? 1.0F : 0.0F, mode, until); // FIXME float not guaranteed precise?
+					m_mainworker.SetSetPointEvo(idx, (state == "On") ? 1.0F : 0.0F, mode, until, szSwitchUser); // FIXME float not guaranteed precise?
 				else if (dType == pTypeEvohomeZone)
-					m_mainworker.SetSetPointEvo(idx, static_cast<float>(atof(setPoint.c_str())), mode, until);
+					m_mainworker.SetSetPointEvo(idx, static_cast<float>(atof(setPoint.c_str())), mode, until, szSwitchUser);
 				else
-					m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setPoint.c_str())));
+					m_mainworker.SetSetPoint(idx, static_cast<float>(atof(setPoint.c_str())), szSwitchUser);
 			}
 
 			if (!strunit.empty())
@@ -4660,6 +6142,10 @@ namespace http
 				else if (Key == "ShortLogInterval")
 				{
 					root["ShortLogInterval"] = nValue;
+				}
+				else if (Key == "LogUnusedSensors")
+				{
+					root["LogUnusedSensors"] = nValue;
 				}
 				else if (Key == "SecPassword")
 				{
@@ -4972,7 +6458,12 @@ namespace http
 				{
 					root["P1DisplayType"] = nValue;
 				}
+				else if (Key == "PriceResolution")
+				{
+					root["PriceResolution"] = nValue;
+				}
 			}
+			root["DebugLevel"] = static_cast<int>(_log.GetDebugFlags());
 		}
 
 		void CWebServer::Cmd_GetLightLog(WebEmSession& session, const request& req, Json::Value& root)
@@ -4993,13 +6484,7 @@ namespace http
 			_eSwitchType switchtype = (_eSwitchType)atoi(result[0][2].c_str());
 			std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(result[0][3]);
 
-			if (
-				(dType != pTypeLighting1) && (dType != pTypeLighting2) && (dType != pTypeLighting3) && (dType != pTypeLighting4) && (dType != pTypeLighting5) &&
-				(dType != pTypeLighting6) && (dType != pTypeFan) && (dType != pTypeColorSwitch) && (dType != pTypeSecurity1) && (dType != pTypeSecurity2) && (dType != pTypeEvohome) &&
-				(dType != pTypeEvohomeRelay) && (dType != pTypeCurtain) && (dType != pTypeBlinds) && (dType != pTypeRFY) && (dType != pTypeRego6XXValue) && (dType != pTypeChime) &&
-				(dType != pTypeThermostat2) && (dType != pTypeThermostat3) && (dType != pTypeThermostat4) && (dType != pTypeRemote) && (dType != pTypeGeneralSwitch) &&
-				(dType != pTypeHomeConfort) && (dType != pTypeFS20) && (!((dType == pTypeRadiator1) && (dSubType == sTypeSmartwaresSwitchRadiator))) && (dType != pTypeHunter) && (dType != pTypeDDxxxx) && (dType != pTypeHoneywell_AL)
-				)
+			if (!(IsLightOrSwitch(dType, dSubType) || (dType == pTypeEvohome) || (dType == pTypeEvohomeRelay) || (dType == pTypeRego6XXValue)))
 				return; // no light device! we should not be here!
 
 			root["status"] = "OK";
@@ -5253,6 +6738,202 @@ namespace http
 			CKWHStats::ResetJSONStats(idx);
 			root["status"] = "OK";
 			root["title"] = "ResetkWhStats";
+		}
+
+		// Helper function to convert ANSI color codes to HTML spans
+		// Also handles progress indicators (dots, ===>, percentages) from tar/wget
+		static std::string ConvertAnsiToHtml(const std::string& input)
+		{
+			// First, handle carriage returns - only keep content after last \r per segment
+			std::string processed;
+			size_t lastCR = 0;
+			bool hasCR = false;
+			for (size_t j = 0; j < input.size(); j++)
+			{
+				if (input[j] == '\r')
+				{
+					lastCR = j + 1;
+					hasCR = true;
+				}
+			}
+			if (hasCR && lastCR < input.size())
+				processed = input.substr(lastCR);
+			else
+				processed = input;
+
+			std::string result;
+			result.reserve(processed.size() * 2);
+
+			size_t i = 0;
+			bool inSpan = false;
+			int progressCharCount = 0;
+			const int maxProgressCharsPerLine = 50;
+
+			while (i < processed.size())
+			{
+				// Check for ANSI escape sequence: \033[ or \x1b[
+				if (i + 1 < processed.size() && processed[i] == '\033' && processed[i + 1] == '[')
+				{
+					// Find the end of the escape sequence (ends with 'm')
+					size_t start = i + 2;
+					size_t end = start;
+					while (end < processed.size() && processed[end] != 'm')
+						end++;
+
+					if (end < processed.size())
+					{
+						std::string code = processed.substr(start, end - start);
+
+						// Close previous span if open
+						if (inSpan)
+						{
+							result += "</span>";
+							inSpan = false;
+						}
+
+						// Map ANSI codes to CSS classes
+						if (code == "0;31" || code == "31")  // Red
+						{
+							result += "<span class=\"log-red\">";
+							inSpan = true;
+						}
+						else if (code == "0;32" || code == "32")  // Green
+						{
+							result += "<span class=\"log-green\">";
+							inSpan = true;
+						}
+						else if (code == "1;33" || code == "33")  // Yellow
+						{
+							result += "<span class=\"log-yellow\">";
+							inSpan = true;
+						}
+						// code == "0" is reset, just close span (already done above)
+
+						i = end + 1;
+						progressCharCount = 0;
+						continue;
+					}
+				}
+
+				// Handle progress characters (dots, equals signs) - break into lines
+				if (processed[i] == '.' || processed[i] == '=')
+				{
+					progressCharCount++;
+					result += processed[i];
+					if (progressCharCount >= maxProgressCharsPerLine)
+					{
+						result += "<br>";
+						progressCharCount = 0;
+					}
+				}
+				// HTML escape special characters
+				else if (processed[i] == '<')
+				{
+					result += "&lt;";
+					progressCharCount = 0;
+				}
+				else if (processed[i] == '>')
+				{
+					result += "&gt;";
+					progressCharCount = 0;
+				}
+				else if (processed[i] == '&')
+				{
+					result += "&amp;";
+					progressCharCount = 0;
+				}
+				else if (processed[i] != '\r')  // Skip any remaining CR
+				{
+					result += processed[i];
+					progressCharCount = 0;
+				}
+
+				i++;
+			}
+
+			// Close any remaining open span
+			if (inSpan)
+				result += "</span>";
+
+			return result;
+		}
+
+		void CWebServer::Cmd_GetUpdateLog(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			root["status"] = "OK";
+			root["title"] = "GetUpdateLog";
+			root["version"] = szAppVersion;
+
+			std::string logfile = szStartupFolder + "update.log";
+			std::ifstream infile;
+			infile.open(logfile.c_str());
+
+			bool hasError = false;
+			bool hasCompleted = false;
+			std::string lastErrorLine;
+
+			if (infile.is_open())
+			{
+				std::string sLine;
+				int ii = 0;
+				while (!infile.eof())
+				{
+					std::getline(infile, sLine);
+					if (!sLine.empty())
+					{
+						// Check for error (red color code \033[0;31m)
+						if (sLine.find("\033[0;31m") != std::string::npos)
+						{
+							hasError = true;
+							// Extract error message (strip ANSI codes for the message)
+							lastErrorLine = sLine;
+							// Remove ANSI codes for plain text error message
+							size_t pos;
+							while ((pos = lastErrorLine.find("\033[")) != std::string::npos)
+							{
+								size_t endPos = lastErrorLine.find('m', pos);
+								if (endPos != std::string::npos)
+									lastErrorLine.erase(pos, endPos - pos + 1);
+								else
+									break;
+							}
+							// Remove the >> prefix if present
+							if (lastErrorLine.substr(0, 3) == ">> ")
+								lastErrorLine = lastErrorLine.substr(3);
+						}
+
+						// Check for successful completion
+						if (sLine.find("Update completed successfully") != std::string::npos)
+							hasCompleted = true;
+
+						// Convert ANSI to HTML and store
+						root["result"][ii] = ConvertAnsiToHtml(sLine);
+						ii++;
+					}
+				}
+				infile.close();
+			}
+
+			// Derive status from log content
+			if (hasError)
+			{
+				root["updatestatus"] = "error";
+				root["errormessage"] = lastErrorLine;
+			}
+			else if (hasCompleted)
+			{
+				root["updatestatus"] = "complete";
+			}
+			else
+			{
+				root["updatestatus"] = "running";
+			}
 		}
 
 	} // namespace server

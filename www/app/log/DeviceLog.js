@@ -1,4 +1,4 @@
-define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLog', 'log/CounterLog', 'log/CounterLogCounter', 'log/CounterLogInstantAndCounter', 'log/CounterLogP1Energy', 'log/RainLog', 'log/SetpointLog'], function (app) {
+define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog', 'log/GraphLog', 'log/CounterLog', 'log/CounterLogCounter', 'log/CounterLogInstantAndCounter', 'log/CounterLogP1Energy', 'log/RainLog', 'log/SetpointLog', 'log/AirQualityLog', 'log/BarometerLog', 'log/WindLog', 'log/UVLog', 'log/FanLog', 'log/CurrentLog'], function (app) {
     app.controller('DeviceLogController', function ($location, $routeParams, domoticzApi, deviceApi, chart) {
         var vm = this;
 
@@ -8,6 +8,12 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
 		vm.isRainLog = isRainLog;
         vm.isTemperatureLog = isTemperatureLog;
         vm.isSetpointLog = isSetpointLog;
+		vm.isAirQualityLog = isAirQualityLog;
+		vm.isBarometerLog = isBarometerLog;
+		vm.isWindLog = isWindLog;
+		vm.isUvLog = isUvLog;
+		vm.isFanLog = isFanLog;
+		vm.isCurrentLog = isCurrentLog;
         vm.isReportAvailable = isReportAvailable;
         vm.isInstantAndCounterLog = isInstantAndCounterLog;
         vm.isP1EnergyLog = isP1EnergyLog;
@@ -27,11 +33,6 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
             deviceApi.getDeviceInfo(vm.deviceIdx).then(function (device) {
                 vm.device = device;
                 vm.pageName = device.Name;
-
-                // TODO REMOVE THIS false
-                if (false && isCounterLog()) {
-                    ShowCounterLog('.js-device-log-content', 'ShowUtilities', device.idx, device.Name, device.SwitchTypeVal);
-                }
             });
         }
 
@@ -75,10 +76,15 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
             if (vm.device.Type === 'Heating') {
                 return ((vm.device.SubType === 'Zone') || (vm.device.SubType === 'Hot Water'));
             }
-            //This goes wrong (when we also use this log call from the weather tab), for wind sensors
-            //as this is placed in weather and temperature, we might have to set a parameter in the url
-            //for now, we assume it is a temperature
-            return (/Temp|Thermostat|Humidity|RFXSensor|Radiator|Wind/i).test(vm.device.Type)
+            // Exclude Wind sensors as they now have their own log
+            if (isWindLog()) {
+                return false;
+            }
+            // Exclude when explicitly requesting barometer log (e.g. from weather section)
+            if ($location.search().sensor === 'baro') {
+                return false;
+            }
+            return (/Temp|Thermostat|Humidity|RFXSensor|Radiator/i).test(vm.device.Type)
         }
 
         function isSetpointLog() {
@@ -106,6 +112,53 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
             }
             return (vm.device.Type === 'Rain');
         }
+
+		function isAirQualityLog() {
+			if (!vm.device) {
+				return undefined;
+			}
+			return (vm.device.Type === 'Air Quality');
+		}
+
+		function isBarometerLog() {
+			if (!vm.device) {
+				return undefined;
+			}
+			if ($location.search().sensor === 'baro') {
+				return true;
+			}
+			return (vm.device.SubType === 'Barometer');
+		}
+
+		function isWindLog() {
+			if (!vm.device) {
+				return undefined;
+			}
+			// Wind devices have a Direction property
+			return (vm.device.Direction !== undefined && /Wind/i.test(vm.device.Type));
+		}
+
+		function isUvLog() {
+			if (!vm.device) {
+				return undefined;
+			}
+			// UV devices have a UVI property
+			return (vm.device.UVI !== undefined);
+		}
+
+		function isFanLog() {
+			if (!vm.device) {
+				return undefined;
+			}
+			return (vm.device.SubType === 'Fan');
+		}
+
+		function isCurrentLog() {
+			if (!vm.device) {
+				return undefined;
+			}
+			return (vm.device.Type === 'Current');
+		}
 
         function isP1EnergyLog() {
             if (!vm.device) {
@@ -174,6 +227,8 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
             }
 
             return isTemperatureLog()
+                || isRainLog()
+                || isWindLog()
                 || ((isInstantAndCounterLog() || isCounterLog() || isP1EnergyLog()) && [0, 1, 2, 3, 4].includes(vm.device.SwitchTypeVal));
         }
     });

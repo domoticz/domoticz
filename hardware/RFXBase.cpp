@@ -5,6 +5,18 @@
 #include "../main/Logger.h"
 #include "../main/RFXtrx.h"
 
+CRFXTeleinfoHelper::CRFXTeleinfoHelper()
+{
+	InitTeleinfo();
+	m_iRateLimit = 2;
+	m_bDisableCRC = false;
+}
+
+void CRFXTeleinfoHelper::SetHwdID(int HwdID)
+{
+	m_HwdID = HwdID;
+}
+
 CRFXBase::CRFXBase()
 {
 	m_NoiseLevel = 0;
@@ -52,6 +64,7 @@ bool CRFXBase::CheckValidRFXData(const uint8_t *pData)
 {
 	uint8_t pLen = pData[0];
 	uint8_t pType = pData[1];
+
 	if (pLen < 1)
 		return false;
 	switch (pType)
@@ -79,7 +92,7 @@ bool CRFXBase::CheckValidRFXData(const uint8_t *pData)
 	case pTypeChime:
 		return (pLen >= 0x07);
 	case pTypeFan:
-		return (pLen == 0x08);
+		return (pLen == 0x08 || pLen == 0x11 || pLen == 0x31);
 	case pTypeCurtain:
 		return (pLen == 0x07);
 	case pTypeBlinds:
@@ -176,6 +189,8 @@ void CRFXBase::SetAsyncType(_eRFXAsyncType const AsyncType)
 {
 	m_AsyncType = AsyncType;
 	Set_Async_Parameters(m_AsyncType);
+	if (AsyncType == ATYPE_TELEINFO_1200 || AsyncType == ATYPE_TELEINFO_19200)
+		m_teleinfoHelper.SetHwdID(m_HwdID);
 }
 
 void CRFXBase::Set_Async_Parameters(const _eRFXAsyncType AsyncType)
@@ -212,22 +227,23 @@ void CRFXBase::Set_Async_Parameters(const _eRFXAsyncType AsyncType)
 		cmnd = asyncreceiveP1;
 		Log(LOG_STATUS, "Async mode set to: 'DSMR 4/5'");
 		break;
-	case ATYPE_TELEINFO_1200://not handled yet!
+	case ATYPE_TELEINFO_1200:
 		baudrate = asyncbaud1200;
 		parity = asyncParityEven;
 		databits = asyncDatabits7;
 		stopbits = asyncStopbits1;
 		polarity = asyncPolarityInvers;
 		cmnd = asyncreceiveTeleinfo;
-		Log(LOG_STATUS, "Async mode set to: 'Teleinfo 1200' (not implemented yet!)");
+		Log(LOG_STATUS, "Async mode set to: 'Teleinfo 1200'");
 		break;
-	case ATYPE_TELEINFO_19200://not handled yet!
+	case ATYPE_TELEINFO_19200:
 		baudrate = asyncbaud19200;
 		parity = asyncParityEven;
 		databits = asyncDatabits7;
 		stopbits = asyncStopbits1;
 		polarity = asyncPolarityInvers;
-		Log(LOG_STATUS, "Async mode set to: 'Teleinfo 19200' (not implemented yet!)");
+		cmnd = asyncreceiveTeleinfo;
+		Log(LOG_STATUS, "Async mode set to: 'Teleinfo 19200'");
 		break;
 	case ATYPE_DISABLED:
 		Log(LOG_STATUS, "Async Disabled");
@@ -258,8 +274,14 @@ void CRFXBase::Parse_Async_Data(const uint8_t *pData, const int Len)
 	case ATYPE_P1_DSMR_3:
 	case ATYPE_P1_DSMR_4:
 	case ATYPE_P1_DSMR_5:
-	default:
 		ParseP1Data(pData, Len, false, 0);
+		break;
+	case ATYPE_TELEINFO_1200:
+	case ATYPE_TELEINFO_19200:
+		m_teleinfoHelper.ProcessData(reinterpret_cast<const char*>(pData), Len);
+		break;
+	default:
+		Log(LOG_ERROR, "Parse_Async_Data: unknown async type %d", m_AsyncType);
 		break;
 	}
 }

@@ -18,11 +18,11 @@
 #include "PluginProtocols.h"
 #include "PluginTransports.h"
 #include <datetime.h>
+#include "PythonPluginUtils.h"
 
 namespace Plugins {
 
 	extern struct PyModuleDef DomoticzExModuleDef;
-	extern void maptypename(const std::string &sTypeName, int &Type, int &SubType, int &SwitchType, std::string &sValue, PyObject *OptionsIn, PyObject *OptionsOut);
 
 	void CDeviceEx_dealloc(CDeviceEx *self)
 	{
@@ -93,11 +93,12 @@ namespace Plugins {
 			}
 
 			// Normal case of DeviceEx creation by DeviceID
-			static char *kwlist[] = { "DeviceID", nullptr };
+			// All parameter names in lowercase for case-insensitive matching
+			static char *kwlist[] = { "deviceid", nullptr };
 
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &DeviceID))
+			if (!PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "s", kwlist, &DeviceID))
 			{
-				pModState->pPlugin->Log(LOG_ERROR, R"(Expected: myVar = Domoticz.DeviceEx(DeviceID='xxxx'))");
+				pModState->pPlugin->Log(LOG_ERROR, R"(Expected: myVar = Domoticz.DeviceEx(DeviceID='xxxx'). Note: Parameter names are case-insensitive.)");
 				pModState->pPlugin->LogPythonException(__func__);
 			}
 			else
@@ -325,7 +326,8 @@ namespace Plugins {
 		PyObject *Options = nullptr;
 		int Used = -1;
 		char *Description = nullptr;
-		static char *kwlist[] = { "Name", "DeviceID", "Unit", "TypeName", "Type", "Subtype", "Switchtype", "Image", "Options", "Used", "Description", nullptr };
+		// All parameter names in lowercase for case-insensitive matching
+		static char *kwlist[] = { "name", "deviceid", "unit", "typename", "type", "subtype", "switchtype", "image", "options", "used", "description", nullptr };
 
 		try
 		{
@@ -350,7 +352,7 @@ namespace Plugins {
 			}
 
 				// otherwise a new Unit is being created
-			if (PyArg_ParseTupleAndKeywords(args, kwds, "ssi|siiiiOis", kwlist, &Name, &DeviceID, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &Description))
+			if (PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "ssi|siiiiOis", kwlist, &Name, &DeviceID, &Unit, &TypeName, &Type, &SubType, &SwitchType, &Image, &Options, &Used, &Description))
 			{
 				char szID[40];
 				if (Name)
@@ -411,45 +413,29 @@ namespace Plugins {
 					self->SubType = SubType;
 				if (SwitchType != -1)
 					self->SwitchType = SwitchType;
+				// Set default sValue for device types that require non-empty initial values
+				// when created by numeric Type/SubType (bypassing maptypename)
+				if (self->Type == pTypeGeneral && self->SubType == sTypeKwh)
+				{
+					std::string currentSValue = PyBorrowedRef(self->sValue);
+					if (currentSValue.empty())
+					{
+						Py_DECREF(self->sValue);
+						self->sValue = PyUnicode_FromString("0;0.0");
+					}
+				}
 				if (Image != -1)
 					self->Image = Image;
 				if (Used == 1)
 					self->Used = Used;
-				if (Options && PyBorrowedRef(Options).IsDict() && PyDict_Size(Options) > 0)
-				{
-					PyObject *pKey, *pValue;
-					Py_ssize_t pos = 0;
-					PyDict_Clear(self->Options);
-					while (PyDict_Next(Options, &pos, &pKey, &pValue))
-					{
-						PyNewRef	pKeyDict = PyObject_Str(pKey);
-						PyNewRef	pValueDict = PyObject_Str(pValue);
-
-						if (pKeyDict && pValueDict)
-						{
-							if (PyDict_SetItem(self->Options, pKeyDict, pValueDict) == -1)
-							{
-								pModState->pPlugin->Log(LOG_ERROR, "(%s) Failed to initialize Options dictionary for Hardware/Unit combination (%d:%d).",
-									pModState->pPlugin->m_Name.c_str(), pModState->pPlugin->m_HwdID, self->Unit);
-								break;
-							}
-						}
-						else
-						{
-							PyNewRef	pName = PyObject_GetAttrString((PyObject*)pValue->ob_type, "__name__");
-							pModState->pPlugin->Log(
-								LOG_ERROR,
-								"(%s) Failed to initialize Options dictionary for Hardware / Unit combination(%d:%d): Unable to convert to string.)",
-								pModState->pPlugin->m_Name.c_str(), pModState->pPlugin->m_HwdID, self->Unit);
-						}
-					}
-				}
+				CopyPythonDictOptions(Options, self->Options, pModState->pPlugin, self->Unit);
 			}
 			else
 			{
-				pModState->pPlugin->Log(LOG_ERROR, R"(Expected: myVar = DomoticzEx.Unit(Name="myDevice", DeviceID="", Unit=0, TypeName="", Type=0, Subtype=0, Switchtype=0, Image=0, Options={}, Used=1, Description=""))");
+				pModState->pPlugin->Log(LOG_ERROR, R"(Expected: myVar = DomoticzEx.Unit(Name="myDevice", DeviceID="", Unit=0, TypeName="", Type=0, SubType=0, SwitchType=0, Image=0, Options={}, Used=1, Description=""). Note: Parameter names are case-insensitive.)");
 				pModState->pPlugin->LogPythonException(__func__);
 			}
+
 		}
 		catch (std::exception *e)
 		{
@@ -577,7 +563,7 @@ namespace Plugins {
 			{
 				if (pModState->pPlugin->m_bDebug & PDM_DEVICE)
 				{
-					pModState->pPlugin->Log(LOG_NORM, "(%s) Creating Unit '%s'.", pModState->pPlugin->m_Name.c_str(), sName.c_str());
+					pModState->pPlugin->Debug(DEBUG_PYTHON, "(%s) Creating Unit '%s'.", pModState->pPlugin->m_Name.c_str(), sName.c_str());
 				}
 
 				if (!m_sql.m_bAcceptNewHardware)
@@ -730,12 +716,12 @@ namespace Plugins {
 			int bUpdateOptions = false;
 			int bSuppressTriggers = false;
 
-			static char *kwlist[] = { "Log", "TypeName", "UpdateProperties", "UpdateOptions", "SuppressTriggers", nullptr };
+			static char *kwlist[] = { "log", "typename", "updateproperties", "updateoptions", "suppresstriggers", nullptr };
 
 			// Try to extract parameters needed to update device settings
-			if (!PyArg_ParseTupleAndKeywords(args, kwds, "|psppp", kwlist, &bWriteLog, &TypeName, &bUpdateProperties, &bUpdateOptions, &bSuppressTriggers))
+			if (!PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "|psppp", kwlist, &bWriteLog, &TypeName, &bUpdateProperties, &bUpdateOptions, &bSuppressTriggers))
 			{
-				pModState->pPlugin->Log(LOG_ERROR, "(%s) Failed to parse parameters: 'Log' and/or 'TypeName' and/or 'UpdateProperties' and/or 'UpdateOptions' and/or 'SuppressTriggers' expected.", __func__);
+				pModState->pPlugin->Log(LOG_ERROR, "(%s) Failed to parse parameters: 'Log' and/or 'TypeName' and/or 'UpdateProperties' and/or 'UpdateOptions' and/or 'SuppressTriggers' expected. Note: Parameter names are case-insensitive.", __func__);
 				pModState->pPlugin->LogPythonException(__func__);
 				Py_RETURN_NONE;
 			}
@@ -759,22 +745,71 @@ namespace Plugins {
 			int iSubType = self->SubType;
 			int iSwitchType = self->SwitchType;
 			PyBorrowedRef pOptionsDict = self->Options;
+			PyObject *OptionsTypeName = PyDict_New();
+			if (OptionsTypeName == nullptr)
+			{
+				pModState->pPlugin->Log(LOG_ERROR, "(%s) Create dict failed.", __func__);
+				pModState->pPlugin->LogPythonException(__func__);
+				Py_RETURN_NONE;
+			}
 
 			// TypeName change - actually derives new Type, SubType and SwitchType values
 			if (TypeName)
 			{
 				std::string stdsValue;
-				maptypename(std::string(TypeName), iType, iSubType, iSwitchType, stdsValue, pOptionsDict, pOptionsDict);
+				maptypename(std::string(TypeName), iType, iSubType, iSwitchType, stdsValue, NULL, OptionsTypeName);
 
 				// Reset nValue and sValue when changing device types
 				nValue = 0;
 				sValue = stdsValue;
 			}
 
-			if (bUpdateProperties) {
-				// Grab state in db
-				CUnitEx_refresh(self);
+			if (bUpdateOptions) {
+				// Options provided, assume change
+				if (!pOptionsDict || (PyBorrowedRef(pOptionsDict).IsDict() && PyDict_Size(pOptionsDict) < 1)) {
+					pOptionsDict = OptionsTypeName;
+				}
+				if (pOptionsDict && PyBorrowedRef(pOptionsDict).IsDict())
+				{
+					if (self->SubType != sTypeCustom)
+					{
+						PyBorrowedRef	pKeyDict, pValueDict;
+						Py_ssize_t pos = 0;
+						std::map<std::string, std::string> mpOptions;
+						while (PyDict_Next(pOptionsDict, &pos, &pKeyDict, &pValueDict))
+						{
+							std::string sOptionName = pKeyDict;
+							std::string sOptionValue = pValueDict;
+							mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
+						}
+						Py_BEGIN_ALLOW_THREADS
+						m_sql.SetDeviceOptions(self->ID, mpOptions);
+						Py_END_ALLOW_THREADS
+					}
+					else
+					{
+						std::string sOptionValue;
+						PyBorrowedRef	pValue = PyDict_GetItemString(pOptionsDict, "Custom");
+						if (pValue)
+						{
+							sOptionValue = PyUnicode_AsUTF8(pValue);
+						}
 
+						std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
+						Py_BEGIN_ALLOW_THREADS
+						m_sql.UpdateDeviceValue("Options", iUsed, sID);
+						m_sql.safe_query("UPDATE DeviceStatus SET Options='%q', LastUpdate='%q' WHERE (ID==%s)",
+							sOptionValue.c_str(), sLastUpdate.c_str(), sID.c_str());
+						Py_END_ALLOW_THREADS
+					}
+				}
+			}
+			Py_DECREF(OptionsTypeName);
+
+			// Grab state in db
+			CUnitEx_refresh(self);
+
+			if (bUpdateProperties) {
 				// Then compare to object saved states and change only if different
 				// Name change
 				if (sName.compare(PyBorrowedRef(self->Name)) != 0)
@@ -857,43 +892,10 @@ namespace Plugins {
 				Py_END_ALLOW_THREADS
 			}
 
-			if (bUpdateOptions) {
-				// Options provided, assume change
-				if (pOptionsDict && PyBorrowedRef(pOptionsDict).IsDict())
-				{
-					if (self->SubType != sTypeCustom)
-					{
-						PyBorrowedRef	pKeyDict, pValueDict;
-						Py_ssize_t pos = 0;
-						std::map<std::string, std::string> mpOptions;
-						while (PyDict_Next(pOptionsDict, &pos, &pKeyDict, &pValueDict))
-						{
-							std::string sOptionName = pKeyDict;
-							std::string sOptionValue = pValueDict;
-							mpOptions.insert(std::pair<std::string, std::string>(sOptionName, sOptionValue));
-						}
-						Py_BEGIN_ALLOW_THREADS
-						m_sql.SetDeviceOptions(self->ID, mpOptions);
-						Py_END_ALLOW_THREADS
-					}
-					else
-					{
-						std::string sOptionValue;
-						PyBorrowedRef	pValue = PyDict_GetItemString(pOptionsDict, "Custom");
-						if (pValue)
-						{
-							sOptionValue = PyUnicode_AsUTF8(pValue);
-						}
-
-						std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
-						Py_BEGIN_ALLOW_THREADS
-						m_sql.UpdateDeviceValue("Options", iUsed, sID);
-						m_sql.safe_query("UPDATE DeviceStatus SET Options='%q', LastUpdate='%q' WHERE (HardwareID==%d) and (Unit==%d)",
-							sOptionValue.c_str(), sLastUpdate.c_str(), pModState->pPlugin->m_HwdID, self->Unit);
-						Py_END_ALLOW_THREADS
-					}
-				}
-			}
+			// Always consume pending_user to prevent leaking to later updates
+			std::string effectiveUser = pModState->pPlugin->ConsumePendingUser();
+			if (effectiveUser.empty())
+				effectiveUser = pModState->pPlugin->m_Name;
 
 			if (!bSuppressTriggers) {
 				uint64_t DevRowIdx = -1;
@@ -914,7 +916,7 @@ namespace Plugins {
 					sValue.c_str(),
 					devname,
 					true,
-					pModState->pPlugin->m_Name.c_str()
+					effectiveUser.c_str()
 				);
 				Py_END_ALLOW_THREADS
 
@@ -992,7 +994,7 @@ namespace Plugins {
 			{
 				if (pModState->pPlugin->m_bDebug & PDM_DEVICE)
 				{
-					pModState->pPlugin->Log(LOG_NORM, "(%s) Deleting unit '%s'.", pModState->pPlugin->m_Name.c_str(), sName.c_str());
+					pModState->pPlugin->Debug(DEBUG_PYTHON, "(%s) Deleting unit '%s'.", pModState->pPlugin->m_Name.c_str(), sName.c_str());
 				}
 
 				// Make sure the entry to delete exists and is for the correct hardware

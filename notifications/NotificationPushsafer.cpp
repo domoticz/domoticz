@@ -4,7 +4,7 @@
 #include "../main/Logger.h"
 #include "../httpclient/UrlEncode.h"
 #include "../httpclient/HTTPClient.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #include "../main/Helper.h"
 
 CNotificationPushsafer::CNotificationPushsafer() : CNotificationBase(std::string("pushsafer"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)

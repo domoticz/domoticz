@@ -6,6 +6,17 @@
 .dataTables_wrapper {
     margin-bottom: 16px;
 }
+
+/* Chart panel styling — dark card with subtle blue border */
+.device-log-chart,
+wind-direction-chart,
+wind-speed-frequency-chart {
+    display: block;
+    background: rgba(0, 15, 35, 0.6);
+    border: 1px solid rgba(67, 164, 211, 0.15);
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
 /*
 .modal-content {
     color: #ddd;

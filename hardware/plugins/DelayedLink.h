@@ -64,6 +64,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(wchar_t*, Py_GetPath, );
 		DECLARE_PYTHON_SYMBOL(void, Py_SetPath, const wchar_t*);
 		DECLARE_PYTHON_SYMBOL(void, PySys_SetPath, const wchar_t*);
+		DECLARE_PYTHON_SYMBOL(int, PySys_SetObject, const char* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(void, Py_SetProgramName, wchar_t*);
 		DECLARE_PYTHON_SYMBOL(wchar_t*, Py_GetProgramFullPath, );
 		DECLARE_PYTHON_SYMBOL(int, PyImport_AppendInittab, const char *COMMA PyObject *(*initfunc)());
@@ -110,6 +111,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(void, PyErr_Fetch, PyObject** COMMA PyObject** COMMA PyObject**);
 		DECLARE_PYTHON_SYMBOL(void, PyErr_NormalizeException, PyObject **COMMA PyObject **COMMA PyObject **);
 		DECLARE_PYTHON_SYMBOL(PyObject *, PyImport_ImportModule, const char *);
+		DECLARE_PYTHON_SYMBOL(PyObject *, PyImport_GetModuleDict, );
 		DECLARE_PYTHON_SYMBOL(int, PyObject_RichCompareBool, PyObject* COMMA PyObject* COMMA int);
 		DECLARE_PYTHON_SYMBOL(PyObject *, PyObject_CallObject, PyObject *COMMA PyObject *);
 		DECLARE_PYTHON_SYMBOL(void, PyEval_InitThreads, );
@@ -130,6 +132,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(int, PyModule_AddObject, PyObject* COMMA const char* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyArg_ParseTuple, PyObject* COMMA const char* COMMA ...);
 		DECLARE_PYTHON_SYMBOL(int, PyArg_ParseTupleAndKeywords, PyObject* COMMA PyObject* COMMA const char* COMMA char*[] COMMA ...);
+		DECLARE_PYTHON_SYMBOL(int, PyArg_VaParseTupleAndKeywords, PyObject* COMMA PyObject* COMMA const char* COMMA char*[] COMMA va_list);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyUnicode_FromFormat, const char* COMMA ...);
 		DECLARE_PYTHON_SYMBOL(PyObject*, Py_BuildValue, const char* COMMA ...);
 		DECLARE_PYTHON_SYMBOL(void, PyMem_Free, void*);
@@ -195,6 +198,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(Py_GetPath);
 					RESOLVE_PYTHON_SYMBOL(Py_SetPath);
 					RESOLVE_PYTHON_SYMBOL(PySys_SetPath);
+					RESOLVE_PYTHON_SYMBOL(PySys_SetObject);
 					RESOLVE_PYTHON_SYMBOL(Py_SetProgramName);
 					RESOLVE_PYTHON_SYMBOL(Py_GetProgramFullPath);
 					RESOLVE_PYTHON_SYMBOL(PyImport_AppendInittab);
@@ -241,6 +245,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyErr_Fetch);
 					RESOLVE_PYTHON_SYMBOL(PyErr_NormalizeException);
 					RESOLVE_PYTHON_SYMBOL(PyImport_ImportModule);
+					RESOLVE_PYTHON_SYMBOL(PyImport_GetModuleDict);
 					RESOLVE_PYTHON_SYMBOL(PyObject_RichCompareBool);
 					RESOLVE_PYTHON_SYMBOL(PyObject_CallObject);
 					RESOLVE_PYTHON_SYMBOL(PyEval_InitThreads);
@@ -261,6 +266,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyModule_AddObject);
 					RESOLVE_PYTHON_SYMBOL(PyArg_ParseTuple);
 					RESOLVE_PYTHON_SYMBOL(PyArg_ParseTupleAndKeywords);
+					RESOLVE_PYTHON_SYMBOL(PyArg_VaParseTupleAndKeywords);
 					RESOLVE_PYTHON_SYMBOL(PyUnicode_FromFormat);
 					RESOLVE_PYTHON_SYMBOL(Py_BuildValue);
 					RESOLVE_PYTHON_SYMBOL(PyMem_Free);
@@ -417,6 +423,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define	Py_EndInterpreter		pythonLib->Py_EndInterpreter
 #define	Py_SetPath				pythonLib->Py_SetPath
 #define	PySys_SetPath			pythonLib->PySys_SetPath
+#define	PySys_SetObject			pythonLib->PySys_SetObject
 #define	Py_GetPath				pythonLib->Py_GetPath
 #define	Py_SetProgramName		pythonLib->Py_SetProgramName
 #define	Py_GetProgramFullPath	pythonLib->Py_GetProgramFullPath
@@ -465,6 +472,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyErr_Fetch				pythonLib->PyErr_Fetch
 #define PyErr_NormalizeException pythonLib->PyErr_NormalizeException
 #define PyImport_ImportModule	pythonLib->PyImport_ImportModule
+#define PyImport_GetModuleDict	pythonLib->PyImport_GetModuleDict
 #define PyObject_RichCompareBool pythonLib->PyObject_RichCompareBool
 #define PyObject_CallObject		pythonLib->PyObject_CallObject
 #define	PyEval_InitThreads		pythonLib->PyEval_InitThreads
@@ -487,6 +495,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyModule_Create2		pythonLib->PyModule_Create2
 #define PyModule_AddObject		pythonLib->PyModule_AddObject
 #define PyArg_ParseTupleAndKeywords pythonLib->PyArg_ParseTupleAndKeywords
+#define PyArg_VaParseTupleAndKeywords pythonLib->PyArg_VaParseTupleAndKeywords
 #define _Py_RefTotal			pythonLib->_Py_RefTotal
 #define PyBool_FromLong			pythonLib->PyBool_FromLong
 #define PyCapsule_Import		pythonLib->PyCapsule_Import

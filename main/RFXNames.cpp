@@ -180,7 +180,6 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_LimitlessLights, "Limitless/AppLamp/Mi Light with LAN/WiFi interface", "Limitless" },
 	{ HTYPE_System, "Motherboard sensors", "HardwareMonitor" },
 	{ HTYPE_EnOceanESP2, "EnOcean USB (ESP2)", "EnOcean" },
-	{ HTYPE_SolarEdgeTCP, "SolarEdge via LAN interface", "SolarEdge" },
 	{ HTYPE_SBFSpot, "SBFSpot (SMA)", "SBFSpot" },
 	{ HTYPE_ICYTHERMOSTAT, "ICY Thermostat", "ICY" },
 	{ HTYPE_WOL, "Wake-on-LAN", "WOL" },
@@ -279,6 +278,7 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_MQTTAutoDiscovery, "MQTT Auto Discovery Client Gateway with LAN interface", "MQTT-AD" },
 	{ HTYPE_RFLINKMQTT, "RFLink Gateway MQTT", "RFLink" },
 	{ HTYPE_MitsubishiWF, "Mitsubishi WF RAC Airco with LAN (HTTP) interface", "MitsubishiWF" },
+	{ HTYPE_OpenMeteo, "Open-Meteo (Weather Lookup)", "OpenMeteo" },
 	{ 0, nullptr, nullptr },
 };
 
@@ -314,7 +314,8 @@ const char* Switch_Type_Desc(const _eSwitchType sType)
 		{ STYPE_Selector, "Selector" },
 		{ STYPE_DoorLock, "Door Lock" },
 		{ STYPE_DoorLockInverted, "Door Lock Inverted" },
-		{ STYPE_BlindsPercentageWithStop, "Blinds + Stop" },
+		{ STYPE_BlindsPercentageWithStop, "Blinds % + Stop" },
+		{ STYPE_BlindsWithStop, "Blinds + Stop" },
 		{ 0, nullptr, nullptr },
 	};
 	return findTableIDSingle1(Table, sType);
@@ -477,6 +478,7 @@ const char* RFX_Type_Desc(const unsigned char i, const unsigned char snum)
 		{ pTypeThermostat2, "Thermostat 2", "temperature" },
 		{ pTypeThermostat3, "Thermostat 3", "temperature" },
 		{ pTypeThermostat4, "Thermostat 4", "temperature" },
+		{ pTypeThermostat6, "Thermostat 6", "temperature" },
 		{ pTypeRadiator1, "Radiator 1", "temperature" },
 		{ pTypeTEMP, "Temp", "temperature" },
 		{ pTypeHUM, "Humidity", "temperature" },
@@ -709,6 +711,11 @@ const char* RFX_Type_SubType_Desc(const unsigned char dType, const unsigned char
 		{ pTypeThermostat4, sTypeMCZ1, "MCZ 1 fan model" },
 		{ pTypeThermostat4, sTypeMCZ2, "MCZ 2 fan model" },
 		{ pTypeThermostat4, sTypeMCZ3, "MCZ 3 fan model" },
+
+		{ pTypeThermostat6, sTypeThermostat6Temp, "Temp/Setpoint" },
+		{ pTypeThermostat6, sTypeThermostat6TempHum, "Temp/Hum/Setpoint" },
+		{ pTypeThermostat6, sTypeThermostat6TempBaro, "Temp/Baro/Setpoint" },
+		{ pTypeThermostat6, sTypeThermostat6TempHumBaro, "Temp/Hum/Baro/Setpoint" },
 
 		{ pTypeRadiator1, sTypeSmartwares, "Smartwares" },
 		{ pTypeRadiator1, sTypeSmartwaresSwitchRadiator, "Smartwares Mode" },
@@ -1738,8 +1745,10 @@ void GetLightStatus(
 		}
 		break;
 	case pTypeBlinds:
-		if (switchtype == STYPE_BlindsPercentage || 
-			switchtype == STYPE_BlindsPercentageWithStop)
+		if (
+			switchtype == STYPE_BlindsPercentage
+			|| switchtype == STYPE_BlindsPercentageWithStop
+			)
 		{
 			bHaveDimmer = true;
 			maxDimLevel = 100;
@@ -1956,6 +1965,40 @@ void GetLightStatus(
 				break;
 			case fan_sLight:
 				lstatus = "light";
+				break;
+			}
+		}
+		break;
+		case sTypeOrcon:
+		{
+			switch (nValue)
+			{
+			case fan_Orconlow:
+				lstatus = "1";
+				break;
+			case fan_Orconmedium:
+				lstatus = "2";
+				break;
+			case fan_Orconhigh:
+				lstatus = "3";
+				break;
+			case fan_Orconaway:
+				lstatus = "away";
+				break;
+			case fan_Orconauto:
+				lstatus = "auto";
+				break;
+			case fan_Orcontimer1:
+				lstatus = "timer 1";
+				break;
+			case fan_Orcontimer2:
+				lstatus = "timer 2";
+				break;
+			case fan_Orcontimer3:
+				lstatus = "timer 3";
+				break;
+			case fan_Orconspeed:
+				lstatus = "speed";
 				break;
 			}
 		}
@@ -2266,7 +2309,9 @@ void GetLightStatus(
 		break;
 	}
 
-	const bool bIsBlinds = (switchtype == STYPE_Blinds
+	const bool bIsBlinds = (
+		switchtype == STYPE_Blinds
+		|| switchtype == STYPE_BlindsWithStop
 		|| switchtype == STYPE_BlindsPercentage
 		|| switchtype == STYPE_BlindsPercentageWithStop
 		|| switchtype == STYPE_VenetianBlindsEU
@@ -3610,6 +3655,28 @@ bool GetLightCommand(
 			}
 		}
 		break;
+		case sTypeOrcon:
+		{
+			if ((switchcmd == "1") || (switchcmd == "low") || (switchcmd == "Low") || (switchcmd == "Off"))
+				cmd = fan_Orconlow;
+			else if ((switchcmd == "2") || (switchcmd == "medium") || (switchcmd == "Medium"))
+				cmd = fan_Orconmedium;
+			else if ((switchcmd == "3") || (switchcmd == "high") || (switchcmd == "High") || (switchcmd == "On"))
+				cmd = fan_Orconhigh;
+			else if ((switchcmd == "away") || (switchcmd == "Away"))
+				cmd = fan_Orconaway;
+			else if ((switchcmd == "auto") || (switchcmd == "Auto"))
+				cmd = fan_Orconauto;
+			else if ((switchcmd == "timer 1") || (switchcmd == "timer") || (switchcmd == "Timer"))
+				cmd = fan_Orcontimer1;
+			else if ((switchcmd == "timer 2"))
+				cmd = fan_Orcontimer2;
+			else if ((switchcmd == "timer 3"))
+				cmd = fan_Orcontimer3;
+			else if ((switchcmd == "speed"))
+				cmd =  fan_Orconspeed;
+		}
+		break;
 		case sTypeItho:
 		{
 			if ((switchcmd == "1") || (switchcmd == "On") || (switchcmd == "Off"))
@@ -3947,7 +4014,6 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_YouLess:
 	case HTYPE_OpenThermGatewayTCP:
 	case HTYPE_LimitlessLights:
-	case HTYPE_SolarEdgeTCP:
 	case HTYPE_WOL:
 	case HTYPE_ECODEVICES:
 	case HTYPE_Mochad:

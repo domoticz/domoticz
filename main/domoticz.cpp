@@ -78,6 +78,7 @@ namespace
 		"\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
 		"\t-nocache ask browser not to cache pages\n"
 		"\t-nomdns do not enable mDNS broadcast and listening\n"
+		"\t-mcp enable Model Context Protocol (/mcp) for use with LLM Agents\n"
 		"\t-startupdelay seconds (default=0)\n"
 		"\t-nowwwpwd (in case you forgot the web server username/password)\n"
 		"\t-wwwcompress mode (on = always compress [default], off = always decompress, static = no processing but try precompressed first)\n"
@@ -153,9 +154,10 @@ domoticz_mdns::mDNS m_mdns;
 
 std::string logfile;
 std::string weblogfile;
-bool g_bStopApplication = false;
+std::atomic<bool> g_bStopApplication{false};
 bool g_bUseSyslog = false;
 bool g_bRunAsDaemon = false;
+bool g_bWritePidFile = false;  // true when -pidfile is explicitly requested (with or without -daemon)
 http::server::_eWebCompressionMode g_wwwCompressMode = http::server::WWW_USE_GZIP;
 bool g_bUseUpdater = true;
 http::server::server_settings webserver_settings;
@@ -163,6 +165,7 @@ http::server::server_settings webserver_settings;
 http::server::ssl_server_settings secure_webserver_settings;
 #endif
 iamserver::iam_settings iamserver_settings;
+bool g_bLlmMCPSupport = false;
 
 bool bStartWebBrowser = true;
 bool g_bUseWatchdog = true;
@@ -656,7 +659,7 @@ bool ParseConfigFile(const std::string &szConfigFile)
 
 void DisplayAppVersion()
 {
-	_log.Log(LOG_STATUS, "Domoticz V%s (c)2012-%d GizMoCuz", szAppVersion.c_str(), ActYear);
+	_log.Log(LOG_STATUS, "Domoticz V%s-%s (c)2012-%d GizMoCuz", szAppVersion.c_str(), VERSION_CHANNEL, ActYear);
 	_log.Log(LOG_STATUS, "Build Hash: %s, Date: %s", szAppHash.c_str(), szAppDate.c_str());
 }
 
@@ -1092,6 +1095,12 @@ int main(int argc, char**argv)
 	if (cmdLine.HasSwitch("-nomdns"))
 	{
 		bEnableMDNS = false;
+		_log.Log(LOG_STATUS, "mDNS Support disabled!");
+	}
+	if (cmdLine.HasSwitch("-mcp"))
+	{
+		g_bLlmMCPSupport = true;
+		_log.Log(LOG_STATUS, "Model Context Protocol (MCP) Support enabled (/mcp).");
 	}
 
 #if defined WIN32
@@ -1138,6 +1147,7 @@ int main(int argc, char**argv)
 		if (cmdLine.HasSwitch("-pidfile"))
 		{
 			pidfile = cmdLine.GetSafeArgument("-pidfile", 0, PID_FILE);
+			g_bWritePidFile = true;
 		}
 
 		if (cmdLine.HasSwitch("-syslog"))
@@ -1207,6 +1217,7 @@ int main(int argc, char**argv)
 		sigaction(SIGILL, &newSigAction, nullptr);  // catch invalid program image
 		sigaction(SIGFPE, &newSigAction, nullptr);  // catch floating point error
 		sigaction(SIGUSR1, &newSigAction, nullptr); // catch SIGUSR1 (used by watchdog)
+		sigaction(SIGHUP, &newSigAction, nullptr);  // catch HUP, for log rotation
 #else
 		signal(SIGINT, signal_handler);
 		signal(SIGTERM, signal_handler);
@@ -1215,6 +1226,7 @@ int main(int argc, char**argv)
 
 	if (!m_mainworker.Start())
 	{
+		m_mainworker.Stop();
 		return 1;
 	}
 
@@ -1224,6 +1236,23 @@ int main(int argc, char**argv)
 	SetThreadName(thread_watchdog.native_handle(), "Watchdog");
 
 	m_StartTime = time(nullptr);
+
+#ifndef WIN32
+	// Write PID file in non-daemon mode when explicitly requested via -pidfile
+	if (!g_bRunAsDaemon && g_bWritePidFile)
+	{
+		FILE *f = fopen(pidfile.c_str(), "w");
+		if (f)
+		{
+			fprintf(f, "%d\n", getpid());
+			fclose(f);
+		}
+		else
+		{
+			_log.Log(LOG_ERROR, "Could not write PID file: %s", pidfile.c_str());
+		}
+	}
+#endif
 
 	/* now, lets get into an infinite loop of doing nothing. */
 #if defined WIN32
@@ -1252,10 +1281,23 @@ int main(int argc, char**argv)
 	{
 		sleep_seconds(1);
 		m_LastHeartbeat = mytime(nullptr);
+
+		// Deferred SIGHUP processing: reopen log file in safe thread context
+		if (g_bReopenLogFile.exchange(false, std::memory_order_acq_rel))
+		{
+			if (!logfile.empty())
+				_log.SetOutputFile(logfile.c_str());
+		}
 	}
 #endif
 	_log.Log(LOG_STATUS, "Closing application!...");
 	fflush(stdout);
+
+	// Stop watchdog before stopping workers so it cannot interfere
+	// with the shutdown by detecting stale heartbeats while workers wind down.
+	g_stop_watchdog = true;
+	thread_watchdog.join();
+
 	_log.Log(LOG_STATUS, "Stopping worker...");
 	try
 	{
@@ -1275,13 +1317,16 @@ int main(int argc, char**argv)
 		// Delete PID file
 		remove(pidfile.c_str());
 	}
+	else if (g_bWritePidFile)
+	{
+		// Non-daemon mode with explicit -pidfile: clean up PID file
+		remove(pidfile.c_str());
+	}
 #else
 	// Release WinSock
 	WSACleanup();
 	CoUninitialize();
 #endif
-	g_stop_watchdog = true;
-	thread_watchdog.join();
 	return 0;
 }
 

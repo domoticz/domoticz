@@ -10,7 +10,7 @@
 #include "../main/SQLHelper.h"
 #include "../notifications/NotificationHelper.h"
 #include "../tinyxpath/tinyxml.h"
-#include "../webserver/Base64.h"
+#include <libwebem/Base64.h>
 #include "hardwaretypes.h"
 #include <iostream>
 #define __STDC_FORMAT_MACROS
@@ -27,9 +27,9 @@
 //#define DEBUG_Enever_W
 #endif
 
-#define ENEVER_FEED_ELEC_TODAY "https://enever.nl/api/stroomprijs_vandaag.php?token={token}"
-#define ENEVER_FEED_ELEC_TOMORROW "https://enever.nl/api/stroomprijs_morgen.php?token={token}"
-#define ENEVER_FEED_GAS_TODAY "https://enever.nl/api/gasprijs_vandaag.php?token={token}"
+#define ENEVER_FEED_ELEC_TODAY "https://enever.nl/apiv3/stroomprijs_vandaag.php?token={token}&resolution=60"
+#define ENEVER_FEED_ELEC_TOMORROW "https://enever.nl/apiv3/stroomprijs_morgen.php?token={token}&resolution=60"
+#define ENEVER_FEED_GAS_TODAY "https://enever.nl/apiv3/gasprijs_vandaag.php?token={token}"
 
 #ifdef DEBUG_Enever_W
 void SaveString2Disk(std::string str, std::string filename)
@@ -62,8 +62,9 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
-Enever::Enever(int ID, const std::string& szToken, const std::string& szProvider) :
-	m_szToken(szToken)
+Enever::Enever(int ID, const std::string& szToken, const std::string& szProvider, const bool bUseQuarterPrices) :
+	m_szToken(szToken),
+	m_bUseQuarterPrices(bUseQuarterPrices)
 {
 	m_HwdID = ID;
 
@@ -225,6 +226,8 @@ std::string Enever::MakeURL(const std::string& sURL)
 {
 	std::string szResult = sURL;
 	stdreplace(szResult, "{token}", m_szToken);
+	if (m_bUseQuarterPrices)
+		stdreplace(szResult, "&resolution=60", "&resolution=15");
 	return szResult;
 }
 
@@ -483,6 +486,7 @@ void Enever::parseElectricity(const std::string& szElectricityData, const bool b
 		localtime_r(&atime, &ltime);
 
 		int act_hour = ltime.tm_hour;
+		int act_quarter = (ltime.tm_min / 15) + 1;
 
 		uint64_t idx = -1;
 
@@ -537,7 +541,15 @@ void Enever::parseElectricity(const std::string& szElectricityData, const bool b
 
 			int64_t iRate = (int64_t)round(fProviderPrice * 10000); //4 digts after comma!
 
-			bool bIsNow = (bIsToday) && (lltime.tm_hour == act_hour);
+			int rec_quarter = (lltime.tm_min / 15) + 1;
+
+			bool bIsNow = false;
+			if (bIsToday) {
+				if (m_bUseQuarterPrices == false)
+					bIsNow = (lltime.tm_hour == act_hour);
+				else
+					bIsNow = (lltime.tm_hour == act_hour) && (rec_quarter == act_quarter);
+			}
 
 			if (bIsNow)
 			{
@@ -547,7 +559,7 @@ void Enever::parseElectricity(const std::string& szElectricityData, const bool b
 			totalPrice += iRate;
 			totalValues++;
 
-			std::string szTime = std_format("%04d-%02d-%02d %02d:%02d:%02d", lltime.tm_year + 1900, lltime.tm_mon + 1, lltime.tm_mday, lltime.tm_hour, 0, 0);
+			std::string szTime = std_format("%04d-%02d-%02d %02d:%02d:%02d", lltime.tm_year + 1900, lltime.tm_mon + 1, lltime.tm_mday, lltime.tm_hour, lltime.tm_min, 0);
 			std::string sValue = std::to_string(iRate) + ";" + std::to_string(iRate);
 			std::string sValueDTime = sValue + ";" + szTime;
 

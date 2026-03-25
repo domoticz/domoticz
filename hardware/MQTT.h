@@ -3,9 +3,9 @@
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
 #include "MySensorsBase.h"
-#include "../main/mosquitto_helper.h"
+#include "../main/mqtt_helper.h"
 
-class MQTT : public MySensorsBase, mosqdz::mosquittodz
+class MQTT : public MySensorsBase, mdz::mqttdz
 {
 	friend class MQTTAutoDiscover;
 

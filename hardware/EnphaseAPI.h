@@ -2,7 +2,6 @@
 
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
-#include "CounterHelper.h"
 
 namespace Json
 {
@@ -41,6 +40,8 @@ private:
 	bool getInventoryDetails(Json::Value& result);
 	bool getLivedataDetails(Json::Value& result);
 	bool getDevStatusDetails(Json::Value& result);
+	bool getEnsemblePowerDetails();
+	bool getTariffDetails();
 
 	void parseProduction(const Json::Value& root);
 	void parseConsumption(const Json::Value& root);
@@ -49,6 +50,7 @@ private:
 	void parseDevStatus(const Json::Value& root);
 
 	bool SetPowerActive(const bool bActive);
+	bool SetChargeFromGrid(const bool bEnable);
 
 	bool CheckAuthJWT(const std::string& szToken, const bool bDisplayErrors);
 
@@ -91,7 +93,13 @@ private:
 
 	bool m_bHaveLiveData = true;
 
-	CounterHelper m_ProductionCounter;
+	bool m_bCheckedEnsemblePower = false;
+	bool m_bHaveEnsemblePower = false;
+
+	bool m_bCheckedTariff = false;
+	bool m_bHaveTariff = false;
+
+	std::string m_szLastTariffData;
 
 	std::shared_ptr<std::thread> m_thread;
 };

@@ -114,6 +114,7 @@ describe('event helpers', function()
 			['radixSeparator'] = '.',
 			['security'] = 'Armed Away',
 			['time'] = Time('2017-06-03 12:04:00'),
+			['startTime'] = Time(os.date('%Y-%m-%d %H:%M:%S', os.time())), -- just started
 			['name'] = 'domoticz', -- used in script1,
 			['openURL'] = function(url) end,
 			['devices'] = function(id)
@@ -263,7 +264,7 @@ describe('event helpers', function()
 		it('should detect erroneous modules', function()
 			local err = false
 			utils.log = function(msg,level)
-				if (level == 1) then
+				if (level == 5) then
 					err = true
 				end
 			end
@@ -306,11 +307,12 @@ describe('event helpers', function()
 			--on = {'timer'} -- every minute
 			local modules = helpers.getEventBindings('timer')
 
-			assert.are.same(4, size(modules))
+			assert.are.same(5, size(modules))
 			local names = _.pluck(modules, {'name'})
 			table.sort(names)
 
 			assert.are.same({
+				"script_at_startup",
 				"script_timer_classic",
 				'script_timer_function',
 				"script_timer_single",
@@ -579,7 +581,7 @@ describe('event helpers', function()
 
 			local err = false
 			utils.log = function(msg,level)
-				if (level == 1) then
+				if (level == 5) then
 					err = true
 				end
 			end
@@ -614,7 +616,7 @@ describe('event helpers', function()
 			end
 
 			helpers.handleEvents(loggingstuff)
-			assert.is_same(4, moduleLevel)
+			assert.is_same(1, moduleLevel)
 			assert.is_same('Hey you', moduleMarker)
 			assert.is_same(1, _G.logLevel)
 			assert.is_same(nil, _G.logMarker)
@@ -801,6 +803,7 @@ describe('event helpers', function()
 			table.sort(scripts)
 
 			assert.is_same({
+				'script_at_startup',
 				'script_timer_classic',
 				'script_timer_function',
 				'script_timer_single',
@@ -929,6 +932,68 @@ describe('event helpers', function()
 				"trigger1",
 			}, responses)
 
+			assert.is_true(dumped)
+		end)
+
+	end)
+
+	describe('at_startup trigger', function()
+
+		it('should return at_startup script in timer bindings when Domoticz just started', function()
+			-- startTime is set to "now" in before_each, so minutesAgo < 2
+			local modules = helpers.getEventBindings('timer')
+			local names = _.pluck(modules, {'name'})
+			table.sort(names)
+			assert.is_true(_.includes(names, 'script_at_startup'))
+		end)
+
+		it('should set trigger to at_startup', function()
+			local modules = helpers.getEventBindings('timer')
+			local found = false
+			for _, mod in pairs(modules) do
+				if mod.name == 'script_at_startup' and mod.trigger == 'at_startup' then
+					found = true
+				end
+			end
+			assert.is_true(found)
+		end)
+
+		it('should NOT return at_startup script when Domoticz started long ago', function()
+			-- Set startTime to 10 minutes ago
+			domoticz.startTime = Time(os.date('%Y-%m-%d %H:%M:%S', os.time() - 600))
+			helpers = EventHelpers(domoticz)
+			helpers._getUtilsInstance().print = function() end
+			helpers._getUtilsInstance().activateDevicesFile = function() end
+
+			local modules = helpers.getEventBindings('timer')
+			local names = _.pluck(modules, {'name'})
+			-- script_at_startup should NOT be in the list due to at_startup
+			-- (it may still appear if 'every hour' matches, but that's the timer rule)
+			local foundAtStartup = false
+			for _, mod in pairs(modules) do
+				if mod.name == 'script_at_startup' and mod.trigger == 'at_startup' then
+					foundAtStartup = true
+				end
+			end
+			assert.is_false(foundAtStartup)
+		end)
+
+		it('should include at_startup script in timer dispatch when just started', function()
+			local scripts = {}
+			local dumped = false
+
+			helpers.dumpCommandArray = function()
+				dumped = true
+			end
+
+			helpers.handleEvents = function(_scripts)
+				_.forEach(_scripts, function(s)
+					table.insert(scripts, s.name)
+				end)
+			end
+
+			helpers.dispatchTimerEventsToScripts()
+			assert.is_true(_.includes(scripts, 'script_at_startup'))
 			assert.is_true(dumped)
 		end)
 

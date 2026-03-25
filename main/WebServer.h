@@ -1,9 +1,9 @@
 #pragma once
 
 #include <string>
-#include "../webserver/cWebem.h"
-#include "../webserver/request.hpp"
-#include "../webserver/session_store.hpp"
+#include <libwebem/cWebem.h>
+#include <libwebem/request.h>
+#include <libwebem/session_store.h>
 #include "../iamserver/iam_settings.hpp"
 
 struct lua_State;
@@ -37,7 +37,14 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void RegisterCommandCode(const char *idname, const webserver_response_function &ResponseFunction, bool bypassAuthentication = false);
 
 	void GetJSonPage(WebEmSession & session, const request& req, reply & rep);
+	void GetAlexaPage(WebEmSession & session, const request& req, reply & rep);
 	void GetCameraSnapshot(WebEmSession & session, const request& req, reply & rep);
+
+	void Alexa_HandleDiscovery(WebEmSession& session, const request& req, Json::Value& root);
+	void Alexa_HandleAcceptGrant(WebEmSession& session, const request& req, Json::Value& root);
+	void Alexa_HandleControl(WebEmSession& session, const request& req, Json::Value& root);
+	bool CheckDeviceAccess(const WebEmSession& session, uint64_t device_idx, bool& bControlPermitted);
+	bool CheckDeviceAccess(const WebEmSession& session, const std::vector<uint64_t>& device_indices, bool& bControlPermitted);
 	void GetInternalCameraSnapshot(WebEmSession & session, const request& req, reply & rep);
 	void GetFloorplanImage(WebEmSession& session, const request& req, reply& rep);
 	void GetServiceWorker(WebEmSession& session, const request& req, reply& rep);
@@ -46,6 +53,8 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void GetOauth2AuthCode(WebEmSession &session, const request &req, reply &rep);
 	void PostOauth2AccessToken(WebEmSession &session, const request &req, reply &rep);
 	void GetOpenIDConfiguration(WebEmSession &session, const request &req, reply &rep);
+
+	void PostMcp(WebEmSession &session, const request &req, reply &rep);
 
 	void SetRFXCOMMode(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void UploadFloorplanImage(WebEmSession & session, const request& req, std::string & redirect_uri);
@@ -65,7 +74,7 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void ReloadCustomSwitchIcons();
 
 	void LoadUsers();
-	void AddUser(unsigned long ID, const std::string &username, const std::string &password, const std::string& mfatoken, int userrights, int activetabs, const std::string &pemfile = "");
+	void AddUser(unsigned long ID, const std::string &username, const std::string &password, const std::string& mfatoken, const std::string& passkeys, int userrights, int activetabs, const std::string &pemfile = "", uint32_t refreshexpire = 0, const std::string &signingsecret = "", time_t accept_legacy_until = 0);
 	void ClearUserPasswords();
 	bool FindAdminUser();
 	int CountAdminUsers();
@@ -78,6 +87,16 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void SetWebRoot(const std::string &webRoot);
 	void SetIamSettings(const iamserver::iam_settings &iamsettings);
 
+	// Passkey/WebAuthn helper functions
+	Json::Value ParsePasskeys(const std::string& passkeysJson);
+	std::string SerializePasskeys(const Json::Value& passkeys);
+	bool AddPasskeyToUser(unsigned long userID, const std::string& credentialID, const std::string& publicKey, const std::string& credentialName, const std::string& deviceInfo = "");
+	bool RemovePasskeyFromUser(unsigned long userID, const std::string& credentialID);
+	int FindUserByPasskeyCredentialID(const std::string& credentialID);
+	bool UpdatePasskeySignCount(unsigned long userID, const std::string& credentialID, uint32_t newSignCount);
+	bool HasAnyPasskeys();
+	bool SaveUserPasskeys(unsigned long userID, const std::string& passkeysJson);
+
 	std::vector<_tWebUserPassword> m_users;
 	//JSon
 	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID,
@@ -87,16 +106,17 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	// SessionStore interface
 	WebEmStoredSession GetSession(const std::string &sessionId) override;
 	void StoreSession(const WebEmStoredSession & session) override;
+	void RenewSessionExpiration(const std::string & sessionId, time_t expires) override;
 	void RemoveSession(const std::string & sessionId) override;
 	void CleanSessions() override;
 	void RemoveUsersSessions(const std::string& username, const WebEmSession & exceptSession);
 	std::string PluginHardwareDesc(int HwdID);
-
-private:
-	bool HandleCommandParam(const std::string &cparam, WebEmSession & session, const request& req, Json::Value &root);
     void GroupBy(Json::Value &root, std::string dbasetable, uint64_t idx, std::string sgroupby, bool bUseValuesOrCounter, std::function<std::string (std::string)> counterExpr, std::function<std::string (std::string)> valueExpr, std::function<std::string (double)> sumToResult);
 	void MakeCompareDataSensor(Json::Value& root, const std::string &sgroupby, const std::string &dbasetable, uint64_t deviceidx, const std::string &dfield, const double divider = 1.0, const bool isCounter = false);
 	void AddTodayValueToResult(Json::Value &root, const std::string &sgroupby, const std::string &today, const double todayValue, const std::string &formatString);
+
+private:
+	bool HandleCommandParam(const std::string &cparam, WebEmSession & session, const request& req, Json::Value &root);
 
 	bool IsIdxForUser(const WebEmSession *pSession, int Idx);
 
@@ -109,6 +129,15 @@ private:
 	bool ValidRedirectUri(const std::string &redirect_uri);
 
 	//Commands
+	// Passkey/WebAuthn commands
+	void Cmd_RegisterPasskeyBegin(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_RegisterPasskeyComplete(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_PasskeyLoginBegin(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_PasskeyLoginComplete(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_HasPasskeys(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_GetMyPasskeys(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_DeletePasskey(WebEmSession& session, const request& req, Json::Value& root);
+
 	void Cmd_GetTimerTypes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetLanguages(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetSwitchTypes(WebEmSession& session, const request& req, Json::Value& root);
@@ -170,9 +199,12 @@ private:
 	void Cmd_SetPlanDeviceCoords(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteAllPlanDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ChangePlanOrder(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ChangePlanFullOrder(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ChangePlanDeviceOrder(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetVersion(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetAuth(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetSetupRequired(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_SetupWizardCreateAdmin(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetMyProfile(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_UpdateMyProfile(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_GetUptime(WebEmSession & session, const request& req, Json::Value &root);
@@ -189,6 +221,7 @@ private:
 	void Cmd_SystemReboot(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ExcecuteScript(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ApplicationUpdate(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_GetUpdateLog(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_GetCosts(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_CheckForUpdate(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_CustomEvent(WebEmSession& session, const request& req, Json::Value& root);
@@ -266,7 +299,10 @@ private:
 
 	void Cmd_AddLogMessage(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_ClearShortLog(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_PruneUnusedSensorLogs(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_VacuumDatabase(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetDbStats(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_FixKwhCounterSpikes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PanasonicSetMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PanasonicGetNodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PanasonicAddNode(WebEmSession & session, const request& req, Json::Value &root);
@@ -469,6 +505,15 @@ private:
 	};
 
 	std::vector<_tUserAccessCode> m_accesscodes;
+
+	struct WebAuthnChallenge {
+		std::string challenge;
+		std::string userID;
+		time_t created;
+	};
+
+	std::mutex m_webauthn_mutex;
+	std::map<std::string, WebAuthnChallenge> m_webauthn_challenges;
 
 };
 

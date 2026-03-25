@@ -8,6 +8,10 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
         controller: function() {
             const $ctrl = this;
             $ctrl.autoRefresh = true;
+            $ctrl.showAdvancedCharts = false;
+            $ctrl.toggleAdvancedCharts = function () {
+                $ctrl.showAdvancedCharts = !$ctrl.showAdvancedCharts;
+            };
 
             $ctrl.$onInit = function() {
                 $ctrl.deviceIdx = $ctrl.device.idx;
@@ -39,24 +43,28 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
                 self.sensorType = 'temp';
 
                 self.$onInit = function() {
+                    var params = chartParams(
+                        domoticzGlobals,
+                        self,
+                        true,
+                        function (dataItem, yearOffset = 0) {
+                            return GetLocalDateTimeFromString(dataItem.d, yearOffset);
+                        },
+                        [
+                            humiditySeriesSupplier(),
+                            chillSeriesSupplier(),
+                            setpointSeriesSupplier(),
+                            temperatureSeriesSupplier(self.device.Type)
+                        ]
+                    );
+                    params.dataSupplier.preprocessData = function (data) {
+                        self.logCtrl.dayGraphData = data.result;
+                    };
                     self.chart = new RefreshingChart(
                         baseParams($),
                         angularParams($location, $route, $scope, $timeout, $element),
                         domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
-                        chartParams(
-                            domoticzGlobals,
-                            self,
-                            true,
-                            function (dataItem, yearOffset = 0) {
-                                return GetLocalDateTimeFromString(dataItem.d, yearOffset);
-                            },
-                            [
-                                humiditySeriesSupplier(),
-                                chillSeriesSupplier(),
-                                setpointSeriesSupplier(),
-                                temperatureSeriesSupplier(self.device.Type)
-                            ]
-                        )
+                        params
                     );
                 };
             }
@@ -271,7 +279,8 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
             label: 'Te',
             template: {
                 name: $.t('Temperature'),
-                color: 'yellow',
+                color: 'yellow',//'rgba(255, 140, 60, 0.9)',
+				//type: 'spline',
                 yAxis: 0,
                 step: deviceType === 'Setpoint' ? 'left' : undefined,
                 tooltip: {
@@ -491,6 +500,669 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
             datapointApi: datapointApi
         };
     }
+    var customChartTemplate =
+        '<div class="chart noselect">' +
+            '<div class="chart-title-center">' +
+                '<div class="chart-title-container"><h2>{{vm.chartTitle}}</h2></div>' +
+            '</div>' +
+            '<div class="chartarea">' +
+                '<div class="chartcontainer" style="height:300px;"></div>' +
+            '</div>' +
+        '</div>';
+
+    app.component('temperatureCurrentConditions', {
+        require: {
+            logCtrl: '^deviceTemperatureLog'
+        },
+        bindings: {
+            device: '<'
+        },
+        template:
+            '<div class="chart noselect current-conditions" style="padding: 10px 0;">' +
+                '<div style="display:flex; justify-content:center; flex-wrap:wrap; gap:20px;">' +
+                    '<div ng-repeat="card in vm.cards" style="text-align:center; min-width:140px; padding:12px 20px; ' +
+                        'background:rgba(255,255,255,0.05); border-radius:8px;">' +
+                        '<div style="font-size:0.85em; opacity:0.7;">{{card.label}}</div>' +
+                        '<div style="font-size:1.8em; font-weight:bold;">{{card.value}}</div>' +
+                        '<div style="font-size:0.85em;" ng-style="{color: card.deltaColor}">{{card.delta}}</div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>',
+        controllerAs: 'vm',
+        controller: function ($element, $scope) {
+            const self = this;
+            self.cards = [];
+
+            self.$onInit = function () {
+                var device = self.device;
+
+                function formatDelta(current, previous, suffix, decimals) {
+                    if (isNaN(current) || isNaN(previous)) return '';
+                    var d = current - previous;
+                    var sign = d >= 0 ? '+' : '';
+                    return sign + d.toFixed(decimals) + ' ' + suffix;
+                }
+
+                function deltaColor(current, previous) {
+                    if (isNaN(current) || isNaN(previous)) return '';
+                    var d = current - previous;
+                    if (Math.abs(d) < 0.1) return '#aaa';
+                    return d > 0 ? '#ff6b6b' : '#4ecdc4';
+                }
+
+                function find24hAgo(items) {
+                    var latest = items[items.length - 1];
+                    var target24h = GetLocalDateTimeFromString(latest.d) - 24 * 3600000;
+                    var closest = items[0];
+                    var closestDiff = Math.abs(GetLocalDateTimeFromString(items[0].d) - target24h);
+                    for (var i = 1; i < items.length; i++) {
+                        var diff = Math.abs(GetLocalDateTimeFromString(items[i].d) - target24h);
+                        if (diff < closestDiff) {
+                            closestDiff = diff;
+                            closest = items[i];
+                        }
+                    }
+                    return closest;
+                }
+
+                function rebuildCards() {
+                    self.cards.length = 0;
+                    var items = self.logCtrl.dayGraphData;
+                    var closest24h = (items && items.length >= 2) ? find24hAgo(items) : null;
+
+                    // Temperature card
+                    if (device.Temp !== undefined) {
+                        var te = parseFloat(device.Temp);
+                        var te24 = closest24h ? parseFloat(closest24h.te) : NaN;
+                        if (!isNaN(te)) {
+                            self.cards.push({
+                                label: $.t('Temperature'),
+                                value: te.toFixed(1) + ' ' + degreeSuffix,
+                                delta: formatDelta(te, te24, degreeSuffix, 1),
+                                deltaColor: deltaColor(te, te24)
+                            });
+                        }
+                    }
+
+                    // Humidity card
+                    if (device.Humidity !== undefined) {
+                        var hu = parseInt(device.Humidity, 10);
+                        var hu24 = closest24h ? parseInt(closest24h.hu, 10) : NaN;
+                        self.cards.push({
+                            label: $.t('Humidity'),
+                            value: hu + ' %',
+                            delta: formatDelta(hu, hu24, '%', 0),
+                            deltaColor: deltaColor(hu, hu24)
+                        });
+                    }
+
+                    // Barometer card
+                    if (device.Barometer !== undefined) {
+                        var ba = parseFloat(device.Barometer);
+                        var ba24 = closest24h ? parseFloat(closest24h.ba) : NaN;
+                        self.cards.push({
+                            label: $.t('Barometer'),
+                            value: ba.toFixed(1) + ' hPa',
+                            delta: formatDelta(ba, ba24, 'hPa', 1),
+                            deltaColor: deltaColor(ba, ba24)
+                        });
+                    }
+
+                    if (self.cards.length === 0) {
+                        $element.hide();
+                    }
+                }
+
+                // Rebuild when chart data refreshes (updates deltas)
+                $scope.$watch(function () {
+                    return self.logCtrl.dayGraphData;
+                }, function (result) {
+                    if (result && result.length >= 2) {
+                        rebuildCards();
+                    }
+                });
+
+                // Rebuild on live device update
+                $scope.$on('device_update', function (event, updatedDevice) {
+                    if (updatedDevice.idx === device.idx) {
+                        device = updatedDevice;
+                        self.device = updatedDevice;
+                        rebuildCards();
+                    }
+                });
+            };
+        }
+    });
+
+    app.component('temperatureDiurnalChart', {
+        require: {
+            logCtrl: '^deviceTemperatureLog'
+        },
+        bindings: {
+            device: '<'
+        },
+        template: customChartTemplate,
+        controllerAs: 'vm',
+        controller: function ($element, domoticzApi) {
+            const self = this;
+            self.chartTitle = $.t('Daily Temperature Cycle');
+
+            self.$onInit = function () {
+                domoticzApi.sendCommand('graph', {
+                    sensor: 'temp', idx: self.device.idx, range: 'day'
+                }).then(function (data) {
+                    if (!data || !data.result || data.result.length < 10) {
+                        $element.hide();
+                        return;
+                    }
+
+                    var hasHum = self.device.Humidity !== undefined;
+                    // Group by hour
+                    var hourBuckets = {};
+                    for (var h = 0; h < 24; h++) {
+                        hourBuckets[h] = { temps: [], hums: [] };
+                    }
+
+                    data.result.forEach(function (item) {
+                        var dateStr = item.d; // "YYYY-MM-DD HH:MM"
+                        var hour = parseInt(dateStr.substring(11, 13), 10);
+                        if (isNaN(hour)) return;
+                        var te = parseFloat(item.te);
+                        if (!isNaN(te)) hourBuckets[hour].temps.push(te);
+                        if (hasHum && item.hu !== undefined) {
+                            var hu = parseInt(item.hu, 10);
+                            if (!isNaN(hu)) hourBuckets[hour].hums.push(hu);
+                        }
+                    });
+
+                    var categories = [];
+                    var tempAvg = [];
+                    var tempMin = [];
+                    var tempMax = [];
+                    var humAvg = [];
+
+                    for (var h = 0; h < 24; h++) {
+                        categories.push(h + ':00');
+                        var t = hourBuckets[h].temps;
+                        if (t.length > 0) {
+                            var sum = t.reduce(function (a, b) { return a + b; }, 0);
+                            tempAvg.push(parseFloat((sum / t.length).toFixed(1)));
+                            tempMin.push(parseFloat(Math.min.apply(null, t).toFixed(1)));
+                            tempMax.push(parseFloat(Math.max.apply(null, t).toFixed(1)));
+                        } else {
+                            tempAvg.push(null);
+                            tempMin.push(null);
+                            tempMax.push(null);
+                        }
+                        var hu = hourBuckets[h].hums;
+                        if (hu.length > 0) {
+                            var hsum = hu.reduce(function (a, b) { return a + b; }, 0);
+                            humAvg.push(Math.round(hsum / hu.length));
+                        } else {
+                            humAvg.push(null);
+                        }
+                    }
+
+                    var yAxes = [{
+                        title: { text: $.t('Temperature') + ' ' + degreeSuffix }
+                    }];
+
+                    var series = [
+                        {
+                            name: $.t('Temperature') + ' ' + $.t('Range'),
+                            type: 'areasplinerange',
+                            data: tempMin.map(function (min, i) { return [min, tempMax[i]]; }),
+                            color: 'rgba(255,200,0,0.3)',
+                            lineWidth: 0,
+                            linkedTo: ':next',
+                            tooltip: { valueSuffix: ' ' + degreeSuffix, valueDecimals: 1 },
+                            zIndex: 0
+                        },
+                        {
+                            name: $.t('Temperature') + ' ' + $.t('Average'),
+                            type: 'spline',
+                            data: tempAvg,
+                            color: 'yellow',
+                            lineWidth: 2,
+                            marker: { enabled: true, radius: 3 },
+                            tooltip: { valueSuffix: ' ' + degreeSuffix, valueDecimals: 1 },
+                            zIndex: 2
+                        }
+                    ];
+
+                    if (hasHum && humAvg.some(function (v) { return v !== null; })) {
+                        yAxes.push({
+                            title: { text: $.t('Humidity') + ' (%)' },
+                            opposite: true
+                        });
+                        series.push({
+                            name: $.t('Humidity') + ' ' + $.t('Average'),
+                            type: 'spline',
+                            data: humAvg,
+                            color: 'limegreen',
+                            yAxis: 1,
+                            dashStyle: 'ShortDash',
+                            lineWidth: 2,
+                            marker: { enabled: true, radius: 3 },
+                            tooltip: { valueSuffix: ' %', valueDecimals: 0 },
+                            zIndex: 1
+                        });
+                    }
+
+                    var chartElement = $element.find('.chartcontainer');
+                    Highcharts.chart(chartElement[0], {
+                        chart: { zoomType: 'x' },
+                        title: { text: null },
+                        xAxis: {
+                            categories: categories,
+                            crosshair: true,
+                            title: { text: $.t('Hour of Day') }
+                        },
+                        yAxis: yAxes,
+                        tooltip: { shared: true },
+                        legend: { enabled: true },
+                        series: series
+                    });
+                });
+            };
+        }
+    });
+
+    app.component('temperatureDistributionChart', {
+        require: {
+            logCtrl: '^deviceTemperatureLog'
+        },
+        bindings: {
+            device: '<'
+        },
+        template: customChartTemplate,
+        controllerAs: 'vm',
+        controller: function ($element, domoticzApi) {
+            const self = this;
+            self.chartTitle = $.t('Temperature') + ' ' + $.t('Distribution');
+
+            self.$onInit = function () {
+                domoticzApi.sendCommand('graph', {
+                    sensor: 'temp', idx: self.device.idx, range: 'day'
+                }).then(function (data) {
+                    if (!data || !data.result || data.result.length < 10) {
+                        $element.hide();
+                        return;
+                    }
+
+                    var temps = [];
+                    data.result.forEach(function (item) {
+                        var te = parseFloat(item.te);
+                        if (!isNaN(te)) temps.push(te);
+                    });
+
+                    if (temps.length < 10) {
+                        $element.hide();
+                        return;
+                    }
+
+                    var minT = Math.floor(Math.min.apply(null, temps));
+                    var maxT = Math.ceil(Math.max.apply(null, temps));
+                    var range = maxT - minT;
+                    var binSize = Math.max(1, Math.round(range / 15));
+                    var binStart = minT;
+                    var bins = [];
+                    var categories = [];
+
+                    while (binStart < maxT) {
+                        var binEnd = binStart + binSize;
+                        var count = 0;
+                        temps.forEach(function (t) {
+                            if (t >= binStart && t < binEnd) count++;
+                        });
+                        bins.push(count);
+                        categories.push(binStart + '-' + binEnd + degreeSuffix);
+                        binStart = binEnd;
+                    }
+
+                    // Color gradient: blue (cold) to red (hot)
+                    var colors = bins.map(function (val, i) {
+                        var ratio = i / Math.max(bins.length - 1, 1);
+                        var r = Math.round(50 + ratio * 200);
+                        var b = Math.round(200 - ratio * 180);
+                        return 'rgba(' + r + ',80,' + b + ',0.8)';
+                    });
+
+                    var chartElement = $element.find('.chartcontainer');
+                    Highcharts.chart(chartElement[0], {
+                        chart: { type: 'column' },
+                        title: { text: null },
+                        xAxis: {
+                            categories: categories,
+                            crosshair: true,
+                            title: { text: $.t('Temperature') + ' ' + degreeSuffix }
+                        },
+                        yAxis: {
+                            title: { text: $.t('Readings') },
+                            allowDecimals: false
+                        },
+                        tooltip: {
+                            formatter: function () {
+                                return this.x + '<br/>' +
+                                    $.t('Readings') + ': <b>' + this.y + '</b>';
+                            }
+                        },
+                        legend: { enabled: false },
+                        plotOptions: {
+                            column: {
+                                colorByPoint: true,
+                                colors: colors,
+                                borderWidth: 0
+                            }
+                        },
+                        series: [{
+                            name: $.t('Readings'),
+                            data: bins
+                        }]
+                    });
+                });
+            };
+        }
+    });
+
+    app.component('temperatureComfortChart', {
+        require: {
+            logCtrl: '^deviceTemperatureLog'
+        },
+        bindings: {
+            device: '<'
+        },
+        template: customChartTemplate,
+        controllerAs: 'vm',
+        controller: function ($element, domoticzApi) {
+            const self = this;
+            self.chartTitle = $.t('Comfort Zone');
+
+            self.$onInit = function () {
+                if (self.device.Humidity === undefined) {
+                    $element.hide();
+                    return;
+                }
+
+                domoticzApi.sendCommand('graph', {
+                    sensor: 'temp', idx: self.device.idx, range: 'day'
+                }).then(function (data) {
+                    if (!data || !data.result || data.result.length === 0) {
+                        $element.hide();
+                        return;
+                    }
+
+                    var scatterData = [];
+                    var n = data.result.length;
+
+                    data.result.forEach(function (item, idx) {
+                        var te = parseFloat(item.te);
+                        var hu = item.hu !== undefined ? parseInt(item.hu, 10) : NaN;
+                        if (isNaN(te) || isNaN(hu)) return;
+
+                        // Convert to Celsius for comfort zone calculation if needed
+                        var teC = ($.myglobals.tempsign === 'F') ? (te - 32) * 5.0 / 9.0 : te;
+                        var inComfort = (teC >= 20 && teC <= 26 && hu >= 30 && hu <= 60);
+
+                        scatterData.push({
+                            x: te,
+                            y: hu,
+                            marker: {
+                                fillColor: inComfort ? 'rgba(0,200,83,0.7)' : 'rgba(255,82,82,0.5)',
+                                radius: 4
+                            },
+                            name: item.d
+                        });
+                    });
+
+                    if (scatterData.length === 0) {
+                        $element.hide();
+                        return;
+                    }
+
+                    // Comfort zone polygon coordinates (in display units)
+                    var comfortMinT = ($.myglobals.tempsign === 'F') ? 68 : 20;
+                    var comfortMaxT = ($.myglobals.tempsign === 'F') ? 78.8 : 26;
+
+                    var chartElement = $element.find('.chartcontainer');
+                    Highcharts.chart(chartElement[0], {
+                        chart: {
+                            type: 'scatter',
+                            zoomType: 'xy'
+                        },
+                        title: { text: null },
+                        xAxis: {
+                            title: { text: $.t('Temperature') + ' ' + degreeSuffix },
+                            crosshair: true,
+                            plotBands: [{
+                                from: comfortMinT,
+                                to: comfortMaxT,
+                                color: 'rgba(0,200,83,0.08)',
+                                label: {
+                                    text: $.t('Comfortable'),
+                                    style: { color: 'rgba(0,200,83,0.4)', fontSize: '10px' },
+                                    align: 'center',
+                                    verticalAlign: 'bottom'
+                                }
+                            }]
+                        },
+                        yAxis: {
+                            title: { text: $.t('Humidity') + ' (%)' },
+                            plotBands: [{
+                                from: 30,
+                                to: 60,
+                                color: 'rgba(0,200,83,0.08)'
+                            }]
+                        },
+                        tooltip: {
+                            formatter: function () {
+                                return this.point.name + '<br/>' +
+                                    $.t('Temperature') + ': <b>' + this.x.toFixed(1) + ' ' + degreeSuffix + '</b><br/>' +
+                                    $.t('Humidity') + ': <b>' + this.y + ' %</b>';
+                            }
+                        },
+                        legend: { enabled: false },
+                        plotOptions: {
+                            scatter: {
+                                marker: { symbol: 'circle' }
+                            }
+                        },
+                        series: [{
+                            name: $.t('Comfort Zone'),
+                            data: scatterData
+                        }]
+                    });
+                });
+            };
+        }
+    });
+
+    app.component('temperatureDewpointChart', {
+        require: {
+            logCtrl: '^deviceTemperatureLog'
+        },
+        bindings: {
+            device: '<'
+        },
+        template: customChartTemplate,
+        controllerAs: 'vm',
+        controller: function ($element, domoticzApi) {
+            const self = this;
+            self.chartTitle = $.t('Dew Point');
+
+            self.$onInit = function () {
+                if (self.device.Humidity === undefined) {
+                    $element.hide();
+                    return;
+                }
+
+                domoticzApi.sendCommand('graph', {
+                    sensor: 'temp',
+                    idx: self.device.idx,
+                    range: 'day'
+                }).then(function (data) {
+                    if (!data || !data.result || data.result.length === 0) {
+                        $element.hide();
+                        return;
+                    }
+
+                    var dewPoints = [];
+                    var temperatures = [];
+                    data.result.forEach(function (item) {
+                        var te = parseFloat(item.te);
+                        var hu = parseInt(item.hu, 10);
+                        if (isNaN(te) || isNaN(hu) || hu <= 0) return;
+
+                        var ts = GetLocalDateTimeFromString(item.d);
+                        // Magnus-Tetens formula
+                        var a = 17.27, b = 237.7;
+                        var alpha = (a * te) / (b + te) + Math.log(hu / 100.0);
+                        var dp = (b * alpha) / (a - alpha);
+
+                        if ($.myglobals.tempsign === 'F') {
+                            dp = dp * 9.0 / 5.0 + 32;
+                        }
+
+                        dewPoints.push([ts, parseFloat(dp.toFixed(1))]);
+                        temperatures.push([ts, te]);
+                    });
+
+                    if (dewPoints.length === 0) return;
+
+                    Highcharts.chart($element.find('.chartcontainer')[0], {
+                        chart: { type: 'spline', zoomType: 'x' },
+                        title: { text: null },
+                        xAxis: {
+                            type: 'datetime'
+                        },
+                        yAxis: {
+                            title: { text: $.t('Degrees') + ' ' + degreeSuffix }
+                        },
+                        tooltip: {
+                            shared: true,
+                            crosshairs: true,
+                            xDateFormat: '%A, %B %e, %H:%M'
+                        },
+                        plotOptions: {
+                            spline: {
+                                lineWidth: 2,
+                                states: { hover: { lineWidth: 3 } },
+                                marker: { enabled: false }
+                            }
+                        },
+                        series: [
+                            {
+                                name: $.t('Dew Point'),
+                                data: dewPoints,
+                                color: '#2b908f',
+                                tooltip: { valueSuffix: ' ' + degreeSuffix, valueDecimals: 1 }
+                            },
+                            {
+                                name: $.t('Temperature'),
+                                data: temperatures,
+                                color: 'yellow',
+                                tooltip: { valueSuffix: ' ' + degreeSuffix, valueDecimals: 1 }
+                            }
+                        ]
+                    });
+                });
+            };
+        }
+    });
+
+    app.component('temperatureVsHumidityChart', {
+        require: {
+            logCtrl: '^deviceTemperatureLog'
+        },
+        bindings: {
+            device: '<'
+        },
+        template: customChartTemplate,
+        controllerAs: 'vm',
+        controller: function ($element, domoticzApi) {
+            const self = this;
+            self.chartTitle = $.t('Temperature') + ' vs ' + $.t('Humidity');
+
+            self.$onInit = function () {
+                if (self.device.Humidity === undefined) {
+                    $element.hide();
+                    return;
+                }
+
+                domoticzApi.sendCommand('graph', {
+                    sensor: 'temp',
+                    idx: self.device.idx,
+                    range: 'day'
+                }).then(function (data) {
+                    if (!data || !data.result || data.result.length === 0) {
+                        $element.hide();
+                        return;
+                    }
+
+                    var n = data.result.length;
+                    var scatterData = [];
+
+                    data.result.forEach(function (item, idx) {
+                        var te = parseFloat(item.te);
+                        var hu = item.hu !== undefined ? parseInt(item.hu, 10) : NaN;
+                        if (isNaN(te) || isNaN(hu)) return;
+
+                        var ratio = idx / Math.max(n - 1, 1);
+                        var lightness = Math.round(80 - ratio * 55);
+                        scatterData.push({
+                            x: te,
+                            y: hu,
+                            color: 'hsl(30,' + Math.round(50 + ratio * 30) + '%,' + lightness + '%)',
+                            name: item.d
+                        });
+                    });
+
+                    if (scatterData.length === 0) return;
+
+                    Highcharts.chart($element.find('.chartcontainer')[0], {
+                        chart: {
+                            type: 'scatter',
+                            zoomType: 'xy'
+                        },
+                        title: { text: null },
+                        xAxis: {
+                            title: { text: $.t('Temperature') + ' ' + degreeSuffix },
+                            crosshair: true
+                        },
+                        yAxis: {
+                            title: { text: $.t('Humidity') + ' (%)' }
+                        },
+                        tooltip: {
+                            formatter: function () {
+                                return this.point.name + '<br/>' +
+                                    $.t('Temperature') + ': <b>' + this.x + ' ' + degreeSuffix + '</b><br/>' +
+                                    $.t('Humidity') + ': <b>' + this.y + ' %</b>';
+                            }
+                        },
+                        legend: {
+                            enabled: false
+                        },
+                        plotOptions: {
+                            scatter: {
+                                marker: {
+                                    radius: 4,
+                                    symbol: 'circle'
+                                }
+                            }
+                        },
+                        series: [
+                            {
+                                name: $.t('Temperature vs Humidity'),
+                                data: scatterData,
+                                colorByPoint: true
+                            }
+                        ]
+                    });
+                });
+            };
+        }
+    });
+
     function chartParams(domoticzGlobals, ctrl, isShortLogChart, timestampFromDataItem, seriesSuppliers) {
         return {
             highchartTemplate: {

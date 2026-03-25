@@ -1,11 +1,16 @@
 #include "stdafx.h"
 #include "HTMLSanitizer.h"
 #include "Helper.h"
+#include <regex>
+#include <algorithm>
 
-namespace
+//Maybe the way we search for 'safe' words is to safe, but better safe than sorry
+std::string HTMLSanitizer::Sanitize(const std::string& szText)
 {
+	if (szText.empty())
+		return szText;
 	// https://html5sec.org/
-	const auto szForbiddenContent = std::array<std::string, 23>{
+	const auto szForbiddenContent = std::array<std::string, 28>{
 		"a",
 		"span",
 		"script",
@@ -29,52 +34,37 @@ namespace
 		"details",
 		"table",
 		"alert",
+		"iframe",
+		"meta",
+		"link",
+		"style",
+		"xss"
 	};
-} // namespace
 
-//Maybe the way we search for 'safe' words is to safe, but better safe than sorry
-std::string HTMLSanitizer::Sanitize(const std::string& szText)
-{
-	if (szText.empty())
-		return szText;
+	std::string result = szText;
 
-	std::string ret;
-	std::string tmpstr(szText);
+	// Remove each forbidden tag (both opening and closing tags)
+	for (const auto& tag : szForbiddenContent) {
+		// Create regex patterns for opening and closing tags
+		// Matches: <tag>, <tag attr="value">, </tag>
+		std::string pattern = "<\\s*/?\\s*" + std::string(tag) +
+			"(?:\\s+[^>]*)?>";
 
-	do
-	{
-		size_t pos_start = tmpstr.find('<');
-		if (pos_start == std::string::npos)
-		{
-			//Done
-			ret += tmpstr;
-			break;
-		}
-		std::string tag = tmpstr.substr(pos_start);
-		tmpstr = tmpstr.substr(0, pos_start);
-		ret += tmpstr;
+		std::regex tagRegex(pattern, std::regex::icase);
+		result = std::regex_replace(result, tagRegex, "");
+	}
+	if (result.empty())
+		return "Invalid!?";
 
-		pos_start = tag.find(' ');
-		if (pos_start == std::string::npos)
-		{
-			//Done
-			ret += tag;
-			break;
-		}
-		tmpstr = tag.substr(pos_start);
-		tag = tag.substr(1, pos_start - 1);
+	// Also remove on* event handlers (onclick, onerror, etc.)
+	std::regex eventRegex("\\s+on\\w+\\s*=\\s*[\"'][^\"']*[\"']",
+		std::regex::icase);
+	result = std::regex_replace(result, eventRegex, "");
 
-		bool bHaveForbiddenTag = false;
-		if (!tag.empty())
-		{
-			//See if we have a forbidden tag, if yes remove it
-			stdlower(tag);
-			bHaveForbiddenTag = std::any_of(szForbiddenContent.begin(), szForbiddenContent.end(), [&](const std::string& content) { return tag == content; });
-		}
-		if (!bHaveForbiddenTag)
-			ret += "<" + tag;
-	} while (true);
+	// Remove javascript: protocol
+	std::regex jsProtocol("javascript:", std::regex::icase);
+	result = std::regex_replace(result, jsProtocol, "");
 
-	return ret;
+	return result;
 }
 
