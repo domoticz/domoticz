@@ -81,12 +81,14 @@ void CounterHelper::Init(const CDomoticzHardwareBase* pHardwareBase, const std::
 
 void CounterHelper::InitInt()
 {
-	auto result = m_sql.safe_query("SELECT sValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type=%d) AND (SubType=%d)",
+	auto result = m_sql.safe_query("SELECT sValue, LastLevel, ID, Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type=%d) AND (SubType=%d)",
 		m_HwdID, m_szID.c_str(), m_Unit,
 		pTypeGeneral, sTypeKwh);
 	if (!result.empty())
 	{
 		std::string sValue = result[0][0];
+		m_DeviceIdx = std::stoi(result[0][2]);
+		m_DeviceName = result[0][3];
 
 		try
 		{
@@ -167,7 +169,7 @@ double CounterHelper::CheckTotalCounter(const double mtotal, bool& bLooped)
 	{
 		if (m_nLastCounterValue != 0)
 		{
-			_log.Log(LOG_STATUS, "CounterHelper: Received 0 reading, returning cached value (%.3f) to avoid DB corruption", m_nLastCounterValue);
+			_log.Log(LOG_STATUS, "CounterHelper: Device %d (%s): Received 0 reading, returning cached value (%.3f) to avoid DB corruption", m_DeviceIdx, m_DeviceName.c_str(), m_nLastCounterValue);
 		}
 		return m_nLastCounterValue; //ignore 0 readings, return last known value to avoid corrupting the DB
 	}

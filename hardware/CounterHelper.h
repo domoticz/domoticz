@@ -27,6 +27,8 @@ private:
 	uint8_t m_Unit = 1;
 
 	std::string m_szID;
+	int m_DeviceIdx = 0;
+	std::string m_DeviceName;
 
 	double m_CounterOffset = 0;
 	double m_nLastCounterValue = 0;
