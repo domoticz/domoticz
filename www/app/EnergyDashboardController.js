@@ -719,8 +719,8 @@ define(['app'], function (app) {
 				let txt = $scope.txtObjText.replace(/<br\s*\/?>/gi, '\n').replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n/g, '<br>');
 				let colored = $scope.lightenDarkColors(txt);
 				ltext.innerHTML = DOMPurify.sanitize(colored, {
-					ALLOWED_TAGS: ['br', 'span', 'font'],
-					ALLOWED_ATTR: ['style', 'color']
+					ALLOWED_TAGS: ['br', 'span', 'font','iframe'],
+					ALLOWED_ATTR: ['style', 'color','allow','allowfullscreen','frameborder','scrolling','src']
 				});
 			}
 		}
