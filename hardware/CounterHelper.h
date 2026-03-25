@@ -28,8 +28,6 @@ private:
 
 	std::string m_szID;
 
-	bool m_bWarnedAbout0Received = false;
-
 	double m_CounterOffset = 0;
 	double m_nLastCounterValue = 0;
 

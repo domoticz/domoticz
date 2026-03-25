@@ -165,10 +165,9 @@ double CounterHelper::CheckTotalCounter(const double mtotal, bool& bLooped)
 {
 	if (mtotal == 0)
 	{
-		if (!m_bWarnedAbout0Received)
+		if (m_nLastCounterValue != 0)
 		{
 			_log.Log(LOG_STATUS, "CounterHelper: Received 0 reading, returning cached value (%.3f) to avoid DB corruption", m_nLastCounterValue);
-			m_bWarnedAbout0Received = true;
 		}
 		return m_nLastCounterValue; //ignore 0 readings, return last known value to avoid corrupting the DB
 	}
