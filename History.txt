@@ -1,9 +1,7 @@
 Version 2026.xxxx
 - Added: Alexa Smart Home v3 API endpoint (see ALEXA.md)
-- Added: Angular Current sensor log with 3-phase support and compare chart
-- Added: Angular log pages, current conditions KPI cards and advanced charts
-- Added: Angular Wind log, wind speed frequency histogram with Weibull distribution curve
 - Added: Battery SOC mode selection for Energy Dashboard with voltage display
+- Added: Current sensor log with 3-phase support and compare chart
 - Added: Energy Dashboard, Battery Energy In/Out device settings and price tracking (not visible yet)
 - Added: Blinds + Stop type
 - Added: Comparing charts, show average across years in tooltip for month/quarter grouping
@@ -22,6 +20,7 @@ Version 2026.xxxx
 - Added: EventSystem support for Thermostat 6 devices (Blockly/Lua/Python event triggers)
 - Added: HaveSetPoint JSON API flag for Thermostat 6 and Setpoint devices (third-party app compatibility)
 - Added: LibreHardwareMonitor, cross-platform HTTP support with mode selector and extended sensors
+- Added: Log pages, current conditions KPI cards and advanced charts
 - Added: Logitech Media Server, SqueezeLite ESP32 support
 - Added: MCP, search_devices tool for device name discovery
 - Added: MQTT-AD, added support for Climate high/low set points
@@ -70,6 +69,7 @@ Version 2026.xxxx
 - Added: Web Interface, single custom template shown as direct navigation link instead of dropdown
 - Added: Web Interface, weather animations for temperature and weather display
 - Added: Weather tab, room plan selector
+- Added: Wind log, wind speed frequency histogram with Weibull distribution curve
 - Fixed: Access denied for non-admin users with no shared devices configured
 - Fixed: Application hang on shutdown when Python event scripts are active
 - Fixed: Buienradar, fallback when station measurements are empty
@@ -135,7 +135,7 @@ Version 2026.xxxx
 - Fixed: WebSocket thread-safety races in session and log callbacks
 - Fixed: WOL, Corrected magic packet creation and supporting IPv6 broadcast
 - Changed: -nocache command line option now also uninstalls the service-worker
-- Changed: Domoticz Remote, Do not force re-enable RemoteSharedPort on startup
+- Changed: Domoticz Remote, do not force re-enable RemoteSharedPort on startup
 - Changed: Energy Dashboard restyled with dark glass-morphism theme and neon glow effects
 - Changed: Enphase, default to new firmware info request
 - Changed: Enphase, start working with correct values from the beginning
