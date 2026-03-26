@@ -1,4 +1,5 @@
 Version 2026.xxxx
+- Added: BuienRadar, new rain sensor based on last 24 hour value instead of rain rate
 
 Version 2026.1 (March 25th 2026)
 - Added: Alexa Smart Home v3 API endpoint (see ALEXA.md)
