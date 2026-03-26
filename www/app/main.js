@@ -30,7 +30,8 @@ require.config({
 		RefreshingChart: 'log/RefreshingChart',
 		DataLoader: 'log/DataLoader',
 		ChartLoader: 'log/ChartLoader',
-		ChartZoomer: 'log/ChartZoomer'
+		ChartZoomer: 'log/ChartZoomer',
+		'ChartWatermark': 'log/ChartWatermark'
 	},
 	shim: {
 		'angularAMD': ['angular'],

@@ -1,4 +1,4 @@
-define(['app', 'luxon'], function (app, luxon) {
+define(['app', 'luxon', 'ChartWatermark'], function (app, luxon, ChartWatermark) {
     var DateTime = luxon.DateTime;
 
     app.component('counterStatChart', {
@@ -10,7 +10,7 @@ define(['app', 'luxon'], function (app, luxon) {
         controller: CounterStatChartController
     });
 
-    function CounterStatChartController($scope, $element, $http, $interval, domoticzGlobals, domoticzApi, dzSettings) {
+    function CounterStatChartController($scope, $element, $http, $interval, domoticzGlobals, domoticzApi, dzSettings, chartWatermark = new ChartWatermark()) {
         const self = this;
 
 		self.$element = $element;
@@ -78,100 +78,11 @@ define(['app', 'luxon'], function (app, luxon) {
 				marginTop: 45
 				events: {
 					load: function () {
-						const chart = this;
-						$scope.chartRef = chart;
-
-						chart.watermarkErrorConfig = {
-							text: '',
-							visible: false
-						};
-
-						function renderWatermarkError() {
-							if (!chart.watermarkErrorConfig.visible) {
-								if (chart.watermarkError) {
-									chart.watermarkError.destroy();
-									chart.watermarkError = null;
-								}
-								return;
-							}
-
-							const maxWidth = Math.round(chart.plotWidth * 0.8);
-
-							if (chart.watermarkError) {
-								chart.watermarkError.attr({ text: `<div class="wm-message" style="maxWidth:${maxWidth}px">${chart.watermarkErrorConfig.text}</div>` });
-								return;
-							}
-
-							const x = chart.plotLeft + chart.plotWidth / 2;
-							const y = chart.plotTop;
-
-							chart.watermarkError = chart.renderer
-								.label(`<div class="wm-message" style="maxWidth:${maxWidth}px">${chart.watermarkErrorConfig.text}</div>`, x, y, null, null, null, true) // can use text instead, lighter but no html
-								.addClass('chart-watermark-error')
-								.attr({
-									align: 'center',
-									zIndex: 5
-								})
-								.add();
-						}
-
-						chart.updateWatermarkError = renderWatermarkError;
-
-						function renderError(errorMessage) {
-							chart.watermarkErrorConfig.text = $.t(errorMessage);
-							chart.watermarkWarningConfig.visible = false;
-							chart.updateWatermarkWarning();
-							chart.watermarkErrorConfig.visible = true;
-							chart.updateWatermarkError();
-						}
-
-						chart.renderError = renderError;
-
-						chart.watermarkWarningConfig = {
-							text: '',
-							visible: false
-						};
-
-						function renderWatermarkWarning() {
-							if (!chart.watermarkWarningConfig.visible) {
-								if (chart.watermarkWarning) {
-									chart.watermarkWarning.destroy();
-									chart.watermarkWarning = null;
-								}
-								return;
-							}
-
-							const maxWidth = Math.round(chart.plotWidth * 0.8);
-
-							if (chart.watermarkWarning) {
-								chart.watermarkWarning.attr({ text: `<div class="wm-message" style="maxWidth:${maxWidth}px">${chart.watermarkWarningConfig.text}</div>` });
-								return;
-							}
-
-							const x = chart.plotLeft + chart.plotWidth / 2;
-							const y = chart.plotTop;
-
-							chart.watermarkWarning = chart.renderer
-								.label(`<div class="wm-message" style="maxWidth:${maxWidth}px">${chart.watermarkWarningConfig.text}</div>`, x, y, null, null, null, true) // can use text instead, lighter but no html
-								.addClass('chart-watermark-warning')
-								.attr({
-									align: 'center',
-									zIndex: 5
-								})
-								.add();
-						}
-
-						chart.updateWatermarkWarning = renderWatermarkWarning;
-
-						function renderWarning(warningMessage) {
-							chart.watermarkWarningConfig.text = $.t(warningMessage);
-							chart.watermarkErrorConfig.visible = false;
-							chart.updateWatermarkError();
-							chart.watermarkWarningConfig.visible = true;
-							chart.updateWatermarkWarning();
-						}
-
-						chart.renderWarning = renderWarning;
+						chartWatermark.initWatermark(this);
+						$scope.chartRef = this;
+					},
+					redraw: function () {
+						chartWatermark.refreshWatermark(this);
 					}
 				}
 			},
