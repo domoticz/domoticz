@@ -411,28 +411,48 @@ namespace mcp		// Model Context Protocol
 		{
 			"rename_device",
 			"Rename a device",
-			"Rename a device by its current name to a new name.",
+			"Rename any device (switch, sensor, virtual, etc.) by its current name to a new name.",
 			{
-				{ "switchname", "string", "Current name of the device", true, {} },
+				{ "name", "string", "Current name of the device", true, {} },
 				{ "new_name", "string", "New name for the device", true, {} },
 			}
 		},
 		{
 			"delete_device",
 			"Delete (hide) a device",
-			"Hide a device by setting its Used flag to 0. The device is not permanently deleted; it can be re-enabled. Use with caution.",
+			"Hide any device (switch, sensor, virtual, etc.) by setting its Used flag to 0. The device is not permanently deleted; it can be re-enabled. Use with caution.",
 			{
-				{ "switchname", "string", "Name of the device to hide/delete", true, {} },
+				{ "name", "string", "Name of the device to hide/delete", true, {} },
 			}
 		},
 		{
-			"create_virtual_sensor",
+			"delete_event",
+			"Delete an event script",
+			"Permanently delete an event script by name. This cannot be undone.",
+			{
+				{ "event_name", "string", "Name of the event script to delete", true, {} },
+			}
+		},
+		{
+			"create_sensor",
 			"Create a virtual sensor",
-			"Create a new virtual sensor attached to a virtual hardware instance. The hw_idx must refer to a virtual (dummy) hardware. sensortype is the mapped sensor type integer (e.g. 80=Temperature, 81=Humidity, 5=Text, 6=Switch).",
+			"Create a new virtual sensor attached to a virtual hardware instance. sensortype is a sensor type name (e.g. 'Wind', 'Temperature', 'Switch') or its numeric mapped value. Read domoticz://sensor-types for all available types. Aliases: create_virtual_sensor, create_device.",
 			{
 				{ "hw_idx", "integer", "IDX of the virtual/dummy hardware to attach the sensor to", true, {} },
 				{ "sensorname", "string", "Name for the new virtual sensor", true, {} },
-				{ "sensortype", "integer", "Sensor type integer (80=Temperature, 81=Humidity, 5=Text, 6=Switch, 113=Counter, etc.)", true, {} },
+				{ "sensortype", "string", "Sensor type name or numeric mapped value. Read domoticz://sensor-types for the full list.", true, {
+					"Air Quality", "Alert", "Ampere (1 Phase)", "Ampere (3 Phase)", "Barometer",
+					"Counter", "Counter Incremental", "Custom Sensor", "Distance",
+					"Electric (Instant+Counter)", "Gas", "Humidity", "Leaf Wetness", "Lux",
+					"Managed Counter", "P1 Smart Meter (Electric)", "Percentage", "Pressure (Bar)",
+					"Rain", "RGB Switch", "RGBW Switch", "Scale", "Selector Switch",
+					"Soil Moisture", "Solar Radiation", "Sound Level", "Switch",
+					"Temp+Baro", "Temp+Hum", "Temp+Hum+Baro", "Temperature", "Text",
+					"Thermostat (Temp/Baro/Setpoint)", "Thermostat (Temp/Hum/Baro/Setpoint)",
+					"Thermostat (Temp/Hum/Setpoint)", "Thermostat (Temp/Setpoint)",
+					"Thermostat Setpoint", "Usage (Electric)", "UV",
+					"Visibility", "Voltage", "Waterflow", "Wind", "Wind+Temp+Chill"
+				} },
 			}
 		},
 		{
@@ -440,7 +460,7 @@ namespace mcp		// Model Context Protocol
 			"Update a device value",
 			"Directly update the nValue and/or sValue of a device (useful for virtual sensors).",
 			{
-				{ "switchname", "string", "Name of the device to update", true, {} },
+				{ "name", "string", "Name of the device to update", true, {} },
 				{ "nvalue", "integer", "Numeric value to set", true, {} },
 				{ "svalue", "string", "String value to set (optional)", false, {} },
 			}
@@ -450,7 +470,7 @@ namespace mcp		// Model Context Protocol
 			"Get device history",
 			"Retrieve the recent log history for a device. Returns up to 50 most recent entries.",
 			{
-				{ "switchname", "string", "Name of the device", true, {} },
+				{ "name", "string", "Name of the device", true, {} },
 				{ "log_type", "string", "Log type: switch (default), text, or graph", false, {} },
 			}
 		},
@@ -711,9 +731,10 @@ namespace mcp		// Model Context Protocol
 			"add_log_message", "update_device_value"
 		};
 		static const std::unordered_set<std::string> kAdminTools = {
-			"rename_device", "delete_device", "create_virtual_sensor",
+			"create_sensor", "create_virtual_sensor", "create_device",
+			"rename_device", "delete_device",
 			"add_user_variable", "update_user_variable", "delete_user_variable",
-			"create_event", "update_event"
+			"create_event", "update_event", "delete_event"
 		};
 
 		if (kAdminTools.count(sMethodName) && session.rights < http::server::URIGHTS_ADMIN)
@@ -758,7 +779,9 @@ namespace mcp		// Model Context Protocol
 			{ "get_device",             getDevice },
 			{ "rename_device",          renameDevice },
 			{ "delete_device",          deleteDevice },
+			{ "create_sensor",          createVirtualSensor },
 			{ "create_virtual_sensor",  createVirtualSensor },
+			{ "create_device",          createVirtualSensor },
 			{ "update_device_value",    updateDeviceValue },
 			{ "get_device_history",     getDeviceHistory },
 			{ "get_scenes",             getScenes },
@@ -784,6 +807,7 @@ namespace mcp		// Model Context Protocol
 			{ "get_event",              getEvent },
 			{ "create_event",           createEvent },
 			{ "update_event",           updateEvent },
+			{ "delete_event",           deleteEvent },
 		};
 
 #ifdef _DEBUG
@@ -895,6 +919,15 @@ namespace mcp		// Model Context Protocol
 			resource["mimeType"] = "text/plain";
 			jsonRPCRep["result"]["resources"].append(resource);
 		}
+		{
+			Json::Value resource;
+			resource["uri"] = "domoticz://sensor-types";
+			resource["name"] = "Sensor Types";
+			resource["title"] = "Virtual Sensor Types";
+			resource["description"] = "All sensor types available for create_sensor / create_virtual_sensor, with their names and numeric mapped values";
+			resource["mimeType"] = "text/plain";
+			jsonRPCRep["result"]["resources"].append(resource);
+		}
 
 		// Add any available floorplans as resources too
 		auto result = m_sql.safe_query("SELECT ID, Name FROM Floorplans");
@@ -960,6 +993,58 @@ namespace mcp		// Model Context Protocol
 
 		_log.Debug(DEBUG_WEBSERVER, "MCP: ResourcesTemplatesList: %d template(s) offered.", jsonRPCRep["result"]["resourceTemplates"].size());
 	}
+
+	// Sensor type map — mirrors Dummy.cpp mappedsensorname exactly (44 entries).
+	// mappedvalue: UI/API identifier (not sequential; assigned historically as types were added).
+	// type/subtype: actual Domoticz device type constants used by CreateDevice().
+	struct _tmapped { int mappedvalue; const char* name; int type; int subtype; };
+	static const _tmapped kSensorMap[] = {
+		{ 249,  "Air Quality",                                    249, 1  },  // pTypeAirQuality / sTypeVoc
+		{ 7,    "Alert",                                          243, 22 },  // pTypeGeneral / sTypeAlert
+		{ 9,    "Ampere (3 Phase)",                               89,  1  },  // pTypeCURRENT / sTypeELEC1
+		{ 19,   "Ampere (1 Phase)",                               243, 23 },  // pTypeGeneral / sTypeCurrent
+		{ 11,   "Barometer",                                      243, 26 },  // pTypeGeneral / sTypeBaro
+		{ 113,  "Counter",                                        113, 0  },  // pTypeRFXMeter / sTypeRFXMeterCount
+		{ 14,   "Counter Incremental",                            243, 28 },  // pTypeGeneral / sTypeCounterIncremental
+		{ 1004, "Custom Sensor",                                  243, 31 },  // pTypeGeneral / sTypeCustom
+		{ 13,   "Distance",                                       243, 27 },  // pTypeGeneral / sTypeDistance
+		{ 18,   "Electric (Instant+Counter)",                     243, 29 },  // pTypeGeneral / sTypeKwh
+		{ 3,    "Gas",                                            251, 2  },  // pTypeP1Gas / sTypeP1Gas
+		{ 81,   "Humidity",                                       81,  1  },  // pTypeHUM / sTypeHUM1
+		{ 16,   "Leaf Wetness",                                   243, 4  },  // pTypeGeneral / sTypeLeafWetness
+		{ 246,  "Lux",                                            246, 1  },  // pTypeLux / sTypeLux
+		{ 250,  "P1 Smart Meter (Electric)",                      250, 1  },  // pTypeP1Power / sTypeP1Power
+		{ 1005, "Managed Counter",                                243, 33 },  // pTypeGeneral / sTypeManagedCounter
+		{ 2,    "Percentage",                                     243, 6  },  // pTypeGeneral / sTypePercentage
+		{ 1,    "Pressure (Bar)",                                 243, 9  },  // pTypeGeneral / sTypePressure
+		{ 85,   "Rain",                                           85,  3  },  // pTypeRAIN / sTypeRAIN3
+		{ 241,  "RGB Switch",                                     241, 2  },  // pTypeColorSwitch / sTypeColor_RGB
+		{ 1003, "RGBW Switch",                                    241, 1  },  // pTypeColorSwitch / sTypeColor_RGB_W
+		{ 93,   "Scale",                                          93,  1  },  // pTypeWEIGHT / sTypeWEIGHT1
+		{ 1002, "Selector Switch",                                244, 62 },  // pTypeGeneralSwitch / sSwitchTypeSelector
+		{ 15,   "Soil Moisture",                                  243, 3  },  // pTypeGeneral / sTypeSoilMoisture
+		{ 20,   "Solar Radiation",                                243, 2  },  // pTypeGeneral / sTypeSolarRadiation
+		{ 10,   "Sound Level",                                    243, 24 },  // pTypeGeneral / sTypeSoundLevel
+		{ 6,    "Switch",                                         244, 73 },  // pTypeGeneralSwitch / sSwitchGeneralSwitch
+		{ 80,   "Temperature",                                    80,  5  },  // pTypeTEMP / sTypeTEMP5
+		{ 82,   "Temp+Hum",                                       82,  1  },  // pTypeTEMP_HUM / sTypeTH1
+		{ 84,   "Temp+Hum+Baro",                                  84,  1  },  // pTypeTEMP_HUM_BARO / sTypeTHB1
+		{ 247,  "Temp+Baro",                                      247, 1  },  // pTypeTEMP_BARO / sTypeBMP085
+		{ 5,    "Text",                                           243, 19 },  // pTypeGeneral / sTypeTextStatus
+		{ 8,    "Thermostat Setpoint",                            242, 1  },  // pTypeSetpoint / sTypeSetpoint
+		{ 248,  "Usage (Electric)",                               248, 1  },  // pTypeUsage / sTypeElectric
+		{ 87,   "UV",                                             87,  1  },  // pTypeUV / sTypeUV1
+		{ 12,   "Visibility",                                     243, 1  },  // pTypeGeneral / sTypeVisibility
+		{ 4,    "Voltage",                                        243, 8  },  // pTypeGeneral / sTypeVoltage
+		{ 1000, "Waterflow",                                      243, 30 },  // pTypeGeneral / sTypeWaterflow
+		{ 86,   "Wind",                                           86,  1  },  // pTypeWIND / sTypeWIND1
+		{ 1001, "Wind+Temp+Chill",                                86,  4  },  // pTypeWIND / sTypeWIND4
+		{ 1006, "Thermostat (Temp/Setpoint)",                     73,  0  },  // pTypeThermostat6 / sTypeThermostat6Temp
+		{ 1007, "Thermostat (Temp/Hum/Setpoint)",                 73,  1  },  // pTypeThermostat6 / sTypeThermostat6TempHum
+		{ 1008, "Thermostat (Temp/Baro/Setpoint)",                73,  2  },  // pTypeThermostat6 / sTypeThermostat6TempBaro
+		{ 1009, "Thermostat (Temp/Hum/Baro/Setpoint)",            73,  3  },  // pTypeThermostat6 / sTypeThermostat6TempHumBaro
+		{ 0,    nullptr,                                          0,   0  }   // sentinel
+	};
 
 	void McpResourcesRead(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
@@ -1330,6 +1415,23 @@ namespace mcp		// Model Context Protocol
 				resource["mimeType"] = "text/plain";
 				resource["text"] = sText;
 			}
+			else if (sResourceType == "sensor-types")
+			{
+				std::string sText = "Virtual Sensor Types for create_sensor / create_virtual_sensor\n";
+				sText += "==============================================================\n";
+				sText += "Use the 'Name' column as the sensortype value. Numeric mapped values are also accepted.\n\n";
+				sText += "Name                        Mapped\n";
+				sText += "--------------------------- ------\n";
+				for (int i = 0; kSensorMap[i].name != nullptr; i++)
+				{
+					char line[64];
+					std::snprintf(line, sizeof(line), "%-27s %d\n", kSensorMap[i].name, kSensorMap[i].mappedvalue);
+					sText += line;
+				}
+				resource["name"] = "Virtual Sensor Types";
+				resource["mimeType"] = "text/plain";
+				resource["text"] = sText;
+			}
 			else
 			{
 				_log.Debug(DEBUG_WEBSERVER, "MCP: resources/read: Unknown domoticz:// resource type: %s", sResourceType.c_str());
@@ -1615,7 +1717,7 @@ namespace mcp		// Model Context Protocol
 
 		// Build lowercase partial for case-insensitive prefix matching
 		std::string sPartialLower = sPartial;
-		std::transform(sPartialLower.begin(), sPartialLower.end(), sPartialLower.begin(), ::tolower);
+		stdlower(sPartialLower);
 
 		// Query rows: vector of strings (display value)
 		std::vector<std::string> candidates;
@@ -1698,8 +1800,8 @@ namespace mcp		// Model Context Protocol
 		for (const auto &candidate : candidates)
 		{
 			std::string candidateLower = candidate;
-			std::transform(candidateLower.begin(), candidateLower.end(), candidateLower.begin(), ::tolower);
-			if (sPartialLower.empty() || candidateLower.substr(0, sPartialLower.size()) == sPartialLower)
+			stdlower(candidateLower);
+			if (sPartialLower.empty() || (candidateLower.size() >= sPartialLower.size() && candidateLower.substr(0, sPartialLower.size()) == sPartialLower))
 				matches.push_back(candidate);
 		}
 
@@ -2226,13 +2328,13 @@ namespace mcp		// Model Context Protocol
 	bool renameDevice(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
 		if (!jsonRequest["params"].isMember("arguments") ||
-		    !jsonRequest["params"]["arguments"].isMember("switchname") ||
+		    !jsonRequest["params"]["arguments"].isMember("name") ||
 		    !jsonRequest["params"]["arguments"].isMember("new_name"))
 		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: renameDevice: Missing required parameters 'switchname' or 'new_name'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: renameDevice: Missing required parameters 'name' or 'new_name'");
 			return false;
 		}
-		std::string sOldName = jsonRequest["params"]["arguments"]["switchname"].asString();
+		std::string sOldName = jsonRequest["params"]["arguments"]["name"].asString();
 		std::string sNewName = jsonRequest["params"]["arguments"]["new_name"].asString();
 
 		Json::Value device;
@@ -2254,12 +2356,12 @@ namespace mcp		// Model Context Protocol
 
 	bool deleteDevice(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("switchname"))
+		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("name"))
 		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: deleteDevice: Missing required parameter 'switchname'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: deleteDevice: Missing required parameter 'name'");
 			return false;
 		}
-		std::string sName = jsonRequest["params"]["arguments"]["switchname"].asString();
+		std::string sName = jsonRequest["params"]["arguments"]["name"].asString();
 
 		Json::Value device;
 		bool bFound = getDeviceByName(sName, device);
@@ -2279,6 +2381,87 @@ namespace mcp		// Model Context Protocol
 		return true;
 	}
 
+	// Resolves a sensor type string (name or numeric) to type/subtype. Returns false on failure.
+	static bool resolveSensorType(const std::string &sSensorType, int &iType, int &iSubType, std::string &sError)
+	{
+		iType = -1; iSubType = -1;
+		std::string sLower = sSensorType;
+		stdlower(sLower);
+
+		for (int i = 0; kSensorMap[i].name != nullptr; i++)
+		{
+			std::string sMapLower = kSensorMap[i].name;
+			stdlower(sMapLower);
+			if (sMapLower == sLower)
+			{
+				iType    = kSensorMap[i].type;
+				iSubType = kSensorMap[i].subtype;
+				return true;
+			}
+		}
+
+		if (!sSensorType.empty() && std::isdigit((unsigned char)sSensorType[0]))
+		{
+			try
+			{
+				int nMapped = std::stoi(sSensorType);
+				for (int i = 0; kSensorMap[i].name != nullptr; i++)
+				{
+					if (kSensorMap[i].mappedvalue == nMapped)
+					{
+						iType    = kSensorMap[i].type;
+						iSubType = kSensorMap[i].subtype;
+						return true;
+					}
+				}
+			}
+			catch (const std::exception &) {}
+		}
+
+		static const std::string sValidNames = []() {
+			std::string names;
+			for (int i = 0; kSensorMap[i].name != nullptr; i++)
+				names += std::string(kSensorMap[i].name) + ", ";
+			if (!names.empty())
+				names.resize(names.size() - 2);
+			return names;
+		}();
+		sError = "Unknown sensor type: \"" + sSensorType + "\". Valid types: " + sValidNames;
+		return false;
+	}
+
+	// Shared creation logic used by both createSensor and createVirtualSensor.
+	static bool doCreateVirtualSensor(int nHwIdx, const std::string &sSensorName, const std::string &sSensorType, Json::Value &jsonRPCRep)
+	{
+		int iType, iSubType;
+		std::string sError;
+		if (!resolveSensorType(sSensorType, iType, iSubType, sError))
+		{
+			mcp::setToolResult(jsonRPCRep, sError, true);
+			return true;
+		}
+
+		auto maxResult = m_sql.safe_query("SELECT MAX(ID) FROM DeviceStatus");
+		unsigned long nid = 1;
+		if (!maxResult.empty() && !maxResult[0][0].empty())
+			nid = atol(maxResult[0][0].c_str()) + 1;
+		nid += 82000;
+
+		bool bPrevAccept = m_sql.m_bAcceptNewHardware;
+		m_sql.m_bAcceptNewHardware = true;
+		std::string soptions;
+		std::string sName = sSensorName;
+		uint64_t DeviceRowIdx = m_sql.CreateDevice(nHwIdx, iType, iSubType, sName, nid, soptions, "MCP");
+		m_sql.m_bAcceptNewHardware = bPrevAccept;
+
+		bool bOK = (DeviceRowIdx != (uint64_t)-1);
+		std::string sResult = bOK
+			? "Virtual sensor \"" + sSensorName + "\" created successfully with idx=" + std::to_string(DeviceRowIdx) + " on hw_idx=" + std::to_string(nHwIdx) + "."
+			: "Failed to create virtual sensor \"" + sSensorName + "\".";
+		mcp::setToolResult(jsonRPCRep, sResult, !bOK);
+		return true;
+	}
+
 	bool createVirtualSensor(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
 		if (!jsonRequest["params"].isMember("arguments") ||
@@ -2290,11 +2473,10 @@ namespace mcp		// Model Context Protocol
 			return false;
 		}
 
-		int nHwIdx     = jsonRequest["params"]["arguments"]["hw_idx"].asInt();
+		int nHwIdx = jsonRequest["params"]["arguments"]["hw_idx"].asInt();
 		std::string sSensorName = jsonRequest["params"]["arguments"]["sensorname"].asString();
-		int nSensorType = jsonRequest["params"]["arguments"]["sensortype"].asInt();
+		std::string sSensorType = jsonRequest["params"]["arguments"]["sensortype"].asString();
 
-		// Validate hardware exists
 		auto hwResult = m_sql.safe_query("SELECT ID FROM Hardware WHERE ID=%d", nHwIdx);
 		if (hwResult.empty())
 		{
@@ -2302,99 +2484,20 @@ namespace mcp		// Model Context Protocol
 			return true;
 		}
 
-		// Look up the type/subtype from the mapped sensor table
-		// Sensor type map (subset of Dummy.cpp mappedsensorname)
-		struct _tmapped { int mappedvalue; int type; int subtype; };
-		static const _tmapped sensorMap[] = {
-			{ 249, 18, 1 },	  // Air Quality (pTypeAirQuality/sTypeVoc)
-			{ 7,   22, 1 },	  // Alert (pTypeGeneral/sTypeAlert)
-			{ 9,   89, 1 },	  // Ampere 3-phase
-			{ 19,  22, 23 },  // Ampere 1-phase
-			{ 11,  22, 2 },	  // Barometer
-			{ 113, 115, 1 },  // Counter (pTypeRFXMeter)
-			{ 14,  22, 28 },  // Counter Incremental
-			{ 1004,22, 31 },  // Custom Sensor
-			{ 13,  22, 13 },  // Distance
-			{ 18,  22, 29 },  // Electric Instant+Counter
-			{ 3,   82, 1 },	  // Gas
-			{ 81,  81, 1 },	  // Humidity
-			{ 16,  22, 18 },  // Leaf Wetness
-			{ 246, 246, 1 },  // Lux
-			{ 250, 250, 1 },  // P1 Smart Meter
-			{ 2,   22, 2  },  // Percentage (overlaps baro, use direct)
-			{ 1,   22, 9 },	  // Pressure
-			{ 85,  85, 3 },	  // Rain
-			{ 241, 241, 1 },  // RGB Switch
-			{ 93,  93, 1 },	  // Scale
-			{ 1002,244, 2 },  // Selector Switch
-			{ 15,  22, 17 },  // Soil Moisture
-			{ 20,  22, 21 },  // Solar Radiation
-			{ 10,  22, 12 },  // Sound Level
-			{ 6,   244, 73 }, // Switch
-			{ 80,  80, 5 },	  // Temperature
-			{ 82,  82, 1 },	  // Temp+Hum
-			{ 84,  84, 1 },	  // Temp+Hum+Baro
-			{ 5,   22, 19 },  // Text
-			{ 8,   242, 1 },  // Thermostat Setpoint
-			{ 248, 250, 1 },  // Usage Electric (reuse P1)
-			{ 87,  87, 1 },	  // UV
-			{ 12,  22, 14 },  // Visibility
-			{ 4,   22, 8 },	  // Voltage
-			{ 86,  86, 1 },	  // Wind
-			{ 0,   0,  0 }    // sentinel
-		};
-
-		int iType = -1, iSubType = -1;
-		for (int i = 0; sensorMap[i].mappedvalue != 0 || i == 0; i++)
-		{
-			if (sensorMap[i].mappedvalue == 0 && i > 0)
-				break;
-			if (sensorMap[i].mappedvalue == nSensorType)
-			{
-				iType    = sensorMap[i].type;
-				iSubType = sensorMap[i].subtype;
-				break;
-			}
-		}
-
-		if (iType == -1)
-		{
-			mcp::setToolResult(jsonRPCRep, "Unknown sensor type: " + std::to_string(nSensorType) + ". Common types: 80=Temperature, 81=Humidity, 5=Text, 6=Switch, 113=Counter, 18=Electric, 82=Temp+Hum", true);
-			return true;
-		}
-
-		// Generate a unique device ID (nid)
-		auto maxResult = m_sql.safe_query("SELECT MAX(ID) FROM DeviceStatus");
-		unsigned long nid = 1;
-		if (!maxResult.empty() && !maxResult[0][0].empty())
-			nid = atol(maxResult[0][0].c_str()) + 1;
-		nid += 82000;
-
-		bool bPrevAccept = m_sql.m_bAcceptNewHardware;
-		m_sql.m_bAcceptNewHardware = true;
-		std::string soptions;
-		uint64_t DeviceRowIdx = m_sql.CreateDevice(nHwIdx, iType, iSubType, sSensorName, nid, soptions, "MCP");
-		m_sql.m_bAcceptNewHardware = bPrevAccept;
-
-		bool bOK = (DeviceRowIdx != (uint64_t)-1);
-		std::string sResult = bOK
-			? "Virtual sensor \"" + sSensorName + "\" created successfully with idx=" + std::to_string(DeviceRowIdx) + "."
-			: "Failed to create virtual sensor \"" + sSensorName + "\".";
-		mcp::setToolResult(jsonRPCRep, sResult, !bOK);
-		return true;
+		return doCreateVirtualSensor(nHwIdx, sSensorName, sSensorType, jsonRPCRep);
 	}
 
 	bool updateDeviceValue(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
 		if (!jsonRequest["params"].isMember("arguments") ||
-		    !jsonRequest["params"]["arguments"].isMember("switchname") ||
+		    !jsonRequest["params"]["arguments"].isMember("name") ||
 		    !jsonRequest["params"]["arguments"].isMember("nvalue"))
 		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: updateDeviceValue: Missing required parameters 'switchname' or 'nvalue'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: updateDeviceValue: Missing required parameters 'name' or 'nvalue'");
 			return false;
 		}
 
-		std::string sName  = jsonRequest["params"]["arguments"]["switchname"].asString();
+		std::string sName  = jsonRequest["params"]["arguments"]["name"].asString();
 		int nValue         = jsonRequest["params"]["arguments"]["nvalue"].asInt();
 		std::string sValue;
 		if (jsonRequest["params"]["arguments"].isMember("svalue"))
@@ -2424,13 +2527,13 @@ namespace mcp		// Model Context Protocol
 
 	bool getDeviceHistory(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("switchname"))
+		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("name"))
 		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: getDeviceHistory: Missing required parameter 'switchname'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: getDeviceHistory: Missing required parameter 'name'");
 			return false;
 		}
 
-		std::string sName = jsonRequest["params"]["arguments"]["switchname"].asString();
+		std::string sName = jsonRequest["params"]["arguments"]["name"].asString();
 		std::string sLogType = "switch";
 		if (jsonRequest["params"]["arguments"].isMember("log_type"))
 			sLogType = jsonRequest["params"]["arguments"]["log_type"].asString();
@@ -2854,6 +2957,30 @@ namespace mcp		// Model Context Protocol
 			? "Event script \"" + sEventName + "\" updated successfully."
 			: "No changes applied to event script \"" + sEventName + "\" (no update parameters provided).";
 		mcp::setToolResult(jsonRPCRep, sResult, false);
+		return true;
+	}
+
+	bool deleteEvent(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("event_name"))
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: deleteEvent: Missing required parameter 'event_name'");
+			return false;
+		}
+		std::string sEventName = jsonRequest["params"]["arguments"]["event_name"].asString();
+
+		auto result = m_sql.safe_query("SELECT ID FROM EventMaster WHERE Name='%q'", sEventName.c_str());
+		if (result.empty())
+		{
+			mcp::setToolResult(jsonRPCRep, "No event script found with name \"" + sEventName + "\"", true);
+			return true;
+		}
+
+		int nIdx = atoi(result[0][0].c_str());
+		m_sql.safe_query("DELETE FROM EventMaster WHERE ID=%d", nIdx);
+		m_mainworker.m_eventsystem.LoadEvents();
+
+		mcp::setToolResult(jsonRPCRep, "Event script \"" + sEventName + "\" (idx=" + std::to_string(nIdx) + ") permanently deleted.", false);
 		return true;
 	}
 

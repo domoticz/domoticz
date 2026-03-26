@@ -90,6 +90,7 @@ namespace mcp
 	bool getEvent(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool createEvent(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool updateEvent(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool deleteEvent(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 
 	struct ToolParam
 	{
