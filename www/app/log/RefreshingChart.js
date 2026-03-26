@@ -1,10 +1,11 @@
-define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'], function (_, Base, DomoticzBase, DataLoader, ChartLoader, ChartZoomer) {
+define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer', 'ChartWatermark'], function (_, Base, DomoticzBase, DataLoader, ChartLoader, ChartZoomer, ChartWatermark) {
 
     function RefreshingChart(
             baseParams, angularParams, domoticzParams, params,
             dataLoader = new DataLoader(),
             chartLoader = new ChartLoader(angularParams.location),
-            chartZoomer = new ChartZoomer()) {
+            chartZoomer = new ChartZoomer(),
+            chartWatermark = new ChartWatermark()) {
         DomoticzBase.call(this, baseParams, angularParams, domoticzParams);
         const self = this;
         self.consoledebug('device -> '
@@ -89,100 +90,11 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                         panKey: 'shift',
                         events: {
                             load: function () {
-                                const chart = this;
-                                self.$scope.chartRef = chart;
-
-                                chart.watermarkErrorConfig = {
-                                    text: '',
-                                    visible: false
-                                };
-
-                                function renderWatermarkError() {
-                                    if (!chart.watermarkErrorConfig.visible) {
-                                        if (chart.watermarkError) {
-                                            chart.watermarkError.destroy();
-                                            chart.watermarkError = null;
-                                        }
-                                        return;
-                                    }
-
-                                    const maxWidth = Math.round(chart.plotWidth * 0.8);
-
-                                    if (chart.watermarkError) {
-                                        chart.watermarkError.attr({ text: `<div class="wm-message" style="maxWidth:${maxWidth}px">${chart.watermarkErrorConfig.text}</div>` });
-                                        return;
-                                    }
-
-                                    const x = chart.plotLeft + chart.plotWidth / 2;
-                                    const y = chart.plotTop;
-
-                                    chart.watermarkError = chart.renderer
-                                        .label(`<div class="wm-message" style="maxWidth:${maxWidth}px">${chart.watermarkErrorConfig.text}</div>`, x, y, null, null, null, true) // can use text instead, lighter but no html
-                                        .addClass('chart-watermark-error')
-                                        .attr({
-                                            align: 'center',
-                                            zIndex: 5
-                                        })
-                                        .add();
-                                }
-
-                                chart.updateWatermarkError = renderWatermarkError;
-
-                                function renderError(errorMessage) {
-                                    chart.watermarkErrorConfig.text = $.t(errorMessage);
-                                    chart.watermarkWarningConfig.visible = false;
-                                    chart.updateWatermarkWarning();
-                                    chart.watermarkErrorConfig.visible = true;
-                                    chart.updateWatermarkError();
-                                }
-
-                                chart.renderError = renderError;
-
-                                chart.watermarkWarningConfig = {
-                                    text: '',
-                                    visible: false
-                                };
-
-                                function renderWatermarkWarning() {
-                                    if (!chart.watermarkWarningConfig.visible) {
-                                        if (chart.watermarkWarning) {
-                                            chart.watermarkWarning.destroy();
-                                            chart.watermarkWarning = null;
-                                        }
-                                        return;
-                                    }
-
-                                    const maxWidth = Math.round(chart.plotWidth * 0.8);
-
-                                    if (chart.watermarkWarning) {
-                                        chart.watermarkWarning.attr({ text: `<div class="wm-message" style="maxWidth:${maxWidth}px">${chart.watermarkWarningConfig.text}</div>` });
-                                        return;
-                                    }
-
-                                    const x = chart.plotLeft + chart.plotWidth / 2;
-                                    const y = chart.plotTop;
-
-                                    chart.watermarkWarning = chart.renderer
-                                        .label(`<div class="wm-message" style="maxWidth:${maxWidth}px">${chart.watermarkWarningConfig.text}</div>`, x, y, null, null, null, true) // can use text instead, lighter but no html
-                                        .addClass('chart-watermark-warning')
-                                        .attr({
-                                            align: 'center',
-                                            zIndex: 5
-                                        })
-                                        .add();
-                                }
-
-                                chart.updateWatermarkWarning = renderWatermarkWarning;
-
-                                function renderWarning(warningMessage) {
-                                    chart.watermarkWarningConfig.text = $.t(warningMessage);
-                                    chart.watermarkErrorConfig.visible = false;
-                                    chart.updateWatermarkError();
-                                    chart.watermarkWarningConfig.visible = true;
-                                    chart.updateWatermarkWarning();
-                                }
-
-                                chart.renderWarning = renderWarning;
+                                chartWatermark.initWatermark(this);
+                                self.$scope.chartRef = this;
+                            },
+                            redraw: function () {
+                                chartWatermark.refreshWatermark(this);
                             }
                         }
                     },
