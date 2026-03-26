@@ -64,7 +64,6 @@ extern std::string szAppHash;
 extern std::string szAppDate;
 extern std::string szPyVersion;
 
-extern bool g_bLlmMCPSupport;
 extern bool bDoCachePages;
 
 namespace http
@@ -266,10 +265,7 @@ namespace http
 					m_iamsettings.discovery_url.c_str(), [this](auto&& session, auto&& req, auto&& rep) { GetOpenIDConfiguration(session, req, rep); }, true);
 			}
 
-			if (g_bLlmMCPSupport)
-			{
-				m_pWebEm->RegisterPageCode("/mcp", [this](auto&& session, auto&& req, auto&& rep) { PostMcp(session, req, rep); }, false);
-			}
+			m_pWebEm->RegisterPageCode("/mcp", [this](auto&& session, auto&& req, auto&& rep) { PostMcp(session, req, rep); }, false);
 
 			m_pWebEm->RegisterPageCode("/json.htm", [this](auto&& session, auto&& req, auto&& rep) { GetJSonPage(session, req, rep); });
 			m_pWebEm->RegisterPageCode("/alexa.htm", [this](auto&& session, auto&& req, auto&& rep) { GetAlexaPage(session, req, rep); });

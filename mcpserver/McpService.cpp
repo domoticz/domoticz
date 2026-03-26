@@ -53,6 +53,7 @@ extern std::string szAppVersion;
 extern std::string szAppHash;
 extern std::string szAppDate;
 extern time_t m_StartTime;
+extern bool g_bLlmMCPSupport;
 
 namespace http
 {
@@ -60,6 +61,12 @@ namespace http
 	{
 		void CWebServer::PostMcp(WebEmSession &session, const request &req, reply &rep)
 		{
+			if (g_bLlmMCPSupport == false)
+			{
+				_log.Log(LOG_ERROR, "MCP: MCP access requested (IP: %s), but service disabled with -nomcp !", session.remote_host.c_str());
+				rep = reply::stock_reply(reply::service_unavailable);
+				return;
+			}
 			_log.Debug(DEBUG_RECEIVED, "MCP: Post (%d): %s (%s)", req.content_length, req.content.c_str(), req.uri.c_str());
 			// Check if the request is valid
 			std::string sProtocolRequestHeader;
@@ -116,8 +123,9 @@ namespace http
 			if (sReqMethod.find("notifications/") != std::string::npos)
 			{
 				// Handle notifications, notifications don't have an ID and do not require a response
+				// MCP HTTP transport expects 202 Accepted (not 204 No Content) for notifications
 				_log.Debug(DEBUG_WEBSERVER, "MCP: Handling notification %s (do nothing).", sReqMethod.c_str());
-				rep = reply::stock_reply(reply::no_content);
+				rep = reply::stock_reply(reply::accepted);
 				return;
 			}
 
