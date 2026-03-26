@@ -1,8 +1,4 @@
 define(function() {
-    function ChartWatermark() {
-
-    }
-
     function renderWatermark(chart, configName, elementName, cssClass) {
         var config = chart[configName];
         if (!config || !config.visible) {
@@ -46,7 +42,7 @@ define(function() {
         renderWatermark(chart, 'watermarkWarningConfig', 'watermarkWarning', 'chart-watermark-warning');
     }
 
-    ChartWatermark.prototype.initWatermark = function(chart) {
+    function init(chart) {
         chart.watermarkErrorConfig = { text: '', visible: false };
         chart.watermarkWarningConfig = { text: '', visible: false };
 
@@ -67,10 +63,13 @@ define(function() {
         };
     };
 
-    ChartWatermark.prototype.refreshWatermark = function(chart) {
+    function refresh(chart) {
         chart.updateWatermarkError();
         chart.updateWatermarkWarning();
     };
 
-    return ChartWatermark;
+    return {
+        init,
+        refresh
+    };
 });

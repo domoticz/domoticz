@@ -4,8 +4,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             baseParams, angularParams, domoticzParams, params,
             dataLoader = new DataLoader(),
             chartLoader = new ChartLoader(angularParams.location),
-            chartZoomer = new ChartZoomer(),
-            chartWatermark = new ChartWatermark()) {
+            chartZoomer = new ChartZoomer()) {
         DomoticzBase.call(this, baseParams, angularParams, domoticzParams);
         const self = this;
         self.consoledebug('device -> '
@@ -94,11 +93,11 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                         panKey: 'shift',
                         events: {
                             load: function () {
-                                chartWatermark.initWatermark(this);
+                                ChartWatermark.init(this);
                                 self.$scope.chartRef = this;
                             },
                             redraw: function () {
-                                chartWatermark.refreshWatermark(this);
+                                ChartWatermark.refresh(this);
                             }
                         }
                     },
