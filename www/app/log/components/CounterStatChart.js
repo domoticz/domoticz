@@ -10,7 +10,7 @@ define(['app', 'luxon', 'ChartWatermark'], function (app, luxon, ChartWatermark)
         controller: CounterStatChartController
     });
 
-    function CounterStatChartController($scope, $element, $http, $interval, domoticzGlobals, domoticzApi, dzSettings, chartWatermark = new ChartWatermark()) {
+    function CounterStatChartController($scope, $element, $http, $interval, domoticzGlobals, domoticzApi, dzSettings) {
         const self = this;
 		
 		self.$element = $element;
@@ -71,11 +71,11 @@ define(['app', 'luxon', 'ChartWatermark'], function (app, luxon, ChartWatermark)
 			chart: {
 				events: {
 					load: function () {
-						chartWatermark.initWatermark(this);
+						ChartWatermark.init(this);
 						$scope.chartRef = this;
 					},
 					redraw: function () {
-						chartWatermark.refreshWatermark(this);
+						ChartWatermark.refresh(this);
 					}
 				}
 			},
