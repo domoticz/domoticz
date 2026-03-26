@@ -180,11 +180,11 @@ Tools are actions an AI agent can invoke. All tools accept and return plain text
 |-
 ! Tool !! Parameters !! Description
 |-
-| <code>search_devices</code> || <code>query</code> (required), <code>filter</code> (optional: light/temp/weather/utility) || Case-insensitive substring search across device name, type and subtype. Use this first to discover the exact name of a device before calling other tools.
+| <code>search_devices</code> || <code>query</code> (required), <code>filter</code> (optional: light/temp/weather/utility) || Case-insensitive substring search across device name, type and subtype. Returns name, type, current value, idx, battery level (if applicable), and signal level/RSSI (if applicable). Use this first to discover the exact name of a device before calling other tools.
 |-
-| <code>get_all_devices</code> || <code>filter</code> (optional: light/temp/weather/utility) || Return a list of all used devices, optionally filtered by category.
+| <code>get_all_devices</code> || <code>filter</code> (optional: light/temp/weather/utility) || Return a list of all used devices, optionally filtered by category. Each entry includes name, type, current value, idx, battery level (if applicable; 255 = no battery), and signal level/RSSI (if applicable).
 |-
-| <code>get_device</code> || <code>name</code> or <code>idx</code> (at least one required) || Return full details for a single device.
+| <code>get_device</code> || <code>name</code> or <code>idx</code> (at least one required) || Return full details for a single device, including hardware, type, current value, last update, battery level (if applicable), and signal level/RSSI (if applicable).
 |}
 
 === Switch & sensor control ===
@@ -388,3 +388,4 @@ Prompts are pre-written instruction templates that guide the AI through common t
 * The <code>delete_device</code> tool hides a device (sets Used=0) rather than permanently deleting it. Historical data is preserved.
 * The <code>create_event</code> and <code>update_event</code> tools take effect immediately — the event system reloads after each change.
 * Device and scene names passed to tools are matched exactly (case-sensitive) except for command values like On/Off/Open/Close which are normalised automatically.
+* Signal level (RSSI) is reported for wireless devices as <code>rssi=&lt;value&gt;</code> (compact format in list tools) or <code>SignalLevel: &lt;value&gt;</code> (detail format in <code>get_device</code>). The value 12 is the default/unknown value and is omitted from output.

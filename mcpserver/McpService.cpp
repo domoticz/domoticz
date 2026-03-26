@@ -2409,7 +2409,7 @@ namespace mcp		// Model Context Protocol
 				{
 					int iSignalLevel = device["SignalLevel"].asInt();
 					if (iSignalLevel != 12)
-						sResult += " SignalLevel: " + std::to_string(iSignalLevel);
+						sResult += "  SignalLevel: " + std::to_string(iSignalLevel) + "\n";
 				}
 			}
 			else
@@ -2439,10 +2439,10 @@ namespace mcp		// Model Context Protocol
 				sResult += "  Used:        " + row[9] + "\n";
 				int iBatt = atoi(row[10].c_str());
 				if (iBatt != 255)
-					sResult += "  BatteryLevel: " + std::to_string(iBatt) + "%";
+					sResult += "  BatteryLevel: " + std::to_string(iBatt) + "%\n";
 				int iSignalLevel = atoi(row[11].c_str());
-				if (iSignalLevel != 255)
-					sResult += "  SignalLevel: " + std::to_string(iSignalLevel);
+				if (iSignalLevel != 12)
+					sResult += "  SignalLevel: " + std::to_string(iSignalLevel) + "\n";
 			}
 			else
 			{
