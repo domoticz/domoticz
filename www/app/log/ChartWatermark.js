@@ -55,11 +55,11 @@ define(function() {
         };
 
         chart.renderError = function(msg) {
-            showError(chart, msg);
+            showError(chart, $.t(msg));
         };
 
         chart.renderWarning = function(msg) {
-            showWarning(chart, msg);
+            showWarning(chart, $.t(msg));
         };
     };
 
