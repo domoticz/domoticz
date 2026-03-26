@@ -16,6 +16,7 @@ public:
 	void Reset();
 	double GetCounterOffset() const { return m_CounterOffset; }
 	double GetLastCounterValue() const { return m_nLastCounterValue; }
+	void SetType(const int devtype, const int subtype);
 private:
 	void Init(const CDomoticzHardwareBase* pHardwareBase, const int NodeID, const int ChildID, const uint8_t Unit = 1);
 	void Init(const CDomoticzHardwareBase* pHardwareBase, const std::string& szDeviceID, const uint8_t Unit = 1);
@@ -32,9 +33,13 @@ private:
 
 	double m_CounterOffset = 0;
 	double m_nLastCounterValue = 0;
+	double m_value_multiply = 1000.0;
 
 	bool m_bPendingReset = false;
 	double m_pendingOffset = 0;
 	time_t m_pendingResetTime = 0;
+
+	int m_devtype;
+	int m_subtype;
 };
 

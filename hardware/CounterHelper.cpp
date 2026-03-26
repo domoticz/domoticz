@@ -22,10 +22,18 @@ constexpr double COUNTER_RESET_TOLERANCE_KWH = 0.1;
 
 CounterHelper::CounterHelper()
 {
+	m_devtype = pTypeGeneral;
+	m_subtype = sTypeKwh;
 }
 
 CounterHelper::~CounterHelper()
 {
+}
+
+void CounterHelper::SetType(const int devtype, const int subtype)
+{
+	m_devtype = devtype;
+	m_subtype = subtype;
 }
 
 void CounterHelper::Reset()
@@ -39,7 +47,7 @@ void CounterHelper::Reset()
 	m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=0, LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type=%d) AND (SubType=%d)",
 		TimeToString(nullptr, TF_DateTime).c_str(),
 		m_HwdID, m_szID.c_str(), m_Unit,
-		pTypeGeneral, sTypeKwh
+		m_devtype, m_subtype
 		);
 }
 
@@ -83,7 +91,7 @@ void CounterHelper::InitInt()
 {
 	auto result = m_sql.safe_query("SELECT sValue, LastLevel, ID, Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type=%d) AND (SubType=%d)",
 		m_HwdID, m_szID.c_str(), m_Unit,
-		pTypeGeneral, sTypeKwh);
+		m_devtype, m_subtype);
 	if (!result.empty())
 	{
 		std::string sValue = result[0][0];
@@ -126,7 +134,7 @@ void CounterHelper::InitInt()
 			m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=0, LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type=%d) AND (SubType=%d)",
 				TimeToString(nullptr, TF_DateTime).c_str(),
 				m_HwdID, m_szID.c_str(), m_Unit,
-				pTypeGeneral, sTypeKwh);
+				m_devtype, m_subtype);
 		}
 	}
 
@@ -199,7 +207,7 @@ double CounterHelper::CheckTotalCounter(const double mtotal, bool& bLooped)
 			m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=%lld, LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type=%d) AND (SubType=%d)",
 				static_cast<long long int>(m_CounterOffset * 1000.0), TimeToString(nullptr, TF_DateTime).c_str(),
 				m_HwdID, m_szID.c_str(), m_Unit,
-				pTypeGeneral, sTypeKwh);
+				m_devtype, m_subtype);
 
 			rTotal = m_CounterOffset + mtotal;
 		}
