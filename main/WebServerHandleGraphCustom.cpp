@@ -681,6 +681,72 @@ void HandleGraphCustomRange(const GraphContext& ctx, const request& req,
 					ii++;
 				}
 			}
+		else if (sensor == "Percentage")
+		{
+			root["status"] = "OK";
+			root["title"] = "Graph " + sensor + " " + srange;
+
+			int ii = 0;
+			result = sql.safe_query("SELECT Percentage_Min, Percentage_Max, Percentage_Avg, Date FROM %s"
+				" WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+				dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
+			if (!result.empty())
+			{
+				for (const auto& sd : result)
+				{
+					root["result"][ii]["d"]     = sd[3].substr(0, 16);
+					root["result"][ii]["v_min"] = sd[0];
+					root["result"][ii]["v_max"] = sd[1];
+					root["result"][ii]["v_avg"] = sd[2];
+					ii++;
+				}
+			}
+			// add today (have to calculate it)
+			result = sql.safe_query("SELECT MIN(Percentage), MAX(Percentage), AVG(Percentage)"
+				" FROM Percentage WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
+				idx, szDateEnd.c_str());
+			if (!result.empty() && !result[0][0].empty())
+			{
+				const auto& sd = result[0];
+				root["result"][ii]["d"]     = szDateEnd;
+				root["result"][ii]["v_min"] = sd[0];
+				root["result"][ii]["v_max"] = sd[1];
+				root["result"][ii]["v_avg"] = sd[2];
+				ii++;
+			}
+		}
+		else if (sensor == "fan")
+		{
+			root["status"] = "OK";
+			root["title"] = "Graph " + sensor + " " + srange;
+
+			int ii = 0;
+			result = sql.safe_query("SELECT Speed_Min, Speed_Max, Date FROM %s"
+				" WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+				dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
+			if (!result.empty())
+			{
+				for (const auto& sd : result)
+				{
+					root["result"][ii]["d"]     = sd[2].substr(0, 16);
+					root["result"][ii]["v_min"] = sd[0];
+					root["result"][ii]["v_max"] = sd[1];
+					ii++;
+				}
+			}
+			// add today (have to calculate it)
+			result = sql.safe_query("SELECT MIN(Speed), MAX(Speed) FROM Fan"
+				" WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
+				idx, szDateEnd.c_str());
+			if (!result.empty() && !result[0][0].empty())
+			{
+				const auto& sd = result[0];
+				root["result"][ii]["d"]     = szDateEnd;
+				root["result"][ii]["v_min"] = sd[0];
+				root["result"][ii]["v_max"] = sd[1];
+				ii++;
+			}
+		}
 
 } // HandleGraphCustomRange
 

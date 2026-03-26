@@ -35,6 +35,9 @@
 #include "../notifications/NotificationHelper.h"
 #include "../hardware/ColorSwitch.h"
 #include <libwebem/Base64.h>
+#include "../main/RFXtrx.h"
+#include "../hardware/hardwaretypes.h"
+#include "../main/WebServerHandleGraphInternals.h"
 
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
@@ -466,12 +469,20 @@ namespace mcp		// Model Context Protocol
 			}
 		},
 		{
-			"get_device_history",
-			"Get device history",
-			"Retrieve the recent log history for a device. Returns up to 50 most recent entries.",
+			"get_sensor_history",
+			"Get history for any device",
+			"Retrieve history for any device: daily aggregated calendar data for sensors "
+			"(temperature, humidity, rain, wind, UV, percentage, fan, P1, energy, gas, water, counters), "
+			"or on/off/dim event log for switches and scenes. "
+			"For sensors: specify 'days' or 'start_date'+'end_date'. "
+			"For switches/scenes: specify 'days'/'start_date'/'end_date' for date range, "
+			"or 'count' for last N events.",
 			{
-				{ "name", "string", "Name of the device", true, {} },
-				{ "log_type", "string", "Log type: switch (default), text, or graph", false, {} },
+				{ "name", "string", "Name of the device or scene", true, {} },
+				{ "days", "integer", "Number of days of history to retrieve (1-366, default 7 for sensors). Ignored if start_date/end_date provided.", false, {} },
+				{ "start_date", "string", "Start date in YYYY-MM-DD format (use with end_date for custom range)", false, {} },
+				{ "end_date", "string", "End date in YYYY-MM-DD format (use with start_date for custom range)", false, {} },
+				{ "count", "integer", "For switches/scenes: return last N log entries (1-500, default 50). When specified, date params are ignored.", false, {} },
 			}
 		},
 		{
@@ -783,7 +794,7 @@ namespace mcp		// Model Context Protocol
 			{ "create_virtual_sensor",  createVirtualSensor },
 			{ "create_device",          createVirtualSensor },
 			{ "update_device_value",    updateDeviceValue },
-			{ "get_device_history",     getDeviceHistory },
+			{ "get_sensor_history",     getSensorHistory },
 			{ "get_scenes",             getScenes },
 			{ "switch_scene",           switchScene },
 			{ "get_rooms",              getRooms },
@@ -1618,7 +1629,7 @@ namespace mcp		// Model Context Protocol
 			sText += "Use the available tools to: ";
 			sText += "1) Find the device using search_devices or get_device if you know its IDX. ";
 			sText += "2) Get the current state using get_switch_state or get_sensor_value. ";
-			sText += "3) Check its recent history using get_device_history. ";
+			sText += "3) Check its recent history using get_sensor_history. ";
 			sText += "4) Check the system log using get_logging for any errors related to this device. ";
 			sText += "5) Check if its hardware is online using get_hardware. ";
 			sText += "Summarize what you find and suggest any remediation steps.";
@@ -1658,7 +1669,7 @@ namespace mcp		// Model Context Protocol
 			sText += "Use the available tools to: ";
 			sText += "1) List all devices using get_all_devices and identify electric, power, and energy sensors (kWh, Watt, P1 Smart Meter, Usage Electric types). ";
 			sText += "2) Read current values using get_sensor_value for each energy device. ";
-			sText += "3) Check recent history using get_device_history for the main consumers. ";
+			sText += "3) Check recent history using get_sensor_history for the main consumers. ";
 			sText += "4) Identify the highest consumers and any unusual patterns. ";
 			sText += "Provide a structured report with current readings, estimated daily/monthly costs if possible, and recommendations for reducing consumption.";
 			makeUserMessage(jsonRPCRep, "Summarize energy consumption and identify high consumers", sText);
@@ -2601,85 +2612,330 @@ namespace mcp		// Model Context Protocol
 		return true;
 	}
 
-	bool getDeviceHistory(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	bool getSensorHistory(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
 		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("name"))
 		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: getDeviceHistory: Missing required parameter 'name'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: getSensorHistory: Missing required parameter 'name'");
 			return false;
 		}
 
-		std::string sName = jsonRequest["params"]["arguments"]["name"].asString();
-		std::string sLogType = "switch";
-		if (jsonRequest["params"]["arguments"].isMember("log_type"))
-			sLogType = jsonRequest["params"]["arguments"]["log_type"].asString();
+		const std::string sName = jsonRequest["params"]["arguments"]["name"].asString();
+		const Json::Value &args = jsonRequest["params"]["arguments"];
 
+		// Find device by name
 		Json::Value device;
-		bool bFound = getDeviceByName(sName, device);
-		std::string sResult;
-
-		if (bFound)
+		if (!getDeviceByName(sName, device))
 		{
-			int nIdx = atoi(device["idx"].asString().c_str());
+			mcp::setToolResult(jsonRPCRep, "No device found with name \"" + sName + "\"", true);
+			return true;
+		}
+		const uint64_t nIdx = (uint64_t)atoll(device["idx"].asString().c_str());
 
-			if (sLogType == "graph")
+		// Scenes/groups are not in DeviceStatus — detect them first via the device JSON Type field.
+		bool bIsSwitch = false;
+		if (device.isMember("Type"))
+		{
+			const std::string sDevType = device["Type"].asString();
+			if (sDevType == "Scene" || sDevType == "Group")
+				bIsSwitch = true;
+		}
+
+		// For non-scene devices fetch dType/dSubType, then use IsLightOrSwitch().
+		unsigned char dType    = 0;
+		unsigned char dSubType = 0;
+		if (!bIsSwitch)
+		{
+			auto devResult = m_sql.safe_query(
+				"SELECT Type, SubType FROM DeviceStatus WHERE ID=%" PRIu64, nIdx);
+			if (devResult.empty())
 			{
-				// Graph history from Temperature_Calendar or Meter_Calendar
+				mcp::setToolResult(jsonRPCRep, "Device \"" + sName + "\" not found in database.", true);
+				return true;
+			}
+			dType    = (unsigned char)atoi(devResult[0][0].c_str());
+			dSubType = (unsigned char)atoi(devResult[0][1].c_str());
+			bIsSwitch = IsLightOrSwitch(dType, dSubType);
+		}
+
+		if (bIsSwitch)
+		{
+			// --- LightingLog branch: switches and scenes ---
+			std::string sResult;
+
+			if (args.isMember("count") && !args["count"].isNull())
+			{
+				// Last N entries regardless of date
+				int iCount = std::max(1, std::min(500, args["count"].asInt()));
 				auto result = m_sql.safe_query(
-					"SELECT Date, Max_Val, Min_Val, Avg_Val FROM Temperature_Calendar WHERE DeviceRowID=%d ORDER BY Date DESC LIMIT 50", nIdx);
-				if (!result.empty())
+					"SELECT Date, nValue, sValue, User FROM LightingLog "
+					"WHERE DeviceRowID=%" PRIu64 " ORDER BY Date DESC LIMIT %d",
+					nIdx, iCount);
+				if (result.empty())
 				{
-					sResult = std::to_string((int)result.size()) + " graph entries for \"" + sName + "\":\n";
-					for (const auto &row : result)
-						sResult += "  " + row[0] + " max=" + row[1] + " min=" + row[2] + " avg=" + row[3] + "\n";
+					sResult = "No log entries found for \"" + sName + "\"";
 				}
 				else
 				{
-					// Try Meter_Calendar
-					auto mResult = m_sql.safe_query(
-						"SELECT Date, Value, Counter FROM Meter_Calendar WHERE DeviceRowID=%d ORDER BY Date DESC LIMIT 50", nIdx);
-					if (!mResult.empty())
+					sResult = "Last " + std::to_string((int)result.size()) +
+					          " log entries for switch \"" + sName + "\":\n";
+					for (const auto &row : result)
 					{
-						sResult = std::to_string((int)mResult.size()) + " meter entries for \"" + sName + "\":\n";
-						for (const auto &row : mResult)
-							sResult += "  " + row[0] + " value=" + row[1] + " counter=" + row[2] + "\n";
-					}
-					else
-					{
-						sResult = "No graph history found for \"" + sName + "\"";
+						int nValue = atoi(row[1].c_str());
+						std::string sState;
+						if (nValue == 0)       sState = "Off";
+						else if (nValue == 1)  sState = "On";
+						else if (nValue == 2)  sState = "Toggle";
+						else if (nValue == 9)  sState = "Dim to level";
+						else                   sState = std::to_string(nValue);
+						if (!row[2].empty())   sState += ": " + row[2];
+						std::string sLine = row[0] + "  " + sState;
+						if (!row[3].empty())   sLine += "  (user: " + row[3] + ")";
+						sResult += sLine + "\n";
 					}
 				}
 			}
 			else
 			{
-				// Switch/text log from LightingLog
-				auto result = m_sql.safe_query(
-					"SELECT Date, nValue, sValue, User FROM LightingLog WHERE DeviceRowID=%d ORDER BY Date DESC LIMIT 50", nIdx);
-				if (!result.empty())
+				// Date range filter
+				std::string szDateStart, szDateEnd;
+				if (args.isMember("start_date") && args.isMember("end_date") &&
+				    !args["start_date"].asString().empty() && !args["end_date"].asString().empty())
 				{
-					sResult = std::to_string((int)result.size()) + " log entries for \"" + sName + "\":\n";
-					for (const auto &row : result)
-					{
-						sResult += "  " + row[0] + " nValue=" + row[1];
-						if (!row[2].empty())
-							sResult += " sValue=\"" + row[2] + "\"";
-						if (!row[3].empty())
-							sResult += " user=" + row[3];
-						sResult += "\n";
-					}
+					szDateStart = args["start_date"].asString();
+					szDateEnd   = args["end_date"].asString();
 				}
 				else
 				{
-					sResult = "No log history found for \"" + sName + "\"";
+					int iDays = 7;
+					if (args.isMember("days"))
+						iDays = std::max(1, std::min(366, args["days"].asInt()));
+					time_t now = mytime(nullptr);
+					struct tm tmNow, tmStart;
+					localtime_r(&now, &tmNow);
+					time_t tStart = now - (time_t)(iDays - 1) * 86400LL;
+					localtime_r(&tStart, &tmStart);
+					char buf[16];
+					snprintf(buf, sizeof(buf), "%04d-%02d-%02d",
+						tmNow.tm_year + 1900, tmNow.tm_mon + 1, tmNow.tm_mday);
+					szDateEnd = buf;
+					snprintf(buf, sizeof(buf), "%04d-%02d-%02d",
+						tmStart.tm_year + 1900, tmStart.tm_mon + 1, tmStart.tm_mday);
+					szDateStart = buf;
+				}
+				auto result = m_sql.safe_query(
+					"SELECT Date, nValue, sValue, User FROM LightingLog "
+					"WHERE DeviceRowID=%" PRIu64 " AND Date>='%q' AND Date<='%q 23:59:59' "
+					"ORDER BY Date DESC",
+					nIdx, szDateStart.c_str(), szDateEnd.c_str());
+				if (result.empty())
+				{
+					sResult = "No log entries found for \"" + sName + "\" in the specified period.";
+				}
+				else
+				{
+					sResult = std::to_string((int)result.size()) +
+					          " log entries for switch \"" + sName + "\" (" +
+					          szDateStart + " to " + szDateEnd + "):\n";
+					for (const auto &row : result)
+					{
+						int nValue = atoi(row[1].c_str());
+						std::string sState;
+						if (nValue == 0)       sState = "Off";
+						else if (nValue == 1)  sState = "On";
+						else if (nValue == 2)  sState = "Toggle";
+						else if (nValue == 9)  sState = "Dim to level";
+						else                   sState = std::to_string(nValue);
+						if (!row[2].empty())   sState += ": " + row[2];
+						std::string sLine = row[0] + "  " + sState;
+						if (!row[3].empty())   sLine += "  (user: " + row[3] + ")";
+						sResult += sLine + "\n";
+					}
 				}
 			}
+			mcp::setToolResult(jsonRPCRep, sResult, false);
+			return true;
+		}
+
+		// Map device type to sensor string (what HandleGraphCustomRange expects)
+		std::string sSensor;
+		if (dType == pTypeTEMP || dType == pTypeTEMP_HUM || dType == pTypeTEMP_HUM_BARO ||
+		    dType == pTypeTEMP_BARO || dType == pTypeHUM)
+			sSensor = "temp";
+		else if (dType == pTypeRAIN)
+			sSensor = "rain";
+		else if (dType == pTypeWIND)
+			sSensor = "wind";
+		else if (dType == pTypeUV)
+			sSensor = "uv";
+		else if (dType == pTypeGeneral && dSubType == sTypePercentage)
+			sSensor = "Percentage";
+		else if (dType == pTypeGeneral && dSubType == sTypeFan)
+			sSensor = "fan";
+		else
+			sSensor = "counter";
+
+		// Compute date range
+		std::string szDateStart, szDateEnd;
+		if (args.isMember("start_date") && args.isMember("end_date") &&
+		    !args["start_date"].asString().empty() && !args["end_date"].asString().empty())
+		{
+			szDateStart = args["start_date"].asString();
+			szDateEnd   = args["end_date"].asString();
 		}
 		else
 		{
-			sResult = "No device found with name \"" + sName + "\"";
+			int iDays = 7;
+			if (args.isMember("days"))
+				iDays = std::max(1, std::min(366, args["days"].asInt()));
+
+			time_t now = mytime(nullptr);
+			struct tm tmNow, tmStart;
+			localtime_r(&now, &tmNow);
+			time_t tStart = now - (time_t)(iDays - 1) * 86400LL;
+			localtime_r(&tStart, &tmStart);
+
+			char buf[16];
+			snprintf(buf, sizeof(buf), "%04d-%02d-%02d",
+				tmNow.tm_year + 1900, tmNow.tm_mon + 1, tmNow.tm_mday);
+			szDateEnd = buf;
+			snprintf(buf, sizeof(buf), "%04d-%02d-%02d",
+				tmStart.tm_year + 1900, tmStart.tm_mon + 1, tmStart.tm_mday);
+			szDateStart = buf;
 		}
 
-		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
+		// Build range string "YYYY-MM-DDTYYYY-MM-DD"
+		std::string sRange = szDateStart + "T" + szDateEnd;
+
+		// Prepare output
+		const char tempsign = m_sql.m_tempsign[0];
+		const char* sTempUnit = (tempsign == 'F') ? "F" : "C";
+		auto cvtTemp = [&](const std::string& s) -> std::string {
+			if (s.empty()) return "";
+			double v = atof(s.c_str());
+			if (tempsign == 'F') v = v * 1.8 + 32.0;
+			char buf[32];
+			snprintf(buf, sizeof(buf), "%.1f", v);
+			return buf;
+		};
+
+		std::string sResult;
+
+		// ---- All sensor types: delegate to HandleGraphCustomRange ----
+		http::server::request req;
+		req.parameters.emplace("idx",       std::to_string(nIdx));
+		req.parameters.emplace("sensor",    sSensor);
+		req.parameters.emplace("range",     sRange);
+		// For temperature: enable all sub-series
+		req.parameters.emplace("graphTemp",  "true");
+		req.parameters.emplace("graphHum",   "true");
+		req.parameters.emplace("graphBaro",  "true");
+		req.parameters.emplace("graphDew",   "true");
+		req.parameters.emplace("graphChill", "true");
+
+		// Build GraphContext (reads device from DB using idx+sensor from req)
+		http::server::GraphContext ctx;
+		if (!http::server::BuildGraphContext(req, m_sql, ctx))
+		{
+			mcp::setToolResult(jsonRPCRep, "Could not build graph context for device \"" + sName + "\".", true);
+			return true;
+		}
+
+		// Call HandleGraphCustomRange (CWebServer& param is unused in that function)
+		Json::Value root;
+		http::server::CWebServer* pWS = m_webservers.GetAnyServer();
+		if (!pWS)
+		{
+			mcp::setToolResult(jsonRPCRep, "Web server not available.", true);
+			return true;
+		}
+		http::server::HandleGraphCustomRange(ctx, req, root, m_sql, *pWS);
+
+		if (!root.isMember("result") || root["result"].empty())
+		{
+			std::string sMsg = "There is no graph history available for the \"" + sName + "\" sensor ";
+			sMsg += "between " + szDateStart + " and " + szDateEnd + ".\n";
+			sMsg += "This may mean graph logging is disabled for this device or no data has been recorded.\n";
+			sMsg += "Tip: try a wider date range or increase 'days'.";
+			mcp::setToolResult(jsonRPCRep, sMsg, true);
+			return true;
+		}
+
+		// Format the JSON result as human-readable text
+		if (sSensor == "temp")
+			sResult = "Daily temperature history for \"" + sName + "\" (\xc2\xb0" + sTempUnit + " min/avg/max):\n";
+		else if (sSensor == "rain")
+			sResult = "Daily rain history for \"" + sName + "\" (mm):\n";
+		else if (sSensor == "wind")
+			sResult = "Daily wind history for \"" + sName + "\":\n";
+		else if (sSensor == "uv")
+			sResult = "Daily UV index history for \"" + sName + "\":\n";
+		else if (sSensor == "Percentage")
+			sResult = "Daily percentage history for \"" + sName + "\" (% min/avg/max):\n";
+		else if (sSensor == "fan")
+			sResult = "Daily fan speed history for \"" + sName + "\" (rpm min/max):\n";
+		else
+			sResult = "Daily history for \"" + sName + "\":\n";
+
+		sResult += "Date        | Data\n";
+		sResult += "------------|--------------------------------------\n";
+
+		const Json::Value& results = root["result"];
+		for (const auto& row : results)
+		{
+			std::string sDate = row.isMember("d") ? row["d"].asString().substr(0, 10) : "?";
+
+			if (sSensor == "temp")
+			{
+				std::string sLine = sDate + " |";
+				if (row.isMember("tm") && row.isMember("ta") && row.isMember("te"))
+					sLine += " temp: min=" + cvtTemp(row["tm"].asString()) +
+					         " avg=" + cvtTemp(row["ta"].asString()) +
+					         " max=" + cvtTemp(row["te"].asString()) +
+					         "\xc2\xb0" + sTempUnit;
+				if (row.isMember("hu"))
+					sLine += "  hum=" + row["hu"].asString() + "%";
+				if (row.isMember("ba"))
+					sLine += "  baro=" + row["ba"].asString() + " hPa";
+				if (row.isMember("dp"))
+					sLine += "  dew=" + cvtTemp(row["dp"].asString()) + "\xc2\xb0" + sTempUnit;
+				sResult += sLine + "\n";
+			}
+			else if (sSensor == "rain")
+			{
+				sResult += sDate + " | " + (row.isMember("mm") ? row["mm"].asString() : "0") + " mm\n";
+			}
+			else if (sSensor == "wind")
+			{
+				std::string sLine = sDate + " |";
+				if (row.isMember("di")) sLine += " dir=" + row["di"].asString() + "\xc2\xb0";
+				if (row.isMember("sp")) sLine += " speed=" + row["sp"].asString();
+				if (row.isMember("gu")) sLine += " gust=" + row["gu"].asString();
+				sResult += sLine + "\n";
+			}
+			else if (sSensor == "uv")
+			{
+				sResult += sDate + " | uvi=" + (row.isMember("uvi") ? row["uvi"].asString() : "?") + "\n";
+			}
+			else if (sSensor == "Percentage" || sSensor == "fan")
+			{
+				std::string sLine = sDate + " |";
+				if (row.isMember("v_min")) sLine += " min=" + row["v_min"].asString();
+				if (row.isMember("v_avg")) sLine += " avg=" + row["v_avg"].asString();
+				if (row.isMember("v_max")) sLine += " max=" + row["v_max"].asString();
+				sResult += sLine + "\n";
+			}
+			else // counter (includes P1, energy, gas, water, generic counters)
+			{
+				std::string sLine = sDate + " |";
+				if (row.isMember("v1")) sLine += " usage=" + row["v1"].asString();
+				if (row.isMember("v2")) sLine += " delivery=" + row["v2"].asString();
+				if (!row.isMember("v1") && row.isMember("v")) sLine += " value=" + row["v"].asString();
+				sResult += sLine + "\n";
+			}
+		}
+
+		mcp::setToolResult(jsonRPCRep, sResult, false);
 		return true;
 	}
 

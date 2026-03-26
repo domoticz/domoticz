@@ -76,7 +76,7 @@ namespace mcp
 	bool deleteDevice(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool createVirtualSensor(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool updateDeviceValue(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
-	bool getDeviceHistory(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool getSensorHistory(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 
 	bool getUserVariables(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool addUserVariable(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
