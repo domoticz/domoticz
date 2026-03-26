@@ -36,9 +36,6 @@ CDaikinModbus::CDaikinModbus(int ID, const std::string& IPAddress, unsigned shor
 	if (m_iPollInterval < 5)
 		m_iPollInterval = 30;
 	m_TransactionID = 0;
-
-	_log.Log(LOG_STATUS, "DaikinModbus: Initializing (ID: %d, IP: %s, Port: %d, Poll: %d, Unit: %d, Model: %s)",
-		m_HwdID, m_szIPAddress.c_str(), m_usIPPort, m_iPollInterval, m_iUnitID, m_bIsAirToAir ? "Air-to-Air" : "Altherma 3");
 }
 
 CDaikinModbus::~CDaikinModbus()
@@ -48,6 +45,9 @@ CDaikinModbus::~CDaikinModbus()
 
 bool CDaikinModbus::StartHardware()
 {
+	Log(LOG_STATUS, "Initializing (ID: %d, IP: %s, Port: %d, Poll: %d, Unit: %d, Model: %s)",
+		m_HwdID, m_szIPAddress.c_str(), m_usIPPort, m_iPollInterval, m_iUnitID, m_bIsAirToAir ? "Air-to-Air" : "Altherma 3");
+
 	m_bIsStarted = true;
 	this->CDomoticzHardwareBase::RequestStart();
 
@@ -80,7 +80,7 @@ bool CDaikinModbus::StopHardware()
 
 void CDaikinModbus::Do_Work()
 {
-	_log.Log(LOG_STATUS, "DaikinModbus: Worker thread started...");
+	Log(LOG_STATUS, "Worker thread started...");
 
 	int iSecCounter = 0;
 	int iPollCounter = m_iPollInterval; // Trigger poll immediately once connected
@@ -97,7 +97,7 @@ void CDaikinModbus::Do_Work()
 		{
 			iSecCounter++;
 			if (iSecCounter % 30 == 0)
-				_log.Log(LOG_STATUS, "DaikinModbus: Waiting for connection...");
+				Log(LOG_STATUS, "Waiting for connection...");
 
 			// We reset the poll counter so we poll immediately upon reconnection
 			iPollCounter = m_iPollInterval;
@@ -111,7 +111,7 @@ void CDaikinModbus::Do_Work()
 			iPollCounter = 0;
 			try
 			{
-				_log.Debug(DEBUG_HARDWARE, "DaikinModbus: Polling registers...");
+				Debug(DEBUG_HARDWARE, "Polling registers...");
 				if (m_bIsAirToAir)
 				{
 					// Homehub / Air-to-Air: Holding Registers 1000, count 2
@@ -132,19 +132,19 @@ void CDaikinModbus::Do_Work()
 			}
 			catch (const std::exception& e)
 			{
-				_log.Log(LOG_ERROR, "DaikinModbus: Exception in worker thread: %s", e.what());
+				Log(LOG_ERROR, "Exception in worker thread: %s", e.what());
 			}
 		}
 	}
 
-	_log.Log(LOG_STATUS, "DaikinModbus: Worker thread stopped.");
+	Log(LOG_STATUS, "Worker thread stopped.");
 }
 
 void CDaikinModbus::SendReadRegisters(uint8_t function_code, uint16_t start_reg, uint16_t count)
 {
 	uint16_t tid = ++m_TransactionID;
 
-	_log.Debug(DEBUG_HARDWARE, "DaikinModbus: Sending Read Request (FC: 0x%02X, Start: %u, Count: %u, TID: %u, Unit: %d)", function_code, start_reg, count, tid, m_iUnitID);
+	Debug(DEBUG_HARDWARE, "Sending Read Request (FC: 0x%02X, Start: %u, Count: %u, TID: %u, Unit: %d)", function_code, start_reg, count, tid, m_iUnitID);
 
 	uint8_t req[12];
 	req[0] = (tid >> 8) & 0xFF;
@@ -167,7 +167,7 @@ void CDaikinModbus::SendWriteRegister(uint16_t reg, uint16_t value)
 {
 	uint16_t tid = ++m_TransactionID;
 
-	_log.Log(LOG_STATUS, "DaikinModbus: Sending Write Request (Reg: %u, Value: %u, TID: %u, Unit: %d)", reg, value, tid, m_iUnitID);
+	Debug(DEBUG_HARDWARE, "Sending Write Request (Reg: %u, Value: %u, TID: %u, Unit: %d)", reg, value, tid, m_iUnitID);
 
 	uint8_t req[12];
 	req[0] = (tid >> 8) & 0xFF;
@@ -242,19 +242,19 @@ bool CDaikinModbus::WriteToHardware(const char* pdata, unsigned char length)
 
 void CDaikinModbus::OnConnect()
 {
-	_log.Log(LOG_STATUS, "DaikinModbus: Connected to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "Connected to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	std::lock_guard<std::mutex> lock(m_rbufferMutex);
 	m_vRBuffer.clear();
 }
 
 void CDaikinModbus::OnDisconnect()
 {
-	_log.Log(LOG_STATUS, "DaikinModbus: Disconnected from %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	Log(LOG_STATUS, "Disconnected from %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 }
 
 void CDaikinModbus::OnError(const boost::system::error_code& error)
 {
-	_log.Log(LOG_ERROR, "DaikinModbus: TCP Error: %s", error.message().c_str());
+	Log(LOG_ERROR, "TCP Error: %s", error.message().c_str());
 }
 
 void CDaikinModbus::OnData(const uint8_t* pData, size_t length)
