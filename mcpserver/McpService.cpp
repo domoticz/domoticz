@@ -5,8 +5,10 @@
  *
  *  Created on: 4 April 2025
  *      Author: kiddigital
- * 
- * 
+ *
+ *  Modified: 26 March 2026
+ *      Author: GizMoCuz
+ *
  * It contains the PostMCP routine that is part of the WebServer class, but for sourcecode management
  * reasons separated out into its own file so it is easier to maintain this MCP related function
  * of the WebServer. The definition of this method here is still in 'main/Webserver.h'
@@ -17,8 +19,11 @@
 
 #include "stdafx.h"
 #include <iostream>
+#include <cassert>
 #include <functional>
 #include <unordered_map>
+#include <unordered_set>
+#include <vector>
 #include <json/json.h>
 #include "McpService.hpp"
 #include "../main/Logger.h"
@@ -34,17 +39,11 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define JSONRPC_PARSE_ERROR -32700
-#define JSONRPC_INVALID_REQUEST -32600
-#define JSONRPC_METHOD_NOT_FOUND -32601
-#define JSONRPC_INVALID_PARAMETER -32602
-#define JSONRPC_INTERNAL_ERROR -32603
-#define MCP_SERVER_ERROR -32000
-#define MCP_TOOL_EXECUTION_FAILED -32000
-#define MCP_RESOURCE_NOT_FOUND -32001
-#define MCP_PERMISSION_DENIED -32002
-#define MCP_RATE_LIMIT_EXCEEDED -32003
-#define MCP_TIMEOUT_OCCURRED -32004
+
+// MCP protocol version this server implements.
+// ISO 8601 date strings (YYYY-MM-DD) compare correctly with < / > because
+// lexicographic order matches chronological order for this format.
+static constexpr const char *MCP_PROTOCOL_VERSION = "2025-06-18";
 
 extern http::server::CWebServerHelper m_webservers;
 extern CLogger _log;
@@ -67,6 +66,19 @@ namespace http
 				rep = reply::stock_reply(reply::service_unavailable);
 				return;
 			}
+			if (session.rights == http::server::URIGHTS_NONE)
+			{
+				_log.Log(LOG_STATUS, "MCP: Unauthenticated access attempt from %s", session.remote_host.c_str());
+				Json::Value errRep;
+				errRep["jsonrpc"] = "2.0";
+				errRep["id"] = Json::Value(Json::nullValue);
+				errRep["error"]["code"] = mcp::MCP_PERMISSION_DENIED;
+				errRep["error"]["message"] = "Unauthorized";
+				rep.content = JSonToRawString(errRep);
+				rep.status = reply::unauthorized;
+				reply::add_header(&rep, "Content-Type", "application/json");
+				return;
+			}
 			_log.Debug(DEBUG_RECEIVED, "MCP: Post (%d): %s (%s)", req.content_length, req.content.c_str(), req.uri.c_str());
 			// Check if the request is valid
 			std::string sProtocolRequestHeader;
@@ -83,10 +95,14 @@ namespace http
 			// Check if the request has the MCP-PROTOCOL-VERSION header
 			// If not, we assume the client is using the latest version
 			// If it is present, we check if it matches the expected version
-			if (req.get_req_header(&req, "mcp-protocol-version:") != nullptr)
+			if (req.get_req_header(&req, "mcp-protocol-version") != nullptr)
 			{
-				sProtocolRequestHeader = req.get_req_header(&req, "mcp-protocol-version:");
-				if (sProtocolRequestHeader != "2025-06-18")
+				sProtocolRequestHeader = req.get_req_header(&req, "mcp-protocol-version");
+				if (sProtocolRequestHeader > MCP_PROTOCOL_VERSION)
+				{
+					_log.Debug(DEBUG_WEBSERVER, "MCP: MCP-PROTOCOL-VERSION newer than supported: %s (continuing)", sProtocolRequestHeader.c_str());
+				}
+				else if (sProtocolRequestHeader != MCP_PROTOCOL_VERSION)
 				{
 					_log.Debug(DEBUG_WEBSERVER, "MCP: MCP-PROTOCOL-VERSION not supported: %s", sProtocolRequestHeader.c_str());
 					rep = reply::stock_reply(reply::bad_request);
@@ -96,12 +112,13 @@ namespace http
 			// Check if the request is a POST request
 			if (req.method != "POST")
 			{
-				// VScode MCP client does sends GET's (maybe other do as well?)
+				// VS Code MCP client sends GET requests (maybe other clients do as well)
 				// It does this to look for asynchronous notifications support
-				// but we don't support that yet, so we return bad request
+				// but we don't support that yet, so we return method not allowed (405)
 				// And the MCP spec does not support GET for requests anyway
 				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid method: %s", req.method.c_str());
-				rep = reply::stock_reply(reply::bad_request);
+				rep = reply::stock_reply(reply::method_not_allowed);
+				reply::add_header(&rep, "Allow", "POST");
 				return;
 			}
 
@@ -110,7 +127,14 @@ namespace http
 			if (!mcp::validRPC(req.content, jsonRequest, sParseErr))
 			{
 				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid JSON-RPC request: %s", sParseErr.c_str());
-				rep = reply::stock_reply(reply::bad_request);	// Or should we send a valid JSON-RPC response with error -32700 (Parse error)?
+				Json::Value errRep;
+				errRep["jsonrpc"] = "2.0";
+				errRep["id"] = Json::Value(Json::nullValue);
+				errRep["error"]["code"] = mcp::JSONRPC_PARSE_ERROR;
+				errRep["error"]["message"] = "Parse error: " + sParseErr;
+				rep.content = JSonToRawString(errRep);
+				rep.status = reply::ok;
+				reply::add_header(&rep, "Content-Type", "application/json");
 				return;
 			}
 
@@ -173,7 +197,7 @@ namespace http
 			}
 			else if (sReqMethod == "tools/call")
 			{
-				mcp::McpToolsCall(jsonRequest, jsonRPCRep);
+				mcp::McpToolsCall(jsonRequest, jsonRPCRep, session);
 			}
 			else if (sReqMethod == "resources/list")
 			{
@@ -202,7 +226,7 @@ namespace http
 				return;
 			}
 			// Set response content
-			rep.content = jsonRPCRep.toStyledString();
+			rep.content = JSonToRawString(jsonRPCRep);
 			rep.status = reply::ok;
 
 			// Set headers
@@ -219,12 +243,41 @@ namespace mcp		// Model Context Protocol
 	static const char* const kVarTypeNames[] = { "Integer", "Float", "String", "Date", "Time" };
 	static const int kVarTypeCount = 5;
 
+	static std::string buildSettingsText()
+	{
+		std::string sTitle, sLocation, sLanguage;
+		int iTempScale = 0, iWindScale = 0, iSensorTimeout = 0, iBatterLow = 0, iActivePlan = 0;
+		m_sql.GetPreferencesVar("Title", sTitle);
+		m_sql.GetPreferencesVar("Location", sLocation);
+		m_sql.GetPreferencesVar("Language", sLanguage);
+		m_sql.GetPreferencesVar("TempScale", iTempScale);
+		m_sql.GetPreferencesVar("WindScale", iWindScale);
+		m_sql.GetPreferencesVar("SensorTimeout", iSensorTimeout);
+		m_sql.GetPreferencesVar("BatterLowNotification", iBatterLow);
+		m_sql.GetPreferencesVar("ActiveTimerPlan", iActivePlan);
+
+		std::string sResult = "Domoticz System Settings\n";
+		sResult += "========================\n";
+		if (!sTitle.empty())
+			sResult += "Title: " + sTitle + "\n";
+		if (!sLocation.empty())
+			sResult += "Location: " + sLocation + "\n";
+		if (!sLanguage.empty())
+			sResult += "Language: " + sLanguage + "\n";
+		sResult += "Temperature scale: " + std::string(iTempScale == 1 ? "Fahrenheit" : "Celsius") + "\n";
+		sResult += "Wind scale: " + std::string(iWindScale == 1 ? "mph" : "m/s") + "\n";
+		sResult += "Sensor timeout (min): " + std::to_string(iSensorTimeout) + "\n";
+		sResult += "Battery low notification threshold: " + std::to_string(iBatterLow) + "%\n";
+		sResult += "Active timer plan: " + std::to_string(iActivePlan) + "\n";
+		return sResult;
+	}
+
 	void McpInitialize(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
 		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling initialize request.");
 
 		// Prepare the result for the initialize method
-		jsonRPCRep["result"]["protocolVersion"] = "2025-06-18";
+		jsonRPCRep["result"]["protocolVersion"] = MCP_PROTOCOL_VERSION;
 		//jsonRPCRep["result"]["capabilities"]["logging"] = Json::Value(Json::objectValue);
 		//jsonRPCRep["result"]["capabilities"]["completion"] = Json::Value(Json::objectValue);
 		jsonRPCRep["result"]["capabilities"]["prompts"] = Json::Value(Json::objectValue);
@@ -243,499 +296,402 @@ namespace mcp		// Model Context Protocol
 		//jsonRPCRep["result"]["instructions"] = "Any additional instructions for the client can be provided here";
 	}
 
+	Json::Value buildToolSchema(const ToolDef &def)
+	{
+		Json::Value tool;
+		tool["name"] = def.name;
+		tool["title"] = def.title;
+		tool["description"] = def.description;
+		tool["inputSchema"]["type"] = "object";
+		tool["inputSchema"]["properties"] = Json::Value(Json::objectValue);
+		Json::Value required(Json::arrayValue);
+		for (const auto &p : def.params)
+		{
+			tool["inputSchema"]["properties"][p.name]["type"] = p.type;
+			tool["inputSchema"]["properties"][p.name]["description"] = p.description;
+			if (!p.enumValues.empty())
+			{
+				tool["inputSchema"]["properties"][p.name]["enum"] = Json::Value(Json::arrayValue);
+				for (const auto &e : p.enumValues)
+					tool["inputSchema"]["properties"][p.name]["enum"].append(e);
+			}
+			if (p.required)
+				required.append(p.name);
+		}
+		tool["inputSchema"]["required"] = required;
+		return tool;
+	}
+
+	static const std::vector<mcp::ToolDef> kToolDefinitions = {
+		{
+			"get_switch_state",
+			"See the state of a switch in the system",
+			"Get the current state of a given switch in the system",
+			{
+				{ "switchname", "string", "Name of the switch to query", true, {} },
+			}
+		},
+		{
+			"toggle_switch_state",
+			"Toggle the state of a switch in the system",
+			"Toggle the state of a given switch in the system",
+			{
+				{ "switchname", "string", "Name of the switch to toggle", true, {} },
+			}
+		},
+		{
+			"get_sensor_value",
+			"Get the value of a sensor in the system",
+			"Retrieve the current value of a specified sensor in the system",
+			{
+				{ "sensorname", "string", "Name of the sensor to query", true, {} },
+			}
+		},
+		{
+			"set_setpoint_value",
+			"Set the target setpoint of a thermostat in the system",
+			"Set the target setpoint of a given thermostat in the system",
+			{
+				{ "thermostatname", "string", "Name of the thermostat to set", true, {} },
+				{ "setpoint", "number", "Temperature setpoint as an number", true, {} },
+			}
+		},
+		{
+			"get_logging",
+			"Get the logging information",
+			"Retrieve the current logging information",
+			{
+				{ "logdate", "number", "The (Unixtimestamp) date and time from which to retrieve the logs (optional, default is 0, which means all logs)", false, {} },
+			}
+		},
+		{
+			"get_floorplan",
+			"Get the floorplan",
+			"Retrieve the specific floorplan within the system",
+			{
+				{ "floorplan", "string", "The name of the floorplan to retrieve", false, {} },
+			}
+		},
+		{
+			"get_status",
+			"Get the system status of Domoticz",
+			"Retrieve the current system status including version, uptime, sunrise/sunset times and device/hardware counts. Use this tool to check if the Domoticz instance is running and healthy.",
+			{}
+		},
+		{
+			"search_devices",
+			"Search for devices",
+			"Search for devices whose name, type or subtype contains the given query string (case-insensitive substring match). Use this tool to discover exact device names before using other tools like get_switch_state or toggle_switch_state that require exact names.",
+			{
+				{ "query", "string", "Search string to match against device name, type or subtype (case-insensitive substring match)", true, {} },
+				{ "filter", "string", "Optional device type filter: light, temp, weather, utility (matches Domoticz device categories)", false, {} },
+			}
+		},
+		{
+			"get_all_devices",
+			"List all devices",
+			"Return a list of all used devices in the system, optionally filtered by category. Use this to discover all available devices.",
+			{
+				{ "filter", "string", "Optional category filter: light, temp, weather, utility (leave empty for all)", false, {} },
+			}
+		},
+		{
+			"get_device",
+			"Get device details",
+			"Return full details for a single device by name or idx. At least one of name or idx must be provided.",
+			{
+				{ "name", "string", "Device name to look up", false, {} },
+				{ "idx", "integer", "Device IDX (numeric identifier) to look up", false, {} },
+			}
+		},
+		{
+			"rename_device",
+			"Rename a device",
+			"Rename a device by its current name to a new name.",
+			{
+				{ "switchname", "string", "Current name of the device", true, {} },
+				{ "new_name", "string", "New name for the device", true, {} },
+			}
+		},
+		{
+			"delete_device",
+			"Delete (hide) a device",
+			"Hide a device by setting its Used flag to 0. The device is not permanently deleted; it can be re-enabled. Use with caution.",
+			{
+				{ "switchname", "string", "Name of the device to hide/delete", true, {} },
+			}
+		},
+		{
+			"create_virtual_sensor",
+			"Create a virtual sensor",
+			"Create a new virtual sensor attached to a virtual hardware instance. The hw_idx must refer to a virtual (dummy) hardware. sensortype is the mapped sensor type integer (e.g. 80=Temperature, 81=Humidity, 5=Text, 6=Switch).",
+			{
+				{ "hw_idx", "integer", "IDX of the virtual/dummy hardware to attach the sensor to", true, {} },
+				{ "sensorname", "string", "Name for the new virtual sensor", true, {} },
+				{ "sensortype", "integer", "Sensor type integer (80=Temperature, 81=Humidity, 5=Text, 6=Switch, 113=Counter, etc.)", true, {} },
+			}
+		},
+		{
+			"update_device_value",
+			"Update a device value",
+			"Directly update the nValue and/or sValue of a device (useful for virtual sensors).",
+			{
+				{ "switchname", "string", "Name of the device to update", true, {} },
+				{ "nvalue", "integer", "Numeric value to set", true, {} },
+				{ "svalue", "string", "String value to set (optional)", false, {} },
+			}
+		},
+		{
+			"get_device_history",
+			"Get device history",
+			"Retrieve the recent log history for a device. Returns up to 50 most recent entries.",
+			{
+				{ "switchname", "string", "Name of the device", true, {} },
+				{ "log_type", "string", "Log type: switch (default), text, or graph", false, {} },
+			}
+		},
+		{
+			"get_user_variables",
+			"List all user variables",
+			"List all user-defined variables (name, type, value, last update).",
+			{}
+		},
+		{
+			"add_user_variable",
+			"Create a user variable",
+			"Create a new user variable. Types: 0=Integer, 1=Float, 2=String, 3=Date (DD/MM/YYYY), 4=Time (HH:MM).",
+			{
+				{ "name", "string", "Variable name (must be unique)", true, {} },
+				{ "vtype", "integer", "Variable type: 0=Integer, 1=Float, 2=String, 3=Date, 4=Time", true, {} },
+				{ "value", "string", "Initial value for the variable", true, {} },
+			}
+		},
+		{
+			"update_user_variable",
+			"Update a user variable",
+			"Update the value (and optionally type) of an existing user variable.",
+			{
+				{ "name", "string", "Variable name to update", true, {} },
+				{ "value", "string", "New value", true, {} },
+				{ "vtype", "integer", "New type (optional): 0=Integer, 1=Float, 2=String, 3=Date, 4=Time", false, {} },
+			}
+		},
+		{
+			"delete_user_variable",
+			"Delete a user variable",
+			"Delete a user variable by name.",
+			{
+				{ "name", "string", "Name of the variable to delete", true, {} },
+			}
+		},
+		{
+			"add_log_message",
+			"Write a log message",
+			"Write a message to the Domoticz system log. Messages are prefixed with 'MCP: ' to identify AI-originated entries.",
+			{
+				{ "message", "string", "The message text to log", true, {} },
+				{ "level", "string", "Log level: normal (default), status, error", false, {} },
+			}
+		},
+		{
+			"send_notification",
+			"Send a push notification",
+			"Send a push notification via all configured Domoticz notification services (e.g. Telegram, Pushover, email). WARNING: This sends to real devices. Do not call repeatedly or for testing.",
+			{
+				{ "subject", "string", "Notification title/subject", true, {} },
+				{ "body", "string", "Notification body text", true, {} },
+				{ "priority", "integer", "Priority: -2 (very low) to 2 (emergency), default 0 (normal)", false, {} },
+			}
+		},
+		{
+			"get_events",
+			"List event scripts",
+			"List all event scripts (dzVents, Lua, Blockly, Python) with their name, interpreter, and enabled status.",
+			{}
+		},
+		{
+			"get_event",
+			"Get event script source",
+			"Get the full source code of a specific event script by name.",
+			{
+				{ "event_name", "string", "Name of the event script to retrieve", true, {} },
+			}
+		},
+		{
+			"create_event",
+			"Create an event script",
+			"Create a new event script. interpreter must be one of: Lua, dzVents, Python, Blockly.",
+			{
+				{ "name", "string", "Script name (must be unique)", true, {} },
+				{ "interpreter", "string", "Script interpreter: Lua, dzVents, Python, or Blockly", true, {} },
+				{ "code", "string", "Script source code", true, {} },
+				{ "enabled", "boolean", "Whether to enable the script immediately (default true)", false, {} },
+			}
+		},
+		{
+			"update_event",
+			"Update an event script",
+			"Update an existing event script's code, enabled state, or name. At least one of code/enabled/new_name must be provided.",
+			{
+				{ "event_name", "string", "Current name of the event script", true, {} },
+				{ "code", "string", "New script source code (optional)", false, {} },
+				{ "enabled", "boolean", "Enable or disable the script (optional)", false, {} },
+				{ "new_name", "string", "Rename the script to this name (optional)", false, {} },
+			}
+		},
+		{
+			"set_switch_state",
+			"Set a switch On or Off",
+			"Explicitly turn a switch On or Off by name (without toggling).",
+			{
+				{ "switchname", "string", "Name of the switch", true, {} },
+				{ "state", "string", "Desired state: On or Off", true, { "On", "Off" } },
+			}
+		},
+		{
+			"set_dimmer_level",
+			"Set a dimmer level",
+			"Set a dimmable light to a specific brightness level (0-100).",
+			{
+				{ "switchname", "string", "Name of the dimmable device", true, {} },
+				{ "level", "integer", "Brightness level 0-100", true, {} },
+			}
+		},
+		{
+			"control_blinds",
+			"Control a blind or shutter",
+			"Send an Open, Close, or Stop command to a blind or shutter device.",
+			{
+				{ "switchname", "string", "Name of the blind/shutter device", true, {} },
+				{ "command", "string", "Command to send: Open, Close, or Stop", true, { "Open", "Close", "Stop" } },
+			}
+		},
+		{
+			"set_color_brightness",
+			"Set color and brightness on an RGB light",
+			"Set the hue and brightness of an RGB or color light device.",
+			{
+				{ "switchname", "string", "Name of the color light device", true, {} },
+				{ "hue", "integer", "Hue angle 0-360", true, {} },
+				{ "brightness", "integer", "Brightness level 0-100", true, {} },
+				{ "iswhite", "boolean", "If true, use white mode instead of RGB color (default false)", false, {} },
+			}
+		},
+		{
+			"set_color_temperature",
+			"Set color temperature on a tunable-white light",
+			"Set the color temperature of a tunable-white light in Kelvin (e.g. 2700 for warm white, 6500 for cool white).",
+			{
+				{ "switchname", "string", "Name of the tunable-white light device", true, {} },
+				{ "kelvin", "integer", "Color temperature in Kelvin (2700=warm white, 6500=cool white)", true, {} },
+			}
+		},
+		{
+			"get_scenes",
+			"List all scenes and groups",
+			"Return a list of all scenes and groups configured in Domoticz.",
+			{}
+		},
+		{
+			"switch_scene",
+			"Activate or deactivate a scene",
+			"Activate (On) or deactivate (Off) a Domoticz scene or group by name.",
+			{
+				{ "scenename", "string", "Name of the scene or group", true, {} },
+				{ "command", "string", "Command: On or Off", true, { "On", "Off" } },
+			}
+		},
+		{
+			"get_rooms",
+			"List all rooms",
+			"Return a list of all rooms (plans) configured in Domoticz.",
+			{}
+		},
+		{
+			"get_room_devices",
+			"Get devices in a room",
+			"Return all devices assigned to a specific room (plan) by room name.",
+			{
+				{ "roomname", "string", "Name of the room (plan)", true, {} },
+			}
+		},
+		{
+			"get_scene_devices",
+			"Get devices in a scene",
+			"Return all devices that belong to a specific scene or group.",
+			{
+				{ "scenename", "string", "Name of the scene or group", true, {} },
+			}
+		},
+		{
+			"get_hardware",
+			"List all hardware",
+			"Return a list of all configured hardware adapters in Domoticz.",
+			{}
+		},
+		{
+			"get_settings",
+			"Get system settings",
+			"Return key Domoticz system settings and preferences.",
+			{}
+		},
+		{
+			"get_sun_times",
+			"Get sunrise and sunset times",
+			"Return today's sunrise, sunset, dawn, dusk, solar noon and related solar data.",
+			{}
+		},
+		{
+			"get_cameras",
+			"List all cameras",
+			"Return a list of all configured cameras (name, address, port, enabled status). Passwords are never returned.",
+			{}
+		},
+		{
+			"get_floorplans",
+			"List all floorplans",
+			"Return a list of available floorplan names and IDs (no image data). Use get_floorplan to retrieve a specific floorplan image.",
+			{}
+		},
+		{
+			"get_users",
+			"List all users",
+			"Return a list of all system users with their username, rights and active status. Passwords are never returned.",
+			{}
+		},
+		{
+			"get_security_status",
+			"Get security panel status",
+			"Return the current Domoticz security panel status (Disarmed, Armed Home, or Armed Away).",
+			{}
+		},
+		{
+			"set_security_status",
+			"Set security panel status",
+			"Set the Domoticz security panel status. Requires the security PIN code. status: 0=Disarmed, 1=Armed Home, 2=Armed Away.",
+			{
+				{ "status", "integer", "New security status: 0=Disarmed, 1=Armed Home, 2=Armed Away", true, {} },
+				{ "seccode", "string", "The security panel PIN code (plaintext)", true, {} },
+			}
+		},
+	};
+
 	void McpToolsList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
 		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling tools/list request.");
 
-		// Prepare the result for the tools/list method
 		jsonRPCRep["result"]["tools"] = Json::Value(Json::arrayValue);
-		Json::Value tool;
-		// Get Switch State tool
-		tool["name"] = "get_switch_state";
-		tool["title"] = "See the state of a switch in the system";
-		tool["description"] = "Get the current state of a given switch in the system";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["switchname"]["type"] = "string";
-		tool["inputSchema"]["properties"]["switchname"]["description"] = "Name of the switch to query";
-		tool["inputSchema"]["required"].append("switchname");
-		jsonRPCRep["result"]["tools"].append(tool);
-		// Toggle switch state tool
-		tool.clear();
-		tool["name"] = "toggle_switch_state";
-		tool["title"] = "Toggle the state of a switch in the system";
-		tool["description"] = "Toggle the state of a given switch in the system";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["switchname"]["type"] = "string";
-		tool["inputSchema"]["properties"]["switchname"]["description"] = "Name of the switch to toggle";
-		tool["inputSchema"]["required"].append("switchname");
-		jsonRPCRep["result"]["tools"].append(tool);
-		// Get Sensor Value tool
-		tool.clear();
-		tool["name"] = "get_sensor_value";
-		tool["title"] = "Get the value of a sensor in the system";
-		tool["description"] = "Retrieve the current value of a specified sensor in the system";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["sensorname"]["type"] = "string";
-		tool["inputSchema"]["properties"]["sensorname"]["description"] = "Name of the sensor to query";
-		tool["inputSchema"]["required"].append("sensorname");
-		jsonRPCRep["result"]["tools"].append(tool);
-		// Set Setpoint Value tool
-		tool.clear();
-		tool["name"] = "set_setpoint_value";
-		tool["title"] = "Set the target setpoint of a thermostat in the system";
-		tool["description"] = "Set the target setpoint of a given thermostat in the system";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["thermostatname"]["type"] = "string";
-		tool["inputSchema"]["properties"]["thermostatname"]["description"] = "Name of the thermostat to set";
-		tool["inputSchema"]["properties"]["setpoint"]["type"] = "number";
-		tool["inputSchema"]["properties"]["setpoint"]["description"] = "Temperature setpoint as an number";
-		tool["inputSchema"]["required"].append("thermostatname");
-		tool["inputSchema"]["required"].append("setpoint");
-		jsonRPCRep["result"]["tools"].append(tool);
-		// Get logging tool
-		tool.clear();
-		tool["name"] = "get_logging";
-		tool["title"] = "Get the logging information";
-		tool["description"] = "Retrieve the current logging information";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["logdate"]["type"] = "number";
-		tool["inputSchema"]["properties"]["logdate"]["description"] = "The (Unixtimestamp) date and time from which to retrieve the logs (optional, default is 0, which means all logs)";
-		jsonRPCRep["result"]["tools"].append(tool);
-		// Get Floorplan(s) tool
-		tool.clear();
-		tool["name"] = "get_floorplan";
-		tool["title"] = "Get the floorplan";
-		tool["description"] = "Retrieve the specific floorplan within the system";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["floorplan"]["type"] = "string";
-		tool["inputSchema"]["properties"]["floorplan"]["description"] = "The name of the floorplan to retrieve";
-		jsonRPCRep["result"]["tools"].append(tool);
-		// Get Status tool
-		tool.clear();
-		tool["name"] = "get_status";
-		tool["title"] = "Get the system status of Domoticz";
-		tool["description"] = "Retrieve the current system status including version, uptime, sunrise/sunset times and device/hardware counts. Use this tool to check if the Domoticz instance is running and healthy.";
-		tool["inputSchema"]["type"] = "object";
-		jsonRPCRep["result"]["tools"].append(tool);
-		// Search Devices tool
-		tool.clear();
-		tool["name"] = "search_devices";
-		tool["title"] = "Search for devices";
-		tool["description"] = "Search for devices whose name, type or subtype contains the given query string (case-insensitive substring match). Use this tool to discover exact device names before using other tools like get_switch_state or toggle_switch_state that require exact names.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["query"]["type"] = "string";
-		tool["inputSchema"]["properties"]["query"]["description"] = "Search string to match against device name, type or subtype (case-insensitive substring match)";
-		tool["inputSchema"]["properties"]["filter"]["type"] = "string";
-		tool["inputSchema"]["properties"]["filter"]["description"] = "Optional device type filter: light, temp, weather, utility (matches Domoticz device categories)";
-		tool["inputSchema"]["required"].append("query");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "get_all_devices";
-		tool["title"] = "List all devices";
-		tool["description"] = "Return a list of all used devices in the system, optionally filtered by category. Use this to discover all available devices.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["filter"]["type"] = "string";
-		tool["inputSchema"]["properties"]["filter"]["description"] = "Optional category filter: light, temp, weather, utility (leave empty for all)";
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "get_device";
-		tool["title"] = "Get device details";
-		tool["description"] = "Return full details for a single device by name or idx. At least one of name or idx must be provided.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["name"]["type"] = "string";
-		tool["inputSchema"]["properties"]["name"]["description"] = "Device name to look up";
-		tool["inputSchema"]["properties"]["idx"]["type"] = "integer";
-		tool["inputSchema"]["properties"]["idx"]["description"] = "Device IDX (numeric identifier) to look up";
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "rename_device";
-		tool["title"] = "Rename a device";
-		tool["description"] = "Rename a device by its current name to a new name.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["switchname"]["type"] = "string";
-		tool["inputSchema"]["properties"]["switchname"]["description"] = "Current name of the device";
-		tool["inputSchema"]["properties"]["new_name"]["type"] = "string";
-		tool["inputSchema"]["properties"]["new_name"]["description"] = "New name for the device";
-		tool["inputSchema"]["required"].append("switchname");
-		tool["inputSchema"]["required"].append("new_name");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "delete_device";
-		tool["title"] = "Delete (hide) a device";
-		tool["description"] = "Hide a device by setting its Used flag to 0. The device is not permanently deleted; it can be re-enabled. Use with caution.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["switchname"]["type"] = "string";
-		tool["inputSchema"]["properties"]["switchname"]["description"] = "Name of the device to hide/delete";
-		tool["inputSchema"]["required"].append("switchname");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "create_virtual_sensor";
-		tool["title"] = "Create a virtual sensor";
-		tool["description"] = "Create a new virtual sensor attached to a virtual hardware instance. The hw_idx must refer to a virtual (dummy) hardware. sensortype is the mapped sensor type integer (e.g. 80=Temperature, 81=Humidity, 5=Text, 6=Switch).";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["hw_idx"]["type"] = "integer";
-		tool["inputSchema"]["properties"]["hw_idx"]["description"] = "IDX of the virtual/dummy hardware to attach the sensor to";
-		tool["inputSchema"]["properties"]["sensorname"]["type"] = "string";
-		tool["inputSchema"]["properties"]["sensorname"]["description"] = "Name for the new virtual sensor";
-		tool["inputSchema"]["properties"]["sensortype"]["type"] = "integer";
-		tool["inputSchema"]["properties"]["sensortype"]["description"] = "Sensor type integer (80=Temperature, 81=Humidity, 5=Text, 6=Switch, 113=Counter, etc.)";
-		tool["inputSchema"]["required"].append("hw_idx");
-		tool["inputSchema"]["required"].append("sensorname");
-		tool["inputSchema"]["required"].append("sensortype");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "update_device_value";
-		tool["title"] = "Update a device value";
-		tool["description"] = "Directly update the nValue and/or sValue of a device (useful for virtual sensors).";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["switchname"]["type"] = "string";
-		tool["inputSchema"]["properties"]["switchname"]["description"] = "Name of the device to update";
-		tool["inputSchema"]["properties"]["nvalue"]["type"] = "integer";
-		tool["inputSchema"]["properties"]["nvalue"]["description"] = "Numeric value to set";
-		tool["inputSchema"]["properties"]["svalue"]["type"] = "string";
-		tool["inputSchema"]["properties"]["svalue"]["description"] = "String value to set (optional)";
-		tool["inputSchema"]["required"].append("switchname");
-		tool["inputSchema"]["required"].append("nvalue");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "get_device_history";
-		tool["title"] = "Get device history";
-		tool["description"] = "Retrieve the recent log history for a device. Returns up to 50 most recent entries.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["switchname"]["type"] = "string";
-		tool["inputSchema"]["properties"]["switchname"]["description"] = "Name of the device";
-		tool["inputSchema"]["properties"]["log_type"]["type"] = "string";
-		tool["inputSchema"]["properties"]["log_type"]["description"] = "Log type: switch (default), text, or graph";
-		tool["inputSchema"]["required"].append("switchname");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "get_user_variables";
-		tool["title"] = "List all user variables";
-		tool["description"] = "List all user-defined variables (name, type, value, last update).";
-		tool["inputSchema"]["type"] = "object";
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "add_user_variable";
-		tool["title"] = "Create a user variable";
-		tool["description"] = "Create a new user variable. Types: 0=Integer, 1=Float, 2=String, 3=Date (DD/MM/YYYY), 4=Time (HH:MM).";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["name"]["type"] = "string";
-		tool["inputSchema"]["properties"]["name"]["description"] = "Variable name (must be unique)";
-		tool["inputSchema"]["properties"]["vtype"]["type"] = "integer";
-		tool["inputSchema"]["properties"]["vtype"]["description"] = "Variable type: 0=Integer, 1=Float, 2=String, 3=Date, 4=Time";
-		tool["inputSchema"]["properties"]["value"]["type"] = "string";
-		tool["inputSchema"]["properties"]["value"]["description"] = "Initial value for the variable";
-		tool["inputSchema"]["required"].append("name");
-		tool["inputSchema"]["required"].append("vtype");
-		tool["inputSchema"]["required"].append("value");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "update_user_variable";
-		tool["title"] = "Update a user variable";
-		tool["description"] = "Update the value (and optionally type) of an existing user variable.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["name"]["type"] = "string";
-		tool["inputSchema"]["properties"]["name"]["description"] = "Variable name to update";
-		tool["inputSchema"]["properties"]["value"]["type"] = "string";
-		tool["inputSchema"]["properties"]["value"]["description"] = "New value";
-		tool["inputSchema"]["properties"]["vtype"]["type"] = "integer";
-		tool["inputSchema"]["properties"]["vtype"]["description"] = "New type (optional): 0=Integer, 1=Float, 2=String, 3=Date, 4=Time";
-		tool["inputSchema"]["required"].append("name");
-		tool["inputSchema"]["required"].append("value");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "delete_user_variable";
-		tool["title"] = "Delete a user variable";
-		tool["description"] = "Delete a user variable by name.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["name"]["type"] = "string";
-		tool["inputSchema"]["properties"]["name"]["description"] = "Name of the variable to delete";
-		tool["inputSchema"]["required"].append("name");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "add_log_message";
-		tool["title"] = "Write a log message";
-		tool["description"] = "Write a message to the Domoticz system log. Messages are prefixed with 'MCP: ' to identify AI-originated entries.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["message"]["type"] = "string";
-		tool["inputSchema"]["properties"]["message"]["description"] = "The message text to log";
-		tool["inputSchema"]["properties"]["level"]["type"] = "string";
-		tool["inputSchema"]["properties"]["level"]["description"] = "Log level: normal (default), status, error";
-		tool["inputSchema"]["required"].append("message");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "send_notification";
-		tool["title"] = "Send a push notification";
-		tool["description"] = "Send a push notification via all configured Domoticz notification services (e.g. Telegram, Pushover, email). WARNING: This sends to real devices. Do not call repeatedly or for testing.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["subject"]["type"] = "string";
-		tool["inputSchema"]["properties"]["subject"]["description"] = "Notification title/subject";
-		tool["inputSchema"]["properties"]["body"]["type"] = "string";
-		tool["inputSchema"]["properties"]["body"]["description"] = "Notification body text";
-		tool["inputSchema"]["properties"]["priority"]["type"] = "integer";
-		tool["inputSchema"]["properties"]["priority"]["description"] = "Priority: -2 (very low) to 2 (emergency), default 0 (normal)";
-		tool["inputSchema"]["required"].append("subject");
-		tool["inputSchema"]["required"].append("body");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "get_events";
-		tool["title"] = "List event scripts";
-		tool["description"] = "List all event scripts (dzVents, Lua, Blockly, Python) with their name, interpreter, and enabled status.";
-		tool["inputSchema"]["type"] = "object";
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "get_event";
-		tool["title"] = "Get event script source";
-		tool["description"] = "Get the full source code of a specific event script by name.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["event_name"]["type"] = "string";
-		tool["inputSchema"]["properties"]["event_name"]["description"] = "Name of the event script to retrieve";
-		tool["inputSchema"]["required"].append("event_name");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "create_event";
-		tool["title"] = "Create an event script";
-		tool["description"] = "Create a new event script. interpreter must be one of: Lua, dzVents, Python, Blockly.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["name"]["type"] = "string";
-		tool["inputSchema"]["properties"]["name"]["description"] = "Script name (must be unique)";
-		tool["inputSchema"]["properties"]["interpreter"]["type"] = "string";
-		tool["inputSchema"]["properties"]["interpreter"]["description"] = "Script interpreter: Lua, dzVents, Python, or Blockly";
-		tool["inputSchema"]["properties"]["code"]["type"] = "string";
-		tool["inputSchema"]["properties"]["code"]["description"] = "Script source code";
-		tool["inputSchema"]["properties"]["enabled"]["type"] = "boolean";
-		tool["inputSchema"]["properties"]["enabled"]["description"] = "Whether to enable the script immediately (default true)";
-		tool["inputSchema"]["required"].append("name");
-		tool["inputSchema"]["required"].append("interpreter");
-		tool["inputSchema"]["required"].append("code");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "update_event";
-		tool["title"] = "Update an event script";
-		tool["description"] = "Update an existing event script's code, enabled state, or name. At least one of code/enabled/new_name must be provided.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["event_name"]["type"] = "string";
-		tool["inputSchema"]["properties"]["event_name"]["description"] = "Current name of the event script";
-		tool["inputSchema"]["properties"]["code"]["type"] = "string";
-		tool["inputSchema"]["properties"]["code"]["description"] = "New script source code (optional)";
-		tool["inputSchema"]["properties"]["enabled"]["type"] = "boolean";
-		tool["inputSchema"]["properties"]["enabled"]["description"] = "Enable or disable the script (optional)";
-		tool["inputSchema"]["properties"]["new_name"]["type"] = "string";
-		tool["inputSchema"]["properties"]["new_name"]["description"] = "Rename the script to this name (optional)";
-		tool["inputSchema"]["required"].append("event_name");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "set_switch_state";
-		tool["title"] = "Set a switch On or Off";
-		tool["description"] = "Explicitly turn a switch On or Off by name (without toggling).";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["switchname"]["type"] = "string";
-		tool["inputSchema"]["properties"]["switchname"]["description"] = "Name of the switch";
-		tool["inputSchema"]["properties"]["state"]["type"] = "string";
-		tool["inputSchema"]["properties"]["state"]["description"] = "Desired state: On or Off";
-		tool["inputSchema"]["properties"]["state"]["enum"].append("On");
-		tool["inputSchema"]["properties"]["state"]["enum"].append("Off");
-		tool["inputSchema"]["required"].append("switchname");
-		tool["inputSchema"]["required"].append("state");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "set_dimmer_level";
-		tool["title"] = "Set a dimmer level";
-		tool["description"] = "Set a dimmable light to a specific brightness level (0-100).";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["switchname"]["type"] = "string";
-		tool["inputSchema"]["properties"]["switchname"]["description"] = "Name of the dimmable device";
-		tool["inputSchema"]["properties"]["level"]["type"] = "integer";
-		tool["inputSchema"]["properties"]["level"]["description"] = "Brightness level 0-100";
-		tool["inputSchema"]["required"].append("switchname");
-		tool["inputSchema"]["required"].append("level");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "control_blinds";
-		tool["title"] = "Control a blind or shutter";
-		tool["description"] = "Send an Open, Close, or Stop command to a blind or shutter device.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["switchname"]["type"] = "string";
-		tool["inputSchema"]["properties"]["switchname"]["description"] = "Name of the blind/shutter device";
-		tool["inputSchema"]["properties"]["command"]["type"] = "string";
-		tool["inputSchema"]["properties"]["command"]["description"] = "Command to send: Open, Close, or Stop";
-		tool["inputSchema"]["properties"]["command"]["enum"].append("Open");
-		tool["inputSchema"]["properties"]["command"]["enum"].append("Close");
-		tool["inputSchema"]["properties"]["command"]["enum"].append("Stop");
-		tool["inputSchema"]["required"].append("switchname");
-		tool["inputSchema"]["required"].append("command");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "set_color_brightness";
-		tool["title"] = "Set color and brightness on an RGB light";
-		tool["description"] = "Set the hue and brightness of an RGB or color light device.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["switchname"]["type"] = "string";
-		tool["inputSchema"]["properties"]["switchname"]["description"] = "Name of the color light device";
-		tool["inputSchema"]["properties"]["hue"]["type"] = "integer";
-		tool["inputSchema"]["properties"]["hue"]["description"] = "Hue angle 0-360";
-		tool["inputSchema"]["properties"]["brightness"]["type"] = "integer";
-		tool["inputSchema"]["properties"]["brightness"]["description"] = "Brightness level 0-100";
-		tool["inputSchema"]["properties"]["iswhite"]["type"] = "boolean";
-		tool["inputSchema"]["properties"]["iswhite"]["description"] = "If true, use white mode instead of RGB color (default false)";
-		tool["inputSchema"]["required"].append("switchname");
-		tool["inputSchema"]["required"].append("hue");
-		tool["inputSchema"]["required"].append("brightness");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "set_color_temperature";
-		tool["title"] = "Set color temperature on a tunable-white light";
-		tool["description"] = "Set the color temperature of a tunable-white light in Kelvin (e.g. 2700 for warm white, 6500 for cool white).";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["switchname"]["type"] = "string";
-		tool["inputSchema"]["properties"]["switchname"]["description"] = "Name of the tunable-white light device";
-		tool["inputSchema"]["properties"]["kelvin"]["type"] = "integer";
-		tool["inputSchema"]["properties"]["kelvin"]["description"] = "Color temperature in Kelvin (2700=warm white, 6500=cool white)";
-		tool["inputSchema"]["required"].append("switchname");
-		tool["inputSchema"]["required"].append("kelvin");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "get_scenes";
-		tool["title"] = "List all scenes and groups";
-		tool["description"] = "Return a list of all scenes and groups configured in Domoticz.";
-		tool["inputSchema"]["type"] = "object";
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "switch_scene";
-		tool["title"] = "Activate or deactivate a scene";
-		tool["description"] = "Activate (On) or deactivate (Off) a Domoticz scene or group by name.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["scenename"]["type"] = "string";
-		tool["inputSchema"]["properties"]["scenename"]["description"] = "Name of the scene or group";
-		tool["inputSchema"]["properties"]["command"]["type"] = "string";
-		tool["inputSchema"]["properties"]["command"]["description"] = "Command: On or Off";
-		tool["inputSchema"]["properties"]["command"]["enum"].append("On");
-		tool["inputSchema"]["properties"]["command"]["enum"].append("Off");
-		tool["inputSchema"]["required"].append("scenename");
-		tool["inputSchema"]["required"].append("command");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "get_rooms";
-		tool["title"] = "List all rooms";
-		tool["description"] = "Return a list of all rooms (plans) configured in Domoticz.";
-		tool["inputSchema"]["type"] = "object";
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "get_room_devices";
-		tool["title"] = "Get devices in a room";
-		tool["description"] = "Return all devices assigned to a specific room (plan) by room name.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["roomname"]["type"] = "string";
-		tool["inputSchema"]["properties"]["roomname"]["description"] = "Name of the room (plan)";
-		tool["inputSchema"]["required"].append("roomname");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "get_scene_devices";
-		tool["title"] = "Get devices in a scene";
-		tool["description"] = "Return all devices that belong to a specific scene or group.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["scenename"]["type"] = "string";
-		tool["inputSchema"]["properties"]["scenename"]["description"] = "Name of the scene or group";
-		tool["inputSchema"]["required"].append("scenename");
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "get_hardware";
-		tool["title"] = "List all hardware";
-		tool["description"] = "Return a list of all configured hardware adapters in Domoticz.";
-		tool["inputSchema"]["type"] = "object";
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "get_settings";
-		tool["title"] = "Get system settings";
-		tool["description"] = "Return key Domoticz system settings and preferences.";
-		tool["inputSchema"]["type"] = "object";
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "get_sun_times";
-		tool["title"] = "Get sunrise and sunset times";
-		tool["description"] = "Return today's sunrise, sunset, dawn, dusk, solar noon and related solar data.";
-		tool["inputSchema"]["type"] = "object";
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "get_cameras";
-		tool["title"] = "List all cameras";
-		tool["description"] = "Return a list of all configured cameras (name, address, port, enabled status). Passwords are never returned.";
-		tool["inputSchema"]["type"] = "object";
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "get_floorplans";
-		tool["title"] = "List all floorplans";
-		tool["description"] = "Return a list of available floorplan names and IDs (no image data). Use get_floorplan to retrieve a specific floorplan image.";
-		tool["inputSchema"]["type"] = "object";
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "get_users";
-		tool["title"] = "List all users";
-		tool["description"] = "Return a list of all system users with their username, rights and active status. Passwords are never returned.";
-		tool["inputSchema"]["type"] = "object";
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "get_security_status";
-		tool["title"] = "Get security panel status";
-		tool["description"] = "Return the current Domoticz security panel status (Disarmed, Armed Home, or Armed Away).";
-		tool["inputSchema"]["type"] = "object";
-		jsonRPCRep["result"]["tools"].append(tool);
-
-		tool.clear();
-		tool["name"] = "set_security_status";
-		tool["title"] = "Set security panel status";
-		tool["description"] = "Set the Domoticz security panel status. Requires the security PIN code. status: 0=Disarmed, 1=Armed Home, 2=Armed Away.";
-		tool["inputSchema"]["type"] = "object";
-		tool["inputSchema"]["properties"]["status"]["type"] = "integer";
-		tool["inputSchema"]["properties"]["status"]["description"] = "New security status: 0=Disarmed, 1=Armed Home, 2=Armed Away";
-		tool["inputSchema"]["properties"]["seccode"]["type"] = "string";
-		tool["inputSchema"]["properties"]["seccode"]["description"] = "The security panel PIN code (plaintext)";
-		tool["inputSchema"]["required"].append("status");
-		tool["inputSchema"]["required"].append("seccode");
-		jsonRPCRep["result"]["tools"].append(tool);
+		for (const auto &def : kToolDefinitions)
+			jsonRPCRep["result"]["tools"].append(mcp::buildToolSchema(def));
 	}
 
-	void McpToolsCall(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	void McpToolsCall(const Json::Value &jsonRequest, Json::Value &jsonRPCRep, const http::server::WebEmSession &session)
 	{
 		// Check if the required parameters are present
 		if (!jsonRequest.isMember("params") || !jsonRequest["params"].isMember("name"))
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: Missing required tool parameter 'name' in tools/{tool} request.");
-			jsonRPCRep["error"]["code"] = JSONRPC_INVALID_PARAMETER;
+			jsonRPCRep["error"]["code"] = mcp::JSONRPC_INVALID_PARAMETER;
 			jsonRPCRep["error"]["message"] = "Missing required parameter 'name'";
 			return;
 		}
@@ -744,6 +700,42 @@ namespace mcp		// Model Context Protocol
 
 		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling tools/{%s} request.", sMethodName.c_str());
 
+		static const std::unordered_set<std::string> kSwitcherTools = {
+			"toggle_switch_state", "set_switch_state", "set_dimmer_level",
+			"control_blinds", "set_color_brightness", "set_color_temperature",
+			"set_setpoint_value", "switch_scene", "send_notification",
+			"add_log_message", "update_device_value"
+		};
+		static const std::unordered_set<std::string> kAdminTools = {
+			"rename_device", "delete_device", "create_virtual_sensor",
+			"add_user_variable", "update_user_variable", "delete_user_variable",
+			"create_event", "update_event"
+		};
+
+		if (kAdminTools.count(sMethodName) && session.rights < http::server::URIGHTS_ADMIN)
+		{
+			jsonRPCRep["error"]["code"] = mcp::MCP_PERMISSION_DENIED;
+			jsonRPCRep["error"]["message"] = "Admin rights required for: " + sMethodName;
+			return;
+		}
+		if (kSwitcherTools.count(sMethodName) && session.rights < http::server::URIGHTS_SWITCHER)
+		{
+			jsonRPCRep["error"]["code"] = mcp::MCP_PERMISSION_DENIED;
+			jsonRPCRep["error"]["message"] = "Switcher rights required for: " + sMethodName;
+			return;
+		}
+
+		if (sMethodName == "set_security_status")
+		{
+			_log.Log(LOG_STATUS, "MCP: Security panel status change requested by user '%s' from %s",
+				session.username.c_str(), session.remote_host.c_str());
+		}
+
+			// Tool function contract:
+		// - Always return true (tool functions always produce a result content)
+		// - Use mcp::setToolResult(rep, message, true) to signal logical errors (device not found, etc.)
+		// - Return false only when required JSON parameters are missing (pre-flight validation)
+		// - Never set jsonRPCRep["error"] directly — that is for JSON-RPC protocol errors only
 		static const std::unordered_map<std::string, std::function<bool(const Json::Value&, Json::Value&)>> kToolDispatch = {
 			{ "get_switch_state",       getSwitchState },
 			{ "toggle_switch_state",    toggleSwitchState },
@@ -790,6 +782,14 @@ namespace mcp		// Model Context Protocol
 			{ "update_event",           updateEvent },
 		};
 
+#ifdef _DEBUG
+		for (const auto &def : kToolDefinitions)
+		{
+			assert(kToolDispatch.count(def.name) > 0 &&
+				   "Tool in definitions table has no dispatch entry");
+		}
+#endif
+
 		auto it = kToolDispatch.find(sMethodName);
 		if (it != kToolDispatch.end())
 		{
@@ -797,7 +797,7 @@ namespace mcp		// Model Context Protocol
 			{
 				if (!jsonRPCRep.isMember("error"))
 				{
-					jsonRPCRep["error"]["code"] = JSONRPC_INVALID_PARAMETER;
+					jsonRPCRep["error"]["code"] = mcp::JSONRPC_INVALID_PARAMETER;
 					jsonRPCRep["error"]["message"] = "Error executing tool: " + sMethodName;
 				}
 			}
@@ -805,7 +805,7 @@ namespace mcp		// Model Context Protocol
 		else
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: Unsupported tool name: %s", sMethodName.c_str());
-			jsonRPCRep["error"]["code"] = JSONRPC_METHOD_NOT_FOUND;
+			jsonRPCRep["error"]["code"] = mcp::JSONRPC_METHOD_NOT_FOUND;
 			jsonRPCRep["error"]["message"] = "Method not found";
 		}
 		//_log.Debug(DEBUG_WEBSERVER, "McpToolsCall: Returning result for method (%s): %s", sMethodName.c_str(), jsonRPCRep.toStyledString().c_str());
@@ -892,37 +892,6 @@ namespace mcp		// Model Context Protocol
 			jsonRPCRep["result"]["resources"].append(resource);
 		}
 
-		// --- Per-device resources using domoticz://device/{idx} ---
-		Json::Value jsonDevices;
-		m_webservers.GetJSonDevices(jsonDevices, "", "", "", "", "", "", false, false, false, 0, "", "");	// To-Do: Use Database instead of WebServerHelper
-		if (jsonDevices.isObject() && jsonDevices.isMember("result"))
-		{
-			for (const auto &device : jsonDevices["result"])
-			{
-				//_log.Debug(DEBUG_WEBSERVER, "MCP: ResourcesList: Got device: %s", device.toStyledString().c_str());
-				if (device.isObject() && device.isMember("idx") && device.isMember("HardwareName") && device.isMember("ID") &&
-					device.isMember("Name") && device.isMember("Type") && device.isMember("SubType") && device.isMember("Data")	&&
-					device.isMember("Used") && atoi(device["Used"].asString().c_str()) == 1)
-				{
-					Json::Value resource;
-					resource["uri"] = "domoticz://device/" + device["idx"].asString();
-					resource["name"] = device["Name"].asString();
-					resource["title"] = device["Name"].asString() + " (" + device["HardwareName"].asString() + " - " + device["Type"].asString() + " - " + device["SubType"].asString() + ")";
-					resource["description"] = "A Sensor from the " + device["HardwareName"].asString() + " hardware of Type " + device["Type"].asString() +
-												" and subtype " + device["SubType"].asString() + " called " + device["Name"].asString() +
-												" with ID " + device["ID"].asString() + " and IDX " + device["idx"].asString();
-					resource["mimeType"] = "text/plain";
-					Json::Value meta;
-					meta["hardware"] = device["HardwareName"].asString();
-					meta["type"] = device["Type"].asString();
-					meta["subtype"] = device["SubType"].asString();
-					meta["idx"] = atoi(device["idx"].asString().c_str());
-					meta["id"] = device["ID"].asString();
-					resource["_meta"] = meta;
-					jsonRPCRep["result"]["resources"].append(resource);
-				}
-			}
-		}
 		// Add any available floorplans as resources too
 		auto result = m_sql.safe_query("SELECT ID, Name FROM Floorplans");
 		if (!result.empty())
@@ -994,7 +963,7 @@ namespace mcp		// Model Context Protocol
 		if (!jsonRequest.isMember("params") || !jsonRequest["params"].isMember("uri"))
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: Missing required resource parameter 'uri' in resources/read request.");
-			jsonRPCRep["error"]["code"] = JSONRPC_INVALID_PARAMETER;
+			jsonRPCRep["error"]["code"] = mcp::JSONRPC_INVALID_PARAMETER;
 			jsonRPCRep["error"]["message"] = "Missing required parameter 'uri'";
 			return;
 		}
@@ -1058,7 +1027,7 @@ namespace mcp		// Model Context Protocol
 				// Single device by idx
 				if (nIdx < 0)
 				{
-					jsonRPCRep["error"]["code"] = JSONRPC_INVALID_PARAMETER;
+					jsonRPCRep["error"]["code"] = mcp::JSONRPC_INVALID_PARAMETER;
 					jsonRPCRep["error"]["message"] = "Invalid device idx in URI";
 					return;
 				}
@@ -1067,7 +1036,7 @@ namespace mcp		// Model Context Protocol
 				if (result.empty())
 				{
 					_log.Debug(DEBUG_WEBSERVER, "MCP: resources/read: No device found with IDX %d", nIdx);
-					jsonRPCRep["error"]["code"] = MCP_RESOURCE_NOT_FOUND;
+					jsonRPCRep["error"]["code"] = mcp::MCP_RESOURCE_NOT_FOUND;
 					jsonRPCRep["error"]["message"] = "No device found with the specified URI";
 					return;
 				}
@@ -1118,14 +1087,14 @@ namespace mcp		// Model Context Protocol
 				// Devices in a room by plan idx
 				if (nIdx < 0)
 				{
-					jsonRPCRep["error"]["code"] = JSONRPC_INVALID_PARAMETER;
+					jsonRPCRep["error"]["code"] = mcp::JSONRPC_INVALID_PARAMETER;
 					jsonRPCRep["error"]["message"] = "Invalid room idx in URI";
 					return;
 				}
 				auto planResult = m_sql.safe_query("SELECT Name FROM Plans WHERE ID=%d", nIdx);
 				if (planResult.empty())
 				{
-					jsonRPCRep["error"]["code"] = MCP_RESOURCE_NOT_FOUND;
+					jsonRPCRep["error"]["code"] = mcp::MCP_RESOURCE_NOT_FOUND;
 					jsonRPCRep["error"]["message"] = "No room found with the specified idx";
 					return;
 				}
@@ -1189,14 +1158,14 @@ namespace mcp		// Model Context Protocol
 				// Devices in a scene by idx
 				if (nIdx < 0)
 				{
-					jsonRPCRep["error"]["code"] = JSONRPC_INVALID_PARAMETER;
+					jsonRPCRep["error"]["code"] = mcp::JSONRPC_INVALID_PARAMETER;
 					jsonRPCRep["error"]["message"] = "Invalid scene idx in URI";
 					return;
 				}
 				auto scResult = m_sql.safe_query("SELECT Name FROM Scenes WHERE ID=%d", nIdx);
 				if (scResult.empty())
 				{
-					jsonRPCRep["error"]["code"] = MCP_RESOURCE_NOT_FOUND;
+					jsonRPCRep["error"]["code"] = mcp::MCP_RESOURCE_NOT_FOUND;
 					jsonRPCRep["error"]["message"] = "No scene found with the specified idx";
 					return;
 				}
@@ -1251,14 +1220,14 @@ namespace mcp		// Model Context Protocol
 				// Single variable by idx
 				if (nIdx < 0)
 				{
-					jsonRPCRep["error"]["code"] = JSONRPC_INVALID_PARAMETER;
+					jsonRPCRep["error"]["code"] = mcp::JSONRPC_INVALID_PARAMETER;
 					jsonRPCRep["error"]["message"] = "Invalid user-variable idx in URI";
 					return;
 				}
 				auto result = m_sql.safe_query("SELECT ID, Name, ValueType, Value, LastUpdate FROM UserVariables WHERE ID=%d", nIdx);
 				if (result.empty())
 				{
-					jsonRPCRep["error"]["code"] = MCP_RESOURCE_NOT_FOUND;
+					jsonRPCRep["error"]["code"] = mcp::MCP_RESOURCE_NOT_FOUND;
 					jsonRPCRep["error"]["message"] = "No user variable found with the specified idx";
 					return;
 				}
@@ -1297,7 +1266,7 @@ namespace mcp		// Model Context Protocol
 				// Single event script by idx
 				if (nIdx < 0)
 				{
-					jsonRPCRep["error"]["code"] = JSONRPC_INVALID_PARAMETER;
+					jsonRPCRep["error"]["code"] = mcp::JSONRPC_INVALID_PARAMETER;
 					jsonRPCRep["error"]["message"] = "Invalid event idx in URI";
 					return;
 				}
@@ -1305,7 +1274,7 @@ namespace mcp		// Model Context Protocol
 					"SELECT ID, Name, XMLStatement, Status, Interpreter FROM EventMaster WHERE ID=%d", nIdx);
 				if (result.empty())
 				{
-					jsonRPCRep["error"]["code"] = MCP_RESOURCE_NOT_FOUND;
+					jsonRPCRep["error"]["code"] = mcp::MCP_RESOURCE_NOT_FOUND;
 					jsonRPCRep["error"]["message"] = "No event script found with the specified idx";
 					return;
 				}
@@ -1340,33 +1309,9 @@ namespace mcp		// Model Context Protocol
 			}
 			else if (sResourceType == "settings")
 			{
-				std::string sTitle, sLocation, sLanguage;
-				int iTempScale = 0, iWindScale = 0, iSensorTimeout = 0, iBatterLow = 0, iActivePlan = 0;
-				m_sql.GetPreferencesVar("Title", sTitle);
-				m_sql.GetPreferencesVar("Location", sLocation);
-				m_sql.GetPreferencesVar("Language", sLanguage);
-				m_sql.GetPreferencesVar("TempScale", iTempScale);
-				m_sql.GetPreferencesVar("WindScale", iWindScale);
-				m_sql.GetPreferencesVar("SensorTimeout", iSensorTimeout);
-				m_sql.GetPreferencesVar("BatterLowNotification", iBatterLow);
-				m_sql.GetPreferencesVar("ActiveTimerPlan", iActivePlan);
-
-				std::string sText = "Domoticz System Settings\n";
-				sText += "========================\n";
-				if (!sTitle.empty())
-					sText += "Title: " + sTitle + "\n";
-				if (!sLocation.empty())
-					sText += "Location: " + sLocation + "\n";
-				if (!sLanguage.empty())
-					sText += "Language: " + sLanguage + "\n";
-				sText += "Temperature scale: " + std::string(iTempScale == 1 ? "Fahrenheit" : "Celsius") + "\n";
-				sText += "Wind scale: " + std::string(iWindScale == 1 ? "mph" : "m/s") + "\n";
-				sText += "Sensor timeout (min): " + std::to_string(iSensorTimeout) + "\n";
-				sText += "Battery low notification threshold: " + std::to_string(iBatterLow) + "%\n";
-				sText += "Active timer plan: " + std::to_string(iActivePlan) + "\n";
 				resource["name"] = "Settings";
 				resource["mimeType"] = "text/plain";
-				resource["text"] = sText;
+				resource["text"] = buildSettingsText();
 			}
 			else if (sResourceType == "log")
 			{
@@ -1384,7 +1329,7 @@ namespace mcp		// Model Context Protocol
 			else
 			{
 				_log.Debug(DEBUG_WEBSERVER, "MCP: resources/read: Unknown domoticz:// resource type: %s", sResourceType.c_str());
-				jsonRPCRep["error"]["code"] = MCP_RESOURCE_NOT_FOUND;
+				jsonRPCRep["error"]["code"] = mcp::MCP_RESOURCE_NOT_FOUND;
 				jsonRPCRep["error"]["message"] = "Unknown resource type: " + sResourceType;
 				return;
 			}
@@ -1397,7 +1342,7 @@ namespace mcp		// Model Context Protocol
 			catch (...) {}
 			if (nIdx < 0)
 			{
-				jsonRPCRep["error"]["code"] = JSONRPC_INVALID_PARAMETER;
+				jsonRPCRep["error"]["code"] = mcp::JSONRPC_INVALID_PARAMETER;
 				jsonRPCRep["error"]["message"] = "Invalid floorplan idx in URI";
 				return;
 			}
@@ -1405,7 +1350,7 @@ namespace mcp		// Model Context Protocol
 			if (result.empty())
 			{
 				_log.Debug(DEBUG_WEBSERVER, "MCP: resources/read: No floorplan found with IDX %d", nIdx);
-				jsonRPCRep["error"]["code"] = MCP_RESOURCE_NOT_FOUND;
+				jsonRPCRep["error"]["code"] = mcp::MCP_RESOURCE_NOT_FOUND;
 				jsonRPCRep["error"]["message"] = "No floorplan found with the specified URI";
 				return;
 			}
@@ -1422,14 +1367,14 @@ namespace mcp		// Model Context Protocol
 		else
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: resources/read: Unsupported URI scheme: %s", sReadURI.c_str());
-			jsonRPCRep["error"]["code"] = MCP_RESOURCE_NOT_FOUND;
+			jsonRPCRep["error"]["code"] = mcp::MCP_RESOURCE_NOT_FOUND;
 			jsonRPCRep["error"]["message"] = "Unsupported resource URI scheme";
 			return;
 		}
 
 		jsonRPCRep["result"]["contents"].append(resource);
 
-		_log.Debug(DEBUG_WEBSERVER, "MCP: Offering resources/read request result %s.", resource.toStyledString().c_str());
+		_log.Debug(DEBUG_WEBSERVER, "MCP: Offering resources/read request result for: %s", resource["uri"].asString().c_str());
 	}
 
 	void McpPromptsList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
@@ -1480,6 +1425,12 @@ namespace mcp		// Model Context Protocol
 
 	void McpPromptsGet(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
+		if (!jsonRequest.isMember("params") || !jsonRequest["params"].isMember("name"))
+		{
+			jsonRPCRep["error"]["code"] = mcp::JSONRPC_INVALID_PARAMETER;
+			jsonRPCRep["error"]["message"] = "Missing required parameter 'name'";
+			return;
+		}
 		std::string sPromptName = jsonRequest["params"]["name"].asString();
 		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling prompts/get request (%s).", sPromptName.c_str());
 
@@ -1508,6 +1459,9 @@ namespace mcp		// Model Context Protocol
 					}
 				}
 			}
+			if (!sText.empty() && sText.size() >= 2 && sText.substr(sText.size() - 2) == ", ")
+				sText.resize(sText.size() - 2);
+			sText += ".";
 			// Append rooms
 			auto roomResult = m_sql.safe_query("SELECT ID, Name FROM Plans WHERE Name!='' ORDER BY Name");
 			if (!roomResult.empty())
@@ -1581,7 +1535,7 @@ namespace mcp		// Model Context Protocol
 		else
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: prompts/get: Unsupported prompt name: %s", sPromptName.c_str());
-			jsonRPCRep["error"]["code"] = JSONRPC_METHOD_NOT_FOUND;
+			jsonRPCRep["error"]["code"] = mcp::JSONRPC_METHOD_NOT_FOUND;
 			jsonRPCRep["error"]["message"] = "Method not found";
 		}
 	}
@@ -1601,12 +1555,7 @@ namespace mcp		// Model Context Protocol
 		{
 			sSwitchState = "The current state of switch \"" + sSwitchName + "\" is: " + device["Data"].asString();
 		}
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = sSwitchState;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = !bFound;
+		mcp::setToolResult(jsonRPCRep, sSwitchState, !bFound);
 		return true;
 	}
 
@@ -1624,16 +1573,10 @@ namespace mcp		// Model Context Protocol
 		if (bFound)
 		{
 			sSwitchState = "The state of switch \"" + sSwitchName + "\" before toggle was: " + device["Data"].asString() + ". ";
-			bFound = true;
 			// const std::string& idx, const std::string& switchcmd, const std::string& level, const std::string& color, const std::string& ooc, const int ExtraDelay, const std::string& User)
 			sSwitchState += (m_mainworker.SwitchLight(device["idx"].asString(), "Toggle", "", "", "", 0, "") == MainWorker::eSwitchLightReturnCode::SL_ERROR ? "Error toggling the switch." : "Switch toggled successfully.");
 		}
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = sSwitchState;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = !bFound;
+		mcp::setToolResult(jsonRPCRep, sSwitchState, !bFound);
 		return true;
 	}
 
@@ -1652,12 +1595,7 @@ namespace mcp		// Model Context Protocol
 		{
 			sSensorValue = "The current value for sensor \"" + sSensorName + "\" is: " + device["Data"].asString();
 		}
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = sSensorValue;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = !bFound;
+		mcp::setToolResult(jsonRPCRep, sSensorValue, !bFound);
 		return true;
 	}
 
@@ -1671,7 +1609,6 @@ namespace mcp		// Model Context Protocol
 		std::string sFloorplan = jsonRequest["params"]["arguments"]["floorplan"].asString();
 		std::string sFloorplanValue = "No floorplan exists with the name " + sFloorplan;
 		std::string sMimeType;
-		Json::Value tool;
 		bool bFound = false;
 
 		auto result = m_sql.safe_query("SELECT ID FROM Floorplans WHERE Name='%q'", sFloorplan.c_str());
@@ -1725,19 +1662,9 @@ namespace mcp		// Model Context Protocol
 		}
 
 		if (bFound)
-		{
-			tool["type"] = "image";
-			tool["mimeType"] = sMimeType;
-			tool["data"] = sFloorplanValue;
-		}
+			mcp::setToolImageResult(jsonRPCRep, sFloorplanValue, sMimeType);
 		else
-		{
-			tool["type"] = "text";
-			tool["text"] = sFloorplanValue;
-		}
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = !bFound;
+			mcp::setToolResult(jsonRPCRep, sFloorplanValue, true);
 		return true;
 	}
 
@@ -1788,13 +1715,8 @@ namespace mcp		// Model Context Protocol
 		}
 		else
 			sResult = "No loglevels are currently enabled!";
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = sResult;;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = !bFound;
-		return bFound;
+		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
+		return true;
 	}
 
 	bool setThermostatSetpoint(const Json::Value& jsonRequest, Json::Value& jsonRPCRep)
@@ -1805,7 +1727,7 @@ namespace mcp		// Model Context Protocol
 			return false;
 		}
 		std::string sThermostatName = jsonRequest["params"]["arguments"]["thermostatname"].asString();
-		float fNewSetpoint = (float)atof(jsonRequest["params"]["arguments"]["setpoint"].asString().c_str());
+		float fNewSetpoint = jsonRequest["params"]["arguments"]["setpoint"].asFloat();
 		std::string sThermostatState = "No thermostat exists with the name " + sThermostatName;
 		Json::Value device;
 		bool bFound = getDeviceByName(sThermostatName, device);
@@ -1815,12 +1737,7 @@ namespace mcp		// Model Context Protocol
 			bFound = true;
 			sThermostatState += (m_mainworker.SetSetPoint(device["idx"].asString(), fNewSetpoint, "MCP") == false ? "Error setting the setpoint." : "Setpoint set successfully.");
 		}
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = sThermostatState;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = !bFound;
+		mcp::setToolResult(jsonRPCRep, sThermostatState, !bFound);
 		return true;
 	}
 
@@ -1881,12 +1798,7 @@ namespace mcp		// Model Context Protocol
 		if (!scResult.empty())
 			sResult += "Scenes/groups: " + scResult[0][0] + "\n";
 
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = false;
+		mcp::setToolResult(jsonRPCRep, sResult, false);
 		return true;
 	}
 
@@ -1955,19 +1867,14 @@ namespace mcp		// Model Context Protocol
 		else
 			sResult = std::to_string(iMatchCount) + " device(s) found matching \"" + sQuery + "\":\n" + sResult;
 
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = false;
+		mcp::setToolResult(jsonRPCRep, sResult, false);
 		return true;
 	}
 
 	bool getDeviceByName(const std::string &sDeviceName, Json::Value &device)
 	{
 		Json::Value jsonDevices;
-		m_webservers.GetJSonDevices(jsonDevices, "", "", "", "", "", "", false, false, false, 0, "", "");
+		m_webservers.GetJSonDevices(jsonDevices, "true", "", "", "", "", "", false, false, false, 0, "", "");
 
 		for (const auto &dev : jsonDevices["result"])
 		{
@@ -2021,12 +1928,7 @@ namespace mcp		// Model Context Protocol
 		if (!sFilter.empty() && sFilter != "light" && sFilter != "temp" && sFilter != "weather" && sFilter != "utility")
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: getAllDevices: Invalid filter value: %s", sFilter.c_str());
-			Json::Value tool;
-			tool["type"] = "text";
-			tool["text"] = "Invalid filter value '" + sFilter + "'. Valid values are: light, temp, weather, utility.";
-			jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-			jsonRPCRep["result"]["content"].append(tool);
-			jsonRPCRep["result"]["isError"] = true;
+			mcp::setToolResult(jsonRPCRep, "Invalid filter value '" + sFilter + "'. Valid values are: light, temp, weather, utility.", true);
 			return true;
 		}
 
@@ -2063,12 +1965,7 @@ namespace mcp		// Model Context Protocol
 		else
 			sResult = std::to_string(iCount) + " device(s):\n" + sResult;
 
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = false;
+		mcp::setToolResult(jsonRPCRep, sResult, false);
 		return true;
 	}
 
@@ -2144,12 +2041,7 @@ namespace mcp		// Model Context Protocol
 			}
 		}
 
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = !bFound;
+		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
 		return true;
 	}
 
@@ -2178,12 +2070,7 @@ namespace mcp		// Model Context Protocol
 			sResult = "No device found with name \"" + sOldName + "\"";
 		}
 
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = !bFound;
+		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
 		return true;
 	}
 
@@ -2210,12 +2097,7 @@ namespace mcp		// Model Context Protocol
 			sResult = "No device found with name \"" + sName + "\"";
 		}
 
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = !bFound;
+		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
 		return true;
 	}
 
@@ -2238,12 +2120,7 @@ namespace mcp		// Model Context Protocol
 		auto hwResult = m_sql.safe_query("SELECT ID FROM Hardware WHERE ID=%d", nHwIdx);
 		if (hwResult.empty())
 		{
-			Json::Value tool;
-			tool["type"] = "text";
-			tool["text"] = "No hardware found with idx=" + std::to_string(nHwIdx);
-			jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-			jsonRPCRep["result"]["content"].append(tool);
-			jsonRPCRep["result"]["isError"] = true;
+			mcp::setToolResult(jsonRPCRep, "No hardware found with idx=" + std::to_string(nHwIdx), true);
 			return true;
 		}
 
@@ -2304,12 +2181,7 @@ namespace mcp		// Model Context Protocol
 
 		if (iType == -1)
 		{
-			Json::Value tool;
-			tool["type"] = "text";
-			tool["text"] = "Unknown sensor type: " + std::to_string(nSensorType) + ". Common types: 80=Temperature, 81=Humidity, 5=Text, 6=Switch, 113=Counter, 18=Electric, 82=Temp+Hum";
-			jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-			jsonRPCRep["result"]["content"].append(tool);
-			jsonRPCRep["result"]["isError"] = true;
+			mcp::setToolResult(jsonRPCRep, "Unknown sensor type: " + std::to_string(nSensorType) + ". Common types: 80=Temperature, 81=Humidity, 5=Text, 6=Switch, 113=Counter, 18=Electric, 82=Temp+Hum", true);
 			return true;
 		}
 
@@ -2318,7 +2190,6 @@ namespace mcp		// Model Context Protocol
 		unsigned long nid = 1;
 		if (!maxResult.empty() && !maxResult[0][0].empty())
 			nid = atol(maxResult[0][0].c_str()) + 1;
-		unsigned long vs_idx = nid;
 		nid += 82000;
 
 		bool bPrevAccept = m_sql.m_bAcceptNewHardware;
@@ -2327,19 +2198,11 @@ namespace mcp		// Model Context Protocol
 		uint64_t DeviceRowIdx = m_sql.CreateDevice(nHwIdx, iType, iSubType, sSensorName, nid, soptions, "MCP");
 		m_sql.m_bAcceptNewHardware = bPrevAccept;
 
-		std::string sResult;
 		bool bOK = (DeviceRowIdx != (uint64_t)-1);
-		if (bOK)
-			sResult = "Virtual sensor \"" + sSensorName + "\" created successfully with idx=" + std::to_string(DeviceRowIdx) + ".";
-		else
-			sResult = "Failed to create virtual sensor \"" + sSensorName + "\".";
-
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = !bOK;
+		std::string sResult = bOK
+			? "Virtual sensor \"" + sSensorName + "\" created successfully with idx=" + std::to_string(DeviceRowIdx) + "."
+			: "Failed to create virtual sensor \"" + sSensorName + "\".";
+		mcp::setToolResult(jsonRPCRep, sResult, !bOK);
 		return true;
 	}
 
@@ -2377,12 +2240,7 @@ namespace mcp		// Model Context Protocol
 			sResult = "No device found with name \"" + sName + "\"";
 		}
 
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = !bFound;
+		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
 		return true;
 	}
 
@@ -2464,12 +2322,7 @@ namespace mcp		// Model Context Protocol
 			sResult = "No device found with name \"" + sName + "\"";
 		}
 
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = !bFound;
+		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
 		return true;
 	}
 
@@ -2495,12 +2348,7 @@ namespace mcp		// Model Context Protocol
 			}
 		}
 
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = false;
+		mcp::setToolResult(jsonRPCRep, sResult, false);
 		return true;
 	}
 
@@ -2521,12 +2369,7 @@ namespace mcp		// Model Context Protocol
 
 		if (vtype < 0 || vtype > 4)
 		{
-			Json::Value tool;
-			tool["type"] = "text";
-			tool["text"] = "Invalid variable type " + std::to_string(vtype) + ". Must be 0-4 (Integer/Float/String/Date/Time).";
-			jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-			jsonRPCRep["result"]["content"].append(tool);
-			jsonRPCRep["result"]["isError"] = true;
+			mcp::setToolResult(jsonRPCRep, "Invalid variable type " + std::to_string(vtype) + ". Must be 0-4 (Integer/Float/String/Date/Time).", true);
 			return true;
 		}
 
@@ -2534,12 +2377,7 @@ namespace mcp		// Model Context Protocol
 		auto existing = m_sql.safe_query("SELECT ID FROM UserVariables WHERE Name='%q'", sName.c_str());
 		if (!existing.empty())
 		{
-			Json::Value tool;
-			tool["type"] = "text";
-			tool["text"] = "A variable named \"" + sName + "\" already exists (idx=" + existing[0][0] + ").";
-			jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-			jsonRPCRep["result"]["content"].append(tool);
-			jsonRPCRep["result"]["isError"] = true;
+			mcp::setToolResult(jsonRPCRep, "A variable named \"" + sName + "\" already exists (idx=" + existing[0][0] + ").", true);
 			return true;
 		}
 
@@ -2551,13 +2389,7 @@ namespace mcp		// Model Context Protocol
 		std::string sResult = bOK
 			? "User variable \"" + sName + "\" created successfully."
 			: "Failed to create variable \"" + sName + "\": " + errorMessage;
-
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = !bOK;
+		mcp::setToolResult(jsonRPCRep, sResult, !bOK);
 		return true;
 	}
 
@@ -2577,12 +2409,7 @@ namespace mcp		// Model Context Protocol
 		auto result = m_sql.safe_query("SELECT ID, ValueType FROM UserVariables WHERE Name='%q'", sName.c_str());
 		if (result.empty())
 		{
-			Json::Value tool;
-			tool["type"] = "text";
-			tool["text"] = "No user variable found with name \"" + sName + "\"";
-			jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-			jsonRPCRep["result"]["content"].append(tool);
-			jsonRPCRep["result"]["isError"] = true;
+			mcp::setToolResult(jsonRPCRep, "No user variable found with name \"" + sName + "\"", true);
 			return true;
 		}
 
@@ -2600,13 +2427,7 @@ namespace mcp		// Model Context Protocol
 		std::string sResult = bOK
 			? "User variable \"" + sName + "\" updated successfully."
 			: "Failed to update variable \"" + sName + "\": " + errorMessage;
-
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = !bOK;
+		mcp::setToolResult(jsonRPCRep, sResult, !bOK);
 		return true;
 	}
 
@@ -2623,12 +2444,7 @@ namespace mcp		// Model Context Protocol
 		auto result = m_sql.safe_query("SELECT ID FROM UserVariables WHERE Name='%q'", sName.c_str());
 		if (result.empty())
 		{
-			Json::Value tool;
-			tool["type"] = "text";
-			tool["text"] = "No user variable found with name \"" + sName + "\"";
-			jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-			jsonRPCRep["result"]["content"].append(tool);
-			jsonRPCRep["result"]["isError"] = true;
+			mcp::setToolResult(jsonRPCRep, "No user variable found with name \"" + sName + "\"", true);
 			return true;
 		}
 
@@ -2636,12 +2452,7 @@ namespace mcp		// Model Context Protocol
 		m_sql.DeleteUserVariable(sIdx);
 		m_mainworker.m_eventsystem.GetCurrentUserVariables();
 
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = "User variable \"" + sName + "\" deleted successfully.";
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = false;
+		mcp::setToolResult(jsonRPCRep, "User variable \"" + sName + "\" deleted successfully.", false);
 		return true;
 	}
 
@@ -2657,6 +2468,14 @@ namespace mcp		// Model Context Protocol
 		}
 
 		std::string sMessage = jsonRequest["params"]["arguments"]["message"].asString();
+
+		const size_t kMaxLogMessageLen = 2048;
+		if (sMessage.size() > kMaxLogMessageLen)
+		{
+			sMessage.resize(kMaxLogMessageLen);
+			sMessage += "... [truncated]";
+		}
+
 		std::string sLevel   = "normal";
 		if (jsonRequest["params"]["arguments"].isMember("level"))
 			sLevel = jsonRequest["params"]["arguments"]["level"].asString();
@@ -2668,12 +2487,7 @@ namespace mcp		// Model Context Protocol
 		else
 			_log.Log(LOG_NORM, "MCP: %s", sMessage.c_str());
 
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = "Log message written at level \"" + sLevel + "\": " + sMessage;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = false;
+		mcp::setToolResult(jsonRPCRep, "Log message written at level \"" + sLevel + "\": " + sMessage, false);
 		return true;
 	}
 
@@ -2702,13 +2516,7 @@ namespace mcp		// Model Context Protocol
 		std::string sResult = bOK
 			? "Notification sent: \"" + sSubject + "\""
 			: "Failed to send notification. No notification services may be configured.";
-
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = !bOK;
+		mcp::setToolResult(jsonRPCRep, sResult, !bOK);
 		return true;
 	}
 
@@ -2735,12 +2543,7 @@ namespace mcp		// Model Context Protocol
 			}
 		}
 
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = false;
+		mcp::setToolResult(jsonRPCRep, sResult, false);
 		return true;
 	}
 
@@ -2774,12 +2577,7 @@ namespace mcp		// Model Context Protocol
 			sResult = "No event script found with name \"" + sEventName + "\"";
 		}
 
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = !bFound;
+		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
 		return true;
 	}
 
@@ -2804,12 +2602,7 @@ namespace mcp		// Model Context Protocol
 		// Validate interpreter
 		if (sInterpreter != "Lua" && sInterpreter != "dzVents" && sInterpreter != "Python" && sInterpreter != "Blockly")
 		{
-			Json::Value tool;
-			tool["type"] = "text";
-			tool["text"] = "Invalid interpreter \"" + sInterpreter + "\". Must be one of: Lua, dzVents, Python, Blockly.";
-			jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-			jsonRPCRep["result"]["content"].append(tool);
-			jsonRPCRep["result"]["isError"] = true;
+			mcp::setToolResult(jsonRPCRep, "Invalid interpreter \"" + sInterpreter + "\". Must be one of: Lua, dzVents, Python, Blockly.", true);
 			return true;
 		}
 
@@ -2817,12 +2610,7 @@ namespace mcp		// Model Context Protocol
 		auto existing = m_sql.safe_query("SELECT ID FROM EventMaster WHERE Name='%q'", sName.c_str());
 		if (!existing.empty())
 		{
-			Json::Value tool;
-			tool["type"] = "text";
-			tool["text"] = "An event script named \"" + sName + "\" already exists (idx=" + existing[0][0] + ").";
-			jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-			jsonRPCRep["result"]["content"].append(tool);
-			jsonRPCRep["result"]["isError"] = true;
+			mcp::setToolResult(jsonRPCRep, "An event script named \"" + sName + "\" already exists (idx=" + existing[0][0] + ").", true);
 			return true;
 		}
 
@@ -2836,12 +2624,7 @@ namespace mcp		// Model Context Protocol
 
 		m_mainworker.m_eventsystem.LoadEvents();
 
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = "Event script \"" + sName + "\" created successfully (idx=" + sNewIdx + ", interpreter=" + sInterpreter + ", " + (bEnabled ? "enabled" : "disabled") + ").";
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = false;
+		mcp::setToolResult(jsonRPCRep, "Event script \"" + sName + "\" created successfully (idx=" + sNewIdx + ", interpreter=" + sInterpreter + ", " + (bEnabled ? "enabled" : "disabled") + ").", false);
 		return true;
 	}
 
@@ -2859,12 +2642,7 @@ namespace mcp		// Model Context Protocol
 		auto result = m_sql.safe_query("SELECT ID FROM EventMaster WHERE Name='%q'", sEventName.c_str());
 		if (result.empty())
 		{
-			Json::Value tool;
-			tool["type"] = "text";
-			tool["text"] = "No event script found with name \"" + sEventName + "\"";
-			jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-			jsonRPCRep["result"]["content"].append(tool);
-			jsonRPCRep["result"]["isError"] = true;
+			mcp::setToolResult(jsonRPCRep, "No event script found with name \"" + sEventName + "\"", true);
 			return true;
 		}
 
@@ -2897,13 +2675,7 @@ namespace mcp		// Model Context Protocol
 		std::string sResult = bAnyChange
 			? "Event script \"" + sEventName + "\" updated successfully."
 			: "No changes applied to event script \"" + sEventName + "\" (no update parameters provided).";
-
-		Json::Value tool;
-		tool["type"] = "text";
-		tool["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(tool);
-		jsonRPCRep["result"]["isError"] = false;
+		mcp::setToolResult(jsonRPCRep, sResult, false);
 		return true;
 	}
 
@@ -2931,12 +2703,7 @@ namespace mcp		// Model Context Protocol
 
 		if (sState != "On" && sState != "Off")
 		{
-			Json::Value toolContent;
-			toolContent["type"] = "text";
-			toolContent["text"] = "Invalid state '" + sState + "'. Must be 'On' or 'Off'.";
-			jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-			jsonRPCRep["result"]["content"].append(toolContent);
-			jsonRPCRep["result"]["isError"] = true;
+			mcp::setToolResult(jsonRPCRep, "Invalid state '" + sState + "'. Must be 'On' or 'Off'.", true);
 			return true;
 		}
 
@@ -2957,12 +2724,7 @@ namespace mcp		// Model Context Protocol
 			else
 				sResult = "Switch \"" + sSwitchName + "\" set to " + sState + " successfully.";
 		}
-		Json::Value toolContent;
-		toolContent["type"] = "text";
-		toolContent["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(toolContent);
-		jsonRPCRep["result"]["isError"] = !bFound;
+		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
 		return true;
 	}
 
@@ -2993,12 +2755,7 @@ namespace mcp		// Model Context Protocol
 				? "Error setting dimmer level on \"" + sSwitchName + "\"."
 				: "Dimmer \"" + sSwitchName + "\" set to level " + std::to_string(iLevel) + ".";
 		}
-		Json::Value toolContent;
-		toolContent["type"] = "text";
-		toolContent["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(toolContent);
-		jsonRPCRep["result"]["isError"] = !bFound;
+		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
 		return true;
 	}
 
@@ -3023,12 +2780,7 @@ namespace mcp		// Model Context Protocol
 
 		if (sCommand != "Open" && sCommand != "Close" && sCommand != "Stop")
 		{
-			Json::Value toolContent;
-			toolContent["type"] = "text";
-			toolContent["text"] = "Invalid command '" + sCommand + "'. Must be 'Open', 'Close', or 'Stop'.";
-			jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-			jsonRPCRep["result"]["content"].append(toolContent);
-			jsonRPCRep["result"]["isError"] = true;
+			mcp::setToolResult(jsonRPCRep, "Invalid command '" + sCommand + "'. Must be 'Open', 'Close', or 'Stop'.", true);
 			return true;
 		}
 
@@ -3046,12 +2798,7 @@ namespace mcp		// Model Context Protocol
 				? "Error sending " + sCommand + " to \"" + sSwitchName + "\"."
 				: "Command " + sCommand + " sent to \"" + sSwitchName + "\" successfully.";
 		}
-		Json::Value toolContent;
-		toolContent["type"] = "text";
-		toolContent["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(toolContent);
-		jsonRPCRep["result"]["isError"] = !bFound;
+		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
 		return true;
 	}
 
@@ -3096,12 +2843,7 @@ namespace mcp		// Model Context Protocol
 				uIdx = std::stoull(device["idx"].asString());
 			} catch (const std::exception &e) {
 				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid device idx: %s", e.what());
-				Json::Value tool;
-				tool["type"] = "text";
-				tool["text"] = "Internal error: invalid device index.";
-				jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-				jsonRPCRep["result"]["content"].append(tool);
-				jsonRPCRep["result"]["isError"] = true;
+				mcp::setToolResult(jsonRPCRep, "Internal error: invalid device index.", true);
 				return true;
 			}
 			auto rc = m_mainworker.SwitchLight(uIdx, "Set Color", (unsigned char)iBrightness, color, false, 0, "MCP");
@@ -3109,12 +2851,7 @@ namespace mcp		// Model Context Protocol
 				? "Error setting color on \"" + sSwitchName + "\"."
 				: "Color set on \"" + sSwitchName + "\": hue=" + std::to_string((int)fHue) + ", brightness=" + std::to_string(iBrightness) + ".";
 		}
-		Json::Value toolContent;
-		toolContent["type"] = "text";
-		toolContent["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(toolContent);
-		jsonRPCRep["result"]["isError"] = !bFound;
+		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
 		return true;
 	}
 
@@ -3154,12 +2891,7 @@ namespace mcp		// Model Context Protocol
 				uIdx = std::stoull(device["idx"].asString());
 			} catch (const std::exception &e) {
 				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid device idx: %s", e.what());
-				Json::Value tool;
-				tool["type"] = "text";
-				tool["text"] = "Internal error: invalid device index.";
-				jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-				jsonRPCRep["result"]["content"].append(tool);
-				jsonRPCRep["result"]["isError"] = true;
+				mcp::setToolResult(jsonRPCRep, "Internal error: invalid device index.", true);
 				return true;
 			}
 			auto rc = m_mainworker.SwitchLight(uIdx, "Set Color", -1, color, false, 0, "MCP");
@@ -3167,12 +2899,7 @@ namespace mcp		// Model Context Protocol
 				? "Error setting color temperature on \"" + sSwitchName + "\"."
 				: "Color temperature on \"" + sSwitchName + "\" set to " + std::to_string(iKelvin) + "K.";
 		}
-		Json::Value toolContent;
-		toolContent["type"] = "text";
-		toolContent["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(toolContent);
-		jsonRPCRep["result"]["isError"] = !bFound;
+		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
 		return true;
 	}
 
@@ -3208,12 +2935,7 @@ namespace mcp		// Model Context Protocol
 				sResult += "]\n";
 			}
 		}
-		Json::Value toolContent;
-		toolContent["type"] = "text";
-		toolContent["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(toolContent);
-		jsonRPCRep["result"]["isError"] = false;
+		mcp::setToolResult(jsonRPCRep, sResult, false);
 		return true;
 	}
 
@@ -3238,12 +2960,7 @@ namespace mcp		// Model Context Protocol
 
 		if (sCommand != "On" && sCommand != "Off")
 		{
-			Json::Value toolContent;
-			toolContent["type"] = "text";
-			toolContent["text"] = "Invalid command '" + sCommand + "'. Must be 'On' or 'Off'.";
-			jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-			jsonRPCRep["result"]["content"].append(toolContent);
-			jsonRPCRep["result"]["isError"] = true;
+			mcp::setToolResult(jsonRPCRep, "Invalid command '" + sCommand + "'. Must be 'On' or 'Off'.", true);
 			return true;
 		}
 
@@ -3262,12 +2979,7 @@ namespace mcp		// Model Context Protocol
 				? "Scene \"" + sSceneName + "\" switched " + sCommand + " successfully."
 				: "Error switching scene \"" + sSceneName + "\".";
 		}
-		Json::Value toolContent;
-		toolContent["type"] = "text";
-		toolContent["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(toolContent);
-		jsonRPCRep["result"]["isError"] = !bFound;
+		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
 		return true;
 	}
 
@@ -3289,12 +3001,7 @@ namespace mcp		// Model Context Protocol
 				sResult += "- \"" + row[1] + "\" [idx=" + row[0] + "]\n";
 			}
 		}
-		Json::Value toolContent;
-		toolContent["type"] = "text";
-		toolContent["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(toolContent);
-		jsonRPCRep["result"]["isError"] = false;
+		mcp::setToolResult(jsonRPCRep, sResult, false);
 		return true;
 	}
 
@@ -3346,12 +3053,7 @@ namespace mcp		// Model Context Protocol
 			else
 				sResult = std::to_string(iCount) + " device(s) in room \"" + sRoomName + "\":\n" + sDeviceList;
 		}
-		Json::Value toolContent;
-		toolContent["type"] = "text";
-		toolContent["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(toolContent);
-		jsonRPCRep["result"]["isError"] = !bFound;
+		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
 		return true;
 	}
 
@@ -3375,10 +3077,11 @@ namespace mcp		// Model Context Protocol
 		else
 		{
 			std::string sSceneIdx = scResult[0][0];
+			int nSceneIdx = atoi(sSceneIdx.c_str());
 			auto devResult = m_sql.safe_query(
 				"SELECT a.DeviceRowID, b.Name, a.Cmd, a.Level "
 				"FROM SceneDevices a JOIN DeviceStatus b ON b.ID=a.DeviceRowID "
-				"WHERE a.SceneRowID=%s ORDER BY b.Name", sSceneIdx.c_str());
+				"WHERE a.SceneRowID=%d ORDER BY b.Name", nSceneIdx);
 			if (devResult.empty())
 			{
 				sResult = "Scene \"" + sSceneName + "\" has no devices assigned.";
@@ -3395,12 +3098,7 @@ namespace mcp		// Model Context Protocol
 				}
 			}
 		}
-		Json::Value toolContent;
-		toolContent["type"] = "text";
-		toolContent["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(toolContent);
-		jsonRPCRep["result"]["isError"] = !bFound;
+		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
 		return true;
 	}
 
@@ -3431,48 +3129,13 @@ namespace mcp		// Model Context Protocol
 				sResult += "]\n";
 			}
 		}
-		Json::Value toolContent;
-		toolContent["type"] = "text";
-		toolContent["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(toolContent);
-		jsonRPCRep["result"]["isError"] = false;
+		mcp::setToolResult(jsonRPCRep, sResult, false);
 		return true;
 	}
 
 	bool getSystemSettings(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		std::string sTitle, sLocation, sLanguage;
-		int iTempScale = 0, iWindScale = 0, iSensorTimeout = 0, iBatterLow = 0, iActivePlan = 0;
-		m_sql.GetPreferencesVar("Title", sTitle);
-		m_sql.GetPreferencesVar("Location", sLocation);
-		m_sql.GetPreferencesVar("Language", sLanguage);
-		m_sql.GetPreferencesVar("TempScale", iTempScale);
-		m_sql.GetPreferencesVar("WindScale", iWindScale);
-		m_sql.GetPreferencesVar("SensorTimeout", iSensorTimeout);
-		m_sql.GetPreferencesVar("BatterLowNotification", iBatterLow);
-		m_sql.GetPreferencesVar("ActiveTimerPlan", iActivePlan);
-
-		std::string sResult = "Domoticz System Settings\n";
-		sResult += "========================\n";
-		if (!sTitle.empty())
-			sResult += "Title: " + sTitle + "\n";
-		if (!sLocation.empty())
-			sResult += "Location: " + sLocation + "\n";
-		if (!sLanguage.empty())
-			sResult += "Language: " + sLanguage + "\n";
-		sResult += "Temperature scale: " + std::string(iTempScale == 1 ? "Fahrenheit" : "Celsius") + "\n";
-		sResult += "Wind scale: " + std::string(iWindScale == 1 ? "mph" : "m/s") + "\n";
-		sResult += "Sensor timeout (min): " + std::to_string(iSensorTimeout) + "\n";
-		sResult += "Battery low notification threshold: " + std::to_string(iBatterLow) + "%\n";
-		sResult += "Active timer plan: " + std::to_string(iActivePlan) + "\n";
-
-		Json::Value toolContent;
-		toolContent["type"] = "text";
-		toolContent["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(toolContent);
-		jsonRPCRep["result"]["isError"] = false;
+		mcp::setToolResult(jsonRPCRep, buildSettingsText(), false);
 		return true;
 	}
 
@@ -3482,12 +3145,7 @@ namespace mcp		// Model Context Protocol
 		if (m_mainworker.m_LastSunriseSet.empty())
 		{
 			sResult = "Sun rise/set data is not available yet. Domoticz needs a valid location configured.";
-			Json::Value toolContent;
-			toolContent["type"] = "text";
-			toolContent["text"] = sResult;
-			jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-			jsonRPCRep["result"]["content"].append(toolContent);
-			jsonRPCRep["result"]["isError"] = true;
+			mcp::setToolResult(jsonRPCRep, sResult, true);
 			return true;
 		}
 
@@ -3507,12 +3165,7 @@ namespace mcp		// Model Context Protocol
 		if (strarray.size() > 8) sResult += "Nautical dusk: " + strarray[8] + "\n";
 		if (strarray.size() > 9) sResult += "Day length:    " + strarray[9] + "\n";
 
-		Json::Value toolContent;
-		toolContent["type"] = "text";
-		toolContent["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(toolContent);
-		jsonRPCRep["result"]["isError"] = false;
+		mcp::setToolResult(jsonRPCRep, sResult, false);
 		return true;
 	}
 
@@ -3544,12 +3197,7 @@ namespace mcp		// Model Context Protocol
 				sResult += "- \"" + row[1] + "\" [idx=" + row[0] + ", " + sEnabled + ", " + sProtocol + "://" + row[3] + ":" + row[4] + "]\n";
 			}
 		}
-		Json::Value toolContent;
-		toolContent["type"] = "text";
-		toolContent["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(toolContent);
-		jsonRPCRep["result"]["isError"] = false;
+		mcp::setToolResult(jsonRPCRep, sResult, false);
 		return true;
 	}
 
@@ -3571,18 +3219,13 @@ namespace mcp		// Model Context Protocol
 			}
 			sResult += "\nUse the get_floorplan tool with the floorplan name to retrieve the image.";
 		}
-		Json::Value toolContent;
-		toolContent["type"] = "text";
-		toolContent["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(toolContent);
-		jsonRPCRep["result"]["isError"] = false;
+		mcp::setToolResult(jsonRPCRep, sResult, false);
 		return true;
 	}
 
 	bool getUsers(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		// Do NOT include Password, Secret or MFAToken columns
+		// Intentionally excludes Password, Secret, and MFAToken columns for security
 		auto result = m_sql.safe_query(
 			"SELECT ID, Active, Username, Rights FROM Users ORDER BY Username");
 
@@ -3609,12 +3252,7 @@ namespace mcp		// Model Context Protocol
 				sResult += "- \"" + row[2] + "\" [idx=" + row[0] + ", " + sRights + ", " + sActive + "]\n";
 			}
 		}
-		Json::Value toolContent;
-		toolContent["type"] = "text";
-		toolContent["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(toolContent);
-		jsonRPCRep["result"]["isError"] = false;
+		mcp::setToolResult(jsonRPCRep, sResult, false);
 		return true;
 	}
 
@@ -3636,12 +3274,7 @@ namespace mcp		// Model Context Protocol
 		}
 		std::string sResult = "Security panel status: " + sStatus + " (code: " + std::to_string(iSecStatus) + ")";
 
-		Json::Value toolContent;
-		toolContent["type"] = "text";
-		toolContent["text"] = sResult;
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(toolContent);
-		jsonRPCRep["result"]["isError"] = false;
+		mcp::setToolResult(jsonRPCRep, sResult, false);
 		return true;
 	}
 
@@ -3659,12 +3292,7 @@ namespace mcp		// Model Context Protocol
 
 		if (iNewStatus < 0 || iNewStatus > 2)
 		{
-			Json::Value toolContent;
-			toolContent["type"] = "text";
-			toolContent["text"] = "Invalid status value " + std::to_string(iNewStatus) + ". Must be 0 (Disarmed), 1 (Armed Home), or 2 (Armed Away).";
-			jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-			jsonRPCRep["result"]["content"].append(toolContent);
-			jsonRPCRep["result"]["isError"] = true;
+			mcp::setToolResult(jsonRPCRep, "Invalid status value " + std::to_string(iNewStatus) + ". Must be 0 (Disarmed), 1 (Armed Home), or 2 (Armed Away).", true);
 			return true;
 		}
 
@@ -3675,12 +3303,7 @@ namespace mcp		// Model Context Protocol
 
 		if (sStoredCode.empty())
 		{
-			Json::Value toolContent;
-			toolContent["type"] = "text";
-			toolContent["text"] = "No security code is configured. Please set a security PIN in Domoticz settings before using this tool.";
-			jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-			jsonRPCRep["result"]["content"].append(toolContent);
-			jsonRPCRep["result"]["isError"] = true;
+			mcp::setToolResult(jsonRPCRep, "No security code is configured. Please set a security PIN in Domoticz settings before using this tool.", true);
 			return true;
 		}
 
@@ -3690,12 +3313,7 @@ namespace mcp		// Model Context Protocol
 		if (sHashedCode != sStoredCode)
 		{
 			_log.Log(LOG_STATUS, "MCP: setSecurityStatus: Invalid security code provided.");
-			Json::Value toolContent;
-			toolContent["type"] = "text";
-			toolContent["text"] = "Invalid security code. Access denied.";
-			jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-			jsonRPCRep["result"]["content"].append(toolContent);
-			jsonRPCRep["result"]["isError"] = true;
+			mcp::setToolResult(jsonRPCRep, "Invalid security code. Access denied.", true);
 			return true;
 		}
 
@@ -3711,12 +3329,7 @@ namespace mcp		// Model Context Protocol
 		}
 		_log.Log(LOG_STATUS, "MCP: Security panel status changed to %s.", sNewStatus.c_str());
 
-		Json::Value toolContent;
-		toolContent["type"] = "text";
-		toolContent["text"] = "Security panel status set to: " + sNewStatus + ".";
-		jsonRPCRep["result"]["content"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["content"].append(toolContent);
-		jsonRPCRep["result"]["isError"] = false;
+		mcp::setToolResult(jsonRPCRep, "Security panel status set to: " + sNewStatus + ".", false);
 		return true;
 	}
 
