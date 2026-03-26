@@ -126,6 +126,7 @@
 #include "../hardware/Ec3kMeterTCP.h"
 #include "../hardware/OpenWeatherMap.h"
 #include "../hardware/Daikin.h"
+#include "../hardware/DaikinModbus.h"
 #include "../hardware/HEOS.h"
 #include "../hardware/MultiFun.h"
 #include "../hardware/ZiBlueSerial.h"
@@ -920,6 +921,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_Daikin:
 		pHardware = new CDaikin(ID, Address, Port, Username, Password, Mode1);
+		break;
+	case HTYPE_DaikinModbus:
+		pHardware = new CDaikinModbus(ID, Address, Port, Mode1, Mode2 != 0, Mode3);
 		break;
 	case HTYPE_SBFSpot:
 		pHardware = new CSBFSpot(ID, Username);
@@ -2331,7 +2335,7 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase* pHardware, const 
 	if ((BatteryLevel != -1) && (procResult.bProcessBatteryValue))
 	{
 		m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d WHERE (ID==%" PRIu64 ")", BatteryLevel, DeviceRowIdx);
-		m_eventsystem.UpdateBatteryLevel(DeviceRowIdx, BatteryLevel); //GizMoCuz, temporarily... 
+		m_eventsystem.UpdateBatteryLevel(DeviceRowIdx, BatteryLevel); //GizMoCuz, temporarily...
 	}
 
 	if ((defaultName != nullptr) && ((DeviceName == "Unknown") || (DeviceName.empty())))
@@ -14302,7 +14306,7 @@ void MainWorker::HeartbeatCheck()
 				if (diff > 60)
 				{
 					_log.Log(LOG_ERROR, "%s hardware (%d) thread seems to have ended unexpectedly", pHardware->m_Name.c_str(), pHardware->m_HwdID);
-					
+
 				}
 			}
 

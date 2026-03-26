@@ -236,6 +236,7 @@ hardware/CurrentCostMeterBase.cpp
 hardware/CurrentCostMeterSerial.cpp
 hardware/CurrentCostMeterTCP.cpp
 hardware/Daikin.cpp
+hardware/DaikinModbus.cpp
 hardware/DarkSky.cpp
 hardware/DavisLoggerSerial.cpp
 hardware/DenkoviDevices.cpp
@@ -472,7 +473,7 @@ ELSE(LUA_LIBRARIES AND LUA_INCLUDE_DIRS)
   IF(LUA_FOUND)
     MESSAGE(STATUS "LUA library found at  : ${LUA_LIBRARIES}")
     MESSAGE(STATUS "LUA includes found at : ${LUA_INCLUDE_DIR}")
-    INCLUDE_DIRECTORIES(${LUA_INCLUDE_DIR}) 
+    INCLUDE_DIRECTORIES(${LUA_INCLUDE_DIR})
   ELSE(LUA_FOUND)
     MESSAGE(FATAL_ERROR "LUA 5.3 not found! use sudo apt-get install liblua5.3-dev")
   ENDIF(LUA_FOUND)
@@ -577,7 +578,7 @@ ELSE(USE_BUILTIN_JSONCPP)
     MESSAGE(FATAL_ERROR "JSONCPP not found on your system! try 'sudo apt-get install jsoncpp-dev'")
   ENDIF(JSONCPP_FOUND)
 ENDIF(USE_BUILTIN_JSONCPP)
- 
+
 # mosquitto
 find_library(MQTT_LIBRARIES NAMES libmosquitto.so)
 find_path(MQTT_INCLUDE_DIRS NAMES mosquitto.h)
@@ -587,7 +588,7 @@ IF(MQTT_LIBRARIES AND MQTT_INCLUDE_DIRS)
 ELSE(MQTT_LIBRARIES AND MQTT_INCLUDE_DIRS)
   MESSAGE(FATAL_ERROR "Mosquitto library not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install libmosquitto-dev')")
 ENDIF(MQTT_LIBRARIES AND MQTT_INCLUDE_DIRS)
- 
+
 # sqlite3
 IF(USE_BUILTIN_SQLITE)
   MESSAGE(STATUS "Using builtin SQLite library")

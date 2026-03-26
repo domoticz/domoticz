@@ -1,0 +1,432 @@
+/*
+ Domoticz, Open Source Home Automation System
+
+ Copyright (C) 2012,2026 Rob Peters (GizMoCuz)
+
+ Domoticz is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ Domoticz is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with Domoticz.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#include "stdafx.h"
+#include "DaikinModbus.h"
+#include "../main/Helper.h"
+#include "../main/Logger.h"
+#include "hardwaretypes.h"
+#include "../main/mainworker.h"
+
+CDaikinModbus::CDaikinModbus(int ID, const std::string& IPAddress, unsigned short usIPPort, int iPollInterval, bool bIsAirToAir, int iUnitID)
+	: ASyncTCP(false) // MODBUS TCP is NOT secure (no SSL)
+	, m_szIPAddress(IPAddress)
+	, m_iPollInterval(iPollInterval)
+	, m_bIsAirToAir(bIsAirToAir)
+	, m_iUnitID(iUnitID)
+{
+	m_HwdID = ID;
+	m_usIPPort = usIPPort;
+	if (m_iPollInterval < 5)
+		m_iPollInterval = 30;
+	m_TransactionID = 0;
+
+	_log.Log(LOG_STATUS, "DaikinModbus: Initializing (ID: %d, IP: %s, Port: %d, Poll: %d, Unit: %d, Model: %s)",
+		m_HwdID, m_szIPAddress.c_str(), m_usIPPort, m_iPollInterval, m_iUnitID, m_bIsAirToAir ? "Air-to-Air" : "Altherma 3");
+}
+
+CDaikinModbus::~CDaikinModbus()
+{
+	StopHardware();
+}
+
+bool CDaikinModbus::StartHardware()
+{
+	m_bIsStarted = true;
+	this->CDomoticzHardwareBase::RequestStart();
+
+	// Set a reasonable reconnect delay (10 seconds)
+	SetReconnectDelay(10);
+
+	// Initiate connection
+	connect(m_szIPAddress, m_usIPPort);
+
+	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
+	SetThreadNameInt(m_thread->native_handle());
+
+	sOnConnected(this);
+	return true;
+}
+
+bool CDaikinModbus::StopHardware()
+{
+	m_bIsStarted = false;
+	this->CDomoticzHardwareBase::RequestStop();
+	terminate();
+	if (m_thread)
+	{
+		if (m_thread->joinable())
+			m_thread->join();
+		m_thread.reset();
+	}
+	return true;
+}
+
+void CDaikinModbus::Do_Work()
+{
+	_log.Log(LOG_STATUS, "DaikinModbus: Worker thread started...");
+
+	int iSecCounter = 0;
+	int iPollCounter = m_iPollInterval; // Trigger poll immediately once connected
+
+	while (!this->CDomoticzHardwareBase::IsStopRequested(1000))
+	{
+		// Always update heartbeat to satisfy watchdog
+		mytime(&m_LastHeartbeat);
+
+		if (!m_bIsStarted)
+			continue;
+
+		if (!isConnected())
+		{
+			iSecCounter++;
+			if (iSecCounter % 30 == 0)
+				_log.Log(LOG_STATUS, "DaikinModbus: Waiting for connection...");
+
+			// We reset the poll counter so we poll immediately upon reconnection
+			iPollCounter = m_iPollInterval;
+			continue;
+		}
+
+		iSecCounter = 0;
+		iPollCounter++;
+		if (iPollCounter >= m_iPollInterval)
+		{
+			iPollCounter = 0;
+			try
+			{
+				_log.Debug(DEBUG_HARDWARE, "DaikinModbus: Polling registers...");
+				if (m_bIsAirToAir)
+				{
+					// Homehub / Air-to-Air: Holding Registers 1000, count 2
+					SendReadRegisters(0x03, 1000, 2);
+				}
+				else
+				{
+					// Altherma 3: Holding Registers 1-60
+					SendReadRegisters(0x03, 1, 60);
+
+					// Slight wait between blocks, but check for stop
+					if (this->CDomoticzHardwareBase::IsStopRequested(200))
+						break;
+
+					// Altherma 3: Input Registers 21-61 (Start 21, count 41)
+					SendReadRegisters(0x04, 21, 41);
+				}
+			}
+			catch (const std::exception& e)
+			{
+				_log.Log(LOG_ERROR, "DaikinModbus: Exception in worker thread: %s", e.what());
+			}
+		}
+	}
+
+	_log.Log(LOG_STATUS, "DaikinModbus: Worker thread stopped.");
+}
+
+void CDaikinModbus::SendReadRegisters(uint8_t function_code, uint16_t start_reg, uint16_t count)
+{
+	uint16_t tid = ++m_TransactionID;
+
+	_log.Debug(DEBUG_HARDWARE, "DaikinModbus: Sending Read Request (FC: 0x%02X, Start: %u, Count: %u, TID: %u, Unit: %d)", function_code, start_reg, count, tid, m_iUnitID);
+
+	uint8_t req[12];
+	req[0] = (tid >> 8) & 0xFF;
+	req[1] = tid & 0xFF;
+	req[2] = 0;
+	req[3] = 0;
+	req[4] = 0;
+	req[5] = 6;
+	req[6] = (uint8_t)m_iUnitID;
+	req[7] = function_code;
+	req[8] = ((start_reg - 1) >> 8) & 0xFF;
+	req[9] = (start_reg - 1) & 0xFF;
+	req[10] = (count >> 8) & 0xFF;
+	req[11] = count & 0xFF;
+
+	write(req, sizeof(req));
+}
+
+void CDaikinModbus::SendWriteRegister(uint16_t reg, uint16_t value)
+{
+	uint16_t tid = ++m_TransactionID;
+
+	_log.Log(LOG_STATUS, "DaikinModbus: Sending Write Request (Reg: %u, Value: %u, TID: %u, Unit: %d)", reg, value, tid, m_iUnitID);
+
+	uint8_t req[12];
+	req[0] = (tid >> 8) & 0xFF;
+	req[1] = tid & 0xFF;
+	req[2] = 0;
+	req[3] = 0;
+	req[4] = 0;
+	req[5] = 6;
+	req[6] = (uint8_t)m_iUnitID;
+	req[7] = 0x06;
+	req[8] = ((reg - 1) >> 8) & 0xFF;
+	req[9] = (reg - 1) & 0xFF;
+	req[10] = (value >> 8) & 0xFF;
+	req[11] = value & 0xFF;
+
+	write(req, sizeof(req));
+}
+
+bool CDaikinModbus::WriteToHardware(const char* pdata, unsigned char length)
+{
+	const tRBUF* prb = (const tRBUF*)pdata;
+
+	if (prb->ICMND.packettype == pTypeSetpoint)
+	{
+		uint16_t childid = prb->RADIATOR1.id4;
+		float setpoint = (float)prb->RADIATOR1.temperature + ((float)prb->RADIATOR1.tempPoint5 / 10.0f);
+
+		uint16_t modbus_reg = 0;
+		uint16_t modbus_val = 0;
+
+		if (childid == 201) { modbus_reg = 1; modbus_val = (uint16_t)(setpoint * 100.0f); }
+		else if (childid == 202) { modbus_reg = 2; modbus_val = (uint16_t)(setpoint * 100.0f); }
+		else if (childid == 206) { modbus_reg = 6; modbus_val = (uint16_t)(setpoint * 100.0f); }
+		else if (childid == 207) { modbus_reg = 7; modbus_val = (uint16_t)(setpoint * 100.0f); }
+		else if (childid == 210) { modbus_reg = 10; modbus_val = (uint16_t)(setpoint * 100.0f); }
+		else if (childid == 254) { modbus_reg = 54; modbus_val = (uint16_t)(setpoint * 100.0f); }
+		else if (childid == 255) { modbus_reg = 55; modbus_val = (uint16_t)(setpoint * 100.0f); }
+
+		if (modbus_reg > 0)
+		{
+			SendWriteRegister(modbus_reg, modbus_val);
+			return true;
+		}
+	}
+	else if (prb->ICMND.packettype == pTypeGeneralSwitch)
+	{
+		uint16_t childid = prb->LIGHTING5.unitcode;
+		uint16_t value = prb->LIGHTING5.level;
+
+		uint16_t modbus_reg = 0;
+		uint16_t modbus_val = 0;
+
+		if (childid == 203) { modbus_reg = 3; modbus_val = value / 10; }
+		else if (childid == 204) { modbus_reg = 4; modbus_val = (prb->LIGHTING5.cmnd == light5_sOn) ? 1 : 0; }
+		else if (childid == 209) { modbus_reg = 9; modbus_val = value / 10; }
+		else if (childid == 212) { modbus_reg = 12; modbus_val = (prb->LIGHTING5.cmnd == light5_sOn) ? 1 : 0; }
+		else if (childid == 213) { modbus_reg = 13; modbus_val = (prb->LIGHTING5.cmnd == light5_sOn) ? 1 : 0; }
+		else if (childid == 253) { modbus_reg = 53; modbus_val = value / 10; }
+		else if (childid == 256) { modbus_reg = 56; modbus_val = value / 10; }
+		else if (childid == 259) { modbus_reg = 59; modbus_val = (prb->LIGHTING5.cmnd == light5_sOn) ? 1 : 0; }
+		else if (m_bIsAirToAir && childid == 1000) { modbus_reg = 1000; modbus_val = value / 10; }
+
+		if (modbus_reg > 0)
+		{
+			SendWriteRegister(modbus_reg, modbus_val);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void CDaikinModbus::OnConnect()
+{
+	_log.Log(LOG_STATUS, "DaikinModbus: Connected to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	std::lock_guard<std::mutex> lock(m_rbufferMutex);
+	m_vRBuffer.clear();
+}
+
+void CDaikinModbus::OnDisconnect()
+{
+	_log.Log(LOG_STATUS, "DaikinModbus: Disconnected from %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+}
+
+void CDaikinModbus::OnError(const boost::system::error_code& error)
+{
+	_log.Log(LOG_ERROR, "DaikinModbus: TCP Error: %s", error.message().c_str());
+}
+
+void CDaikinModbus::OnData(const uint8_t* pData, size_t length)
+{
+	std::lock_guard<std::mutex> lock(m_rbufferMutex);
+	m_vRBuffer.insert(m_vRBuffer.end(), pData, pData + length);
+
+	while (m_vRBuffer.size() >= 7)
+	{
+		uint16_t payload_len = (m_vRBuffer[4] << 8) | m_vRBuffer[5];
+		size_t total_expected = 6 + payload_len;
+
+		if (payload_len < 2)
+		{
+			m_vRBuffer.erase(m_vRBuffer.begin());
+			continue;
+		}
+
+		if (m_vRBuffer.size() < total_expected)
+			break;
+
+		uint8_t fc = m_vRBuffer[7];
+
+		SetHeartbeatReceived();
+
+		if (fc == 0x03 && payload_len >= 3)
+		{
+			uint8_t byte_count = m_vRBuffer[8];
+			if (payload_len >= (size_t)(3 + byte_count))
+				ProcessHoldingRegisters(m_vRBuffer.data() + 9, byte_count);
+		}
+		else if (fc == 0x04 && payload_len >= 3)
+		{
+			uint8_t byte_count = m_vRBuffer[8];
+			if (payload_len >= (size_t)(3 + byte_count))
+				ProcessInputRegisters(m_vRBuffer.data() + 9, byte_count);
+		}
+
+		m_vRBuffer.erase(m_vRBuffer.begin(), m_vRBuffer.begin() + total_expected);
+	}
+}
+
+void CDaikinModbus::ProcessInputRegisters(const uint8_t* pData, size_t length)
+{
+	auto getReg = [&](int reg) -> int16_t {
+		int idx = (reg - 21) * 2;
+		if (idx < 0 || idx + 1 >= (int)length) return 0x7FFF;
+		return (int16_t)((pData[idx] << 8) | pData[idx + 1]);
+	};
+
+	if (m_bIsAirToAir) return;
+
+	int16_t val;
+
+	// Combined Alert for Unit Error (Reg 21 and 23)
+	int16_t err = getReg(21);
+	int16_t suberr = getReg(23);
+	if (err != 0x7FFF)
+	{
+		int alertLevel = (err == 0) ? 1 : 4; // 1=Green (OK), 4=Red (Error)
+		std::string msg = (err == 0) ? "Unit Status: OK" : "Unit Error: " + std::to_string(err) + " (Sub: " + std::to_string(suberr) + ")";
+		UpdateAlertSensor(121, alertLevel, msg, "Unit Status");
+	}
+
+	// Binary States (30-37, 52, 53)
+	if ((val = getReg(30)) != 0x7FFF && val != 32766) UpdateSwitch(130, val != 0, "Circulation Pump");
+	if ((val = getReg(31)) != 0x7FFF && val != 32766) UpdateSwitch(131, val != 0, "Compressor");
+	if ((val = getReg(32)) != 0x7FFF && val != 32766) UpdateSwitch(132, val != 0, "Booster Heater");
+	if ((val = getReg(33)) != 0x7FFF && val != 32766) UpdateSwitch(133, val != 0, "Disinfection");
+	if ((val = getReg(35)) != 0x7FFF && val != 32766) UpdateSwitch(135, val != 0, "Defrost/Startup");
+	if ((val = getReg(36)) != 0x7FFF && val != 32766) UpdateSwitch(136, val != 0, "Hot Start");
+	if ((val = getReg(37)) != 0x7FFF && val != 32766) UpdateSwitch(137, val != 0, "3-way Valve");
+	if ((val = getReg(52)) != 0x7FFF && val != 32766) UpdateSwitch(152, val != 0, "DHW Normal Op");
+	if ((val = getReg(53)) != 0x7FFF && val != 32766) UpdateSwitch(153, val != 0, "Heating/Cooling Normal Op");
+
+	// Temperatures (40-45, 50) - Scale 0.01
+	if ((val = getReg(40)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(140, val / 100.0f, "LWT PHE");
+	if ((val = getReg(41)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(141, val / 100.0f, "LWT BUH");
+	if ((val = getReg(42)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(142, val / 100.0f, "Return Water Temp");
+	if ((val = getReg(43)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(143, val / 100.0f, "DHW Temp");
+	if ((val = getReg(44)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(144, val / 100.0f, "Outside Temp");
+	if ((val = getReg(45)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(145, val / 100.0f, "Refrigerant Temp");
+	if ((val = getReg(50)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(150, val / 100.0f, "Room Temp");
+
+	// Limits (54-57) - Scale 0.01
+	if ((val = getReg(54)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(154, val / 100.0f, "LWT Heating Lower Limit");
+	if ((val = getReg(55)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(155, val / 100.0f, "LWT Heating Upper Limit");
+	if ((val = getReg(56)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(156, val / 100.0f, "LWT Cooling Lower Limit");
+	if ((val = getReg(57)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(157, val / 100.0f, "LWT Cooling Upper Limit");
+
+	// Sensors (49, 51)
+	if ((val = getReg(49)) != 0x7FFF && val != 32766) UpdateWaterflowSensor(149, val / 100.0f, "Flow Rate");
+	if ((val = getReg(51)) != 0x7FFF && val != 32766) UpdateCustomSensor(151, (val / 100.0f) * 1000.0f, "Power Consumption", "W");
+}
+
+void CDaikinModbus::ProcessHoldingRegisters(const uint8_t* pData, size_t length)
+{
+	if (m_bIsAirToAir)
+	{
+		auto getReg = [&](int reg) -> int16_t {
+			int idx = (reg - 1000) * 2;
+			if (idx < 0 || idx + 1 >= (int)length) return 0x7FFF;
+			return (int16_t)((pData[idx] << 8) | pData[idx + 1]);
+		};
+
+		int16_t val;
+		if ((val = getReg(1000)) != 0x7FFF && val != 32766) UpdateSelectorSwitch(1000, val * 10, "Smart Grid Mode", "Free|Forced off|Recommended on|Forced on");
+		if ((val = getReg(1001)) != 0x7FFF && val != 32766) UpdateCustomSensor(1001, (val / 100.0f) * 1000.0f, "Power Limit", "W");
+		return;
+	}
+
+	auto getReg = [&](int reg) -> int16_t {
+		int idx = (reg - 1) * 2;
+		if (idx < 0 || idx + 1 >= (int)length) return 0x7FFF;
+		return (int16_t)((pData[idx] << 8) | pData[idx + 1]);
+	};
+
+	int16_t val;
+	// Setpoints (1, 2, 6, 7, 10)
+	if ((val = getReg(1)) != 0x7FFF && val != 32766) UpdateSetpointDevice(201, val / 100.0f, "LWT Heating Setpoint");
+	if ((val = getReg(2)) != 0x7FFF && val != 32766) UpdateSetpointDevice(202, val / 100.0f, "LWT Cooling Setpoint");
+	if ((val = getReg(6)) != 0x7FFF && val != 32766) UpdateSetpointDevice(206, val / 100.0f, "Room Heating Setpoint");
+	if ((val = getReg(7)) != 0x7FFF && val != 32766) UpdateSetpointDevice(207, val / 100.0f, "Room Cooling Setpoint");
+	if ((val = getReg(10)) != 0x7FFF && val != 32766) UpdateSetpointDevice(210, val / 100.0f, "DHW Reheat Setpoint");
+
+	// Modes and Other (3, 4, 9, 12, 13, 53, 54, 55, 56, 58, 59)
+	if ((val = getReg(3)) != 0x7FFF && val != 32766) UpdateSelectorSwitch(203, val * 10, "Operation Mode", "Auto|Heating|Cooling");
+	if ((val = getReg(4)) != 0x7FFF && val != 32766) UpdateSwitch(204, val != 0, "Space Heating/Cooling");
+	if ((val = getReg(9)) != 0x7FFF && val != 32766) UpdateSelectorSwitch(209, val * 10, "Quiet Mode", "Off|On (Auto)|On (Manual)");
+	if ((val = getReg(12)) != 0x7FFF && val != 32766) UpdateSwitch(212, val != 0, "DHW Reheat");
+	if ((val = getReg(13)) != 0x7FFF && val != 32766) UpdateSwitch(213, val != 0, "DHW Booster");
+	if ((val = getReg(53)) != 0x7FFF && val != 32766) UpdateSelectorSwitch(253, val * 10, "Weather Dependent Mode", "Fixed|Weather Dependent|Fixed+Scheduled|Weather Dependent+Scheduled");
+	if ((val = getReg(54)) != 0x7FFF && val != 32766) UpdateSetpointDevice(254, val / 100.0f, "Weather Dependent Heating Offset");
+	if ((val = getReg(55)) != 0x7FFF && val != 32766) UpdateSetpointDevice(255, val / 100.0f, "Weather Dependent Cooling Offset");
+	if ((val = getReg(56)) != 0x7FFF && val != 32766) UpdateSelectorSwitch(256, val * 10, "Smart Grid", "Free|Forced off|Recommended on|Forced on");
+	if ((val = getReg(58)) != 0x7FFF && val != 32766) UpdateCustomSensor(258, (val / 100.0f) * 1000.0f, "General Power Limit", "W");
+	if ((val = getReg(59)) != 0x7FFF && val != 32766) UpdateSwitch(259, val != 0, "Thermostat Main Input A");
+}
+
+void CDaikinModbus::UpdateTemperatureSensor(int ChildID, float temperature, const std::string& szDefaultName)
+{
+	// Important: Use unique ChildID as NodeID to prevent overwriting
+	SendTempSensor(ChildID, 255, temperature, szDefaultName);
+}
+
+void CDaikinModbus::UpdateSwitch(int ChildID, bool bOn, const std::string& szDefaultName)
+{
+	SendGeneralSwitch(m_HwdID, ChildID, 255, bOn ? 1 : 0, 0, szDefaultName, "");
+}
+
+void CDaikinModbus::UpdateSetpointDevice(int ChildID, float temperature, const std::string& szDefaultName)
+{
+	// NodeID 0, ChildID as ID4
+	SendSetPointSensor(0, 0, 0, (uint8_t)ChildID, 1, 255, temperature, szDefaultName);
+}
+
+void CDaikinModbus::UpdateWaterflowSensor(int ChildID, float flow, const std::string& szDefaultName)
+{
+	SendWaterflowSensor(m_HwdID, (uint8_t)ChildID, 255, flow, szDefaultName);
+}
+
+void CDaikinModbus::UpdateSelectorSwitch(int ChildID, int level, const std::string& szDefaultName, const std::string& szLevelNames)
+{
+	SendSelectorSwitch(m_HwdID, (uint8_t)ChildID, std::to_string(level), szDefaultName, 0, false, szLevelNames, "", false, "");
+}
+
+void CDaikinModbus::UpdateAlertSensor(int ChildID, int alertLevel, const std::string& szMessage, const std::string& szDefaultName)
+{
+	SendAlertSensor(ChildID, 255, alertLevel, szMessage, szDefaultName);
+}
+
+void CDaikinModbus::UpdateCustomSensor(int ChildID, float fValue, const std::string& szDefaultName, const std::string& szLabel)
+{
+	SendCustomSensor(m_HwdID, (uint8_t)ChildID, 255, fValue, szDefaultName, szLabel);
+}

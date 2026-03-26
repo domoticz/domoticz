@@ -224,6 +224,7 @@ enum _eHardwareTypes {
 	HTYPE_RFLINKMQTT,			//126
 	HTYPE_VisualCrossing,		//127
 	HTYPE_MitsubishiWF,			//128
+	HTYPE_DaikinModbus,			//129
 	HTYPE_END
 };
 
