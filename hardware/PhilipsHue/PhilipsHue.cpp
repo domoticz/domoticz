@@ -420,35 +420,38 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string& LCmd, const i
 	}
 
 	// Update cached state
-	_tHueLightState* pState = nullptr;
+	{
+		std::lock_guard<std::mutex> lock(m_mutex);
+		_tHueLightState* pState = nullptr;
 
-	if (nodeID < 1000)
-	{
-		//Light
-		auto&& ittLight = m_lights.find(nodeID);
-		if (ittLight != m_lights.end())
+		if (nodeID < 1000)
 		{
-			pState = &ittLight->second;
+			//Light
+			auto&& ittLight = m_lights.find(nodeID);
+			if (ittLight != m_lights.end())
+			{
+				pState = &ittLight->second;
+			}
 		}
-	}
-	else if (nodeID < 2000)
-	{
-		//Group
-		auto&& ittGroup = m_groups.find(nodeID - 1000);
-		if (ittGroup != m_groups.end())
+		else if (nodeID < 2000)
 		{
-			pState = &ittGroup->second.gstate;
+			//Group
+			auto&& ittGroup = m_groups.find(nodeID - 1000);
+			if (ittGroup != m_groups.end())
+			{
+				pState = &ittGroup->second.gstate;
+			}
 		}
-	}
-	if (pState)
-	{
-		if (setOn) pState->on = On;
-		if (setLevel)
-			pState->level = int((100.0F / 254.0F) * float(svalue));
-		if (setHueSat) pState->hue = svalue2;
-		if (setHueSat) pState->sat = svalue3;
-		if (setCt) pState->ct = int((float(svalue2) - 153.0) / (500.0 - 153.0));
-		if (setMode) pState->mode = mode;
+		if (pState)
+		{
+			if (setOn) pState->on = On;
+			if (setLevel)
+				pState->level = int((100.0F / 254.0F) * float(svalue));
+			if (setHueSat) pState->hue = svalue2;
+			if (setHueSat) pState->sat = svalue3;
+			if (setCt) pState->ct = int((float(svalue2) - 153.0) / (500.0 - 153.0));
+			if (setMode) pState->mode = mode;
+		}
 	}
 
 	std::stringstream sstr2;
@@ -490,10 +493,13 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string& LCmd, const i
 			<< "/groups/0/action";
 	}
 	std::string sURL = sstr2.str();
-	if (!HTTPClient::PUT(sURL, sPostData.str(), ExtraHeaders, sResult))
 	{
-		Log(LOG_ERROR, "Error connecting to Hue bridge (Switch Light/Scene), (Check IPAddress/Username)");
-		return false;
+		std::lock_guard<std::mutex> lock(m_http_mutex);
+		if (!HTTPClient::PUT(sURL, sPostData.str(), ExtraHeaders, sResult))
+		{
+			Log(LOG_ERROR, "Error sending command to Hue bridge (Switch Light/Scene)");
+			return false;
+		}
 	}
 #ifdef DEBUG_PhilipsHue_W
 	SaveString2Disk(sResult, urlToFilename("PhilipsHue", sURL));
@@ -824,10 +830,13 @@ bool CPhilipsHue::GetStates()
 	//Get Data
 	std::string sURL = sstr2.str();
 	std::vector<std::string> ExtraHeaders;
-	if (!hue_http_get(sURL, ExtraHeaders, sResult))
 	{
-		Log(LOG_ERROR, "Error getting Light States, (Check IPAddress/Username)");
-		return false;
+		std::lock_guard<std::mutex> lock(m_http_mutex);
+		if (!hue_http_get(sURL, ExtraHeaders, sResult))
+		{
+			Log(LOG_ERROR, "Error getting Light States, (Check IPAddress/Username)");
+			return false;
+		}
 	}
 	Json::Value root;
 	bool ret = ParseJSon(sResult, root);
@@ -1012,20 +1021,26 @@ bool CPhilipsHue::GetLights(const Json::Value& root)
 			continue;
 		}
 
-		auto myLight = m_lights.find(lID);
-		if (myLight != m_lights.end())
 		{
-			if (StatesSimilar(myLight->second, tlight))
-				bDoSend = false;
+			std::lock_guard<std::mutex> lock(m_mutex);
+			auto myLight = m_lights.find(lID);
+			if (myLight != m_lights.end())
+			{
+				if (StatesSimilar(myLight->second, tlight))
+					bDoSend = false;
+			}
 		}
 		if (bDoSend)
 		{
 			//Log(LOG_STATUS, "HueBridge state change: tbri = %d, level = %d", tbri, tlight.level);
 			if (!light["modelid"].empty())
 			{
-				m_lights[lID] = tlight;
 				std::string modelid = light["modelid"].asString();
-				m_lightModels[lID] = modelid;
+				{
+					std::lock_guard<std::mutex> lock(m_mutex);
+					m_lights[lID] = tlight;
+					m_lightModels[lID] = modelid;
+				}
 				InsertUpdateLamp(lID, LType, tlight, light["name"].asString(), "", modelid, true);
 			}
 		}
@@ -1062,17 +1077,23 @@ bool CPhilipsHue::GetGroups(const Json::Value& root)
 				}
 			}
 
-			auto myGroup = m_groups.find(gID);
-			if (myGroup != m_groups.end())
 			{
-				if (StatesSimilar(myGroup->second.gstate, tstate))
-					bDoSend = false;
+				std::lock_guard<std::mutex> lock(m_mutex);
+				auto myGroup = m_groups.find(gID);
+				if (myGroup != m_groups.end())
+				{
+					if (StatesSimilar(myGroup->second.gstate, tstate))
+						bDoSend = false;
+				}
 			}
 			if (bDoSend)
 			{
-				m_groups[gID].gstate = tstate;
 				std::string oname = (!group["name"].empty()) ? group["name"].asString() : "??";
 				std::string Name = "Group " + oname;
+				{
+					std::lock_guard<std::mutex> lock(m_mutex);
+					m_groups[gID].gstate = tstate;
+				}
 				InsertUpdateLamp(1000 + gID, LType, tstate, Name, "", "", m_add_groups);
 			}
 		}
@@ -1148,15 +1169,23 @@ bool CPhilipsHue::GetGroups(const Json::Value& root)
 	}
 
 	int gID = 0;
-	std::map<int, _tHueGroup>::iterator myGroup = m_groups.find(gID);
-	if (myGroup != m_groups.end())
+	bool bDoSendGroup0 = false;
 	{
-		if (!StatesSimilar(myGroup->second.gstate, tstate))
+		std::lock_guard<std::mutex> lock(m_mutex);
+		std::map<int, _tHueGroup>::iterator myGroup = m_groups.find(gID);
+		if (myGroup != m_groups.end())
 		{
-			myGroup->second.gstate = tstate;
-			std::string Name = "Group All Lights";
-			InsertUpdateLamp(1000 + gID, LType, tstate, Name, "", "", m_add_groups);
+			if (!StatesSimilar(myGroup->second.gstate, tstate))
+			{
+				myGroup->second.gstate = tstate;
+				bDoSendGroup0 = true;
+			}
 		}
+	}
+	if (bDoSendGroup0)
+	{
+		std::string Name = "Group All Lights";
+		InsertUpdateLamp(1000 + gID, LType, tstate, Name, "", "", m_add_groups);
 	}
 	else {
 		//Should we add Group 0? Seems we are not doing anything with Group 0

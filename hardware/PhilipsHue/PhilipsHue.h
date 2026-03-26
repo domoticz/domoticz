@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <mutex>
 #include "../DomoticzHardware.h"
 #include "PhilipsHueSensors.h"
 #include "PhilipsHueV2Sensors.h" // NEW: include V2 helper
@@ -97,6 +98,8 @@ private:
 	std::map<std::string, _tHueScene> m_scenes;
 	std::map<int, CPHSensor> m_sensors;
 	std::map<int, std::string> m_lightModels;
+	std::mutex m_mutex;
+	std::mutex m_http_mutex;
 private:
 	bool m_use_v2_sensors = false;
 	std::unique_ptr<CPhilipsHueV2Sensors> m_v2sensors; // constructed when enabled
