@@ -1560,12 +1560,17 @@ namespace mcp		// Model Context Protocol
 			return {};
 		};
 
-		auto escapeQuotes = [](std::string s) -> std::string {
+		auto escapeQuotes = [](const std::string &s) -> std::string {
 			std::string result;
-			result.reserve(s.size());
-			for (char c : s) {
-				if (c == '"') result += "\\\"";
-				else result += c;
+			result.reserve(s.size() * 2);
+			for (unsigned char c : s) {
+				if      (c == '"')  result += "\\\"";
+				else if (c == '\\') result += "\\\\";
+				else if (c == '\n') result += "\\n";
+				else if (c == '\r') result += "\\r";
+				else if (c == '\t') result += "\\t";
+				else if (c < 0x20) { char buf[7]; snprintf(buf, sizeof(buf), "\\u%04x", c); result += buf; }
+				else result += static_cast<char>(c);
 			}
 			return result;
 		};
