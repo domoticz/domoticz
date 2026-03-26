@@ -414,6 +414,15 @@ define(['app'], function (app) {
                         return 'images/' + lockImage + '48_' + (isUnlocked ? 'On' : 'Off') + '.png';
                     }
 
+                    // Contact and Door Contact: backend sets Status='Open' (not 'On') when nValue=1
+                    if (device.SwitchType == 'Contact' || device.SwitchType == 'Door Contact') {
+                        var contactImage = device.Image || (device.SwitchType == 'Door Contact' ? 'Door' : 'Contact');
+                        if (device.CustomImage == 0) {
+                            contactImage = contactImage.charAt(0).toUpperCase() + contactImage.slice(1);
+                        }
+                        return 'images/' + contactImage + '48_' + (device.Status == 'Open' ? 'On' : 'Off') + '.png';
+                    }
+
                     // Use device.Image as-is from backend
                     // Backend sets Image="Light" when CustomImage==0, or custom icon root when CustomImage!=0
                     var image = device.Image;
