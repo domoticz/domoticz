@@ -1871,7 +1871,8 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 		{
 			if (!root["linkquality"].empty())
 			{
-				pSensor->SignalLevel = (int)round((10.0F / 255.0F) * root["linkquality"].asFloat());
+				int linkquality = std::min(root["linkquality"].asInt(), 132);
+				pSensor->SignalLevel = static_cast<int>(round((10.0F / 132.0F) * linkquality));
 			}
 			if (!root["battery"].empty())
 			{
