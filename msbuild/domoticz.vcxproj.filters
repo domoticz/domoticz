@@ -519,6 +519,9 @@
     <Filter Include="Webserver\IamService">
       <UniqueIdentifier>{81a998bf-9440-48ed-acad-561718cb579e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Webserver\MCP">
+      <UniqueIdentifier>{129c491d-9fbd-4e51-bf25-6ba221b50060}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2221,9 +2224,6 @@
     <ClInclude Include="..\main\KWHStats.h">
       <Filter>Helpers</Filter>
     </ClInclude>
-    <ClInclude Include="..\mcpserver\McpService.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\iamserver\iam_settings.hpp">
       <Filter>Webserver\IamService</Filter>
     </ClInclude>
@@ -2241,6 +2241,9 @@
     </ClInclude>
     <ClInclude Include="..\main\WebServerLoggerAdapter.h">
       <Filter>Webserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mcpserver\McpService.hpp">
+      <Filter>Webserver\MCP</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2991,9 +2994,6 @@
     <ClCompile Include="..\main\KWHStats.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
-    <ClCompile Include="..\mcpserver\McpService.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\iamserver\IamService.cpp">
       <Filter>Webserver\IamService</Filter>
     </ClCompile>
@@ -3038,6 +3038,9 @@
     </ClCompile>
     <ClCompile Include="..\main\WebServerHandleGraphWeek.cpp">
       <Filter>Webserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mcpserver\McpService.cpp">
+      <Filter>Webserver\MCP</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

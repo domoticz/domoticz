@@ -219,6 +219,10 @@ namespace http
 			{
 				mcp::McpPromptsGet(jsonRequest, jsonRPCRep);
 			}
+			else if (sReqMethod == "completion/complete")
+			{
+				mcp::McpCompletionComplete(jsonRequest, jsonRPCRep);
+			}
 			else
 			{
 				_log.Debug(DEBUG_WEBSERVER, "MCP: Unsupported method: %s", sReqMethod.c_str());
@@ -279,7 +283,7 @@ namespace mcp		// Model Context Protocol
 		// Prepare the result for the initialize method
 		jsonRPCRep["result"]["protocolVersion"] = MCP_PROTOCOL_VERSION;
 		//jsonRPCRep["result"]["capabilities"]["logging"] = Json::Value(Json::objectValue);
-		//jsonRPCRep["result"]["capabilities"]["completion"] = Json::Value(Json::objectValue);
+		jsonRPCRep["result"]["capabilities"]["completion"] = Json::Value(Json::objectValue);
 		jsonRPCRep["result"]["capabilities"]["prompts"] = Json::Value(Json::objectValue);
 		//jsonRPCRep["result"]["capabilities"]["prompts"]["listChanged"] = true;
 		jsonRPCRep["result"]["capabilities"]["resources"] = Json::Value(Json::objectValue);
@@ -1421,6 +1425,18 @@ namespace mcp		// Model Context Protocol
 		prompt["description"] = "Review all event scripts for logic issues, inefficiencies, or improvement opportunities";
 		prompt["arguments"] = Json::Value(Json::arrayValue);
 		jsonRPCRep["result"]["prompts"].append(prompt);
+		// Analyze single event prompt
+		prompt.clear();
+		prompt["name"] = "analyze_event";
+		prompt["title"] = "Analyze an event script";
+		prompt["description"] = "Review a specific event script for logic issues, inefficiencies, or improvement opportunities";
+		prompt["arguments"] = Json::Value(Json::arrayValue);
+		Json::Value argEvent;
+		argEvent["name"] = "event";
+		argEvent["description"] = "Name of the event script to analyze";
+		argEvent["required"] = true;
+		prompt["arguments"].append(argEvent);
+		jsonRPCRep["result"]["prompts"].append(prompt);
 	}
 
 	void McpPromptsGet(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
@@ -1532,12 +1548,174 @@ namespace mcp		// Model Context Protocol
 			message["content"]["text"] = sText;
 			jsonRPCRep["result"]["messages"].append(message);
 		}
+		else if (sPromptName == "analyze_event")
+		{
+			std::string sEvent = ((jsonRequest["params"].isMember("arguments") && jsonRequest["params"]["arguments"].isMember("event")) ? jsonRequest["params"]["arguments"]["event"].asString() : "");
+			jsonRPCRep["result"]["description"] = "Analyze event script: " + sEvent;
+			jsonRPCRep["result"]["messages"] = Json::Value(Json::arrayValue);
+			Json::Value message;
+			message["role"] = "user";
+			message["content"] = Json::Value(Json::objectValue);
+			message["content"]["type"] = "text";
+			std::string sText = "Please analyze the Domoticz automation event script named \"" + sEvent + "\". ";
+			sText += "Use the available tools to: ";
+			sText += "1) Retrieve the script source code using get_event. ";
+			sText += "2) Check the system log for any errors related to this script using get_logging. ";
+			sText += "3) Review the script for logic errors, inefficiencies, or improvement opportunities. ";
+			sText += "Provide a structured report with findings and concrete suggestions.";
+			message["content"]["text"] = sText;
+			jsonRPCRep["result"]["messages"].append(message);
+		}
 		else
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: prompts/get: Unsupported prompt name: %s", sPromptName.c_str());
 			jsonRPCRep["error"]["code"] = mcp::JSONRPC_METHOD_NOT_FOUND;
 			jsonRPCRep["error"]["message"] = "Method not found";
 		}
+	}
+
+	void McpCompletionComplete(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling completion/complete request.");
+
+		// Helper lambda: build empty completion result
+		auto emptyResult = [&]() {
+			jsonRPCRep["result"]["completion"]["values"] = Json::Value(Json::arrayValue);
+			jsonRPCRep["result"]["completion"]["total"] = 0;
+			jsonRPCRep["result"]["completion"]["hasMore"] = false;
+		};
+
+		if (!jsonRequest.isMember("params") ||
+		    !jsonRequest["params"].isMember("ref") ||
+		    !jsonRequest["params"].isMember("argument"))
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: completion/complete: Missing required params.");
+			emptyResult();
+			return;
+		}
+
+		const Json::Value &refObj  = jsonRequest["params"]["ref"];
+		const Json::Value &argObj  = jsonRequest["params"]["argument"];
+
+		if (!refObj.isMember("type") || !refObj.isMember("name") ||
+		    !argObj.isMember("name") || !argObj.isMember("value"))
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: completion/complete: Malformed ref or argument object.");
+			emptyResult();
+			return;
+		}
+
+		const std::string sRefType  = refObj["type"].asString();
+		const std::string sRefName  = refObj["name"].asString();
+		const std::string sArgName  = argObj["name"].asString();
+		const std::string sPartial  = argObj["value"].asString();
+
+		_log.Debug(DEBUG_WEBSERVER, "MCP: completion/complete: refType=%s refName=%s argName=%s partial='%s'",
+		           sRefType.c_str(), sRefName.c_str(), sArgName.c_str(), sPartial.c_str());
+
+		// Build lowercase partial for case-insensitive prefix matching
+		std::string sPartialLower = sPartial;
+		std::transform(sPartialLower.begin(), sPartialLower.end(), sPartialLower.begin(), ::tolower);
+
+		// Query rows: vector of strings (display value)
+		std::vector<std::string> candidates;
+
+		if (sRefType == "ref/prompt")
+		{
+			if (sRefName == "housesummary" && sArgName == "room")
+			{
+				auto rows = m_sql.safe_query("SELECT Name FROM Plans WHERE Name!='' ORDER BY Name");
+				for (const auto &row : rows)
+					candidates.push_back(row[0]);
+			}
+			else if (sRefName == "troubleshoot_device" && sArgName == "device")
+			{
+				auto rows = m_sql.safe_query("SELECT Name FROM DeviceStatus ORDER BY Name");
+				for (const auto &row : rows)
+					candidates.push_back(row[0]);
+			}
+			else if (sRefName == "analyze_event" && sArgName == "event")
+			{
+				auto rows = m_sql.safe_query("SELECT Name FROM EventMaster ORDER BY Name");
+				for (const auto &row : rows)
+					candidates.push_back(row[0]);
+			}
+			else
+			{
+				_log.Debug(DEBUG_WEBSERVER, "MCP: completion/complete: Unrecognised prompt/arg combination.");
+				emptyResult();
+				return;
+			}
+		}
+		else if (sRefType == "ref/resource")
+		{
+			if (sRefName.find("domoticz://device/") != std::string::npos)
+			{
+				auto rows = m_sql.safe_query("SELECT ID, Name FROM DeviceStatus ORDER BY Name");
+				for (const auto &row : rows)
+					candidates.push_back(row[0] + " - " + row[1]);
+			}
+			else if (sRefName.find("domoticz://room/") != std::string::npos)
+			{
+				auto rows = m_sql.safe_query("SELECT ID, Name FROM Plans WHERE Name!='' ORDER BY Name");
+				for (const auto &row : rows)
+					candidates.push_back(row[0] + " - " + row[1]);
+			}
+			else if (sRefName.find("domoticz://scene/") != std::string::npos)
+			{
+				auto rows = m_sql.safe_query("SELECT ID, Name FROM Scenes ORDER BY Name");
+				for (const auto &row : rows)
+					candidates.push_back(row[0] + " - " + row[1]);
+			}
+			else if (sRefName.find("domoticz://user-variable/") != std::string::npos)
+			{
+				auto rows = m_sql.safe_query("SELECT ID, Name FROM UserVariables ORDER BY Name");
+				for (const auto &row : rows)
+					candidates.push_back(row[0] + " - " + row[1]);
+			}
+			else if (sRefName.find("domoticz://event/") != std::string::npos)
+			{
+				auto rows = m_sql.safe_query("SELECT ID, Name FROM EventMaster ORDER BY Name");
+				for (const auto &row : rows)
+					candidates.push_back(row[0] + " - " + row[1]);
+			}
+			else
+			{
+				_log.Debug(DEBUG_WEBSERVER, "MCP: completion/complete: Unrecognised resource URI template.");
+				emptyResult();
+				return;
+			}
+		}
+		else
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: completion/complete: Unknown ref type '%s'.", sRefType.c_str());
+			emptyResult();
+			return;
+		}
+
+		// Case-insensitive prefix filter
+		std::vector<std::string> matches;
+		for (const auto &candidate : candidates)
+		{
+			std::string candidateLower = candidate;
+			std::transform(candidateLower.begin(), candidateLower.end(), candidateLower.begin(), ::tolower);
+			if (sPartialLower.empty() || candidateLower.substr(0, sPartialLower.size()) == sPartialLower)
+				matches.push_back(candidate);
+		}
+
+		constexpr int kMaxValues = 100;
+		int total = static_cast<int>(matches.size());
+		bool hasMore = (total > kMaxValues);
+
+		jsonRPCRep["result"]["completion"]["values"] = Json::Value(Json::arrayValue);
+		int count = std::min(total, kMaxValues);
+		for (int i = 0; i < count; ++i)
+			jsonRPCRep["result"]["completion"]["values"].append(matches[i]);
+		jsonRPCRep["result"]["completion"]["total"] = total;
+		jsonRPCRep["result"]["completion"]["hasMore"] = hasMore;
+
+		_log.Debug(DEBUG_WEBSERVER, "MCP: completion/complete: Returning %d/%d matches (hasMore=%s).",
+		           count, total, hasMore ? "true" : "false");
 	}
 
 	bool getSwitchState(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)

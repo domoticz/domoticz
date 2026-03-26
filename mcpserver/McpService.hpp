@@ -32,6 +32,7 @@ namespace mcp
 	void McpResourcesRead(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	void McpPromptsList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	void McpPromptsGet(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	void McpCompletionComplete(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 
 	bool getSensorValue(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool getSwitchState(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
