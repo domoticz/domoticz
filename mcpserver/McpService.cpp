@@ -2225,6 +2225,18 @@ namespace mcp		// Model Context Protocol
 					sResult += "]";
 				if (device.isMember("Data"))
 					sResult += " = " + device["Data"].asString();
+				if (device.isMember("BatteryLevel"))
+				{
+					int iBatt = device["BatteryLevel"].asInt();
+					if (iBatt != 255)
+						sResult += " battery=" + std::to_string(iBatt) + "%";
+				}
+				if (device.isMember("SignalLevel"))
+				{
+					int iSignalLevel = device["SignalLevel"].asInt();
+					if (iSignalLevel != 12)
+						sResult += " rssi=" + std::to_string(iSignalLevel);
+				}
 				sResult += "\n";
 			}
 		}
@@ -2323,6 +2335,18 @@ namespace mcp		// Model Context Protocol
 					sResult += " = " + device["Data"].asString();
 				if (device.isMember("idx"))
 					sResult += " (idx=" + device["idx"].asString() + ")";
+				if (device.isMember("BatteryLevel"))
+				{
+					int iBatt = device["BatteryLevel"].asInt();
+					if (iBatt != 255)
+						sResult += " battery=" + std::to_string(iBatt) + "%";
+				}
+				if (device.isMember("SignalLevel"))
+				{
+					int iSignalLevel = device["SignalLevel"].asInt();
+					if (iSignalLevel != 12)
+						sResult += " rssi=" + std::to_string(iSignalLevel);
+				}
 				sResult += "\n";
 			}
 		}
@@ -2375,6 +2399,18 @@ namespace mcp		// Model Context Protocol
 					sResult += "  LastUpdate:  " + device["LastUpdate"].asString() + "\n";
 				if (device.isMember("Used"))
 					sResult += "  Used:        " + device["Used"].asString() + "\n";
+				if (device.isMember("BatteryLevel"))
+				{
+					int iBatt = device["BatteryLevel"].asInt();
+					if (iBatt != 255)
+						sResult += "  BatteryLevel: " + std::to_string(iBatt) + "%\n";
+				}
+				if (device.isMember("SignalLevel"))
+				{
+					int iSignalLevel = device["SignalLevel"].asInt();
+					if (iSignalLevel != 12)
+						sResult += " SignalLevel: " + std::to_string(iSignalLevel);
+				}
 			}
 			else
 			{
@@ -2385,7 +2421,7 @@ namespace mcp		// Model Context Protocol
 		{
 			int nIdx = args["idx"].asInt();
 			auto result = m_sql.safe_query(
-				"SELECT DS.Name, DS.HardwareID, H.Name, DS.DeviceID, DS.Type, DS.SubType, DS.nValue, DS.sValue, DS.LastUpdate, DS.Used "
+				"SELECT DS.Name, DS.HardwareID, H.Name, DS.DeviceID, DS.Type, DS.SubType, DS.nValue, DS.sValue, DS.LastUpdate, DS.Used, DS.BatteryLevel, DS.SignalLevel "
 				"FROM DeviceStatus DS LEFT JOIN Hardware H ON DS.HardwareID=H.ID WHERE DS.ID=%d", nIdx);
 			if (!result.empty())
 			{
@@ -2401,6 +2437,12 @@ namespace mcp		// Model Context Protocol
 				sResult += "  sValue:      " + row[7] + "\n";
 				sResult += "  LastUpdate:  " + row[8] + "\n";
 				sResult += "  Used:        " + row[9] + "\n";
+				int iBatt = atoi(row[10].c_str());
+				if (iBatt != 255)
+					sResult += "  BatteryLevel: " + std::to_string(iBatt) + "%";
+				int iSignalLevel = atoi(row[11].c_str());
+				if (iSignalLevel != 255)
+					sResult += "  SignalLevel: " + std::to_string(iSignalLevel);
 			}
 			else
 			{
