@@ -1487,58 +1487,60 @@ namespace mcp		// Model Context Protocol
 	{
 		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling prompts/list request.");
 
-		// Prepare the result for the prompts/list method
+		struct PromptArg { const char* name; const char* description; bool required; };
+		struct PromptDef { const char* name; const char* title; const char* description; std::vector<PromptArg> args; };
+
+		static const std::vector<PromptDef> kPrompts = {
+			{ "housesummary",       "Get a status overview",
+			  "Summarize the current status of all sensors and devices in the house (optionally limited to a specific room)",
+			  { { "room", "The room to limit the summary to (optional)", false } } },
+			{ "systemanalysis",     "Get a system analysis",
+			  "Analyze the current status of the system and provide insights", {} },
+			{ "troubleshoot_device","Troubleshoot a device",
+			  "Diagnose issues with a specific device by analyzing its current state, recent history, and system logs",
+			  { { "device", "Name or IDX of the device to troubleshoot", true } } },
+			{ "analyze_automations","Analyze automation scripts",
+			  "Review all event scripts for logic issues, inefficiencies, or improvement opportunities", {} },
+			{ "analyze_event",      "Analyze an event script",
+			  "Review a specific event script for logic issues, inefficiencies, or improvement opportunities",
+			  { { "event", "Name of the event script to analyze", true } } },
+			{ "energy_report",      "Energy consumption report",
+			  "Summarize power and energy consumption across all electric sensors, identify high consumers, and compare to recent history", {} },
+			{ "security_check",     "Security status check",
+			  "Review security panel status, door/window sensors, cameras, and recent alerts", {} },
+			{ "battery_status",     "Battery status report",
+			  "List all battery-powered devices, flag low-battery ones, and suggest replacements", {} },
+			{ "climate_overview",   "Climate overview",
+			  "Summarize temperature, humidity, and thermostat setpoints per room and suggest comfort improvements", {} },
+			{ "scene_optimizer",    "Scene optimizer",
+			  "Review all scenes and groups, identify redundant or conflicting ones, and suggest consolidation", {} },
+			{ "hardware_health",    "Hardware health check",
+			  "Check all hardware instances for connectivity and errors, and flag anything offline or problematic", {} },
+			{ "create_automation",  "Create an automation script",
+			  "Guide through creating a new dzVents event script for a described automation rule",
+			  { { "rule", "Description of the automation rule to implement", true } } },
+			{ "daily_report",       "Daily digest report",
+			  "Generate a daily digest covering overnight anomalies, battery warnings, offline devices, and energy highlights", {} },
+		};
+
 		jsonRPCRep["result"]["prompts"] = Json::Value(Json::arrayValue);
-		Json::Value prompt;
-		// House Summary prompt
-		prompt["name"] = "housesummary";
-		prompt["title"] = "Get a status overview";
-		prompt["description"] = "Summarize the current status of all sensors and devices in the house (optionally limited to a specific room)";
-		prompt["arguments"] = Json::Value(Json::arrayValue);
-		Json::Value arg;
-		arg["name"] = "room";
-		arg["description"] = "The room to limit the summary to (optional, if not provided the whole house is summarized)";
-		arg["required"] = false;
-		prompt["arguments"].append(arg);
-		jsonRPCRep["result"]["prompts"].append(prompt);
-		// System analysis prompt
-		prompt.clear();
-		prompt["name"] = "systemanalysis";
-		prompt["title"] = "Get a system analysis";
-		prompt["description"] = "Analyze the current status of the system and provide insights";
-		prompt["arguments"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["prompts"].append(prompt);
-		// Troubleshoot device prompt
-		prompt.clear();
-		prompt["name"] = "troubleshoot_device";
-		prompt["title"] = "Troubleshoot a device";
-		prompt["description"] = "Diagnose issues with a specific device by analyzing its current state, recent history, and system logs";
-		prompt["arguments"] = Json::Value(Json::arrayValue);
-		Json::Value argDev;
-		argDev["name"] = "device";
-		argDev["description"] = "Name or IDX of the device to troubleshoot";
-		argDev["required"] = true;
-		prompt["arguments"].append(argDev);
-		jsonRPCRep["result"]["prompts"].append(prompt);
-		// Analyze automations prompt
-		prompt.clear();
-		prompt["name"] = "analyze_automations";
-		prompt["title"] = "Analyze automation scripts";
-		prompt["description"] = "Review all event scripts for logic issues, inefficiencies, or improvement opportunities";
-		prompt["arguments"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["prompts"].append(prompt);
-		// Analyze single event prompt
-		prompt.clear();
-		prompt["name"] = "analyze_event";
-		prompt["title"] = "Analyze an event script";
-		prompt["description"] = "Review a specific event script for logic issues, inefficiencies, or improvement opportunities";
-		prompt["arguments"] = Json::Value(Json::arrayValue);
-		Json::Value argEvent;
-		argEvent["name"] = "event";
-		argEvent["description"] = "Name of the event script to analyze";
-		argEvent["required"] = true;
-		prompt["arguments"].append(argEvent);
-		jsonRPCRep["result"]["prompts"].append(prompt);
+		for (const auto &def : kPrompts)
+		{
+			Json::Value prompt;
+			prompt["name"]        = def.name;
+			prompt["title"]       = def.title;
+			prompt["description"] = def.description;
+			prompt["arguments"]   = Json::Value(Json::arrayValue);
+			for (const auto &a : def.args)
+			{
+				Json::Value arg;
+				arg["name"]        = a.name;
+				arg["description"] = a.description;
+				arg["required"]    = a.required;
+				prompt["arguments"].append(arg);
+			}
+			jsonRPCRep["result"]["prompts"].append(prompt);
+		}
 	}
 
 	void McpPromptsGet(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
@@ -1552,94 +1554,73 @@ namespace mcp		// Model Context Protocol
 		std::string sPromptName = jsonRequest["params"]["name"].asString();
 		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling prompts/get request (%s).", sPromptName.c_str());
 
+		auto getArg = [&](const char* argName) -> std::string {
+			if (jsonRequest["params"].isMember("arguments") && jsonRequest["params"]["arguments"].isMember(argName))
+				return jsonRequest["params"]["arguments"][argName].asString();
+			return {};
+		};
+
+		auto escapeQuotes = [](std::string s) -> std::string {
+			std::string result;
+			result.reserve(s.size());
+			for (char c : s) {
+				if (c == '"') result += "\\\"";
+				else result += c;
+			}
+			return result;
+		};
+
+		auto makeUserMessage = [&](Json::Value &rep, const std::string &description, const std::string &text) {
+			rep["result"]["description"] = description;
+			rep["result"]["messages"] = Json::Value(Json::arrayValue);
+			Json::Value msg;
+			msg["role"] = "user";
+			msg["content"]["type"] = "text";
+			msg["content"]["text"] = text;
+			rep["result"]["messages"].append(msg);
+		};
+
 		if (sPromptName == "housesummary")
 		{
-			std::string sRoom = ((jsonRequest["params"].isMember("arguments") && jsonRequest["params"]["arguments"].isMember("room")) ? jsonRequest["params"]["arguments"]["room"].asString() : "");
-			// Prepare the result for the prompts/get method
-			jsonRPCRep["result"]["description"] = "Summarize the current status of all sensors and devices in the house (optionally limited to a specific room)";
-			jsonRPCRep["result"]["messages"] = Json::Value(Json::arrayValue);
-			Json::Value message;
-			message["role"] = "user";
-			message["content"] = Json::Value(Json::objectValue);
-			message["content"]["type"] = "text";
-			std::string sText = "As the friendly butler of the house, please summarize the current status of all sensors and devices preferably grouped by room.";
-			Json::Value jsonDevices;
-			m_webservers.GetJSonDevices(jsonDevices, "", "", "", "", "", "", false, false, false, 0, "", "");
-			sText += " Include the following devices in your summary:";
-			for(const auto &device : jsonDevices["result"])
-			{
-				if(device.isObject() && device.isMember("Name") && device.isMember("Data") && device.isMember("Type") && device.isMember("SubType"))
-				{
-					std::string sDevRoom = (device.isMember("Room") ? device["Room"].asString() : "");
-					if(sRoom.empty() || (!sRoom.empty() && sRoom == sDevRoom))
-					{
-						sText += device["Name"].asString() + ", ";
-					}
-				}
-			}
-			if (!sText.empty() && sText.size() >= 2 && sText.substr(sText.size() - 2) == ", ")
-				sText.resize(sText.size() - 2);
-			sText += ".";
-			// Append rooms
-			auto roomResult = m_sql.safe_query("SELECT ID, Name FROM Plans WHERE Name!='' ORDER BY Name");
-			if (!roomResult.empty())
-			{
-				sText += " The house has the following rooms: ";
-				for (const auto &row : roomResult)
-					sText += row[1] + " (idx=" + row[0] + "), ";
-			}
-			// Append scenes
-			auto sceneResult = m_sql.safe_query("SELECT Name, Status FROM Scenes ORDER BY Name");
-			if (!sceneResult.empty())
-			{
-				sText += " Available scenes/groups: ";
-				for (const auto &row : sceneResult)
-					sText += row[0] + " [" + (row[1] == "1" ? "On" : "Off") + "], ";
-			}
-			message["content"]["text"] = sText;
-			jsonRPCRep["result"]["messages"].append(message);
+			std::string sRoom = getArg("room");
+			std::string sText = "As the friendly butler of the house, please summarize the current status of all sensors and devices, preferably grouped by room.";
+			sText += " Use get_all_devices to retrieve the full device list.";
+			if (!sRoom.empty())
+				sText += " Limit the summary to the room named \"" + escapeQuotes(sRoom) + "\".";
+			sText += " Also use get_scenes to list available scenes/groups and their current state.";
+			sText += " Present a concise, readable overview suitable for a quick status check.";
+			makeUserMessage(jsonRPCRep,
+				sRoom.empty() ? "Summarize the current status of the whole house"
+				              : "Summarize the current status of room: " + sRoom,
+				sText);
 		}
 		else if (sPromptName == "systemanalysis")
 		{
-			// Prepare the result for the prompts/get method
-			jsonRPCRep["result"]["description"] = "Analyze the current status of the system and provide insights";
-			jsonRPCRep["result"]["messages"] = Json::Value(Json::arrayValue);
-			Json::Value message;
-			message["role"] = "user";
-			message["content"] = Json::Value(Json::objectValue);
-			message["content"]["type"] = "text";
-			std::string sText = "As the friendly butler of the house, please make an analysis of the current status of the system by analyzing all available log information, and providing suggestions if needed.";
+			std::string sText = "As the friendly butler of the house, please make an analysis of the current status of the system by analyzing all available log information, and providing suggestions if needed. ";
 			sText += "State the time window of the logging you have analyzed. If the latest log entries are older than 3 minutes, make sure to first retrieve the latest log entries before making your analysis.";
-			message["content"]["text"] = sText;
-			jsonRPCRep["result"]["messages"].append(message);
+			makeUserMessage(jsonRPCRep, "Analyze the current status of the system and provide insights", sText);
 		}
 		else if (sPromptName == "troubleshoot_device")
 		{
-			std::string sDevice = ((jsonRequest["params"].isMember("arguments") && jsonRequest["params"]["arguments"].isMember("device")) ? jsonRequest["params"]["arguments"]["device"].asString() : "");
-			jsonRPCRep["result"]["description"] = "Troubleshoot device: " + sDevice;
-			jsonRPCRep["result"]["messages"] = Json::Value(Json::arrayValue);
-			Json::Value message;
-			message["role"] = "user";
-			message["content"] = Json::Value(Json::objectValue);
-			message["content"]["type"] = "text";
-			std::string sText = "Please troubleshoot the Domoticz device named \"" + sDevice + "\". ";
+			std::string sDevice = getArg("device");
+			if (sDevice.empty())
+			{
+				jsonRPCRep["error"]["code"] = mcp::JSONRPC_INVALID_PARAMETER;
+				jsonRPCRep["error"]["message"] = "Missing required argument 'device'";
+				return;
+			}
+			std::string sText = "Please troubleshoot the Domoticz device named \"" + escapeQuotes(sDevice) + "\". ";
 			sText += "Use the available tools to: ";
-			sText += "1) Get the current state of the device using get_switch_state or get_sensor_value. ";
-			sText += "2) Check its recent history using get_device_history. ";
-			sText += "3) Check the system log using get_logging for any errors related to this device. ";
-			sText += "4) Check if its hardware is online using get_hardware. ";
+			sText += "1) Find the device using search_devices or get_device if you know its IDX. ";
+			sText += "2) Get the current state using get_switch_state or get_sensor_value. ";
+			sText += "3) Check its recent history using get_device_history. ";
+			sText += "4) Check the system log using get_logging for any errors related to this device. ";
+			sText += "5) Check if its hardware is online using get_hardware. ";
 			sText += "Summarize what you find and suggest any remediation steps.";
-			message["content"]["text"] = sText;
-			jsonRPCRep["result"]["messages"].append(message);
+			makeUserMessage(jsonRPCRep, "Troubleshoot device: " + sDevice, sText);
 		}
 		else if (sPromptName == "analyze_automations")
 		{
-			jsonRPCRep["result"]["description"] = "Review all event scripts for logic issues, inefficiencies, or improvement opportunities";
-			jsonRPCRep["result"]["messages"] = Json::Value(Json::arrayValue);
-			Json::Value message;
-			message["role"] = "user";
-			message["content"] = Json::Value(Json::objectValue);
-			message["content"]["type"] = "text";
 			std::string sText = "Please analyze all Domoticz automation event scripts. ";
 			sText += "Use the available tools to: ";
 			sText += "1) List all event scripts using get_events. ";
@@ -1647,32 +1628,122 @@ namespace mcp		// Model Context Protocol
 			sText += "3) Review each script for logic errors, inefficiencies, or improvement opportunities. ";
 			sText += "4) Check the system log for any automation-related errors using get_logging. ";
 			sText += "Provide a structured report with findings and suggestions for each script.";
-			message["content"]["text"] = sText;
-			jsonRPCRep["result"]["messages"].append(message);
+			makeUserMessage(jsonRPCRep, "Review all event scripts for logic issues, inefficiencies, or improvement opportunities", sText);
 		}
 		else if (sPromptName == "analyze_event")
 		{
-			std::string sEvent = ((jsonRequest["params"].isMember("arguments") && jsonRequest["params"]["arguments"].isMember("event")) ? jsonRequest["params"]["arguments"]["event"].asString() : "");
-			jsonRPCRep["result"]["description"] = "Analyze event script: " + sEvent;
-			jsonRPCRep["result"]["messages"] = Json::Value(Json::arrayValue);
-			Json::Value message;
-			message["role"] = "user";
-			message["content"] = Json::Value(Json::objectValue);
-			message["content"]["type"] = "text";
-			std::string sText = "Please analyze the Domoticz automation event script named \"" + sEvent + "\". ";
+			std::string sEvent = getArg("event");
+			if (sEvent.empty())
+			{
+				jsonRPCRep["error"]["code"] = mcp::JSONRPC_INVALID_PARAMETER;
+				jsonRPCRep["error"]["message"] = "Missing required argument 'event'";
+				return;
+			}
+			std::string sText = "Please analyze the Domoticz automation event script named \"" + escapeQuotes(sEvent) + "\". ";
 			sText += "Use the available tools to: ";
 			sText += "1) Retrieve the script source code using get_event. ";
 			sText += "2) Check the system log for any errors related to this script using get_logging. ";
 			sText += "3) Review the script for logic errors, inefficiencies, or improvement opportunities. ";
 			sText += "Provide a structured report with findings and concrete suggestions.";
-			message["content"]["text"] = sText;
-			jsonRPCRep["result"]["messages"].append(message);
+			makeUserMessage(jsonRPCRep, "Analyze event script: " + sEvent, sText);
+		}
+		else if (sPromptName == "energy_report")
+		{
+			std::string sText = "Please generate an energy consumption report for this Domoticz system. ";
+			sText += "Use the available tools to: ";
+			sText += "1) List all devices using get_all_devices and identify electric, power, and energy sensors (kWh, Watt, P1 Smart Meter, Usage Electric types). ";
+			sText += "2) Read current values using get_sensor_value for each energy device. ";
+			sText += "3) Check recent history using get_device_history for the main consumers. ";
+			sText += "4) Identify the highest consumers and any unusual patterns. ";
+			sText += "Provide a structured report with current readings, estimated daily/monthly costs if possible, and recommendations for reducing consumption.";
+			makeUserMessage(jsonRPCRep, "Summarize energy consumption and identify high consumers", sText);
+		}
+		else if (sPromptName == "security_check")
+		{
+			std::string sText = "Please perform a security check of this Domoticz system. ";
+			sText += "Use the available tools to: ";
+			sText += "1) Check the security panel status using get_security_status. ";
+			sText += "2) List all devices using get_all_devices and identify door/window sensors, motion sensors, and smoke detectors. ";
+			sText += "3) Check the current state of all security-related sensors using get_switch_state or get_sensor_value. ";
+			sText += "4) List all cameras using get_cameras. ";
+			sText += "5) Review recent alerts in the system log using get_logging. ";
+			sText += "Provide a security status overview, flag any open doors/windows or triggered sensors, and suggest improvements.";
+			makeUserMessage(jsonRPCRep, "Review security panel, sensors, cameras, and recent alerts", sText);
+		}
+		else if (sPromptName == "battery_status")
+		{
+			std::string sText = "Please check the battery status of all battery-powered devices in this Domoticz system. ";
+			sText += "Use the available tools to: ";
+			sText += "1) List all devices using get_all_devices and look for devices with battery level information (BatteryLevel field). ";
+			sText += "2) Flag any devices with low battery (BatteryLevel below 20%). ";
+			sText += "3) Also identify devices that have not reported recently based on their LastUpdate field. ";
+			sText += "Provide a battery health report sorted by urgency, indicating which batteries need immediate replacement and which should be monitored.";
+			makeUserMessage(jsonRPCRep, "List battery-powered devices and flag low-battery ones", sText);
+		}
+		else if (sPromptName == "climate_overview")
+		{
+			std::string sText = "Please provide a climate overview of this Domoticz system. ";
+			sText += "Use the available tools to: ";
+			sText += "1) List all devices using get_all_devices and identify temperature, humidity, and thermostat/setpoint sensors, grouped by room. ";
+			sText += "2) Read current values using get_sensor_value for each climate sensor. ";
+			sText += "3) Compare thermostat setpoints to actual measured temperatures. ";
+			sText += "Provide a room-by-room climate summary. Flag rooms outside comfortable ranges (temperature below 18°C or above 26°C, humidity outside 40-60%). Suggest any adjustments.";
+			makeUserMessage(jsonRPCRep, "Summarize temperature, humidity, and thermostat setpoints per room", sText);
+		}
+		else if (sPromptName == "scene_optimizer")
+		{
+			std::string sText = "Please analyze and optimize the scenes and groups in this Domoticz system. ";
+			sText += "Use the available tools to: ";
+			sText += "1) List all scenes using get_scenes. ";
+			sText += "2) Get the devices in each scene using get_scene_devices. ";
+			sText += "3) Review scene configurations for redundancies, conflicts, or missing useful combinations. ";
+			sText += "Provide a structured analysis with suggestions for consolidation, renaming for clarity, or new scenes that would be useful based on the existing device setup.";
+			makeUserMessage(jsonRPCRep, "Review scenes and groups, identify redundancies, and suggest improvements", sText);
+		}
+		else if (sPromptName == "hardware_health")
+		{
+			std::string sText = "Please check the health of all hardware instances in this Domoticz system. ";
+			sText += "Use the available tools to: ";
+			sText += "1) List all hardware using get_hardware and identify any that are disabled or show errors. ";
+			sText += "2) Cross-reference with get_all_devices to find devices that haven't reported recently (stale LastUpdate). ";
+			sText += "3) Check the system log using get_logging for any hardware-related errors or warnings. ";
+			sText += "Provide a hardware health report, flag any offline or problematic hardware instances, and suggest remediation steps.";
+			makeUserMessage(jsonRPCRep, "Check hardware connectivity, errors, and offline instances", sText);
+		}
+		else if (sPromptName == "create_automation")
+		{
+			std::string sRule = getArg("rule");
+			if (sRule.empty())
+			{
+				jsonRPCRep["error"]["code"] = mcp::JSONRPC_INVALID_PARAMETER;
+				jsonRPCRep["error"]["message"] = "Missing required argument 'rule'";
+				return;
+			}
+			std::string sText = "Please create a new Domoticz automation event script for the following rule: \"" + escapeQuotes(sRule) + "\". ";
+			sText += "Use the available tools to: ";
+			sText += "1) List existing event scripts using get_events to avoid naming conflicts and understand existing patterns. ";
+			sText += "2) Find relevant devices using search_devices or get_all_devices. ";
+			sText += "3) Write the automation script in dzVents (preferred) following Domoticz best practices: use device names, handle edge cases, include meaningful log messages. ";
+			sText += "4) Create the script using create_event with interpreter='dzVents'. ";
+			sText += "Confirm the script was created successfully and explain what it does.";
+			makeUserMessage(jsonRPCRep, "Create automation script for: " + sRule, sText);
+		}
+		else if (sPromptName == "daily_report")
+		{
+			std::string sText = "Please generate a daily digest report for this Domoticz system. ";
+			sText += "Use the available tools to: ";
+			sText += "1) Check the system log using get_logging for any warnings, errors, or anomalies. ";
+			sText += "2) List all devices using get_all_devices and identify: devices with low battery (BatteryLevel < 20%), devices that haven't reported in over 24 hours, and any unusual states. ";
+			sText += "3) Check energy consumption using get_sensor_value for power and energy devices. ";
+			sText += "4) Review security status using get_security_status. ";
+			sText += "Provide a concise daily digest with clearly separated sections: Alerts requiring attention, Battery warnings, Offline/stale devices, Energy highlights, and a General system health summary.";
+			makeUserMessage(jsonRPCRep, "Daily digest: anomalies, battery warnings, offline devices, energy highlights", sText);
 		}
 		else
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: prompts/get: Unsupported prompt name: %s", sPromptName.c_str());
-			jsonRPCRep["error"]["code"] = mcp::JSONRPC_METHOD_NOT_FOUND;
-			jsonRPCRep["error"]["message"] = "Method not found";
+			jsonRPCRep["error"]["code"] = mcp::JSONRPC_INVALID_PARAMETER;
+			jsonRPCRep["error"]["message"] = "Unknown prompt name: " + sPromptName;
 		}
 	}
 
