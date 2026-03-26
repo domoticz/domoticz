@@ -14,12 +14,7 @@ define(['app', 'luxon', 'ChartWatermark'], function (app, luxon, ChartWatermark)
         const self = this;
 
 		self.$element = $element;
-<<<<<<< HEAD
 
-=======
-		self.$scope = $scope;
-		
->>>>>>> 50f30351a (Cleanup and unify code)
 		$scope.idx = 1768;//8830;//7953;//1768;
 
 		$scope.actDay = -2;
