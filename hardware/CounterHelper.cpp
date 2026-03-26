@@ -128,8 +128,8 @@ void CounterHelper::InitInt()
 		// to 0 to prevent counter values from doubling after restart.
 		if ((m_CounterOffset > 0) && (m_nLastCounterValue > 0) && (m_CounterOffset >= m_nLastCounterValue))
 		{
-			_log.Log(LOG_ERROR, "CounterHelper: Detected corrupted counter data (offset %.3f >= total %.3f). Resetting offset to 0.",
-				m_CounterOffset, m_nLastCounterValue);
+			_log.Log(LOG_ERROR, "CounterHelper: Detected corrupted counter data (offset %.3f >= total %.3f). Resetting offset to 0.", m_CounterOffset, m_nLastCounterValue);
+
 			m_CounterOffset = 0;
 			m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=0, LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type=%d) AND (SubType=%d)",
 				TimeToString(nullptr, TF_DateTime).c_str(),
@@ -175,10 +175,12 @@ double CounterHelper::CheckTotalCounter(const double mtotal, bool& bLooped)
 {
 	if (mtotal == 0)
 	{
+/*
 		if (m_nLastCounterValue >= 0.0005)
 		{
 			_log.Log(LOG_STATUS, "CounterHelper: Device %d (%s): Received 0 reading, returning cached value (%.3f) to avoid DB corruption", m_DeviceIdx, m_DeviceName.c_str(), m_nLastCounterValue);
 		}
+*/
 		return m_nLastCounterValue; //ignore 0 readings, return last known value to avoid corrupting the DB
 	}
 
