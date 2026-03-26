@@ -3343,7 +3343,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					if (!module["sum_rain_1"].empty())
 					{
 						bHaveRain = true;
-						rain_1 = module["sum_rain_1"].asFloat();
+						rain_1 = module["sum_rain_1"].asFloat() * 10.0F;
 						//Debug(DEBUG_HARDWARE, "HomeStatus Module Rain [%f]", rain_1);
 					}
 					if (!module["sum_rain_24"].empty())
