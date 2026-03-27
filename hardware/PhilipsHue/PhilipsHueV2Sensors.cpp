@@ -11,7 +11,7 @@
 #ifdef _DEBUG
 //should be the same as in the main class!
 //#define DEBUG_PhilipsHue_R
-#define DEBUG_PhilipsHue_W
+//#define DEBUG_PhilipsHue_W
 #endif
 
 #ifdef DEBUG_PhilipsHue_W
