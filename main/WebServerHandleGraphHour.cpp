@@ -77,7 +77,7 @@ void HandleGraphHour(const GraphContext& ctx, const request& req,
 			// check if data are from yesterday or before
 			if (tm1.tm_mday != (tm_limit.tm_mday+1))
 			{
-				root["warningmessage"] = "Warning: data are from yesterday or older";
+				root["warningmessage"] = "Data is outdated - results may not reflect current conditions";
 			}
 				
 			std::string szDateEnd = FormatDateTime(tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday, tm1.tm_hour, tm1.tm_min, tm1.tm_sec);
