@@ -67,6 +67,7 @@ namespace mcp
 	bool setSecurityStatus(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 
 	bool getDeviceByName(const std::string &sDeviceName, Json::Value &device);
+	bool getDeviceByIdx(int nIdx, Json::Value &device);
 
 	bool validRPC(const std::string &sInput, Json::Value &jsonRequest, std::string &sError);
 
