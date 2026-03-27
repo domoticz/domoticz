@@ -426,6 +426,9 @@
     <Filter Include="Pushers\Websocket">
       <UniqueIdentifier>{ec8bbfd7-5375-4170-93dd-c470284d1512}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Pushers\MCP">
+      <UniqueIdentifier>{d3a1c5f8-9b42-4e7d-8f3a-6c2e0b1d4a95}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Devices\eHouse">
       <UniqueIdentifier>{b56cf9a6-abbb-4578-8e1a-23b4cd57a309}</UniqueIdentifier>
     </Filter>
@@ -1975,6 +1978,9 @@
     <ClInclude Include="..\push\WebsocketPush.h">
       <Filter>Pushers\Websocket</Filter>
     </ClInclude>
+    <ClInclude Include="..\push\McpPush.h">
+      <Filter>Pushers\MCP</Filter>
+    </ClInclude>
     <ClInclude Include="..\notifications\NotificationBrowser.h">
       <Filter>Notifications</Filter>
     </ClInclude>
@@ -2243,6 +2249,12 @@
       <Filter>Webserver</Filter>
     </ClInclude>
     <ClInclude Include="..\mcpserver\McpService.hpp">
+      <Filter>Webserver\MCP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mcpserver\McpSseSession.h">
+      <Filter>Webserver\MCP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mcpserver\McpSessionRegistry.h">
       <Filter>Webserver\MCP</Filter>
     </ClInclude>
   </ItemGroup>
@@ -2781,6 +2793,9 @@
     <ClCompile Include="..\push\WebsocketPush.cpp">
       <Filter>Pushers\Websocket</Filter>
     </ClCompile>
+    <ClCompile Include="..\push\McpPush.cpp">
+      <Filter>Pushers\MCP</Filter>
+    </ClCompile>
     <ClCompile Include="..\notifications\NotificationBrowser.cpp">
       <Filter>Notifications</Filter>
     </ClCompile>
@@ -3040,6 +3055,12 @@
       <Filter>Webserver</Filter>
     </ClCompile>
     <ClCompile Include="..\mcpserver\McpService.cpp">
+      <Filter>Webserver\MCP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mcpserver\McpSseSession.cpp">
+      <Filter>Webserver\MCP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mcpserver\McpSessionRegistry.cpp">
       <Filter>Webserver\MCP</Filter>
     </ClCompile>
   </ItemGroup>

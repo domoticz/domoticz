@@ -38,6 +38,7 @@
 #include <libwebem/Base64.h>
 #include "../smtpclient/SMTPClient.h"
 #include "../push/BasePush.h"
+#include "../push/McpPush.h"
 #include "../notifications/NotificationHelper.h"
 
 #ifdef ENABLE_PYTHON
@@ -1705,6 +1706,7 @@ namespace http
 
 				m_mainworker.AddHardwareFromParams(ID, name, (senabled == "true") ? true : false, htype, iLogLevelEnabled, address, port, sport, username, password, extra, mode1,
 					mode2, mode3, mode4, mode5, mode6, iDataTimeout, true);
+				g_McpPush.onDeviceTableChanged();
 			}
 		}
 
@@ -2132,6 +2134,7 @@ namespace http
 
 			m_mainworker.RemoveDomoticzHardware(hwID);
 			m_sql.DeleteHardware(idx);
+			g_McpPush.onDeviceTableChanged();
 		}
 
 		void CWebServer::Cmd_GetLog(WebEmSession& session, const request& req, Json::Value& root)
@@ -4035,6 +4038,7 @@ namespace http
 			root["title"] = "DeleteDevice";
 			m_sql.DeleteDevices(idx);
 			m_mainworker.m_scheduler.ReloadSchedules();
+			g_McpPush.onDeviceTableChanged();
 		}
 
 		void CWebServer::Cmd_AddScene(WebEmSession& session, const request& req, Json::Value& root)

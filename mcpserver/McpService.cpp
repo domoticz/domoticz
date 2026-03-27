@@ -38,6 +38,8 @@
 #include "../main/RFXtrx.h"
 #include "../hardware/hardwaretypes.h"
 #include "../main/WebServerHandleGraphInternals.h"
+#include "../mcpserver/McpSseSession.h"
+#include "../mcpserver/McpSessionRegistry.h"
 
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
@@ -50,6 +52,42 @@ static constexpr const char *MCP_PROTOCOL_VERSION = "2025-06-18";
 
 extern http::server::CWebServerHelper m_webservers;
 extern CLogger _log;
+
+static std::string McpGetSessionIdFromRequest(const http::server::request& req)
+{
+	const char* hdr = req.get_req_header(&req, "Mcp-Session-Id");
+	return hdr ? std::string(hdr) : std::string{};
+}
+
+static bool McpIsValidSubscriptionUri(const std::string& uri)
+{
+	if (uri == "domoticz://devices" || uri == "domoticz://scenes")
+		return true;
+	if (uri.size() > 19 && uri.substr(0, 19) == "domoticz://devices/")
+	{
+		const auto digits = uri.substr(19);
+		return !digits.empty() && digits.find_first_not_of("0123456789") == std::string::npos;
+	}
+	if (uri.size() > 18 && uri.substr(0, 18) == "domoticz://scenes/")
+	{
+		const auto digits = uri.substr(18);
+		return !digits.empty() && digits.find_first_not_of("0123456789") == std::string::npos;
+	}
+	return false;
+}
+
+static int McpLevelToPriority(const std::string& levelStr)
+{
+	if (levelStr == "debug")     return 0;
+	if (levelStr == "info")      return 1;
+	if (levelStr == "notice")    return 2;
+	if (levelStr == "warning")   return 2;
+	if (levelStr == "error")     return 3;
+	if (levelStr == "critical")  return 3;
+	if (levelStr == "alert")     return 3;
+	if (levelStr == "emergency") return 3;
+	return 2;
+}
 extern CNotificationHelper m_notifications;
 extern std::string szAppVersion;
 extern std::string szAppHash;
@@ -83,7 +121,26 @@ namespace http
 				return;
 			}
 			_log.Debug(DEBUG_RECEIVED, "MCP: Post (%d): %s (%s)", req.content_length, req.content.c_str(), req.uri.c_str());
-			// Check if the request is valid
+
+			if (req.method == "GET")
+			{
+				HandleMcpGet(session, req, rep);
+				return;
+			}
+			if (req.method == "DELETE")
+			{
+				HandleMcpDelete(session, req, rep);
+				return;
+			}
+			if (req.method != "POST")
+			{
+				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid method: %s", req.method.c_str());
+				rep = reply::stock_reply(reply::method_not_allowed);
+				reply::add_header(&rep, "Allow", "GET, POST, DELETE");
+				return;
+			}
+
+			// POST-specific header validation
 			std::string sProtocolRequestHeader;
 			if (req.get_req_header(&req, "Accept") != nullptr)
 			{
@@ -95,9 +152,6 @@ namespace http
 					return;
 				}
 			}
-			// Check if the request has the MCP-PROTOCOL-VERSION header
-			// If not, we assume the client is using the latest version
-			// If it is present, we check if it matches the expected version
 			if (req.get_req_header(&req, "mcp-protocol-version") != nullptr)
 			{
 				sProtocolRequestHeader = req.get_req_header(&req, "mcp-protocol-version");
@@ -111,18 +165,6 @@ namespace http
 					rep = reply::stock_reply(reply::bad_request);
 					return;
 				}
-			}
-			// Check if the request is a POST request
-			if (req.method != "POST")
-			{
-				// VS Code MCP client sends GET requests (maybe other clients do as well)
-				// It does this to look for asynchronous notifications support
-				// but we don't support that yet, so we return method not allowed (405)
-				// And the MCP spec does not support GET for requests anyway
-				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid method: %s", req.method.c_str());
-				rep = reply::stock_reply(reply::method_not_allowed);
-				reply::add_header(&rep, "Allow", "POST");
-				return;
 			}
 
 			Json::Value jsonRequest;
@@ -146,6 +188,23 @@ namespace http
 			// Check if the method is supported and handle it
 			std::string sReqMethod = jsonRequest["method"].asString();
 			_log.Debug(DEBUG_WEBSERVER, "MCP: Request method: %s", sReqMethod.c_str());
+
+			if (sReqMethod != "initialize")
+			{
+				std::string reqSid = McpGetSessionIdFromRequest(req);
+				if (reqSid.empty())
+				{
+					rep = reply::stock_reply(reply::bad_request);
+					return;
+				}
+				bool found = CMcpSessionRegistry::Instance().WithSession(
+					reqSid, [](CMcpSession& s) { s.lastActivity = time(nullptr); });
+				if (!found)
+				{
+					rep = reply::stock_reply(reply::not_found);
+					return;
+				}
+			}
 
 			if (sReqMethod.find("notifications/") != std::string::npos)
 			{
@@ -185,6 +244,8 @@ namespace http
 				return;
 			};
 
+			std::string newSessionId;
+
 			if (sReqMethod == "ping")
 			{
 				_log.Debug(DEBUG_WEBSERVER, "MCP: Handling ping request (return empty result).");
@@ -193,6 +254,7 @@ namespace http
 			else if (sReqMethod == "initialize")
 			{
 				mcp::McpInitialize(jsonRequest, jsonRPCRep);
+				newSessionId = CMcpSessionRegistry::Instance().CreateSession(session);
 			}
 			else if (sReqMethod == "tools/list")
 			{
@@ -226,6 +288,54 @@ namespace http
 			{
 				mcp::McpCompletionComplete(jsonRequest, jsonRPCRep);
 			}
+			else if (sReqMethod == "logging/setLevel")
+			{
+				std::string levelStr = jsonRequest["params"]["level"].asString();
+				std::string sid = McpGetSessionIdFromRequest(req);
+				if (!sid.empty())
+				{
+					// Clamp at 3 (error): clients cannot enable info/debug Domoticz log forwarding.
+					int priority = std::max(McpLevelToPriority(levelStr), 3);
+					CMcpSessionRegistry::Instance().WithSession(
+						sid, [priority](CMcpSession& s) { s.minLogLevel = priority; });
+				}
+				jsonRPCRep["result"] = Json::Value(Json::objectValue);
+			}
+			else if (sReqMethod == "resources/subscribe")
+			{
+				std::string uri = jsonRequest["params"]["uri"].asString();
+				if (uri.empty())
+				{
+					jsonRPCRep["error"]["code"] = mcp::JSONRPC_INVALID_PARAMETER;
+					jsonRPCRep["error"]["message"] = "Missing uri parameter";
+				}
+				else if (!McpIsValidSubscriptionUri(uri))
+				{
+					jsonRPCRep["error"]["code"] = mcp::MCP_RESOURCE_NOT_FOUND;
+					jsonRPCRep["error"]["message"] = "Unknown resource URI: " + uri;
+				}
+				else
+				{
+					std::string sid = McpGetSessionIdFromRequest(req);
+					if (!sid.empty())
+					{
+						CMcpSessionRegistry::Instance().WithSession(
+							sid, [&uri](CMcpSession& s) { s.subscribedUris.insert(uri); });
+					}
+					jsonRPCRep["result"] = Json::Value(Json::objectValue);
+				}
+			}
+			else if (sReqMethod == "resources/unsubscribe")
+			{
+				std::string uri = jsonRequest["params"]["uri"].asString();
+				std::string sid = McpGetSessionIdFromRequest(req);
+				if (!sid.empty())
+				{
+					CMcpSessionRegistry::Instance().WithSession(
+						sid, [&uri](CMcpSession& s) { s.subscribedUris.erase(uri); });
+				}
+				jsonRPCRep["result"] = Json::Value(Json::objectValue);
+			}
 			else
 			{
 				_log.Debug(DEBUG_WEBSERVER, "MCP: Unsupported method: %s", sReqMethod.c_str());
@@ -238,8 +348,59 @@ namespace http
 
 			// Set headers
 			reply::add_header(&rep, "Content-Type", "application/json");	// "text/event-stream" is also an option if we want to support SSE
+			if (!newSessionId.empty())
+				reply::add_header(&rep, "Mcp-Session-Id", newSessionId.c_str());
 			//reply::add_header(&rep, "Cache-Control", "no-cache");
 			//reply::add_header(&rep, "Connection", "keep-alive");
+		}
+
+		void CWebServer::HandleMcpGet(WebEmSession& session, const request& req, reply& rep)
+		{
+			// Validate Accept header: must include text/event-stream
+			const char* acceptHdr = req.get_req_header(&req, "Accept");
+			if (acceptHdr == nullptr ||
+			    std::string(acceptHdr).find("text/event-stream") == std::string::npos)
+			{
+				rep = reply::stock_reply(reply::bad_request);
+				return;
+			}
+
+			// Look up session ID from header
+			const char* sessionIdHdr = req.get_req_header(&req, "Mcp-Session-Id");
+			std::string mcpSessionId;
+
+			if (sessionIdHdr != nullptr)
+			{
+				bool found = CMcpSessionRegistry::Instance().WithSession(
+					sessionIdHdr, [](CMcpSession& s) { s.lastActivity = time(nullptr); });
+				if (!found)
+				{
+					rep = reply::stock_reply(reply::not_found);
+					return;
+				}
+				mcpSessionId = sessionIdHdr;
+			}
+
+			// Build sse_context: "sessionId" or "sessionId:lastEventId"
+			const char* lastEventId = req.get_req_header(&req, "Last-Event-ID");
+			std::string sseContext = mcpSessionId;
+			if (lastEventId != nullptr && !mcpSessionId.empty())
+				sseContext = mcpSessionId + ":" + std::string(lastEventId);
+
+			rep.status = reply::sse_stream;
+			rep.sse_session = session;
+			rep.sse_context = sseContext;
+
+			_log.Debug(DEBUG_WEBSERVER, "MCP: Opening SSE stream for client %s (session: %s)",
+			           session.remote_host.c_str(), mcpSessionId.empty() ? "(anon)" : mcpSessionId.c_str());
+		}
+
+		void CWebServer::HandleMcpDelete(WebEmSession& /*session*/, const request& req, reply& rep)
+		{
+			const char* sessionIdHdr = req.get_req_header(&req, "Mcp-Session-Id");
+			if (sessionIdHdr != nullptr)
+				CMcpSessionRegistry::Instance().RemoveSession(sessionIdHdr);
+			rep = reply::stock_reply(reply::ok);
 		}
 
 	} // namespace server
@@ -285,15 +446,15 @@ namespace mcp		// Model Context Protocol
 
 		// Prepare the result for the initialize method
 		jsonRPCRep["result"]["protocolVersion"] = MCP_PROTOCOL_VERSION;
-		//jsonRPCRep["result"]["capabilities"]["logging"] = Json::Value(Json::objectValue);
+		jsonRPCRep["result"]["capabilities"]["logging"] = Json::Value(Json::objectValue);
 		jsonRPCRep["result"]["capabilities"]["completion"] = Json::Value(Json::objectValue);
 		jsonRPCRep["result"]["capabilities"]["prompts"] = Json::Value(Json::objectValue);
 		//jsonRPCRep["result"]["capabilities"]["prompts"]["listChanged"] = true;
 		jsonRPCRep["result"]["capabilities"]["resources"] = Json::Value(Json::objectValue);
-		//jsonRPCRep["result"]["capabilities"]["resources"]["subscribe"] = true;
-		//jsonRPCRep["result"]["capabilities"]["resources"]["listChanged"] = true;
+		jsonRPCRep["result"]["capabilities"]["resources"]["subscribe"] = true;
+		jsonRPCRep["result"]["capabilities"]["resources"]["listChanged"] = true;
 		jsonRPCRep["result"]["capabilities"]["tools"] = Json::Value(Json::objectValue);
-		//jsonRPCRep["result"]["capabilities"]["tools"]["listChanged"] = true;
+		jsonRPCRep["result"]["capabilities"]["tools"]["listChanged"] = true;
 
 		jsonRPCRep["result"]["serverInfo"]["name"] = "DomoticzMcp";
 		jsonRPCRep["result"]["serverInfo"]["title"] = "Domoticz MCP Server";
@@ -2225,13 +2386,13 @@ namespace mcp		// Model Context Protocol
 					sResult += "]";
 				if (device.isMember("Data"))
 					sResult += " = " + device["Data"].asString();
-				if (device.isMember("BatteryLevel"))
+				if (device.isMember("BatteryLevel") && device["BatteryLevel"].isInt())
 				{
 					int iBatt = device["BatteryLevel"].asInt();
 					if (iBatt != 255)
 						sResult += " battery=" + std::to_string(iBatt) + "%";
 				}
-				if (device.isMember("SignalLevel"))
+				if (device.isMember("SignalLevel") && device["SignalLevel"].isInt())
 				{
 					int iSignalLevel = device["SignalLevel"].asInt();
 					if (iSignalLevel != 12)
@@ -2335,13 +2496,13 @@ namespace mcp		// Model Context Protocol
 					sResult += " = " + device["Data"].asString();
 				if (device.isMember("idx"))
 					sResult += " (idx=" + device["idx"].asString() + ")";
-				if (device.isMember("BatteryLevel"))
+				if (device.isMember("BatteryLevel") && device["BatteryLevel"].isInt())
 				{
 					int iBatt = device["BatteryLevel"].asInt();
 					if (iBatt != 255)
 						sResult += " battery=" + std::to_string(iBatt) + "%";
 				}
-				if (device.isMember("SignalLevel"))
+				if (device.isMember("SignalLevel") && device["SignalLevel"].isInt())
 				{
 					int iSignalLevel = device["SignalLevel"].asInt();
 					if (iSignalLevel != 12)
@@ -2399,13 +2560,13 @@ namespace mcp		// Model Context Protocol
 					sResult += "  LastUpdate:  " + device["LastUpdate"].asString() + "\n";
 				if (device.isMember("Used"))
 					sResult += "  Used:        " + device["Used"].asString() + "\n";
-				if (device.isMember("BatteryLevel"))
+				if (device.isMember("BatteryLevel") && device["BatteryLevel"].isInt())
 				{
 					int iBatt = device["BatteryLevel"].asInt();
 					if (iBatt != 255)
 						sResult += "  BatteryLevel: " + std::to_string(iBatt) + "%\n";
 				}
-				if (device.isMember("SignalLevel"))
+				if (device.isMember("SignalLevel") && device["SignalLevel"].isInt())
 				{
 					int iSignalLevel = device["SignalLevel"].asInt();
 					if (iSignalLevel != 12)

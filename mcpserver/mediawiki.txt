@@ -1,10 +1,10 @@
-''Last revised: 2026-03-26''
+''Last revised: 2026-03-27''
 
 Domoticz (from version 2026.1) adds built-in support for the [https://modelcontextprotocol.io/specification/2025-06-18 Model Context Protocol] (MCP), allowing AI assistants and LLM clients to monitor and control your home automation system directly — without any external intermediary process.
 
 ''Only [https://modelcontextprotocol.io/specification/2025-06-18 MCP specification version 2025-06-18] is supported.''
 
-''Only Streamable HTTP transport is supported (no STDIO or SSE). Connections are stateless HTTP calls to the <code>/mcp</code> endpoint.''
+''Streamable HTTP transport is supported, including persistent SSE streams for real-time async notifications. STDIO transport is not natively supported; use an HTTP proxy if your client requires it.''
 
 == Enabling MCP support ==
 
@@ -379,11 +379,94 @@ Prompts are pre-written instruction templates that guide the AI through common t
 | <code>daily_report</code> || — || Generate a daily digest covering overnight anomalies, battery warnings, offline devices, and energy highlights.
 |}
 
+== Async notifications (SSE) ==
+
+Domoticz supports the full MCP Streamable HTTP transport, including server-sent event (SSE) streams for real-time push notifications. This allows AI clients such as VS Code Copilot to stay current on device state without polling.
+
+=== How it works ===
+
+After calling <code>initialize</code>, the server returns an <code>Mcp-Session-Id</code> header. The client then opens a persistent SSE stream with:
+
+<pre>
+GET /mcp HTTP/1.1
+Accept: text/event-stream
+Mcp-Session-Id: <session-id>
+MCP-Protocol-Version: 2025-06-18
+</pre>
+
+The server keeps this connection open and pushes JSON-RPC notification events as they occur. The client must include <code>Mcp-Session-Id</code> on all subsequent POST requests to associate them with the correct session.
+
+=== Notification types ===
+
+{| class="wikitable"
+|-
+! Notification !! Trigger
+|-
+| <code>notifications/resources/updated</code> || A device or scene state changed. The <code>params.uri</code> field contains the resource URI, e.g. <code>domoticz://devices/42</code> or <code>domoticz://scenes/3</code>.
+|-
+| <code>notifications/resources/list_changed</code> || A device was added or removed (virtual sensor created, device deleted, hardware added/removed).
+|-
+| <code>notifications/tools/list_changed</code> || Same trigger as above — the tool list changes whenever the device list changes.
+|-
+| <code>notifications/message</code> || A Domoticz error log entry, or an MCP-specific operational message (e.g. SSE stream connected). See [[#Log forwarding|Log forwarding]] below.
+|}
+
+=== Resource subscriptions ===
+
+By default a session receives <code>notifications/resources/updated</code> for '''all''' device and scene changes. To restrict notifications to specific resources, send a <code>resources/subscribe</code> request:
+
+<pre>
+POST /mcp
+{
+  "jsonrpc": "2.0", "id": 1,
+  "method": "resources/subscribe",
+  "params": { "uri": "domoticz://devices/42" }
+}
+</pre>
+
+Once any subscription is registered, only events matching a subscribed URI are sent. Use <code>resources/unsubscribe</code> with the same body to remove a subscription.
+
+=== Log forwarding ===
+
+By default, only Domoticz <code>LOG_ERROR</code> messages are forwarded as <code>notifications/message</code> events. MCP-specific operational messages (such as "SSE stream connected") are always sent regardless of the log level setting.
+
+Clients can adjust the log level via <code>logging/setLevel</code>:
+
+<pre>
+POST /mcp
+{
+  "jsonrpc": "2.0", "id": 2,
+  "method": "logging/setLevel",
+  "params": { "level": "error" }
+}
+</pre>
+
+Valid levels are <code>debug</code>, <code>info</code>, <code>notice</code>, <code>warning</code>, <code>error</code>, <code>critical</code>, <code>alert</code>, <code>emergency</code>. Note: to prevent flooding, the minimum effective level is always <code>error</code> — requesting <code>debug</code> or <code>info</code> has no additional effect.
+
+=== Reconnection and event replay ===
+
+Each SSE event carries a numeric <code>id:</code> field. If a client disconnects and reconnects, it can send a <code>Last-Event-ID</code> header to replay any events it missed (up to the last 100 events, or events from the last 5 minutes):
+
+<pre>
+GET /mcp HTTP/1.1
+Accept: text/event-stream
+Mcp-Session-Id: <session-id>
+Last-Event-ID: 17
+</pre>
+
+=== Session lifecycle ===
+
+Sessions are created by <code>initialize</code> and terminated by:
+* A <code>DELETE /mcp</code> request with the <code>Mcp-Session-Id</code> header
+* Automatic pruning after 1 hour of inactivity
+
 == Notes and limitations ==
 
 * Only [https://modelcontextprotocol.io/specification/2025-06-18 MCP specification version 2025-06-18] is supported.
-* Only Streamable HTTP transport is implemented. STDIO and SSE are not natively supported; use an HTTP proxy if your client requires STDIO.
+* Streamable HTTP transport is implemented, including SSE streams for async notifications. STDIO is not natively supported; use an HTTP proxy if your client requires it.
 * All tool responses are plain text, making them compatible with any LLM regardless of multimodal support (except <code>get_floorplan</code> which returns image data).
+* SSE sessions are pruned after 1 hour of inactivity. Long-running AI agents should periodically send a request to keep the session alive.
+* The minimum log forwarding level is <code>error</code>. Status and debug messages from Domoticz are intentionally not forwarded to avoid flooding AI clients during normal operation.
 * The <code>send_notification</code> tool sends to real devices (phone, email, etc.). Avoid invoking it in automated loops.
 * The <code>delete_device</code> tool hides a device (sets Used=0) rather than permanently deleting it. Historical data is preserved.
 * The <code>create_event</code> and <code>update_event</code> tools take effect immediately — the event system reloads after each change.

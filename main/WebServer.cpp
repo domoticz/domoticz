@@ -20,10 +20,13 @@
 #include <libwebem/Base64.h>
 #include "../smtpclient/SMTPClient.h"
 #include "../push/BasePush.h"
+#include "../push/McpPush.h"
 #include "../notifications/NotificationHelper.h"
 
 #include "WebServerLoggerAdapter.h"
 #include "DomoticzWebsocketHandler.h"
+#include "../mcpserver/McpSseSession.h"
+#include "../mcpserver/McpSessionRegistry.h"
 
 #ifdef ENABLE_PYTHON
 #include "../hardware/plugins/Plugins.h"
@@ -224,6 +227,18 @@ namespace http
 				},
 				"domoticz"
 			);
+
+			m_pWebEm->RegisterSseEndpoint(
+				"/mcp",
+				[](std::function<void(const std::string&)> writer,
+				   const http::server::WebEmSession& session,
+				   const std::string& context)
+				   -> std::shared_ptr<http::server::ISseHandler>
+				{
+					return std::make_shared<CMcpSseHandler>(writer, session, context);
+				});
+
+			g_McpPush.Start();
 
 			m_pWebEm->SetDigistRealm(sRealm);
 			// Maintain backward compatibility: libwebem defaults to "SID" but Domoticz
@@ -695,6 +710,7 @@ namespace http
 
 		void CWebServer::StopServer()
 		{
+			g_McpPush.Stop();
 			m_bDoStop = true;
 			try
 			{
