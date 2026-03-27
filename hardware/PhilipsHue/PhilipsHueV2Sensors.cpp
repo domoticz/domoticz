@@ -78,7 +78,7 @@ bool CPhilipsHueV2Sensors::UpdateAll()
 	FetchGroupedMotion();
 	FetchGroupedLightLevel();
 	FetchCameraMotion();
-	FetchSecurityAreaMotion();
+	//FetchSecurityAreaMotion(); // security_area_motion is not a valid Hue V2 API endpoint (tag only, no paths defined)
 	FetchBellButtons();
 	FetchButtons();
 	return ok0 || ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7 || ok8;
