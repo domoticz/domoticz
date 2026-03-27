@@ -1897,6 +1897,9 @@
     <ClInclude Include="..\hardware\Daikin.h">
       <Filter>Devices\Daikin</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\DaikinModbus.h">
+      <Filter>Devices\Daikin</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\HEOS.h">
       <Filter>Devices\HEOS</Filter>
     </ClInclude>
@@ -2716,6 +2719,9 @@
       <Filter>Devices\OpenWeatherMap</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\Daikin.cpp">
+      <Filter>Devices\Daikin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\DaikinModbus.cpp">
       <Filter>Devices\Daikin</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\HEOS.cpp">
