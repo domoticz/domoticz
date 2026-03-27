@@ -44,13 +44,7 @@ bool CNotificationPushbullet::SendMessageImplementation(
 	ExtraHeaders.push_back(sHeaderKey.str());
 	ExtraHeaders.push_back("Content-Type: application/json");
 
-#ifndef WIN32
-	HTTPClient::SetSecurityOptions(true, true);
-#endif
 	bRet = HTTPClient::POST("https://api.pushbullet.com/v2/pushes",sPostData,ExtraHeaders,sResult);
-#ifndef WIN32
-	HTTPClient::SetSecurityOptions(false, false);
-#endif
 
 	bool bSuccess = (sResult.find("\"created\":") != std::string::npos);
 	if (!bSuccess)
