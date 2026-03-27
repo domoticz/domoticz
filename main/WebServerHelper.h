@@ -29,6 +29,16 @@ namespace http {
 					    const std::string &hardwareid = "");
 			// called from CSQLHelper
 			void ReloadCustomSwitchIcons();
+			CWebServer* GetAnyServer() const
+		{
+			if (plainServer_)
+				return plainServer_.get();
+#ifdef WWW_ENABLE_SSL
+			if (secureServer_)
+				return secureServer_.get();
+#endif
+			return nullptr;
+		}
 			std::string our_listener_port;
 		private:
 			std::shared_ptr<CWebServer> plainServer_;

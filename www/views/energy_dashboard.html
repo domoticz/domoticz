@@ -191,10 +191,10 @@ History:
 			</g>
 			<text class="etext" x="46" y="6" opacity="0.7" font-size="2.0px" text-anchor="center" dy="0" style="font-weight: normal; white-space: pre;" ng-show="ServerTime">{{ ServerTime }}</text>
 			<text class="etext" x="46" y="7.5" opacity="0.6" font-size="1.0px" text-anchor="center" dy="0" style="font-weight: normal; white-space: pre;" ng-show="SunRise">↑{{ SunRise }} ↓{{ SunSet }}</text>
-			<g transform="matrix(0.065, 0, 0, 0.065, 61, 6.4)" ng-show="imgOutsideTemp">
+			<g transform="matrix(0.065, 0, 0, 0.065, 61, 6.4)" ng-show="idOutsideTemp != -1">
 				<image width="48" height="48" xlink:href="{{imgOutsideTemp}}" />
 			</g>
-			<text class="etext" x="56" y="6" opacity="1.0" font-size="2.0px" text-anchor="right" dy="0" style="font-weight: normal; white-space: pre;" ng-show="txtOutsideTemp">{{ txtOutsideTemp }}&deg; {{ config.TempSign }}</text>
+			<text class="etext" x="56" y="6" opacity="1.0" font-size="2.0px" text-anchor="right" dy="0" style="font-weight: normal; white-space: pre;" ng-show="idOutsideTemp != -1">{{ txtOutsideTemp }}&deg; {{ config.TempSign }}</text>
 			<g id="groupBatt" ng-show="idBattWatt != -1">
 				<line id="SolarToBatt" x1="30" y1="17.25" x2="30" y2="42.75" style="stroke:#ffd050;stroke-width:{{flowStrokeBack}}" ng-show="idSolar != -1"/>
 				<g ng-show="fSolarToBatt>0">

@@ -76,7 +76,7 @@ namespace mcp
 	bool deleteDevice(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool createVirtualSensor(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool updateDeviceValue(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
-	bool getDeviceHistory(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool getSensorHistory(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 
 	bool getUserVariables(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool addUserVariable(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
@@ -90,6 +90,7 @@ namespace mcp
 	bool getEvent(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool createEvent(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool updateEvent(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool deleteEvent(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 
 	struct ToolParam
 	{

@@ -201,6 +201,8 @@ main/WindCalculation.cpp
 mdns/mdns.cpp
 iamserver/IamService.cpp
 mcpserver/McpService.cpp
+mcpserver/McpSseSession.cpp
+mcpserver/McpSessionRegistry.cpp
 push/BasePush.cpp
 push/FibaroPush.cpp
 push/GooglePubSubPush.cpp
@@ -208,6 +210,7 @@ push/HttpPush.cpp
 push/InfluxPush.cpp
 push/MQTTPush.cpp
 push/WebsocketPush.cpp
+push/McpPush.cpp
 httpclient/HTTPClient.cpp
 httpclient/UrlEncode.cpp
 hardware/1Wire.cpp
@@ -327,6 +330,7 @@ hardware/PhilipsHue/PhilipsHue.cpp
 hardware/PhilipsHue/PhilipsHueHelper.cpp
 hardware/PhilipsHue/PhilipsHueSensors.cpp
 hardware/PhilipsHue/PhilipsHueV2Sensors.cpp
+hardware/PhilipsHue/PhilipsHueSSE.cpp
 hardware/PiFace.cpp
 hardware/Pinger.cpp
 hardware/PVOutput_Input.cpp

@@ -35,6 +35,11 @@
 #include "../notifications/NotificationHelper.h"
 #include "../hardware/ColorSwitch.h"
 #include <libwebem/Base64.h>
+#include "../main/RFXtrx.h"
+#include "../hardware/hardwaretypes.h"
+#include "../main/WebServerHandleGraphInternals.h"
+#include "../mcpserver/McpSseSession.h"
+#include "../mcpserver/McpSessionRegistry.h"
 
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
@@ -47,6 +52,42 @@ static constexpr const char *MCP_PROTOCOL_VERSION = "2025-06-18";
 
 extern http::server::CWebServerHelper m_webservers;
 extern CLogger _log;
+
+static std::string McpGetSessionIdFromRequest(const http::server::request& req)
+{
+	const char* hdr = req.get_req_header(&req, "Mcp-Session-Id");
+	return hdr ? std::string(hdr) : std::string{};
+}
+
+static bool McpIsValidSubscriptionUri(const std::string& uri)
+{
+	if (uri == "domoticz://devices" || uri == "domoticz://scenes")
+		return true;
+	if (uri.size() > 19 && uri.substr(0, 19) == "domoticz://devices/")
+	{
+		const auto digits = uri.substr(19);
+		return !digits.empty() && digits.find_first_not_of("0123456789") == std::string::npos;
+	}
+	if (uri.size() > 18 && uri.substr(0, 18) == "domoticz://scenes/")
+	{
+		const auto digits = uri.substr(18);
+		return !digits.empty() && digits.find_first_not_of("0123456789") == std::string::npos;
+	}
+	return false;
+}
+
+static int McpLevelToPriority(const std::string& levelStr)
+{
+	if (levelStr == "debug")     return 0;
+	if (levelStr == "info")      return 1;
+	if (levelStr == "notice")    return 2;
+	if (levelStr == "warning")   return 2;
+	if (levelStr == "error")     return 3;
+	if (levelStr == "critical")  return 3;
+	if (levelStr == "alert")     return 3;
+	if (levelStr == "emergency") return 3;
+	return 2;
+}
 extern CNotificationHelper m_notifications;
 extern std::string szAppVersion;
 extern std::string szAppHash;
@@ -80,7 +121,26 @@ namespace http
 				return;
 			}
 			_log.Debug(DEBUG_RECEIVED, "MCP: Post (%d): %s (%s)", req.content_length, req.content.c_str(), req.uri.c_str());
-			// Check if the request is valid
+
+			if (req.method == "GET")
+			{
+				HandleMcpGet(session, req, rep);
+				return;
+			}
+			if (req.method == "DELETE")
+			{
+				HandleMcpDelete(session, req, rep);
+				return;
+			}
+			if (req.method != "POST")
+			{
+				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid method: %s", req.method.c_str());
+				rep = reply::stock_reply(reply::method_not_allowed);
+				reply::add_header(&rep, "Allow", "GET, POST, DELETE");
+				return;
+			}
+
+			// POST-specific header validation
 			std::string sProtocolRequestHeader;
 			if (req.get_req_header(&req, "Accept") != nullptr)
 			{
@@ -92,9 +152,6 @@ namespace http
 					return;
 				}
 			}
-			// Check if the request has the MCP-PROTOCOL-VERSION header
-			// If not, we assume the client is using the latest version
-			// If it is present, we check if it matches the expected version
 			if (req.get_req_header(&req, "mcp-protocol-version") != nullptr)
 			{
 				sProtocolRequestHeader = req.get_req_header(&req, "mcp-protocol-version");
@@ -108,18 +165,6 @@ namespace http
 					rep = reply::stock_reply(reply::bad_request);
 					return;
 				}
-			}
-			// Check if the request is a POST request
-			if (req.method != "POST")
-			{
-				// VS Code MCP client sends GET requests (maybe other clients do as well)
-				// It does this to look for asynchronous notifications support
-				// but we don't support that yet, so we return method not allowed (405)
-				// And the MCP spec does not support GET for requests anyway
-				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid method: %s", req.method.c_str());
-				rep = reply::stock_reply(reply::method_not_allowed);
-				reply::add_header(&rep, "Allow", "POST");
-				return;
 			}
 
 			Json::Value jsonRequest;
@@ -143,6 +188,23 @@ namespace http
 			// Check if the method is supported and handle it
 			std::string sReqMethod = jsonRequest["method"].asString();
 			_log.Debug(DEBUG_WEBSERVER, "MCP: Request method: %s", sReqMethod.c_str());
+
+			if (sReqMethod != "initialize")
+			{
+				std::string reqSid = McpGetSessionIdFromRequest(req);
+				if (reqSid.empty())
+				{
+					rep = reply::stock_reply(reply::bad_request);
+					return;
+				}
+				bool found = CMcpSessionRegistry::Instance().WithSession(
+					reqSid, [](CMcpSession& s) { s.lastActivity = time(nullptr); });
+				if (!found)
+				{
+					rep = reply::stock_reply(reply::not_found);
+					return;
+				}
+			}
 
 			if (sReqMethod.find("notifications/") != std::string::npos)
 			{
@@ -182,6 +244,8 @@ namespace http
 				return;
 			};
 
+			std::string newSessionId;
+
 			if (sReqMethod == "ping")
 			{
 				_log.Debug(DEBUG_WEBSERVER, "MCP: Handling ping request (return empty result).");
@@ -190,6 +254,7 @@ namespace http
 			else if (sReqMethod == "initialize")
 			{
 				mcp::McpInitialize(jsonRequest, jsonRPCRep);
+				newSessionId = CMcpSessionRegistry::Instance().CreateSession(session);
 			}
 			else if (sReqMethod == "tools/list")
 			{
@@ -223,6 +288,54 @@ namespace http
 			{
 				mcp::McpCompletionComplete(jsonRequest, jsonRPCRep);
 			}
+			else if (sReqMethod == "logging/setLevel")
+			{
+				std::string levelStr = jsonRequest["params"]["level"].asString();
+				std::string sid = McpGetSessionIdFromRequest(req);
+				if (!sid.empty())
+				{
+					// Clamp at 3 (error): clients cannot enable info/debug Domoticz log forwarding.
+					int priority = std::max(McpLevelToPriority(levelStr), 3);
+					CMcpSessionRegistry::Instance().WithSession(
+						sid, [priority](CMcpSession& s) { s.minLogLevel = priority; });
+				}
+				jsonRPCRep["result"] = Json::Value(Json::objectValue);
+			}
+			else if (sReqMethod == "resources/subscribe")
+			{
+				std::string uri = jsonRequest["params"]["uri"].asString();
+				if (uri.empty())
+				{
+					jsonRPCRep["error"]["code"] = mcp::JSONRPC_INVALID_PARAMETER;
+					jsonRPCRep["error"]["message"] = "Missing uri parameter";
+				}
+				else if (!McpIsValidSubscriptionUri(uri))
+				{
+					jsonRPCRep["error"]["code"] = mcp::MCP_RESOURCE_NOT_FOUND;
+					jsonRPCRep["error"]["message"] = "Unknown resource URI: " + uri;
+				}
+				else
+				{
+					std::string sid = McpGetSessionIdFromRequest(req);
+					if (!sid.empty())
+					{
+						CMcpSessionRegistry::Instance().WithSession(
+							sid, [&uri](CMcpSession& s) { s.subscribedUris.insert(uri); });
+					}
+					jsonRPCRep["result"] = Json::Value(Json::objectValue);
+				}
+			}
+			else if (sReqMethod == "resources/unsubscribe")
+			{
+				std::string uri = jsonRequest["params"]["uri"].asString();
+				std::string sid = McpGetSessionIdFromRequest(req);
+				if (!sid.empty())
+				{
+					CMcpSessionRegistry::Instance().WithSession(
+						sid, [&uri](CMcpSession& s) { s.subscribedUris.erase(uri); });
+				}
+				jsonRPCRep["result"] = Json::Value(Json::objectValue);
+			}
 			else
 			{
 				_log.Debug(DEBUG_WEBSERVER, "MCP: Unsupported method: %s", sReqMethod.c_str());
@@ -235,8 +348,59 @@ namespace http
 
 			// Set headers
 			reply::add_header(&rep, "Content-Type", "application/json");	// "text/event-stream" is also an option if we want to support SSE
+			if (!newSessionId.empty())
+				reply::add_header(&rep, "Mcp-Session-Id", newSessionId.c_str());
 			//reply::add_header(&rep, "Cache-Control", "no-cache");
 			//reply::add_header(&rep, "Connection", "keep-alive");
+		}
+
+		void CWebServer::HandleMcpGet(WebEmSession& session, const request& req, reply& rep)
+		{
+			// Validate Accept header: must include text/event-stream
+			const char* acceptHdr = req.get_req_header(&req, "Accept");
+			if (acceptHdr == nullptr ||
+			    std::string(acceptHdr).find("text/event-stream") == std::string::npos)
+			{
+				rep = reply::stock_reply(reply::bad_request);
+				return;
+			}
+
+			// Look up session ID from header
+			const char* sessionIdHdr = req.get_req_header(&req, "Mcp-Session-Id");
+			std::string mcpSessionId;
+
+			if (sessionIdHdr != nullptr)
+			{
+				bool found = CMcpSessionRegistry::Instance().WithSession(
+					sessionIdHdr, [](CMcpSession& s) { s.lastActivity = time(nullptr); });
+				if (!found)
+				{
+					rep = reply::stock_reply(reply::not_found);
+					return;
+				}
+				mcpSessionId = sessionIdHdr;
+			}
+
+			// Build sse_context: "sessionId" or "sessionId:lastEventId"
+			const char* lastEventId = req.get_req_header(&req, "Last-Event-ID");
+			std::string sseContext = mcpSessionId;
+			if (lastEventId != nullptr && !mcpSessionId.empty())
+				sseContext = mcpSessionId + ":" + std::string(lastEventId);
+
+			rep.status = reply::sse_stream;
+			rep.sse_session = session;
+			rep.sse_context = sseContext;
+
+			_log.Debug(DEBUG_WEBSERVER, "MCP: Opening SSE stream for client %s (session: %s)",
+			           session.remote_host.c_str(), mcpSessionId.empty() ? "(anon)" : mcpSessionId.c_str());
+		}
+
+		void CWebServer::HandleMcpDelete(WebEmSession& /*session*/, const request& req, reply& rep)
+		{
+			const char* sessionIdHdr = req.get_req_header(&req, "Mcp-Session-Id");
+			if (sessionIdHdr != nullptr)
+				CMcpSessionRegistry::Instance().RemoveSession(sessionIdHdr);
+			rep = reply::stock_reply(reply::ok);
 		}
 
 	} // namespace server
@@ -282,15 +446,15 @@ namespace mcp		// Model Context Protocol
 
 		// Prepare the result for the initialize method
 		jsonRPCRep["result"]["protocolVersion"] = MCP_PROTOCOL_VERSION;
-		//jsonRPCRep["result"]["capabilities"]["logging"] = Json::Value(Json::objectValue);
+		jsonRPCRep["result"]["capabilities"]["logging"] = Json::Value(Json::objectValue);
 		jsonRPCRep["result"]["capabilities"]["completion"] = Json::Value(Json::objectValue);
 		jsonRPCRep["result"]["capabilities"]["prompts"] = Json::Value(Json::objectValue);
 		//jsonRPCRep["result"]["capabilities"]["prompts"]["listChanged"] = true;
 		jsonRPCRep["result"]["capabilities"]["resources"] = Json::Value(Json::objectValue);
-		//jsonRPCRep["result"]["capabilities"]["resources"]["subscribe"] = true;
-		//jsonRPCRep["result"]["capabilities"]["resources"]["listChanged"] = true;
+		jsonRPCRep["result"]["capabilities"]["resources"]["subscribe"] = true;
+		jsonRPCRep["result"]["capabilities"]["resources"]["listChanged"] = true;
 		jsonRPCRep["result"]["capabilities"]["tools"] = Json::Value(Json::objectValue);
-		//jsonRPCRep["result"]["capabilities"]["tools"]["listChanged"] = true;
+		jsonRPCRep["result"]["capabilities"]["tools"]["listChanged"] = true;
 
 		jsonRPCRep["result"]["serverInfo"]["name"] = "DomoticzMcp";
 		jsonRPCRep["result"]["serverInfo"]["title"] = "Domoticz MCP Server";
@@ -411,28 +575,48 @@ namespace mcp		// Model Context Protocol
 		{
 			"rename_device",
 			"Rename a device",
-			"Rename a device by its current name to a new name.",
+			"Rename any device (switch, sensor, virtual, etc.) by its current name to a new name.",
 			{
-				{ "switchname", "string", "Current name of the device", true, {} },
+				{ "name", "string", "Current name of the device", true, {} },
 				{ "new_name", "string", "New name for the device", true, {} },
 			}
 		},
 		{
 			"delete_device",
 			"Delete (hide) a device",
-			"Hide a device by setting its Used flag to 0. The device is not permanently deleted; it can be re-enabled. Use with caution.",
+			"Hide any device (switch, sensor, virtual, etc.) by setting its Used flag to 0. The device is not permanently deleted; it can be re-enabled. Use with caution.",
 			{
-				{ "switchname", "string", "Name of the device to hide/delete", true, {} },
+				{ "name", "string", "Name of the device to hide/delete", true, {} },
 			}
 		},
 		{
-			"create_virtual_sensor",
+			"delete_event",
+			"Delete an event script",
+			"Permanently delete an event script by name. This cannot be undone.",
+			{
+				{ "event_name", "string", "Name of the event script to delete", true, {} },
+			}
+		},
+		{
+			"create_sensor",
 			"Create a virtual sensor",
-			"Create a new virtual sensor attached to a virtual hardware instance. The hw_idx must refer to a virtual (dummy) hardware. sensortype is the mapped sensor type integer (e.g. 80=Temperature, 81=Humidity, 5=Text, 6=Switch).",
+			"Create a new virtual sensor attached to a virtual hardware instance. sensortype is a sensor type name (e.g. 'Wind', 'Temperature', 'Switch') or its numeric mapped value. Read domoticz://sensor-types for all available types. Aliases: create_virtual_sensor, create_device.",
 			{
 				{ "hw_idx", "integer", "IDX of the virtual/dummy hardware to attach the sensor to", true, {} },
 				{ "sensorname", "string", "Name for the new virtual sensor", true, {} },
-				{ "sensortype", "integer", "Sensor type integer (80=Temperature, 81=Humidity, 5=Text, 6=Switch, 113=Counter, etc.)", true, {} },
+				{ "sensortype", "string", "Sensor type name or numeric mapped value. Read domoticz://sensor-types for the full list.", true, {
+					"Air Quality", "Alert", "Ampere (1 Phase)", "Ampere (3 Phase)", "Barometer",
+					"Counter", "Counter Incremental", "Custom Sensor", "Distance",
+					"Electric (Instant+Counter)", "Gas", "Humidity", "Leaf Wetness", "Lux",
+					"Managed Counter", "P1 Smart Meter (Electric)", "Percentage", "Pressure (Bar)",
+					"Rain", "RGB Switch", "RGBW Switch", "Scale", "Selector Switch",
+					"Soil Moisture", "Solar Radiation", "Sound Level", "Switch",
+					"Temp+Baro", "Temp+Hum", "Temp+Hum+Baro", "Temperature", "Text",
+					"Thermostat (Temp/Baro/Setpoint)", "Thermostat (Temp/Hum/Baro/Setpoint)",
+					"Thermostat (Temp/Hum/Setpoint)", "Thermostat (Temp/Setpoint)",
+					"Thermostat Setpoint", "Usage (Electric)", "UV",
+					"Visibility", "Voltage", "Waterflow", "Wind", "Wind+Temp+Chill"
+				} },
 			}
 		},
 		{
@@ -440,18 +624,26 @@ namespace mcp		// Model Context Protocol
 			"Update a device value",
 			"Directly update the nValue and/or sValue of a device (useful for virtual sensors).",
 			{
-				{ "switchname", "string", "Name of the device to update", true, {} },
+				{ "name", "string", "Name of the device to update", true, {} },
 				{ "nvalue", "integer", "Numeric value to set", true, {} },
 				{ "svalue", "string", "String value to set (optional)", false, {} },
 			}
 		},
 		{
-			"get_device_history",
-			"Get device history",
-			"Retrieve the recent log history for a device. Returns up to 50 most recent entries.",
+			"get_sensor_history",
+			"Get history for any device",
+			"Retrieve history for any device: daily aggregated calendar data for sensors "
+			"(temperature, humidity, rain, wind, UV, percentage, fan, P1, energy, gas, water, counters), "
+			"or on/off/dim event log for switches and scenes. "
+			"For sensors: specify 'days' or 'start_date'+'end_date'. "
+			"For switches/scenes: specify 'days'/'start_date'/'end_date' for date range, "
+			"or 'count' for last N events.",
 			{
-				{ "switchname", "string", "Name of the device", true, {} },
-				{ "log_type", "string", "Log type: switch (default), text, or graph", false, {} },
+				{ "name", "string", "Name of the device or scene", true, {} },
+				{ "days", "integer", "Number of days of history to retrieve (1-366, default 7 for sensors). Ignored if start_date/end_date provided.", false, {} },
+				{ "start_date", "string", "Start date in YYYY-MM-DD format (use with end_date for custom range)", false, {} },
+				{ "end_date", "string", "End date in YYYY-MM-DD format (use with start_date for custom range)", false, {} },
+				{ "count", "integer", "For switches/scenes: return last N log entries (1-500, default 50). When specified, date params are ignored.", false, {} },
 			}
 		},
 		{
@@ -711,9 +903,10 @@ namespace mcp		// Model Context Protocol
 			"add_log_message", "update_device_value"
 		};
 		static const std::unordered_set<std::string> kAdminTools = {
-			"rename_device", "delete_device", "create_virtual_sensor",
+			"create_sensor", "create_virtual_sensor", "create_device",
+			"rename_device", "delete_device",
 			"add_user_variable", "update_user_variable", "delete_user_variable",
-			"create_event", "update_event"
+			"create_event", "update_event", "delete_event"
 		};
 
 		if (kAdminTools.count(sMethodName) && session.rights < http::server::URIGHTS_ADMIN)
@@ -758,9 +951,11 @@ namespace mcp		// Model Context Protocol
 			{ "get_device",             getDevice },
 			{ "rename_device",          renameDevice },
 			{ "delete_device",          deleteDevice },
+			{ "create_sensor",          createVirtualSensor },
 			{ "create_virtual_sensor",  createVirtualSensor },
+			{ "create_device",          createVirtualSensor },
 			{ "update_device_value",    updateDeviceValue },
-			{ "get_device_history",     getDeviceHistory },
+			{ "get_sensor_history",     getSensorHistory },
 			{ "get_scenes",             getScenes },
 			{ "switch_scene",           switchScene },
 			{ "get_rooms",              getRooms },
@@ -784,6 +979,7 @@ namespace mcp		// Model Context Protocol
 			{ "get_event",              getEvent },
 			{ "create_event",           createEvent },
 			{ "update_event",           updateEvent },
+			{ "delete_event",           deleteEvent },
 		};
 
 #ifdef _DEBUG
@@ -895,6 +1091,15 @@ namespace mcp		// Model Context Protocol
 			resource["mimeType"] = "text/plain";
 			jsonRPCRep["result"]["resources"].append(resource);
 		}
+		{
+			Json::Value resource;
+			resource["uri"] = "domoticz://sensor-types";
+			resource["name"] = "Sensor Types";
+			resource["title"] = "Virtual Sensor Types";
+			resource["description"] = "All sensor types available for create_sensor / create_virtual_sensor, with their names and numeric mapped values";
+			resource["mimeType"] = "text/plain";
+			jsonRPCRep["result"]["resources"].append(resource);
+		}
 
 		// Add any available floorplans as resources too
 		auto result = m_sql.safe_query("SELECT ID, Name FROM Floorplans");
@@ -960,6 +1165,58 @@ namespace mcp		// Model Context Protocol
 
 		_log.Debug(DEBUG_WEBSERVER, "MCP: ResourcesTemplatesList: %d template(s) offered.", jsonRPCRep["result"]["resourceTemplates"].size());
 	}
+
+	// Sensor type map — mirrors Dummy.cpp mappedsensorname exactly (44 entries).
+	// mappedvalue: UI/API identifier (not sequential; assigned historically as types were added).
+	// type/subtype: actual Domoticz device type constants used by CreateDevice().
+	struct _tmapped { int mappedvalue; const char* name; int type; int subtype; };
+	static const _tmapped kSensorMap[] = {
+		{ 249,  "Air Quality",                                    249, 1  },  // pTypeAirQuality / sTypeVoc
+		{ 7,    "Alert",                                          243, 22 },  // pTypeGeneral / sTypeAlert
+		{ 9,    "Ampere (3 Phase)",                               89,  1  },  // pTypeCURRENT / sTypeELEC1
+		{ 19,   "Ampere (1 Phase)",                               243, 23 },  // pTypeGeneral / sTypeCurrent
+		{ 11,   "Barometer",                                      243, 26 },  // pTypeGeneral / sTypeBaro
+		{ 113,  "Counter",                                        113, 0  },  // pTypeRFXMeter / sTypeRFXMeterCount
+		{ 14,   "Counter Incremental",                            243, 28 },  // pTypeGeneral / sTypeCounterIncremental
+		{ 1004, "Custom Sensor",                                  243, 31 },  // pTypeGeneral / sTypeCustom
+		{ 13,   "Distance",                                       243, 27 },  // pTypeGeneral / sTypeDistance
+		{ 18,   "Electric (Instant+Counter)",                     243, 29 },  // pTypeGeneral / sTypeKwh
+		{ 3,    "Gas",                                            251, 2  },  // pTypeP1Gas / sTypeP1Gas
+		{ 81,   "Humidity",                                       81,  1  },  // pTypeHUM / sTypeHUM1
+		{ 16,   "Leaf Wetness",                                   243, 4  },  // pTypeGeneral / sTypeLeafWetness
+		{ 246,  "Lux",                                            246, 1  },  // pTypeLux / sTypeLux
+		{ 250,  "P1 Smart Meter (Electric)",                      250, 1  },  // pTypeP1Power / sTypeP1Power
+		{ 1005, "Managed Counter",                                243, 33 },  // pTypeGeneral / sTypeManagedCounter
+		{ 2,    "Percentage",                                     243, 6  },  // pTypeGeneral / sTypePercentage
+		{ 1,    "Pressure (Bar)",                                 243, 9  },  // pTypeGeneral / sTypePressure
+		{ 85,   "Rain",                                           85,  3  },  // pTypeRAIN / sTypeRAIN3
+		{ 241,  "RGB Switch",                                     241, 2  },  // pTypeColorSwitch / sTypeColor_RGB
+		{ 1003, "RGBW Switch",                                    241, 1  },  // pTypeColorSwitch / sTypeColor_RGB_W
+		{ 93,   "Scale",                                          93,  1  },  // pTypeWEIGHT / sTypeWEIGHT1
+		{ 1002, "Selector Switch",                                244, 62 },  // pTypeGeneralSwitch / sSwitchTypeSelector
+		{ 15,   "Soil Moisture",                                  243, 3  },  // pTypeGeneral / sTypeSoilMoisture
+		{ 20,   "Solar Radiation",                                243, 2  },  // pTypeGeneral / sTypeSolarRadiation
+		{ 10,   "Sound Level",                                    243, 24 },  // pTypeGeneral / sTypeSoundLevel
+		{ 6,    "Switch",                                         244, 73 },  // pTypeGeneralSwitch / sSwitchGeneralSwitch
+		{ 80,   "Temperature",                                    80,  5  },  // pTypeTEMP / sTypeTEMP5
+		{ 82,   "Temp+Hum",                                       82,  1  },  // pTypeTEMP_HUM / sTypeTH1
+		{ 84,   "Temp+Hum+Baro",                                  84,  1  },  // pTypeTEMP_HUM_BARO / sTypeTHB1
+		{ 247,  "Temp+Baro",                                      247, 1  },  // pTypeTEMP_BARO / sTypeBMP085
+		{ 5,    "Text",                                           243, 19 },  // pTypeGeneral / sTypeTextStatus
+		{ 8,    "Thermostat Setpoint",                            242, 1  },  // pTypeSetpoint / sTypeSetpoint
+		{ 248,  "Usage (Electric)",                               248, 1  },  // pTypeUsage / sTypeElectric
+		{ 87,   "UV",                                             87,  1  },  // pTypeUV / sTypeUV1
+		{ 12,   "Visibility",                                     243, 1  },  // pTypeGeneral / sTypeVisibility
+		{ 4,    "Voltage",                                        243, 8  },  // pTypeGeneral / sTypeVoltage
+		{ 1000, "Waterflow",                                      243, 30 },  // pTypeGeneral / sTypeWaterflow
+		{ 86,   "Wind",                                           86,  1  },  // pTypeWIND / sTypeWIND1
+		{ 1001, "Wind+Temp+Chill",                                86,  4  },  // pTypeWIND / sTypeWIND4
+		{ 1006, "Thermostat (Temp/Setpoint)",                     73,  0  },  // pTypeThermostat6 / sTypeThermostat6Temp
+		{ 1007, "Thermostat (Temp/Hum/Setpoint)",                 73,  1  },  // pTypeThermostat6 / sTypeThermostat6TempHum
+		{ 1008, "Thermostat (Temp/Baro/Setpoint)",                73,  2  },  // pTypeThermostat6 / sTypeThermostat6TempBaro
+		{ 1009, "Thermostat (Temp/Hum/Baro/Setpoint)",            73,  3  },  // pTypeThermostat6 / sTypeThermostat6TempHumBaro
+		{ 0,    nullptr,                                          0,   0  }   // sentinel
+	};
 
 	void McpResourcesRead(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
@@ -1330,6 +1587,23 @@ namespace mcp		// Model Context Protocol
 				resource["mimeType"] = "text/plain";
 				resource["text"] = sText;
 			}
+			else if (sResourceType == "sensor-types")
+			{
+				std::string sText = "Virtual Sensor Types for create_sensor / create_virtual_sensor\n";
+				sText += "==============================================================\n";
+				sText += "Use the 'Name' column as the sensortype value. Numeric mapped values are also accepted.\n\n";
+				sText += "Name                        Mapped\n";
+				sText += "--------------------------- ------\n";
+				for (int i = 0; kSensorMap[i].name != nullptr; i++)
+				{
+					char line[64];
+					std::snprintf(line, sizeof(line), "%-27s %d\n", kSensorMap[i].name, kSensorMap[i].mappedvalue);
+					sText += line;
+				}
+				resource["name"] = "Virtual Sensor Types";
+				resource["mimeType"] = "text/plain";
+				resource["text"] = sText;
+			}
 			else
 			{
 				_log.Debug(DEBUG_WEBSERVER, "MCP: resources/read: Unknown domoticz:// resource type: %s", sResourceType.c_str());
@@ -1385,58 +1659,60 @@ namespace mcp		// Model Context Protocol
 	{
 		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling prompts/list request.");
 
-		// Prepare the result for the prompts/list method
+		struct PromptArg { const char* name; const char* description; bool required; };
+		struct PromptDef { const char* name; const char* title; const char* description; std::vector<PromptArg> args; };
+
+		static const std::vector<PromptDef> kPrompts = {
+			{ "housesummary",       "Get a status overview",
+			  "Summarize the current status of all sensors and devices in the house (optionally limited to a specific room)",
+			  { { "room", "The room to limit the summary to (optional)", false } } },
+			{ "systemanalysis",     "Get a system analysis",
+			  "Analyze the current status of the system and provide insights", {} },
+			{ "troubleshoot_device","Troubleshoot a device",
+			  "Diagnose issues with a specific device by analyzing its current state, recent history, and system logs",
+			  { { "device", "Name or IDX of the device to troubleshoot", true } } },
+			{ "analyze_automations","Analyze automation scripts",
+			  "Review all event scripts for logic issues, inefficiencies, or improvement opportunities", {} },
+			{ "analyze_event",      "Analyze an event script",
+			  "Review a specific event script for logic issues, inefficiencies, or improvement opportunities",
+			  { { "event", "Name of the event script to analyze", true } } },
+			{ "energy_report",      "Energy consumption report",
+			  "Summarize power and energy consumption across all electric sensors, identify high consumers, and compare to recent history", {} },
+			{ "security_check",     "Security status check",
+			  "Review security panel status, door/window sensors, cameras, and recent alerts", {} },
+			{ "battery_status",     "Battery status report",
+			  "List all battery-powered devices, flag low-battery ones, and suggest replacements", {} },
+			{ "climate_overview",   "Climate overview",
+			  "Summarize temperature, humidity, and thermostat setpoints per room and suggest comfort improvements", {} },
+			{ "scene_optimizer",    "Scene optimizer",
+			  "Review all scenes and groups, identify redundant or conflicting ones, and suggest consolidation", {} },
+			{ "hardware_health",    "Hardware health check",
+			  "Check all hardware instances for connectivity and errors, and flag anything offline or problematic", {} },
+			{ "create_automation",  "Create an automation script",
+			  "Guide through creating a new dzVents event script for a described automation rule",
+			  { { "rule", "Description of the automation rule to implement", true } } },
+			{ "daily_report",       "Daily digest report",
+			  "Generate a daily digest covering overnight anomalies, battery warnings, offline devices, and energy highlights", {} },
+		};
+
 		jsonRPCRep["result"]["prompts"] = Json::Value(Json::arrayValue);
-		Json::Value prompt;
-		// House Summary prompt
-		prompt["name"] = "housesummary";
-		prompt["title"] = "Get a status overview";
-		prompt["description"] = "Summarize the current status of all sensors and devices in the house (optionally limited to a specific room)";
-		prompt["arguments"] = Json::Value(Json::arrayValue);
-		Json::Value arg;
-		arg["name"] = "room";
-		arg["description"] = "The room to limit the summary to (optional, if not provided the whole house is summarized)";
-		arg["required"] = false;
-		prompt["arguments"].append(arg);
-		jsonRPCRep["result"]["prompts"].append(prompt);
-		// System analysis prompt
-		prompt.clear();
-		prompt["name"] = "systemanalysis";
-		prompt["title"] = "Get a system analysis";
-		prompt["description"] = "Analyze the current status of the system and provide insights";
-		prompt["arguments"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["prompts"].append(prompt);
-		// Troubleshoot device prompt
-		prompt.clear();
-		prompt["name"] = "troubleshoot_device";
-		prompt["title"] = "Troubleshoot a device";
-		prompt["description"] = "Diagnose issues with a specific device by analyzing its current state, recent history, and system logs";
-		prompt["arguments"] = Json::Value(Json::arrayValue);
-		Json::Value argDev;
-		argDev["name"] = "device";
-		argDev["description"] = "Name or IDX of the device to troubleshoot";
-		argDev["required"] = true;
-		prompt["arguments"].append(argDev);
-		jsonRPCRep["result"]["prompts"].append(prompt);
-		// Analyze automations prompt
-		prompt.clear();
-		prompt["name"] = "analyze_automations";
-		prompt["title"] = "Analyze automation scripts";
-		prompt["description"] = "Review all event scripts for logic issues, inefficiencies, or improvement opportunities";
-		prompt["arguments"] = Json::Value(Json::arrayValue);
-		jsonRPCRep["result"]["prompts"].append(prompt);
-		// Analyze single event prompt
-		prompt.clear();
-		prompt["name"] = "analyze_event";
-		prompt["title"] = "Analyze an event script";
-		prompt["description"] = "Review a specific event script for logic issues, inefficiencies, or improvement opportunities";
-		prompt["arguments"] = Json::Value(Json::arrayValue);
-		Json::Value argEvent;
-		argEvent["name"] = "event";
-		argEvent["description"] = "Name of the event script to analyze";
-		argEvent["required"] = true;
-		prompt["arguments"].append(argEvent);
-		jsonRPCRep["result"]["prompts"].append(prompt);
+		for (const auto &def : kPrompts)
+		{
+			Json::Value prompt;
+			prompt["name"]        = def.name;
+			prompt["title"]       = def.title;
+			prompt["description"] = def.description;
+			prompt["arguments"]   = Json::Value(Json::arrayValue);
+			for (const auto &a : def.args)
+			{
+				Json::Value arg;
+				arg["name"]        = a.name;
+				arg["description"] = a.description;
+				arg["required"]    = a.required;
+				prompt["arguments"].append(arg);
+			}
+			jsonRPCRep["result"]["prompts"].append(prompt);
+		}
 	}
 
 	void McpPromptsGet(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
@@ -1450,94 +1726,78 @@ namespace mcp		// Model Context Protocol
 		std::string sPromptName = jsonRequest["params"]["name"].asString();
 		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling prompts/get request (%s).", sPromptName.c_str());
 
+		auto getArg = [&](const char* argName) -> std::string {
+			if (jsonRequest["params"].isMember("arguments") && jsonRequest["params"]["arguments"].isMember(argName))
+				return jsonRequest["params"]["arguments"][argName].asString();
+			return {};
+		};
+
+		auto escapeQuotes = [](const std::string &s) -> std::string {
+			std::string result;
+			result.reserve(s.size() * 2);
+			for (unsigned char c : s) {
+				if      (c == '"')  result += "\\\"";
+				else if (c == '\\') result += "\\\\";
+				else if (c == '\n') result += "\\n";
+				else if (c == '\r') result += "\\r";
+				else if (c == '\t') result += "\\t";
+				else if (c < 0x20) { char buf[7]; snprintf(buf, sizeof(buf), "\\u%04x", c); result += buf; }
+				else result += static_cast<char>(c);
+			}
+			return result;
+		};
+
+		auto makeUserMessage = [&](Json::Value &rep, const std::string &description, const std::string &text) {
+			rep["result"]["description"] = description;
+			rep["result"]["messages"] = Json::Value(Json::arrayValue);
+			Json::Value msg;
+			msg["role"] = "user";
+			msg["content"]["type"] = "text";
+			msg["content"]["text"] = text;
+			rep["result"]["messages"].append(msg);
+		};
+
 		if (sPromptName == "housesummary")
 		{
-			std::string sRoom = ((jsonRequest["params"].isMember("arguments") && jsonRequest["params"]["arguments"].isMember("room")) ? jsonRequest["params"]["arguments"]["room"].asString() : "");
-			// Prepare the result for the prompts/get method
-			jsonRPCRep["result"]["description"] = "Summarize the current status of all sensors and devices in the house (optionally limited to a specific room)";
-			jsonRPCRep["result"]["messages"] = Json::Value(Json::arrayValue);
-			Json::Value message;
-			message["role"] = "user";
-			message["content"] = Json::Value(Json::objectValue);
-			message["content"]["type"] = "text";
-			std::string sText = "As the friendly butler of the house, please summarize the current status of all sensors and devices preferably grouped by room.";
-			Json::Value jsonDevices;
-			m_webservers.GetJSonDevices(jsonDevices, "", "", "", "", "", "", false, false, false, 0, "", "");
-			sText += " Include the following devices in your summary:";
-			for(const auto &device : jsonDevices["result"])
-			{
-				if(device.isObject() && device.isMember("Name") && device.isMember("Data") && device.isMember("Type") && device.isMember("SubType"))
-				{
-					std::string sDevRoom = (device.isMember("Room") ? device["Room"].asString() : "");
-					if(sRoom.empty() || (!sRoom.empty() && sRoom == sDevRoom))
-					{
-						sText += device["Name"].asString() + ", ";
-					}
-				}
-			}
-			if (!sText.empty() && sText.size() >= 2 && sText.substr(sText.size() - 2) == ", ")
-				sText.resize(sText.size() - 2);
-			sText += ".";
-			// Append rooms
-			auto roomResult = m_sql.safe_query("SELECT ID, Name FROM Plans WHERE Name!='' ORDER BY Name");
-			if (!roomResult.empty())
-			{
-				sText += " The house has the following rooms: ";
-				for (const auto &row : roomResult)
-					sText += row[1] + " (idx=" + row[0] + "), ";
-			}
-			// Append scenes
-			auto sceneResult = m_sql.safe_query("SELECT Name, Status FROM Scenes ORDER BY Name");
-			if (!sceneResult.empty())
-			{
-				sText += " Available scenes/groups: ";
-				for (const auto &row : sceneResult)
-					sText += row[0] + " [" + (row[1] == "1" ? "On" : "Off") + "], ";
-			}
-			message["content"]["text"] = sText;
-			jsonRPCRep["result"]["messages"].append(message);
+			std::string sRoom = getArg("room");
+			std::string sText = "As the friendly butler of the house, please summarize the current status of all sensors and devices, preferably grouped by room.";
+			sText += " Use get_all_devices to retrieve the full device list.";
+			if (!sRoom.empty())
+				sText += " Limit the summary to the room named \"" + escapeQuotes(sRoom) + "\".";
+			sText += " Also use get_scenes to list available scenes/groups and their current state.";
+			sText += " Present a concise, readable overview suitable for a quick status check.";
+			makeUserMessage(jsonRPCRep,
+				sRoom.empty() ? "Summarize the current status of the whole house"
+				              : "Summarize the current status of room: " + sRoom,
+				sText);
 		}
 		else if (sPromptName == "systemanalysis")
 		{
-			// Prepare the result for the prompts/get method
-			jsonRPCRep["result"]["description"] = "Analyze the current status of the system and provide insights";
-			jsonRPCRep["result"]["messages"] = Json::Value(Json::arrayValue);
-			Json::Value message;
-			message["role"] = "user";
-			message["content"] = Json::Value(Json::objectValue);
-			message["content"]["type"] = "text";
-			std::string sText = "As the friendly butler of the house, please make an analysis of the current status of the system by analyzing all available log information, and providing suggestions if needed.";
+			std::string sText = "As the friendly butler of the house, please make an analysis of the current status of the system by analyzing all available log information, and providing suggestions if needed. ";
 			sText += "State the time window of the logging you have analyzed. If the latest log entries are older than 3 minutes, make sure to first retrieve the latest log entries before making your analysis.";
-			message["content"]["text"] = sText;
-			jsonRPCRep["result"]["messages"].append(message);
+			makeUserMessage(jsonRPCRep, "Analyze the current status of the system and provide insights", sText);
 		}
 		else if (sPromptName == "troubleshoot_device")
 		{
-			std::string sDevice = ((jsonRequest["params"].isMember("arguments") && jsonRequest["params"]["arguments"].isMember("device")) ? jsonRequest["params"]["arguments"]["device"].asString() : "");
-			jsonRPCRep["result"]["description"] = "Troubleshoot device: " + sDevice;
-			jsonRPCRep["result"]["messages"] = Json::Value(Json::arrayValue);
-			Json::Value message;
-			message["role"] = "user";
-			message["content"] = Json::Value(Json::objectValue);
-			message["content"]["type"] = "text";
-			std::string sText = "Please troubleshoot the Domoticz device named \"" + sDevice + "\". ";
+			std::string sDevice = getArg("device");
+			if (sDevice.empty())
+			{
+				jsonRPCRep["error"]["code"] = mcp::JSONRPC_INVALID_PARAMETER;
+				jsonRPCRep["error"]["message"] = "Missing required argument 'device'";
+				return;
+			}
+			std::string sText = "Please troubleshoot the Domoticz device named \"" + escapeQuotes(sDevice) + "\". ";
 			sText += "Use the available tools to: ";
-			sText += "1) Get the current state of the device using get_switch_state or get_sensor_value. ";
-			sText += "2) Check its recent history using get_device_history. ";
-			sText += "3) Check the system log using get_logging for any errors related to this device. ";
-			sText += "4) Check if its hardware is online using get_hardware. ";
+			sText += "1) Find the device using search_devices or get_device if you know its IDX. ";
+			sText += "2) Get the current state using get_switch_state or get_sensor_value. ";
+			sText += "3) Check its recent history using get_sensor_history. ";
+			sText += "4) Check the system log using get_logging for any errors related to this device. ";
+			sText += "5) Check if its hardware is online using get_hardware. ";
 			sText += "Summarize what you find and suggest any remediation steps.";
-			message["content"]["text"] = sText;
-			jsonRPCRep["result"]["messages"].append(message);
+			makeUserMessage(jsonRPCRep, "Troubleshoot device: " + sDevice, sText);
 		}
 		else if (sPromptName == "analyze_automations")
 		{
-			jsonRPCRep["result"]["description"] = "Review all event scripts for logic issues, inefficiencies, or improvement opportunities";
-			jsonRPCRep["result"]["messages"] = Json::Value(Json::arrayValue);
-			Json::Value message;
-			message["role"] = "user";
-			message["content"] = Json::Value(Json::objectValue);
-			message["content"]["type"] = "text";
 			std::string sText = "Please analyze all Domoticz automation event scripts. ";
 			sText += "Use the available tools to: ";
 			sText += "1) List all event scripts using get_events. ";
@@ -1545,32 +1805,122 @@ namespace mcp		// Model Context Protocol
 			sText += "3) Review each script for logic errors, inefficiencies, or improvement opportunities. ";
 			sText += "4) Check the system log for any automation-related errors using get_logging. ";
 			sText += "Provide a structured report with findings and suggestions for each script.";
-			message["content"]["text"] = sText;
-			jsonRPCRep["result"]["messages"].append(message);
+			makeUserMessage(jsonRPCRep, "Review all event scripts for logic issues, inefficiencies, or improvement opportunities", sText);
 		}
 		else if (sPromptName == "analyze_event")
 		{
-			std::string sEvent = ((jsonRequest["params"].isMember("arguments") && jsonRequest["params"]["arguments"].isMember("event")) ? jsonRequest["params"]["arguments"]["event"].asString() : "");
-			jsonRPCRep["result"]["description"] = "Analyze event script: " + sEvent;
-			jsonRPCRep["result"]["messages"] = Json::Value(Json::arrayValue);
-			Json::Value message;
-			message["role"] = "user";
-			message["content"] = Json::Value(Json::objectValue);
-			message["content"]["type"] = "text";
-			std::string sText = "Please analyze the Domoticz automation event script named \"" + sEvent + "\". ";
+			std::string sEvent = getArg("event");
+			if (sEvent.empty())
+			{
+				jsonRPCRep["error"]["code"] = mcp::JSONRPC_INVALID_PARAMETER;
+				jsonRPCRep["error"]["message"] = "Missing required argument 'event'";
+				return;
+			}
+			std::string sText = "Please analyze the Domoticz automation event script named \"" + escapeQuotes(sEvent) + "\". ";
 			sText += "Use the available tools to: ";
 			sText += "1) Retrieve the script source code using get_event. ";
 			sText += "2) Check the system log for any errors related to this script using get_logging. ";
 			sText += "3) Review the script for logic errors, inefficiencies, or improvement opportunities. ";
 			sText += "Provide a structured report with findings and concrete suggestions.";
-			message["content"]["text"] = sText;
-			jsonRPCRep["result"]["messages"].append(message);
+			makeUserMessage(jsonRPCRep, "Analyze event script: " + sEvent, sText);
+		}
+		else if (sPromptName == "energy_report")
+		{
+			std::string sText = "Please generate an energy consumption report for this Domoticz system. ";
+			sText += "Use the available tools to: ";
+			sText += "1) List all devices using get_all_devices and identify electric, power, and energy sensors (kWh, Watt, P1 Smart Meter, Usage Electric types). ";
+			sText += "2) Read current values using get_sensor_value for each energy device. ";
+			sText += "3) Check recent history using get_sensor_history for the main consumers. ";
+			sText += "4) Identify the highest consumers and any unusual patterns. ";
+			sText += "Provide a structured report with current readings, estimated daily/monthly costs if possible, and recommendations for reducing consumption.";
+			makeUserMessage(jsonRPCRep, "Summarize energy consumption and identify high consumers", sText);
+		}
+		else if (sPromptName == "security_check")
+		{
+			std::string sText = "Please perform a security check of this Domoticz system. ";
+			sText += "Use the available tools to: ";
+			sText += "1) Check the security panel status using get_security_status. ";
+			sText += "2) List all devices using get_all_devices and identify door/window sensors, motion sensors, and smoke detectors. ";
+			sText += "3) Check the current state of all security-related sensors using get_switch_state or get_sensor_value. ";
+			sText += "4) List all cameras using get_cameras. ";
+			sText += "5) Review recent alerts in the system log using get_logging. ";
+			sText += "Provide a security status overview, flag any open doors/windows or triggered sensors, and suggest improvements.";
+			makeUserMessage(jsonRPCRep, "Review security panel, sensors, cameras, and recent alerts", sText);
+		}
+		else if (sPromptName == "battery_status")
+		{
+			std::string sText = "Please check the battery status of all battery-powered devices in this Domoticz system. ";
+			sText += "Use the available tools to: ";
+			sText += "1) List all devices using get_all_devices and look for devices with battery level information (BatteryLevel field). ";
+			sText += "2) Flag any devices with low battery (BatteryLevel below 20%). ";
+			sText += "3) Also identify devices that have not reported recently based on their LastUpdate field. ";
+			sText += "Provide a battery health report sorted by urgency, indicating which batteries need immediate replacement and which should be monitored.";
+			makeUserMessage(jsonRPCRep, "List battery-powered devices and flag low-battery ones", sText);
+		}
+		else if (sPromptName == "climate_overview")
+		{
+			std::string sText = "Please provide a climate overview of this Domoticz system. ";
+			sText += "Use the available tools to: ";
+			sText += "1) List all devices using get_all_devices and identify temperature, humidity, and thermostat/setpoint sensors, grouped by room. ";
+			sText += "2) Read current values using get_sensor_value for each climate sensor. ";
+			sText += "3) Compare thermostat setpoints to actual measured temperatures. ";
+			sText += "Provide a room-by-room climate summary. Flag rooms outside comfortable ranges (temperature below 18°C or above 26°C, humidity outside 40-60%). Suggest any adjustments.";
+			makeUserMessage(jsonRPCRep, "Summarize temperature, humidity, and thermostat setpoints per room", sText);
+		}
+		else if (sPromptName == "scene_optimizer")
+		{
+			std::string sText = "Please analyze and optimize the scenes and groups in this Domoticz system. ";
+			sText += "Use the available tools to: ";
+			sText += "1) List all scenes using get_scenes. ";
+			sText += "2) Get the devices in each scene using get_scene_devices. ";
+			sText += "3) Review scene configurations for redundancies, conflicts, or missing useful combinations. ";
+			sText += "Provide a structured analysis with suggestions for consolidation, renaming for clarity, or new scenes that would be useful based on the existing device setup.";
+			makeUserMessage(jsonRPCRep, "Review scenes and groups, identify redundancies, and suggest improvements", sText);
+		}
+		else if (sPromptName == "hardware_health")
+		{
+			std::string sText = "Please check the health of all hardware instances in this Domoticz system. ";
+			sText += "Use the available tools to: ";
+			sText += "1) List all hardware using get_hardware and identify any that are disabled or show errors. ";
+			sText += "2) Cross-reference with get_all_devices to find devices that haven't reported recently (stale LastUpdate). ";
+			sText += "3) Check the system log using get_logging for any hardware-related errors or warnings. ";
+			sText += "Provide a hardware health report, flag any offline or problematic hardware instances, and suggest remediation steps.";
+			makeUserMessage(jsonRPCRep, "Check hardware connectivity, errors, and offline instances", sText);
+		}
+		else if (sPromptName == "create_automation")
+		{
+			std::string sRule = getArg("rule");
+			if (sRule.empty())
+			{
+				jsonRPCRep["error"]["code"] = mcp::JSONRPC_INVALID_PARAMETER;
+				jsonRPCRep["error"]["message"] = "Missing required argument 'rule'";
+				return;
+			}
+			std::string sText = "Please create a new Domoticz automation event script for the following rule: \"" + escapeQuotes(sRule) + "\". ";
+			sText += "Use the available tools to: ";
+			sText += "1) List existing event scripts using get_events to avoid naming conflicts and understand existing patterns. ";
+			sText += "2) Find relevant devices using search_devices or get_all_devices. ";
+			sText += "3) Write the automation script in dzVents (preferred) following Domoticz best practices: use device names, handle edge cases, include meaningful log messages. ";
+			sText += "4) Create the script using create_event with interpreter='dzVents'. ";
+			sText += "Confirm the script was created successfully and explain what it does.";
+			makeUserMessage(jsonRPCRep, "Create automation script for: " + sRule, sText);
+		}
+		else if (sPromptName == "daily_report")
+		{
+			std::string sText = "Please generate a daily digest report for this Domoticz system. ";
+			sText += "Use the available tools to: ";
+			sText += "1) Check the system log using get_logging for any warnings, errors, or anomalies. ";
+			sText += "2) List all devices using get_all_devices and identify: devices with low battery (BatteryLevel < 20%), devices that haven't reported in over 24 hours, and any unusual states. ";
+			sText += "3) Check energy consumption using get_sensor_value for power and energy devices. ";
+			sText += "4) Review security status using get_security_status. ";
+			sText += "Provide a concise daily digest with clearly separated sections: Alerts requiring attention, Battery warnings, Offline/stale devices, Energy highlights, and a General system health summary.";
+			makeUserMessage(jsonRPCRep, "Daily digest: anomalies, battery warnings, offline devices, energy highlights", sText);
 		}
 		else
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: prompts/get: Unsupported prompt name: %s", sPromptName.c_str());
-			jsonRPCRep["error"]["code"] = mcp::JSONRPC_METHOD_NOT_FOUND;
-			jsonRPCRep["error"]["message"] = "Method not found";
+			jsonRPCRep["error"]["code"] = mcp::JSONRPC_INVALID_PARAMETER;
+			jsonRPCRep["error"]["message"] = "Unknown prompt name: " + sPromptName;
 		}
 	}
 
@@ -1615,7 +1965,7 @@ namespace mcp		// Model Context Protocol
 
 		// Build lowercase partial for case-insensitive prefix matching
 		std::string sPartialLower = sPartial;
-		std::transform(sPartialLower.begin(), sPartialLower.end(), sPartialLower.begin(), ::tolower);
+		stdlower(sPartialLower);
 
 		// Query rows: vector of strings (display value)
 		std::vector<std::string> candidates;
@@ -1698,8 +2048,8 @@ namespace mcp		// Model Context Protocol
 		for (const auto &candidate : candidates)
 		{
 			std::string candidateLower = candidate;
-			std::transform(candidateLower.begin(), candidateLower.end(), candidateLower.begin(), ::tolower);
-			if (sPartialLower.empty() || candidateLower.substr(0, sPartialLower.size()) == sPartialLower)
+			stdlower(candidateLower);
+			if (sPartialLower.empty() || (candidateLower.size() >= sPartialLower.size() && candidateLower.substr(0, sPartialLower.size()) == sPartialLower))
 				matches.push_back(candidate);
 		}
 
@@ -2036,6 +2386,18 @@ namespace mcp		// Model Context Protocol
 					sResult += "]";
 				if (device.isMember("Data"))
 					sResult += " = " + device["Data"].asString();
+				if (device.isMember("BatteryLevel") && device["BatteryLevel"].isInt())
+				{
+					int iBatt = device["BatteryLevel"].asInt();
+					if (iBatt != 255)
+						sResult += " battery=" + std::to_string(iBatt) + "%";
+				}
+				if (device.isMember("SignalLevel") && device["SignalLevel"].isInt())
+				{
+					int iSignalLevel = device["SignalLevel"].asInt();
+					if (iSignalLevel != 12)
+						sResult += " rssi=" + std::to_string(iSignalLevel);
+				}
 				sResult += "\n";
 			}
 		}
@@ -2134,6 +2496,18 @@ namespace mcp		// Model Context Protocol
 					sResult += " = " + device["Data"].asString();
 				if (device.isMember("idx"))
 					sResult += " (idx=" + device["idx"].asString() + ")";
+				if (device.isMember("BatteryLevel") && device["BatteryLevel"].isInt())
+				{
+					int iBatt = device["BatteryLevel"].asInt();
+					if (iBatt != 255)
+						sResult += " battery=" + std::to_string(iBatt) + "%";
+				}
+				if (device.isMember("SignalLevel") && device["SignalLevel"].isInt())
+				{
+					int iSignalLevel = device["SignalLevel"].asInt();
+					if (iSignalLevel != 12)
+						sResult += " rssi=" + std::to_string(iSignalLevel);
+				}
 				sResult += "\n";
 			}
 		}
@@ -2186,6 +2560,18 @@ namespace mcp		// Model Context Protocol
 					sResult += "  LastUpdate:  " + device["LastUpdate"].asString() + "\n";
 				if (device.isMember("Used"))
 					sResult += "  Used:        " + device["Used"].asString() + "\n";
+				if (device.isMember("BatteryLevel") && device["BatteryLevel"].isInt())
+				{
+					int iBatt = device["BatteryLevel"].asInt();
+					if (iBatt != 255)
+						sResult += "  BatteryLevel: " + std::to_string(iBatt) + "%\n";
+				}
+				if (device.isMember("SignalLevel") && device["SignalLevel"].isInt())
+				{
+					int iSignalLevel = device["SignalLevel"].asInt();
+					if (iSignalLevel != 12)
+						sResult += "  SignalLevel: " + std::to_string(iSignalLevel) + "\n";
+				}
 			}
 			else
 			{
@@ -2196,7 +2582,7 @@ namespace mcp		// Model Context Protocol
 		{
 			int nIdx = args["idx"].asInt();
 			auto result = m_sql.safe_query(
-				"SELECT DS.Name, DS.HardwareID, H.Name, DS.DeviceID, DS.Type, DS.SubType, DS.nValue, DS.sValue, DS.LastUpdate, DS.Used "
+				"SELECT DS.Name, DS.HardwareID, H.Name, DS.DeviceID, DS.Type, DS.SubType, DS.nValue, DS.sValue, DS.LastUpdate, DS.Used, DS.BatteryLevel, DS.SignalLevel "
 				"FROM DeviceStatus DS LEFT JOIN Hardware H ON DS.HardwareID=H.ID WHERE DS.ID=%d", nIdx);
 			if (!result.empty())
 			{
@@ -2212,6 +2598,12 @@ namespace mcp		// Model Context Protocol
 				sResult += "  sValue:      " + row[7] + "\n";
 				sResult += "  LastUpdate:  " + row[8] + "\n";
 				sResult += "  Used:        " + row[9] + "\n";
+				int iBatt = atoi(row[10].c_str());
+				if (iBatt != 255)
+					sResult += "  BatteryLevel: " + std::to_string(iBatt) + "%\n";
+				int iSignalLevel = atoi(row[11].c_str());
+				if (iSignalLevel != 12)
+					sResult += "  SignalLevel: " + std::to_string(iSignalLevel) + "\n";
 			}
 			else
 			{
@@ -2226,13 +2618,13 @@ namespace mcp		// Model Context Protocol
 	bool renameDevice(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
 		if (!jsonRequest["params"].isMember("arguments") ||
-		    !jsonRequest["params"]["arguments"].isMember("switchname") ||
+		    !jsonRequest["params"]["arguments"].isMember("name") ||
 		    !jsonRequest["params"]["arguments"].isMember("new_name"))
 		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: renameDevice: Missing required parameters 'switchname' or 'new_name'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: renameDevice: Missing required parameters 'name' or 'new_name'");
 			return false;
 		}
-		std::string sOldName = jsonRequest["params"]["arguments"]["switchname"].asString();
+		std::string sOldName = jsonRequest["params"]["arguments"]["name"].asString();
 		std::string sNewName = jsonRequest["params"]["arguments"]["new_name"].asString();
 
 		Json::Value device;
@@ -2254,12 +2646,12 @@ namespace mcp		// Model Context Protocol
 
 	bool deleteDevice(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("switchname"))
+		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("name"))
 		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: deleteDevice: Missing required parameter 'switchname'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: deleteDevice: Missing required parameter 'name'");
 			return false;
 		}
-		std::string sName = jsonRequest["params"]["arguments"]["switchname"].asString();
+		std::string sName = jsonRequest["params"]["arguments"]["name"].asString();
 
 		Json::Value device;
 		bool bFound = getDeviceByName(sName, device);
@@ -2279,6 +2671,87 @@ namespace mcp		// Model Context Protocol
 		return true;
 	}
 
+	// Resolves a sensor type string (name or numeric) to type/subtype. Returns false on failure.
+	static bool resolveSensorType(const std::string &sSensorType, int &iType, int &iSubType, std::string &sError)
+	{
+		iType = -1; iSubType = -1;
+		std::string sLower = sSensorType;
+		stdlower(sLower);
+
+		for (int i = 0; kSensorMap[i].name != nullptr; i++)
+		{
+			std::string sMapLower = kSensorMap[i].name;
+			stdlower(sMapLower);
+			if (sMapLower == sLower)
+			{
+				iType    = kSensorMap[i].type;
+				iSubType = kSensorMap[i].subtype;
+				return true;
+			}
+		}
+
+		if (!sSensorType.empty() && std::isdigit((unsigned char)sSensorType[0]))
+		{
+			try
+			{
+				int nMapped = std::stoi(sSensorType);
+				for (int i = 0; kSensorMap[i].name != nullptr; i++)
+				{
+					if (kSensorMap[i].mappedvalue == nMapped)
+					{
+						iType    = kSensorMap[i].type;
+						iSubType = kSensorMap[i].subtype;
+						return true;
+					}
+				}
+			}
+			catch (const std::exception &) {}
+		}
+
+		static const std::string sValidNames = []() {
+			std::string names;
+			for (int i = 0; kSensorMap[i].name != nullptr; i++)
+				names += std::string(kSensorMap[i].name) + ", ";
+			if (!names.empty())
+				names.resize(names.size() - 2);
+			return names;
+		}();
+		sError = "Unknown sensor type: \"" + sSensorType + "\". Valid types: " + sValidNames;
+		return false;
+	}
+
+	// Shared creation logic used by both createSensor and createVirtualSensor.
+	static bool doCreateVirtualSensor(int nHwIdx, const std::string &sSensorName, const std::string &sSensorType, Json::Value &jsonRPCRep)
+	{
+		int iType, iSubType;
+		std::string sError;
+		if (!resolveSensorType(sSensorType, iType, iSubType, sError))
+		{
+			mcp::setToolResult(jsonRPCRep, sError, true);
+			return true;
+		}
+
+		auto maxResult = m_sql.safe_query("SELECT MAX(ID) FROM DeviceStatus");
+		unsigned long nid = 1;
+		if (!maxResult.empty() && !maxResult[0][0].empty())
+			nid = atol(maxResult[0][0].c_str()) + 1;
+		nid += 82000;
+
+		bool bPrevAccept = m_sql.m_bAcceptNewHardware;
+		m_sql.m_bAcceptNewHardware = true;
+		std::string soptions;
+		std::string sName = sSensorName;
+		uint64_t DeviceRowIdx = m_sql.CreateDevice(nHwIdx, iType, iSubType, sName, nid, soptions, "MCP");
+		m_sql.m_bAcceptNewHardware = bPrevAccept;
+
+		bool bOK = (DeviceRowIdx != (uint64_t)-1);
+		std::string sResult = bOK
+			? "Virtual sensor \"" + sSensorName + "\" created successfully with idx=" + std::to_string(DeviceRowIdx) + " on hw_idx=" + std::to_string(nHwIdx) + "."
+			: "Failed to create virtual sensor \"" + sSensorName + "\".";
+		mcp::setToolResult(jsonRPCRep, sResult, !bOK);
+		return true;
+	}
+
 	bool createVirtualSensor(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
 		if (!jsonRequest["params"].isMember("arguments") ||
@@ -2290,11 +2763,10 @@ namespace mcp		// Model Context Protocol
 			return false;
 		}
 
-		int nHwIdx     = jsonRequest["params"]["arguments"]["hw_idx"].asInt();
+		int nHwIdx = jsonRequest["params"]["arguments"]["hw_idx"].asInt();
 		std::string sSensorName = jsonRequest["params"]["arguments"]["sensorname"].asString();
-		int nSensorType = jsonRequest["params"]["arguments"]["sensortype"].asInt();
+		std::string sSensorType = jsonRequest["params"]["arguments"]["sensortype"].asString();
 
-		// Validate hardware exists
 		auto hwResult = m_sql.safe_query("SELECT ID FROM Hardware WHERE ID=%d", nHwIdx);
 		if (hwResult.empty())
 		{
@@ -2302,99 +2774,20 @@ namespace mcp		// Model Context Protocol
 			return true;
 		}
 
-		// Look up the type/subtype from the mapped sensor table
-		// Sensor type map (subset of Dummy.cpp mappedsensorname)
-		struct _tmapped { int mappedvalue; int type; int subtype; };
-		static const _tmapped sensorMap[] = {
-			{ 249, 18, 1 },	  // Air Quality (pTypeAirQuality/sTypeVoc)
-			{ 7,   22, 1 },	  // Alert (pTypeGeneral/sTypeAlert)
-			{ 9,   89, 1 },	  // Ampere 3-phase
-			{ 19,  22, 23 },  // Ampere 1-phase
-			{ 11,  22, 2 },	  // Barometer
-			{ 113, 115, 1 },  // Counter (pTypeRFXMeter)
-			{ 14,  22, 28 },  // Counter Incremental
-			{ 1004,22, 31 },  // Custom Sensor
-			{ 13,  22, 13 },  // Distance
-			{ 18,  22, 29 },  // Electric Instant+Counter
-			{ 3,   82, 1 },	  // Gas
-			{ 81,  81, 1 },	  // Humidity
-			{ 16,  22, 18 },  // Leaf Wetness
-			{ 246, 246, 1 },  // Lux
-			{ 250, 250, 1 },  // P1 Smart Meter
-			{ 2,   22, 2  },  // Percentage (overlaps baro, use direct)
-			{ 1,   22, 9 },	  // Pressure
-			{ 85,  85, 3 },	  // Rain
-			{ 241, 241, 1 },  // RGB Switch
-			{ 93,  93, 1 },	  // Scale
-			{ 1002,244, 2 },  // Selector Switch
-			{ 15,  22, 17 },  // Soil Moisture
-			{ 20,  22, 21 },  // Solar Radiation
-			{ 10,  22, 12 },  // Sound Level
-			{ 6,   244, 73 }, // Switch
-			{ 80,  80, 5 },	  // Temperature
-			{ 82,  82, 1 },	  // Temp+Hum
-			{ 84,  84, 1 },	  // Temp+Hum+Baro
-			{ 5,   22, 19 },  // Text
-			{ 8,   242, 1 },  // Thermostat Setpoint
-			{ 248, 250, 1 },  // Usage Electric (reuse P1)
-			{ 87,  87, 1 },	  // UV
-			{ 12,  22, 14 },  // Visibility
-			{ 4,   22, 8 },	  // Voltage
-			{ 86,  86, 1 },	  // Wind
-			{ 0,   0,  0 }    // sentinel
-		};
-
-		int iType = -1, iSubType = -1;
-		for (int i = 0; sensorMap[i].mappedvalue != 0 || i == 0; i++)
-		{
-			if (sensorMap[i].mappedvalue == 0 && i > 0)
-				break;
-			if (sensorMap[i].mappedvalue == nSensorType)
-			{
-				iType    = sensorMap[i].type;
-				iSubType = sensorMap[i].subtype;
-				break;
-			}
-		}
-
-		if (iType == -1)
-		{
-			mcp::setToolResult(jsonRPCRep, "Unknown sensor type: " + std::to_string(nSensorType) + ". Common types: 80=Temperature, 81=Humidity, 5=Text, 6=Switch, 113=Counter, 18=Electric, 82=Temp+Hum", true);
-			return true;
-		}
-
-		// Generate a unique device ID (nid)
-		auto maxResult = m_sql.safe_query("SELECT MAX(ID) FROM DeviceStatus");
-		unsigned long nid = 1;
-		if (!maxResult.empty() && !maxResult[0][0].empty())
-			nid = atol(maxResult[0][0].c_str()) + 1;
-		nid += 82000;
-
-		bool bPrevAccept = m_sql.m_bAcceptNewHardware;
-		m_sql.m_bAcceptNewHardware = true;
-		std::string soptions;
-		uint64_t DeviceRowIdx = m_sql.CreateDevice(nHwIdx, iType, iSubType, sSensorName, nid, soptions, "MCP");
-		m_sql.m_bAcceptNewHardware = bPrevAccept;
-
-		bool bOK = (DeviceRowIdx != (uint64_t)-1);
-		std::string sResult = bOK
-			? "Virtual sensor \"" + sSensorName + "\" created successfully with idx=" + std::to_string(DeviceRowIdx) + "."
-			: "Failed to create virtual sensor \"" + sSensorName + "\".";
-		mcp::setToolResult(jsonRPCRep, sResult, !bOK);
-		return true;
+		return doCreateVirtualSensor(nHwIdx, sSensorName, sSensorType, jsonRPCRep);
 	}
 
 	bool updateDeviceValue(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
 		if (!jsonRequest["params"].isMember("arguments") ||
-		    !jsonRequest["params"]["arguments"].isMember("switchname") ||
+		    !jsonRequest["params"]["arguments"].isMember("name") ||
 		    !jsonRequest["params"]["arguments"].isMember("nvalue"))
 		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: updateDeviceValue: Missing required parameters 'switchname' or 'nvalue'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: updateDeviceValue: Missing required parameters 'name' or 'nvalue'");
 			return false;
 		}
 
-		std::string sName  = jsonRequest["params"]["arguments"]["switchname"].asString();
+		std::string sName  = jsonRequest["params"]["arguments"]["name"].asString();
 		int nValue         = jsonRequest["params"]["arguments"]["nvalue"].asInt();
 		std::string sValue;
 		if (jsonRequest["params"]["arguments"].isMember("svalue"))
@@ -2422,85 +2815,330 @@ namespace mcp		// Model Context Protocol
 		return true;
 	}
 
-	bool getDeviceHistory(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	bool getSensorHistory(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("switchname"))
+		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("name"))
 		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: getDeviceHistory: Missing required parameter 'switchname'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: getSensorHistory: Missing required parameter 'name'");
 			return false;
 		}
 
-		std::string sName = jsonRequest["params"]["arguments"]["switchname"].asString();
-		std::string sLogType = "switch";
-		if (jsonRequest["params"]["arguments"].isMember("log_type"))
-			sLogType = jsonRequest["params"]["arguments"]["log_type"].asString();
+		const std::string sName = jsonRequest["params"]["arguments"]["name"].asString();
+		const Json::Value &args = jsonRequest["params"]["arguments"];
 
+		// Find device by name
 		Json::Value device;
-		bool bFound = getDeviceByName(sName, device);
-		std::string sResult;
-
-		if (bFound)
+		if (!getDeviceByName(sName, device))
 		{
-			int nIdx = atoi(device["idx"].asString().c_str());
+			mcp::setToolResult(jsonRPCRep, "No device found with name \"" + sName + "\"", true);
+			return true;
+		}
+		const uint64_t nIdx = (uint64_t)atoll(device["idx"].asString().c_str());
 
-			if (sLogType == "graph")
+		// Scenes/groups are not in DeviceStatus — detect them first via the device JSON Type field.
+		bool bIsSwitch = false;
+		if (device.isMember("Type"))
+		{
+			const std::string sDevType = device["Type"].asString();
+			if (sDevType == "Scene" || sDevType == "Group")
+				bIsSwitch = true;
+		}
+
+		// For non-scene devices fetch dType/dSubType, then use IsLightOrSwitch().
+		unsigned char dType    = 0;
+		unsigned char dSubType = 0;
+		if (!bIsSwitch)
+		{
+			auto devResult = m_sql.safe_query(
+				"SELECT Type, SubType FROM DeviceStatus WHERE ID=%" PRIu64, nIdx);
+			if (devResult.empty())
 			{
-				// Graph history from Temperature_Calendar or Meter_Calendar
+				mcp::setToolResult(jsonRPCRep, "Device \"" + sName + "\" not found in database.", true);
+				return true;
+			}
+			dType    = (unsigned char)atoi(devResult[0][0].c_str());
+			dSubType = (unsigned char)atoi(devResult[0][1].c_str());
+			bIsSwitch = IsLightOrSwitch(dType, dSubType);
+		}
+
+		if (bIsSwitch)
+		{
+			// --- LightingLog branch: switches and scenes ---
+			std::string sResult;
+
+			if (args.isMember("count") && !args["count"].isNull())
+			{
+				// Last N entries regardless of date
+				int iCount = std::max(1, std::min(500, args["count"].asInt()));
 				auto result = m_sql.safe_query(
-					"SELECT Date, Max_Val, Min_Val, Avg_Val FROM Temperature_Calendar WHERE DeviceRowID=%d ORDER BY Date DESC LIMIT 50", nIdx);
-				if (!result.empty())
+					"SELECT Date, nValue, sValue, User FROM LightingLog "
+					"WHERE DeviceRowID=%" PRIu64 " ORDER BY Date DESC LIMIT %d",
+					nIdx, iCount);
+				if (result.empty())
 				{
-					sResult = std::to_string((int)result.size()) + " graph entries for \"" + sName + "\":\n";
-					for (const auto &row : result)
-						sResult += "  " + row[0] + " max=" + row[1] + " min=" + row[2] + " avg=" + row[3] + "\n";
+					sResult = "No log entries found for \"" + sName + "\"";
 				}
 				else
 				{
-					// Try Meter_Calendar
-					auto mResult = m_sql.safe_query(
-						"SELECT Date, Value, Counter FROM Meter_Calendar WHERE DeviceRowID=%d ORDER BY Date DESC LIMIT 50", nIdx);
-					if (!mResult.empty())
+					sResult = "Last " + std::to_string((int)result.size()) +
+					          " log entries for switch \"" + sName + "\":\n";
+					for (const auto &row : result)
 					{
-						sResult = std::to_string((int)mResult.size()) + " meter entries for \"" + sName + "\":\n";
-						for (const auto &row : mResult)
-							sResult += "  " + row[0] + " value=" + row[1] + " counter=" + row[2] + "\n";
-					}
-					else
-					{
-						sResult = "No graph history found for \"" + sName + "\"";
+						int nValue = atoi(row[1].c_str());
+						std::string sState;
+						if (nValue == 0)       sState = "Off";
+						else if (nValue == 1)  sState = "On";
+						else if (nValue == 2)  sState = "Toggle";
+						else if (nValue == 9)  sState = "Dim to level";
+						else                   sState = std::to_string(nValue);
+						if (!row[2].empty())   sState += ": " + row[2];
+						std::string sLine = row[0] + "  " + sState;
+						if (!row[3].empty())   sLine += "  (user: " + row[3] + ")";
+						sResult += sLine + "\n";
 					}
 				}
 			}
 			else
 			{
-				// Switch/text log from LightingLog
-				auto result = m_sql.safe_query(
-					"SELECT Date, nValue, sValue, User FROM LightingLog WHERE DeviceRowID=%d ORDER BY Date DESC LIMIT 50", nIdx);
-				if (!result.empty())
+				// Date range filter
+				std::string szDateStart, szDateEnd;
+				if (args.isMember("start_date") && args.isMember("end_date") &&
+				    !args["start_date"].asString().empty() && !args["end_date"].asString().empty())
 				{
-					sResult = std::to_string((int)result.size()) + " log entries for \"" + sName + "\":\n";
-					for (const auto &row : result)
-					{
-						sResult += "  " + row[0] + " nValue=" + row[1];
-						if (!row[2].empty())
-							sResult += " sValue=\"" + row[2] + "\"";
-						if (!row[3].empty())
-							sResult += " user=" + row[3];
-						sResult += "\n";
-					}
+					szDateStart = args["start_date"].asString();
+					szDateEnd   = args["end_date"].asString();
 				}
 				else
 				{
-					sResult = "No log history found for \"" + sName + "\"";
+					int iDays = 7;
+					if (args.isMember("days"))
+						iDays = std::max(1, std::min(366, args["days"].asInt()));
+					time_t now = mytime(nullptr);
+					struct tm tmNow, tmStart;
+					localtime_r(&now, &tmNow);
+					time_t tStart = now - (time_t)(iDays - 1) * 86400LL;
+					localtime_r(&tStart, &tmStart);
+					char buf[16];
+					snprintf(buf, sizeof(buf), "%04d-%02d-%02d",
+						tmNow.tm_year + 1900, tmNow.tm_mon + 1, tmNow.tm_mday);
+					szDateEnd = buf;
+					snprintf(buf, sizeof(buf), "%04d-%02d-%02d",
+						tmStart.tm_year + 1900, tmStart.tm_mon + 1, tmStart.tm_mday);
+					szDateStart = buf;
+				}
+				auto result = m_sql.safe_query(
+					"SELECT Date, nValue, sValue, User FROM LightingLog "
+					"WHERE DeviceRowID=%" PRIu64 " AND Date>='%q' AND Date<='%q 23:59:59' "
+					"ORDER BY Date DESC",
+					nIdx, szDateStart.c_str(), szDateEnd.c_str());
+				if (result.empty())
+				{
+					sResult = "No log entries found for \"" + sName + "\" in the specified period.";
+				}
+				else
+				{
+					sResult = std::to_string((int)result.size()) +
+					          " log entries for switch \"" + sName + "\" (" +
+					          szDateStart + " to " + szDateEnd + "):\n";
+					for (const auto &row : result)
+					{
+						int nValue = atoi(row[1].c_str());
+						std::string sState;
+						if (nValue == 0)       sState = "Off";
+						else if (nValue == 1)  sState = "On";
+						else if (nValue == 2)  sState = "Toggle";
+						else if (nValue == 9)  sState = "Dim to level";
+						else                   sState = std::to_string(nValue);
+						if (!row[2].empty())   sState += ": " + row[2];
+						std::string sLine = row[0] + "  " + sState;
+						if (!row[3].empty())   sLine += "  (user: " + row[3] + ")";
+						sResult += sLine + "\n";
+					}
 				}
 			}
+			mcp::setToolResult(jsonRPCRep, sResult, false);
+			return true;
+		}
+
+		// Map device type to sensor string (what HandleGraphCustomRange expects)
+		std::string sSensor;
+		if (dType == pTypeTEMP || dType == pTypeTEMP_HUM || dType == pTypeTEMP_HUM_BARO ||
+		    dType == pTypeTEMP_BARO || dType == pTypeHUM)
+			sSensor = "temp";
+		else if (dType == pTypeRAIN)
+			sSensor = "rain";
+		else if (dType == pTypeWIND)
+			sSensor = "wind";
+		else if (dType == pTypeUV)
+			sSensor = "uv";
+		else if (dType == pTypeGeneral && dSubType == sTypePercentage)
+			sSensor = "Percentage";
+		else if (dType == pTypeGeneral && dSubType == sTypeFan)
+			sSensor = "fan";
+		else
+			sSensor = "counter";
+
+		// Compute date range
+		std::string szDateStart, szDateEnd;
+		if (args.isMember("start_date") && args.isMember("end_date") &&
+		    !args["start_date"].asString().empty() && !args["end_date"].asString().empty())
+		{
+			szDateStart = args["start_date"].asString();
+			szDateEnd   = args["end_date"].asString();
 		}
 		else
 		{
-			sResult = "No device found with name \"" + sName + "\"";
+			int iDays = 7;
+			if (args.isMember("days"))
+				iDays = std::max(1, std::min(366, args["days"].asInt()));
+
+			time_t now = mytime(nullptr);
+			struct tm tmNow, tmStart;
+			localtime_r(&now, &tmNow);
+			time_t tStart = now - (time_t)(iDays - 1) * 86400LL;
+			localtime_r(&tStart, &tmStart);
+
+			char buf[16];
+			snprintf(buf, sizeof(buf), "%04d-%02d-%02d",
+				tmNow.tm_year + 1900, tmNow.tm_mon + 1, tmNow.tm_mday);
+			szDateEnd = buf;
+			snprintf(buf, sizeof(buf), "%04d-%02d-%02d",
+				tmStart.tm_year + 1900, tmStart.tm_mon + 1, tmStart.tm_mday);
+			szDateStart = buf;
 		}
 
-		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
+		// Build range string "YYYY-MM-DDTYYYY-MM-DD"
+		std::string sRange = szDateStart + "T" + szDateEnd;
+
+		// Prepare output
+		const char tempsign = m_sql.m_tempsign[0];
+		const char* sTempUnit = (tempsign == 'F') ? "F" : "C";
+		auto cvtTemp = [&](const std::string& s) -> std::string {
+			if (s.empty()) return "";
+			double v = atof(s.c_str());
+			if (tempsign == 'F') v = v * 1.8 + 32.0;
+			char buf[32];
+			snprintf(buf, sizeof(buf), "%.1f", v);
+			return buf;
+		};
+
+		std::string sResult;
+
+		// ---- All sensor types: delegate to HandleGraphCustomRange ----
+		http::server::request req;
+		req.parameters.emplace("idx",       std::to_string(nIdx));
+		req.parameters.emplace("sensor",    sSensor);
+		req.parameters.emplace("range",     sRange);
+		// For temperature: enable all sub-series
+		req.parameters.emplace("graphTemp",  "true");
+		req.parameters.emplace("graphHum",   "true");
+		req.parameters.emplace("graphBaro",  "true");
+		req.parameters.emplace("graphDew",   "true");
+		req.parameters.emplace("graphChill", "true");
+
+		// Build GraphContext (reads device from DB using idx+sensor from req)
+		http::server::GraphContext ctx;
+		if (!http::server::BuildGraphContext(req, m_sql, ctx))
+		{
+			mcp::setToolResult(jsonRPCRep, "Could not build graph context for device \"" + sName + "\".", true);
+			return true;
+		}
+
+		// Call HandleGraphCustomRange (CWebServer& param is unused in that function)
+		Json::Value root;
+		http::server::CWebServer* pWS = m_webservers.GetAnyServer();
+		if (!pWS)
+		{
+			mcp::setToolResult(jsonRPCRep, "Web server not available.", true);
+			return true;
+		}
+		http::server::HandleGraphCustomRange(ctx, req, root, m_sql, *pWS);
+
+		if (!root.isMember("result") || root["result"].empty())
+		{
+			std::string sMsg = "There is no graph history available for the \"" + sName + "\" sensor ";
+			sMsg += "between " + szDateStart + " and " + szDateEnd + ".\n";
+			sMsg += "This may mean graph logging is disabled for this device or no data has been recorded.\n";
+			sMsg += "Tip: try a wider date range or increase 'days'.";
+			mcp::setToolResult(jsonRPCRep, sMsg, true);
+			return true;
+		}
+
+		// Format the JSON result as human-readable text
+		if (sSensor == "temp")
+			sResult = "Daily temperature history for \"" + sName + "\" (\xc2\xb0" + sTempUnit + " min/avg/max):\n";
+		else if (sSensor == "rain")
+			sResult = "Daily rain history for \"" + sName + "\" (mm):\n";
+		else if (sSensor == "wind")
+			sResult = "Daily wind history for \"" + sName + "\":\n";
+		else if (sSensor == "uv")
+			sResult = "Daily UV index history for \"" + sName + "\":\n";
+		else if (sSensor == "Percentage")
+			sResult = "Daily percentage history for \"" + sName + "\" (% min/avg/max):\n";
+		else if (sSensor == "fan")
+			sResult = "Daily fan speed history for \"" + sName + "\" (rpm min/max):\n";
+		else
+			sResult = "Daily history for \"" + sName + "\":\n";
+
+		sResult += "Date        | Data\n";
+		sResult += "------------|--------------------------------------\n";
+
+		const Json::Value& results = root["result"];
+		for (const auto& row : results)
+		{
+			std::string sDate = row.isMember("d") ? row["d"].asString().substr(0, 10) : "?";
+
+			if (sSensor == "temp")
+			{
+				std::string sLine = sDate + " |";
+				if (row.isMember("tm") && row.isMember("ta") && row.isMember("te"))
+					sLine += " temp: min=" + cvtTemp(row["tm"].asString()) +
+					         " avg=" + cvtTemp(row["ta"].asString()) +
+					         " max=" + cvtTemp(row["te"].asString()) +
+					         "\xc2\xb0" + sTempUnit;
+				if (row.isMember("hu"))
+					sLine += "  hum=" + row["hu"].asString() + "%";
+				if (row.isMember("ba"))
+					sLine += "  baro=" + row["ba"].asString() + " hPa";
+				if (row.isMember("dp"))
+					sLine += "  dew=" + cvtTemp(row["dp"].asString()) + "\xc2\xb0" + sTempUnit;
+				sResult += sLine + "\n";
+			}
+			else if (sSensor == "rain")
+			{
+				sResult += sDate + " | " + (row.isMember("mm") ? row["mm"].asString() : "0") + " mm\n";
+			}
+			else if (sSensor == "wind")
+			{
+				std::string sLine = sDate + " |";
+				if (row.isMember("di")) sLine += " dir=" + row["di"].asString() + "\xc2\xb0";
+				if (row.isMember("sp")) sLine += " speed=" + row["sp"].asString();
+				if (row.isMember("gu")) sLine += " gust=" + row["gu"].asString();
+				sResult += sLine + "\n";
+			}
+			else if (sSensor == "uv")
+			{
+				sResult += sDate + " | uvi=" + (row.isMember("uvi") ? row["uvi"].asString() : "?") + "\n";
+			}
+			else if (sSensor == "Percentage" || sSensor == "fan")
+			{
+				std::string sLine = sDate + " |";
+				if (row.isMember("v_min")) sLine += " min=" + row["v_min"].asString();
+				if (row.isMember("v_avg")) sLine += " avg=" + row["v_avg"].asString();
+				if (row.isMember("v_max")) sLine += " max=" + row["v_max"].asString();
+				sResult += sLine + "\n";
+			}
+			else // counter (includes P1, energy, gas, water, generic counters)
+			{
+				std::string sLine = sDate + " |";
+				if (row.isMember("v1")) sLine += " usage=" + row["v1"].asString();
+				if (row.isMember("v2")) sLine += " delivery=" + row["v2"].asString();
+				if (!row.isMember("v1") && row.isMember("v")) sLine += " value=" + row["v"].asString();
+				sResult += sLine + "\n";
+			}
+		}
+
+		mcp::setToolResult(jsonRPCRep, sResult, false);
 		return true;
 	}
 
@@ -2854,6 +3492,30 @@ namespace mcp		// Model Context Protocol
 			? "Event script \"" + sEventName + "\" updated successfully."
 			: "No changes applied to event script \"" + sEventName + "\" (no update parameters provided).";
 		mcp::setToolResult(jsonRPCRep, sResult, false);
+		return true;
+	}
+
+	bool deleteEvent(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("event_name"))
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: deleteEvent: Missing required parameter 'event_name'");
+			return false;
+		}
+		std::string sEventName = jsonRequest["params"]["arguments"]["event_name"].asString();
+
+		auto result = m_sql.safe_query("SELECT ID FROM EventMaster WHERE Name='%q'", sEventName.c_str());
+		if (result.empty())
+		{
+			mcp::setToolResult(jsonRPCRep, "No event script found with name \"" + sEventName + "\"", true);
+			return true;
+		}
+
+		int nIdx = atoi(result[0][0].c_str());
+		m_sql.safe_query("DELETE FROM EventMaster WHERE ID=%d", nIdx);
+		m_mainworker.m_eventsystem.LoadEvents();
+
+		mcp::setToolResult(jsonRPCRep, "Event script \"" + sEventName + "\" (idx=" + std::to_string(nIdx) + ") permanently deleted.", false);
 		return true;
 	}
 
