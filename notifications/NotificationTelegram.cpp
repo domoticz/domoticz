@@ -56,14 +56,8 @@ bool CNotificationTelegram::SendMessageImplementation(
 	//Add the required Content Type
 	ExtraHeaders.push_back("Content-Type: application/json");
 
-#ifndef WIN32
-	HTTPClient::SetSecurityOptions(true, true);
-#endif
 	bRet = HTTPClient::POST(sUrl,sPostData,ExtraHeaders,sResult);
-#ifndef WIN32
-	HTTPClient::SetSecurityOptions(false, false);
-#endif
-//"ok":true
+
 	bool bSuccess = (sResult.find("\"ok\":true") != std::string::npos);
 	if (!bSuccess)
 		_log.Log(LOG_ERROR, "Telegram: %s", sResult.c_str());
