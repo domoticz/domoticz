@@ -8,8 +8,13 @@ Version 2026.xxxx
 - Added: MCP, domoticz://sensor-types resource listing all available virtual sensor types with mapped values
 - Added: MCP, get_sensor_history tool with daily calendar data for all sensor types and event log for switches/scenes
 - Added: MCP, new prompts: battery_status, climate_overview, create_automation, daily_report, energy_report, hardware_health, scene_optimizer, security_check
+- Added: PhilipsHue, automatic bridge version detection (V2 HTTPS/443, V1 HTTPS/443, V1 HTTP/80); port no longer needs manual configuration
+- Added: PhilipsHue V2, real-time sensor updates via Server-Sent Events (SSE); instant state changes without waiting for the next poll cycle
+- Added: PhilipsHue V2, new sensor types: grouped motion, grouped light level, camera motion, security area motion, button remotes, and bell button (doorbell)
 - Fixed: Contact and DoorContact switches now show correct Open/Closed icon state in the dashboard
 - Fixed: MCP, server is now enabled by default; use -nomcp flag to disable (previously required -llmmcp flag to enable)
+- Fixed: PhilipsHue SSE, application shutdown hang when event stream was idle
+- Fixed: PhilipsHue V2, battery level for motion/temperature/light level sensors reported as 255 instead of actual level
 - Fixed: PhilipsHue v2, thread-safety race condition causing concurrent API call errors
 - Fixed: Python plugin framework, spurious NullStream initialization errors on Python < 3.13 (#6688)
 - Fixed: Text device utility widget now preserves HTML style attributes (color, font-size, etc.)

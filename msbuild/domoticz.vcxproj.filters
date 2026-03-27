@@ -1672,6 +1672,9 @@
     <ClInclude Include="..\hardware\PhilipsHue\PhilipsHueV2Sensors.h">
       <Filter>Devices\Philips Hue</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\PhilipsHue\PhilipsHueSSE.h">
+      <Filter>Devices\Philips Hue</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\EvohomeBase.h">
       <Filter>Devices\EvoHome</Filter>
     </ClInclude>
@@ -2446,6 +2449,9 @@
       <Filter>Devices\Philips Hue</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueV2Sensors.cpp">
+      <Filter>Devices\Philips Hue</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueSSE.cpp">
       <Filter>Devices\Philips Hue</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\EvohomeBase.cpp">

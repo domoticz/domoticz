@@ -1,0 +1,134 @@
+== Philips Hue ==
+
+Domoticz supports the Philips Hue bridge (both V1 and V2) and automatically detects which API version to use.
+
+=== Adding the Hardware ===
+
+Go to '''Setup → Hardware''' and select '''Philips Hue Bridge''' as the hardware type.
+
+Enter:
+* The '''IP Address''' of your Hue bridge (you can also find this in your network router)
+
+'''First time setup (no username yet):'''
+# Leave the '''Username''' field empty
+# Press the '''link button''' on top of the Hue bridge
+# Within 30 seconds, press the '''Register''' button in Domoticz
+# If successful, a username is automatically filled in
+# Press '''Add'''
+
+'''Already registered before:'''
+* If you know the username, enter it and press '''Add'''
+* If you forgot the username, use the first-time procedure above to register again
+
+'''Note:''' To allow Domoticz to create new devices, make sure '''Accept new Hardware Devices''' is enabled under '''Setup → Settings'''.
+
+Domoticz will automatically probe the bridge after adding:
+* Hue V2 bridges (CLIP v2 API) are detected on HTTPS port 443
+* Hue V1 bridges are tried on HTTPS port 443, then HTTP port 80
+* If no bridge is reachable, an error is logged and the hardware is not started
+
+=== Configuration Options ===
+
+{| class="wikitable"
+|-
+! Option !! Description
+|-
+| '''IP Address''' || The local IP address or hostname of your Hue bridge
+|-
+| '''Username''' || The application key used to authenticate with the Hue API
+|-
+| '''Poll Interval''' || For V1 bridges: how often Domoticz polls all device states (seconds, minimum 5, default 10). For V2 bridges: interval between full resyncs; real-time updates arrive instantly via SSE regardless of this setting.
+|-
+| '''Add Groups''' || Whether to expose Hue light groups as Domoticz devices
+|-
+| '''Add Scenes''' || Whether to expose Hue scenes as Domoticz selector switches
+|}
+
+=== Supported Hardware ===
+
+==== Lights ====
+
+All lights connected to the Hue bridge are added as Domoticz devices:
+
+* '''On/Off lights''' — basic switch
+* '''Dimmable lights''' — dimmer switch (brightness 0–100%)
+* '''Color temperature lights''' — dimmer with color temperature control
+* '''Full colour lights (RGB/RGBW)''' — RGB colour device
+
+Lights can be controlled directly from the Domoticz dashboard or via scripts.
+
+==== Groups ====
+
+Light groups configured in the Hue app can be exposed as a single device in Domoticz (enable the '''Add Groups''' option). Controlling the group device turns all lights in the group on/off and adjusts brightness/colour.
+
+==== Scenes ====
+
+Hue scenes (named light configurations) can be exposed as selector switches in Domoticz (enable the '''Add Scenes''' option). Selecting a scene activates it on the bridge.
+
+==== Sensors (V1 API) ====
+
+The following sensor types are supported via the V1 API:
+
+* '''Motion sensors''' (ZLLPresence) — motion/no-motion switch
+* '''Temperature sensors''' (ZLLTemperature) — temperature device (°C)
+* '''Light level sensors''' (ZLLLightLevel) — lux level device
+* '''Switches / Remotes''' (ZLLSwitch, ZGPSwitch) — selector switch with button events
+* '''Daylight sensor''' — on/off based on local sunrise/sunset
+
+==== Sensors (V2 API) ====
+
+When a V2 bridge is detected, the following additional sensor types are supported:
+
+* '''Motion''' — motion sensors (per room or per individual device)
+* '''Temperature''' — temperature sensors attached to motion sensor devices
+* '''Light level''' — ambient light level in lux (per room or per device)
+* '''Contact sensors''' — door/window open/close state
+* '''Tamper alerts''' — tamper detection state
+* '''Camera motion''' — motion detected by Hue camera devices
+* '''Security area motion''' — motion events from security area zones
+* '''Grouped motion''' — aggregated motion state across a room or zone
+* '''Grouped light level''' — aggregated light level for a room or zone
+* '''Buttons / Remotes''' — Hue dimmer switches and tap dial switches; each remote appears as a selector switch with short/long press levels per button
+* '''Bell button''' — Hue doorbell button; triggers a Domoticz doorbell device on ring event
+* '''Device power''' — battery level reported for all battery-powered Hue accessories (0–100%, or 255 if not applicable)
+
+=== V2 API — Server-Sent Events (SSE) ===
+
+When a Hue V2 bridge is detected, Domoticz uses the Hue CLIP v2 event stream (`/eventstream/clip/v2`) in addition to the polling loop.
+
+The SSE stream is a persistent HTTP connection that delivers real-time push notifications from the bridge whenever a device state changes (motion, button press, contact open/close, etc.). This means:
+
+* '''Instant updates''' — device state changes appear in Domoticz within milliseconds, without waiting for the next poll cycle
+* '''Reduced bridge load''' — SSE replaces per-sensor polling for most sensor types
+* '''Automatic reconnect''' — if the SSE connection drops, Domoticz reconnects automatically with exponential backoff (up to 60 seconds between retries)
+
+A full resync (fetching all device states via the REST API) still runs at every poll interval to catch any missed updates.
+
+=== Troubleshooting ===
+
+{| class="wikitable"
+|-
+! Problem !! Solution
+|-
+| Hardware starts but no devices appear || Check the Username/application key. Ensure the Hue bridge is reachable at the configured IP address.
+|-
+| '''No Philips Hue bridge found''' error in log || Verify the IP address. Check that the bridge is online and reachable from the Domoticz host. Firewall rules may block HTTPS (port 443) or HTTP (port 80).
+|-
+| Lights appear but sensors do not || For V1 bridges, sensors must already be paired. For V2 bridges, check that the application key was created on the V2 bridge (not via a V1-only API path).
+|-
+| Battery level shows 255 || The device does not report a battery level (mains-powered) or no battery report has been received yet.
+|-
+| Duplicate devices after bridge upgrade || If you upgraded from a V1 to a V2 bridge and re-added the hardware, sensors may appear as duplicates due to different internal IDs. You can delete the old devices via '''Setup → Devices'''.
+|}
+
+=== Notes ===
+
+* The Hue bridge has a limit of approximately 3 concurrent API connections. The SSE stream counts as one connection. Avoid connecting too many external applications simultaneously.
+* Hue V1 bridges manufactured before 2016 may not support HTTPS. Domoticz will fall back to HTTP port 80 automatically.
+* The Hue V2 CLIP API supports additional sensor and device types not available via V1. Using a V2 bridge is recommended for the best experience.
+
+=== Links ===
+
+* Philips Hue developer portal: https://developers.meethue.com/
+* Hue CLIP v2 API documentation: https://developers.meethue.com/develop/hue-api-v2/
+* Domoticz forum: https://forum.domoticz.com/
