@@ -193,15 +193,15 @@ Tools are actions an AI agent can invoke. All tools accept and return plain text
 |-
 ! Tool !! Parameters !! Description
 |-
-| <code>get_switch_state</code> || <code>switchname</code> (required) || Get the current on/off state of a switch by name.
+| <code>get_switch_state</code> || <code>switchname</code> or <code>idx</code> (one required) || Get the current on/off state of a switch by name or IDX.
 |-
-| <code>toggle_switch_state</code> || <code>switchname</code> (required) || Toggle a switch between on and off.
+| <code>toggle_switch_state</code> || <code>switchname</code> or <code>idx</code> (one required) || Toggle a switch between on and off.
 |-
-| <code>set_switch_state</code> || <code>switchname</code> (required), <code>state</code> (required: On/Off) || Explicitly set a switch to On or Off. State is case-insensitive.
+| <code>set_switch_state</code> || <code>switchname</code> or <code>idx</code> (one required), <code>state</code> (required: On/Off) || Explicitly set a switch to On or Off. State is case-insensitive.
 |-
-| <code>get_sensor_value</code> || <code>sensorname</code> (required) || Get the current reading of any sensor by name.
+| <code>get_sensor_value</code> || <code>sensorname</code> or <code>idx</code> (one required) || Get the current reading of any sensor by name or IDX.
 |-
-| <code>set_setpoint_value</code> || <code>thermostatname</code> (required), <code>setpoint</code> (required, number) || Set the target temperature setpoint of a thermostat.
+| <code>set_setpoint_value</code> || <code>thermostatname</code> or <code>idx</code> (one required), <code>setpoint</code> (required, number) || Set the target temperature setpoint of a thermostat.
 |}
 
 === Dimmer & lighting control ===
@@ -210,11 +210,11 @@ Tools are actions an AI agent can invoke. All tools accept and return plain text
 |-
 ! Tool !! Parameters !! Description
 |-
-| <code>set_dimmer_level</code> || <code>switchname</code> (required), <code>level</code> (required, 0–100) || Set a dimmable light to a specific brightness level.
+| <code>set_dimmer_level</code> || <code>switchname</code> or <code>idx</code> (one required), <code>level</code> (required, 0–100) || Set a dimmable light to a specific brightness level.
 |-
-| <code>set_color_brightness</code> || <code>switchname</code> (required), <code>hue</code> (required, 0–360), <code>brightness</code> (required, 0–100), <code>iswhite</code> (optional, boolean) || Set the colour and brightness of an RGB light.
+| <code>set_color_brightness</code> || <code>switchname</code> or <code>idx</code> (one required), <code>hue</code> (required, 0–360), <code>brightness</code> (required, 0–100), <code>iswhite</code> (optional, boolean) || Set the colour and brightness of an RGB light.
 |-
-| <code>set_color_temperature</code> || <code>switchname</code> (required), <code>kelvin</code> (required, 2700–6500) || Set the colour temperature of a tunable-white light in Kelvin. 2700K is warm white, 6500K is cool daylight.
+| <code>set_color_temperature</code> || <code>switchname</code> or <code>idx</code> (one required), <code>kelvin</code> (required, 2700–6500) || Set the colour temperature of a tunable-white light in Kelvin. 2700K is warm white, 6500K is cool daylight.
 |}
 
 === Blind & shutter control ===
@@ -223,7 +223,7 @@ Tools are actions an AI agent can invoke. All tools accept and return plain text
 |-
 ! Tool !! Parameters !! Description
 |-
-| <code>control_blinds</code> || <code>switchname</code> (required), <code>command</code> (required: Open/Close/Stop) || Send an Open, Close or Stop command to a blind or shutter. Command is case-insensitive.
+| <code>control_blinds</code> || <code>switchname</code> or <code>idx</code> (one required), <code>command</code> (required: Open/Close/Stop) || Send an Open, Close or Stop command to a blind or shutter. Command is case-insensitive.
 |}
 
 === Scene & room control ===
@@ -234,13 +234,13 @@ Tools are actions an AI agent can invoke. All tools accept and return plain text
 |-
 | <code>get_scenes</code> || — || List all scenes and groups with their current status.
 |-
-| <code>switch_scene</code> || <code>scenename</code> (required), <code>command</code> (required: On/Off) || Activate or deactivate a scene or group by name.
+| <code>switch_scene</code> || <code>scenename</code> or <code>scene_id</code> (one required), <code>command</code> (required: On/Off) || Activate or deactivate a scene or group by name or IDX.
 |-
 | <code>get_rooms</code> || — || List all configured rooms (plans).
 |-
-| <code>get_room_devices</code> || <code>roomname</code> (required) || List all devices assigned to a specific room.
+| <code>get_room_devices</code> || <code>roomname</code> or <code>room_id</code> (one required) || List all devices assigned to a specific room.
 |-
-| <code>get_scene_devices</code> || <code>scenename</code> (required) || List the devices and commands that make up a specific scene.
+| <code>get_scene_devices</code> || <code>scenename</code> or <code>scene_id</code> (one required) || List the devices and commands that make up a specific scene.
 |}
 
 === Device management ===
@@ -249,13 +249,13 @@ Tools are actions an AI agent can invoke. All tools accept and return plain text
 |-
 ! Tool !! Parameters !! Description
 |-
-| <code>rename_device</code> || <code>switchname</code> (required, current name), <code>new_name</code> (required) || Rename a device.
+| <code>rename_device</code> || <code>name</code> or <code>idx</code> (one required), <code>new_name</code> (required) || Rename a device.
 |-
-| <code>delete_device</code> || <code>switchname</code> (required) || Hide a device (sets Used=0; does not permanently delete data).
+| <code>delete_device</code> || <code>name</code> or <code>idx</code> (one required) || Hide a device (sets Used=0; does not permanently delete data).
 |-
 | <code>create_virtual_sensor</code> || <code>hw_idx</code> (required), <code>sensorname</code> (required), <code>sensortype</code> (required, integer) || Create a new virtual sensor on a virtual hardware adapter. Common sensor types: 80=Temperature, 81=Humidity, 5=Text, 6=Switch, 113=Counter.
 |-
-| <code>update_device_value</code> || <code>switchname</code> (required), <code>nvalue</code> (required, integer), <code>svalue</code> (optional, string) || Directly update the value of a device (useful for virtual sensors).
+| <code>update_device_value</code> || <code>name</code> or <code>idx</code> (one required), <code>nvalue</code> (required, integer), <code>svalue</code> (optional, string) || Directly update the value of a device (useful for virtual sensors).
 |}
 
 === History ===
@@ -264,7 +264,7 @@ Tools are actions an AI agent can invoke. All tools accept and return plain text
 |-
 ! Tool !! Parameters !! Description
 |-
-| <code>get_sensor_history</code> || <code>name</code> (required), <code>days</code> (optional, default 7), <code>start_date</code> / <code>end_date</code> (optional, YYYY-MM-DD), <code>count</code> (optional, 1–500) || Retrieve history for any device or scene. For '''sensors''' (temperature, humidity, barometer, rain, wind, UV, percentage, fan, P1 smart meter, energy/kWh, gas, water, counters): returns daily aggregated min/avg/max calendar data. Specify <code>days</code> for a trailing window or <code>start_date</code>+<code>end_date</code> for a custom range. For '''switches and scenes''': returns on/off/dim event log entries from <code>LightingLog</code>. Use <code>count</code> for the last N events regardless of date, or <code>days</code>/<code>start_date</code>+<code>end_date</code> for a date-filtered log.
+| <code>get_sensor_history</code> || <code>name</code> or <code>idx</code> (one required), <code>days</code> (optional, default 7), <code>start_date</code> / <code>end_date</code> (optional, YYYY-MM-DD), <code>count</code> (optional, 1–500) || Retrieve history for any device or scene. For '''sensors''' (temperature, humidity, barometer, rain, wind, UV, percentage, fan, P1 smart meter, energy/kWh, gas, water, counters): returns daily aggregated min/avg/max calendar data. Specify <code>days</code> for a trailing window or <code>start_date</code>+<code>end_date</code> for a custom range. For '''switches and scenes''': returns on/off/dim event log entries from <code>LightingLog</code>. Use <code>count</code> for the last N events regardless of date, or <code>days</code>/<code>start_date</code>+<code>end_date</code> for a date-filtered log.
 |}
 
 === User variables ===
@@ -277,9 +277,9 @@ Tools are actions an AI agent can invoke. All tools accept and return plain text
 |-
 | <code>add_user_variable</code> || <code>name</code> (required), <code>vtype</code> (required, 0–4), <code>value</code> (required) || Create a new user variable. Types: 0=Integer, 1=Float, 2=String, 3=Date (DD/MM/YYYY), 4=Time (HH:MM).
 |-
-| <code>update_user_variable</code> || <code>name</code> (required), <code>value</code> (required), <code>vtype</code> (optional) || Update an existing user variable's value (and optionally its type).
+| <code>update_user_variable</code> || <code>name</code> or <code>variable_id</code> (one required), <code>value</code> (required), <code>vtype</code> (optional) || Update an existing user variable's value (and optionally its type).
 |-
-| <code>delete_user_variable</code> || <code>name</code> (required) || Delete a user variable by name.
+| <code>delete_user_variable</code> || <code>name</code> or <code>variable_id</code> (one required) || Delete a user variable by name or IDX.
 |}
 
 === System information ===
@@ -300,7 +300,7 @@ Tools are actions an AI agent can invoke. All tools accept and return plain text
 |-
 | <code>get_floorplans</code> || — || List all available floorplans by name and IDX (use <code>get_floorplan</code> to retrieve the actual image).
 |-
-| <code>get_floorplan</code> || <code>floorplan</code> (required, name) || Retrieve a floorplan image by name (returned as base64-encoded image data).
+| <code>get_floorplan</code> || <code>floorplan</code> or <code>floorplan_id</code> (one required) || Retrieve a floorplan image by name or IDX (returned as base64-encoded image data).
 |-
 | <code>get_users</code> || — || List system users with their username, rights level and active status (no password information).
 |}
@@ -337,11 +337,13 @@ Tools are actions an AI agent can invoke. All tools accept and return plain text
 |-
 | <code>get_events</code> || — || List all automation event scripts with their interpreter (dzVents/Lua/Python/Blockly) and enabled status.
 |-
-| <code>get_event</code> || <code>event_name</code> (required) || Retrieve the full source code of a specific event script.
+| <code>get_event</code> || <code>event_name</code> or <code>event_id</code> (one required) || Retrieve the full source code of a specific event script by name or IDX.
 |-
 | <code>create_event</code> || <code>name</code> (required), <code>interpreter</code> (required: Lua/dzVents/Python/Blockly), <code>code</code> (required), <code>enabled</code> (optional, default: true) || Create a new automation event script.
 |-
-| <code>update_event</code> || <code>event_name</code> (required), <code>code</code> (optional), <code>enabled</code> (optional), <code>new_name</code> (optional) || Update an existing event script's code, enabled state, or name.
+| <code>update_event</code> || <code>event_name</code> or <code>event_id</code> (one required), <code>code</code> (optional), <code>enabled</code> (optional), <code>new_name</code> (optional) || Update an existing event script's code, enabled state, or name.
+|-
+| <code>delete_event</code> || <code>event_name</code> or <code>event_id</code> (one required) || Permanently delete an event script by name or IDX. This cannot be undone.
 |}
 
 == Prompts ==
@@ -470,5 +472,5 @@ Sessions are created by <code>initialize</code> and terminated by:
 * The <code>send_notification</code> tool sends to real devices (phone, email, etc.). Avoid invoking it in automated loops.
 * The <code>delete_device</code> tool hides a device (sets Used=0) rather than permanently deleting it. Historical data is preserved.
 * The <code>create_event</code> and <code>update_event</code> tools take effect immediately — the event system reloads after each change.
-* Device and scene names passed to tools are matched exactly (case-sensitive) except for command values like On/Off/Open/Close which are normalised automatically.
+* Device and scene names passed to tools are matched exactly (case-sensitive). All tools that accept a name also accept a numeric <code>idx</code> parameter as an alternative — use whichever is more convenient. Command values like On/Off/Open/Close are normalised automatically (case-insensitive).
 * Signal level (RSSI) is reported for wireless devices as <code>rssi=&lt;value&gt;</code> (compact format in list tools) or <code>SignalLevel: &lt;value&gt;</code> (detail format in <code>get_device</code>). The value 12 is the default/unknown value and is omitted from output.
