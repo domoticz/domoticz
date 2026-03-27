@@ -278,6 +278,7 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_MQTTAutoDiscovery, "MQTT Auto Discovery Client Gateway with LAN interface", "MQTT-AD" },
 	{ HTYPE_RFLINKMQTT, "RFLink Gateway MQTT", "RFLink" },
 	{ HTYPE_MitsubishiWF, "Mitsubishi WF RAC Airco with LAN (HTTP) interface", "MitsubishiWF" },
+	{ HTYPE_DaikinModbus, "Daikin Altherma (Modbus TCP via Homehub)", "DaikinHH" },
 	{ HTYPE_OpenMeteo, "Open-Meteo (Weather Lookup)", "OpenMeteo" },
 	{ 0, nullptr, nullptr },
 };
@@ -1738,7 +1739,7 @@ void GetLightStatus(
 			break;
 		case curtain_sClose:
 			lstatus = "Close";
-			break; 
+			break;
 		case curtain_sStop:
 			lstatus = "Stop";
 			break;

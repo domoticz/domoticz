@@ -121,7 +121,7 @@ enum _eHardwareTypes {
 	HTYPE_System,				//23
 	HTYPE_EnOceanESP2,			//24
 	HTYPE_DarkSky,				//25
-	HTYPE_FREE2USE,				//26 (Old deprecated hardware, use this enum for your next project if you want to have a free to use hardware type for your plugin)
+	HTYPE_DaikinModbus,			//26
 	HTYPE_SBFSpot,				//27
 	HTYPE_ICYTHERMOSTAT,		//28
 	HTYPE_WOL,					//29
