@@ -84,6 +84,7 @@ define(['app', 'domoticz.api', 'livesocket'], function(app) {
                     // Light devices
                     else if (
                         item.Type.indexOf('Light') === 0 ||
+                        item.Type.indexOf('Security') === 0 ||
                         item.SubType === 'Smartwares Mode' ||
                         item.Type.indexOf('Blind') === 0 ||
                         item.Type.indexOf('Curtain') === 0 ||
