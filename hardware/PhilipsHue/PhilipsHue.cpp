@@ -896,6 +896,7 @@ bool CPhilipsHue::GetStates()
 	}
 	try
 	{
+		std::lock_guard<std::mutex> lock(m_http_mutex);
 		GetV2Sensors();
 	}
 	catch (const std::exception& e)
