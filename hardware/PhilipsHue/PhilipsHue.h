@@ -2,9 +2,11 @@
 
 #include <memory>
 #include <mutex>
+#include <set>
 #include "../DomoticzHardware.h"
 #include "PhilipsHueSensors.h"
 #include "PhilipsHueV2Sensors.h" // NEW: include V2 helper
+#include "PhilipsHueSSE.h"
 
 namespace Json
 {
@@ -61,7 +63,9 @@ public:
 	static std::string RegisterUser(const std::string& IPAddress, unsigned short Port, const std::string& username);
 
 private:
-	void Init();
+	bool CheckIsV2Bridge();
+	bool CheckV1Bridge(int port);
+	bool Init();
 	bool StartHardware() override;
 	bool StopHardware() override;
 	void Do_Work();
@@ -83,6 +87,27 @@ private:
 
 	// Helper: generate deterministic numeric NodeID from a v2 UUID/rid
 	static int NodeIDFromRid(const std::string& rid);
+	void LogV2MigrationWarning(const std::string& ownerRid, int v1NodeID, int hashNodeID, const std::string& friendlyName);
+
+	// SSE event dispatch
+	void OnSSEEvent(const std::string& jsonData);
+	void DispatchSSEResource(const std::string& rtype, const Json::Value& resource);
+	void HandleSSEContact(const Json::Value& r);
+	void HandleSSETamper(const Json::Value& r);
+	void HandleSSEMotion(const Json::Value& r);
+	void HandleSSETemperature(const Json::Value& r);
+	void HandleSSELightLevel(const Json::Value& r);
+	void HandleSSEDevicePower(const Json::Value& r);
+	void HandleSSEGroupedMotion(const Json::Value& r);
+	void HandleSSEGroupedLightLevel(const Json::Value& r);
+	void HandleSSECameraMotion(const Json::Value& r);
+	void HandleSSESecurityAreaMotion(const Json::Value& r);
+	void HandleSSEBellButton(const Json::Value& r);
+	void HandleSSEButton(const Json::Value& r);
+
+	// Look up a cached V2 device name by owner RID
+	std::string GetV2DeviceName(const std::string& ownerRid) const;
+	uint8_t GetBatteryForOwner(const std::string& ownerRid) const;
 
 private:
 	int m_poll_interval;
@@ -103,10 +128,12 @@ private:
 private:
 	bool m_use_v2_sensors = false;
 	std::unique_ptr<CPhilipsHueV2Sensors> m_v2sensors; // constructed when enabled
+	std::unique_ptr<CPhilipsHueSSE> m_sse;
 	// v2 state caches to avoid updating Domoticz every poll when nothing changed
 	std::map<std::string, std::string> m_v2_contact_state;    // owner_rid -> last seen contact state (e.g. "contact"/"no_contact")
 	std::map<std::string, std::string> m_v2_contact_changed;  // owner_rid -> last seen changed timestamp
 	std::map<std::string, std::string> m_v2_tamper_state;     // owner_rid -> last seen tamper state
 	std::map<std::string, std::string> m_v2_tamper_changed;   // owner_rid -> last seen tamper changed timestamp
 	std::map<std::string, int> m_v2_battery_level;            // owner_rid -> last known battery level (0..100), 255=unknown/not-set
+	std::set<std::string> m_v2_migration_warned;              // owner_rids already warned about NodeID change
 };

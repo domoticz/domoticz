@@ -951,16 +951,7 @@ define(['app'], function (app) {
 					ShowNotify($.t('Please enter an Address!'), 2500, true);
 					return;
 				}
-				var port = $("#hardwarecontent #divremote #tcpport").val();
-				if (port == "") {
-					ShowNotify($.t('Please enter an Port!'), 2500, true);
-					return;
-				}
-				var intRegex = /^\d+$/;
-				if (!intRegex.test(port)) {
-					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
-					return;
-				}
+				var port = 443;
 				var username = $("#hardwarecontent #hardwareparamsphilipshue #username").val();
 				if (username == "") {
 					ShowNotify($.t('Please enter a username!'), 2500, true);
@@ -2445,16 +2436,7 @@ define(['app'], function (app) {
 					ShowNotify($.t('Please enter an Address!'), 2500, true);
 					return;
 				}
-				var port = $("#hardwarecontent #divremote #tcpport").val();
-				if (port == "") {
-					ShowNotify($.t('Please enter an Port!'), 2500, true);
-					return;
-				}
-				var intRegex = /^\d+$/;
-				if (!intRegex.test(port)) {
-					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
-					return;
-				}
+				var port = 443;
 				var username = $("#hardwarecontent #hardwareparamsphilipshue #username").val();
 
 				if (username == "") {
@@ -4763,7 +4745,7 @@ define(['app'], function (app) {
 						}
 						else if (data["Type"].indexOf("Philips Hue") >= 0) {
 							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
-							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
+							$("#hardwarecontent #divremote #tcpport").closest('tr').hide();
 							$("#hardwarecontent #hardwareparamsphilipshue #username").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamsphilipshue #pollinterval").val(data["Mode1"]);
 							$("#hardwarecontent #hardwareparamsphilipshue #addgroups").prop('checked', (data["Mode2"]&1));
@@ -5602,6 +5584,7 @@ define(['app'], function (app) {
 			}
 			else if (text.indexOf("Philips Hue") >= 0) {
 				$("#hardwarecontent #divremote").show();
+				$("#hardwarecontent #divremote #tcpport").closest('tr').hide();
 				$("#hardwarecontent #divphilipshue").show();
 			}
 			else if (text.indexOf("Yeelight") >= 0) {
