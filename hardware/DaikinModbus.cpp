@@ -192,19 +192,20 @@ bool CDaikinModbus::WriteToHardware(const char* pdata, unsigned char length)
 
 	if (prb->ICMND.packettype == pTypeSetpoint)
 	{
-		uint16_t childid = prb->RADIATOR1.id4;
-		float setpoint = (float)prb->RADIATOR1.temperature + ((float)prb->RADIATOR1.tempPoint5 / 10.0f);
+		const _tSetpoint* pSetpoint = reinterpret_cast<const _tSetpoint*>(prb);
+		uint16_t childid = pSetpoint->id4;
+		float setpoint = pSetpoint->value;
 
 		uint16_t modbus_reg = 0;
 		uint16_t modbus_val = 0;
 
-		if (childid == 201) { modbus_reg = 1; modbus_val = (uint16_t)(setpoint * 100.0f); }
-		else if (childid == 202) { modbus_reg = 2; modbus_val = (uint16_t)(setpoint * 100.0f); }
-		else if (childid == 206) { modbus_reg = 6; modbus_val = (uint16_t)(setpoint * 100.0f); }
-		else if (childid == 207) { modbus_reg = 7; modbus_val = (uint16_t)(setpoint * 100.0f); }
-		else if (childid == 210) { modbus_reg = 10; modbus_val = (uint16_t)(setpoint * 100.0f); }
-		else if (childid == 254) { modbus_reg = 54; modbus_val = (uint16_t)(setpoint * 100.0f); }
-		else if (childid == 255) { modbus_reg = 55; modbus_val = (uint16_t)(setpoint * 100.0f); }
+		if (childid == 201) { modbus_reg = 1; modbus_val = (uint16_t)setpoint; }
+		else if (childid == 202) { modbus_reg = 2; modbus_val = (uint16_t)setpoint; }
+		else if (childid == 206) { modbus_reg = 6; modbus_val = (uint16_t)setpoint; }
+		else if (childid == 207) { modbus_reg = 7; modbus_val = (uint16_t)setpoint; }
+		else if (childid == 210) { modbus_reg = 10; modbus_val = (uint16_t)setpoint; }
+		else if (childid == 254) { modbus_reg = 54; modbus_val = (uint16_t)setpoint; }
+		else if (childid == 255) { modbus_reg = 55; modbus_val = (uint16_t)setpoint; }
 
 		if (modbus_reg > 0)
 		{
@@ -374,11 +375,11 @@ void CDaikinModbus::ProcessHoldingRegisters(const uint8_t* pData, size_t length)
 
 	int16_t val;
 	// Setpoints (1, 2, 6, 7, 10)
-	if ((val = getReg(1)) != 0x7FFF && val != 32766) UpdateSetpointDevice(201, val / 100.0f, "LWT Heating Setpoint");
-	if ((val = getReg(2)) != 0x7FFF && val != 32766) UpdateSetpointDevice(202, val / 100.0f, "LWT Cooling Setpoint");
-	if ((val = getReg(6)) != 0x7FFF && val != 32766) UpdateSetpointDevice(206, val / 100.0f, "Room Heating Setpoint");
-	if ((val = getReg(7)) != 0x7FFF && val != 32766) UpdateSetpointDevice(207, val / 100.0f, "Room Cooling Setpoint");
-	if ((val = getReg(10)) != 0x7FFF && val != 32766) UpdateSetpointDevice(210, val / 100.0f, "DHW Reheat Setpoint");
+	if ((val = getReg(1)) != 0x7FFF && val != 32766) UpdateSetpointDevice(201, (float)val, "LWT Heating Setpoint");
+	if ((val = getReg(2)) != 0x7FFF && val != 32766) UpdateSetpointDevice(202, (float)val, "LWT Cooling Setpoint");
+	if ((val = getReg(6)) != 0x7FFF && val != 32766) UpdateSetpointDevice(206, (float)val, "Room Heating Setpoint");
+	if ((val = getReg(7)) != 0x7FFF && val != 32766) UpdateSetpointDevice(207, (float)val, "Room Cooling Setpoint");
+	if ((val = getReg(10)) != 0x7FFF && val != 32766) UpdateSetpointDevice(210, (float)val, "DHW Reheat Setpoint");
 
 	// Modes and Other (3, 4, 9, 12, 13, 53, 54, 55, 56, 58, 59)
 	if ((val = getReg(3)) != 0x7FFF && val != 32766) UpdateSelectorSwitch(203, val * 10, "Operation Mode", "Auto|Heating|Cooling");
@@ -387,8 +388,8 @@ void CDaikinModbus::ProcessHoldingRegisters(const uint8_t* pData, size_t length)
 	if ((val = getReg(12)) != 0x7FFF && val != 32766) UpdateSwitch(212, val != 0, "DHW Reheat");
 	if ((val = getReg(13)) != 0x7FFF && val != 32766) UpdateSwitch(213, val != 0, "DHW Booster");
 	if ((val = getReg(53)) != 0x7FFF && val != 32766) UpdateSelectorSwitch(253, val * 10, "Weather Dependent Mode", "Fixed|Weather Dependent|Fixed+Scheduled|Weather Dependent+Scheduled");
-	if ((val = getReg(54)) != 0x7FFF && val != 32766) UpdateSetpointDevice(254, val / 100.0f, "Weather Dependent Heating Offset");
-	if ((val = getReg(55)) != 0x7FFF && val != 32766) UpdateSetpointDevice(255, val / 100.0f, "Weather Dependent Cooling Offset");
+	if ((val = getReg(54)) != 0x7FFF && val != 32766) UpdateSetpointDevice(254, (float)val, "Weather Dependent Heating Offset");
+	if ((val = getReg(55)) != 0x7FFF && val != 32766) UpdateSetpointDevice(255, (float)val, "Weather Dependent Cooling Offset");
 	if ((val = getReg(56)) != 0x7FFF && val != 32766) UpdateSelectorSwitch(256, val * 10, "Smart Grid", "Free|Forced off|Recommended on|Forced on");
 	if ((val = getReg(58)) != 0x7FFF && val != 32766) UpdateCustomSensor(258, (val / 100.0f) * 1000.0f, "General Power Limit", "W");
 	if ((val = getReg(59)) != 0x7FFF && val != 32766) UpdateSwitch(259, val != 0, "Thermostat Main Input A");
