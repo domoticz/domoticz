@@ -300,10 +300,10 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
                     const stopwatchCycle = stopwatch('cycle');
                     if (data.errormessage !== undefined) {
-                        self.$scope.chartRef.renderError(data.errormessage)
+                        self.$scope.chartRef.renderError(data.errormessage);
                     }
                     else if (data.warningmessage !== undefined) {
-                        self.$scope.chartRef.renderWarning(data.warningmessage)
+                        self.$scope.chartRef.renderWarning(data.warningmessage);
                     }
                     loadDataInChart(data);
                     synchronizeYaxes();

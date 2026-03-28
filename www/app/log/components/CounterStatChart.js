@@ -70,7 +70,7 @@ define(['app', 'luxon', 'ChartWatermark'], function (app, luxon, ChartWatermark)
 		$scope.chartDefinitionBase = {
 			title: null,
 			chart: {
-				marginTop: 45
+				marginTop: 45,
 				events: {
 					load: function () {
 						ChartWatermark.init(this);
