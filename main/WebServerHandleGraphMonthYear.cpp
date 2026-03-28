@@ -567,8 +567,16 @@ static void HandleGraphMonthYear_Counter_P1Energy(
 						root["result"][ii]["c"] = "0";
 					break;
 				}
-				snprintf(szTmp, sizeof(szTmp), "%.4f", fPrice);
-				root["result"][ii]["p"] = szTmp; // Json::Value::null;
+				{
+					const double dValue = atof(szValue.c_str());
+					if (dValue <= 0.0 || std::abs(fPrice) > (static_cast<float>(dValue) / divider) * 3.0f)
+						root["result"][ii]["p"] = "0";
+					else
+					{
+						snprintf(szTmp, sizeof(szTmp), "%.4f", fPrice);
+						root["result"][ii]["p"] = szTmp;
+					}
+				}
 				ii++;
 			}
 		}

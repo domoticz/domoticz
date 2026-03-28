@@ -3,6 +3,8 @@
 #include "json_helper.h"
 #include "Logger.h"
 #include "SQLHelper.h"
+#include "RFXNames.h"
+#include "../hardware/hardwaretypes.h"
 #include <thread>
 #include <atomic>
 #include <mutex>
@@ -105,8 +107,10 @@ bool CKWHStats::RemoveSpikeStats(const uint64_t device_id)
 			if (kwhs.weekday_hour_kwh[wday][hour] > 0)
 				all_hourly.push_back(kwhs.weekday_hour_kwh[wday][hour]);
 
-	if (all_hourly.empty())
-		return false;
+	bool changed = false;
+
+	if (!all_hourly.empty())
+	{
 
 	std::sort(all_hourly.begin(), all_hourly.end());
 	const size_t n = all_hourly.size();
@@ -120,7 +124,6 @@ bool CKWHStats::RemoveSpikeStats(const uint64_t device_id)
 	// Daily threshold: 24 peak-hours at the hourly fence
 	const int daily_threshold = static_cast<int>(std::min((int64_t)hourly_threshold * 24, (int64_t)INT_MAX));
 
-	bool changed = false;
 
 	// Fix weekday_hour_kwh: replace each spike with the average of non-spike values
 	// for the same hour across all other weekdays (computed before any modification).
@@ -142,14 +145,14 @@ bool CKWHStats::RemoveSpikeStats(const uint64_t device_id)
 		{
 			bool any_spike = false;
 			for (int wday = 0; wday < DAYS_PER_WEEK; wday++)
-				if (kwhs.weekday_hour_kwh[wday][hour] > hourly_threshold) { any_spike = true; break; }
+				if (kwhs.weekday_hour_kwh[wday][hour] > hourly_threshold || kwhs.weekday_hour_kwh[wday][hour] < 0) { any_spike = true; break; }
 			if (any_spike)
 				_log.Log(LOG_STATUS, "KWHStats: device %" PRIu64 " hour %d: no valid baseline across weekdays, zeroing spike(s)", device_id, hour);
 		}
 		const int replacement = (count > 0) ? static_cast<int>(sum / count) : 0;
 		for (int wday = 0; wday < DAYS_PER_WEEK; wday++)
 		{
-			if (kwhs.weekday_hour_kwh[wday][hour] > hourly_threshold)
+			if (kwhs.weekday_hour_kwh[wday][hour] > hourly_threshold || kwhs.weekday_hour_kwh[wday][hour] < 0)
 			{
 				kwhs.weekday_hour_kwh[wday][hour] = replacement;
 				changed = true;
@@ -162,7 +165,7 @@ bool CKWHStats::RemoveSpikeStats(const uint64_t device_id)
 	// a subsequent normal sample can correct it through the running average.
 	for (int hour = 0; hour < HOURS_PER_DAY; hour++)
 	{
-		if (kwhs.daily_hour_kwh[hour] > hourly_threshold)
+		if (kwhs.daily_hour_kwh[hour] > hourly_threshold || kwhs.daily_hour_kwh[hour] < 0)
 		{
 			int64_t sum = 0;
 			int count = 0;
@@ -205,14 +208,14 @@ bool CKWHStats::RemoveSpikeStats(const uint64_t device_id)
 		{
 			bool any_spike = false;
 			for (int wday = 0; wday < DAYS_PER_WEEK; wday++)
-				if (kwhs.weekday_kwh[wday] > daily_threshold) { any_spike = true; break; }
+				if (kwhs.weekday_kwh[wday] > daily_threshold || kwhs.weekday_kwh[wday] < 0) { any_spike = true; break; }
 			if (any_spike)
 				_log.Log(LOG_STATUS, "KWHStats: device %" PRIu64 " weekday totals: no valid baseline, zeroing spike(s)", device_id);
 		}
 		const int replacement = (count > 0) ? static_cast<int>(sum / count) : 0;
 		for (int wday = 0; wday < DAYS_PER_WEEK; wday++)
 		{
-			if (kwhs.weekday_kwh[wday] > daily_threshold)
+			if (kwhs.weekday_kwh[wday] > daily_threshold || kwhs.weekday_kwh[wday] < 0)
 			{
 				kwhs.weekday_kwh[wday] = replacement;
 				changed = true;
@@ -220,10 +223,11 @@ bool CKWHStats::RemoveSpikeStats(const uint64_t device_id)
 		}
 	}
 
-	if (changed)
-	{
-		kwhs.m_bDirty = true;
-		kwhs.SaveToDB();
+		if (changed)
+		{
+			kwhs.m_bDirty = true;
+			kwhs.SaveToDB();
+		}
 	}
 
 	return changed;

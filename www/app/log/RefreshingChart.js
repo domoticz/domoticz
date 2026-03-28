@@ -322,14 +322,21 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                         // self._missingDataWindowEnd is used by zoom/reset buttons to end at today.
                         self._missingDataWindowEnd = null;
 
-                        if (self.range !== 'day' && self.range !== 'month' && self.range !== 'year') {
+                        if (self.range !== 'day' && self.range !== 'month' && self.range !== 'year' && self.range !== 'hour') {
+                            return;
+                        }
+                        // For the hour chart, only apply when showing the last 24 hours ('1d' zoom)
+                        if (self.range === 'hour' && self.$scope.zoomType !== '1d') {
                             return;
                         }
 
                         var now = Date.now();
                         var windowEnd, windowStart = null;
 
-                        if (self.range === 'day') {
+                        if (self.range === 'hour') {
+                            windowEnd = now;
+                            windowStart = now - 24 * 3600 * 1000;
+                        } else if (self.range === 'day') {
                             windowEnd = now;
                             var shortLogDays = (self.$scope.$root.config.FiveMinuteHistoryDays || 1);
                             windowStart = now - shortLogDays * 86400 * 1000;
@@ -364,7 +371,9 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                         var today = new Date(); today.setHours(0, 0, 0, 0);
                         var lastDataDay = new Date(dataMax); lastDataDay.setHours(0, 0, 0, 0);
 
-                        var hasMissingData = (self.range === 'day')
+                        var hasMissingData = (self.range === 'hour')
+                            ? (dataMax < now - 3600000)         // more than 1 hour gap for hour chart
+                            : (self.range === 'day')
                             ? (dataMax < now - 300000)          // more than 5 min gap for short log
                             : (lastDataDay.getTime() < today.getTime()); // last entry before today
 
@@ -975,13 +984,23 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             deleteItem.style.cssText = 'padding:8px 16px;cursor:pointer;color:#ddd;white-space:nowrap;font-size:13px;';
             deleteItem.innerHTML = '<i class="fa fa-trash fa-fw" style="margin-right:8px;color:#aaa;"></i>' + $.t('Delete this value');
 
-            [spreadItem, deleteItem].forEach(function (item) {
+            var dividerItem = document.createElement('div');
+            dividerItem.style.cssText = 'margin:4px 0;border-top:1px solid #444;';
+
+            var fixItem = document.createElement('div');
+            fixItem.setAttribute('data-spike-action', 'fix');
+            fixItem.style.cssText = 'padding:8px 16px;cursor:pointer;color:#ddd;white-space:nowrap;font-size:13px;';
+            fixItem.innerHTML = '<i class="fa fa-wrench fa-fw" style="margin-right:8px;color:#aaa;"></i>' + $.t('Fix Counter/Price Spikes');
+
+            [spreadItem, deleteItem, fixItem].forEach(function (item) {
                 item.addEventListener('mouseenter', function () { item.style.background = '#3a3a3a'; });
                 item.addEventListener('mouseleave', function () { item.style.background = ''; });
             });
 
             menu.appendChild(spreadItem);
             menu.appendChild(deleteItem);
+            menu.appendChild(dividerItem);
+            menu.appendChild(fixItem);
             document.body.appendChild(menu);
 
             function hideMenu() {
@@ -1040,6 +1059,20 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     self.dataSupplier.isShortLogChart,
                     Intl.DateTimeFormat().resolvedOptions().timeZone
                 ).then(function () { self.$route.reload(); });
+            });
+
+            fixItem.addEventListener('click', function () {
+                hideMenu();
+                bootbox.confirm($.t('Fix the Weekly Pattern by removing spike contamination?\n\nThis recalculates averages from valid data.'), function (result) {
+                    if (!result) return;
+                    $.ajax({ url: 'json.htm?type=command&param=fixcounterprices&idx=' + self.device.idx })
+                        .then(function (data) {
+                            var msg = $.t('Weekly pattern fixed.');
+                            if (data && data.pricesFixed > 0)
+                                msg += '\n' + $.t('Also fixed') + ' ' + data.pricesFixed + ' ' + $.t('invalid price entries in the calendar.');
+                            bootbox.alert(msg, function () { self.$route.reload(); });
+                        });
+                });
             });
 
             function onDocClick(e) {

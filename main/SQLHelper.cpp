@@ -7997,6 +7997,15 @@ void CSQLHelper::AddCalendarUpdateMeter()
 
 				price = 0;
 				CalcMeterPrice(ID, divider, szDateStart, szDateEnd, price);
+				if (price != 0.0f && total_real > 0)
+				{
+					// Spike protection: discard price if implied tariff exceeds max plausible rate
+					constexpr float max_unit_price = 3.0f;  
+					if (std::abs(price) > (static_cast<float>(total_real) / divider) * max_unit_price)
+						price = 0;
+				}
+				else if (total_real <= 0)
+					price = 0;
 				
 				result = safe_query(
 					"INSERT INTO Meter_Calendar (DeviceRowID, Value, Counter, Price, Date) "
@@ -8175,6 +8184,14 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 				//counters are values 1(u1), 5(u2), 2(d1), 6(d2)
 				price = 0;
 				CalcMultiMeterPrice(ID, EnergyDivider, szDateStart, szDateEnd, price);
+				if (price != 0.0f)
+				{
+					// Spike protection: discard price if implied tariff exceeds max plausible rate
+					float gross_energy = (total_real[0] + total_real[1] + total_real[4] + total_real[5]) / EnergyDivider;
+					constexpr float max_unit_price = 3.0f;  
+					if (gross_energy <= 0 || std::abs(price) > gross_energy * max_unit_price)
+						price = 0;
+				}
 			}
 			else
 			{
@@ -8852,8 +8869,302 @@ bool CSQLHelper::FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dr
 
 	if (CKWHStats::RemoveSpikeStats(idx))
 		results.push_back("Weekly pattern: removed contaminated hourly/daily averages");
+	int pricesFixed = SanitizeCalendarData(idx);
+	if (pricesFixed > 0)
+		results.push_back(std_format("Fixed %d invalid price entries in calendar", pricesFixed));
 
 	return true;
+}
+
+int CSQLHelper::SanitizeCalendarData(uint64_t idx)
+{
+	int pricesFixed = 0;
+
+	int tValue = 0;
+	float EnergyDivider = 1000.0F;
+	float GasDivider = 100.0F;
+	float WaterDivider = 100.0F;
+	if (GetPreferencesVar("MeterDividerEnergy", tValue)) EnergyDivider = float(tValue);
+	if (GetPreferencesVar("MeterDividerGas", tValue)) GasDivider = float(tValue);
+	if (GetPreferencesVar("MeterDividerWater", tValue)) WaterDivider = float(tValue);
+
+	auto dev_result = safe_query("SELECT Type, SubType, SwitchType, AddjValue2 FROM DeviceStatus WHERE ID=%" PRIu64, idx);
+	if (!dev_result.empty())
+	{
+		unsigned char devType = static_cast<unsigned char>(atoi(dev_result[0][0].c_str()));
+		_eMeterType metertype = (_eMeterType)atoi(dev_result[0][2].c_str());
+		float addjvalue2 = static_cast<float>(atof(dev_result[0][3].c_str()));
+		if (addjvalue2 == 0) addjvalue2 = 1;
+
+		if (devType == pTypeP1Power) metertype = MTYPE_ENERGY;
+		else if (devType == pTypeP1Gas) metertype = MTYPE_GAS;
+
+		float divider = 1.0F;
+		switch (metertype)
+		{
+		case MTYPE_ENERGY:
+		case MTYPE_ENERGY_GENERATED:
+			divider = EnergyDivider; break;
+		case MTYPE_GAS:
+			divider = GasDivider; break;
+		case MTYPE_WATER:
+			divider = WaterDivider; break;
+		default:
+			divider = addjvalue2; break;
+		}
+
+		constexpr float fallback_max_unit_rate = 3.0f;
+		constexpr size_t min_samples_for_iqr = 5;
+
+		auto computeIQRFence = [min_samples_for_iqr](std::vector<float>& rates, float& fence_lo, float& fence_hi) -> bool {
+			if (rates.size() < min_samples_for_iqr)
+				return false;
+			std::sort(rates.begin(), rates.end());
+			const size_t n = rates.size();
+			const float q1 = rates[n / 4];
+			const float q3 = rates[n * 3 / 4];
+			const float iqr = q3 - q1;
+			if (iqr > 0)
+			{
+				fence_lo = q1 - 3.0f * iqr;
+				fence_hi = q3 + 3.0f * iqr;
+				return true;
+			}
+			const float med = rates[n / 2];
+			if (med != 0.0f)
+			{
+				fence_lo = med - 10.0f * std::abs(med);
+				fence_hi = med + 10.0f * std::abs(med);
+				return true;
+			}
+			return false;
+		};
+
+		{
+			auto cal_result = safe_query("SELECT ROWID, Value, Price FROM Meter_Calendar WHERE DeviceRowID=%" PRIu64 " ORDER BY Date ASC", idx);
+
+			for (auto& row : cal_result)
+			{
+				if (atof(row[1].c_str()) < 0)
+				{
+					safe_query("UPDATE Meter_Calendar SET Value=0, Price=0 WHERE ROWID=%s", row[0].c_str());
+					row[1] = "0";
+					row[2] = "0";
+					pricesFixed++;
+				}
+			}
+
+			std::vector<float> rates;
+			rates.reserve(cal_result.size());
+			for (const auto& row : cal_result)
+			{
+				const float value = static_cast<float>(atof(row[1].c_str()));
+				const float price = static_cast<float>(atof(row[2].c_str()));
+				if (price != 0.0f && value > 0)
+					rates.push_back(price / (value / divider));
+			}
+
+			float fence_lo = 0, fence_hi = 0;
+			const bool use_iqr = computeIQRFence(rates, fence_lo, fence_hi);
+
+			for (size_t i = 0; i < cal_result.size(); i++)
+			{
+				auto& row = cal_result[i];
+				const float value = static_cast<float>(atof(row[1].c_str()));
+				const float price = static_cast<float>(atof(row[2].c_str()));
+				if (price == 0.0f) continue;
+
+				bool bad;
+				if (value <= 0)
+					bad = true;
+				else if (use_iqr)
+				{
+					const float rate = price / (value / divider);
+					bad = (rate < fence_lo || rate > fence_hi);
+				}
+				else
+					bad = (std::abs(price) > (value / divider) * fallback_max_unit_rate);
+
+				if (!bad) continue;
+
+				if (value <= 0)
+				{
+					safe_query("UPDATE Meter_Calendar SET Price=0 WHERE ROWID=%s", row[0].c_str());
+					row[2] = "0";
+					pricesFixed++;
+				}
+				else
+				{
+					std::vector<size_t> dead_indices;
+					for (int j = static_cast<int>(i) - 1; j >= 0; j--)
+					{
+						const float dv = static_cast<float>(atof(cal_result[j][1].c_str()));
+						const float dp = static_cast<float>(atof(cal_result[j][2].c_str()));
+						if (dv > 0 && dp == 0.0f)
+							dead_indices.push_back(static_cast<size_t>(j));
+						else
+							break;
+					}
+
+					if (!dead_indices.empty())
+					{
+						float total_value = value;
+						for (size_t didx : dead_indices)
+							total_value += static_cast<float>(atof(cal_result[didx][1].c_str()));
+
+						const float spread_rate = price / (total_value / divider);
+						bool spread_ok;
+						if (use_iqr)
+							spread_ok = (spread_rate >= fence_lo && spread_rate <= fence_hi);
+						else
+							spread_ok = (std::abs(price) <= (total_value / divider) * fallback_max_unit_rate);
+
+						if (spread_ok)
+						{
+							for (size_t didx : dead_indices)
+							{
+								const float dv = static_cast<float>(atof(cal_result[didx][1].c_str()));
+								const float share = price * (dv / total_value);
+								safe_query("UPDATE Meter_Calendar SET Price=%.4f WHERE ROWID=%s", share, cal_result[didx][0].c_str());
+								char buf[32];
+								snprintf(buf, sizeof(buf), "%.4f", share);
+								cal_result[didx][2] = buf;
+								pricesFixed++;
+							}
+							const float remaining = price * (value / total_value);
+							safe_query("UPDATE Meter_Calendar SET Price=%.4f WHERE ROWID=%s", remaining, row[0].c_str());
+							char buf[32];
+							snprintf(buf, sizeof(buf), "%.4f", remaining);
+							row[2] = buf;
+						}
+						else
+						{
+							safe_query("UPDATE Meter_Calendar SET Price=0 WHERE ROWID=%s", row[0].c_str());
+							row[2] = "0";
+							pricesFixed++;
+						}
+					}
+					else
+					{
+						safe_query("UPDATE Meter_Calendar SET Price=0 WHERE ROWID=%s", row[0].c_str());
+						row[2] = "0";
+						pricesFixed++;
+					}
+				}
+			}
+		}
+
+		if (devType == pTypeP1Power)
+		{
+			auto mmcal = safe_query("SELECT ROWID, Value1, Value2, Value5, Value6, Price FROM MultiMeter_Calendar WHERE DeviceRowID=%" PRIu64 " ORDER BY Date ASC", idx);
+
+			std::vector<float> rates;
+			rates.reserve(mmcal.size());
+			for (const auto& row : mmcal)
+			{
+				const float price = static_cast<float>(atof(row[5].c_str()));
+				const float gross = (static_cast<float>(atof(row[1].c_str())) + static_cast<float>(atof(row[2].c_str()))
+					+ static_cast<float>(atof(row[3].c_str())) + static_cast<float>(atof(row[4].c_str()))) / EnergyDivider;
+				if (price != 0.0f && gross > 0)
+					rates.push_back(price / gross);
+			}
+
+			float fence_lo = 0, fence_hi = 0;
+			const bool use_iqr = computeIQRFence(rates, fence_lo, fence_hi);
+
+			for (size_t i = 0; i < mmcal.size(); i++)
+			{
+				auto& row = mmcal[i];
+				const float price = static_cast<float>(atof(row[5].c_str()));
+				if (price == 0.0f) continue;
+				const float gross = (static_cast<float>(atof(row[1].c_str())) + static_cast<float>(atof(row[2].c_str()))
+					+ static_cast<float>(atof(row[3].c_str())) + static_cast<float>(atof(row[4].c_str()))) / EnergyDivider;
+
+				bool bad;
+				if (gross <= 0)
+					bad = true;
+				else if (use_iqr)
+				{
+					const float rate = price / gross;
+					bad = (rate < fence_lo || rate > fence_hi);
+				}
+				else
+					bad = (std::abs(price) > gross * fallback_max_unit_rate);
+
+				if (!bad) continue;
+
+				if (gross <= 0)
+				{
+					safe_query("UPDATE MultiMeter_Calendar SET Price=0 WHERE ROWID=%s", row[0].c_str());
+					row[5] = "0";
+					pricesFixed++;
+				}
+				else
+				{
+					std::vector<size_t> dead_indices;
+					for (int j = static_cast<int>(i) - 1; j >= 0; j--)
+					{
+						const float dg = (static_cast<float>(atof(mmcal[j][1].c_str())) + static_cast<float>(atof(mmcal[j][2].c_str()))
+							+ static_cast<float>(atof(mmcal[j][3].c_str())) + static_cast<float>(atof(mmcal[j][4].c_str()))) / EnergyDivider;
+						const float dp = static_cast<float>(atof(mmcal[j][5].c_str()));
+						if (dg > 0 && dp == 0.0f)
+							dead_indices.push_back(static_cast<size_t>(j));
+						else
+							break;
+					}
+
+					if (!dead_indices.empty())
+					{
+						float total_gross = gross;
+						for (size_t didx : dead_indices)
+							total_gross += (static_cast<float>(atof(mmcal[didx][1].c_str())) + static_cast<float>(atof(mmcal[didx][2].c_str()))
+								+ static_cast<float>(atof(mmcal[didx][3].c_str())) + static_cast<float>(atof(mmcal[didx][4].c_str()))) / EnergyDivider;
+
+						const float spread_rate = price / total_gross;
+						bool spread_ok;
+						if (use_iqr)
+							spread_ok = (spread_rate >= fence_lo && spread_rate <= fence_hi);
+						else
+							spread_ok = (std::abs(price) <= total_gross * fallback_max_unit_rate);
+
+						if (spread_ok)
+						{
+							for (size_t didx : dead_indices)
+							{
+								const float dg = (static_cast<float>(atof(mmcal[didx][1].c_str())) + static_cast<float>(atof(mmcal[didx][2].c_str()))
+									+ static_cast<float>(atof(mmcal[didx][3].c_str())) + static_cast<float>(atof(mmcal[didx][4].c_str()))) / EnergyDivider;
+								const float share = price * (dg / total_gross);
+								safe_query("UPDATE MultiMeter_Calendar SET Price=%.4f WHERE ROWID=%s", share, mmcal[didx][0].c_str());
+								char buf[32];
+								snprintf(buf, sizeof(buf), "%.4f", share);
+								mmcal[didx][5] = buf;
+								pricesFixed++;
+							}
+							const float remaining = price * (gross / total_gross);
+							safe_query("UPDATE MultiMeter_Calendar SET Price=%.4f WHERE ROWID=%s", remaining, row[0].c_str());
+							char buf[32];
+							snprintf(buf, sizeof(buf), "%.4f", remaining);
+							row[5] = buf;
+						}
+						else
+						{
+							safe_query("UPDATE MultiMeter_Calendar SET Price=0 WHERE ROWID=%s", row[0].c_str());
+							row[5] = "0";
+							pricesFixed++;
+						}
+					}
+					else
+					{
+						safe_query("UPDATE MultiMeter_Calendar SET Price=0 WHERE ROWID=%s", row[0].c_str());
+						row[5] = "0";
+						pricesFixed++;
+					}
+				}
+			}
+		}
+	}
+
+	return pricesFixed;
 }
 
 bool CSQLHelper::SpreadCounterSpike(uint64_t idx, const std::string& sdate, std::vector<std::string>& results)
@@ -8868,7 +9179,7 @@ bool CSQLHelper::SpreadCounterSpike(uint64_t idx, const std::string& sdate, std:
 
 	// Get spike row
 	auto spikerow = safe_query(
-		"SELECT Value, Counter FROM Meter_Calendar WHERE (DeviceRowID='%" PRIu64 "') AND (Date='%q')",
+		"SELECT Value, Counter, Price FROM Meter_Calendar WHERE (DeviceRowID='%" PRIu64 "') AND (Date='%q')",
 		idx, sdate.c_str());
 	if (spikerow.empty())
 	{
@@ -8879,6 +9190,8 @@ bool CSQLHelper::SpreadCounterSpike(uint64_t idx, const std::string& sdate, std:
 	int64_t spike_counter = 0;
 	try { spike_value = std::stoll(spikerow[0][0]); } catch (...) {}
 	try { spike_counter = std::stoll(spikerow[0][1]); } catch (...) {}
+	float spike_price = 0.0f;
+	try { spike_price = std::stof(spikerow[0][2]); } catch (...) {}
 
 	if (spike_value <= 0)
 	{
@@ -8958,30 +9271,32 @@ bool CSQLHelper::SpreadCounterSpike(uint64_t idx, const std::string& sdate, std:
 	int64_t total_days = static_cast<int64_t>(dead_days.size()) + 1;
 	int64_t spread = spike_value / total_days;
 	int64_t remainder = spike_value - spread * total_days;
+	const float price_per_day = (spike_price != 0.0f) ? spike_price / float(total_days) : 0.0f;
+	const float price_spike_day = (spike_price != 0.0f) ? (spike_price - price_per_day * float(dead_days.size())) : 0.0f;
 
 	for (const auto& dd : dead_days)
 	{
 		if (dd.existing)
 		{
 			safe_query(
-				"UPDATE Meter_Calendar SET Value=%" PRId64 " "
+				"UPDATE Meter_Calendar SET Value=%" PRId64 ", Price=%.4f "
 				"WHERE (DeviceRowID='%" PRIu64 "') AND (Date='%q')",
-				spread, idx, dd.date.c_str());
+				spread, price_per_day, idx, dd.date.c_str());
 		}
 		else
 		{
 			safe_query(
 				"INSERT INTO Meter_Calendar (DeviceRowID, Value, Date, Counter, Price) "
-				"VALUES ('%" PRIu64 "', %" PRId64 ", '%q', %" PRId64 ", 0)",
-				idx, spread, dd.date.c_str(), dead_counter);
+				"VALUES ('%" PRIu64 "', %" PRId64 ", '%q', %" PRId64 ", %.4f)",
+				idx, spread, dd.date.c_str(), dead_counter, price_per_day);
 		}
 	}
 
 	// Spike day gets spread + remainder
 	safe_query(
-		"UPDATE Meter_Calendar SET Value=%" PRId64 " "
+		"UPDATE Meter_Calendar SET Value=%" PRId64 ", Price=%.4f "
 		"WHERE (DeviceRowID='%" PRIu64 "') AND (Date='%q')",
-		spread + remainder, idx, sdate.c_str());
+		spread + remainder, price_spike_day, idx, sdate.c_str());
 
 	results.push_back(std_format("Spread %" PRId64 " across %" PRId64 " day(s) (%" PRId64 " per day)",
 		spike_value, total_days, spread));
@@ -8989,6 +9304,7 @@ bool CSQLHelper::SpreadCounterSpike(uint64_t idx, const std::string& sdate, std:
 		idx, sdate.c_str(), spike_value, total_days);
 
 	CKWHStats::RemoveSpikeStats(idx);
+	SanitizeCalendarData(idx);
 
 	return true;
 }

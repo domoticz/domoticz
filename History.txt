@@ -10,12 +10,16 @@ Version 2026.xxxx
 - Added: MCP, new prompts: battery_status, climate_overview, create_automation, daily_report, energy_report, hardware_health, scene_optimizer, security_check
 - Added: Counter log, right-click context menu on anomalous spike bars with options to spread the value across preceding empty days or delete it (admin only)
 - Added: Counter log, "Fix Weekly Pattern" option in the Weekly Generated Pattern and Days/Hourly Energy chart menus to remove spike contamination from running averages (admin only)
+- Added: Counter log, "Fix Counter/Price Spikes" option in Last Month, Last Year and shortlog chart context menus to repair corrupted price entries and counter resets (admin only)
 - Added: PhilipsHue, automatic bridge version detection (V2 HTTPS/443, V1 HTTPS/443, V1 HTTP/80); port no longer needs manual configuration
 - Added: PhilipsHue V2, real-time sensor updates via Server-Sent Events (SSE); instant state changes without waiting for the next poll cycle
 - Added: PhilipsHue V2, new sensor types: grouped motion, grouped light level, camera motion, security area motion, button remotes, and bell button (doorbell)
+- Changed: Counter log, "Fix Counter Spikes" renamed to "Fix Counter/Price Spikes"; now also detects and repairs corrupted price entries in the calendar caused by counter spikes
 - Changed: Counter log, "Fix Counter Spikes" admin button is now visible in the counter log footer
 - Changed: Security Panel page redesigned to match Domoticz glass-card style (login/about page look)
+- Fixed: Counter log, calendar entries with negative values caused by counter resets or rollovers are now detected and zeroed by "Fix Counter/Price Spikes"
 - Fixed: Counter log, monthly/yearly charts incorrectly spreading a day's value across preceding zero-value days (#6703)
+- Fixed: Counter log, spreading a spiked counter value across previous empty days now also distributes the associated price proportionally
 - Fixed: Log charts, month/year/day range charts now always extend to today; a red highlight indicates the period with no recorded data
 - Fixed: Counter log, Weekly Generated Pattern heatmap could show extreme values caused by spike contamination in running hourly averages
 - Fixed: Contact and DoorContact switches now show correct Open/Closed icon state in the dashboard

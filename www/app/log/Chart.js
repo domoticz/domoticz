@@ -170,13 +170,14 @@ define(['app'], function (app) {
         const iqr = q3 - q1;
         if (iqr <= 0) return;
 
-        const threshold = q3 + 3 * iqr;
+        const upperThreshold = q3 + 3 * iqr;
+        const lowerThreshold = q1 - 3 * iqr;
         const extremeThreshold = q3 * 10;
         for (let i = 0; i < datapoints.length; i++) {
             const dp = datapoints[i];
             const value = dp[1];
-            if (value !== null && value > threshold) {
-                const isExtreme = value > extremeThreshold;
+            if (value !== null && (value > upperThreshold || value < lowerThreshold)) {
+                const isExtreme = value > extremeThreshold || value < -extremeThreshold;
                 if (!isExtreme) {
                     const prevVal = i > 0 ? datapoints[i - 1][1] : null;
                     const nextVal = i < datapoints.length - 1 ? datapoints[i + 1][1] : null;

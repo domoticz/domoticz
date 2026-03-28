@@ -351,6 +351,7 @@ private:
 	void Cmd_GetkWhStats(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_ResetkWhStats(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_FixkWhStats(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_FixCounterPrices(WebEmSession& session, const request& req, Json::Value& root);
 
 	// Plugin functions
 	void Cmd_PluginCommand(WebEmSession & session, const request& req, Json::Value &root);

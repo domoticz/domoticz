@@ -12,44 +12,9 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
             },
             templateUrl: 'app/log/CounterLog.html',
             controllerAs: '$ctrl',
-            controller: ['domoticzApi', '$window', function (domoticzApi, $window) {
+            controller: [function () {
                 const $ctrl = this;
                 $ctrl.autoRefresh = true;
-
-                $ctrl.fixKwhSpikes = function () {
-                    if (!$ctrl.device || !$ctrl.device.idx) return;
-
-                    var confirmMsg = $.t('Are you sure you want to fix counter spikes for this device?') + '<br><br>' +
-                        '<span style="color:#fff; font-weight:bold;">' + $.t('It is advised to make a database backup before running this operation.') + '</span>';
-
-                    bootbox.confirm(confirmMsg, function (result) {
-                        if (!result) return;
-
-                        domoticzApi.sendCommand('fixkwhcounterspikes', {
-                            idx: $ctrl.device.idx,
-                            dryrun: 0
-                        }).then(function (response) {
-                            var lines = (response.result && response.result.length > 0)
-                                ? response.result
-                                : [$.t('No issues found.')];
-                            var html = '<ul style="text-align:left; margin: 10px 0;">';
-                            lines.forEach(function (line) {
-                                // Safely escape HTML entities from backend result lines
-                                html += '<li>' + $('<div>').text(line).html() + '</li>';
-                            });
-                            html += '</ul>';
-
-                            bootbox.alert(html, function () {
-                                $window.location.reload();
-                            });
-                        }, function (response) {
-                            var msg = (response && response.message)
-                                ? response.message
-                                : $.t('Failed to fix counter spikes. Check the Domoticz log for details.');
-                            bootbox.alert(msg);
-                        });
-                    });
-                };
             }]
         });
 
@@ -246,6 +211,30 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
             }
         });
 
+        function addFixSpikesMenuItem(params, deviceIdx, $route) {
+            var menuItems = Highcharts.getOptions().exporting.buttons.contextButton.menuItems.slice();
+            menuItems.push({ separator: true });
+            menuItems.push({
+                text: $.t('Fix Counter/Price Spikes'),
+                onclick: function () {
+                    bootbox.confirm($.t('Are you sure you want to fix counter spikes for this device?') + '\n\n' + $.t('It is advised to make a database backup before running this operation.'), function (result) {
+                        if (!result) return;
+                        $.ajax({ url: 'json.htm?type=command&param=fixcounterprices&idx=' + deviceIdx })
+                            .then(function (data) {
+                                var msg = $.t('Weekly pattern fixed.');
+                                if (data && data.pricesFixed > 0)
+                                    msg += '\n' + $.t('Also fixed') + ' ' + data.pricesFixed + ' ' + $.t('invalid price entries in the calendar.');
+                                bootbox.alert(msg, function () { $route.reload(); });
+                            });
+                    });
+                }
+            });
+            if (!params.highchartTemplate) params.highchartTemplate = {};
+            params.highchartTemplate.exporting = {
+                buttons: { contextButton: { menuItems: menuItems } }
+            };
+        }
+
         app.component('counterDayChart', {
             require: {
                 logCtrl: '^deviceCounterLog'
@@ -261,24 +250,26 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 
                 self.$onInit = function () {
                     const subtype = counterLogSubtypeRegistry.get(self.logCtrl.subtype);
+                    var params = counterLogParams.chartParamsDay(domoticzGlobals, self,
+                        subtype.chartParamsDayTemplate,
+                        {
+                            isShortLogChart: true,
+                            yAxes: subtype.yAxesDay(self.device.SwitchTypeVal),
+                            timestampFromDataItem: function (dataItem, yearOffset = 0) {
+                                return GetLocalDateTimeFromString(dataItem.d, yearOffset);
+                            },
+                            extendDataRequest: subtype.extendDataRequestDay,
+                            preprocessData: subtype.preprocessDayData,
+                            preprocessDataItems: subtype.preprocessDayDataItems
+                        },
+                        subtype.daySeriesSuppliers(self.device.SwitchTypeVal, self.device.Divider)
+                    );
+                    addFixSpikesMenuItem(params, self.device.idx, $route);
                     self.chart = new RefreshingChart(
                         chart.baseParams($),
                         chart.angularParams($location, $route, $scope, $timeout, $element),
                         chart.domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
-                        counterLogParams.chartParamsDay(domoticzGlobals, self,
-                            subtype.chartParamsDayTemplate,
-                            {
-                                isShortLogChart: true,
-                                yAxes: subtype.yAxesDay(self.device.SwitchTypeVal),
-                                timestampFromDataItem: function (dataItem, yearOffset = 0) {
-                                    return GetLocalDateTimeFromString(dataItem.d, yearOffset);
-                                },
-                                extendDataRequest: subtype.extendDataRequestDay,
-                                preprocessData: subtype.preprocessDayData,
-                                preprocessDataItems: subtype.preprocessDayDataItems
-                            },
-                            subtype.daySeriesSuppliers(self.device.SwitchTypeVal, self.device.Divider)
-                        )
+                        params
                     );
                 }
             }
@@ -338,23 +329,25 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 
                 self.$onInit = function () {
                     const subtype = counterLogSubtypeRegistry.get(self.logCtrl.subtype);
+                    var params = counterLogParams.chartParamsMonthYear(domoticzGlobals, self,
+                        subtype.chartParamsMonthYearTemplate,
+                        {
+                            isShortLogChart: false,
+                            yAxes: subtype.yAxesMonthYear(self.device.SwitchTypeVal),
+                            timestampFromDataItem: function (dataItem, yearOffset = 0) {
+                                return GetLocalDateFromString(dataItem.d, yearOffset);
+                            },
+                            preprocessData: subtype.preprocessMonthYearData,
+                            preprocessDataItems: subtype.preprocessMonthYearDataItems
+                        },
+                        subtype.monthYearSeriesSuppliers(self.device.SwitchTypeVal, self.device.Divider)
+                    );
+                    addFixSpikesMenuItem(params, self.device.idx, $route);
                     self.chart = new RefreshingChart(
                         chart.baseParams($),
                         chart.angularParams($location, $route, $scope, $timeout, $element),
                         chart.domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
-                        counterLogParams.chartParamsMonthYear(domoticzGlobals, self,
-                            subtype.chartParamsMonthYearTemplate,
-                            {
-                                isShortLogChart: false,
-                                yAxes: subtype.yAxesMonthYear(self.device.SwitchTypeVal),
-                                timestampFromDataItem: function (dataItem, yearOffset = 0) {
-                                    return GetLocalDateFromString(dataItem.d, yearOffset);
-                                },
-                                preprocessData: subtype.preprocessMonthYearData,
-                                preprocessDataItems: subtype.preprocessMonthYearDataItems
-                            },
-                            subtype.monthYearSeriesSuppliers(self.device.SwitchTypeVal, self.device.Divider)
-                        )
+                        params
                     );
                 }
             }
@@ -376,29 +369,31 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                 self.$onInit = function () {
                     const subtype = counterLogSubtypeRegistry.get(self.logCtrl.subtype);
                     var origPreprocessData = subtype.preprocessMonthYearData;
+                    var params = counterLogParams.chartParamsMonthYear(domoticzGlobals, self,
+                        subtype.chartParamsMonthYearTemplate,
+                        {
+                            isShortLogChart: false,
+                            yAxes: subtype.yAxesMonthYear(self.device.SwitchTypeVal),
+                            timestampFromDataItem: function (dataItem, yearOffset = 0) {
+                                return GetLocalDateFromString(dataItem.d, yearOffset);
+                            },
+                            preprocessData: function (data) {
+                                // Share year data with conditions component
+                                self.logCtrl.yearGraphData = data.result;
+                                if (origPreprocessData) {
+                                    origPreprocessData.call(this, data);
+                                }
+                            },
+                            preprocessDataItems: subtype.preprocessMonthYearDataItems
+                        },
+                        subtype.monthYearSeriesSuppliers(self.device.SwitchTypeVal, self.device.Divider)
+                    );
+                    addFixSpikesMenuItem(params, self.device.idx, $route);
                     self.chart = new RefreshingChart(
                         chart.baseParams($),
                         chart.angularParams($location, $route, $scope, $timeout, $element),
                         chart.domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
-                        counterLogParams.chartParamsMonthYear(domoticzGlobals, self,
-                            subtype.chartParamsMonthYearTemplate,
-                            {
-                                isShortLogChart: false,
-                                yAxes: subtype.yAxesMonthYear(self.device.SwitchTypeVal),
-                                timestampFromDataItem: function (dataItem, yearOffset = 0) {
-                                    return GetLocalDateFromString(dataItem.d, yearOffset);
-                                },
-                                preprocessData: function (data) {
-                                    // Share year data with conditions component
-                                    self.logCtrl.yearGraphData = data.result;
-                                    if (origPreprocessData) {
-                                        origPreprocessData.call(this, data);
-                                    }
-                                },
-                                preprocessDataItems: subtype.preprocessMonthYearDataItems
-                            },
-                            subtype.monthYearSeriesSuppliers(self.device.SwitchTypeVal, self.device.Divider)
-                        )
+                        params
                     );
                 }
             }

@@ -6795,6 +6795,25 @@ namespace http
 			root["title"] = "FixkWhStats";
 		}
 
+		void CWebServer::Cmd_FixCounterPrices(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+			if (request::findValue(&req, "idx").empty())
+				return;
+			uint64_t idx = std::stoull(request::findValue(&req, "idx"));
+
+			bool changed = CKWHStats::RemoveSpikeStats(idx);
+			int pricesFixed = m_sql.SanitizeCalendarData(idx);
+			root["changed"] = changed || (pricesFixed > 0);
+			root["pricesFixed"] = pricesFixed;
+			root["status"] = "OK";
+			root["title"] = "FixCounterPrices";
+		}
+
 		// Helper function to convert ANSI color codes to HTML spans
 		// Also handles progress indicators (dots, ===>, percentages) from tar/wget
 		static std::string ConvertAnsiToHtml(const std::string& input)
