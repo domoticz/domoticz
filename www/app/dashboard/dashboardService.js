@@ -42,8 +42,14 @@ define(['app', 'domoticz.api', 'livesocket'], function(app) {
                 };
 
                 return domoticzApi.sendRequest(params).then(function(data) {
+                    var devices = (data.result || []).map(function(device) {
+                        if (device.Type === 'Security' && device.SubType === 'Security Panel' && device.Status === 'Normal') {
+                            return Object.assign({}, device, { Status: 'Disarm' });
+                        }
+                        return device;
+                    });
                     var result = {
-                        devices: data.result || [],
+                        devices: devices,
                         lastUpdateTime: data.ActTime ? parseInt(data.ActTime) : 0,
                         sunrise: data.Sunrise,
                         sunset: data.Sunset,
@@ -84,6 +90,7 @@ define(['app', 'domoticz.api', 'livesocket'], function(app) {
                     // Light devices
                     else if (
                         item.Type.indexOf('Light') === 0 ||
+                        item.Type.indexOf('Security') === 0 ||
                         item.SubType === 'Smartwares Mode' ||
                         item.Type.indexOf('Blind') === 0 ||
                         item.Type.indexOf('Curtain') === 0 ||

@@ -579,6 +579,7 @@
     <ClInclude Include="..\hardware\CurrentCostMeterSerial.h" />
     <ClInclude Include="..\hardware\CurrentCostMeterTCP.h" />
     <ClInclude Include="..\hardware\Daikin.h" />
+    <ClInclude Include="..\hardware\DaikinModbus.h" />
     <ClInclude Include="..\hardware\DarkSky.h" />
     <ClInclude Include="..\hardware\DavisLoggerSerial.h" />
     <ClInclude Include="..\hardware\DenkoviDevices.h" />
@@ -736,6 +737,8 @@
     <ClInclude Include="..\mdns\include\mdns.h" />
     <ClInclude Include="..\mdns\mdns.hpp" />
     <ClInclude Include="..\mcpserver\McpService.hpp" />
+    <ClInclude Include="..\mcpserver\McpSseSession.h" />
+    <ClInclude Include="..\mcpserver\McpSessionRegistry.h" />
     <ClInclude Include="..\main\appversion.h" />
     <ClInclude Include="..\hardware\ASyncSerial.h" />
     <ClInclude Include="..\main\BaroForecastCalculator.h" />
@@ -797,6 +800,7 @@
     <ClInclude Include="..\push\HttpPush.h" />
     <ClInclude Include="..\push\MQTTPush.h" />
     <ClInclude Include="..\push\WebsocketPush.h" />
+    <ClInclude Include="..\push\McpPush.h" />
     <ClInclude Include="..\push\InfluxPush.h" />
     <ClInclude Include="..\push\BasePush.h" />
     <ClInclude Include="..\main\DomoticzWebsocketHandler.h" />
@@ -878,6 +882,7 @@
     <ClCompile Include="..\hardware\CurrentCostMeterSerial.cpp" />
     <ClCompile Include="..\hardware\CurrentCostMeterTCP.cpp" />
     <ClCompile Include="..\hardware\Daikin.cpp" />
+    <ClCompile Include="..\hardware\DaikinModbus.cpp" />
     <ClCompile Include="..\hardware\DarkSky.cpp" />
     <ClCompile Include="..\hardware\DavisLoggerSerial.cpp" />
     <ClCompile Include="..\hardware\DenkoviDevices.cpp" />
@@ -978,6 +983,7 @@
     <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueHelper.cpp" />
     <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueSensors.cpp" />
     <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueV2Sensors.cpp" />
+    <ClCompile Include="..\hardware\PhilipsHue\PhilipsHueSSE.cpp" />
     <ClCompile Include="..\hardware\PiFace.cpp" />
     <ClCompile Include="..\hardware\Pinger.cpp" />
     <ClCompile Include="..\hardware\plugins\DelayedLink.cpp" />
@@ -1031,6 +1037,8 @@
     <ClCompile Include="..\main\KWHStats.cpp" />
     <ClCompile Include="..\mdns\mdns.cpp" />
     <ClCompile Include="..\mcpserver\McpService.cpp" />
+    <ClCompile Include="..\mcpserver\McpSseSession.cpp" />
+    <ClCompile Include="..\mcpserver\McpSessionRegistry.cpp" />
     <ClCompile Include="..\main\Alexa.cpp" />
     <ClCompile Include="..\main\BaroForecastCalculator.cpp" />
     <ClCompile Include="..\main\Camera.cpp" />
@@ -1098,6 +1106,7 @@
     <ClCompile Include="..\push\HttpPush.cpp" />
     <ClCompile Include="..\push\MQTTPush.cpp" />
     <ClCompile Include="..\push\WebsocketPush.cpp" />
+    <ClCompile Include="..\push\McpPush.cpp" />
     <ClCompile Include="..\push\InfluxPush.cpp" />
     <ClCompile Include="..\push\BasePush.cpp" />
     <ClCompile Include="..\smtpclient\SMTPClient.cpp" />

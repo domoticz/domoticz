@@ -46,7 +46,15 @@ define(['app'], function (app) {
             controllerAs: 'ctrl',
             controller: function ($scope, $element, $location) {
                 var ctrl = this;
-                var device = $scope.device;
+
+                function normalizeDevice(dev) {
+                    if (dev && dev.Type === 'Security' && dev.SubType === 'Security Panel' && dev.Status === 'Normal') {
+                        return Object.assign({}, dev, { Status: 'Disarm' });
+                    }
+                    return dev;
+                }
+
+                var device = normalizeDevice($scope.device);
 
                 ctrl.device = device;
                 ctrl.isMobile = window.myglobals && window.myglobals.ismobile;
@@ -55,8 +63,8 @@ define(['app'], function (app) {
                 // Keep ctrl.device in sync when parent replaces the binding
                 $scope.$watch('device', function (newVal) {
                     if (newVal) {
-                        device = newVal;
-                        ctrl.device = newVal;
+                        device = normalizeDevice(newVal);
+                        ctrl.device = device;
                         ctrl.updateSelectorLevels();
                         ctrl.updateSearchText();
                     }
@@ -670,6 +678,45 @@ define(['app'], function (app) {
                             }
                         });
                     }
+                };
+
+                ctrl.isSecurityType = function() {
+                    return device.Type === 'Security';
+                };
+
+                ctrl.isSecurityPanel = function() {
+                    return device.Type === 'Security' && device.SubType === 'Security Panel';
+                };
+
+                ctrl.isSecurityArmable = function() {
+                    return device.Type === 'Security' && (
+                        (device.SubType && device.SubType.indexOf('remote') > 0) ||
+                        (device.SubType && device.SubType.indexOf('Meiantech') >= 0)
+                    );
+                };
+
+                ctrl.isSecurityArmed = function() {
+                    return device.Status && (device.Status.indexOf('Arm') >= 0 || device.Status.indexOf('Panic') >= 0);
+                };
+
+                ctrl.sendSecurityCommand = function(cmd) {
+                    if (window.my_config && window.my_config.userrights == 0) {
+                        ShowNotify($.t('You do not have permission to do that!'), 2500, true);
+                        return;
+                    }
+                    $.devIdx = device.idx;
+                    if (device.Protected) {
+                        bootbox.prompt($.t('Please enter Password') + ':', function(result) {
+                            if (!result) return;
+                            SendX10Command(device.idx, cmd, result);
+                        });
+                    } else {
+                        SendX10Command(device.idx, cmd, '');
+                    }
+                };
+
+                ctrl.navigateToSecPanel = function() {
+                    window.location.href = 'secpanel/';
                 };
 
                 ctrl.isRFY = function () {

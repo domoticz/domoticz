@@ -119,8 +119,35 @@
                             </span>
                         </span>
 
+                        <!-- Security Panel -->
+                        <span ng-if="ctrl.isSecurityPanel()">
+                            <button class="btn btn-mini"
+                                    ng-click="ctrl.navigateToSecPanel()">{{ctrl.device.Status}}</button>
+                        </span>
+
+                        <!-- Armable Security (remote / Meiantech) -->
+                        <span ng-if="ctrl.isSecurityArmable()">
+                            <button class="btn btn-mini"
+                                    ng-if="!ctrl.isSecurityArmed()"
+                                    ng-click="ctrl.sendSecurityCommand('Arm Home')"
+                                    data-i18n="Arm Home">Arm Home</button>
+                            <button class="btn btn-mini"
+                                    ng-if="!ctrl.isSecurityArmed()"
+                                    ng-click="ctrl.sendSecurityCommand('Arm Away')"
+                                    data-i18n="Arm Away">Arm Away</button>
+                            <button class="btn btn-mini btn-info"
+                                    ng-if="ctrl.isSecurityArmed()"
+                                    ng-click="ctrl.sendSecurityCommand('Disarm')"
+                                    data-i18n="Disarm">Disarm</button>
+                        </span>
+
+                        <!-- Other Security types (read-only status) -->
+                        <span ng-if="ctrl.isSecurityType() && !ctrl.isSecurityPanel() && !ctrl.isSecurityArmable()">
+                            {{ctrl.getStatusText()}}
+                        </span>
+
                         <!-- Standard On/Off -->
-                        <span ng-if="!ctrl.isDimmer() && !ctrl.isBlinds() && !ctrl.isSelector() && ctrl.device.SwitchType != 'Push On Button' && ctrl.device.SwitchType != 'Push Off Button' && ctrl.device.SwitchType != 'Door Contact' && ctrl.device.SwitchType != 'Door Lock' && ctrl.device.SwitchType != 'Motion Sensor' && ctrl.device.SwitchType != 'Smoke Detector' && ctrl.device.SwitchType != 'Doorbell'">
+                        <span ng-if="!ctrl.isDimmer() && !ctrl.isBlinds() && !ctrl.isSelector() && !ctrl.isSecurityType() && ctrl.device.SwitchType != 'Push On Button' && ctrl.device.SwitchType != 'Push Off Button' && ctrl.device.SwitchType != 'Door Contact' && ctrl.device.SwitchType != 'Door Lock' && ctrl.device.SwitchType != 'Motion Sensor' && ctrl.device.SwitchType != 'Smoke Detector' && ctrl.device.SwitchType != 'Doorbell'">
                             {{ctrl.getStatusText()}}
                         </span>
                     </div>

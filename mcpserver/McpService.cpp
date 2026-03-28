@@ -38,6 +38,8 @@
 #include "../main/RFXtrx.h"
 #include "../hardware/hardwaretypes.h"
 #include "../main/WebServerHandleGraphInternals.h"
+#include "../mcpserver/McpSseSession.h"
+#include "../mcpserver/McpSessionRegistry.h"
 
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
@@ -50,6 +52,42 @@ static constexpr const char *MCP_PROTOCOL_VERSION = "2025-06-18";
 
 extern http::server::CWebServerHelper m_webservers;
 extern CLogger _log;
+
+static std::string McpGetSessionIdFromRequest(const http::server::request& req)
+{
+	const char* hdr = req.get_req_header(&req, "Mcp-Session-Id");
+	return hdr ? std::string(hdr) : std::string{};
+}
+
+static bool McpIsValidSubscriptionUri(const std::string& uri)
+{
+	if (uri == "domoticz://devices" || uri == "domoticz://scenes")
+		return true;
+	if (uri.size() > 19 && uri.substr(0, 19) == "domoticz://devices/")
+	{
+		const auto digits = uri.substr(19);
+		return !digits.empty() && digits.find_first_not_of("0123456789") == std::string::npos;
+	}
+	if (uri.size() > 18 && uri.substr(0, 18) == "domoticz://scenes/")
+	{
+		const auto digits = uri.substr(18);
+		return !digits.empty() && digits.find_first_not_of("0123456789") == std::string::npos;
+	}
+	return false;
+}
+
+static int McpLevelToPriority(const std::string& levelStr)
+{
+	if (levelStr == "debug")     return 0;
+	if (levelStr == "info")      return 1;
+	if (levelStr == "notice")    return 2;
+	if (levelStr == "warning")   return 2;
+	if (levelStr == "error")     return 3;
+	if (levelStr == "critical")  return 3;
+	if (levelStr == "alert")     return 3;
+	if (levelStr == "emergency") return 3;
+	return 2;
+}
 extern CNotificationHelper m_notifications;
 extern std::string szAppVersion;
 extern std::string szAppHash;
@@ -83,7 +121,26 @@ namespace http
 				return;
 			}
 			_log.Debug(DEBUG_RECEIVED, "MCP: Post (%d): %s (%s)", req.content_length, req.content.c_str(), req.uri.c_str());
-			// Check if the request is valid
+
+			if (req.method == "GET")
+			{
+				HandleMcpGet(session, req, rep);
+				return;
+			}
+			if (req.method == "DELETE")
+			{
+				HandleMcpDelete(session, req, rep);
+				return;
+			}
+			if (req.method != "POST")
+			{
+				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid method: %s", req.method.c_str());
+				rep = reply::stock_reply(reply::method_not_allowed);
+				reply::add_header(&rep, "Allow", "GET, POST, DELETE");
+				return;
+			}
+
+			// POST-specific header validation
 			std::string sProtocolRequestHeader;
 			if (req.get_req_header(&req, "Accept") != nullptr)
 			{
@@ -95,9 +152,6 @@ namespace http
 					return;
 				}
 			}
-			// Check if the request has the MCP-PROTOCOL-VERSION header
-			// If not, we assume the client is using the latest version
-			// If it is present, we check if it matches the expected version
 			if (req.get_req_header(&req, "mcp-protocol-version") != nullptr)
 			{
 				sProtocolRequestHeader = req.get_req_header(&req, "mcp-protocol-version");
@@ -111,18 +165,6 @@ namespace http
 					rep = reply::stock_reply(reply::bad_request);
 					return;
 				}
-			}
-			// Check if the request is a POST request
-			if (req.method != "POST")
-			{
-				// VS Code MCP client sends GET requests (maybe other clients do as well)
-				// It does this to look for asynchronous notifications support
-				// but we don't support that yet, so we return method not allowed (405)
-				// And the MCP spec does not support GET for requests anyway
-				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid method: %s", req.method.c_str());
-				rep = reply::stock_reply(reply::method_not_allowed);
-				reply::add_header(&rep, "Allow", "POST");
-				return;
 			}
 
 			Json::Value jsonRequest;
@@ -146,6 +188,23 @@ namespace http
 			// Check if the method is supported and handle it
 			std::string sReqMethod = jsonRequest["method"].asString();
 			_log.Debug(DEBUG_WEBSERVER, "MCP: Request method: %s", sReqMethod.c_str());
+
+			if (sReqMethod != "initialize")
+			{
+				std::string reqSid = McpGetSessionIdFromRequest(req);
+				if (reqSid.empty())
+				{
+					rep = reply::stock_reply(reply::bad_request);
+					return;
+				}
+				bool found = CMcpSessionRegistry::Instance().WithSession(
+					reqSid, [](CMcpSession& s) { s.lastActivity = time(nullptr); });
+				if (!found)
+				{
+					rep = reply::stock_reply(reply::not_found);
+					return;
+				}
+			}
 
 			if (sReqMethod.find("notifications/") != std::string::npos)
 			{
@@ -185,6 +244,8 @@ namespace http
 				return;
 			};
 
+			std::string newSessionId;
+
 			if (sReqMethod == "ping")
 			{
 				_log.Debug(DEBUG_WEBSERVER, "MCP: Handling ping request (return empty result).");
@@ -193,6 +254,7 @@ namespace http
 			else if (sReqMethod == "initialize")
 			{
 				mcp::McpInitialize(jsonRequest, jsonRPCRep);
+				newSessionId = CMcpSessionRegistry::Instance().CreateSession(session);
 			}
 			else if (sReqMethod == "tools/list")
 			{
@@ -226,6 +288,54 @@ namespace http
 			{
 				mcp::McpCompletionComplete(jsonRequest, jsonRPCRep);
 			}
+			else if (sReqMethod == "logging/setLevel")
+			{
+				std::string levelStr = jsonRequest["params"]["level"].asString();
+				std::string sid = McpGetSessionIdFromRequest(req);
+				if (!sid.empty())
+				{
+					// Clamp at 3 (error): clients cannot enable info/debug Domoticz log forwarding.
+					int priority = std::max(McpLevelToPriority(levelStr), 3);
+					CMcpSessionRegistry::Instance().WithSession(
+						sid, [priority](CMcpSession& s) { s.minLogLevel = priority; });
+				}
+				jsonRPCRep["result"] = Json::Value(Json::objectValue);
+			}
+			else if (sReqMethod == "resources/subscribe")
+			{
+				std::string uri = jsonRequest["params"]["uri"].asString();
+				if (uri.empty())
+				{
+					jsonRPCRep["error"]["code"] = mcp::JSONRPC_INVALID_PARAMETER;
+					jsonRPCRep["error"]["message"] = "Missing uri parameter";
+				}
+				else if (!McpIsValidSubscriptionUri(uri))
+				{
+					jsonRPCRep["error"]["code"] = mcp::MCP_RESOURCE_NOT_FOUND;
+					jsonRPCRep["error"]["message"] = "Unknown resource URI: " + uri;
+				}
+				else
+				{
+					std::string sid = McpGetSessionIdFromRequest(req);
+					if (!sid.empty())
+					{
+						CMcpSessionRegistry::Instance().WithSession(
+							sid, [&uri](CMcpSession& s) { s.subscribedUris.insert(uri); });
+					}
+					jsonRPCRep["result"] = Json::Value(Json::objectValue);
+				}
+			}
+			else if (sReqMethod == "resources/unsubscribe")
+			{
+				std::string uri = jsonRequest["params"]["uri"].asString();
+				std::string sid = McpGetSessionIdFromRequest(req);
+				if (!sid.empty())
+				{
+					CMcpSessionRegistry::Instance().WithSession(
+						sid, [&uri](CMcpSession& s) { s.subscribedUris.erase(uri); });
+				}
+				jsonRPCRep["result"] = Json::Value(Json::objectValue);
+			}
 			else
 			{
 				_log.Debug(DEBUG_WEBSERVER, "MCP: Unsupported method: %s", sReqMethod.c_str());
@@ -238,8 +348,59 @@ namespace http
 
 			// Set headers
 			reply::add_header(&rep, "Content-Type", "application/json");	// "text/event-stream" is also an option if we want to support SSE
+			if (!newSessionId.empty())
+				reply::add_header(&rep, "Mcp-Session-Id", newSessionId.c_str());
 			//reply::add_header(&rep, "Cache-Control", "no-cache");
 			//reply::add_header(&rep, "Connection", "keep-alive");
+		}
+
+		void CWebServer::HandleMcpGet(WebEmSession& session, const request& req, reply& rep)
+		{
+			// Validate Accept header: must include text/event-stream
+			const char* acceptHdr = req.get_req_header(&req, "Accept");
+			if (acceptHdr == nullptr ||
+			    std::string(acceptHdr).find("text/event-stream") == std::string::npos)
+			{
+				rep = reply::stock_reply(reply::bad_request);
+				return;
+			}
+
+			// Look up session ID from header
+			const char* sessionIdHdr = req.get_req_header(&req, "Mcp-Session-Id");
+			std::string mcpSessionId;
+
+			if (sessionIdHdr != nullptr)
+			{
+				bool found = CMcpSessionRegistry::Instance().WithSession(
+					sessionIdHdr, [](CMcpSession& s) { s.lastActivity = time(nullptr); });
+				if (!found)
+				{
+					rep = reply::stock_reply(reply::not_found);
+					return;
+				}
+				mcpSessionId = sessionIdHdr;
+			}
+
+			// Build sse_context: "sessionId" or "sessionId:lastEventId"
+			const char* lastEventId = req.get_req_header(&req, "Last-Event-ID");
+			std::string sseContext = mcpSessionId;
+			if (lastEventId != nullptr && !mcpSessionId.empty())
+				sseContext = mcpSessionId + ":" + std::string(lastEventId);
+
+			rep.status = reply::sse_stream;
+			rep.sse_session = session;
+			rep.sse_context = sseContext;
+
+			_log.Debug(DEBUG_WEBSERVER, "MCP: Opening SSE stream for client %s (session: %s)",
+			           session.remote_host.c_str(), mcpSessionId.empty() ? "(anon)" : mcpSessionId.c_str());
+		}
+
+		void CWebServer::HandleMcpDelete(WebEmSession& /*session*/, const request& req, reply& rep)
+		{
+			const char* sessionIdHdr = req.get_req_header(&req, "Mcp-Session-Id");
+			if (sessionIdHdr != nullptr)
+				CMcpSessionRegistry::Instance().RemoveSession(sessionIdHdr);
+			rep = reply::stock_reply(reply::ok);
 		}
 
 	} // namespace server
@@ -285,15 +446,15 @@ namespace mcp		// Model Context Protocol
 
 		// Prepare the result for the initialize method
 		jsonRPCRep["result"]["protocolVersion"] = MCP_PROTOCOL_VERSION;
-		//jsonRPCRep["result"]["capabilities"]["logging"] = Json::Value(Json::objectValue);
+		jsonRPCRep["result"]["capabilities"]["logging"] = Json::Value(Json::objectValue);
 		jsonRPCRep["result"]["capabilities"]["completion"] = Json::Value(Json::objectValue);
 		jsonRPCRep["result"]["capabilities"]["prompts"] = Json::Value(Json::objectValue);
 		//jsonRPCRep["result"]["capabilities"]["prompts"]["listChanged"] = true;
 		jsonRPCRep["result"]["capabilities"]["resources"] = Json::Value(Json::objectValue);
-		//jsonRPCRep["result"]["capabilities"]["resources"]["subscribe"] = true;
-		//jsonRPCRep["result"]["capabilities"]["resources"]["listChanged"] = true;
+		jsonRPCRep["result"]["capabilities"]["resources"]["subscribe"] = true;
+		jsonRPCRep["result"]["capabilities"]["resources"]["listChanged"] = true;
 		jsonRPCRep["result"]["capabilities"]["tools"] = Json::Value(Json::objectValue);
-		//jsonRPCRep["result"]["capabilities"]["tools"]["listChanged"] = true;
+		jsonRPCRep["result"]["capabilities"]["tools"]["listChanged"] = true;
 
 		jsonRPCRep["result"]["serverInfo"]["name"] = "DomoticzMcp";
 		jsonRPCRep["result"]["serverInfo"]["title"] = "Domoticz MCP Server";
@@ -335,7 +496,8 @@ namespace mcp		// Model Context Protocol
 			"See the state of a switch in the system",
 			"Get the current state of a given switch in the system",
 			{
-				{ "switchname", "string", "Name of the switch to query", true, {} },
+				{ "switchname", "string", "Name of the switch to query", false, {} },
+				{ "idx", "integer", "Device IDX (use either this or switchname)", false, {} },
 			}
 		},
 		{
@@ -343,7 +505,8 @@ namespace mcp		// Model Context Protocol
 			"Toggle the state of a switch in the system",
 			"Toggle the state of a given switch in the system",
 			{
-				{ "switchname", "string", "Name of the switch to toggle", true, {} },
+				{ "switchname", "string", "Name of the switch to toggle", false, {} },
+				{ "idx", "integer", "Device IDX (use either this or switchname)", false, {} },
 			}
 		},
 		{
@@ -351,7 +514,8 @@ namespace mcp		// Model Context Protocol
 			"Get the value of a sensor in the system",
 			"Retrieve the current value of a specified sensor in the system",
 			{
-				{ "sensorname", "string", "Name of the sensor to query", true, {} },
+				{ "sensorname", "string", "Name of the sensor to query", false, {} },
+				{ "idx", "integer", "Device IDX (use either this or sensorname)", false, {} },
 			}
 		},
 		{
@@ -359,7 +523,8 @@ namespace mcp		// Model Context Protocol
 			"Set the target setpoint of a thermostat in the system",
 			"Set the target setpoint of a given thermostat in the system",
 			{
-				{ "thermostatname", "string", "Name of the thermostat to set", true, {} },
+				{ "thermostatname", "string", "Name of the thermostat to set", false, {} },
+				{ "idx", "integer", "Device IDX (use either this or thermostatname)", false, {} },
 				{ "setpoint", "number", "Temperature setpoint as an number", true, {} },
 			}
 		},
@@ -377,6 +542,7 @@ namespace mcp		// Model Context Protocol
 			"Retrieve the specific floorplan within the system",
 			{
 				{ "floorplan", "string", "The name of the floorplan to retrieve", false, {} },
+				{ "floorplan_id", "integer", "Floorplan IDX (use either this or floorplan name)", false, {} },
 			}
 		},
 		{
@@ -416,7 +582,8 @@ namespace mcp		// Model Context Protocol
 			"Rename a device",
 			"Rename any device (switch, sensor, virtual, etc.) by its current name to a new name.",
 			{
-				{ "name", "string", "Current name of the device", true, {} },
+				{ "name", "string", "Current name of the device", false, {} },
+				{ "idx", "integer", "Device IDX (use either this or name)", false, {} },
 				{ "new_name", "string", "New name for the device", true, {} },
 			}
 		},
@@ -425,15 +592,17 @@ namespace mcp		// Model Context Protocol
 			"Delete (hide) a device",
 			"Hide any device (switch, sensor, virtual, etc.) by setting its Used flag to 0. The device is not permanently deleted; it can be re-enabled. Use with caution.",
 			{
-				{ "name", "string", "Name of the device to hide/delete", true, {} },
+				{ "name", "string", "Name of the device to hide/delete", false, {} },
+				{ "idx", "integer", "Device IDX (use either this or name)", false, {} },
 			}
 		},
 		{
 			"delete_event",
 			"Delete an event script",
-			"Permanently delete an event script by name. This cannot be undone.",
+			"Permanently delete an event script by name or ID. This cannot be undone.",
 			{
-				{ "event_name", "string", "Name of the event script to delete", true, {} },
+				{ "event_name", "string", "Name of the event script to delete (use either this or event_id)", false, {} },
+				{ "event_id", "integer", "ID (idx) of the event script to delete (use either this or event_name)", false, {} },
 			}
 		},
 		{
@@ -463,7 +632,8 @@ namespace mcp		// Model Context Protocol
 			"Update a device value",
 			"Directly update the nValue and/or sValue of a device (useful for virtual sensors).",
 			{
-				{ "name", "string", "Name of the device to update", true, {} },
+				{ "name", "string", "Name of the device to update", false, {} },
+				{ "idx", "integer", "Device IDX (use either this or name)", false, {} },
 				{ "nvalue", "integer", "Numeric value to set", true, {} },
 				{ "svalue", "string", "String value to set (optional)", false, {} },
 			}
@@ -478,7 +648,8 @@ namespace mcp		// Model Context Protocol
 			"For switches/scenes: specify 'days'/'start_date'/'end_date' for date range, "
 			"or 'count' for last N events.",
 			{
-				{ "name", "string", "Name of the device or scene", true, {} },
+				{ "name", "string", "Name of the device or scene", false, {} },
+				{ "idx", "integer", "Device IDX (use either this or name)", false, {} },
 				{ "days", "integer", "Number of days of history to retrieve (1-366, default 7 for sensors). Ignored if start_date/end_date provided.", false, {} },
 				{ "start_date", "string", "Start date in YYYY-MM-DD format (use with end_date for custom range)", false, {} },
 				{ "end_date", "string", "End date in YYYY-MM-DD format (use with start_date for custom range)", false, {} },
@@ -506,7 +677,8 @@ namespace mcp		// Model Context Protocol
 			"Update a user variable",
 			"Update the value (and optionally type) of an existing user variable.",
 			{
-				{ "name", "string", "Variable name to update", true, {} },
+				{ "name", "string", "Variable name to update", false, {} },
+				{ "variable_id", "integer", "Variable IDX (use either this or name)", false, {} },
 				{ "value", "string", "New value", true, {} },
 				{ "vtype", "integer", "New type (optional): 0=Integer, 1=Float, 2=String, 3=Date, 4=Time", false, {} },
 			}
@@ -516,7 +688,8 @@ namespace mcp		// Model Context Protocol
 			"Delete a user variable",
 			"Delete a user variable by name.",
 			{
-				{ "name", "string", "Name of the variable to delete", true, {} },
+				{ "name", "string", "Name of the variable to delete", false, {} },
+				{ "variable_id", "integer", "Variable IDX (use either this or name)", false, {} },
 			}
 		},
 		{
@@ -547,9 +720,10 @@ namespace mcp		// Model Context Protocol
 		{
 			"get_event",
 			"Get event script source",
-			"Get the full source code of a specific event script by name.",
+			"Get the full source code of a specific event script by name or ID.",
 			{
-				{ "event_name", "string", "Name of the event script to retrieve", true, {} },
+				{ "event_name", "string", "Name of the event script (use either this or event_id)", false, {} },
+				{ "event_id", "integer", "ID (idx) of the event script (use either this or event_name)", false, {} },
 			}
 		},
 		{
@@ -566,9 +740,10 @@ namespace mcp		// Model Context Protocol
 		{
 			"update_event",
 			"Update an event script",
-			"Update an existing event script's code, enabled state, or name. At least one of code/enabled/new_name must be provided.",
+			"Update an existing event script's code, enabled state, or name. Identify the script by event_name or event_id. At least one of code/enabled/new_name must be provided.",
 			{
-				{ "event_name", "string", "Current name of the event script", true, {} },
+				{ "event_name", "string", "Current name of the event script (use either this or event_id)", false, {} },
+				{ "event_id", "integer", "ID (idx) of the event script (use either this or event_name)", false, {} },
 				{ "code", "string", "New script source code (optional)", false, {} },
 				{ "enabled", "boolean", "Enable or disable the script (optional)", false, {} },
 				{ "new_name", "string", "Rename the script to this name (optional)", false, {} },
@@ -579,7 +754,8 @@ namespace mcp		// Model Context Protocol
 			"Set a switch On or Off",
 			"Explicitly turn a switch On or Off by name (without toggling).",
 			{
-				{ "switchname", "string", "Name of the switch", true, {} },
+				{ "switchname", "string", "Name of the switch", false, {} },
+				{ "idx", "integer", "Device IDX (use either this or switchname)", false, {} },
 				{ "state", "string", "Desired state: On or Off", true, { "On", "Off" } },
 			}
 		},
@@ -588,7 +764,8 @@ namespace mcp		// Model Context Protocol
 			"Set a dimmer level",
 			"Set a dimmable light to a specific brightness level (0-100).",
 			{
-				{ "switchname", "string", "Name of the dimmable device", true, {} },
+				{ "switchname", "string", "Name of the dimmable device", false, {} },
+				{ "idx", "integer", "Device IDX (use either this or switchname)", false, {} },
 				{ "level", "integer", "Brightness level 0-100", true, {} },
 			}
 		},
@@ -597,7 +774,8 @@ namespace mcp		// Model Context Protocol
 			"Control a blind or shutter",
 			"Send an Open, Close, or Stop command to a blind or shutter device.",
 			{
-				{ "switchname", "string", "Name of the blind/shutter device", true, {} },
+				{ "switchname", "string", "Name of the blind/shutter device", false, {} },
+				{ "idx", "integer", "Device IDX (use either this or switchname)", false, {} },
 				{ "command", "string", "Command to send: Open, Close, or Stop", true, { "Open", "Close", "Stop" } },
 			}
 		},
@@ -606,7 +784,8 @@ namespace mcp		// Model Context Protocol
 			"Set color and brightness on an RGB light",
 			"Set the hue and brightness of an RGB or color light device.",
 			{
-				{ "switchname", "string", "Name of the color light device", true, {} },
+				{ "switchname", "string", "Name of the color light device", false, {} },
+				{ "idx", "integer", "Device IDX (use either this or switchname)", false, {} },
 				{ "hue", "integer", "Hue angle 0-360", true, {} },
 				{ "brightness", "integer", "Brightness level 0-100", true, {} },
 				{ "iswhite", "boolean", "If true, use white mode instead of RGB color (default false)", false, {} },
@@ -617,7 +796,8 @@ namespace mcp		// Model Context Protocol
 			"Set color temperature on a tunable-white light",
 			"Set the color temperature of a tunable-white light in Kelvin (e.g. 2700 for warm white, 6500 for cool white).",
 			{
-				{ "switchname", "string", "Name of the tunable-white light device", true, {} },
+				{ "switchname", "string", "Name of the tunable-white light device", false, {} },
+				{ "idx", "integer", "Device IDX (use either this or switchname)", false, {} },
 				{ "kelvin", "integer", "Color temperature in Kelvin (2700=warm white, 6500=cool white)", true, {} },
 			}
 		},
@@ -632,7 +812,8 @@ namespace mcp		// Model Context Protocol
 			"Activate or deactivate a scene",
 			"Activate (On) or deactivate (Off) a Domoticz scene or group by name.",
 			{
-				{ "scenename", "string", "Name of the scene or group", true, {} },
+				{ "scenename", "string", "Name of the scene or group", false, {} },
+				{ "scene_id", "integer", "Scene IDX (use either this or scenename)", false, {} },
 				{ "command", "string", "Command: On or Off", true, { "On", "Off" } },
 			}
 		},
@@ -647,7 +828,8 @@ namespace mcp		// Model Context Protocol
 			"Get devices in a room",
 			"Return all devices assigned to a specific room (plan) by room name.",
 			{
-				{ "roomname", "string", "Name of the room (plan)", true, {} },
+				{ "roomname", "string", "Name of the room (plan)", false, {} },
+				{ "room_id", "integer", "Room IDX (use either this or roomname)", false, {} },
 			}
 		},
 		{
@@ -655,7 +837,8 @@ namespace mcp		// Model Context Protocol
 			"Get devices in a scene",
 			"Return all devices that belong to a specific scene or group.",
 			{
-				{ "scenename", "string", "Name of the scene or group", true, {} },
+				{ "scenename", "string", "Name of the scene or group", false, {} },
+				{ "scene_id", "integer", "Scene IDX (use either this or scenename)", false, {} },
 			}
 		},
 		{
@@ -1909,34 +2092,58 @@ namespace mcp		// Model Context Protocol
 
 	bool getSwitchState(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("switchname"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasIdx = args.isMember("idx");
+		bool bHasName = args.isMember("switchname") && !args["switchname"].asString().empty();
+		if (!bHasIdx && !bHasName)
 		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: getSwitchState: Missing required parameter 'switchname'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: getSwitchState: Missing required parameter 'switchname' or 'idx'");
 			return false;
 		}
-		std::string sSwitchName = jsonRequest["params"]["arguments"]["switchname"].asString();
-		std::string sSwitchState = "No switch exists with the name " + sSwitchName;
 		Json::Value device;
-		bool bFound = getDeviceByName(sSwitchName, device);
-		if (bFound)
+		std::string sSwitchName;
+		bool bFound;
+		if (bHasIdx)
 		{
-			sSwitchState = "The current state of switch \"" + sSwitchName + "\" is: " + device["Data"].asString();
+			bFound = getDeviceByIdx(args["idx"].asInt(), device);
+			sSwitchName = bFound ? device["Name"].asString() : "idx=" + std::to_string(args["idx"].asInt());
 		}
+		else
+		{
+			sSwitchName = args["switchname"].asString();
+			bFound = getDeviceByName(sSwitchName, device);
+		}
+		std::string sSwitchState = bFound
+			? "The current state of switch \"" + sSwitchName + "\" is: " + device["Data"].asString()
+			: "No switch exists with the name " + sSwitchName;
 		mcp::setToolResult(jsonRPCRep, sSwitchState, !bFound);
 		return true;
 	}
 
 	bool toggleSwitchState(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("switchname"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasIdx = args.isMember("idx");
+		bool bHasName = args.isMember("switchname") && !args["switchname"].asString().empty();
+		if (!bHasIdx && !bHasName)
 		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: toggleSwitchState: Missing required parameter 'switchname'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: toggleSwitchState: Missing required parameter 'switchname' or 'idx'");
 			return false;
 		}
-		std::string sSwitchName = jsonRequest["params"]["arguments"]["switchname"].asString();
-		std::string sSwitchState = "No switch exists with the name " + sSwitchName;
 		Json::Value device;
-		bool bFound = getDeviceByName(sSwitchName, device);
+		std::string sSwitchName;
+		bool bFound;
+		if (bHasIdx)
+		{
+			bFound = getDeviceByIdx(args["idx"].asInt(), device);
+			sSwitchName = bFound ? device["Name"].asString() : "idx=" + std::to_string(args["idx"].asInt());
+		}
+		else
+		{
+			sSwitchName = args["switchname"].asString();
+			bFound = getDeviceByName(sSwitchName, device);
+		}
+		std::string sSwitchState = "No switch exists with the name " + sSwitchName;
 		if (bFound)
 		{
 			sSwitchState = "The state of switch \"" + sSwitchName + "\" before toggle was: " + device["Data"].asString() + ". ";
@@ -1949,36 +2156,54 @@ namespace mcp		// Model Context Protocol
 
 	bool getSensorValue(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("sensorname"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasIdx = args.isMember("idx");
+		bool bHasName = args.isMember("sensorname") && !args["sensorname"].asString().empty();
+		if (!bHasIdx && !bHasName)
 		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: getSensorValue: Missing required parameter 'sensorname'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: getSensorValue: Missing required parameter 'sensorname' or 'idx'");
 			return false;
 		}
-		std::string sSensorName = jsonRequest["params"]["arguments"]["sensorname"].asString();
-		std::string sSensorValue = "No sensor exists with the name " + sSensorName;
 		Json::Value device;
-		bool bFound = getDeviceByName(sSensorName, device);
-		if (bFound)
+		std::string sSensorName;
+		bool bFound;
+		if (bHasIdx)
 		{
-			sSensorValue = "The current value for sensor \"" + sSensorName + "\" is: " + device["Data"].asString();
+			bFound = getDeviceByIdx(args["idx"].asInt(), device);
+			sSensorName = bFound ? device["Name"].asString() : "idx=" + std::to_string(args["idx"].asInt());
 		}
+		else
+		{
+			sSensorName = args["sensorname"].asString();
+			bFound = getDeviceByName(sSensorName, device);
+		}
+		std::string sSensorValue = bFound
+			? "The current value for sensor \"" + sSensorName + "\" is: " + device["Data"].asString()
+			: "No sensor exists with the name " + sSensorName;
 		mcp::setToolResult(jsonRPCRep, sSensorValue, !bFound);
 		return true;
 	}
 
 	bool getFloorplan(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("floorplan"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasId = args.isMember("floorplan_id");
+		bool bHasName = args.isMember("floorplan") && !args["floorplan"].asString().empty();
+		if (!bHasId && !bHasName)
 		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: getFloorplan: Missing required parameter 'floorplan'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: getFloorplan: Missing required parameter 'floorplan' or 'floorplan_id'");
 			return false;
 		}
-		std::string sFloorplan = jsonRequest["params"]["arguments"]["floorplan"].asString();
+		std::string sFloorplan = bHasName ? args["floorplan"].asString() : "idx=" + std::to_string(args["floorplan_id"].asInt());
 		std::string sFloorplanValue = "No floorplan exists with the name " + sFloorplan;
 		std::string sMimeType;
 		bool bFound = false;
 
-		auto result = m_sql.safe_query("SELECT ID FROM Floorplans WHERE Name='%q'", sFloorplan.c_str());
+		std::vector<std::vector<std::string>> result;
+		if (bHasId)
+			result = m_sql.safe_query("SELECT ID FROM Floorplans WHERE ID=%d", args["floorplan_id"].asInt());
+		else
+			result = m_sql.safe_query("SELECT ID FROM Floorplans WHERE Name='%q'", sFloorplan.c_str());
 		if (!result.empty() && result.size() == 1 )
 		{
 			std::string idx = result[0][0];
@@ -2088,16 +2313,29 @@ namespace mcp		// Model Context Protocol
 
 	bool setThermostatSetpoint(const Json::Value& jsonRequest, Json::Value& jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("thermostatname") || !jsonRequest["params"]["arguments"].isMember("setpoint"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasIdx = args.isMember("idx");
+		bool bHasName = args.isMember("thermostatname") && !args["thermostatname"].asString().empty();
+		if ((!bHasIdx && !bHasName) || !args.isMember("setpoint"))
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: setThermostatSetpoint: Missing required parameter 'thermostatname/setpoint'");
 			return false;
 		}
-		std::string sThermostatName = jsonRequest["params"]["arguments"]["thermostatname"].asString();
-		float fNewSetpoint = jsonRequest["params"]["arguments"]["setpoint"].asFloat();
-		std::string sThermostatState = "No thermostat exists with the name " + sThermostatName;
+		float fNewSetpoint = args["setpoint"].asFloat();
 		Json::Value device;
-		bool bFound = getDeviceByName(sThermostatName, device);
+		std::string sThermostatName;
+		bool bFound;
+		if (bHasIdx)
+		{
+			bFound = getDeviceByIdx(args["idx"].asInt(), device);
+			sThermostatName = bFound ? device["Name"].asString() : "idx=" + std::to_string(args["idx"].asInt());
+		}
+		else
+		{
+			sThermostatName = args["thermostatname"].asString();
+			bFound = getDeviceByName(sThermostatName, device);
+		}
+		std::string sThermostatState = "No thermostat exists with the name " + sThermostatName;
 		if (bFound)
 		{
 			sThermostatState = "The value of thermostat \"" + sThermostatName + "\" before setting was: " + device["Data"].asString() + ". ";
@@ -2225,13 +2463,13 @@ namespace mcp		// Model Context Protocol
 					sResult += "]";
 				if (device.isMember("Data"))
 					sResult += " = " + device["Data"].asString();
-				if (device.isMember("BatteryLevel"))
+				if (device.isMember("BatteryLevel") && device["BatteryLevel"].isInt())
 				{
 					int iBatt = device["BatteryLevel"].asInt();
 					if (iBatt != 255)
 						sResult += " battery=" + std::to_string(iBatt) + "%";
 				}
-				if (device.isMember("SignalLevel"))
+				if (device.isMember("SignalLevel") && device["SignalLevel"].isInt())
 				{
 					int iSignalLevel = device["SignalLevel"].asInt();
 					if (iSignalLevel != 12)
@@ -2258,6 +2496,21 @@ namespace mcp		// Model Context Protocol
 		for (const auto &dev : jsonDevices["result"])
 		{
 			if (dev.isObject() && dev.isMember("Name") && dev["Name"].asString() == sDeviceName)
+			{
+				device = dev;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool getDeviceByIdx(int nIdx, Json::Value &device)
+	{
+		Json::Value jsonDevices;
+		m_webservers.GetJSonDevices(jsonDevices, "true", "", "", "", "", "", false, false, false, 0, "", "");
+		for (const auto &dev : jsonDevices["result"])
+		{
+			if (dev.isObject() && dev.isMember("idx") && dev["idx"].asString() == std::to_string(nIdx))
 			{
 				device = dev;
 				return true;
@@ -2335,13 +2588,13 @@ namespace mcp		// Model Context Protocol
 					sResult += " = " + device["Data"].asString();
 				if (device.isMember("idx"))
 					sResult += " (idx=" + device["idx"].asString() + ")";
-				if (device.isMember("BatteryLevel"))
+				if (device.isMember("BatteryLevel") && device["BatteryLevel"].isInt())
 				{
 					int iBatt = device["BatteryLevel"].asInt();
 					if (iBatt != 255)
 						sResult += " battery=" + std::to_string(iBatt) + "%";
 				}
-				if (device.isMember("SignalLevel"))
+				if (device.isMember("SignalLevel") && device["SignalLevel"].isInt())
 				{
 					int iSignalLevel = device["SignalLevel"].asInt();
 					if (iSignalLevel != 12)
@@ -2399,13 +2652,13 @@ namespace mcp		// Model Context Protocol
 					sResult += "  LastUpdate:  " + device["LastUpdate"].asString() + "\n";
 				if (device.isMember("Used"))
 					sResult += "  Used:        " + device["Used"].asString() + "\n";
-				if (device.isMember("BatteryLevel"))
+				if (device.isMember("BatteryLevel") && device["BatteryLevel"].isInt())
 				{
 					int iBatt = device["BatteryLevel"].asInt();
 					if (iBatt != 255)
 						sResult += "  BatteryLevel: " + std::to_string(iBatt) + "%\n";
 				}
-				if (device.isMember("SignalLevel"))
+				if (device.isMember("SignalLevel") && device["SignalLevel"].isInt())
 				{
 					int iSignalLevel = device["SignalLevel"].asInt();
 					if (iSignalLevel != 12)
@@ -2456,18 +2709,28 @@ namespace mcp		// Model Context Protocol
 
 	bool renameDevice(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") ||
-		    !jsonRequest["params"]["arguments"].isMember("name") ||
-		    !jsonRequest["params"]["arguments"].isMember("new_name"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasIdx = args.isMember("idx");
+		bool bHasName = args.isMember("name") && !args["name"].asString().empty();
+		if ((!bHasIdx && !bHasName) || !args.isMember("new_name"))
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: renameDevice: Missing required parameters 'name' or 'new_name'");
 			return false;
 		}
-		std::string sOldName = jsonRequest["params"]["arguments"]["name"].asString();
-		std::string sNewName = jsonRequest["params"]["arguments"]["new_name"].asString();
-
+		std::string sNewName = args["new_name"].asString();
 		Json::Value device;
-		bool bFound = getDeviceByName(sOldName, device);
+		std::string sOldName;
+		bool bFound;
+		if (bHasIdx)
+		{
+			bFound = getDeviceByIdx(args["idx"].asInt(), device);
+			sOldName = bFound ? device["Name"].asString() : "idx=" + std::to_string(args["idx"].asInt());
+		}
+		else
+		{
+			sOldName = args["name"].asString();
+			bFound = getDeviceByName(sOldName, device);
+		}
 		std::string sResult;
 		if (bFound)
 		{
@@ -2485,15 +2748,27 @@ namespace mcp		// Model Context Protocol
 
 	bool deleteDevice(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("name"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasIdx = args.isMember("idx");
+		bool bHasName = args.isMember("name") && !args["name"].asString().empty();
+		if (!bHasIdx && !bHasName)
 		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: deleteDevice: Missing required parameter 'name'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: deleteDevice: Missing required parameter 'name' or 'idx'");
 			return false;
 		}
-		std::string sName = jsonRequest["params"]["arguments"]["name"].asString();
-
 		Json::Value device;
-		bool bFound = getDeviceByName(sName, device);
+		std::string sName;
+		bool bFound;
+		if (bHasIdx)
+		{
+			bFound = getDeviceByIdx(args["idx"].asInt(), device);
+			sName = bFound ? device["Name"].asString() : "idx=" + std::to_string(args["idx"].asInt());
+		}
+		else
+		{
+			sName = args["name"].asString();
+			bFound = getDeviceByName(sName, device);
+		}
 		std::string sResult;
 		if (bFound)
 		{
@@ -2618,22 +2893,33 @@ namespace mcp		// Model Context Protocol
 
 	bool updateDeviceValue(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") ||
-		    !jsonRequest["params"]["arguments"].isMember("name") ||
-		    !jsonRequest["params"]["arguments"].isMember("nvalue"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasIdx = args.isMember("idx");
+		bool bHasName = args.isMember("name") && !args["name"].asString().empty();
+		if ((!bHasIdx && !bHasName) || !args.isMember("nvalue"))
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: updateDeviceValue: Missing required parameters 'name' or 'nvalue'");
 			return false;
 		}
 
-		std::string sName  = jsonRequest["params"]["arguments"]["name"].asString();
-		int nValue         = jsonRequest["params"]["arguments"]["nvalue"].asInt();
+		int nValue = args["nvalue"].asInt();
 		std::string sValue;
-		if (jsonRequest["params"]["arguments"].isMember("svalue"))
-			sValue = jsonRequest["params"]["arguments"]["svalue"].asString();
+		if (args.isMember("svalue"))
+			sValue = args["svalue"].asString();
 
 		Json::Value device;
-		bool bFound = getDeviceByName(sName, device);
+		std::string sName;
+		bool bFound;
+		if (bHasIdx)
+		{
+			bFound = getDeviceByIdx(args["idx"].asInt(), device);
+			sName = bFound ? device["Name"].asString() : "idx=" + std::to_string(args["idx"].asInt());
+		}
+		else
+		{
+			sName = args["name"].asString();
+			bFound = getDeviceByName(sName, device);
+		}
 		std::string sResult;
 		if (bFound)
 		{
@@ -2656,18 +2942,29 @@ namespace mcp		// Model Context Protocol
 
 	bool getSensorHistory(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("name"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasIdx = args.isMember("idx");
+		bool bHasName = args.isMember("name") && !args["name"].asString().empty();
+		if (!bHasIdx && !bHasName)
 		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: getSensorHistory: Missing required parameter 'name'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: getSensorHistory: Missing required parameter 'name' or 'idx'");
 			return false;
 		}
 
-		const std::string sName = jsonRequest["params"]["arguments"]["name"].asString();
-		const Json::Value &args = jsonRequest["params"]["arguments"];
-
-		// Find device by name
 		Json::Value device;
-		if (!getDeviceByName(sName, device))
+		std::string sName;
+		bool bFound;
+		if (bHasIdx)
+		{
+			bFound = getDeviceByIdx(args["idx"].asInt(), device);
+			sName = bFound ? device["Name"].asString() : "idx=" + std::to_string(args["idx"].asInt());
+		}
+		else
+		{
+			sName = args["name"].asString();
+			bFound = getDeviceByName(sName, device);
+		}
+		if (!bFound)
 		{
 			mcp::setToolResult(jsonRPCRep, "No device found with name \"" + sName + "\"", true);
 			return true;
@@ -3050,29 +3347,44 @@ namespace mcp		// Model Context Protocol
 
 	bool updateUserVariable(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") ||
-		    !jsonRequest["params"]["arguments"].isMember("name") ||
-		    !jsonRequest["params"]["arguments"].isMember("value"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasVarId = args.isMember("variable_id");
+		bool bHasName = args.isMember("name") && !args["name"].asString().empty();
+		if ((!bHasVarId && !bHasName) || !args.isMember("value"))
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: updateUserVariable: Missing required parameters 'name' or 'value'");
 			return false;
 		}
 
-		std::string sName  = jsonRequest["params"]["arguments"]["name"].asString();
-		std::string sValue = jsonRequest["params"]["arguments"]["value"].asString();
+		std::string sValue = args["value"].asString();
 
-		auto result = m_sql.safe_query("SELECT ID, ValueType FROM UserVariables WHERE Name='%q'", sName.c_str());
+		std::vector<std::vector<std::string>> result;
+		std::string sIdentifier;
+		if (bHasVarId)
+		{
+			int nVarId = args["variable_id"].asInt();
+			sIdentifier = "idx=" + std::to_string(nVarId);
+			result = m_sql.safe_query("SELECT ID, Name, ValueType FROM UserVariables WHERE ID=%d", nVarId);
+		}
+		else
+		{
+			std::string sName = args["name"].asString();
+			sIdentifier = "\"" + sName + "\"";
+			result = m_sql.safe_query("SELECT ID, Name, ValueType FROM UserVariables WHERE Name='%q'", sName.c_str());
+		}
+
 		if (result.empty())
 		{
-			mcp::setToolResult(jsonRPCRep, "No user variable found with name \"" + sName + "\"", true);
+			mcp::setToolResult(jsonRPCRep, "No user variable found with " + sIdentifier, true);
 			return true;
 		}
 
 		std::string sIdx = result[0][0];
-		int currentType  = atoi(result[0][1].c_str());
+		std::string sName = result[0][1];
+		int currentType  = atoi(result[0][2].c_str());
 		int newType      = currentType;
-		if (jsonRequest["params"]["arguments"].isMember("vtype"))
-			newType = jsonRequest["params"]["arguments"]["vtype"].asInt();
+		if (args.isMember("vtype"))
+			newType = args["vtype"].asInt();
 
 		std::string errorMessage;
 		bool bOK = m_sql.UpdateUserVariable(sIdx, sName, (_eUsrVariableType)newType, sValue, (newType == currentType), errorMessage);
@@ -3088,22 +3400,38 @@ namespace mcp		// Model Context Protocol
 
 	bool deleteUserVariable(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("name"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasVarId = args.isMember("variable_id");
+		bool bHasName = args.isMember("name") && !args["name"].asString().empty();
+		if (!bHasVarId && !bHasName)
 		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: deleteUserVariable: Missing required parameter 'name'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: deleteUserVariable: Missing required parameter 'name' or 'variable_id'");
 			return false;
 		}
 
-		std::string sName = jsonRequest["params"]["arguments"]["name"].asString();
+		std::vector<std::vector<std::string>> result;
+		std::string sIdentifier;
+		if (bHasVarId)
+		{
+			int nVarId = args["variable_id"].asInt();
+			sIdentifier = "idx=" + std::to_string(nVarId);
+			result = m_sql.safe_query("SELECT ID, Name FROM UserVariables WHERE ID=%d", nVarId);
+		}
+		else
+		{
+			std::string sName = args["name"].asString();
+			sIdentifier = "\"" + sName + "\"";
+			result = m_sql.safe_query("SELECT ID, Name FROM UserVariables WHERE Name='%q'", sName.c_str());
+		}
 
-		auto result = m_sql.safe_query("SELECT ID FROM UserVariables WHERE Name='%q'", sName.c_str());
 		if (result.empty())
 		{
-			mcp::setToolResult(jsonRPCRep, "No user variable found with name \"" + sName + "\"", true);
+			mcp::setToolResult(jsonRPCRep, "No user variable found with " + sIdentifier, true);
 			return true;
 		}
 
 		std::string sIdx = result[0][0];
+		std::string sName = result[0][1];
 		m_sql.DeleteUserVariable(sIdx);
 		m_mainworker.m_eventsystem.GetCurrentUserVariables();
 
@@ -3204,17 +3532,32 @@ namespace mcp		// Model Context Protocol
 
 	bool getEvent(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("event_name"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool hasName = args.isMember("event_name") && !args["event_name"].asString().empty();
+		bool hasId   = args.isMember("event_id");
+
+		if (!hasName && !hasId)
 		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: getEvent: Missing required parameter 'event_name'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: getEvent: Missing required parameter 'event_name' or 'event_id'");
 			return false;
 		}
 
-		std::string sEventName = jsonRequest["params"]["arguments"]["event_name"].asString();
-
-		auto result = m_sql.safe_query(
-			"SELECT ID, Name, XMLStatement, Status, Interpreter FROM EventMaster WHERE Name='%q'",
-			sEventName.c_str());
+		std::vector<std::vector<std::string>> result;
+		std::string sIdentifier;
+		if (hasId)
+		{
+			int nId = args["event_id"].asInt();
+			sIdentifier = "idx=" + std::to_string(nId);
+			result = m_sql.safe_query(
+				"SELECT ID, Name, XMLStatement, Status, Interpreter FROM EventMaster WHERE ID=%d", nId);
+		}
+		else
+		{
+			sIdentifier = "\"" + args["event_name"].asString() + "\"";
+			result = m_sql.safe_query(
+				"SELECT ID, Name, XMLStatement, Status, Interpreter FROM EventMaster WHERE Name='%q'",
+				args["event_name"].asString().c_str());
+		}
 
 		std::string sResult;
 		bool bFound = !result.empty();
@@ -3229,7 +3572,7 @@ namespace mcp		// Model Context Protocol
 		}
 		else
 		{
-			sResult = "No event script found with name \"" + sEventName + "\"";
+			sResult = "No event script found with " + sIdentifier;
 		}
 
 		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
@@ -3285,23 +3628,38 @@ namespace mcp		// Model Context Protocol
 
 	bool updateEvent(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("event_name"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool hasName = args.isMember("event_name") && !args["event_name"].asString().empty();
+		bool hasId   = args.isMember("event_id");
+
+		if (!hasName && !hasId)
 		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: updateEvent: Missing required parameter 'event_name'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: updateEvent: Missing required parameter 'event_name' or 'event_id'");
 			return false;
 		}
 
-		std::string sEventName = jsonRequest["params"]["arguments"]["event_name"].asString();
-		const Json::Value &args = jsonRequest["params"]["arguments"];
+		std::vector<std::vector<std::string>> result;
+		std::string sIdentifier;
+		if (hasId)
+		{
+			int nId = args["event_id"].asInt();
+			sIdentifier = "idx=" + std::to_string(nId);
+			result = m_sql.safe_query("SELECT ID, Name FROM EventMaster WHERE ID=%d", nId);
+		}
+		else
+		{
+			sIdentifier = "\"" + args["event_name"].asString() + "\"";
+			result = m_sql.safe_query("SELECT ID, Name FROM EventMaster WHERE Name='%q'", args["event_name"].asString().c_str());
+		}
 
-		auto result = m_sql.safe_query("SELECT ID FROM EventMaster WHERE Name='%q'", sEventName.c_str());
 		if (result.empty())
 		{
-			mcp::setToolResult(jsonRPCRep, "No event script found with name \"" + sEventName + "\"", true);
+			mcp::setToolResult(jsonRPCRep, "No event script found with " + sIdentifier, true);
 			return true;
 		}
 
 		int nIdx = atoi(result[0][0].c_str());
+		std::string sEventName = result[0][1];
 		bool bAnyChange = false;
 
 		if (args.isMember("code"))
@@ -3336,21 +3694,38 @@ namespace mcp		// Model Context Protocol
 
 	bool deleteEvent(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") || !jsonRequest["params"]["arguments"].isMember("event_name"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool hasName = args.isMember("event_name") && !args["event_name"].asString().empty();
+		bool hasId   = args.isMember("event_id");
+
+		if (!hasName && !hasId)
 		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: deleteEvent: Missing required parameter 'event_name'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: deleteEvent: Missing required parameter 'event_name' or 'event_id'");
 			return false;
 		}
-		std::string sEventName = jsonRequest["params"]["arguments"]["event_name"].asString();
 
-		auto result = m_sql.safe_query("SELECT ID FROM EventMaster WHERE Name='%q'", sEventName.c_str());
+		std::vector<std::vector<std::string>> result;
+		std::string sIdentifier;
+		if (hasId)
+		{
+			int nId = args["event_id"].asInt();
+			sIdentifier = "idx=" + std::to_string(nId);
+			result = m_sql.safe_query("SELECT ID, Name FROM EventMaster WHERE ID=%d", nId);
+		}
+		else
+		{
+			sIdentifier = "\"" + args["event_name"].asString() + "\"";
+			result = m_sql.safe_query("SELECT ID, Name FROM EventMaster WHERE Name='%q'", args["event_name"].asString().c_str());
+		}
+
 		if (result.empty())
 		{
-			mcp::setToolResult(jsonRPCRep, "No event script found with name \"" + sEventName + "\"", true);
+			mcp::setToolResult(jsonRPCRep, "No event script found with " + sIdentifier, true);
 			return true;
 		}
 
 		int nIdx = atoi(result[0][0].c_str());
+		std::string sEventName = result[0][1];
 		m_sql.safe_query("DELETE FROM EventMaster WHERE ID=%d", nIdx);
 		m_mainworker.m_eventsystem.LoadEvents();
 
@@ -3363,15 +3738,15 @@ namespace mcp		// Model Context Protocol
 
 	bool setSwitchState(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") ||
-			!jsonRequest["params"]["arguments"].isMember("switchname") ||
-			!jsonRequest["params"]["arguments"].isMember("state"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasIdx = args.isMember("idx");
+		bool bHasName = args.isMember("switchname") && !args["switchname"].asString().empty();
+		if ((!bHasIdx && !bHasName) || !args.isMember("state"))
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: setSwitchState: Missing required parameter 'switchname' or 'state'");
 			return false;
 		}
-		std::string sSwitchName = jsonRequest["params"]["arguments"]["switchname"].asString();
-		std::string sState = jsonRequest["params"]["arguments"]["state"].asString();
+		std::string sState = args["state"].asString();
 
 		// Capitalize first letter, lowercase rest — matches "On"/"Off" format
 		if (!sState.empty()) {
@@ -3387,7 +3762,18 @@ namespace mcp		// Model Context Protocol
 		}
 
 		Json::Value device;
-		bool bFound = getDeviceByName(sSwitchName, device);
+		std::string sSwitchName;
+		bool bFound;
+		if (bHasIdx)
+		{
+			bFound = getDeviceByIdx(args["idx"].asInt(), device);
+			sSwitchName = bFound ? device["Name"].asString() : "idx=" + std::to_string(args["idx"].asInt());
+		}
+		else
+		{
+			sSwitchName = args["switchname"].asString();
+			bFound = getDeviceByName(sSwitchName, device);
+		}
 		std::string sResult;
 		if (!bFound)
 		{
@@ -3409,19 +3795,30 @@ namespace mcp		// Model Context Protocol
 
 	bool setDimmerLevel(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") ||
-			!jsonRequest["params"]["arguments"].isMember("switchname") ||
-			!jsonRequest["params"]["arguments"].isMember("level"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasIdx = args.isMember("idx");
+		bool bHasName = args.isMember("switchname") && !args["switchname"].asString().empty();
+		if ((!bHasIdx && !bHasName) || !args.isMember("level"))
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: setDimmerLevel: Missing required parameter 'switchname' or 'level'");
 			return false;
 		}
-		std::string sSwitchName = jsonRequest["params"]["arguments"]["switchname"].asString();
-		int iLevel = jsonRequest["params"]["arguments"]["level"].asInt();
+		int iLevel = args["level"].asInt();
 		iLevel = std::max(0, std::min(100, iLevel));
 
 		Json::Value device;
-		bool bFound = getDeviceByName(sSwitchName, device);
+		std::string sSwitchName;
+		bool bFound;
+		if (bHasIdx)
+		{
+			bFound = getDeviceByIdx(args["idx"].asInt(), device);
+			sSwitchName = bFound ? device["Name"].asString() : "idx=" + std::to_string(args["idx"].asInt());
+		}
+		else
+		{
+			sSwitchName = args["switchname"].asString();
+			bFound = getDeviceByName(sSwitchName, device);
+		}
 		std::string sResult;
 		if (!bFound)
 		{
@@ -3440,15 +3837,15 @@ namespace mcp		// Model Context Protocol
 
 	bool controlBlinds(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") ||
-			!jsonRequest["params"]["arguments"].isMember("switchname") ||
-			!jsonRequest["params"]["arguments"].isMember("command"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasIdx = args.isMember("idx");
+		bool bHasName = args.isMember("switchname") && !args["switchname"].asString().empty();
+		if ((!bHasIdx && !bHasName) || !args.isMember("command"))
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: controlBlinds: Missing required parameter 'switchname' or 'command'");
 			return false;
 		}
-		std::string sSwitchName = jsonRequest["params"]["arguments"]["switchname"].asString();
-		std::string sCommand = jsonRequest["params"]["arguments"]["command"].asString();
+		std::string sCommand = args["command"].asString();
 
 		// Capitalize first letter, lowercase rest — matches "Open"/"Close"/"Stop" format
 		if (!sCommand.empty()) {
@@ -3464,7 +3861,18 @@ namespace mcp		// Model Context Protocol
 		}
 
 		Json::Value device;
-		bool bFound = getDeviceByName(sSwitchName, device);
+		std::string sSwitchName;
+		bool bFound;
+		if (bHasIdx)
+		{
+			bFound = getDeviceByIdx(args["idx"].asInt(), device);
+			sSwitchName = bFound ? device["Name"].asString() : "idx=" + std::to_string(args["idx"].asInt());
+		}
+		else
+		{
+			sSwitchName = args["switchname"].asString();
+			bFound = getDeviceByName(sSwitchName, device);
+		}
 		std::string sResult;
 		if (!bFound)
 		{
@@ -3483,26 +3891,48 @@ namespace mcp		// Model Context Protocol
 
 	bool setColorBrightness(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") ||
-			!jsonRequest["params"]["arguments"].isMember("switchname") ||
-			!jsonRequest["params"]["arguments"].isMember("hue") ||
-			!jsonRequest["params"]["arguments"].isMember("brightness"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasIdx = args.isMember("idx");
+		bool bHasName = args.isMember("switchname") && !args["switchname"].asString().empty();
+		if ((!bHasIdx && !bHasName) || !args.isMember("hue") || !args.isMember("brightness"))
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: setColorBrightness: Missing required parameters");
 			return false;
 		}
-		std::string sSwitchName = jsonRequest["params"]["arguments"]["switchname"].asString();
-		float fHue = (float)jsonRequest["params"]["arguments"]["hue"].asInt();
-		int iBrightness = jsonRequest["params"]["arguments"]["brightness"].asInt();
+		float fHue = (float)args["hue"].asInt();
+		int iBrightness = args["brightness"].asInt();
 		bool bIsWhite = false;
-		if (jsonRequest["params"]["arguments"].isMember("iswhite"))
-			bIsWhite = jsonRequest["params"]["arguments"]["iswhite"].asBool();
+		if (args.isMember("iswhite"))
+			bIsWhite = args["iswhite"].asBool();
 
 		iBrightness = std::max(0, std::min(100, iBrightness));
 		fHue = std::max(0.0F, std::min(360.0F, fHue));
 
 		Json::Value device;
-		bool bFound = getDeviceByName(sSwitchName, device);
+		std::string sSwitchName;
+		bool bFound;
+		uint64_t uIdx = 0;
+		if (bHasIdx)
+		{
+			bFound = getDeviceByIdx(args["idx"].asInt(), device);
+			sSwitchName = bFound ? device["Name"].asString() : "idx=" + std::to_string(args["idx"].asInt());
+			uIdx = (uint64_t)args["idx"].asInt();
+		}
+		else
+		{
+			sSwitchName = args["switchname"].asString();
+			bFound = getDeviceByName(sSwitchName, device);
+			if (bFound)
+			{
+				try {
+					uIdx = std::stoull(device["idx"].asString());
+				} catch (const std::exception &e) {
+					_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid device idx: %s", e.what());
+					mcp::setToolResult(jsonRPCRep, "Internal error: invalid device index.", true);
+					return true;
+				}
+			}
+		}
 		std::string sResult;
 		if (!bFound)
 		{
@@ -3517,14 +3947,6 @@ namespace mcp		// Model Context Protocol
 			if (bIsWhite)
 				color.mode = ColorModeWhite;
 
-			uint64_t uIdx;
-			try {
-				uIdx = std::stoull(device["idx"].asString());
-			} catch (const std::exception &e) {
-				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid device idx: %s", e.what());
-				mcp::setToolResult(jsonRPCRep, "Internal error: invalid device index.", true);
-				return true;
-			}
 			auto rc = m_mainworker.SwitchLight(uIdx, "Set Color", (unsigned char)iBrightness, color, false, 0, "MCP");
 			sResult = (rc == MainWorker::eSwitchLightReturnCode::SL_ERROR)
 				? "Error setting color on \"" + sSwitchName + "\"."
@@ -3536,15 +3958,15 @@ namespace mcp		// Model Context Protocol
 
 	bool setColorTemperature(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") ||
-			!jsonRequest["params"]["arguments"].isMember("switchname") ||
-			!jsonRequest["params"]["arguments"].isMember("kelvin"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasIdx = args.isMember("idx");
+		bool bHasName = args.isMember("switchname") && !args["switchname"].asString().empty();
+		if ((!bHasIdx && !bHasName) || !args.isMember("kelvin"))
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: setColorTemperature: Missing required parameters");
 			return false;
 		}
-		std::string sSwitchName = jsonRequest["params"]["arguments"]["switchname"].asString();
-		int iKelvin = jsonRequest["params"]["arguments"]["kelvin"].asInt();
+		int iKelvin = args["kelvin"].asInt();
 
 		// Map Kelvin to Domoticz ColorModeTemp level (0-100):
 		// 6500K (cool/daylight) maps to level 0, 2700K (warm/incandescent) maps to level 100.
@@ -3555,7 +3977,30 @@ namespace mcp		// Model Context Protocol
 		iLevel = std::max(0, std::min(100, iLevel));
 
 		Json::Value device;
-		bool bFound = getDeviceByName(sSwitchName, device);
+		std::string sSwitchName;
+		bool bFound;
+		uint64_t uIdx = 0;
+		if (bHasIdx)
+		{
+			bFound = getDeviceByIdx(args["idx"].asInt(), device);
+			sSwitchName = bFound ? device["Name"].asString() : "idx=" + std::to_string(args["idx"].asInt());
+			uIdx = (uint64_t)args["idx"].asInt();
+		}
+		else
+		{
+			sSwitchName = args["switchname"].asString();
+			bFound = getDeviceByName(sSwitchName, device);
+			if (bFound)
+			{
+				try {
+					uIdx = std::stoull(device["idx"].asString());
+				} catch (const std::exception &e) {
+					_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid device idx: %s", e.what());
+					mcp::setToolResult(jsonRPCRep, "Internal error: invalid device index.", true);
+					return true;
+				}
+			}
+		}
 		std::string sResult;
 		if (!bFound)
 		{
@@ -3565,14 +4010,6 @@ namespace mcp		// Model Context Protocol
 		{
 			uint8_t tVal = (uint8_t)(int)round(iLevel * 255.0 / 100.0);
 			_tColor color(tVal, ColorModeTemp);
-			uint64_t uIdx;
-			try {
-				uIdx = std::stoull(device["idx"].asString());
-			} catch (const std::exception &e) {
-				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid device idx: %s", e.what());
-				mcp::setToolResult(jsonRPCRep, "Internal error: invalid device index.", true);
-				return true;
-			}
 			auto rc = m_mainworker.SwitchLight(uIdx, "Set Color", -1, color, false, 0, "MCP");
 			sResult = (rc == MainWorker::eSwitchLightReturnCode::SL_ERROR)
 				? "Error setting color temperature on \"" + sSwitchName + "\"."
@@ -3620,15 +4057,15 @@ namespace mcp		// Model Context Protocol
 
 	bool switchScene(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") ||
-			!jsonRequest["params"]["arguments"].isMember("scenename") ||
-			!jsonRequest["params"]["arguments"].isMember("command"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasId = args.isMember("scene_id");
+		bool bHasName = args.isMember("scenename") && !args["scenename"].asString().empty();
+		if ((!bHasId && !bHasName) || !args.isMember("command"))
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: switchScene: Missing required parameter 'scenename' or 'command'");
 			return false;
 		}
-		std::string sSceneName = jsonRequest["params"]["arguments"]["scenename"].asString();
-		std::string sCommand = jsonRequest["params"]["arguments"]["command"].asString();
+		std::string sCommand = args["command"].asString();
 
 		// Capitalize first letter, lowercase rest — matches "On"/"Off" format
 		if (!sCommand.empty()) {
@@ -3643,9 +4080,24 @@ namespace mcp		// Model Context Protocol
 			return true;
 		}
 
-		auto result = m_sql.safe_query("SELECT ID FROM Scenes WHERE Name='%q'", sSceneName.c_str());
+		std::vector<std::vector<std::string>> result;
+		std::string sIdentifier;
+		if (bHasId)
+		{
+			int nSceneId = args["scene_id"].asInt();
+			sIdentifier = "idx=" + std::to_string(nSceneId);
+			result = m_sql.safe_query("SELECT ID, Name FROM Scenes WHERE ID=%d", nSceneId);
+		}
+		else
+		{
+			std::string sName = args["scenename"].asString();
+			sIdentifier = "\"" + sName + "\"";
+			result = m_sql.safe_query("SELECT ID, Name FROM Scenes WHERE Name='%q'", sName.c_str());
+		}
+
 		std::string sResult;
 		bool bFound = !result.empty();
+		std::string sSceneName = bFound ? result[0][1] : sIdentifier;
 		if (!bFound)
 		{
 			sResult = "No scene or group exists with the name \"" + sSceneName + "\".";
@@ -3686,17 +4138,33 @@ namespace mcp		// Model Context Protocol
 
 	bool getRoomDevices(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") ||
-			!jsonRequest["params"]["arguments"].isMember("roomname"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasId = args.isMember("room_id");
+		bool bHasName = args.isMember("roomname") && !args["roomname"].asString().empty();
+		if (!bHasId && !bHasName)
 		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: getRoomDevices: Missing required parameter 'roomname'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: getRoomDevices: Missing required parameter 'roomname' or 'room_id'");
 			return false;
 		}
-		std::string sRoomName = jsonRequest["params"]["arguments"]["roomname"].asString();
 
-		auto planResult = m_sql.safe_query("SELECT ID FROM Plans WHERE Name='%q'", sRoomName.c_str());
+		std::vector<std::vector<std::string>> planResult;
+		std::string sIdentifier;
+		if (bHasId)
+		{
+			int nRoomId = args["room_id"].asInt();
+			sIdentifier = "idx=" + std::to_string(nRoomId);
+			planResult = m_sql.safe_query("SELECT ID, Name FROM Plans WHERE ID=%d", nRoomId);
+		}
+		else
+		{
+			std::string sName = args["roomname"].asString();
+			sIdentifier = "\"" + sName + "\"";
+			planResult = m_sql.safe_query("SELECT ID, Name FROM Plans WHERE Name='%q'", sName.c_str());
+		}
+
 		std::string sResult;
 		bool bFound = !planResult.empty();
+		std::string sRoomName = bFound ? planResult[0][1] : sIdentifier;
 		if (!bFound)
 		{
 			sResult = "No room (plan) exists with the name \"" + sRoomName + "\".";
@@ -3738,17 +4206,33 @@ namespace mcp		// Model Context Protocol
 
 	bool getSceneDevices(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
-		if (!jsonRequest["params"].isMember("arguments") ||
-			!jsonRequest["params"]["arguments"].isMember("scenename"))
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasId = args.isMember("scene_id");
+		bool bHasName = args.isMember("scenename") && !args["scenename"].asString().empty();
+		if (!bHasId && !bHasName)
 		{
-			_log.Debug(DEBUG_WEBSERVER, "MCP: getSceneDevices: Missing required parameter 'scenename'");
+			_log.Debug(DEBUG_WEBSERVER, "MCP: getSceneDevices: Missing required parameter 'scenename' or 'scene_id'");
 			return false;
 		}
-		std::string sSceneName = jsonRequest["params"]["arguments"]["scenename"].asString();
 
-		auto scResult = m_sql.safe_query("SELECT ID, SceneType FROM Scenes WHERE Name='%q'", sSceneName.c_str());
+		std::vector<std::vector<std::string>> scResult;
+		std::string sIdentifier;
+		if (bHasId)
+		{
+			int nSceneId = args["scene_id"].asInt();
+			sIdentifier = "idx=" + std::to_string(nSceneId);
+			scResult = m_sql.safe_query("SELECT ID, SceneType, Name FROM Scenes WHERE ID=%d", nSceneId);
+		}
+		else
+		{
+			std::string sName = args["scenename"].asString();
+			sIdentifier = "\"" + sName + "\"";
+			scResult = m_sql.safe_query("SELECT ID, SceneType, Name FROM Scenes WHERE Name='%q'", sName.c_str());
+		}
+
 		std::string sResult;
 		bool bFound = !scResult.empty();
+		std::string sSceneName = bFound ? scResult[0][2] : sIdentifier;
 		if (!bFound)
 		{
 			sResult = "No scene or group exists with the name \"" + sSceneName + "\".";

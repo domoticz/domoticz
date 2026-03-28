@@ -285,6 +285,22 @@ define(['app', 'luxon', 'ChartWatermark'], function (app, luxon, ChartWatermark)
 			});
 		}
 
+		self.FixStats = function() {
+			bootbox.confirm($.t('Fix the Weekly Pattern by removing spike contamination?\n\nThis recalculates averages from valid data.'), function (result) {
+				if (result == true) {
+					$http({
+						url: 'json.htm?type=command&param=fixkwhstats&idx=' + $scope.idx,
+						async: false,
+						dataType: 'json'
+					}).then(function successCallback(response) {
+						self.getStats();
+					}, function errorCallback(response) {
+						self.getStats();
+					});
+				}
+			});
+		}
+
 		self.$onInit = function () {
 			$scope.idx = self.device.idx;
 
@@ -315,6 +331,13 @@ define(['app', 'luxon', 'ChartWatermark'], function (app, luxon, ChartWatermark)
 				text: $.t('Reset Internal Statistics'),
 				onclick: function () {
 					self.ResetStats();
+				},
+				separator: false
+			});
+			$scope.chart_buttons.push({
+				text: $.t('Fix Weekly Pattern'),
+				onclick: function () {
+					self.FixStats();
 				},
 				separator: false
 			});

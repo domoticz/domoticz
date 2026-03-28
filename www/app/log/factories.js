@@ -54,7 +54,8 @@ define(['app'], function (app) {
 
     app.factory('domoticzDataPointApi', function ($q, domoticzApi, permissions) {
         return {
-            deletePoint: deletePoint
+            deletePoint: deletePoint,
+            spreadPoint: spreadPoint
         };
 
         function deletePoint(deviceIdx, point, isShort, timezone) {
@@ -101,6 +102,34 @@ define(['app'], function (app) {
                             reject();
                         });
                 });
+            });
+        }
+
+        function spreadPoint(deviceIdx, point, timezone) {
+            return $q(function (resolve, reject) {
+                if (!permissions.hasPermission('Admin')) {
+                    HideNotify();
+                    ShowNotify($.t('You do not have permission to do that!'), 2500, true);
+                    return;
+                }
+                if (timezone !== undefined) {
+                    Highcharts.setOptions({ time: { timezone: timezone } });
+                }
+                var dateString = Highcharts.dateFormat('%Y-%m-%d', point.x);
+                if (timezone !== undefined) {
+                    Highcharts.setOptions({ time: { timezone: undefined, useUTC: true } });
+                }
+                domoticzApi
+                    .sendCommand('spreadcounterspike', {
+                        idx: deviceIdx,
+                        date: dateString
+                    })
+                    .then(resolve)
+                    .catch(function () {
+                        HideNotify();
+                        ShowNotify($.t('Problem spreading data point!'), 2500, true);
+                        reject();
+                    });
             });
         }
     });

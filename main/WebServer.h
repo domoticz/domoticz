@@ -55,6 +55,8 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void GetOpenIDConfiguration(WebEmSession &session, const request &req, reply &rep);
 
 	void PostMcp(WebEmSession &session, const request &req, reply &rep);
+	void HandleMcpGet(WebEmSession &session, const request &req, reply &rep);
+	void HandleMcpDelete(WebEmSession &session, const request &req, reply &rep);
 
 	void SetRFXCOMMode(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void UploadFloorplanImage(WebEmSession & session, const request& req, std::string & redirect_uri);
@@ -303,6 +305,7 @@ private:
 	void Cmd_VacuumDatabase(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDbStats(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_FixKwhCounterSpikes(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_SpreadCounterSpike(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PanasonicSetMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PanasonicGetNodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PanasonicAddNode(WebEmSession & session, const request& req, Json::Value &root);
@@ -347,6 +350,7 @@ private:
 
 	void Cmd_GetkWhStats(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_ResetkWhStats(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_FixkWhStats(WebEmSession& session, const request& req, Json::Value& root);
 
 	// Plugin functions
 	void Cmd_PluginCommand(WebEmSession & session, const request& req, Json::Value &root);

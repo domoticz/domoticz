@@ -1,0 +1,32 @@
+<br>
+<p><i>Note: This plugin requires the <b>Daikin Homehub (EKRHH)</b> gateway configured for Modbus TCP.</i></p>
+<table class="display" id="hardwareparamsdaikinmodbus" border="0" cellpadding="0" cellspacing="20">
+	<tr valign="top">
+		<td align="right" style="width:110px">
+			<label id="lblmodeldaikinmodbus"><span data-i18n="Model">Model</span>: </label>
+		</td>
+		<td>
+			<select id="modeldaikinmodbus" class="combobox ui-corner-all">
+				<option value="0">Altherma 3 (Air-to-Water)</option>
+				<option value="1">Air-to-Air (AC units)</option>
+			</select>
+		</td>
+	</tr>
+	<tr valign="top">
+		<td align="right" style="width:110px">
+			<label id="lblunitiddaikinmodbus"><span data-i18n="Unit ID">Unit ID</span>: </label>
+		</td>
+		<td>
+			<input type="text" id="unitiddaikinmodbus" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="1"><br>
+		</td>
+	</tr>
+	<tr valign="top">
+		<td align="right" style="width:110px">
+			<label id="lblupdfreqdaikinmodbus"><span data-i18n="Poll Interval">Poll Interval</span>: </label>
+		</td>
+		<td>
+			<input type="text" id="updatefrequencydaikinmodbus" style="width: 50px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="30">&nbsp;<span data-i18n="(Seconds)">(Seconds)</span><br>
+			<span data-i18n="This sets the polling interval for status updates.">This sets the polling interval for status updates.</span><br>
+		</td>
+	</tr>
+</table>

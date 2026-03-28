@@ -1,5 +1,31 @@
 Version 2026.xxxx
 - Added: BuienRadar, new rain sensor based on last 24 hour value instead of rain rate
+- Added: CounterHelper, support for additional counter device types
+- Added: MCP, battery level and RSSI/signal level included in device search and listing tools
+- Added: MCP, completion/complete support with prompt argument and resource URI autocompletion
+- Added: MCP, create_sensor and create_device as aliases for create_virtual_sensor tool
+- Added: MCP, delete_event tool for removing automation event scripts (admin only)
+- Added: MCP, domoticz://sensor-types resource listing all available virtual sensor types with mapped values
+- Added: MCP, get_sensor_history tool with daily calendar data for all sensor types and event log for switches/scenes
+- Added: MCP, new prompts: battery_status, climate_overview, create_automation, daily_report, energy_report, hardware_health, scene_optimizer, security_check
+- Added: Counter log, right-click context menu on anomalous spike bars with options to spread the value across preceding empty days or delete it (admin only)
+- Added: Counter log, "Fix Weekly Pattern" option in the Weekly Generated Pattern and Days/Hourly Energy chart menus to remove spike contamination from running averages (admin only)
+- Added: PhilipsHue, automatic bridge version detection (V2 HTTPS/443, V1 HTTPS/443, V1 HTTP/80); port no longer needs manual configuration
+- Added: PhilipsHue V2, real-time sensor updates via Server-Sent Events (SSE); instant state changes without waiting for the next poll cycle
+- Added: PhilipsHue V2, new sensor types: grouped motion, grouped light level, camera motion, security area motion, button remotes, and bell button (doorbell)
+- Changed: Counter log, "Fix Counter Spikes" admin button is now visible in the counter log footer
+- Changed: Security Panel page redesigned to match Domoticz glass-card style (login/about page look)
+- Fixed: Counter log, monthly/yearly charts incorrectly spreading a day's value across preceding zero-value days (#6703)
+- Fixed: Log charts, month/year/day range charts now always extend to today; a red highlight indicates the period with no recorded data
+- Fixed: Counter log, Weekly Generated Pattern heatmap could show extreme values caused by spike contamination in running hourly averages
+- Fixed: Contact and DoorContact switches now show correct Open/Closed icon state in the dashboard
+- Fixed: Dashboard, Security type devices marked as favorites are now displayed in the Dashboard tab
+- Fixed: MCP, server is now enabled by default; use -nomcp flag to disable (previously required -llmmcp flag to enable)
+- Fixed: PhilipsHue SSE, application shutdown hang when event stream was idle
+- Fixed: PhilipsHue V2, battery level for motion/temperature/light level sensors reported as 255 instead of actual level
+- Fixed: PhilipsHue v2, thread-safety race condition causing concurrent API call errors
+- Fixed: Python plugin framework, spurious NullStream initialization errors on Python < 3.13 (#6688)
+- Fixed: Text device utility widget now preserves HTML style attributes (color, font-size, etc.)
 
 Version 2026.1 (March 25th 2026)
 - Added: Alexa Smart Home v3 API endpoint (see ALEXA.md)

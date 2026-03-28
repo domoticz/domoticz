@@ -197,7 +197,7 @@ define(['app'], function (app) {
             + '</b>';
         if (this.custom && this.custom.isSpike) {
             s += '<br/><span style="color:#FF4444">\u26A0 '
-                + $.t('Anomalous value — shift+click to delete')
+                + $.t('Anomalous value — right-click for options')
                 + '</span>';
         }
         return s + '<br/>';

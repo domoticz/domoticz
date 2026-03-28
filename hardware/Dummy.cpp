@@ -8,6 +8,7 @@
 #include <libwebem/cWebem.h>
 #include <json/json.h>
 #include "hardwaretypes.h"
+#include "../push/McpPush.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 #include <sstream>
@@ -176,6 +177,7 @@ namespace http {
 						root["status"] = "OK";
 						root["title"] = "CreateVirtualSensor";
 						root["idx"] = std::to_string(vs_idx);
+						g_McpPush.onDeviceTableChanged();
 					}
 					break;
 				}
@@ -271,6 +273,7 @@ namespace http {
 				root["status"] = "OK";
 				root["title"] = "CreateSensor";
 				root["idx"] = std::to_string(vs_idx);
+				g_McpPush.onDeviceTableChanged();
 			}
 
 		}

@@ -110,6 +110,7 @@ void CMQTTPush::UpdateSettings()
 	m_sql.GetPreferencesVar("MQTTPushPassword", m_Password);
 	m_sql.GetPreferencesVar("MQTTPushTopicOut", m_TopicOut);
 	m_sql.GetPreferencesVar("MQTTPushCAFile", m_CAFilename);
+	nValue = 2;
 	m_sql.GetPreferencesVar("MQTTPushTLSVersion", nValue);
 	m_TLS_Version = nValue;
 	nValue = 0;
@@ -326,35 +327,33 @@ namespace http
 
 			std::string svalue;
 
-			if (m_sql.GetPreferencesVar("MQTTPushIP", svalue))
-			{
-				root["ipaddress"] = svalue;
-			}
-			if (m_sql.GetPreferencesVar("MQTTPushPort", nValue))
-			{
-				root["port"] = nValue;
-			}
-			if (m_sql.GetPreferencesVar("MQTTPushUsername", svalue))
-			{
-				root["username"] = svalue;
-			}
-			if (m_sql.GetPreferencesVar("MQTTPushPassword", svalue))
-			{
-				root["password"] = svalue;
-			}
-			if (m_sql.GetPreferencesVar("MQTTPushTopicOut", svalue))
-			{
-				root["topicout"] = svalue;
-			}
-			if (m_sql.GetPreferencesVar("MQTTPushCAFile", svalue))
-			{
-				root["cafile"] = svalue;
-			}
-			nValue = 0;
-			if (m_sql.GetPreferencesVar("MQTTPushTLSVersion", nValue))
-			{
-				root["tlsversion"] = nValue;
-			}
+			svalue = "";
+			m_sql.GetPreferencesVar("MQTTPushIP", svalue);
+			root["ipaddress"] = svalue;
+
+			nValue = 1883;
+			m_sql.GetPreferencesVar("MQTTPushPort", nValue);
+			root["port"] = nValue;
+
+			svalue = "";
+			m_sql.GetPreferencesVar("MQTTPushUsername", svalue);
+			root["username"] = svalue;
+
+			svalue = "";
+			m_sql.GetPreferencesVar("MQTTPushPassword", svalue);
+			root["password"] = svalue;
+
+			svalue = "";
+			m_sql.GetPreferencesVar("MQTTPushTopicOut", svalue);
+			root["topicout"] = svalue;
+
+			svalue = "";
+			m_sql.GetPreferencesVar("MQTTPushCAFile", svalue);
+			root["cafile"] = svalue;
+
+			nValue = 2;
+			m_sql.GetPreferencesVar("MQTTPushTLSVersion", nValue);
+			root["tlsversion"] = nValue;
 			nValue = 0;
 			m_sql.GetPreferencesVar("MQTTPushRetain", nValue);
 			root["retained_mode"] = nValue;
