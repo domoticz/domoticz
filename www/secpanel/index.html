@@ -1,4 +1,4 @@
-﻿<!DOCTYPE HTML>
+<!DOCTYPE HTML>
 <html lang="en-US">
 <head>
 	<meta charset="utf-8">
@@ -6,14 +6,131 @@
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black">
-	<meta http-equiv="content-type" content="text/html; charset=utf-8">
 	<title>Domoticz Security Panel</title>
-	<link rel="stylesheet" href="css/style.css">
+	<link rel="stylesheet" href="../css/style.css">
 	<script src="js/ion.sound.min.js"></script>
 	<script src="../js/jquery-3.6.0.min.js"></script>
 	<script src="../js/i18next-1.8.0.min.js"></script>
 	<script src="../js/domoticz.js"></script>
 	<script src="../js/md5.js"></script>
+	<style>
+		@font-face {
+			font-family: 'Digital';
+			src: url('font/Digital.eot');
+			src: url('font/Digital.eot?#iefix') format('embedded-opentype'),
+			     url('font/Digital.woff') format('woff'),
+			     url('font/Digital.ttf') format('truetype'),
+			     url('font/Digital.svg#Digital-7Italic') format('svg');
+		}
+		@font-face {
+			font-family: 'Audiowide';
+			src: url('font/Audiowide.eot');
+			src: url('font/Audiowide.eot?#iefix') format('embedded-opentype'),
+			     url('font/Audiowide.woff') format('woff'),
+			     url('font/Audiowide.ttf') format('truetype'),
+			     url('font/Audiowide.svg#Audiowide-7Italic') format('svg');
+		}
+
+		body, #foreground, #midground { background: none; }
+		body { background: radial-gradient(ellipse at center, #1a1a2e 0%, #16213e 50%, #0f0f23 100%) fixed; min-height: 100vh; }
+
+		.glass-container {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			min-height: 100vh;
+			padding: 20px;
+			box-sizing: border-box;
+		}
+
+		.sec-title {
+			font-size: 1.4em;
+			font-weight: 300;
+			color: rgba(255, 255, 255, 0.9);
+			text-shadow: 0 0 30px rgba(100, 200, 255, 0.5);
+			margin-bottom: 20px;
+			letter-spacing: 3px;
+			text-transform: uppercase;
+			text-align: center;
+		}
+
+		.sec-display {
+			display: block;
+			width: 100%;
+			box-sizing: border-box;
+			background: rgba(0, 0, 0, 0.5);
+			border: 1px solid rgba(128, 255, 196, 0.2);
+			border-radius: 10px;
+			padding: 12px 15px;
+			margin-bottom: 20px;
+			font-family: 'Digital', sans-serif;
+			font-size: 52px;
+			color: rgba(128, 255, 196, 0.95);
+			text-align: center;
+			text-shadow: 0 0 20px rgba(128, 255, 196, 0.5);
+			box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+		}
+
+		.keypad-grid {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr) 1.7fr;
+			gap: 12px;
+		}
+
+		.btn-keypad {
+			background: rgba(255, 255, 255, 0.07);
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			border-radius: 12px;
+			color: rgba(255, 255, 255, 0.9);
+			font-family: 'Audiowide', sans-serif;
+			font-size: 22px;
+			padding: 8px;
+			cursor: pointer;
+			transition: background 0.2s ease, color 0.2s ease;
+			text-align: center;
+			backdrop-filter: blur(5px);
+			box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.5);
+			width: 100%;
+			aspect-ratio: 1;
+		}
+
+		.btn-keypad:hover {
+			background: rgba(255, 255, 255, 0.15);
+			color: rgba(196, 255, 225, 0.95);
+		}
+
+		.btn-keypad.btn-disarm {
+			background: rgba(0, 170, 0, 0.7);
+			border-color: rgba(0, 220, 0, 0.5);
+			font-size: 18px;
+			aspect-ratio: auto;
+			align-self: stretch;
+		}
+		.btn-keypad.btn-disarm:hover {
+			background: rgba(0, 200, 0, 0.85);
+		}
+
+		.btn-keypad.btn-arm {
+			background: rgba(180, 0, 0, 0.65);
+			border-color: rgba(220, 0, 0, 0.5);
+			font-size: 18px;
+			aspect-ratio: auto;
+			align-self: stretch;
+		}
+		.btn-keypad.btn-arm:hover {
+			background: rgba(210, 0, 0, 0.8);
+		}
+
+		.btn-keypad.btn-cancel {
+			font-size: 18px;
+			aspect-ratio: auto;
+			align-self: stretch;
+		}
+
+		.keypad-empty {
+			display: block;
+		}
+	</style>
 	<script type="text/javascript">
 		ion.sound({
 			sounds: [
@@ -263,42 +380,35 @@
 	</script>
 </head>
 <body>
-	<div id="main">
-		<div class="main-border">
-			<div id="keypad">
-				<div class="keypad-header">
-					<div class="title" onClick="javascript:main.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);"><p>Domoticz Security Panel</p></div>
+	<div class="glass-container">
+		<center>
+			<div class="glass-card" style="max-width: 420px;">
+				<h1 class="sec-title">Domoticz Security Panel</h1>
+				<input type="text" id="digitdisplay" class="sec-display" value="" disabled>
+				<input type="hidden" id="password" value="">
+				<div class="keypad-grid">
+					<button class="btn-keypad" onclick="AddDigit('1')">1</button>
+					<button class="btn-keypad" onclick="AddDigit('2')">2</button>
+					<button class="btn-keypad" onclick="AddDigit('3')">3</button>
+					<button class="btn-keypad btn-disarm" onclick="SetSecStatus(0)">Disarm</button>
+
+					<button class="btn-keypad" onclick="AddDigit('4')">4</button>
+					<button class="btn-keypad" onclick="AddDigit('5')">5</button>
+					<button class="btn-keypad" onclick="AddDigit('6')">6</button>
+					<button class="btn-keypad btn-arm" onclick="SetSecStatus(1)">Arm Home</button>
+
+					<button class="btn-keypad" onclick="AddDigit('7')">7</button>
+					<button class="btn-keypad" onclick="AddDigit('8')">8</button>
+					<button class="btn-keypad" onclick="AddDigit('9')">9</button>
+					<button class="btn-keypad btn-arm" onclick="SetSecStatus(2)">Arm Away</button>
+
+					<span class="keypad-empty"></span>
+					<button class="btn-keypad" onclick="AddDigit('0')">0</button>
+					<span class="keypad-empty"></span>
+					<button class="btn-keypad btn-cancel" onclick="beep(); ShowStatus()">Cancel</button>
 				</div>
-				<form name="keypadinput">
-					<input type="text" id="digitdisplay" value="" name="digitdisplay" disabled="disabled">
-					<input type="hidden" id="password" value="" name="password">
-					<ul class="keypad-keys">
-						<li class="digit" onClick="javascript:AddDigit('1');">1</li>
-						<li class="digit" onClick="javascript:AddDigit('2');">2</li>
-						<li class="digit" onClick="javascript:AddDigit('3');">3</li>
-						<li class="disarm" onClick="javascript:SetSecStatus(0);">Disarm</li>
-					</ul>
-					<ul class="keypad-keys">
-						<li class="digit" onClick="javascript:AddDigit('4');">4</li>
-						<li class="digit" onClick="javascript:AddDigit('5');">5</li>
-						<li class="digit" onClick="javascript:AddDigit('6');">6</li>
-						<li class="arm" onClick="javascript:SetSecStatus(1);">Arm Home</li>
-					</ul>
-					<ul class="keypad-keys">
-						<li class="digit" onClick="javascript:AddDigit('7');">7</li>
-						<li class="digit" onClick="javascript:AddDigit('8');">8</li>
-						<li class="digit" onClick="javascript:AddDigit('9');">9</li>
-						<li class="arm" onClick="javascript:SetSecStatus(2);">Arm Away</li>
-					</ul>
-					<ul class="keypad-keys">
-						<li style="visibility: hidden;"></li>
-						<li class="digit" onClick="javascript:AddDigit('0');">0</li>
-						<li style="visibility: hidden;"></li>
-						<li class="cancel" onClick="javascript:beep(); ShowStatus();">Cancel</li>
-					</ul>
-				</form>
 			</div>
-		</div>
+		</center>
 	</div>
 </body>
 </html>
