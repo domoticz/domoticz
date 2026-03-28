@@ -12,6 +12,7 @@ Version 2026.xxxx
 - Added: PhilipsHue V2, real-time sensor updates via Server-Sent Events (SSE); instant state changes without waiting for the next poll cycle
 - Added: PhilipsHue V2, new sensor types: grouped motion, grouped light level, camera motion, security area motion, button remotes, and bell button (doorbell)
 - Fixed: Contact and DoorContact switches now show correct Open/Closed icon state in the dashboard
+- Fixed: Dashboard, Security type devices marked as favorites are now displayed in the Dashboard tab
 - Fixed: MCP, server is now enabled by default; use -nomcp flag to disable (previously required -llmmcp flag to enable)
 - Fixed: PhilipsHue SSE, application shutdown hang when event stream was idle
 - Fixed: PhilipsHue V2, battery level for motion/temperature/light level sensors reported as 255 instead of actual level

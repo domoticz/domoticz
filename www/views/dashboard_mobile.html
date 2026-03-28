@@ -359,8 +359,37 @@
 										data-i18n="4">4</button>
 							</span>
 
+							<!-- Security Panel -->
+							<span ng-if="item.Type == 'Security' && item.SubType == 'Security Panel'">
+								<a class="btn btn-mini" href="secpanel/">{{item.Status}}</a>
+							</span>
+
+							<!-- Armable Security (remote / Meiantech) -->
+							<span ng-if="item.Type == 'Security' && ((item.SubType || '').indexOf('remote') > 0 || (item.SubType || '').indexOf('Meiantech') >= 0)">
+								<button class="btn btn-mini"
+										ng-if="(item.Status || '').indexOf('Arm') < 0 && (item.Status || '').indexOf('Panic') < 0"
+										type="button"
+										ng-click="switchLight(item.idx, 'Arm Home', item.Protected)"
+										data-i18n="Arm Home">Arm Home</button>
+								<button class="btn btn-mini"
+										ng-if="(item.Status || '').indexOf('Arm') < 0 && (item.Status || '').indexOf('Panic') < 0"
+										type="button"
+										ng-click="switchLight(item.idx, 'Arm Away', item.Protected)"
+										data-i18n="Arm Away">Arm Away</button>
+								<button class="btn btn-mini btn-info"
+										ng-if="(item.Status || '').indexOf('Arm') >= 0 || (item.Status || '').indexOf('Panic') >= 0"
+										type="button"
+										ng-click="switchLight(item.idx, 'Disarm', item.Protected)"
+										data-i18n="Disarm">Disarm</button>
+							</span>
+
+							<!-- Other Security types (read-only status) -->
+							<span ng-if="item.Type == 'Security' && item.SubType != 'Security Panel' && (item.SubType || '').indexOf('remote') < 0 && (item.SubType || '').indexOf('Meiantech') < 0">
+								{{item.Status}}
+							</span>
+
 							<!-- Default switch (everything not matched above) -->
-							<span ng-if="item.SwitchType != 'Doorbell' && item.SwitchType != 'Push On Button' && item.SwitchType != 'Push Off Button' && item.SwitchType != 'Door Contact' && item.SwitchType != 'Door Lock' && item.SwitchType != 'Door Lock Inverted' && item.SwitchType != 'X10 Siren' && item.SwitchType != 'Contact' && item.SwitchType != 'Motion Sensor' && item.SwitchType != 'Smoke Detector' && item.SwitchType != 'Dusk Sensor' && (item.SwitchType || '').indexOf('Blind') < 0 && (item.SwitchType || '').indexOf('blind') < 0 && item.SwitchType != 'Selector' && item.SwitchType != 'Dimmer' && item.SwitchType != 'TPI' && (item.SubType || '').indexOf('Itho') < 0 && (item.SubType || '').indexOf('Lucci Air DC') < 0 && (item.SubType || '').indexOf('Lucci') < 0 && (item.SubType || '').indexOf('Westinghouse') < 0 && (item.SubType || '').indexOf('Falmec') < 0">
+							<span ng-if="item.SwitchType != 'Doorbell' && item.SwitchType != 'Push On Button' && item.SwitchType != 'Push Off Button' && item.SwitchType != 'Door Contact' && item.SwitchType != 'Door Lock' && item.SwitchType != 'Door Lock Inverted' && item.SwitchType != 'X10 Siren' && item.SwitchType != 'Contact' && item.SwitchType != 'Motion Sensor' && item.SwitchType != 'Smoke Detector' && item.SwitchType != 'Dusk Sensor' && (item.SwitchType || '').indexOf('Blind') < 0 && (item.SwitchType || '').indexOf('blind') < 0 && item.SwitchType != 'Selector' && item.SwitchType != 'Dimmer' && item.SwitchType != 'TPI' && (item.SubType || '').indexOf('Itho') < 0 && (item.SubType || '').indexOf('Lucci Air DC') < 0 && (item.SubType || '').indexOf('Lucci') < 0 && (item.SubType || '').indexOf('Westinghouse') < 0 && (item.SubType || '').indexOf('Falmec') < 0 && item.Type != 'Security'">
 								<button class="btn btn-mini"
 										ng-class="{'btn-info': item.Status == 'On' || item.Status == 'Chime' || item.Status == 'Group On' || (item.Status || '').indexOf('Down') != -1 || (item.Status || '').indexOf('Up') != -1 || (item.Status || '').indexOf('Set ') === 0}"
 										type="button"
