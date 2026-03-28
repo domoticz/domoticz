@@ -100,6 +100,7 @@ define(['app', 'domoticz.api', 'livesocket'], function(app) {
                         item.Type.indexOf('Color Switch') === 0 ||
                         item.Type.indexOf('RFY') === 0 ||
                         item.Type.indexOf('ASA') === 0 ||
+                        item.Type.indexOf('Fan') === 0 ||
                         item.SubType === 'Relay' ||
                         (typeof item.SubType !== 'undefined' && item.SubType.indexOf('Itho') === 0) ||
                         (typeof item.SubType !== 'undefined' && item.SubType.indexOf('Lucci') === 0) ||
