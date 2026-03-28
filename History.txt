@@ -11,6 +11,7 @@ Version 2026.xxxx
 - Added: PhilipsHue, automatic bridge version detection (V2 HTTPS/443, V1 HTTPS/443, V1 HTTP/80); port no longer needs manual configuration
 - Added: PhilipsHue V2, real-time sensor updates via Server-Sent Events (SSE); instant state changes without waiting for the next poll cycle
 - Added: PhilipsHue V2, new sensor types: grouped motion, grouped light level, camera motion, security area motion, button remotes, and bell button (doorbell)
+- Changed: Security Panel page redesigned to match Domoticz glass-card style (login/about page look)
 - Fixed: Contact and DoorContact switches now show correct Open/Closed icon state in the dashboard
 - Fixed: Dashboard, Security type devices marked as favorites are now displayed in the Dashboard tab
 - Fixed: MCP, server is now enabled by default; use -nomcp flag to disable (previously required -llmmcp flag to enable)
