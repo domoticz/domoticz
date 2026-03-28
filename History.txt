@@ -16,6 +16,7 @@ Version 2026.xxxx
 - Changed: Counter log, "Fix Counter Spikes" admin button is now visible in the counter log footer
 - Changed: Security Panel page redesigned to match Domoticz glass-card style (login/about page look)
 - Fixed: Counter log, monthly/yearly charts incorrectly spreading a day's value across preceding zero-value days (#6703)
+- Fixed: Log charts, month/year/day range charts now always extend to today; a red highlight indicates the period with no recorded data
 - Fixed: Counter log, Weekly Generated Pattern heatmap could show extreme values caused by spike contamination in running hourly averages
 - Fixed: Contact and DoorContact switches now show correct Open/Closed icon state in the dashboard
 - Fixed: Dashboard, Security type devices marked as favorites are now displayed in the Dashboard tab

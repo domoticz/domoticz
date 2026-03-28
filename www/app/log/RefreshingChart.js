@@ -292,8 +292,10 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
                     const stopwatchCycle = stopwatch('cycle');
                     loadDataInChart(data);
+                    prepareAxisRange();
                     synchronizeYaxes();
                     redrawChart();
+                    addMissingDataPlotBand();
                     self.consoledebug(function () { return stopwatchCycle.log(); });
                     if (afterRefreshChartData !== undefined) {
                         afterRefreshChartData();
@@ -313,6 +315,68 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                         // Forces the legend to be redrawn as well
                         // self.chart.isDirtyLegend = true;
                         self.chart.redraw();
+                    }
+
+                    function prepareAxisRange() {
+                        // Computes the window end (today) and updates the x-axis range before redraw.
+                        // self._missingDataWindowEnd is used by zoom/reset buttons to end at today.
+                        self._missingDataWindowEnd = null;
+
+                        if (self.range !== 'day' && self.range !== 'month' && self.range !== 'year') {
+                            return;
+                        }
+
+                        var now = Date.now();
+                        var windowEnd, windowStart = null;
+
+                        if (self.range === 'day') {
+                            windowEnd = now;
+                            var shortLogDays = (self.$scope.$root.config.FiveMinuteHistoryDays || 1);
+                            windowStart = now - shortLogDays * 86400 * 1000;
+                        } else if (self.range === 'month') {
+                            var d = new Date(); d.setHours(23, 59, 59, 999);
+                            windowEnd = d.getTime();
+                        } else { // year
+                            var d = new Date(); d.setHours(23, 59, 59, 999);
+                            windowEnd = d.getTime();
+                        }
+
+                        self._missingDataWindowEnd = windowEnd;
+
+                        // Extend the axis to cover the current period (only when not user-zoomed)
+                        if (!self.isZoomed) {
+                            self.chart.xAxis[0].update({ min: windowStart, max: windowEnd }, false);
+                        }
+                    }
+
+                    function addMissingDataPlotBand() {
+                        // Called after redraw so the band renders on top of the chart.
+                        var xAxis = self.chart.xAxis[0];
+                        xAxis.removePlotBand('missing-data-indicator');
+
+                        var windowEnd = self._missingDataWindowEnd;
+                        if (!windowEnd) return;
+
+                        var now = Date.now();
+                        var dataMax = xAxis.dataMax;
+                        if (!dataMax || !isFinite(dataMax)) return;
+
+                        var today = new Date(); today.setHours(0, 0, 0, 0);
+                        var lastDataDay = new Date(dataMax); lastDataDay.setHours(0, 0, 0, 0);
+
+                        var hasMissingData = (self.range === 'day')
+                            ? (dataMax < now - 300000)          // more than 5 min gap for short log
+                            : (lastDataDay.getTime() < today.getTime()); // last entry before today
+
+                        if (!hasMissingData) return;
+
+                        xAxis.addPlotBand({
+                            id: 'missing-data-indicator',
+                            from: dataMax,
+                            to: windowEnd,
+                            color: 'rgba(255, 80, 80, 0.15)',
+                            zIndex: 3
+                        });
                     }
                 });
 
@@ -592,7 +656,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             self.$scope.zoomHours = function (hours) {
                 self.$scope.activeZoom = hours + 'H';
                 const xAxis = self.chart.xAxis[0];
-                const right = Math.min(xAxis.max, xAxis.dataMax);
+                const right = self._missingDataWindowEnd || xAxis.dataMax;
 				let cLabel = hours.toString() + ' ';
 				if (hours == 1)
 					cLabel = $.t('Hour');
@@ -604,7 +668,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             self.$scope.zoomDays = function (days) {
                 self.$scope.activeZoom = (days % 7 === 0) ? (days / 7) + 'w' : days + 'd';
                 const xAxis = self.chart.xAxis[0];
-                const right = Math.min(xAxis.max, xAxis.dataMax);
+                const right = self._missingDataWindowEnd || xAxis.dataMax;
 				let cLabel = days.toString() + ' ';
 				if (days == 1)
 					cLabel = $.t('Day');
@@ -624,7 +688,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             self.$scope.zoomMonths = function (months) {
                 self.$scope.activeZoom = months + 'M';
                 const xAxis = self.chart.xAxis[0];
-                const right = Math.min(xAxis.max, xAxis.dataMax);
+                const right = self._missingDataWindowEnd || xAxis.dataMax;
 				let cLabel = months.toString() + ' ';
 				if (months == 1)
 					cLabel = $.t('Month');
@@ -653,7 +717,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             self.$scope.zoomreset = function () {
                 self.$scope.activeZoom = null;
                 const xAxis = self.chart.xAxis[0];
-                zoom(xAxis.dataMin, xAxis.dataMax, '');
+                zoom(xAxis.dataMin, self._missingDataWindowEnd || xAxis.dataMax, '');
             }
 
 			self.$scope.changeCompTypeTemp = function() {
