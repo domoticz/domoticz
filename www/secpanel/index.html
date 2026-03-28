@@ -86,34 +86,7 @@
 			if (typeof(RefreshTimer) != "undefined") {
 				RefreshTimer=clearTimeout(RefreshTimer);
 			}
-			$.ajax({
-				url: "../json.htm?type=command&param=getuservariables",
-				async: false,
-				dataType: 'json',
-				success: function(data) {
-					if (data.status != "OK") {
-						ShowError('NoOkData');
-						return;
-					}
-					else {
-						if (typeof(data.result) != "undefined") {
-							$.each(data.result, function(i,item) {
-								if (item.Name=='secpanel-autorefresh') {
-									var timer=item.Value*1000;
-									RefreshTimer=setTimeout('ShowStatus(); SetRefreshTimer();', timer);
-								}
-								else {
-									RefreshTimer=setTimeout('ShowStatus(); SetRefreshTimer();', 60000);
-								}
-							});
-						}
-					}
-				},
-				error: function(){
-					ShowError('NoConnect');
-					return;
-				}
-			});
+			RefreshTimer=setTimeout('ShowStatus(); SetRefreshTimer();', 60000);
 		}
 
 		var CountdownTimer = 0;
