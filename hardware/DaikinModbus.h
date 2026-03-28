@@ -48,7 +48,7 @@ private:
 	void UpdateWaterflowSensor(int ChildID, float flow, const std::string& szDefaultName);
 	void UpdateSelectorSwitch(int ChildID, int level, const std::string& szDefaultName, const std::string& szLevelNames);
 	void UpdateAlertSensor(int ChildID, int alertLevel, const std::string& szMessage, const std::string& szDefaultName);
-	void UpdateCustomSensor(int ChildID, float fValue, const std::string& szDefaultName, const std::string& szLabel);
+	void UpdateUsageSensor(int ChildID, float fValue, const std::string& szDefaultName);
 
 	// ASyncTCP callbacks
 	void OnConnect() override;

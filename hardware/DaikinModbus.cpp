@@ -348,7 +348,7 @@ void CDaikinModbus::ProcessInputRegisters(const uint8_t* pData, size_t length)
 
 	// Sensors (49, 51)
 	if ((val = getReg(49)) != 0x7FFF && val != 32766) UpdateWaterflowSensor(149, val / 100.0f, "Flow Rate");
-	if ((val = getReg(51)) != 0x7FFF && val != 32766) UpdateCustomSensor(151, (val / 100.0f) * 1000.0f, "Power Consumption", "W");
+	if ((val = getReg(51)) != 0x7FFF && val != 32766) UpdateUsageSensor(151, (val / 100.0f) * 1000.0f, "Power Consumption");
 }
 
 void CDaikinModbus::ProcessHoldingRegisters(const uint8_t* pData, size_t length)
@@ -363,7 +363,7 @@ void CDaikinModbus::ProcessHoldingRegisters(const uint8_t* pData, size_t length)
 
 		int16_t val;
 		if ((val = getReg(1000)) != 0x7FFF && val != 32766) UpdateSelectorSwitch(1000, val * 10, "Smart Grid Mode", "Free|Forced off|Recommended on|Forced on");
-		if ((val = getReg(1001)) != 0x7FFF && val != 32766) UpdateCustomSensor(1001, (val / 100.0f) * 1000.0f, "Power Limit", "W");
+		if ((val = getReg(1001)) != 0x7FFF && val != 32766) UpdateUsageSensor(1001, (val / 100.0f) * 1000.0f, "Power Limit");
 		return;
 	}
 
@@ -391,7 +391,7 @@ void CDaikinModbus::ProcessHoldingRegisters(const uint8_t* pData, size_t length)
 	if ((val = getReg(54)) != 0x7FFF && val != 32766) UpdateSetpointDevice(254, (float)val, "Weather Dependent Heating Offset");
 	if ((val = getReg(55)) != 0x7FFF && val != 32766) UpdateSetpointDevice(255, (float)val, "Weather Dependent Cooling Offset");
 	if ((val = getReg(56)) != 0x7FFF && val != 32766) UpdateSelectorSwitch(256, val * 10, "Smart Grid", "Free|Forced off|Recommended on|Forced on");
-	if ((val = getReg(58)) != 0x7FFF && val != 32766) UpdateCustomSensor(258, (val / 100.0f) * 1000.0f, "General Power Limit", "W");
+	if ((val = getReg(58)) != 0x7FFF && val != 32766) UpdateUsageSensor(258, (val / 100.0f) * 1000.0f, "General Power Limit");
 	if ((val = getReg(59)) != 0x7FFF && val != 32766) UpdateSwitch(259, val != 0, "Thermostat Main Input A");
 }
 
@@ -427,7 +427,7 @@ void CDaikinModbus::UpdateAlertSensor(int ChildID, int alertLevel, const std::st
 	SendAlertSensor(ChildID, 255, alertLevel, szMessage, szDefaultName);
 }
 
-void CDaikinModbus::UpdateCustomSensor(int ChildID, float fValue, const std::string& szDefaultName, const std::string& szLabel)
+void CDaikinModbus::UpdateUsageSensor(int ChildID, float fValue, const std::string& szDefaultName)
 {
-	SendCustomSensor(m_HwdID, (uint8_t)ChildID, 255, fValue, szDefaultName, szLabel);
+	SendWattMeter(m_HwdID, (uint8_t)ChildID, 255, fValue, szDefaultName);
 }
