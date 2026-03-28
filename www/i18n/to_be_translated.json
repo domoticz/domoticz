@@ -5,6 +5,6 @@
 	"Fix the Weekly Pattern by removing spike contamination?\n\nThis recalculates averages from valid data.": "Fix the Weekly Pattern by removing spike contamination?\n\nThis recalculates averages from valid data.",
 	"Problem spreading data point!": "Problem spreading data point!",
 	"Spread across previous empty days": "Spread across previous empty days",
-    "Data is outdated - results may not reflect current conditions" : "Data is outdated - results may not reflect current conditions"
+	"Data is outdated - results may not reflect current conditions" : "Data is outdated - results may not reflect current conditions"
 }
     
