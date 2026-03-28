@@ -397,6 +397,7 @@ public:
 	int PruneUnusedSensorLogs();
 	void VacuumDatabase();
 	bool FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dry_run, std::vector<std::string>& results);
+	bool SpreadCounterSpike(uint64_t idx, const std::string& sdate, std::vector<std::string>& results);
 	void OptimizeDatabase(sqlite3 *dbase);
 	void DeleteHardware(const std::string &idx);
 

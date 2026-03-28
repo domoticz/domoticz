@@ -5426,6 +5426,40 @@ namespace http
 				root["result"][i] = results[i];
 		}
 
+		void CWebServer::Cmd_SpreadCounterSpike(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			std::string sidx = request::findValue(&req, "idx");
+			std::string sdate = request::findValue(&req, "date");
+			if (sidx.empty() || sdate.empty())
+			{
+				root["status"] = "ERR";
+				root["message"] = "idx and date parameters required";
+				return;
+			}
+
+			uint64_t idx = 0;
+			try { idx = std::stoull(sidx); }
+			catch (const std::exception&)
+			{
+				root["status"] = "ERR";
+				root["message"] = "Invalid idx format";
+				return;
+			}
+
+			std::vector<std::string> results;
+			bool ok = m_sql.SpreadCounterSpike(idx, sdate, results);
+			root["status"] = ok ? "OK" : "ERR";
+			root["title"] = "SpreadCounterSpike";
+			for (int i = 0; i < static_cast<int>(results.size()); i++)
+				root["result"][i] = results[i];
+		}
+
 		void CWebServer::Cmd_ClearShortLog(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != URIGHTS_ADMIN)
@@ -6742,6 +6776,23 @@ namespace http
 			CKWHStats::ResetJSONStats(idx);
 			root["status"] = "OK";
 			root["title"] = "ResetkWhStats";
+		}
+
+		void CWebServer::Cmd_FixkWhStats(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+			if (request::findValue(&req, "idx").empty())
+				return;
+			uint64_t idx = std::stoull(request::findValue(&req, "idx"));
+
+			bool changed = CKWHStats::RemoveSpikeStats(idx);
+			root["changed"] = changed;
+			root["status"] = "OK";
+			root["title"] = "FixkWhStats";
 		}
 
 		// Helper function to convert ANSI color codes to HTML spans

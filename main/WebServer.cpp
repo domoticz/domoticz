@@ -542,6 +542,7 @@ namespace http
 			RegisterCommandCode("vacuumdatabase", [this](auto&& session, auto&& req, auto&& root) { Cmd_VacuumDatabase(session, req, root); });
 			RegisterCommandCode("getdbstats", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDbStats(session, req, root); });
 			RegisterCommandCode("fixkwhcounterspikes", [this](auto&& session, auto&& req, auto&& root) { Cmd_FixKwhCounterSpikes(session, req, root); });
+			RegisterCommandCode("spreadcounterspike", [this](auto&& session, auto&& req, auto&& root) { Cmd_SpreadCounterSpike(session, req, root); });
 
 			RegisterCommandCode("addmobiledevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddMobileDevice(session, req, root); });
 			RegisterCommandCode("updatemobiledevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateMobileDevice(session, req, root); });
@@ -693,6 +694,7 @@ namespace http
 			//kWh stats
 			RegisterCommandCode("getkwhstats", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetkWhStats(session, req, root); });
 			RegisterCommandCode("resetkwhstats", [this](auto&& session, auto&& req, auto&& root) { Cmd_ResetkWhStats(session, req, root); });
+			RegisterCommandCode("fixkwhstats", [this](auto&& session, auto&& req, auto&& root) { Cmd_FixkWhStats(session, req, root); });
 
 			//Whitelist
 			m_pWebEm->RegisterWhitelistURLString("/images/floorplans/plan");

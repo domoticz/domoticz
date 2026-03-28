@@ -45,6 +45,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
         });
         self.refreshTimestamp = new Date().getTime();
         configureZoomingAndPanning();
+        configureSpikeContextMenu();
 
         self.$scope.$on('$routeChangeStart', function($event, next, current) {
             self.chart.tooltip.hide();
@@ -180,7 +181,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                                                     self.dataSupplier.isShortLogChart,
                                                     Intl.DateTimeFormat().resolvedOptions().timeZone
                                                 ).then(function () {
-													window.location.reload();
+                                                    self.$route.reload();
                                                 });
                                             }
                                         }
@@ -892,6 +893,113 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
         function deletePointIsSupported() {
             return ['day', 'month', 'year'].includes(self.range);
+        }
+
+        function configureSpikeContextMenu() {
+            if (!deletePointIsSupported()) return;
+
+            var menu = document.createElement('div');
+            menu.style.cssText = 'display:none;position:fixed;z-index:9999;background:#2a2a2a;border:1px solid #555;border-radius:4px;padding:4px 0;box-shadow:2px 6px 16px rgba(0,0,0,0.6);min-width:220px;';
+
+            var spreadItem = document.createElement('div');
+            spreadItem.setAttribute('data-spike-action', 'spread');
+            spreadItem.style.cssText = 'padding:8px 16px;cursor:pointer;color:#ddd;white-space:nowrap;font-size:13px;';
+            spreadItem.innerHTML = '<i class="fa fa-share-alt fa-fw" style="margin-right:8px;color:#aaa;"></i>' + $.t('Spread across previous empty days');
+
+            var deleteItem = document.createElement('div');
+            deleteItem.setAttribute('data-spike-action', 'delete');
+            deleteItem.style.cssText = 'padding:8px 16px;cursor:pointer;color:#ddd;white-space:nowrap;font-size:13px;';
+            deleteItem.innerHTML = '<i class="fa fa-trash fa-fw" style="margin-right:8px;color:#aaa;"></i>' + $.t('Delete this value');
+
+            [spreadItem, deleteItem].forEach(function (item) {
+                item.addEventListener('mouseenter', function () { item.style.background = '#3a3a3a'; });
+                item.addEventListener('mouseleave', function () { item.style.background = ''; });
+            });
+
+            menu.appendChild(spreadItem);
+            menu.appendChild(deleteItem);
+            document.body.appendChild(menu);
+
+            function hideMenu() {
+                menu.style.display = 'none';
+                self._spikeMenuPoint = null;
+            }
+
+            function showMenu(clientX, clientY, point) {
+                var hasPrevEmpty = false;
+                var series = point.series;
+                if (series && series.data) {
+                    for (var i = Math.max(0, point.index - 14); i < point.index; i++) {
+                        var p = series.data[i];
+                        if (p && (p.y === 0 || p.y === null || p.y === undefined)) {
+                            hasPrevEmpty = true;
+                            break;
+                        }
+                    }
+                }
+                spreadItem.style.display = hasPrevEmpty ? 'block' : 'none';
+                self._spikeMenuPoint = point;
+
+                menu.style.left = clientX + 'px';
+                menu.style.top = clientY + 'px';
+                menu.style.display = 'block';
+
+                setTimeout(function () {
+                    var rect = menu.getBoundingClientRect();
+                    if (rect.right > window.innerWidth) {
+                        menu.style.left = (clientX - rect.width) + 'px';
+                    }
+                    if (rect.bottom > window.innerHeight) {
+                        menu.style.top = (clientY - rect.height) + 'px';
+                    }
+                }, 0);
+            }
+
+            spreadItem.addEventListener('click', function () {
+                var point = self._spikeMenuPoint;
+                hideMenu();
+                if (!point) return;
+                self.domoticzDatapointApi.spreadPoint(
+                    self.device.idx,
+                    point,
+                    Intl.DateTimeFormat().resolvedOptions().timeZone
+                ).then(function () { self.$route.reload(); });
+            });
+
+            deleteItem.addEventListener('click', function () {
+                var point = self._spikeMenuPoint;
+                hideMenu();
+                if (!point) return;
+                self.domoticzDatapointApi.deletePoint(
+                    self.device.idx,
+                    point,
+                    self.dataSupplier.isShortLogChart,
+                    Intl.DateTimeFormat().resolvedOptions().timeZone
+                ).then(function () { self.$route.reload(); });
+            });
+
+            function onDocClick(e) {
+                if (!menu.contains(e.target)) hideMenu();
+            }
+            function onKeyDown(e) {
+                if (e.key === 'Escape') hideMenu();
+            }
+            document.addEventListener('click', onDocClick);
+            document.addEventListener('keydown', onKeyDown);
+
+            self.chart.container.addEventListener('contextmenu', function (e) {
+                var hoverPoint = self.chart.hoverPoint;
+                if (!hoverPoint || !hoverPoint.custom || !hoverPoint.custom.isSpike) return;
+                e.preventDefault();
+                e.stopPropagation();
+                showMenu(e.clientX, e.clientY, hoverPoint);
+            });
+
+            self.$scope.$on('$routeChangeStart', function () {
+                document.removeEventListener('click', onDocClick);
+                document.removeEventListener('keydown', onKeyDown);
+                if (menu.parentNode) menu.parentNode.removeChild(menu);
+            });
         }
     }
 

@@ -82,6 +82,152 @@ bool CKWHStats::ResetJSONStats(const uint64_t device_id)
 	return true;
 }
 
+bool CKWHStats::RemoveSpikeStats(const uint64_t device_id)
+{
+	std::unique_lock<std::mutex> lock(m_task_mutex);
+
+	if (g_kwhstats.find(device_id) == g_kwhstats.end())
+	{
+		CKWHStats kwhs;
+		kwhs.Init(device_id);
+		g_kwhstats[device_id] = kwhs;
+	}
+
+	CKWHStats& kwhs = g_kwhstats[device_id];
+
+	// Derive hourly spike threshold from the distribution of all non-zero weekday_hour_kwh values.
+	// Uses Q3 + 3*IQR — the same method as the frontend chart spike detector.
+	std::vector<int> all_hourly;
+	all_hourly.reserve(DAYS_PER_WEEK * HOURS_PER_DAY);
+	for (int wday = 0; wday < DAYS_PER_WEEK; wday++)
+		for (int hour = 0; hour < HOURS_PER_DAY; hour++)
+			if (kwhs.weekday_hour_kwh[wday][hour] > 0)
+				all_hourly.push_back(kwhs.weekday_hour_kwh[wday][hour]);
+
+	if (all_hourly.empty())
+		return false;
+
+	std::sort(all_hourly.begin(), all_hourly.end());
+	const size_t n = all_hourly.size();
+	const int64_t q1 = all_hourly[n / 4];
+	const int64_t q3 = all_hourly[n * 3 / 4];
+	const int64_t iqr = q3 - q1;
+	// If IQR is 0 (all values the same), use 10x the median as fallback to avoid flagging everything
+	const int64_t median = all_hourly[n / 2];
+	const int64_t hourly_fence = (iqr > 0) ? (q3 + 3 * iqr) : (median * 10);
+	const int hourly_threshold = static_cast<int>(std::min(hourly_fence, (int64_t)INT_MAX));
+	// Daily threshold: 24 peak-hours at the hourly fence
+	const int daily_threshold = static_cast<int>(std::min((int64_t)hourly_threshold * 24, (int64_t)INT_MAX));
+
+	bool changed = false;
+
+	// Fix weekday_hour_kwh: replace each spike with the average of non-spike values
+	// for the same hour across all other weekdays (computed before any modification).
+	// Falls back to 0 only when every weekday cell for that hour is also a spike.
+	for (int hour = 0; hour < HOURS_PER_DAY; hour++)
+	{
+		int64_t sum = 0;
+		int count = 0;
+		for (int wday = 0; wday < DAYS_PER_WEEK; wday++)
+		{
+			int v = kwhs.weekday_hour_kwh[wday][hour];
+			if (v > 0 && v <= hourly_threshold)
+			{
+				sum += v;
+				count++;
+			}
+		}
+		if (count == 0)
+		{
+			bool any_spike = false;
+			for (int wday = 0; wday < DAYS_PER_WEEK; wday++)
+				if (kwhs.weekday_hour_kwh[wday][hour] > hourly_threshold) { any_spike = true; break; }
+			if (any_spike)
+				_log.Log(LOG_STATUS, "KWHStats: device %" PRIu64 " hour %d: no valid baseline across weekdays, zeroing spike(s)", device_id, hour);
+		}
+		const int replacement = (count > 0) ? static_cast<int>(sum / count) : 0;
+		for (int wday = 0; wday < DAYS_PER_WEEK; wday++)
+		{
+			if (kwhs.weekday_hour_kwh[wday][hour] > hourly_threshold)
+			{
+				kwhs.weekday_hour_kwh[wday][hour] = replacement;
+				changed = true;
+			}
+		}
+	}
+
+	// Fix daily_hour_kwh: replace spikes with average of (now-repaired) weekday values for same hour.
+	// Only marks changed when a valid baseline is found; leaves the value intact otherwise so
+	// a subsequent normal sample can correct it through the running average.
+	for (int hour = 0; hour < HOURS_PER_DAY; hour++)
+	{
+		if (kwhs.daily_hour_kwh[hour] > hourly_threshold)
+		{
+			int64_t sum = 0;
+			int count = 0;
+			for (int wday = 0; wday < DAYS_PER_WEEK; wday++)
+			{
+				int v = kwhs.weekday_hour_kwh[wday][hour];
+				if (v > 0 && v <= hourly_threshold)
+				{
+					sum += v;
+					count++;
+				}
+			}
+			if (count > 0)
+			{
+				kwhs.daily_hour_kwh[hour] = static_cast<int>(sum / count);
+				changed = true;
+			}
+			else
+			{
+				_log.Log(LOG_STATUS, "KWHStats: device %" PRIu64 " daily hour %d: no valid baseline found, leaving spike intact", device_id, hour);
+			}
+		}
+	}
+
+	// Fix weekday_kwh: replace spikes with the average of non-spike daily totals.
+	// Falls back to 0 only when every weekday total is also a spike.
+	{
+		int64_t sum = 0;
+		int count = 0;
+		for (int wday = 0; wday < DAYS_PER_WEEK; wday++)
+		{
+			int v = kwhs.weekday_kwh[wday];
+			if (v > 0 && v <= daily_threshold)
+			{
+				sum += v;
+				count++;
+			}
+		}
+		if (count == 0)
+		{
+			bool any_spike = false;
+			for (int wday = 0; wday < DAYS_PER_WEEK; wday++)
+				if (kwhs.weekday_kwh[wday] > daily_threshold) { any_spike = true; break; }
+			if (any_spike)
+				_log.Log(LOG_STATUS, "KWHStats: device %" PRIu64 " weekday totals: no valid baseline, zeroing spike(s)", device_id);
+		}
+		const int replacement = (count > 0) ? static_cast<int>(sum / count) : 0;
+		for (int wday = 0; wday < DAYS_PER_WEEK; wday++)
+		{
+			if (kwhs.weekday_kwh[wday] > daily_threshold)
+			{
+				kwhs.weekday_kwh[wday] = replacement;
+				changed = true;
+			}
+		}
+	}
+
+	if (changed)
+	{
+		kwhs.m_bDirty = true;
+		kwhs.SaveToDB();
+	}
+
+	return changed;
+}
+
 CKWHStats::CKWHStats()
 {
 }

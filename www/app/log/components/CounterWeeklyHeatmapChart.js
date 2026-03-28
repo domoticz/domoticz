@@ -159,6 +159,19 @@ define(['app'], function (app) {
             }
         };
 
+        self.fixWeeklyPattern = function () {
+            bootbox.confirm($.t('Fix the Weekly Pattern by removing spike contamination?\n\nThis recalculates averages from valid data.'), function (result) {
+                if (result) {
+                    $http({
+                        url: 'json.htm?type=command&param=fixkwhstats&idx=' + self.device.idx,
+                        dataType: 'json'
+                    }).then(function () {
+                        self.$onInit();
+                    });
+                }
+            });
+        };
+
         self.$onInit = function () {
             $http({
                 url: 'json.htm?type=command&param=getkwhstats&idx=' + self.device.idx,
@@ -167,6 +180,18 @@ define(['app'], function (app) {
                 var data = response.data;
                 if (data && data.status === 'OK' && data.result && data.result.weekday_hour_kwh) {
                     buildChart(data.result.weekday_hour_kwh, self.device.SwitchTypeVal);
+                    var menuItems = Highcharts.getOptions().exporting.buttons.contextButton.menuItems.slice();
+                    menuItems.push({ separator: true });
+                    menuItems.push({
+                        text: $.t('Fix Weekly Pattern'),
+                        onclick: function () {
+                            self.fixWeeklyPattern();
+                        }
+                    });
+                    if (!self.chartDefinition.exporting) {
+                        self.chartDefinition.exporting = { buttons: { contextButton: {} } };
+                    }
+                    self.chartDefinition.exporting.buttons.contextButton.menuItems = menuItems;
                 }
             });
         };

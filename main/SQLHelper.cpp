@@ -27,6 +27,7 @@
 #include "clx_unzip.h"
 #include "../notifications/NotificationHelper.h"
 #include "IFTTT.h"
+#include "KWHStats.h"
 #ifdef ENABLE_PYTHON
 #include "../hardware/plugins/Plugins.h"
 #endif
@@ -8848,6 +8849,146 @@ bool CSQLHelper::FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dr
 
 	_log.Log(LOG_STATUS, "FixKwhCounterSpikes: device %" PRIu64 " corrected %d spike(s), total -%.3f kWh",
 		idx, static_cast<int>(spikes.size() + meter_spikes.size()), total_positive_delta_wh / 1000.0);
+
+	if (CKWHStats::RemoveSpikeStats(idx))
+		results.push_back("Weekly pattern: removed contaminated hourly/daily averages");
+
+	return true;
+}
+
+bool CSQLHelper::SpreadCounterSpike(uint64_t idx, const std::string& sdate, std::vector<std::string>& results)
+{
+	// Validate device exists
+	auto devresult = safe_query("SELECT ID FROM DeviceStatus WHERE (ID='%" PRIu64 "')", idx);
+	if (devresult.empty())
+	{
+		results.push_back("Device not found");
+		return false;
+	}
+
+	// Get spike row
+	auto spikerow = safe_query(
+		"SELECT Value, Counter FROM Meter_Calendar WHERE (DeviceRowID='%" PRIu64 "') AND (Date='%q')",
+		idx, sdate.c_str());
+	if (spikerow.empty())
+	{
+		results.push_back("No calendar entry for this date");
+		return false;
+	}
+	int64_t spike_value = 0;
+	int64_t spike_counter = 0;
+	try { spike_value = std::stoll(spikerow[0][0]); } catch (...) {}
+	try { spike_counter = std::stoll(spikerow[0][1]); } catch (...) {}
+
+	if (spike_value <= 0)
+	{
+		results.push_back("No positive value on this date to spread");
+		return false;
+	}
+
+	// Get up to 30 rows preceding this date, to find consecutive dead days
+	auto prev_rows = safe_query(
+		"SELECT Date, Value, Counter FROM Meter_Calendar "
+		"WHERE (DeviceRowID='%" PRIu64 "') AND (Date < '%q') "
+		"ORDER BY Date DESC LIMIT 30",
+		idx, sdate.c_str());
+
+	// Build a map of date -> {value, counter} from the preceding rows
+	std::map<std::string, std::pair<int64_t, int64_t>> row_map;
+	for (const auto& row : prev_rows)
+	{
+		int64_t v = 0, c = 0;
+		try { v = std::stoll(row[1]); } catch (...) {}
+		try { c = std::stoll(row[2]); } catch (...) {}
+		row_map[row[0]] = { v, c };
+	}
+
+	// The counter to use for any inserted missing rows
+	int64_t dead_counter = spike_counter - spike_value;
+
+	// Walk backward day by day from sdate-1, collecting consecutive dead days
+	struct DeadDay
+	{
+		std::string date;
+		bool existing; // true = row exists with Value=0 (UPDATE); false = missing (INSERT)
+	};
+	std::vector<DeadDay> dead_days;
+
+	int sy = 0, sm = 0, sd_day = 0;
+	sscanf(sdate.c_str(), "%d-%d-%d", &sy, &sm, &sd_day);
+	struct tm t = {};
+	t.tm_year = sy - 1900;
+	t.tm_mon  = sm - 1;
+	t.tm_mday = sd_day;
+	mktime(&t);
+
+	for (int i = 0; i < 30; i++)
+	{
+		t.tm_mday--;
+		mktime(&t);
+		char datebuf[12];
+		snprintf(datebuf, sizeof(datebuf), "%04d-%02d-%02d", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday);
+		std::string check_date(datebuf);
+
+		auto it = row_map.find(check_date);
+		if (it == row_map.end())
+		{
+			// Missing row — counts as dead day
+			dead_days.push_back({ check_date, false });
+		}
+		else if (it->second.first == 0)
+		{
+			// Row exists but Value=0 — dead day
+			dead_days.push_back({ check_date, true });
+		}
+		else
+		{
+			// Real production day — stop
+			break;
+		}
+	}
+
+	if (dead_days.empty())
+	{
+		results.push_back("No empty days found before the spike; nothing to spread");
+		return true;
+	}
+
+	// Spread spike_value evenly across dead days + spike day
+	int64_t total_days = static_cast<int64_t>(dead_days.size()) + 1;
+	int64_t spread = spike_value / total_days;
+	int64_t remainder = spike_value - spread * total_days;
+
+	for (const auto& dd : dead_days)
+	{
+		if (dd.existing)
+		{
+			safe_query(
+				"UPDATE Meter_Calendar SET Value=%" PRId64 " "
+				"WHERE (DeviceRowID='%" PRIu64 "') AND (Date='%q')",
+				spread, idx, dd.date.c_str());
+		}
+		else
+		{
+			safe_query(
+				"INSERT INTO Meter_Calendar (DeviceRowID, Value, Date, Counter, Price) "
+				"VALUES ('%" PRIu64 "', %" PRId64 ", '%q', %" PRId64 ", 0)",
+				idx, spread, dd.date.c_str(), dead_counter);
+		}
+	}
+
+	// Spike day gets spread + remainder
+	safe_query(
+		"UPDATE Meter_Calendar SET Value=%" PRId64 " "
+		"WHERE (DeviceRowID='%" PRIu64 "') AND (Date='%q')",
+		spread + remainder, idx, sdate.c_str());
+
+	results.push_back(std_format("Spread %" PRId64 " across %" PRId64 " day(s) (%" PRId64 " per day)",
+		spike_value, total_days, spread));
+	_log.Log(LOG_STATUS, "SpreadCounterSpike: device %" PRIu64 " date %s spread %" PRId64 " across %" PRId64 " days",
+		idx, sdate.c_str(), spike_value, total_days);
+
+	CKWHStats::RemoveSpikeStats(idx);
 
 	return true;
 }
