@@ -7,6 +7,7 @@
 #include <atomic>
 #include <mutex>
 
+#include <climits>
 #include <inttypes.h>
 #include <map>
 
