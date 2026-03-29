@@ -69,7 +69,18 @@ if [ "$BUILD_ONLY" = false ]; then
     git fetch --all --recurse-submodules=no
 
     git reset --hard ${BRANCH}
-    git submodule update --init --recursive --force
+    # Per-branch submodule strategy:
+    #   beta (development): --remote tracks the latest upstream commit on each
+    #     configured branch in .gitmodules, keeping bundled libraries current.
+    #   release (master):   --recursive checks out the exact pinned SHA for
+    #     reproducible, stable builds.
+    # --force is used in both cases to discard any leftover local modifications
+    # in submodule working trees from previous build runs.
+    if [ "$BUILD_TYPE" = "beta" ]; then
+        git submodule update --init --remote --force
+    else
+        git submodule update --init --recursive --force
+    fi
 
     if [ "$FORCE" != "force" ]; then
         LAST_SUCCESS_FILE="/tmp/build_${MACH}_${BUILD_TYPE}.last_success"
