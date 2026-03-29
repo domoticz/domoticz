@@ -221,9 +221,10 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                         if (!result) return;
                         $.ajax({ url: 'json.htm?type=command&param=fixcounterprices&idx=' + deviceIdx })
                             .then(function (data) {
-                                var msg = $.t('Weekly pattern fixed.');
-                                if (data && data.pricesFixed > 0)
-                                    msg += '\n' + $.t('Also fixed') + ' ' + data.pricesFixed + ' ' + $.t('invalid price entries in the calendar.');
+                                var parts = [];
+                                if (data && data.kwhStatsFixed) parts.push($.t('Weekly pattern fixed.'));
+                                if (data && data.pricesFixed > 0) parts.push($.t('Repaired') + ' ' + data.pricesFixed + ' ' + $.t('daily rows') + '.');
+                                var msg = parts.length > 0 ? parts.join('\n') : $.t('No issues found.');
                                 bootbox.alert(msg, function () { $route.reload(); });
                             });
                     });

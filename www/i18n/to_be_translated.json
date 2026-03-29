@@ -1,5 +1,6 @@
 {
-	"Also fixed": "Also fixed",
+	"Repaired": "Repaired",
+	"daily rows": "daily rows",
 	"Anomalous value — right-click for options": "Anomalous value — right-click for options",
 	"Are you sure you want to fix counter spikes for this device?": "Are you sure you want to fix counter spikes for this device?",
 	"Delete this value": "Delete this value",
@@ -8,7 +9,6 @@
 	"Fix Weekly Pattern": "Fix Weekly Pattern",
 	"Fix the Weekly Pattern by removing spike contamination?\n\nThis recalculates averages from valid data.": "Fix the Weekly Pattern by removing spike contamination?\n\nThis recalculates averages from valid data.",
 	"It is advised to make a database backup before running this operation.": "It is advised to make a database backup before running this operation.",
-	"invalid price entries in the calendar.": "invalid price entries in the calendar.",
 	"No issues found.": "No issues found.",
 	"Problem spreading data point!": "Problem spreading data point!",
 	"Spread across previous empty days": "Spread across previous empty days",

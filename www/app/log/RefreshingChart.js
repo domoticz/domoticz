@@ -1067,9 +1067,10 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     if (!result) return;
                     $.ajax({ url: 'json.htm?type=command&param=fixcounterprices&idx=' + self.device.idx })
                         .then(function (data) {
-                            var msg = $.t('Weekly pattern fixed.');
-                            if (data && data.pricesFixed > 0)
-                                msg += '\n' + $.t('Also fixed') + ' ' + data.pricesFixed + ' ' + $.t('invalid price entries in the calendar.');
+                            var parts = [];
+                            if (data && data.kwhStatsFixed) parts.push($.t('Weekly pattern fixed.'));
+                            if (data && data.pricesFixed > 0) parts.push($.t('Repaired') + ' ' + data.pricesFixed + ' ' + $.t('daily rows') + '.');
+                            var msg = parts.length > 0 ? parts.join('\n') : $.t('No issues found.');
                             bootbox.alert(msg, function () { self.$route.reload(); });
                         });
                 });
