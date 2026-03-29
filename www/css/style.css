@@ -32,10 +32,10 @@ html, body {
 }
 
 body {
-	background: #202020 url(images/img01.jpg) repeat;
+	background-color: var(--dz-body-bg, #202020);
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 10pt;
-	color: #FFF;
+	color: var(--dz-body-text, #fff);
 }
 
 .bootbox-body {
@@ -77,6 +77,44 @@ h1, h3 {
 	margin: 0em;
 	padding: 0em;
 	font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Layout — applies to all themes */
+#main-view {
+	padding-top: 0;
+}
+
+.row {
+	clear: both;
+}
+
+.tab-content {
+	overflow: visible;
+}
+
+@media all and (min-width: 768px) {
+	.row-fluid {
+		display: flex;
+	}
+}
+
+hr {
+	margin: 5px 0;
+	border: 0;
+	border-top: 1px solid var(--dz-input-border, #ccc);
+}
+
+.dataTables_wrapper {
+	margin-bottom: 16px;
+}
+
+#img img:hover {
+	transform: scale(1.1);
+	transition: transform 0.2s ease;
+}
+
+.events-editor__tree {
+	padding-top: 14px !important;
 }
 
 p {
@@ -1302,7 +1340,7 @@ mark.log-highlight {
 .page-header-small {
 	padding-bottom: 4px;
 	margin: 20px 0 6px;
-	border-bottom: 3px double var(--accent-color);
+	border-bottom: 1px solid var(--accent-color);
 	font-size: 9pt;
 }
 
@@ -1321,8 +1359,8 @@ mark.log-highlight {
 }
 
 .page-content-container {
-	background: #11213d;
-	border: 1px solid var(--accent-color);
+	background: var(--dz-modal-bg, #11213d);
+	border: none;
 	border-radius: 5px;
 	padding: 10px 0;
 	margin-top: 10px;
