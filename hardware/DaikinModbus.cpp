@@ -326,15 +326,15 @@ void CDaikinModbus::ProcessInputRegisters(const uint8_t* pData, size_t length)
 	}
 
 	// Binary States (30-37, 52, 53)
-	if ((val = getReg(30)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_iUnitID, 130, 255, val != 0 ? 1 : 0, 0, "Circulation Pump", m_Name);
-	if ((val = getReg(31)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_iUnitID, 131, 255, val != 0 ? 1 : 0, 0, "Compressor", m_Name);
-	if ((val = getReg(32)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_iUnitID, 132, 255, val != 0 ? 1 : 0, 0, "Booster Heater", m_Name);
-	if ((val = getReg(33)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_iUnitID, 133, 255, val != 0 ? 1 : 0, 0, "Disinfection", m_Name);
-	if ((val = getReg(35)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_iUnitID, 135, 255, val != 0 ? 1 : 0, 0, "Defrost/Startup", m_Name);
-	if ((val = getReg(36)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_iUnitID, 136, 255, val != 0 ? 1 : 0, 0, "Hot Start", m_Name);
-	if ((val = getReg(37)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_iUnitID, 137, 255, val != 0 ? 1 : 0, 0, "3-way Valve", m_Name);
-	if ((val = getReg(52)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_iUnitID, 152, 255, val != 0 ? 1 : 0, 0, "DHW Normal Op", m_Name);
-	if ((val = getReg(53)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_iUnitID, 153, 255, val != 0 ? 1 : 0, 0, "Heating/Cooling Normal Op", m_Name);
+	if ((val = getReg(30)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 130, 255, val != 0, 0, "Circulation Pump", m_Name);
+	if ((val = getReg(31)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 131, 255, val != 0, 0, "Compressor", m_Name);
+	if ((val = getReg(32)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 132, 255, val != 0, 0, "Booster Heater", m_Name);
+	if ((val = getReg(33)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 133, 255, val != 0, 0, "Disinfection", m_Name);
+	if ((val = getReg(35)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 135, 255, val != 0, 0, "Defrost/Startup", m_Name);
+	if ((val = getReg(36)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 136, 255, val != 0, 0, "Hot Start", m_Name);
+	if ((val = getReg(37)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 137, 255, val != 0, 0, "3-way Valve", m_Name);
+	if ((val = getReg(52)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 152, 255, val != 0, 0, "DHW Normal Op", m_Name);
+	if ((val = getReg(53)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 153, 255, val != 0, 0, "Heating/Cooling Normal Op", m_Name);
 
 	// Temperatures (40-45, 50) - Scale 0.01
 	if ((val = getReg(40)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 140, 255, val / 100.0f, "LWT PHE");
@@ -388,14 +388,14 @@ void CDaikinModbus::ProcessHoldingRegisters(const uint8_t* pData, size_t length)
 
 	// Modes and Other (3, 4, 9, 12, 13, 53, 54, 55, 56, 58, 59)
 	if ((val = getReg(3)) != 0x7FFF && val != 32766) SendSelectorSwitch(m_iUnitID, 3, std::to_string(val * 10), "Operation Mode", 0, false, "Auto|Heating|Cooling", "", false, m_Name);
-	if ((val = getReg(4)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_iUnitID, 4, 255, val != 0 ? 1 : 0, 0, "Space Heating/Cooling", m_Name);
+	if ((val = getReg(4)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 4, 255, val != 0, 0, "Space Heating/Cooling", m_Name);
 	if ((val = getReg(9)) != 0x7FFF && val != 32766) SendSelectorSwitch(m_iUnitID, 9, std::to_string(val * 10), "Quiet Mode", 0, false, "Off|On (Auto)|On (Manual)", "", false, m_Name);
-	if ((val = getReg(12)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_iUnitID, 12, 255, val != 0 ? 1 : 0, 0, "DHW Reheat", m_Name);
-	if ((val = getReg(13)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_iUnitID, 13, 255, val != 0 ? 1 : 0, 0, "DHW Booster", m_Name);
+	if ((val = getReg(12)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 12, 255, val != 0, 0, "DHW Reheat", m_Name);
+	if ((val = getReg(13)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 13, 255, val != 0, 0, "DHW Booster", m_Name);
 	if ((val = getReg(53)) != 0x7FFF && val != 32766) SendSelectorSwitch(m_iUnitID, 53, std::to_string(val * 10), "Weather Dependent Mode", 0, false, "Fixed|Weather Dependent|Fixed+Scheduled|Weather Dependent+Scheduled", "", false, m_Name);
 	if ((val = getReg(54)) != 0x7FFF && val != 32766) SendSetPointSensor(m_iUnitID, 0, 0, 54, 1, 255, (float)val, "Weather Dependent Heating Offset");
 	if ((val = getReg(55)) != 0x7FFF && val != 32766) SendSetPointSensor(m_iUnitID, 0, 0, 55, 1, 255, (float)val, "Weather Dependent Cooling Offset");
 	if ((val = getReg(56)) != 0x7FFF && val != 32766) SendSelectorSwitch(m_iUnitID, 56, std::to_string(val * 10), "Smart Grid", 0, false, "Free|Forced off|Recommended on|Forced on", "", false, m_Name);
 	if ((val = getReg(58)) != 0x7FFF && val != 32766) SendWattMeter(m_iUnitID, 58, 255, (val / 100.0f) * 1000.0f, "General Power Limit");
-	if ((val = getReg(59)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_iUnitID, 59, 255, val != 0 ? 1 : 0, 0, "Thermostat Main Input A", m_Name);
+	if ((val = getReg(59)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 59, 255, val != 0, 0, "Thermostat Main Input A", m_Name);
 }
