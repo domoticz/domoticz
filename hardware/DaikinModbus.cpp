@@ -317,38 +317,38 @@ void CDaikinModbus::ProcessInputRegisters(const uint8_t* pData, size_t length)
 	{
 		int alertLevel = (err == 0) ? 1 : 4; // 1=Green (OK), 4=Red (Error)
 		std::string msg = (err == 0) ? "Unit Status: OK" : "Unit Error: " + std::to_string(err) + " (Sub: " + std::to_string(suberr) + ")";
-		UpdateAlertSensor(121, alertLevel, msg, "Unit Status");
+		SendAlertSensor(121, 255, alertLevel, msg, "Unit Status");
 	}
 
 	// Binary States (30-37, 52, 53)
-	if ((val = getReg(30)) != 0x7FFF && val != 32766) UpdateSwitch(130, val != 0, "Circulation Pump");
-	if ((val = getReg(31)) != 0x7FFF && val != 32766) UpdateSwitch(131, val != 0, "Compressor");
-	if ((val = getReg(32)) != 0x7FFF && val != 32766) UpdateSwitch(132, val != 0, "Booster Heater");
-	if ((val = getReg(33)) != 0x7FFF && val != 32766) UpdateSwitch(133, val != 0, "Disinfection");
-	if ((val = getReg(35)) != 0x7FFF && val != 32766) UpdateSwitch(135, val != 0, "Defrost/Startup");
-	if ((val = getReg(36)) != 0x7FFF && val != 32766) UpdateSwitch(136, val != 0, "Hot Start");
-	if ((val = getReg(37)) != 0x7FFF && val != 32766) UpdateSwitch(137, val != 0, "3-way Valve");
-	if ((val = getReg(52)) != 0x7FFF && val != 32766) UpdateSwitch(152, val != 0, "DHW Normal Op");
-	if ((val = getReg(53)) != 0x7FFF && val != 32766) UpdateSwitch(153, val != 0, "Heating/Cooling Normal Op");
+	if ((val = getReg(30)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_HwdID, 130, 255, val != 0 ? 1 : 0, 0, "Circulation Pump", "");
+	if ((val = getReg(31)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_HwdID, 131, 255, val != 0 ? 1 : 0, 0, "Compressor", "");
+	if ((val = getReg(32)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_HwdID, 132, 255, val != 0 ? 1 : 0, 0, "Booster Heater", "");
+	if ((val = getReg(33)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_HwdID, 133, 255, val != 0 ? 1 : 0, 0, "Disinfection", "");
+	if ((val = getReg(35)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_HwdID, 135, 255, val != 0 ? 1 : 0, 0, "Defrost/Startup", "");
+	if ((val = getReg(36)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_HwdID, 136, 255, val != 0 ? 1 : 0, 0, "Hot Start", "");
+	if ((val = getReg(37)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_HwdID, 137, 255, val != 0 ? 1 : 0, 0, "3-way Valve", "");
+	if ((val = getReg(52)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_HwdID, 152, 255, val != 0 ? 1 : 0, 0, "DHW Normal Op", "");
+	if ((val = getReg(53)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_HwdID, 153, 255, val != 0 ? 1 : 0, 0, "Heating/Cooling Normal Op", "");
 
 	// Temperatures (40-45, 50) - Scale 0.01
-	if ((val = getReg(40)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(140, val / 100.0f, "LWT PHE");
-	if ((val = getReg(41)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(141, val / 100.0f, "LWT BUH");
-	if ((val = getReg(42)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(142, val / 100.0f, "Return Water Temp");
-	if ((val = getReg(43)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(143, val / 100.0f, "DHW Temp");
-	if ((val = getReg(44)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(144, val / 100.0f, "Outside Temp");
-	if ((val = getReg(45)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(145, val / 100.0f, "Refrigerant Temp");
-	if ((val = getReg(50)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(150, val / 100.0f, "Room Temp");
+	if ((val = getReg(40)) != 0x7FFF && val != 32766) SendTempSensor(140, 255, val / 100.0f, "LWT PHE");
+	if ((val = getReg(41)) != 0x7FFF && val != 32766) SendTempSensor(141, 255, val / 100.0f, "LWT BUH");
+	if ((val = getReg(42)) != 0x7FFF && val != 32766) SendTempSensor(142, 255, val / 100.0f, "Return Water Temp");
+	if ((val = getReg(43)) != 0x7FFF && val != 32766) SendTempSensor(143, 255, val / 100.0f, "DHW Temp");
+	if ((val = getReg(44)) != 0x7FFF && val != 32766) SendTempSensor(144, 255, val / 100.0f, "Outside Temp");
+	if ((val = getReg(45)) != 0x7FFF && val != 32766) SendTempSensor(145, 255, val / 100.0f, "Refrigerant Temp");
+	if ((val = getReg(50)) != 0x7FFF && val != 32766) SendTempSensor(150, 255, val / 100.0f, "Room Temp");
 
 	// Limits (54-57) - Scale 0.01
-	if ((val = getReg(54)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(154, val / 100.0f, "LWT Heating Lower Limit");
-	if ((val = getReg(55)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(155, val / 100.0f, "LWT Heating Upper Limit");
-	if ((val = getReg(56)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(156, val / 100.0f, "LWT Cooling Lower Limit");
-	if ((val = getReg(57)) != 0x7FFF && val != 32766) UpdateTemperatureSensor(157, val / 100.0f, "LWT Cooling Upper Limit");
+	if ((val = getReg(54)) != 0x7FFF && val != 32766) SendTempSensor(154, 255, val / 100.0f, "LWT Heating Lower Limit");
+	if ((val = getReg(55)) != 0x7FFF && val != 32766) SendTempSensor(155, 255, val / 100.0f, "LWT Heating Upper Limit");
+	if ((val = getReg(56)) != 0x7FFF && val != 32766) SendTempSensor(156, 255, val / 100.0f, "LWT Cooling Lower Limit");
+	if ((val = getReg(57)) != 0x7FFF && val != 32766) SendTempSensor(157, 255, val / 100.0f, "LWT Cooling Upper Limit");
 
 	// Sensors (49, 51)
-	if ((val = getReg(49)) != 0x7FFF && val != 32766) UpdateWaterflowSensor(149, val / 100.0f, "Flow Rate");
-	if ((val = getReg(51)) != 0x7FFF && val != 32766) UpdateUsageSensor(151, (val / 100.0f) * 1000.0f, "Power Consumption");
+	if ((val = getReg(49)) != 0x7FFF && val != 32766) SendWaterflowSensor(m_HwdID, 149, 255, val / 100.0f, "Flow Rate");
+	if ((val = getReg(51)) != 0x7FFF && val != 32766) SendWattMeter(m_HwdID, 151, 255, (val / 100.0f) * 1000.0f, "Power Consumption");
 }
 
 void CDaikinModbus::ProcessHoldingRegisters(const uint8_t* pData, size_t length)
@@ -362,8 +362,8 @@ void CDaikinModbus::ProcessHoldingRegisters(const uint8_t* pData, size_t length)
 		};
 
 		int16_t val;
-		if ((val = getReg(1000)) != 0x7FFF && val != 32766) UpdateSelectorSwitch(1000, val * 10, "Smart Grid Mode", "Free|Forced off|Recommended on|Forced on");
-		if ((val = getReg(1001)) != 0x7FFF && val != 32766) UpdateUsageSensor(1001, (val / 100.0f) * 1000.0f, "Power Limit");
+		if ((val = getReg(1000)) != 0x7FFF && val != 32766) SendSelectorSwitch(m_HwdID, 100, std::to_string(val * 10), "Smart Grid Mode", 0, false, "Free|Forced off|Recommended on|Forced on", "", false, "");
+		if ((val = getReg(1001)) != 0x7FFF && val != 32766) SendWattMeter(m_HwdID, 101, 255, (val / 100.0f) * 1000.0f, "Power Limit");
 		return;
 	}
 
@@ -375,59 +375,22 @@ void CDaikinModbus::ProcessHoldingRegisters(const uint8_t* pData, size_t length)
 
 	int16_t val;
 	// Setpoints (1, 2, 6, 7, 10)
-	if ((val = getReg(1)) != 0x7FFF && val != 32766) UpdateSetpointDevice(201, (float)val, "LWT Heating Setpoint");
-	if ((val = getReg(2)) != 0x7FFF && val != 32766) UpdateSetpointDevice(202, (float)val, "LWT Cooling Setpoint");
-	if ((val = getReg(6)) != 0x7FFF && val != 32766) UpdateSetpointDevice(206, (float)val, "Room Heating Setpoint");
-	if ((val = getReg(7)) != 0x7FFF && val != 32766) UpdateSetpointDevice(207, (float)val, "Room Cooling Setpoint");
-	if ((val = getReg(10)) != 0x7FFF && val != 32766) UpdateSetpointDevice(210, (float)val, "DHW Reheat Setpoint");
+	if ((val = getReg(1)) != 0x7FFF && val != 32766) SendSetPointSensor(0, 0, 0, 201, 1, 255, (float)val, "LWT Heating Setpoint");
+	if ((val = getReg(2)) != 0x7FFF && val != 32766) SendSetPointSensor(0, 0, 0, 202, 1, 255, (float)val, "LWT Cooling Setpoint");
+	if ((val = getReg(6)) != 0x7FFF && val != 32766) SendSetPointSensor(0, 0, 0, 206, 1, 255, (float)val, "Room Heating Setpoint");
+	if ((val = getReg(7)) != 0x7FFF && val != 32766) SendSetPointSensor(0, 0, 0, 207, 1, 255, (float)val, "Room Cooling Setpoint");
+	if ((val = getReg(10)) != 0x7FFF && val != 32766) SendSetPointSensor(0, 0, 0, 210, 1, 255, (float)val, "DHW Reheat Setpoint");
 
 	// Modes and Other (3, 4, 9, 12, 13, 53, 54, 55, 56, 58, 59)
-	if ((val = getReg(3)) != 0x7FFF && val != 32766) UpdateSelectorSwitch(203, val * 10, "Operation Mode", "Auto|Heating|Cooling");
-	if ((val = getReg(4)) != 0x7FFF && val != 32766) UpdateSwitch(204, val != 0, "Space Heating/Cooling");
-	if ((val = getReg(9)) != 0x7FFF && val != 32766) UpdateSelectorSwitch(209, val * 10, "Quiet Mode", "Off|On (Auto)|On (Manual)");
-	if ((val = getReg(12)) != 0x7FFF && val != 32766) UpdateSwitch(212, val != 0, "DHW Reheat");
-	if ((val = getReg(13)) != 0x7FFF && val != 32766) UpdateSwitch(213, val != 0, "DHW Booster");
-	if ((val = getReg(53)) != 0x7FFF && val != 32766) UpdateSelectorSwitch(253, val * 10, "Weather Dependent Mode", "Fixed|Weather Dependent|Fixed+Scheduled|Weather Dependent+Scheduled");
-	if ((val = getReg(54)) != 0x7FFF && val != 32766) UpdateSetpointDevice(254, (float)val, "Weather Dependent Heating Offset");
-	if ((val = getReg(55)) != 0x7FFF && val != 32766) UpdateSetpointDevice(255, (float)val, "Weather Dependent Cooling Offset");
-	if ((val = getReg(56)) != 0x7FFF && val != 32766) UpdateSelectorSwitch(256, val * 10, "Smart Grid", "Free|Forced off|Recommended on|Forced on");
-	if ((val = getReg(58)) != 0x7FFF && val != 32766) UpdateUsageSensor(258, (val / 100.0f) * 1000.0f, "General Power Limit");
-	if ((val = getReg(59)) != 0x7FFF && val != 32766) UpdateSwitch(259, val != 0, "Thermostat Main Input A");
-}
-
-void CDaikinModbus::UpdateTemperatureSensor(int ChildID, float temperature, const std::string& szDefaultName)
-{
-	// Important: Use unique ChildID as NodeID to prevent overwriting
-	SendTempSensor(ChildID, 255, temperature, szDefaultName);
-}
-
-void CDaikinModbus::UpdateSwitch(int ChildID, bool bOn, const std::string& szDefaultName)
-{
-	SendGeneralSwitch(m_HwdID, ChildID, 255, bOn ? 1 : 0, 0, szDefaultName, "");
-}
-
-void CDaikinModbus::UpdateSetpointDevice(int ChildID, float temperature, const std::string& szDefaultName)
-{
-	// NodeID 0, ChildID as ID4
-	SendSetPointSensor(0, 0, 0, (uint8_t)ChildID, 1, 255, temperature, szDefaultName);
-}
-
-void CDaikinModbus::UpdateWaterflowSensor(int ChildID, float flow, const std::string& szDefaultName)
-{
-	SendWaterflowSensor(m_HwdID, (uint8_t)ChildID, 255, flow, szDefaultName);
-}
-
-void CDaikinModbus::UpdateSelectorSwitch(int ChildID, int level, const std::string& szDefaultName, const std::string& szLevelNames)
-{
-	SendSelectorSwitch(m_HwdID, (uint8_t)ChildID, std::to_string(level), szDefaultName, 0, false, szLevelNames, "", false, "");
-}
-
-void CDaikinModbus::UpdateAlertSensor(int ChildID, int alertLevel, const std::string& szMessage, const std::string& szDefaultName)
-{
-	SendAlertSensor(ChildID, 255, alertLevel, szMessage, szDefaultName);
-}
-
-void CDaikinModbus::UpdateUsageSensor(int ChildID, float fValue, const std::string& szDefaultName)
-{
-	SendWattMeter(m_HwdID, (uint8_t)ChildID, 255, fValue, szDefaultName);
+	if ((val = getReg(3)) != 0x7FFF && val != 32766) SendSelectorSwitch(m_HwdID, 203, std::to_string(val * 10), "Operation Mode", 0, false, "Auto|Heating|Cooling", "", false, "");
+	if ((val = getReg(4)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_HwdID, 204, 255, val != 0 ? 1 : 0, 0, "Space Heating/Cooling", "");
+	if ((val = getReg(9)) != 0x7FFF && val != 32766) SendSelectorSwitch(m_HwdID, 209, std::to_string(val * 10), "Quiet Mode", 0, false, "Off|On (Auto)|On (Manual)", "", false, "");
+	if ((val = getReg(12)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_HwdID, 212, 255, val != 0 ? 1 : 0, 0, "DHW Reheat", "");
+	if ((val = getReg(13)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_HwdID, 213, 255, val != 0 ? 1 : 0, 0, "DHW Booster", "");
+	if ((val = getReg(53)) != 0x7FFF && val != 32766) SendSelectorSwitch(m_HwdID, 253, std::to_string(val * 10), "Weather Dependent Mode", 0, false, "Fixed|Weather Dependent|Fixed+Scheduled|Weather Dependent+Scheduled", "", false, "");
+	if ((val = getReg(54)) != 0x7FFF && val != 32766) SendSetPointSensor(0, 0, 0, 254, 1, 255, (float)val, "Weather Dependent Heating Offset");
+	if ((val = getReg(55)) != 0x7FFF && val != 32766) SendSetPointSensor(0, 0, 0, 255, 1, 255, (float)val, "Weather Dependent Cooling Offset");
+	if ((val = getReg(56)) != 0x7FFF && val != 32766) SendSelectorSwitch(m_HwdID, 256, std::to_string(val * 10), "Smart Grid", 0, false, "Free|Forced off|Recommended on|Forced on", "", false, "");
+	if ((val = getReg(58)) != 0x7FFF && val != 32766) SendWattMeter(m_HwdID, 258, 255, (val / 100.0f) * 1000.0f, "General Power Limit");
+	if ((val = getReg(59)) != 0x7FFF && val != 32766) SendGeneralSwitch(m_HwdID, 259, 255, val != 0 ? 1 : 0, 0, "Thermostat Main Input A", "");
 }
