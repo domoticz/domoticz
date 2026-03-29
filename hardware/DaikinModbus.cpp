@@ -217,22 +217,23 @@ bool CDaikinModbus::WriteToHardware(const char* pdata, unsigned char length)
 	}
 	else if (prb->ICMND.packettype == pTypeGeneralSwitch)
 	{
-		if (prb->LIGHTING5.id != (int32_t)m_iUnitID) return false;
+		const _tGeneralSwitch* pSwitch = reinterpret_cast<const _tGeneralSwitch*>(prb);
+		if (pSwitch->id != (int32_t)m_iUnitID) return false;
 
-		uint16_t childid = prb->LIGHTING5.unitcode;
-		uint16_t value = prb->LIGHTING5.level;
+		uint16_t childid = (uint16_t)pSwitch->unitcode;
+		uint16_t value = pSwitch->level;
 
 		uint16_t modbus_reg = 0;
 		uint16_t modbus_val = 0;
 
 		if (childid == 3) { modbus_reg = 3; modbus_val = value / 10; }
-		else if (childid == 4) { modbus_reg = 4; modbus_val = (prb->LIGHTING5.cmnd == light5_sOn) ? 1 : 0; }
+		else if (childid == 4) { modbus_reg = 4; modbus_val = (pSwitch->cmnd == gswitch_sOn) ? 1 : 0; }
 		else if (childid == 9) { modbus_reg = 9; modbus_val = value / 10; }
-		else if (childid == 12) { modbus_reg = 12; modbus_val = (prb->LIGHTING5.cmnd == light5_sOn) ? 1 : 0; }
-		else if (childid == 13) { modbus_reg = 13; modbus_val = (prb->LIGHTING5.cmnd == light5_sOn) ? 1 : 0; }
+		else if (childid == 12) { modbus_reg = 12; modbus_val = (pSwitch->cmnd == gswitch_sOn) ? 1 : 0; }
+		else if (childid == 13) { modbus_reg = 13; modbus_val = (pSwitch->cmnd == gswitch_sOn) ? 1 : 0; }
 		else if (childid == 53) { modbus_reg = 53; modbus_val = value / 10; }
 		else if (childid == 56) { modbus_reg = 56; modbus_val = value / 10; }
-		else if (childid == 59) { modbus_reg = 59; modbus_val = (prb->LIGHTING5.cmnd == light5_sOn) ? 1 : 0; }
+		else if (childid == 59) { modbus_reg = 59; modbus_val = (pSwitch->cmnd == gswitch_sOn) ? 1 : 0; }
 		else if (m_bIsAirToAir && childid == 100) { modbus_reg = 1000; modbus_val = value / 10; }
 
 		if (modbus_reg > 0)
