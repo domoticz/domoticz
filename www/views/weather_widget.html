@@ -28,8 +28,8 @@
 				</td>
 				<td id="lastupdate"><span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: <span ng-bind="item.LastUpdate"></span></td>
 				<td class="options">
-					<img ng-show="item.Favorite == 0" src="images/nofavorite.png" ng-click="ctrl.MakeFavorite(1)" class="lcursor" data-i18n="[title]Add to Dashboard" title="Add to Dashboard">
-					<img ng-show="item.Favorite != 0" src="images/favorite.png" ng-click="ctrl.MakeFavorite(0)" class="lcursor" data-i18n="[title]Remove from Dashboard" title="Remove from Dashboard">
+					<img ng-if="item.Favorite == 0" src="images/nofavorite.png" ng-click="ctrl.MakeFavorite(1)" class="lcursor" data-i18n="[title]Add to Dashboard" title="Add to Dashboard">
+					<img ng-if="item.Favorite != 0" src="images/favorite.png" ng-click="ctrl.MakeFavorite(0)" class="lcursor" data-i18n="[title]Remove from Dashboard" title="Remove from Dashboard">
 					&nbsp;&nbsp;
 					<a class="btnsmall" ng-click="ctrl.ShowLog()" data-i18n="Log">Log</a>
 

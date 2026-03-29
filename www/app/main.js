@@ -3,7 +3,6 @@ require.config({
 	paths: {
 		'angular': '../js/angular.min',
 		'angular-route': '../js/angular-route.min',
-		'angular-animate': '../js/angular-animate.min',
 		'ngSanitize': '../js/angular-sanitize.min',
 		'angular-md5': '../js/angular-md5.min',
 		'ui-grid': '../js/ui-grid.min',
@@ -35,7 +34,6 @@ require.config({
 	shim: {
 		'angularAMD': ['angular'],
 		'angular-route': ['angular'],
-		'angular-animate': ['angular'],
 		'ngSanitize': ['angular'],
 		'angular-md5': ['angular'],
 		'ui-grid': ['angular'],

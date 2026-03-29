@@ -11,6 +11,7 @@ Version 2026.xxxx
 - Added: Counter log, right-click context menu on anomalous spike bars with options to spread the value across preceding empty days or delete it (admin only)
 - Added: Counter log, "Fix Weekly Pattern" option in the Weekly Generated Pattern and Days/Hourly Energy chart menus to remove spike contamination from running averages (admin only)
 - Added: Counter log, "Fix Counter/Price Spikes" option in Last Month, Last Year and shortlog chart context menus to repair corrupted price entries and counter resets (admin only)
+- Added: Devices, search filter is now preserved when navigating to a device log and pressing Back; cleared when changing room plan
 - Added: PhilipsHue, automatic bridge version detection (V2 HTTPS/443, V1 HTTPS/443, V1 HTTP/80); port no longer needs manual configuration
 - Added: PhilipsHue V2, real-time sensor updates via Server-Sent Events (SSE); instant state changes without waiting for the next poll cycle
 - Added: PhilipsHue V2, new sensor types: grouped motion, grouped light level, camera motion, security area motion, button remotes, and bell button (doorbell)
@@ -21,6 +22,7 @@ Version 2026.xxxx
 - Fixed: Counter log, monthly/yearly charts incorrectly spreading a day's value across preceding zero-value days (#6703)
 - Fixed: Counter log, spreading a spiked counter value across previous empty days now also distributes the associated price proportionally
 - Fixed: Log charts, month/year/day range charts now always extend to today; a red highlight indicates the period with no recorded data
+- Fixed: Log charts, report overview charts did not had a fixed height; this could cause chart regrows on a certain browser
 - Fixed: Counter log, Weekly Generated Pattern heatmap could show extreme values caused by spike contamination in running hourly averages
 - Fixed: Contact and DoorContact switches now show correct Open/Closed icon state in the dashboard
 - Fixed: Dashboard, Security type devices marked as favorites are now displayed in the Dashboard tab
@@ -31,6 +33,7 @@ Version 2026.xxxx
 - Fixed: Python plugin framework, spurious NullStream initialization errors on Python < 3.13 (#6688)
 - Fixed: Setup menu, large gaps between dropdown dividers caused by the service worker serving a stale version of the stylesheet after a Domoticz update
 - Fixed: Text device utility widget now preserves HTML style attributes (color, font-size, etc.)
+- Fixed: Widgets, brief visual flash of incorrect content on initial page load in switches, temperature and weather tabs
 
 Version 2026.1 (March 25th 2026)
 - Added: Alexa Smart Home v3 API endpoint (see ALEXA.md)

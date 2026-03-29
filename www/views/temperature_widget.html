@@ -6,10 +6,10 @@
                 <td id="bigtext" class="ng-cloak">
 					<img ng-show="ctrl.displayTrend({{item.trend}})" height="12" ng-src="images/arrow_{{ctrl.trendState(item.trend)}}.png">
                     <span ng-show="ctrl.displayTemp()">{{item.Temp}}&#176; {{tempsign}}</span>
-                    <span ng-show="ctrl.displaySetPoint() && ctrl.isSetPointOn()">({{item.SetPoint}} {{ctrl.getSetpointUnit()}})</span>
-                    <span ng-show="ctrl.displaySetPoint() && !ctrl.isSetPointOn()">(Off)</span>
-                    <img ng-show="ctrl.displayState()" height="12" ng-src="images/evohome/{{item.State}}.png">
-                    <img ng-show="ctrl.displayHeat()" height="15" ng-src="images/evohome/{{ctrl.imgHeat()}}.png">
+                    <span ng-if="ctrl.displaySetPoint() && ctrl.isSetPointOn()">({{item.SetPoint}} {{ctrl.getSetpointUnit()}})</span>
+                    <span ng-if="ctrl.displaySetPoint() && !ctrl.isSetPointOn()">(Off)</span>
+                    <img ng-if="ctrl.displayState()" height="12" ng-src="images/evohome/{{item.State}}.png">
+                    <img ng-if="ctrl.displayHeat()" height="15" ng-src="images/evohome/{{ctrl.imgHeat()}}.png">
 
                     <span ng-show="ctrl.displayHumidity() && (ctrl.displayTemp() || ctrl.displaySetPoint() || ctrl.displayState() || ctrl.displayHeat())">/</span>
                     <span ng-show="ctrl.displayHumidity()">{{item.Humidity}}%</span>
@@ -26,10 +26,10 @@
                 </td>
                 <td id="status" class="ng-cloak">
                     <!-- NB : weird comments to avoid unwanted spaces due to new line -->
-                    <span ng-show="ctrl.displaySetPoint()" data-i18n="Set Point">Set Point</span><span ng-show="ctrl.displaySetPoint() && ctrl.isSetPointOn()">: {{item.SetPoint}} {{ctrl.getSetpointUnit()}}</span><span ng-show="ctrl.displayMode()">, </span><span ng-show="ctrl.displaySetPoint() && !ctrl.isSetPointOn()">: Off, </span><!--
-                    --><span ng-show="ctrl.displayState()" data-i18n="State">State</span><span ng-show="ctrl.displayState()">: {{item.State}}, </span><span ng-show="ctrl.displayMode()" data-i18n="Mode">Mode</span><span ng-show="ctrl.displayMode()">: {{ctrl.EvoDisplayTextMode()}}</span><!--
-                    --><span ng-show="ctrl.displayUntil()">, </span><!--
-                    --><span ng-show="ctrl.displayUntil()" data-i18n="Until">Until</span><span ng-show="ctrl.displayUntil()">: {{ctrl.dtUntil()}} </span><!--
+                    <span ng-if="ctrl.displaySetPoint()" data-i18n="Set Point">Set Point</span><span ng-if="ctrl.displaySetPoint() && ctrl.isSetPointOn()">: {{item.SetPoint}} {{ctrl.getSetpointUnit()}}</span><span ng-if="ctrl.displayMode()">, </span><span ng-if="ctrl.displaySetPoint() && !ctrl.isSetPointOn()">: Off, </span><!--
+                    --><span ng-if="ctrl.displayState()" data-i18n="State">State</span><span ng-if="ctrl.displayState()">: {{item.State}}, </span><span ng-if="ctrl.displayMode()" data-i18n="Mode">Mode</span><span ng-if="ctrl.displayMode()">: {{ctrl.EvoDisplayTextMode()}}</span><!--
+                    --><span ng-if="ctrl.displayUntil()">, </span><!--
+                    --><span ng-if="ctrl.displayUntil()" data-i18n="Until">Until</span><span ng-if="ctrl.displayUntil()">: {{ctrl.dtUntil()}} </span><!--
                     --><span ng-show="ctrl.displaySetPoint() && ctrl.displayHumidityStatus()">, </span><!--
                     --><span ng-show="ctrl.displayHumidityStatus()">{{ctrl.HumidityStatus()}}</span><!--
                     --><span ng-show="(ctrl.displayMode() || ctrl.displayHumidityStatus()) && ctrl.displayBarometer()">, </span><!--
@@ -45,8 +45,8 @@
                 </td>
                 <td id="lastupdate"><span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: <span ng-bind="item.LastUpdate"></span></td>
                 <td class="options">
-                    <img ng-show="item.Favorite == 0" src="images/nofavorite.png" ng-click="ctrl.MakeFavorite(1)" class="lcursor" data-i18n="[title]Add to Dashboard" title="Add to Dashboard">
-                    <img ng-show="item.Favorite != 0" src="images/favorite.png" ng-click="ctrl.MakeFavorite(0)" class="lcursor" data-i18n="[title]Remove from Dashboard" title="Remove from Dashboard">
+                    <img ng-if="item.Favorite == 0" src="images/nofavorite.png" ng-click="ctrl.MakeFavorite(1)" class="lcursor" data-i18n="[title]Add to Dashboard" title="Add to Dashboard">
+                    <img ng-if="item.Favorite != 0" src="images/favorite.png" ng-click="ctrl.MakeFavorite(0)" class="lcursor" data-i18n="[title]Remove from Dashboard" title="Remove from Dashboard">
                     &nbsp;&nbsp;
                     <a class="btnsmall" data-i18n="Log" ng-href="#/Devices/{{ ::item.idx }}/Log{{ item.Direction !== undefined ? '?sensor=temp' : '' }}"></a>
 
