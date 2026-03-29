@@ -127,10 +127,31 @@ ENDIF(NOT ProjectRevision)
 IF(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
 # Update submodules as needed
     IF(GIT_SUBMODULE)
-        message(STATUS "Submodule update")
-    execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --remote
-                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
+        # Detect the current branch to choose the right submodule update strategy:
+        #   development branch -> --remote: track the latest upstream commit on the
+        #     branch configured in .gitmodules, so new library fixes are picked up
+        #     automatically during active development.
+        #   master / other branches -> --recursive: check out the exact commit SHA
+        #     pinned in the parent repository, ensuring reproducible stable builds.
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_BRANCH
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+        IF("${GIT_BRANCH}" STREQUAL "development")
+            message(STATUS "Development branch: updating submodules to latest upstream (--remote)")
+            execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --remote --force
+                                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                                RESULT_VARIABLE GIT_SUBMOD_RESULT)
+        ELSE()
+            message(STATUS "Submodule update (branch: ${GIT_BRANCH})")
+            execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive --force
+                                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                                RESULT_VARIABLE GIT_SUBMOD_RESULT)
+        ENDIF()
+
         IF(NOT GIT_SUBMOD_RESULT EQUAL "0")
             message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
         ENDIF()
