@@ -1367,8 +1367,10 @@ void CPhilipsHue::LogV2MigrationWarning(const std::string& ownerRid, int v1NodeI
 		return;
 	if (m_v2_migration_warned.find(ownerRid) != m_v2_migration_warned.end())
 		return;
-	Log(LOG_STATUS, "PhilipsHue: Sensor '%s' now uses V1-compatible ID %d (was %d). Old device can be removed from Settings > Devices.",
-		friendlyName.c_str(), v1NodeID, hashNodeID);
+	Log(LOG_STATUS, "PhilipsHue: Sensor '%s' has been re-created with a new device ID (old: %d, new: %d). "
+		"To keep your automations and scripts working: go to Settings > Devices, find the old device, "
+		"click Edit > Replace, and select the new device.",
+		friendlyName.c_str(), hashNodeID, v1NodeID);
 	m_v2_migration_warned.insert(ownerRid);
 }
 
