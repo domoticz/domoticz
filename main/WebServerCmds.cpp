@@ -6809,6 +6809,7 @@ namespace http
 			bool changed = CKWHStats::RemoveSpikeStats(idx);
 			int pricesFixed = m_sql.SanitizeCalendarData(idx);
 			root["changed"] = changed || (pricesFixed > 0);
+			root["kwhStatsFixed"] = changed;
 			root["pricesFixed"] = pricesFixed;
 			root["status"] = "OK";
 			root["title"] = "FixCounterPrices";

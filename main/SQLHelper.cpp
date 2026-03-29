@@ -9054,6 +9054,104 @@ int CSQLHelper::SanitizeCalendarData(uint64_t idx)
 			}
 		}
 
+		if (devType != pTypeP1Power)
+		{
+			auto vspike_result = safe_query(
+				"SELECT ROWID, Value, Counter, Price FROM Meter_Calendar "
+				"WHERE DeviceRowID=%" PRIu64 " ORDER BY Date ASC", idx);
+
+			std::vector<float> vvalues;
+			vvalues.reserve(vspike_result.size());
+			for (const auto& row : vspike_result)
+			{
+				const float v = static_cast<float>(atof(row[1].c_str()));
+				if (v > 0)
+					vvalues.push_back(v);
+			}
+
+			float vfence_lo = 0, vfence_hi = 0;
+			const bool use_iqr_values = computeIQRFence(vvalues, vfence_lo, vfence_hi);
+
+			if (use_iqr_values)
+			{
+				for (size_t i = 0; i < vspike_result.size(); i++)
+				{
+					auto& row = vspike_result[i];
+					const int64_t spike_value = static_cast<int64_t>(atoll(row[1].c_str()));
+					if (static_cast<float>(spike_value) <= vfence_hi)
+						continue;
+
+					std::vector<size_t> dead_indices;
+					for (int64_t j = static_cast<int64_t>(i) - 1; j >= 0; j--)
+					{
+						const int64_t v = static_cast<int64_t>(atoll(vspike_result[static_cast<size_t>(j)][1].c_str()));
+						if (v != 0)
+							break;
+						dead_indices.push_back(static_cast<size_t>(j));
+					}
+
+					if (dead_indices.empty())
+					{
+						// Standalone spike with no preceding zero-value days — zero it out.
+						// Reset Counter to the previous day's Counter so the cumulative line stays consistent.
+						const int64_t prev_counter = (i > 0)
+							? static_cast<int64_t>(atoll(vspike_result[i - 1][2].c_str()))
+							: static_cast<int64_t>(atoll(row[2].c_str()));
+						safe_query("UPDATE Meter_Calendar SET Value=0, Counter=%" PRId64 ", Price=0 WHERE ROWID=%s",
+							prev_counter, row[0].c_str());
+						row[1] = "0";
+						char cbuf[32];
+						snprintf(cbuf, sizeof(cbuf), "%" PRId64, prev_counter);
+						row[2] = cbuf;
+						row[3] = "0";
+						pricesFixed++;
+						continue;
+					}
+
+					const int64_t total_value = spike_value;
+					const float total_price = static_cast<float>(atof(row[3].c_str()));
+					const int64_t n_days = static_cast<int64_t>(dead_indices.size()) + 1;
+					const int64_t share_value = total_value / n_days;
+
+					if (share_value <= 0 || static_cast<float>(share_value) > vfence_hi)
+						continue;
+
+					const float share_price = total_price / static_cast<float>(n_days);
+
+					std::reverse(dead_indices.begin(), dead_indices.end());
+
+					const int64_t start_counter = static_cast<int64_t>(atoll(vspike_result[dead_indices[0]][2].c_str()));
+					int64_t running_counter = start_counter;
+
+					for (size_t didx : dead_indices)
+					{
+						running_counter += share_value;
+						safe_query("UPDATE Meter_Calendar SET Value=%" PRId64 ", Counter=%" PRId64 ", Price=%.4f WHERE ROWID=%s",
+							share_value, running_counter, share_price, vspike_result[didx][0].c_str());
+						char vbuf[32], cbuf[32], pbuf[32];
+						snprintf(vbuf, sizeof(vbuf), "%" PRId64, share_value);
+						snprintf(cbuf, sizeof(cbuf), "%" PRId64, running_counter);
+						snprintf(pbuf, sizeof(pbuf), "%.4f", share_price);
+						vspike_result[didx][1] = vbuf;
+						vspike_result[didx][2] = cbuf;
+						vspike_result[didx][3] = pbuf;
+						pricesFixed++;
+					}
+
+					const int64_t spike_remainder = total_value - share_value * static_cast<int64_t>(dead_indices.size());
+					const float spike_price = (total_value > 0) ? (total_price * static_cast<float>(spike_remainder) / static_cast<float>(total_value)) : 0.0f;
+					safe_query("UPDATE Meter_Calendar SET Value=%" PRId64 ", Price=%.4f WHERE ROWID=%s",
+						spike_remainder, spike_price, row[0].c_str());
+					char vbuf[32], pbuf[32];
+					snprintf(vbuf, sizeof(vbuf), "%" PRId64, spike_remainder);
+					snprintf(pbuf, sizeof(pbuf), "%.4f", spike_price);
+					row[1] = vbuf;
+					row[3] = pbuf;
+					pricesFixed++;
+				}
+			}
+		}
+
 		if (devType == pTypeP1Power)
 		{
 			auto mmcal = safe_query("SELECT ROWID, Value1, Value2, Value5, Value6, Price FROM MultiMeter_Calendar WHERE DeviceRowID=%" PRIu64 " ORDER BY Date ASC", idx);

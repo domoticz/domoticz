@@ -19,6 +19,7 @@ Version 2026.xxxx
 - Changed: Counter log, "Fix Counter Spikes" admin button is now visible in the counter log footer
 - Changed: Security Panel page redesigned to match Domoticz glass-card style (login/about page look)
 - Fixed: Counter log, calendar entries with negative values caused by counter resets or rollovers are now detected and zeroed by "Fix Counter/Price Spikes"
+- Fixed: Counter log, "Fix Counter/Price Spikes" now detects and repairs value spikes caused by a device being offline for multiple days (accumulated usage spread across the offline period); isolated spikes with no preceding zero-value days are zeroed out
 - Fixed: Counter log, monthly/yearly charts incorrectly spreading a day's value across preceding zero-value days (#6703)
 - Fixed: Counter log, spreading a spiked counter value across previous empty days now also distributes the associated price proportionally
 - Fixed: Log charts, month/year/day range charts now always extend to today; a red highlight indicates the period with no recorded data
