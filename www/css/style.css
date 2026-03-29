@@ -946,6 +946,8 @@ table.mobileitem {
 }
 
 .navbar .nav .dropdown-menu .divider {
+	height: 1px;
+	margin: 4px 1px;
 	background-color: rgba(255, 255, 255, 0.1);
 	border-bottom: none;
 }

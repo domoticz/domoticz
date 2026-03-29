@@ -29,6 +29,7 @@ Version 2026.xxxx
 - Fixed: PhilipsHue V2, battery level for motion/temperature/light level sensors reported as 255 instead of actual level
 - Fixed: PhilipsHue v2, thread-safety race condition causing concurrent API call errors
 - Fixed: Python plugin framework, spurious NullStream initialization errors on Python < 3.13 (#6688)
+- Fixed: Setup menu, large gaps between dropdown dividers caused by the service worker serving a stale version of the stylesheet after a Domoticz update
 - Fixed: Text device utility widget now preserves HTML style attributes (color, font-size, etc.)
 
 Version 2026.1 (March 25th 2026)
