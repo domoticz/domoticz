@@ -4078,7 +4078,7 @@ define(['app'], function (app) {
 
 							var SerialName = "Unknown!?";
 							var intport = 0;
-							if ((HwTypeStr.indexOf("LAN") >= 0) || (HwTypeStr.indexOf("MySensors Gateway with MQTT") >= 0) || (HwTypeStr.indexOf("Domoticz") >= 0) || (HwTypeStr.indexOf("Harmony") >= 0) || (HwTypeStr.indexOf("Philips Hue") >= 0)) {
+							if ((HwTypeStr.indexOf("LAN") >= 0) || (HwTypeStr.indexOf("MySensors Gateway with MQTT") >= 0) || (HwTypeStr.indexOf("Domoticz") >= 0) || (HwTypeStr.indexOf("Harmony") >= 0) || (HwTypeStr.indexOf("Philips Hue") >= 0) || (HwTypeStr.indexOf("Daikin") >= 0)) {
 								SerialName = item.Port;
 							}
 							else if ((item.Type == 7) || (item.Type == 11)) {

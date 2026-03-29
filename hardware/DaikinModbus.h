@@ -41,15 +41,6 @@ private:
 	void ProcessInputRegisters(const uint8_t* pData, size_t length);
 	void ProcessHoldingRegisters(const uint8_t* pData, size_t length);
 
-	// Device creation/update helpers
-	void UpdateTemperatureSensor(int ChildID, float temperature, const std::string& szDefaultName);
-	void UpdateSwitch(int ChildID, bool bOn, const std::string& szDefaultName);
-	void UpdateSetpointDevice(int ChildID, float temperature, const std::string& szDefaultName);
-	void UpdateWaterflowSensor(int ChildID, float flow, const std::string& szDefaultName);
-	void UpdateSelectorSwitch(int ChildID, int level, const std::string& szDefaultName, const std::string& szLevelNames);
-	void UpdateAlertSensor(int ChildID, int alertLevel, const std::string& szMessage, const std::string& szDefaultName);
-	void UpdateCustomSensor(int ChildID, float fValue, const std::string& szDefaultName, const std::string& szLabel);
-
 	// ASyncTCP callbacks
 	void OnConnect() override;
 	void OnDisconnect() override;
