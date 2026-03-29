@@ -2754,17 +2754,21 @@ namespace Plugins
 						Py_ssize_t pos = 0;
 						while (PyDict_Next(pSysModules, &pos, &pKey, &pValue))
 						{
-							if (!pKey || !PyUnicode_Check(pKey) || !pValue)
+							if (!pKey || !pValue)
 								continue;
+							// PyUnicode_AsUTF8 returns NULL (+ sets TypeError) for non-unicode keys;
+							// PyErr_Clear() below suppresses that without needing PyUnicode_Check.
 							const char* pModName = PyUnicode_AsUTF8(pKey);
+							PyErr_Clear();
 							if (!pModName || std::string(pModName) == "plugin")
 								continue;
 							// Check if the module was loaded from the plugin's directory
 							PyNewRef pFile = PyObject_GetAttrString(pValue, "__file__");
 							PyErr_Clear();
-							if (pFile && PyUnicode_Check(pFile))
+							if (pFile)
 							{
 								const char* pFilePath = PyUnicode_AsUTF8(pFile);
+								PyErr_Clear();
 								if (pFilePath && std::string(pFilePath).find(m_HomeFolder) == 0)
 									modsToRemove.push_back(pModName);
 							}
