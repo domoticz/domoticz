@@ -2743,8 +2743,38 @@ namespace Plugins
 				PyObject* pSysModules = PyImport_GetModuleDict();
 				if (pSysModules)
 				{
-					PyDict_DelItemString(pSysModules, "plugin");
-					PyErr_Clear();
+					// Remove 'plugin' and any sub-modules loaded from the plugin directory.
+					// Only removing "plugin" leaves imported sub-modules cached in sys.modules,
+					// so changes to those files would not be picked up on reload.
+					std::vector<std::string> modsToRemove;
+					modsToRemove.push_back("plugin");
+					if (!m_HomeFolder.empty())
+					{
+						PyObject *pKey, *pValue;
+						Py_ssize_t pos = 0;
+						while (PyDict_Next(pSysModules, &pos, &pKey, &pValue))
+						{
+							if (!pKey || !PyUnicode_Check(pKey) || !pValue)
+								continue;
+							const char* pModName = PyUnicode_AsUTF8(pKey);
+							if (!pModName || std::string(pModName) == "plugin")
+								continue;
+							// Check if the module was loaded from the plugin's directory
+							PyNewRef pFile = PyObject_GetAttrString(pValue, "__file__");
+							PyErr_Clear();
+							if (pFile && PyUnicode_Check(pFile))
+							{
+								const char* pFilePath = PyUnicode_AsUTF8(pFile);
+								if (pFilePath && std::string(pFilePath).find(m_HomeFolder) == 0)
+									modsToRemove.push_back(pModName);
+							}
+						}
+					}
+					for (const auto& name : modsToRemove)
+					{
+						PyDict_DelItemString(pSysModules, name.c_str());
+						PyErr_Clear();
+					}
 				}
 				if (!m_bShared)
 				{
