@@ -2665,6 +2665,28 @@ function RefreshLiveSearch(){
 	$('.jsLiveSearch').trigger('change');
 }
 
+/* Restores saved search filter once both the input and items are in the DOM.
+   Called from WatchLiveSearch (topbar loaded) and from controllers (data loaded),
+   so whichever event fires last will trigger the restore. ------------------- */
+function ScheduleLiveSearchRestore(){
+	if(!window.myglobals || !window.myglobals.LastSearchFilter) return;
+	if(window._lsRestoreInterval) clearInterval(window._lsRestoreInterval);
+	var _attempts = 0;
+	window._lsRestoreInterval = setInterval(function(){
+		var input = $('.jsLiveSearch');
+		var searchable = $('.itemBlock [data-search]');
+		if(input.length > 0 && searchable.length > 0){
+			clearInterval(window._lsRestoreInterval);
+			window._lsRestoreInterval = null;
+			input.val(window.myglobals.LastSearchFilter);
+			RefreshLiveSearch();
+		} else if(++_attempts >= 100){
+			clearInterval(window._lsRestoreInterval);
+			window._lsRestoreInterval = null;
+		}
+	}, 50);
+}
+
 /* Watches the LiveSearch INPUT field -------------------------------- */
 function WatchLiveSearch(){
 	if(_debug_livesearch) console.log('LiveSearch: Start Watching ...');
@@ -2674,6 +2696,7 @@ function WatchLiveSearch(){
 	$('.jsLiveSearch').off().on('keyup change',function(e){
 		if(_debug_livesearch)  console.log('LiveSearch: processing on keyup - "'+$(this).val()+'"');
 		var query	=$(this).val();
+		if(window.myglobals) window.myglobals.LastSearchFilter = query;
 		var div		=$('.divider');
 		var cont	=$('.devicesList');
 		var items	=$('.itemBlock');
@@ -2728,8 +2751,11 @@ function WatchLiveSearch(){
 	$(".jsTbResultsClose,.jsTbResults").off().on('click',function(e) {
 		e.preventDefault();
 		if(_debug_livesearch)  console.log('LiveSearch: Close Clicked');
+		if(window.myglobals) window.myglobals.LastSearchFilter = '';
 		$('.jsLiveSearch').val('').trigger('change');
 	});
+
+	ScheduleLiveSearchRestore();
 }
 
 /* Toggle Results display ------------------------------------------ */

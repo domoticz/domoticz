@@ -68,7 +68,7 @@ define([
 			$scope.rowItems = 3;
 
 			// Search/filter
-			$scope.searchFilter = '';
+			$scope.searchFilter = (window.myglobals && window.myglobals.LastSearchFilter) || '';
 
 			// Room plan controller
 			$scope.ctrl = {
@@ -77,6 +77,8 @@ define([
 				changeRoom: function () {
 					var idx = $scope.ctrl.roomSelected;
 					window.myglobals.LastPlanSelected = idx;
+					window.myglobals.LastSearchFilter = '';
+					$('.jsLiveSearch').val('').trigger('change');
 					$route.updateParams({
 						room: idx >= 0 ? idx : undefined
 					});
@@ -136,6 +138,7 @@ define([
 							initMobileSliders();
 							$scope.ResizeDimSliders();
 							initDragAndDrop();
+							ScheduleLiveSearchRestore();
 						}, 100);
 					})
 					.catch(function (error) {

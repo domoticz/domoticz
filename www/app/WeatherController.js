@@ -175,6 +175,7 @@ define(['app', 'livesocket'], function (app) {
 					$('#weathertophtm').i18n();
 
 					$rootScope.RefreshTimeAndSun();
+					ScheduleLiveSearchRestore();
 					RefreshWeathers();
 				},
 				error: function () {
@@ -600,6 +601,8 @@ define(['app', 'livesocket'], function (app) {
 			ctrl.changeRoom = function () {
 				var idx = ctrl.roomSelected;
 				window.myglobals.LastPlanSelected = idx;
+				window.myglobals.LastSearchFilter = '';
+				$('.jsLiveSearch').val('').trigger('change');
 				$route.updateParams({
 					room: idx >= 0 ? idx : undefined
 				});
