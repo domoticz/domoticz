@@ -40,7 +40,7 @@
 		</div>
 
 		<!-- Scenes section -->
-		<section ng-if="!loading && (scenes | filter:filterDevices).length > 0" class="dashCategory" id="dashScenes">
+		<section ng-if="!loading && config.EnableTabScenes && (scenes | filter:filterDevices).length > 0" class="dashCategory" id="dashScenes">
 			<h2>
 				<span data-i18n="Scenes">::Scenes</span>:
 			</h2>
@@ -58,7 +58,7 @@
 		</section>
 
 		<!-- Lights/Switches section -->
-		<section ng-if="!loading && (lights | filter:filterDevices).length > 0" class="dashCategory" id="dashLights">
+		<section ng-if="!loading && config.EnableTabLights && (lights | filter:filterDevices).length > 0" class="dashCategory" id="dashLights">
 			<h2>
 				<span data-i18n="Lights/Switches">::Lights/Switches</span>:
 			</h2>
@@ -76,7 +76,7 @@
 		</section>
 
 		<!-- Temperature section -->
-		<section ng-if="!loading && (temperature | filter:filterDevices).length > 0" class="dashCategory" id="dashTemp">
+		<section ng-if="!loading && config.EnableTabTemp && (temperature | filter:filterDevices).length > 0" class="dashCategory" id="dashTemp">
 			<h2>
 				<span data-i18n="Temperature">::Temperature</span>:
 			</h2>
@@ -117,7 +117,7 @@
 		</section>
 
 		<!-- Weather section -->
-		<section ng-if="!loading && (weather | filter:filterDevices).length > 0" class="dashCategory" id="dashWeather">
+		<section ng-if="!loading && config.EnableTabWeather && (weather | filter:filterDevices).length > 0" class="dashCategory" id="dashWeather">
 			<h2>
 				<span data-i18n="Weather">::Weather</span>:
 			</h2>
@@ -159,7 +159,7 @@
 		</section>
 
 		<!-- Utility section -->
-		<section ng-if="!loading && (utility | filter:filterDevices).length > 0" class="dashCategory" id="dashUtility">
+		<section ng-if="!loading && config.EnableTabUtility && (utility | filter:filterDevices).length > 0" class="dashCategory" id="dashUtility">
 			<h2>
 				<span data-i18n="Utility">::Utility</span>:
 			</h2>
