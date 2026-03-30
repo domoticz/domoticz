@@ -140,13 +140,15 @@ IF(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
             OUTPUT_STRIP_TRAILING_WHITESPACE
             ERROR_QUIET
         )
-        IF("${GIT_BRANCH}" STREQUAL "development")
+        IF("$ENV{GITHUB_REF_NAME}" STREQUAL "development"
+                OR "$ENV{GITHUB_HEAD_REF}" STREQUAL "development"
+                OR "$ENV{GITHUB_REF_NAME}" STREQUAL "development")
             message(STATUS "Development branch: updating submodules to latest upstream (--remote)")
             execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --remote --force
                                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                                 RESULT_VARIABLE GIT_SUBMOD_RESULT)
         ELSE()
-            message(STATUS "Submodule update (branch: ${GIT_BRANCH})")
+            message(STATUS "Submodule update (branch: $ENV{GITHUB_REF_NAME})")
             execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive --force
                                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                                 RESULT_VARIABLE GIT_SUBMOD_RESULT)
