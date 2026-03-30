@@ -65,7 +65,7 @@ jobs:
           <Project>
             <ItemDefinitionGroup>
               <ClCompile>
-                <AdditionalIncludeDirectories>${{ github.workspace }}\msbuild\Windows Libraries\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+                <AdditionalIncludeDirectories>${{ github.workspace }}\extern\jwtcpp\include;${{ github.workspace }}\msbuild\Windows Libraries\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
               </ClCompile>
             </ItemDefinitionGroup>
           </Project>
