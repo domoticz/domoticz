@@ -247,14 +247,62 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		$httpProvider.interceptors.push(logsOutUserOn401);
 	});
 
-	app.controller('NavbarController', function ($scope, $location) {
+	app.controller('NavbarController', function ($scope, $location, $timeout) {
 		$scope.getClass = function (path) {
-			if ($location.path().substr(0, path.length) == path) {
-				return true
+			return $location.path().substr(0, path.length) === path;
+		};
+
+		// ── Auto-hide navbar on Dashboard2 ────────────────────
+		var hideTimer   = null;
+		var HIDE_DELAY  = 3000;
+		var body        = document.body;
+
+		function isDashboard2() {
+			return $location.path() === '/Dashboard2';
+		}
+
+		function showNavbar() {
+			body.classList.remove('db2-navbar-hidden');
+		}
+
+		function scheduleHide() {
+			if (hideTimer) { $timeout.cancel(hideTimer); }
+			hideTimer = $timeout(function () {
+				if (isDashboard2()) { body.classList.add('db2-navbar-hidden'); }
+			}, HIDE_DELAY);
+		}
+
+		function onMouseMove(e) {
+			if (!isDashboard2()) { return; }
+			showNavbar();
+			// Keep navbar visible while cursor is near the top edge
+			if (e.clientY < 15) {
+				if (hideTimer) { $timeout.cancel(hideTimer); hideTimer = null; }
 			} else {
-				return false;
+				scheduleHide();
 			}
 		}
+
+		document.addEventListener('mousemove', onMouseMove);
+
+		// Watch route changes to activate/deactivate the feature
+		$scope.$watch(function () { return $location.path(); }, function (path) {
+			if (path === '/Dashboard2') {
+				body.classList.add('db2-dashboard-active');
+				scheduleHide();
+			} else {
+				body.classList.remove('db2-dashboard-active');
+				body.classList.remove('db2-navbar-hidden');
+				if (hideTimer) { $timeout.cancel(hideTimer); hideTimer = null; }
+			}
+		});
+
+		$scope.$on('$destroy', function () {
+			document.removeEventListener('mousemove', onMouseMove);
+			if (hideTimer) { $timeout.cancel(hideTimer); }
+			body.classList.remove('db2-dashboard-active');
+			body.classList.remove('db2-navbar-hidden');
+		});
 	});
 
 	app.controller('MainController', ['$scope', '$location', '$http', function ($scope, $location, $http) {

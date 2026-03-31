@@ -3033,3 +3033,13 @@ table.display thead th.sorting_disabled div.DataTables_sort_wrapper {
 		display: none;
 	}
 }
+
+/* ── Dashboard2 auto-hide navbar ──────────────────────────── */
+/* Smooth slide transition — only active when Dashboard2 is open */
+body.db2-dashboard-active .navbar.navbar-fixed-top {
+    transition: top 0.3s ease;
+}
+
+body.db2-navbar-hidden .navbar.navbar-fixed-top {
+    top: -60px;
+}

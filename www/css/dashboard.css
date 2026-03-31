@@ -21,7 +21,7 @@
 .db2-topbar {
     position: fixed;
     top: 50px;
-    right: 16px;
+    left: 16px;
     z-index: 1000;
     display: flex;
     align-items: center;
@@ -32,7 +32,12 @@
     padding: 3px 6px 3px 10px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.25);
     opacity: 0.5;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s, top 0.3s ease;
+}
+
+/* When navbar is auto-hidden on Dashboard2, float the topbar pill to the top */
+body.db2-navbar-hidden .db2-topbar {
+    top: 8px;
 }
 
 .db2-topbar:hover {
