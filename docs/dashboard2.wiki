@@ -282,10 +282,13 @@ Pressing a button sends the command immediately. A green flash confirms success.
 | Field | Description |
 |-------|-------------|
 | Content | The text to display |
-| Background color | Color picker |
+| Font size | Font size in pixels (8–72) |
+| Font | Cross-platform font selector (Arial, Verdana, Georgia, Courier New, etc.) |
+| Alignment | Left / Center / Right |
 | Text color | Color picker |
-| Font size | Slider (em) |
-| Text align | Left / Center / Right |
+| Text opacity | 0–100% (0 = fully transparent) |
+| Background color | Color picker |
+| Background opacity | 0–100% (0 = fully transparent background) |
 
 ---
 

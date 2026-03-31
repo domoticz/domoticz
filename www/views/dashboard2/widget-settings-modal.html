@@ -55,13 +55,12 @@
                    step="{{ field.step || 1 }}">
 
             <!-- boolean -->
-            <label ng-if="field.type === 'boolean'" class="db2-checkbox-label">
-                <input type="checkbox"
-                       name="field_{{ field.key }}"
-                       ng-model="config[field.key]">
+            <div ng-if="field.type === 'boolean'" class="db2-checkbox-label"
+                 ng-click="config[field.key] = !config[field.key]">
+                <i class="fa-solid db2-bool-icon"
+                   ng-class="config[field.key] ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
                 {{ field.label }}
-                <span class="text-danger" ng-show="field.required">*</span>
-            </label>
+            </div>
 
             <!-- select -->
             <select ng-if="field.type === 'select'"

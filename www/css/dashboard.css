@@ -1097,6 +1097,11 @@
     border-color: var(--dz-btn-success-bg, #27ae60);
 }
 
+.db2-qa-btn--error {
+    background: #f2dede;
+    border-color: var(--dz-btn-danger-bg, #d9534f);
+}
+
 .db2-qa-label {
     font-weight: 500;
     max-width: 100%;
@@ -1482,24 +1487,31 @@
     cursor: pointer;
 }
 
-/* Boolean / checkbox label — inline, normal weight (must beat .db2-settings-form label) */
-.db2-settings-form label.db2-checkbox-label {
-    display: inline-flex !important;
+/* Boolean toggle — div with FA icon (avoids native checkbox visibility issues) */
+.db2-settings-form .db2-checkbox-label {
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     font-weight: normal;
     cursor: pointer;
     margin: 2px 0;
     color: var(--dz-body-text);
+    user-select: none;
 }
 
-.db2-settings-form label.db2-checkbox-label input[type="checkbox"] {
-    width: 14px;
-    height: 14px;
-    margin: 0;
-    flex-shrink: 0;
-    cursor: pointer;
-    accent-color: var(--dz-btn-primary-bg, #337ab7);
+.db2-settings-form .db2-checkbox-label:hover {
+    opacity: 0.85;
+}
+
+.db2-bool-icon {
+    font-size: 22px;
+    line-height: 1;
+    color: rgba(128, 128, 128, 0.5);
+    transition: color 0.15s;
+}
+
+.db2-bool-icon.fa-toggle-on {
+    color: var(--dz-btn-primary-bg, #337ab7);
 }
 
 /* Help text */
@@ -1666,8 +1678,7 @@
 
 .db2-eim-tabs {
     margin: 0;
-    border-bottom: 1px solid var(--dz-border-color, rgba(255,255,255,0.1));
-    padding: 0 16px;
+    padding: 0;
 }
 
 .db2-eim-subtabs {

@@ -6,7 +6,8 @@
             ng-class="{
                 'db2-qa-btn--scene':   action.type === 'scene',
                 'db2-qa-btn--switch':  action.type !== 'scene',
-                'db2-qa-btn--success': ctrl.success[action.idx]
+                'db2-qa-btn--success': ctrl.success[action.idx],
+                'db2-qa-btn--error':   ctrl.error[action.idx]
             }"
             title="{{ action.label }}">
         <i ng-class="action.icon || 'fa-solid fa-play'"></i>

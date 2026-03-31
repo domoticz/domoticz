@@ -8,7 +8,7 @@
 
 <div class="modal-body db2-eim-body">
     <!-- Top-level tabs: Export / Import -->
-    <ul class="nav nav-tabs db2-eim-tabs">
+    <ul class="nav nav-tabs sub-tabs db2-eim-tabs">
         <li ng-class="{active: tab === 'export'}">
             <a href ng-click="tab = 'export'">
                 <i class="fa-solid fa-file-export"></i> Export
@@ -34,7 +34,7 @@
         </div>
 
         <!-- Source tabs -->
-        <ul class="nav nav-tabs db2-eim-subtabs">
+        <ul class="nav nav-tabs sub-tabs db2-eim-subtabs">
             <li ng-class="{active: exportTab === 'clipboard'}">
                 <a href ng-click="exportTab = 'clipboard'; buildExportJson()">
                     <i class="fa-solid fa-clipboard"></i> Clipboard
@@ -81,7 +81,7 @@
     <!-- IMPORT PANEL -->
     <div ng-show="tab === 'import'" class="db2-eim-panel">
         <!-- Source tabs -->
-        <ul class="nav nav-tabs db2-eim-subtabs">
+        <ul class="nav nav-tabs sub-tabs db2-eim-subtabs">
             <li ng-class="{active: importTab === 'clipboard'}">
                 <a href ng-click="importTab = 'clipboard'">
                     <i class="fa-solid fa-clipboard"></i> Clipboard

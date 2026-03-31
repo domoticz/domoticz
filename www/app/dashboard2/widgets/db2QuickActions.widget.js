@@ -35,11 +35,12 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$timeout', function($scope, $http, $timeout) {
+            controller: ['$scope', '$http', '$timeout', 'db2Toast', function($scope, $http, $timeout, db2Toast) {
                 var ctrl = this;
                 ctrl.actions  = [];
                 ctrl.busy     = {};
                 ctrl.success  = {};
+                ctrl.error    = {};
 
                 ctrl.$onInit = function() {
                     parseActions();
@@ -69,7 +70,8 @@ define([
 
                 ctrl.execute = function(action) {
                     if (ctrl.busy[action.idx]) { return; }
-                    ctrl.busy[action.idx] = true;
+                    ctrl.busy[action.idx]   = true;
+                    ctrl.error[action.idx]  = false;
 
                     var params;
                     if (action.type === 'scene') {
@@ -89,11 +91,29 @@ define([
                     }
 
                     $http.get('json.htm', { params: params })
-                        .then(function() {
-                            ctrl.success[action.idx] = true;
+                        .then(function(resp) {
+                            var data = resp.data || {};
+                            if (data.status === 'OK') {
+                                ctrl.success[action.idx] = true;
+                                $timeout(function() {
+                                    ctrl.success[action.idx] = false;
+                                }, 1200);
+                            } else {
+                                var msg = data.message || data.status || 'Unknown error';
+                                ctrl.error[action.idx] = true;
+                                db2Toast.error((action.label || action.idx) + ': ' + msg);
+                                $timeout(function() {
+                                    ctrl.error[action.idx] = false;
+                                }, 2500);
+                            }
+                        })
+                        .catch(function(err) {
+                            var msg = (err && err.statusText) ? err.statusText : 'Request failed';
+                            ctrl.error[action.idx] = true;
+                            db2Toast.error((action.label || action.idx) + ': ' + msg);
                             $timeout(function() {
-                                ctrl.success[action.idx] = false;
-                            }, 1200);
+                                ctrl.error[action.idx] = false;
+                            }, 2500);
                         })
                         .finally(function() {
                             ctrl.busy[action.idx] = false;
