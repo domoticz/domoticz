@@ -3043,3 +3043,12 @@ body.db2-dashboard-active .navbar.navbar-fixed-top {
 body.db2-navbar-hidden .navbar.navbar-fixed-top {
     transform: translateY(-100%);
 }
+
+/* Slide the page content up to fill the freed navbar space */
+body.db2-dashboard-active #holder > .container-fluid {
+    transition: padding-top 0.3s ease;
+}
+
+body.db2-navbar-hidden #holder > .container-fluid {
+    padding-top: 0;
+}
