@@ -5902,6 +5902,26 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					level = 100;
 				double elevel = (level / 100.0) * (pSensor->speed_range_max - pSensor->speed_range_min);
 				int slevel = (int)round(elevel);
+				if (!pSensor->percentage_command_template.empty())
+                {
+                    const std::string& tpl = pSensor->percentage_command_template;
+                    double dval = slevel;
+                    size_t mulpos = tpl.find("value *");
+                    size_t divpos = tpl.find("value /");
+                    if (mulpos != std::string::npos)
+                    {
+                        double factor = atof(tpl.substr(mulpos + 7).c_str());
+                        if (factor != 0)
+                            dval = slevel * factor;
+                    }
+                    else if (divpos != std::string::npos)
+                    {
+                        double factor = atof(tpl.substr(divpos + 7).c_str());
+                        if (factor != 0)
+                            dval = slevel / factor;
+                    }
+                    slevel = (int)round(dval);
+                }
 				szSendValue = std::to_string(slevel);
 				command_topic = pSensor->percentage_command_topic;
 				// For fans with separate state and percentage topics, send ON if currently off, and OFF when it is set to 0
