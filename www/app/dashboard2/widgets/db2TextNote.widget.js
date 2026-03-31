@@ -13,7 +13,7 @@ define([
         defaultW:    3,
         defaultH:    2,
         minW:        2,
-        minH:        2,
+        minH:        1,
         maxW:        12,
         maxH:        12,
         configSchema: [
@@ -78,10 +78,13 @@ define([
                     var cfg = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
                     var bgOp   = cfg.bgOpacity   !== undefined ? Number(cfg.bgOpacity)   : 100;
                     var txtOp  = cfg.textOpacity !== undefined ? Number(cfg.textOpacity) : 100;
+                    var align  = cfg.textAlign || 'left';
+                    var justifyMap = { left: 'flex-start', center: 'center', right: 'flex-end' };
                     var style  = {
-                        'font-size':   (cfg.fontSize  || 14) + 'px',
-                        'font-family':  cfg.fontFamily || 'inherit',
-                        'text-align':   cfg.textAlign  || 'left'
+                        'font-size':        (cfg.fontSize  || 14) + 'px',
+                        'font-family':       cfg.fontFamily || 'inherit',
+                        'text-align':        align,
+                        'justify-content':   justifyMap[align] || 'flex-start'
                     };
                     style['color']            = cfg.textColor ? hexToRgba(cfg.textColor, txtOp) : '';
                     style['background-color'] = cfg.bgColor   ? hexToRgba(cfg.bgColor,   bgOp)  : (bgOp < 100 ? 'transparent' : '');

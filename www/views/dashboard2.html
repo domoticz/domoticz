@@ -36,6 +36,12 @@
             <span class="db2-topbar-name" ng-show="layouts.length <= 1"
                   ng-bind="activeLayout && activeLayout.name"></span>
         </div>
+        <button type="button" class="btn btn-xs db2-topbar-btn db2-topbar-fullpage"
+                ng-class="{'db2-topbar-nav-on': !isFullPage}"
+                ng-click="toggleFullPage()"
+                title="{{ isFullPage ? 'Show navigation bar' : 'Hide navigation bar' }}">
+            <i ng-class="isFullPage ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
+        </button>
         <button type="button" class="btn btn-xs db2-topbar-btn db2-topbar-edit"
                 ng-click="toggleEditMode()"
                 title="Edit Layout (Ctrl+E)">
@@ -90,32 +96,43 @@
                 </ul>
             </div>
 
-            <!-- Done Editing -->
+            <!-- Edit actions dropdown -->
+            <div class="btn-group">
+                <button type="button" class="btn btn-default btn-sm dropdown-toggle"
+                        data-toggle="dropdown">
+                    <i class="fa-solid fa-ellipsis-vertical"></i> Edit
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a ng-click="openExportImport()">
+                        <i class="fa-solid fa-arrow-right-arrow-left"></i> Export / Import
+                    </a></li>
+                    <li><a ng-click="resetToFavorites()">
+                        <i class="fa-solid fa-star"></i> Reset to Favorites
+                    </a></li>
+                    <li class="divider"></li>
+                    <li><a ng-click="duplicateLayout()">
+                        <i class="fa-solid fa-copy"></i> Duplicate
+                    </a></li>
+                    <li ng-class="{'disabled': layouts.length <= 1}">
+                        <a ng-click="deleteCurrentLayout()">
+                            <i class="fa-solid fa-trash"></i> Delete
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li ng-class="{'disabled': !activeData || !activeData.widgets.length}">
+                        <a ng-click="clearAllWidgets()">
+                            <i class="fa-solid fa-trash"></i> Clear All Widgets
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Save and exit edit mode -->
             <button type="button" class="btn btn-warning btn-sm"
                     ng-click="toggleEditMode()"
-                    title="Exit edit mode (Esc)">
-                <i class="fa-solid fa-check"></i> Done Editing
-            </button>
-
-            <!-- Add widget -->
-            <button type="button" class="btn btn-primary btn-sm"
-                    ng-click="toggleLibrary()">
-                <i class="fa-solid fa-plus"></i> Add Widget
-            </button>
-
-            <!-- Save -->
-            <button type="button"
-                    class="btn btn-sm"
-                    ng-class="savedFlash ? 'btn-success' : 'btn-default'"
-                    ng-click="saveCurrentLayout()">
-                <i class="fa-solid fa-floppy-disk"></i>
-                {{ savedFlash ? 'Saved!' : 'Save' }}
-            </button>
-
-            <!-- Export / Import -->
-            <button type="button" class="btn btn-default btn-sm"
-                    ng-click="openExportImport()">
-                <i class="fa-solid fa-arrow-right-arrow-left"></i> Export / Import
+                    title="Save and exit edit mode (Esc)">
+                <i class="fa-solid fa-floppy-disk"></i> Save
             </button>
 
             <!-- Cancel -->
@@ -128,11 +145,18 @@
             <span class="text-warning db2-dirty-indicator" ng-show="isDirty">
                 <i class="fa-solid fa-asterisk"></i> Unsaved
             </span>
+
+            <!-- Add widget -->
+            <button type="button" class="btn btn-primary btn-sm"
+                    ng-click="toggleLibrary()">
+                <i class="fa-solid fa-plus"></i> Add Widget
+            </button>
+
         </div>
     </div>
 
     <!-- Grid area: ng-if key forces full re-render on cancel -->
-    <div ng-if="gridVersion > 0"
+    <div ng-if="gridReady"
          class="grid-stack db2-grid"
          db2-grid
          grid-data="activeData"

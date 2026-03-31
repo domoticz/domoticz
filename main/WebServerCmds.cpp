@@ -7011,5 +7011,221 @@ namespace http
 			}
 		}
 
+		// ---------------------------------------------------------------------------
+		// Dashboard 2.0 layout management commands
+		// ---------------------------------------------------------------------------
+
+		void CWebServer::Cmd_GetDashboardLayouts(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "GetDashboardLayouts";
+
+			if (session.username.empty())
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			int iUser = FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			Json::Value layouts;
+			if (!m_sql.GetDashboardLayouts((int)m_users[iUser].ID, layouts))
+			{
+				root["message"] = "Failed to retrieve dashboard layouts";
+				return;
+			}
+			root["status"] = "OK";
+			root["result"] = layouts;
+		}
+
+		void CWebServer::Cmd_GetDashboardLayout(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "GetDashboardLayout";
+
+			if (session.username.empty())
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			int iUser = FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			std::string layoutid = request::findValue(&req, "id");
+			if (layoutid.empty())
+			{
+				root["message"] = "Missing parameter: id";
+				return;
+			}
+
+			Json::Value layout;
+			if (!m_sql.GetDashboardLayout((int)m_users[iUser].ID, layoutid, layout))
+			{
+				root["message"] = "Layout not found";
+				return;
+			}
+			root["status"] = "OK";
+			root["result"] = layout;
+		}
+
+		void CWebServer::Cmd_SaveDashboardLayout(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "SaveDashboardLayout";
+
+			if (session.username.empty())
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			int iUser = FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			std::string id         = request::findValue(&req, "id");
+			std::string name       = request::findValue(&req, "name");
+			std::string isdefstr   = request::findValue(&req, "isDefault");
+			std::string layoutjson = request::findValue(&req, "layout");
+
+			if (id.empty() || name.empty())
+			{
+				root["message"] = "Missing required parameters: id, name";
+				return;
+			}
+
+			if (id.size() > 64)
+			{
+				root["message"] = "Invalid id: too long";
+				return;
+			}
+			for (char c : id)
+			{
+				if (!isalnum((unsigned char)c) && c != '-' && c != '_')
+				{
+					root["message"] = "Invalid id format";
+					return;
+				}
+			}
+
+			if (name.size() > 100)
+			{
+				root["message"] = "Invalid name: too long";
+				return;
+			}
+
+			bool bUpdateLayout = !layoutjson.empty();
+
+			if (bUpdateLayout)
+			{
+				const size_t MAX_LAYOUT_SIZE = 1048576; // 1 MB
+				if (layoutjson.size() > MAX_LAYOUT_SIZE)
+				{
+					root["message"] = "Layout JSON exceeds maximum allowed size";
+					return;
+				}
+
+				Json::Value parsedLayout;
+				std::string parseError;
+				if (!ParseJSon(layoutjson, parsedLayout, &parseError))
+				{
+					root["message"] = "Invalid layout JSON: " + parseError;
+					return;
+				}
+			}
+
+			bool isDefault = (isdefstr == "true" || isdefstr == "1");
+			if (!m_sql.SaveDashboardLayout((int)m_users[iUser].ID, id, name, isDefault, bUpdateLayout ? layoutjson : std::string()))
+			{
+				root["message"] = "Failed to save layout";
+				return;
+			}
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_DeleteDashboardLayout(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "DeleteDashboardLayout";
+
+			if (session.username.empty())
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			int iUser = FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			std::string id = request::findValue(&req, "id");
+			if (id.empty())
+			{
+				root["message"] = "Missing parameter: id";
+				return;
+			}
+
+			m_sql.DeleteDashboardLayout((int)m_users[iUser].ID, id);
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_CopyDashboardLayout(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "CopyDashboardLayout";
+
+			if (session.username.empty())
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			int iUser = FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			std::string srcid   = request::findValue(&req, "id");
+			std::string newname = request::findValue(&req, "newname");
+			if (srcid.empty() || newname.empty())
+			{
+				root["message"] = "Missing parameters: id, newname";
+				return;
+			}
+
+			if (newname.size() > 100)
+			{
+				root["message"] = "Invalid newname: too long";
+				return;
+			}
+
+			std::string newid = GenerateUUID();
+			if (!m_sql.CopyDashboardLayout((int)m_users[iUser].ID, srcid, newid, newname))
+			{
+				root["message"] = "Failed to copy layout (source not found?)";
+				return;
+			}
+			root["status"] = "OK";
+			root["id"] = newid;
+		}
+
 	} // namespace server
 } // namespace http

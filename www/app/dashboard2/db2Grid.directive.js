@@ -80,13 +80,14 @@ define([
                 // ── Item management ──────────────────────────────────
                 function addItemToGrid(widget) {
                     var el = createWidgetElement(widget);
+                    var isTextNote = widget.type === 'text-note';
                     grid.addWidget(el, {
                         x:    widget.x    || 0,
                         y:    widget.y    || 0,
                         w:    widget.w    || widget.defaultW || 3,
                         h:    widget.h    || widget.defaultH || 2,
                         minW: widget.minW || 2,
-                        minH: widget.minH || 2,
+                        minH: isTextNote ? 1 : (widget.minH || 2),
                         maxW: widget.maxW || 12,
                         maxH: widget.maxH || 20,
                         id:   widget.id
@@ -110,14 +111,16 @@ define([
                 // ── Sync grid positions back to model ────────────────
                 function syncToModel() {
                     if (!grid) return;
-                    var items = grid.save(false); // false = positions only, no content
-                    items.forEach(function(item) {
-                        var widget = findWidget(item.id);
+                    // Use grid.engine.nodes instead of grid.save(false) because
+                    // GridStack's save() intentionally omits w/h when they equal
+                    // minW/minH or 1, which causes those values to be lost in the DB.
+                    grid.engine.nodes.forEach(function(node) {
+                        var widget = findWidget(node.id);
                         if (widget) {
-                            widget.x = item.x;
-                            widget.y = item.y;
-                            widget.w = item.w;
-                            widget.h = item.h;
+                            widget.x = node.x;
+                            widget.y = node.y;
+                            widget.w = node.w;
+                            widget.h = node.h;
                         }
                     });
                     scope.$applyAsync(function() {

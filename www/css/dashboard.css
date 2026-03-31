@@ -35,7 +35,7 @@
     transition: opacity 0.2s, top 0.3s ease;
 }
 
-/* When navbar is auto-hidden on Dashboard2, float the topbar pill to the top */
+/* When navbar is hidden, float the topbar pill to the top edge */
 body.db2-navbar-hidden .db2-topbar {
     top: 8px;
 }
@@ -74,10 +74,23 @@ body.db2-navbar-hidden .db2-topbar {
     color: var(--dz-btn-primary-bg, #337ab7) !important;
 }
 
+.db2-topbar-btn:focus,
+.db2-topbar-btn:active {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
 .db2-topbar-edit {
     border-left: 1px solid var(--dz-border-color, rgba(255,255,255,0.15)) !important;
     margin-left: 2px;
     padding-left: 8px !important;
+}
+
+/* Navbar toggle button: accent when navbar is currently visible */
+.db2-topbar-btn.db2-topbar-nav-on {
+    color: #fff !important;
+    background: var(--dz-btn-primary-bg, #337ab7) !important;
+    border-radius: 10px;
 }
 
 /* ── Full Edit Toolbar ────────────────────────────────────── */
@@ -88,7 +101,7 @@ body.db2-navbar-hidden .db2-topbar {
     padding: 6px 10px;
     margin-bottom: 8px;
     background: var(--dz-nav-bg);
-    border: 1px solid var(--dz-btn-warning-bg, #f0ad4e);
+    border: 1px solid rgba(255,255,255,0.1);
     border-radius: 6px;
     flex-wrap: wrap;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
@@ -123,6 +136,40 @@ body.db2-navbar-hidden .db2-topbar {
     align-items: center;
     gap: 6px;
     flex-wrap: wrap;
+}
+
+/* Keep the dropdown toggle button dark when open (Bootstrap overrides it white) */
+.db2-toolbar .btn-group.open > .dropdown-toggle {
+    background: transparent !important;
+    color: var(--dz-body-text, #fff) !important;
+    box-shadow: none !important;
+}
+
+/* Toolbar dropdown menu: match the navbar dark theme */
+.db2-toolbar .dropdown-menu {
+    background: var(--dz-nav-bg, #283750);
+    border-color: rgba(255,255,255,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.db2-toolbar .dropdown-menu > li > a {
+    color: var(--dz-body-text, #fff);
+}
+
+.db2-toolbar .dropdown-menu > li > a:hover,
+.db2-toolbar .dropdown-menu > li > a:focus {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}
+
+.db2-toolbar .dropdown-menu > li.active > a,
+.db2-toolbar .dropdown-menu > li.active > a:hover {
+    background: var(--dz-btn-primary-bg, #337ab7);
+    color: #fff;
+}
+
+.db2-toolbar .dropdown-menu .divider {
+    background-color: rgba(255,255,255,0.15);
 }
 
 .db2-dirty-indicator {
@@ -160,6 +207,24 @@ body.db2-navbar-hidden .db2-topbar {
     max-width: 360px;
     margin: 0;
     color: var(--dz-body-text);
+    opacity: 0.75;
+}
+
+.db2-empty-state p strong {
+    opacity: 1;
+    color: var(--dz-btn-primary-bg, #337ab7);
+    font-weight: 600;
+}
+
+/* Remove Bootstrap's gradient from buttons inside the dashboard page
+   so they render as flat solid colors matching the CSS variable theme */
+.db2-page .btn-primary,
+.db2-page .btn-primary:hover,
+.db2-page .btn-primary:focus,
+.db2-page .btn-warning,
+.db2-page .btn-warning:hover,
+.db2-page .btn-warning:focus {
+    background-image: none;
 }
 
 /* ── Widget Library Panel ─────────────────────────────────── */
@@ -518,17 +583,6 @@ body.db2-navbar-hidden .db2-topbar {
     flex-direction: column;
 }
 
-.db2-chart-title {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--dz-body-text);
-    padding: 4px 8px 0;
-    flex-shrink: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    opacity: 0.8;
-}
 
 .db2-highchart {
     width: 100%;
@@ -733,20 +787,23 @@ body.db2-navbar-hidden .db2-topbar {
 /* ── DZ Device Wrappers (Feature 06) ─────────────────────── */
 
 /* Device widget: transparent chrome in view mode — let the native tile stand alone */
-.db2-widget--dz-device {
+.db2-widget--dz-device,
+.db2-widget--dz-scene {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
 }
 
 /* In edit mode restore the widget chrome so the resize/drag boundaries are visible */
-.edit-mode .db2-widget--dz-device {
+.edit-mode .db2-widget--dz-device,
+.edit-mode .db2-widget--dz-scene {
     background: var(--dz-panel-bg) !important;
     border: 1px solid rgba(255,255,255,0.08) !important;
     box-shadow: var(--dz-widget-shadow) !important;
 }
 
-.db2-widget--dz-device > .db2-widget-body {
+.db2-widget--dz-device > .db2-widget-body,
+.db2-widget--dz-scene > .db2-widget-body {
     padding: 0 !important;
     overflow: hidden !important;
     background: transparent !important;
@@ -1281,7 +1338,7 @@ body.db2-navbar-hidden .db2-topbar {
 
 /* ── Edit Mode Indicator ─────────────────────────────────────────── */
 .db2-page.edit-mode .db2-toolbar {
-    border-bottom: 2px solid var(--dz-btn-warning-bg, #f0ad4e);
+    border-bottom: 2px solid rgba(255,255,255,0.15);
 }
 
 .db2-page.edit-mode .db2-widget-chrome {
@@ -1686,50 +1743,67 @@ body.db2-navbar-hidden .db2-topbar {
     padding: 0;
 }
 
-.db2-eim-subtabs {
-    margin: 12px 0 0;
-}
-
 .db2-eim-panel {
     padding: 16px;
 }
 
-.db2-eim-subpanel {
-    border: 1px solid var(--dz-border-color, rgba(255,255,255,0.1));
-    border-top: none;
-    padding: 12px;
-    border-radius: 0 0 4px 4px;
-    min-height: 200px;
-}
-
 .db2-eim-textarea {
     width: 100%;
-    height: 200px;
+    height: 220px;
     font-family: monospace;
     font-size: 11px;
     resize: vertical;
+    background: var(--dz-modal-bg, #013) !important;
+    color: var(--dz-modal-text, #ddd) !important;
+    border-color: rgba(255,255,255,0.15) !important;
+}
+
+.db2-eim-textarea:focus {
+    background: var(--dz-modal-bg, #013) !important;
+    color: var(--dz-modal-text, #ddd) !important;
+}
+
+.db2-eim-textarea--drag {
+    border-color: var(--dz-btn-primary-bg, #337ab7) !important;
+    box-shadow: 0 0 0 2px rgba(51, 122, 183, 0.35) !important;
 }
 
 .db2-eim-actions {
     margin-top: 8px;
     display: flex;
+    gap: 6px;
     justify-content: flex-end;
 }
 
-.db2-eim-download {
+/* File drop zone (import panel) */
+.db2-eim-dropzone {
+    margin-top: 8px;
+    padding: 10px 16px;
+    border: 2px dashed rgba(255,255,255,0.2);
+    border-radius: 4px;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    min-height: 180px;
-    text-align: center;
+    gap: 10px;
+    cursor: pointer;
+    color: var(--dz-modal-text, #ddd);
+    opacity: 0.7;
+    transition: border-color 0.15s, opacity 0.15s;
 }
 
-.db2-eim-filename {
-    margin-top: 10px;
-    font-size: 13px;
-    color: var(--dz-body-text);
-    opacity: 0.8;
+.db2-eim-dropzone:hover,
+.db2-eim-dropzone--hover {
+    border-color: var(--dz-btn-primary-bg, #337ab7);
+    opacity: 1;
+}
+
+.db2-eim-dropzone i {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.db2-eim-dropzone code {
+    background: transparent;
+    color: inherit;
 }
 
 .db2-eim-row {

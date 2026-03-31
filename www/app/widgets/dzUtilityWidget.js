@@ -282,6 +282,18 @@ define(['app'], function (app) {
                         image = (device.CustomImage == 0) ? 'Speaker48_On.png' : device.Image + '48_On.png';
                     } else if (device.SubType === 'Waterflow') {
                         image = (device.CustomImage == 0) ? 'moisture48.png' : device.Image + '48_On.png';
+                    } else if (typeof device.Temp !== 'undefined' || typeof device.Chill !== 'undefined') {
+                        // Temperature / weather devices: use temperature-range icon
+                        var tempVal = typeof device.Temp !== 'undefined' ? device.Temp : device.Chill;
+                        image = (typeof GetTemp48Item === 'function') ? GetTemp48Item(tempVal) : 'Temp-48_On.png';
+                    } else if (device.Type === 'Humidity') {
+                        image = 'gauge48.png';
+                    } else if (typeof device.Rain !== 'undefined') {
+                        image = 'Rain48_On.png';
+                    } else if (typeof device.WindDir !== 'undefined') {
+                        image = 'wind48.png';
+                    } else if (typeof device.UVI !== 'undefined') {
+                        image = 'uv48.png';
                     } else {
                         image = (device.CustomImage == 0) ? 'current48.png' : device.Image + '48_On.png';
                     }

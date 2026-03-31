@@ -697,6 +697,13 @@ namespace http
 			RegisterCommandCode("fixkwhstats", [this](auto&& session, auto&& req, auto&& root) { Cmd_FixkWhStats(session, req, root); });
 			RegisterCommandCode("fixcounterprices", [this](auto&& session, auto&& req, auto&& root) { Cmd_FixCounterPrices(session, req, root); });
 
+			// Dashboard 2.0 layout management
+			RegisterCommandCode("getdashboardlayouts",    [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDashboardLayouts(session, req, root); });
+			RegisterCommandCode("getdashboardlayout",     [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDashboardLayout(session, req, root); });
+			RegisterCommandCode("savedashboardlayout",    [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveDashboardLayout(session, req, root); });
+			RegisterCommandCode("deletedashboardlayout",  [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteDashboardLayout(session, req, root); });
+			RegisterCommandCode("copydashboardlayout",    [this](auto&& session, auto&& req, auto&& root) { Cmd_CopyDashboardLayout(session, req, root); });
+
 			//Whitelist
 			m_pWebEm->RegisterWhitelistURLString("/images/floorplans/plan");
 

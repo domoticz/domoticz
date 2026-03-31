@@ -64,6 +64,20 @@ define([
                 var chart = null;
                 var cancelToken = null;
                 var lastDeviceIdx = null;
+                var resizeObserver = null;
+
+                function setupResizeObserver(container) {
+                    if (resizeObserver) { resizeObserver.disconnect(); }
+                    if (!window.ResizeObserver || !container) { return; }
+                    resizeObserver = new ResizeObserver(function(entries) {
+                        if (!chart) { return; }
+                        var r = entries[0] && entries[0].contentRect;
+                        if (r && r.width > 0 && r.height > 0) {
+                            chart.setSize(r.width, r.height, false);
+                        }
+                    });
+                    resizeObserver.observe(container);
+                }
 
                 function getThemeColor(varName, fallback) {
                     var val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
@@ -120,6 +134,13 @@ define([
                         chart = null;
                     }
 
+                    // Use offsetHeight (px) — Highcharts percentage heights are
+                    // relative to chart WIDTH, not the container height.
+                    var h = container.offsetHeight || 200;
+
+                    var titleText = ctrl.deviceName || null;
+                    var titleColor = getThemeColor('--dz-body-text', '#ccc');
+
                     chart = window.Highcharts.chart(ctrl.chartId, {
                         chart: {
                             type:            'spline',
@@ -127,9 +148,14 @@ define([
                             backgroundColor: 'transparent',
                             margin:          [10, 10, 30, 40],
                             style:           { fontFamily: 'inherit' },
-                            height:          '100%'
+                            height:          h,
+                            width:           container.offsetWidth || null
                         },
-                        title:   { text: null },
+                        title: {
+                            text:  titleText,
+                            align: 'center',
+                            style: { fontSize: '11px', fontWeight: '600', color: titleColor }
+                        },
                         legend:  { enabled: false },
                         credits: { enabled: false },
                         xAxis: {
@@ -150,6 +176,8 @@ define([
                             color: getThemeColor('--dz-accent-danger', '#e74c3c')
                         }]
                     });
+
+                    setupResizeObserver(container);
                 }
 
                 // Debounced reload on device update — charts show historical data so
@@ -163,6 +191,7 @@ define([
                 });
 
                 $scope.$on('$destroy', function() {
+                    if (resizeObserver) { resizeObserver.disconnect(); resizeObserver = null; }
                     if (cancelToken) { cancelToken.resolve(); cancelToken = null; }
                     if (chart) { chart.destroy(); chart = null; }
                     if (refreshDebounce) { $timeout.cancel(refreshDebounce); }
@@ -173,10 +202,21 @@ define([
                 $scope.$watch(
                     function() {
                         var cfg = ctrl.widgetDef && ctrl.widgetDef.config;
-                        return cfg ? (cfg.deviceIdx + '|' + cfg.range) : '';
+                        return cfg ? (cfg.deviceIdx + '|' + cfg.range + '|' + (cfg.title || '')) : '';
                     },
                     function(val, old) {
-                        if (val !== old) { load(); }
+                        if (val !== old) {
+                            // If only the title changed (same device/range), update chart title in-place
+                            var cfg = ctrl.widgetDef && ctrl.widgetDef.config;
+                            var oldParts = old.split('|');
+                            var newParts = val.split('|');
+                            if (chart && oldParts[0] === newParts[0] && oldParts[1] === newParts[1]) {
+                                ctrl.deviceName = cfg.title || ctrl.deviceName;
+                                chart.setTitle({ text: ctrl.deviceName || null });
+                            } else {
+                                load();
+                            }
+                        }
                     }
                 );
 

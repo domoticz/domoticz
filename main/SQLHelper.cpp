@@ -43,7 +43,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 177
+#define DB_VERSION 178
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -638,6 +638,17 @@ constexpr auto sqlCreateApplications =
 "[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime'))"
 ");";
 
+constexpr auto sqlCreateDashboardLayouts =
+"CREATE TABLE IF NOT EXISTS [DashboardLayouts]("
+"[id] TEXT NOT NULL PRIMARY KEY,"
+"[userid] INTEGER NOT NULL,"
+"[name] TEXT NOT NULL DEFAULT 'My Dashboard',"
+"[isdefault] INTEGER NOT NULL DEFAULT 0,"
+"[layout] TEXT NOT NULL DEFAULT '{}',"
+"[created] DATETIME NOT NULL DEFAULT (datetime('now','localtime')),"
+"[updated] DATETIME NOT NULL DEFAULT (datetime('now','localtime'))"
+");";
+
 extern std::string szUserDataFolder;
 
 CSQLHelper::CSQLHelper()
@@ -769,6 +780,8 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateUserSessions);
 	query(sqlCreateMobileDevices);
 	query(sqlCreateApplications);
+	query(sqlCreateDashboardLayouts);
+	query("CREATE INDEX IF NOT EXISTS [ix_DashboardLayouts_userid] ON [DashboardLayouts]([userid]);");
 	//Add indexes to log tables
 	query("create index if not exists ds_hduts_idx	on DeviceStatus(HardwareID, DeviceID, Unit, Type, SubType);");
 	query("create index if not exists f_id_idx		on Fan(DeviceRowID);");
@@ -3354,6 +3367,12 @@ bool CSQLHelper::OpenDatabase()
 			{
 				query("ALTER TABLE Hardware ADD COLUMN [Settings] TEXT DEFAULT ''");
 			}
+		}
+		if (dbversion < 178)
+		{
+			// Dashboard 2.0: per-user flexible widget layout storage
+			query(sqlCreateDashboardLayouts);
+			query("CREATE INDEX IF NOT EXISTS [ix_DashboardLayouts_userid] ON [DashboardLayouts]([userid]);");
 		}
 	}
 	else if (bNewInstall)
@@ -11705,5 +11724,105 @@ bool CSQLHelper::TransferDevice(const std::string& sOldIdx, const std::string& s
 	return true;
 }
 
+bool CSQLHelper::GetDashboardLayouts(int userid, Json::Value &result)
+{
+	result = Json::Value(Json::arrayValue);
+	auto dbresult = safe_query(
+		"SELECT id, name, isdefault, updated FROM DashboardLayouts "
+		"WHERE userid=%d ORDER BY isdefault DESC, name ASC",
+		userid);
+	for (const auto &sd : dbresult)
+	{
+		Json::Value item;
+		item["id"]        = sd[0];
+		item["name"]      = sd[1];
+		item["isDefault"] = (sd[2] == "1");
+		item["updated"]   = sd[3];
+		result.append(item);
+	}
+	return true;
+}
+
+bool CSQLHelper::GetDashboardLayout(int userid, const std::string &layoutid, Json::Value &result)
+{
+	auto dbresult = safe_query(
+		"SELECT id, name, isdefault, layout, updated FROM DashboardLayouts "
+		"WHERE userid=%d AND id='%q'",
+		userid, layoutid.c_str());
+	if (dbresult.empty())
+		return false;
+	const auto &sd    = dbresult[0];
+	result["id"]      = sd[0];
+	result["name"]    = sd[1];
+	result["isDefault"] = (sd[2] == "1");
+	result["layout"]  = sd[3];
+	result["updated"] = sd[4];
+	return true;
+}
+
+bool CSQLHelper::SaveDashboardLayout(int userid, const std::string &layoutid, const std::string &name, bool isDefault, const std::string &layout_json)
+{
+	bool bUpdateLayout = !layout_json.empty();
+
+	// Check if the row already exists (owned by this user)
+	auto existing = safe_query(
+		"SELECT id FROM DashboardLayouts WHERE userid=%d AND id='%q'",
+		userid, layoutid.c_str());
+	if (existing.empty())
+	{
+		safe_query(
+			"INSERT INTO DashboardLayouts (id, userid, name, isdefault, layout, created, updated) "
+			"VALUES ('%q', %d, '%q', %d, '%q', datetime('now','localtime'), datetime('now','localtime'))",
+			layoutid.c_str(), userid, name.c_str(), isDefault ? 1 : 0, layout_json.c_str());
+	}
+	else
+	{
+		if (bUpdateLayout)
+		{
+			safe_query(
+				"UPDATE DashboardLayouts SET name='%q', isdefault=%d, layout='%q', updated=datetime('now','localtime') "
+				"WHERE userid=%d AND id='%q'",
+				name.c_str(), isDefault ? 1 : 0, layout_json.c_str(), userid, layoutid.c_str());
+		}
+		else
+		{
+			safe_query(
+				"UPDATE DashboardLayouts SET name='%q', isdefault=%d, updated=datetime('now','localtime') "
+				"WHERE userid=%d AND id='%q'",
+				name.c_str(), isDefault ? 1 : 0, userid, layoutid.c_str());
+		}
+	}
+	// Atomically set the new default and clear all others for this user in one statement,
+	// after the layout row is guaranteed to exist.
+	if (isDefault)
+	{
+		safe_query(
+			"UPDATE [DashboardLayouts] SET [isdefault] = CASE WHEN [id]='%q' THEN 1 ELSE 0 END WHERE [userid]=%d",
+			layoutid.c_str(), userid);
+	}
+	return true;
+}
+
+bool CSQLHelper::DeleteDashboardLayout(int userid, const std::string &layoutid)
+{
+	safe_query("DELETE FROM DashboardLayouts WHERE userid=%d AND id='%q'",
+		userid, layoutid.c_str());
+	return true;
+}
+
+bool CSQLHelper::CopyDashboardLayout(int userid, const std::string &srcid, const std::string &newid, const std::string &newname)
+{
+	auto dbresult = safe_query(
+		"SELECT layout FROM DashboardLayouts WHERE userid=%d AND id='%q'",
+		userid, srcid.c_str());
+	if (dbresult.empty())
+		return false;
+	const std::string &layout_json = dbresult[0][0];
+	safe_query(
+		"INSERT INTO DashboardLayouts (id, userid, name, isdefault, layout, created, updated) "
+		"VALUES ('%q', %d, '%q', 0, '%q', datetime('now','localtime'), datetime('now','localtime'))",
+		newid.c_str(), userid, newname.c_str(), layout_json.c_str());
+	return true;
+}
 
 

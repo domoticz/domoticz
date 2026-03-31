@@ -247,63 +247,23 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		$httpProvider.interceptors.push(logsOutUserOn401);
 	});
 
-	app.controller('NavbarController', function ($scope, $location, $timeout) {
+	app.controller('NavbarController', function ($scope, $location) {
 		$scope.getClass = function (path) {
 			return $location.path().substr(0, path.length) === path;
 		};
 
-		// ── Auto-hide navbar on Dashboard2 ────────────────────
-		var hideTimer   = null;
-		var HIDE_DELAY  = 3000;
-		var body        = document.body;
+		var body = document.body;
 
-		function isDashboard2() {
-			return $location.path() === '/Dashboard2';
-		}
-
-		function showNavbar() {
-			body.classList.remove('db2-navbar-hidden');
-		}
-
-		function scheduleHide() {
-			if (hideTimer) { $timeout.cancel(hideTimer); }
-			hideTimer = $timeout(function () {
-				if (isDashboard2()) { body.classList.add('db2-navbar-hidden'); }
-			}, HIDE_DELAY);
-		}
-
-		function onMouseMove(e) {
-			if (!isDashboard2()) { return; }
-			// Show navbar when cursor enters the top 20px strip (standard
-			// auto-hide hotspot pattern, same as Windows taskbar auto-hide)
-			if (e.clientY < 20) {
-				showNavbar();
-				if (hideTimer) { $timeout.cancel(hideTimer); hideTimer = null; }
-				return;
-			}
-			// Any movement outside the hotspot restarts the hide timer
-			if (!body.classList.contains('db2-navbar-hidden')) {
-				scheduleHide();
-			}
-		}
-
-		document.addEventListener('mousemove', onMouseMove);
-
-		// Watch route changes to activate/deactivate the feature
 		$scope.$watch(function () { return $location.path(); }, function (path) {
 			if (path === '/Dashboard2') {
 				body.classList.add('db2-dashboard-active');
-				scheduleHide();
 			} else {
 				body.classList.remove('db2-dashboard-active');
 				body.classList.remove('db2-navbar-hidden');
-				if (hideTimer) { $timeout.cancel(hideTimer); hideTimer = null; }
 			}
 		});
 
 		$scope.$on('$destroy', function () {
-			document.removeEventListener('mousemove', onMouseMove);
-			if (hideTimer) { $timeout.cancel(hideTimer); }
 			body.classList.remove('db2-dashboard-active');
 			body.classList.remove('db2-navbar-hidden');
 		});

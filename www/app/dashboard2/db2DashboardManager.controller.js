@@ -11,9 +11,9 @@ define([
      */
     app.controller('Db2DashboardManagerCtrl', [
         '$scope', '$uibModalInstance', '$timeout',
-        'dashboard2Service', 'layouts', 'currentId', 'onSwitch',
+        'dashboard2Service', 'layouts', 'currentId', 'onSwitch', 'bootbox',
         function($scope, $uibModalInstance, $timeout,
-                 dashboard2Service, layouts, currentId, onSwitch) {
+                 dashboard2Service, layouts, currentId, onSwitch, bootbox) {
 
         $scope.layouts   = angular.copy(layouts);
         $scope.newName   = '';
@@ -71,25 +71,25 @@ define([
                     $scope.layouts = updated;
                 })
                 .catch(function(err) {
-                    alert('Failed to copy dashboard: ' + err);
+                    bootbox.alert('Failed to copy dashboard: ' + err);
                 });
         };
 
         // ── Delete ─────────────────────────────────────────────
         $scope.deleteLayout = function(layout) {
             if ($scope.layouts.length <= 1) { return; }
-            if (!confirm('Delete "' + layout.name + '"? This cannot be undone.')) { return; }
-
-            dashboard2Service.deleteLayout(layout.id).then(function() {
-                var idx = $scope.layouts.indexOf(layout);
-                if (idx !== -1) { $scope.layouts.splice(idx, 1); }
-                // If the deleted layout was the current one, switch to the first remaining
-                if (layout.id === currentId && $scope.layouts.length > 0) {
-                    onSwitch($scope.layouts[0].id);
-                }
-            }).catch(function(err) {
-                alert('Failed to delete dashboard: ' + err);
-            });
+            bootbox.confirm('Delete "' + layout.name + '"? This cannot be undone.').then(function() {
+                dashboard2Service.deleteLayout(layout.id).then(function() {
+                    var idx = $scope.layouts.indexOf(layout);
+                    if (idx !== -1) { $scope.layouts.splice(idx, 1); }
+                    // If the deleted layout was the current one, switch to the first remaining
+                    if (layout.id === currentId && $scope.layouts.length > 0) {
+                        onSwitch($scope.layouts[0].id);
+                    }
+                }).catch(function(err) {
+                    bootbox.alert('Failed to delete dashboard: ' + err);
+                });
+            }).catch(angular.noop);
         };
 
         // ── Create new ─────────────────────────────────────────
@@ -121,50 +121,7 @@ define([
                 $uibModalInstance.close(id);
             }).catch(function(err) {
                 $scope.busy = false;
-                alert('Failed to create dashboard: ' + err);
-            });
-        };
-
-        // ── Reset current layout to starter ───────────────────
-        $scope.resetCurrentToDefault = function() {
-            if (!confirm('Reset current dashboard to the starter layout? All current widgets will be removed.')) {
-                return;
-            }
-
-            var layout = null;
-            for (var i = 0; i < $scope.layouts.length; i++) {
-                if ($scope.layouts[i].id === currentId) { layout = $scope.layouts[i]; break; }
-            }
-            if (!layout) { return; }
-
-            var starterData = {
-                version: 1, columns: 12, rowHeight: 60,
-                margin: 8, animate: true,
-                widgets: [
-                    { id: dashboard2Service.generateId(), type: 'clock',
-                      x: 0, y: 0, w: 2, h: 2, minW: 2, minH: 1, config: {} },
-                    { id: dashboard2Service.generateId(), type: 'sun-info',
-                      x: 2, y: 0, w: 2, h: 2, minW: 2, minH: 2, config: {} },
-                    { id: dashboard2Service.generateId(), type: 'weather',
-                      x: 4, y: 0, w: 4, h: 2, minW: 2, minH: 2, config: {} },
-                    { id: dashboard2Service.generateId(), type: 'activity-log',
-                      x: 0, y: 2, w: 6, h: 4, minW: 2, minH: 3, config: { maxItems: 15 } },
-                    { id: dashboard2Service.generateId(), type: 'system-status',
-                      x: 6, y: 2, w: 3, h: 2, minW: 2, minH: 2, config: {} }
-                ]
-            };
-
-            $scope.busy = true;
-            dashboard2Service.saveLayout(
-                { id: currentId, name: layout.name, isDefault: layout.isDefault },
-                starterData
-            ).then(function() {
-                $scope.busy = false;
-                onSwitch(currentId);
-                $uibModalInstance.close(currentId);
-            }).catch(function(err) {
-                $scope.busy = false;
-                alert('Failed to reset dashboard: ' + err);
+                bootbox.alert('Failed to create dashboard: ' + err);
             });
         };
 

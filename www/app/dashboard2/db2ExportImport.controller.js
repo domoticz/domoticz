@@ -4,26 +4,68 @@ define([
 ], function(app) {
     'use strict';
 
+    // Calls scope expression with $file when a file <input> changes
+    app.directive('db2FileImport', function() {
+        return {
+            restrict: 'A',
+            link: function(scope, el, attrs) {
+                el.on('change', function(e) {
+                    var file = (e.target || e.srcElement).files[0];
+                    if (file) {
+                        scope.$apply(function() {
+                            scope.$eval(attrs.db2FileImport, { $file: file });
+                        });
+                    }
+                });
+            }
+        };
+    });
+
+    // Adds drag-and-drop file support to any element
+    app.directive('db2FileDrop', function() {
+        return {
+            restrict: 'A',
+            link: function(scope, el, attrs) {
+                el.on('dragover dragenter', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    scope.$apply(function() { scope.dropHover = true; });
+                });
+                el.on('dragleave dragend', function() {
+                    scope.$apply(function() { scope.dropHover = false; });
+                });
+                el.on('drop', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var dt   = e.dataTransfer || (e.originalEvent && e.originalEvent.dataTransfer);
+                    var file = dt && dt.files && dt.files[0];
+                    scope.$apply(function() {
+                        scope.dropHover = false;
+                        if (file) { scope.$eval(attrs.onDrop, { $file: file }); }
+                    });
+                });
+            }
+        };
+    });
+
     app.controller('Db2ExportImportCtrl', [
         '$scope', '$uibModalInstance', '$http', '$timeout', '$q',
         'dashboard2Service', 'activeLayout', 'activeData', 'layouts', 'onImported',
         function($scope, $uibModalInstance, $http, $timeout, $q,
                  dashboard2Service, activeLayout, activeData, layouts, onImported) {
 
-        $scope.tab        = 'export';
-        $scope.exportTab  = 'clipboard';
-        $scope.importTab  = 'clipboard';
-        $scope.exportScope = 'current';
-        $scope.exportJson = '';
-        $scope.importJson = '';
+        $scope.tab          = 'export';
+        $scope.exportJson   = '';
+        $scope.importJson   = '';
         $scope.importTarget = 'new';
-        $scope.copied     = false;
+        $scope.importNewName = '';
+        $scope.copied       = false;
+        $scope.dropHover    = false;
         $scope.versionWarning = '';
-        $scope.importError = '';
-        $scope.selectedFileName = '';
+        $scope.importError  = '';
         $scope.activeLayout = activeLayout;
-        var _parsedPayload = null;
-        var _localRevision = null;
+        var _parsedPayload  = null;
+        var _localRevision  = null;
 
         // ── Get local revision ─────────────────────────────────
         $http.get('json.htm?type=command&param=getversion').then(function(resp) {
@@ -32,31 +74,13 @@ define([
 
         // ── Export ─────────────────────────────────────────────
         $scope.buildExportJson = function() {
-            var payload;
-            if ($scope.exportScope === 'all') {
-                // Export all layouts; activeData is already loaded for the current one
-                payload = {
-                    domoticzRevision: _localRevision || 0,
-                    dashboards: layouts.map(function(l) {
-                        if (l.id === activeLayout.id) {
-                            return { name: l.name, isDefault: l.isDefault, layout: activeData };
-                        }
-                        return { name: l.name, isDefault: l.isDefault, layout: null };
-                    })
-                };
-            } else {
-                payload = {
-                    name:             activeLayout.name,
-                    domoticzRevision: _localRevision || 0,
-                    layout:           activeData
-                };
-            }
+            var payload = {
+                name:             activeLayout.name,
+                domoticzRevision: _localRevision || 0,
+                layout:           activeData
+            };
             $scope.exportJson = JSON.stringify(payload, null, 2);
         };
-
-        $scope.$watch('exportScope', function() {
-            if ($scope.exportTab === 'clipboard') { $scope.buildExportJson(); }
-        });
 
         $scope.copyToClipboard = function() {
             if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -67,7 +91,6 @@ define([
                     });
                 });
             } else {
-                // Fallback: select the textarea
                 var el = document.querySelector('.db2-eim-textarea');
                 if (el) { el.select(); document.execCommand('copy'); }
                 $scope.copied = true;
@@ -76,12 +99,10 @@ define([
         };
 
         $scope.downloadFile = function() {
-            $scope.buildExportJson();
             var blob = new Blob([$scope.exportJson], { type: 'application/json' });
             var url  = URL.createObjectURL(blob);
             var a    = document.createElement('a');
-            var name = ($scope.exportScope === 'all' ? 'all-dashboards' : (activeLayout.name || 'dashboard'))
-                       .replace(/[^a-z0-9_\-]/gi, '_');
+            var name = (activeLayout.name || 'dashboard').replace(/[^a-z0-9_\-]/gi, '_');
             a.href = url;
             a.download = name + '.json';
             document.body.appendChild(a);
@@ -92,7 +113,7 @@ define([
 
         // ── Import ─────────────────────────────────────────────
         $scope.validateImportJson = function() {
-            $scope.importError   = '';
+            $scope.importError    = '';
             $scope.versionWarning = '';
             _parsedPayload = null;
 
@@ -105,11 +126,8 @@ define([
                 return;
             }
 
-            // Accept single dashboard {name, layout} or multi {dashboards:[]}
-            var hasSingle = payload.layout;
-            var hasMulti  = Array.isArray(payload.dashboards);
-            if (!hasSingle && !hasMulti) {
-                $scope.importError = 'Not a valid dashboard file (missing layout or dashboards key)';
+            if (!payload.layout) {
+                $scope.importError = 'Not a valid dashboard file (missing layout key)';
                 return;
             }
 
@@ -120,16 +138,15 @@ define([
             }
 
             _parsedPayload = payload;
+            $scope.importNewName = payload.name || '';
         };
 
-        $scope.triggerFilePick = function() {
-            var el = document.getElementById('db2-eim-file');
-            if (el) { el.value = ''; el.click(); }
-        };
-
-        $scope.onFileSelected = function(file) {
+        function loadFile(file) {
             if (!file) { return; }
-            $scope.selectedFileName = file.name;
+            if (!file.name.match(/\.json$/i)) {
+                $scope.importError = 'Please select a .json file';
+                return;
+            }
             var reader = new FileReader();
             reader.onload = function(e) {
                 $scope.$apply(function() {
@@ -138,46 +155,43 @@ define([
                 });
             };
             reader.readAsText(file);
+        }
+
+        $scope.triggerFilePick = function() {
+            var el = document.getElementById('db2-eim-file');
+            if (el) { el.value = ''; el.click(); }
         };
 
-        $scope.canImport = function() {
-            return !!_parsedPayload;
-        };
+        $scope.onFileSelected = function(file) { loadFile(file); };
+        $scope.onFileDrop     = function(file) { loadFile(file); };
+
+        $scope.canImport = function() { return !!_parsedPayload; };
 
         $scope.doImport = function() {
             if (!_parsedPayload) { return; }
             var payload = _parsedPayload;
             var replace = $scope.importTarget === 'replace';
+            var data    = angular.copy(payload.layout);
 
-            // Normalise to array of {name, layout, isDefault}
-            var items = payload.dashboards || [{ name: payload.name, layout: payload.layout, isDefault: false }];
-
-            // Process each dashboard sequentially
-            var chain = $q.when();
-            items.forEach(function(item) {
-                if (!item.layout) { return; } // skip placeholders in multi-export
-                chain = chain.then(function() {
-                    var data = angular.copy(item.layout);
-                    if (data.widgets) {
-                        data.widgets.forEach(function(w) {
-                            w.id = dashboard2Service.generateId();
-                        });
-                    }
-                    if (replace && items.length === 1) {
-                        // Replace current: keep same id/name
-                        return onImported({ replace: true, meta: activeLayout, data: data });
-                    } else {
-                        var meta = {
-                            id:        dashboard2Service.generateId(),
-                            name:      (item.name || 'Imported') + (items.length === 1 ? ' (imported)' : ''),
-                            isDefault: false
-                        };
-                        return onImported({ replace: false, meta: meta, data: data });
-                    }
+            if (data.widgets) {
+                data.widgets.forEach(function(w) {
+                    w.id = dashboard2Service.generateId();
                 });
-            });
+            }
 
-            chain.then(function() {
+            var result;
+            if (replace) {
+                result = onImported({ replace: true, meta: activeLayout, data: data });
+            } else {
+                var meta = {
+                    id:        dashboard2Service.generateId(),
+                    name:      ($scope.importNewName || payload.name || 'Imported').trim(),
+                    isDefault: false
+                };
+                result = onImported({ replace: false, meta: meta, data: data });
+            }
+
+            $q.when(result).then(function() {
                 $uibModalInstance.close();
             }).catch(function() {
                 $scope.importError = 'Import failed. Please try again.';
@@ -187,8 +201,5 @@ define([
         $scope.cancel = function() {
             $uibModalInstance.dismiss('cancel');
         };
-
-        // Build initial export JSON
-        $scope.buildExportJson();
     }]);
 });
