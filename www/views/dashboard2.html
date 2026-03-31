@@ -10,8 +10,41 @@
         <strong>Error:</strong> {{ error }}
     </div>
 
-    <!-- Toolbar -->
-    <div class="db2-toolbar">
+    <!-- Compact view-mode bar: always visible, top-right floating pill -->
+    <div class="db2-topbar" ng-hide="editMode">
+        <div class="db2-topbar-left">
+            <!-- Dashboard switcher -->
+            <div class="btn-group" ng-show="layouts.length > 1">
+                <button type="button" class="btn btn-xs db2-topbar-btn dropdown-toggle"
+                        data-toggle="dropdown">
+                    <i class="fa-solid fa-border-all"></i>
+                    <span class="db2-topbar-name" ng-bind="activeLayout && activeLayout.name"></span>
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-right">
+                    <li ng-repeat="l in layouts"
+                        ng-class="{active: activeLayout && l.id === activeLayout.id}">
+                        <a href ng-click="switchLayout(l.id)">{{ l.name }}</a>
+                    </li>
+                    <li class="divider"></li>
+                    <li><a href ng-click="openDashboardManager()">
+                        <i class="fa-solid fa-gear"></i> Manage Dashboards...
+                    </a></li>
+                </ul>
+            </div>
+            <!-- Single dashboard: just the name -->
+            <span class="db2-topbar-name" ng-show="layouts.length <= 1"
+                  ng-bind="activeLayout && activeLayout.name"></span>
+        </div>
+        <button type="button" class="btn btn-xs db2-topbar-btn db2-topbar-edit"
+                ng-click="toggleEditMode()"
+                title="Edit Layout (Ctrl+E)">
+            <i class="fa-solid fa-pencil"></i>
+        </button>
+    </div>
+
+    <!-- Full edit toolbar: only visible in edit mode -->
+    <div class="db2-toolbar" ng-show="editMode">
         <!-- Dashboard title: static in view mode, click-to-edit in edit mode -->
         <div class="db2-toolbar-title" ng-show="activeLayout && !editingTitle">
             <i class="fa-solid fa-border-all" style="margin-right:6px"></i>
@@ -38,12 +71,11 @@
         </div>
 
         <div class="db2-toolbar-actions">
-            <!-- Layout switcher dropdown — always visible when layouts exist -->
-            <div class="btn-group" ng-show="layouts.length">
+            <!-- Layout switcher dropdown -->
+            <div class="btn-group" ng-show="layouts.length > 1">
                 <button type="button" class="btn btn-default btn-sm dropdown-toggle"
                         data-toggle="dropdown">
-                    <i class="fa-solid fa-list"></i>
-                    <span ng-show="layouts.length > 1"> Dashboards</span>
+                    <i class="fa-solid fa-list"></i> Dashboards
                     <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu">
@@ -58,47 +90,44 @@
                 </ul>
             </div>
 
-            <!-- Edit mode toggle -->
-            <button type="button"
-                    class="btn btn-sm"
-                    ng-class="editMode ? 'btn-warning' : 'btn-default'"
+            <!-- Done Editing -->
+            <button type="button" class="btn btn-warning btn-sm"
                     ng-click="toggleEditMode()"
-                    title="{{ editMode ? 'Exit edit mode (Esc)' : 'Edit layout (Ctrl+E)' }}">
-                <i ng-class="editMode ? 'fa-solid fa-check' : 'fa-solid fa-pencil'"></i>
-                {{ editMode ? 'Done Editing' : 'Edit Layout' }}
+                    title="Exit edit mode (Esc)">
+                <i class="fa-solid fa-check"></i> Done Editing
             </button>
 
-            <!-- Add widget (only in edit mode) -->
+            <!-- Add widget -->
             <button type="button" class="btn btn-primary btn-sm"
-                    ng-show="editMode"
                     ng-click="toggleLibrary()">
                 <i class="fa-solid fa-plus"></i> Add Widget
             </button>
 
-            <!-- Save (only in edit mode) -->
+            <!-- Save -->
             <button type="button"
                     class="btn btn-sm"
                     ng-class="savedFlash ? 'btn-success' : 'btn-default'"
-                    ng-show="editMode"
                     ng-click="saveCurrentLayout()">
                 <i class="fa-solid fa-floppy-disk"></i>
                 {{ savedFlash ? 'Saved!' : 'Save' }}
             </button>
 
-            <!-- Cancel (only in edit mode) -->
+            <!-- Export / Import -->
             <button type="button" class="btn btn-default btn-sm"
-                    ng-show="editMode"
+                    ng-click="openExportImport()">
+                <i class="fa-solid fa-arrow-right-arrow-left"></i> Export / Import
+            </button>
+
+            <!-- Cancel -->
+            <button type="button" class="btn btn-default btn-sm"
                     ng-click="cancelEdit()">
                 <i class="fa-solid fa-ban"></i> Cancel
             </button>
 
-            <span class="db2-edit-badge" ng-show="editMode">Editing</span>
-
-            <!-- Unsaved changes indicator -->
-            <span class="text-warning db2-dirty-indicator" ng-show="isDirty && editMode">
-                <i class="fa-solid fa-asterisk"></i> Unsaved changes
+            <!-- Unsaved indicator -->
+            <span class="text-warning db2-dirty-indicator" ng-show="isDirty">
+                <i class="fa-solid fa-asterisk"></i> Unsaved
             </span>
-
         </div>
     </div>
 
@@ -146,7 +175,7 @@
     <!-- Widget library panel — populated by Feature 05 -->
     <div class="db2-library-panel" ng-class="{open: showLibrary && editMode}">
         <div class="db2-library-panel-header">
-            <strong>Widget Library</strong>
+            <strong style="color: var(--dz-body-text)">Widget Library</strong>
             <button class="db2-panel-close" ng-click="toggleLibrary()" title="Close">&times;</button>
         </div>
         <div class="db2-library-panel-body">

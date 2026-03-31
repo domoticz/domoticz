@@ -35,7 +35,21 @@ define([
         ]
     });
 
-    app.directive('db2HtmlWidget', ['$sce', function($sce) {
+    // Helper directive: sets iframe.srcdoc directly via DOM to avoid Angular encoding issues
+    app.directive('db2HtmlFrame', [function() {
+        return {
+            restrict: 'A',
+            link: function(scope, element, attrs) {
+                scope.$watch(attrs.db2HtmlFrame, function(doc) {
+                    if (doc) {
+                        element[0].srcdoc = doc;
+                    }
+                });
+            }
+        };
+    }]);
+
+    app.directive('db2HtmlWidget', [function() {
         return {
             restrict:         'E',
             templateUrl:      'views/dashboard2/widgets/html-widget.html',
@@ -48,17 +62,22 @@ define([
             controller: ['$scope', function($scope) {
                 var ctrl = this;
 
-                ctrl.safeHtml = '';
+                ctrl.iframeDoc = '';
 
-                function sanitize(raw) {
+                // Injected style: override 100vh to fit the iframe, hide scrollbars
+                var FIT_STYLE = '<style>html,body{height:100%!important;max-height:100%!important;overflow:hidden!important;box-sizing:border-box}</style>';
+
+                function buildDoc(raw) {
                     if (!raw) { return ''; }
-                    if (typeof DOMPurify !== 'undefined') {
-                        return $sce.trustAsHtml(DOMPurify.sanitize(raw));
+                    var isFullDoc = /<!DOCTYPE|<html/i.test(raw);
+                    if (isFullDoc) {
+                        // Inject fit style into existing <head>
+                        return raw.replace(/(<head[^>]*>)/i, '$1' + FIT_STYLE);
                     }
-                    // Fallback: escape all HTML tags when DOMPurify is unavailable
-                    var tmp = document.createElement('div');
-                    tmp.textContent = raw;
-                    return $sce.trustAsHtml(tmp.innerHTML);
+                    return '<!DOCTYPE html><html><head>' +
+                        '<meta charset="utf-8">' + FIT_STYLE +
+                        '<style>body{margin:0;padding:4px;font-family:inherit;background:transparent;color:inherit}</style>' +
+                        '</head><body>' + raw + '</body></html>';
                 }
 
                 $scope.$watch(
@@ -66,13 +85,12 @@ define([
                         return ctrl.widgetDef && ctrl.widgetDef.config && ctrl.widgetDef.config.html;
                     },
                     function(raw) {
-                        ctrl.safeHtml = sanitize(raw || '');
+                        ctrl.iframeDoc = buildDoc(raw || '');
                     }
                 );
 
-                // Initial render
                 var cfg = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
-                ctrl.safeHtml = sanitize(cfg.html || '');
+                ctrl.iframeDoc = buildDoc(cfg.html || '');
             }]
         };
     }]);

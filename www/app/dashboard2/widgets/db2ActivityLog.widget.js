@@ -57,6 +57,8 @@ define([
                     });
                 }
 
+                $scope.$on('device_update', load);
+
                 var timer = $interval(load, 15000);
 
                 $scope.$on('$destroy', function() { $interval.cancel(timer); });

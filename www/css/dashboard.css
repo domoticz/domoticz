@@ -13,20 +13,80 @@
     position: relative;
     min-height: 100%;
     padding: 8px;
+    padding-top: 10px;
     box-sizing: border-box;
 }
 
-/* ── Toolbar ──────────────────────────────────────────────── */
+/* ── Compact top bar (view mode) ─────────────────────────── */
+.db2-topbar {
+    position: fixed;
+    top: 50px;
+    right: 16px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--dz-nav-bg);
+    border: 1px solid var(--dz-border-color, rgba(255,255,255,0.12));
+    border-radius: 20px;
+    padding: 3px 6px 3px 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.db2-topbar:hover {
+    opacity: 1;
+}
+
+.db2-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.db2-topbar-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--dz-body-text);
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.db2-topbar-btn {
+    background: transparent !important;
+    border: none !important;
+    color: var(--dz-body-text) !important;
+    padding: 2px 5px !important;
+    box-shadow: none !important;
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+}
+
+.db2-topbar-btn:hover {
+    color: var(--dz-btn-primary-bg, #337ab7) !important;
+}
+
+.db2-topbar-edit {
+    border-left: 1px solid var(--dz-border-color, rgba(255,255,255,0.15)) !important;
+    margin-left: 2px;
+    padding-left: 8px !important;
+}
+
+/* ── Full Edit Toolbar ────────────────────────────────────── */
 .db2-toolbar {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 8px;
+    padding: 6px 10px;
     margin-bottom: 8px;
     background: var(--dz-nav-bg);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 4px;
+    border: 1px solid var(--dz-btn-warning-bg, #f0ad4e);
+    border-radius: 6px;
     flex-wrap: wrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 .db2-toolbar-title {
@@ -35,13 +95,14 @@
     flex: 1;
     min-width: 120px;
     color: var(--dz-body-text);
+    cursor: default;
 }
 
 .db2-title-editable {
     cursor: pointer;
     border-bottom: 1px dashed transparent;
-    transition: border-color 0.15s;
 }
+
 .db2-title-editable:hover {
     border-bottom-color: var(--dz-btn-primary-bg);
 }
@@ -59,28 +120,9 @@
     flex-wrap: wrap;
 }
 
-.db2-kbd-hint {
-    font-size: 0.78em;
-    opacity: 0.45;
+.db2-dirty-indicator {
+    font-size: 0.85em;
     color: var(--dz-body-text);
-}
-
-/* ── Edit mode indicator ───────────────────────────────────── */
-.db2-page.edit-mode .db2-toolbar {
-    border-color: var(--dz-btn-warning-bg);
-    background: var(--dz-nav-bg);
-}
-
-.db2-edit-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    background: var(--dz-btn-warning-bg);
-    color: var(--dz-btn-primary-text);
-    border-radius: 12px;
-    font-size: 0.75em;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
 }
 
 /* ── Empty state ──────────────────────────────────────────── */
@@ -449,17 +491,44 @@
 }
 
 /* ── Chart widgets ─────────────────────────────────────────── */
+.db2-widget--temperature-graph > .db2-widget-body,
+.db2-widget--energy-chart > .db2-widget-body {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+}
+
 .db2-chart-container {
-    height: 100%;
+    position: absolute;
+    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+.db2-chart-wrap {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.db2-chart-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--dz-body-text);
+    padding: 4px 8px 0;
+    flex-shrink: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    opacity: 0.8;
+}
+
 .db2-highchart {
     width: 100%;
-    height: 100%;
-    min-height: 150px;
+    flex: 1;
+    min-height: 0;
 }
 
 .db2-chart-unconfigured {
@@ -492,7 +561,7 @@
     text-align: center;
     padding: 8px;
     width: 100%;
-    border-top: 4px solid var(--dz-btn-primary-bg);
+    border-top: none;
 }
 
 .db2-stat-label {
@@ -544,6 +613,14 @@
     overflow: hidden;
     opacity: 0.5;
     pointer-events: none;
+}
+
+.db2-weather-scene-bg .fcw-scene {
+    top: 5px;
+    left: auto;
+    right: 5px;
+    transform: scale(0.75);
+    transform-origin: top right;
 }
 
 /* Text content anchored to bottom */
@@ -784,14 +861,22 @@
 }
 
 /* ── Clock widget ─────────────────────────────────────────── */
+.db2-widget--clock > .db2-widget-body {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+}
+
 .db2-clock {
-    height: 100%;
+    position: absolute;
+    inset: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
     padding: 8px;
+    box-sizing: border-box;
 }
 
 .db2-clock-time {
@@ -809,10 +894,41 @@
 }
 
 /* ── Text Note widget ─────────────────────────────────────── */
+.db2-widget--text-note > .db2-widget-body {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.db2-widget--text-note {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.edit-mode .db2-widget--text-note {
+    background: var(--dz-panel-bg);
+    border: 1px solid var(--dz-border-color, rgba(255,255,255,0.1));
+    box-shadow: var(--dz-panel-shadow, none);
+}
+
+.edit-mode .db2-widget--text-note > .db2-widget-body {
+    background: transparent;
+}
+
 .db2-text-note {
-    height: 100%;
-    overflow-y: auto;
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
     padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-sizing: border-box;
     box-sizing: border-box;
     white-space: pre-wrap;
     word-break: break-word;
@@ -1417,13 +1533,38 @@
     color: var(--dz-btn-danger-bg, #d9534f);
 }
 
+/* Modal close button: Bootstrap default is black + low opacity, invisible on dark themes */
+.modal-header .close {
+    color: var(--dz-body-text, #333);
+    opacity: 0.7;
+    text-shadow: none;
+    filter: none;
+}
+.modal-header .close:hover {
+    color: var(--dz-body-text, #333);
+    opacity: 1;
+}
+
 /* ── HTML Widget ──────────────────────────────────────────────── */
+.db2-widget--db2HtmlWidget > .db2-widget-body {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+}
+
 .db2-html-widget {
-    padding: 8px;
-    height: 100%;
-    overflow: auto;
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
     box-sizing: border-box;
     color: var(--dz-body-text);
+}
+
+.db2-html-widget-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
 }
 
 .db2-html-widget-empty {
@@ -1447,4 +1588,167 @@
     margin: 0;
     font-size: 0.85em;
     opacity: 0.6;
+}
+
+/* ─── Action List Editor (Quick Actions settings) ───────── */
+.db2-action-list-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.db2-al-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    background: var(--dz-input-bg, rgba(255,255,255,0.05));
+    border: 1px solid var(--dz-border-color, rgba(255,255,255,0.1));
+    border-radius: 4px;
+}
+
+.db2-al-type-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 5px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+.db2-al-badge-scene  { background: var(--dz-btn-success-bg, #5cb85c); color: #fff; }
+.db2-al-badge-switch { background: var(--dz-btn-primary-bg, #337ab7); color: #fff; }
+
+.db2-al-icon {
+    font-size: 13px;
+    color: var(--dz-body-text-muted, #999);
+    flex-shrink: 0;
+}
+
+.db2-al-label {
+    flex: 1;
+    font-size: 13px;
+    color: var(--dz-body-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.db2-al-actions {
+    display: flex;
+    gap: 3px;
+    flex-shrink: 0;
+}
+
+.db2-al-empty {
+    padding: 8px;
+    font-size: 12px;
+    color: var(--dz-body-text-muted, #999);
+    text-align: center;
+    border: 1px dashed var(--dz-border-color, rgba(255,255,255,0.2));
+    border-radius: 4px;
+}
+
+.db2-al-add {
+    margin-top: 4px;
+}
+
+.db2-al-add-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+/* ─── Export / Import Modal ─────────────────────────────── */
+.db2-eim-body {
+    padding: 0;
+}
+
+.db2-eim-tabs {
+    margin: 0;
+    border-bottom: 1px solid var(--dz-border-color, rgba(255,255,255,0.1));
+    padding: 0 16px;
+}
+
+.db2-eim-subtabs {
+    margin: 12px 0 0;
+}
+
+.db2-eim-panel {
+    padding: 16px;
+}
+
+.db2-eim-subpanel {
+    border: 1px solid var(--dz-border-color, rgba(255,255,255,0.1));
+    border-top: none;
+    padding: 12px;
+    border-radius: 0 0 4px 4px;
+    min-height: 200px;
+}
+
+.db2-eim-textarea {
+    width: 100%;
+    height: 200px;
+    font-family: monospace;
+    font-size: 11px;
+    resize: vertical;
+}
+
+.db2-eim-actions {
+    margin-top: 8px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.db2-eim-download {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+    text-align: center;
+}
+
+.db2-eim-filename {
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--dz-body-text);
+    opacity: 0.8;
+}
+
+.db2-eim-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.db2-eim-target-row {
+    margin-top: 12px;
+    margin-bottom: 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--dz-border-color, rgba(255,255,255,0.1));
+}
+
+.db2-eim-target-label {
+    font-size: 13px;
+    color: var(--dz-body-text);
+    opacity: 0.7;
+    flex-shrink: 0;
+}
+
+.db2-eim-radio {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 5px;
+    font-weight: normal;
+    cursor: pointer;
+    margin: 0;
+}
+
+.db2-eim-warning {
+    margin-top: 10px;
+    margin-bottom: 0;
+    font-size: 12px;
+    padding: 8px 12px;
 }

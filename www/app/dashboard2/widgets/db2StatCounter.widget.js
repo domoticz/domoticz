@@ -75,6 +75,18 @@ define([
                     });
                 }
 
+                $scope.$on('device_update', function(e, updated) {
+                    var cfg = ctrl.widgetDef && ctrl.widgetDef.config;
+                    if (cfg && String(updated.idx) === String(cfg.deviceIdx)) {
+                        // Update directly from broadcast payload to avoid extra HTTP call
+                        var d = updated;
+                        var match = (d.Data || '').match(/^([\d.\-]+)\s*(.*)?$/);
+                        ctrl.value = match ? match[1] : (d.Data || '\u2014');
+                        ctrl.unit  = match ? (match[2] || '') : '';
+                        ctrl.label = cfg.label || d.Name || '';
+                    }
+                });
+
                 var timer = $interval(load, 30000);
 
                 $scope.$on('$destroy', function() {

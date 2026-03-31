@@ -107,6 +107,77 @@ define([
                 .catch(function() { $scope.cameras = []; });
         }
 
+        // For action-list fields: load devices + scenes and set up helpers
+        var actionListFields = (descriptor.configSchema || []).filter(function(f) {
+            return f.type === 'action-list';
+        });
+        if (actionListFields.length) {
+            // Parse legacy JSON string to array
+            actionListFields.forEach(function(field) {
+                var val = $scope.config[field.key];
+                if (typeof val === 'string') {
+                    try { $scope.config[field.key] = JSON.parse(val); } catch(e) { $scope.config[field.key] = []; }
+                }
+                if (!Array.isArray($scope.config[field.key])) {
+                    $scope.config[field.key] = [];
+                }
+            });
+
+            // Load devices
+            $http.get('json.htm?type=command&param=getdevices&order=Name&displayhidden=1&used=true')
+                .then(function(resp) {
+                    $scope.actionDevices = (resp.data && resp.data.result) || [];
+                });
+
+            // Load scenes
+            $http.get('json.htm?type=command&param=getscenes')
+                .then(function(resp) {
+                    $scope.actionScenes = (resp.data && resp.data.result) || [];
+                });
+
+            // New action form state
+            $scope.newAction = { type: 'switch', idx: '', label: '', icon: '' };
+
+            $scope.actionAddItem = function(fieldKey) {
+                var a = $scope.newAction;
+                if (!a.idx) { return; }
+                // Auto-fill label from device/scene name if blank
+                var label = (a.label || '').trim();
+                if (!label) {
+                    var list = a.type === 'scene' ? $scope.actionScenes : $scope.actionDevices;
+                    var found = list && list.find(function(x) { return String(x.idx) === String(a.idx); });
+                    label = found ? found.Name : a.idx;
+                }
+                $scope.config[fieldKey].push({
+                    type:  a.type,
+                    idx:   String(a.idx),
+                    label: label,
+                    icon:  a.icon || (a.type === 'scene' ? 'fa-solid fa-play' : 'fa-solid fa-power-off')
+                });
+                $scope.newAction = { type: a.type, idx: '', label: '', icon: '' };
+            };
+
+            $scope.actionRemoveItem = function(fieldKey, index) {
+                $scope.config[fieldKey].splice(index, 1);
+            };
+
+            $scope.actionMoveUp = function(fieldKey, index) {
+                if (index === 0) { return; }
+                var arr = $scope.config[fieldKey];
+                var tmp = arr[index - 1];
+                arr[index - 1] = arr[index];
+                arr[index] = tmp;
+            };
+
+            $scope.actionMoveDown = function(fieldKey, index) {
+                var arr = $scope.config[fieldKey];
+                if (index >= arr.length - 1) { return; }
+                var tmp = arr[index + 1];
+                arr[index + 1] = arr[index];
+                arr[index] = tmp;
+            };
+        }
+
         $scope.save = function() {
             if ($scope.settingsForm.$invalid) {
                 $scope.settingsForm.$setSubmitted();

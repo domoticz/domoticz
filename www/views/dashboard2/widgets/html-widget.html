@@ -1,5 +1,9 @@
 <div class="db2-html-widget">
-    <div ng-if="ctrl.widgetDef.config.html" ng-bind-html="ctrl.safeHtml"></div>
+    <iframe class="db2-html-widget-frame"
+            db2-html-frame="ctrl.iframeDoc"
+            sandbox="allow-scripts"
+            frameborder="0"
+            ng-show="ctrl.widgetDef.config.html"></iframe>
     <div ng-if="!ctrl.widgetDef.config.html" class="db2-html-widget-empty">
         <i class="fa-solid fa-code"></i>
         <p>Configure this widget to add HTML content</p>

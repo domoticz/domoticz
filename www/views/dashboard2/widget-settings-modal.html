@@ -105,6 +105,69 @@
                         value="{{cam.idx}}">{{cam.Name}}</option>
             </select>
 
+            <!-- action-list -->
+            <div ng-if="field.type === 'action-list'" class="db2-action-list-editor">
+
+                <!-- Existing actions -->
+                <div class="db2-al-item" ng-repeat="action in config[field.key] track by $index">
+                    <span class="db2-al-type-badge"
+                          ng-class="action.type === 'scene' ? 'db2-al-badge-scene' : 'db2-al-badge-switch'">
+                        {{ action.type === 'scene' ? 'Scene' : 'Device' }}
+                    </span>
+                    <i ng-class="action.icon || 'fa-solid fa-bolt'" class="db2-al-icon"></i>
+                    <span class="db2-al-label" ng-bind="action.label"></span>
+                    <div class="db2-al-actions">
+                        <button type="button" class="btn btn-xs btn-default"
+                                ng-click="actionMoveUp(field.key, $index)"
+                                ng-disabled="$index === 0" title="Move up">
+                            <i class="fa-solid fa-chevron-up"></i>
+                        </button>
+                        <button type="button" class="btn btn-xs btn-default"
+                                ng-click="actionMoveDown(field.key, $index)"
+                                ng-disabled="$index === config[field.key].length - 1" title="Move down">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <button type="button" class="btn btn-xs btn-danger"
+                                ng-click="actionRemoveItem(field.key, $index)" title="Remove">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="db2-al-empty" ng-show="!config[field.key] || config[field.key].length === 0">
+                    No actions yet. Add one below.
+                </div>
+
+                <!-- Add new action row -->
+                <div class="db2-al-add">
+                    <div class="db2-al-add-row">
+                        <select class="form-control input-sm" ng-model="newAction.type" style="width:90px;flex-shrink:0">
+                            <option value="switch">Device</option>
+                            <option value="scene">Scene</option>
+                        </select>
+
+                        <select class="form-control input-sm" ng-model="newAction.idx" style="flex:1">
+                            <option value="">-- Select --</option>
+                            <option ng-if="newAction.type !== 'scene'"
+                                    ng-repeat="d in actionDevices track by d.idx"
+                                    value="{{ d.idx }}">{{ d.Name }}</option>
+                            <option ng-if="newAction.type === 'scene'"
+                                    ng-repeat="s in actionScenes track by s.idx"
+                                    value="{{ s.idx }}">{{ s.Name }}</option>
+                        </select>
+
+                        <input type="text" class="form-control input-sm" ng-model="newAction.label"
+                               placeholder="Label (optional)" style="flex:1">
+
+                        <button type="button" class="btn btn-sm btn-primary"
+                                ng-click="actionAddItem(field.key)"
+                                ng-disabled="!newAction.idx">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- color -->
             <input ng-if="field.type === 'color'"
                    type="color"

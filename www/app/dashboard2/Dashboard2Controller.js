@@ -9,6 +9,7 @@ define([
     'dashboard2/db2Grid',
     'dashboard2/db2WidgetSettings.controller',
     'dashboard2/db2DashboardManager.controller',
+    'dashboard2/db2ExportImport.controller',
     'widgets/dzLightWidget',
     'widgets/dzUtilityWidget',
     'widgets/dzSceneWidget',
@@ -248,14 +249,44 @@ define([
             }).catch(angular.noop); // dismiss is not an error
         };
 
+        // ── Export / Import ───────────────────────────────────
+        $scope.openExportImport = function(startTab) {
+            $uibModal.open({
+                templateUrl: 'views/dashboard2/export-import-modal.html',
+                controller:  'Db2ExportImportCtrl',
+                size:        'md',
+                resolve: {
+                    activeLayout: function() { return $scope.activeLayout; },
+                    activeData:   function() { return $scope.activeData; },
+                    layouts:      function() { return $scope.layouts; },
+                    onImported:   function() {
+                        return function(result) {
+                            if (result.replace) {
+                                return dashboard2Service.saveLayout(result.meta, result.data).then(function() {
+                                    $scope.activeData = result.data;
+                                    $scope.gridVersion++;
+                                    db2Toast.success('Dashboard replaced');
+                                });
+                            } else {
+                                return dashboard2Service.saveLayout(result.meta, result.data).then(function() {
+                                    $scope.layouts.push(result.meta);
+                                    $scope.activeLayout = result.meta;
+                                    $scope.activeData   = result.data;
+                                    $scope.gridVersion++;
+                                    db2Toast.success('Imported: ' + result.meta.name);
+                                });
+                            }
+                        };
+                    }
+                }
+            }).catch(angular.noop);
+        };
+
         // ── Keyboard shortcuts ────────────────────────────────
         function onKeyDown(e) {
             // Escape: exit edit mode
             if (e.keyCode === 27 && $scope.editMode) {
-                $scope.$apply(function() {
-                    $scope.editMode    = false;
-                    $scope.showLibrary = false;
-                });
+                $scope.$apply(function() { $scope.toggleEditMode(); });
             }
             // Ctrl+S: save layout
             if (e.ctrlKey && e.keyCode === 83 && $scope.editMode) {
@@ -265,7 +296,7 @@ define([
             // Ctrl+E: toggle edit mode
             if (e.ctrlKey && e.keyCode === 69) {
                 e.preventDefault();
-                $scope.$apply(function() { $scope.editMode = !$scope.editMode; });
+                $scope.$apply(function() { $scope.toggleEditMode(); });
             }
         }
         document.addEventListener('keydown', onKeyDown);

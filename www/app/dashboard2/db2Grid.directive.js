@@ -33,6 +33,14 @@ define([
             link: function(scope, element) {
                 var grid = null;
 
+                // Track real mouse position so drag starts at the cursor
+                var _lastMouseX = 0, _lastMouseY = 0;
+                function onMouseMove(e) { _lastMouseX = e.clientX; _lastMouseY = e.clientY; }
+                document.addEventListener('mousemove', onMouseMove);
+                scope.$on('$destroy', function() {
+                    document.removeEventListener('mousemove', onMouseMove);
+                });
+
                 // ── Init ─────────────────────────────────────────────
                 function initGrid() {
                     var options = {
@@ -140,7 +148,10 @@ define([
                 }
 
                 // ── Public API exposed to parent scope ───────────────
-                scope.$parent.addWidgetToGrid = function(widgetDef) {
+                // Note: ng-if on the grid element creates an intermediate child scope,
+                // so $parent is the ng-if scope and $parent.$parent is the controller scope.
+                var controllerScope = scope.$parent.$parent || scope.$parent;
+                controllerScope.addWidgetToGrid = function(widgetDef) {
                     var widget = angular.copy(widgetDef);
                     widget.id     = widget.id || generateId();
                     // Validate ID is safe for use in HTML attribute strings
@@ -162,7 +173,7 @@ define([
                     }, 50);
                 };
 
-                scope.$parent.removeWidget = function(id) {
+                controllerScope.removeWidget = function(id) {
                     var el = element[0].querySelector('[data-widget-id="' + escapeId(id) + '"]');
                     if (el && grid) {
                         // GridStack DOM: .grid-stack-item > .grid-stack-item-content > .db2-widget-cell
@@ -173,7 +184,7 @@ define([
                     if (idx !== -1) scope.gridData.widgets.splice(idx, 1);
                 };
 
-                scope.$parent.cloneWidget = function(id) {
+                controllerScope.cloneWidget = function(id) {
                     var source = findWidget(id);
                     if (!source) { return; }
                     var clone = angular.copy(source);
@@ -199,17 +210,17 @@ define([
                 // template expressions (on-remove, on-configure, on-clone) can
                 // resolve them — isolated scopes don't inherit from $parent.
                 scope.removeWidget = function(id) {
-                    scope.$parent.removeWidget(id);
+                    controllerScope.removeWidget(id);
                 };
 
                 scope.configureWidget = function(id) {
-                    if (scope.$parent.configureWidget) {
-                        scope.$parent.configureWidget(id);
+                    if (controllerScope.configureWidget) {
+                        controllerScope.configureWidget(id);
                     }
                 };
 
                 scope.cloneWidget = function(id) {
-                    scope.$parent.cloneWidget(id);
+                    controllerScope.cloneWidget(id);
                 };
 
                 // ── Edit mode watch ──────────────────────────────────
@@ -248,16 +259,13 @@ define([
                 }
 
                 function triggerDragOnElement(el) {
-                    // Find the drag handle inside the new widget and simulate a mousedown
-                    // so GridStack picks it up and the user can place it by moving the mouse.
+                    // Fire mousedown at the actual current mouse position so GridStack's
+                    // drag offset matches where the cursor really is.
                     var handle = el.querySelector('.db2-widget-drag-handle') || el;
-                    var rect = el.getBoundingClientRect();
-                    var cx = rect.left + rect.width / 2;
-                    var cy = rect.top + 10;
                     ['mouseenter', 'mouseover', 'mousedown'].forEach(function(type) {
                         var ev = new MouseEvent(type, {
                             bubbles: true, cancelable: true,
-                            clientX: cx, clientY: cy,
+                            clientX: _lastMouseX, clientY: _lastMouseY,
                             view: window
                         });
                         handle.dispatchEvent(ev);

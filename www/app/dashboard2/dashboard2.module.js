@@ -69,5 +69,26 @@ define(['app'], function(app) {
         };
     }]);
 
+    /**
+     * db2FileImport directive
+     *
+     * Bridges a native <input type="file"> change event into an Angular callback.
+     * Usage: <input type="file" db2-file-import="handler($file)">
+     */
+    app.directive('db2FileImport', [function() {
+        return {
+            restrict: 'A',
+            scope: { db2FileImport: '&' },
+            link: function(scope, element) {
+                element.on('change', function(e) {
+                    var file = e.target.files && e.target.files[0];
+                    scope.$apply(function() {
+                        scope.db2FileImport({ $file: file });
+                    });
+                });
+            }
+        };
+    }]);
+
     return app;
 });

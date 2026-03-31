@@ -18,11 +18,9 @@ define([
         maxH:        4,
         configSchema: [
             {
-                key:      'actions',
-                type:     'textarea',
-                label:    'Actions (JSON array)',
-                required: false,
-                help:     'Array of {type:"scene"|"switch", idx:"5", label:"Name", icon:"fa-solid fa-power-off"}'
+                key:   'actions',
+                type:  'action-list',
+                label: 'Actions'
             }
         ]
     });
@@ -61,6 +59,7 @@ define([
                     var raw = ctrl.widgetDef && ctrl.widgetDef.config &&
                               ctrl.widgetDef.config.actions;
                     if (!raw) { ctrl.actions = []; return; }
+                    if (Array.isArray(raw)) { ctrl.actions = raw; return; }
                     try {
                         ctrl.actions = JSON.parse(raw);
                     } catch (e) {

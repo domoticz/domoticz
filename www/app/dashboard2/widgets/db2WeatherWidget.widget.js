@@ -126,6 +126,25 @@ define([
                     });
                 }
 
+                $scope.$on('device_update', function(e, updated) {
+                    var cfg = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
+                    var id = String(updated.idx);
+                    if (cfg.tempIdx && id === String(cfg.tempIdx)) {
+                        ctrl.temperature = (updated.Temp !== undefined) ? updated.Temp : '\u2014';
+                        ctrl.humidity    = updated.Humidity || null;
+                        ctrl.description = updated.HumidityStatus || updated.Forecast || '';
+                    }
+                    if (cfg.windIdx && id === String(cfg.windIdx)) {
+                        ctrl.windSpeed     = updated.Speed;
+                        ctrl.windDirection = updated.DirectionStr;
+                    }
+                    if (cfg.baroIdx && id === String(cfg.baroIdx)) {
+                        ctrl.barometer   = updated.Barometer;
+                        ctrl.forecastStr = updated.ForecastStr || updated.Forecast || '';
+                        ctrl.weatherScene = ctrl.getWeatherScene(ctrl.forecastStr);
+                    }
+                });
+
                 var timer = $interval(load, 60000);
 
                 $scope.$on('$destroy', function() {

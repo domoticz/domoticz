@@ -59,9 +59,11 @@ define([
             bindToController: true,
             controller: ['$scope', '$http', '$timeout', '$q', function($scope, $http, $timeout, $q) {
                 var ctrl = this;
-                ctrl.chartId = 'db2-temp-chart-' + (++chartIdCounter);
+                ctrl.chartId    = 'db2-temp-chart-' + (++chartIdCounter);
+                ctrl.deviceName = '';
                 var chart = null;
                 var cancelToken = null;
+                var lastDeviceIdx = null;
 
                 function getThemeColor(varName, fallback) {
                     var val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
@@ -74,6 +76,18 @@ define([
 
                     if (cancelToken) { cancelToken.resolve(); }
                     cancelToken = $q.defer();
+
+                    // Fetch device name if device changed
+                    if (cfg.deviceIdx !== lastDeviceIdx) {
+                        lastDeviceIdx = cfg.deviceIdx;
+                        $http.get('json.htm?type=command&param=getdevices&rid=' + cfg.deviceIdx)
+                            .then(function(resp) {
+                                var d = resp.data && resp.data.result && resp.data.result[0];
+                                ctrl.deviceName = cfg.title || (d && d.Name) || '';
+                            });
+                    } else {
+                        ctrl.deviceName = cfg.title || ctrl.deviceName;
+                    }
 
                     var range = cfg.range || 'week';
                     var url = 'json.htm?type=command&param=graph&sensor=temp' +
@@ -112,7 +126,8 @@ define([
                             animation:       false,
                             backgroundColor: 'transparent',
                             margin:          [10, 10, 30, 40],
-                            style:           { fontFamily: 'inherit' }
+                            style:           { fontFamily: 'inherit' },
+                            height:          '100%'
                         },
                         title:   { text: null },
                         legend:  { enabled: false },
@@ -137,9 +152,20 @@ define([
                     });
                 }
 
+                // Debounced reload on device update — charts show historical data so
+                // reloading more than once per minute is wasteful
+                var refreshDebounce = null;
+                $scope.$on('device_update', function(e, updated) {
+                    var cfg = ctrl.widgetDef && ctrl.widgetDef.config;
+                    if (!cfg || String(updated.idx) !== String(cfg.deviceIdx)) { return; }
+                    if (refreshDebounce) { $timeout.cancel(refreshDebounce); }
+                    refreshDebounce = $timeout(load, 60000);
+                });
+
                 $scope.$on('$destroy', function() {
                     if (cancelToken) { cancelToken.resolve(); cancelToken = null; }
                     if (chart) { chart.destroy(); chart = null; }
+                    if (refreshDebounce) { $timeout.cancel(refreshDebounce); }
                 });
 
                 $scope.$on('db2:widget:refresh', load);
