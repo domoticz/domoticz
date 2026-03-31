@@ -55,10 +55,7 @@ define([
                         float:         true,
                         auto:          false,
                         columnOpts: {
-                            breakpoints: [
-                                { w: 768,  c: 4 },
-                                { w: 1024, c: 8 }
-                            ]
+                            layout: 'none'
                         }
                     };
 

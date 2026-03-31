@@ -35,16 +35,28 @@ define([
         ]
     });
 
-    // Helper directive: sets iframe.srcdoc directly via DOM to avoid Angular encoding issues
+    // Helper directive: sets iframe.srcdoc directly via DOM to avoid Angular encoding issues.
+    // Also uses ResizeObserver to re-stamp srcdoc when the iframe dimensions change so that
+    // content inside the iframe reflowss when the widget is resized in the grid editor.
     app.directive('db2HtmlFrame', [function() {
         return {
             restrict: 'A',
             link: function(scope, element, attrs) {
+                var el = element[0];
+                var lastDoc = '';
+
                 scope.$watch(attrs.db2HtmlFrame, function(doc) {
-                    if (doc) {
-                        element[0].srcdoc = doc;
-                    }
+                    lastDoc = doc || '';
+                    if (lastDoc) { el.srcdoc = lastDoc; }
                 });
+
+                if (typeof ResizeObserver !== 'undefined') {
+                    var ro = new ResizeObserver(function() {
+                        if (lastDoc) { el.srcdoc = lastDoc; }
+                    });
+                    ro.observe(el);
+                    scope.$on('$destroy', function() { ro.disconnect(); });
+                }
             }
         };
     }]);

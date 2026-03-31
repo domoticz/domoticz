@@ -374,6 +374,11 @@ body.db2-navbar-hidden .db2-topbar {
 /* ── GridStack Integration ────────────────────────────────── */
 .db2-grid.grid-stack {
     background: transparent;
+    min-width: 600px;
+}
+
+.db2-page {
+    overflow-x: auto;
 }
 
 /* GridStack's bundled CSS omits top/left/right/bottom on grid-stack-item-content.
@@ -1185,11 +1190,17 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 /* ── iFrame Embed widget ──────────────────────────────────── */
+.db2-widget--iframe-embed > .db2-widget-body {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+}
+
 .db2-iframe-container {
-    height: 100%;
+    position: absolute;
+    inset: 0;
     display: flex;
     flex-direction: column;
-    position: relative;
     overflow: hidden;
 }
 
@@ -1198,6 +1209,7 @@ body.db2-navbar-hidden .db2-topbar {
     flex: 1;
     border: none;
     display: block;
+    min-height: 0;
 }
 
 .db2-iframe-placeholder {
