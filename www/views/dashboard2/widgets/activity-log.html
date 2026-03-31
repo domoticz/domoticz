@@ -1,0 +1,19 @@
+<div class="db2-activity-log">
+    <ul class="db2-activity-list">
+        <li class="db2-activity-item"
+            ng-repeat="item in ctrl.items">
+            <span class="db2-activity-dot"
+                  ng-class="item.nvalue > 0 ? 'db2-activity-dot--on' : 'db2-activity-dot--off'">
+            </span>
+            <div class="db2-activity-info">
+                <span class="db2-activity-name" ng-bind="item.Name"></span>
+                <span class="db2-activity-value" ng-bind="item.Data"></span>
+            </div>
+            <span class="db2-activity-time" ng-bind="item.LastUpdate | date:'HH:mm'"></span>
+        </li>
+    </ul>
+    <div class="db2-activity-empty"
+         ng-show="!ctrl.loading && ctrl.items.length === 0">
+        No recent activity
+    </div>
+</div>

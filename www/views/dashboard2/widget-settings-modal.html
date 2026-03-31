@@ -1,0 +1,139 @@
+<div class="modal-header">
+    <button type="button" class="close" ng-click="cancel()">&times;</button>
+    <h4 class="modal-title">
+        <i ng-class="descriptor.icon" ng-show="descriptor.icon" style="margin-right:6px"></i>
+        {{ descriptor.label }} Settings
+    </h4>
+</div>
+
+<div class="modal-body">
+    <form name="settingsForm" class="db2-settings-form" novalidate>
+        <div class="form-group"
+             ng-repeat="field in descriptor.configSchema"
+             ng-class="{'has-error': settingsForm['field_' + field.key].$invalid && settingsForm.$submitted}">
+
+            <label ng-if="field.type !== 'boolean'">
+                {{ field.label }}
+                <span class="text-danger" ng-show="field.required">*</span>
+            </label>
+
+            <!-- text -->
+            <input ng-if="field.type === 'text'"
+                   type="text"
+                   class="form-control"
+                   name="field_{{ field.key }}"
+                   ng-model="config[field.key]"
+                   ng-required="field.required"
+                   placeholder="{{ field.placeholder || '' }}">
+
+            <!-- url -->
+            <input ng-if="field.type === 'url'"
+                   type="url"
+                   class="form-control"
+                   name="field_{{ field.key }}"
+                   ng-model="config[field.key]"
+                   ng-required="field.required"
+                   placeholder="{{ field.placeholder || 'https://' }}">
+
+            <!-- textarea -->
+            <textarea ng-if="field.type === 'textarea'"
+                      class="form-control"
+                      rows="4"
+                      name="field_{{ field.key }}"
+                      ng-model="config[field.key]"
+                      ng-required="field.required"></textarea>
+
+            <!-- number -->
+            <input ng-if="field.type === 'number'"
+                   type="number"
+                   class="form-control"
+                   name="field_{{ field.key }}"
+                   ng-model="config[field.key]"
+                   ng-required="field.required"
+                   min="{{ field.min }}"
+                   max="{{ field.max }}"
+                   step="{{ field.step || 1 }}">
+
+            <!-- boolean -->
+            <label ng-if="field.type === 'boolean'" class="db2-checkbox-label">
+                <input type="checkbox"
+                       name="field_{{ field.key }}"
+                       ng-model="config[field.key]">
+                {{ field.label }}
+                <span class="text-danger" ng-show="field.required">*</span>
+            </label>
+
+            <!-- select -->
+            <select ng-if="field.type === 'select'"
+                    class="form-control"
+                    name="field_{{ field.key }}"
+                    ng-model="config[field.key]"
+                    ng-required="field.required"
+                    ng-options="o.value as o.label for o in field.options">
+                <option value="">-- Select --</option>
+            </select>
+
+            <!-- device-picker -->
+            <select ng-if="field.type === 'device-picker'"
+                    class="form-control"
+                    name="field_{{ field.key }}"
+                    ng-model="config[field.key]"
+                    ng-required="field.required">
+                <option value="">-- Select Device --</option>
+                <option ng-repeat="d in deviceListByField[field.key]" value="{{ d.idx }}">
+                    {{ deviceLabel(d) }}
+                </option>
+            </select>
+
+            <!-- scene-picker -->
+            <select ng-if="field.type === 'scene-picker'"
+                    class="form-control"
+                    name="field_{{ field.key }}"
+                    ng-model="config[field.key]"
+                    ng-required="field.required">
+                <option value="">— select scene —</option>
+                <option ng-repeat="s in scenes" value="{{ s.idx }}">{{ s.Name }}</option>
+            </select>
+
+            <!-- camera-picker -->
+            <select ng-if="field.type === 'camera-picker'"
+                    class="form-control input-sm"
+                    ng-model="config[field.key]"
+                    ng-required="field.required">
+                <option value="">— Select camera —</option>
+                <option ng-repeat="cam in cameras track by cam.idx"
+                        value="{{cam.idx}}">{{cam.Name}}</option>
+            </select>
+
+            <!-- color -->
+            <input ng-if="field.type === 'color'"
+                   type="color"
+                   class="form-control"
+                   name="field_{{ field.key }}"
+                   ng-model="config[field.key]">
+
+            <!-- range / slider -->
+            <div ng-if="field.type === 'range'" style="display:flex;align-items:center;gap:8px">
+                <input type="range"
+                       name="field_{{ field.key }}"
+                       ng-model="config[field.key]"
+                       min="{{ field.min || 0 }}"
+                       max="{{ field.max || 100 }}"
+                       step="{{ field.step || 1 }}"
+                       style="flex:1">
+                <span style="min-width:40px;text-align:right">{{ config[field.key] }}</span>
+            </div>
+
+            <span class="help-block" ng-show="field.help">{{ field.help }}</span>
+            <span class="help-block text-danger"
+                  ng-show="settingsForm['field_' + field.key].$invalid && settingsForm.$submitted">
+                This field is required.
+            </span>
+        </div>
+    </form>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary" ng-click="save()">Save</button>
+</div>

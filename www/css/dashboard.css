@@ -1,0 +1,1450 @@
+/*
+ * dashboard.css — Dashboard 2.0 specific styles
+ *
+ * THEMING RULE: use only --dz-* variables (defined in css/variables.css).
+ * Never invent private --panel-bg / --text-muted aliases.
+ * All --dz-* variables are automatically overridden by whichever theme is
+ * active, so this file needs zero changes to support dark or custom themes.
+ * See doc/Theming.wiki for the full variable reference.
+ */
+
+/* ── Container ────────────────────────────────────────────── */
+.db2-page {
+    position: relative;
+    min-height: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+/* ── Toolbar ──────────────────────────────────────────────── */
+.db2-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    margin-bottom: 8px;
+    background: var(--dz-nav-bg);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 4px;
+    flex-wrap: wrap;
+}
+
+.db2-toolbar-title {
+    font-size: 1.05em;
+    font-weight: 600;
+    flex: 1;
+    min-width: 120px;
+    color: var(--dz-body-text);
+}
+
+.db2-title-editable {
+    cursor: pointer;
+    border-bottom: 1px dashed transparent;
+    transition: border-color 0.15s;
+}
+.db2-title-editable:hover {
+    border-bottom-color: var(--dz-btn-primary-bg);
+}
+
+.db2-toolbar-title-edit {
+    flex: 1;
+    min-width: 150px;
+    max-width: 300px;
+}
+
+.db2-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.db2-kbd-hint {
+    font-size: 0.78em;
+    opacity: 0.45;
+    color: var(--dz-body-text);
+}
+
+/* ── Edit mode indicator ───────────────────────────────────── */
+.db2-page.edit-mode .db2-toolbar {
+    border-color: var(--dz-btn-warning-bg);
+    background: var(--dz-nav-bg);
+}
+
+.db2-edit-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--dz-btn-warning-bg);
+    color: var(--dz-btn-primary-text);
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ── Empty state ──────────────────────────────────────────── */
+.db2-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    gap: 16px;
+    color: var(--dz-body-text);
+    text-align: center;
+    padding: 40px;
+}
+
+.db2-empty-state .db2-empty-icon {
+    font-size: 64px;
+    opacity: 0.3;
+    color: var(--dz-body-text);
+}
+
+.db2-empty-state h3 {
+    font-size: 1.4em;
+    margin: 0;
+    color: var(--dz-body-text);
+}
+
+.db2-empty-state p {
+    font-size: 0.95em;
+    max-width: 360px;
+    margin: 0;
+    color: var(--dz-body-text);
+}
+
+/* ── Widget Library Panel ─────────────────────────────────── */
+.db2-library-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 320px;
+    background: var(--dz-panel-bg);
+    color: var(--dz-panel-text);
+    border-left: 1px solid rgba(255,255,255,0.08);
+    box-shadow: -4px 0 16px var(--dz-widget-shadow);
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+    overflow: hidden;
+}
+
+.db2-library-panel.open {
+    transform: translateX(0);
+}
+
+.db2-library-panel-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    background: var(--dz-nav-bg);
+    color: var(--dz-body-text);
+}
+
+.db2-panel-close {
+    background: transparent;
+    border: none;
+    color: var(--dz-body-text);
+    font-size: 20px;
+    line-height: 1;
+    padding: 0 4px;
+    cursor: pointer;
+    opacity: 0.7;
+}
+.db2-panel-close:hover {
+    opacity: 1;
+}
+
+.db2-library-panel-body {
+    overflow-y: auto;
+    flex: 1;
+    padding: 8px;
+}
+
+.db2-library-search {
+    padding: 8px;
+    position: sticky;
+    top: 0;
+    background: var(--dz-panel-bg);
+    z-index: 1;
+}
+
+.db2-library-category {
+    margin-bottom: 12px;
+}
+
+.db2-library-category-label {
+    font-size: 0.75em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--dz-body-text);
+    padding: 4px 8px;
+    opacity: 0.7;
+}
+
+.db2-library-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-bottom: 2px;
+    color: var(--dz-panel-text);
+}
+
+.db2-library-item:hover {
+    background: rgba(255,255,255,0.12);
+}
+
+.db2-library-item-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.db2-library-item-icon i,
+.db2-library-item-icon .fa-solid,
+.db2-library-item-icon .fa-regular {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.db2-library-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.db2-library-item-label {
+    font-weight: 600;
+    font-size: 0.9em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.db2-library-item-desc {
+    font-size: 0.78em;
+    color: var(--dz-body-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0.7;
+}
+
+/* ── Loading overlay ──────────────────────────────────────── */
+.db2-loading {
+    position: absolute;
+    inset: 0;
+    background: var(--dz-panel-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    color: var(--dz-body-text);
+}
+
+/* ── GridStack Integration ────────────────────────────────── */
+.db2-grid.grid-stack {
+    background: transparent;
+}
+
+/* GridStack's bundled CSS omits top/left/right/bottom on grid-stack-item-content.
+   Force it to fill the full grid cell via absolute positioning. */
+.db2-grid .grid-stack-item-content {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: transparent;
+    border: none;
+    overflow: hidden;
+}
+
+/* Widget cell: the container inside each GridStack cell */
+.db2-widget-cell {
+    height: 100%;
+    overflow: hidden;
+}
+
+/* The db2-widget-wrapper attribute directive host element must also be full height */
+.db2-widget-cell > div {
+    height: 100%;
+    display: block;
+}
+
+/* Edit mode: show grid column guides and item borders */
+.db2-page.edit-mode .db2-grid.grid-stack {
+    background-image:
+        repeating-linear-gradient(
+            to right,
+            var(--dz-db2-grid-line) 0,
+            var(--dz-db2-grid-line) 1px,
+            transparent 1px,
+            transparent calc(100% / 12)
+        );
+}
+
+.db2-page.edit-mode .db2-grid .grid-stack-item-content {
+    outline: 1px dashed var(--dz-btn-warning-bg);
+    border-radius: 4px;
+}
+
+/* Drag placeholder */
+.grid-stack-placeholder > .placeholder-content {
+    background: var(--dz-widget-bg) !important;
+    border: 2px dashed var(--dz-btn-primary-bg) !important;
+    border-radius: 4px;
+    opacity: 0.6;
+}
+
+/* Resize handle — only visible in edit mode.
+   GridStack's CSS applies rotate(-45deg) to .ui-resizable-se which turns a
+   square into a diamond. Override that and use a plain corner indicator. */
+.db2-page.edit-mode .db2-grid .grid-stack-item > .ui-resizable-se {
+    transform: none;
+    background-image: none;
+    background-color: var(--dz-btn-warning-bg);
+    width: 14px;
+    height: 14px;
+    bottom: 0;
+    right: 0;
+    border-radius: 3px 0 0 0;
+    opacity: 0.85;
+    cursor: se-resize;
+}
+
+/* Drag handle cursor */
+.db2-widget-drag-handle {
+    cursor: grab;
+}
+.db2-widget-drag-handle:active {
+    cursor: grabbing;
+}
+
+/* ── Widget Chrome ────────────────────────────────────────── */
+/*
+ * Dashboard 2 widgets use --dz-panel-bg / --dz-nav-bg / --dz-body-text
+ * so they match the dark panel / navbar look without touching the global
+ * --dz-widget-* variables used by the existing device tile tables.
+ */
+.db2-widget {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--dz-panel-bg);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--dz-widget-border-radius);
+    box-shadow: var(--dz-widget-shadow);
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+
+.db2-widget-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--dz-nav-bg);
+    color: var(--dz-body-text);
+    flex-shrink: 0;
+    min-height: 28px;
+    user-select: none;
+}
+
+.db2-widget-icon {
+    font-size: 14px;
+    color: var(--dz-body-text);
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+
+.db2-widget-title {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: var(--dz-body-text);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.db2-widget-actions {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.db2-widget-btn.btn {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    padding: 2px 6px;
+    line-height: 1.4;
+}
+
+.db2-widget-btn.btn:hover,
+.db2-widget-btn.btn:focus {
+    background: rgba(255, 255, 255, 0.28);
+    border-color: rgba(255, 255, 255, 0.55);
+    color: #fff;
+    outline: none;
+}
+
+.db2-widget-btn--remove.btn:hover,
+.db2-widget-btn--remove.btn:focus {
+    background: #c0392b;
+    border-color: #922b21;
+    color: #fff;
+}
+
+.db2-widget-body {
+    flex: 1;
+    overflow: auto;
+    position: relative;
+    padding: 10px;
+    color: var(--dz-body-text);
+}
+
+.db2-widget-error {
+    padding: 12px 16px;
+    color: var(--dz-status-timeout);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85em;
+}
+
+.db2-widget--loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* ── Responsive: collapse panel on small screens ───────────── */
+@media (max-width: 768px) {
+    .db2-library-panel {
+        width: 100%;
+    }
+
+    .db2-toolbar-title {
+        width: 100%;
+    }
+}
+
+/* ── Chart widgets ─────────────────────────────────────────── */
+.db2-chart-container {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.db2-highchart {
+    width: 100%;
+    height: 100%;
+    min-height: 150px;
+}
+
+.db2-chart-unconfigured {
+    text-align: center;
+    color: var(--dz-body-text);
+    opacity: 0.5;
+    padding: 20px;
+}
+
+.db2-chart-unconfigured i,
+.db2-chart-unconfigured .fa-solid {
+    font-size: 28px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* ── Stat Counter ─────────────────────────────────────────── */
+.db2-stat-counter {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.db2-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8px;
+    width: 100%;
+    border-top: 4px solid var(--dz-btn-primary-bg);
+}
+
+.db2-stat-label {
+    font-size: 0.8em;
+    color: var(--dz-body-text);
+    opacity: 0.7;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+}
+
+.db2-stat-value {
+    font-size: 2.4em;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--dz-body-text);
+}
+
+.db2-stat-unit {
+    font-size: 1em;
+    color: var(--dz-body-text);
+    opacity: 0.7;
+    margin-top: 2px;
+}
+
+/* ── Weather Widget ───────────────────────────────────────── */
+/* Weather widget body: no padding, use relative positioning so children can fill it */
+.db2-widget--weather > .db2-widget-body {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.db2-weather {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.db2-weather-configured {
+    position: absolute;
+    inset: 0;
+}
+
+/* Scene fills entire widget background */
+.db2-weather-scene-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Text content anchored to bottom */
+.db2-weather-content {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.db2-weather-temp {
+    font-size: 2.2em;
+    font-weight: 700;
+    color: var(--dz-body-text);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    line-height: 1;
+}
+
+.db2-weather-unit {
+    font-size: 0.6em;
+    vertical-align: super;
+}
+
+.db2-weather-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    font-size: 0.85em;
+    color: var(--dz-body-text);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.db2-weather-forecast {
+    font-size: 0.85em;
+    color: var(--dz-body-text);
+    opacity: 0.85;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.db2-weather-desc {
+    font-size: 0.8em;
+    color: var(--dz-body-text);
+    opacity: 0.7;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* ── Sun Info ─────────────────────────────────────────────── */
+.db2-sun {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px 8px;
+    justify-content: center;
+}
+
+.db2-sun-cols {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.db2-sun-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+}
+
+.db2-sun-divider {
+    width: 1px;
+    height: 36px;
+    background: var(--dz-body-text);
+    opacity: 0.2;
+}
+
+.db2-sun-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.db2-sun-label {
+    font-size: 0.7em;
+    color: var(--dz-body-text);
+    opacity: 0.7;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.db2-sun-time {
+    font-size: 1.15em;
+    font-weight: 600;
+    color: var(--dz-body-text);
+}
+
+.db2-sun-daylength {
+    font-size: 0.75em;
+    text-align: center;
+    opacity: 0.6;
+}
+
+/* ── DZ Device Wrappers (Feature 06) ─────────────────────── */
+
+/* Device widget: transparent chrome in view mode — let the native tile stand alone */
+.db2-widget--dz-device {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* In edit mode restore the widget chrome so the resize/drag boundaries are visible */
+.edit-mode .db2-widget--dz-device {
+    background: var(--dz-panel-bg) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    box-shadow: var(--dz-widget-shadow) !important;
+}
+
+.db2-widget--dz-device > .db2-widget-body {
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: transparent !important;
+}
+
+.db2-dz-device,
+.db2-dz-favorites {
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Container for the compiled existing directive */
+.db2-dz-inner {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    width: 100%;
+    padding: 0 4px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Override Bootstrap 2 span classes — force full width, no float */
+.db2-dz-inner [class*="span"] {
+    width: 100% !important;
+    float: none !important;
+    margin-left: 0 !important;
+}
+
+/* Device tile fills the container without overflow */
+.db2-dz-inner .item,
+.db2-dz-inner .itemBlock {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    max-width: 100% !important;
+}
+
+/* Table fills width with fixed layout so cells can shrink */
+.db2-dz-inner table[id^="itemtable"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+}
+
+/* All cells truncate text instead of pushing table wider */
+.db2-dz-inner table[id^="itemtable"] td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Unconfigured / loading / error state */
+.db2-dz-unconfigured {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 8px;
+    color: var(--dz-body-text);
+    text-align: center;
+    padding: 16px;
+    opacity: 0.6;
+}
+
+.db2-dz-unconfigured p {
+    margin: 0;
+    font-size: 0.85em;
+}
+
+/* ── Favorites / Room tab strip ───────────────────────────── */
+.db2-favorites-tabs {
+    flex-shrink: 0;
+    margin-bottom: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.db2-favorites-tabs > li > a {
+    color: var(--dz-body-text);
+    padding: 6px 10px;
+    font-size: 0.82em;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.db2-favorites-tabs > li.active > a,
+.db2-favorites-tabs > li.active > a:hover,
+.db2-favorites-tabs > li.active > a:focus {
+    background: var(--dz-panel-bg);
+    border-color: rgba(255,255,255,0.08);
+    border-bottom-color: var(--dz-panel-bg);
+    color: var(--dz-body-text);
+}
+
+.db2-favorites-tabs > li > a:hover {
+    background: rgba(255,255,255,0.12);
+}
+
+/* ── Device tile grid ─────────────────────────────────────── */
+.db2-dz-favorites-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 4px;
+}
+
+.db2-dz-fav-item {
+    flex: 0 0 auto;
+}
+
+/* ── Clock widget ─────────────────────────────────────────── */
+.db2-clock {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8px;
+}
+
+.db2-clock-time {
+    font-size: 2.4em;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    color: var(--dz-body-text);
+}
+
+.db2-clock-date {
+    font-size: 0.85em;
+    color: var(--dz-text-muted, #999);
+    margin-top: 4px;
+}
+
+/* ── Text Note widget ─────────────────────────────────────── */
+.db2-text-note {
+    height: 100%;
+    overflow-y: auto;
+    padding: 8px;
+    box-sizing: border-box;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.5;
+    color: var(--dz-body-text);
+}
+
+.db2-text-note-hint {
+    display: block;
+    color: var(--dz-text-muted, #999);
+    font-size: 0.8em;
+    padding: 4px 0;
+}
+
+/* ── Activity Log widget ──────────────────────────────────── */
+.db2-activity-log {
+    height: 100%;
+    overflow-y: auto;
+}
+
+.db2-activity-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.db2-activity-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.db2-activity-item:last-child {
+    border-bottom: none;
+}
+
+.db2-activity-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.db2-activity-dot--on  { background: var(--dz-btn-success-bg, #27ae60); }
+.db2-activity-dot--off { background: var(--dz-text-muted, #bdc3c7); }
+
+.db2-activity-info {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.85em;
+    overflow: hidden;
+}
+
+.db2-activity-name {
+    font-weight: 600;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.db2-activity-value {
+    color: var(--dz-text-muted, #666);
+    font-size: 0.9em;
+}
+
+.db2-activity-time {
+    font-size: 0.78em;
+    color: var(--dz-text-muted, #999);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.db2-activity-empty {
+    padding: 16px;
+    text-align: center;
+    font-size: 0.85em;
+    color: var(--dz-text-muted, #999);
+}
+
+/* ── System Status widget ─────────────────────────────────── */
+.db2-sysstat {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px;
+}
+
+.db2-sysstat-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85em;
+}
+
+.db2-sysstat-row i,
+.db2-sysstat-row .fa-solid {
+    color: var(--dz-text-muted, #888);
+    width: 16px;
+    text-align: center;
+}
+
+.db2-sysstat-label {
+    flex: 1;
+    color: var(--dz-text-muted, #666);
+}
+
+.db2-sysstat-value {
+    font-weight: 600;
+    color: var(--dz-body-text);
+}
+
+.db2-sysstat-running {
+    color: var(--dz-btn-success-bg, #27ae60);
+}
+
+/* ── Quick Actions widget ─────────────────────────────────── */
+.db2-quick-actions {
+    height: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-content: center;
+    padding: 6px;
+    box-sizing: border-box;
+}
+
+.db2-qa-btn {
+    flex: 1;
+    min-width: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 6px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: var(--dz-panel-bg);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    font-size: 0.8em;
+    color: var(--dz-body-text);
+}
+
+.db2-qa-btn:hover:not(:disabled) {
+    background: rgba(255,255,255,0.12);
+    border-color: var(--dz-btn-primary-bg);
+}
+
+.db2-qa-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.db2-qa-btn--scene {
+    border-color: var(--dz-btn-primary-bg);
+}
+
+.db2-qa-btn--success {
+    background: #dff0d8;
+    border-color: var(--dz-btn-success-bg, #27ae60);
+}
+
+.db2-qa-label {
+    font-weight: 500;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.db2-qa-empty {
+    width: 100%;
+    text-align: center;
+    padding: 16px;
+    font-size: 0.85em;
+    color: var(--dz-text-muted, #999);
+}
+
+.db2-qa-empty p {
+    margin: 6px 0 0 0;
+}
+
+/* ── iFrame Embed widget ──────────────────────────────────── */
+.db2-iframe-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.db2-iframe {
+    width: 100%;
+    flex: 1;
+    border: none;
+    display: block;
+}
+
+.db2-iframe-placeholder {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 16px;
+    color: var(--dz-text-muted, #999);
+    gap: 8px;
+}
+
+.db2-iframe-error-state {
+    color: var(--dz-btn-danger-bg, #d9534f);
+}
+
+.db2-iframe-script-warning {
+    margin: 4px 4px 0 4px;
+    font-size: 0.82em;
+    padding: 6px 8px;
+    flex-shrink: 0;
+}
+
+/* ── Remote Image widget ──────────────────────────────────── */
+/* Image widget: no padding, no scroll on the body — image fills via absolute positioning */
+.db2-widget--image-widget > .db2-widget-body {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.db2-image-widget {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.db2-image-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.db2-image-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px;
+    text-align: center;
+    color: var(--dz-text-muted, #999);
+}
+
+.db2-image-error-state {
+    color: var(--dz-btn-danger-bg, #d9534f);
+}
+
+.db2-image-load-error {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    background: var(--dz-btn-danger-bg-alpha, rgba(217, 83, 79, 0.85));
+    color: #fff;
+    font-size: 0.8em;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.db2-image-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    font-size: 0.8em;
+    padding: 4px 8px;
+    text-align: center;
+}
+
+/* ── Skeleton Loader ─────────────────────────────────────────────── */
+.db2-skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--dz-db2-skeleton-start, rgba(0,0,0,0.06)) 25%,
+        var(--dz-db2-skeleton-mid,   rgba(0,0,0,0.12)) 50%,
+        var(--dz-db2-skeleton-start, rgba(0,0,0,0.06)) 75%
+    );
+    background-size: 200% 100%;
+    animation: db2-shimmer 1.4s ease-in-out infinite;
+    border-radius: 4px;
+    min-height: 1em;
+}
+
+@keyframes db2-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.db2-widget-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.db2-widget-skeleton .skel-title {
+    height: 14px;
+    width: 60%;
+}
+
+.db2-widget-skeleton .skel-body {
+    flex: 1;
+    min-height: 40px;
+}
+
+.db2-widget-skeleton .skel-row {
+    height: 12px;
+    width: 80%;
+}
+
+.db2-widget-skeleton .skel-row:nth-child(3) { width: 65%; }
+.db2-widget-skeleton .skel-row:nth-child(4) { width: 72%; }
+
+/* ── Edit Mode Indicator ─────────────────────────────────────────── */
+.db2-page.edit-mode .db2-toolbar {
+    border-bottom: 2px solid var(--dz-btn-warning-bg, #f0ad4e);
+}
+
+.db2-page.edit-mode .db2-widget-chrome {
+    box-shadow: 0 0 0 2px var(--dz-btn-warning-bg, #f0ad4e),
+                var(--dz-widget-shadow, 0 2px 8px rgba(0,0,0,0.12));
+}
+
+/* ── Toast Notifications ─────────────────────────────────────────── */
+.db2-toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 320px;
+}
+
+.db2-toast {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 13px;
+    line-height: 1.4;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    animation: db2-toast-in 0.2s ease-out;
+}
+
+@keyframes db2-toast-in {
+    from { transform: translateX(110%); opacity: 0; }
+    to   { transform: translateX(0);   opacity: 1; }
+}
+
+.db2-toast--info    { background: var(--dz-btn-info-bg,    #5bc0de); }
+.db2-toast--success { background: var(--dz-btn-success-bg, #5cb85c); }
+.db2-toast--warning { background: var(--dz-btn-warning-bg, #f0ad4e); color: #333; }
+.db2-toast--danger  { background: var(--dz-btn-danger-bg,  #d9534f); }
+
+.db2-toast-msg  { flex: 1; }
+
+/* ── Dashboard Manager Modal ──────────────────────────────── */
+.db2-manager-body {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.db2-manager-table tbody tr:hover td {
+    background: rgba(255,255,255,0.12);
+}
+
+.db2-manager-name {
+    cursor: pointer;
+    border-bottom: 1px dashed transparent;
+}
+
+.db2-manager-name:hover {
+    border-bottom-color: var(--dz-btn-primary-bg);
+    color: var(--dz-btn-primary-bg);
+}
+
+/* ── Camera Feed Widget ──────────────────────────────────────────── */
+/* Camera widget: no padding, fills body edge-to-edge like the image widget */
+.db2-widget--camera-feed > .db2-widget-body {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.db2-camera-widget {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.db2-camera-placeholder {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--dz-text-muted, #999);
+    gap: 6px;
+    text-align: center;
+    padding: 12px;
+}
+
+.db2-camera-placeholder-icon {
+    font-size: 36px;
+    opacity: 0.4;
+}
+
+.db2-camera-hint {
+    font-size: 11px;
+    opacity: 0.7;
+}
+
+.db2-camera-frame {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    background: #000;
+}
+
+.db2-camera-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.db2-camera-error {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--dz-text-muted, #999);
+    font-size: 13px;
+}
+
+.db2-camera-error i,
+.db2-camera-error .fa-solid {
+    font-size: 28px;
+    opacity: 0.5;
+}
+
+.db2-camera-name {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 4px 8px;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    font-size: 12px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Widget Settings Form (Bootstrap 2 form-group fix) ───────── */
+.db2-settings-form .form-group {
+    display: block;
+    margin-bottom: 14px;
+}
+
+/* Block label for all non-boolean fields */
+.db2-settings-form label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 600;
+    color: var(--dz-body-text);
+}
+
+/* Full-width inputs, selects, textareas */
+.db2-settings-form .form-control {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px 8px;
+    border: 1px solid rgba(128,128,128,0.4);
+    border-radius: 3px;
+    background: var(--dz-input-bg, #fff);
+    color: var(--dz-body-text);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.db2-settings-form .form-control:focus {
+    outline: none;
+    border-color: var(--dz-btn-primary-bg, #337ab7);
+    box-shadow: 0 0 0 2px rgba(51,122,183,0.2);
+}
+
+/* textarea: let it grow a bit */
+.db2-settings-form textarea.form-control {
+    min-height: 80px;
+    resize: vertical;
+}
+
+/* color input: smaller fixed width so it doesn't stretch the whole row */
+.db2-settings-form input[type="color"].form-control {
+    width: 60px;
+    height: 34px;
+    padding: 2px 4px;
+    cursor: pointer;
+}
+
+/* Range / slider row */
+.db2-settings-form .form-group > div[style*="flex"] {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.db2-settings-form input[type="range"] {
+    flex: 1;
+    cursor: pointer;
+}
+
+/* Boolean / checkbox label — inline, normal weight (must beat .db2-settings-form label) */
+.db2-settings-form label.db2-checkbox-label {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+    font-weight: normal;
+    cursor: pointer;
+    margin: 2px 0;
+    color: var(--dz-body-text);
+}
+
+.db2-settings-form label.db2-checkbox-label input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    flex-shrink: 0;
+    cursor: pointer;
+    accent-color: var(--dz-btn-primary-bg, #337ab7);
+}
+
+/* Help text */
+.db2-settings-form .help-block {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.82em;
+    color: var(--dz-text-muted, #888);
+    line-height: 1.3;
+}
+
+/* Validation error state */
+/* Suppress browser-native :invalid red styling — we handle validation ourselves */
+.db2-settings-form .form-control:invalid {
+    box-shadow: none;
+    color: inherit;
+}
+
+/* Style select options using the theme input variables */
+.db2-settings-form select option {
+    background: var(--dz-input-bg, #fff);
+    color: var(--dz-input-text, #000);
+}
+
+.db2-settings-form .form-group.has-error .form-control {
+    border-color: var(--dz-btn-danger-bg, #d9534f);
+    box-shadow: none;
+}
+
+.db2-settings-form .form-group.has-error .help-block.text-danger {
+    color: var(--dz-btn-danger-bg, #d9534f);
+}
+
+/* ── HTML Widget ──────────────────────────────────────────────── */
+.db2-html-widget {
+    padding: 8px;
+    height: 100%;
+    overflow: auto;
+    box-sizing: border-box;
+    color: var(--dz-body-text);
+}
+
+.db2-html-widget-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    color: var(--dz-text-muted, #999);
+    gap: 8px;
+}
+
+.db2-html-widget-empty i,
+.db2-html-widget-empty .fa-solid {
+    font-size: 2em;
+    opacity: 0.4;
+}
+
+.db2-html-widget-empty p {
+    margin: 0;
+    font-size: 0.85em;
+    opacity: 0.6;
+}

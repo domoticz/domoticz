@@ -1,0 +1,18 @@
+<div class="db2-sun">
+    <div class="db2-sun-cols">
+        <div class="db2-sun-col">
+            <span class="db2-sun-icon">&#x1F305;</span>
+            <div class="db2-sun-label">Sunrise</div>
+            <div class="db2-sun-time" ng-bind="ctrl.sunrise"></div>
+        </div>
+        <div class="db2-sun-divider"></div>
+        <div class="db2-sun-col">
+            <span class="db2-sun-icon">&#x1F307;</span>
+            <div class="db2-sun-label">Sunset</div>
+            <div class="db2-sun-time" ng-bind="ctrl.sunset"></div>
+        </div>
+    </div>
+    <div class="db2-sun-daylength text-muted">
+        Day length: {{ ctrl.daylength }}
+    </div>
+</div>

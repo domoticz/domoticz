@@ -5,6 +5,18 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
         $locationProvider.hashPrefix('');
 
         $routeProvider
+            .when('/Dashboard2', angularAMD.route({
+                templateUrl: 'views/dashboard2.html',
+                controller:  'Dashboard2Controller',
+                controllerUrl: 'dashboard2/Dashboard2Controller',
+                resolve: {
+                    mobileGuard: ['$location', function($location) {
+                        if (window.myglobals && window.myglobals.ismobile) {
+                            $location.path('/Dashboard');
+                        }
+                    }]
+                }
+            }))
             .when('/Dashboard', angularAMD.route({
                 templateUrl: function() {
                     var dt = (window.myglobals && window.myglobals.DashboardType) || 0;
@@ -14,9 +26,6 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                     }
                     return 'views/dashboard_desktop.html';
                 },
-                // DashboardDesktopController handles both mobile and desktop templates.
-                // It detects mobile via window.myglobals.ismobile and applies the
-                // appropriate body classes and scope bindings for each template.
                 controllerUrl: 'dashboard/DashboardDesktopController',
                 controller: 'DashboardDesktopController'
             }))

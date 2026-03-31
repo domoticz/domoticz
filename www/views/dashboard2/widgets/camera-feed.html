@@ -1,0 +1,20 @@
+<div class="db2-camera-widget">
+    <div ng-if="!ctrl.widgetDef.config.cameraIdx" class="db2-camera-placeholder">
+        <i class="fa-solid fa-video db2-camera-placeholder-icon"></i>
+        <p>No camera selected</p>
+        <p class="db2-camera-hint" ng-if="ctrl.editMode">Click the settings icon to choose a camera.</p>
+    </div>
+
+    <div ng-if="ctrl.widgetDef.config.cameraIdx" class="db2-camera-frame">
+        <img ng-if="ctrl.imageUrl"
+             ng-src="{{ctrl.imageUrl}}"
+             class="db2-camera-img"
+             alt="Camera feed"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+        <div class="db2-camera-error" style="display:none">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>Camera unavailable</span>
+        </div>
+        <div ng-if="ctrl.cameraName" class="db2-camera-name">{{ctrl.cameraName}}</div>
+    </div>
+</div>

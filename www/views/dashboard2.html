@@ -1,0 +1,185 @@
+<div class="db2-page" ng-class="{'edit-mode': editMode}">
+
+    <!-- Loading overlay -->
+    <div class="db2-loading" ng-show="loading">
+        <i class="fa-solid fa-rotate fa-spin" style="font-size:32px"></i>
+    </div>
+
+    <!-- Error state -->
+    <div class="alert alert-danger" ng-show="error">
+        <strong>Error:</strong> {{ error }}
+    </div>
+
+    <!-- Toolbar -->
+    <div class="db2-toolbar">
+        <!-- Dashboard title: static in view mode, click-to-edit in edit mode -->
+        <div class="db2-toolbar-title" ng-show="activeLayout && !editingTitle">
+            <i class="fa-solid fa-border-all" style="margin-right:6px"></i>
+            <span ng-bind="activeLayout.name"
+                  ng-class="{'db2-title-editable': editMode}"
+                  ng-click="editMode && startTitleEdit()"
+                  title="{{ editMode ? 'Click to rename' : '' }}"></span>
+        </div>
+        <div class="db2-toolbar-title-edit" ng-show="editingTitle">
+            <div class="input-group input-group-sm">
+                <input type="text" class="form-control"
+                       ng-model="titleEditValue"
+                       ng-keyup="$event.key === 'Enter' && finishTitleEdit(); $event.key === 'Escape' && cancelTitleEdit()"
+                       db2-autofocus>
+                <span class="input-group-btn">
+                    <button class="btn btn-success" ng-click="finishTitleEdit()">
+                        <i class="fa-solid fa-check"></i>
+                    </button>
+                    <button class="btn btn-default" ng-click="cancelTitleEdit()">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </span>
+            </div>
+        </div>
+
+        <div class="db2-toolbar-actions">
+            <!-- Layout switcher dropdown — always visible when layouts exist -->
+            <div class="btn-group" ng-show="layouts.length">
+                <button type="button" class="btn btn-default btn-sm dropdown-toggle"
+                        data-toggle="dropdown">
+                    <i class="fa-solid fa-list"></i>
+                    <span ng-show="layouts.length > 1"> Dashboards</span>
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li ng-repeat="l in layouts"
+                        ng-class="{active: activeLayout && l.id === activeLayout.id}">
+                        <a href ng-click="switchLayout(l.id)">{{ l.name }}</a>
+                    </li>
+                    <li class="divider"></li>
+                    <li><a href ng-click="openDashboardManager()">
+                        <i class="fa-solid fa-gear"></i> Manage Dashboards...
+                    </a></li>
+                </ul>
+            </div>
+
+            <!-- Edit mode toggle -->
+            <button type="button"
+                    class="btn btn-sm"
+                    ng-class="editMode ? 'btn-warning' : 'btn-default'"
+                    ng-click="toggleEditMode()"
+                    title="{{ editMode ? 'Exit edit mode (Esc)' : 'Edit layout (Ctrl+E)' }}">
+                <i ng-class="editMode ? 'fa-solid fa-check' : 'fa-solid fa-pencil'"></i>
+                {{ editMode ? 'Done Editing' : 'Edit Layout' }}
+            </button>
+
+            <!-- Add widget (only in edit mode) -->
+            <button type="button" class="btn btn-primary btn-sm"
+                    ng-show="editMode"
+                    ng-click="toggleLibrary()">
+                <i class="fa-solid fa-plus"></i> Add Widget
+            </button>
+
+            <!-- Save (only in edit mode) -->
+            <button type="button"
+                    class="btn btn-sm"
+                    ng-class="savedFlash ? 'btn-success' : 'btn-default'"
+                    ng-show="editMode"
+                    ng-click="saveCurrentLayout()">
+                <i class="fa-solid fa-floppy-disk"></i>
+                {{ savedFlash ? 'Saved!' : 'Save' }}
+            </button>
+
+            <!-- Cancel (only in edit mode) -->
+            <button type="button" class="btn btn-default btn-sm"
+                    ng-show="editMode"
+                    ng-click="cancelEdit()">
+                <i class="fa-solid fa-ban"></i> Cancel
+            </button>
+
+            <span class="db2-edit-badge" ng-show="editMode">Editing</span>
+
+            <!-- Unsaved changes indicator -->
+            <span class="text-warning db2-dirty-indicator" ng-show="isDirty && editMode">
+                <i class="fa-solid fa-asterisk"></i> Unsaved changes
+            </span>
+
+        </div>
+    </div>
+
+    <!-- Grid area: ng-if key forces full re-render on cancel -->
+    <div ng-if="gridVersion > 0"
+         class="grid-stack db2-grid"
+         db2-grid
+         grid-data="activeData"
+         edit-mode="editMode"
+         on-change="onGridChange(widgets)"
+         ng-show="!loading && activeData && activeData.widgets.length > 0">
+        <!-- GridStack populates this area programmatically via db2WidgetWrapper / db2WidgetContent -->
+    </div>
+
+    <!-- Empty state: shown when widgets array is empty -->
+    <div class="db2-empty-state"
+         ng-show="!loading && activeData && activeData.widgets.length === 0">
+        <div class="db2-empty-icon">
+            <i class="fa-solid fa-border-all"></i>
+        </div>
+        <h3>Your dashboard is empty</h3>
+        <p>Click <strong>Edit Layout</strong> then <strong>Add Widget</strong> to start
+           building your personalized dashboard.</p>
+        <button class="btn btn-primary" ng-click="toggleEditMode()">
+            <i class="fa-solid fa-pencil"></i> Edit Layout
+        </button>
+    </div>
+
+    <!-- Toast container -->
+    <div class="db2-toast-container" aria-live="polite" aria-atomic="false">
+        <div class="db2-toast"
+             ng-repeat="t in db2Toast.toasts track by t.id"
+             ng-class="['db2-toast--' + t.type, {'db2-toast--visible': t.visible}]"
+             role="alert">
+            <i ng-class="{
+                    'fa-solid fa-circle-check':         t.type === 'success',
+                    'fa-solid fa-circle-exclamation':   t.type === 'danger',
+                    'fa-solid fa-circle-info':          t.type === 'info',
+                    'fa-solid fa-triangle-exclamation': t.type === 'warning'
+                }"></i>
+            {{ t.message }}
+        </div>
+    </div>
+
+    <!-- Widget library panel — populated by Feature 05 -->
+    <div class="db2-library-panel" ng-class="{open: showLibrary && editMode}">
+        <div class="db2-library-panel-header">
+            <strong>Widget Library</strong>
+            <button class="db2-panel-close" ng-click="toggleLibrary()" title="Close">&times;</button>
+        </div>
+        <div class="db2-library-panel-body">
+            <div class="db2-library-search">
+                <input type="text" class="form-control input-sm"
+                       placeholder="Search widgets..."
+                       ng-model="librarySearch">
+            </div>
+            <div ng-repeat="(category, items) in widgetCatalogGrouped">
+                <div class="db2-library-category-label" ng-bind="category"></div>
+                <div class="db2-library-category">
+                    <div class="db2-library-item"
+                         ng-repeat="item in items | filter:librarySearch"
+                         ng-click="addWidgetToGrid(item)"
+                         title="{{ item.description }}">
+                        <div class="db2-library-item-icon">
+                            <i ng-class="item.icon"></i>
+                        </div>
+                        <div class="db2-library-item-info">
+                            <div class="db2-library-item-label" ng-bind="item.label"></div>
+                            <div class="db2-library-item-desc" ng-bind="item.description"></div>
+                        </div>
+                        <i class="fa-solid fa-circle-plus"
+                           style="color:var(--dz-btn-primary-bg);font-size:18px"></i>
+                    </div>
+                </div>
+            </div>
+            <p class="text-muted"
+               style="padding:8px;font-size:0.85em"
+               ng-show="isEmptyObject(widgetCatalogGrouped)">
+                No widgets registered yet.
+            </p>
+        </div>
+    </div>
+
+</div>

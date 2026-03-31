@@ -1,0 +1,9 @@
+<div class="db2-dz-device">
+    <div class="db2-dz-unconfigured" ng-show="!ctrl.device">
+        <i class="fa-solid fa-circle-question" style="font-size:32px;opacity:0.3"></i>
+        <p ng-show="!ctrl.widgetDef.config.deviceIdx">Select a device in widget settings</p>
+        <p ng-show="ctrl.widgetDef.config.deviceIdx && ctrl.loading">Loading&hellip;</p>
+        <p ng-show="ctrl.widgetDef.config.deviceIdx && ctrl.error" ng-bind="ctrl.error"></p>
+    </div>
+    <div class="db2-dz-inner" ng-show="ctrl.device"></div>
+</div>

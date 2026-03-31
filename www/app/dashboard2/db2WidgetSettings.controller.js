@@ -1,0 +1,122 @@
+define([
+    'app',
+    'dashboard2/dashboard2.module',
+    'dashboard2/widgetRegistry.service'
+], function(app) {
+    'use strict';
+
+    /**
+     * Db2WidgetSettingsCtrl
+     *
+     * Modal controller for the widget configuration dialog.
+     * Opened via $uibModal with:
+     *   resolve: {
+     *     widget:     function() { return widgetObject; },
+     *     descriptor: function() { return descriptorObject; }
+     *   }
+     *
+     * On save, closes the modal with the updated config object.
+     * The caller is responsible for writing the config back to the widget.
+     */
+    app.controller('Db2WidgetSettingsCtrl', [
+        '$scope', '$uibModalInstance', '$http', 'widget', 'descriptor',
+        function($scope, $uibModalInstance, $http, widget, descriptor) {
+
+        $scope.descriptor      = descriptor;
+        $scope.config          = angular.copy(widget.config || {});
+        $scope.deviceList      = [];
+        $scope.deviceListByField = {};
+        $scope.scenes          = [];
+        $scope.cameras         = [];
+
+        // Pre-populate schema defaults for keys not yet set in config
+        (descriptor.configSchema || []).forEach(function(field) {
+            if ($scope.config[field.key] === undefined && field.default !== undefined) {
+                $scope.config[field.key] = field.default;
+            }
+        });
+
+        // Lazy-load device list only if a device-picker field is present
+        var devicePickerFields = (descriptor.configSchema || []).filter(function(f) {
+            return f.type === 'device-picker';
+        });
+        if (devicePickerFields.length) {
+            $http.get('json.htm?type=command&param=getdevices&order=Name&displayhidden=1')
+                .then(function(resp) {
+                    var all = (resp.data && resp.data.result) || [];
+                    $scope.deviceList = all;
+
+                    function deviceLabel(d) {
+                        var typeStr = (d.SubType && d.SubType !== d.Type)
+                            ? d.Type + '/' + d.SubType
+                            : d.Type;
+                        return typeStr + ' - ' + d.Name;
+                    }
+
+                    function sortByLabel(list) {
+                        return list.slice().sort(function(a, b) {
+                            return deviceLabel(a).localeCompare(deviceLabel(b));
+                        });
+                    }
+
+                    // Build per-field filtered + sorted lists
+                    devicePickerFields.forEach(function(field) {
+                        var filter = field.deviceFilter;
+                        var filtered = filter ? all.filter(function(d) {
+                            if (filter === 'temp') {
+                                return d.Type && d.Type.indexOf('Temp') >= 0;
+                            }
+                            if (filter === 'wind') {
+                                return d.Type === 'Wind';
+                            }
+                            if (filter === 'baro') {
+                                return typeof d.Barometer !== 'undefined' ||
+                                       (d.Type && (d.Type.indexOf('Baro') >= 0 || d.Type === 'Barometer')) ||
+                                       (d.SubType && d.SubType.indexOf('Barometer') >= 0);
+                            }
+                            return true;
+                        }) : all;
+                        $scope.deviceListByField[field.key] = sortByLabel(filtered);
+                    });
+
+                    // Helper so the template can compute the label
+                    $scope.deviceLabel = deviceLabel;
+                });
+        }
+
+        // Lazy-load scene list only if a scene-picker field is present
+        var needsScenes = (descriptor.configSchema || []).some(function(f) {
+            return f.type === 'scene-picker';
+        });
+        if (needsScenes) {
+            $http.get('json.htm?type=command&param=getscenes')
+                .then(function(resp) {
+                    $scope.scenes = (resp.data && resp.data.result) || [];
+                });
+        }
+
+        // Lazy-load camera list only if a camera-picker field is present
+        var needsCameras = (descriptor.configSchema || []).some(function(f) {
+            return f.type === 'camera-picker';
+        });
+        if (needsCameras) {
+            $http.get('json.htm', { params: { type: 'command', param: 'getcameras', order: 'Name' } })
+                .then(function(resp) {
+                    $scope.cameras = (resp.data && resp.data.result) || [];
+                })
+                .catch(function() { $scope.cameras = []; });
+        }
+
+        $scope.save = function() {
+            if ($scope.settingsForm.$invalid) {
+                $scope.settingsForm.$setSubmitted();
+                return;
+            }
+            $uibModalInstance.close($scope.config);
+        };
+
+        $scope.cancel = function() {
+            $uibModalInstance.dismiss('cancel');
+        };
+    }]);
+});

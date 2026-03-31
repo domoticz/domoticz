@@ -4,6 +4,9 @@
   --dz-widget-text:                #0D161F;
   --dz-widget-border-radius:       5px;
   --dz-widget-shadow:              none;
+  --dz-db2-grid-line:              rgba(0,0,0,0.06);
+  --dz-db2-skeleton-start:         #e0e0e0;
+  --dz-db2-skeleton-mid:           #f0f0f0;
   --dz-widget-name-bg:             #D4E1EE;
   --dz-widget-name-border:         #2B5074;
   --dz-widget-name-text:           #0D161F;
@@ -45,6 +48,7 @@
   --dz-btn-primary-text:           #fff;
   --dz-btn-warning-bg:             #f0ad4e;
   --dz-btn-danger-bg:              #d9534f;
+  --dz-btn-danger-bg-alpha:        rgba(217, 83, 79, 0.85);
   --dz-btn-info-bg:                #5bc0de;
   --dz-btn-success-bg:             #5cb85c;
   --dz-panel-bg:                   rgba(0, 0, 0, 0.25);

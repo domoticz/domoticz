@@ -1,0 +1,39 @@
+<div class="db2-dz-favorites">
+
+    <div class="db2-dz-unconfigured" ng-show="!ctrl.widgetDef.config.planIdx">
+        <i class="fa-solid fa-house" style="font-size:32px;opacity:0.3"></i>
+        <p>Set a Plan / Room ID in widget settings</p>
+    </div>
+
+    <div class="db2-dz-unconfigured" ng-show="ctrl.widgetDef.config.planIdx && ctrl.loading && !ctrl.devices.length">
+        <i class="fa-solid fa-rotate fa-spin" style="font-size:24px;opacity:0.4"></i>
+        <p>Loading&hellip;</p>
+    </div>
+
+    <div class="db2-dz-unconfigured" ng-show="ctrl.error">
+        <i class="fa-solid fa-triangle-exclamation" style="font-size:24px;opacity:0.4"></i>
+        <p ng-bind="ctrl.error"></p>
+    </div>
+
+    <div class="db2-dz-favorites-body"
+         ng-show="ctrl.widgetDef.config.planIdx && !ctrl.error && (!ctrl.loading || ctrl.devices.length)">
+        <div ng-repeat="device in ctrl.devices" class="db2-dz-fav-item">
+            <dz-light-widget
+                ng-if="ctrl.isLight(device)"
+                device="device"
+                dashboard-type="0">
+            </dz-light-widget>
+            <dz-utility-widget
+                ng-if="!ctrl.isLight(device) && !ctrl.isScene(device)"
+                device="device"
+                dashboard-type="0">
+            </dz-utility-widget>
+        </div>
+        <div class="db2-dz-unconfigured"
+             ng-show="!ctrl.loading && !ctrl.devices.length">
+            <i class="fa-solid fa-inbox" style="font-size:28px;opacity:0.3"></i>
+            <p>No devices found in this room</p>
+        </div>
+    </div>
+
+</div>
