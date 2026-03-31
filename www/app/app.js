@@ -272,11 +272,31 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			}, HIDE_DELAY);
 		}
 
+		function getTopbarRight() {
+			// Measure the topbar pill so we know its horizontal extent
+			var pill = document.querySelector('.db2-topbar');
+			if (pill) {
+				var r = pill.getBoundingClientRect();
+				return r.right + 16; // add a small margin
+			}
+			return 300; // safe fallback
+		}
+
 		function onMouseMove(e) {
 			if (!isDashboard2()) { return; }
+			// Only trigger show/hide logic when mouse is in the horizontal
+			// column of the topbar pill (left side of screen)
+			if (e.clientX > getTopbarRight()) {
+				// Outside the pill column — movement still resets the hide timer
+				// but does NOT show the navbar when it is already hidden
+				if (!body.classList.contains('db2-navbar-hidden')) {
+					scheduleHide();
+				}
+				return;
+			}
 			showNavbar();
-			// Keep navbar visible while cursor is near the top edge
-			if (e.clientY < 15) {
+			// Keep navbar visible while cursor is in the pill zone near the top
+			if (e.clientY < 55) {
 				if (hideTimer) { $timeout.cancel(hideTimer); hideTimer = null; }
 			} else {
 				scheduleHide();
