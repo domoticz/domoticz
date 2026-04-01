@@ -2902,6 +2902,7 @@ namespace http
 				int bEnableTabWeather = 1;
 				int bEnableTabUtility = 1;
 				int bEnableTabCustom = 0;
+				int bEnableTabDashboard2 = 0;
 
 				std::vector<std::vector<std::string>> result;
 				result = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID==%lu)", UserID);
@@ -2915,6 +2916,7 @@ namespace http
 					bEnableTabUtility = (TabsEnabled & (1 << 4));
 					bEnableTabCustom = (TabsEnabled & (1 << 5));
 					bEnableTabFloorplans = (TabsEnabled & (1 << 6));
+					bEnableTabDashboard2 = (TabsEnabled & (1 << 7));
 				}
 
 				if (iDashboardType == 3)
@@ -2930,6 +2932,7 @@ namespace http
 				root["result"]["EnableTabWeather"] = bEnableTabWeather != 0;
 				root["result"]["EnableTabUtility"] = bEnableTabUtility != 0;
 				root["result"]["EnableTabCustom"] = bEnableTabCustom != 0;
+				root["result"]["EnableTabDashboard2"] = bEnableTabDashboard2 != 0;
 
 				if (bEnableTabCustom)
 				{

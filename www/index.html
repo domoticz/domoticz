@@ -1267,21 +1267,11 @@ $(document).ready(function() {
 				<ul class="nav" id="appnavbar">
 					<li ng-show="config.EnableTabDashboard"
 						ng-class="{'current_page_item':getClass('/Dashboard')||getClass('/Dashboard2')}"
-						class="clDashboard dropdown">
-						<a id="cDashboard" class="dropdown-toggle" data-toggle="dropdown">
+						class="clDashboard">
+						<a id="cDashboard" ng-href="{{config.EnableTabDashboard2 ? '#Dashboard2' : '#Dashboard'}}">
 							<img src="images/desktop.png">
 							<span class="hidden-phone hidden-tablet" data-i18n="Dashboard">Dashboard</span>
-							<b class="caret hidden-phone hidden-tablet"></b>
 						</a>
-						<ul class="dropdown-menu">
-							<li ng-class="{'current_page_item':getClass('/Dashboard')}">
-								<a href="#Dashboard"><img src="images/desktop.png"> <span data-i18n="Dashboard">Dashboard</span></a>
-							</li>
-							<li ng-class="{'current_page_item':getClass('/Dashboard2')}"
-								class="hidden-phone">
-								<a href="#Dashboard2"><img src="images/desktop.png"> <span>Dashboard2</span></a>
-							</li>
-						</ul>
 					</li>
 					<li ng-show="config.EnableTabFloorplans" ng-class="{'current_page_item':getClass('/Floorplans')}" class="clFloorplans"><a id="cFloorplans" href="#Floorplans"><img src="images/house.png"> <span class="hidden-phone hidden-tablet" data-i18n="Floorplan">Floorplan</span></a></li>
 					<li ng-show="config.EnableTabLights" ng-class="{'current_page_item':getClass('/LightSwitches')}" class="clLightSwitches"><a id="cLightSwitches" href="#LightSwitches"><img src="images/lightbulb.png"> <span class="hidden-phone hidden-tablet" data-i18n="Switches">Switches</span></a></li>

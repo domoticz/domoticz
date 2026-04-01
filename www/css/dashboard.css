@@ -8,6 +8,41 @@
  * See doc/Theming.wiki for the full variable reference.
  */
 
+/* ── Dashboard2 Widget Color Tokens ───────────────────────────
+   Override these in a custom theme to restyle the widgets.
+   ─────────────────────────────────────────────────────────────*/
+:root {
+    /* Energy value colors */
+    --dz-widget-energy-import:   #ffb300;
+    --dz-widget-energy-export:   #66bb6a;
+    --dz-widget-energy-price:    #c8a0ff;
+    --dz-widget-energy-solar:    #ffd54f;
+    --dz-widget-energy-gas:      #ff7043;
+    --dz-widget-energy-water:    #43a4d3;
+    --dz-widget-energy-battery:  #43a4d3;
+    --dz-widget-energy-net-pos:  #66bb6a;
+    --dz-widget-energy-net-neg:  #ef5350;
+
+    /* Stat card surface */
+    --dz-widget-stat-surface:    rgba(255,255,255,0.05);
+    --dz-widget-stat-radius:     8px;
+    --dz-widget-stat-muted:      rgba(255,255,255,0.55);
+
+    /* RSS widget */
+    --dz-widget-rss-accent:      #43a4d3;
+    --dz-widget-rss-link:        #7bbfff;
+
+    /* Weather forecast widget */
+    --dz-widget-weather-sun:     #ffd54f;
+    --dz-widget-weather-rain:    #43a4d3;
+    --dz-widget-weather-cloud:   #90a4ae;
+    --dz-widget-weather-snow:    #e0f7fa;
+    --dz-widget-weather-storm:   #ef5350;
+
+    /* Moon phase widget */
+    --dz-widget-moon-color:      #e0d8c8;
+}
+
 /* ── Container ────────────────────────────────────────────── */
 .db2-page {
     position: relative;
@@ -235,7 +270,7 @@ body.db2-navbar-hidden .db2-topbar {
     bottom: 0;
     width: 320px;
     background: var(--dz-panel-bg);
-    color: var(--dz-panel-text);
+    color: var(--dz-body-text);
     border-left: 1px solid rgba(255,255,255,0.08);
     box-shadow: -4px 0 16px var(--dz-widget-shadow);
     z-index: 1050;
@@ -312,7 +347,7 @@ body.db2-navbar-hidden .db2-topbar {
     cursor: pointer;
     transition: background 0.15s;
     margin-bottom: 2px;
-    color: var(--dz-panel-text);
+    color: var(--dz-body-text);
 }
 
 .db2-library-item:hover {
@@ -631,7 +666,6 @@ body.db2-navbar-hidden .db2-topbar {
 .db2-stat-label {
     font-size: 0.8em;
     color: var(--dz-body-text);
-    opacity: 0.7;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     margin-bottom: 4px;
@@ -647,7 +681,6 @@ body.db2-navbar-hidden .db2-topbar {
 .db2-stat-unit {
     font-size: 1em;
     color: var(--dz-body-text);
-    opacity: 0.7;
     margin-top: 2px;
 }
 
@@ -734,6 +767,77 @@ body.db2-navbar-hidden .db2-topbar {
     text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
+/* ── Weather Widget — forecast card style ─────────────────── */
+.db2-weather-forecast-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    background: var(--dz-widget-stat-surface);
+    border-radius: var(--dz-widget-stat-radius);
+}
+
+.db2-fc-label {
+    font-size: 0.85em;
+    color: var(--dz-body-text);
+    margin-bottom: 4px;
+    position: relative;
+    z-index: 1;
+}
+
+.db2-fc-value {
+    font-size: 2em;
+    font-weight: 300;
+    margin: 4px 0;
+    color: var(--dz-body-text);
+    position: relative;
+    z-index: 1;
+}
+
+.db2-fc-unit {
+    font-size: 0.6em;
+    vertical-align: super;
+}
+
+.db2-fc-sub {
+    font-size: 0.82em;
+    color: var(--dz-body-text);
+    text-align: center;
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
+}
+
+/* Energy Dashboard weather card animation: same offset/opacity as Weather widget Style 2 */
+.db2-stat-card .fc-weather-icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: translate(20px, 12px);
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+/* Style 2 animation: offset 20px right / 12px down, reduced opacity so text stays readable */
+.db2-weather-forecast-card .fc-weather-icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: translate(20px, 12px);
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+/* The weather widget body already has padding:0 via .db2-widget--weather > .db2-widget-body.
+   The db2-weather-fc-style class on the inner .db2-weather div is used by sub-elements only. */
+
 /* ── Sun Info ─────────────────────────────────────────────── */
 .db2-sun {
     height: 100%;
@@ -812,6 +916,48 @@ body.db2-navbar-hidden .db2-topbar {
     padding: 0 !important;
     overflow: hidden !important;
     background: transparent !important;
+}
+
+.db2-widget--kwh-summary,
+.db2-widget--gas-summary,
+.db2-widget--p1-electricity,
+.db2-widget--battery-status,
+.db2-widget--energy-dashboard,
+.db2-widget--self-sufficiency,
+.db2-widget--setpoint,
+.db2-widget--combo-thermostat,
+.db2-widget--thermostat6 {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.edit-mode .db2-widget--kwh-summary,
+.edit-mode .db2-widget--gas-summary,
+.edit-mode .db2-widget--p1-electricity,
+.edit-mode .db2-widget--battery-status,
+.edit-mode .db2-widget--energy-dashboard,
+.edit-mode .db2-widget--self-sufficiency,
+.edit-mode .db2-widget--setpoint,
+.edit-mode .db2-widget--combo-thermostat,
+.edit-mode .db2-widget--thermostat6 {
+    background: var(--dz-panel-bg) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    box-shadow: var(--dz-widget-shadow) !important;
+}
+
+.db2-widget--kwh-summary > .db2-widget-body,
+.db2-widget--gas-summary > .db2-widget-body,
+.db2-widget--p1-electricity > .db2-widget-body,
+.db2-widget--battery-status > .db2-widget-body,
+.db2-widget--energy-dashboard > .db2-widget-body,
+.db2-widget--self-sufficiency > .db2-widget-body,
+.db2-widget--setpoint > .db2-widget-body,
+.db2-widget--combo-thermostat > .db2-widget-body,
+.db2-widget--thermostat6 > .db2-widget-body {
+    background: transparent !important;
+    padding: 4px !important;
+    overflow: hidden !important;
 }
 
 .db2-dz-device,
@@ -1854,3 +2000,333 @@ body.db2-navbar-hidden .db2-topbar {
     font-size: 12px;
     padding: 8px 12px;
 }
+
+/* ── Stat Card (shared by energy summary widgets) ── */
+.db2-stat-card {
+    text-align: center;
+    padding: 8px 12px;
+    background: var(--dz-widget-stat-surface);
+    border-radius: var(--dz-widget-stat-radius);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    box-sizing: border-box;
+    overflow: hidden;
+    position: relative;
+}
+.db2-stat-label {
+    font-size: 0.85em;
+    color: var(--dz-body-text);
+    margin-bottom: 2px;
+}
+.db2-stat-value {
+    font-size: 1.9em;
+    font-weight: bold;
+    line-height: 1.1;
+}
+.db2-stat-line {
+    font-size: 1.3em;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.db2-stat-sub {
+    font-size: 0.82em;
+    color: var(--dz-body-text);
+    margin-top: 2px;
+    line-height: 1.5;
+}
+.db2-energy-import  { color: var(--dz-widget-energy-import); }
+.db2-energy-export  { color: var(--dz-widget-energy-export); }
+.db2-energy-price   { color: var(--dz-widget-energy-price);  }
+.db2-energy-solar   { color: var(--dz-widget-energy-solar);  }
+.db2-energy-gas     { color: var(--dz-widget-energy-gas);    }
+.db2-energy-battery { color: var(--dz-widget-energy-battery); }
+
+/* ── Energy Dashboard widget — cards row ── */
+.db2-fc-conditions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    align-items: stretch;
+    padding: 2px 0 4px;
+}
+.db2-fc-conditions .db2-stat-card {
+    min-width: 120px;
+    flex: 1 1 120px;
+    max-width: 200px;
+    height: auto;
+}
+.db2-fc-conditions .db2-stat-card--wide {
+    min-width: 160px;
+    flex: 1.5 1 160px;
+    max-width: 260px;
+}
+
+/* ── Energy Balance Bar (self-sufficiency widget) ── */
+.db2-balance {
+    font-size: 0.82em;
+    color: var(--dz-body-text);
+    padding: 5px 10px;
+    background: var(--dz-widget-stat-surface);
+    border-radius: 6px;
+    border-left: 3px solid var(--dz-widget-energy-battery);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px 20px;
+    height: 100%;
+    box-sizing: border-box;
+}
+.db2-balance-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+}
+.db2-balance-stats span {
+    color: var(--dz-body-text);
+    font-weight: bold;
+}
+.db2-balance-time {
+    white-space: nowrap;
+    color: var(--dz-body-text);
+    font-size: 0.9em;
+}
+.db2-balance-bar-wrap {
+    width: 100%;
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 6px;
+}
+.db2-balance-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--dz-widget-energy-net-neg), var(--dz-widget-energy-import), var(--dz-widget-energy-export));
+    transition: width 0.5s ease;
+}
+
+/* ── Setpoint Widget ──────────────────────────────────────── */
+.db2-setpoint {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 8px;
+    padding: 8px;
+}
+.db2-setpoint-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+.db2-setpoint-value {
+    font-size: 1.8em;
+    font-weight: bold;
+    cursor: pointer;
+    min-width: 80px;
+    text-align: center;
+    color: var(--dz-widget-energy-battery);
+}
+.db2-setpoint-value:hover {
+    opacity: 0.8;
+}
+.db2-setpoint-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--dz-widget-stat-muted);
+    background: transparent;
+    cursor: pointer;
+    font-size: 1.2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dz-body-text);
+    transition: border-color 0.15s, opacity 0.15s;
+}
+.db2-setpoint-btn:hover:not(:disabled) {
+    border-color: var(--dz-widget-energy-battery);
+    color: var(--dz-widget-energy-battery);
+}
+.db2-setpoint-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* ── Text Sensor Widget ───────────────────────────────────── */
+.db2-text-sensor {
+    padding: 8px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.db2-text-sensor-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+.db2-text-sensor-title {
+    font-size: 0.85em;
+    color: var(--dz-widget-stat-muted);
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+.db2-text-sensor-content {
+    flex: 1;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.5;
+}
+.db2-text-sensor-updated {
+    font-size: 0.75em;
+    color: var(--dz-widget-stat-muted);
+    margin-top: 4px;
+}
+
+/* ── RSS Feed Widget ──────────────────────────────────────── */
+.db2-rss { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
+.db2-rss-header { font-size: 0.9em; font-weight: 600; color: var(--dz-widget-rss-accent); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+.db2-rss-list { flex: 1; overflow-y: auto; }
+.db2-rss-item { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08); align-items: flex-start; }
+.db2-rss-item:last-child { border-bottom: none; }
+.db2-rss-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+.db2-rss-item-body { flex: 1; min-width: 0; }
+.db2-rss-item-title { font-size: 0.85em; color: inherit; text-decoration: none; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.db2-rss-item-title:hover { color: var(--dz-widget-rss-link); }
+.db2-rss-item-meta { font-size: 0.75em; color: var(--dz-widget-stat-muted); margin-top: 2px; }
+.db2-rss-link-icon { color: var(--dz-widget-rss-link); font-size: 0.8em; flex-shrink: 0; }
+/* Single item mode */
+.db2-rss-single-img { width: 100%; max-height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 8px; }
+.db2-rss-single-title { font-size: 1em; font-weight: 600; margin-bottom: 6px; }
+.db2-rss-single-excerpt { font-size: 0.82em; color: var(--dz-widget-stat-muted); line-height: 1.5; flex: 1; overflow: hidden; }
+
+/* ── Weather Forecast Widget ──────────────────────────────── */
+.db2-forecast { height: 100%; display: flex; flex-direction: column; padding: 4px 8px; overflow: hidden; }
+.db2-forecast-header { font-size: 0.9em; font-weight: 600; margin-bottom: 4px; }
+.db2-forecast-grid { display: flex; flex: 1; gap: 2px; overflow: hidden; align-items: stretch; }
+.db2-forecast-day { flex: 1; min-width: 50px; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 2px; text-align: center; justify-content: center; }
+.db2-forecast-dayname { font-size: 0.78em; font-weight: 600; color: var(--dz-widget-stat-muted); }
+.db2-forecast-day > i { font-size: 1.2em; }
+.db2-forecast-temps { font-size: 0.8em; white-space: nowrap; }
+.db2-forecast-precip { font-size: 0.72em; color: var(--dz-widget-weather-rain); }
+.db2-forecast-wind { font-size: 0.72em; color: var(--dz-widget-stat-muted); }
+.db2-forecast-error { font-size: 0.8em; color: var(--dz-widget-energy-net-neg); margin-top: 8px; }
+
+/* ── Domoticz Log Widget ──────────────────────────────────── */
+.db2-log { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+.db2-log-header { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.db2-log-title { font-size: 0.9em; font-weight: 600; }
+.db2-log-filters { display: flex; gap: 4px; align-items: center; }
+.db2-log-filter-btn { padding: 2px 6px; border-radius: 4px; border: 1px solid currentColor; background: transparent; cursor: pointer; font-size: 0.75em; opacity: 0.5; }
+.db2-log-filter-btn.active { opacity: 1; background: currentColor; }
+.db2-log-filter-btn.active span { color: #000; }
+.db2-log-filter-normal { color: var(--dz-body-text); }
+.db2-log-filter-status { color: var(--dz-widget-rss-accent); }
+.db2-log-filter-error  { color: var(--dz-widget-energy-net-neg); }
+.db2-log-filter-error-alert { color: var(--dz-widget-energy-net-neg); }
+.db2-log-list { flex: 1; overflow-y: auto; font-size: 0.78em; font-family: monospace; }
+.db2-log-entry { padding: 2px 8px; display: flex; gap: 8px; }
+.db2-log-entry:hover { background: rgba(255,255,255,0.05); }
+.db2-log-time { color: var(--dz-widget-stat-muted); flex-shrink: 0; }
+.db2-log-level { flex-shrink: 0; min-width: 50px; }
+.db2-log-msg { flex: 1; word-break: break-word; }
+.db2-log-entry-normal .db2-log-level { color: var(--dz-body-text); }
+.db2-log-entry-status .db2-log-level { color: var(--dz-widget-rss-accent); }
+.db2-log-entry-error  .db2-log-level { color: var(--dz-widget-energy-net-neg); }
+
+/* ── Moon Phase Widget ────────────────────────────────────── */
+.db2-moon { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; text-align: center; gap: 4px; }
+.db2-moon-title { font-size: 0.8em; color: var(--dz-widget-stat-muted); }
+.db2-moon-emoji { font-size: 3em; line-height: 1.1; color: var(--dz-widget-moon-color); }
+.db2-moon-phase { font-size: 0.9em; font-weight: 600; }
+.db2-moon-illumination { font-size: 0.8em; color: var(--dz-widget-stat-muted); }
+.db2-moon-next { font-size: 0.8em; color: var(--dz-widget-stat-muted); margin-top: 4px; }
+
+/* ── Kiosk mode ───────────────────────────────────────────── */
+.db2-kiosk-progress {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    z-index: 9999;
+}
+
+.db2-kiosk-progress-fill {
+    height: 100%;
+    background: var(--dz-widget-energy-battery);
+    transition: width 1s linear;
+}
+
+/* Kiosk button: accent when kiosk is running */
+.db2-topbar-btn.db2-topbar-kiosk-active {
+    color: #fff !important;
+    background: var(--dz-widget-energy-battery) !important;
+    border-radius: 10px;
+}
+
+/* ── Google Calendar Widget ───────────────────────────────── */
+.db2-calendar { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
+.db2-calendar-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; font-weight: 600; margin-bottom: 8px; flex-shrink: 0; }
+.db2-calendar-month { font-size: 0.85em; color: var(--dz-widget-stat-muted); }
+.db2-calendar-body { flex: 1; overflow-y: auto; }
+.db2-calendar-group { margin-bottom: 10px; }
+.db2-calendar-day-label { font-size: 0.75em; font-weight: 700; text-transform: uppercase; color: var(--dz-widget-rss-accent); margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 2px; }
+.db2-calendar-event { display: flex; gap: 8px; padding: 3px 0; font-size: 0.85em; align-items: baseline; }
+.db2-calendar-time { flex-shrink: 0; min-width: 45px; color: var(--dz-widget-stat-muted); font-size: 0.9em; }
+.db2-calendar-allday { font-style: italic; }
+.db2-calendar-title { flex: 1; }
+.db2-calendar-past { opacity: 0.5; }
+.db2-calendar-empty { font-size: 0.85em; color: var(--dz-widget-stat-muted); text-align: center; margin-top: 16px; }
+
+/* ── Battery Monitor Widget ───────────────────────────────── */
+.db2-battery-monitor { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
+.db2-battery-monitor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-shrink: 0; }
+.db2-battery-monitor-title { font-size: 0.9em; font-weight: 600; }
+.db2-battery-monitor-badge { font-size: 0.75em; padding: 2px 7px; border-radius: 10px; background: var(--dz-widget-energy-net-neg); color: #fff; }
+.db2-battery-monitor-badge.ok { background: var(--dz-widget-energy-export); }
+.db2-battery-monitor-list { flex: 1; overflow-y: auto; }
+.db2-battery-monitor-row { display: flex; align-items: center; gap: 8px; padding: 4px 2px; font-size: 0.85em; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.db2-battery-monitor-row:last-child { border-bottom: none; }
+.db2-battery-monitor-icon { width: 20px; text-align: center; font-size: 1em; flex-shrink: 0; }
+.db2-battery-monitor-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.db2-battery-monitor-level { flex-shrink: 0; font-weight: 600; min-width: 36px; text-align: right; }
+.db2-battery-monitor-ok { text-align: center; padding: 16px; color: var(--dz-widget-energy-export); font-size: 0.9em; }
+
+/* ── Screen Standby Mode ──────────────────────────────────── */
+body.db2-standby .db2-page {
+    opacity: var(--db2-standby-opacity, 0.05);
+    transition: opacity 2s ease;
+    pointer-events: none;
+}
+
+body.db2-standby::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: #000;
+    opacity: 0.95;
+    z-index: 9998;
+    cursor: pointer;
+}
+
+/* ── Gauge Widget ─────────────────────────────────────────── */
+.db2-gauge-wrap { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; }
+.db2-gauge-svg-wrap { position: relative; width: 100%; max-width: 140px; }
+.db2-gauge-svg { width: 100%; height: auto; display: block; }
+.db2-gauge-bg { stroke: rgba(255,255,255,0.1); }
+.db2-gauge-fill { transition: stroke-dasharray 0.6s ease, stroke 0.4s ease; }
+.db2-gauge-value { position: absolute; bottom: 0; left: 0; right: 0; text-align: center; font-size: 1.1em; font-weight: 600; line-height: 1; padding-bottom: 4px; }
+.db2-gauge-title { margin-bottom: 4px; }

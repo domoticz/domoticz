@@ -66,6 +66,9 @@ define(['app'], function (app) {
 			if ($('#usercontent #userparamstable #EnableTabFloorplans').is(":checked")) {
 				csettings.TabsEnabled |= (1 << 6);
 			}
+			if ($('#usercontent #userparamstable #combodashboardtype').val() === '1') {
+				csettings.TabsEnabled |= (1 << 7);
+			}
 			return csettings;
 		}
 
@@ -90,6 +93,10 @@ define(['app'], function (app) {
 						ShowNotify(data.message, 2500, true);
 						return;
 					}
+					// Persist dashboard type to localStorage so navbar updates immediately
+					// (before backend recompile exposes EnableTabDashboard2 in getconfig)
+					var isDynamic = ($('#usercontent #userparamstable #combodashboardtype').val() === '1');
+					try { localStorage.setItem('dz_use_dashboard2_' + csettings.username, isDynamic ? '1' : '0'); } catch(e) {}
 					RefreshUserTable();
 				},
 				error: function () {
@@ -342,6 +349,7 @@ define(['app'], function (app) {
 						$('#usercontent #userparamstable #EnableTabUtility').prop('checked', (EnabledTabs & 16));
 						$('#usercontent #userparamstable #EnableTabCustom').prop('checked', (EnabledTabs & 32));
 						$('#usercontent #userparamstable #EnableTabFloorplans').prop('checked', (EnabledTabs & 64));
+						$('#usercontent #userparamstable #combodashboardtype').val((EnabledTabs & 128) ? '1' : '0');
 					}
 				}
 			});

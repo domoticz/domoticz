@@ -381,6 +381,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		$rootScope.currentyear = new Date().getFullYear();
 		$rootScope.config = {
 			EnableTabDashboard: false,
+			EnableTabDashboard2: false,
 			EnableTabFloorplans: false,
 			EnableTabLights: false,
 			EnableTabScenes: false,
@@ -441,9 +442,16 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.EnableTabTemp = data.result.EnableTabTemp;
 						$rootScope.config.EnableTabWeather = data.result.EnableTabWeather;
 						$rootScope.config.EnableTabUtility = data.result.EnableTabUtility;
+						$rootScope.config.EnableTabDashboard2 = data.result.EnableTabDashboard2 || false;
 						$rootScope.config.ShowUpdatedEffect = data.result.ShowUpdatedEffect;
 						if (typeof data.UserName != 'undefined') {
 							$rootScope.config.userName = data.UserName;
+							// localStorage fallback until backend exposes EnableTabDashboard2 via getconfig
+							if (!$rootScope.config.EnableTabDashboard2) {
+								try {
+									$rootScope.config.EnableTabDashboard2 = localStorage.getItem('dz_use_dashboard2_' + data.UserName) === '1';
+								} catch(e) {}
+							}
 							$rootScope.config.appversion = data.version;
 							$rootScope.config.apphash = data.hash;
 							$rootScope.config.appdate = data.build_time;
