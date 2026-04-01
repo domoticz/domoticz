@@ -328,6 +328,7 @@
                     dataIsValid: function (data) {
                         return data.delivered === true;
                     },
+					postprocessDatapoints: negateDatapoints,
 					label: 'C',
 					series: {
 						type: 'column',
@@ -384,7 +385,6 @@
                     },
                     showWithoutDatapoints: false,
                     //convertZeroToNull: true,
-                    postprocessDatapoints: negateDatapoints,
                     label: 'R',
                     template: {
 						type: 'area',
@@ -419,7 +419,6 @@
                         return data.delivered === true;
                     },
                     showWithoutDatapoints: false,
-                    postprocessDatapoints: negateDatapoints,
                     label: 'R',
                     template: {
 						type: 'area',
@@ -444,7 +443,6 @@
                         return data.delivered === true;
                     },
                     showWithoutDatapoints: false,
-                    postprocessDatapoints: negateDatapoints,
                     label: 'S',
                     template: {
 						type: 'area',
