@@ -20,7 +20,7 @@ define([
         maxW:        12,
         maxH:        20,
         configSchema: [
-            { key: 'planIdx', type: 'number', label: 'Plan / Room ID', required: true },
+            { key: 'planIdx', type: 'plan-picker', label: 'Room / Plan', required: true },
             { key: 'title',   type: 'text',   label: 'Custom Title',   required: false }
         ]
     });
@@ -80,6 +80,11 @@ define([
                 $scope.$on('device_update', load);
                 $scope.$on('scene_update',  load);
                 $scope.$on('db2:widget:refresh', load);
+
+                $scope.$watch(
+                    function() { return ctrl.widgetDef && ctrl.widgetDef.config && ctrl.widgetDef.config.planIdx; },
+                    function(val, old) { if (val !== old) { load(); } }
+                );
 
                 var timer = $interval(load, 60000);
                 $scope.$on('$destroy', function() { $interval.cancel(timer); });
