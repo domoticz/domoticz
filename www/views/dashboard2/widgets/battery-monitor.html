@@ -1,0 +1,57 @@
+<div class="db2-battery-monitor">
+
+    <!-- Header -->
+    <div class="db2-battery-monitor-header">
+        <span class="db2-battery-monitor-title" ng-bind="ctrl.title"></span>
+        <span ng-if="ctrl.count > 0"
+              class="db2-battery-monitor-badge">
+            {{ctrl.count}} low
+        </span>
+        <span ng-if="ctrl.count === 0 && !ctrl.loading && !ctrl.loadError"
+              class="db2-battery-monitor-badge ok">
+            All OK
+        </span>
+    </div>
+
+    <!-- Loading state -->
+    <div ng-if="ctrl.loading && !ctrl.devices.length"
+         class="db2-chart-unconfigured">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+    </div>
+
+    <!-- Error state -->
+    <div ng-if="ctrl.loadError && !ctrl.loading && !ctrl.devices.length"
+         class="db2-chart-unconfigured">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <p>Could not load devices</p>
+    </div>
+
+    <!-- All OK state (showFull = false, no devices below threshold) -->
+    <div ng-if="!ctrl.loading && !ctrl.loadError && ctrl.count === 0 && !ctrl.widgetDef.config.showFull"
+         class="db2-battery-monitor-ok">
+        <i class="fa-solid fa-circle-check"></i>
+        <div>All batteries OK</div>
+        <div style="font-size: 0.8em; opacity: 0.65; margin-top: 4px;">
+            {{ctrl.totalWithBattery}} device<span ng-if="ctrl.totalWithBattery !== 1">s</span> monitored
+        </div>
+    </div>
+
+    <!-- Device list -->
+    <div class="db2-battery-monitor-list"
+         ng-if="!ctrl.loading && !ctrl.loadError && ctrl.devices.length > 0">
+        <div class="db2-battery-monitor-row"
+             ng-repeat="device in ctrl.devices track by device.idx">
+            <span class="db2-battery-monitor-icon"
+                  ng-style="{ color: ctrl.levelColor(device.level) }">
+                <i class="fa-solid {{ctrl.levelIcon(device.level)}}"></i>
+            </span>
+            <span class="db2-battery-monitor-name"
+                  title="{{device.name}}">{{device.name}}</span>
+            <span class="db2-battery-monitor-level"
+                  ng-style="{ color: ctrl.levelColor(device.level) }">
+                {{device.level}}%
+            </span>
+        </div>
+    </div>
+
+</div>

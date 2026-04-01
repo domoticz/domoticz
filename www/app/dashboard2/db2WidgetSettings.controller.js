@@ -74,6 +74,39 @@ define([
                                        (d.Type && (d.Type.indexOf('Baro') >= 0 || d.Type === 'Barometer')) ||
                                        (d.SubType && d.SubType.indexOf('Barometer') >= 0);
                             }
+                            if (filter === 'rain') {
+                                return d.Type === 'Rain';
+                            }
+                            if (filter === 'setpoint') {
+                                var sub = (d.SubType || '').toLowerCase();
+                                return sub === 'setpoint' || sub === 'set point';
+                            }
+                            if (filter === 'thermostat6') {
+                                return (d.Type || '') === 'Thermostat 6';
+                            }
+                            if (filter === 'kwh') {
+                                var t = d.Type || '';
+                                var st = d.SubType || '';
+                                return (t === 'General' && st === 'kWh') ||
+                                       (t.indexOf('Meter') >= 0 && (d.SwitchTypeVal === 0 || d.SwitchTypeVal === 4));
+                            }
+                            if (filter === 'gas') {
+                                return (d.Type || '').indexOf('Meter') >= 0 && d.SwitchTypeVal === 1;
+                            }
+                            if (filter === 'p1') {
+                                return d.Type === 'P1 Smart Meter';
+                            }
+                            if (filter === 'counter') {
+                                var t = d.Type || '';
+                                var st = d.SubType || '';
+                                return t.indexOf('Meter') >= 0 ||
+                                       t === 'Cube Electric' ||
+                                       (t === 'General' && (
+                                           st === 'kWh' ||
+                                           st === 'Counter Incremental' ||
+                                           st === 'Managed Counter'
+                                       ));
+                            }
                             return true;
                         }) : all;
                         $scope.deviceListByField[field.key] = sortByLabel(filtered);
@@ -93,6 +126,18 @@ define([
                 .then(function(resp) {
                     $scope.scenes = (resp.data && resp.data.result) || [];
                 });
+        }
+
+        // Lazy-load plan list only if a plan-picker field is present
+        var needsPlans = (descriptor.configSchema || []).some(function(f) {
+            return f.type === 'plan-picker';
+        });
+        if (needsPlans) {
+            $http.get('json.htm?type=command&param=getplans&order=name&used=true')
+                .then(function(resp) {
+                    $scope.plans = (resp.data && resp.data.result) || [];
+                })
+                .catch(function() { $scope.plans = []; });
         }
 
         // Lazy-load camera list only if a camera-picker field is present

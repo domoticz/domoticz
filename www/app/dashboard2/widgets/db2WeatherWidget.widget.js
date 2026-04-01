@@ -38,6 +38,16 @@ define([
                 label:        'Barometer device',
                 required:     false,
                 deviceFilter: 'baro'
+            },
+            {
+                key:     'displayStyle',
+                type:    'select',
+                label:   'Display style',
+                options: [
+                    { value: 'compact',  label: 'Style 1' },
+                    { value: 'forecast', label: 'Style 2' }
+                ],
+                default: 'compact'
             }
         ]
     });
@@ -65,8 +75,37 @@ define([
                 ctrl.weatherScene  = 'fcw-cloudy';
                 ctrl.tempSign      = ($rootScope.config && $rootScope.config.TempSign) || 'C';
                 ctrl.windUnit      = ($rootScope.config && $rootScope.config.WindSign)  || 'm/s';
+                ctrl.isNight       = false;
+                ctrl.sunrise       = '';
+                ctrl.sunset        = '';
+                ctrl.dewPoint      = null;
+                ctrl.displayStyle  = 'compact';
 
                 var cancelTokens = [];
+                var nightTimer   = null;
+
+                function computeIsNight(sunriseStr, sunsetStr) {
+                    var toMinutes = function(s) {
+                        var p = s.split(':');
+                        return parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
+                    };
+                    var now    = new Date();
+                    var nowMin = now.getHours() * 60 + now.getMinutes();
+                    return nowMin < toMinutes(sunriseStr) || nowMin >= toMinutes(sunsetStr);
+                }
+
+                function loadSunRiseSet() {
+                    $http.get('json.htm', {
+                        params: { type: 'command', param: 'getSunRiseSet' }
+                    }).then(function(resp) {
+                        var d = resp.data;
+                        if (d && d.Sunrise && d.Sunset) {
+                            ctrl.sunrise = d.Sunrise;
+                            ctrl.sunset  = d.Sunset;
+                            ctrl.isNight = computeIsNight(d.Sunrise, d.Sunset);
+                        }
+                    });
+                }
 
                 ctrl.getWeatherScene = function(forecastStr) {
                     if (!forecastStr) { return 'fcw-cloudy'; }
@@ -108,10 +147,25 @@ define([
                     cancelAll();
                     var cfg = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
 
+                    ctrl.displayStyle = cfg.displayStyle || 'compact';
+
                     loadDevice(cfg.tempIdx, function(d) {
                         ctrl.temperature = (d.Temp !== undefined) ? d.Temp : '\u2014';
                         ctrl.humidity    = d.Humidity || null;
                         ctrl.description = d.HumidityStatus || d.Forecast || '';
+
+                        // Extract dew point: prefer device field, fall back to Magnus formula
+                        if (d.DewPoint !== undefined && d.DewPoint !== null) {
+                            ctrl.dewPoint = parseFloat(d.DewPoint);
+                        } else if (d.Temp !== undefined && d.Humidity) {
+                            var temp     = parseFloat(d.Temp);
+                            var humidity = parseFloat(d.Humidity);
+                            if (!isNaN(temp) && !isNaN(humidity) && humidity > 0) {
+                                var a     = 17.27, b = 237.7;
+                                var alpha = (a * temp / (b + temp)) + Math.log(humidity / 100);
+                                ctrl.dewPoint = (b * alpha) / (a - alpha);
+                            }
+                        }
                     });
 
                     loadDevice(cfg.windIdx, function(d) {
@@ -133,6 +187,18 @@ define([
                         ctrl.temperature = (updated.Temp !== undefined) ? updated.Temp : '\u2014';
                         ctrl.humidity    = updated.Humidity || null;
                         ctrl.description = updated.HumidityStatus || updated.Forecast || '';
+
+                        if (updated.DewPoint !== undefined && updated.DewPoint !== null) {
+                            ctrl.dewPoint = parseFloat(updated.DewPoint);
+                        } else if (updated.Temp !== undefined && updated.Humidity) {
+                            var temp     = parseFloat(updated.Temp);
+                            var humidity = parseFloat(updated.Humidity);
+                            if (!isNaN(temp) && !isNaN(humidity) && humidity > 0) {
+                                var a     = 17.27, b = 237.7;
+                                var alpha = (a * temp / (b + temp)) + Math.log(humidity / 100);
+                                ctrl.dewPoint = (b * alpha) / (a - alpha);
+                            }
+                        }
                     }
                     if (cfg.windIdx && id === String(cfg.windIdx)) {
                         ctrl.windSpeed     = updated.Speed;
@@ -147,23 +213,34 @@ define([
 
                 var timer = $interval(load, 60000);
 
+                // Re-evaluate isNight every minute (sunrise/sunset data loaded once on init)
+                nightTimer = $interval(function() {
+                    if (ctrl.sunrise && ctrl.sunset) {
+                        ctrl.isNight = computeIsNight(ctrl.sunrise, ctrl.sunset);
+                    }
+                }, 60000);
+
                 $scope.$on('$destroy', function() {
                     cancelAll();
                     $interval.cancel(timer);
+                    if (nightTimer) { $interval.cancel(nightTimer); }
                 });
                 $scope.$on('db2:widget:refresh', load);
 
                 $scope.$watch(
                     function() {
                         var cfg = ctrl.widgetDef && ctrl.widgetDef.config;
-                        return cfg ? (cfg.tempIdx + '|' + cfg.windIdx + '|' + cfg.baroIdx) : '';
+                        return cfg ? (cfg.tempIdx + '|' + cfg.windIdx + '|' + cfg.baroIdx + '|' + (cfg.displayStyle || 'compact')) : '';
                     },
                     function(val, old) {
                         if (val !== old) { load(); }
                     }
                 );
 
-                ctrl.$onInit = load;
+                ctrl.$onInit = function() {
+                    load();
+                    loadSunRiseSet();
+                };
             }]
         };
     }]);

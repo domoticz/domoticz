@@ -1,0 +1,33 @@
+<div class="db2-gauge-wrap">
+    <!-- Unconfigured state -->
+    <div ng-if="!ctrl.widgetDef.config.deviceIdx" class="db2-chart-unconfigured">
+        <i class="fa-solid fa-gauge-high"></i>
+        <p>Select a device in settings</p>
+    </div>
+
+    <!-- Configured state -->
+    <div ng-if="ctrl.widgetDef.config.deviceIdx" style="width:100%;display:flex;flex-direction:column;align-items:center;">
+        <div class="db2-gauge-title db2-stat-label" ng-show="ctrl.title">{{ ctrl.title }}</div>
+        <div class="db2-gauge-svg-wrap">
+            <svg viewBox="0 0 100 80" class="db2-gauge-svg">
+                <!-- Background arc -->
+                <circle class="db2-gauge-bg"
+                        cx="50" cy="55" r="40"
+                        fill="none" stroke-width="8"
+                        ng-attr-stroke-dasharray="{{ ctrl.strokeDasharrayBg() }}"
+                        stroke-dashoffset="0"
+                        transform="rotate(160 50 55)"/>
+                <!-- Value arc -->
+                <circle class="db2-gauge-fill"
+                        cx="50" cy="55" r="40"
+                        fill="none" stroke-width="8"
+                        ng-attr-stroke="{{ ctrl.gaugeColor() }}"
+                        ng-attr-stroke-dasharray="{{ ctrl.strokeDasharray() }}"
+                        stroke-dashoffset="0"
+                        transform="rotate(160 50 55)"/>
+            </svg>
+            <!-- Centre value text -->
+            <div class="db2-gauge-value">{{ ctrl.displayValue() }}</div>
+        </div>
+    </div>
+</div>

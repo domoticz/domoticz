@@ -1,0 +1,64 @@
+<div class="db2-log">
+
+    <!-- Header -->
+    <div class="db2-log-header">
+        <span class="db2-log-title" ng-bind="ctrl.title"></span>
+        <div class="db2-log-filters">
+            <button class="db2-log-filter-btn db2-log-filter-normal"
+                    ng-class="{'active': ctrl.isShowNormal()}"
+                    ng-click="ctrl.toggleNormal()"
+                    title="Toggle Normal">
+                <span>N {{ctrl.counts.normal}}</span>
+            </button>
+            <button class="db2-log-filter-btn db2-log-filter-status"
+                    ng-class="{'active': ctrl.isShowStatus()}"
+                    ng-click="ctrl.toggleStatus()"
+                    title="Toggle Status">
+                <span>S {{ctrl.counts.status}}</span>
+            </button>
+            <button class="db2-log-filter-btn db2-log-filter-error"
+                    ng-class="{'active': ctrl.isShowError(), 'db2-log-filter-error-alert': ctrl.counts.error > 0}"
+                    ng-click="ctrl.toggleError()"
+                    title="Toggle Errors">
+                <span>E {{ctrl.counts.error}}</span>
+            </button>
+            <button class="db2-log-filter-btn db2-log-filter-normal"
+                    ng-click="ctrl.load()"
+                    title="Refresh"
+                    style="min-width: 0; padding: 2px 6px;">
+                <span>
+                    <i class="fa-solid fa-arrows-rotate"
+                       ng-class="{'fa-spin': ctrl.loading}"></i>
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading / error states -->
+    <div ng-if="ctrl.loading && !ctrl.allEntries.length"
+         class="db2-chart-unconfigured">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+    </div>
+
+    <div ng-if="ctrl.loadError && !ctrl.loading && !ctrl.allEntries.length"
+         class="db2-chart-unconfigured">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <p>Could not load log</p>
+    </div>
+
+    <!-- Log list -->
+    <div class="db2-log-list" ng-if="ctrl.allEntries.length">
+        <div class="db2-log-entry"
+             ng-class="entry.levelClass"
+             ng-repeat="entry in ctrl.filteredEntries track by $index">
+            <span class="db2-log-time"  ng-bind="entry.timestamp"></span>
+            <span class="db2-log-level" ng-bind="entry.levelLabel"></span>
+            <span class="db2-log-msg"   ng-bind="entry.text"></span>
+        </div>
+        <div ng-if="ctrl.filteredEntries.length === 0 && !ctrl.loading"
+             class="db2-log-entry" style="opacity: 0.5; font-style: italic;">
+            No entries match the active filters
+        </div>
+    </div>
+
+</div>

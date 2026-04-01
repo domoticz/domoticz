@@ -1,0 +1,47 @@
+<div class="db2-calendar">
+
+    <!-- Unconfigured state -->
+    <div ng-if="!ctrl.widgetDef.config.calendarUrl" class="db2-chart-unconfigured">
+        <i class="fa-solid fa-calendar-days"></i>
+        <p>Enter a calendar URL in settings</p>
+    </div>
+
+    <!-- Configured state -->
+    <div ng-if="ctrl.widgetDef.config.calendarUrl" style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
+
+        <!-- Header -->
+        <div class="db2-calendar-header">
+            <span><i class="fa-solid fa-calendar-days"></i> {{ ctrl.title }}</span>
+            <span class="db2-calendar-month">{{ ctrl.currentMonthYear }}</span>
+        </div>
+
+        <!-- Loading -->
+        <div ng-if="ctrl.loading && !ctrl.groups.length" class="db2-chart-unconfigured">
+            <i class="fa fa-spinner fa-spin"></i>
+        </div>
+
+        <!-- Error -->
+        <div ng-if="ctrl.loadError" class="db2-calendar-body">
+            <div class="db2-calendar-empty">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                {{ ctrl.errorMessage || 'Failed to load calendar.' }}
+            </div>
+        </div>
+
+        <!-- Event list -->
+        <div ng-if="!ctrl.loadError" class="db2-calendar-body">
+            <div ng-repeat="group in ctrl.groups" class="db2-calendar-group">
+                <div class="db2-calendar-day-label">{{ group.label }}</div>
+                <div ng-repeat="event in group.events" class="db2-calendar-event">
+                    <span class="db2-calendar-time" ng-if="ctrl.showTime && !event.allDay">{{ event.timeStr }}</span>
+                    <span class="db2-calendar-time db2-calendar-allday" ng-if="event.allDay">All day</span>
+                    <span class="db2-calendar-title" ng-class="{'db2-calendar-past': event.isPast}">{{ event.title }}</span>
+                </div>
+            </div>
+            <div ng-if="!ctrl.groups.length && !ctrl.loading" class="db2-calendar-empty">
+                No upcoming events
+            </div>
+        </div>
+
+    </div>
+</div>

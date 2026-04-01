@@ -1,0 +1,24 @@
+<div class="db2-stat-card">
+    <!-- Unconfigured state -->
+    <div ng-if="!ctrl.widgetDef.config.deviceIdx" class="db2-chart-unconfigured">
+        <i class="fa-solid fa-fire"></i>
+        <p>Select a device in settings</p>
+    </div>
+
+    <!-- Loaded state -->
+    <div ng-if="ctrl.widgetDef.config.deviceIdx">
+        <div class="db2-stat-label" ng-bind="ctrl.title"></div>
+
+        <div ng-if="ctrl.counterToday !== null"
+             class="db2-stat-value db2-energy-gas">
+            <i class="fa-solid fa-fire"></i> {{ctrl.counterToday}}
+        </div>
+        <div ng-if="ctrl.counterToday === null" class="db2-stat-value">
+            &mdash;
+        </div>
+
+        <div ng-if="ctrl.counterTotal !== null" class="db2-stat-sub">
+            Total: {{ctrl.counterTotal}}
+        </div>
+    </div>
+</div>

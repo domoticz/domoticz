@@ -94,6 +94,16 @@
                 <option ng-repeat="s in scenes" value="{{ s.idx }}">{{ s.Name }}</option>
             </select>
 
+            <!-- plan-picker -->
+            <select ng-if="field.type === 'plan-picker'"
+                    class="form-control"
+                    name="field_{{ field.key }}"
+                    ng-model="config[field.key]"
+                    ng-required="field.required">
+                <option value="">— Select Room / Plan —</option>
+                <option ng-repeat="p in plans track by p.idx" value="{{ p.idx }}">{{ p.Name }}</option>
+            </select>
+
             <!-- camera-picker -->
             <select ng-if="field.type === 'camera-picker'"
                     class="form-control input-sm"

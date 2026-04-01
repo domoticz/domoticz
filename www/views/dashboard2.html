@@ -42,11 +42,23 @@
                 title="{{ isFullPage ? 'Show navigation bar' : 'Hide navigation bar' }}">
             <i ng-class="isFullPage ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
         </button>
+        <button type="button" class="btn btn-xs db2-topbar-btn db2-topbar-kiosk"
+                ng-show="layouts.length >= 2"
+                ng-class="{'db2-topbar-kiosk-active': kioskActive}"
+                ng-click="toggleKiosk()"
+                title="{{ kioskActive ? 'Stop kiosk mode (Esc)' : 'Start kiosk mode' }}">
+            <i class="fa" ng-class="kioskActive ? 'fa-stop' : 'fa-play'"></i>
+        </button>
         <button type="button" class="btn btn-xs db2-topbar-btn db2-topbar-edit"
                 ng-click="toggleEditMode()"
                 title="Edit Layout (Ctrl+E)">
             <i class="fa-solid fa-pencil"></i>
         </button>
+    </div>
+
+    <!-- Kiosk progress bar -->
+    <div class="db2-kiosk-progress" ng-show="kioskActive">
+        <div class="db2-kiosk-progress-fill" ng-style="{'width': kioskProgress + '%'}"></div>
     </div>
 
     <!-- Full edit toolbar: only visible in edit mode -->

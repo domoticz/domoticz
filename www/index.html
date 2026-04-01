@@ -1266,9 +1266,9 @@ $(document).ready(function() {
 				<a class="brand hidden-phone" id="version" href="#Dashboard"><img src="images/logo/57.png"><h1>Domoticz</h1> <h2 id="appversion" tooltip-html="{{config.versiontooltip}}" tooltip-placement="right" class="version-tooltip">*</h2></a>
 				<ul class="nav" id="appnavbar">
 					<li ng-show="config.EnableTabDashboard"
-						ng-class="{'current_page_item':getClass('/Dashboard')||getClass('/Dashboard2')}"
+						ng-class="{'current_page_item':getClass('/Dashboard')}"
 						class="clDashboard">
-						<a id="cDashboard" ng-href="{{config.EnableTabDashboard2 ? '#Dashboard2' : '#Dashboard'}}">
+						<a id="cDashboard" href="#Dashboard">
 							<img src="images/desktop.png">
 							<span class="hidden-phone hidden-tablet" data-i18n="Dashboard">Dashboard</span>
 						</a>

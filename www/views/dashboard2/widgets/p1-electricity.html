@@ -1,0 +1,45 @@
+<div class="db2-stat-card">
+    <!-- Unconfigured state -->
+    <div ng-if="!ctrl.widgetDef.config.deviceIdx" class="db2-chart-unconfigured">
+        <i class="fa-solid fa-plug"></i>
+        <p>Select a P1 device in settings</p>
+    </div>
+
+    <!-- Loaded state -->
+    <div ng-if="ctrl.widgetDef.config.deviceIdx">
+        <div class="db2-stat-label" ng-bind="ctrl.title"></div>
+
+        <!-- Exporting: show export watts in export color -->
+        <div ng-if="ctrl.isExporting"
+             class="db2-stat-value db2-energy-export">
+            <i class="fa fa-arrow-up"></i> {{ctrl.exportWatt}} W
+        </div>
+
+        <!-- Importing (or zero): show import watts in import color -->
+        <div ng-if="!ctrl.isExporting"
+             class="db2-stat-value db2-energy-import">
+            <i class="fa fa-arrow-down"></i> {{ctrl.importWatt}} W
+        </div>
+
+        <!-- Today totals -->
+        <div ng-if="ctrl.counterToday !== null || ctrl.counterDelivToday !== null"
+             class="db2-stat-sub">
+            <span ng-if="ctrl.counterToday !== null">
+                &darr; {{ctrl.counterToday}}
+            </span>
+            <span ng-if="ctrl.counterToday !== null && ctrl.counterDelivToday !== null">
+                &nbsp;&bull;&nbsp;
+            </span>
+            <span ng-if="ctrl.counterDelivToday !== null">
+                &uarr; {{ctrl.counterDelivToday}}
+            </span>
+        </div>
+
+        <!-- Price line -->
+        <div ng-if="ctrl.widgetDef.config.showPrice !== false && ctrl.price !== null"
+             class="db2-stat-sub db2-energy-price"
+             style="font-weight: bold; margin-top: 4px;">
+            {{ctrl.price | number:4}} {{$root.config.CurrencySign}}
+        </div>
+    </div>
+</div>

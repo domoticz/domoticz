@@ -23,6 +23,8 @@ define([
     'dashboard2/widgets/db2StatCounter.widget',
     'dashboard2/widgets/db2TemperatureGraph.widget',
     'dashboard2/widgets/db2EnergyChart.widget',
+    'dashboard2/widgets/db2WindChart.widget',
+    'dashboard2/widgets/db2RainChart.widget',
     'dashboard2/widgets/db2IframeEmbed.widget',
     'dashboard2/widgets/db2ImageWidget.widget',
     'dashboard2/widgets/db2CameraFeed.widget',
@@ -30,14 +32,32 @@ define([
     'dashboard2/widgets/db2DzScene.widget',
     'dashboard2/widgets/db2DzFavorites.widget',
     'dashboard2/widgets/db2DzRoom.widget',
-    'dashboard2/widgets/db2HtmlWidget.widget'
+    'dashboard2/widgets/db2HtmlWidget.widget',
+    'dashboard2/widgets/db2KwhSummary.widget',
+    'dashboard2/widgets/db2GasSummary.widget',
+    'dashboard2/widgets/db2P1Electricity.widget',
+    'dashboard2/widgets/db2TextSensor.widget',
+    'dashboard2/widgets/db2BatteryStatus.widget',
+    'dashboard2/widgets/db2Setpoint.widget',
+    'dashboard2/widgets/db2ComboThermostat.widget',
+    'dashboard2/widgets/db2Thermostat6.widget',
+    'dashboard2/widgets/db2RssFeed.widget',
+    'dashboard2/widgets/db2WeatherForecast.widget',
+    'dashboard2/widgets/db2DomoticzLog.widget',
+    'dashboard2/widgets/db2MoonPhase.widget',
+    'dashboard2/widgets/db2GoogleCalendar.widget',
+    'dashboard2/widgets/db2EnergyDashboard.widget',
+    'dashboard2/widgets/db2SelfSufficiency.widget',
+    'dashboard2/widgets/db2CustomChart.widget',
+    'dashboard2/widgets/db2Gauge.widget',
+    'dashboard2/widgets/db2BatteryMonitor.widget'
 ], function(app) {
     'use strict';
 
     app.controller('Dashboard2Controller', [
-        '$scope', '$timeout', '$location', '$uibModal', '$q', '$http',
+        '$scope', '$timeout', '$interval', '$document', '$location', '$uibModal', '$q', '$http',
         'dashboard2Service', 'widgetRegistry', 'db2Toast', 'bootbox',
-        function($scope, $timeout, $location, $uibModal, $q, $http,
+        function($scope, $timeout, $interval, $document, $location, $uibModal, $q, $http,
                  dashboard2Service, widgetRegistry, db2Toast, bootbox) {
 
         // ── State ──────────────────────────────────────────────
@@ -55,12 +75,83 @@ define([
         var _savedDataSnapshot  = null;  // deep copy taken when entering edit mode
         var _body               = document.body;
 
+        // ── Kiosk state ────────────────────────────────────────
+        var LS_KIOSK = 'db2_kiosk';
+        var _kioskDefaults = { enabled: false, layoutIds: [], interval: 30, loop: true };
+        try {
+            $scope.kiosk = angular.extend({}, _kioskDefaults, JSON.parse(localStorage.getItem(LS_KIOSK) || '{}'));
+        } catch(e) {
+            $scope.kiosk = angular.copy(_kioskDefaults);
+        }
+        $scope.kioskActive   = false;
+        $scope.kioskProgress = 0;
+        var _kioskTickTimer  = null;
+        var _kioskLayouts    = [];
+        var _kioskIndex      = 0;
+        var _kioskElapsed    = 0;
+
+        // ── Standby state ───────────────────────────────────────
+        var LS_STANDBY = 'db2_standby';
+        var _standbyDefaults = { enabled: false, timeout: 5, opacity: 5, blackout: false };
+        try {
+            $scope.standby = angular.extend({}, _standbyDefaults, JSON.parse(localStorage.getItem(LS_STANDBY) || '{}'));
+        } catch(e) {
+            $scope.standby = angular.copy(_standbyDefaults);
+        }
+        $scope.standbyActive = false;
+        var _standbyTimer    = null;
+
         // Cycle gridReady false→true so ng-if fully destroys and recreates the grid,
         // ensuring compiled widget cells always reference the current activeData.
         function refreshGrid() {
             $scope.gridReady = false;
             $timeout(function() { $scope.gridReady = true; });
         }
+
+        // ── Standby functions ──────────────────────────────────
+        function enterStandby() {
+            $scope.$apply(function() { $scope.standbyActive = true; });
+            var opacity = $scope.standby.blackout ? 0 : ($scope.standby.opacity / 100);
+            _body.style.setProperty('--db2-standby-opacity', opacity);
+            _body.classList.add('db2-standby');
+        }
+
+        function exitStandby() {
+            _body.classList.remove('db2-standby');
+            $scope.$apply(function() { $scope.standbyActive = false; });
+            resetStandbyTimer();
+        }
+
+        function resetStandbyTimer() {
+            if (_standbyTimer) {
+                $timeout.cancel(_standbyTimer);
+                _standbyTimer = null;
+            }
+            if (!$scope.standby.enabled) { return; }
+            if ($scope.standbyActive) {
+                exitStandby();
+                return;
+            }
+            var ms = Math.max(1, parseInt($scope.standby.timeout, 10) || 5) * 60000;
+            _standbyTimer = $timeout(enterStandby, ms);
+        }
+
+        $scope.saveStandbySettings = function(patch) {
+            angular.extend($scope.standby, patch);
+            try { localStorage.setItem(LS_STANDBY, JSON.stringify($scope.standby)); } catch(e) {}
+            if (_standbyTimer) {
+                $timeout.cancel(_standbyTimer);
+                _standbyTimer = null;
+            }
+            if ($scope.standbyActive) {
+                _body.classList.remove('db2-standby');
+                $scope.standbyActive = false;
+            }
+            if ($scope.standby.enabled) {
+                var ms = Math.max(1, parseInt($scope.standby.timeout, 10) || 5) * 60000;
+                _standbyTimer = $timeout(enterStandby, ms);
+            }
+        };
 
         // ── Private helpers ────────────────────────────────────
         function loadLayout(id) {
@@ -120,7 +211,14 @@ define([
                 var startLayout = (lastId && layouts.find(function(l) { return l.id === lastId; })) ||
                                   layouts.find(function(l) { return l.isDefault; }) ||
                                   layouts[0];
-                return loadLayout(startLayout.id);
+                return loadLayout(startLayout.id).then(function() {
+                    if ($scope.kiosk.enabled && $scope.layouts.length >= 2) {
+                        $timeout(function() { $scope.startKiosk(); }, 0);
+                    }
+                    if ($scope.standby.enabled) {
+                        resetStandbyTimer();
+                    }
+                });
             }).catch(function(err) {
                 $scope.error   = 'Failed to load dashboard';
                 $scope.loading = false;
@@ -131,6 +229,7 @@ define([
         $scope.switchLayout = function(id) {
             try { localStorage.setItem(LS_KEY, id); } catch(e) {}
             loadLayout(id);
+            resetStandbyTimer();
         };
 
         $scope.toggleEditMode = function() {
@@ -250,9 +349,17 @@ define([
                 controller:  'Db2DashboardManagerCtrl',
                 size:        'lg',
                 resolve: {
-                    layouts:   function() { return $scope.layouts; },
-                    currentId: function() { return $scope.activeLayout && $scope.activeLayout.id; },
-                    onSwitch:  function() { return function(id) { $scope.switchLayout(id); }; }
+                    layouts:         function() { return $scope.layouts; },
+                    currentId:       function() { return $scope.activeLayout && $scope.activeLayout.id; },
+                    onSwitch:        function() { return function(id) { $scope.switchLayout(id); }; },
+                    kioskSettings:   function() { return $scope.kiosk; },
+                    onKioskChange:   function() {
+                        return function(settings) { $scope.saveKioskSettings(settings); };
+                    },
+                    standbySettings: function() { return $scope.standby; },
+                    onStandbyChange: function() {
+                        return function(settings) { $scope.saveStandbySettings(settings); };
+                    }
                 }
             }).result.then(function() {
                 // Refresh layout list after the manager closes
@@ -307,7 +414,11 @@ define([
 
         // ── Keyboard shortcuts ────────────────────────────────
         function onKeyDown(e) {
-            // Escape: exit edit mode
+            // Escape: stop kiosk if active, otherwise exit edit mode
+            if (e.keyCode === 27 && $scope.kioskActive) {
+                $scope.$apply(function() { $scope.stopKiosk(); });
+                return;
+            }
             if (e.keyCode === 27 && $scope.editMode) {
                 $scope.$apply(function() { $scope.toggleEditMode(); });
             }
@@ -323,6 +434,12 @@ define([
             }
         }
         document.addEventListener('keydown', onKeyDown);
+
+        // ── Standby activity listeners ────────────────────────
+        var _standbyActivityEvents = ['mousemove', 'touchstart', 'keydown', 'click'];
+        _standbyActivityEvents.forEach(function(ev) {
+            document.addEventListener(ev, resetStandbyTimer, { passive: true });
+        });
 
         // ── Clear all widgets ──────────────────────────────────
         $scope.clearAllWidgets = function() {
@@ -483,10 +600,83 @@ define([
             }).catch(angular.noop);
         };
 
+        // ── Kiosk functions ────────────────────────────────────
+        $scope.saveKioskSettings = function(settings) {
+            angular.extend($scope.kiosk, settings);
+            try { localStorage.setItem(LS_KIOSK, JSON.stringify($scope.kiosk)); } catch(e) {}
+        };
+
+        $scope.startKiosk = function() {
+            if ($scope.kioskActive) { return; }
+
+            var ids = $scope.kiosk.layoutIds && $scope.kiosk.layoutIds.length
+                ? $scope.layouts.filter(function(l) { return $scope.kiosk.layoutIds.indexOf(l.id) !== -1; })
+                : $scope.layouts.slice();
+
+            if (ids.length < 2) { return; }
+            _kioskLayouts = ids;
+
+            // Position index to the current layout
+            var curIdx = _kioskLayouts.findIndex(function(l) {
+                return $scope.activeLayout && l.id === $scope.activeLayout.id;
+            });
+            _kioskIndex   = curIdx !== -1 ? curIdx : 0;
+            _kioskElapsed = 0;
+            $scope.kioskProgress = 0;
+            $scope.kioskActive   = true;
+
+            var intervalSec = Math.max(5, parseInt($scope.kiosk.interval, 10) || 30);
+
+            // Tick every second to update progress
+            _kioskTickTimer = $interval(function() {
+                _kioskElapsed++;
+                $scope.kioskProgress = Math.min(100, Math.round((_kioskElapsed / intervalSec) * 100));
+
+                if (_kioskElapsed >= intervalSec) {
+                    _kioskElapsed = 0;
+                    $scope.kioskProgress = 0;
+                    _kioskIndex++;
+                    if (_kioskIndex >= _kioskLayouts.length) {
+                        if ($scope.kiosk.loop) {
+                            _kioskIndex = 0;
+                        } else {
+                            $scope.stopKiosk();
+                            return;
+                        }
+                    }
+                    $scope.switchLayout(_kioskLayouts[_kioskIndex].id);
+                }
+            }, 1000);
+        };
+
+        $scope.stopKiosk = function() {
+            if (_kioskTickTimer) {
+                $interval.cancel(_kioskTickTimer);
+                _kioskTickTimer = null;
+            }
+            $scope.kioskActive   = false;
+            $scope.kioskProgress = 0;
+            _kioskElapsed        = 0;
+        };
+
+        $scope.toggleKiosk = function() {
+            if ($scope.kioskActive) {
+                $scope.stopKiosk();
+            } else {
+                $scope.startKiosk();
+            }
+        };
+
         // ── Cleanup ────────────────────────────────────────────
         $scope.$on('$destroy', function() {
             document.removeEventListener('keydown', onKeyDown);
+            _standbyActivityEvents.forEach(function(ev) {
+                document.removeEventListener(ev, resetStandbyTimer);
+            });
+            if (_standbyTimer) { $timeout.cancel(_standbyTimer); }
             _body.classList.remove('db2-navbar-hidden');
+            _body.classList.remove('db2-standby');
+            $scope.stopKiosk();
         });
 
         // ── Init ───────────────────────────────────────────────

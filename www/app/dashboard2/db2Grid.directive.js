@@ -1,6 +1,7 @@
 define([
     'app',
-    'dashboard2/dashboard2.module'
+    'dashboard2/dashboard2.module',
+    'dashboard2/widgetRegistry.service'
 ], function(app) {
     'use strict';
 
@@ -22,7 +23,7 @@ define([
      * - Fire onGridChange whenever layout mutates
      * - Expose addWidgetToGrid(widgetDef) and removeWidget(id) on parent scope
      */
-    app.directive('db2Grid', ['$timeout', '$compile', function($timeout, $compile) {
+    app.directive('db2Grid', ['$timeout', '$compile', 'widgetRegistry', function($timeout, $compile, widgetRegistry) {
         return {
             restrict: 'A',
             scope: {
@@ -75,16 +76,20 @@ define([
                 }
 
                 // ── Item management ──────────────────────────────────
+                function getDescMinH(widget) {
+                    var desc = widgetRegistry.get(widget.type);
+                    return (desc && desc.minH) || 2;
+                }
+
                 function addItemToGrid(widget) {
                     var el = createWidgetElement(widget);
-                    var isTextNote = widget.type === 'text-note';
                     grid.addWidget(el, {
                         x:    widget.x    || 0,
                         y:    widget.y    || 0,
                         w:    widget.w    || widget.defaultW || 3,
                         h:    widget.h    || widget.defaultH || 2,
                         minW: widget.minW || 2,
-                        minH: isTextNote ? 1 : (widget.minH || 2),
+                        minH: widget.minH || getDescMinH(widget),
                         maxW: widget.maxW || 12,
                         maxH: widget.maxH || 20,
                         id:   widget.id
@@ -140,7 +145,7 @@ define([
                         w:    widget.w    || widget.defaultW || 3,
                         h:    widget.h    || widget.defaultH || 2,
                         minW: widget.minW || 2,
-                        minH: widget.minH || 2,
+                        minH: widget.minH || getDescMinH(widget),
                         maxW: widget.maxW || 12,
                         maxH: widget.maxH || 20,
                         id:   widget.id

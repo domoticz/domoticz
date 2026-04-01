@@ -1,0 +1,10 @@
+<div class="db2-moon">
+    <div class="db2-moon-title" ng-show="ctrl.title">{{ ctrl.title }}</div>
+    <div class="db2-moon-emoji">{{ ctrl.emoji }}</div>
+    <div class="db2-moon-phase" ng-show="ctrl.showPhaseName">{{ ctrl.phaseName }}</div>
+    <div class="db2-moon-illumination" ng-show="ctrl.showIllumination">{{ ctrl.illumination }}% illuminated</div>
+    <div class="db2-moon-next" ng-show="ctrl.showNextEvent">
+        <span ng-if="ctrl.daysToFull <= ctrl.daysToNew">Full moon: {{ ctrl.fullMoonDate }}</span>
+        <span ng-if="ctrl.daysToNew < ctrl.daysToFull">New moon: {{ ctrl.newMoonDate }}</span>
+    </div>
+</div>

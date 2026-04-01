@@ -255,7 +255,10 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		var body = document.body;
 
 		$scope.$watch(function () { return $location.path(); }, function (path) {
-			if (path === '/Dashboard2') {
+			var isDash2 = path === '/Dashboard'
+				&& $scope.$root.config.EnableTabDashboard2
+				&& !(window.myglobals && window.myglobals.ismobile);
+			if (isDash2) {
 				body.classList.add('db2-dashboard-active');
 			} else {
 				body.classList.remove('db2-dashboard-active');
@@ -352,6 +355,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			}
 
 			$.myglobals.DashboardType = $rootScope.config.DashboardType;
+			$.myglobals.enableDashboard2 = $rootScope.config.EnableTabDashboard2;
 			$.myglobals.DateFormat = $rootScope.config.DateFormat;
 
 			if (typeof $rootScope.config.WindScale != 'undefined') {
@@ -672,6 +676,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 					$location.path('/Dashboard');
 					return;
 				}
+
 
 				if (next && next.$$route && next.$$route.permission) {
 					var permission = next.$$route.permission;

@@ -5,20 +5,16 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
         $locationProvider.hashPrefix('');
 
         $routeProvider
-            .when('/Dashboard2', angularAMD.route({
-                templateUrl: 'views/dashboard2.html',
-                controller:  'Dashboard2Controller',
-                controllerUrl: 'dashboard2/Dashboard2Controller',
-                resolve: {
-                    mobileGuard: ['$location', function($location) {
-                        if (window.myglobals && window.myglobals.ismobile) {
-                            $location.path('/Dashboard');
-                        }
-                    }]
-                }
-            }))
-            .when('/Dashboard', angularAMD.route({
+            .when('/Dashboard2', {
+                redirectTo: '/Dashboard'
+            })
+            .when('/Dashboard', {
                 templateUrl: function() {
+                    var useDash2 = window.myglobals && window.myglobals.enableDashboard2
+                                   && !(window.myglobals && window.myglobals.ismobile);
+                    if (useDash2) {
+                        return 'views/dashboard2.html';
+                    }
                     var dt = (window.myglobals && window.myglobals.DashboardType) || 0;
                     var isMobile = window.myglobals && window.myglobals.ismobile;
                     if (dt == 2 || isMobile) {
@@ -26,9 +22,27 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                     }
                     return 'views/dashboard_desktop.html';
                 },
-                controllerUrl: 'dashboard/DashboardDesktopController',
-                controller: 'DashboardDesktopController'
-            }))
+                resolve: {
+                    loadCtrl: ['$q', '$rootScope', function($q, $rootScope) {
+                        var d = $q.defer();
+                        var useDash2 = $rootScope.config.EnableTabDashboard2
+                                       && !(window.myglobals && window.myglobals.ismobile);
+                        var ctrlName   = useDash2 ? 'Dashboard2Controller'       : 'DashboardDesktopController';
+                        var modulePath = useDash2 ? 'dashboard2/Dashboard2Controller' : 'dashboard/DashboardDesktopController';
+                        require([modulePath], function() {
+                            if ($rootScope.$$phase) {
+                                d.resolve(ctrlName);
+                            } else {
+                                $rootScope.$apply(function() { d.resolve(ctrlName); });
+                            }
+                        });
+                        return d.promise;
+                    }]
+                },
+                controller: ['$scope', '$injector', 'loadCtrl', function($scope, $injector, loadCtrl) {
+                    $injector.get('$controller')(loadCtrl, { $scope: $scope });
+                }]
+            })
             .when('/Devices', angularAMD.route({
                 templateUrl: 'app/devices/Devices.html',
                 controller: 'DevicesController',
