@@ -31,12 +31,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          submodules: false
-
-      # Update submodules to the latest upstream commit on each
-      # configured tracking branch, so new library fixes are picked up automatically.
-      - name: Update submodules to latest upstream
-        run: git submodule update --init --remote --force
+          submodules: true
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.3

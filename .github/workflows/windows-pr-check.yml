@@ -31,12 +31,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: false
-
-      # update submodules to the latest upstream commit on each
-      # configured tracking branch, so new library fixes are picked up automatically.
-      - name: Update submodules to latest upstream
-        run: git submodule update --init --remote --force
+          submodules: true
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.3
@@ -58,7 +53,7 @@ jobs:
           <Project>
             <ItemDefinitionGroup>
               <ClCompile>
-                <AdditionalIncludeDirectories>${{ github.workspace }}\extern\jwtcpp\include;${{ github.workspace }}\msbuild\Windows Libraries\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+                <AdditionalIncludeDirectories>${{ github.workspace }}\msbuild\Windows Libraries\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
               </ClCompile>
             </ItemDefinitionGroup>
           </Project>
