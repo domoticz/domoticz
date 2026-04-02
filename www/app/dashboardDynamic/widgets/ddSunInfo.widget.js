@@ -8,7 +8,7 @@ define([
         type:        'sun-info',
         label:       'Sun Info',
         description: 'Sunrise and sunset times with day length',
-        category:    'Charts & Data',
+        category:    'Weather',
         icon:        'fa-solid fa-sun',
         defaultW:    2,
         defaultH:    2,

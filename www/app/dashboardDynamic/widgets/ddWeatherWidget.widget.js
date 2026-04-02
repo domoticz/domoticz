@@ -8,7 +8,7 @@ define([
         type:        'weather',
         label:       'Weather',
         description: 'Current weather conditions from weather devices',
-        category:    'Charts & Data',
+        category:    'Weather',
         icon:        'fa-solid fa-cloud',
         defaultW:    3,
         defaultH:    2,
