@@ -7,8 +7,12 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
         $routeProvider
             .when('/Dashboard', {
                 templateUrl: function() {
-                    var useDash2 = window.myglobals && window.myglobals.enableDashboardDynamic
-                                   && !(window.myglobals && window.myglobals.ismobile);
+                    var enableDynamic = false;
+                    try {
+                        var $rootScope = angular.element(document).injector().get('$rootScope');
+                        enableDynamic = !!($rootScope.config && $rootScope.config.EnableTabDashboardDynamic);
+                    } catch (e) {}
+                    var useDash2 = enableDynamic && !(window.myglobals && window.myglobals.ismobile);
                     if (useDash2) {
                         return 'views/dashboardDynamic.html';
                     }

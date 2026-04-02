@@ -192,18 +192,24 @@ define([
                 rowHeight: 60,
                 margin:    8,
                 animate:   true,
-                widgets: [
-                    { id: dashboardDynamicService.generateId(), type: 'clock',        x: 0, y: 0, w: 2, h: 2, config: {} },
-                    { id: dashboardDynamicService.generateId(), type: 'sun-info',     x: 2, y: 0, w: 2, h: 2, config: {} },
-                    { id: dashboardDynamicService.generateId(), type: 'activity-log', x: 0, y: 2, w: 6, h: 4, config: {} }
-                ]
+                widgets:   []
             };
-            return dashboardDynamicService.saveLayout(meta, data).then(function() {
-                $scope.layouts = [meta];
-                $scope.activeLayout = meta;
-                $scope.activeData   = data;
-                $scope.loading = false;
-            });
+            return $http.get('json.htm?type=command&param=getdevices&filter=all&used=true&favorite=1&order=%5BOrder%5D')
+                .then(function(resp) {
+                    data.widgets = buildFavoritesWidgets(resp.data.result || []);
+                })
+                .catch(function() {
+                    data.widgets = [];
+                })
+                .then(function() {
+                    return dashboardDynamicService.saveLayout(meta, data).then(function() {
+                        $scope.layouts      = [meta];
+                        $scope.activeLayout = meta;
+                        $scope.activeData   = data;
+                        refreshGrid();
+                        $scope.loading      = false;
+                    });
+                });
         }
 
         // ── Lifecycle ──────────────────────────────────────────
@@ -514,50 +520,47 @@ define([
             return result;
         }
 
+        function buildFavoritesWidgets(all) {
+            var cats    = categorizeFavorites(all);
+            var widgets = [];
+            var y       = 0;
+            var COLS    = 4, W = 3, H = 2, HEADER_H = 1;
+
+            function addSection(label, items, widgetType, configKey) {
+                widgetType = widgetType || 'dz-device';
+                configKey  = configKey  || 'deviceIdx';
+                if (!items.length) { return; }
+                widgets.push({
+                    id: dashboardDynamicService.generateId(), type: 'text-note',
+                    x: 0, y: y, w: 12, h: HEADER_H, minH: 1,
+                    config: { content: label, fontSize: 16, textAlign: 'left' }
+                });
+                y += HEADER_H;
+                items.forEach(function(item, i) {
+                    var cfg = {};
+                    cfg[configKey] = String(item.idx);
+                    widgets.push({
+                        id: dashboardDynamicService.generateId(), type: widgetType,
+                        x: (i % COLS) * W, y: y + Math.floor(i / COLS) * H,
+                        w: W, h: H, config: cfg
+                    });
+                });
+                y += Math.ceil(items.length / COLS) * H;
+            }
+
+            addSection('Lights/Switches:', cats.lights);
+            addSection('Temperature:',     cats.temperature);
+            addSection('Weather:',         cats.weather);
+            addSection('Utility:',         cats.utility);
+
+            return widgets;
+        }
+
         $scope.resetToFavorites = function() {
             bootbox.confirm('Replace all widgets with the favorites layout?').then(function() {
                 $http.get('json.htm?type=command&param=getdevices&filter=all&used=true&favorite=1&order=%5BOrder%5D')
                     .then(function(resp) {
-                        var all  = resp.data.result || [];
-                        var cats = categorizeFavorites(all);
-
-                        // Scenes/Groups come from getdevices as Type='Scene'/'Group'
-                        var scenes = all.filter(function(d) {
-                            return d.Type.indexOf('Scene') === 0 || d.Type.indexOf('Group') === 0;
-                        });
-
-                        var widgets = [];
-                        var y       = 0;
-                        var COLS    = 4, W = 3, H = 2, HEADER_H = 1;
-
-                        function addSection(label, items, widgetType, configKey) {
-                            widgetType = widgetType || 'dz-device';
-                            configKey  = configKey  || 'deviceIdx';
-                            if (!items.length) { return; }
-                            widgets.push({
-                                id: dashboardDynamicService.generateId(), type: 'text-note',
-                                x: 0, y: y, w: 12, h: HEADER_H, minH: 1,
-                                config: { content: label, fontSize: 16, textAlign: 'left' }
-                            });
-                            y += HEADER_H;
-                            items.forEach(function(item, i) {
-                                var cfg = {};
-                                cfg[configKey] = String(item.idx);
-                                widgets.push({
-                                    id: dashboardDynamicService.generateId(), type: widgetType,
-                                    x: (i % COLS) * W, y: y + Math.floor(i / COLS) * H,
-                                    w: W, h: H, config: cfg
-                                });
-                            });
-                            y += Math.ceil(items.length / COLS) * H;
-                        }
-
-                        addSection('Lights/Switches:', cats.lights);
-                        addSection('Temperature:',     cats.temperature);
-                        addSection('Weather:',         cats.weather);
-                        addSection('Utility:',         cats.utility);
-
-                        $scope.activeData.widgets = widgets;
+                        $scope.activeData.widgets = buildFavoritesWidgets(resp.data.result || []);
                         $scope.isDirty = true;
                         refreshGrid();
                     })
