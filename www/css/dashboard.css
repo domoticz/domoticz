@@ -2192,25 +2192,29 @@ body.dd-navbar-hidden .dd-topbar {
     display: flex;
     flex-direction: column;
 }
+.dd-text-sensor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+    flex-shrink: 0;
+}
 .dd-text-sensor-title {
     font-size: 0.85em;
     color: var(--dz-widget-stat-muted);
-    margin-bottom: 2px;
     font-weight: 500;
-    flex-shrink: 0;
-}
-.dd-text-sensor-content {
-    flex-shrink: 0;
-    white-space: pre-wrap;
-    word-break: break-word;
-    line-height: 1.5;
-    text-align: left;
 }
 .dd-text-sensor-updated {
     font-size: 0.75em;
     color: var(--dz-widget-stat-muted);
-    margin-top: 4px;
+    white-space: nowrap;
+    margin-left: 8px;
+}
+.dd-text-sensor-content {
     flex-shrink: 0;
+    word-break: break-word;
+    line-height: 1.5;
+    text-align: left;
 }
 
 /* ── RSS Feed Widget ──────────────────────────────────────── */

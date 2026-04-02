@@ -250,13 +250,17 @@ define([
                     Object.keys(unitToAxis).forEach(function(unit) {
                         unitList[unitToAxis[unit]] = unit;
                     });
+                    // Axis 0 → left side; axes 1+ → right side, each offset by 55px
                     for (var ai = 0; ai < axisCount; ai++) {
-                        var isOpposite = (ai % 2 === 1);
-                        yAxes.push({
+                        var isOpposite = ai > 0;
+                        var axisOffset = ai > 1 ? (ai - 1) * 55 : 0;
+                        var axisEntry = {
                             title:    { text: unitList[ai], style: { fontSize: '10px', color: textColor } },
                             labels:   { style: { fontSize: '10px', color: textColor } },
                             opposite: isOpposite || undefined
-                        });
+                        };
+                        if (axisOffset) { axisEntry.offset = axisOffset; }
+                        yAxes.push(axisEntry);
                     }
 
                     var hcSeries = results.map(function(result, i) {
@@ -284,15 +288,12 @@ define([
                     });
 
                     var showLegend = cfg.showLegend !== false;
-                    var rightMargin = axisCount > 1 ? 50 : 10;
 
                     var opts = {
                         chart: {
                             animation:       false,
                             backgroundColor: 'transparent',
                             marginTop:       10,
-                            marginLeft:      45,
-                            marginRight:     rightMargin,
                             style:           { fontFamily: 'inherit' },
                             height:          container.offsetHeight || 200,
                             width:           container.offsetWidth  || null,
@@ -339,10 +340,11 @@ define([
                                         }
                                         val = last;
                                     }
+                                    var unit = unitList[series.options.yAxis] || '';
                                     s += '<br/><span style="color:' + series.color + '">\u25CF</span> ' +
                                          series.name + ': ';
                                     s += (val !== null && val !== undefined)
-                                        ? ('<b>' + window.Highcharts.numberFormat(val, 1) + '</b>')
+                                        ? ('<b>' + window.Highcharts.numberFormat(val, 1) + (unit ? ' ' + unit : '') + '</b>')
                                         : '<i>—</i>';
                                 });
                                 return s;

@@ -55,7 +55,7 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$q', function($scope, $http, $interval, $q) {
+            controller: ['$scope', '$http', '$interval', '$q', '$sce', function($scope, $http, $interval, $q, $sce) {
                 var ctrl = this;
                 ctrl.text        = null;
                 ctrl.deviceName  = '';
@@ -66,9 +66,18 @@ define([
                 var timer        = null;
 
                 function applyDevice(d) {
-                    ctrl.text       = (d.Data || '').trim().replace(/^[ \t]+/gm, '');
-                    ctrl.deviceName = d.Name       || '';
-                    ctrl.lastUpdate = d.LastUpdate  || '';
+                    var raw = (d.Data || '').trim();
+                    // Convert newlines to <br /> then sanitize, matching the original utility widget
+                    var html = raw.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+                    if (window.DOMPurify) {
+                        html = DOMPurify.sanitize(html, {
+                            ALLOWED_TAGS: ['br', 'span', 'font', 'a', 'b', 'i', 'u'],
+                            ALLOWED_ATTR: ['style', 'color', 'href', 'target']
+                        });
+                    }
+                    ctrl.text       = $sce.trustAsHtml(html);
+                    ctrl.deviceName = d.Name      || '';
+                    ctrl.lastUpdate = d.LastUpdate || '';
                 }
 
                 function load() {
