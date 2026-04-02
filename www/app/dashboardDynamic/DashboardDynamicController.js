@@ -29,6 +29,7 @@ define([
     'dashboardDynamic/widgets/ddImageWidget.widget',
     'dashboardDynamic/widgets/ddCameraFeed.widget',
     'dashboardDynamic/widgets/ddDzDevice.widget',
+    'dashboardDynamic/widgets/ddDzScene.widget',
     'dashboardDynamic/widgets/ddDzFavorites.widget',
     'dashboardDynamic/widgets/ddDzRoom.widget',
     'dashboardDynamic/widgets/ddHtmlWidget.widget',
@@ -522,6 +523,9 @@ define([
 
         function buildFavoritesWidgets(all) {
             var cats    = categorizeFavorites(all);
+            var scenes  = all.filter(function(d) {
+                return d.Type.indexOf('Scene') === 0 || d.Type.indexOf('Group') === 0;
+            });
             var widgets = [];
             var y       = 0;
             var COLS    = 4, W = 3, H = 2, HEADER_H = 1;
@@ -548,6 +552,7 @@ define([
                 y += Math.ceil(items.length / COLS) * H;
             }
 
+            addSection('Scenes:',          scenes,  'dz-scene', 'sceneIdx');
             addSection('Lights/Switches:', cats.lights);
             addSection('Temperature:',     cats.temperature);
             addSection('Weather:',         cats.weather);

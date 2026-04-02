@@ -52,6 +52,7 @@
   --dz-btn-info-bg:                #5bc0de;
   --dz-btn-success-bg:             #5cb85c;
   --dz-panel-bg:                   rgba(0, 0, 0, 0.25);
+  --dz-panel-bg-dark:              rgba(0, 0, 0, 0.75);
   --dz-panel-text:                 var(--dz-body-text);
   --dz-table-odd-bg:               #E2E4FF;
   --dz-table-odd-text:             #333;

@@ -924,7 +924,8 @@ body.dd-navbar-hidden .dd-topbar {
 .dd-widget--self-sufficiency,
 .dd-widget--setpoint,
 .dd-widget--combo-thermostat,
-.dd-widget--thermostat6 {
+.dd-widget--thermostat6,
+.dd-widget--dz-scene {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
