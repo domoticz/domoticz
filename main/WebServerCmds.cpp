@@ -199,6 +199,33 @@ namespace http
 				root["Title"] = "Domoticz";
 		}
 
+		void CWebServer::Cmd_FetchUrl(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			std::string sUrl = request::findValue(&req, "url");
+			if (sUrl.empty())
+			{
+				root["status"] = "ERR";
+				root["message"] = "url parameter missing";
+				return;
+			}
+			// Only allow http/https URLs
+			if (sUrl.substr(0, 7) != "http://" && sUrl.substr(0, 8) != "https://")
+			{
+				root["status"] = "ERR";
+				root["message"] = "Only http/https URLs are allowed";
+				return;
+			}
+			std::string sResult;
+			if (!HTTPClient::GET(sUrl, sResult))
+			{
+				root["status"] = "ERR";
+				root["message"] = "Fetch failed";
+				return;
+			}
+			root["status"] = "OK";
+			root["data"] = sResult;
+		}
+
 		void CWebServer::Cmd_LoginCheck(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			std::string tmpusrname = request::findValue(&req, "username");
@@ -2902,7 +2929,7 @@ namespace http
 				int bEnableTabWeather = 1;
 				int bEnableTabUtility = 1;
 				int bEnableTabCustom = 0;
-				int bEnableTabDashboard2 = 0;
+				int bEnableTabDashboardDynamic = 0;
 
 				std::vector<std::vector<std::string>> result;
 				result = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID==%lu)", UserID);
@@ -2916,7 +2943,7 @@ namespace http
 					bEnableTabUtility = (TabsEnabled & (1 << 4));
 					bEnableTabCustom = (TabsEnabled & (1 << 5));
 					bEnableTabFloorplans = (TabsEnabled & (1 << 6));
-					bEnableTabDashboard2 = (TabsEnabled & (1 << 7));
+					bEnableTabDashboardDynamic = (TabsEnabled & (1 << 7));
 				}
 
 				if (iDashboardType == 3)
@@ -2932,7 +2959,7 @@ namespace http
 				root["result"]["EnableTabWeather"] = bEnableTabWeather != 0;
 				root["result"]["EnableTabUtility"] = bEnableTabUtility != 0;
 				root["result"]["EnableTabCustom"] = bEnableTabCustom != 0;
-				root["result"]["EnableTabDashboard2"] = bEnableTabDashboard2 != 0;
+				root["result"]["EnableTabDashboardDynamic"] = bEnableTabDashboardDynamic != 0;
 
 				if (bEnableTabCustom)
 				{

@@ -1,9 +1,0 @@
-<div class="db2-chart-container">
-    <div ng-if="!ctrl.widgetDef.config.deviceIdx" class="db2-chart-unconfigured">
-        <i class="fa-solid fa-bolt"></i>
-        <p>Select a counter or energy device in settings</p>
-    </div>
-    <div ng-if="ctrl.widgetDef.config.deviceIdx" class="db2-chart-wrap">
-        <div id="{{ ctrl.chartId }}" class="db2-highchart"></div>
-    </div>
-</div>

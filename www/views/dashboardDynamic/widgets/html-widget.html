@@ -1,0 +1,11 @@
+<div class="dd-html-widget">
+    <iframe class="dd-html-widget-frame"
+            dd-html-frame="ctrl.iframeDoc"
+            sandbox="allow-scripts"
+            frameborder="0"
+            ng-show="ctrl.widgetDef.config.html"></iframe>
+    <div ng-if="!ctrl.widgetDef.config.html" class="dd-html-widget-empty">
+        <i class="fa-solid fa-code"></i>
+        <p>Configure this widget to add HTML content</p>
+    </div>
+</div>

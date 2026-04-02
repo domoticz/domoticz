@@ -1,0 +1,25 @@
+<div class="dd-stat-card">
+    <!-- Unconfigured state -->
+    <div ng-if="!ctrl.widgetDef.config.deviceIdx" class="dd-chart-unconfigured">
+        <i class="fa-solid fa-solar-panel"></i>
+        <p>Select a device in settings</p>
+    </div>
+
+    <!-- Loaded state -->
+    <div ng-if="ctrl.widgetDef.config.deviceIdx">
+        <div class="dd-stat-label" ng-bind="ctrl.title"></div>
+
+        <div ng-if="ctrl.usageWatt !== null"
+             class="dd-stat-value"
+             ng-class="ctrl.colorClass()">
+            <i class="fa fa-bolt"></i> {{ctrl.usageWatt}} W
+        </div>
+        <div ng-if="ctrl.usageWatt === null" class="dd-stat-value">
+            &mdash;
+        </div>
+
+        <div ng-if="ctrl.counterToday !== null" class="dd-stat-sub">
+            Today: {{ctrl.counterToday}}
+        </div>
+    </div>
+</div>

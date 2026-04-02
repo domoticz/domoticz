@@ -5,15 +5,12 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
         $locationProvider.hashPrefix('');
 
         $routeProvider
-            .when('/Dashboard2', {
-                redirectTo: '/Dashboard'
-            })
             .when('/Dashboard', {
                 templateUrl: function() {
-                    var useDash2 = window.myglobals && window.myglobals.enableDashboard2
+                    var useDash2 = window.myglobals && window.myglobals.enableDashboardDynamic
                                    && !(window.myglobals && window.myglobals.ismobile);
                     if (useDash2) {
-                        return 'views/dashboard2.html';
+                        return 'views/dashboardDynamic.html';
                     }
                     var dt = (window.myglobals && window.myglobals.DashboardType) || 0;
                     var isMobile = window.myglobals && window.myglobals.ismobile;
@@ -25,10 +22,10 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                 resolve: {
                     loadCtrl: ['$q', '$rootScope', function($q, $rootScope) {
                         var d = $q.defer();
-                        var useDash2 = $rootScope.config.EnableTabDashboard2
+                        var useDash2 = $rootScope.config.EnableTabDashboardDynamic
                                        && !(window.myglobals && window.myglobals.ismobile);
-                        var ctrlName   = useDash2 ? 'Dashboard2Controller'       : 'DashboardDesktopController';
-                        var modulePath = useDash2 ? 'dashboard2/Dashboard2Controller' : 'dashboard/DashboardDesktopController';
+                        var ctrlName   = useDash2 ? 'DashboardDynamicController'       : 'DashboardDesktopController';
+                        var modulePath = useDash2 ? 'dashboardDynamic/DashboardDynamicController' : 'dashboard/DashboardDesktopController';
                         require([modulePath], function() {
                             if ($rootScope.$$phase) {
                                 d.resolve(ctrlName);

@@ -4,9 +4,9 @@
   --dz-widget-text:                #0D161F;
   --dz-widget-border-radius:       5px;
   --dz-widget-shadow:              none;
-  --dz-db2-grid-line:              rgba(0,0,0,0.06);
-  --dz-db2-skeleton-start:         #e0e0e0;
-  --dz-db2-skeleton-mid:           #f0f0f0;
+  --dz-dd-grid-line:              rgba(0,0,0,0.06);
+  --dz-dd-skeleton-start:         #e0e0e0;
+  --dz-dd-skeleton-mid:           #f0f0f0;
   --dz-widget-name-bg:             #D4E1EE;
   --dz-widget-name-border:         #2B5074;
   --dz-widget-name-text:           #0D161F;

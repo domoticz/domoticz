@@ -1,0 +1,18 @@
+<div class="dd-sun">
+    <div class="dd-sun-cols">
+        <div class="dd-sun-col">
+            <span class="dd-sun-icon">&#x1F305;</span>
+            <div class="dd-sun-label">Sunrise</div>
+            <div class="dd-sun-time" ng-bind="ctrl.sunrise"></div>
+        </div>
+        <div class="dd-sun-divider"></div>
+        <div class="dd-sun-col">
+            <span class="dd-sun-icon">&#x1F307;</span>
+            <div class="dd-sun-label">Sunset</div>
+            <div class="dd-sun-time" ng-bind="ctrl.sunset"></div>
+        </div>
+    </div>
+    <div class="dd-sun-daylength text-muted">
+        Day length: {{ ctrl.daylength }}
+    </div>
+</div>

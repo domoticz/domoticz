@@ -94,9 +94,9 @@ define(['app'], function (app) {
 						return;
 					}
 					// Persist dashboard type to localStorage so navbar updates immediately
-					// (before backend recompile exposes EnableTabDashboard2 in getconfig)
+					// (before backend recompile exposes EnableTabDashboardDynamic in getconfig)
 					var isDynamic = ($('#usercontent #userparamstable #combodashboardtype').val() === '1');
-					try { localStorage.setItem('dz_use_dashboard2_' + csettings.username, isDynamic ? '1' : '0'); } catch(e) {}
+					try { localStorage.setItem('dz_use_dashboard_dynamic_' + csettings.username, isDynamic ? '1' : '0'); } catch(e) {}
 					RefreshUserTable();
 				},
 				error: function () {

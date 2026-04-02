@@ -1,0 +1,212 @@
+<div class="modal-header">
+    <button type="button" class="close" ng-click="dismiss()">&times;</button>
+    <h4 class="modal-title">
+        <i class="fa-solid fa-border-all" style="margin-right:6px"></i>
+        Manage Dashboards
+    </h4>
+</div>
+
+<div class="modal-body dd-manager-body" style="padding:0">
+
+    <!-- Dashboard list -->
+    <table class="table table-hover dd-manager-table" style="margin:0">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th style="width:100px" class="text-center">Default</th>
+                <th style="width:130px">Updated</th>
+                <th style="width:180px">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="layout in layouts"
+                ng-class="{'active': layout.isDefault}">
+
+                <!-- Name (click to rename) -->
+                <td style="vertical-align:middle">
+                    <span ng-hide="layout._editing"
+                          ng-bind="layout.name"
+                          ng-click="startRename(layout)"
+                          class="dd-manager-name"
+                          title="Click to rename"></span>
+                    <div ng-show="layout._editing" class="input-group input-group-sm">
+                        <input type="text"
+                               class="form-control"
+                               ng-model="layout._editName"
+                               ng-keyup="$event.key === 'Enter' && finishRename(layout)"
+                               ng-keydown="$event.key === 'Escape' && cancelRename(layout)">
+                        <span class="input-group-btn">
+                            <button class="btn btn-success" ng-click="finishRename(layout)" title="Save">
+                                <i class="fa-solid fa-check"></i>
+                            </button>
+                            <button class="btn btn-default" ng-click="cancelRename(layout)" title="Cancel">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </span>
+                    </div>
+                </td>
+
+                <!-- Default badge + set default -->
+                <td class="text-center" style="vertical-align:middle">
+                    <span ng-show="layout.isDefault" class="label label-success">Default</span>
+                    <a ng-hide="layout.isDefault" href
+                       ng-click="setDefault(layout)"
+                       class="text-muted"
+                       title="Set as default"
+                       style="font-size:0.85em">Set default</a>
+                </td>
+
+                <!-- Updated date -->
+                <td class="text-muted" style="font-size:0.85em;vertical-align:middle">
+                    {{ layout.updated | date:'dd MMM yyyy HH:mm' }}
+                </td>
+
+                <!-- Action buttons -->
+                <td style="vertical-align:middle;white-space:nowrap">
+                    <button class="btn btn-primary btn-xs"
+                            ng-click="openLayout(layout)"
+                            title="Open dashboard"
+                            style="margin-right:2px">
+                        Open
+                    </button>
+                    <button class="btn btn-default btn-xs"
+                            ng-click="copyLayout(layout)"
+                            title="Duplicate dashboard"
+                            style="margin-right:2px">
+                        Copy
+                    </button>
+                    <button class="btn btn-danger btn-xs"
+                            ng-click="deleteLayout(layout)"
+                            ng-disabled="layouts.length <= 1"
+                            title="{{ layouts.length <= 1 ? 'Cannot delete the last dashboard' : 'Delete dashboard' }}">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Empty state -->
+    <div class="text-muted text-center" style="padding:24px"
+         ng-show="layouts.length === 0">
+        No dashboards yet. Create your first one below.
+    </div>
+
+</div>
+
+<!-- Kiosk settings -->
+<div class="dd-kiosk-settings" style="padding:14px 16px;border-top:1px solid rgba(255,255,255,0.1)">
+    <div style="font-size:0.9em;font-weight:600;color:var(--dz-body-text);margin-bottom:10px">
+        <i class="fa fa-play-circle" style="margin-right:5px"></i> Kiosk / Auto-Swipe
+    </div>
+    <div class="dd-settings-form">
+        <!-- Enable on load -->
+        <div class="form-group" style="margin-bottom:10px">
+            <label class="dd-checkbox-label" ng-click="kiosk.enabled = !kiosk.enabled; saveKioskSettings({enabled: kiosk.enabled})">
+                <i class="fa dd-bool-icon"
+                   ng-class="kiosk.enabled ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                Auto-start kiosk on page load
+            </label>
+        </div>
+        <!-- Interval -->
+        <div class="form-group" style="margin-bottom:10px">
+            <label style="display:inline-block;margin-right:8px;font-size:0.9em">
+                Interval (seconds):
+            </label>
+            <input type="number" class="form-control" min="5" max="3600"
+                   style="display:inline-block;width:90px"
+                   ng-model="kiosk.interval"
+                   ng-change="saveKioskSettings({interval: kiosk.interval})">
+        </div>
+        <!-- Loop -->
+        <div class="form-group" style="margin-bottom:10px">
+            <label class="dd-checkbox-label" ng-click="kiosk.loop = !kiosk.loop; saveKioskSettings({loop: kiosk.loop})">
+                <i class="fa dd-bool-icon"
+                   ng-class="kiosk.loop ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                Loop continuously
+            </label>
+        </div>
+        <!-- Layout selection -->
+        <div class="form-group" style="margin-bottom:4px">
+            <label style="font-size:0.9em;margin-bottom:6px">
+                Layouts to include <span style="font-weight:normal;opacity:0.7">(leave all unchecked to use all)</span>:
+            </label>
+            <div ng-repeat="l in layouts" style="margin-bottom:4px">
+                <label class="dd-checkbox-label"
+                       ng-click="toggleKioskLayout(l.id)">
+                    <i class="fa dd-bool-icon"
+                       ng-class="kiosk.layoutIds.indexOf(l.id) !== -1 ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                    <span ng-bind="l.name"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Screen Standby settings -->
+<div class="dd-standby-settings" style="padding:14px 16px;border-top:1px solid rgba(255,255,255,0.1)">
+    <div style="font-size:0.9em;font-weight:600;color:var(--dz-body-text);margin-bottom:10px">
+        <i class="fa fa-moon-o" style="margin-right:5px"></i> Screen Standby
+    </div>
+    <div class="dd-settings-form">
+        <!-- Enable standby -->
+        <div class="form-group" style="margin-bottom:10px">
+            <label class="dd-checkbox-label" ng-click="standby.enabled = !standby.enabled; saveStandbySettings({enabled: standby.enabled})">
+                <i class="fa dd-bool-icon"
+                   ng-class="standby.enabled ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                Enable screen standby
+            </label>
+        </div>
+        <!-- Timeout -->
+        <div class="form-group" style="margin-bottom:10px">
+            <label style="display:inline-block;margin-right:8px;font-size:0.9em">
+                Inactivity timeout (minutes):
+            </label>
+            <input type="number" class="form-control" min="1" max="60"
+                   style="display:inline-block;width:80px"
+                   ng-model="standby.timeout"
+                   ng-change="saveStandbySettings({timeout: standby.timeout})">
+        </div>
+        <!-- Blackout -->
+        <div class="form-group" style="margin-bottom:10px">
+            <label class="dd-checkbox-label" ng-click="standby.blackout = !standby.blackout; saveStandbySettings({blackout: standby.blackout})">
+                <i class="fa dd-bool-icon"
+                   ng-class="standby.blackout ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                Full blackout (ignore opacity setting)
+            </label>
+        </div>
+        <!-- Opacity (only shown when not blackout) -->
+        <div class="form-group" style="margin-bottom:4px" ng-hide="standby.blackout">
+            <label style="display:inline-block;margin-right:8px;font-size:0.9em">
+                Dimmed screen opacity (%):
+            </label>
+            <input type="number" class="form-control" min="0" max="30"
+                   style="display:inline-block;width:80px"
+                   ng-model="standby.opacity"
+                   ng-change="saveStandbySettings({opacity: standby.opacity})">
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer" style="display:flex;align-items:center;gap:6px">
+    <div style="flex:1;display:flex;gap:6px">
+        <!-- New dashboard -->
+        <div class="input-group input-group-sm" style="max-width:280px">
+            <input type="text"
+                   class="form-control"
+                   ng-model="newName"
+                   placeholder="New dashboard name..."
+                   ng-keyup="$event.key === 'Enter' && createNew()">
+            <span class="input-group-btn">
+                <button class="btn btn-primary"
+                        ng-click="createNew()"
+                        ng-disabled="!newName.trim() || busy">
+                    <i class="fa-solid fa-plus"></i> Create
+                </button>
+            </span>
+        </div>
+
+    </div>
+
+    <button type="button" class="btn btn-default btn-sm" ng-click="dismiss()">Close</button>
+</div>

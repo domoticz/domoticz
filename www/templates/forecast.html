@@ -1,0 +1,966 @@
+<style>
+.forecast-page {
+  --fc-text:        #e0e0e0;
+  --fc-muted:       #9ab;
+  --fc-accent:      #43A4D3;
+  --fc-green:       #66bb6a;
+  --fc-import:      #ffb300;
+  --fc-purple:      #c8a0ff;
+  --fc-surface:     var(--dz-panel-bg, rgba(255,255,255,0.05));
+  padding: 8px 4px;
+  color: var(--fc-text);
+}
+
+/* Stat cards */
+.fc-conditions { display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; margin-bottom: 12px; padding: 10px 0; }
+.fc-card { text-align: center; min-width: 140px; padding: 12px 20px; background: var(--fc-surface); border-radius: 8px; position: relative; overflow: hidden; }
+.fc-card .fc-label { font-size: 0.85em; opacity: 0.7; margin-bottom: 4px; position: relative; z-index: 1; }
+.fc-card .fc-value { font-size: 1.8em; font-weight: bold; line-height: 1.2; position: relative; z-index: 1; }
+.fc-card .fc-line { font-size: 1.3em; font-weight: bold; white-space: nowrap; position: relative; z-index: 1; }
+.fc-card .fc-sub { font-size: 0.82em; opacity: 0.65; margin-top: 4px; line-height: 1.5; position: relative; z-index: 1; }
+
+/* Balance bar */
+.fc-balance { font-size: 0.82em; color: var(--fc-muted); margin-bottom: 12px; padding: 6px 10px; background: var(--fc-surface); border-radius: 6px; border-left: 3px solid var(--fc-accent); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 20px; }
+.fc-balance-stats { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.fc-balance-stats span { color: var(--fc-text); font-weight: bold; }
+.fc-balance-time { white-space: nowrap; color: var(--fc-text); }
+
+/* Battery plan */
+.fc-plan { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+.fc-plan-col { flex: 1; min-width: 200px; background: var(--fc-surface); border-radius: 8px; padding: 0; overflow: hidden; }
+.fc-plan-col h4 { margin: 0; padding: 5px 14px; font-size: 0.78em; text-transform: uppercase; letter-spacing: 1px; color: var(--fc-accent); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.12); }
+.fc-plan-col .fc-plan-row { padding: 3px 14px; }
+.fc-plan-earned { color: var(--fc-green); font-weight: bold; text-transform: none; letter-spacing: 0; font-size: 1.1em; }
+.fc-plan-row { display: flex; align-items: center; gap: 5px; font-size: 0.82em; padding: 3px 0; border-bottom: 1px solid var(--fc-surface); }
+.fc-plan-row:last-child { border-bottom: none; }
+.fc-plan-row .fc-plan-time { font-weight: bold; min-width: 95px; color: #ddd; }
+.fc-plan-row .fc-plan-type { font-size: 0.75em; text-transform: uppercase; letter-spacing: 0.5px; padding: 1px 6px; border-radius: 3px; }
+.fc-plan-type-charge    { background: rgba(0,120,255,0.25); color: #7bbfff; }
+.fc-plan-type-discharge { background: rgba(255,130,0,0.25); color: #ffb366; }
+.fc-plan-row .fc-plan-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+.fc-plan-row .fc-plan-bat { color: var(--fc-muted); min-width: 70px; }
+.fc-plan-row .fc-plan-price { color: var(--fc-purple); white-space: nowrap; min-width: 22px; text-align: right; }
+
+.forecast-chart-wrap { margin-bottom: 10px; border-radius: 8px; overflow: hidden; background: rgba(0,15,35,0.6); border: 1px solid rgba(67,164,211,0.15); }
+.fc-no-data { text-align: center; padding: 40px; color: #555; font-size: 1.1em; }
+.fc-footer { text-align: right; font-size: 0.68em; color: #445; margin-top: 4px; }
+.fc-import { color: var(--fc-import); }
+.fc-export { color: var(--fc-green); }
+
+/* Weather animations are in css/weather.css (loaded globally via index.html) */
+.fc-weather-icon { position: absolute; inset: 0; overflow: hidden; opacity: 0.3; pointer-events: none; z-index: 0; }
+</style>
+
+<div ng-app="domoticz" ng-controller="myCtrl" class="forecast-page">
+
+	<!--
+	  ENERGY BALANCE FORMULA
+	  ═══════════════════════════════════════════════════════════════════
+	  Sources:
+	    P1 import today      = grid.counterToday
+	    P1 export today      = grid.counterDelivToday
+	    Solar today          = solar.counterToday
+	    Battery charged      = battery.importedKwh      ← from grid OR solar into battery
+	    Battery discharged   = battery.exportedKwh      ← from battery to grid OR house
+
+	  Derived:
+	    battery_net          = battery_charged - battery_discharged
+	    house_consumption    = P1_import + solar - P1_export - battery_net
+	    net_grid             = P1_import - P1_export
+	    self_sufficiency (%) = (1 - max(0, net_grid) / house_consumption) × 100
+
+	  Why battery_net is subtracted:
+	    If battery is net charging (+), that energy came from grid/solar but NOT consumed by house.
+	    If battery is net discharging (−), extra energy was supplied to house/grid beyond what
+	    the P1/solar meters captured on the input side.
+	  ═══════════════════════════════════════════════════════════════════
+	-->
+
+	<!-- Live stat cards (current-conditions style) -->
+	<div class="fc-conditions">
+		<!-- Weather -->
+		<div class="fc-card">
+			<div class="fc-weather-icon" ng-if="weather" ng-switch="weather.forecastStr">
+				<div class="fcw-scene" ng-switch-when="Sunny">
+					<div ng-if="!isNight">
+						<div class="fcw-rays fcw-rays-main"></div>
+						<div class="fcw-sun  fcw-sun-main"></div>
+					</div>
+					<div ng-if="isNight">
+						<div class="fcw-star fcw-star1"></div>
+						<div class="fcw-star fcw-star2"></div>
+						<div class="fcw-star fcw-star3"></div>
+						<div class="fcw-moon"></div>
+					</div>
+				</div>
+				<div class="fcw-scene" ng-switch-when="Partly Cloudy">
+					<div ng-if="!isNight">
+						<div class="fcw-rays  fcw-rays-mini"></div>
+						<div class="fcw-sun   fcw-sun-mini"></div>
+					</div>
+					<div ng-if="isNight">
+						<div class="fcw-star fcw-star2"></div>
+						<div class="fcw-moon"></div>
+					</div>
+					<div class="fcw-cloud fcw-cloud-light"></div>
+				</div>
+				<div class="fcw-scene" ng-switch-when="Cloudy">
+					<div class="fcw-cloud fcw-cloud-dark-sm"></div>
+					<div class="fcw-cloud fcw-cloud-lg"></div>
+				</div>
+				<div class="fcw-scene" ng-switch-when="Some Clouds">
+					<div ng-if="!isNight">
+						<div class="fcw-rays  fcw-rays-mini"></div>
+						<div class="fcw-sun   fcw-sun-mini"></div>
+					</div>
+					<div ng-if="isNight">
+						<div class="fcw-star fcw-star2"></div>
+						<div class="fcw-moon"></div>
+					</div>
+					<div class="fcw-cloud fcw-cloud-light"></div>
+				</div>
+				<div class="fcw-scene" ng-switch-when="Rain">
+					<div class="fcw-raindrop fcw-rd1"></div>
+					<div class="fcw-raindrop fcw-rd2"></div>
+					<div class="fcw-raindrop fcw-rd3"></div>
+					<div class="fcw-raindrop fcw-rd4"></div>
+					<div class="fcw-cloud fcw-cloud-rain"></div>
+				</div>
+				<div class="fcw-scene" ng-switch-when="Heavy Rain">
+					<div class="fcw-raindrop fcw-rd1"></div>
+					<div class="fcw-raindrop fcw-rd2"></div>
+					<div class="fcw-raindrop fcw-rd3"></div>
+					<div class="fcw-raindrop fcw-rd4"></div>
+					<div class="fcw-raindrop fcw-rd5"></div>
+					<div class="fcw-raindrop fcw-rd6"></div>
+					<div class="fcw-raindrop fcw-rd7"></div>
+					<div class="fcw-raindrop fcw-rd8"></div>
+					<div class="fcw-cloud fcw-cloud-heavyrain"></div>
+				</div>
+				<div class="fcw-scene" ng-switch-when="Snow">
+					<div class="fcw-snowdot fcw-sd1"></div>
+					<div class="fcw-snowdot fcw-sd2"></div>
+					<div class="fcw-snowdot fcw-sd3"></div>
+					<div class="fcw-snowdot fcw-sd4"></div>
+					<div class="fcw-cloud fcw-cloud-snow"></div>
+				</div>
+				<div class="fcw-scene" ng-switch-when="Heavy Snow">
+					<div class="fcw-snowdot fcw-sd1"></div>
+					<div class="fcw-snowdot fcw-sd2"></div>
+					<div class="fcw-snowdot fcw-sd3"></div>
+					<div class="fcw-snowdot fcw-sd4"></div>
+					<div class="fcw-snowdot fcw-sd5"></div>
+					<div class="fcw-snowdot fcw-sd6"></div>
+					<div class="fcw-snowdot fcw-sd7"></div>
+					<div class="fcw-snowdot fcw-sd8"></div>
+					<div class="fcw-cloud fcw-cloud-heavysnow"></div>
+				</div>
+				<div class="fcw-scene" ng-switch-when="Stable">
+					<div ng-if="!isNight">
+						<div class="fcw-rays fcw-rays-main"></div>
+						<div class="fcw-sun  fcw-sun-main"></div>
+					</div>
+					<div ng-if="isNight">
+						<div class="fcw-star fcw-star1"></div>
+						<div class="fcw-star fcw-star2"></div>
+						<div class="fcw-star fcw-star3"></div>
+						<div class="fcw-moon"></div>
+					</div>
+				</div>
+				<div class="fcw-scene" ng-switch-when="Unstable">
+					<div class="fcw-cloud fcw-cloud-dark-sm"></div>
+					<div class="fcw-cloud fcw-cloud-lg"></div>
+				</div>
+				<div class="fcw-scene" ng-switch-default>
+					<div class="fcw-cloud fcw-cloud-dark-sm"></div>
+					<div class="fcw-cloud fcw-cloud-lg"></div>
+				</div>
+			</div>
+			<div class="fc-label">{{'Outside' | translate}}</div>
+			<div class="fc-value" ng-if="weather">{{weather.temp | number:1}} &deg;C</div>
+			<div class="fc-value" ng-if="!weather">--</div>
+			<div class="fc-sub" ng-if="weather">
+				{{weather.forecastStr}} &bull; {{'Dew Point' | translate}} {{weather.dewPoint | number:1}}&deg;C<br/>
+				<i class="fa fa-tint"></i> {{weather.humidity | number:0}}%
+				&nbsp;&bull;&nbsp;
+				<i class="fa fa-dashboard"></i> {{weather.barometer}} hPa
+			</div>
+		</div>
+		<!-- Grid -->
+		<div class="fc-card">
+			<div class="fc-label">{{'Grid' | translate}}</div>
+			<div ng-if="grid">
+				<div class="fc-line fc-export" ng-if="grid.usageDelivWatt > 0"><i class="fa fa-arrow-up"></i> {{grid.usageDelivWatt}} W</div>
+				<div class="fc-line fc-import" ng-if="grid.usageDelivWatt == 0"><i class="fa fa-arrow-down"></i> {{grid.usageWatt}} W</div>
+			</div>
+			<div class="fc-value" ng-if="!grid">--</div>
+			<div class="fc-sub" ng-if="grid">
+				&darr; {{grid.counterToday}} &nbsp;&bull;&nbsp; &uarr; {{grid.counterDelivToday}}
+			</div>
+			<div ng-if="grid && grid.price !== null" style="font-size:1em;font-weight:bold;color:#c8a0ff;margin-top:4px;">
+				{{grid.price | number:4}} {{$root.config.CurrencySign}}
+			</div>
+		</div>
+		<!-- Solar -->
+		<div class="fc-card">
+			<div class="fc-label">{{'Solar' | translate}}</div>
+			<div class="fc-value" ng-if="solar" style="color:#ff9800;"><i class="fa fa-sun-o"></i> {{solar.usageWatt}} W</div>
+			<div class="fc-value" ng-if="!solar">--</div>
+			<div class="fc-sub" ng-if="solar">{{'Today' | translate | lowercase}}: {{solar.counterToday}}</div>
+		</div>
+		<!-- Gas -->
+		<div class="fc-card">
+			<div class="fc-label">{{'Gas' | translate}}</div>
+			<div class="fc-value" ng-if="gas" style="color:#ef5350;"><i class="fa fa-fire"></i> {{gas.counterToday}}</div>
+			<div class="fc-value" ng-if="!gas">--</div>
+			<div class="fc-sub" ng-if="gas">{{'Total' | translate}}: {{gas.counter}} m&sup3;</div>
+		</div>
+		<!-- Battery (merged: today totals + live side by side) -->
+		<div class="fc-card">
+			<div class="fc-label">{{'Battery' | translate}}</div>
+			<div style="display:flex;gap:16px;justify-content:center;align-items:flex-start;">
+				<div ng-if="battery">
+					<div class="fc-line fc-import"><i class="fa fa-arrow-circle-down"></i> {{battery.importedKwh | number:2}} kWh</div>
+					<div class="fc-line fc-export"><i class="fa fa-arrow-circle-up"></i> {{battery.exportedKwh | number:2}} kWh</div>
+					<div class="fc-sub">
+						{{'Net' | translate}}: <span ng-class="battery.importedKwh >= battery.exportedKwh ? 'fc-import' : 'fc-export'">
+							{{battery.importedKwh >= battery.exportedKwh ? '+' : ''}}{{(battery.importedKwh - battery.exportedKwh) | number:2}} kWh
+						</span>
+					</div>
+				</div>
+				<div ng-if="batteryLive">
+					<div class="fc-line" style="color:#66bb6a;" ng-if="batteryLive.soc"><i class="fa fa-battery-three-quarters"></i> {{batteryLive.soc}}</div>
+					<div class="fc-line" style="color:#43A4D3;" ng-if="batteryLive.watt"><i class="fa fa-bolt"></i> {{batteryLive.watt}}</div>
+					<div class="fc-line" style="color:#ffb300;" ng-if="batteryLive.voltage"><i class="fa fa-plug"></i> {{batteryLive.voltage}}</div>
+				</div>
+			</div>
+			<div class="fc-value" ng-if="!battery && !batteryLive">--</div>
+		</div>
+	</div>
+
+	<!-- Energy balance bar -->
+	<div class="fc-balance">
+		<div class="fc-balance-stats" ng-if="balance">
+			<span><i class="fa fa-leaf" style="color:#66bb6a;"></i> {{'Self-sufficiency' | translate}}: <span>{{balance.selfSufficiency | number:0}}%</span></span>
+			<span>{{'House consumption' | translate}}: <span>{{balance.houseToday | number:1}} kWh</span></span>
+			<span>{{'Solar yield' | translate}}: <span>{{balance.solarToday}} kWh</span></span>
+			<span>{{'Battery net' | translate}}: <span ng-class="balance.batNet >= 0 ? 'fc-import' : 'fc-export'">{{balance.batNet >= 0 ? '+' : ''}}{{balance.batNet | number:2}} kWh</span></span>
+		</div>
+		<div class="fc-balance-time" ng-show="currentTime">
+			{{currentTime}}
+			<span style="color:yellow;">☀</span>
+			▲{{sunrise}} ▼{{sunset}}
+		</div>
+	</div>
+
+	<!-- Battery plan (idx 9683) -->
+	<div class="fc-plan" ng-if="batteryPlan.today.length > 0 || batteryPlan.tomorrow.length > 0">
+		<div class="fc-plan-col" ng-if="batteryPlan.today.length > 0">
+			<h4><span><i class="fa fa-calendar"></i> {{'Battery plan' | translate}} {{'Today' | translate | lowercase}}</span><span class="fc-plan-earned" ng-if="planSlotTotal(true) !== null">&euro; {{planSlotTotal(true) | number:2}}</span></h4>
+			<div class="fc-plan-row" ng-repeat="r in batteryPlan.today">
+				<span class="fc-plan-time">{{r.start}} &rarr; {{r.end}}</span>
+				<span class="fc-plan-type" ng-class="r.type === 'charge' ? 'fc-plan-type-charge' : 'fc-plan-type-discharge'">{{r.type}}</span>
+				<span class="fc-plan-right">
+					<span class="fc-plan-bat"><i class="fa fa-battery-half"></i> {{r.pct}}</span>
+					<span class="fc-plan-price" ng-if="lookupEarnedDelta(r.start, r.end, true) !== null">&euro; {{lookupEarnedDelta(r.start, r.end, true) | number:2}}</span>
+				</span>
+			</div>
+		</div>
+		<div class="fc-plan-col">
+			<h4><span><i class="fa fa-calendar"></i> {{'Battery plan' | translate}} {{'Tomorrow' | translate | lowercase}}</span><span class="fc-plan-earned" ng-if="planSlotTotal(false) !== null">&euro; {{planSlotTotal(false) | number:2}}</span></h4>
+			<div class="fc-plan-row" ng-if="batteryPlan.tomorrow.length === 0">
+				<span style="color:#556; font-style:italic;">{{'No forecast available' | translate}}</span>
+			</div>
+			<div class="fc-plan-row" ng-repeat="r in batteryPlan.tomorrow">
+				<span class="fc-plan-time">{{r.start}} &rarr; {{r.end}}</span>
+				<span class="fc-plan-type" ng-class="r.type === 'charge' ? 'fc-plan-type-charge' : 'fc-plan-type-discharge'">{{r.type}}</span>
+				<span class="fc-plan-right">
+					<span class="fc-plan-bat"><i class="fa fa-battery-half"></i> {{r.pct}}</span>
+					<span class="fc-plan-price" ng-if="lookupEarnedDelta(r.start, r.end, false) !== null">&euro; {{lookupEarnedDelta(r.start, r.end, false) | number:2}}</span>
+				</span>
+			</div>
+		</div>
+	</div>
+
+	<!-- Today chart -->
+	<div class="forecast-chart-wrap">
+		<highchart ng-show="energy_price_today.length>0" config="chartDefinitionToday" style="display:block;width:100%;height:340px;"></highchart>
+		<div class="fc-no-data" ng-show="energy_price_today.length==0">{{'No forecast available' | translate}}</div>
+	</div>
+
+	<!-- Tomorrow chart -->
+	<div class="forecast-chart-wrap">
+		<highchart ng-show="energy_price_tomorrow.length>0" config="chartDefinitionTomorrow" style="display:block;width:100%;height:340px;"></highchart>
+		<div class="fc-no-data" ng-show="energy_price_tomorrow.length==0">{{'No forecast available' | translate}}</div>
+	</div>
+
+	<div class="fc-footer">{{'Updated' | translate}}: {{lastUpdate}}</div>
+</div>
+
+<script>
+var app = angular.module(['myApp'], []);
+app.controller('myCtrl', function($scope, $element, $rootScope, $location, $http, $interval, $q, livesocket) {
+
+	// User Variable indices for forecast chart data — configure these to match your installation
+	$scope.UVTodayIdx = 40;
+	$scope.UVTomorrowIdx = 41;
+
+	// Device IDs loaded from Energy Dashboard settings (getenergydashboarddevices)
+	$scope.idP1 = -1;
+	$scope.idSolar = -1;
+	$scope.idWeather = -1;
+	$scope.idGas = -1;
+	$scope.idPlan = -1;
+	$scope.idBattEnergyIn = -1;
+	$scope.idBattEnergyOut = -1;
+	$scope.idBattSoc = -1;
+	$scope.idBattWatt = -1;
+	$scope.idBattVolt = -1;
+	$scope.watchedIds = {};
+
+	$scope.batteryPlan = { today: [], tomorrow: [] };
+	$scope.earnedTotals = { today: null, tomorrow: null };
+
+	$scope.energy_price_today = [];
+	$scope.earned_money_today = [];
+	$scope.forecast_today = [];
+	$scope.battery_percentage_today = [];
+
+	$scope.energy_price_tomorrow = [];
+	$scope.earned_money_tomorrow = [];
+	$scope.forecast_tomorrow = [];
+	$scope.battery_percentage_tomorrow = [];
+
+	$scope.liveData = {};
+	$scope.lastUpdate = '';
+	$scope.isNight = false;
+	$scope.currentTime = '';
+	$scope.sunrise = '';
+	$scope.sunset = '';
+
+	// Fetch sunrise/sunset immediately via HTTP (WebSocket takes over after first event)
+	$http.get('json.htm?type=command&param=getSunRiseSet').then(function(response) {
+		var data = response.data;
+		if (data && data.Sunrise) {
+			$scope.sunrise = data.Sunrise;
+			$scope.sunset  = data.Sunset;
+			$scope.isNight = computeIsNight(data.Sunrise, data.Sunset);
+		}
+	});
+
+	$scope.plotbandHour = {
+		color: '#FFFFFF30', // Color value
+		from: 3, // Start of the plot band
+		to: 4 // End of the plot band
+	};
+
+	$scope.chartSeriesEnergyPrice = {
+		id: 'energyprice',
+		name: $.t('Energy Price'),
+		type: 'area',
+		yAxis: 0,
+		color: 'rgba(120,120,240,0.8)',
+		tooltip: {
+			valueDecimals: 4
+		}
+	};
+
+	$scope.chartSeriesSolarForecast = {
+		id: "forecast",
+		name: $.t('Solar') + ' ' + $.t('Forecast'),
+		type: 'column',
+		dashStyle: 'shortdot',
+		yAxis: 2,
+		color: 'orange',
+		tooltip: {
+			valueSuffix: ' Watt',
+		}
+	}
+
+	$scope.chartSeriesEarnedMoney = {
+		id: 'earnedmoney',
+		name: $.t('Earned Money'),
+		type: 'line',
+		yAxis: 1,
+		color: 'rgba(255,255,0,1)',
+		tooltip: {
+			valueDecimals: 4
+		}
+	}
+
+	$scope.chartSeriesBatteryPercentage = {
+		id: 'batpercentage',
+		name: $.t('Battery') + ' Percentage',
+		type: 'spline',
+		yAxis: 3,
+		color: Highcharts.getOptions().colors[1],
+		tooltip: {
+			valueSuffix: ' %',
+			valueDecimals: 2
+		}
+	}
+
+	$scope.chartDefinitionBase = {
+		chart: {
+			zooming: { type: 'xy' }
+		},
+		title: {
+			text: $.t('Today') + ' Hourly forecast Energy Price/PV'
+		},
+		tooltip: {
+			shared: true
+		},
+		xAxis: {
+			type: 'datetime'
+		},
+		yAxis: [{
+			min: 0,
+			labels: {
+				format: '{value} €',
+				valueDecimals: 2,
+				style: { color: Highcharts.getOptions().colors[0] }
+			},
+			title: {
+				text: $.t('Hour Price') + ' (€)',
+				style: { color: Highcharts.getOptions().colors[0] }
+			},
+		}, {
+			labels: {
+				format: '{value} €',
+				style: { color: 'rgba(255,255,0,1)' }
+			},
+			title: {
+				text: $.t('Earned Money') + ' (€)',
+				style: { color: 'rgba(255,255,0,1)' }
+			},
+		}, {
+			labels: {
+				format: '{value} Watt',
+				style: { color: Highcharts.getOptions().colors[2] }
+			},
+			title: {
+				text: $.t('Solar') + ' ' + $.t('Forecast') + ' (W)',
+				style: { color: Highcharts.getOptions().colors[2] }
+			},
+			opposite: true
+		}, {
+			labels: {
+				format: '{value} %',
+				style: { color: Highcharts.getOptions().colors[1] }
+			},
+			title: {
+				text: $.t('Battery') + ' Percentage (%)',
+				style: {
+					color: Highcharts.getOptions().colors[1]
+				}
+			},
+			min: 0,
+			max: 100,
+			alignTicks: false,
+			opposite: true
+		}
+		],
+		plotOptions: {
+			column: {
+				pointWidth: 4,
+				pointPadding: 0.2,
+				borderWidth: 0
+			},
+			spline: {
+				lineWidth: 2,
+				states: {
+					hover: {
+						lineWidth: 3
+					}
+				},
+				marker: {
+					enabled: false
+				}
+			},
+			line: {
+				marker: {
+					enabled: false,
+				}
+			},
+			area: {
+				marker: {
+					enabled: false,
+					symbol: 'circle',
+					radius: 2,
+					states: {
+						hover: {
+							enabled: true
+						}
+					}
+				}
+			}
+		}
+	};
+
+	$scope.chartDefinitionToday = {};
+	$scope.chartDefinitionTomorrow = {};
+
+	// Build hour_type color bands from a flat data array.
+	// For the today chart, timestamps come from new Date(item.datum).getTime().
+	// For the tomorrow chart, timestamps are already UTC milliseconds passed in via tsArray.
+	function buildHourTypeBands(items, tsArray) {
+		var typeColors = {
+			'charge':    'rgba(0, 100, 255, 0.12)',
+			'discharge': 'rgba(255, 140, 0, 0.12)',
+			'sell':      'rgba(0, 200, 80, 0.12)'
+		};
+		var bands = [];
+		if (!items || items.length === 0) return bands;
+
+		var intervalMs = 15 * 60 * 1000;
+		var currentType = null;
+		var bandStart = null;
+
+		for (var i = 0; i < items.length; i++) {
+			var type = items[i].hour_type;
+			var ts = tsArray ? tsArray[i] : new Date(items[i].datum).getTime();
+
+			if (type !== currentType) {
+				// Close previous band
+				if (currentType && currentType !== 'idle' && bandStart !== null) {
+					bands.push({ color: typeColors[currentType], from: bandStart, to: ts });
+				}
+				currentType = type;
+				bandStart = (currentType !== 'idle') ? ts : null;
+			}
+		}
+		// Close the last open band
+		if (currentType && currentType !== 'idle' && bandStart !== null) {
+			var lastTs = tsArray
+				? tsArray[items.length - 1]
+				: new Date(items[items.length - 1].datum).getTime();
+			bands.push({ color: typeColors[currentType], from: bandStart, to: lastTs + intervalMs });
+		}
+		return bands;
+	}
+
+	$scope.parseTodayStats = function(data) {
+		if (typeof data.result != 'undefined') {
+			if (typeof data.status != 'undefined') {
+				if (data.status == "OK") {
+					data = JSON.parse(data.result[0].Value);
+					if (data.status == true) {
+						if (data.data.length > 0) {
+							const actHour = new Date().getHours();
+
+							var pb_date = new Date(data.data[0].datum);
+
+							const currentHourStart = new Date(pb_date.getFullYear(), pb_date.getMonth(), pb_date.getDate(), actHour + 1, 0, 0, 0);
+							const currentHourEnd = new Date(currentHourStart.getTime() + 60 * 60 * 1000);
+
+							$scope.plotbandHour.from = currentHourStart;
+							$scope.plotbandHour.to = currentHourEnd;
+
+							$.each(data.data, function (i, item) {
+								$scope.energy_price_today[i] = [ item.datum, item.hour_price ];
+								$scope.earned_money_today[i] = [ item.datum, item.earned_money ];
+								$scope.forecast_today[i] = [ item.datum, item.forecast ];
+								$scope.battery_percentage_today[i] = [ item.datum, item.battery_capacity_percentage ];
+							});
+
+							// Add hour_type color bands for today
+							var typeBands = buildHourTypeBands(data.data, null);
+							if ($scope.chartDefinitionToday.xAxis && $scope.chartDefinitionToday.xAxis.plotBands) {
+								$scope.chartDefinitionToday.xAxis.plotBands = [$scope.plotbandHour].concat(typeBands);
+							}
+							var lastT = $scope.earned_money_today[$scope.earned_money_today.length - 1];
+							$scope.earnedTotals.today = lastT ? lastT[1] : null;
+							$scope.batteryPlan.today = parseBatteryPlanFromUV(data.data);
+						}
+						return;
+					}
+				}
+			}
+		}
+		$scope.energy_price_today = [];
+		$scope.earned_money_today = [];
+		$scope.forecast_today = [];
+		$scope.battery_percentage_today = [];
+		$scope.batteryPlan.today = [];
+	}
+
+	$scope.parseTomorrowStats = function(data) {
+		if (typeof data.result != 'undefined') {
+			if (typeof data.status != 'undefined') {
+				if (data.status == "OK") {
+					data = JSON.parse(data.result[0].Value);
+					if (data.status == true) {
+						const tomorrow = new Date();
+						tomorrow.setDate(tomorrow.getDate() + 1);
+						var tsArray = [];
+						$.each(data.data, function (i, item) {
+							var ddate = Date.UTC(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), i / 4, (i % 4) * 15, 0, 0);
+							tsArray[i] = ddate;
+							$scope.energy_price_tomorrow[i] = [ ddate, item.hour_price ];
+							$scope.earned_money_tomorrow[i] = [ ddate, item.earned_money ];
+							$scope.forecast_tomorrow[i] = [ ddate, item.forecast ];
+							$scope.battery_percentage_tomorrow[i] = [ ddate, item.battery_capacity_percentage ];
+						});
+
+						// Add hour_type color bands for tomorrow
+						var typeBands = buildHourTypeBands(data.data, tsArray);
+						if ($scope.chartDefinitionTomorrow.xAxis && $scope.chartDefinitionTomorrow.xAxis.plotBands) {
+							$scope.chartDefinitionTomorrow.xAxis.plotBands = typeBands;
+						}
+						var lastTm = $scope.earned_money_tomorrow[$scope.earned_money_tomorrow.length - 1];
+						$scope.earnedTotals.tomorrow = lastTm ? lastTm[1] : null;
+						$scope.batteryPlan.tomorrow = parseBatteryPlanFromUV(data.data);
+						return;
+					}
+				}
+			}
+		}
+		$scope.energy_price_tomorrow = [];
+		$scope.earned_money_tomorrow = [];
+		$scope.forecast_today_tomorrow = [];
+		$scope.battery_percentage_tomorrow = [];
+		$scope.batteryPlan.tomorrow = [];
+	}
+
+	$scope.getStats = function() {
+		$http({
+			url: "json.htm?type=command&param=getuservariable&idx=" + $scope.UVTodayIdx,
+			async: false,
+			dataType: 'json'
+		}).then(function successCallback(response) {
+			$scope.parseTodayStats(response.data);
+		}, function errorCallback(response) {
+			$scope.parseTodayStats([]);
+		});
+		$http({
+			url: "json.htm?type=command&param=getuservariable&idx=" + $scope.UVTomorrowIdx,
+			async: false,
+			dataType: 'json'
+		}).then(function successCallback(response) {
+			$scope.parseTomorrowStats(response.data);
+		}, function errorCallback(response) {
+			$scope.parseTomorrowStats([]);
+		});
+	}
+
+	// Parse a watt string like "527 Watt" to a number
+	function parseWatt(str) {
+		if (!str) return 0;
+		return parseFloat(String(str).replace(' Watt', '').replace(',', '.')) || 0;
+	}
+
+	// Parse a kWh string like "64.793 kWh" to a number
+	function parseKwh(str) {
+		if (!str) return 0;
+		return parseFloat(String(str).replace(' kWh', '').replace(',', '.')) || 0;
+	}
+
+	// Extract HH:MM from a datum string "YYYY-MM-DD HH:MM:SS"
+	function datumToHHMM(datum) {
+		return datum.substring(11, 16);
+	}
+
+	// Add 15 minutes to an HH:MM string
+	function addQuarterHour(hhmm) {
+		var parts = hhmm.split(':');
+		var totalMin = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10) + 15;
+		var h = Math.floor(totalMin / 60) % 24;
+		var m = totalMin % 60;
+		return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+	}
+
+	// Group consecutive charge/discharge slots from a UV data array into plan entries
+	function parseBatteryPlanFromUV(items) {
+		var plan = [];
+		var i = 0;
+		while (i < items.length) {
+			var type = items[i].hour_type;
+			if (type === 'charge' || type === 'discharge') {
+				var start = i;
+				while (i < items.length && items[i].hour_type === type) i++;
+				var startTime = datumToHHMM(items[start].datum);
+				var endTime = i < items.length ? datumToHHMM(items[i].datum) : addQuarterHour(datumToHHMM(items[i - 1].datum));
+				var pct = items[i - 1].battery_capacity_percentage;
+				plan.push({ start: startTime, end: endTime, type: type, pct: pct.toFixed(2) + '%' });
+			} else {
+				i++;
+			}
+		}
+		return plan;
+	}
+
+	$scope.loadEnergySettings = function() {
+		return $http.get('json.htm?type=command&param=getenergydashboarddevices').then(function(response) {
+			var d = response.data;
+			if (d && d.result && d.result.ESettings) {
+				var s = d.result.ESettings;
+				$scope.idP1           = s.idP1                  || -1;
+				$scope.idSolar        = s.idSolar               || -1;
+				$scope.idWeather      = s.idOutsideTempSensor   || -1;
+				$scope.idGas          = s.idGas                 || -1;
+				$scope.idPlan         = s.idTextSensor          || -1;
+				$scope.idBattEnergyIn  = s.idBatteryEnergyIn   || -1;
+				$scope.idBattEnergyOut = s.idBatteryEnergyOut  || -1;
+				$scope.idBattSoc      = s.idBatterySoc          || -1;
+				$scope.idBattWatt     = s.idBatteryWatt         || -1;
+				$scope.idBattVolt     = s.idBatteryVolt         || -1;
+
+				// Build watchedIds for live socket device_update events
+				$scope.watchedIds = {};
+				[$scope.idP1, $scope.idSolar, $scope.idWeather, $scope.idGas,
+				 $scope.idPlan, $scope.idBattEnergyIn, $scope.idBattEnergyOut,
+				 $scope.idBattSoc, $scope.idBattWatt, $scope.idBattVolt
+				].forEach(function(id) {
+					if (id !== -1) $scope.watchedIds[String(id)] = 1;
+				});
+			}
+		});
+	};
+
+	$scope.loadLiveDevices = function() {
+		var ids = [];
+		if ($scope.idP1 !== -1)           ids.push($scope.idP1);
+		if ($scope.idSolar !== -1)        ids.push($scope.idSolar);
+		if ($scope.idWeather !== -1)      ids.push($scope.idWeather);
+		if ($scope.idGas !== -1)          ids.push($scope.idGas);
+		if ($scope.idPlan !== -1)         ids.push($scope.idPlan);
+		if ($scope.idBattEnergyIn !== -1) ids.push($scope.idBattEnergyIn);
+		if ($scope.idBattEnergyOut !== -1) ids.push($scope.idBattEnergyOut);
+		if ($scope.idBattSoc !== -1)      ids.push($scope.idBattSoc);
+		if ($scope.idBattWatt !== -1)     ids.push($scope.idBattWatt);
+		if ($scope.idBattVolt !== -1)     ids.push($scope.idBattVolt);
+
+		if (ids.length === 0) return;
+
+		$http.get('json.htm?type=command&param=getdevices&rid=' + ids.join(','))
+			.then(function(response) {
+				var result = response.data && response.data.result;
+				if (!result) return;
+
+				var byIdx = {};
+				result.forEach(function(item) { byIdx[String(item.idx)] = item; });
+
+				function get(id) { return id !== -1 ? (byIdx[String(id)] || null) : null; }
+
+				// Grid/P1
+				var gr = get($scope.idP1);
+				if (gr) {
+					$scope.grid = {
+						usageWatt:         parseWatt(gr.Usage),
+						usageDelivWatt:    parseWatt(gr.UsageDeliv),
+						counterToday:      gr.CounterToday || '',
+						counterDelivToday: gr.CounterDelivToday || '',
+						price:             gr.hasOwnProperty('price') ? (parseFloat(gr.price) || 0) : null
+					};
+				}
+
+				// Solar
+				var sl = get($scope.idSolar);
+				if (sl) {
+					$scope.solar = {
+						usageWatt:    parseWatt(sl.Usage),
+						counterToday: sl.CounterToday || ''
+					};
+				}
+
+				// Weather
+				var wt = get($scope.idWeather);
+				if (wt) {
+					$scope.weather = {
+						temp:        parseFloat(wt.Temp) || 0,
+						humidity:    parseFloat(wt.Humidity) || 0,
+						barometer:   parseInt(wt.Barometer, 10) || 0,
+						forecastStr: wt.ForecastStr || '',
+						dewPoint:    parseFloat(wt.DewPoint) || 0
+					};
+				}
+
+				// Gas
+				var gs = get($scope.idGas);
+				if (gs) {
+					$scope.gas = {
+						counterToday: gs.CounterToday || '',
+						counter:      gs.Counter || ''
+					};
+				}
+
+				// Battery energy meters
+				var batImportedKwh = 0, batExportedKwh = 0;
+				var bi = get($scope.idBattEnergyIn);
+				if (bi) batImportedKwh = parseKwh(bi.CounterToday);
+				var bo = get($scope.idBattEnergyOut);
+				if (bo) batExportedKwh = parseKwh(bo.CounterToday);
+				$scope.battery = { importedKwh: batImportedKwh, exportedKwh: batExportedKwh };
+
+				// Battery live (SOC, Watt, Voltage)
+				$scope.batteryLive = null;
+				var soc = get($scope.idBattSoc);
+				var bw  = get($scope.idBattWatt);
+				var bv  = get($scope.idBattVolt);
+				if (soc || bw || bv) {
+					$scope.batteryLive = {
+						soc:     soc ? soc.Data : null,
+						watt:    bw  ? (bw.Usage || bw.Data) : null,
+						voltage: bv  ? bv.Data : null
+					};
+				}
+
+				// Energy balance — corrected for battery trading
+				// battery_net  = energy stored net in battery today (positive = charged)
+				// house        = P1_import + solar - P1_export - battery_net
+				// self_suff    = 1 - net_grid_draw / house  (net_grid = P1_import - P1_export)
+				if ($scope.grid && $scope.solar) {
+					var solarKwh   = parseKwh($scope.solar.counterToday);
+					var importKwh  = parseKwh($scope.grid.counterToday);
+					var exportKwh  = parseKwh($scope.grid.counterDelivToday);
+					var batNet     = batImportedKwh - batExportedKwh;
+					var houseKwh   = importKwh + solarKwh - exportKwh - batNet;
+					var netGrid    = importKwh - exportKwh;
+					var selfSuff   = (houseKwh > 0) ? Math.max(0, (1 - Math.max(0, netGrid) / houseKwh) * 100) : 0;
+					$scope.balance = {
+						selfSufficiency: selfSuff,
+						solarToday:      solarKwh.toFixed(1),
+						houseToday:      houseKwh,
+						batNet:          batNet
+					};
+				}
+
+				$scope.lastUpdate = new Date().toLocaleTimeString();
+			}, function() {
+				// Silently ignore errors to avoid breaking the rest of the page
+			});
+	};
+
+	// Look up earned money from the cumulative series.
+	// earned_money[T] = cumulative earnings at the END of the [T, T+15min] period.
+	// Returns the last data point with timestamp strictly before the given HH:MM,
+	// so that for slot [start, end]: delta = lookupEarned(end) - lookupEarned(start).
+	// Example: slot 23:00->23:15 → base=data[22:45], end=data[23:00] → correct delta.
+	// isToday=true  → earned_money_today  (timestamps are local-time date strings)
+	// isToday=false → earned_money_tomorrow (timestamps are Date.UTC values)
+	$scope.lookupEarned = function(hhmm, isToday) {
+		var arr = isToday ? $scope.earned_money_today : $scope.earned_money_tomorrow;
+		if (!arr || arr.length === 0) return null;
+		var parts = hhmm.split(':');
+		var targetMin = parseInt(parts[0], 10) * 60 + (parseInt(parts[1], 10) || 0);
+		var result = null;
+		for (var i = 0; i < arr.length; i++) {
+			if (arr[i][1] == null) continue;
+			var d = new Date(arr[i][0]);
+			var entryMin = (isToday ? d.getHours() : d.getUTCHours()) * 60 + (isToday ? d.getMinutes() : d.getUTCMinutes());
+			if (entryMin < targetMin) result = arr[i][1];
+		}
+		return result;
+	};
+
+	$scope.lookupEarnedDelta = function(startHhmm, endHhmm, isToday) {
+		var startVal = $scope.lookupEarned(startHhmm, isToday);
+		var endVal   = $scope.lookupEarned(endHhmm,   isToday);
+		if (endVal === null || startVal === null) return null;
+		return endVal - startVal;
+	};
+
+	$scope.planSlotTotal = function(isToday) {
+		var plan = isToday ? $scope.batteryPlan.today : $scope.batteryPlan.tomorrow;
+		if (!plan || plan.length === 0) return null;
+		var sum = 0, hasAny = false;
+		for (var i = 0; i < plan.length; i++) {
+			var delta = $scope.lookupEarnedDelta(plan[i].start, plan[i].end, isToday);
+			if (delta !== null) { sum += delta; hasAny = true; }
+		}
+		return hasAny ? sum : null;
+	};
+
+	function computeIsNight(sunriseStr, sunsetStr) {
+		var now = new Date();
+		function toMinutes(s) {
+			var p = s.split(':');
+			return parseInt(p[0], 10) * 60 + parseInt(p[1], 10);
+		}
+		var nowMin  = now.getHours() * 60 + now.getMinutes();
+		return nowMin < toMinutes(sunriseStr) || nowMin >= toMinutes(sunsetStr);
+	}
+
+	$scope.$on('time_update', function(event, data) {
+		if (data.serverTime) {
+			$scope.currentTime = data.serverTime.substring(11);
+		}
+		if (data.sunrise && data.sunset) {
+			$scope.sunrise = data.sunrise;
+			$scope.sunset  = data.sunset;
+			$scope.isNight = computeIsNight(data.sunrise, data.sunset);
+		}
+	});
+
+	init();
+
+	function init() {
+		$scope.chartDefinitionToday = {
+				...$scope.chartDefinitionBase,
+		        series: [
+					$scope.chartSeriesEnergyPrice,
+					$scope.chartSeriesEarnedMoney,
+					$scope.chartSeriesSolarForecast,
+					$scope.chartSeriesBatteryPercentage
+				]
+		};
+
+		$scope.chartDefinitionTomorrow = JSON.parse(JSON.stringify($scope.chartDefinitionBase));
+		$scope.chartDefinitionTomorrow.series = [
+			JSON.parse(JSON.stringify($scope.chartSeriesEnergyPrice)),
+			JSON.parse(JSON.stringify($scope.chartSeriesEarnedMoney)),
+			JSON.parse(JSON.stringify($scope.chartSeriesSolarForecast)),
+			JSON.parse(JSON.stringify($scope.chartSeriesBatteryPercentage))
+		];
+		$scope.chartDefinitionTomorrow.title.text = $.t('Tomorrow') + ' Hourly forecast Energy Price/PV';
+
+		$scope.chartDefinitionToday.series[0].data = $scope.energy_price_today;
+		$scope.chartDefinitionToday.series[1].data = $scope.earned_money_today;
+		$scope.chartDefinitionToday.series[2].data = $scope.forecast_today;
+		$scope.chartDefinitionToday.series[3].data = $scope.battery_percentage_today;
+
+		$scope.chartDefinitionToday.xAxis.plotBands = [
+			$scope.plotbandHour
+		];
+
+		$scope.chartDefinitionTomorrow.series[0].data = $scope.energy_price_tomorrow;
+		$scope.chartDefinitionTomorrow.series[1].data = $scope.earned_money_tomorrow;
+		$scope.chartDefinitionTomorrow.series[2].data = $scope.forecast_tomorrow;
+		$scope.chartDefinitionTomorrow.series[3].data = $scope.battery_percentage_tomorrow;
+
+		$scope.chartDefinitionTomorrow.xAxis.plotBands = [];
+
+		$scope.getStats();
+
+		$scope.loadEnergySettings().then(function() {
+			$scope.loadLiveDevices();
+		});
+
+		$scope.liveTimer = $interval(function() {
+			$scope.loadLiveDevices();
+		}, 60000);
+
+		var reloadPending = false;
+		$scope.$on('device_update', function(event, device) {
+			if ($scope.watchedIds[device.idx] && !reloadPending) {
+				reloadPending = true;
+				setTimeout(function() {
+					reloadPending = false;
+					$scope.loadLiveDevices();
+				}, 500);
+			}
+		});
+	}
+
+	$scope.$on('$destroy', function () {
+		if (typeof $scope.mytimer !== "undefined") {
+			$interval.cancel($scope.mytimer);
+			$scope.mytimer = undefined;
+		}
+		if (typeof $scope.liveTimer !== "undefined") {
+			$interval.cancel($scope.liveTimer);
+			$scope.liveTimer = undefined;
+		}
+	});
+});
+</script>

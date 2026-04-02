@@ -256,19 +256,19 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 
 		$scope.$watch(function () { return $location.path(); }, function (path) {
 			var isDash2 = path === '/Dashboard'
-				&& $scope.$root.config.EnableTabDashboard2
+				&& $scope.$root.config.EnableTabDashboardDynamic
 				&& !(window.myglobals && window.myglobals.ismobile);
 			if (isDash2) {
-				body.classList.add('db2-dashboard-active');
+				body.classList.add('dd-dashboard-active');
 			} else {
-				body.classList.remove('db2-dashboard-active');
-				body.classList.remove('db2-navbar-hidden');
+				body.classList.remove('dd-dashboard-active');
+				body.classList.remove('dd-navbar-hidden');
 			}
 		});
 
 		$scope.$on('$destroy', function () {
-			body.classList.remove('db2-dashboard-active');
-			body.classList.remove('db2-navbar-hidden');
+			body.classList.remove('dd-dashboard-active');
+			body.classList.remove('dd-navbar-hidden');
 		});
 	});
 
@@ -355,7 +355,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			}
 
 			$.myglobals.DashboardType = $rootScope.config.DashboardType;
-			$.myglobals.enableDashboard2 = $rootScope.config.EnableTabDashboard2;
+			$.myglobals.enableDashboardDynamic = $rootScope.config.EnableTabDashboardDynamic;
 			$.myglobals.DateFormat = $rootScope.config.DateFormat;
 
 			if (typeof $rootScope.config.WindScale != 'undefined') {
@@ -385,7 +385,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		$rootScope.currentyear = new Date().getFullYear();
 		$rootScope.config = {
 			EnableTabDashboard: false,
-			EnableTabDashboard2: false,
+			EnableTabDashboardDynamic: false,
 			EnableTabFloorplans: false,
 			EnableTabLights: false,
 			EnableTabScenes: false,
@@ -446,14 +446,19 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.EnableTabTemp = data.result.EnableTabTemp;
 						$rootScope.config.EnableTabWeather = data.result.EnableTabWeather;
 						$rootScope.config.EnableTabUtility = data.result.EnableTabUtility;
-						$rootScope.config.EnableTabDashboard2 = data.result.EnableTabDashboard2 || false;
+						$rootScope.config.EnableTabDashboardDynamic = data.result.EnableTabDashboardDynamic || false;
 						$rootScope.config.ShowUpdatedEffect = data.result.ShowUpdatedEffect;
 						if (typeof data.UserName != 'undefined') {
 							$rootScope.config.userName = data.UserName;
-							// localStorage fallback until backend exposes EnableTabDashboard2 via getconfig
-							if (!$rootScope.config.EnableTabDashboard2) {
+							// localStorage fallback until backend exposes EnableTabDashboardDynamic via getconfig
+							if (!$rootScope.config.EnableTabDashboardDynamic) {
 								try {
-									$rootScope.config.EnableTabDashboard2 = localStorage.getItem('dz_use_dashboard2_' + data.UserName) === '1';
+									var _lsOld = localStorage.getItem('dz_use_dashboard2_' + data.UserName);
+									if (_lsOld !== null) {
+										localStorage.setItem('dz_use_dashboard_dynamic_' + data.UserName, _lsOld);
+										localStorage.removeItem('dz_use_dashboard2_' + data.UserName);
+									}
+									$rootScope.config.EnableTabDashboardDynamic = localStorage.getItem('dz_use_dashboard_dynamic_' + data.UserName) === '1';
 								} catch(e) {}
 							}
 							$rootScope.config.appversion = data.version;

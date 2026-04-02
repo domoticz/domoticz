@@ -8,7 +8,7 @@
  * See doc/Theming.wiki for the full variable reference.
  */
 
-/* ── Dashboard2 Widget Color Tokens ───────────────────────────
+/* ── DashboardDynamic Widget Color Tokens ───────────────────────────
    Override these in a custom theme to restyle the widgets.
    ─────────────────────────────────────────────────────────────*/
 :root {
@@ -24,7 +24,6 @@
     --dz-widget-energy-net-neg:  #ef5350;
 
     /* Stat card surface */
-    --dz-widget-stat-surface:    rgba(255,255,255,0.05);
     --dz-widget-stat-radius:     8px;
     --dz-widget-stat-muted:      rgba(255,255,255,0.55);
 
@@ -44,7 +43,7 @@
 }
 
 /* ── Container ────────────────────────────────────────────── */
-.db2-page {
+.dd-page {
     position: relative;
     min-height: 100%;
     padding: 8px;
@@ -53,7 +52,7 @@
 }
 
 /* ── Compact top bar (view mode) ─────────────────────────── */
-.db2-topbar {
+.dd-topbar {
     position: fixed;
     top: 50px;
     left: 16px;
@@ -71,21 +70,21 @@
 }
 
 /* When navbar is hidden, float the topbar pill to the top edge */
-body.db2-navbar-hidden .db2-topbar {
+body.dd-navbar-hidden .dd-topbar {
     top: 8px;
 }
 
-.db2-topbar:hover {
+.dd-topbar:hover {
     opacity: 1;
 }
 
-.db2-topbar-left {
+.dd-topbar-left {
     display: flex;
     align-items: center;
     gap: 4px;
 }
 
-.db2-topbar-name {
+.dd-topbar-name {
     font-size: 12px;
     font-weight: 600;
     color: var(--dz-body-text);
@@ -95,7 +94,7 @@ body.db2-navbar-hidden .db2-topbar {
     white-space: nowrap;
 }
 
-.db2-topbar-btn {
+.dd-topbar-btn {
     background: transparent !important;
     border: none !important;
     color: var(--dz-body-text) !important;
@@ -105,31 +104,31 @@ body.db2-navbar-hidden .db2-topbar {
     line-height: 1.4 !important;
 }
 
-.db2-topbar-btn:hover {
+.dd-topbar-btn:hover {
     color: var(--dz-btn-primary-bg, #337ab7) !important;
 }
 
-.db2-topbar-btn:focus,
-.db2-topbar-btn:active {
+.dd-topbar-btn:focus,
+.dd-topbar-btn:active {
     outline: none !important;
     box-shadow: none !important;
 }
 
-.db2-topbar-edit {
+.dd-topbar-edit {
     border-left: 1px solid var(--dz-border-color, rgba(255,255,255,0.15)) !important;
     margin-left: 2px;
     padding-left: 8px !important;
 }
 
 /* Navbar toggle button: accent when navbar is currently visible */
-.db2-topbar-btn.db2-topbar-nav-on {
+.dd-topbar-btn.dd-topbar-nav-on {
     color: #fff !important;
     background: var(--dz-btn-primary-bg, #337ab7) !important;
     border-radius: 10px;
 }
 
 /* ── Full Edit Toolbar ────────────────────────────────────── */
-.db2-toolbar {
+.dd-toolbar {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -142,7 +141,7 @@ body.db2-navbar-hidden .db2-topbar {
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-.db2-toolbar-title {
+.dd-toolbar-title {
     font-size: 1.05em;
     font-weight: 600;
     flex: 1;
@@ -151,22 +150,22 @@ body.db2-navbar-hidden .db2-topbar {
     cursor: default;
 }
 
-.db2-title-editable {
+.dd-title-editable {
     cursor: pointer;
     border-bottom: 1px dashed transparent;
 }
 
-.db2-title-editable:hover {
+.dd-title-editable:hover {
     border-bottom-color: var(--dz-btn-primary-bg);
 }
 
-.db2-toolbar-title-edit {
+.dd-toolbar-title-edit {
     flex: 1;
     min-width: 150px;
     max-width: 300px;
 }
 
-.db2-toolbar-actions {
+.dd-toolbar-actions {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -174,46 +173,46 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 /* Keep the dropdown toggle button dark when open (Bootstrap overrides it white) */
-.db2-toolbar .btn-group.open > .dropdown-toggle {
+.dd-toolbar .btn-group.open > .dropdown-toggle {
     background: transparent !important;
     color: var(--dz-body-text, #fff) !important;
     box-shadow: none !important;
 }
 
 /* Toolbar dropdown menu: match the navbar dark theme */
-.db2-toolbar .dropdown-menu {
+.dd-toolbar .dropdown-menu {
     background: var(--dz-nav-bg, #283750);
     border-color: rgba(255,255,255,0.15);
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
-.db2-toolbar .dropdown-menu > li > a {
+.dd-toolbar .dropdown-menu > li > a {
     color: var(--dz-body-text, #fff);
 }
 
-.db2-toolbar .dropdown-menu > li > a:hover,
-.db2-toolbar .dropdown-menu > li > a:focus {
+.dd-toolbar .dropdown-menu > li > a:hover,
+.dd-toolbar .dropdown-menu > li > a:focus {
     background: rgba(255,255,255,0.1);
     color: #fff;
 }
 
-.db2-toolbar .dropdown-menu > li.active > a,
-.db2-toolbar .dropdown-menu > li.active > a:hover {
+.dd-toolbar .dropdown-menu > li.active > a,
+.dd-toolbar .dropdown-menu > li.active > a:hover {
     background: var(--dz-btn-primary-bg, #337ab7);
     color: #fff;
 }
 
-.db2-toolbar .dropdown-menu .divider {
+.dd-toolbar .dropdown-menu .divider {
     background-color: rgba(255,255,255,0.15);
 }
 
-.db2-dirty-indicator {
+.dd-dirty-indicator {
     font-size: 0.85em;
     color: var(--dz-body-text);
 }
 
 /* ── Empty state ──────────────────────────────────────────── */
-.db2-empty-state {
+.dd-empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -225,19 +224,19 @@ body.db2-navbar-hidden .db2-topbar {
     padding: 40px;
 }
 
-.db2-empty-state .db2-empty-icon {
+.dd-empty-state .dd-empty-icon {
     font-size: 64px;
     opacity: 0.3;
     color: var(--dz-body-text);
 }
 
-.db2-empty-state h3 {
+.dd-empty-state h3 {
     font-size: 1.4em;
     margin: 0;
     color: var(--dz-body-text);
 }
 
-.db2-empty-state p {
+.dd-empty-state p {
     font-size: 0.95em;
     max-width: 360px;
     margin: 0;
@@ -245,7 +244,7 @@ body.db2-navbar-hidden .db2-topbar {
     opacity: 0.75;
 }
 
-.db2-empty-state p strong {
+.dd-empty-state p strong {
     opacity: 1;
     color: var(--dz-btn-primary-bg, #337ab7);
     font-weight: 600;
@@ -253,23 +252,23 @@ body.db2-navbar-hidden .db2-topbar {
 
 /* Remove Bootstrap's gradient from buttons inside the dashboard page
    so they render as flat solid colors matching the CSS variable theme */
-.db2-page .btn-primary,
-.db2-page .btn-primary:hover,
-.db2-page .btn-primary:focus,
-.db2-page .btn-warning,
-.db2-page .btn-warning:hover,
-.db2-page .btn-warning:focus {
+.dd-page .btn-primary,
+.dd-page .btn-primary:hover,
+.dd-page .btn-primary:focus,
+.dd-page .btn-warning,
+.dd-page .btn-warning:hover,
+.dd-page .btn-warning:focus {
     background-image: none;
 }
 
 /* ── Widget Library Panel ─────────────────────────────────── */
-.db2-library-panel {
+.dd-library-panel {
     position: fixed;
     top: 0;
     right: 0;
     bottom: 0;
     width: 320px;
-    background: var(--dz-panel-bg);
+    background: var(--dz-nav-bg);
     color: var(--dz-body-text);
     border-left: 1px solid rgba(255,255,255,0.08);
     box-shadow: -4px 0 16px var(--dz-widget-shadow);
@@ -281,11 +280,11 @@ body.db2-navbar-hidden .db2-topbar {
     overflow: hidden;
 }
 
-.db2-library-panel.open {
+.dd-library-panel.open {
     transform: translateX(0);
 }
 
-.db2-library-panel-header {
+.dd-library-panel-header {
     padding: 12px 16px;
     border-bottom: 1px solid rgba(255,255,255,0.08);
     display: flex;
@@ -296,7 +295,7 @@ body.db2-navbar-hidden .db2-topbar {
     color: var(--dz-body-text);
 }
 
-.db2-panel-close {
+.dd-panel-close {
     background: transparent;
     border: none;
     color: var(--dz-body-text);
@@ -306,29 +305,29 @@ body.db2-navbar-hidden .db2-topbar {
     cursor: pointer;
     opacity: 0.7;
 }
-.db2-panel-close:hover {
+.dd-panel-close:hover {
     opacity: 1;
 }
 
-.db2-library-panel-body {
+.dd-library-panel-body {
     overflow-y: auto;
     flex: 1;
     padding: 8px;
 }
 
-.db2-library-search {
+.dd-library-search {
     padding: 8px;
     position: sticky;
     top: 0;
-    background: var(--dz-panel-bg);
+    background: var(--dz-nav-bg);
     z-index: 1;
 }
 
-.db2-library-category {
+.dd-library-category {
     margin-bottom: 12px;
 }
 
-.db2-library-category-label {
+.dd-library-category-label {
     font-size: 0.75em;
     font-weight: 700;
     text-transform: uppercase;
@@ -338,7 +337,7 @@ body.db2-navbar-hidden .db2-topbar {
     opacity: 0.7;
 }
 
-.db2-library-item {
+.dd-library-item {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -350,11 +349,11 @@ body.db2-navbar-hidden .db2-topbar {
     color: var(--dz-body-text);
 }
 
-.db2-library-item:hover {
+.dd-library-item:hover {
     background: rgba(255,255,255,0.12);
 }
 
-.db2-library-item-icon {
+.dd-library-item-icon {
     width: 36px;
     height: 36px;
     display: flex;
@@ -365,19 +364,19 @@ body.db2-navbar-hidden .db2-topbar {
     flex-shrink: 0;
 }
 
-.db2-library-item-icon i,
-.db2-library-item-icon .fa-solid,
-.db2-library-item-icon .fa-regular {
+.dd-library-item-icon i,
+.dd-library-item-icon .fa-solid,
+.dd-library-item-icon .fa-regular {
     font-size: 18px;
     color: rgba(255, 255, 255, 0.85);
 }
 
-.db2-library-item-info {
+.dd-library-item-info {
     flex: 1;
     min-width: 0;
 }
 
-.db2-library-item-label {
+.dd-library-item-label {
     font-weight: 600;
     font-size: 0.9em;
     white-space: nowrap;
@@ -385,7 +384,7 @@ body.db2-navbar-hidden .db2-topbar {
     text-overflow: ellipsis;
 }
 
-.db2-library-item-desc {
+.dd-library-item-desc {
     font-size: 0.78em;
     color: var(--dz-body-text);
     white-space: nowrap;
@@ -395,7 +394,7 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 /* ── Loading overlay ──────────────────────────────────────── */
-.db2-loading {
+.dd-loading {
     position: absolute;
     inset: 0;
     background: var(--dz-panel-bg);
@@ -407,18 +406,18 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 /* ── GridStack Integration ────────────────────────────────── */
-.db2-grid.grid-stack {
+.dd-grid.grid-stack {
     background: transparent;
     min-width: 600px;
 }
 
-.db2-page {
+.dd-page {
     overflow-x: auto;
 }
 
 /* GridStack's bundled CSS omits top/left/right/bottom on grid-stack-item-content.
    Force it to fill the full grid cell via absolute positioning. */
-.db2-grid .grid-stack-item-content {
+.dd-grid .grid-stack-item-content {
     position: absolute !important;
     top: 0 !important;
     left: 0 !important;
@@ -430,30 +429,30 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 /* Widget cell: the container inside each GridStack cell */
-.db2-widget-cell {
+.dd-widget-cell {
     height: 100%;
     overflow: hidden;
 }
 
 /* The db2-widget-wrapper attribute directive host element must also be full height */
-.db2-widget-cell > div {
+.dd-widget-cell > div {
     height: 100%;
     display: block;
 }
 
 /* Edit mode: show grid column guides and item borders */
-.db2-page.edit-mode .db2-grid.grid-stack {
+.dd-page.edit-mode .dd-grid.grid-stack {
     background-image:
         repeating-linear-gradient(
             to right,
-            var(--dz-db2-grid-line) 0,
-            var(--dz-db2-grid-line) 1px,
+            var(--dz-dd-grid-line) 0,
+            var(--dz-dd-grid-line) 1px,
             transparent 1px,
             transparent calc(100% / 12)
         );
 }
 
-.db2-page.edit-mode .db2-grid .grid-stack-item-content {
+.dd-page.edit-mode .dd-grid .grid-stack-item-content {
     outline: 1px dashed var(--dz-btn-warning-bg);
     border-radius: 4px;
 }
@@ -469,7 +468,7 @@ body.db2-navbar-hidden .db2-topbar {
 /* Resize handle — only visible in edit mode.
    GridStack's CSS applies rotate(-45deg) to .ui-resizable-se which turns a
    square into a diamond. Override that and use a plain corner indicator. */
-.db2-page.edit-mode .db2-grid .grid-stack-item > .ui-resizable-se {
+.dd-page.edit-mode .dd-grid .grid-stack-item > .ui-resizable-se {
     transform: none;
     background-image: none;
     background-color: var(--dz-btn-warning-bg);
@@ -483,10 +482,10 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 /* Drag handle cursor */
-.db2-widget-drag-handle {
+.dd-widget-drag-handle {
     cursor: grab;
 }
-.db2-widget-drag-handle:active {
+.dd-widget-drag-handle:active {
     cursor: grabbing;
 }
 
@@ -496,7 +495,7 @@ body.db2-navbar-hidden .db2-topbar {
  * so they match the dark panel / navbar look without touching the global
  * --dz-widget-* variables used by the existing device tile tables.
  */
-.db2-widget {
+.dd-widget {
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -508,7 +507,7 @@ body.db2-navbar-hidden .db2-topbar {
     transition: box-shadow 0.2s;
 }
 
-.db2-widget-header {
+.dd-widget-header {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -521,14 +520,14 @@ body.db2-navbar-hidden .db2-topbar {
     user-select: none;
 }
 
-.db2-widget-icon {
+.dd-widget-icon {
     font-size: 14px;
     color: var(--dz-body-text);
     flex-shrink: 0;
     opacity: 0.7;
 }
 
-.db2-widget-title {
+.dd-widget-title {
     font-size: 0.85em;
     font-weight: 600;
     color: var(--dz-body-text);
@@ -538,13 +537,13 @@ body.db2-navbar-hidden .db2-topbar {
     white-space: nowrap;
 }
 
-.db2-widget-actions {
+.dd-widget-actions {
     display: flex;
     gap: 2px;
     flex-shrink: 0;
 }
 
-.db2-widget-btn.btn {
+.dd-widget-btn.btn {
     background: rgba(255, 255, 255, 0.12);
     border-color: rgba(255, 255, 255, 0.3);
     color: #fff;
@@ -552,22 +551,22 @@ body.db2-navbar-hidden .db2-topbar {
     line-height: 1.4;
 }
 
-.db2-widget-btn.btn:hover,
-.db2-widget-btn.btn:focus {
+.dd-widget-btn.btn:hover,
+.dd-widget-btn.btn:focus {
     background: rgba(255, 255, 255, 0.28);
     border-color: rgba(255, 255, 255, 0.55);
     color: #fff;
     outline: none;
 }
 
-.db2-widget-btn--remove.btn:hover,
-.db2-widget-btn--remove.btn:focus {
+.dd-widget-btn--remove.btn:hover,
+.dd-widget-btn--remove.btn:focus {
     background: #c0392b;
     border-color: #922b21;
     color: #fff;
 }
 
-.db2-widget-body {
+.dd-widget-body {
     flex: 1;
     overflow: auto;
     position: relative;
@@ -575,7 +574,7 @@ body.db2-navbar-hidden .db2-topbar {
     color: var(--dz-body-text);
 }
 
-.db2-widget-error {
+.dd-widget-error {
     padding: 12px 16px;
     color: var(--dz-status-timeout);
     display: flex;
@@ -584,31 +583,31 @@ body.db2-navbar-hidden .db2-topbar {
     font-size: 0.85em;
 }
 
-.db2-widget--loading {
+.dd-widget--loading {
     opacity: 0.7;
     pointer-events: none;
 }
 
 /* ── Responsive: collapse panel on small screens ───────────── */
 @media (max-width: 768px) {
-    .db2-library-panel {
+    .dd-library-panel {
         width: 100%;
     }
 
-    .db2-toolbar-title {
+    .dd-toolbar-title {
         width: 100%;
     }
 }
 
 /* ── Chart widgets ─────────────────────────────────────────── */
-.db2-widget--temperature-graph > .db2-widget-body,
-.db2-widget--energy-chart > .db2-widget-body {
+.dd-widget--temperature-graph > .dd-widget-body,
+.dd-widget--energy-chart > .dd-widget-body {
     padding: 0;
     overflow: hidden;
     position: relative;
 }
 
-.db2-chart-container {
+.dd-chart-container {
     position: absolute;
     inset: 0;
     display: flex;
@@ -616,7 +615,7 @@ body.db2-navbar-hidden .db2-topbar {
     justify-content: center;
 }
 
-.db2-chart-wrap {
+.dd-chart-wrap {
     position: absolute;
     inset: 0;
     display: flex;
@@ -624,35 +623,35 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 
-.db2-highchart {
+.dd-highchart {
     width: 100%;
     flex: 1;
     min-height: 0;
 }
 
-.db2-chart-unconfigured {
+.dd-chart-unconfigured {
     text-align: center;
     color: var(--dz-body-text);
     opacity: 0.5;
     padding: 20px;
 }
 
-.db2-chart-unconfigured i,
-.db2-chart-unconfigured .fa-solid {
+.dd-chart-unconfigured i,
+.dd-chart-unconfigured .fa-solid {
     font-size: 28px;
     display: block;
     margin-bottom: 8px;
 }
 
 /* ── Stat Counter ─────────────────────────────────────────── */
-.db2-stat-counter {
+.dd-stat-counter {
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.db2-stat {
+.dd-stat {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -663,7 +662,7 @@ body.db2-navbar-hidden .db2-topbar {
     border-top: none;
 }
 
-.db2-stat-label {
+.dd-stat-label {
     font-size: 0.8em;
     color: var(--dz-body-text);
     text-transform: uppercase;
@@ -671,14 +670,14 @@ body.db2-navbar-hidden .db2-topbar {
     margin-bottom: 4px;
 }
 
-.db2-stat-value {
+.dd-stat-value {
     font-size: 2.4em;
     font-weight: 700;
     line-height: 1;
     color: var(--dz-body-text);
 }
 
-.db2-stat-unit {
+.dd-stat-unit {
     font-size: 1em;
     color: var(--dz-body-text);
     margin-top: 2px;
@@ -686,25 +685,25 @@ body.db2-navbar-hidden .db2-topbar {
 
 /* ── Weather Widget ───────────────────────────────────────── */
 /* Weather widget body: no padding, use relative positioning so children can fill it */
-.db2-widget--weather > .db2-widget-body {
+.dd-widget--weather > .dd-widget-body {
     padding: 0;
     overflow: hidden;
     position: relative;
 }
 
-.db2-weather {
+.dd-weather {
     position: absolute;
     inset: 0;
     overflow: hidden;
 }
 
-.db2-weather-configured {
+.dd-weather-configured {
     position: absolute;
     inset: 0;
 }
 
 /* Scene fills entire widget background */
-.db2-weather-scene-bg {
+.dd-weather-scene-bg {
     position: absolute;
     inset: 0;
     overflow: hidden;
@@ -712,7 +711,7 @@ body.db2-navbar-hidden .db2-topbar {
     pointer-events: none;
 }
 
-.db2-weather-scene-bg .fcw-scene {
+.dd-weather-scene-bg .fcw-scene {
     top: 5px;
     left: auto;
     right: 5px;
@@ -721,7 +720,7 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 /* Text content anchored to bottom */
-.db2-weather-content {
+.dd-weather-content {
     position: absolute;
     left: 10px;
     right: 10px;
@@ -731,7 +730,7 @@ body.db2-navbar-hidden .db2-topbar {
     gap: 4px;
 }
 
-.db2-weather-temp {
+.dd-weather-temp {
     font-size: 2.2em;
     font-weight: 700;
     color: var(--dz-body-text);
@@ -739,12 +738,12 @@ body.db2-navbar-hidden .db2-topbar {
     line-height: 1;
 }
 
-.db2-weather-unit {
+.dd-weather-unit {
     font-size: 0.6em;
     vertical-align: super;
 }
 
-.db2-weather-details {
+.dd-weather-details {
     display: flex;
     flex-wrap: wrap;
     gap: 6px 12px;
@@ -753,14 +752,14 @@ body.db2-navbar-hidden .db2-topbar {
     text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
-.db2-weather-forecast {
+.dd-weather-forecast {
     font-size: 0.85em;
     color: var(--dz-body-text);
     opacity: 0.85;
     text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
-.db2-weather-desc {
+.dd-weather-desc {
     font-size: 0.8em;
     color: var(--dz-body-text);
     opacity: 0.7;
@@ -768,7 +767,7 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 /* ── Weather Widget — forecast card style ─────────────────── */
-.db2-weather-forecast-card {
+.dd-weather-forecast-card {
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -776,11 +775,11 @@ body.db2-navbar-hidden .db2-topbar {
     justify-content: center;
     position: relative;
     overflow: hidden;
-    background: var(--dz-widget-stat-surface);
+    background: var(--dz-panel-bg);
     border-radius: var(--dz-widget-stat-radius);
 }
 
-.db2-fc-label {
+.dd-fc-label {
     font-size: 0.85em;
     color: var(--dz-body-text);
     margin-bottom: 4px;
@@ -788,7 +787,7 @@ body.db2-navbar-hidden .db2-topbar {
     z-index: 1;
 }
 
-.db2-fc-value {
+.dd-fc-value {
     font-size: 2em;
     font-weight: 300;
     margin: 4px 0;
@@ -797,12 +796,12 @@ body.db2-navbar-hidden .db2-topbar {
     z-index: 1;
 }
 
-.db2-fc-unit {
+.dd-fc-unit {
     font-size: 0.6em;
     vertical-align: super;
 }
 
-.db2-fc-sub {
+.dd-fc-sub {
     font-size: 0.82em;
     color: var(--dz-body-text);
     text-align: center;
@@ -812,7 +811,7 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 /* Energy Dashboard weather card animation: same offset/opacity as Weather widget Style 2 */
-.db2-stat-card .fc-weather-icon {
+.dd-stat-card .fc-weather-icon {
     position: absolute;
     top: 0;
     left: 0;
@@ -824,7 +823,7 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 /* Style 2 animation: offset 20px right / 12px down, reduced opacity so text stays readable */
-.db2-weather-forecast-card .fc-weather-icon {
+.dd-weather-forecast-card .fc-weather-icon {
     position: absolute;
     top: 0;
     left: 0;
@@ -835,11 +834,11 @@ body.db2-navbar-hidden .db2-topbar {
     pointer-events: none;
 }
 
-/* The weather widget body already has padding:0 via .db2-widget--weather > .db2-widget-body.
-   The db2-weather-fc-style class on the inner .db2-weather div is used by sub-elements only. */
+/* The weather widget body already has padding:0 via .dd-widget--weather > .dd-widget-body.
+   The db2-weather-fc-style class on the inner .dd-weather div is used by sub-elements only. */
 
 /* ── Sun Info ─────────────────────────────────────────────── */
-.db2-sun {
+.dd-sun {
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -848,32 +847,32 @@ body.db2-navbar-hidden .db2-topbar {
     justify-content: center;
 }
 
-.db2-sun-cols {
+.dd-sun-cols {
     display: flex;
     align-items: center;
     justify-content: space-around;
 }
 
-.db2-sun-col {
+.dd-sun-col {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1px;
 }
 
-.db2-sun-divider {
+.dd-sun-divider {
     width: 1px;
     height: 36px;
     background: var(--dz-body-text);
     opacity: 0.2;
 }
 
-.db2-sun-icon {
+.dd-sun-icon {
     font-size: 20px;
     line-height: 1;
 }
 
-.db2-sun-label {
+.dd-sun-label {
     font-size: 0.7em;
     color: var(--dz-body-text);
     opacity: 0.7;
@@ -881,13 +880,13 @@ body.db2-navbar-hidden .db2-topbar {
     letter-spacing: 0.05em;
 }
 
-.db2-sun-time {
+.dd-sun-time {
     font-size: 1.15em;
     font-weight: 600;
     color: var(--dz-body-text);
 }
 
-.db2-sun-daylength {
+.dd-sun-daylength {
     font-size: 0.75em;
     text-align: center;
     opacity: 0.6;
@@ -896,80 +895,93 @@ body.db2-navbar-hidden .db2-topbar {
 /* ── DZ Device Wrappers (Feature 06) ─────────────────────── */
 
 /* Device widget: transparent chrome in view mode — let the native tile stand alone */
-.db2-widget--dz-device,
-.db2-widget--dz-scene {
+.dd-widget--dz-device {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
 }
 
 /* In edit mode restore the widget chrome so the resize/drag boundaries are visible */
-.edit-mode .db2-widget--dz-device,
-.edit-mode .db2-widget--dz-scene {
+.edit-mode .dd-widget--dz-device {
     background: var(--dz-panel-bg) !important;
     border: 1px solid rgba(255,255,255,0.08) !important;
     box-shadow: var(--dz-widget-shadow) !important;
 }
 
-.db2-widget--dz-device > .db2-widget-body,
-.db2-widget--dz-scene > .db2-widget-body {
+.dd-widget--dz-device > .dd-widget-body,
+.dd-widget--dz-favorites > .dd-widget-body {
     padding: 0 !important;
     overflow: hidden !important;
     background: transparent !important;
+    position: relative !important;
 }
 
-.db2-widget--kwh-summary,
-.db2-widget--gas-summary,
-.db2-widget--p1-electricity,
-.db2-widget--battery-status,
-.db2-widget--energy-dashboard,
-.db2-widget--self-sufficiency,
-.db2-widget--setpoint,
-.db2-widget--combo-thermostat,
-.db2-widget--thermostat6 {
+.dd-widget--kwh-summary,
+.dd-widget--gas-summary,
+.dd-widget--p1-electricity,
+.dd-widget--battery-status,
+.dd-widget--energy-dashboard,
+.dd-widget--self-sufficiency,
+.dd-widget--setpoint,
+.dd-widget--combo-thermostat,
+.dd-widget--thermostat6 {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
 }
 
-.edit-mode .db2-widget--kwh-summary,
-.edit-mode .db2-widget--gas-summary,
-.edit-mode .db2-widget--p1-electricity,
-.edit-mode .db2-widget--battery-status,
-.edit-mode .db2-widget--energy-dashboard,
-.edit-mode .db2-widget--self-sufficiency,
-.edit-mode .db2-widget--setpoint,
-.edit-mode .db2-widget--combo-thermostat,
-.edit-mode .db2-widget--thermostat6 {
+.edit-mode .dd-widget--kwh-summary,
+.edit-mode .dd-widget--gas-summary,
+.edit-mode .dd-widget--p1-electricity,
+.edit-mode .dd-widget--battery-status,
+.edit-mode .dd-widget--energy-dashboard,
+.edit-mode .dd-widget--self-sufficiency,
+.edit-mode .dd-widget--setpoint,
+.edit-mode .dd-widget--combo-thermostat,
+.edit-mode .dd-widget--thermostat6 {
     background: var(--dz-panel-bg) !important;
     border: 1px solid rgba(255,255,255,0.08) !important;
     box-shadow: var(--dz-widget-shadow) !important;
 }
 
-.db2-widget--kwh-summary > .db2-widget-body,
-.db2-widget--gas-summary > .db2-widget-body,
-.db2-widget--p1-electricity > .db2-widget-body,
-.db2-widget--battery-status > .db2-widget-body,
-.db2-widget--energy-dashboard > .db2-widget-body,
-.db2-widget--self-sufficiency > .db2-widget-body,
-.db2-widget--setpoint > .db2-widget-body,
-.db2-widget--combo-thermostat > .db2-widget-body,
-.db2-widget--thermostat6 > .db2-widget-body {
+.dd-widget--kwh-summary > .dd-widget-body,
+.dd-widget--gas-summary > .dd-widget-body,
+.dd-widget--p1-electricity > .dd-widget-body,
+.dd-widget--battery-status > .dd-widget-body,
+.dd-widget--energy-dashboard > .dd-widget-body,
+.dd-widget--self-sufficiency > .dd-widget-body,
+.dd-widget--setpoint > .dd-widget-body,
+.dd-widget--combo-thermostat > .dd-widget-body,
+.dd-widget--thermostat6 > .dd-widget-body {
     background: transparent !important;
     padding: 4px !important;
     overflow: hidden !important;
 }
 
-.db2-dz-device,
-.db2-dz-favorites {
+.dd-dz-device {
     height: 100%;
     overflow: hidden;
     display: flex;
     flex-direction: column;
 }
 
+.dd-dz-favorites {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.dd-favorites-main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
 /* Container for the compiled existing directive */
-.db2-dz-inner {
+.dd-dz-inner {
     flex: 1;
     min-height: 0;
     overflow: hidden;
@@ -982,36 +994,36 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 /* Override Bootstrap 2 span classes — force full width, no float */
-.db2-dz-inner [class*="span"] {
+.dd-dz-inner [class*="span"] {
     width: 100% !important;
     float: none !important;
     margin-left: 0 !important;
 }
 
 /* Device tile fills the container without overflow */
-.db2-dz-inner .item,
-.db2-dz-inner .itemBlock {
+.dd-dz-inner .item,
+.dd-dz-inner .itemBlock {
     width: 100% !important;
     box-sizing: border-box !important;
     max-width: 100% !important;
 }
 
 /* Table fills width with fixed layout so cells can shrink */
-.db2-dz-inner table[id^="itemtable"] {
+.dd-dz-inner table[id^="itemtable"] {
     width: 100% !important;
     max-width: 100% !important;
     table-layout: fixed !important;
 }
 
 /* All cells truncate text instead of pushing table wider */
-.db2-dz-inner table[id^="itemtable"] td {
+.dd-dz-inner table[id^="itemtable"] td {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 /* Unconfigured / loading / error state */
-.db2-dz-unconfigured {
+.dd-dz-unconfigured {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1024,19 +1036,19 @@ body.db2-navbar-hidden .db2-topbar {
     opacity: 0.6;
 }
 
-.db2-dz-unconfigured p {
+.dd-dz-unconfigured p {
     margin: 0;
     font-size: 0.85em;
 }
 
 /* ── Favorites / Room tab strip ───────────────────────────── */
-.db2-favorites-tabs {
+.dd-favorites-tabs {
     flex-shrink: 0;
     margin-bottom: 0;
     border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
-.db2-favorites-tabs > li > a {
+.dd-favorites-tabs > li > a {
     color: var(--dz-body-text);
     padding: 6px 10px;
     font-size: 0.82em;
@@ -1045,22 +1057,23 @@ body.db2-navbar-hidden .db2-topbar {
     gap: 4px;
 }
 
-.db2-favorites-tabs > li.active > a,
-.db2-favorites-tabs > li.active > a:hover,
-.db2-favorites-tabs > li.active > a:focus {
+.dd-favorites-tabs > li.active > a,
+.dd-favorites-tabs > li.active > a:hover,
+.dd-favorites-tabs > li.active > a:focus {
     background: var(--dz-panel-bg);
     border-color: rgba(255,255,255,0.08);
     border-bottom-color: var(--dz-panel-bg);
     color: var(--dz-body-text);
 }
 
-.db2-favorites-tabs > li > a:hover {
+.dd-favorites-tabs > li > a:hover {
     background: rgba(255,255,255,0.12);
 }
 
 /* ── Device tile grid ─────────────────────────────────────── */
-.db2-dz-favorites-body {
+.dd-dz-favorites-body {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
     padding: 4px;
     display: flex;
@@ -1069,18 +1082,18 @@ body.db2-navbar-hidden .db2-topbar {
     gap: 4px;
 }
 
-.db2-dz-fav-item {
+.dd-dz-fav-item {
     flex: 0 0 auto;
 }
 
 /* ── Clock widget ─────────────────────────────────────────── */
-.db2-widget--clock > .db2-widget-body {
+.dd-widget--clock > .dd-widget-body {
     padding: 0;
     overflow: hidden;
     position: relative;
 }
 
-.db2-clock {
+.dd-clock {
     position: absolute;
     inset: 0;
     display: flex;
@@ -1092,7 +1105,7 @@ body.db2-navbar-hidden .db2-topbar {
     box-sizing: border-box;
 }
 
-.db2-clock-time {
+.dd-clock-time {
     font-size: 2.4em;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
@@ -1100,14 +1113,14 @@ body.db2-navbar-hidden .db2-topbar {
     color: var(--dz-body-text);
 }
 
-.db2-clock-date {
+.dd-clock-date {
     font-size: 0.85em;
     color: var(--dz-text-muted, #999);
     margin-top: 4px;
 }
 
 /* ── Text Note widget ─────────────────────────────────────── */
-.db2-widget--text-note > .db2-widget-body {
+.dd-widget--text-note > .dd-widget-body {
     padding: 0;
     overflow: hidden;
     position: relative;
@@ -1116,23 +1129,23 @@ body.db2-navbar-hidden .db2-topbar {
     box-shadow: none;
 }
 
-.db2-widget--text-note {
+.dd-widget--text-note {
     background: transparent;
     border: none;
     box-shadow: none;
 }
 
-.edit-mode .db2-widget--text-note {
+.edit-mode .dd-widget--text-note {
     background: var(--dz-panel-bg);
     border: 1px solid var(--dz-border-color, rgba(255,255,255,0.1));
     box-shadow: var(--dz-panel-shadow, none);
 }
 
-.edit-mode .db2-widget--text-note > .db2-widget-body {
+.edit-mode .dd-widget--text-note > .dd-widget-body {
     background: transparent;
 }
 
-.db2-text-note {
+.dd-text-note {
     position: absolute;
     inset: 0;
     overflow: hidden;
@@ -1149,7 +1162,7 @@ body.db2-navbar-hidden .db2-topbar {
     color: var(--dz-body-text);
 }
 
-.db2-text-note-hint {
+.dd-text-note-hint {
     display: block;
     color: var(--dz-text-muted, #999);
     font-size: 0.8em;
@@ -1157,18 +1170,18 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 /* ── Activity Log widget ──────────────────────────────────── */
-.db2-activity-log {
+.dd-activity-log {
     height: 100%;
     overflow-y: auto;
 }
 
-.db2-activity-list {
+.dd-activity-list {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.db2-activity-item {
+.dd-activity-item {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -1176,28 +1189,28 @@ body.db2-navbar-hidden .db2-topbar {
     border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
-.db2-activity-item:last-child {
+.dd-activity-item:last-child {
     border-bottom: none;
 }
 
-.db2-activity-dot {
+.dd-activity-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
     flex-shrink: 0;
 }
 
-.db2-activity-dot--on  { background: var(--dz-btn-success-bg, #27ae60); }
-.db2-activity-dot--off { background: var(--dz-text-muted, #bdc3c7); }
+.dd-activity-dot--on  { background: var(--dz-btn-success-bg, #27ae60); }
+.dd-activity-dot--off { background: var(--dz-text-muted, #bdc3c7); }
 
-.db2-activity-info {
+.dd-activity-info {
     flex: 1;
     min-width: 0;
     font-size: 0.85em;
     overflow: hidden;
 }
 
-.db2-activity-name {
+.dd-activity-name {
     font-weight: 600;
     display: block;
     white-space: nowrap;
@@ -1205,19 +1218,19 @@ body.db2-navbar-hidden .db2-topbar {
     text-overflow: ellipsis;
 }
 
-.db2-activity-value {
+.dd-activity-value {
     color: var(--dz-text-muted, #666);
     font-size: 0.9em;
 }
 
-.db2-activity-time {
+.dd-activity-time {
     font-size: 0.78em;
     color: var(--dz-text-muted, #999);
     white-space: nowrap;
     flex-shrink: 0;
 }
 
-.db2-activity-empty {
+.dd-activity-empty {
     padding: 16px;
     text-align: center;
     font-size: 0.85em;
@@ -1225,7 +1238,7 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 /* ── System Status widget ─────────────────────────────────── */
-.db2-sysstat {
+.dd-sysstat {
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -1234,36 +1247,36 @@ body.db2-navbar-hidden .db2-topbar {
     padding: 8px;
 }
 
-.db2-sysstat-row {
+.dd-sysstat-row {
     display: flex;
     align-items: center;
     gap: 8px;
     font-size: 0.85em;
 }
 
-.db2-sysstat-row i,
-.db2-sysstat-row .fa-solid {
+.dd-sysstat-row i,
+.dd-sysstat-row .fa-solid {
     color: var(--dz-text-muted, #888);
     width: 16px;
     text-align: center;
 }
 
-.db2-sysstat-label {
+.dd-sysstat-label {
     flex: 1;
     color: var(--dz-text-muted, #666);
 }
 
-.db2-sysstat-value {
+.dd-sysstat-value {
     font-weight: 600;
     color: var(--dz-body-text);
 }
 
-.db2-sysstat-running {
+.dd-sysstat-running {
     color: var(--dz-btn-success-bg, #27ae60);
 }
 
 /* ── Quick Actions widget ─────────────────────────────────── */
-.db2-quick-actions {
+.dd-quick-actions {
     height: 100%;
     display: flex;
     flex-wrap: wrap;
@@ -1273,7 +1286,7 @@ body.db2-navbar-hidden .db2-topbar {
     box-sizing: border-box;
 }
 
-.db2-qa-btn {
+.dd-qa-btn {
     flex: 1;
     min-width: 80px;
     display: flex;
@@ -1291,31 +1304,31 @@ body.db2-navbar-hidden .db2-topbar {
     color: var(--dz-body-text);
 }
 
-.db2-qa-btn:hover:not(:disabled) {
+.dd-qa-btn:hover:not(:disabled) {
     background: rgba(255,255,255,0.12);
     border-color: var(--dz-btn-primary-bg);
 }
 
-.db2-qa-btn:disabled {
+.dd-qa-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
 
-.db2-qa-btn--scene {
+.dd-qa-btn--scene {
     border-color: var(--dz-btn-primary-bg);
 }
 
-.db2-qa-btn--success {
+.dd-qa-btn--success {
     background: #dff0d8;
     border-color: var(--dz-btn-success-bg, #27ae60);
 }
 
-.db2-qa-btn--error {
+.dd-qa-btn--error {
     background: #f2dede;
     border-color: var(--dz-btn-danger-bg, #d9534f);
 }
 
-.db2-qa-label {
+.dd-qa-label {
     font-weight: 500;
     max-width: 100%;
     overflow: hidden;
@@ -1323,7 +1336,7 @@ body.db2-navbar-hidden .db2-topbar {
     white-space: nowrap;
 }
 
-.db2-qa-empty {
+.dd-qa-empty {
     width: 100%;
     text-align: center;
     padding: 16px;
@@ -1331,18 +1344,18 @@ body.db2-navbar-hidden .db2-topbar {
     color: var(--dz-text-muted, #999);
 }
 
-.db2-qa-empty p {
+.dd-qa-empty p {
     margin: 6px 0 0 0;
 }
 
 /* ── iFrame Embed widget ──────────────────────────────────── */
-.db2-widget--iframe-embed > .db2-widget-body {
+.dd-widget--iframe-embed > .dd-widget-body {
     padding: 0;
     overflow: hidden;
     position: relative;
 }
 
-.db2-iframe-container {
+.dd-iframe-container {
     position: absolute;
     inset: 0;
     display: flex;
@@ -1350,7 +1363,7 @@ body.db2-navbar-hidden .db2-topbar {
     overflow: hidden;
 }
 
-.db2-iframe {
+.dd-iframe {
     width: 100%;
     flex: 1;
     border: none;
@@ -1358,7 +1371,7 @@ body.db2-navbar-hidden .db2-topbar {
     min-height: 0;
 }
 
-.db2-iframe-placeholder {
+.dd-iframe-placeholder {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -1370,11 +1383,11 @@ body.db2-navbar-hidden .db2-topbar {
     gap: 8px;
 }
 
-.db2-iframe-error-state {
+.dd-iframe-error-state {
     color: var(--dz-btn-danger-bg, #d9534f);
 }
 
-.db2-iframe-script-warning {
+.dd-iframe-script-warning {
     margin: 4px 4px 0 4px;
     font-size: 0.82em;
     padding: 6px 8px;
@@ -1383,19 +1396,19 @@ body.db2-navbar-hidden .db2-topbar {
 
 /* ── Remote Image widget ──────────────────────────────────── */
 /* Image widget: no padding, no scroll on the body — image fills via absolute positioning */
-.db2-widget--image-widget > .db2-widget-body {
+.dd-widget--image-widget > .dd-widget-body {
     padding: 0;
     overflow: hidden;
     position: relative;
 }
 
-.db2-image-widget {
+.dd-image-widget {
     position: absolute;
     inset: 0;
     overflow: hidden;
 }
 
-.db2-image-img {
+.dd-image-img {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -1404,7 +1417,7 @@ body.db2-navbar-hidden .db2-topbar {
     display: block;
 }
 
-.db2-image-placeholder {
+.dd-image-placeholder {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1415,11 +1428,11 @@ body.db2-navbar-hidden .db2-topbar {
     color: var(--dz-text-muted, #999);
 }
 
-.db2-image-error-state {
+.dd-image-error-state {
     color: var(--dz-btn-danger-bg, #d9534f);
 }
 
-.db2-image-load-error {
+.dd-image-load-error {
     position: absolute;
     bottom: 8px;
     left: 8px;
@@ -1436,7 +1449,7 @@ body.db2-navbar-hidden .db2-topbar {
     gap: 4px;
 }
 
-.db2-image-caption {
+.dd-image-caption {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -1449,25 +1462,25 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 /* ── Skeleton Loader ─────────────────────────────────────────────── */
-.db2-skeleton {
+.dd-skeleton {
     background: linear-gradient(
         90deg,
-        var(--dz-db2-skeleton-start, rgba(0,0,0,0.06)) 25%,
-        var(--dz-db2-skeleton-mid,   rgba(0,0,0,0.12)) 50%,
-        var(--dz-db2-skeleton-start, rgba(0,0,0,0.06)) 75%
+        var(--dz-dd-skeleton-start, rgba(0,0,0,0.06)) 25%,
+        var(--dz-dd-skeleton-mid,   rgba(0,0,0,0.12)) 50%,
+        var(--dz-dd-skeleton-start, rgba(0,0,0,0.06)) 75%
     );
     background-size: 200% 100%;
-    animation: db2-shimmer 1.4s ease-in-out infinite;
+    animation: dd-shimmer 1.4s ease-in-out infinite;
     border-radius: 4px;
     min-height: 1em;
 }
 
-@keyframes db2-shimmer {
+@keyframes dd-shimmer {
     0%   { background-position: 200% 0; }
     100% { background-position: -200% 0; }
 }
 
-.db2-widget-skeleton {
+.dd-widget-skeleton {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -1476,36 +1489,36 @@ body.db2-navbar-hidden .db2-topbar {
     box-sizing: border-box;
 }
 
-.db2-widget-skeleton .skel-title {
+.dd-widget-skeleton .skel-title {
     height: 14px;
     width: 60%;
 }
 
-.db2-widget-skeleton .skel-body {
+.dd-widget-skeleton .skel-body {
     flex: 1;
     min-height: 40px;
 }
 
-.db2-widget-skeleton .skel-row {
+.dd-widget-skeleton .skel-row {
     height: 12px;
     width: 80%;
 }
 
-.db2-widget-skeleton .skel-row:nth-child(3) { width: 65%; }
-.db2-widget-skeleton .skel-row:nth-child(4) { width: 72%; }
+.dd-widget-skeleton .skel-row:nth-child(3) { width: 65%; }
+.dd-widget-skeleton .skel-row:nth-child(4) { width: 72%; }
 
 /* ── Edit Mode Indicator ─────────────────────────────────────────── */
-.db2-page.edit-mode .db2-toolbar {
+.dd-page.edit-mode .dd-toolbar {
     border-bottom: 2px solid rgba(255,255,255,0.15);
 }
 
-.db2-page.edit-mode .db2-widget-chrome {
+.dd-page.edit-mode .dd-widget-chrome {
     box-shadow: 0 0 0 2px var(--dz-btn-warning-bg, #f0ad4e),
                 var(--dz-widget-shadow, 0 2px 8px rgba(0,0,0,0.12));
 }
 
 /* ── Toast Notifications ─────────────────────────────────────────── */
-.db2-toast-container {
+.dd-toast-container {
     position: fixed;
     bottom: 24px;
     right: 24px;
@@ -1516,7 +1529,7 @@ body.db2-navbar-hidden .db2-topbar {
     max-width: 320px;
 }
 
-.db2-toast {
+.dd-toast {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1527,50 +1540,50 @@ body.db2-navbar-hidden .db2-topbar {
     line-height: 1.4;
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    animation: db2-toast-in 0.2s ease-out;
+    animation: dd-toast-in 0.2s ease-out;
 }
 
-@keyframes db2-toast-in {
+@keyframes dd-toast-in {
     from { transform: translateX(110%); opacity: 0; }
     to   { transform: translateX(0);   opacity: 1; }
 }
 
-.db2-toast--info    { background: var(--dz-btn-info-bg,    #5bc0de); }
-.db2-toast--success { background: var(--dz-btn-success-bg, #5cb85c); }
-.db2-toast--warning { background: var(--dz-btn-warning-bg, #f0ad4e); color: #333; }
-.db2-toast--danger  { background: var(--dz-btn-danger-bg,  #d9534f); }
+.dd-toast--info    { background: var(--dz-btn-info-bg,    #5bc0de); }
+.dd-toast--success { background: var(--dz-btn-success-bg, #5cb85c); }
+.dd-toast--warning { background: var(--dz-btn-warning-bg, #f0ad4e); color: #333; }
+.dd-toast--danger  { background: var(--dz-btn-danger-bg,  #d9534f); }
 
-.db2-toast-msg  { flex: 1; }
+.dd-toast-msg  { flex: 1; }
 
 /* ── Dashboard Manager Modal ──────────────────────────────── */
-.db2-manager-body {
+.dd-manager-body {
     max-height: 60vh;
     overflow-y: auto;
 }
 
-.db2-manager-table tbody tr:hover td {
+.dd-manager-table tbody tr:hover td {
     background: rgba(255,255,255,0.12);
 }
 
-.db2-manager-name {
+.dd-manager-name {
     cursor: pointer;
     border-bottom: 1px dashed transparent;
 }
 
-.db2-manager-name:hover {
+.dd-manager-name:hover {
     border-bottom-color: var(--dz-btn-primary-bg);
     color: var(--dz-btn-primary-bg);
 }
 
 /* ── Camera Feed Widget ──────────────────────────────────────────── */
 /* Camera widget: no padding, fills body edge-to-edge like the image widget */
-.db2-widget--camera-feed > .db2-widget-body {
+.dd-widget--camera-feed > .dd-widget-body {
     padding: 0;
     overflow: hidden;
     position: relative;
 }
 
-.db2-camera-widget {
+.dd-camera-widget {
     position: absolute;
     inset: 0;
     display: flex;
@@ -1578,7 +1591,7 @@ body.db2-navbar-hidden .db2-topbar {
     overflow: hidden;
 }
 
-.db2-camera-placeholder {
+.dd-camera-placeholder {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -1590,17 +1603,17 @@ body.db2-navbar-hidden .db2-topbar {
     padding: 12px;
 }
 
-.db2-camera-placeholder-icon {
+.dd-camera-placeholder-icon {
     font-size: 36px;
     opacity: 0.4;
 }
 
-.db2-camera-hint {
+.dd-camera-hint {
     font-size: 11px;
     opacity: 0.7;
 }
 
-.db2-camera-frame {
+.dd-camera-frame {
     position: relative;
     flex: 1;
     min-height: 0;
@@ -1608,7 +1621,7 @@ body.db2-navbar-hidden .db2-topbar {
     background: #000;
 }
 
-.db2-camera-img {
+.dd-camera-img {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -1617,7 +1630,7 @@ body.db2-navbar-hidden .db2-topbar {
     display: block;
 }
 
-.db2-camera-error {
+.dd-camera-error {
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -1626,13 +1639,13 @@ body.db2-navbar-hidden .db2-topbar {
     font-size: 13px;
 }
 
-.db2-camera-error i,
-.db2-camera-error .fa-solid {
+.dd-camera-error i,
+.dd-camera-error .fa-solid {
     font-size: 28px;
     opacity: 0.5;
 }
 
-.db2-camera-name {
+.dd-camera-name {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -1648,13 +1661,13 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 /* ── Widget Settings Form (Bootstrap 2 form-group fix) ───────── */
-.db2-settings-form .form-group {
+.dd-settings-form .form-group {
     display: block;
     margin-bottom: 14px;
 }
 
 /* Block label for all non-boolean fields */
-.db2-settings-form label {
+.dd-settings-form label {
     display: block;
     margin-bottom: 4px;
     font-weight: 600;
@@ -1662,7 +1675,9 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 /* Full-width inputs, selects, textareas */
-.db2-settings-form .form-control {
+.dd-settings-form input.text,
+.dd-settings-form textarea.text,
+.dd-settings-form select.combobox {
     display: block;
     width: 100%;
     box-sizing: border-box;
@@ -1670,25 +1685,27 @@ body.db2-navbar-hidden .db2-topbar {
     border: 1px solid rgba(128,128,128,0.4);
     border-radius: 3px;
     background: var(--dz-input-bg, #fff);
-    color: var(--dz-body-text);
+    color: var(--dz-input-text, #000);
     font-size: 13px;
     line-height: 1.4;
 }
 
-.db2-settings-form .form-control:focus {
+.dd-settings-form input.text:focus,
+.dd-settings-form textarea.text:focus,
+.dd-settings-form select.combobox:focus {
     outline: none;
     border-color: var(--dz-btn-primary-bg, #337ab7);
     box-shadow: 0 0 0 2px rgba(51,122,183,0.2);
 }
 
 /* textarea: let it grow a bit */
-.db2-settings-form textarea.form-control {
+.dd-settings-form textarea.text {
     min-height: 80px;
     resize: vertical;
 }
 
 /* color input: smaller fixed width so it doesn't stretch the whole row */
-.db2-settings-form input[type="color"].form-control {
+.dd-settings-form input[type="color"].ui-corner-all {
     width: 60px;
     height: 34px;
     padding: 2px 4px;
@@ -1696,19 +1713,19 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 /* Range / slider row */
-.db2-settings-form .form-group > div[style*="flex"] {
+.dd-settings-form .form-group > div[style*="flex"] {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.db2-settings-form input[type="range"] {
+.dd-settings-form input[type="range"] {
     flex: 1;
     cursor: pointer;
 }
 
 /* Boolean toggle — div with FA icon (avoids native checkbox visibility issues) */
-.db2-settings-form .db2-checkbox-label {
+.dd-settings-form .dd-checkbox-label {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -1719,23 +1736,23 @@ body.db2-navbar-hidden .db2-topbar {
     user-select: none;
 }
 
-.db2-settings-form .db2-checkbox-label:hover {
+.dd-settings-form .dd-checkbox-label:hover {
     opacity: 0.85;
 }
 
-.db2-bool-icon {
+.dd-bool-icon {
     font-size: 22px;
     line-height: 1;
     color: rgba(128, 128, 128, 0.5);
     transition: color 0.15s;
 }
 
-.db2-bool-icon.fa-toggle-on {
+.dd-bool-icon.fa-toggle-on {
     color: var(--dz-btn-primary-bg, #337ab7);
 }
 
 /* Help text */
-.db2-settings-form .help-block {
+.dd-settings-form .help-block {
     display: block;
     margin-top: 4px;
     font-size: 0.82em;
@@ -1745,23 +1762,26 @@ body.db2-navbar-hidden .db2-topbar {
 
 /* Validation error state */
 /* Suppress browser-native :invalid red styling — we handle validation ourselves */
-.db2-settings-form .form-control:invalid {
+.dd-settings-form input.text:invalid,
+.dd-settings-form select.combobox:invalid {
     box-shadow: none;
     color: inherit;
 }
 
 /* Style select options using the theme input variables */
-.db2-settings-form select option {
+.dd-settings-form select.combobox option {
     background: var(--dz-input-bg, #fff);
     color: var(--dz-input-text, #000);
 }
 
-.db2-settings-form .form-group.has-error .form-control {
+.dd-settings-form .form-group.has-error input.text,
+.dd-settings-form .form-group.has-error textarea.text,
+.dd-settings-form .form-group.has-error select.combobox {
     border-color: var(--dz-btn-danger-bg, #d9534f);
     box-shadow: none;
 }
 
-.db2-settings-form .form-group.has-error .help-block.text-danger {
+.dd-settings-form .form-group.has-error .help-block.text-danger {
     color: var(--dz-btn-danger-bg, #d9534f);
 }
 
@@ -1778,13 +1798,13 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 /* ── HTML Widget ──────────────────────────────────────────────── */
-.db2-widget--db2HtmlWidget > .db2-widget-body {
+.dd-widget--db2HtmlWidget > .dd-widget-body {
     padding: 0;
     overflow: hidden;
     position: relative;
 }
 
-.db2-html-widget {
+.dd-html-widget {
     position: absolute;
     inset: 0;
     overflow: hidden;
@@ -1792,14 +1812,14 @@ body.db2-navbar-hidden .db2-topbar {
     color: var(--dz-body-text);
 }
 
-.db2-html-widget-frame {
+.dd-html-widget-frame {
     width: 100%;
     height: 100%;
     border: none;
     display: block;
 }
 
-.db2-html-widget-empty {
+.dd-html-widget-empty {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1810,26 +1830,26 @@ body.db2-navbar-hidden .db2-topbar {
     gap: 8px;
 }
 
-.db2-html-widget-empty i,
-.db2-html-widget-empty .fa-solid {
+.dd-html-widget-empty i,
+.dd-html-widget-empty .fa-solid {
     font-size: 2em;
     opacity: 0.4;
 }
 
-.db2-html-widget-empty p {
+.dd-html-widget-empty p {
     margin: 0;
     font-size: 0.85em;
     opacity: 0.6;
 }
 
 /* ─── Action List Editor (Quick Actions settings) ───────── */
-.db2-action-list-editor {
+.dd-action-list-editor {
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
 
-.db2-al-item {
+.dd-al-item {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -1839,7 +1859,7 @@ body.db2-navbar-hidden .db2-topbar {
     border-radius: 4px;
 }
 
-.db2-al-type-badge {
+.dd-al-type-badge {
     font-size: 10px;
     font-weight: 600;
     padding: 1px 5px;
@@ -1848,16 +1868,16 @@ body.db2-navbar-hidden .db2-topbar {
     text-transform: uppercase;
 }
 
-.db2-al-badge-scene  { background: var(--dz-btn-success-bg, #5cb85c); color: #fff; }
-.db2-al-badge-switch { background: var(--dz-btn-primary-bg, #337ab7); color: #fff; }
+.dd-al-badge-scene  { background: var(--dz-btn-success-bg, #5cb85c); color: #fff; }
+.dd-al-badge-switch { background: var(--dz-btn-primary-bg, #337ab7); color: #fff; }
 
-.db2-al-icon {
+.dd-al-icon {
     font-size: 13px;
     color: var(--dz-body-text-muted, #999);
     flex-shrink: 0;
 }
 
-.db2-al-label {
+.dd-al-label {
     flex: 1;
     font-size: 13px;
     color: var(--dz-body-text);
@@ -1866,13 +1886,13 @@ body.db2-navbar-hidden .db2-topbar {
     white-space: nowrap;
 }
 
-.db2-al-actions {
+.dd-al-actions {
     display: flex;
     gap: 3px;
     flex-shrink: 0;
 }
 
-.db2-al-empty {
+.dd-al-empty {
     padding: 8px;
     font-size: 12px;
     color: var(--dz-body-text-muted, #999);
@@ -1881,31 +1901,31 @@ body.db2-navbar-hidden .db2-topbar {
     border-radius: 4px;
 }
 
-.db2-al-add {
+.dd-al-add {
     margin-top: 4px;
 }
 
-.db2-al-add-row {
+.dd-al-add-row {
     display: flex;
     gap: 6px;
     align-items: center;
 }
 
 /* ─── Export / Import Modal ─────────────────────────────── */
-.db2-eim-body {
+.dd-eim-body {
     padding: 0;
 }
 
-.db2-eim-tabs {
+.dd-eim-tabs {
     margin: 0;
     padding: 0;
 }
 
-.db2-eim-panel {
+.dd-eim-panel {
     padding: 16px;
 }
 
-.db2-eim-textarea {
+.dd-eim-textarea {
     width: 100%;
     height: 220px;
     font-family: monospace;
@@ -1916,17 +1936,17 @@ body.db2-navbar-hidden .db2-topbar {
     border-color: rgba(255,255,255,0.15) !important;
 }
 
-.db2-eim-textarea:focus {
+.dd-eim-textarea:focus {
     background: var(--dz-modal-bg, #013) !important;
     color: var(--dz-modal-text, #ddd) !important;
 }
 
-.db2-eim-textarea--drag {
+.dd-eim-textarea--drag {
     border-color: var(--dz-btn-primary-bg, #337ab7) !important;
     box-shadow: 0 0 0 2px rgba(51, 122, 183, 0.35) !important;
 }
 
-.db2-eim-actions {
+.dd-eim-actions {
     margin-top: 8px;
     display: flex;
     gap: 6px;
@@ -1934,7 +1954,7 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 /* File drop zone (import panel) */
-.db2-eim-dropzone {
+.dd-eim-dropzone {
     margin-top: 8px;
     padding: 10px 16px;
     border: 2px dashed rgba(255,255,255,0.2);
@@ -1948,44 +1968,44 @@ body.db2-navbar-hidden .db2-topbar {
     transition: border-color 0.15s, opacity 0.15s;
 }
 
-.db2-eim-dropzone:hover,
-.db2-eim-dropzone--hover {
+.dd-eim-dropzone:hover,
+.dd-eim-dropzone--hover {
     border-color: var(--dz-btn-primary-bg, #337ab7);
     opacity: 1;
 }
 
-.db2-eim-dropzone i {
+.dd-eim-dropzone i {
     font-size: 18px;
     flex-shrink: 0;
 }
 
-.db2-eim-dropzone code {
+.dd-eim-dropzone code {
     background: transparent;
     color: inherit;
 }
 
-.db2-eim-row {
+.dd-eim-row {
     display: flex;
     align-items: center;
     gap: 16px;
     margin-bottom: 12px;
 }
 
-.db2-eim-target-row {
+.dd-eim-target-row {
     margin-top: 12px;
     margin-bottom: 0;
     padding-top: 12px;
     border-top: 1px solid var(--dz-border-color, rgba(255,255,255,0.1));
 }
 
-.db2-eim-target-label {
+.dd-eim-target-label {
     font-size: 13px;
     color: var(--dz-body-text);
     opacity: 0.7;
     flex-shrink: 0;
 }
 
-.db2-eim-radio {
+.dd-eim-radio {
     display: inline-flex !important;
     align-items: center;
     gap: 5px;
@@ -1994,7 +2014,7 @@ body.db2-navbar-hidden .db2-topbar {
     margin: 0;
 }
 
-.db2-eim-warning {
+.dd-eim-warning {
     margin-top: 10px;
     margin-bottom: 0;
     font-size: 12px;
@@ -2002,10 +2022,10 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 /* ── Stat Card (shared by energy summary widgets) ── */
-.db2-stat-card {
+.dd-stat-card {
     text-align: center;
     padding: 8px 12px;
-    background: var(--dz-widget-stat-surface);
+    background: var(--dz-panel-bg);
     border-radius: var(--dz-widget-stat-radius);
     height: 100%;
     display: flex;
@@ -2017,36 +2037,36 @@ body.db2-navbar-hidden .db2-topbar {
     overflow: hidden;
     position: relative;
 }
-.db2-stat-label {
+.dd-stat-label {
     font-size: 0.85em;
     color: var(--dz-body-text);
     margin-bottom: 2px;
 }
-.db2-stat-value {
+.dd-stat-value {
     font-size: 1.9em;
     font-weight: bold;
     line-height: 1.1;
 }
-.db2-stat-line {
+.dd-stat-line {
     font-size: 1.3em;
     font-weight: bold;
     white-space: nowrap;
 }
-.db2-stat-sub {
+.dd-stat-sub {
     font-size: 0.82em;
     color: var(--dz-body-text);
     margin-top: 2px;
     line-height: 1.5;
 }
-.db2-energy-import  { color: var(--dz-widget-energy-import); }
-.db2-energy-export  { color: var(--dz-widget-energy-export); }
-.db2-energy-price   { color: var(--dz-widget-energy-price);  }
-.db2-energy-solar   { color: var(--dz-widget-energy-solar);  }
-.db2-energy-gas     { color: var(--dz-widget-energy-gas);    }
-.db2-energy-battery { color: var(--dz-widget-energy-battery); }
+.dd-energy-import  { color: var(--dz-widget-energy-import); }
+.dd-energy-export  { color: var(--dz-widget-energy-export); }
+.dd-energy-price   { color: var(--dz-widget-energy-price);  }
+.dd-energy-solar   { color: var(--dz-widget-energy-solar);  }
+.dd-energy-gas     { color: var(--dz-widget-energy-gas);    }
+.dd-energy-battery { color: var(--dz-widget-energy-battery); }
 
 /* ── Energy Dashboard widget — cards row ── */
-.db2-fc-conditions {
+.dd-fc-conditions {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
@@ -2054,24 +2074,24 @@ body.db2-navbar-hidden .db2-topbar {
     align-items: stretch;
     padding: 2px 0 4px;
 }
-.db2-fc-conditions .db2-stat-card {
+.dd-fc-conditions .dd-stat-card {
     min-width: 120px;
     flex: 1 1 120px;
     max-width: 200px;
     height: auto;
 }
-.db2-fc-conditions .db2-stat-card--wide {
+.dd-fc-conditions .dd-stat-card--wide {
     min-width: 160px;
     flex: 1.5 1 160px;
     max-width: 260px;
 }
 
 /* ── Energy Balance Bar (self-sufficiency widget) ── */
-.db2-balance {
+.dd-balance {
     font-size: 0.82em;
     color: var(--dz-body-text);
     padding: 5px 10px;
-    background: var(--dz-widget-stat-surface);
+    background: var(--dz-panel-bg);
     border-radius: 6px;
     border-left: 3px solid var(--dz-widget-energy-battery);
     display: flex;
@@ -2082,21 +2102,21 @@ body.db2-navbar-hidden .db2-topbar {
     height: 100%;
     box-sizing: border-box;
 }
-.db2-balance-stats {
+.dd-balance-stats {
     display: flex;
     flex-wrap: wrap;
     gap: 6px 16px;
 }
-.db2-balance-stats span {
+.dd-balance-stats span {
     color: var(--dz-body-text);
     font-weight: bold;
 }
-.db2-balance-time {
+.dd-balance-time {
     white-space: nowrap;
     color: var(--dz-body-text);
     font-size: 0.9em;
 }
-.db2-balance-bar-wrap {
+.dd-balance-bar-wrap {
     width: 100%;
     height: 6px;
     background: rgba(255,255,255,0.1);
@@ -2104,7 +2124,7 @@ body.db2-navbar-hidden .db2-topbar {
     overflow: hidden;
     margin-top: 6px;
 }
-.db2-balance-bar-fill {
+.dd-balance-bar-fill {
     height: 100%;
     border-radius: 3px;
     background: linear-gradient(to right, var(--dz-widget-energy-net-neg), var(--dz-widget-energy-import), var(--dz-widget-energy-export));
@@ -2112,7 +2132,7 @@ body.db2-navbar-hidden .db2-topbar {
 }
 
 /* ── Setpoint Widget ──────────────────────────────────────── */
-.db2-setpoint {
+.dd-setpoint {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2121,13 +2141,13 @@ body.db2-navbar-hidden .db2-topbar {
     gap: 8px;
     padding: 8px;
 }
-.db2-setpoint-controls {
+.dd-setpoint-controls {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 12px;
 }
-.db2-setpoint-value {
+.dd-setpoint-value {
     font-size: 1.8em;
     font-weight: bold;
     cursor: pointer;
@@ -2135,10 +2155,10 @@ body.db2-navbar-hidden .db2-topbar {
     text-align: center;
     color: var(--dz-widget-energy-battery);
 }
-.db2-setpoint-value:hover {
+.dd-setpoint-value:hover {
     opacity: 0.8;
 }
-.db2-setpoint-btn {
+.dd-setpoint-btn {
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -2152,109 +2172,109 @@ body.db2-navbar-hidden .db2-topbar {
     color: var(--dz-body-text);
     transition: border-color 0.15s, opacity 0.15s;
 }
-.db2-setpoint-btn:hover:not(:disabled) {
+.dd-setpoint-btn:hover:not(:disabled) {
     border-color: var(--dz-widget-energy-battery);
     color: var(--dz-widget-energy-battery);
 }
-.db2-setpoint-btn:disabled {
+.dd-setpoint-btn:disabled {
     opacity: 0.3;
     cursor: not-allowed;
 }
 
 /* ── Text Sensor Widget ───────────────────────────────────── */
-.db2-text-sensor {
+.dd-text-sensor {
     padding: 8px;
     height: 100%;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+.dd-text-sensor-inner {
     display: flex;
     flex-direction: column;
-    overflow: hidden;
 }
-.db2-text-sensor-inner {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
-}
-.db2-text-sensor-title {
+.dd-text-sensor-title {
     font-size: 0.85em;
     color: var(--dz-widget-stat-muted);
-    margin-bottom: 4px;
+    margin-bottom: 2px;
     font-weight: 500;
+    flex-shrink: 0;
 }
-.db2-text-sensor-content {
-    flex: 1;
-    overflow-y: auto;
+.dd-text-sensor-content {
+    flex-shrink: 0;
     white-space: pre-wrap;
     word-break: break-word;
     line-height: 1.5;
+    text-align: left;
 }
-.db2-text-sensor-updated {
+.dd-text-sensor-updated {
     font-size: 0.75em;
     color: var(--dz-widget-stat-muted);
     margin-top: 4px;
+    flex-shrink: 0;
 }
 
 /* ── RSS Feed Widget ──────────────────────────────────────── */
-.db2-rss { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
-.db2-rss-header { font-size: 0.9em; font-weight: 600; color: var(--dz-widget-rss-accent); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-.db2-rss-list { flex: 1; overflow-y: auto; }
-.db2-rss-item { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08); align-items: flex-start; }
-.db2-rss-item:last-child { border-bottom: none; }
-.db2-rss-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
-.db2-rss-item-body { flex: 1; min-width: 0; }
-.db2-rss-item-title { font-size: 0.85em; color: inherit; text-decoration: none; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.db2-rss-item-title:hover { color: var(--dz-widget-rss-link); }
-.db2-rss-item-meta { font-size: 0.75em; color: var(--dz-widget-stat-muted); margin-top: 2px; }
-.db2-rss-link-icon { color: var(--dz-widget-rss-link); font-size: 0.8em; flex-shrink: 0; }
+.dd-rss { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
+.dd-rss-header { font-size: 0.9em; font-weight: 600; color: var(--dz-widget-rss-accent); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+.dd-rss-list { flex: 1; overflow-y: auto; }
+.dd-rss-item { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08); align-items: flex-start; }
+.dd-rss-item:last-child { border-bottom: none; }
+.dd-rss-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+.dd-rss-item-body { flex: 1; min-width: 0; }
+.dd-rss-item-title { font-size: 0.85em; color: inherit; text-decoration: none; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dd-rss-item-title:hover { color: var(--dz-widget-rss-link); }
+.dd-rss-item-meta { font-size: 0.75em; color: var(--dz-widget-stat-muted); margin-top: 2px; }
+.dd-rss-link-icon { color: var(--dz-widget-rss-link); font-size: 0.8em; flex-shrink: 0; }
 /* Single item mode */
-.db2-rss-single-img { width: 100%; max-height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 8px; }
-.db2-rss-single-title { font-size: 1em; font-weight: 600; margin-bottom: 6px; }
-.db2-rss-single-excerpt { font-size: 0.82em; color: var(--dz-widget-stat-muted); line-height: 1.5; flex: 1; overflow: hidden; }
+.dd-rss-single-img { width: 100%; max-height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 8px; }
+.dd-rss-single-title { font-size: 1em; font-weight: 600; margin-bottom: 6px; }
+.dd-rss-single-excerpt { font-size: 0.82em; color: var(--dz-widget-stat-muted); line-height: 1.5; flex: 1; overflow: hidden; }
 
 /* ── Weather Forecast Widget ──────────────────────────────── */
-.db2-forecast { height: 100%; display: flex; flex-direction: column; padding: 4px 8px; overflow: hidden; }
-.db2-forecast-header { font-size: 0.9em; font-weight: 600; margin-bottom: 4px; }
-.db2-forecast-grid { display: flex; flex: 1; gap: 2px; overflow: hidden; align-items: stretch; }
-.db2-forecast-day { flex: 1; min-width: 50px; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 2px; text-align: center; justify-content: center; }
-.db2-forecast-dayname { font-size: 0.78em; font-weight: 600; color: var(--dz-widget-stat-muted); }
-.db2-forecast-day > i { font-size: 1.2em; }
-.db2-forecast-temps { font-size: 0.8em; white-space: nowrap; }
-.db2-forecast-precip { font-size: 0.72em; color: var(--dz-widget-weather-rain); }
-.db2-forecast-wind { font-size: 0.72em; color: var(--dz-widget-stat-muted); }
-.db2-forecast-error { font-size: 0.8em; color: var(--dz-widget-energy-net-neg); margin-top: 8px; }
+.dd-forecast { height: 100%; display: flex; flex-direction: column; padding: 4px 8px; overflow: hidden; }
+.dd-forecast-header { font-size: 0.9em; font-weight: 600; margin-bottom: 4px; }
+.dd-forecast-grid { display: flex; flex: 1; gap: 2px; overflow: hidden; align-items: stretch; }
+.dd-forecast-day { flex: 1; min-width: 50px; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 2px; text-align: center; justify-content: center; }
+.dd-forecast-dayname { font-size: 0.78em; font-weight: 600; color: var(--dz-widget-stat-muted); }
+.dd-forecast-day > i { font-size: 1.2em; }
+.dd-forecast-temps { font-size: 0.8em; white-space: nowrap; }
+.dd-forecast-precip { font-size: 0.72em; color: var(--dz-widget-weather-rain); }
+.dd-forecast-wind { font-size: 0.72em; color: var(--dz-widget-stat-muted); }
+.dd-forecast-error { font-size: 0.8em; color: var(--dz-widget-energy-net-neg); margin-top: 8px; }
 
 /* ── Domoticz Log Widget ──────────────────────────────────── */
-.db2-log { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
-.db2-log-header { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
-.db2-log-title { font-size: 0.9em; font-weight: 600; }
-.db2-log-filters { display: flex; gap: 4px; align-items: center; }
-.db2-log-filter-btn { padding: 2px 6px; border-radius: 4px; border: 1px solid currentColor; background: transparent; cursor: pointer; font-size: 0.75em; opacity: 0.5; }
-.db2-log-filter-btn.active { opacity: 1; background: currentColor; }
-.db2-log-filter-btn.active span { color: #000; }
-.db2-log-filter-normal { color: var(--dz-body-text); }
-.db2-log-filter-status { color: var(--dz-widget-rss-accent); }
-.db2-log-filter-error  { color: var(--dz-widget-energy-net-neg); }
-.db2-log-filter-error-alert { color: var(--dz-widget-energy-net-neg); }
-.db2-log-list { flex: 1; overflow-y: auto; font-size: 0.78em; font-family: monospace; }
-.db2-log-entry { padding: 2px 8px; display: flex; gap: 8px; }
-.db2-log-entry:hover { background: rgba(255,255,255,0.05); }
-.db2-log-time { color: var(--dz-widget-stat-muted); flex-shrink: 0; }
-.db2-log-level { flex-shrink: 0; min-width: 50px; }
-.db2-log-msg { flex: 1; word-break: break-word; }
-.db2-log-entry-normal .db2-log-level { color: var(--dz-body-text); }
-.db2-log-entry-status .db2-log-level { color: var(--dz-widget-rss-accent); }
-.db2-log-entry-error  .db2-log-level { color: var(--dz-widget-energy-net-neg); }
+.dd-widget--domoticz-log > .dd-widget-body { padding: 0; overflow: hidden; position: relative; }
+.dd-log { position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden; }
+.dd-log-header { display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.dd-log-title { font-size: 0.9em; font-weight: 600; }
+.dd-log-filters { display: flex; gap: 4px; align-items: center; }
+.dd-log-filter-btn { padding: 2px 6px; border-radius: 4px; border: 1px solid currentColor; background: transparent; cursor: pointer; font-size: 0.75em; opacity: 0.5; }
+.dd-log-filter-btn.active { opacity: 1; background: currentColor; }
+.dd-log-filter-btn.active span { color: #000; }
+.dd-log-filter-normal { color: var(--dz-body-text); }
+.dd-log-filter-status { color: var(--dz-widget-rss-accent); }
+.dd-log-filter-error  { color: var(--dz-widget-energy-net-neg); }
+.dd-log-filter-error-alert { color: var(--dz-widget-energy-net-neg); }
+.dd-log-list { flex: 1; overflow-y: auto; font-size: 0.78em; font-family: monospace; }
+.dd-log-entry { padding: 2px 8px; display: flex; gap: 8px; }
+.dd-log-entry:hover { background: rgba(255,255,255,0.05); }
+.dd-log-time { color: var(--dz-widget-stat-muted); flex-shrink: 0; }
+.dd-log-level { flex-shrink: 0; min-width: 50px; }
+.dd-log-msg { flex: 1; word-break: break-word; }
+.dd-log-entry-normal .dd-log-level { color: var(--dz-body-text); }
+.dd-log-entry-status .dd-log-level { color: var(--dz-widget-rss-accent); }
+.dd-log-entry-error  .dd-log-level { color: var(--dz-widget-energy-net-neg); }
 
 /* ── Moon Phase Widget ────────────────────────────────────── */
-.db2-moon { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; text-align: center; gap: 4px; }
-.db2-moon-title { font-size: 0.8em; color: var(--dz-widget-stat-muted); }
-.db2-moon-emoji { font-size: 3em; line-height: 1.1; color: var(--dz-widget-moon-color); }
-.db2-moon-phase { font-size: 0.9em; font-weight: 600; }
-.db2-moon-illumination { font-size: 0.8em; color: var(--dz-widget-stat-muted); }
-.db2-moon-next { font-size: 0.8em; color: var(--dz-widget-stat-muted); margin-top: 4px; }
+.dd-moon { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; text-align: center; gap: 4px; }
+.dd-moon-title { font-size: 0.8em; color: var(--dz-widget-stat-muted); }
+.dd-moon-emoji { font-size: 3em; line-height: 1.1; color: var(--dz-widget-moon-color); }
+.dd-moon-phase { font-size: 0.9em; font-weight: 600; }
+.dd-moon-illumination { font-size: 0.8em; color: var(--dz-widget-stat-muted); }
+.dd-moon-next { font-size: 0.8em; color: var(--dz-widget-stat-muted); margin-top: 4px; }
 
 /* ── Kiosk mode ───────────────────────────────────────────── */
-.db2-kiosk-progress {
+.dd-kiosk-progress {
     position: fixed;
     bottom: 0;
     left: 0;
@@ -2264,55 +2284,55 @@ body.db2-navbar-hidden .db2-topbar {
     z-index: 9999;
 }
 
-.db2-kiosk-progress-fill {
+.dd-kiosk-progress-fill {
     height: 100%;
     background: var(--dz-widget-energy-battery);
     transition: width 1s linear;
 }
 
 /* Kiosk button: accent when kiosk is running */
-.db2-topbar-btn.db2-topbar-kiosk-active {
+.dd-topbar-btn.dd-topbar-kiosk-active {
     color: #fff !important;
     background: var(--dz-widget-energy-battery) !important;
     border-radius: 10px;
 }
 
 /* ── Google Calendar Widget ───────────────────────────────── */
-.db2-calendar { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
-.db2-calendar-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; font-weight: 600; margin-bottom: 8px; flex-shrink: 0; }
-.db2-calendar-month { font-size: 0.85em; color: var(--dz-widget-stat-muted); }
-.db2-calendar-body { flex: 1; overflow-y: auto; }
-.db2-calendar-group { margin-bottom: 10px; }
-.db2-calendar-day-label { font-size: 0.75em; font-weight: 700; text-transform: uppercase; color: var(--dz-widget-rss-accent); margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 2px; }
-.db2-calendar-event { display: flex; gap: 8px; padding: 3px 0; font-size: 0.85em; align-items: baseline; }
-.db2-calendar-time { flex-shrink: 0; min-width: 45px; color: var(--dz-widget-stat-muted); font-size: 0.9em; }
-.db2-calendar-allday { font-style: italic; }
-.db2-calendar-title { flex: 1; }
-.db2-calendar-past { opacity: 0.5; }
-.db2-calendar-empty { font-size: 0.85em; color: var(--dz-widget-stat-muted); text-align: center; margin-top: 16px; }
+.dd-calendar { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
+.dd-calendar-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; font-weight: 600; margin-bottom: 8px; flex-shrink: 0; }
+.dd-calendar-month { font-size: 0.85em; color: var(--dz-widget-stat-muted); }
+.dd-calendar-body { flex: 1; overflow-y: auto; }
+.dd-calendar-group { margin-bottom: 10px; }
+.dd-calendar-day-label { font-size: 0.75em; font-weight: 700; text-transform: uppercase; color: var(--dz-widget-rss-accent); margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 2px; }
+.dd-calendar-event { display: flex; gap: 8px; padding: 3px 0; font-size: 0.85em; align-items: baseline; }
+.dd-calendar-time { flex-shrink: 0; min-width: 45px; color: var(--dz-widget-stat-muted); font-size: 0.9em; }
+.dd-calendar-allday { font-style: italic; }
+.dd-calendar-title { flex: 1; }
+.dd-calendar-past { opacity: 0.5; }
+.dd-calendar-empty { font-size: 0.85em; color: var(--dz-widget-stat-muted); text-align: center; margin-top: 16px; }
 
 /* ── Battery Monitor Widget ───────────────────────────────── */
-.db2-battery-monitor { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
-.db2-battery-monitor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-shrink: 0; }
-.db2-battery-monitor-title { font-size: 0.9em; font-weight: 600; }
-.db2-battery-monitor-badge { font-size: 0.75em; padding: 2px 7px; border-radius: 10px; background: var(--dz-widget-energy-net-neg); color: #fff; }
-.db2-battery-monitor-badge.ok { background: var(--dz-widget-energy-export); }
-.db2-battery-monitor-list { flex: 1; overflow-y: auto; }
-.db2-battery-monitor-row { display: flex; align-items: center; gap: 8px; padding: 4px 2px; font-size: 0.85em; border-bottom: 1px solid rgba(255,255,255,0.06); }
-.db2-battery-monitor-row:last-child { border-bottom: none; }
-.db2-battery-monitor-icon { width: 20px; text-align: center; font-size: 1em; flex-shrink: 0; }
-.db2-battery-monitor-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.db2-battery-monitor-level { flex-shrink: 0; font-weight: 600; min-width: 36px; text-align: right; }
-.db2-battery-monitor-ok { text-align: center; padding: 16px; color: var(--dz-widget-energy-export); font-size: 0.9em; }
+.dd-battery-monitor { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
+.dd-battery-monitor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-shrink: 0; }
+.dd-battery-monitor-title { font-size: 0.9em; font-weight: 600; }
+.dd-battery-monitor-badge { font-size: 0.75em; padding: 2px 7px; border-radius: 10px; background: var(--dz-widget-energy-net-neg); color: #fff; }
+.dd-battery-monitor-badge.ok { background: var(--dz-widget-energy-export); }
+.dd-battery-monitor-list { flex: 1; overflow-y: auto; }
+.dd-battery-monitor-row { display: flex; align-items: center; gap: 8px; padding: 4px 2px; font-size: 0.85em; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.dd-battery-monitor-row:last-child { border-bottom: none; }
+.dd-battery-monitor-icon { width: 20px; text-align: center; font-size: 1em; flex-shrink: 0; }
+.dd-battery-monitor-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dd-battery-monitor-level { flex-shrink: 0; font-weight: 600; min-width: 36px; text-align: right; }
+.dd-battery-monitor-ok { text-align: center; padding: 16px; color: var(--dz-widget-energy-export); font-size: 0.9em; }
 
 /* ── Screen Standby Mode ──────────────────────────────────── */
-body.db2-standby .db2-page {
-    opacity: var(--db2-standby-opacity, 0.05);
+body.dd-standby .dd-page {
+    opacity: var(--dd-standby-opacity, 0.05);
     transition: opacity 2s ease;
     pointer-events: none;
 }
 
-body.db2-standby::after {
+body.dd-standby::after {
     content: '';
     position: fixed;
     inset: 0;
@@ -2323,10 +2343,10 @@ body.db2-standby::after {
 }
 
 /* ── Gauge Widget ─────────────────────────────────────────── */
-.db2-gauge-wrap { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; }
-.db2-gauge-svg-wrap { position: relative; width: 100%; max-width: 140px; }
-.db2-gauge-svg { width: 100%; height: auto; display: block; }
-.db2-gauge-bg { stroke: rgba(255,255,255,0.1); }
-.db2-gauge-fill { transition: stroke-dasharray 0.6s ease, stroke 0.4s ease; }
-.db2-gauge-value { position: absolute; bottom: 0; left: 0; right: 0; text-align: center; font-size: 1.1em; font-weight: 600; line-height: 1; padding-bottom: 4px; }
-.db2-gauge-title { margin-bottom: 4px; }
+.dd-gauge-wrap { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; }
+.dd-gauge-svg-wrap { position: relative; width: 100%; max-width: 140px; }
+.dd-gauge-svg { width: 100%; height: auto; display: block; }
+.dd-gauge-bg { stroke: rgba(255,255,255,0.1); }
+.dd-gauge-fill { transition: stroke-dasharray 0.6s ease, stroke 0.4s ease; }
+.dd-gauge-value { position: absolute; bottom: 0; left: 0; right: 0; text-align: center; font-size: 1.1em; font-weight: 600; line-height: 1; padding-bottom: 4px; }
+.dd-gauge-title { margin-bottom: 4px; }

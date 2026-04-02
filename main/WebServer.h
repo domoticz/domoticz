@@ -146,6 +146,7 @@ private:
 	void Cmd_GetMeterTypes(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_GetThemes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetTitle(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_FetchUrl(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_LoginCheck(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PostSettings(WebEmSession &session, const request &req, Json::Value &root);
 	void Cmd_GetHardwareTypes(WebEmSession & session, const request& req, Json::Value &root);

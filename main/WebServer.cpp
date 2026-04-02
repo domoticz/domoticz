@@ -327,6 +327,7 @@ namespace http
 			RegisterCommandCode("getmetertypes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMeterTypes(session, req, root); }, true);
 			RegisterCommandCode("getthemes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetThemes(session, req, root); }, true);
 			RegisterCommandCode("gettitle", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTitle(session, req, root); }, true);
+			RegisterCommandCode("fetchurl", [this](auto&& session, auto&& req, auto&& root) { Cmd_FetchUrl(session, req, root); });
 			RegisterCommandCode("logincheck", [this](auto&& session, auto&& req, auto&& root) { Cmd_LoginCheck(session, req, root); }, true);
 
 			RegisterCommandCode("getversion", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetVersion(session, req, root); }, true);
