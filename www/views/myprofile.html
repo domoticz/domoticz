@@ -50,6 +50,24 @@
 		<table class="display table-details" id="profiletable">
 			<tr>
 				<td colspan="2" style="text-align: left;">
+				<h3 data-i18n="Dashboard">Dashboard</h3>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label for="UseDynamicDashboard"><span data-i18n="Dynamic Dashboard"></span>:</label>
+				</td>
+				<td>
+					<input type="checkbox" id="UseDynamicDashboard" name="UseDynamicDashboard"
+						   ng-model="myprofile.useDynamicDashboard">
+					<label for="UseDynamicDashboard" data-i18n="Enabled">Enabled</label>
+				</td>
+			</tr>
+		</table>
+		<br />
+		<table class="display table-details" id="profiletable">
+			<tr>
+				<td colspan="2" style="text-align: left;">
 					<h3 data-i18n="Two-Factor Authentication"></h3>
 				</td>
 			</tr>

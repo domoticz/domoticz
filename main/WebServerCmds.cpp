@@ -2756,6 +2756,22 @@ namespace http
 			m_users[iUser].Mfatoken = sTotpsecret;
 			m_sql.safe_query("UPDATE Users SET MFAsecret='%q' WHERE (ID=%d)", sTotpsecret.c_str(), m_users[iUser].ID);
 
+			// Update dashboard type preference (bit 7 of TabsEnabled)
+			std::string sUseDynamicDashboard = request::findValue(&req, "usedynamicdashboard");
+			if (!sUseDynamicDashboard.empty())
+			{
+				auto result2 = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID=%d)", m_users[iUser].ID);
+				if (!result2.empty())
+				{
+					int tabsEnabled = atoi(result2[0][0].c_str());
+					if (sUseDynamicDashboard == "true")
+						tabsEnabled |= (1 << 7);
+					else
+						tabsEnabled &= ~(1 << 7);
+					m_sql.safe_query("UPDATE Users SET TabsEnabled=%d WHERE (ID=%d)", tabsEnabled, m_users[iUser].ID);
+				}
+			}
+
 			LoadUsers();
 			root["status"] = "OK";
 		}

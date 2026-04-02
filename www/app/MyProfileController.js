@@ -15,7 +15,8 @@ define(['app'], function (app) {
 			oldpwd: '',
 			newpwd: '',
 			vfypwd: '',
-			qruri: 'otpauth://totp/domoticz?algorithm=SHA1&digits=6&secret='
+			qruri: 'otpauth://totp/domoticz?algorithm=SHA1&digits=6&secret=',
+			useDynamicDashboard: false
 		};
 
 		$scope.generateTOTPSecret = function()
@@ -39,6 +40,7 @@ define(['app'], function (app) {
 			$('#profiletable').hide();
 			$('#passwdtable').hide();
 			$scope.MakeGlobalConfig();
+			$scope.myprofile.useDynamicDashboard = $rootScope.config.EnableTabDashboardDynamic || false;
 			domoticzApi.sendCommand('getmyprofile', {
 				'username': $scope.config.userName
 				}).then(function (data) {
@@ -97,6 +99,7 @@ define(['app'], function (app) {
 				}
 			}
 
+			fd.append('usedynamicdashboard', $scope.myprofile.useDynamicDashboard);
 			$http.post('json.htm?type=command&param=updatemyprofile', fd, {
 				transformRequest: angular.identity,
 				headers: { 'Content-Type': undefined }
@@ -106,6 +109,9 @@ define(['app'], function (app) {
 					ShowNotify($.t(data.error), 2500, true);
 					return;
 			    }
+				var _isDynamic = $scope.myprofile.useDynamicDashboard;
+				$rootScope.config.EnableTabDashboardDynamic = _isDynamic;
+				if (window.$ && window.$.myglobals) { window.$.myglobals.enableDashboardDynamic = _isDynamic; }
 				$location.path('/Dashboard');
 				return;
 			}, function errorCallback(response) {

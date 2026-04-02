@@ -450,17 +450,6 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.ShowUpdatedEffect = data.result.ShowUpdatedEffect;
 						if (typeof data.UserName != 'undefined') {
 							$rootScope.config.userName = data.UserName;
-							// localStorage fallback until backend exposes EnableTabDashboardDynamic via getconfig
-							if (!$rootScope.config.EnableTabDashboardDynamic) {
-								try {
-									var _lsOld = localStorage.getItem('dz_use_dashboard2_' + data.UserName);
-									if (_lsOld !== null) {
-										localStorage.setItem('dz_use_dashboard_dynamic_' + data.UserName, _lsOld);
-										localStorage.removeItem('dz_use_dashboard2_' + data.UserName);
-									}
-									$rootScope.config.EnableTabDashboardDynamic = localStorage.getItem('dz_use_dashboard_dynamic_' + data.UserName) === '1';
-								} catch(e) {}
-							}
 							$rootScope.config.appversion = data.version;
 							$rootScope.config.apphash = data.hash;
 							$rootScope.config.appdate = data.build_time;
