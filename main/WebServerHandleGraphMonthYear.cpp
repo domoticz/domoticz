@@ -569,7 +569,7 @@ static void HandleGraphMonthYear_Counter_P1Energy(
 				}
 				{
 					const double dValue = atof(szValue.c_str());
-					if (dValue <= 0.0 || std::abs(fPrice) > (static_cast<float>(dValue) / divider) * 3.0f)
+					if (dValue == 0.0 || std::abs(fPrice) > (std::abs(static_cast<float>(dValue)) / divider) * 3.0f)
 						root["result"][ii]["p"] = "0";
 					else
 					{
