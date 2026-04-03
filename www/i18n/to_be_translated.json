@@ -12,5 +12,13 @@
 	"No issues found.": "No issues found.",
 	"Problem spreading data point!": "Problem spreading data point!",
 	"Spread across previous empty days": "Spread across previous empty days",
-	"Weekly pattern fixed.": "Weekly pattern fixed."
+	"Weekly pattern fixed.": "Weekly pattern fixed.",
+	"Cumulative Energy": "Cumulative Energy",
+	"Cumulative Energy Generated": "Cumulative Energy Generated",
+	"Cumulative Gas": "Cumulative Gas",
+	"Cumulative Water": "Cumulative Water",
+	"Net": "Net",
+	"Delivery": "Delivery",
+	"This Month": "This Month",
+	"This Year": "This Year"
 }
