@@ -313,6 +313,7 @@ void CLogger::Log(const _eLogLevel level, const char *logline, ...)
 
 	sOnLogMessage(level, szIntLog);
 
+	bool bForceNotificationCheck = false;
 	{
 		// Locked region to allow multiple threads to print at the same time
 		std::unique_lock<std::mutex> lock(m_mutex);
@@ -324,7 +325,7 @@ void CLogger::Log(const _eLogLevel level, const char *logline, ...)
 			m_notification_log.push_back(_tLogLineStruct(level, szIntLog));
 			if ((m_notification_log.size() == 1) && (mytime(nullptr) - m_LastLogNotificationsSend >= 5))
 			{
-				m_mainworker.ForceLogNotificationCheck();
+				bForceNotificationCheck = true;
 			}
 		}
 
@@ -355,6 +356,11 @@ void CLogger::Log(const _eLogLevel level, const char *logline, ...)
 				m_lastlog[level].erase(m_lastlog[level].begin());
 		}
 		m_lastlog[level].push_back(_tLogLineStruct(level, szIntLog));
+	}
+
+	if (bForceNotificationCheck)
+	{
+		m_mainworker.ForceLogNotificationCheck();
 	}
 }
 
