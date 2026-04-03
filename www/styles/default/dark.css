@@ -1,0 +1,43 @@
+/*
+  dark.css — default theme variable overrides.
+
+  The default theme uses light widget defaults from variables.css (light cards on a dark body).
+  Form controls, modals, and settings panels use dark values to match the dark background.
+
+  Themes that want fully dark widget cards should provide their own dark.css with
+  --dz-widget-bg, --dz-widget-name-bg, etc.
+*/
+:root {
+  /* Body background gradient */
+  --dz-body-bg:          #001133;  /* fallback solid colour (#013) */
+  --dz-body-bg-start:    #001c38;  /* gradient top */
+  --dz-body-bg-end:      #0f0c2b;  /* gradient bottom */
+
+  /* Form controls */
+  --dz-input-bg:         #283750;
+  --dz-input-text:       #eee;
+
+  /* Modals and dialogs */
+  --dz-modal-bg:         #11213d;
+  --dz-modal-text:       #fff;
+  --dz-modal-header-bg:  #283750;
+
+  /* Buttons */
+  --dz-btn-bg:           #404C63;
+  --dz-btn-text:         #fff;
+  --dz-btn-border:       #303a50;
+  --dz-btn-hover-bg:     #505e7a;
+
+  /* Content panels */
+  --dz-panel-bg:         #11213d;
+  --dz-panel-text:       #fff;
+}
+
+.dataTables_length select, .dataTables_filter input {
+  background-color: #fff !important;
+  color: #000 !important;
+  border: 0 !important;
+  outline: none;
+  box-shadow: none !important;  
+}
+

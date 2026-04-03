@@ -66,6 +66,9 @@ define(['app'], function (app) {
 			if ($('#usercontent #userparamstable #EnableTabFloorplans').is(":checked")) {
 				csettings.TabsEnabled |= (1 << 6);
 			}
+			if ($('#usercontent #userparamstable #combodashboardtype').val() === '1') {
+				csettings.TabsEnabled |= (1 << 7);
+			}
 			return csettings;
 		}
 
@@ -342,6 +345,7 @@ define(['app'], function (app) {
 						$('#usercontent #userparamstable #EnableTabUtility').prop('checked', (EnabledTabs & 16));
 						$('#usercontent #userparamstable #EnableTabCustom').prop('checked', (EnabledTabs & 32));
 						$('#usercontent #userparamstable #EnableTabFloorplans').prop('checked', (EnabledTabs & 64));
+						$('#usercontent #userparamstable #combodashboardtype').val((EnabledTabs & 128) ? '1' : '0');
 					}
 				}
 			});

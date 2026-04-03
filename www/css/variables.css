@@ -1,0 +1,616 @@
+:root {
+  --accent-color:                  #337ab7;
+  --dz-widget-bg:                  #F1F5FA;
+  --dz-widget-text:                #0D161F;
+  --dz-widget-border-radius:       5px;
+  --dz-widget-shadow:              none;
+  --dz-dd-grid-line:              rgba(0,0,0,0.06);
+  --dz-dd-skeleton-start:         #e0e0e0;
+  --dz-dd-skeleton-mid:           #f0f0f0;
+  --dz-widget-name-bg:             #D4E1EE;
+  --dz-widget-name-border:         #2B5074;
+  --dz-widget-name-text:           #0D161F;
+  --dz-widget-name-font-size:      130%;
+  --dz-widget-status-text:         #000000;
+  --dz-widget-value-font-size:     140%;
+  --dz-widget-hover-bg:            #F2F1FA;
+  --dz-widget-hover-name-bg:       #D4D5EE;
+  --dz-widget-hover-name-border:   #2B2C74;
+  --dz-widget-hover-name-text:     #0D0D1F;
+  --dz-status-normal:              #D4E1EE;
+  --dz-status-protected:           #A4B1EE;
+  --dz-status-timeout:             #DF2D3A;
+  --dz-status-low-battery:         #DDDF2D;
+  --dz-status-disabled:            #A6A8AA;
+  --dz-status-disabled-opacity:    0.5;
+  --dz-status-evo-off:             #9b9b9b;
+  --dz-status-evo-25:              #ff0302;
+  --dz-status-evo-22:              #ff6a2a;
+  --dz-status-evo-19:              #fe9b2d;
+  --dz-status-evo-16:              #79bc5c;
+  --dz-status-evo-min:             #6ca5fd;
+  --dz-body-bg:                    #202020;
+  --dz-body-text:                  #fff;
+  --dz-input-bg:                   #fff;
+  --dz-input-text:                 #000;
+  --dz-input-border:               #ccc;
+  --dz-modal-bg:                   #013;
+  --dz-modal-text:                 #ddd;
+  --dz-modal-header-bg:            #f5f5f5;
+  --dz-nav-bg:                     #283750;
+  --dz-btn-bg:                     #f5f5f5;
+  --dz-btn-text:                   #333;
+  --dz-btn-border:                 #ccc;
+  --dz-btn-hover-bg:               #e0e0e0;
+  --dz-btn-shadow:                 none;
+  --dz-btn-text-shadow:            none;
+  --dz-btn-primary-bg:             #337ab7;
+  --dz-btn-primary-text:           #fff;
+  --dz-btn-warning-bg:             #f0ad4e;
+  --dz-btn-danger-bg:              #d9534f;
+  --dz-btn-danger-bg-alpha:        rgba(217, 83, 79, 0.85);
+  --dz-btn-info-bg:                #5bc0de;
+  --dz-btn-success-bg:             #5cb85c;
+  --dz-panel-bg:                   rgba(0, 0, 0, 0.25);
+  --dz-panel-bg-dark:              rgba(0, 0, 0, 0.75);
+  --dz-panel-text:                 var(--dz-body-text);
+  --dz-table-odd-bg:               #E2E4FF;
+  --dz-table-odd-text:             #333;
+  --dz-table-even-bg:              #ffffff;
+  --dz-table-even-text:            #333;
+}
+
+/* --- Shared table/tbody block display --- */
+body table#itemtable,
+body table#itemtable tbody,
+body table#itemtablenotype,
+body table#itemtablenotype tbody,
+body table#itemtablenostatus,
+body table#itemtablenostatus tbody,
+body table#itemtablesmall,
+body table#itemtablesmall tbody,
+body table#itemtabledoubleicon,
+body table#itemtabledoubleicon tbody,
+body table#itemtabletrippleicon,
+body table#itemtabletrippleicon tbody,
+body table#itemtablesmalldoubleicon,
+body table#itemtablesmalldoubleicon tbody,
+body table#itemtablesmalltrippleicon,
+body table#itemtablesmalltrippleicon tbody {
+	display: block;
+	width: 100%;
+}
+
+/* --- Shared thead hide --- */
+body table#itemtable thead,
+body table#itemtablenotype thead,
+body table#itemtablenostatus thead,
+body table#itemtablesmall thead,
+body table#itemtabledoubleicon thead,
+body table#itemtabletrippleicon thead,
+body table#itemtablesmalldoubleicon thead,
+body table#itemtablesmalltrippleicon thead {
+	display: none;
+}
+
+/* --- Shared tr > * block --- */
+body table#itemtable tr > *,
+body table#itemtablenotype tr > *,
+body table#itemtablenostatus tr > *,
+body table#itemtablesmall tr > *,
+body table#itemtabledoubleicon tr > *,
+body table#itemtabletrippleicon tr > *,
+body table#itemtablesmalldoubleicon tr > *,
+body table#itemtablesmalltrippleicon tr > * {
+	display: block;
+	padding: 0;
+	margin: 0;
+}
+
+/* --- Shared tbody tr row --- */
+body table#itemtable tbody tr,
+body table#itemtablenotype tbody tr,
+body table#itemtablenostatus tbody tr,
+body table#itemtabledoubleicon tbody tr,
+body table#itemtabletrippleicon tbody tr {
+	display: block;
+	width: 98%;
+	padding: 5px 5px 5px 5px;
+	margin: 2px 100% 5px 0;
+	border-style: none;
+	border-radius: var(--dz-widget-border-radius);
+	color: var(--dz-widget-text);
+	background-color: var(--dz-widget-bg);
+	box-shadow: var(--dz-widget-shadow);
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+/* --- Small variants: same as shared but with height --- */
+body table#itemtablesmall tbody tr {
+	display: block;
+	width: 98%;
+	min-height: 66px;
+	padding: 5px 5px 5px 5px;
+	margin: 2px 100% 5px 0;
+	border-style: none;
+	border-radius: var(--dz-widget-border-radius);
+	color: var(--dz-widget-text);
+	background-color: var(--dz-widget-bg);
+	box-shadow: var(--dz-widget-shadow);
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+body table#itemtablesmalldoubleicon tbody tr,
+body table#itemtablesmalltrippleicon tbody tr {
+	display: block;
+	width: 98%;
+	height: 66px;
+	padding: 5px 5px 5px 5px;
+	margin: 2px 100% 5px 0;
+	border-style: none;
+	border-radius: var(--dz-widget-border-radius);
+	color: var(--dz-widget-text);
+	background-color: var(--dz-widget-bg);
+	box-shadow: var(--dz-widget-shadow);
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+/* --- Shared first column (name bar) --- */
+body table#itemtable tr td:first-child,
+body table#itemtablenotype tr td:first-child,
+body table#itemtablenostatus tr td:first-child,
+body table#itemtablesmall tr td:first-child,
+body table#itemtabledoubleicon tr td:first-child,
+body table#itemtabletrippleicon tr td:first-child,
+body table#itemtablesmalldoubleicon tr td:first-child,
+body table#itemtablesmalltrippleicon tr td:first-child {
+	height: 1.2em;
+	padding: 0 .5em 0 .5em;
+	margin-bottom: 5px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: var(--dz-widget-name-font-size);
+	white-space: nowrap;
+	border-width: 1px 1px 1px 1px;
+	border-color: var(--dz-widget-name-border);
+	border-style: solid;
+	border-radius: var(--dz-widget-border-radius);
+	color: var(--dz-widget-name-text);
+	background-color: var(--dz-widget-name-bg);
+}
+
+/* --- Shared second column (value) --- */
+body table#itemtable tr td:first-child + td,
+body table#itemtablenotype tr td:first-child + td,
+body table#itemtablenostatus tr td:first-child + td,
+body table#itemtablesmall tr td:first-child + td,
+body table#itemtabledoubleicon tr td:first-child + td,
+body table#itemtabletrippleicon tr td:first-child + td,
+body table#itemtablesmalldoubleicon tr td:first-child + td,
+body table#itemtablesmalltrippleicon tr td:first-child + td {
+	float: right;
+	margin: -27px 3px 0px 0px;
+	font-size: var(--dz-widget-value-font-size);
+	font-weight: bold;
+	white-space: nowrap;
+	color: var(--dz-widget-status-text);
+}
+
+/* --- Shared hover state --- */
+body table#itemtable tbody tr:hover,
+body table#itemtablenotype tbody tr:hover,
+body table#itemtablenostatus tbody tr:hover,
+body table#itemtablesmall tbody tr:hover,
+body table#itemtabledoubleicon tbody tr:hover,
+body table#itemtabletrippleicon tbody tr:hover,
+body table#itemtablesmalldoubleicon tbody tr:hover,
+body table#itemtablesmalltrippleicon tbody tr:hover {
+	border-color: var(--dz-widget-hover-name-border);
+	background-color: var(--dz-widget-hover-bg);
+}
+
+body table#itemtable tr:hover td:first-child,
+body table#itemtablenotype tr:hover td:first-child,
+body table#itemtablenostatus tr:hover td:first-child,
+body table#itemtablesmall tr:hover td:first-child,
+body table#itemtabledoubleicon tr:hover td:first-child,
+body table#itemtabletrippleicon tr:hover td:first-child,
+body table#itemtablesmalldoubleicon tr:hover td:first-child,
+body table#itemtablesmalltrippleicon tr:hover td:first-child {
+	border-color: var(--dz-widget-hover-name-border);
+	color: var(--dz-widget-hover-name-text);
+	background-color: var(--dz-widget-hover-name-bg);
+}
+
+/* --- #itemtable column rules --- */
+body table#itemtable tr td:first-child + td + td {
+	border-color: var(--dz-widget-name-border);
+	border-style: none;
+	border-width: 1px;
+	float: left;
+	margin: 0 10px 10px 0;
+}
+
+body table#itemtable tr td:first-child + td + td img {
+	display: block;
+}
+
+body table#itemtable tr td:first-child + td + td + td {
+	font-size: 90%;
+	font-weight: bold;
+}
+
+body table#itemtable tr td:first-child + td + td + td + td {
+	font-size: 80%;
+}
+
+body table#itemtable tr td:first-child + td + td + td + td + td {
+	font-size: 80%;
+}
+
+body table#itemtable tr td:first-child + td + td + td + td + td:before {
+	content: "Type: ";
+	font-style: italic;
+}
+
+body table#itemtable tr td:first-child + td + td + td + td + td + td {
+	font-size: 90%;
+	clear: both;
+	padding: 0 5% 0 5%;
+	line-height: 130%;
+}
+
+/* --- #itemtablenotype column rules --- */
+body table#itemtablenotype tr td:first-child + td + td {
+	border-color: var(--dz-widget-name-border);
+	border-style: none;
+	border-width: 1px;
+	float: left;
+	margin: 0 10px 10px 0;
+}
+
+body table#itemtablenotype tr td:first-child + td + td img {
+	display: block;
+}
+
+body table#itemtablenotype tr td:first-child + td + td + td {
+	font-size: 90%;
+	font-weight: bold;
+}
+
+body table#itemtablenotype tr td:first-child + td + td + td + td {
+	font-size: 80%;
+}
+
+body table#itemtablenotype tr td:first-child + td + td + td + td + td {
+	font-size: 90%;
+	clear: both;
+	padding: 0 5% 0 5%;
+	line-height: 130%;
+}
+
+/* --- #itemtablenostatus column rules --- */
+body table#itemtablenostatus tr td:first-child + td + td {
+	border-color: var(--dz-widget-name-border);
+	border-style: none;
+	border-width: 1px;
+	float: left;
+	margin: 0 10px 10px 0;
+}
+
+body table#itemtablenostatus tr td:first-child + td + td img {
+	display: block;
+}
+
+body table#itemtablenostatus tr td:first-child + td + td + td {
+	font-size: 90%;
+	font-weight: bold;
+}
+
+body table#itemtablenostatus tr td:first-child + td + td + td:before {
+	font-style: italic;
+	font-size: 90%;
+}
+
+body table#itemtablenostatus tr td:first-child + td + td + td + td {
+	font-size: 80%;
+}
+
+body table#itemtablenostatus tr td:first-child + td + td + td + td + td {
+	font-size: 80%;
+}
+
+body table#itemtablenostatus tr td:first-child + td + td + td + td + td:before {
+	content: "Type: ";
+	font-style: italic;
+}
+
+body table#itemtablenostatus tr td:first-child + td + td + td + td + td + td {
+	font-size: 90%;
+	clear: both;
+	padding: 0 5% 0 5%;
+	line-height: 130%;
+}
+
+/* --- #itemtablesmall column rules --- */
+body table#itemtablesmall tr td:first-child + td + td {
+	border-color: var(--dz-widget-name-border);
+	border-style: none;
+	border-width: 1px;
+	float: left;
+	margin: 0 10px 10px 0;
+}
+
+body table#itemtablesmall tr td:first-child + td + td img {
+	display: block;
+}
+
+body table#itemtablesmall tr td:first-child + td + td + td {
+	font-size: 90%;
+	font-weight: bold;
+	line-height: 86%;
+}
+
+body table#itemtablesmall tr td:first-child + td + td + td:before {
+	content: "";
+	font-style: italic;
+	font-size: 90%;
+}
+
+body table#itemtablesmall tr td:first-child + td + td + td + td {
+	margin-top: 2px;
+	font-size: 80%;
+	line-height: 86%;
+}
+
+/* --- #itemtabledoubleicon column rules --- */
+body table#itemtabledoubleicon tr td:first-child + td + td {
+	border-style: none;
+	float: left;
+	margin: 0 5px 10px 0;
+}
+
+body table#itemtabledoubleicon tr td:first-child + td + td img {
+	display: block;
+}
+
+body table#itemtabledoubleicon tr td:first-child + td + td + td {
+	border-style: none;
+	float: left;
+	margin: 0 10px 10px 0;
+}
+
+body table#itemtabledoubleicon tr td:first-child + td + td + td img {
+	display: block;
+}
+
+body table#itemtabledoubleicon tr td:first-child + td + td + td + td {
+	font-size: 90%;
+	font-weight: bold;
+}
+
+body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td {
+	font-size: 80%;
+}
+
+body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td {
+	font-size: 80%;
+}
+
+body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td:before {
+	content: "Type: ";
+	font-style: italic;
+}
+
+body table#itemtabledoubleicon tr td:first-child + td + td + td + td + td + td + td {
+	font-size: 90%;
+	margin-top: 16px;
+	clear: both;
+	padding: 0 5% 0 5%;
+	line-height: 130%;
+}
+
+/* --- #itemtabletrippleicon column rules --- */
+body table#itemtabletrippleicon tr td:first-child + td + td {
+	border-style: none;
+	float: left;
+	margin: 0 4px 10px 0;
+}
+
+body table#itemtabletrippleicon tr td:first-child + td + td img {
+	display: block;
+}
+
+body table#itemtabletrippleicon tr td:first-child + td + td + td {
+	border-style: none;
+	float: left;
+	margin: 0 4px 10px 0;
+}
+
+body table#itemtabletrippleicon tr td:first-child + td + td + td img {
+	display: block;
+}
+
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td {
+	border-style: none;
+	float: left;
+	margin: 0 5px 10px 0;
+}
+
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td img {
+	display: block;
+}
+
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td {
+	font-size: 90%;
+	font-weight: bold;
+}
+
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td {
+	font-size: 80%;
+}
+
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td + td {
+	font-size: 80%;
+}
+
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td + td:before {
+	content: "Type: ";
+	font-style: italic;
+}
+
+body table#itemtabletrippleicon tr td:first-child + td + td + td + td + td + td + td + td {
+	font-size: 90%;
+	clear: both;
+	padding: 0 5% 0 5%;
+	line-height: 130%;
+}
+
+/* --- #itemtablesmalldoubleicon column rules --- */
+body table#itemtablesmalldoubleicon tr td:first-child + td + td {
+	border-style: none;
+	float: left;
+	margin: 0 5px 10px 0;
+}
+
+body table#itemtablesmalldoubleicon tr td:first-child + td + td img {
+	display: block;
+}
+
+body table#itemtablesmalldoubleicon tr td:first-child + td + td + td {
+	border-style: none;
+	float: left;
+	margin: 0 10px 10px 0;
+}
+
+body table#itemtablesmalldoubleicon tr td:first-child + td + td + td img {
+	display: block;
+}
+
+body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td {
+	font-size: 90%;
+	font-weight: bold;
+	line-height: 86%;
+}
+
+body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td:before {
+	content: "";
+	font-style: italic;
+	font-size: 90%;
+}
+
+body table#itemtablesmalldoubleicon tr td:first-child + td + td + td + td + td {
+	margin-top: 2px;
+	font-size: 80%;
+	line-height: 86%;
+}
+
+/* --- #itemtablesmalltrippleicon column rules --- */
+body table#itemtablesmalltrippleicon tr td:first-child + td + td {
+	border-style: none;
+	float: left;
+	margin: 0 5px 10px 0;
+}
+
+body table#itemtablesmalltrippleicon tr td:first-child + td + td img {
+	display: block;
+}
+
+body table#itemtablesmalltrippleicon tr td:first-child + td + td + td {
+	border-style: none;
+	float: left;
+	margin: 0 5px 5px 0;
+}
+
+body table#itemtablesmalltrippleicon tr td:first-child + td + td + td img {
+	display: block;
+}
+
+body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td {
+	border-style: none;
+	float: left;
+	margin: 0 10px 10px 0;
+}
+
+body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td img {
+	display: block;
+}
+
+body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td + td {
+	font-size: 90%;
+	font-weight: bold;
+	line-height: 86%;
+}
+
+body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td + td:before {
+	content: "";
+	font-style: italic;
+	font-size: 90%;
+}
+
+body table#itemtablesmalltrippleicon tr td:first-child + td + td + td + td + td + td {
+	margin-top: 2px;
+	font-size: 80%;
+	line-height: 86%;
+}
+
+/* --- Status classes --- */
+div.item.statusNormal td#name {
+	background-color: var(--dz-status-normal);
+}
+div.item.statusProtected td#name {
+	background-color: var(--dz-status-protected);
+}
+div.item.statusTimeout td#name {
+	background-color: var(--dz-status-timeout);
+}
+div.item.statusLowBattery td#name {
+	background-color: var(--dz-status-low-battery);
+}
+div.item.statusDisabled td#name {
+	background-color: var(--dz-status-disabled);
+}
+div.item.statusDisabled {
+	opacity: var(--dz-status-disabled-opacity);
+}
+div.item.statusEvoSetPointOff td#name {
+	background-color: var(--dz-status-evo-off);
+}
+div.item.statusEvoSetPoint25 td#name {
+	background-color: var(--dz-status-evo-25);
+}
+div.item.statusEvoSetPoint22 td#name {
+	background-color: var(--dz-status-evo-22);
+}
+div.item.statusEvoSetPoint19 td#name {
+	background-color: var(--dz-status-evo-19);
+}
+div.item.statusEvoSetPoint16 td#name {
+	background-color: var(--dz-status-evo-16);
+}
+div.item.statusEvoSetPointMin td#name {
+	background-color: var(--dz-status-evo-min);
+}
+
+/* --- Widget directive elements --- */
+dz-light-widget,
+dz-scene-widget,
+dz-utility-widget {
+	display: contents;
+}
+
+/* --- Selector levels --- */
+.selectorlevels {
+	font-size: 1em;
+}
+
+#dashcontent .selectorlevels {
+	font-size: 0.9em;
+}
+
+.selectorlevels .ui-button-text-only .ui-button-text {
+	padding: .3em 0.7em;
+}
+
+.selectorlevels .ui-selectmenu-button.ui-widget {
+	font-size: 1.1em;
+}

@@ -465,6 +465,13 @@ public:
 	bool CalcMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd, float &price);
 	bool CalcMultiMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd, float& price);
 	bool TransferDevice(const std::string& sOldIdx, const std::string&  sNewIdx);
+
+	// Dashboard 2.0 layout persistence
+	bool GetDashboardLayouts(int userid, Json::Value& result);
+	bool GetDashboardLayout(int userid, const std::string& layoutid, Json::Value& result);
+	bool SaveDashboardLayout(int userid, const std::string& layoutid, const std::string& name, bool isDefault, const std::string& layout_json);
+	bool DeleteDashboardLayout(int userid, const std::string& layoutid);
+	bool CopyDashboardLayout(int userid, const std::string& srcid, const std::string& newid, const std::string& newname);
 public:
 	std::string m_LastSwitchID; // for learning command
 	std::string m_UniqueID;

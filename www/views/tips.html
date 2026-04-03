@@ -1,0 +1,46 @@
+<div class="modal-header">
+	<button type="button" class="close" ng-click="close()">&times;</button>
+	<h4 class="modal-title">
+		<img src="images/logo/57.png" alt="Domoticz" style="height:24px; margin-right:8px; vertical-align:middle;">
+		<span data-i18n="Tips &amp; Tricks">Tips &amp; Tricks</span>
+	</h4>
+</div>
+
+<div class="modal-body">
+	<div class="tips-category-tabs">
+		<button class="btn btn-xs"
+				ng-repeat="cat in categories"
+				ng-click="selectCategory(cat)"
+				ng-class="cat === selectedCategory ? 'btn-primary' : 'btn-default'">
+			{{cat}}
+		</button>
+	</div>
+
+	<div class="tips-content" ng-if="currentTip()">
+		<i class="fa-solid {{currentTip().icon}} tips-icon"></i>
+		<p class="tips-text">{{currentTip().tip}}</p>
+		<a ng-if="currentTip().url" ng-href="{{currentTip().url}}" target="_blank" class="tips-learn-more" data-i18n="Learn more">Learn more</a>
+	</div>
+
+	<div class="tips-nav">
+		<button class="btn btn-default btn-sm" ng-click="prev()">
+			<i class="fa-solid fa-chevron-left"></i>
+		</button>
+		<span class="tips-counter">{{currentIndex + 1}} / {{tips.length}}</span>
+		<button class="btn btn-default btn-sm" ng-click="next()">
+			<i class="fa-solid fa-chevron-right"></i>
+		</button>
+	</div>
+</div>
+
+<div class="modal-footer tips-footer">
+	<div class="tips-footer-close">
+		<button class="btn btn-primary" ng-click="close()" data-i18n="Close">Close</button>
+	</div>
+	<div class="tips-footer-startup">
+		<label class="tips-startup-label">
+			<input type="checkbox" ng-model="showOnStartup" ng-change="toggleStartup()">
+			&nbsp;<span data-i18n="Show tips on startup">Show tips on startup</span>
+		</label>
+	</div>
+</div>

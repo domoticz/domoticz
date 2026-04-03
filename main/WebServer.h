@@ -146,6 +146,7 @@ private:
 	void Cmd_GetMeterTypes(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_GetThemes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetTitle(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_FetchUrl(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_LoginCheck(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PostSettings(WebEmSession &session, const request &req, Json::Value &root);
 	void Cmd_GetHardwareTypes(WebEmSession & session, const request& req, Json::Value &root);
@@ -352,6 +353,13 @@ private:
 	void Cmd_ResetkWhStats(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_FixkWhStats(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_FixCounterPrices(WebEmSession& session, const request& req, Json::Value& root);
+
+	// Dashboard 2.0 layout management
+	void Cmd_GetDashboardLayouts(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_GetDashboardLayout(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_SaveDashboardLayout(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_DeleteDashboardLayout(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_CopyDashboardLayout(WebEmSession& session, const request& req, Json::Value& root);
 
 	// Plugin functions
 	void Cmd_PluginCommand(WebEmSession & session, const request& req, Json::Value &root);

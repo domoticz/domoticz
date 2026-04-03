@@ -1,4 +1,5 @@
 @import url("../../css/legacy.css"); /* Don't remove this line! */
+@import url("common.css");
 
 @font-face {
 	font-family: "OpenSans";

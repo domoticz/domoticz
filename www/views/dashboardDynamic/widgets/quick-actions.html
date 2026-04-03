@@ -1,0 +1,21 @@
+<div class="dd-quick-actions">
+    <button class="dd-qa-btn"
+            ng-repeat="action in ctrl.actions"
+            ng-click="ctrl.execute(action)"
+            ng-disabled="ctrl.busy[action.idx]"
+            ng-class="{
+                'dd-qa-btn--scene':   action.type === 'scene',
+                'dd-qa-btn--switch':  action.type !== 'scene',
+                'dd-qa-btn--success': ctrl.success[action.idx],
+                'dd-qa-btn--error':   ctrl.error[action.idx]
+            }"
+            title="{{ action.label }}">
+        <i ng-class="action.icon || 'fa-solid fa-play'"></i>
+        <span class="dd-qa-label" ng-bind="action.label"></span>
+    </button>
+    <div class="dd-qa-empty"
+         ng-show="ctrl.actions.length === 0">
+        <i class="fa-solid fa-bolt" style="opacity:0.3;font-size:24px"></i>
+        <p>Configure actions in widget settings</p>
+    </div>
+</div>

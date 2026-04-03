@@ -1,0 +1,370 @@
+<!-- Last updated: 2026-03-29 — variables.css renamed to variables.css; dark.css has default theme overrides; panel/table variables added -->
+== Introduction ==
+
+Domoticz supports visual themes that let you change the look of the web interface without modifying core files.
+
+The active theme is configured in '''Setup → Settings → System → GUI theme''' and defaults to <code>default</code>.
+
+=== How URL rewriting works ===
+
+<code>index.html</code> always loads <code>styles/default/custom.css</code>. The Domoticz web server (cWebem) intercepts every request for a file under <code>styles/default/</code> and transparently serves the corresponding file from the active theme folder if it exists there. If the file does not exist in the active theme folder, the request falls through to <code>styles/default/</code>.
+
+This means:
+* A theme only needs to provide files it actually overrides.
+* <code>common.css</code>, <code>variables.css</code>, and <code>legacy.css</code> are served from <code>default/</code> unless your theme provides its own copies.
+* Fallback is per-file — you can override <code>dark.css</code> alone without touching anything else.
+
+== Minimum required files ==
+
+Every theme needs exactly one file: '''custom.css'''.
+
+=== Dark theme ===
+
+<source lang="css">
+@import url("../../css/legacy.css"); /* required */
+@import url("common.css");           /* shared utilities — served from default/ via fallback */
+@import url("dark.css");             /* your dark :root overrides */
+</source>
+
+=== Light theme ===
+
+<source lang="css">
+@import url("../../css/legacy.css"); /* required */
+@import url("common.css");           /* shared utilities — light by default, no dark.css needed */
+</source>
+
+For a light theme you do not need a <code>dark.css</code>. The <code>--dz-*</code> variable defaults defined in <code>variables.css</code> are light-valued, so form controls, modals, and buttons render correctly without any <code>:root</code> override block.
+
+== CSS load order ==
+
+The following shows the full waterfall from <code>index.html</code> to theme variables. Theme authors need to understand what loads when and which <code>:root</code> block wins.
+
+<pre>
+index.html  →  <link> files loaded in parallel:
+  css/style.css                        (structural resets + body { background: var(--dz-body-bg) })
+  css/bootstrap.css
+  css/bootstrap-responsive.css
+  ... other lib CSS ...
+  styles/default/custom.css            (last <link>; server-rewritten to active theme)
+    └─ @import legacy.css              (serial fetch 1)
+    │    └─ @import variables.css        (serial fetch 2 — --dz-* light defaults + widget rules)
+    ├─ @import common.css              (serial fetch 3 — colour-neutral utilities)
+    ├─ @import dark.css                (serial fetch 4 — dark :root overrides, dark themes only)
+    └─ theme's own :root block         (inline in custom.css — wins by source order)
+</pre>
+
+=== What wins (specificity rules) ===
+
+* All <code>:root</code> blocks have the same specificity <code>(0,1,0)</code> — '''last one wins''' by source order.
+* <code>variables.css</code> <code>:root</code> loads first → <code>dark.css</code> <code>:root</code> overrides it → theme's inline <code>:root</code> overrides that.
+* For non-variable rules, normal CSS specificity applies.
+* Inline styles from JavaScript (<code>$(el).css(...)</code>) override everything, including variables.
+
+== CSS variable reference ==
+
+All <code>--dz-*</code> variables are defined in <code>css/variables.css</code> with light values as their defaults. These variables form the stable public theming API.
+
+The default Domoticz theme uses light widget colours on a dark page background. <code>default/dark.css</code> provides the dark body gradient, dark form controls, modals, buttons, and content panels. Widget card colours are intentionally left at the light defaults from <code>variables.css</code>.
+
+The '''"Suggested dark value"''' column in the tables below shows recommended values for theme authors building a fully dark theme. They are not defined anywhere by default — you must set them yourself in your theme's <code>:root</code> block or <code>dark.css</code>.
+
+=== Widget card ===
+
+{| class="wikitable"
+! Variable !! Light default !! Suggested dark value !! Description
+|-
+| <code>--dz-widget-bg</code> || <code>#F1F5FA</code> || <code>#11213d</code> || Device card background
+|-
+| <code>--dz-widget-text</code> || <code>#0D161F</code> || <code>#fff</code> || Device card text
+|-
+| <code>--dz-widget-border-radius</code> || <code>5px</code> || <code>5px</code> || Card corner radius
+|-
+| <code>--dz-widget-shadow</code> || <code>none</code> || <code>none</code> || Card box-shadow
+|-
+| <code>--dz-widget-name-bg</code> || <code>#D4E1EE</code> || <code>#283750</code> || Name bar background
+|-
+| <code>--dz-widget-name-border</code> || <code>#2B5074</code> || <code>#404C63</code> || Name bar border
+|-
+| <code>--dz-widget-name-text</code> || <code>#0D161F</code> || <code>#fff</code> || Name bar text
+|-
+| <code>--dz-widget-name-font-size</code> || <code>130%</code> || <code>130%</code> || Name bar font size
+|-
+| <code>--dz-widget-status-text</code> || <code>#000000</code> || <code>#eee</code> || Value/status text
+|-
+| <code>--dz-widget-value-font-size</code> || <code>140%</code> || <code>140%</code> || Value column font size
+|-
+| <code>--dz-widget-hover-bg</code> || <code>#F2F1FA</code> || <code>#1a2e4a</code> || Card background on hover
+|-
+| <code>--dz-widget-hover-name-bg</code> || <code>#D4D5EE</code> || <code>#3a4d6a</code> || Name bar background on hover
+|-
+| <code>--dz-widget-hover-name-border</code> || <code>#2B2C74</code> || <code>#555c7a</code> || Name bar border on hover
+|-
+| <code>--dz-widget-hover-name-text</code> || <code>#0D0D1F</code> || <code>#fff</code> || Name bar text on hover
+|}
+
+=== Status colours ===
+
+{| class="wikitable"
+! Variable !! Light default !! Suggested dark value !! Description
+|-
+| <code>--dz-status-normal</code> || <code>#D4E1EE</code> || <code>#283750</code> || Normal / no alert
+|-
+| <code>--dz-status-protected</code> || <code>#A4B1EE</code> || <code>#354a80</code> || Protected device
+|-
+| <code>--dz-status-timeout</code> || <code>#DF2D3A</code> || <code>#8b1a23</code> || Communication timeout
+|-
+| <code>--dz-status-low-battery</code> || <code>#DDDF2D</code> || <code>#7a7a00</code> || Low battery
+|-
+| <code>--dz-status-disabled</code> || <code>#A6A8AA</code> || <code>#4a4a4a</code> || Disabled
+|-
+| <code>--dz-status-disabled-opacity</code> || <code>0.5</code> || <code>0.5</code> || Disabled opacity
+|}
+
+=== Page, forms, modals, navigation, and buttons ===
+
+The light default for <code>--dz-body-bg</code> is intentionally set to <code>#202020</code> (a dark value) to prevent a flash of unstyled content (FOUC) on page load before the theme's CSS arrives. Light themes should always override this variable.
+
+{| class="wikitable"
+! Variable !! Light default !! Description
+|-
+| <code>--dz-body-bg</code> || <code>#202020</code> || Page background (dark default to prevent FOUC)
+|-
+| <code>--dz-body-text</code> || <code>#fff</code> || Page text
+|-
+| <code>--dz-input-bg</code> || <code>#fff</code> || Input / select / textarea background
+|-
+| <code>--dz-input-text</code> || <code>#000</code> || Input text
+|-
+| <code>--dz-input-border</code> || <code>#ccc</code> || Input border
+|-
+| <code>--dz-modal-bg</code> || <code>#fff</code> || Modal background
+|-
+| <code>--dz-modal-text</code> || <code>#000</code> || Modal text
+|-
+| <code>--dz-modal-header-bg</code> || <code>#f5f5f5</code> || Modal header background
+|-
+| <code>--dz-nav-bg</code> || <code>#283750</code> || Navbar background
+|-
+| <code>--dz-btn-bg</code> || <code>#f5f5f5</code> || Button background
+|-
+| <code>--dz-btn-text</code> || <code>#333</code> || Button text
+|-
+| <code>--dz-btn-border</code> || <code>#ccc</code> || Button border
+|-
+| <code>--dz-btn-hover-bg</code> || <code>#e0e0e0</code> || Button hover background
+|-
+| <code>--dz-btn-primary-bg</code> || <code>#337ab7</code> || Primary button background
+|-
+| <code>--dz-btn-warning-bg</code> || <code>#f0ad4e</code> || Warning button background
+|-
+| <code>--dz-btn-danger-bg</code> || <code>#d9534f</code> || Danger button background
+|-
+| <code>--dz-btn-info-bg</code> || <code>#5bc0de</code> || Info button background
+|-
+| <code>--dz-btn-success-bg</code> || <code>#5cb85c</code> || Success button background
+|-
+| <code>--dz-panel-bg</code> || <code>rgba(0,0,0,0.25)</code> || Settings/content panel background
+|-
+| <code>--dz-panel-text</code> || <code>var(--dz-body-text)</code> || Settings/content panel text
+|-
+| <code>--dz-table-odd-bg</code> || <code>#E2E4FF</code> || DataTable odd row background
+|-
+| <code>--dz-table-odd-text</code> || <code>#333</code> || DataTable odd row text
+|-
+| <code>--dz-table-even-bg</code> || <code>#ffffff</code> || DataTable even row background
+|-
+| <code>--dz-table-even-text</code> || <code>#333</code> || DataTable even row text
+|}
+
+== Creating a dark theme ==
+
+Place variable overrides in a <code>dark.css</code> file in your theme folder and import it from <code>custom.css</code>:
+
+'''custom.css:'''
+
+<source lang="css">
+@import url("../../css/legacy.css");
+@import url("common.css");
+@import url("dark.css");
+</source>
+
+'''dark.css:'''
+
+<source lang="css">
+:root {
+  --dz-widget-bg:          #1e2a3a;
+  --dz-widget-text:        #f0f0f0;
+  --dz-widget-name-bg:     #2a3a50;
+  --dz-widget-name-border: #3a4a60;
+  --dz-widget-name-text:   #f0f0f0;
+  --dz-widget-hover-bg:    #253040;
+  --dz-widget-hover-name-bg: #354558;
+
+  --dz-status-normal:      #283750;
+  --dz-status-protected:   #354a80;
+  --dz-status-timeout:     #8b1a23;
+  --dz-status-low-battery: #7a7a00;
+  --dz-status-disabled:    #4a4a4a;
+
+  --dz-body-bg:            #0f1a2a;
+  --dz-body-text:          #f0f0f0;
+  --dz-input-bg:           #1a2a3a;
+  --dz-input-text:         #ddd;
+  --dz-input-border:       #3a4a5a;
+  --dz-modal-bg:           #1e2a3a;
+  --dz-modal-text:         #f0f0f0;
+  --dz-modal-header-bg:    #152030;
+}
+
+body {
+  background: var(--dz-body-bg);
+  color: var(--dz-body-text);
+}
+</source>
+
+== Creating a light theme ==
+
+For a light theme, import <code>common.css</code> only — no <code>dark.css</code>. The <code>--dz-*</code> defaults in <code>variables.css</code> are already light-valued, so widgets render correctly without a full <code>:root</code> override block. You only need to override the variables you want to change.
+
+The one variable you '''must''' override is <code>--dz-body-bg</code>, because its default (<code>#202020</code>) is intentionally dark to prevent FOUC.
+
+'''custom.css:'''
+
+<source lang="css">
+@import url("../../css/legacy.css");
+@import url("common.css");
+
+:root {
+  --dz-widget-bg:   #e8f0f8;   /* optional: fine-tune widget colour */
+  --dz-body-bg:     #f0f2f5;   /* required: override the dark FOUC default */
+  --dz-body-text:   #333;
+}
+
+body {
+  background: var(--dz-body-bg);
+  color: var(--dz-body-text);
+}
+</source>
+
+== Variable contract versioning ==
+
+The <code>--dz-*</code> variables defined in <code>variables.css</code> and <code>common.css</code> are the stable public API for theme authors.
+
+{| class="wikitable"
+! Change type !! Policy
+|-
+| Adding new variables || Safe — themes that do not reference them are unaffected
+|-
+| Changing default values || Safe with a release note — themes that override the variable are unaffected; themes relying on the default will see the change
+|-
+| Renaming or removing a variable || Requires a deprecation window. The old name is kept as an alias (<code>--dz-old-name: var(--dz-new-name)</code>) for at least two releases
+|-
+| Internal CSS selectors and class names || May change between releases without compatibility guarantees — use <code>--dz-*</code> variables instead of targeting selectors
+|}
+
+== Community theme migration guide ==
+
+If your theme was built before the CSS variable system was introduced, it likely contains long selector chains targeting internal widget tables. These can now be replaced with a single <code>:root</code> block.
+
+=== Before (old approach) ===
+
+<source lang="css">
+/* Fighting legacy.css specificity to change widget colours */
+body table#itemtablesmall tbody tr          { background-color: #1e2a3a !important; }
+body table#itemtabledoubleicon tbody tr     { background-color: #1e2a3a !important; }
+/* ... repeated 8 times for every table variant ... */
+body table#itemtablesmall tbody tr td:first-child { background-color: #2a3a50 !important; }
+/* ... repeated 8 times again ... */
+</source>
+
+=== After (new approach) ===
+
+<source lang="css">
+/* One :root block replaces all of the above */
+:root {
+  --dz-widget-bg:      #1e2a3a;
+  --dz-widget-name-bg: #2a3a50;
+}
+</source>
+
+=== Migration checklist ===
+
+# Remove all <code>body table#itemtable*</code> colour overrides from your theme.
+# Replace them with a <code>:root { --dz-*: your-values; }</code> block.
+# Review <code>!important</code> declarations on widget colour properties — most are now unnecessary.
+# If your theme copied rules from <code>legacy.css</code>, remove those copies — they will conflict with the variable-driven rules.
+
+== Theme author guidelines ==
+
+* '''Prefer variable overrides''' over selector chains. Changing <code>--dz-widget-bg</code> is safer and more forward-compatible than targeting <code>.item</code> or <code>table#itemtablesmall</code>.
+* '''Do not override Bootstrap layout globally.''' Overriding <code>.row-fluid</code>, <code>.span*</code>, or <code>.container-fluid</code> at the top level breaks page structure. Scope overrides to specific containers.
+* '''Scope custom selectors.''' Target <code>#holder .item</code> rather than bare <code>.item</code>, to avoid interfering with modals and other contexts.
+* '''Do not use <code>!important</code> on variable-driven properties.''' It defeats the purpose of the variable contract and makes your overrides impossible for downstream themes to fix.
+* '''Do not import extras_and_animations.css by default''' unless your theme explicitly wants transitions and hover animations. When you do want them, add <code>@import url("extras_and_animations.css");</code> to your <code>custom.css</code>.
+
+== Button systems ==
+
+Domoticz has three separate button systems. Theme authors need to be aware of all three:
+
+{| class="wikitable"
+! System !! Classes !! Used where
+|-
+| Bootstrap 2.x || <code>.btn</code>, <code>.btn-default</code>, <code>.btn-primary</code>, <code>.btn-warning</code>, <code>.btn-danger</code>, <code>.btn-info</code>, <code>.btn-success</code> || Modal footers, toolbar actions, device overview
+|-
+| Custom Domoticz || <code>.btnstyle</code>, <code>.btnstylerev</code>, <code>.btnstyle3</code>, <code>.btnstyle3-sel</code>, <code>.btnstyle3-dis</code> || Switches tab, scene buttons
+|-
+| Small action || <code>.btnsmall</code>, <code>.btnsmall-sel</code>, <code>.btn-mini</code> || Device options menus, log/timer tabs
+|}
+
+The <code>--dz-btn-*</code> variables control Bootstrap <code>.btn*</code> styles. The <code>.btnstyle*</code> and <code>.btnsmall*</code> systems do not yet have variables — override them with explicit selectors if needed.
+
+== Known limitations ==
+
+These items are '''not''' controlled by <code>--dz-*</code> variables:
+
+* '''JavaScript <code>.css()</code> calls''' — there are many <code>$(el).css(...)</code> calls across the frontend that apply inline styles directly to DOM elements. Inline styles have specificity <code>(1,0,0,0)</code> and override any stylesheet rule, including variable-driven ones. Some elements will not respond to variable overrides.
+* '''<code>extras_and_animations.css</code>''' — imported only by the <code>default</code> theme via <code>custom.css</code>. To include transitions and hover effects in your theme, add <code>@import url("extras_and_animations.css");</code> to your <code>custom.css</code>. The file is served from <code>default/extras_and_animations.css</code> via fallback if your theme does not provide one.
+* '''Hardcoded colours in other CSS files''' — <code>css/style.css</code>, <code>css/bootstrap.css</code>, and <code>css/demo_table_jui.css</code> contain many hardcoded colours that are not yet variablized.
+* '''SVG icon colours''' — icon-specific colours in some device SVGs may still be hardcoded and will not respond to <code>--dz-status-*</code> overrides.
+
+== Browser support ==
+
+CSS custom properties (<code>var()</code>) require:
+
+* Chrome 49+
+* Firefox 31+
+* Safari 9.1+
+* Edge 16+
+
+<code>display: contents</code> (used on widget custom elements) had Safari accessibility issues until Safari 16. Older browser support is not a goal for the Domoticz web UI.
+
+== Directory structure ==
+
+A theme lives in a subdirectory of <code>www/styles/</code>:
+
+<pre>
+www/styles/
+  your-theme/
+    custom.css        (required — theme entry point, loaded by index.html via cWebem rewrite)
+    common.css        (optional — overrides default/common.css for this theme)
+    dark.css          (optional — dark :root overrides, imported from custom.css)
+    base.css          (optional — overrides default/base.css for backward compatibility)
+    extras_and_animations.css  (optional — transitions and hover effects)
+    images/           (optional — theme-specific images)
+    fonts/            (optional — custom fonts)
+</pre>
+
+== Browser cache ==
+
+The web frontend is configured for browser caching to speed up application launch time, which is especially useful when creating a home-screen shortcut on a mobile device.
+
+When developing or experimenting with a theme, be sure to perform a hard reload after each change to ensure the browser fetches the latest CSS rather than serving a cached copy.
+
+* Windows/Linux: <code>Ctrl+Shift+R</code>
+* macOS: <code>Cmd+Shift+R</code>
+
+Because the cWebem URL rewriting is transparent to the browser, switching themes in Settings does not automatically invalidate cached copies of <code>common.css</code> or <code>variables.css</code>. A full hard reload is always required after a theme switch.
+
+[[Category:Domoticz]]
+[[Category:Customization]]
+[[Category:Manual]]

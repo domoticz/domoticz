@@ -1,0 +1,2363 @@
+/*
+ * dashboard.css — Dashboard 2.0 specific styles
+ *
+ * THEMING RULE: use only --dz-* variables (defined in css/variables.css).
+ * Never invent private --panel-bg / --text-muted aliases.
+ * All --dz-* variables are automatically overridden by whichever theme is
+ * active, so this file needs zero changes to support dark or custom themes.
+ * See doc/Theming.wiki for the full variable reference.
+ */
+
+/* ── DashboardDynamic Widget Color Tokens ───────────────────────────
+   Override these in a custom theme to restyle the widgets.
+   ─────────────────────────────────────────────────────────────*/
+:root {
+    /* Energy value colors */
+    --dz-widget-energy-import:   #ffb300;
+    --dz-widget-energy-export:   #66bb6a;
+    --dz-widget-energy-price:    #c8a0ff;
+    --dz-widget-energy-solar:    #ffd54f;
+    --dz-widget-energy-gas:      #ff7043;
+    --dz-widget-energy-water:    #43a4d3;
+    --dz-widget-energy-battery:  #43a4d3;
+    --dz-widget-energy-net-pos:  #66bb6a;
+    --dz-widget-energy-net-neg:  #ef5350;
+
+    /* Stat card surface */
+    --dz-widget-stat-radius:     8px;
+    --dz-widget-stat-muted:      rgba(255,255,255,0.55);
+
+    /* RSS widget */
+    --dz-widget-rss-accent:      #43a4d3;
+    --dz-widget-rss-link:        #7bbfff;
+
+    /* Weather forecast widget */
+    --dz-widget-weather-sun:     #ffd54f;
+    --dz-widget-weather-rain:    #43a4d3;
+    --dz-widget-weather-cloud:   #90a4ae;
+    --dz-widget-weather-snow:    #e0f7fa;
+    --dz-widget-weather-storm:   #ef5350;
+
+    /* Moon phase widget */
+    --dz-widget-moon-color:      #e0d8c8;
+}
+
+/* ── Container ────────────────────────────────────────────── */
+.dd-page {
+    position: relative;
+    min-height: 100%;
+    padding: 8px;
+    padding-top: 10px;
+    box-sizing: border-box;
+}
+
+/* ── Compact top bar (view mode) ─────────────────────────── */
+.dd-topbar {
+    position: fixed;
+    top: 50px;
+    left: 16px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--dz-nav-bg);
+    border: 1px solid var(--dz-border-color, rgba(255,255,255,0.12));
+    border-radius: 20px;
+    padding: 3px 6px 3px 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    opacity: 0.5;
+    transition: opacity 0.2s, top 0.3s ease;
+}
+
+/* When navbar is hidden, float the topbar pill to the top edge */
+body.dd-navbar-hidden .dd-topbar {
+    top: 8px;
+}
+
+.dd-topbar:hover {
+    opacity: 1;
+}
+
+.dd-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.dd-topbar-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--dz-body-text);
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dd-topbar-btn {
+    background: transparent !important;
+    border: none !important;
+    color: var(--dz-body-text) !important;
+    padding: 2px 5px !important;
+    box-shadow: none !important;
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+}
+
+.dd-topbar-btn:hover {
+    color: var(--dz-btn-primary-bg, #337ab7) !important;
+}
+
+.dd-topbar-btn:focus,
+.dd-topbar-btn:active {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.dd-topbar-edit {
+    border-left: 1px solid var(--dz-border-color, rgba(255,255,255,0.15)) !important;
+    margin-left: 2px;
+    padding-left: 8px !important;
+}
+
+/* Navbar toggle button: accent when navbar is currently visible */
+.dd-topbar-btn.dd-topbar-nav-on {
+    color: #fff !important;
+    background: var(--dz-btn-primary-bg, #337ab7) !important;
+    border-radius: 10px;
+}
+
+/* ── Full Edit Toolbar ────────────────────────────────────── */
+.dd-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: var(--dz-nav-bg);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    flex-wrap: wrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    position: fixed;
+    top: 50px;
+    left: 20px;
+    right: 20px;
+    z-index: 1020;
+    margin-bottom: 0;
+}
+
+/* When the navbar is hidden the toolbar moves to the top of the viewport */
+body.dd-navbar-hidden .dd-toolbar {
+    top: 4px;
+}
+
+.dd-toolbar-title {
+    font-size: 1.05em;
+    font-weight: 600;
+    flex: 1;
+    min-width: 120px;
+    color: var(--dz-body-text);
+    cursor: default;
+}
+
+.dd-title-editable {
+    cursor: pointer;
+    border-bottom: 1px dashed transparent;
+}
+
+.dd-title-editable:hover {
+    border-bottom-color: var(--dz-btn-primary-bg);
+}
+
+.dd-toolbar-title-edit {
+    flex: 1;
+    min-width: 150px;
+    max-width: 300px;
+}
+
+.dd-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+/* Keep the dropdown toggle button dark when open (Bootstrap overrides it white) */
+.dd-toolbar .btn-group.open > .dropdown-toggle {
+    background: transparent !important;
+    color: var(--dz-body-text, #fff) !important;
+    box-shadow: none !important;
+}
+
+/* Toolbar dropdown menu: match the navbar dark theme */
+.dd-toolbar .dropdown-menu {
+    background: var(--dz-nav-bg, #283750);
+    border-color: rgba(255,255,255,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.dd-toolbar .dropdown-menu > li > a {
+    color: var(--dz-body-text, #fff);
+}
+
+.dd-toolbar .dropdown-menu > li > a:hover,
+.dd-toolbar .dropdown-menu > li > a:focus {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}
+
+.dd-toolbar .dropdown-menu > li.active > a,
+.dd-toolbar .dropdown-menu > li.active > a:hover {
+    background: var(--dz-btn-primary-bg, #337ab7);
+    color: #fff;
+}
+
+.dd-toolbar .dropdown-menu .divider {
+    background-color: rgba(255,255,255,0.15);
+}
+
+.dd-dirty-indicator {
+    font-size: 0.85em;
+    color: var(--dz-body-text);
+}
+
+/* ── Empty state ──────────────────────────────────────────── */
+.dd-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    gap: 16px;
+    color: var(--dz-body-text);
+    text-align: center;
+    padding: 40px;
+}
+
+.dd-empty-state .dd-empty-icon {
+    font-size: 64px;
+    opacity: 0.3;
+    color: var(--dz-body-text);
+}
+
+.dd-empty-state h3 {
+    font-size: 1.4em;
+    margin: 0;
+    color: var(--dz-body-text);
+}
+
+.dd-empty-state p {
+    font-size: 0.95em;
+    max-width: 360px;
+    margin: 0;
+    color: var(--dz-body-text);
+    opacity: 0.75;
+}
+
+.dd-empty-state p strong {
+    opacity: 1;
+    color: var(--dz-btn-primary-bg, #337ab7);
+    font-weight: 600;
+}
+
+/* Remove Bootstrap's gradient from buttons inside the dashboard page
+   so they render as flat solid colors matching the CSS variable theme */
+.dd-page .btn-primary,
+.dd-page .btn-primary:hover,
+.dd-page .btn-primary:focus,
+.dd-page .btn-warning,
+.dd-page .btn-warning:hover,
+.dd-page .btn-warning:focus {
+    background-image: none;
+}
+
+/* ── Widget Library Panel ─────────────────────────────────── */
+.dd-library-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 320px;
+    background: var(--dz-nav-bg);
+    color: var(--dz-body-text);
+    border-left: 1px solid rgba(255,255,255,0.08);
+    box-shadow: -4px 0 16px var(--dz-widget-shadow);
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+    overflow: hidden;
+}
+
+.dd-library-panel.open {
+    transform: translateX(0);
+}
+
+.dd-library-panel-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    background: var(--dz-nav-bg);
+    color: var(--dz-body-text);
+}
+
+.dd-panel-close {
+    background: transparent;
+    border: none;
+    color: var(--dz-body-text);
+    font-size: 20px;
+    line-height: 1;
+    padding: 0 4px;
+    cursor: pointer;
+    opacity: 0.7;
+}
+.dd-panel-close:hover {
+    opacity: 1;
+}
+
+.dd-library-panel-body {
+    overflow-y: auto;
+    flex: 1;
+    padding: 8px;
+}
+
+.dd-library-search {
+    padding: 8px;
+    position: sticky;
+    top: 0;
+    background: var(--dz-nav-bg);
+    z-index: 1;
+}
+
+.dd-library-category {
+    margin-bottom: 12px;
+}
+
+.dd-library-category-label {
+    font-size: 0.75em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--dz-body-text);
+    padding: 4px 8px;
+    opacity: 0.7;
+}
+
+.dd-library-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-bottom: 2px;
+    color: var(--dz-body-text);
+}
+
+.dd-library-item:hover {
+    background: rgba(255,255,255,0.12);
+}
+
+.dd-library-item-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.dd-library-item-icon i,
+.dd-library-item-icon .fa-solid,
+.dd-library-item-icon .fa-regular {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.dd-library-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.dd-library-item-label {
+    font-weight: 600;
+    font-size: 0.9em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dd-library-item-desc {
+    font-size: 0.78em;
+    color: var(--dz-body-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0.7;
+}
+
+/* ── Loading overlay ──────────────────────────────────────── */
+.dd-loading {
+    position: absolute;
+    inset: 0;
+    background: var(--dz-panel-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    color: var(--dz-body-text);
+}
+
+/* ── GridStack Integration ────────────────────────────────── */
+.dd-grid.grid-stack {
+    background: transparent;
+    min-width: 600px;
+}
+
+.dd-page {
+    overflow-x: auto;
+}
+
+/* GridStack's bundled CSS omits top/left/right/bottom on grid-stack-item-content.
+   Force it to fill the full grid cell via absolute positioning. */
+.dd-grid .grid-stack-item-content {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: transparent;
+    border: none;
+    overflow: hidden;
+}
+
+/* Widget cell: the container inside each GridStack cell */
+.dd-widget-cell {
+    height: 100%;
+    overflow: hidden;
+}
+
+/* The db2-widget-wrapper attribute directive host element must also be full height */
+.dd-widget-cell > div {
+    height: 100%;
+    display: block;
+}
+
+/* Push grid below the fixed toolbar in edit mode (~44px toolbar + 10px gap) */
+.dd-page.edit-mode {
+    padding-top: 54px;
+}
+
+/* Edit mode: show grid column guides and item borders */
+.dd-page.edit-mode .dd-grid.grid-stack {
+    background-image:
+        repeating-linear-gradient(
+            to right,
+            var(--dz-dd-grid-line) 0,
+            var(--dz-dd-grid-line) 1px,
+            transparent 1px,
+            transparent calc(100% / 12)
+        );
+}
+
+.dd-page.edit-mode .dd-grid .grid-stack-item-content {
+    outline: 1px dashed var(--dz-btn-warning-bg);
+    border-radius: 4px;
+}
+
+/* Drag placeholder */
+.grid-stack-placeholder > .placeholder-content {
+    background: var(--dz-widget-bg) !important;
+    border: 2px dashed var(--dz-btn-primary-bg) !important;
+    border-radius: 4px;
+    opacity: 0.6;
+}
+
+/* Resize handle — only visible in edit mode.
+   GridStack's CSS applies rotate(-45deg) to .ui-resizable-se which turns a
+   square into a diamond. Override that and use a plain corner indicator. */
+.dd-page.edit-mode .dd-grid .grid-stack-item > .ui-resizable-se {
+    transform: none;
+    background-image: none;
+    background-color: var(--dz-btn-warning-bg);
+    width: 14px;
+    height: 14px;
+    bottom: 0;
+    right: 0;
+    border-radius: 3px 0 0 0;
+    opacity: 0.85;
+    cursor: se-resize;
+}
+
+/* Drag handle cursor */
+.dd-widget-drag-handle {
+    cursor: grab;
+}
+.dd-widget-drag-handle:active {
+    cursor: grabbing;
+}
+
+/* ── Widget Chrome ────────────────────────────────────────── */
+/*
+ * Dashboard 2 widgets use --dz-panel-bg / --dz-nav-bg / --dz-body-text
+ * so they match the dark panel / navbar look without touching the global
+ * --dz-widget-* variables used by the existing device tile tables.
+ */
+.dd-widget {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--dz-panel-bg);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--dz-widget-border-radius);
+    box-shadow: var(--dz-widget-shadow);
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+
+/* Widgets registered with transparentBackground:true get this class in view mode only.
+   The class is never applied in edit mode, so the default panel chrome shows for drag/resize. */
+.dd-widget--no-bg {
+    background:  transparent !important;
+    border:      none        !important;
+    box-shadow:  none        !important;
+}
+
+.dd-widget-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--dz-nav-bg);
+    color: var(--dz-body-text);
+    flex-shrink: 0;
+    min-height: 28px;
+    user-select: none;
+}
+
+.dd-widget-icon {
+    font-size: 14px;
+    color: var(--dz-body-text);
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+
+.dd-widget-title {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: var(--dz-body-text);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dd-widget-actions {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.dd-widget-btn.btn {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    padding: 2px 6px;
+    line-height: 1.4;
+}
+
+.dd-widget-btn.btn:hover,
+.dd-widget-btn.btn:focus {
+    background: rgba(255, 255, 255, 0.28);
+    border-color: rgba(255, 255, 255, 0.55);
+    color: #fff;
+    outline: none;
+}
+
+.dd-widget-btn--remove.btn:hover,
+.dd-widget-btn--remove.btn:focus {
+    background: #c0392b;
+    border-color: #922b21;
+    color: #fff;
+}
+
+.dd-widget-body {
+    flex: 1;
+    overflow: auto;
+    position: relative;
+    padding: 10px;
+    color: var(--dz-body-text);
+}
+
+.dd-widget-error {
+    padding: 12px 16px;
+    color: var(--dz-status-timeout);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85em;
+}
+
+.dd-widget--loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* ── Responsive: collapse panel on small screens ───────────── */
+@media (max-width: 768px) {
+    .dd-library-panel {
+        width: 100%;
+    }
+
+    .dd-toolbar-title {
+        width: 100%;
+    }
+}
+
+/* ── Chart widgets ─────────────────────────────────────────── */
+.dd-widget--temperature-graph > .dd-widget-body,
+.dd-widget--energy-chart > .dd-widget-body {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.dd-chart-container {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dd-chart-wrap {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.dd-highchart {
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+}
+
+.dd-chart-unconfigured {
+    text-align: center;
+    color: var(--dz-body-text);
+    opacity: 0.5;
+    padding: 20px;
+}
+
+.dd-chart-unconfigured i,
+.dd-chart-unconfigured .fa-solid {
+    font-size: 28px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* ── Stat Counter ─────────────────────────────────────────── */
+.dd-stat-counter {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dd-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8px;
+    width: 100%;
+    border-top: none;
+}
+
+.dd-stat-label {
+    font-size: 0.8em;
+    color: var(--dz-body-text);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+}
+
+.dd-stat-value {
+    font-size: 2.4em;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--dz-body-text);
+}
+
+.dd-stat-unit {
+    font-size: 1em;
+    color: var(--dz-body-text);
+    margin-top: 2px;
+}
+
+/* ── Weather Widget ───────────────────────────────────────── */
+/* Weather widget body: no padding, use relative positioning so children can fill it */
+.dd-widget--weather > .dd-widget-body {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.dd-weather {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.dd-weather-configured {
+    position: absolute;
+    inset: 0;
+}
+
+/* Scene fills entire widget background */
+.dd-weather-scene-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.dd-weather-scene-bg .fcw-scene {
+    top: 5px;
+    left: auto;
+    right: 5px;
+    transform: scale(0.75);
+    transform-origin: top right;
+}
+
+/* Text content anchored to bottom */
+.dd-weather-content {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dd-weather-temp {
+    font-size: 2.2em;
+    font-weight: 700;
+    color: var(--dz-body-text);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    line-height: 1;
+}
+
+.dd-weather-unit {
+    font-size: 0.6em;
+    vertical-align: super;
+}
+
+.dd-weather-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    font-size: 0.85em;
+    color: var(--dz-body-text);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.dd-weather-forecast {
+    font-size: 0.85em;
+    color: var(--dz-body-text);
+    opacity: 0.85;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.dd-weather-desc {
+    font-size: 0.8em;
+    color: var(--dz-body-text);
+    opacity: 0.7;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* ── Weather Widget — forecast card style ─────────────────── */
+.dd-weather-forecast-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    background: var(--dz-panel-bg);
+    border-radius: var(--dz-widget-stat-radius);
+}
+
+.dd-fc-label {
+    font-size: 0.85em;
+    color: var(--dz-body-text);
+    margin-bottom: 4px;
+    position: relative;
+    z-index: 1;
+}
+
+.dd-fc-value {
+    font-size: 2em;
+    font-weight: 300;
+    margin: 4px 0;
+    color: var(--dz-body-text);
+    position: relative;
+    z-index: 1;
+}
+
+.dd-fc-unit {
+    font-size: 0.6em;
+    vertical-align: super;
+}
+
+.dd-fc-sub {
+    font-size: 0.82em;
+    color: var(--dz-body-text);
+    text-align: center;
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
+}
+
+/* Energy Dashboard weather card animation: same offset/opacity as Weather widget Style 2 */
+.dd-stat-card .fc-weather-icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: translate(20px, 12px);
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+/* Style 2 animation: offset 20px right / 12px down, reduced opacity so text stays readable */
+.dd-weather-forecast-card .fc-weather-icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: translate(20px, 12px);
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+/* The weather widget body already has padding:0 via .dd-widget--weather > .dd-widget-body.
+   The db2-weather-fc-style class on the inner .dd-weather div is used by sub-elements only. */
+
+/* ── Sun Info ─────────────────────────────────────────────── */
+.dd-sun {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px 8px;
+    justify-content: center;
+}
+
+.dd-sun-cols {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.dd-sun-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+}
+
+.dd-sun-divider {
+    width: 1px;
+    height: 36px;
+    background: var(--dz-body-text);
+    opacity: 0.2;
+}
+
+.dd-sun-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.dd-sun-label {
+    font-size: 0.7em;
+    color: var(--dz-body-text);
+    opacity: 0.7;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.dd-sun-time {
+    font-size: 1.15em;
+    font-weight: 600;
+    color: var(--dz-body-text);
+}
+
+.dd-sun-daylength {
+    font-size: 0.75em;
+    text-align: center;
+    opacity: 0.6;
+}
+
+/* ── DZ Device Wrappers (Feature 06) ─────────────────────── */
+
+.dd-widget--dz-device > .dd-widget-body,
+.dd-widget--dz-favorites > .dd-widget-body {
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: transparent !important;
+    position: relative !important;
+}
+
+/* Remove hardcoded left margin on dimmer/blinds sliders inside dynamic dashboard tiles.
+   The old values (50/94/124px) were sized for the full-width dashboard; in compact tiles
+   they push the slider handle outside the right edge. */
+.dd-widget--dz-device .dimslidernorm,
+.dd-widget--dz-device .dimslidersmalldouble,
+.dd-widget--dz-device .dimslidersmalltripple {
+    margin-left: 0 !important;
+}
+
+.dd-widget--kwh-summary > .dd-widget-body,
+.dd-widget--gas-summary > .dd-widget-body,
+.dd-widget--p1-electricity > .dd-widget-body,
+.dd-widget--battery-status > .dd-widget-body,
+.dd-widget--energy-dashboard > .dd-widget-body,
+.dd-widget--self-sufficiency > .dd-widget-body,
+.dd-widget--setpoint > .dd-widget-body,
+.dd-widget--combo-thermostat > .dd-widget-body,
+.dd-widget--thermostat6 > .dd-widget-body {
+    background: transparent !important;
+    padding: 4px !important;
+    overflow: hidden !important;
+}
+
+.dd-dz-device {
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.dd-dz-favorites {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.dd-favorites-main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Container for the compiled existing directive */
+.dd-dz-inner {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    width: 100%;
+    padding: 0 4px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Override Bootstrap 2 span classes — force full width, no float */
+.dd-dz-inner [class*="span"] {
+    width: 100% !important;
+    float: none !important;
+    margin-left: 0 !important;
+}
+
+/* Device tile fills the container without overflow */
+.dd-dz-inner .item,
+.dd-dz-inner .itemBlock {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    max-width: 100% !important;
+}
+
+/* Table fills width with fixed layout so cells can shrink */
+.dd-dz-inner table[id^="itemtable"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+}
+
+/* All cells truncate text instead of pushing table wider */
+.dd-dz-inner table[id^="itemtable"] td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Unconfigured / loading / error state */
+.dd-dz-unconfigured {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 8px;
+    color: var(--dz-body-text);
+    text-align: center;
+    padding: 16px;
+    opacity: 0.6;
+}
+
+.dd-dz-unconfigured p {
+    margin: 0;
+    font-size: 0.85em;
+}
+
+/* ── Favorites / Room tab strip ───────────────────────────── */
+.dd-favorites-tabs {
+    flex-shrink: 0;
+    margin-bottom: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.dd-favorites-tabs > li > a {
+    color: var(--dz-body-text);
+    padding: 6px 10px;
+    font-size: 0.82em;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.dd-favorites-tabs > li.active > a,
+.dd-favorites-tabs > li.active > a:hover,
+.dd-favorites-tabs > li.active > a:focus {
+    background: var(--dz-panel-bg);
+    border-color: rgba(255,255,255,0.08);
+    border-bottom-color: var(--dz-panel-bg);
+    color: var(--dz-body-text);
+}
+
+.dd-favorites-tabs > li > a:hover {
+    background: rgba(255,255,255,0.12);
+}
+
+/* ── Device tile grid ─────────────────────────────────────── */
+.dd-dz-favorites-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 4px;
+}
+
+.dd-dz-fav-item {
+    flex: 0 0 auto;
+}
+
+/* ── Clock widget ─────────────────────────────────────────── */
+.dd-widget--clock > .dd-widget-body {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.dd-clock {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.dd-clock-time {
+    font-size: 2.4em;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    color: var(--dz-body-text);
+}
+
+.dd-clock-date {
+    font-size: 0.85em;
+    color: var(--dz-text-muted, #999);
+    margin-top: 4px;
+}
+
+/* ── Text Note widget ─────────────────────────────────────── */
+.dd-widget--text-note > .dd-widget-body {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+
+.dd-text-note {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-sizing: border-box;
+    box-sizing: border-box;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.5;
+    color: var(--dz-body-text);
+}
+
+.dd-text-note-hint {
+    display: block;
+    color: var(--dz-text-muted, #999);
+    font-size: 0.8em;
+    padding: 4px 0;
+}
+
+/* ── Activity Log widget ──────────────────────────────────── */
+.dd-activity-log {
+    height: 100%;
+    overflow-y: auto;
+}
+
+.dd-activity-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.dd-activity-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.dd-activity-item:last-child {
+    border-bottom: none;
+}
+
+.dd-activity-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.dd-activity-dot--on  { background: var(--dz-btn-success-bg, #27ae60); }
+.dd-activity-dot--off { background: var(--dz-text-muted, #bdc3c7); }
+
+.dd-activity-info {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.85em;
+    overflow: hidden;
+}
+
+.dd-activity-name {
+    font-weight: 600;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dd-activity-value {
+    color: var(--dz-text-muted, #666);
+    font-size: 0.9em;
+}
+
+.dd-activity-time {
+    font-size: 0.78em;
+    color: var(--dz-text-muted, #999);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.dd-activity-empty {
+    padding: 16px;
+    text-align: center;
+    font-size: 0.85em;
+    color: var(--dz-text-muted, #999);
+}
+
+/* ── System Status widget ─────────────────────────────────── */
+.dd-sysstat {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px;
+}
+
+.dd-sysstat-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85em;
+}
+
+.dd-sysstat-row i,
+.dd-sysstat-row .fa-solid {
+    color: var(--dz-text-muted, #888);
+    width: 16px;
+    text-align: center;
+}
+
+.dd-sysstat-label {
+    flex: 1;
+    color: var(--dz-text-muted, #666);
+}
+
+.dd-sysstat-value {
+    font-weight: 600;
+    color: var(--dz-body-text);
+}
+
+.dd-sysstat-running {
+    color: var(--dz-btn-success-bg, #27ae60);
+}
+
+/* ── Quick Actions widget ─────────────────────────────────── */
+.dd-quick-actions {
+    height: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-content: center;
+    padding: 6px;
+    box-sizing: border-box;
+}
+
+.dd-qa-btn {
+    flex: 1;
+    min-width: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 6px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: var(--dz-panel-bg);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    font-size: 0.8em;
+    color: var(--dz-body-text);
+}
+
+.dd-qa-btn:hover:not(:disabled) {
+    background: rgba(255,255,255,0.12);
+    border-color: var(--dz-btn-primary-bg);
+}
+
+.dd-qa-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.dd-qa-btn--scene {
+    border-color: var(--dz-btn-primary-bg);
+}
+
+.dd-qa-btn--success {
+    background: #dff0d8;
+    border-color: var(--dz-btn-success-bg, #27ae60);
+}
+
+.dd-qa-btn--error {
+    background: #f2dede;
+    border-color: var(--dz-btn-danger-bg, #d9534f);
+}
+
+.dd-qa-label {
+    font-weight: 500;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dd-qa-empty {
+    width: 100%;
+    text-align: center;
+    padding: 16px;
+    font-size: 0.85em;
+    color: var(--dz-text-muted, #999);
+}
+
+.dd-qa-empty p {
+    margin: 6px 0 0 0;
+}
+
+/* ── iFrame Embed widget ──────────────────────────────────── */
+.dd-widget--iframe-embed > .dd-widget-body {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.dd-iframe-container {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.dd-iframe {
+    width: 100%;
+    flex: 1;
+    border: none;
+    display: block;
+    min-height: 0;
+}
+
+.dd-iframe-placeholder {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 16px;
+    color: var(--dz-text-muted, #999);
+    gap: 8px;
+}
+
+.dd-iframe-error-state {
+    color: var(--dz-btn-danger-bg, #d9534f);
+}
+
+.dd-iframe-script-warning {
+    margin: 4px 4px 0 4px;
+    font-size: 0.82em;
+    padding: 6px 8px;
+    flex-shrink: 0;
+}
+
+/* ── Remote Image widget ──────────────────────────────────── */
+/* Image widget: no padding, no scroll on the body — image fills via absolute positioning */
+.dd-widget--image-widget > .dd-widget-body {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.dd-image-widget {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.dd-image-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.dd-image-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px;
+    text-align: center;
+    color: var(--dz-text-muted, #999);
+}
+
+.dd-image-error-state {
+    color: var(--dz-btn-danger-bg, #d9534f);
+}
+
+.dd-image-load-error {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    background: var(--dz-btn-danger-bg-alpha, rgba(217, 83, 79, 0.85));
+    color: #fff;
+    font-size: 0.8em;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.dd-image-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    font-size: 0.8em;
+    padding: 4px 8px;
+    text-align: center;
+}
+
+/* ── Skeleton Loader ─────────────────────────────────────────────── */
+.dd-skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--dz-dd-skeleton-start, rgba(0,0,0,0.06)) 25%,
+        var(--dz-dd-skeleton-mid,   rgba(0,0,0,0.12)) 50%,
+        var(--dz-dd-skeleton-start, rgba(0,0,0,0.06)) 75%
+    );
+    background-size: 200% 100%;
+    animation: dd-shimmer 1.4s ease-in-out infinite;
+    border-radius: 4px;
+    min-height: 1em;
+}
+
+@keyframes dd-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.dd-widget-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.dd-widget-skeleton .skel-title {
+    height: 14px;
+    width: 60%;
+}
+
+.dd-widget-skeleton .skel-body {
+    flex: 1;
+    min-height: 40px;
+}
+
+.dd-widget-skeleton .skel-row {
+    height: 12px;
+    width: 80%;
+}
+
+.dd-widget-skeleton .skel-row:nth-child(3) { width: 65%; }
+.dd-widget-skeleton .skel-row:nth-child(4) { width: 72%; }
+
+/* ── Edit Mode Indicator ─────────────────────────────────────────── */
+.dd-page.edit-mode .dd-toolbar {
+    border-bottom: 2px solid rgba(255,255,255,0.15);
+}
+
+.dd-page.edit-mode .dd-widget-chrome {
+    box-shadow: 0 0 0 2px var(--dz-btn-warning-bg, #f0ad4e),
+                var(--dz-widget-shadow, 0 2px 8px rgba(0,0,0,0.12));
+}
+
+/* ── Toast Notifications ─────────────────────────────────────────── */
+.dd-toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 320px;
+}
+
+.dd-toast {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 13px;
+    line-height: 1.4;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    animation: dd-toast-in 0.2s ease-out;
+}
+
+@keyframes dd-toast-in {
+    from { transform: translateX(110%); opacity: 0; }
+    to   { transform: translateX(0);   opacity: 1; }
+}
+
+.dd-toast--info    { background: var(--dz-btn-info-bg,    #5bc0de); }
+.dd-toast--success { background: var(--dz-btn-success-bg, #5cb85c); }
+.dd-toast--warning { background: var(--dz-btn-warning-bg, #f0ad4e); color: #333; }
+.dd-toast--danger  { background: var(--dz-btn-danger-bg,  #d9534f); }
+
+.dd-toast-msg  { flex: 1; }
+
+/* ── Dashboard Manager Modal ──────────────────────────────── */
+.dd-manager-body {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.dd-manager-table tbody tr:hover td {
+    background: rgba(255,255,255,0.12);
+}
+
+.dd-manager-name {
+    cursor: pointer;
+    border-bottom: 1px dashed transparent;
+}
+
+.dd-manager-name:hover {
+    border-bottom-color: var(--dz-btn-primary-bg);
+    color: var(--dz-btn-primary-bg);
+}
+
+/* ── Camera Feed Widget ──────────────────────────────────────────── */
+/* Camera widget: no padding, fills body edge-to-edge like the image widget */
+.dd-widget--camera-feed > .dd-widget-body {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.dd-camera-widget {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.dd-camera-placeholder {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--dz-text-muted, #999);
+    gap: 6px;
+    text-align: center;
+    padding: 12px;
+}
+
+.dd-camera-placeholder-icon {
+    font-size: 36px;
+    opacity: 0.4;
+}
+
+.dd-camera-hint {
+    font-size: 11px;
+    opacity: 0.7;
+}
+
+.dd-camera-frame {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    background: #000;
+}
+
+.dd-camera-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.dd-camera-error {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--dz-text-muted, #999);
+    font-size: 13px;
+}
+
+.dd-camera-error i,
+.dd-camera-error .fa-solid {
+    font-size: 28px;
+    opacity: 0.5;
+}
+
+.dd-camera-name {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 4px 8px;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    font-size: 12px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Widget Settings Form (Bootstrap 2 form-group fix) ───────── */
+.dd-settings-form .form-group {
+    display: block;
+    margin-bottom: 14px;
+}
+
+/* Block label for all non-boolean fields */
+.dd-settings-form label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 600;
+    color: var(--dz-body-text);
+}
+
+/* Full-width inputs, selects, textareas */
+.dd-settings-form input.text,
+.dd-settings-form textarea.text,
+.dd-settings-form select.combobox {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px 8px;
+    border: 1px solid rgba(128,128,128,0.4);
+    border-radius: 3px;
+    background: var(--dz-input-bg, #fff);
+    color: var(--dz-input-text, #000);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.dd-settings-form input.text:focus,
+.dd-settings-form textarea.text:focus,
+.dd-settings-form select.combobox:focus {
+    outline: none;
+    border-color: var(--dz-btn-primary-bg, #337ab7);
+    box-shadow: 0 0 0 2px rgba(51,122,183,0.2);
+}
+
+/* textarea: let it grow a bit */
+.dd-settings-form textarea.text {
+    min-height: 80px;
+    resize: vertical;
+}
+
+/* color input: smaller fixed width so it doesn't stretch the whole row */
+.dd-settings-form input[type="color"].ui-corner-all {
+    width: 60px;
+    height: 34px;
+    padding: 2px 4px;
+    cursor: pointer;
+}
+
+/* color-alpha: swatch button + inline dropdown */
+dd-wcp-color {
+    position: relative;
+    display: inline-block;
+}
+
+.dd-settings-form .dd-wcp-swatch {
+    width: 48px;
+    height: 34px;
+    padding: 0;
+    border: 2px solid var(--dz-input-border, #ccc);
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-block;
+    color: transparent !important;
+    text-shadow: none !important;
+    font-size: 0 !important;
+}
+
+.dd-wcp-drop {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 1200;
+    background: #eee;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    padding: 8px;
+    box-shadow: 1px 1px 6px rgba(0,0,0,.4);
+}
+
+/* Range / slider row */
+.dd-settings-form .form-group > div[style*="flex"] {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dd-settings-form input[type="range"] {
+    flex: 1;
+    cursor: pointer;
+}
+
+/* Boolean toggle — div with FA icon (avoids native checkbox visibility issues) */
+.dd-settings-form .dd-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: normal;
+    cursor: pointer;
+    margin: 2px 0;
+    color: var(--dz-body-text);
+    user-select: none;
+}
+
+.dd-settings-form .dd-checkbox-label:hover {
+    opacity: 0.85;
+}
+
+.dd-bool-icon {
+    font-size: 22px;
+    line-height: 1;
+    color: rgba(128, 128, 128, 0.5);
+    transition: color 0.15s;
+}
+
+.dd-bool-icon.fa-toggle-on {
+    color: var(--dz-btn-primary-bg, #337ab7);
+}
+
+/* Help text */
+.dd-settings-form .help-block {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.82em;
+    color: var(--dz-text-muted, #888);
+    line-height: 1.3;
+}
+
+/* Validation error state */
+/* Suppress browser-native :invalid red styling — we handle validation ourselves */
+.dd-settings-form input.text:invalid,
+.dd-settings-form select.combobox:invalid {
+    box-shadow: none;
+    color: inherit;
+}
+
+/* Style select options using the theme input variables */
+.dd-settings-form select.combobox option {
+    background: var(--dz-input-bg, #fff);
+    color: var(--dz-input-text, #000);
+}
+
+.dd-settings-form .form-group.has-error input.text,
+.dd-settings-form .form-group.has-error textarea.text,
+.dd-settings-form .form-group.has-error select.combobox {
+    border-color: var(--dz-btn-danger-bg, #d9534f);
+    box-shadow: none;
+}
+
+.dd-settings-form .form-group.has-error .help-block.text-danger {
+    color: var(--dz-btn-danger-bg, #d9534f);
+}
+
+/* Modal close button: Bootstrap default is black + low opacity, invisible on dark themes */
+.modal-header .close {
+    color: var(--dz-body-text, #333);
+    opacity: 0.7;
+    text-shadow: none;
+    filter: none;
+}
+.modal-header .close:hover {
+    color: var(--dz-body-text, #333);
+    opacity: 1;
+}
+
+/* ── HTML Widget ──────────────────────────────────────────────── */
+.dd-widget--db2HtmlWidget > .dd-widget-body {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.dd-html-widget {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+    color: var(--dz-body-text);
+}
+
+.dd-html-widget-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
+
+.dd-html-widget-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    color: var(--dz-text-muted, #999);
+    gap: 8px;
+}
+
+.dd-html-widget-empty i,
+.dd-html-widget-empty .fa-solid {
+    font-size: 2em;
+    opacity: 0.4;
+}
+
+.dd-html-widget-empty p {
+    margin: 0;
+    font-size: 0.85em;
+    opacity: 0.6;
+}
+
+/* ─── Action List Editor (Quick Actions settings) ───────── */
+.dd-action-list-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dd-al-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    background: var(--dz-input-bg, rgba(255,255,255,0.05));
+    border: 1px solid var(--dz-border-color, rgba(255,255,255,0.1));
+    border-radius: 4px;
+}
+
+.dd-al-type-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 5px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+.dd-al-badge-scene  { background: var(--dz-btn-success-bg, #5cb85c); color: #fff; }
+.dd-al-badge-switch { background: var(--dz-btn-primary-bg, #337ab7); color: #fff; }
+
+.dd-al-icon {
+    font-size: 13px;
+    color: var(--dz-body-text-muted, #999);
+    flex-shrink: 0;
+}
+
+.dd-al-label {
+    flex: 1;
+    font-size: 13px;
+    color: var(--dz-body-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dd-al-actions {
+    display: flex;
+    gap: 3px;
+    flex-shrink: 0;
+}
+
+.dd-al-empty {
+    padding: 8px;
+    font-size: 12px;
+    color: var(--dz-body-text-muted, #999);
+    text-align: center;
+    border: 1px dashed var(--dz-border-color, rgba(255,255,255,0.2));
+    border-radius: 4px;
+}
+
+.dd-al-add {
+    margin-top: 4px;
+}
+
+.dd-al-add-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+/* ─── Export / Import Modal ─────────────────────────────── */
+.dd-eim-body {
+    padding: 0;
+}
+
+.dd-eim-tabs {
+    margin: 0;
+    padding: 0;
+}
+
+.dd-eim-panel {
+    padding: 16px;
+}
+
+.dd-eim-textarea {
+    width: 100%;
+    height: 220px;
+    font-family: monospace;
+    font-size: 11px;
+    resize: vertical;
+    background: var(--dz-modal-bg, #013) !important;
+    color: var(--dz-modal-text, #ddd) !important;
+    border-color: rgba(255,255,255,0.15) !important;
+}
+
+.dd-eim-textarea:focus {
+    background: var(--dz-modal-bg, #013) !important;
+    color: var(--dz-modal-text, #ddd) !important;
+}
+
+.dd-eim-textarea--drag {
+    border-color: var(--dz-btn-primary-bg, #337ab7) !important;
+    box-shadow: 0 0 0 2px rgba(51, 122, 183, 0.35) !important;
+}
+
+.dd-eim-actions {
+    margin-top: 8px;
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+/* File drop zone (import panel) */
+.dd-eim-dropzone {
+    margin-top: 8px;
+    padding: 10px 16px;
+    border: 2px dashed rgba(255,255,255,0.2);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    color: var(--dz-modal-text, #ddd);
+    opacity: 0.7;
+    transition: border-color 0.15s, opacity 0.15s;
+}
+
+.dd-eim-dropzone:hover,
+.dd-eim-dropzone--hover {
+    border-color: var(--dz-btn-primary-bg, #337ab7);
+    opacity: 1;
+}
+
+.dd-eim-dropzone i {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.dd-eim-dropzone code {
+    background: transparent;
+    color: inherit;
+}
+
+.dd-eim-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.dd-eim-target-row {
+    margin-top: 12px;
+    margin-bottom: 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--dz-border-color, rgba(255,255,255,0.1));
+}
+
+.dd-eim-target-label {
+    font-size: 13px;
+    color: var(--dz-body-text);
+    opacity: 0.7;
+    flex-shrink: 0;
+}
+
+.dd-eim-radio {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 5px;
+    font-weight: normal;
+    cursor: pointer;
+    margin: 0;
+}
+
+.dd-eim-warning {
+    margin-top: 10px;
+    margin-bottom: 0;
+    font-size: 12px;
+    padding: 8px 12px;
+}
+
+/* ── Stat Card (shared by energy summary widgets) ── */
+.dd-stat-card {
+    text-align: center;
+    padding: 8px 12px;
+    background: var(--dz-panel-bg);
+    border-radius: var(--dz-widget-stat-radius);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    box-sizing: border-box;
+    overflow: hidden;
+    position: relative;
+}
+.dd-stat-label {
+    font-size: 0.85em;
+    color: var(--dz-body-text);
+    margin-bottom: 2px;
+}
+.dd-stat-value {
+    font-size: 1.9em;
+    font-weight: bold;
+    line-height: 1.1;
+}
+.dd-stat-line {
+    font-size: 1.3em;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.dd-stat-sub {
+    font-size: 0.82em;
+    color: var(--dz-body-text);
+    margin-top: 2px;
+    line-height: 1.5;
+}
+.dd-energy-import  { color: var(--dz-widget-energy-import); }
+.dd-energy-export  { color: var(--dz-widget-energy-export); }
+.dd-energy-price   { color: var(--dz-widget-energy-price);  }
+.dd-energy-solar   { color: var(--dz-widget-energy-solar);  }
+.dd-energy-gas     { color: var(--dz-widget-energy-gas);    }
+.dd-energy-battery { color: var(--dz-widget-energy-battery); }
+
+/* ── Energy Dashboard widget — cards row ── */
+.dd-fc-conditions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    align-items: stretch;
+    padding: 2px 0 4px;
+}
+.dd-fc-conditions .dd-stat-card {
+    min-width: 120px;
+    flex: 1 1 120px;
+    max-width: 200px;
+    height: auto;
+}
+.dd-fc-conditions .dd-stat-card--wide {
+    min-width: 160px;
+    flex: 1.5 1 160px;
+    max-width: 260px;
+}
+
+/* ── Energy Balance Bar (self-sufficiency widget) ── */
+.dd-balance {
+    font-size: 0.82em;
+    color: var(--dz-body-text);
+    padding: 5px 10px;
+    background: var(--dz-panel-bg);
+    border-radius: 6px;
+    border-left: 3px solid var(--dz-widget-energy-battery);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px 20px;
+    height: 100%;
+    box-sizing: border-box;
+}
+.dd-balance-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+}
+.dd-balance-stats span {
+    color: var(--dz-body-text);
+    font-weight: bold;
+}
+.dd-balance-time {
+    white-space: nowrap;
+    color: var(--dz-body-text);
+    font-size: 0.9em;
+}
+.dd-balance-bar-wrap {
+    width: 100%;
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 6px;
+}
+.dd-balance-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--dz-widget-energy-net-neg), var(--dz-widget-energy-import), var(--dz-widget-energy-export));
+    transition: width 0.5s ease;
+}
+
+/* ── Setpoint Widget ──────────────────────────────────────── */
+.dd-setpoint {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 8px;
+    padding: 8px;
+}
+.dd-setpoint-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+.dd-setpoint-value {
+    font-size: 1.8em;
+    font-weight: bold;
+    cursor: pointer;
+    min-width: 80px;
+    text-align: center;
+    color: var(--dz-widget-energy-battery);
+}
+.dd-setpoint-value:hover {
+    opacity: 0.8;
+}
+.dd-setpoint-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--dz-widget-stat-muted);
+    background: transparent;
+    cursor: pointer;
+    font-size: 1.2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dz-body-text);
+    transition: border-color 0.15s, opacity 0.15s;
+}
+.dd-setpoint-btn:hover:not(:disabled) {
+    border-color: var(--dz-widget-energy-battery);
+    color: var(--dz-widget-energy-battery);
+}
+.dd-setpoint-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* ── Text Sensor Widget ───────────────────────────────────── */
+.dd-text-sensor {
+    padding: 8px;
+    height: 100%;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+.dd-text-sensor-inner {
+    display: flex;
+    flex-direction: column;
+}
+.dd-text-sensor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+    flex-shrink: 0;
+}
+.dd-text-sensor-title {
+    font-size: 0.85em;
+    color: var(--dz-widget-stat-muted);
+    font-weight: 500;
+}
+.dd-text-sensor-updated {
+    font-size: 0.75em;
+    color: var(--dz-widget-stat-muted);
+    white-space: nowrap;
+    margin-left: 8px;
+}
+.dd-text-sensor-content {
+    flex-shrink: 0;
+    word-break: break-word;
+    line-height: 1.5;
+    text-align: left;
+}
+
+/* ── RSS Feed Widget ──────────────────────────────────────── */
+.dd-rss { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
+.dd-rss-header { font-size: 0.9em; font-weight: 600; color: var(--dz-widget-rss-accent); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+.dd-rss-list { flex: 1; overflow-y: auto; }
+.dd-rss-item { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08); align-items: flex-start; }
+.dd-rss-item:last-child { border-bottom: none; }
+.dd-rss-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+.dd-rss-item-body { flex: 1; min-width: 0; }
+.dd-rss-item-title { font-size: 0.85em; color: inherit; text-decoration: none; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dd-rss-item-title:hover { color: var(--dz-widget-rss-link); }
+.dd-rss-item-meta { font-size: 0.75em; color: var(--dz-widget-stat-muted); margin-top: 2px; }
+.dd-rss-link-icon { color: var(--dz-widget-rss-link); font-size: 0.8em; flex-shrink: 0; }
+/* Single item mode */
+.dd-rss-single-img { width: 100%; max-height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 8px; }
+.dd-rss-single-title { font-size: 1em; font-weight: 600; margin-bottom: 6px; }
+.dd-rss-single-excerpt { font-size: 0.82em; color: var(--dz-widget-stat-muted); line-height: 1.5; flex: 1; overflow: hidden; }
+
+/* ── Weather Forecast Widget ──────────────────────────────── */
+.dd-forecast { height: 100%; display: flex; flex-direction: column; padding: 4px 8px; overflow: hidden; }
+.dd-forecast-header { font-size: 0.9em; font-weight: 600; margin-bottom: 4px; }
+.dd-forecast-grid { display: flex; flex: 1; gap: 2px; overflow: hidden; align-items: stretch; }
+.dd-forecast-day { flex: 1; min-width: 50px; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 2px; text-align: center; justify-content: center; }
+.dd-forecast-dayname { font-size: 0.78em; font-weight: 600; color: var(--dz-widget-stat-muted); }
+.dd-forecast-day > i { font-size: 1.2em; }
+.dd-forecast-temps { font-size: 0.8em; white-space: nowrap; }
+.dd-forecast-label { font-size: 0.68em; color: var(--dz-widget-stat-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.dd-forecast-precip { font-size: 0.72em; color: var(--dz-widget-weather-rain); }
+.dd-forecast-wind { font-size: 0.72em; color: var(--dz-widget-stat-muted); }
+.dd-forecast-error { font-size: 0.8em; color: var(--dz-widget-energy-net-neg); margin-top: 8px; }
+
+/* ── Domoticz Log Widget ──────────────────────────────────── */
+.dd-widget--domoticz-log > .dd-widget-body { padding: 0; overflow: hidden; position: relative; }
+.dd-log { position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden; }
+.dd-log-header { display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.dd-log-title { font-size: 0.9em; font-weight: 600; }
+.dd-log-filters { display: flex; gap: 4px; align-items: center; }
+.dd-log-filter-btn { padding: 2px 6px; border-radius: 4px; border: 1px solid currentColor; background: transparent; cursor: pointer; font-size: 0.75em; opacity: 0.5; }
+.dd-log-filter-btn.active { opacity: 1; background: currentColor; }
+.dd-log-filter-btn.active span { color: #000; }
+.dd-log-filter-normal { color: var(--dz-body-text); }
+.dd-log-filter-status { color: var(--dz-widget-rss-accent); }
+.dd-log-filter-error  { color: var(--dz-widget-energy-net-neg); }
+.dd-log-filter-error-alert { color: var(--dz-widget-energy-net-neg); }
+.dd-log-list { flex: 1; overflow-y: auto; font-size: 0.78em; font-family: monospace; }
+.dd-log-entry { padding: 2px 8px; display: flex; gap: 8px; }
+.dd-log-entry:hover { background: rgba(255,255,255,0.05); }
+.dd-log-time { color: var(--dz-widget-stat-muted); flex-shrink: 0; }
+.dd-log-level { flex-shrink: 0; min-width: 50px; }
+.dd-log-msg { flex: 1; word-break: break-word; }
+.dd-log-entry-normal .dd-log-level { color: var(--dz-body-text); }
+.dd-log-entry-status .dd-log-level { color: var(--dz-widget-rss-accent); }
+.dd-log-entry-error  .dd-log-level { color: var(--dz-widget-energy-net-neg); }
+
+/* ── Moon Phase Widget ────────────────────────────────────── */
+.dd-moon { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; text-align: center; gap: 4px; }
+.dd-moon-title { font-size: 0.8em; color: var(--dz-widget-stat-muted); }
+.dd-moon-emoji { font-size: 3em; line-height: 1.1; color: var(--dz-widget-moon-color); }
+.dd-moon-phase { font-size: 0.9em; font-weight: 600; }
+.dd-moon-illumination { font-size: 0.8em; color: var(--dz-widget-stat-muted); }
+.dd-moon-next { font-size: 0.8em; color: var(--dz-widget-stat-muted); margin-top: 4px; }
+
+/* ── Kiosk mode ───────────────────────────────────────────── */
+.dd-kiosk-progress {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    z-index: 9999;
+}
+
+.dd-kiosk-progress-fill {
+    height: 100%;
+    background: var(--dz-widget-energy-battery);
+    transition: width 1s linear;
+}
+
+/* Kiosk button: accent when kiosk is running */
+.dd-topbar-btn.dd-topbar-kiosk-active {
+    color: #fff !important;
+    background: var(--dz-widget-energy-battery) !important;
+    border-radius: 10px;
+}
+
+/* ── Google Calendar Widget ───────────────────────────────── */
+.dd-calendar { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
+.dd-calendar-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; font-weight: 600; margin-bottom: 8px; flex-shrink: 0; }
+.dd-calendar-month { font-size: 0.85em; color: var(--dz-widget-stat-muted); }
+.dd-calendar-body { flex: 1; overflow-y: auto; }
+.dd-calendar-group { margin-bottom: 10px; }
+.dd-calendar-day-label { font-size: 0.75em; font-weight: 700; text-transform: uppercase; color: var(--dz-widget-rss-accent); margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 2px; }
+.dd-calendar-event { display: flex; gap: 8px; padding: 3px 0; font-size: 0.85em; align-items: baseline; }
+.dd-calendar-time { flex-shrink: 0; min-width: 45px; color: var(--dz-widget-stat-muted); font-size: 0.9em; }
+.dd-calendar-allday { font-style: italic; }
+.dd-calendar-title { flex: 1; }
+.dd-calendar-past { opacity: 0.5; }
+.dd-calendar-empty { font-size: 0.85em; color: var(--dz-widget-stat-muted); text-align: center; margin-top: 16px; }
+
+/* ── Battery Monitor Widget ───────────────────────────────── */
+.dd-battery-monitor { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
+.dd-battery-monitor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-shrink: 0; }
+.dd-battery-monitor-title { font-size: 0.9em; font-weight: 600; }
+.dd-battery-monitor-badge { font-size: 0.75em; padding: 2px 7px; border-radius: 10px; background: var(--dz-widget-energy-net-neg); color: #fff; }
+.dd-battery-monitor-badge.ok { background: var(--dz-widget-energy-export); }
+.dd-battery-monitor-list { flex: 1; overflow-y: auto; }
+.dd-battery-monitor-row { display: flex; align-items: center; gap: 8px; padding: 4px 2px; font-size: 0.85em; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.dd-battery-monitor-row:last-child { border-bottom: none; }
+.dd-battery-monitor-icon { width: 20px; text-align: center; font-size: 1em; flex-shrink: 0; }
+.dd-battery-monitor-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dd-battery-monitor-level { flex-shrink: 0; font-weight: 600; min-width: 36px; text-align: right; }
+.dd-battery-monitor-ok { text-align: center; padding: 16px; color: var(--dz-widget-energy-export); font-size: 0.9em; }
+
+/* ── Screen Standby Mode ──────────────────────────────────── */
+body.dd-standby .dd-page {
+    opacity: var(--dd-standby-opacity, 0.05);
+    transition: opacity 2s ease;
+    pointer-events: none;
+}
+
+body.dd-standby::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: #000;
+    opacity: 0.95;
+    z-index: 9998;
+    cursor: pointer;
+}
+
+/* ── Gauge Widget ─────────────────────────────────────────── */
+.dd-gauge-wrap { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; }
+.dd-gauge-svg-wrap { position: relative; width: 100%; max-width: 140px; }
+.dd-gauge-svg { width: 100%; height: auto; display: block; }
+.dd-gauge-bg { stroke: rgba(255,255,255,0.1); }
+.dd-gauge-fill { transition: stroke-dasharray 0.6s ease, stroke 0.4s ease; }
+.dd-gauge-value { position: absolute; bottom: 0; left: 0; right: 0; text-align: center; font-size: 1.1em; font-weight: 600; line-height: 1; padding-bottom: 4px; }
+.dd-gauge-title { margin-bottom: 4px; }

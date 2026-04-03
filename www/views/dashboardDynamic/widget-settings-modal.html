@@ -1,0 +1,260 @@
+<div class="modal-header">
+    <button type="button" class="close" ng-click="cancel()">&times;</button>
+    <h4 class="modal-title">
+        <i ng-class="descriptor.icon" ng-show="descriptor.icon" style="margin-right:6px"></i>
+        {{ descriptor.label }} Settings
+    </h4>
+</div>
+
+<div class="modal-body">
+    <form name="settingsForm" class="dd-settings-form" novalidate>
+        <div class="form-group"
+             ng-repeat="field in descriptor.configSchema"
+             ng-class="{'has-error': settingsForm['field_' + field.key].$invalid && settingsForm.$submitted}">
+
+            <label ng-if="field.type !== 'boolean' && field.type !== 'group'">
+                {{ field.label }}
+                <span class="text-danger" ng-show="field.required">*</span>
+            </label>
+
+            <!-- text -->
+            <input ng-if="field.type === 'text'"
+                   type="text"
+                   class="text ui-widget-content ui-corner-all"
+                   name="field_{{ field.key }}"
+                   ng-model="config[field.key]"
+                   ng-required="field.required"
+                   placeholder="{{ field.placeholder || '' }}">
+
+            <!-- url -->
+            <input ng-if="field.type === 'url'"
+                   type="url"
+                   class="text ui-widget-content ui-corner-all"
+                   name="field_{{ field.key }}"
+                   ng-model="config[field.key]"
+                   ng-required="field.required"
+                   placeholder="{{ field.placeholder || 'https://' }}">
+
+            <!-- textarea -->
+            <textarea ng-if="field.type === 'textarea'"
+                      class="text ui-widget-content ui-corner-all"
+                      rows="4"
+                      name="field_{{ field.key }}"
+                      ng-model="config[field.key]"
+                      ng-required="field.required"></textarea>
+
+            <!-- number -->
+            <input ng-if="field.type === 'number'"
+                   type="number"
+                   class="text ui-widget-content ui-corner-all"
+                   name="field_{{ field.key }}"
+                   ng-model="config[field.key]"
+                   ng-required="field.required"
+                   min="{{ field.min }}"
+                   max="{{ field.max }}"
+                   step="{{ field.step || 1 }}">
+
+            <!-- boolean -->
+            <div ng-if="field.type === 'boolean'" class="dd-checkbox-label"
+                 ng-click="config[field.key] = !config[field.key]">
+                <i class="fa-solid dd-bool-icon"
+                   ng-class="config[field.key] ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                {{ field.label }}
+            </div>
+
+            <!-- select -->
+            <select ng-if="field.type === 'select'"
+                    class="combobox ui-corner-all"
+                    name="field_{{ field.key }}"
+                    ng-model="config[field.key]"
+                    ng-required="field.required"
+                    ng-options="o.value as o.label for o in field.options">
+                <option value="">-- Select --</option>
+            </select>
+
+            <!-- device-picker -->
+            <select ng-if="field.type === 'device-picker'"
+                    class="combobox ui-corner-all"
+                    name="field_{{ field.key }}"
+                    ng-model="config[field.key]"
+                    ng-required="field.required">
+                <option value="">-- Select Device --</option>
+                <option ng-repeat="d in deviceListByField[field.key]" value="{{ d.idx }}">
+                    {{ deviceLabel(d) }}
+                </option>
+            </select>
+
+            <!-- scene-picker -->
+            <select ng-if="field.type === 'scene-picker'"
+                    class="combobox ui-corner-all"
+                    name="field_{{ field.key }}"
+                    ng-model="config[field.key]"
+                    ng-required="field.required">
+                <option value="">— select scene —</option>
+                <option ng-repeat="s in scenes" value="{{ s.idx }}">{{ s.Name }}</option>
+            </select>
+
+            <!-- plan-picker -->
+            <select ng-if="field.type === 'plan-picker'"
+                    class="combobox ui-corner-all"
+                    name="field_{{ field.key }}"
+                    ng-model="config[field.key]"
+                    ng-required="field.required">
+                <option value="">— Select Room / Plan —</option>
+                <option ng-repeat="p in plans track by p.idx" value="{{ p.idx }}">{{ p.Name }}</option>
+            </select>
+
+            <!-- camera-picker -->
+            <select ng-if="field.type === 'camera-picker'"
+                    class="combobox ui-corner-all"
+                    ng-model="config[field.key]"
+                    ng-required="field.required">
+                <option value="">— Select camera —</option>
+                <option ng-repeat="cam in cameras track by cam.idx"
+                        value="{{cam.idx}}">{{cam.Name}}</option>
+            </select>
+
+            <!-- action-list -->
+            <div ng-if="field.type === 'action-list'" class="dd-action-list-editor">
+
+                <!-- Existing actions -->
+                <div class="dd-al-item" ng-repeat="action in config[field.key] track by $index">
+                    <span class="dd-al-type-badge"
+                          ng-class="action.type === 'scene' ? 'dd-al-badge-scene' : 'dd-al-badge-switch'">
+                        {{ action.type === 'scene' ? 'Scene' : 'Device' }}
+                    </span>
+                    <i ng-class="action.icon || 'fa-solid fa-bolt'" class="dd-al-icon"></i>
+                    <span class="dd-al-label" ng-bind="action.label"></span>
+                    <div class="dd-al-actions">
+                        <button type="button" class="btn btn-xs btn-default"
+                                ng-click="actionMoveUp(field.key, $index)"
+                                ng-disabled="$index === 0" title="Move up">
+                            <i class="fa-solid fa-chevron-up"></i>
+                        </button>
+                        <button type="button" class="btn btn-xs btn-default"
+                                ng-click="actionMoveDown(field.key, $index)"
+                                ng-disabled="$index === config[field.key].length - 1" title="Move down">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                        <button type="button" class="btn btn-xs btn-danger"
+                                ng-click="actionRemoveItem(field.key, $index)" title="Remove">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="dd-al-empty" ng-show="!config[field.key] || config[field.key].length === 0">
+                    No actions yet. Add one below.
+                </div>
+
+                <!-- Add new action row -->
+                <div class="dd-al-add">
+                    <div class="dd-al-add-row">
+                        <select class="combobox ui-corner-all" ng-model="newAction.type" style="width:90px;flex-shrink:0">
+                            <option value="switch">Device</option>
+                            <option value="scene">Scene</option>
+                        </select>
+
+                        <select class="combobox ui-corner-all" ng-model="newAction.idx" style="flex:1">
+                            <option value="">-- Select --</option>
+                            <option ng-if="newAction.type !== 'scene'"
+                                    ng-repeat="d in actionDevices track by d.idx"
+                                    value="{{ d.idx }}">{{ d.Name }}</option>
+                            <option ng-if="newAction.type === 'scene'"
+                                    ng-repeat="s in actionScenes track by s.idx"
+                                    value="{{ s.idx }}">{{ s.Name }}</option>
+                        </select>
+
+                        <input type="text" class="text ui-widget-content ui-corner-all" ng-model="newAction.label"
+                               placeholder="Label (optional)" style="flex:1">
+
+                        <button type="button" class="btn btn-sm btn-primary"
+                                ng-click="actionAddItem(field.key)"
+                                ng-disabled="!newAction.idx">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- color -->
+            <input ng-if="field.type === 'color'"
+                   type="color"
+                   class="ui-corner-all"
+                   name="field_{{ field.key }}"
+                   ng-model="config[field.key]">
+
+            <!-- color-alpha (wheel + alpha slider) -->
+            <dd-wcp-color ng-if="field.type === 'color-alpha'"
+                          name="field_{{ field.key }}"
+                          ng-model="config[field.key]">
+            </dd-wcp-color>
+
+            <!-- group: renders sub-fields side by side -->
+            <div ng-if="field.type === 'group'" class="dd-field-group" style="display:flex;gap:12px;align-items:flex-end">
+                <div ng-repeat="subField in field.fields" style="flex:1;min-width:0">
+                    <label ng-if="subField.type !== 'boolean'" style="display:block;margin-bottom:4px">{{ subField.label }}</label>
+
+                    <input ng-if="subField.type === 'number'"
+                           type="number"
+                           class="text ui-widget-content ui-corner-all"
+                           name="field_{{ subField.key }}"
+                           ng-model="config[subField.key]"
+                           ng-required="subField.required"
+                           min="{{ subField.min }}"
+                           max="{{ subField.max }}"
+                           step="{{ subField.step || 1 }}"
+                           style="width:100%">
+
+                    <select ng-if="subField.type === 'select'"
+                            class="combobox ui-corner-all"
+                            name="field_{{ subField.key }}"
+                            ng-model="config[subField.key]"
+                            ng-required="subField.required"
+                            ng-options="o.value as o.label for o in subField.options"
+                            style="width:100%">
+                        <option value="">-- Select --</option>
+                    </select>
+
+                    <input ng-if="subField.type === 'color'"
+                           type="color"
+                           class="ui-corner-all"
+                           name="field_{{ subField.key }}"
+                           ng-model="config[subField.key]">
+
+                    <input ng-if="subField.type === 'text'"
+                           type="text"
+                           class="text ui-widget-content ui-corner-all"
+                           name="field_{{ subField.key }}"
+                           ng-model="config[subField.key]"
+                           ng-required="subField.required"
+                           placeholder="{{ subField.placeholder || '' }}"
+                           style="width:100%">
+                </div>
+            </div>
+
+            <!-- range / slider -->
+            <div ng-if="field.type === 'range'" style="display:flex;align-items:center;gap:8px">
+                <input type="range"
+                       name="field_{{ field.key }}"
+                       ng-model="config[field.key]"
+                       min="{{ field.min || 0 }}"
+                       max="{{ field.max || 100 }}"
+                       step="{{ field.step || 1 }}"
+                       style="flex:1">
+                <span style="min-width:40px;text-align:right">{{ config[field.key] }}</span>
+            </div>
+
+            <span class="help-block" ng-show="field.help">{{ field.help }}</span>
+            <span class="help-block text-danger"
+                  ng-show="settingsForm['field_' + field.key].$invalid && settingsForm.$submitted">
+                This field is required.
+            </span>
+        </div>
+    </form>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary" ng-click="save()">Save</button>
+</div>

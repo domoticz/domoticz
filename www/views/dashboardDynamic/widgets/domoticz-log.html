@@ -1,0 +1,64 @@
+<div class="dd-log">
+
+    <!-- Header -->
+    <div class="dd-log-header">
+        <span class="dd-log-title" ng-bind="ctrl.title"></span>
+        <div class="dd-log-filters">
+            <button class="dd-log-filter-btn dd-log-filter-normal"
+                    ng-class="{'active': ctrl.isShowNormal()}"
+                    ng-click="ctrl.toggleNormal()"
+                    title="Toggle Normal">
+                <span>N {{ctrl.counts.normal}}</span>
+            </button>
+            <button class="dd-log-filter-btn dd-log-filter-status"
+                    ng-class="{'active': ctrl.isShowStatus()}"
+                    ng-click="ctrl.toggleStatus()"
+                    title="Toggle Status">
+                <span>S {{ctrl.counts.status}}</span>
+            </button>
+            <button class="dd-log-filter-btn dd-log-filter-error"
+                    ng-class="{'active': ctrl.isShowError(), 'dd-log-filter-error-alert': ctrl.counts.error > 0}"
+                    ng-click="ctrl.toggleError()"
+                    title="Toggle Errors">
+                <span>E {{ctrl.counts.error}}</span>
+            </button>
+            <button class="dd-log-filter-btn dd-log-filter-normal"
+                    ng-click="ctrl.load()"
+                    title="Refresh"
+                    style="min-width: 0; padding: 2px 6px;">
+                <span>
+                    <i class="fa-solid fa-arrows-rotate"
+                       ng-class="{'fa-spin': ctrl.loading}"></i>
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading / error states -->
+    <div ng-if="ctrl.loading && !ctrl.allEntries.length"
+         class="dd-chart-unconfigured">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+    </div>
+
+    <div ng-if="ctrl.loadError && !ctrl.loading && !ctrl.allEntries.length"
+         class="dd-chart-unconfigured">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <p>Could not load log</p>
+    </div>
+
+    <!-- Log list -->
+    <div class="dd-log-list" ng-if="ctrl.allEntries.length">
+        <div class="dd-log-entry"
+             ng-class="entry.levelClass"
+             ng-repeat="entry in ctrl.filteredEntries track by $index">
+            <span class="dd-log-time"  ng-bind="entry.timestamp"></span>
+            <span class="dd-log-level" ng-bind="entry.levelLabel"></span>
+            <span class="dd-log-msg"   ng-bind="entry.text"></span>
+        </div>
+        <div ng-if="ctrl.filteredEntries.length === 0 && !ctrl.loading"
+             class="dd-log-entry" style="opacity: 0.5; font-style: italic;">
+            No entries match the active filters
+        </div>
+    </div>
+
+</div>

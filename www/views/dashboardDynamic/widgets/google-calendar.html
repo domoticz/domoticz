@@ -1,0 +1,51 @@
+<div class="dd-calendar">
+
+    <!-- Unconfigured state -->
+    <div ng-if="!ctrl.widgetDef.config.calendarUrl" class="dd-chart-unconfigured">
+        <i class="fa-solid fa-calendar-days"></i>
+        <p>Enter a calendar URL in settings</p>
+    </div>
+
+    <!-- Configured state -->
+    <div ng-if="ctrl.widgetDef.config.calendarUrl" style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
+
+        <!-- Header -->
+        <div class="dd-calendar-header">
+            <span><i class="fa-solid fa-calendar-days"></i> {{ ctrl.title }}</span>
+            <span class="dd-calendar-month">{{ ctrl.currentMonthYear }}</span>
+            <a ng-click="ctrl.load()" title="Refresh" style="cursor: pointer; margin-left: 6px;">
+                <i class="fa-solid fa-arrows-rotate"
+                   ng-class="{'fa-spin': ctrl.loading}"></i>
+            </a>
+        </div>
+
+        <!-- Loading -->
+        <div ng-if="ctrl.loading && !ctrl.groups.length" class="dd-chart-unconfigured">
+            <i class="fa fa-spinner fa-spin"></i>
+        </div>
+
+        <!-- Error -->
+        <div ng-if="ctrl.loadError" class="dd-calendar-body">
+            <div class="dd-calendar-empty">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                {{ ctrl.errorMessage || 'Failed to load calendar.' }}
+            </div>
+        </div>
+
+        <!-- Event list -->
+        <div ng-if="!ctrl.loadError" class="dd-calendar-body">
+            <div ng-repeat="group in ctrl.groups" class="dd-calendar-group">
+                <div class="dd-calendar-day-label">{{ group.label }}</div>
+                <div ng-repeat="event in group.events" class="dd-calendar-event">
+                    <span class="dd-calendar-time" ng-if="ctrl.showTime && !event.allDay">{{ event.timeStr }}</span>
+                    <span class="dd-calendar-time dd-calendar-allday" ng-if="event.allDay">All day</span>
+                    <span class="dd-calendar-title" ng-class="{'dd-calendar-past': event.isPast}">{{ event.title }}</span>
+                </div>
+            </div>
+            <div ng-if="!ctrl.groups.length && !ctrl.loading" class="dd-calendar-empty">
+                No upcoming events
+            </div>
+        </div>
+
+    </div>
+</div>

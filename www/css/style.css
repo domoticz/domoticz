@@ -32,10 +32,10 @@ html, body {
 }
 
 body {
-	background: #202020 url(images/img01.jpg) repeat;
+	background-color: var(--dz-body-bg, #202020);
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 10pt;
-	color: #FFF;
+	color: var(--dz-body-text, #fff);
 }
 
 .bootbox-body {
@@ -77,6 +77,44 @@ h1, h3 {
 	margin: 0em;
 	padding: 0em;
 	font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Layout — applies to all themes */
+#main-view {
+	padding-top: 0;
+}
+
+.row {
+	clear: both;
+}
+
+.tab-content {
+	overflow: visible;
+}
+
+@media all and (min-width: 768px) {
+	.row-fluid {
+		display: flex;
+	}
+}
+
+hr {
+	margin: 5px 0;
+	border: 0;
+	border-top: 1px solid var(--dz-input-border, #ccc);
+}
+
+.dataTables_wrapper {
+	margin-bottom: 16px;
+}
+
+#img img:hover {
+	transform: scale(1.1);
+	transition: transform 0.2s ease;
+}
+
+.events-editor__tree {
+	padding-top: 14px !important;
 }
 
 p {
@@ -1302,7 +1340,7 @@ mark.log-highlight {
 .page-header-small {
 	padding-bottom: 4px;
 	margin: 20px 0 6px;
-	border-bottom: 3px double var(--accent-color);
+	border-bottom: 1px solid var(--accent-color);
 	font-size: 9pt;
 }
 
@@ -1321,8 +1359,8 @@ mark.log-highlight {
 }
 
 .page-content-container {
-	background: #11213d;
-	border: 1px solid var(--accent-color);
+	background: var(--dz-panel-bg, #11213d);
+	border: none;
 	border-radius: 5px;
 	padding: 10px 0;
 	margin-top: 10px;
@@ -2995,3 +3033,38 @@ table.display thead th.sorting_disabled div.DataTables_sort_wrapper {
 		display: none;
 	}
 }
+
+/* ── DashboardDynamic navbar toggle ─────────────────────────────── */
+/* Use transform (not top) — no layout reflow, GPU composited */
+body.dd-dashboard-active .navbar.navbar-fixed-top {
+    transition: transform 0.3s ease;
+}
+
+body.dd-navbar-hidden .navbar.navbar-fixed-top {
+    transform: translateY(-100%);
+}
+
+/* Slide the page content up to fill the freed navbar space */
+body.dd-dashboard-active #holder > .container-fluid {
+    transition: padding-top 0.3s ease;
+}
+
+body.dd-navbar-hidden #holder > .container-fluid {
+    padding-top: 0;
+}
+
+/* Tips of the Day modal */
+.tips-modal .modal-content,
+.tips-modal .modal-header,
+.tips-modal .modal-body,
+.tips-modal .modal-footer { background: var(--dz-panel-bg); }
+.tips-category-tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 16px; }
+.tips-content       { display: flex; align-items: center; gap: 16px; padding: 16px 0; }
+.tips-icon          { flex-shrink: 0; font-size: 2.5em; color: var(--dz-btn-primary-bg); }
+.tips-text          { flex: 1; font-size: 1.1em; line-height: 1.5; color: var(--dz-panel-text); margin: 0; text-align: left; min-height: 3.3em; }
+.tips-nav           { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 8px; }
+.tips-counter       { color: var(--dz-panel-text); min-width: 50px; text-align: center; }
+.tips-footer             { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
+.tips-footer-close       { text-align: center; }
+.tips-footer-startup     { text-align: right; }
+.tips-startup-label      { margin: 0; font-weight: normal; color: var(--dz-panel-text); }

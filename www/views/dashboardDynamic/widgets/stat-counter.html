@@ -1,0 +1,11 @@
+<div class="dd-stat-counter">
+    <div ng-if="!ctrl.widgetDef.config.deviceIdx" class="dd-chart-unconfigured">
+        <i class="fa-solid fa-gauge"></i>
+        <p>Select a device in settings</p>
+    </div>
+    <div ng-if="ctrl.widgetDef.config.deviceIdx" class="dd-stat">
+        <div class="dd-stat-label" ng-bind="ctrl.label"></div>
+        <div class="dd-stat-value" ng-bind="ctrl.value"></div>
+        <div class="dd-stat-unit"  ng-bind="ctrl.unit"></div>
+    </div>
+</div>

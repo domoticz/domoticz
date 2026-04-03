@@ -1,10 +1,38 @@
+@import url("common.css"); /* Loads default/common.css via fallback */
 
+:root {
+  --dz-widget-bg:                  #444141;
+  --dz-widget-text:                #fff;
+  --dz-widget-name-bg:             #444;
+  --dz-widget-name-border:         #333;
+  --dz-widget-name-text:           #fff;
+  --dz-widget-status-text:         #eee;
+  --dz-widget-hover-bg:            rgba(53, 53, 53, 0.5);
+  --dz-widget-hover-name-bg:       #626060;
+  --dz-widget-hover-name-border:   #444;
+  --dz-widget-hover-name-text:     #fff;
+  --dz-status-normal:              #5a5757;
+  --dz-status-protected:           #44485a;
+  --dz-status-timeout:             #7a1a1a;
+  --dz-status-low-battery:         #6a6a00;
+  --dz-status-disabled:            #3a3a3a;
+  --dz-input-bg:                   #333;
+  --dz-input-text:                 #ddd;
+  --dz-input-border:               #555;
+  --dz-modal-bg:                   #444141;
+  --dz-modal-text:                 #fff;
+  --dz-modal-header-bg:            #5a5757;
+  --dz-btn-bg:                     #5a5757;
+  --dz-btn-text:                   #fff;
+  --dz-btn-border:                 #444;
+  --dz-btn-hover-bg:               #626060;
+}
 
 .row-fluid .span12,
 .row-fluid .span6 {
 	padding: 10px;
 	margin-bottom: 15px;
-	margin-top: 5px
+	margin-top: 5px;
 }
 
 div.divider .span3,
@@ -47,7 +75,7 @@ div.divider .span4 {
 	margin-bottom: 80px;
 }
 
-zwavesettingscontent .sub-tabs {
+#zwavesettingscontent .sub-tabs {
 	border-bottom: 1px solid #fff;
 }
 
@@ -79,4 +107,3 @@ zwavesettingscontent .sub-tabs {
 .tab-content {
 	overflow: visible;
 }
-

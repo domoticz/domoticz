@@ -96,6 +96,8 @@
 		<link rel="stylesheet" href="app/events/Events.css">
 		<link rel="stylesheet" href="app/devices/Devices.css">
 		<link rel="stylesheet" href="styles/default/custom.css">
+		<link rel="stylesheet" href="css/dashboard.css">
+		<link rel="stylesheet" href="css/gridstack.min.css">
 
 		<script src="js/babel-polyfill-6.26.0.js"></script>
 		<script src="js/jquery-3.6.0.min.js"></script>
@@ -133,6 +135,7 @@
 		<script charset="utf-8" src="js/domoticz.js"></script>
 		<script src="js/dompurify.min.js"></script>
 		<script charset="utf-8" src="js/domoticzdevices.js"></script>
+		<script src="js/gridstack.min.js"></script>
 		<script charset="utf-8" src="js/jquery-ui-timepicker-addon.js"></script>
 		<script charset="utf-8" src="styles/default/custom.js"></script>
 		<script data-main="app/main" src="js/require.min.js"></script>
@@ -493,24 +496,17 @@ $(document).ready(function() {
 			</table>
 		</div>
 	</div>
-	<div id="setpoint_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">
-		<div class="ui-close" onclick="CloseSetpointPopup()"></div>
-		<table class="display" border="0" cellpadding="0" cellspacing="0">
-			<tr>
-				<td style="width:60px; vertical-align: center;">
-					<span data-i18n="Actual">Actual</span>:<br>
-					<span id="actual_value" style="font-size: 24px; font-weight: bold;">20.1</span>
-				</td>
-				<td align="center" style="vertical-align: center;">
-					<a id="popup_temp_up"><img src="images/Up48.png" class="lcursor" style="margin-top: 5px;" height="48" width="48" onclick="SetpointUp()"></a><br>
-					<input id="popup_setpoint" type="text" style="width: 90px; padding: .2em; margin-top: 10px; margin-bottom: 10px; font-size: 24px; font-weight: bold; border: 3px solid white; text-align: center;" class="text ui-widget-content ui-corner-all"><br>
-					<a id="popup_temp_down"><img src="images/Down48.png" class="lcursor" height="48" width="48" onclick="SetpointDown()"></a>
-				</td>
-				<td align="center" style="vertical-align: center;">
-					<button data-i18n="Set" class="btn btn-info" onclick="SetSetpoint()">Set</button>
-				</td>
-			</tr>
-		</table>
+	<div id="setpoint_popup" class="pop" style="display:none;position:absolute;z-index:1100;background:var(--dz-panel-bg-dark);border-radius:var(--dz-widget-border-radius);box-shadow:var(--dz-widget-shadow);padding:16px 20px;min-width:200px;">
+		<button onclick="CloseSetpointPopup()" style="position:absolute;top:6px;right:8px;background:none;border:none;cursor:pointer;padding:0;font-size:1.1em;color:var(--dz-body-text);opacity:0.6;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'"><i class="fa-solid fa-xmark"></i></button>
+		<div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+			<div><span data-i18n="Actual">Actual</span>: <span id="actual_value" style="font-size:1.2em;font-weight:bold;color:var(--dz-widget-energy-battery);">20.1</span></div>
+			<div class="dd-setpoint-controls">
+				<button class="dd-setpoint-btn" onclick="SetpointDown()" title="Decrease"><i class="fa fa-minus"></i></button>
+				<input id="popup_setpoint" type="text" style="width:80px;padding:.3em;font-size:1.4em;font-weight:bold;text-align:center;" class="text ui-widget-content ui-corner-all">
+				<button class="dd-setpoint-btn" onclick="SetpointUp()" title="Increase"><i class="fa fa-plus"></i></button>
+			</div>
+			<button data-i18n="Set" class="btn btn-info" onclick="SetSetpoint()">Set</button>
+		</div>
 	</div>
 	<div id="rfy_popup" class="ui-popup ui-body-b ui-overlay-shadow ui-corner-all pop">
 		<div class="ui-close" onclick="CloseRFYPopup()"></div>
@@ -1262,7 +1258,14 @@ $(document).ready(function() {
 			<div class="container">
 				<a class="brand hidden-phone" id="version" href="#Dashboard"><img src="images/logo/57.png"><h1>Domoticz</h1> <h2 id="appversion" tooltip-html="{{config.versiontooltip}}" tooltip-placement="right" class="version-tooltip">*</h2></a>
 				<ul class="nav" id="appnavbar">
-					<li ng-show="config.EnableTabDashboard" ng-class="{'current_page_item':getClass('/Dashboard')}" class="clDashboard"><a id="cDashboard" href="#Dashboard"><img src="images/desktop.png"> <span class="hidden-phone hidden-tablet" data-i18n="Dashboard">Dashboard</span></a></li>
+					<li ng-show="config.EnableTabDashboard"
+						ng-class="{'current_page_item':getClass('/Dashboard')}"
+						class="clDashboard">
+						<a id="cDashboard" href="#Dashboard">
+							<img src="images/desktop.png">
+							<span class="hidden-phone hidden-tablet" data-i18n="Dashboard">Dashboard</span>
+						</a>
+					</li>
 					<li ng-show="config.EnableTabFloorplans" ng-class="{'current_page_item':getClass('/Floorplans')}" class="clFloorplans"><a id="cFloorplans" href="#Floorplans"><img src="images/house.png"> <span class="hidden-phone hidden-tablet" data-i18n="Floorplan">Floorplan</span></a></li>
 					<li ng-show="config.EnableTabLights" ng-class="{'current_page_item':getClass('/LightSwitches')}" class="clLightSwitches"><a id="cLightSwitches" href="#LightSwitches"><img src="images/lightbulb.png"> <span class="hidden-phone hidden-tablet" data-i18n="Switches">Switches</span></a></li>
 					<li ng-show="config.EnableTabScenes" ng-class="{'current_page_item':getClass('/Scenes')}" class="clScenes"><a id="cScenes" href="#Scenes"><img src="images/scenes.png"> <span class="hidden-phone hidden-tablet" data-i18n="Scenes">Scenes</span></a></li>

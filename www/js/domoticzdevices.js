@@ -464,12 +464,12 @@ function Device(item) {
         var el;
         //Draw device values if option(s) is turned on
         if ((this.showStatus == true) && (this.smallStatus.length > 0)) {
-            var nbackcolor = "#D4E1EE";
+            var nbackcolor = "var(--dz-status-normal)";
             if (this.protected == true) {
-                nbackcolor = "#A4B1EE";
+                nbackcolor = "var(--dz-status-protected)";
             }
             if (this.haveTimeout == true) {
-                nbackcolor = "#DF2D3A";
+                nbackcolor = "var(--dz-status-timeout)";
             }
             if (Device.useSVGtags == true) {
                 var tileMaxWidth = this.hasHTMLContent ? Device.iconSize * 5 : Device.iconSize * 3;
@@ -550,16 +550,16 @@ function Device(item) {
         return el;
     };
     this.drawDetails = function (parent, display) {
-        var nbackcolor = "#D4E1EE";
+        var nbackcolor = "var(--dz-status-normal)";
         var showme = (display == false) ? 'none' : 'inline';
         if (this.protected == true) {
-            nbackcolor = "#A4B1EE";
+            nbackcolor = "var(--dz-status-protected)";
         }
         if (this.haveTimeout == true) {
-            nbackcolor = "#DF2D3A";
+            nbackcolor = "var(--dz-status-timeout)";
         }
         if (this.batteryLevel <= 10) {
-            nbackcolor = "#DDDF2D";
+            nbackcolor = "var(--dz-status-low-battery)";
         }
         var existing = document.getElementById(this.uniquename + "_Detail");
         var el;

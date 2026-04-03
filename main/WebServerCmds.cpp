@@ -199,6 +199,33 @@ namespace http
 				root["Title"] = "Domoticz";
 		}
 
+		void CWebServer::Cmd_FetchUrl(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			std::string sUrl = request::findValue(&req, "url");
+			if (sUrl.empty())
+			{
+				root["status"] = "ERR";
+				root["message"] = "url parameter missing";
+				return;
+			}
+			// Only allow http/https URLs
+			if (sUrl.substr(0, 7) != "http://" && sUrl.substr(0, 8) != "https://")
+			{
+				root["status"] = "ERR";
+				root["message"] = "Only http/https URLs are allowed";
+				return;
+			}
+			std::string sResult;
+			if (!HTTPClient::GET(sUrl, sResult))
+			{
+				root["status"] = "ERR";
+				root["message"] = "Fetch failed";
+				return;
+			}
+			root["status"] = "OK";
+			root["data"] = sResult;
+		}
+
 		void CWebServer::Cmd_LoginCheck(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			std::string tmpusrname = request::findValue(&req, "username");
@@ -2729,6 +2756,22 @@ namespace http
 			m_users[iUser].Mfatoken = sTotpsecret;
 			m_sql.safe_query("UPDATE Users SET MFAsecret='%q' WHERE (ID=%d)", sTotpsecret.c_str(), m_users[iUser].ID);
 
+			// Update dashboard type preference (bit 7 of TabsEnabled)
+			std::string sUseDynamicDashboard = request::findValue(&req, "usedynamicdashboard");
+			if (!sUseDynamicDashboard.empty())
+			{
+				auto result2 = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID=%d)", m_users[iUser].ID);
+				if (!result2.empty())
+				{
+					int tabsEnabled = atoi(result2[0][0].c_str());
+					if (sUseDynamicDashboard == "true")
+						tabsEnabled |= (1 << 7);
+					else
+						tabsEnabled &= ~(1 << 7);
+					m_sql.safe_query("UPDATE Users SET TabsEnabled=%d WHERE (ID=%d)", tabsEnabled, m_users[iUser].ID);
+				}
+			}
+
 			LoadUsers();
 			root["status"] = "OK";
 		}
@@ -2902,6 +2945,7 @@ namespace http
 				int bEnableTabWeather = 1;
 				int bEnableTabUtility = 1;
 				int bEnableTabCustom = 0;
+				int bEnableTabDashboardDynamic = 0;
 
 				std::vector<std::vector<std::string>> result;
 				result = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID==%lu)", UserID);
@@ -2915,6 +2959,7 @@ namespace http
 					bEnableTabUtility = (TabsEnabled & (1 << 4));
 					bEnableTabCustom = (TabsEnabled & (1 << 5));
 					bEnableTabFloorplans = (TabsEnabled & (1 << 6));
+					bEnableTabDashboardDynamic = (TabsEnabled & (1 << 7));
 				}
 
 				if (iDashboardType == 3)
@@ -2930,6 +2975,7 @@ namespace http
 				root["result"]["EnableTabWeather"] = bEnableTabWeather != 0;
 				root["result"]["EnableTabUtility"] = bEnableTabUtility != 0;
 				root["result"]["EnableTabCustom"] = bEnableTabCustom != 0;
+				root["result"]["EnableTabDashboardDynamic"] = bEnableTabDashboardDynamic != 0;
 
 				if (bEnableTabCustom)
 				{
@@ -7009,6 +7055,222 @@ namespace http
 			{
 				root["updatestatus"] = "running";
 			}
+		}
+
+		// ---------------------------------------------------------------------------
+		// Dashboard 2.0 layout management commands
+		// ---------------------------------------------------------------------------
+
+		void CWebServer::Cmd_GetDashboardLayouts(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "GetDashboardLayouts";
+
+			if (session.username.empty())
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			int iUser = FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			Json::Value layouts;
+			if (!m_sql.GetDashboardLayouts((int)m_users[iUser].ID, layouts))
+			{
+				root["message"] = "Failed to retrieve dashboard layouts";
+				return;
+			}
+			root["status"] = "OK";
+			root["result"] = layouts;
+		}
+
+		void CWebServer::Cmd_GetDashboardLayout(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "GetDashboardLayout";
+
+			if (session.username.empty())
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			int iUser = FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			std::string layoutid = request::findValue(&req, "id");
+			if (layoutid.empty())
+			{
+				root["message"] = "Missing parameter: id";
+				return;
+			}
+
+			Json::Value layout;
+			if (!m_sql.GetDashboardLayout((int)m_users[iUser].ID, layoutid, layout))
+			{
+				root["message"] = "Layout not found";
+				return;
+			}
+			root["status"] = "OK";
+			root["result"] = layout;
+		}
+
+		void CWebServer::Cmd_SaveDashboardLayout(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "SaveDashboardLayout";
+
+			if (session.username.empty())
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			int iUser = FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			std::string id         = request::findValue(&req, "id");
+			std::string name       = request::findValue(&req, "name");
+			std::string isdefstr   = request::findValue(&req, "isDefault");
+			std::string layoutjson = request::findValue(&req, "layout");
+
+			if (id.empty() || name.empty())
+			{
+				root["message"] = "Missing required parameters: id, name";
+				return;
+			}
+
+			if (id.size() > 64)
+			{
+				root["message"] = "Invalid id: too long";
+				return;
+			}
+			for (char c : id)
+			{
+				if (!isalnum((unsigned char)c) && c != '-' && c != '_')
+				{
+					root["message"] = "Invalid id format";
+					return;
+				}
+			}
+
+			if (name.size() > 100)
+			{
+				root["message"] = "Invalid name: too long";
+				return;
+			}
+
+			bool bUpdateLayout = !layoutjson.empty();
+
+			if (bUpdateLayout)
+			{
+				const size_t MAX_LAYOUT_SIZE = 1048576; // 1 MB
+				if (layoutjson.size() > MAX_LAYOUT_SIZE)
+				{
+					root["message"] = "Layout JSON exceeds maximum allowed size";
+					return;
+				}
+
+				Json::Value parsedLayout;
+				std::string parseError;
+				if (!ParseJSon(layoutjson, parsedLayout, &parseError))
+				{
+					root["message"] = "Invalid layout JSON: " + parseError;
+					return;
+				}
+			}
+
+			bool isDefault = (isdefstr == "true" || isdefstr == "1");
+			if (!m_sql.SaveDashboardLayout((int)m_users[iUser].ID, id, name, isDefault, bUpdateLayout ? layoutjson : std::string()))
+			{
+				root["message"] = "Failed to save layout";
+				return;
+			}
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_DeleteDashboardLayout(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "DeleteDashboardLayout";
+
+			if (session.username.empty())
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			int iUser = FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			std::string id = request::findValue(&req, "id");
+			if (id.empty())
+			{
+				root["message"] = "Missing parameter: id";
+				return;
+			}
+
+			m_sql.DeleteDashboardLayout((int)m_users[iUser].ID, id);
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_CopyDashboardLayout(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "CopyDashboardLayout";
+
+			if (session.username.empty())
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			int iUser = FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			std::string srcid   = request::findValue(&req, "id");
+			std::string newname = request::findValue(&req, "newname");
+			if (srcid.empty() || newname.empty())
+			{
+				root["message"] = "Missing parameters: id, newname";
+				return;
+			}
+
+			if (newname.size() > 100)
+			{
+				root["message"] = "Invalid newname: too long";
+				return;
+			}
+
+			std::string newid = GenerateUUID();
+			if (!m_sql.CopyDashboardLayout((int)m_users[iUser].ID, srcid, newid, newname))
+			{
+				root["message"] = "Failed to copy layout (source not found?)";
+				return;
+			}
+			root["status"] = "OK";
+			root["id"] = newid;
 		}
 
 	} // namespace server

@@ -249,12 +249,27 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 
 	app.controller('NavbarController', function ($scope, $location) {
 		$scope.getClass = function (path) {
-			if ($location.path().substr(0, path.length) == path) {
-				return true
+			return $location.path().substr(0, path.length) === path;
+		};
+
+		var body = document.body;
+
+		$scope.$watch(function () { return $location.path(); }, function (path) {
+			var isDash2 = path === '/Dashboard'
+				&& $scope.$root.config.EnableTabDashboardDynamic
+				&& !(window.myglobals && window.myglobals.ismobile);
+			if (isDash2) {
+				body.classList.add('dd-dashboard-active');
 			} else {
-				return false;
+				body.classList.remove('dd-dashboard-active');
+				body.classList.remove('dd-navbar-hidden');
 			}
-		}
+		});
+
+		$scope.$on('$destroy', function () {
+			body.classList.remove('dd-dashboard-active');
+			body.classList.remove('dd-navbar-hidden');
+		});
 	});
 
 	app.controller('MainController', ['$scope', '$location', '$http', function ($scope, $location, $http) {
@@ -313,7 +328,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
     	template: '<section class="page-spinner">{{:: "Loading..." | translate }}</section>'
 	});
 
-	app.run(function ($rootScope, $location, $window, $route, $http, dzTimeAndSun, permissions) {
+	app.run(function ($rootScope, $location, $window, $route, $http, dzTimeAndSun, permissions, $uibModal) {
 		var permissionList = {
 			isloggedin: false,
 			rights: -1,
@@ -340,6 +355,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			}
 
 			$.myglobals.DashboardType = $rootScope.config.DashboardType;
+			$.myglobals.enableDashboardDynamic = $rootScope.config.EnableTabDashboardDynamic;
 			$.myglobals.DateFormat = $rootScope.config.DateFormat;
 
 			if (typeof $rootScope.config.WindScale != 'undefined') {
@@ -369,6 +385,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		$rootScope.currentyear = new Date().getFullYear();
 		$rootScope.config = {
 			EnableTabDashboard: false,
+			EnableTabDashboardDynamic: false,
 			EnableTabFloorplans: false,
 			EnableTabLights: false,
 			EnableTabScenes: false,
@@ -429,6 +446,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.EnableTabTemp = data.result.EnableTabTemp;
 						$rootScope.config.EnableTabWeather = data.result.EnableTabWeather;
 						$rootScope.config.EnableTabUtility = data.result.EnableTabUtility;
+						$rootScope.config.EnableTabDashboardDynamic = data.result.EnableTabDashboardDynamic || false;
 						$rootScope.config.ShowUpdatedEffect = data.result.ShowUpdatedEffect;
 						if (typeof data.UserName != 'undefined') {
 							$rootScope.config.userName = data.UserName;
@@ -653,6 +671,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 					return;
 				}
 
+
 				if (next && next.$$route && next.$$route.permission) {
 					var permission = next.$$route.permission;
 					if (!permissions.hasPermission(permission)) {
@@ -660,6 +679,25 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 					}
 				}
 			}
+		});
+
+		var _tipsShown = false;
+		$rootScope.$on('$routeChangeSuccess', function() {
+			if (_tipsShown) return;
+			var path = $location.path();
+			if (path === '/Login' || path === '/Setup' || path === '/SetupWizard' || path === '/Offline') return;
+			var enabled = true;
+			try { enabled = localStorage.getItem('dz_tips_enabled') !== 'false'; } catch(e) {}
+			if (!enabled) return;
+			_tipsShown = true;
+			require(['TipsController'], function() {
+				$uibModal.open({
+					templateUrl: 'views/tips.html',
+					controller: 'TipsController',
+					size: 'md',
+					windowClass: 'tips-modal'
+				}).result.catch(angular.noop);
+			});
 		});
 
 		permissions.setPermissions(permissionList);

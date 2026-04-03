@@ -1,0 +1,250 @@
+<div class="dd-page" ng-class="{'edit-mode': editMode}">
+
+    <!-- Loading overlay -->
+    <div class="dd-loading" ng-show="loading">
+        <i class="fa-solid fa-rotate fa-spin" style="font-size:32px"></i>
+    </div>
+
+    <!-- Error state -->
+    <div class="alert alert-danger" ng-show="error">
+        <strong>Error:</strong> {{ error }}
+    </div>
+
+    <!-- Compact view-mode bar: always visible, top-right floating pill -->
+    <div class="dd-topbar" ng-hide="editMode">
+        <div class="dd-topbar-left">
+            <!-- Dashboard switcher -->
+            <div class="btn-group" ng-show="layouts.length > 1">
+                <button type="button" class="btn btn-xs dd-topbar-btn dropdown-toggle"
+                        data-toggle="dropdown">
+                    <i class="fa-solid fa-border-all"></i>
+                    <span class="dd-topbar-name" ng-bind="activeLayout && activeLayout.name"></span>
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-right">
+                    <li ng-repeat="l in layouts"
+                        ng-class="{active: activeLayout && l.id === activeLayout.id}">
+                        <a href ng-click="switchLayout(l.id)">{{ l.name }}</a>
+                    </li>
+                    <li class="divider"></li>
+                    <li><a href ng-click="openDashboardManager()">
+                        <i class="fa-solid fa-gear"></i> Manage Dashboards...
+                    </a></li>
+                </ul>
+            </div>
+            <!-- Single dashboard: just the name -->
+            <span class="dd-topbar-name" ng-show="layouts.length <= 1"
+                  ng-bind="activeLayout && activeLayout.name"></span>
+        </div>
+        <button type="button" class="btn btn-xs dd-topbar-btn dd-topbar-fullpage"
+                ng-class="{'dd-topbar-nav-on': !isFullPage}"
+                ng-click="toggleFullPage()"
+                title="{{ isFullPage ? 'Show navigation bar' : 'Hide navigation bar' }}">
+            <i ng-class="isFullPage ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
+        </button>
+        <button type="button" class="btn btn-xs dd-topbar-btn dd-topbar-kiosk"
+                ng-show="layouts.length >= 2"
+                ng-class="{'dd-topbar-kiosk-active': kioskActive}"
+                ng-click="toggleKiosk()"
+                title="{{ kioskActive ? 'Stop kiosk mode (Esc)' : 'Start kiosk mode' }}">
+            <i class="fa" ng-class="kioskActive ? 'fa-stop' : 'fa-play'"></i>
+        </button>
+        <button type="button" class="btn btn-xs dd-topbar-btn dd-topbar-edit"
+                ng-click="toggleEditMode()"
+                title="Edit Layout (Ctrl+E)">
+            <i class="fa-solid fa-pencil"></i>
+        </button>
+    </div>
+
+    <!-- Kiosk progress bar -->
+    <div class="dd-kiosk-progress" ng-show="kioskActive">
+        <div class="dd-kiosk-progress-fill" ng-style="{'width': kioskProgress + '%'}"></div>
+    </div>
+
+    <!-- Full edit toolbar: only visible in edit mode -->
+    <div class="dd-toolbar" ng-show="editMode">
+        <!-- Dashboard title: static in view mode, click-to-edit in edit mode -->
+        <div class="dd-toolbar-title" ng-show="activeLayout && !editingTitle">
+            <i class="fa-solid fa-border-all" style="margin-right:6px"></i>
+            <span ng-bind="activeLayout.name"
+                  ng-class="{'dd-title-editable': editMode}"
+                  ng-click="editMode && startTitleEdit()"
+                  title="{{ editMode ? 'Click to rename' : '' }}"></span>
+        </div>
+        <div class="dd-toolbar-title-edit" ng-show="editingTitle">
+            <div class="input-group input-group-sm">
+                <input type="text" class="form-control"
+                       ng-model="titleEditValue"
+                       ng-keyup="$event.key === 'Enter' && finishTitleEdit(); $event.key === 'Escape' && cancelTitleEdit()"
+                       dd-autofocus>
+                <span class="input-group-btn">
+                    <button class="btn btn-success" ng-click="finishTitleEdit()">
+                        <i class="fa-solid fa-check"></i>
+                    </button>
+                    <button class="btn btn-default" ng-click="cancelTitleEdit()">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </span>
+            </div>
+        </div>
+
+        <div class="dd-toolbar-actions">
+            <!-- Layout switcher dropdown -->
+            <div class="btn-group" ng-show="layouts.length > 1">
+                <button type="button" class="btn btn-default btn-sm dropdown-toggle"
+                        data-toggle="dropdown">
+                    <i class="fa-solid fa-list"></i> Dashboards
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li ng-repeat="l in layouts"
+                        ng-class="{active: activeLayout && l.id === activeLayout.id}">
+                        <a href ng-click="switchLayout(l.id)">{{ l.name }}</a>
+                    </li>
+                    <li class="divider"></li>
+                    <li><a href ng-click="openDashboardManager()">
+                        <i class="fa-solid fa-gear"></i> Manage Dashboards...
+                    </a></li>
+                </ul>
+            </div>
+
+            <!-- Edit actions dropdown -->
+            <div class="btn-group">
+                <button type="button" class="btn btn-default btn-sm dropdown-toggle"
+                        data-toggle="dropdown">
+                    <i class="fa-solid fa-ellipsis-vertical"></i> Edit
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a ng-click="openExportImport()">
+                        <i class="fa-solid fa-arrow-right-arrow-left"></i> Export / Import
+                    </a></li>
+                    <li><a ng-click="resetToFavorites()">
+                        <i class="fa-solid fa-star"></i> Reset to Favorites
+                    </a></li>
+                    <li class="divider"></li>
+                    <li><a ng-click="duplicateLayout()">
+                        <i class="fa-solid fa-copy"></i> Duplicate
+                    </a></li>
+                    <li ng-class="{'disabled': layouts.length <= 1}">
+                        <a ng-click="deleteCurrentLayout()">
+                            <i class="fa-solid fa-trash"></i> Delete
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li ng-class="{'disabled': !activeData || !activeData.widgets.length}">
+                        <a ng-click="clearAllWidgets()">
+                            <i class="fa-solid fa-trash"></i> Clear All Widgets
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Save and exit edit mode -->
+            <button type="button" class="btn btn-warning btn-sm"
+                    ng-click="toggleEditMode()"
+                    title="Save and exit edit mode (Esc)">
+                <i class="fa-solid fa-floppy-disk"></i> Save
+            </button>
+
+            <!-- Cancel -->
+            <button type="button" class="btn btn-default btn-sm"
+                    ng-click="cancelEdit()">
+                <i class="fa-solid fa-ban"></i> Cancel
+            </button>
+
+            <!-- Unsaved indicator -->
+            <span class="text-warning dd-dirty-indicator" ng-show="isDirty">
+                <i class="fa-solid fa-asterisk"></i> Unsaved
+            </span>
+
+            <!-- Add widget -->
+            <button type="button" class="btn btn-default btn-sm"
+                    ng-click="toggleLibrary()">
+                <i class="fa-solid fa-plus"></i> Add Widget
+            </button>
+
+        </div>
+    </div>
+
+    <!-- Grid area: ng-if key forces full re-render on cancel -->
+    <div ng-if="gridReady"
+         class="grid-stack dd-grid"
+         dd-grid
+         grid-data="activeData"
+         edit-mode="editMode"
+         on-change="onGridChange(widgets)"
+         ng-show="!loading && activeData && activeData.widgets.length > 0">
+        <!-- GridStack populates this area programmatically via ddWidgetWrapper / ddWidgetContent -->
+    </div>
+
+    <!-- Empty state: shown when widgets array is empty -->
+    <div class="dd-empty-state"
+         ng-show="!loading && activeData && activeData.widgets.length === 0">
+        <div class="dd-empty-icon">
+            <i class="fa-solid fa-border-all"></i>
+        </div>
+        <h3>Your dashboard is empty</h3>
+        <p>Click <strong>Edit Layout</strong> then <strong>Add Widget</strong> to start
+           building your personalized dashboard.</p>
+        <button class="btn btn-primary" ng-click="toggleEditMode()">
+            <i class="fa-solid fa-pencil"></i> Edit Layout
+        </button>
+    </div>
+
+    <!-- Toast container -->
+    <div class="dd-toast-container" aria-live="polite" aria-atomic="false">
+        <div class="dd-toast"
+             ng-repeat="t in ddToast.toasts track by t.id"
+             ng-class="['dd-toast--' + t.type, {'dd-toast--visible': t.visible}]"
+             role="alert">
+            <i ng-class="{
+                    'fa-solid fa-circle-check':         t.type === 'success',
+                    'fa-solid fa-circle-exclamation':   t.type === 'danger',
+                    'fa-solid fa-circle-info':          t.type === 'info',
+                    'fa-solid fa-triangle-exclamation': t.type === 'warning'
+                }"></i>
+            {{ t.message }}
+        </div>
+    </div>
+
+    <!-- Widget library panel — populated by Feature 05 -->
+    <div class="dd-library-panel" ng-class="{open: showLibrary && editMode}">
+        <div class="dd-library-panel-header">
+            <strong style="color: var(--dz-body-text)">Widget Library</strong>
+            <button class="dd-panel-close" ng-click="toggleLibrary()" title="Close">&times;</button>
+        </div>
+        <div class="dd-library-panel-body">
+            <div class="dd-library-search">
+                <input type="text" class="form-control input-sm"
+                       placeholder="Search widgets..."
+                       ng-model="librarySearch">
+            </div>
+            <div ng-repeat="group in widgetCatalogGrouped">
+                <div class="dd-library-category-label" ng-bind="group.category"></div>
+                <div class="dd-library-category">
+                    <div class="dd-library-item"
+                         ng-repeat="item in group.items | filter:librarySearch"
+                         ng-click="addWidgetToGrid(item)"
+                         title="{{ item.description }}">
+                        <div class="dd-library-item-icon">
+                            <i ng-class="item.icon"></i>
+                        </div>
+                        <div class="dd-library-item-info">
+                            <div class="dd-library-item-label" ng-bind="item.label"></div>
+                            <div class="dd-library-item-desc" ng-bind="item.description"></div>
+                        </div>
+                        <i class="fa-solid fa-circle-plus"
+                           style="color:var(--dz-btn-primary-bg);font-size:18px"></i>
+                    </div>
+                </div>
+            </div>
+            <p class="text-muted"
+               style="padding:8px;font-size:0.85em"
+               ng-show="isEmptyObject(widgetCatalogGrouped)">
+                No widgets registered yet.
+            </p>
+        </div>
+    </div>
+
+</div>
