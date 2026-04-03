@@ -1359,7 +1359,7 @@ mark.log-highlight {
 }
 
 .page-content-container {
-	background: var(--dz-modal-bg, #11213d);
+	background: var(--dz-panel-bg, #11213d);
 	border: none;
 	border-radius: 5px;
 	padding: 10px 0;

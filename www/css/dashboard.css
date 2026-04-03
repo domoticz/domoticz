@@ -948,7 +948,8 @@ body.dd-navbar-hidden .dd-topbar {
 .edit-mode .dd-widget--self-sufficiency,
 .edit-mode .dd-widget--setpoint,
 .edit-mode .dd-widget--combo-thermostat,
-.edit-mode .dd-widget--thermostat6 {
+.edit-mode .dd-widget--thermostat6,
+.edit-mode .dd-widget--dz-scene {
     background: var(--dz-panel-bg) !important;
     border: 1px solid rgba(255,255,255,0.08) !important;
     box-shadow: var(--dz-widget-shadow) !important;
