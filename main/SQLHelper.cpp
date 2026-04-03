@@ -8628,7 +8628,7 @@ bool CSQLHelper::FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dr
 		{
 			std::sort(positive_values.begin(), positive_values.end());
 			int64_t median_wh = positive_values[positive_values.size() / 2];
-			int64_t auto_threshold_wh = std::max(median_wh * 100LL, int64_t(1000)); // floor: 1 kWh
+			int64_t auto_threshold_wh = std::max(median_wh * int64_t(100), int64_t(1000)); // floor: 1 kWh
 			max_daily_kwh = auto_threshold_wh / 1000.0;
 			results.push_back(std_format("Auto-detected threshold: %.1f kWh (100x median daily usage of %.3f kWh)",
 				max_daily_kwh, median_wh / 1000.0));
