@@ -38,9 +38,9 @@
 		<button class="btn btn-primary" ng-click="close()" data-i18n="Close">Close</button>
 	</div>
 	<div class="tips-footer-startup">
-		<label class="tips-startup-label">
-			<input type="checkbox" ng-model="showOnStartup" ng-change="toggleStartup()">
-			&nbsp;<span data-i18n="Show tips on startup">Show tips on startup</span>
-		</label>
+		<div class="tips-startup-label" ng-click="showOnStartup = !showOnStartup; toggleStartup()">
+			<i class="fa-solid dd-bool-icon" ng-class="showOnStartup ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+			<span data-i18n="Show tips on startup">Show tips on startup</span>
+		</div>
 	</div>
 </div>

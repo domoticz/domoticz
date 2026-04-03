@@ -3067,4 +3067,4 @@ body.dd-navbar-hidden #holder > .container-fluid {
 .tips-footer             { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
 .tips-footer-close       { text-align: center; }
 .tips-footer-startup     { text-align: right; }
-.tips-startup-label      { margin: 0; font-weight: normal; color: var(--dz-panel-text); }
+.tips-startup-label      { display: inline-flex; align-items: center; gap: 8px; margin: 0; font-weight: normal; color: var(--dz-panel-text); cursor: pointer; user-select: none; }
