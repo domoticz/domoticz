@@ -224,6 +224,9 @@ define(['app'], function (app) {
             }, function (data) {
                 if (!data || data.length === 0) { return; }
                 buildChart(data, self.device.SwitchTypeVal, isP1);
+                if (isP1) {
+                    self.hasReturn = self.hasReturn && self.logCtrl.yearGraphDelivered === true;
+                }
             });
         };
     }

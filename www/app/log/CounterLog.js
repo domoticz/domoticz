@@ -381,6 +381,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                             preprocessData: function (data) {
                                 // Share year data with conditions component
                                 self.logCtrl.yearGraphData = data.result;
+                                self.logCtrl.yearGraphDelivered = data.delivered === true;
                                 if (origPreprocessData) {
                                     origPreprocessData.call(this, data);
                                 }

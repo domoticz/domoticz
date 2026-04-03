@@ -1,6 +1,9 @@
 define(['app'], function (app) {
 
     app.component('counterWeeklyHeatmapChart', {
+        require: {
+            logCtrl: '^deviceCounterLog'
+        },
         bindings: {
             device: '<'
         },
@@ -180,6 +183,9 @@ define(['app'], function (app) {
                 var data = response.data;
                 if (data && data.status === 'OK' && data.result && data.result.weekday_hour_kwh) {
                     buildChart(data.result.weekday_hour_kwh, self.device.SwitchTypeVal);
+                    if (self.logCtrl.yearGraphDelivered === false) {
+                        self.hasReturn = false;
+                    }
                     var menuItems = Highcharts.getOptions().exporting.buttons.contextButton.menuItems.slice();
                     menuItems.push({ separator: true });
                     menuItems.push({
