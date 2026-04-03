@@ -133,12 +133,22 @@ body.dd-navbar-hidden .dd-topbar {
     align-items: center;
     gap: 6px;
     padding: 6px 10px;
-    margin-bottom: 8px;
     background: var(--dz-nav-bg);
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 6px;
     flex-wrap: wrap;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    position: fixed;
+    top: 50px;
+    left: 20px;
+    right: 20px;
+    z-index: 1020;
+    margin-bottom: 0;
+}
+
+/* When the navbar is hidden the toolbar moves to the top of the viewport */
+body.dd-navbar-hidden .dd-toolbar {
+    top: 4px;
 }
 
 .dd-toolbar-title {
@@ -438,6 +448,11 @@ body.dd-navbar-hidden .dd-topbar {
 .dd-widget-cell > div {
     height: 100%;
     display: block;
+}
+
+/* Push grid below the fixed toolbar in edit mode (~44px toolbar + 10px gap) */
+.dd-page.edit-mode {
+    padding-top: 54px;
 }
 
 /* Edit mode: show grid column guides and item borders */
