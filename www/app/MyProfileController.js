@@ -41,6 +41,7 @@ define(['app'], function (app) {
 			$('#passwdtable').hide();
 			$scope.MakeGlobalConfig();
 			$scope.myprofile.useDynamicDashboard = $rootScope.config.EnableTabDashboardDynamic || false;
+			try { $scope.myprofile.showTips = localStorage.getItem('dz_tips_enabled') !== 'false'; } catch(e) { $scope.myprofile.showTips = true; }
 			domoticzApi.sendCommand('getmyprofile', {
 				'username': $scope.config.userName
 				}).then(function (data) {
@@ -57,6 +58,10 @@ define(['app'], function (app) {
 					ShowNotify($.t('Problem retrieving Profile!'), 2500, true);
 				});
 		}
+
+		$scope.toggleTips = function() {
+			try { localStorage.setItem('dz_tips_enabled', String($scope.myprofile.showTips)); } catch(e) {}
+		};
 
 		$scope.changeTOTP = function () {
 			if ($scope.myprofile.enableMFA == true) {

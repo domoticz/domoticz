@@ -328,7 +328,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
     	template: '<section class="page-spinner">{{:: "Loading..." | translate }}</section>'
 	});
 
-	app.run(function ($rootScope, $location, $window, $route, $http, dzTimeAndSun, permissions) {
+	app.run(function ($rootScope, $location, $window, $route, $http, dzTimeAndSun, permissions, $uibModal) {
 		var permissionList = {
 			isloggedin: false,
 			rights: -1,
@@ -679,6 +679,25 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 					}
 				}
 			}
+		});
+
+		var _tipsShown = false;
+		$rootScope.$on('$routeChangeSuccess', function() {
+			if (_tipsShown) return;
+			var path = $location.path();
+			if (path === '/Login' || path === '/Setup' || path === '/SetupWizard' || path === '/Offline') return;
+			var enabled = true;
+			try { enabled = localStorage.getItem('dz_tips_enabled') !== 'false'; } catch(e) {}
+			if (!enabled) return;
+			_tipsShown = true;
+			require(['TipsController'], function() {
+				$uibModal.open({
+					templateUrl: 'views/tips.html',
+					controller: 'TipsController',
+					size: 'md',
+					windowClass: 'tips-modal'
+				}).result.catch(angular.noop);
+			});
 		});
 
 		permissions.setPermissions(permissionList);

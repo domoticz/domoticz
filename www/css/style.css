@@ -3052,3 +3052,19 @@ body.dd-dashboard-active #holder > .container-fluid {
 body.dd-navbar-hidden #holder > .container-fluid {
     padding-top: 0;
 }
+
+/* Tips of the Day modal */
+.tips-modal .modal-content,
+.tips-modal .modal-header,
+.tips-modal .modal-body,
+.tips-modal .modal-footer { background: var(--dz-panel-bg); }
+.tips-category-tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 16px; }
+.tips-content       { display: flex; align-items: center; gap: 16px; padding: 16px 0; }
+.tips-icon          { flex-shrink: 0; font-size: 2.5em; color: var(--dz-btn-primary-bg); }
+.tips-text          { flex: 1; font-size: 1.1em; line-height: 1.5; color: var(--dz-panel-text); margin: 0; text-align: left; min-height: 3.3em; }
+.tips-nav           { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 8px; }
+.tips-counter       { color: var(--dz-panel-text); min-width: 50px; text-align: center; }
+.tips-footer             { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
+.tips-footer-close       { text-align: center; }
+.tips-footer-startup     { text-align: right; }
+.tips-startup-label      { margin: 0; font-weight: normal; color: var(--dz-panel-text); }
