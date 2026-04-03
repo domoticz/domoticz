@@ -2065,7 +2065,7 @@ void CNetatmo::GetHomeStatusDetails()
 	std::string home_data;
 	std::string home_id;
 	m_homeid.clear();
-	bool Scenarios = False;
+	bool Scenarios = false;
 
 	GetHomesDataDetails();                 //Homes Data
 
