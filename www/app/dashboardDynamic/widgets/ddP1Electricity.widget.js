@@ -5,7 +5,8 @@ define([
     'use strict';
 
     widgetRegistry.register({
-        type:        'p1-electricity',
+        type:                  'p1-electricity',
+        transparentBackground: true,
         label:       'P1 Electricity',
         description: 'Dutch P1 smart meter widget showing current import/export power and today\'s totals',
         category:    'Energy',

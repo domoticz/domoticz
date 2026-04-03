@@ -5,7 +5,8 @@ define([
     'use strict';
 
     widgetRegistry.register({
-        type:        'battery-status',
+        type:                  'battery-status',
+        transparentBackground: true,
         label:       'Battery Status',
         description: 'Battery import/export kWh, net, SOC %, watts, and voltage',
         category:    'Energy',

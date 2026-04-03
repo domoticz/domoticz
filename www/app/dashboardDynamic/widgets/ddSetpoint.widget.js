@@ -7,7 +7,8 @@ define([
     var _verifiedDevices = {};
 
     widgetRegistry.register({
-        type:        'setpoint',
+        type:                  'setpoint',
+        transparentBackground: true,
         label:       'Setpoint',
         description: 'Display and control a Domoticz setpoint device with +/− buttons and click-to-edit',
         category:    'Controls',

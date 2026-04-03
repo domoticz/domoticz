@@ -5,7 +5,8 @@ define([
     'use strict';
 
     widgetRegistry.register({
-        type:        'kwh-summary',
+        type:                  'kwh-summary',
+        transparentBackground: true,
         label:       'kWh Summary',
         description: 'Compact stat card showing current power (W) and today\'s energy total (kWh)',
         category:    'Energy',

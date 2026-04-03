@@ -7,7 +7,8 @@ define([
     'use strict';
 
     widgetRegistry.register({
-        type:        'dz-scene',
+        type:                  'dz-scene',
+        transparentBackground: true,
         label:       'Scene',
         description: 'A scene or group',
         category:    'Devices',

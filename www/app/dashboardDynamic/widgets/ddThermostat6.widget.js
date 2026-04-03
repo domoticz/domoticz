@@ -7,7 +7,8 @@ define([
     var _verifiedDevices = {};
 
     widgetRegistry.register({
-        type:        'thermostat6',
+        type:                  'thermostat6',
+        transparentBackground: true,
         label:       'Thermostat6',
         description: 'Shows Temp, Humidity, Barometer and Setpoint controls for a Thermostat6 device',
         category:    'Controls',

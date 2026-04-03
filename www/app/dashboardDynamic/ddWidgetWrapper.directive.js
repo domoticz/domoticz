@@ -47,6 +47,13 @@ define([
                             ctrl.error = 'Unknown widget type: ' + ctrl.widgetDef.type;
                         }
                     }
+                    ctrl.isTransparent = function() {
+                        var cfg = ctrl.widgetDef && ctrl.widgetDef.config;
+                        if (cfg && typeof cfg.showBackground === 'boolean') {
+                            return !cfg.showBackground;
+                        }
+                        return !!(ctrl.descriptor && ctrl.descriptor.transparentBackground);
+                    };
                 };
 
                 // Template-facing helpers — call the isolate-scope bindings

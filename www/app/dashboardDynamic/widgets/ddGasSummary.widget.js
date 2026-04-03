@@ -5,7 +5,8 @@ define([
     'use strict';
 
     widgetRegistry.register({
-        type:        'gas-summary',
+        type:                  'gas-summary',
+        transparentBackground: true,
         label:       'Gas Summary',
         description: 'Compact stat card showing today\'s gas usage and total counter',
         category:    'Energy',

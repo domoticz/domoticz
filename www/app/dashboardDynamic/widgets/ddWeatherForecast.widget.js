@@ -74,7 +74,8 @@ define([
                 type:     'text',
                 label:    'Title (optional)',
                 required: false
-            }
+            },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 

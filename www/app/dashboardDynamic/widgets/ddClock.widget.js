@@ -17,9 +17,10 @@ define([
         maxW:        6,
         maxH:        4,
         configSchema: [
-            { key: 'showSeconds', type: 'boolean', label: 'Show seconds',   default: true },
-            { key: 'format24h',   type: 'boolean', label: '24-hour format', default: true },
-            { key: 'showDate',    type: 'boolean', label: 'Show date',      default: true }
+            { key: 'showSeconds',     type: 'boolean', label: 'Show seconds',          default: true },
+            { key: 'format24h',       type: 'boolean', label: '24-hour format',         default: true },
+            { key: 'showDate',        type: 'boolean', label: 'Show date',              default: true },
+            { key: 'showBackground',  type: 'boolean', label: 'Show panel background',  default: true }
         ]
     });
 

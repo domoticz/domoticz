@@ -507,6 +507,14 @@ body.dd-navbar-hidden .dd-topbar {
     transition: box-shadow 0.2s;
 }
 
+/* Widgets registered with transparentBackground:true get this class in view mode only.
+   The class is never applied in edit mode, so the default panel chrome shows for drag/resize. */
+.dd-widget--no-bg {
+    background:  transparent !important;
+    border:      none        !important;
+    box-shadow:  none        !important;
+}
+
 .dd-widget-header {
     display: flex;
     align-items: center;
@@ -894,20 +902,6 @@ body.dd-navbar-hidden .dd-topbar {
 
 /* ── DZ Device Wrappers (Feature 06) ─────────────────────── */
 
-/* Device widget: transparent chrome in view mode — let the native tile stand alone */
-.dd-widget--dz-device {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-
-/* In edit mode restore the widget chrome so the resize/drag boundaries are visible */
-.edit-mode .dd-widget--dz-device {
-    background: var(--dz-panel-bg) !important;
-    border: 1px solid rgba(255,255,255,0.08) !important;
-    box-shadow: var(--dz-widget-shadow) !important;
-}
-
 .dd-widget--dz-device > .dd-widget-body,
 .dd-widget--dz-favorites > .dd-widget-body {
     padding: 0 !important;
@@ -923,36 +917,6 @@ body.dd-navbar-hidden .dd-topbar {
 .dd-widget--dz-device .dimslidersmalldouble,
 .dd-widget--dz-device .dimslidersmalltripple {
     margin-left: 0 !important;
-}
-
-.dd-widget--kwh-summary,
-.dd-widget--gas-summary,
-.dd-widget--p1-electricity,
-.dd-widget--battery-status,
-.dd-widget--energy-dashboard,
-.dd-widget--self-sufficiency,
-.dd-widget--setpoint,
-.dd-widget--combo-thermostat,
-.dd-widget--thermostat6,
-.dd-widget--dz-scene {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-
-.edit-mode .dd-widget--kwh-summary,
-.edit-mode .dd-widget--gas-summary,
-.edit-mode .dd-widget--p1-electricity,
-.edit-mode .dd-widget--battery-status,
-.edit-mode .dd-widget--energy-dashboard,
-.edit-mode .dd-widget--self-sufficiency,
-.edit-mode .dd-widget--setpoint,
-.edit-mode .dd-widget--combo-thermostat,
-.edit-mode .dd-widget--thermostat6,
-.edit-mode .dd-widget--dz-scene {
-    background: var(--dz-panel-bg) !important;
-    border: 1px solid rgba(255,255,255,0.08) !important;
-    box-shadow: var(--dz-widget-shadow) !important;
 }
 
 .dd-widget--kwh-summary > .dd-widget-body,
@@ -1140,21 +1104,6 @@ body.dd-navbar-hidden .dd-topbar {
     box-shadow: none;
 }
 
-.dd-widget--text-note {
-    background: transparent;
-    border: none;
-    box-shadow: none;
-}
-
-.edit-mode .dd-widget--text-note {
-    background: var(--dz-panel-bg);
-    border: 1px solid var(--dz-border-color, rgba(255,255,255,0.1));
-    box-shadow: var(--dz-panel-shadow, none);
-}
-
-.edit-mode .dd-widget--text-note > .dd-widget-body {
-    background: transparent;
-}
 
 .dd-text-note {
     position: absolute;

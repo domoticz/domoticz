@@ -5,7 +5,8 @@ define([
     'use strict';
 
     widgetRegistry.register({
-        type:        'energy-dashboard',
+        type:                  'energy-dashboard',
+        transparentBackground: true,
         label:       'Energy Dashboard',
         description: 'Full energy overview — Weather, Grid, Solar, Gas, Battery and self-sufficiency balance bar',
         category:    'Energy',

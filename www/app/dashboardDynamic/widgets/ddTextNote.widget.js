@@ -5,7 +5,8 @@ define([
     'use strict';
 
     widgetRegistry.register({
-        type:        'text-note',
+        type:                  'text-note',
+        transparentBackground: true,
         label:       'Text Note',
         description: 'Plain text note with font and color options',
         category:    'Custom Content',

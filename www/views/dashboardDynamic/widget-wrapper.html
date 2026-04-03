@@ -1,5 +1,5 @@
 <div class="dd-widget"
-     ng-class="['dd-widget--' + ctrl.widgetDef.type, {'dd-widget--error': ctrl.error, 'dd-widget--loading': ctrl.loading}]"
+     ng-class="['dd-widget--' + ctrl.widgetDef.type, {'dd-widget--error': ctrl.error, 'dd-widget--loading': ctrl.loading, 'dd-widget--no-bg': ctrl.isTransparent() && !editMode}]"
      role="article"
      aria-label="{{ (ctrl.descriptor && ctrl.descriptor.label || ctrl.widgetDef.type) + ': ' + (ctrl.widgetDef.config.title || '') }}"
      tabindex="{{ editMode ? 0 : -1 }}">

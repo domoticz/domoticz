@@ -47,7 +47,8 @@ define([
                     { value: 'forecast', label: 'Style 2' }
                 ],
                 default: 'compact'
-            }
+            },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 

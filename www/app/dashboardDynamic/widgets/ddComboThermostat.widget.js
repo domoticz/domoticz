@@ -7,7 +7,8 @@ define([
     var _verifiedDevices = {};
 
     widgetRegistry.register({
-        type:        'combo-thermostat',
+        type:                  'combo-thermostat',
+        transparentBackground: true,
         label:       'Thermostat',
         description: 'Shows current temperature from a sensor alongside a setpoint control with +/− buttons',
         category:    'Controls',

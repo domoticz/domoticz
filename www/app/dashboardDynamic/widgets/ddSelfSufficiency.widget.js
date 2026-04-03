@@ -5,7 +5,8 @@ define([
     'use strict';
 
     widgetRegistry.register({
-        type:        'self-sufficiency',
+        type:                  'self-sufficiency',
+        transparentBackground: true,
         label:       'Self-Sufficiency',
         description: 'Compact energy self-sufficiency percentage with house consumption, solar yield, and battery net',
         category:    'Energy',

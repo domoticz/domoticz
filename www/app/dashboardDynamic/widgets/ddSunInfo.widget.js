@@ -16,7 +16,9 @@ define([
         minH:        2,
         maxW:        4,
         maxH:        3,
-        configSchema: []
+        configSchema: [
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
+        ]
     });
 
     app.directive('ddSunInfoWidget', ['$q', function($q) {

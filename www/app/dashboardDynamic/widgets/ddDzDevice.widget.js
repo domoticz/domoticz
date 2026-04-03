@@ -8,7 +8,8 @@ define([
     'use strict';
 
     widgetRegistry.register({
-        type:        'dz-device',
+        type:                  'dz-device',
+        transparentBackground: true,
         label:       'Device',
         description: 'Any switch, sensor, meter, or actuator (type auto-detected)',
         category:    'Devices',
