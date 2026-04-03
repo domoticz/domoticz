@@ -133,8 +133,7 @@ define(['app'], function (app) {
                     crosshair: true
                 },
                 yAxis: {
-                    title: { text: unit },
-                    min: 0
+                    title: { text: unit }
                 },
                 legend: { enabled: true },
                 tooltip: {
