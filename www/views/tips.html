@@ -19,6 +19,7 @@
 	<div class="tips-content" ng-if="currentTip()">
 		<i class="fa-solid {{currentTip().icon}} tips-icon"></i>
 		<p class="tips-text">{{currentTip().tip}}</p>
+		<a ng-if="currentTip().url" ng-href="{{currentTip().url}}" target="_blank" class="tips-learn-more" data-i18n="Learn more">Learn more</a>
 	</div>
 
 	<div class="tips-nav">

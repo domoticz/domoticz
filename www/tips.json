@@ -190,7 +190,8 @@
   "Advanced": [
     {
       "tip": "Try the Dynamic Dashboard for a fully customizable widget-based layout — enable it in My Profile.",
-      "icon": "fa-table-cells-large"
+      "icon": "fa-table-cells-large",
+      "url": "https://wiki.domoticz.com/DynamicDashboard"
     },
     {
       "tip": "Use DzVents for powerful event-driven automation.",

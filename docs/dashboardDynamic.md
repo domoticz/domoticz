@@ -1,8 +1,15 @@
 # Dashboard Dynamic
 
-**Revision:** 2026-04-01
-**Branch:** css-theme-restructure
+**Revision:** 2026-04-03
 **Minimum build:** 17584
+
+---
+
+## Enabling Dashboard Dynamic
+
+Dashboard Dynamic is opt-in per user. To enable it, go to **My Profile** (top-right menu) and check **Use Dynamic Dashboard**, then save. The **Dashboard** menu item will now open the dynamic dashboard instead of the classic one.
+
+Administrators can also enable or disable it for any user via **Setup → Users**.
 
 ---
 
@@ -11,7 +18,7 @@
 Dashboard Dynamic is a fully modular, drag-and-drop dashboard system for Domoticz. It replaces the fixed-layout classic dashboard with a flexible, personalized workspace where users can freely compose, resize, and arrange widgets to their liking.
 
 Key characteristics:
-- Grid-based layout powered by **GridStack.js**
+
 - Per-user persistent layouts stored in the Domoticz database
 - Multiple named dashboards per user
 - Real-time device updates via the existing WebSocket (livesocket)
@@ -24,11 +31,10 @@ Key characteristics:
 
 Navigate to the **Dashboard** menu item. On first visit, a starter layout is created automatically containing a Clock, Sun Info, and Activity Log widget.
 
-Dashboard Dynamic is activated per user. Administrators can enable it via **Setup → Users** (toggle "Use Dynamic Dashboard"). It can also be toggled from the user's own profile page.
-
 ### Toolbar (Compact Mode)
 
 In view mode, a small floating pill bar appears in the top-right corner of the page. It contains:
+
 - **Dashboard name** — click to open the switcher dropdown if multiple dashboards exist
 - **Pencil icon** — enter Edit Mode
 - **Play icon** — start/stop Kiosk mode (visible when 2+ dashboards exist)
@@ -50,6 +56,7 @@ Press the pencil button or **Ctrl+E** to enter Edit Mode. The full toolbar appea
 | **Cancel** | Discard unsaved changes |
 
 **Keyboard shortcuts:**
+
 - `Ctrl+E` — toggle edit mode
 - `Ctrl+S` — save layout
 - `Escape` — exit edit mode (saves if dirty); also stops Kiosk mode
@@ -61,6 +68,7 @@ Click **Add Widget** to open the slide-in library panel on the right. Widgets ar
 ### Widget Actions (Edit Mode)
 
 Each widget shows a header bar in edit mode with:
+
 - **Drag handle** — drag the title bar to reposition
 - **Configure** (gear icon) — open widget settings
 - **Duplicate** (copy icon) — clone the widget; the clone starts dragging immediately
@@ -75,6 +83,7 @@ Resize any widget by dragging the bottom-right corner handle.
 ### Multiple Dashboards
 
 Click **Dashboards → Manage Dashboards...** to open the dashboard manager where you can:
+
 - Create new dashboards
 - Rename existing dashboards
 - Set a dashboard as default
@@ -88,11 +97,13 @@ Click **Dashboards → Manage Dashboards...** to open the dashboard manager wher
 Automatically cycles through a set of dashboards at a fixed interval — useful for wall tablets and kiosk displays.
 
 **Controls:**
+
 - **Play/Stop button** in the topbar (visible when 2+ dashboards exist)
 - **Escape** key stops kiosk mode
 - A thin progress bar at the bottom of the screen shows time remaining until the next switch
 
 **Settings** (in Dashboard Manager → Kiosk section):
+
 | Setting | Default | Description |
 |---------|---------|-------------|
 | Enable on load | off | Automatically start kiosk when page loads |
@@ -107,6 +118,7 @@ Settings are saved in browser `localStorage` (`dd_kiosk`).
 Dims or blanks the screen after a period of inactivity — prevents burn-in on wall-mounted displays. Any mouse movement, touch, keystroke, or click wakes the screen.
 
 **Settings** (in Dashboard Manager → Screen Standby section):
+
 | Setting | Default | Description |
 |---------|---------|-------------|
 | Enable standby | off | Enable inactivity dimming |
@@ -121,6 +133,7 @@ Settings are saved in browser `localStorage` (`dd_standby`).
 The **Export / Import** button opens a modal dialog with two tabs:
 
 **Export tab:**
+
 - *Clipboard* — generates JSON and lets you copy it to the clipboard for sharing (e.g. in forum posts)
 - *Download* — downloads the dashboard as a `.json` file
 - Choose to export the **current dashboard** or **all dashboards**
@@ -128,6 +141,7 @@ The **Export / Import** button opens a modal dialog with two tabs:
 The exported JSON includes the Domoticz build revision (`domoticzRevision`) so recipients know the minimum version needed.
 
 **Import tab:**
+
 - *Clipboard* — paste JSON directly from the clipboard
 - *File* — select a `.json` file from disk
 - Choose to import as a **new dashboard** or **replace current**
@@ -149,18 +163,19 @@ Displays the current local time and date. No configuration required. Updates eve
 ---
 
 ### Sun Info
-**Category:** Info
+**Category:** Weather
 
 Shows today's sunrise and sunset times, derived from the configured location in Domoticz settings. No configuration required.
 
 ---
 
 ### Weather
-**Category:** Charts & Data
+**Category:** Weather
 
 Displays current weather conditions with an animated weather scene background (sun, clouds, rain, snow, moon/stars at night).
 
 **Configuration:**
+
 | Field | Description |
 |-------|-------------|
 | Temperature device | Any Temp / Temp+Hum / Temp+Hum+Baro device |
@@ -182,6 +197,7 @@ Live: updates instantly from WebSocket device updates.
 Displays a single large KPI number from any device.
 
 **Configuration:**
+
 | Field | Description |
 |-------|-------------|
 | Device | Any used device |
@@ -197,6 +213,7 @@ Live: updates instantly from WebSocket `device_update` events.
 Highcharts chart showing temperature history.
 
 **Configuration:**
+
 | Field | Description |
 |-------|-------------|
 | Device | Temperature / Temp+Hum type device |
@@ -204,6 +221,7 @@ Highcharts chart showing temperature history.
 | Custom title | Optional override |
 
 **Chart types:**
+
 | Type | Description |
 |------|-------------|
 | Last 24h | Hourly temperature spline |
@@ -222,6 +240,7 @@ Highcharts chart showing temperature history.
 Column chart for counter and energy devices (kWh, Gas, Water, P1, generic counter). Automatically detects the device type and display unit.
 
 **Configuration:**
+
 | Field | Description |
 |-------|-------------|
 | Device | Counter / kWh / Gas / Water / P1 Meter device |
@@ -229,6 +248,7 @@ Column chart for counter and energy devices (kWh, Gas, Water, P1, generic counte
 | Custom title | Optional override |
 
 **Chart types:**
+
 | Type | Description |
 |------|-------------|
 | Today | Hourly bars |
@@ -247,6 +267,7 @@ P1 Smart Meters with return capability display import and export as two separate
 Wind data charts for a Wind type device.
 
 **Configuration:**
+
 | Field | Description |
 |-------|-------------|
 | Device | Wind type device |
@@ -254,6 +275,7 @@ Wind data charts for a Wind type device.
 | Title | Optional override |
 
 **Chart types:**
+
 | Type | Description |
 |------|-------------|
 | Last 24h | Speed + gust line chart. Tooltips show Beaufort scale notation (Calm, Light Breeze, Strong Breeze, etc.) |
@@ -270,6 +292,7 @@ Wind data charts for a Wind type device.
 Rain data charts for a Rain type device.
 
 **Configuration:**
+
 | Field | Description |
 |-------|-------------|
 | Device | Rain type device |
@@ -277,6 +300,7 @@ Rain data charts for a Rain type device.
 | Title | Optional override |
 
 **Chart types:**
+
 | Type | Description |
 |------|-------------|
 | Last 24h | Rain rate (mm/h) line + cumulative total area, dual y-axis |
@@ -292,6 +316,7 @@ Rain data charts for a Rain type device.
 Circular arc gauge showing the current value of any numeric device against a configurable min/max range with colour-coded thresholds.
 
 **Configuration:**
+
 | Field | Default | Description |
 |-------|---------|-------------|
 | Device | — | Any numeric device |
@@ -315,6 +340,7 @@ Live: refreshes every 30 seconds and on WebSocket `device_update` for the config
 Free-form Highcharts chart where you can combine any number of sensors (temperature, counter, humidity, rain, wind, etc.) on a single chart with a shared time range.
 
 **Configuration:**
+
 | Field | Default | Description |
 |-------|---------|-------------|
 | Series (JSON) | `[]` | JSON array defining each series (see format below) |
@@ -351,6 +377,7 @@ A helpful error message is shown if the JSON is invalid. All series are fetched 
 Compact stat card showing current power (W) and today's energy total (kWh).
 
 **Configuration:**
+
 | Field | Description |
 |-------|-------------|
 | Device | Energy / Counter type device |
@@ -367,6 +394,7 @@ Live: refreshes every 30 seconds and on WebSocket device updates.
 Compact stat card showing today's gas usage and cumulative total.
 
 **Configuration:**
+
 | Field | Description |
 |-------|-------------|
 | Device | Gas type device |
@@ -382,6 +410,7 @@ Live: refreshes every 60 seconds and on WebSocket device updates.
 Dedicated widget for Dutch P1 smart meters showing current import/export power and today's totals.
 
 **Configuration:**
+
 | Field | Description |
 |-------|-------------|
 | Device | P1 Electricity Meter device |
@@ -400,6 +429,7 @@ Live: refreshes every 30 seconds and on WebSocket device updates.
 Battery energy storage widget showing today's imported/exported kWh, net, and live SOC / watts / voltage.
 
 **Configuration:**
+
 | Field | Description |
 |-------|-------------|
 | Auto mode | Read device IDs from the Energy Dashboard settings |
@@ -422,6 +452,7 @@ Live: refreshes every 60 seconds.
 Full energy overview widget — combines all cards (Weather, Grid, Solar, Gas, Battery) and the self-sufficiency balance bar in one resizable widget. Lifted directly from `forecast.html`.
 
 **Configuration:**
+
 | Field | Default | Description |
 |-------|---------|-------------|
 | Show weather card | on | Weather conditions |
@@ -441,6 +472,7 @@ Device IDs are read automatically from the Energy Dashboard settings (`getenergy
 Compact bar showing energy self-sufficiency percentage and today's balance stats (house consumption, solar yield, battery net).
 
 **Configuration:**
+
 | Field | Default | Description |
 |-------|---------|-------------|
 | Auto mode | on | Read device IDs from Energy Dashboard settings |
@@ -464,6 +496,7 @@ Result is clamped to 0–100%.
 Displays the text value (`Data` field) of a Domoticz Text sensor device.
 
 **Configuration:**
+
 | Field | Default | Description |
 |-------|---------|-------------|
 | Device | — | Text sensor device |
@@ -481,6 +514,7 @@ Content preserves whitespace and line breaks. Live: re-fetches immediately on We
 Embeds any single Domoticz device using its native widget (the same widget used in the classic dashboard).
 
 **Configuration:**
+
 | Field | Description |
 |-------|-------------|
 | Device | Any device |
@@ -495,6 +529,7 @@ The background is transparent in view mode. Live: instant WebSocket updates.
 Embeds a Domoticz scene or group with its native widget.
 
 **Configuration:**
+
 | Field | Description |
 |-------|-------------|
 | Scene or Group | Any defined scene or group |
@@ -509,6 +544,7 @@ Live: WebSocket `scene_update` events.
 Shows all favorite devices grouped by category, reproducing the classic dashboard tabs in a single widget.
 
 **Configuration:**
+
 | Field | Description |
 |-------|-------------|
 | Category filter | All / Switches & Lights / Temperature / Weather / Utility |
@@ -526,6 +562,7 @@ Live: WebSocket `device_update` / `scene_update` + 60s polling fallback.
 Shows all devices belonging to a specific Domoticz plan (room).
 
 **Configuration:**
+
 | Field | Description |
 |-------|-------------|
 | Plan / Room ID | Numeric ID of the plan |
@@ -541,6 +578,7 @@ Live: WebSocket `device_update` / `scene_update`.
 Display and control a Domoticz setpoint device with +/− step buttons and a click-to-edit popup.
 
 **Configuration:**
+
 | Field | Default | Description |
 |-------|---------|-------------|
 | Device | — | Setpoint type device |
@@ -560,6 +598,7 @@ Clicking the value opens a number input popup (pre-filled with current value) fo
 Combined widget showing current temperature from a sensor alongside setpoint controls. Ideal for room thermostats.
 
 **Configuration:**
+
 | Field | Default | Description |
 |-------|---------|-------------|
 | Temperature device | — | Temp / Temp+Hum sensor |
@@ -580,6 +619,7 @@ Displays the current temperature large and prominent, with +/− setpoint contro
 Widget for the Thermostat6 device type. Displays all available measured values (Temp, Humidity + status, Barometer) and setpoint controls. Only rows for values present on the device are shown.
 
 **Configuration:**
+
 | Field | Default | Description |
 |-------|---------|-------------|
 | Device | — | Thermostat6 device |
@@ -596,6 +636,7 @@ Widget for the Thermostat6 device type. Displays all available measured values (
 Multi-day weather forecast using the [Open-Meteo API](https://open-meteo.com) (free, no API key required). Location is read automatically from Domoticz settings.
 
 **Configuration:**
+
 | Field | Default | Description |
 |-------|---------|-------------|
 | Days | 7 | Forecast days to display (1–14) |
@@ -615,6 +656,7 @@ Data is cached for 30 minutes to avoid excessive API calls.
 Displays items from any RSS or Atom feed.
 
 **Configuration:**
+
 | Field | Default | Description |
 |-------|---------|-------------|
 | Feed URL | — | Full URL of the RSS/Atom feed |
@@ -639,6 +681,7 @@ Fetches feeds via the [rss2json.com](https://api.rss2json.com) proxy (free tier,
 Displays upcoming events from a Google Calendar or any ICS-compatible calendar, grouped as Today / Tomorrow / upcoming days.
 
 **Configuration:**
+
 | Field | Default | Description |
 |-------|---------|-------------|
 | Calendar URL | — | Public ICS URL or Google Calendar API endpoint |
@@ -660,6 +703,7 @@ https://www.googleapis.com/calendar/v3/calendars/{calendarId}/events
 The widget auto-detects `.ics` vs JSON API URLs.
 
 **CORS handling:** The widget fetches calendar data using a fallback chain:
+
 1. Direct request (works for CORS-friendly URLs)
 2. Domoticz server-side proxy (`json.htm?type=command&param=fetchurl&url=<encoded>`) — avoids CORS entirely for any URL reachable from the Domoticz server
 3. Public CORS proxies (corsproxy.io / codetabs) as last resort
@@ -676,6 +720,7 @@ Past events today are shown in muted color. All-day events display without a tim
 Displays recent Domoticz system log entries with filter toggles.
 
 **Configuration:**
+
 | Field | Default | Description |
 |-------|---------|-------------|
 | Max entries | 50 | Log lines to display |
@@ -695,6 +740,7 @@ Toggle buttons in the widget header show the count per level (e.g. `N 42`, `S 8`
 Shows the current moon phase with a large emoji graphic, phase name, illumination percentage, and next full/new moon date. Calculated entirely in JavaScript — no external API required.
 
 **Configuration:**
+
 | Field | Default | Description |
 |-------|---------|-------------|
 | Show phase name | on | Display phase label (e.g. "Waxing Gibbous") |
@@ -730,6 +776,7 @@ An action list editor lets you add, reorder, and remove actions:
 Displays custom text with configurable appearance. Useful for section headers, labels, or status messages.
 
 **Configuration:**
+
 | Field | Description |
 |-------|-------------|
 | Content | The text to display |
@@ -749,6 +796,7 @@ Displays custom text with configurable appearance. Useful for section headers, l
 Renders arbitrary HTML inside a sandboxed `<iframe>`. Full documents and snippets are both supported.
 
 **Configuration:**
+
 | Field | Description |
 |-------|-------------|
 | Widget Title | Optional label in the header |
@@ -764,6 +812,7 @@ Security: `sandbox="allow-scripts"` — scripts run in isolation but cannot acce
 Shows a live MJPEG or snapshot image from a Domoticz-configured camera.
 
 **Configuration:**
+
 | Field | Description |
 |-------|-------------|
 | Camera | Pick from configured cameras |
@@ -776,6 +825,7 @@ Shows a live MJPEG or snapshot image from a Domoticz-configured camera.
 Displays a remote image from a URL, with optional auto-refresh.
 
 **Configuration:**
+
 | Field | Description |
 |-------|-------------|
 | Image URL | Full URL to the image |
@@ -790,6 +840,7 @@ Displays a remote image from a URL, with optional auto-refresh.
 Embeds any external website or web app in an iframe.
 
 **Configuration:**
+
 | Field | Description |
 |-------|-------------|
 | URL | The page to embed |
@@ -805,6 +856,7 @@ Note: Many external sites block iframe embedding via `X-Frame-Options`. Works be
 Shows all Domoticz devices whose battery level is at or below a configurable threshold — a maintenance overview so you know which sensors need fresh batteries.
 
 **Configuration:**
+
 | Field | Default | Description |
 |-------|---------|-------------|
 | Threshold | 25% | Show devices at or below this battery level |
@@ -823,6 +875,7 @@ Battery level colours: ≤10% red, ≤25% orange, ≤50% yellow, >50% green. Whe
 Shows the most recently updated devices, ordered by last update time.
 
 **Configuration:**
+
 | Field | Description |
 |-------|-------------|
 | Max items | 5–50 items (default 15) |
@@ -872,56 +925,3 @@ Shows Domoticz version, build number, and hardware count. No configuration requi
 
 ---
 
-## Technical Notes
-
-### Architecture
-
-- **AngularJS 1.x** with RequireJS (AMD) module loading
-- **GridStack.js** for the drag/resize grid
-- **Highcharts** for chart widgets
-- Layouts stored in the Domoticz database via `savedashboardlayout` / `getdashboardlayout`
-- CSS custom properties (`--dz-*`) for full theme compatibility
-
-### Widget Development
-
-Each widget consists of:
-1. A JS file in `www/app/dashboardDynamic/widgets/` that registers with `widgetRegistry` and defines an AngularJS directive
-2. An HTML template in `www/views/dashboardDynamic/widgets/`
-3. Registration in the `define()` deps array of `DashboardDynamicController.js`
-
-The `configSchema` array drives the settings modal automatically — supported field types: `text`, `textarea`, `number`, `boolean`, `select`, `device-picker`, `scene-picker`, `camera-picker`, `color`, `range`, `action-list`.
-
-### Theme Tokens
-
-All new widgets use CSS custom properties defined in `dashboard.css` for colors. Theme authors can override any of these in a custom theme:
-
-| Token | Default | Use |
-|-------|---------|-----|
-| `--dz-widget-energy-import` | `#ffb300` | Grid import, orange |
-| `--dz-widget-energy-export` | `#66bb6a` | Solar / export, green |
-| `--dz-widget-energy-price`  | `#c8a0ff` | Electricity price, purple |
-| `--dz-widget-energy-solar`  | `#ffd54f` | Solar yield, yellow |
-| `--dz-widget-energy-gas`    | `#ff7043` | Gas, red-orange |
-| `--dz-widget-energy-battery`| `#43a4d3` | Battery, blue |
-| `--dz-widget-stat-surface`  | — | Energy card background |
-| `--dz-widget-stat-muted`    | — | Muted label text |
-| `--dz-widget-rss-accent`    | — | RSS feed title color |
-| `--dz-widget-weather-sun`   | — | Sunny icon color |
-| `--dz-widget-weather-rain`  | — | Rainy icon color |
-| `--dz-widget-moon-color`    | — | Moon emoji color |
-
----
-
-## Ideas for Future Widgets
-
-| Widget | Description |
-|--------|-------------|
-| **Multi-Sensor Summary** | Shows multiple sensors (e.g. all room temperatures) in a compact list/grid |
-| **Device History Log** | On/off timeline for a switch — shows when lights were on/off as a 24h bar chart |
-| **Countdown Timer** | Counts down to a user-defined time/event with optional color thresholds |
-| **Floor Plan Minimap** | Clickable floor plan showing device states overlaid |
-| **Electricity Price Ticker** | Dynamic pricing (ENTSO-E / Tibber) with current €/kWh and 24h price chart |
-| **Air Quality** | CO₂, PM2.5, VOC levels with color-coded thresholds |
-| **Waste Calendar** | Dutch/European waste collection APIs showing next collection date |
-| **Alarm Zone Status** | Door/window/motion sensor overview grouped by zone |
-| **Heatmap Calendar** | Monthly calendar heatmap (GitHub-style) for energy or temperature |
