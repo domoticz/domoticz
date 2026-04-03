@@ -25,6 +25,11 @@ define(['app'], function (app) {
             $.t('Sep'), $.t('Oct'), $.t('Nov'), $.t('Dec')
         ];
 
+        self.sensorarea = 'usage';
+        self.hasReturn = false;
+        self.usageLabel = $.t('Usage');
+        self.returnLabel = $.t('Return');
+
         function isLeapYear(yr) {
             return (yr % 4 === 0 && yr % 100 !== 0) || (yr % 400 === 0);
         }
@@ -41,7 +46,13 @@ define(['app'], function (app) {
             }, function () { return []; });
         }
 
-        function buildCumulativeSeries(items, yr, isP1) {
+        function hasDeliveryData(items) {
+            return items.some(function (item) {
+                return (parseFloat(item.r1) || 0) + (parseFloat(item.r2) || 0) > 0;
+            });
+        }
+
+        function buildCumulativeSeries(items, yr, isP1, sensorarea) {
             var filtered = items.filter(function (item) {
                 return item.d && item.d.substring(0, 4) === String(yr);
             });
@@ -55,7 +66,9 @@ define(['app'], function (app) {
                 var parts = item.d.split('-');
                 var date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
                 var val = isP1
-                    ? (parseFloat(item.v1) || 0) + (parseFloat(item.v2) || 0)
+                    ? (sensorarea === 'delivery'
+                        ? Math.abs(parseFloat(item.r1) || 0) + Math.abs(parseFloat(item.r2) || 0)
+                        : (parseFloat(item.v1) || 0) + (parseFloat(item.v2) || 0))
                     : (parseFloat(item.v) || 0);
                 cumulative += val;
                 dataPoints.push({
@@ -72,12 +85,19 @@ define(['app'], function (app) {
             return 'kWh';
         }
 
+        function buildChartTitle(isGenerated) {
+            if (self.sensorarea === 'delivery') {
+                return $.t('Cumulative Energy') + ' ' + $.t('Return');
+            }
+            if (isGenerated) return $.t('Cumulative Energy Generated');
+            if (self.subtype === 'gas') return $.t('Cumulative Gas');
+            if (self.subtype === 'water') return $.t('Cumulative Water');
+            return $.t('Cumulative Energy');
+        }
+
         function buildChart(allSeries, isGenerated, currentYear) {
             var unit = unitForSubtype(self.subtype);
-            var titleText = isGenerated ? $.t('Cumulative Energy Generated') :
-                (self.subtype === 'gas' ? $.t('Cumulative Gas') :
-                self.subtype === 'water' ? $.t('Cumulative Water') : $.t('Cumulative Energy'));
-            self.chartTitle = titleText;
+            self.chartTitle = buildChartTitle(isGenerated);
             var seriesList = [];
 
             allSeries.forEach(function (s, i) {
@@ -100,7 +120,7 @@ define(['app'], function (app) {
             doys.forEach(function (doy, idx) { tickLabels[doy] = monthNames[idx]; });
 
             self.chartDefinition = {
-                chart: { type: 'spline' },
+                chart: { type: 'spline', zoomType: 'x' },
                 title: null,
                 xAxis: {
                     min: 1,
@@ -137,10 +157,39 @@ define(['app'], function (app) {
             };
         }
 
+        self.toggleSensorArea = function (area) {
+            if (!self.hasReturn || self.sensorarea === area) { return; }
+            self.sensorarea = area;
+            rebuildFromData();
+        };
+
+        function rebuildFromData() {
+            var isP1 = (self.subtype === 'p1Energy');
+            var isGenerated = (self.device.SwitchTypeVal === 4) && !isP1;
+            var now = new Date();
+            var currentYear = now.getFullYear();
+            var allSeries = [];
+
+            var curData = buildCumulativeSeries(self._currentYearData, currentYear, isP1, self.sensorarea);
+            if (curData && curData.length > 0) {
+                allSeries.push({ year: currentYear, data: curData });
+            }
+
+            [0, 1].forEach(function (i) {
+                var yr = currentYear - 1 - i;
+                var data = buildCumulativeSeries(self._prevResults[i], yr, isP1, self.sensorarea);
+                if (data && data.length > 0) {
+                    allSeries.push({ year: yr, data: data });
+                }
+            });
+
+            allSeries.sort(function (a, b) { return a.year - b.year; });
+            buildChart(allSeries, isGenerated, currentYear);
+        }
+
         self.$onInit = function () {
             var isP1 = (self.subtype === 'p1Energy');
             var sensor = 'counter';
-            var isGenerated = (self.device.SwitchTypeVal === 4);
             var idx = self.device.idx;
             var now = new Date();
             var currentYear = now.getFullYear();
@@ -154,25 +203,17 @@ define(['app'], function (app) {
                     fetchYear(idx, sensor, currentYear - 1),
                     fetchYear(idx, sensor, currentYear - 2)
                 ]).then(function (prevResults) {
-                    var allSeries = [];
+                    self._prevResults = prevResults;
+                    self._currentYearData = currentYearData;
 
-                    // Current year from shared data
-                    var curData = buildCumulativeSeries(currentYearData, currentYear, isP1);
-                    if (curData && curData.length > 0) {
-                        allSeries.push({ year: currentYear, data: curData });
+                    if (isP1) {
+                        var allItems = currentYearData.concat(prevResults[0]).concat(prevResults[1]);
+                        self.hasReturn = hasDeliveryData(allItems);
+                    } else {
+                        self.hasReturn = false;
                     }
 
-                    // Previous years from API
-                    [0, 1].forEach(function (i) {
-                        var yr = currentYear - 1 - i;
-                        var data = buildCumulativeSeries(prevResults[i], yr, isP1);
-                        if (data && data.length > 0) {
-                            allSeries.push({ year: yr, data: data });
-                        }
-                    });
-
-                    allSeries.sort(function (a, b) { return a.year - b.year; });
-                    buildChart(allSeries, isGenerated, currentYear);
+                    rebuildFromData();
                 });
             });
         };
