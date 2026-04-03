@@ -5,6 +5,7 @@
             <div class="dd-forecast-dayname">{{ day.dayName }}</div>
             <i class="fa {{ day.icon }}" ng-style="{'color': 'var(' + day.tokenColor + ')'}"></i>
             <div class="dd-forecast-temps">{{ day.tempMax }}° / {{ day.tempMin }}°</div>
+            <div class="dd-forecast-label">{{ day.label }}</div>
             <div class="dd-forecast-precip" ng-if="ctrl.showPrecip">{{ day.precip }}mm</div>
             <div class="dd-forecast-wind" ng-if="ctrl.showWind">{{ day.wind }}km/h</div>
         </div>

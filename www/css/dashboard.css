@@ -2248,6 +2248,7 @@ dd-wcp-color {
 .dd-forecast-dayname { font-size: 0.78em; font-weight: 600; color: var(--dz-widget-stat-muted); }
 .dd-forecast-day > i { font-size: 1.2em; }
 .dd-forecast-temps { font-size: 0.8em; white-space: nowrap; }
+.dd-forecast-label { font-size: 0.68em; color: var(--dz-widget-stat-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .dd-forecast-precip { font-size: 0.72em; color: var(--dz-widget-weather-rain); }
 .dd-forecast-wind { font-size: 0.72em; color: var(--dz-widget-stat-muted); }
 .dd-forecast-error { font-size: 0.8em; color: var(--dz-widget-energy-net-neg); margin-top: 8px; }
