@@ -8599,14 +8599,49 @@ bool CSQLHelper::FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dr
 		return false;
 	}
 
-	double clamped_threshold = std::min(max_daily_kwh, 1e9);
-	int64_t threshold_wh = static_cast<int64_t>(clamped_threshold * 1000.0);
-
 	// --- Phase 1: Detect anomalous days in Meter_Calendar ---
 	//   Positive spike: Value > threshold  — false counter jump upward (e.g. reset artefact)
 	//   Negative spike: Value < -threshold — counter reset stored without offset correction
 	auto calresult = safe_query(
 		"SELECT Date, Value FROM Meter_Calendar WHERE (DeviceRowID='%" PRIu64 "') ORDER BY Date ASC", idx);
+
+	// Auto-detect threshold when max_daily_kwh <= 0:
+	// Compute the median of positive daily values, then use 100x as the spike threshold.
+	// Using the median (not the mean) ensures that a small number of spike days cannot
+	// inflate the baseline and hide themselves from detection.
+	// This scales correctly for all device types:
+	//   - Low-power sensor  (median ~0.45 kWh) → threshold ~45 kWh
+	//   - EV charger        (median ~50 kWh)   → threshold ~5000 kWh  (300 kWh real peaks not flagged)
+	//   - Heavy power user  (median ~1000 kWh) → threshold ~100000 kWh (large-but-real days not flagged)
+	if (max_daily_kwh <= 0.0)
+	{
+		std::vector<int64_t> positive_values;
+		positive_values.reserve(calresult.size());
+		for (const auto& row : calresult)
+		{
+			int64_t v = 0;
+			try { v = std::stoll(row[1]); } catch (...) { continue; }
+			if (v > 0)
+				positive_values.push_back(v);
+		}
+		if (positive_values.size() >= 5)
+		{
+			std::sort(positive_values.begin(), positive_values.end());
+			int64_t median_wh = positive_values[positive_values.size() / 2];
+			int64_t auto_threshold_wh = std::max(median_wh * 100LL, int64_t(1000)); // floor: 1 kWh
+			max_daily_kwh = auto_threshold_wh / 1000.0;
+			results.push_back(std_format("Auto-detected threshold: %.1f kWh (100x median daily usage of %.3f kWh)",
+				max_daily_kwh, median_wh / 1000.0));
+		}
+		else
+		{
+			max_daily_kwh = 1000.0; // not enough history, fall back to safe default
+			results.push_back("Not enough history for auto-detection; using default 1000 kWh threshold");
+		}
+	}
+
+	double clamped_threshold = std::min(max_daily_kwh, 1e9);
+	int64_t threshold_wh = static_cast<int64_t>(clamped_threshold * 1000.0);
 
 	struct SpikeDay
 	{
