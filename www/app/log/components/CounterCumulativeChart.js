@@ -29,6 +29,7 @@ define(['app'], function (app) {
         self.hasReturn = false;
         self.usageLabel = $.t('Usage');
         self.returnLabel = $.t('Return');
+        self.netLabel = $.t('Net');
 
         function isLeapYear(yr) {
             return (yr % 4 === 0 && yr % 100 !== 0) || (yr % 400 === 0);
@@ -48,7 +49,7 @@ define(['app'], function (app) {
 
         function hasDeliveryData(items) {
             return items.some(function (item) {
-                return (parseFloat(item.r1) || 0) + (parseFloat(item.r2) || 0) > 0;
+                return Math.abs(parseFloat(item.r1) || 0) + Math.abs(parseFloat(item.r2) || 0) > 0;
             });
         }
 
@@ -68,7 +69,9 @@ define(['app'], function (app) {
                 var val = isP1
                     ? (sensorarea === 'delivery'
                         ? Math.abs(parseFloat(item.r1) || 0) + Math.abs(parseFloat(item.r2) || 0)
-                        : (parseFloat(item.v1) || 0) + (parseFloat(item.v2) || 0))
+                        : sensorarea === 'net'
+                            ? ((parseFloat(item.v1) || 0) + (parseFloat(item.v2) || 0)) - (Math.abs(parseFloat(item.r1) || 0) + Math.abs(parseFloat(item.r2) || 0))
+                            : (parseFloat(item.v1) || 0) + (parseFloat(item.v2) || 0))
                     : (parseFloat(item.v) || 0);
                 cumulative += val;
                 dataPoints.push({
@@ -88,6 +91,9 @@ define(['app'], function (app) {
         function buildChartTitle(isGenerated) {
             if (self.sensorarea === 'delivery') {
                 return $.t('Cumulative Energy') + ' ' + $.t('Return');
+            }
+            if (self.sensorarea === 'net') {
+                return $.t('Cumulative Energy') + ' ' + $.t('Net');
             }
             if (isGenerated) return $.t('Cumulative Energy Generated');
             if (self.subtype === 'gas') return $.t('Cumulative Gas');
