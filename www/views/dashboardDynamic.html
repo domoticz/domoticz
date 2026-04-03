@@ -220,11 +220,11 @@
                        placeholder="Search widgets..."
                        ng-model="librarySearch">
             </div>
-            <div ng-repeat="(category, items) in widgetCatalogGrouped">
-                <div class="dd-library-category-label" ng-bind="category"></div>
+            <div ng-repeat="group in widgetCatalogGrouped">
+                <div class="dd-library-category-label" ng-bind="group.category"></div>
                 <div class="dd-library-category">
                     <div class="dd-library-item"
-                         ng-repeat="item in items | filter:librarySearch"
+                         ng-repeat="item in group.items | filter:librarySearch"
                          ng-click="addWidgetToGrid(item)"
                          title="{{ item.description }}">
                         <div class="dd-library-item-icon">

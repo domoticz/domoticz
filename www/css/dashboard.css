@@ -916,6 +916,15 @@ body.dd-navbar-hidden .dd-topbar {
     position: relative !important;
 }
 
+/* Remove hardcoded left margin on dimmer/blinds sliders inside dynamic dashboard tiles.
+   The old values (50/94/124px) were sized for the full-width dashboard; in compact tiles
+   they push the slider handle outside the right edge. */
+.dd-widget--dz-device .dimslidernorm,
+.dd-widget--dz-device .dimslidersmalldouble,
+.dd-widget--dz-device .dimslidersmalltripple {
+    margin-left: 0 !important;
+}
+
 .dd-widget--kwh-summary,
 .dd-widget--gas-summary,
 .dd-widget--p1-electricity,
@@ -1711,6 +1720,37 @@ body.dd-navbar-hidden .dd-topbar {
     height: 34px;
     padding: 2px 4px;
     cursor: pointer;
+}
+
+/* color-alpha: swatch button + inline dropdown */
+dd-wcp-color {
+    position: relative;
+    display: inline-block;
+}
+
+.dd-settings-form .dd-wcp-swatch {
+    width: 48px;
+    height: 34px;
+    padding: 0;
+    border: 2px solid var(--dz-input-border, #ccc);
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-block;
+    color: transparent !important;
+    text-shadow: none !important;
+    font-size: 0 !important;
+}
+
+.dd-wcp-drop {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 1200;
+    background: #eee;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    padding: 8px;
+    box-shadow: 1px 1px 6px rgba(0,0,0,.4);
 }
 
 /* Range / slider row */

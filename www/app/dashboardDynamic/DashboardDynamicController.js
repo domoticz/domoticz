@@ -8,6 +8,7 @@ define([
     'dashboardDynamic/ddWidgetWrapper',
     'dashboardDynamic/ddGrid',
     'dashboardDynamic/ddWidgetSettings.controller',
+    'dashboardDynamic/ddWcpColor.directive',
     'dashboardDynamic/ddDashboardManager.controller',
     'dashboardDynamic/ddExportImport.controller',
     'widgets/dzLightWidget',
@@ -505,6 +506,7 @@ define([
                     d.Type === 'Current'      || d.Type === 'Energy'       || d.Type === 'Current/Energy' ||
                     d.Type === 'Power'        || d.Type === 'Gas'          || d.Type === 'Water'    ||
                     d.Type === 'Weight'       || d.Type === 'Usage'        || d.Type === 'Radiator 1' ||
+                    d.Type === 'P1 Smart Meter' ||
                     d.SubType === 'kWh'       || d.SubType === 'Percentage' || d.SubType === 'Voltage' ||
                     d.SubType === 'Distance'  || d.SubType === 'Current'   || d.SubType === 'Text'  ||
                     d.SubType === 'Alert'     || d.SubType === 'Pressure'  || d.SubType === 'A/D'   ||
@@ -513,8 +515,14 @@ define([
                     d.SubType === 'Sound Level' || d.SubType === 'Custom Sensor' ||
                     d.SubType === 'Thermostat Clock' || d.SubType === 'Soil Moisture' ||
                     d.SubType === 'Leaf Wetness' ||
+                    d.SubType === 'Gas'       || d.SwitchType === 'Gas'    || d.SwitchTypeVal === 1 ||
+                    d.SubType === 'Counter Incremental' || d.SubType === 'Managed Counter' ||
                     (d.Type === 'Setpoint' && d.SubType === 'SetPoint')
                 ) {
+                    result.utility.push(d);
+                } else {
+                    // Catch-all: any favorited device that doesn't fit a known category
+                    // goes to utility so it always appears on the dashboard
                     result.utility.push(d);
                 }
             });

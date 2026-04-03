@@ -8,7 +8,7 @@ define([
         type:        'system-status',
         label:       'System Status',
         description: 'Domoticz server version and device counts',
-        category:    'System & Logs',
+        category:    'System',
         icon:        'fa-solid fa-server',
         defaultW:    3,
         defaultH:    2,

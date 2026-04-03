@@ -8,7 +8,7 @@ define([
         type:        'activity-log',
         label:       'Activity Log',
         description: 'Recent device state changes',
-        category:    'System & Logs',
+        category:    'System',
         icon:        'fa-solid fa-list',
         defaultW:    3,
         defaultH:    4,

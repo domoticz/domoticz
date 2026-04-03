@@ -8,7 +8,7 @@ define([
         type:        'camera-feed',
         label:       'Camera Feed',
         description: 'Live snapshot from a configured IP camera',
-        category:    'Devices',
+        category:    'Controls',
         icon:        'fa-solid fa-video',
         defaultW:    3,
         defaultH:    2,

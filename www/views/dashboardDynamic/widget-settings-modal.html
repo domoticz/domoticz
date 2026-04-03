@@ -12,7 +12,7 @@
              ng-repeat="field in descriptor.configSchema"
              ng-class="{'has-error': settingsForm['field_' + field.key].$invalid && settingsForm.$submitted}">
 
-            <label ng-if="field.type !== 'boolean'">
+            <label ng-if="field.type !== 'boolean' && field.type !== 'group'">
                 {{ field.label }}
                 <span class="text-danger" ng-show="field.required">*</span>
             </label>
@@ -183,6 +183,55 @@
                    class="ui-corner-all"
                    name="field_{{ field.key }}"
                    ng-model="config[field.key]">
+
+            <!-- color-alpha (wheel + alpha slider) -->
+            <dd-wcp-color ng-if="field.type === 'color-alpha'"
+                          name="field_{{ field.key }}"
+                          ng-model="config[field.key]">
+            </dd-wcp-color>
+
+            <!-- group: renders sub-fields side by side -->
+            <div ng-if="field.type === 'group'" class="dd-field-group" style="display:flex;gap:12px;align-items:flex-end">
+                <div ng-repeat="subField in field.fields" style="flex:1;min-width:0">
+                    <label ng-if="subField.type !== 'boolean'" style="display:block;margin-bottom:4px">{{ subField.label }}</label>
+
+                    <input ng-if="subField.type === 'number'"
+                           type="number"
+                           class="text ui-widget-content ui-corner-all"
+                           name="field_{{ subField.key }}"
+                           ng-model="config[subField.key]"
+                           ng-required="subField.required"
+                           min="{{ subField.min }}"
+                           max="{{ subField.max }}"
+                           step="{{ subField.step || 1 }}"
+                           style="width:100%">
+
+                    <select ng-if="subField.type === 'select'"
+                            class="combobox ui-corner-all"
+                            name="field_{{ subField.key }}"
+                            ng-model="config[subField.key]"
+                            ng-required="subField.required"
+                            ng-options="o.value as o.label for o in subField.options"
+                            style="width:100%">
+                        <option value="">-- Select --</option>
+                    </select>
+
+                    <input ng-if="subField.type === 'color'"
+                           type="color"
+                           class="ui-corner-all"
+                           name="field_{{ subField.key }}"
+                           ng-model="config[subField.key]">
+
+                    <input ng-if="subField.type === 'text'"
+                           type="text"
+                           class="text ui-widget-content ui-corner-all"
+                           name="field_{{ subField.key }}"
+                           ng-model="config[subField.key]"
+                           ng-required="subField.required"
+                           placeholder="{{ subField.placeholder || '' }}"
+                           style="width:100%">
+                </div>
+            </div>
 
             <!-- range / slider -->
             <div ng-if="field.type === 'range'" style="display:flex;align-items:center;gap:8px">

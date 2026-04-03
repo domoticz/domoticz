@@ -36,6 +36,17 @@ define([
             }
         });
 
+        // Pre-populate defaults for sub-fields inside group fields
+        (descriptor.configSchema || []).forEach(function(field) {
+            if (field.type === 'group' && field.fields) {
+                field.fields.forEach(function(subField) {
+                    if ($scope.config[subField.key] === undefined && subField.default !== undefined) {
+                        $scope.config[subField.key] = subField.default;
+                    }
+                });
+            }
+        });
+
         // Lazy-load device list only if a device-picker field is present
         var devicePickerFields = (descriptor.configSchema || []).filter(function(f) {
             return f.type === 'device-picker';

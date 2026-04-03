@@ -1,5 +1,5 @@
 <div class="dd-text-note" ng-style="ctrl.getStyle()">
-    <span ng-bind="(ctrl.widgetDef.config.content) || (ctrl.editMode ? '' : 'Double-click to edit in settings')"></span>
+    <span style="white-space:pre-wrap" ng-bind="(ctrl.widgetDef.config.content) || (ctrl.editMode ? '' : 'Double-click to edit in settings')"></span>
     <span class="dd-text-note-hint"
           ng-show="ctrl.editMode && !ctrl.widgetDef.config.content">
         <i class="fa-solid fa-pencil"></i>
