@@ -43,7 +43,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 178
+#define DB_VERSION 177
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -781,7 +781,6 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateMobileDevices);
 	query(sqlCreateApplications);
 	query(sqlCreateDashboardLayouts);
-	query("CREATE INDEX IF NOT EXISTS [ix_DashboardLayouts_userid] ON [DashboardLayouts]([userid]);");
 	//Add indexes to log tables
 	query("create index if not exists ds_hduts_idx	on DeviceStatus(HardwareID, DeviceID, Unit, Type, SubType);");
 	query("create index if not exists f_id_idx		on Fan(DeviceRowID);");
@@ -820,6 +819,7 @@ bool CSQLHelper::OpenDatabase()
 	query("create index if not exists w_id_date_idx   on Wind(DeviceRowID, Date);");
 	query("create index if not exists wc_id_idx	   on Wind_Calendar(DeviceRowID);");
 	query("create index if not exists wc_id_date_idx  on Wind_Calendar(DeviceRowID, Date);");
+	query("CREATE INDEX IF NOT EXISTS [ix_DashboardLayouts_userid] ON [DashboardLayouts]([userid]);");
 	sqlite3_exec(m_dbase, "END TRANSACTION;", nullptr, nullptr, nullptr);
 
 	if ((!bNewInstall) && (dbversion < DB_VERSION))
@@ -3367,12 +3367,6 @@ bool CSQLHelper::OpenDatabase()
 			{
 				query("ALTER TABLE Hardware ADD COLUMN [Settings] TEXT DEFAULT ''");
 			}
-		}
-		if (dbversion < 178)
-		{
-			// Dashboard 2.0: per-user flexible widget layout storage
-			query(sqlCreateDashboardLayouts);
-			query("CREATE INDEX IF NOT EXISTS [ix_DashboardLayouts_userid] ON [DashboardLayouts]([userid]);");
 		}
 	}
 	else if (bNewInstall)
