@@ -1068,6 +1068,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     $.ajax({ url: 'json.htm?type=command&param=fixcounterprices&idx=' + self.device.idx })
                         .then(function (data) {
                             var parts = [];
+                            if (data && data.spikesFixed > 0) parts.push($.t('Fixed') + ' ' + data.spikesFixed + ' ' + $.t('counter spike(s).'));
                             if (data && data.kwhStatsFixed) parts.push($.t('Weekly pattern fixed.'));
                             if (data && data.pricesFixed > 0) parts.push($.t('Repaired') + ' ' + data.pricesFixed + ' ' + $.t('daily rows') + '.');
                             var msg = parts.length > 0 ? parts.join('\n') : $.t('No issues found.');
