@@ -341,17 +341,13 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			//Ver bad (Old code!), should be changed soon!
 			$.FiveMinuteHistoryDays = $rootScope.config.FiveMinuteHistoryDays;
 
-			$.myglobals.ismobileint = false;
-			if (typeof $rootScope.config.MobileType != 'undefined') {
-				if (/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
-					$.myglobals.ismobile = true;
-					$.myglobals.ismobileint = true;
-				}
-				if ($rootScope.config.MobileType != 0) {
-					if (!(/iPhone/i.test(navigator.userAgent))) {
-						$.myglobals.ismobile = false;
-					}
-				}
+			var _screenWidth = window.innerWidth || screen.width;
+			var _isPhone = (_screenWidth < 600);
+			$.myglobals.ismobile = _isPhone;
+			$.myglobals.ismobileint = _isPhone;
+			// MobileType=1: force desktop view regardless of screen size
+			if ($rootScope.config.MobileType == 1) {
+				$.myglobals.ismobile = false;
 			}
 
 			$.myglobals.DashboardType = $rootScope.config.DashboardType;
