@@ -4558,6 +4558,11 @@ namespace http
 				return;
 			}
 
+			if (root["status"].asString() != "OK" && session.reply_status == http::server::reply::ok)
+			{
+				session.reply_status = http::server::reply::bad_request;
+			}
+
 			reply::set_content(&rep, root.toStyledString());
 			rep.status = static_cast<http::server::reply::status_type>(session.reply_status);
 		}
