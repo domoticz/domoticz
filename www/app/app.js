@@ -593,6 +593,12 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						if ((data.HaveUpdate == true) && (data.UseUpdate)) {
 							ShowUpdateNotification(data.Revision, data.SystemName, data.DomoticzUpdateURL);
 						}
+
+						try {
+							if (localStorage.getItem('dz_easter_eggs') !== 'false') {
+								require(['EasterEggs'], function (EE) { EE.init(); });
+							}
+						} catch (e) {}
 					}
 				},
 				error: function () {

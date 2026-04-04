@@ -16,7 +16,8 @@ define(['app'], function (app) {
 			newpwd: '',
 			vfypwd: '',
 			qruri: 'otpauth://totp/domoticz?algorithm=SHA1&digits=6&secret=',
-			useDynamicDashboard: false
+			useDynamicDashboard: false,
+			showEasterEggs: true
 		};
 
 		$scope.generateTOTPSecret = function()
@@ -42,6 +43,7 @@ define(['app'], function (app) {
 			$scope.MakeGlobalConfig();
 			$scope.myprofile.useDynamicDashboard = $rootScope.config.EnableTabDashboardDynamic || false;
 			try { $scope.myprofile.showTips = localStorage.getItem('dz_tips_enabled') !== 'false'; } catch(e) { $scope.myprofile.showTips = true; }
+			try { $scope.myprofile.showEasterEggs = localStorage.getItem('dz_easter_eggs') !== 'false'; } catch(e) { $scope.myprofile.showEasterEggs = true; }
 			domoticzApi.sendCommand('getmyprofile', {
 				'username': $scope.config.userName
 				}).then(function (data) {
@@ -61,6 +63,10 @@ define(['app'], function (app) {
 
 		$scope.toggleTips = function() {
 			try { localStorage.setItem('dz_tips_enabled', String($scope.myprofile.showTips)); } catch(e) {}
+		};
+
+		$scope.toggleEasterEggs = function() {
+			try { localStorage.setItem('dz_easter_eggs', String($scope.myprofile.showEasterEggs)); } catch(e) {}
 		};
 
 		$scope.changeTOTP = function () {

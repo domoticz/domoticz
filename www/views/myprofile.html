@@ -81,6 +81,23 @@
 				</td>
 			</tr>
 		</table>
+		<table class="display table-details">
+			<tr>
+				<td colspan="2" style="text-align: left;">
+					<h3 data-i18n="Fun &amp; Easter Eggs">Fun &amp; Easter Eggs</h3>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label for="ShowEasterEggs"><span data-i18n="Enable Easter Eggs"></span>:</label>
+				</td>
+				<td>
+					<input type="checkbox" id="ShowEasterEggs" name="ShowEasterEggs"
+						   ng-model="myprofile.showEasterEggs" ng-change="toggleEasterEggs()">
+					<label for="ShowEasterEggs" data-i18n="Enabled">Enabled</label>
+				</td>
+			</tr>
+		</table>
 		<br />
 		<table class="display table-details" id="profiletable">
 			<tr>

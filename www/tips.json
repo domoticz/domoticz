@@ -294,6 +294,10 @@
     {
       "tip": "Create a 'good morning' scene that gradually brightens lights, starts the coffee maker, and reads the weather.",
       "icon": "fa-mug-hot"
+    },
+    {
+      "tip": "Did you know Domoticz has Easter eggs? Keep an eye out on special days — or try the Konami code! \uD83E\uDD5A",
+      "icon": "fa-egg"
     }
   ]
 }
