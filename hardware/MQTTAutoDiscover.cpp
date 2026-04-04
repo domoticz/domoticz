@@ -2156,12 +2156,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 
 		if (bTotalIncreasing)
 		{
-			// CounterHelper always works in kWh. Convert to kWh regardless of the sensor's
-			// native unit before passing in, then convert the combined total back.
-			// (For kWh sensors multiply=1000, so the round-trip is a no-op.)
-			double dkWh_kwh = dkWh * multiply / 1000.0;
-			dkWh_kwh = m_kwh_counter_helper[pSensor->unique_id].CheckTotalCounter(this, pSensor->unique_id, 1, dkWh_kwh);
-			dkWh = dkWh_kwh * 1000.0 / multiply;
+			dkWh = m_kwh_counter_helper[pSensor->unique_id].CheckTotalCounter(this, pSensor->unique_id, 1, dkWh);
 		}
 		pSensor->prev_value = dkWh;
 		double dUsage = 0;

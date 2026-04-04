@@ -72,67 +72,50 @@
                 <option value="">-- Select --</option>
             </select>
 
+            <!-- picker (searchable dz-picker for large option lists) -->
+            <dz-picker ng-if="field.type === 'picker'"
+                       ng-model="config[field.key]"
+                       dz-options="field.options"
+                       placeholder="-- Select --"
+                       dz-required="field.required"
+                       name="field_{{ field.key }}">
+            </dz-picker>
+
             <!-- device-picker -->
-            <div ng-if="field.type === 'device-picker'">
-                <input type="text" class="form-control input-sm" style="margin-bottom:4px"
-                       placeholder="Search devices..."
-                       ng-model="pickerSearch[field.key]"
-                       ng-show="deviceListByField[field.key].length > 5">
-                <select class="combobox ui-corner-all"
-                        name="field_{{ field.key }}"
-                        ng-model="config[field.key]"
-                        ng-required="field.required">
-                    <option value="">-- Select Device --</option>
-                    <option ng-repeat="d in deviceListByField[field.key] | filter:{Name: pickerSearch[field.key]}" value="{{ d.idx }}">
-                        {{ field.deviceFilter ? d.Name : deviceLabel(d) }}
-                    </option>
-                </select>
-            </div>
+            <dz-picker ng-if="field.type === 'device-picker'"
+                       ng-model="config[field.key]"
+                       dz-options="pickerOptions[field.key]"
+                       placeholder="-- Select Device --"
+                       dz-required="field.required"
+                       name="field_{{ field.key }}">
+            </dz-picker>
 
             <!-- scene-picker -->
-            <div ng-if="field.type === 'scene-picker'">
-                <input type="text" class="form-control input-sm" style="margin-bottom:4px"
-                       placeholder="Search scenes..."
-                       ng-model="pickerSearch[field.key]"
-                       ng-show="scenes.length > 5">
-                <select class="combobox ui-corner-all"
-                        name="field_{{ field.key }}"
-                        ng-model="config[field.key]"
-                        ng-required="field.required">
-                    <option value="">— select scene —</option>
-                    <option ng-repeat="s in scenes | filter:{Name: pickerSearch[field.key]}" value="{{ s.idx }}">{{ s.Name }}</option>
-                </select>
-            </div>
+            <dz-picker ng-if="field.type === 'scene-picker'"
+                       ng-model="config[field.key]"
+                       dz-options="sceneOptions"
+                       placeholder="— select scene —"
+                       dz-required="field.required"
+                       name="field_{{ field.key }}">
+            </dz-picker>
 
             <!-- plan-picker -->
-            <div ng-if="field.type === 'plan-picker'">
-                <input type="text" class="form-control input-sm" style="margin-bottom:4px"
-                       placeholder="Search rooms / plans..."
-                       ng-model="pickerSearch[field.key]"
-                       ng-show="plans.length > 5">
-                <select class="combobox ui-corner-all"
-                        name="field_{{ field.key }}"
-                        ng-model="config[field.key]"
-                        ng-required="field.required">
-                    <option value="">— Select Room / Plan —</option>
-                    <option ng-repeat="p in (plans | filter:{Name: pickerSearch[field.key]}) track by p.idx" value="{{ p.idx }}">{{ p.Name }}</option>
-                </select>
-            </div>
+            <dz-picker ng-if="field.type === 'plan-picker'"
+                       ng-model="config[field.key]"
+                       dz-options="planOptions"
+                       placeholder="— Select Room / Plan —"
+                       dz-required="field.required"
+                       name="field_{{ field.key }}">
+            </dz-picker>
 
             <!-- camera-picker -->
-            <div ng-if="field.type === 'camera-picker'">
-                <input type="text" class="form-control input-sm" style="margin-bottom:4px"
-                       placeholder="Search cameras..."
-                       ng-model="pickerSearch[field.key]"
-                       ng-show="cameras.length > 5">
-                <select class="combobox ui-corner-all"
-                        ng-model="config[field.key]"
-                        ng-required="field.required">
-                    <option value="">— Select camera —</option>
-                    <option ng-repeat="cam in (cameras | filter:{Name: pickerSearch[field.key]}) track by cam.idx"
-                            value="{{cam.idx}}">{{cam.Name}}</option>
-                </select>
-            </div>
+            <dz-picker ng-if="field.type === 'camera-picker'"
+                       ng-model="config[field.key]"
+                       dz-options="cameraOptions"
+                       placeholder="— Select camera —"
+                       dz-required="field.required"
+                       name="field_{{ field.key }}">
+            </dz-picker>
 
             <!-- action-list -->
             <div ng-if="field.type === 'action-list'" class="dd-action-list-editor">

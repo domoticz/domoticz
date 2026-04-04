@@ -5451,7 +5451,7 @@ namespace http
 			}
 
 			std::string sthreshold = request::findValue(&req, "threshold");
-			double max_daily_kwh = 0.0; // 0 = auto-detect from device history
+			double max_daily_kwh = 1000.0;
 			if (!sthreshold.empty())
 			{
 				char* endptr = nullptr;
@@ -6852,24 +6852,11 @@ namespace http
 				return;
 			uint64_t idx = std::stoull(request::findValue(&req, "idx"));
 
-			// Fix actual counter spikes in Meter_Calendar / Meter (kWh devices only).
-			// Uses auto-detected threshold (0.0 = 100x median daily usage).
-			// Non-kWh devices are silently skipped by FixKwhCounterSpikes.
-			std::vector<std::string> spikeResults;
-			m_sql.FixKwhCounterSpikes(idx, 0.0, false, spikeResults);
-			int spikesFixed = 0;
-			for (const auto& line : spikeResults)
-			{
-				if (line.rfind("Positive spike", 0) == 0 || line.rfind("Negative spike", 0) == 0)
-					spikesFixed++;
-			}
-
 			bool changed = CKWHStats::RemoveSpikeStats(idx);
 			int pricesFixed = m_sql.SanitizeCalendarData(idx);
-			root["changed"] = changed || (pricesFixed > 0) || (spikesFixed > 0);
+			root["changed"] = changed || (pricesFixed > 0);
 			root["kwhStatsFixed"] = changed;
 			root["pricesFixed"] = pricesFixed;
-			root["spikesFixed"] = spikesFixed;
 			root["status"] = "OK";
 			root["title"] = "FixCounterPrices";
 		}

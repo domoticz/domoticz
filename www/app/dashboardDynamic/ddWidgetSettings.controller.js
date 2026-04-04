@@ -22,13 +22,13 @@ define([
         '$scope', '$uibModalInstance', '$http', 'widget', 'descriptor',
         function($scope, $uibModalInstance, $http, widget, descriptor) {
 
-        $scope.descriptor      = descriptor;
-        $scope.config          = angular.copy(widget.config || {});
-        $scope.deviceList      = [];
+        $scope.descriptor        = descriptor;
+        $scope.config            = angular.copy(widget.config || {});
+        $scope.deviceList        = [];
         $scope.deviceListByField = {};
-        $scope.scenes          = [];
-        $scope.cameras         = [];
-        $scope.pickerSearch    = {};
+        $scope.scenes            = [];
+        $scope.cameras           = [];
+        $scope.pickerOptions     = {};
 
         // Pre-populate schema defaults for keys not yet set in config
         (descriptor.configSchema || []).forEach(function(field) {
@@ -135,6 +135,9 @@ define([
                             var lb = filter ? b.Name : deviceLabel(b);
                             return la.localeCompare(lb);
                         });
+                        $scope.pickerOptions[field.key] = $scope.deviceListByField[field.key].map(function(d) {
+                            return { value: String(d.idx), label: field.deviceFilter ? d.Name : deviceLabel(d) };
+                        });
                     });
 
                     // Helper so the template can compute the label
@@ -150,6 +153,9 @@ define([
             $http.get('json.htm?type=command&param=getscenes')
                 .then(function(resp) {
                     $scope.scenes = (resp.data && resp.data.result) || [];
+                    $scope.sceneOptions = $scope.scenes.map(function(s) {
+                        return { value: String(s.idx), label: s.Name };
+                    });
                 });
         }
 
@@ -161,6 +167,9 @@ define([
             $http.get('json.htm?type=command&param=getplans&order=name&used=true')
                 .then(function(resp) {
                     $scope.plans = (resp.data && resp.data.result) || [];
+                    $scope.planOptions = $scope.plans.map(function(p) {
+                        return { value: String(p.idx), label: p.Name };
+                    });
                 })
                 .catch(function() { $scope.plans = []; });
         }
@@ -173,6 +182,9 @@ define([
             $http.get('json.htm', { params: { type: 'command', param: 'getcameras', order: 'Name' } })
                 .then(function(resp) {
                     $scope.cameras = (resp.data && resp.data.result) || [];
+                    $scope.cameraOptions = $scope.cameras.map(function(c) {
+                        return { value: String(c.idx), label: c.Name };
+                    });
                 })
                 .catch(function() { $scope.cameras = []; });
         }

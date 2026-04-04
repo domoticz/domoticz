@@ -303,6 +303,12 @@ define([
 
         $scope.toggleLibrary = function() {
             $scope.showLibrary = !$scope.showLibrary;
+            if ($scope.showLibrary) {
+                $timeout(function() {
+                    var input = document.querySelector('.dd-library-search input');
+                    if (input) { input.focus(); }
+                }, 30);
+            }
         };
 
         var autoSaveTimeout = null;

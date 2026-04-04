@@ -104,5 +104,5 @@ require.config({
 		'blockly-blocks': ['blockly'],
 		'blockly-msg-en': ['blockly']
 	},
-	deps: ['app']
+	deps: ['app', 'dzPicker.directive']
 });

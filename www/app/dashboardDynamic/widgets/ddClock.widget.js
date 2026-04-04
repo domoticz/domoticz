@@ -57,7 +57,7 @@ define([
             { key: 'format24h',       type: 'boolean', label: '24-hour format',                      default: true },
             { key: 'showDate',        type: 'boolean', label: 'Show date',                           default: true },
             { key: 'showBackground',  type: 'boolean', label: 'Show panel background',               default: true },
-            { key: 'timezone',        type: 'select',  label: 'Timezone', default: _localTz, options: _tzOptions }
+            { key: 'timezone',        type: 'picker',  label: 'Timezone', default: _localTz, options: _tzOptions }
         ]
     });
 

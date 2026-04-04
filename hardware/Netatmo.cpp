@@ -100,11 +100,10 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 
 	Debug(DEBUG_HARDWARE, "Netatmo Actif Scopes %s", m_scopes.c_str());
 
-	// Weatherdevice is available in HomesData + HomeStatus
-	//m_bPollWeatherData = (m_scopes.find("station_R") != std::string::npos);      //read_station
+	m_bPollWeatherData = (m_scopes.find("station_R") != std::string::npos);      //read_station
 	m_bPollHomecoachData = (m_scopes.find("homecoach_R") != std::string::npos);  //read_homecoach
 
-	m_bPollHomeStatus = find_scopes(); //"thermostat_RW","camera_RWA","presence_RWA","carbonmonoxidedetector_R","smokedetector_R","magellan_RW","bubendorff_RW","smarther_RW","mx_RW","mhs1_RW","station_R","doorbell_RA","camerapro_RWA"
+	m_bPollHomeStatus = find_scopes(); //"thermostat_RW","camera_RWA","presence_RWA","carbonmonoxidedetector_R","smokedetector_R","magellan_RW","bubendorff_RW","smarther_RW","mx_RW","mhs1_RW", "camerapro_RWA"
 	m_netatmo_api_uri = std::string(NETATMO_API_URI);
 
 	m_bPollThermostat = true;
@@ -581,11 +580,9 @@ bool CNetatmo::find_scopes()
 		return true;
 	if (m_scopes.find("station_R") != std::string::npos)                //
 		return true;
-	if (m_scopes.find("doorbell_RA") != std::string::npos)                //
-		return true;
 	if (m_scopes.find("camerapro_RWA") != std::string::npos)                //
 		return true;
-	//"thermostat_RW","camera_RWA","presence_RWA","carbonmonoxidedetector_R","smokedetector_R","magellan_RW","bubendorff_RW","smarther_RW","mx_RW","mhs1_RW","station_R","homecoach_R","doorbell_RA","camerapro_RWA"
+	//"thermostat_RW","camera_RWA","presence_RWA","carbonmonoxidedetector_R","smokedetector_R","magellan_RW","bubendorff_RW","smarther_RW","mx_RW","mhs1_RW","camerapro_RWA"
 	return false;
 }
 
@@ -2065,7 +2062,6 @@ void CNetatmo::GetHomeStatusDetails()
 	std::string home_data;
 	std::string home_id;
 	m_homeid.clear();
-	bool Scenarios = false;
 
 	GetHomesDataDetails();                 //Homes Data
 
@@ -2094,22 +2090,12 @@ void CNetatmo::GetHomeStatusDetails()
 		Debug(DEBUG_HARDWARE, "Parsed index %d Home Status of HomeID %s %s", i, home_id.c_str(), Home_Name.c_str());
 	}
 	// Scenarios in separated loop
-	// Scenarios only with selected scopes.
-	if (m_scopes.find("magellan_RW") != std::string::npos)              //
-		Scenarios = true;
-	if (m_scopes.find("bubendorff_RW") != std::string::npos)            //
-		Scenarios = true;
-	if (m_scopes.find("mhs1_RW") != std::string::npos)                  //
-		Scenarios = true;
-	if (Scenarios)
+	for (int i = 0; i < size; i++)
 	{
-		for (int i = 0; i < size; i++)
-		{
-			Debug(DEBUG_HARDWARE, "index %d of Scenarios", i);
-			home_id = m_homeid[i];
-			Json::Value scenarios;
-			Get_Scenarios(home_id, scenarios);
-		}
+		Debug(DEBUG_HARDWARE, "index %d of Scenarios", i);
+		home_id = m_homeid[i];
+		Json::Value scenarios;
+		Get_Scenarios(home_id, scenarios);
 	}
 	Debug(DEBUG_HARDWARE, "Parsed Home Status |");
 }
@@ -2694,7 +2680,7 @@ bool CNetatmo::ParseDashboard(const Json::Value& root, const int DevIdx, const i
 	if (!root["sum_rain_1"].empty())
 	{
 		bHaveRain = true;
-		rain_1 = root["sum_rain_1"].asFloat() * 10.0F;
+		rain_1 = root["sum_rain_1"].asFloat();
 		//Debug(DEBUG_HARDWARE, "ParseDashBoard Module Rain_1 [%f]", rain_1);
 	}
 	if (!root["sum_rain_24"].empty())

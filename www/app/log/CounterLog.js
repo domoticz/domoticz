@@ -222,7 +222,6 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                         $.ajax({ url: 'json.htm?type=command&param=fixcounterprices&idx=' + deviceIdx })
                             .then(function (data) {
                                 var parts = [];
-                                if (data && data.spikesFixed > 0) parts.push($.t('Fixed') + ' ' + data.spikesFixed + ' ' + $.t('counter spike(s).'));
                                 if (data && data.kwhStatsFixed) parts.push($.t('Weekly pattern fixed.'));
                                 if (data && data.pricesFixed > 0) parts.push($.t('Repaired') + ' ' + data.pricesFixed + ' ' + $.t('daily rows') + '.');
                                 var msg = parts.length > 0 ? parts.join('\n') : $.t('No issues found.');
