@@ -28,6 +28,7 @@ define([
         $scope.deviceListByField = {};
         $scope.scenes          = [];
         $scope.cameras         = [];
+        $scope.pickerSearch    = {};
 
         // Pre-populate schema defaults for keys not yet set in config
         (descriptor.configSchema || []).forEach(function(field) {

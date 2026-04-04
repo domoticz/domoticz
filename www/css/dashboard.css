@@ -720,6 +720,12 @@ body.dd-navbar-hidden .dd-toolbar {
     opacity: 0.8;
 }
 
+.dd-widget--stat-counter .dd-stat-value,
+.dd-widget--stat-counter .dd-stat-unit {
+    color: var(--dz-widget-accent);
+    opacity: 1;
+}
+
 /* ── Weather Widget ───────────────────────────────────────── */
 /* Weather widget body: no padding, use relative positioning so children can fill it */
 .dd-widget--weather > .dd-widget-body {
@@ -893,6 +899,7 @@ body.dd-navbar-hidden .dd-toolbar {
     display: flex;
     align-items: center;
     justify-content: space-around;
+    gap: 6px;
 }
 
 .dd-sun-col {
@@ -1114,6 +1121,14 @@ body.dd-navbar-hidden .dd-toolbar {
     text-align: center;
     padding: 8px;
     box-sizing: border-box;
+}
+
+.dd-clock-title {
+    font-size: 0.8em;
+    color: var(--dz-widget-stat-muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .dd-clock-time {
@@ -2282,7 +2297,7 @@ dd-wcp-color {
 .dd-log-filters { display: flex; gap: 4px; align-items: center; }
 .dd-log-filter-btn { padding: 2px 6px; border-radius: 4px; border: 1px solid currentColor; background: transparent; cursor: pointer; font-size: 0.75em; opacity: 0.5; }
 .dd-log-filter-btn.active { opacity: 1; background: currentColor; }
-.dd-log-filter-btn.active span { color: #000; }
+.dd-log-filter-btn.active span { color: var(--dz-body-text); }
 .dd-log-filter-normal { color: var(--dz-body-text); }
 .dd-log-filter-status { color: var(--dz-widget-accent); }
 .dd-log-filter-error  { color: var(--dz-accent-red); }
@@ -2357,6 +2372,14 @@ dd-wcp-color {
 .dd-battery-monitor-level { flex-shrink: 0; font-weight: 600; min-width: 36px; text-align: right; }
 .dd-battery-monitor-ok { text-align: center; padding: 16px; color: var(--dz-widget-energy-export); font-size: 0.9em; }
 
+
+html,
+.dd-battery-monitor-list,
+.dd-rss-list,
+.dd-log-list,
+.dd-widget-body {
+    scrollbar-color: var(--dz-accent-color) transparent;
+}
 
 /* ── Screen Standby Mode ──────────────────────────────────── */
 body.dd-standby .dd-page {
