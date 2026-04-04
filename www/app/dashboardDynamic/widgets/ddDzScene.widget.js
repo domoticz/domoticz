@@ -109,6 +109,12 @@ define([
                     }
                 );
 
+                $scope.$on('scene_update', function(e, sceneData) {
+                    if (ctrl.scene && String(sceneData.idx) === String(ctrl.scene.idx)) {
+                        renderScene(sceneData);
+                    }
+                });
+
                 $scope.$on('dd:widget:refresh', load);
 
                 $scope.$on('$destroy', function() {

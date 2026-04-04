@@ -16,9 +16,9 @@ define([
         category:    'Charts & Data',
         icon:        'fa-solid fa-gauge-high',
         defaultW:    2,
-        defaultH:    2,
+        defaultH:    3,
         minW:        2,
-        minH:        2,
+        minH:        3,
         maxW:        4,
         maxH:        4,
         configSchema: [
@@ -94,11 +94,13 @@ define([
                 ctrl.value    = null;
                 var cancelToken = null;
 
-                ctrl.displayValue = function() {
-                    if (ctrl.value === null) { return '--'; }
-                    var cfg  = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
-                    var unit = (cfg.unit !== undefined && cfg.unit !== null) ? cfg.unit : '%';
-                    return ctrl.value + (unit ? '\u00a0' + unit : '');
+                ctrl.unitStr = function() {
+                    var cfg = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
+                    return (cfg.unit !== undefined && cfg.unit !== null) ? cfg.unit : '%';
+                };
+
+                ctrl.valueStr = function() {
+                    return ctrl.value !== null ? String(ctrl.value) : '--';
                 };
 
                 ctrl.gaugeColor = function() {
@@ -114,12 +116,12 @@ define([
 
                     if (mode === 'high-is-good') {
                         if (v >= crit) { return 'var(--dz-widget-energy-export)'; }
-                        if (v >= warn) { return 'var(--dz-widget-energy-solar)'; }
+                        if (v >= warn) { return 'var(--dz-widget-sunpv)'; }
                         return 'var(--dz-widget-energy-net-neg)';
                     } else {
                         // low-is-good
                         if (v < warn)  { return 'var(--dz-widget-energy-export)'; }
-                        if (v < crit)  { return 'var(--dz-widget-energy-solar)'; }
+                        if (v < crit)  { return 'var(--dz-widget-sunpv)'; }
                         return 'var(--dz-widget-energy-net-neg)';
                     }
                 };

@@ -80,7 +80,7 @@
                     ng-required="field.required">
                 <option value="">-- Select Device --</option>
                 <option ng-repeat="d in deviceListByField[field.key]" value="{{ d.idx }}">
-                    {{ deviceLabel(d) }}
+                    {{ field.deviceFilter ? d.Name : deviceLabel(d) }}
                 </option>
             </select>
 

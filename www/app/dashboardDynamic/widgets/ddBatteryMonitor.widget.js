@@ -83,8 +83,8 @@ define([
 
                 ctrl.levelColor = function(level) {
                     if (level <= 10) { return 'var(--dz-widget-energy-net-neg)'; }
-                    if (level <= 25) { return 'var(--dz-widget-energy-import)'; }
-                    if (level <= 50) { return 'var(--dz-widget-energy-solar)'; }
+                    if (level <= 25) { return 'var(--dz-widget-sunpv)'; }
+                    if (level <= 50) { return 'var(--dz-widget-sunpv)'; }
                     return 'var(--dz-widget-energy-export)';
                 };
 

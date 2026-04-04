@@ -1,7 +1,7 @@
 <div class="dd-balance">
     <div class="dd-balance-stats" ng-if="ctrl.balance">
         <span>
-            <i class="fa fa-leaf" ng-style="{'color': 'var(--dz-widget-energy-net-pos)'}"></i>
+            <i class="fa fa-leaf" ng-style="{'color': 'var(--dz-widget-energy-export)'}"></i>
             {{'Self-sufficiency' | translate}}: <span>{{ ctrl.balance.selfSufficiency | number:0 }}%</span>
         </span>
         <span>{{'House consumption' | translate}}: <span>{{ ctrl.balance.houseToday | number:1 }} kWh</span></span>

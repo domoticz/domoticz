@@ -272,15 +272,26 @@ define([
         };
 
         $scope.cancelEdit = function() {
-            if (_savedDataSnapshot) {
-                $scope.activeData = angular.copy(_savedDataSnapshot);
-                _savedDataSnapshot = null;
+            function doCancel() {
+                if (_savedDataSnapshot) {
+                    $scope.activeData = angular.copy(_savedDataSnapshot);
+                    _savedDataSnapshot = null;
+                }
+                $scope.editMode    = false;
+                $scope.showLibrary = false;
+                $scope.isDirty     = false;
+                refreshGrid();
             }
-            $scope.editMode    = false;
-            $scope.showLibrary = false;
-            $scope.isDirty     = false;
-            // Force the grid to re-render with the restored data
-            refreshGrid();
+
+            if (!$scope.isDirty) {
+                $scope.$evalAsync(doCancel);
+                return;
+            }
+            bootbox.confirm('Discard unsaved changes?').then(function(result) {
+                if (result) {
+                    $scope.$apply(doCancel);
+                }
+            }).catch(angular.noop);
         };
 
         $scope.toggleLibrary = function() {
@@ -327,6 +338,7 @@ define([
             return dashboardDynamicService.saveLayout($scope.activeLayout, $scope.activeData)
                 .then(function() {
                     $scope.isDirty = false;
+                    _savedDataSnapshot = angular.copy($scope.activeData);
                     ddToast.success('Dashboard saved');
                 })
                 .catch(function(err) {
@@ -441,7 +453,7 @@ define([
                 return;
             }
             if (e.keyCode === 27 && $scope.editMode) {
-                $scope.$apply(function() { $scope.toggleEditMode(); });
+                $scope.cancelEdit();
             }
             // Ctrl+S: save layout
             if (e.ctrlKey && e.keyCode === 83 && $scope.editMode) {
