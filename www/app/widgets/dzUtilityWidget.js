@@ -122,6 +122,11 @@ define(['app'], function (app) {
                         bigtext = device.Data;
                     }
 
+                    // EU ., replacements
+                    if ($.myglobals.EUNumberFormat) {
+                        bigtext = formatEUValue(bigtext);
+                    }
+
                     return bigtext;
                 };
 
@@ -137,10 +142,18 @@ define(['app'], function (app) {
                             } else {
                                 status = $.t('Today') + ': ' + device.CounterToday + ', ' + device.Counter;
                             }
+                            // EU ., replacements
+                            if ($.myglobals.EUNumberFormat) {
+                                status = formatEUValue(status);
+                            }
                         }
                     } else if (ctrl.isEnergy()) {
                         if (typeof device.CounterToday !== 'undefined') {
                             status = $.t('Today') + ': ' + device.CounterToday;
+                            // EU ., replacements
+                            if ($.myglobals.EUNumberFormat) {
+                                status = formatEUValue(status);
+                            }
                         }
                     } else if (device.Type === 'Air Quality') {
                         status = device.Quality;
@@ -165,6 +178,10 @@ define(['app'], function (app) {
                             status += '<br>' + $.t('Return') + ': ' + device.CounterDelivToday;
                         } else {
                             status += '<br>' + $.t('Return') + ': ' + $.t('Today') + ': ' + device.CounterDelivToday + ', ' + device.CounterDeliv;
+                        }
+                        // EU ., replacements
+                        if ($.myglobals.EUNumberFormat) {
+                            status = formatEUValue(status);
                         }
                     }
 

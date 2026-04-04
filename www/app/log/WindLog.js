@@ -43,7 +43,14 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 						if (isNaN(current) || isNaN(previous)) return '';
 						var d = current - previous;
 						var sign = d >= 0 ? '+' : '';
-						return sign + d.toFixed(decimals) + ' ' + suffix;
+						var ret = sign + d.toFixed(decimals) + ' ' + suffix;
+
+						// EU ., replacements
+						if ($.myglobals.EUNumberFormat) {
+							ret = formatEUValue(ret);
+						}
+
+						return ret;
 					}
 
 					function deltaColor(current, previous) {
@@ -80,9 +87,16 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 							var sp = parseFloat(device.Speed);
 							var sp24 = closest24h ? parseFloat(closest24h.sp) : NaN;
 							if (!isNaN(sp)) {
+								var cardValue = sp.toFixed(1) + ' ' + unit;
+
+								// EU ., replacements
+								if ($.myglobals.EUNumberFormat) {
+									cardValue = formatEUValue(cardValue);
+								}
+
 								self.cards.push({
 									label: $.t('Speed'),
-									value: sp.toFixed(1) + ' ' + unit,
+									value: cardValue,
 									delta: formatDelta(sp, sp24, unit, 1),
 									deltaColor: deltaColor(sp, sp24)
 								});
@@ -94,9 +108,16 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 							var gu = parseFloat(device.Gust);
 							var gu24 = closest24h ? parseFloat(closest24h.gu) : NaN;
 							if (!isNaN(gu)) {
+								var cardValue = gu.toFixed(1) + ' ' + unit;
+
+								// EU ., replacements
+								if ($.myglobals.EUNumberFormat) {
+									cardValue = formatEUValue(cardValue);
+								}
+
 								self.cards.push({
 									label: $.t('Gust'),
-									value: gu.toFixed(1) + ' ' + unit,
+									value: cardValue,
 									delta: formatDelta(gu, gu24, unit, 1),
 									deltaColor: deltaColor(gu, gu24)
 								});
@@ -116,9 +137,16 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 						// Wind Chill card
 						if (device.Chill !== undefined) {
 							var degreeSuffix = $.myglobals.tempsign;
+							var cardValue = device.Chill.toFixed(1) + ' ' + degreeSuffix;
+
+							// EU ., replacements
+							if ($.myglobals.EUNumberFormat) {
+								cardValue = formatEUValue(cardValue);
+							}
+
 							self.cards.push({
 								label: $.t('Chill'),
-								value: device.Chill.toFixed(1) + ' ' + degreeSuffix,
+								value: cardValue,
 								delta: '',
 								deltaColor: ''
 							});

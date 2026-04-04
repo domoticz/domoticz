@@ -641,6 +641,40 @@ define(['app', 'livesocket'], function (app) {
 				var ctrl = this;
 				var item = $scope.item;
 
+				// EU ., replacements
+				if ($.myglobals.EUNumberFormat) {
+					if (item.Barometer != null) {
+						item.Barometer = formatEUValue(item.Barometer);
+					}
+					if (item.Rain != null) {
+						item.Rain = formatEUValue(item.Rain);
+					}
+					if (item.RainRate != null) {
+						item.RainRate = formatEUValue(item.RainRate);
+					}
+					if (item.Radiation != null) {
+						item.Radiation = formatEUValue(item.Radiation);
+					}
+					if (item.UVI != null) {
+						item.UVI = formatEUValue(item.UVI);
+					}
+					if (item.Visibility != null) {
+						item.Data = formatEUValue(item.Data);
+					}
+					if (item.Temp != null) {
+						item.Temp = formatEUValue(item.Temp);
+					}
+					if (item.Speed != null) {
+						item.Speed = formatEUValue(item.Speed);
+					}
+					if (item.Gust != null) {
+						item.Gust = formatEUValue(item.Gust);
+					}
+					if (item.Chill != null) {
+						item.Chill = formatEUValue(item.Chill);
+					}
+				}
+
 				ctrl.nbackstyle = function () {
 					var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
 					return backgroundClass;

@@ -46,9 +46,16 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader'],
 
                         // Current value from device.Data
                         if (device.Data !== undefined && device.Data !== null && device.Data !== '') {
+                            var cardValue = String(device.Data);
+
+                            // EU ., replacements
+                            if ($.myglobals.EUNumberFormat) {
+                                cardValue = formatEUValue(cardValue);
+                            }
+
                             self.cards.push({
                                 label: $.t('Current'),
-                                value: String(device.Data),
+                                value: cardValue,
                                 delta: '',
                                 deltaColor: ''
                             });
@@ -71,15 +78,24 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader'],
                                 var dataMatch = dataStr.match(/[\d.\-]+\s*(.*)/);
                                 var unit = (dataMatch && dataMatch[1]) ? dataMatch[1] : deviceUnit;
                                 var decimals = (min % 1 === 0 && max % 1 === 0) ? 0 : 1;
+                                var minValue = min.toFixed(decimals) + ' ' + unit;
+                                var maxValue = max.toFixed(decimals) + ' ' + unit;
+
+                                // EU ., replacements
+                                if ($.myglobals.EUNumberFormat) {
+                                    minValue = formatEUValue(minValue);
+                                    maxValue = formatEUValue(maxValue);
+                                }
+
                                 self.cards.push({
                                     label: $.t('Minimum'),
-                                    value: min.toFixed(decimals) + ' ' + unit,
+                                    value: minValue,
                                     delta: '',
                                     deltaColor: ''
                                 });
                                 self.cards.push({
                                     label: $.t('Maximum'),
-                                    value: max.toFixed(decimals) + ' ' + unit,
+                                    value: maxValue,
                                     delta: '',
                                     deltaColor: ''
                                 });

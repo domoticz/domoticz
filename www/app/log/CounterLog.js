@@ -72,6 +72,10 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                         // Current Usage (e.g. "11325 Watt")
                         if (device.Usage !== undefined && device.Usage !== null) {
                             var usage = String(device.Usage);
+                            // EU ., replacements
+                            if ($.myglobals.EUNumberFormat) {
+                                usage = formatEUValue(usage);
+                            }
                             if (usage !== '' && usage !== '0' && usage !== '0 Watt') {
                                 self.cards.push({
                                     label: $.t('Usage'),
@@ -98,6 +102,10 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                             if (device.SwitchTypeVal === chart.deviceTypes.Water && todayValue.indexOf('Liter') === -1) {
                                 var numVal = parseFloat(todayValue) * 1000;
                                 todayValue = Math.round(numVal) + ' ' + chartUnit;
+                            }
+                            // EU ., replacements
+                            if ($.myglobals.EUNumberFormat) {
+                                todayValue = formatEUValue(todayValue);
                             }
                             if (hasReturn && device.CounterDelivToday !== undefined && device.CounterDelivToday !== null
                                     && parseFloat(device.CounterDelivToday) > 0) {
@@ -161,21 +169,39 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                 }
                             });
 
+                            var monthUsageValue = monthUsage.toFixed(3) + ' ' + chartUnit;
+                            var yearUsageValue  = yearUsage.toFixed(3) + ' ' + chartUnit;
+
+                            // EU ., replacements
+                            if ($.myglobals.EUNumberFormat) {
+                                monthUsageValue = formatEUValue(monthUsageValue);
+                                yearUsageValue = formatEUValue(yearUsageValue);
+                            }
+
                             if (hasReturn) {
+                                var monthReturnValue = monthReturn.toFixed(3) + ' ' + chartUnit;
+                                var yearReturnValue = yearReturn.toFixed(3) + ' ' + chartUnit;
+
+                                // EU ., replacements
+                                if ($.myglobals.EUNumberFormat) {
+                                    monthReturnValue = formatEUValue(monthReturnValue);
+                                    yearReturnValue = formatEUValue(yearReturnValue);
+                                }
+
                                 // This Month with usage + return lines
                                 self.cards.push({ label: $.t('This Month'), lines: [
-                                    { icon: 'fa-arrow-down', iconColor: '#ff6b6b', value: monthUsage.toFixed(3) + ' ' + chartUnit, tooltip: $.t('Usage') },
-                                    { icon: 'fa-arrow-up', iconColor: '#4ecdc4', value: monthReturn.toFixed(3) + ' ' + chartUnit, tooltip: $.t('Return') }
+                                    { icon: 'fa-arrow-down', iconColor: '#ff6b6b', value: monthUsageValue, tooltip: $.t('Usage') },
+                                    { icon: 'fa-arrow-up', iconColor: '#4ecdc4', value: monthReturnValue, tooltip: $.t('Return') }
                                 ]});
                                 // This Year with usage + return lines
                                 self.cards.push({ label: $.t('This Year'), lines: [
-                                    { icon: 'fa-arrow-down', iconColor: '#ff6b6b', value: yearUsage.toFixed(3) + ' ' + chartUnit, tooltip: $.t('Usage') },
-                                    { icon: 'fa-arrow-up', iconColor: '#4ecdc4', value: yearReturn.toFixed(3) + ' ' + chartUnit, tooltip: $.t('Return') }
+                                    { icon: 'fa-arrow-down', iconColor: '#ff6b6b', value: yearUsageValue, tooltip: $.t('Usage') },
+                                    { icon: 'fa-arrow-up', iconColor: '#4ecdc4', value: yearReturnValue, tooltip: $.t('Return') }
                                 ]});
                             } else {
                                 // No return: simple values, no icons
-                                self.cards.push({ label: $.t('This Month'), value: monthUsage.toFixed(3) + ' ' + chartUnit });
-                                self.cards.push({ label: $.t('This Year'), value: yearUsage.toFixed(3) + ' ' + chartUnit });
+                                self.cards.push({ label: $.t('This Month'), value: monthUsageValue });
+                                self.cards.push({ label: $.t('This Year'), value: yearUsageValue });
                             }
                         } else {
                             // Non-P1: single value for month and year
@@ -193,13 +219,22 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                 }
                             });
 
+                            var monthValue = monthTotal.toFixed(decimals) + ' ' + chartUnit;
+                            var yearValue  = yearTotal.toFixed(decimals) + ' ' + chartUnit;
+
+                            // EU ., replacements
+                            if ($.myglobals.EUNumberFormat) {
+                                monthValue = formatEUValue(monthValue);
+                                yearValue = formatEUValue(yearValue);
+                            }
+
                             self.cards.push({
                                 label: $.t('This Month'),
-                                value: monthTotal.toFixed(decimals) + ' ' + chartUnit
+                                value: monthValue
                             });
                             self.cards.push({
                                 label: $.t('This Year'),
-                                value: yearTotal.toFixed(decimals) + ' ' + chartUnit
+                                value: yearValue
                             });
                         }
 

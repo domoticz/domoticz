@@ -574,6 +574,25 @@ define(['app', 'livesocket'], function (app) {
 					var ctrl = this;
 					var item = $scope.item;
 
+					// EU ., replacements
+					if ($.myglobals.EUNumberFormat) {
+						if (item.Temp != null) {
+							item.Temp = formatEUValue(item.Temp);
+						}
+						if (item.Speed != null) {
+							item.Speed = formatEUValue(item.Speed);
+						}
+						if (item.Gust != null) {
+							item.Gust = formatEUValue(item.Gust);
+						}
+						if (item.SetPoint != null) {
+							item.SetPoint = formatEUValue(item.SetPoint);
+						}
+						if (item.DewPoint != null) {
+							item.DewPoint = formatEUValue(item.DewPoint);
+						}
+					}
+
 					$scope.$watch('item', function (newVal) {
 						if (newVal) item = newVal;
 					});

@@ -2931,6 +2931,11 @@ namespace http
 			root["CurrencySign"] = m_sql.m_currencysign;
 			root["PriceResolution"] = m_sql.m_PriceResolution.load();
 
+			if (m_sql.GetPreferencesVar("EUNumberFormat", sValue))
+			{
+				root["EUNumberFormat"] = sValue;
+			}
+
 			int iUser = -1;
 			if (!session.username.empty() && (iUser = FindUser(session.username.c_str())) != -1)
 			{
@@ -3798,6 +3803,9 @@ namespace http
 
 				std::string sCurrency = request::findValue(&req, "CurrencySymbol");
 				m_sql.UpdatePreferencesVar("Currency", sCurrency); cntSettings++;
+
+				std::string sEUNumberFormat = request::findValue(&req, "EUNumberFormat");
+				m_sql.UpdatePreferencesVar("EUNumberFormat", sEUNumberFormat); cntSettings++;
 
 				bool AllowPlainBasicAuth = (request::findValue(&req, "AllowPlainBasicAuth") == "on" ? 1 : 0);
 				m_sql.UpdatePreferencesVar("AllowPlainBasicAuth", AllowPlainBasicAuth);
@@ -6528,6 +6536,10 @@ namespace http
 				else if (Key == "Currency")
 				{
 					root["Currency"] = sValue;
+				}
+				else if (Key == "EUNumberFormat")
+				{
+					root["EUNumberFormat"] = sValue;
 				}
 				else if (Key == "ESettings")
 				{

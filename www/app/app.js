@@ -4,6 +4,30 @@ function formatBytes(bytes) {
 	return (bytes / 1048576).toFixed(1) + ' MB';
 }
 
+function formatEUValue(val) {
+	if (typeof val == 'number') {
+		// convert to string
+		var tmpStr = val + "";
+		// check, if a . is present
+		if (tmpStr.includes('.')) {
+			// replace . to ,
+			return tmpStr.replaceAll('.', ',');
+		}
+	}
+	else if (typeof val == 'string') {
+		// check, if a . is present
+		if (val.includes('.')) {
+			// replace . to ,
+			return val.replaceAll('.', ',');
+		}
+	}
+	else {
+		console.log('formatEUValue: ', val, " // ", typeof val);
+	}
+
+	return val;
+}
+
 define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.permissions', 'domoticz.api', 'livesocket', 'devices/deviceFactory', 'ui-grid', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue'], function (angularAMD, appRoutesModule, appConstantsModule, appNotificationsModule, appPermissionsModule, apiModule, websocketModule, deviceFactory) {
 	var app = angular.module('domoticz', [
 		'ngRoute', 'ui.grid', 'ngSanitize',
@@ -381,6 +405,9 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			if (typeof $rootScope.config.CurrencySign != 'undefined') {
 				$.myglobals.currencysign = $rootScope.config.CurrencySign;
 			}
+			if (typeof $rootScope.config.EUNumberFormat != 'undefined') {
+				$.myglobals.EUNumberFormat = $rootScope.config.EUNumberFormat;
+			}
 		}
 		$rootScope.currentyear = new Date().getFullYear();
 		$rootScope.config = {
@@ -405,6 +432,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			WindSign: "km/h",
 			language: "en",
 			CurrencySign: "€",
+			EUNumberFormat: false,
 			HaveUpdate: false,
 			UseUpdate: true,
 			appversion: 0,
@@ -437,6 +465,9 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.WindSign = data.WindSign;
 						$rootScope.config.language = data.language;
 						$rootScope.config.CurrencySign = data.CurrencySign;
+						if (data.EUNumberFormat == 'yes') {
+							$rootScope.config.EUNumberFormat = true;
+						}
 						$rootScope.config.DegreeDaysBaseTemperature = data.DegreeDaysBaseTemperature;
 						$rootScope.config.PriceResolution = data.PriceResolution;
 						$rootScope.config.EnableTabDashboard = data.result.EnableTabDashboard,

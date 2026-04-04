@@ -43,7 +43,14 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 						if (isNaN(current) || isNaN(previous)) return '';
 						var d = current - previous;
 						var sign = d >= 0 ? '+' : '';
-						return sign + d.toFixed(decimals) + ' ' + suffix;
+						var ret = sign + d.toFixed(decimals) + ' ' + suffix;
+
+						// EU ., replacements
+						if ($.myglobals.EUNumberFormat) {
+							ret = formatEUValue(ret);
+						}
+
+						return ret;
 					}
 
 					function deltaColor(current, previous) {
@@ -84,10 +91,16 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 								else if (uvi <= 7) level = 'High';
 								else if (uvi <= 10) level = 'Very High';
 								else level = 'Extreme';
+								var cardValue = uvi.toFixed(1);
+
+								// EU ., replacements
+								if ($.myglobals.EUNumberFormat) {
+									cardValue = formatEUValue(cardValue);
+								}
 
 								self.cards.push({
 									label: $.t('UV Index'),
-									value: uvi.toFixed(1),
+									value: cardValue,
 									delta: formatDelta(uvi, uvi24, 'UVI', 1),
 									deltaColor: deltaColor(uvi, uvi24)
 								});

@@ -226,7 +226,14 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 					if (isNaN(current) || isNaN(previous)) return '';
 					var d = current - previous;
 					var sign = d >= 0 ? '+' : '';
-					return sign + d.toFixed(decimals) + ' ' + suffix;
+					var ret = sign + d.toFixed(decimals) + ' ' + suffix;
+
+					// EU ., replacements
+					if ($.myglobals.EUNumberFormat) {
+						ret = formatEUValue(ret);
+					}
+
+					return ret;
 				}
 
 				function deltaColor(current, previous) {
@@ -260,9 +267,16 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 					if (device.Barometer !== undefined) {
 						var ba = parseFloat(device.Barometer);
 						var ba24 = closest24h ? parseFloat(closest24h.ba) : NaN;
+						var cardValue = ba.toFixed(1) + ' hPa';
+
+						// EU ., replacements
+						if ($.myglobals.EUNumberFormat) {
+							cardValue = formatEUValue(cardValue);
+						}
+
 						self.cards.push({
 							label: $.t('Barometer'),
-							value: ba.toFixed(1) + ' hPa',
+							value: cardValue,
 							delta: formatDelta(ba, ba24, 'hPa', 1),
 							deltaColor: deltaColor(ba, ba24)
 						});
@@ -272,10 +286,17 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 					if (device.Temp !== undefined) {
 						var te = parseFloat(device.Temp);
 						var te24 = closest24h ? parseFloat(closest24h.te) : NaN;
+						var cardValue = te.toFixed(1) + ' ' + baroDegreeSuffix;
+
+						// EU ., replacements
+						if ($.myglobals.EUNumberFormat) {
+							cardValue = formatEUValue(cardValue);
+						}
+
 						if (!isNaN(te)) {
 							self.cards.push({
 								label: $.t('Temperature'),
-								value: te.toFixed(1) + ' ' + baroDegreeSuffix,
+								value: cardValue,
 								delta: formatDelta(te, te24, baroDegreeSuffix, 1),
 								deltaColor: deltaColor(te, te24)
 							});

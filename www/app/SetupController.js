@@ -471,6 +471,7 @@ define(['app'], function (app) {
 						$("#locationtable #Longitude").val(data.Location.Longitude);
 					}
 					$("#locationtable #CurrencySymbol").val(data.Currency);
+					$("#locationtable #EUNumberFormat").val(data.EUNumberFormat);
 					if (typeof data.ProwlEnabled != 'undefined') {
 						$("#prowltable #ProwlEnabled").prop('checked', data.ProwlEnabled == 1);
 					}

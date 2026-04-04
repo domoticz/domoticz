@@ -52,10 +52,17 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                         // Rain Rate card
                         if (device.RainRate !== undefined) {
                             var rainRate = parseFloat(device.RainRate);
+                            var cardValue = rainRate.toFixed(1) + ' ' + unit + '/h';
+
+                            // EU ., replacements
+                            if ($.myglobals.EUNumberFormat) {
+                                cardValue = formatEUValue(cardValue);
+                            }
+
                             if (!isNaN(rainRate)) {
                                 self.cards.push({
                                     label: $.t('Rain rate'),
-                                    value: rainRate.toFixed(1) + ' ' + unit + '/h',
+                                    value: cardValue,
                                     delta: '',
                                     deltaColor: ''
                                 });
@@ -76,9 +83,16 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                     if (!isNaN(val)) todayTotal += val;
                                 }
                             }
+                            var cardValue = todayTotal.toFixed(1) + ' ' + unit;
+
+                            // EU ., replacements
+                            if ($.myglobals.EUNumberFormat) {
+                                cardValue = formatEUValue(cardValue);
+                            }
+
                             self.cards.push({
                                 label: $.t('Today'),
-                                value: todayTotal.toFixed(1) + ' ' + unit,
+                                value: cardValue,
                                 delta: '',
                                 deltaColor: ''
                             });
@@ -129,10 +143,16 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                 if (!isNaN(v)) yearTotal += v;
                             }
                         });
+                        var cardValue = yearTotal.toFixed(1) + ' ' + unit;
+
+                        // EU ., replacements
+                        if ($.myglobals.EUNumberFormat) {
+                            cardValue = formatEUValue(cardValue);
+                        }
 
                         self.cards.push({
                             label: $.t('This Year'),
-                            value: yearTotal.toFixed(1) + ' ' + unit,
+                            value: cardValue,
                             delta: '',
                             deltaColor: ''
                         });
