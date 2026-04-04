@@ -74,6 +74,8 @@ define([
                             ALLOWED_TAGS: ['br', 'span', 'font', 'a', 'b', 'i', 'u'],
                             ALLOWED_ATTR: ['style', 'color', 'href', 'target']
                         });
+                    } else if (/<[a-zA-Z]/.test(html)) {
+                        console.warn('ddTextSensor: DOMPurify not loaded; HTML content rendered unsanitized');
                     }
                     ctrl.text       = $sce.trustAsHtml(html);
                     ctrl.deviceName = d.Name      || '';

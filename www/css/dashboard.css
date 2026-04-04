@@ -2267,7 +2267,7 @@ dd-wcp-color {
 .dd-rss-item:last-child { border-bottom: none; }
 .dd-rss-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
 .dd-rss-item-body { flex: 1; min-width: 0; }
-.dd-rss-item-title { font-size: 0.85em; color: inherit; text-decoration: none; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dd-rss-item-title { font-size: 0.85em; color: inherit; text-decoration: none; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .dd-rss-item-title:hover { color: var(--dz-widget-accent); }
 .dd-rss-item-meta { font-size: 0.75em; color: var(--dz-widget-stat-muted); margin-top: 2px; }
 .dd-rss-link-icon { color: var(--dz-widget-accent); font-size: 0.8em; flex-shrink: 0; }

@@ -154,7 +154,7 @@ define([
                                 var mt = item.getElementsByTagNameNS('http://search.yahoo.com/mrss/', 'thumbnail')[0];
                                 if (mt) { thumb = mt.getAttribute('url') || ''; }
                                 var linkEl = item.querySelector('link');
-                                var link = linkEl ? (linkEl.textContent || linkEl.nextSibling && linkEl.nextSibling.nodeValue || '#') : '#';
+                                var link = (linkEl && (linkEl.textContent || (linkEl.nextSibling && linkEl.nextSibling.nodeValue) || linkEl.getAttribute('href'))) || '#';
                                 items.push({
                                     title:       (item.querySelector('title') || {textContent:''}).textContent,
                                     link:        link.trim() || '#',

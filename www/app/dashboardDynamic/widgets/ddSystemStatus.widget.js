@@ -29,14 +29,19 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', function($scope, $http, $interval) {
+            controller: ['$scope', '$http', '$interval', '$q', function($scope, $http, $interval, $q) {
                 var ctrl = this;
                 ctrl.version       = null;
                 ctrl.hardwareCount = null;
                 ctrl.deviceCount   = null;
+                var cancelToken = null;
 
                 function load() {
-                    $http.get('json.htm?type=command&param=getversion')
+                    if (cancelToken) { cancelToken.resolve(); }
+                    cancelToken = $q.defer();
+                    var t = cancelToken.promise;
+
+                    $http.get('json.htm?type=command&param=getversion', { timeout: t })
                         .then(function(resp) {
                             var d = resp.data;
                             ctrl.version = d && (d.version || d.build_time || null);
@@ -46,7 +51,7 @@ define([
                             console.error('SystemStatus: failed to load version', err);
                         });
 
-                    $http.get('json.htm?type=command&param=gethardware')
+                    $http.get('json.htm?type=command&param=gethardware', { timeout: t })
                         .then(function(resp) {
                             var hw = (resp.data && resp.data.result) || [];
                             ctrl.hardwareCount = hw.filter(function(h) {
@@ -59,7 +64,8 @@ define([
                         });
 
                     $http.get('json.htm', {
-                        params: { type: 'command', param: 'getdevices', filter: 'all', used: 'true', order: 'Name' }
+                        params: { type: 'command', param: 'getdevices', filter: 'all', used: 'true', order: 'Name' },
+                        timeout: t
                     }).then(function(resp) {
                         var result = resp.data && resp.data.result;
                         ctrl.deviceCount = result ? result.length : 0;
@@ -72,7 +78,10 @@ define([
                 // Refresh every 5 minutes
                 var timer = $interval(load, 300000);
 
-                $scope.$on('$destroy', function() { $interval.cancel(timer); });
+                $scope.$on('$destroy', function() {
+                    if (cancelToken) { cancelToken.resolve(); }
+                    $interval.cancel(timer);
+                });
                 $scope.$on('dd:widget:refresh', load);
 
                 ctrl.$onInit = load;

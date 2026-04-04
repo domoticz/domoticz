@@ -17,7 +17,7 @@
 
     <div class="dd-dz-favorites-body"
          ng-show="ctrl.widgetDef.config.planIdx && !ctrl.error && (!ctrl.loading || ctrl.devices.length)">
-        <div ng-repeat="device in ctrl.devices" class="dd-dz-fav-item">
+        <div ng-repeat="device in ctrl.devices track by device.idx" class="dd-dz-fav-item">
             <dz-light-widget
                 ng-if="ctrl.isLight(device)"
                 device="device"

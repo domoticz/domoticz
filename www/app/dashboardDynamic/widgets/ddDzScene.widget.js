@@ -111,7 +111,13 @@ define([
 
                 $scope.$on('scene_update', function(e, sceneData) {
                     if (ctrl.scene && String(sceneData.idx) === String(ctrl.scene.idx)) {
-                        renderScene(sceneData);
+                        if (!innerScope || innerScope.$$destroyed) {
+                            renderScene(sceneData);
+                        } else {
+                            // Update scene data in place to avoid DOM teardown flicker
+                            ctrl.scene = sceneData;
+                            innerScope.scene = sceneData;
+                        }
                     }
                 });
 

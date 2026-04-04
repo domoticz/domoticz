@@ -120,7 +120,16 @@ define([
 
                 $scope.$on('device_update', function(e, updatedDevice) {
                     if (ctrl.device && String(updatedDevice.idx) === String(ctrl.device.idx)) {
-                        renderDevice(updatedDevice);
+                        var newDirective = ddDeviceClassifier.getDirective(updatedDevice);
+                        var curDirective = ddDeviceClassifier.getDirective(ctrl.device);
+                        if (newDirective !== curDirective || !innerScope || innerScope.$$destroyed) {
+                            // Directive type changed or inner scope gone — full re-render needed
+                            renderDevice(updatedDevice);
+                        } else {
+                            // Same directive — update device data in place to avoid DOM teardown flicker
+                            ctrl.device = updatedDevice;
+                            innerScope.device = updatedDevice;
+                        }
                     }
                 });
 
