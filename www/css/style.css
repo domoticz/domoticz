@@ -1073,7 +1073,7 @@ table.mobileitem {
 div.log {
 	height: 300px;
 	overflow: auto;
-	border: 1px solid var(--accent-color, #283750);
+	border: 1px solid var(--dz-accent-color, #283750);
 	padding: 4px;
 	font-family: 'Courier New', Consolas, monospace;
 	color: #ccc;
@@ -1102,7 +1102,7 @@ div.log {
 	display: flex;
 	flex-direction: column;
 	height: calc(100vh - 110px);
-	border: 1px solid var(--accent-color, #283750);
+	border: 1px solid var(--dz-accent-color, #283750);
 	border-radius: 5px;
 	position: relative;
 	font-size: 14px;
@@ -1113,8 +1113,8 @@ div.log {
 	align-items: center;
 	gap: 12px;
 	padding: 8px 12px;
-	background: var(--accent-color, #283750);
-	border-bottom: 1px solid var(--accent-color, #283750);
+	background: var(--dz-accent-color, #283750);
+	border-bottom: 1px solid var(--dz-accent-color, #283750);
 	flex-shrink: 0;
 	flex-wrap: wrap;
 }
@@ -1145,7 +1145,7 @@ div.log {
 
 .log-statusbar {
 	padding: 4px 12px;
-	background: var(--accent-color, #283750);
+	background: var(--dz-accent-color, #283750);
 	color: #aac;
 	font-size: 11px;
 	flex-shrink: 0;
@@ -1241,7 +1241,7 @@ mark.log-highlight {
 	bottom: 32px;
 	left: 50%;
 	transform: translateX(-50%);
-	background: var(--accent-color, #283750);
+	background: var(--dz-accent-color, #283750);
 	color: #ddd;
 	padding: 6px 16px;
 	border-radius: 20px;
@@ -1340,7 +1340,7 @@ mark.log-highlight {
 .page-header-small {
 	padding-bottom: 4px;
 	margin: 20px 0 6px;
-	border-bottom: 1px solid var(--accent-color);
+	border-bottom: 1px solid var(--dz-accent-color);
 	font-size: 9pt;
 }
 
@@ -3060,7 +3060,7 @@ body.dd-navbar-hidden #holder > .container-fluid {
 .tips-modal .modal-footer { background: var(--dz-panel-bg); }
 .tips-category-tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 16px; }
 .tips-content       { display: flex; align-items: center; gap: 16px; padding: 16px 0; }
-.tips-icon          { flex-shrink: 0; font-size: 2.5em; color: var(--dz-btn-primary-bg); }
+.tips-icon          { flex-shrink: 0; font-size: 2.5em; color: var(--dz-widget-accent); }
 .tips-text          { flex: 1; font-size: 1.1em; line-height: 1.5; color: var(--dz-panel-text); margin: 0; text-align: left; min-height: 3.3em; }
 .tips-nav           { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 8px; }
 .tips-counter       { color: var(--dz-panel-text); min-width: 50px; text-align: center; }

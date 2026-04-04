@@ -12,31 +12,23 @@
    Override these in a custom theme to restyle the widgets.
    ─────────────────────────────────────────────────────────────*/
 :root {
+    /* Shared accent color */
+    --dz-widget-accent:          #43a4d3;
+
     /* Energy value colors */
-    --dz-widget-energy-import:   #ffb300;
+    --dz-widget-sunpv:           #ffb300;
     --dz-widget-energy-export:   #66bb6a;
     --dz-widget-energy-price:    #c8a0ff;
-    --dz-widget-energy-solar:    #ffd54f;
     --dz-widget-energy-gas:      #ff7043;
-    --dz-widget-energy-water:    #43a4d3;
-    --dz-widget-energy-battery:  #43a4d3;
-    --dz-widget-energy-net-pos:  #66bb6a;
-    --dz-widget-energy-net-neg:  #ef5350;
 
     /* Stat card surface */
     --dz-widget-stat-radius:     8px;
     --dz-widget-stat-muted:      rgba(255,255,255,0.55);
 
-    /* RSS widget */
-    --dz-widget-rss-accent:      #43a4d3;
-    --dz-widget-rss-link:        #7bbfff;
-
     /* Weather forecast widget */
-    --dz-widget-weather-sun:     #ffd54f;
-    --dz-widget-weather-rain:    #43a4d3;
     --dz-widget-weather-cloud:   #90a4ae;
     --dz-widget-weather-snow:    #e0f7fa;
-    --dz-widget-weather-storm:   #ef5350;
+    --dz-widget-weather-storm:   var(--dz-accent-red);
 
     /* Moon phase widget */
     --dz-widget-moon-color:      #e0d8c8;
@@ -112,6 +104,12 @@ body.dd-navbar-hidden .dd-topbar {
 .dd-topbar-btn:active {
     outline: none !important;
     box-shadow: none !important;
+}
+
+.dd-topbar .caret,
+.dd-toolbar .caret {
+    border-top-color: var(--dz-body-text);
+    border-bottom-color: var(--dz-body-text);
 }
 
 .dd-topbar-edit {
@@ -653,22 +651,32 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 .dd-chart-unconfigured {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
     color: var(--dz-body-text);
     opacity: 0.5;
     padding: 20px;
+    height: 100%;
 }
 
 .dd-chart-unconfigured i,
 .dd-chart-unconfigured .fa-solid {
     font-size: 28px;
-    display: block;
     margin-bottom: 8px;
 }
 
 /* ── Stat Counter ─────────────────────────────────────────── */
+.dd-widget--stat-counter > .dd-widget-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
 .dd-stat-counter {
-    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -693,6 +701,12 @@ body.dd-navbar-hidden .dd-toolbar {
     margin-bottom: 4px;
 }
 
+.dd-stat-value-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+}
+
 .dd-stat-value {
     font-size: 2.4em;
     font-weight: 700;
@@ -703,7 +717,13 @@ body.dd-navbar-hidden .dd-toolbar {
 .dd-stat-unit {
     font-size: 1em;
     color: var(--dz-body-text);
-    margin-top: 2px;
+    opacity: 0.8;
+}
+
+.dd-widget--stat-counter .dd-stat-value,
+.dd-widget--stat-counter .dd-stat-unit {
+    color: var(--dz-widget-accent);
+    opacity: 1;
 }
 
 /* ── Weather Widget ───────────────────────────────────────── */
@@ -861,26 +881,32 @@ body.dd-navbar-hidden .dd-toolbar {
    The db2-weather-fc-style class on the inner .dd-weather div is used by sub-elements only. */
 
 /* ── Sun Info ─────────────────────────────────────────────── */
+.dd-widget--sun-info > .dd-widget-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
 .dd-sun {
-    height: 100%;
     display: flex;
     flex-direction: column;
     gap: 2px;
     padding: 4px 8px;
-    justify-content: center;
 }
 
 .dd-sun-cols {
     display: flex;
     align-items: center;
     justify-content: space-around;
+    gap: 6px;
 }
 
 .dd-sun-col {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1px;
+    gap: 4px;
 }
 
 .dd-sun-divider {
@@ -894,6 +920,8 @@ body.dd-navbar-hidden .dd-toolbar {
     font-size: 20px;
     line-height: 1;
 }
+.dd-sun-icon-rise { color: #f5a52a; }
+.dd-sun-icon-set  { color: #8ba4d8; }
 
 .dd-sun-label {
     font-size: 0.7em;
@@ -1095,6 +1123,14 @@ body.dd-navbar-hidden .dd-toolbar {
     box-sizing: border-box;
 }
 
+.dd-clock-title {
+    font-size: 0.8em;
+    color: var(--dz-widget-stat-muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
 .dd-clock-time {
     font-size: 2.4em;
     font-weight: 700;
@@ -1194,7 +1230,7 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 .dd-activity-value {
-    color: var(--dz-text-muted, #666);
+    color: var(--dz-widget-accent);
     font-size: 0.9em;
 }
 
@@ -1231,14 +1267,14 @@ body.dd-navbar-hidden .dd-toolbar {
 
 .dd-sysstat-row i,
 .dd-sysstat-row .fa-solid {
-    color: var(--dz-text-muted, #888);
+    color: var(--dz-body-text);
     width: 16px;
     text-align: center;
 }
 
 .dd-sysstat-label {
     flex: 1;
-    color: var(--dz-text-muted, #666);
+    color: var(--dz-body-text);
 }
 
 .dd-sysstat-value {
@@ -1754,7 +1790,7 @@ dd-wcp-color {
 }
 
 .dd-bool-icon.fa-toggle-on {
-    color: var(--dz-btn-primary-bg, #337ab7);
+    color: var(--dz-widget-accent);
 }
 
 /* Help text */
@@ -2064,12 +2100,12 @@ dd-wcp-color {
     margin-top: 2px;
     line-height: 1.5;
 }
-.dd-energy-import  { color: var(--dz-widget-energy-import); }
+.dd-energy-import  { color: var(--dz-widget-sunpv); }
 .dd-energy-export  { color: var(--dz-widget-energy-export); }
 .dd-energy-price   { color: var(--dz-widget-energy-price);  }
-.dd-energy-solar   { color: var(--dz-widget-energy-solar);  }
+.dd-energy-solar   { color: var(--dz-widget-sunpv);  }
 .dd-energy-gas     { color: var(--dz-widget-energy-gas);    }
-.dd-energy-battery { color: var(--dz-widget-energy-battery); }
+.dd-energy-battery { color: var(--dz-widget-accent); }
 
 /* ── Energy Dashboard widget — cards row ── */
 .dd-fc-conditions {
@@ -2099,7 +2135,7 @@ dd-wcp-color {
     padding: 5px 10px;
     background: var(--dz-panel-bg);
     border-radius: 6px;
-    border-left: 3px solid var(--dz-widget-energy-battery);
+    border-left: 3px solid var(--dz-widget-accent);
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
@@ -2133,7 +2169,7 @@ dd-wcp-color {
 .dd-balance-bar-fill {
     height: 100%;
     border-radius: 3px;
-    background: linear-gradient(to right, var(--dz-widget-energy-net-neg), var(--dz-widget-energy-import), var(--dz-widget-energy-export));
+    background: linear-gradient(to right, var(--dz-accent-red), var(--dz-widget-sunpv), var(--dz-widget-energy-export));
     transition: width 0.5s ease;
 }
 
@@ -2159,7 +2195,7 @@ dd-wcp-color {
     cursor: pointer;
     min-width: 80px;
     text-align: center;
-    color: var(--dz-widget-energy-battery);
+    color: var(--dz-widget-accent);
 }
 .dd-setpoint-value:hover {
     opacity: 0.8;
@@ -2179,8 +2215,8 @@ dd-wcp-color {
     transition: border-color 0.15s, opacity 0.15s;
 }
 .dd-setpoint-btn:hover:not(:disabled) {
-    border-color: var(--dz-widget-energy-battery);
-    color: var(--dz-widget-energy-battery);
+    border-color: var(--dz-widget-accent);
+    color: var(--dz-widget-accent);
 }
 .dd-setpoint-btn:disabled {
     opacity: 0.3;
@@ -2225,16 +2261,16 @@ dd-wcp-color {
 
 /* ── RSS Feed Widget ──────────────────────────────────────── */
 .dd-rss { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
-.dd-rss-header { font-size: 0.9em; font-weight: 600; color: var(--dz-widget-rss-accent); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+.dd-rss-header { font-size: 0.9em; font-weight: 600; color: var(--dz-widget-accent); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
 .dd-rss-list { flex: 1; overflow-y: auto; }
 .dd-rss-item { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08); align-items: flex-start; }
 .dd-rss-item:last-child { border-bottom: none; }
 .dd-rss-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
 .dd-rss-item-body { flex: 1; min-width: 0; }
 .dd-rss-item-title { font-size: 0.85em; color: inherit; text-decoration: none; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dd-rss-item-title:hover { color: var(--dz-widget-rss-link); }
+.dd-rss-item-title:hover { color: var(--dz-widget-accent); }
 .dd-rss-item-meta { font-size: 0.75em; color: var(--dz-widget-stat-muted); margin-top: 2px; }
-.dd-rss-link-icon { color: var(--dz-widget-rss-link); font-size: 0.8em; flex-shrink: 0; }
+.dd-rss-link-icon { color: var(--dz-widget-accent); font-size: 0.8em; flex-shrink: 0; }
 /* Single item mode */
 .dd-rss-single-img { width: 100%; max-height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 8px; }
 .dd-rss-single-title { font-size: 1em; font-weight: 600; margin-bottom: 6px; }
@@ -2249,9 +2285,9 @@ dd-wcp-color {
 .dd-forecast-day > i { font-size: 1.2em; }
 .dd-forecast-temps { font-size: 0.8em; white-space: nowrap; }
 .dd-forecast-label { font-size: 0.68em; color: var(--dz-widget-stat-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-.dd-forecast-precip { font-size: 0.72em; color: var(--dz-widget-weather-rain); }
+.dd-forecast-precip { font-size: 0.72em; color: var(--dz-widget-accent); }
 .dd-forecast-wind { font-size: 0.72em; color: var(--dz-widget-stat-muted); }
-.dd-forecast-error { font-size: 0.8em; color: var(--dz-widget-energy-net-neg); margin-top: 8px; }
+.dd-forecast-error { font-size: 0.8em; color: var(--dz-accent-red); margin-top: 8px; }
 
 /* ── Domoticz Log Widget ──────────────────────────────────── */
 .dd-widget--domoticz-log > .dd-widget-body { padding: 0; overflow: hidden; position: relative; }
@@ -2261,11 +2297,11 @@ dd-wcp-color {
 .dd-log-filters { display: flex; gap: 4px; align-items: center; }
 .dd-log-filter-btn { padding: 2px 6px; border-radius: 4px; border: 1px solid currentColor; background: transparent; cursor: pointer; font-size: 0.75em; opacity: 0.5; }
 .dd-log-filter-btn.active { opacity: 1; background: currentColor; }
-.dd-log-filter-btn.active span { color: #000; }
+.dd-log-filter-btn.active span { color: var(--dz-body-text); }
 .dd-log-filter-normal { color: var(--dz-body-text); }
-.dd-log-filter-status { color: var(--dz-widget-rss-accent); }
-.dd-log-filter-error  { color: var(--dz-widget-energy-net-neg); }
-.dd-log-filter-error-alert { color: var(--dz-widget-energy-net-neg); }
+.dd-log-filter-status { color: var(--dz-widget-accent); }
+.dd-log-filter-error  { color: var(--dz-accent-red); }
+.dd-log-filter-error-alert { color: var(--dz-accent-red); }
 .dd-log-list { flex: 1; overflow-y: auto; font-size: 0.78em; font-family: monospace; }
 .dd-log-entry { padding: 2px 8px; display: flex; gap: 8px; }
 .dd-log-entry:hover { background: rgba(255,255,255,0.05); }
@@ -2273,8 +2309,8 @@ dd-wcp-color {
 .dd-log-level { flex-shrink: 0; min-width: 50px; }
 .dd-log-msg { flex: 1; word-break: break-word; }
 .dd-log-entry-normal .dd-log-level { color: var(--dz-body-text); }
-.dd-log-entry-status .dd-log-level { color: var(--dz-widget-rss-accent); }
-.dd-log-entry-error  .dd-log-level { color: var(--dz-widget-energy-net-neg); }
+.dd-log-entry-status .dd-log-level { color: var(--dz-widget-accent); }
+.dd-log-entry-error  .dd-log-level { color: var(--dz-accent-red); }
 
 /* ── Moon Phase Widget ────────────────────────────────────── */
 .dd-moon { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; text-align: center; gap: 4px; }
@@ -2297,14 +2333,14 @@ dd-wcp-color {
 
 .dd-kiosk-progress-fill {
     height: 100%;
-    background: var(--dz-widget-energy-battery);
+    background: var(--dz-widget-accent);
     transition: width 1s linear;
 }
 
 /* Kiosk button: accent when kiosk is running */
 .dd-topbar-btn.dd-topbar-kiosk-active {
     color: #fff !important;
-    background: var(--dz-widget-energy-battery) !important;
+    background: var(--dz-widget-accent) !important;
     border-radius: 10px;
 }
 
@@ -2314,7 +2350,7 @@ dd-wcp-color {
 .dd-calendar-month { font-size: 0.85em; color: var(--dz-widget-stat-muted); }
 .dd-calendar-body { flex: 1; overflow-y: auto; }
 .dd-calendar-group { margin-bottom: 10px; }
-.dd-calendar-day-label { font-size: 0.75em; font-weight: 700; text-transform: uppercase; color: var(--dz-widget-rss-accent); margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 2px; }
+.dd-calendar-day-label { font-size: 0.75em; font-weight: 700; text-transform: uppercase; color: var(--dz-widget-accent); margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 2px; }
 .dd-calendar-event { display: flex; gap: 8px; padding: 3px 0; font-size: 0.85em; align-items: baseline; }
 .dd-calendar-time { flex-shrink: 0; min-width: 45px; color: var(--dz-widget-stat-muted); font-size: 0.9em; }
 .dd-calendar-allday { font-style: italic; }
@@ -2326,7 +2362,7 @@ dd-wcp-color {
 .dd-battery-monitor { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
 .dd-battery-monitor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-shrink: 0; }
 .dd-battery-monitor-title { font-size: 0.9em; font-weight: 600; }
-.dd-battery-monitor-badge { font-size: 0.75em; padding: 2px 7px; border-radius: 10px; background: var(--dz-widget-energy-net-neg); color: #fff; }
+.dd-battery-monitor-badge { font-size: 0.75em; padding: 2px 7px; border-radius: 10px; background: var(--dz-accent-red); color: #fff; }
 .dd-battery-monitor-badge.ok { background: var(--dz-widget-energy-export); }
 .dd-battery-monitor-list { flex: 1; overflow-y: auto; }
 .dd-battery-monitor-row { display: flex; align-items: center; gap: 8px; padding: 4px 2px; font-size: 0.85em; border-bottom: 1px solid rgba(255,255,255,0.06); }
@@ -2335,6 +2371,15 @@ dd-wcp-color {
 .dd-battery-monitor-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dd-battery-monitor-level { flex-shrink: 0; font-weight: 600; min-width: 36px; text-align: right; }
 .dd-battery-monitor-ok { text-align: center; padding: 16px; color: var(--dz-widget-energy-export); font-size: 0.9em; }
+
+
+html,
+.dd-battery-monitor-list,
+.dd-rss-list,
+.dd-log-list,
+.dd-widget-body {
+    scrollbar-color: var(--dz-accent-color) transparent;
+}
 
 /* ── Screen Standby Mode ──────────────────────────────────── */
 body.dd-standby .dd-page {
@@ -2354,10 +2399,12 @@ body.dd-standby::after {
 }
 
 /* ── Gauge Widget ─────────────────────────────────────────── */
-.dd-gauge-wrap { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; }
-.dd-gauge-svg-wrap { position: relative; width: 100%; max-width: 140px; }
+.dd-widget--gauge > .dd-widget-body { overflow: hidden; }
+.dd-gauge-wrap { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px; }
+.dd-gauge-svg-wrap { position: relative; width: 100%; max-width: 220px; }
 .dd-gauge-svg { width: 100%; height: auto; display: block; }
 .dd-gauge-bg { stroke: rgba(255,255,255,0.1); }
 .dd-gauge-fill { transition: stroke-dasharray 0.6s ease, stroke 0.4s ease; }
-.dd-gauge-value { position: absolute; bottom: 0; left: 0; right: 0; text-align: center; font-size: 1.1em; font-weight: 600; line-height: 1; padding-bottom: 4px; }
+.dd-gauge-text-value { font-size: 14px; font-weight: 700; fill: var(--dz-body-text); }
+.dd-gauge-text-unit  { font-size: 8px; fill: var(--dz-body-text); opacity: 0.7; }
 .dd-gauge-title { margin-bottom: 4px; }

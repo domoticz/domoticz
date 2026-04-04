@@ -28,6 +28,7 @@ define([
         $scope.deviceListByField = {};
         $scope.scenes          = [];
         $scope.cameras         = [];
+        $scope.pickerSearch    = {};
 
         // Pre-populate schema defaults for keys not yet set in config
         (descriptor.configSchema || []).forEach(function(field) {
@@ -61,13 +62,7 @@ define([
                         var typeStr = (d.SubType && d.SubType !== d.Type)
                             ? d.Type + '/' + d.SubType
                             : d.Type;
-                        return typeStr + ' - ' + d.Name;
-                    }
-
-                    function sortByLabel(list) {
-                        return list.slice().sort(function(a, b) {
-                            return deviceLabel(a).localeCompare(deviceLabel(b));
-                        });
+                        return d.Name + (typeStr ? ' (' + typeStr + ')' : '');
                     }
 
                     // Build per-field filtered + sorted lists
@@ -135,7 +130,11 @@ define([
                             }
                             return true;
                         }) : all;
-                        $scope.deviceListByField[field.key] = sortByLabel(filtered);
+                        $scope.deviceListByField[field.key] = filtered.slice().sort(function(a, b) {
+                            var la = filter ? a.Name : deviceLabel(a);
+                            var lb = filter ? b.Name : deviceLabel(b);
+                            return la.localeCompare(lb);
+                        });
                     });
 
                     // Helper so the template can compute the label

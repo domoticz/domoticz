@@ -5,12 +5,12 @@
   --dz-widget-text:                #fff;
   --dz-widget-name-bg:             #444;
   --dz-widget-name-border:         #333;
-  --dz-widget-name-text:           #fff;
+
   --dz-widget-status-text:         #eee;
-  --dz-widget-hover-bg:            rgba(53, 53, 53, 0.5);
+
   --dz-widget-hover-name-bg:       #626060;
   --dz-widget-hover-name-border:   #444;
-  --dz-widget-hover-name-text:     #fff;
+
   --dz-status-normal:              #5a5757;
   --dz-status-protected:           #44485a;
   --dz-status-timeout:             #7a1a1a;

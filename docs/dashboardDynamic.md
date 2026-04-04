@@ -156,16 +156,31 @@ Widgets are grouped into the following categories: **Info**, **Charts & Data**, 
 ---
 
 ### Clock
-**Category:** Info
+**Category:** Custom Content
 
-Displays the current local time and date. No configuration required. Updates every second.
+Displays the current local time and date. Updates every second.
+
+**Configuration:**
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| Show seconds | on | Include seconds in the time display |
+| 24-hour format | on | Use 24h clock; off for 12h with AM/PM |
+| Show date | on | Show the date line below the time |
+| Show panel background | on | Show the widget panel background |
 
 ---
 
 ### Sun Info
 **Category:** Weather
 
-Shows today's sunrise and sunset times, derived from the configured location in Domoticz settings. No configuration required.
+Shows today's sunrise and sunset times, derived from the configured location in Domoticz settings.
+
+**Configuration:**
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| Show panel background | on | Show the widget panel background |
 
 ---
 
@@ -182,6 +197,7 @@ Displays current weather conditions with an animated weather scene background (s
 | Wind device | A Wind type device |
 | Barometer device | A Temp+Baro or Temp+Hum+Baro device |
 | Display style | **Style 1** (default) or **Style 2** (see below) |
+| Show panel background | Show the widget panel background (default: on) |
 
 **Style 1:** Data-dense view with the animated weather scene as a background. Shows temperature, wind speed/direction, barometer, humidity, and forecast string as individual rows.
 
@@ -337,37 +353,18 @@ Live: refreshes every 30 seconds and on WebSocket `device_update` for the config
 ### Custom Chart
 **Category:** Charts & Data
 
-Free-form Highcharts chart where you can combine any number of sensors (temperature, counter, humidity, rain, wind, etc.) on a single chart with a shared time range.
+Free-form Highcharts chart where you can combine up to 10 sensors (temperature, counter, humidity, rain, wind, etc.) on a single chart with a shared time range.
 
 **Configuration:**
 
 | Field | Default | Description |
 |-------|---------|-------------|
-| Series (JSON) | `[]` | JSON array defining each series (see format below) |
-| Time range | day | Last 24h / Last 7 days / Last month / Last year |
+| Time range | Last 24h | Last 24h / Last 7 days / Last month / Last year |
 | Title | — | Optional chart title |
-| Left axis label | — | Label for the left y-axis |
-| Right axis label | — | Label for the right y-axis |
 | Show legend | on | Toggle chart legend |
+| Device 1–10 | — | Up to 10 device pickers; each added device becomes one series |
 
-**Series JSON format:**
-```json
-[
-  { "idx": 123, "sensor": "temp",    "label": "Living Room", "color": "#ff6600", "axis": 1 },
-  { "idx": 456, "sensor": "counter", "label": "Power (W)",   "color": "#43a4d3", "axis": 2 },
-  { "idx": 789, "sensor": "humidity","label": "Humidity",    "color": "#66bb6a", "axis": 1 }
-]
-```
-
-| Series field | Required | Description |
-|---|---|---|
-| `idx` | yes | Domoticz device index |
-| `sensor` | no | `temp`, `counter`, `humidity`, `rain`, `wind`, `lux`, `uv`, `setpoint` — default `temp` |
-| `label` | no | Series name in legend (defaults to "Series N") |
-| `color` | no | Hex color (e.g. `"#ff6600"`); omit to use Highcharts defaults |
-| `axis` | no | `1` = left y-axis (default), `2` = right y-axis |
-
-A helpful error message is shown if the JSON is invalid. All series are fetched in parallel.
+The sensor type and y-axis unit are detected automatically from the device type. Series with matching units share a y-axis; incompatible units get separate axes.
 
 ---
 
@@ -469,16 +466,14 @@ Device IDs are read automatically from the Energy Dashboard settings (`getenergy
 ### Self-Sufficiency
 **Category:** Energy
 
-Compact bar showing energy self-sufficiency percentage and today's balance stats (house consumption, solar yield, battery net).
+Compact bar showing energy self-sufficiency percentage and today's balance stats (house consumption, solar yield, battery net). Device IDs are read automatically from the Energy Dashboard settings.
 
 **Configuration:**
 
 | Field | Default | Description |
 |-------|---------|-------------|
-| Auto mode | on | Read device IDs from Energy Dashboard settings |
-| Show sun times | on | Show current time, sunrise, sunset |
 | Show gauge bar | on | Green→red percentage bar |
-| Refresh interval | 60s | Seconds |
+| Refresh interval | 60s | Seconds between data refresh |
 
 Self-sufficiency formula:
 ```
@@ -582,13 +577,9 @@ Display and control a Domoticz setpoint device with +/− step buttons and a cli
 | Field | Default | Description |
 |-------|---------|-------------|
 | Device | — | Setpoint type device |
-| Step | 0.5 | Increment per button press |
-| Min | 5 | Minimum allowed value |
-| Max | 35 | Maximum allowed value |
-| Unit | °C | Display unit |
 | Title | device name | Optional override |
 
-Clicking the value opens a number input popup (pre-filled with current value) for direct entry. Commands use `setdevice&idx=X&setpoint=Y`. Live: WebSocket device updates re-fetch the current value.
+Step, min, max, and unit are read automatically from the device. Clicking the value opens a number input popup (pre-filled with current value) for direct entry. Commands use `setdevice&idx=X&setpoint=Y`. Live: WebSocket device updates re-fetch the current value.
 
 ---
 
@@ -601,15 +592,11 @@ Combined widget showing current temperature from a sensor alongside setpoint con
 
 | Field | Default | Description |
 |-------|---------|-------------|
-| Temperature device | — | Temp / Temp+Hum sensor |
+| Temperature sensor | — | Temp / Temp+Hum sensor |
 | Setpoint device | — | Setpoint device |
-| Step | 0.5 | Setpoint increment |
-| Min | 5 | Minimum setpoint |
-| Max | 35 | Maximum setpoint |
-| Unit | °C | Display unit |
 | Title | — | Optional override |
 
-Displays the current temperature large and prominent, with +/− setpoint controls below. Both devices are fetched in a single API call.
+Step, min, max, and unit are read automatically from the setpoint device. Displays the current temperature large and prominent, with +/− setpoint controls below. Both devices are fetched in a single API call.
 
 ---
 
@@ -623,10 +610,9 @@ Widget for the Thermostat6 device type. Displays all available measured values (
 | Field | Default | Description |
 |-------|---------|-------------|
 | Device | — | Thermostat6 device |
-| Step | 0.5 | Setpoint step |
-| Min | 5 | Minimum setpoint |
-| Max | 35 | Maximum setpoint |
 | Title | device name | Optional override |
+
+Step, min, and max are read automatically from the device.
 
 ---
 
@@ -643,6 +629,7 @@ Multi-day weather forecast using the [Open-Meteo API](https://open-meteo.com) (f
 | Show wind | on | Wind speed row |
 | Show precipitation | on | Precipitation row |
 | Title | Weather Forecast | Optional override |
+| Show panel background | on | Show the widget panel background |
 
 Displays a horizontal grid of day columns, each with a weather icon (mapped from WMO weather codes), temperature range, precipitation (mm), and wind speed (km/h).
 
@@ -777,16 +764,15 @@ Displays custom text with configurable appearance. Useful for section headers, l
 
 **Configuration:**
 
-| Field | Description |
-|-------|-------------|
-| Content | The text to display |
-| Font size | 8–72 px |
-| Font | Arial, Verdana, Georgia, Courier New, etc. |
-| Alignment | Left / Center / Right |
-| Text color | Color picker |
-| Text opacity | 0–100% |
-| Background color | Color picker |
-| Background opacity | 0–100% |
+| Field | Default | Description |
+|-------|---------|-------------|
+| Content | — | The text to display |
+| Font | Default (theme) | Default (theme), Arial, Verdana, Tahoma, Trebuchet MS, Helvetica Neue, Georgia, Times New Roman, Palatino, Courier New, Lucida Console, Impact, System UI |
+| Size | 14 px | Font size in pixels (8–72) |
+| Alignment | Center | Left / Center / Right |
+| Style | Normal | Normal / Bold / Italic / Bold + Italic / Underline |
+| Text color | rgba(255,255,255,1) | Color + opacity picker |
+| Background color | rgba(0,0,0,0) | Color + opacity picker (default: transparent) |
 
 ---
 
@@ -807,15 +793,17 @@ Security: `sandbox="allow-scripts"` — scripts run in isolation but cannot acce
 ---
 
 ### Camera Feed
-**Category:** Custom Content
+**Category:** Controls
 
-Shows a live MJPEG or snapshot image from a Domoticz-configured camera.
+Shows a live snapshot image from a Domoticz-configured camera.
 
 **Configuration:**
 
-| Field | Description |
-|-------|-------------|
-| Camera | Pick from configured cameras |
+| Field | Default | Description |
+|-------|---------|-------------|
+| Camera | — | Pick from configured cameras |
+| Refresh interval | 5s | Seconds between snapshot refreshes |
+| Show camera name | on | Display the camera name in the widget header |
 
 ---
 
@@ -826,25 +814,28 @@ Displays a remote image from a URL, with optional auto-refresh.
 
 **Configuration:**
 
-| Field | Description |
-|-------|-------------|
-| Image URL | Full URL to the image |
-| Refresh interval | 0 = no refresh, otherwise seconds |
-| Object fit | Contain / Cover / Fill |
+| Field | Default | Description |
+|-------|---------|-------------|
+| Image URL | — | Full URL to the image |
+| Caption | — | Optional label shown over the image |
+| Fit | Contain | Contain (full image visible) / Cover (fill area, crop) / Stretch to fill |
+| Refresh interval | 0 | Seconds between reloads; 0 = no auto-refresh |
 
 ---
 
-### IFrame Embed
+### Website Embed
 **Category:** Custom Content
 
 Embeds any external website or web app in an iframe.
 
 **Configuration:**
 
-| Field | Description |
-|-------|-------------|
-| URL | The page to embed |
-| Allow interaction | Enable pointer events |
+| Field | Default | Description |
+|-------|---------|-------------|
+| URL | — | The page to embed (https:// recommended) |
+| Title | — | Optional widget header label |
+| Allow scripts | off | Enable JavaScript in the embedded page (trusted sources only) |
+| Auto-reload | 0 | Seconds between iframe reloads; 0 = off |
 
 Note: Many external sites block iframe embedding via `X-Frame-Options`. Works best with local network pages.
 
@@ -921,7 +912,9 @@ Shows Domoticz version, build number, and hardware count. No configuration requi
 | Gauge | 30s interval + instant WebSocket |
 | Battery Monitor | Configurable interval (default 5 min) |
 | Custom Chart | 60s debounced reload on config/range change |
-| Sun Info / Text / HTML / IFrame / Image | Static |
+| Sun Info / Text Note / HTML / Image | Static |
+| Website Embed | Configurable auto-reload interval (default off) |
+| Camera Feed | Configurable interval (default 5s) |
 
 ---
 

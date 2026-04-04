@@ -9,7 +9,7 @@
     <div ng-if="ctrl.widgetDef.config.deviceIdx" style="width:100%;display:flex;flex-direction:column;align-items:center;">
         <div class="dd-gauge-title dd-stat-label" ng-show="ctrl.title">{{ ctrl.title }}</div>
         <div class="dd-gauge-svg-wrap">
-            <svg viewBox="0 0 100 80" class="dd-gauge-svg">
+            <svg viewBox="0 10 100 62" class="dd-gauge-svg">
                 <!-- Background arc -->
                 <circle class="dd-gauge-bg"
                         cx="50" cy="55" r="40"
@@ -25,9 +25,11 @@
                         ng-attr-stroke-dasharray="{{ ctrl.strokeDasharray() }}"
                         stroke-dashoffset="0"
                         transform="rotate(160 50 55)"/>
+                <!-- Value text inside arc -->
+                <text class="dd-gauge-text-value" x="50" y="44" text-anchor="middle" dominant-baseline="middle">{{ ctrl.valueStr() }}</text>
+                <!-- Unit text below value -->
+                <text class="dd-gauge-text-unit" x="50" y="59" text-anchor="middle" dominant-baseline="middle" ng-bind="ctrl.unitStr()"></text>
             </svg>
-            <!-- Centre value text -->
-            <div class="dd-gauge-value">{{ ctrl.displayValue() }}</div>
         </div>
     </div>
 </div>

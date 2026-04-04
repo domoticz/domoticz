@@ -5,34 +5,34 @@ define([
     'use strict';
 
     var WMO = {
-        0:  { icon: 'fa-sun',                 label: 'Clear Sky',               token: '--dz-widget-weather-sun'   },
+        0:  { icon: 'fa-sun',                 label: 'Clear Sky',               token: '--dz-widget-sunpv'   },
         1:  { icon: 'fa-cloud-sun',           label: 'Mainly Clear',            token: '--dz-widget-weather-cloud' },
         2:  { icon: 'fa-cloud-sun',           label: 'Partly Cloudy',           token: '--dz-widget-weather-cloud' },
         3:  { icon: 'fa-cloud',               label: 'Overcast',                token: '--dz-widget-weather-cloud' },
         45: { icon: 'fa-smog',                label: 'Fog',                     token: '--dz-widget-weather-cloud' },
         48: { icon: 'fa-smog',                label: 'Depositing Rime Fog',     token: '--dz-widget-weather-cloud' },
-        51: { icon: 'fa-cloud-rain',          label: 'Light Drizzle',           token: '--dz-widget-weather-rain'  },
-        53: { icon: 'fa-cloud-rain',          label: 'Moderate Drizzle',        token: '--dz-widget-weather-rain'  },
-        55: { icon: 'fa-cloud-rain',          label: 'Dense Drizzle',           token: '--dz-widget-weather-rain'  },
+        51: { icon: 'fa-cloud-rain',          label: 'Light Drizzle',           token: '--dz-widget-accent'  },
+        53: { icon: 'fa-cloud-rain',          label: 'Moderate Drizzle',        token: '--dz-widget-accent'  },
+        55: { icon: 'fa-cloud-rain',          label: 'Dense Drizzle',           token: '--dz-widget-accent'  },
         56: { icon: 'fa-cloud-rain',          label: 'Light Frz. Drizzle',      token: '--dz-widget-weather-snow'  },
         57: { icon: 'fa-cloud-rain',          label: 'Dense Frz. Drizzle',      token: '--dz-widget-weather-snow'  },
-        61: { icon: 'fa-cloud-rain',          label: 'Slight Rain',             token: '--dz-widget-weather-rain'  },
-        63: { icon: 'fa-cloud-rain',          label: 'Moderate Rain',           token: '--dz-widget-weather-rain'  },
-        65: { icon: 'fa-cloud-rain',          label: 'Heavy Rain',              token: '--dz-widget-weather-rain'  },
+        61: { icon: 'fa-cloud-rain',          label: 'Slight Rain',             token: '--dz-widget-accent'  },
+        63: { icon: 'fa-cloud-rain',          label: 'Moderate Rain',           token: '--dz-widget-accent'  },
+        65: { icon: 'fa-cloud-rain',          label: 'Heavy Rain',              token: '--dz-widget-accent'  },
         66: { icon: 'fa-cloud-rain',          label: 'Light Frz. Rain',         token: '--dz-widget-weather-snow'  },
         67: { icon: 'fa-cloud-rain',          label: 'Heavy Frz. Rain',         token: '--dz-widget-weather-snow'  },
         71: { icon: 'fa-snowflake',           label: 'Slight Snowfall',         token: '--dz-widget-weather-snow'  },
         73: { icon: 'fa-snowflake',           label: 'Moderate Snowfall',       token: '--dz-widget-weather-snow'  },
         75: { icon: 'fa-snowflake',           label: 'Heavy Snowfall',          token: '--dz-widget-weather-snow'  },
         77: { icon: 'fa-snowflake',           label: 'Snow Grains',             token: '--dz-widget-weather-snow'  },
-        80: { icon: 'fa-cloud-showers-heavy', label: 'Slight Rain Showers',     token: '--dz-widget-weather-rain'  },
-        81: { icon: 'fa-cloud-showers-heavy', label: 'Moderate Rain Showers',   token: '--dz-widget-weather-rain'  },
-        82: { icon: 'fa-cloud-showers-heavy', label: 'Violent Rain Showers',    token: '--dz-widget-weather-rain'  },
+        80: { icon: 'fa-cloud-showers-heavy', label: 'Slight Rain Showers',     token: '--dz-widget-accent'  },
+        81: { icon: 'fa-cloud-showers-heavy', label: 'Moderate Rain Showers',   token: '--dz-widget-accent'  },
+        82: { icon: 'fa-cloud-showers-heavy', label: 'Violent Rain Showers',    token: '--dz-widget-accent'  },
         85: { icon: 'fa-snowflake',           label: 'Slight Snow Showers',     token: '--dz-widget-weather-snow'  },
         86: { icon: 'fa-snowflake',           label: 'Heavy Snow Showers',      token: '--dz-widget-weather-snow'  },
-        95: { icon: 'fa-bolt',                label: 'Thunderstorm',            token: '--dz-widget-weather-storm' },
-        96: { icon: 'fa-bolt',                label: 'Thunderstorm w/ Hail',    token: '--dz-widget-weather-storm' },
-        99: { icon: 'fa-bolt',                label: 'Thunderstorm+Heavy Hail', token: '--dz-widget-weather-storm' }
+        95: { icon: 'fa-bolt',                label: 'Thunderstorm',            token: '--dz-accent-red' },
+        96: { icon: 'fa-bolt',                label: 'Thunderstorm w/ Hail',    token: '--dz-accent-red' },
+        99: { icon: 'fa-bolt',                label: 'Thunderstorm+Heavy Hail', token: '--dz-accent-red' }
     };
 
     var CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes

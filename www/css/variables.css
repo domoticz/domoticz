@@ -1,29 +1,29 @@
 :root {
-  --accent-color:                  #337ab7;
+  --dz-accent-color:               #337ab7;
+  --dz-accent-red:                 #DF2D3A;
   --dz-widget-bg:                  #F1F5FA;
   --dz-widget-text:                #0D161F;
   --dz-widget-border-radius:       5px;
   --dz-widget-shadow:              none;
   --dz-dd-grid-line:              rgba(0,0,0,0.06);
-  --dz-dd-skeleton-start:         #e0e0e0;
+  --dz-dd-skeleton-start:         var(--dz-btn-hover-bg);
   --dz-dd-skeleton-mid:           #f0f0f0;
-  --dz-widget-name-bg:             #D4E1EE;
+  --dz-widget-name-bg:             var(--dz-status-normal);
   --dz-widget-name-border:         #2B5074;
-  --dz-widget-name-text:           #0D161F;
+  --dz-widget-name-text:           var(--dz-widget-text);
   --dz-widget-name-font-size:      130%;
-  --dz-widget-status-text:         #000000;
+  --dz-widget-status-text:         var(--dz-input-text);
   --dz-widget-value-font-size:     140%;
-  --dz-widget-hover-bg:            #F2F1FA;
+
   --dz-widget-hover-name-bg:       #D4D5EE;
   --dz-widget-hover-name-border:   #2B2C74;
-  --dz-widget-hover-name-text:     #0D0D1F;
   --dz-status-normal:              #D4E1EE;
   --dz-status-protected:           #A4B1EE;
-  --dz-status-timeout:             #DF2D3A;
+  --dz-status-timeout:             var(--dz-accent-red);
   --dz-status-low-battery:         #DDDF2D;
   --dz-status-disabled:            #A6A8AA;
   --dz-status-disabled-opacity:    0.5;
-  --dz-status-evo-off:             #9b9b9b;
+  --dz-status-evo-off:             var(--dz-status-disabled);
   --dz-status-evo-25:              #ff0302;
   --dz-status-evo-22:              #ff6a2a;
   --dz-status-evo-19:              #fe9b2d;
@@ -40,7 +40,7 @@
   --dz-nav-bg:                     #283750;
   --dz-btn-bg:                     #f5f5f5;
   --dz-btn-text:                   #333;
-  --dz-btn-border:                 #ccc;
+  --dz-btn-border:                 var(--dz-input-border);
   --dz-btn-hover-bg:               #e0e0e0;
   --dz-btn-shadow:                 none;
   --dz-btn-text-shadow:            none;
@@ -205,7 +205,7 @@ body table#itemtabletrippleicon tbody tr:hover,
 body table#itemtablesmalldoubleicon tbody tr:hover,
 body table#itemtablesmalltrippleicon tbody tr:hover {
 	border-color: var(--dz-widget-hover-name-border);
-	background-color: var(--dz-widget-hover-bg);
+	background-color: var(--dz-widget-bg);
 }
 
 body table#itemtable tr:hover td:first-child,
@@ -217,7 +217,7 @@ body table#itemtabletrippleicon tr:hover td:first-child,
 body table#itemtablesmalldoubleicon tr:hover td:first-child,
 body table#itemtablesmalltrippleicon tr:hover td:first-child {
 	border-color: var(--dz-widget-hover-name-border);
-	color: var(--dz-widget-hover-name-text);
+	color: var(--dz-widget-text);
 	background-color: var(--dz-widget-hover-name-bg);
 }
 

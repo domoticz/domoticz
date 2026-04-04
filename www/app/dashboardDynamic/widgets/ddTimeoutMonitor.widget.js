@@ -5,11 +5,11 @@ define([
     'use strict';
 
     widgetRegistry.register({
-        type:        'battery-monitor',
-        label:       'Battery Monitor',
-        description: 'Shows all devices with battery level at or below a configurable threshold',
+        type:        'timeout-monitor',
+        label:       'Timeout Monitor',
+        description: 'Shows all devices that have not reported within their expected interval',
         category:    'System',
-        icon:        'fa-solid fa-battery-quarter',
+        icon:        'fa-solid fa-clock-rotate-left',
         defaultW:    3,
         defaultH:    4,
         minW:        2,
@@ -24,25 +24,13 @@ define([
                 required: false
             },
             {
-                key:     'threshold',
-                type:    'number',
-                label:   'Alert threshold % (show devices at or below)',
-                default: 25
-            },
-            {
-                key:     'showFull',
-                type:    'boolean',
-                label:   'Show all devices with a battery (not just low)',
-                default: false
-            },
-            {
                 key:     'sortBy',
                 type:    'select',
                 label:   'Sort by',
-                default: 'level',
+                default: 'lastUpdate',
                 options: [
-                    { value: 'level', label: 'Battery level (low first)' },
-                    { value: 'name',  label: 'Device name (A–Z)' }
+                    { value: 'lastUpdate', label: 'Last update (oldest first)' },
+                    { value: 'name',       label: 'Device name (A–Z)' }
                 ]
             },
             {
@@ -54,10 +42,10 @@ define([
         ]
     });
 
-    app.directive('ddBatteryMonitorWidget', [function() {
+    app.directive('ddTimeoutMonitorWidget', [function() {
         return {
             restrict:         'E',
-            templateUrl:      'views/dashboardDynamic/widgets/battery-monitor.html',
+            templateUrl:      'views/dashboardDynamic/widgets/timeout-monitor.html',
             scope: {
                 widgetDef: '=',
                 editMode:  '<'
@@ -67,12 +55,12 @@ define([
             controller: ['$scope', '$http', '$interval', '$q', function($scope, $http, $interval, $q) {
                 var ctrl = this;
 
-                ctrl.title            = 'Battery Monitor';
-                ctrl.devices          = [];
-                ctrl.count            = 0;
-                ctrl.totalWithBattery = 0;
-                ctrl.loading          = false;
-                ctrl.loadError        = false;
+                ctrl.title          = 'Timeout Monitor';
+                ctrl.devices        = [];
+                ctrl.count          = 0;
+                ctrl.totalMonitored = 0;
+                ctrl.loading        = false;
+                ctrl.loadError      = false;
 
                 var refreshTimer = null;
                 var cancelToken  = null;
@@ -81,19 +69,16 @@ define([
                     return (ctrl.widgetDef && ctrl.widgetDef.config) || {};
                 }
 
-                ctrl.levelColor = function(level) {
-                    if (level <= 10) { return 'var(--dz-accent-red)'; }
-                    if (level <= 25) { return 'var(--dz-widget-sunpv)'; }
-                    if (level <= 50) { return 'var(--dz-widget-sunpv)'; }
-                    return 'var(--dz-widget-energy-export)';
-                };
-
-                ctrl.levelIcon = function(level) {
-                    if (level <= 10) { return 'fa-battery-empty'; }
-                    if (level <= 25) { return 'fa-battery-quarter'; }
-                    if (level <= 50) { return 'fa-battery-half'; }
-                    if (level <= 75) { return 'fa-battery-three-quarters'; }
-                    return 'fa-battery-full';
+                ctrl.timeAgo = function(lastUpdate) {
+                    if (!lastUpdate) { return '–'; }
+                    var d = new Date(lastUpdate.replace(' ', 'T'));
+                    if (isNaN(d.getTime())) { return '–'; }
+                    var diff = Math.floor((Date.now() - d.getTime()) / 1000);
+                    if (diff < 0)     { return 'just now'; }
+                    if (diff < 60)    { return 'just now'; }
+                    if (diff < 3600)  { return Math.floor(diff / 60) + 'm ago'; }
+                    if (diff < 86400) { return Math.floor(diff / 3600) + 'h ago'; }
+                    return Math.floor(diff / 86400) + 'd ago';
                 };
 
                 function load() {
@@ -117,43 +102,32 @@ define([
                         var result = resp.data && resp.data.result;
                         if (!result) { return; }
 
-                        var c         = cfg();
-                        var threshold = parseInt(c.threshold, 10);
-                        if (isNaN(threshold) || threshold < 1)   { threshold = 25; }
-                        if (threshold > 100) { threshold = 100; }
-                        var showFull  = c.showFull === true;
-                        var sortBy    = c.sortBy || 'level';
+                        var c      = cfg();
+                        var sortBy = c.sortBy || 'lastUpdate';
 
-                        // Filter: only devices that have a battery (level != 255 and defined)
-                        var withBattery = result.filter(function(d) {
-                            return typeof d.BatteryLevel !== 'undefined' &&
-                                   d.BatteryLevel !== 255;
+                        ctrl.totalMonitored = result.filter(function(d) {
+                            return typeof d.HaveTimeout !== 'undefined';
+                        }).length;
+
+                        var timedOut = result.filter(function(d) {
+                            return d.HaveTimeout === true;
                         });
 
-                        ctrl.totalWithBattery = withBattery.length;
-
-                        // Apply threshold filter unless showFull is true
-                        var visible = showFull
-                            ? withBattery
-                            : withBattery.filter(function(d) {
-                                return d.BatteryLevel <= threshold;
-                              });
-
-                        // Sort
                         if (sortBy === 'name') {
-                            visible.sort(function(a, b) {
+                            timedOut.sort(function(a, b) {
                                 return a.Name.localeCompare(b.Name);
                             });
                         } else {
-                            visible.sort(function(a, b) {
-                                return a.BatteryLevel - b.BatteryLevel;
+                            timedOut.sort(function(a, b) {
+                                var da = new Date((a.LastUpdate || '').replace(' ', 'T'));
+                                var db = new Date((b.LastUpdate || '').replace(' ', 'T'));
+                                return da - db;
                             });
                         }
 
-                        ctrl.devices = visible.map(function(d) {
+                        ctrl.devices = timedOut.map(function(d) {
                             return {
                                 name:       d.Name,
-                                level:      d.BatteryLevel,
                                 idx:        d.idx,
                                 lastUpdate: d.LastUpdate || ''
                             };
@@ -183,7 +157,7 @@ define([
 
                 ctrl.$onInit = function() {
                     var c      = cfg();
-                    ctrl.title = c.title || 'Battery Monitor';
+                    ctrl.title = c.title || 'Timeout Monitor';
                     load();
                     scheduleRefresh();
                 };
@@ -191,12 +165,12 @@ define([
                 $scope.$watch(
                     function() {
                         var c = cfg();
-                        return (c.threshold) + '|' + (c.showFull) + '|' + (c.sortBy) + '|' + (c.refreshInterval);
+                        return (c.sortBy) + '|' + (c.refreshInterval);
                     },
                     function(val, old) {
                         if (val !== old) {
                             var c      = cfg();
-                            ctrl.title = c.title || 'Battery Monitor';
+                            ctrl.title = c.title || 'Timeout Monitor';
                             load();
                             scheduleRefresh();
                         }

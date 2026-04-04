@@ -131,10 +131,10 @@ textarea {
 }
 
 #settingscontent .sub-tabs li.active a {
-	background-color: var(--accent-color);
+	background-color: var(--dz-accent-color);
 	color: var(--dz-modal-text);
 	border: none;
-	border-bottom: 4px solid var(--accent-color);
+	border-bottom: 4px solid var(--dz-accent-color);
 }
 
 #settingscontent .sub-tabs li:not(.active) {
@@ -168,10 +168,10 @@ textarea {
 }
 
 #zwavesettingscontent .sub-tabs li.active a {
-	background-color: var(--accent-color);
+	background-color: var(--dz-accent-color);
 	color: var(--dz-modal-text);
 	border: none;
-	border-bottom: 4px solid var(--accent-color);
+	border-bottom: 4px solid var(--dz-accent-color);
 }
 
 #zwavesettingscontent .sub-tabs li:not(.active) {

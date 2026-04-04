@@ -73,46 +73,66 @@
             </select>
 
             <!-- device-picker -->
-            <select ng-if="field.type === 'device-picker'"
-                    class="combobox ui-corner-all"
-                    name="field_{{ field.key }}"
-                    ng-model="config[field.key]"
-                    ng-required="field.required">
-                <option value="">-- Select Device --</option>
-                <option ng-repeat="d in deviceListByField[field.key]" value="{{ d.idx }}">
-                    {{ deviceLabel(d) }}
-                </option>
-            </select>
+            <div ng-if="field.type === 'device-picker'">
+                <input type="text" class="form-control input-sm" style="margin-bottom:4px"
+                       placeholder="Search devices..."
+                       ng-model="pickerSearch[field.key]"
+                       ng-show="deviceListByField[field.key].length > 5">
+                <select class="combobox ui-corner-all"
+                        name="field_{{ field.key }}"
+                        ng-model="config[field.key]"
+                        ng-required="field.required">
+                    <option value="">-- Select Device --</option>
+                    <option ng-repeat="d in deviceListByField[field.key] | filter:{Name: pickerSearch[field.key]}" value="{{ d.idx }}">
+                        {{ field.deviceFilter ? d.Name : deviceLabel(d) }}
+                    </option>
+                </select>
+            </div>
 
             <!-- scene-picker -->
-            <select ng-if="field.type === 'scene-picker'"
-                    class="combobox ui-corner-all"
-                    name="field_{{ field.key }}"
-                    ng-model="config[field.key]"
-                    ng-required="field.required">
-                <option value="">— select scene —</option>
-                <option ng-repeat="s in scenes" value="{{ s.idx }}">{{ s.Name }}</option>
-            </select>
+            <div ng-if="field.type === 'scene-picker'">
+                <input type="text" class="form-control input-sm" style="margin-bottom:4px"
+                       placeholder="Search scenes..."
+                       ng-model="pickerSearch[field.key]"
+                       ng-show="scenes.length > 5">
+                <select class="combobox ui-corner-all"
+                        name="field_{{ field.key }}"
+                        ng-model="config[field.key]"
+                        ng-required="field.required">
+                    <option value="">— select scene —</option>
+                    <option ng-repeat="s in scenes | filter:{Name: pickerSearch[field.key]}" value="{{ s.idx }}">{{ s.Name }}</option>
+                </select>
+            </div>
 
             <!-- plan-picker -->
-            <select ng-if="field.type === 'plan-picker'"
-                    class="combobox ui-corner-all"
-                    name="field_{{ field.key }}"
-                    ng-model="config[field.key]"
-                    ng-required="field.required">
-                <option value="">— Select Room / Plan —</option>
-                <option ng-repeat="p in plans track by p.idx" value="{{ p.idx }}">{{ p.Name }}</option>
-            </select>
+            <div ng-if="field.type === 'plan-picker'">
+                <input type="text" class="form-control input-sm" style="margin-bottom:4px"
+                       placeholder="Search rooms / plans..."
+                       ng-model="pickerSearch[field.key]"
+                       ng-show="plans.length > 5">
+                <select class="combobox ui-corner-all"
+                        name="field_{{ field.key }}"
+                        ng-model="config[field.key]"
+                        ng-required="field.required">
+                    <option value="">— Select Room / Plan —</option>
+                    <option ng-repeat="p in (plans | filter:{Name: pickerSearch[field.key]}) track by p.idx" value="{{ p.idx }}">{{ p.Name }}</option>
+                </select>
+            </div>
 
             <!-- camera-picker -->
-            <select ng-if="field.type === 'camera-picker'"
-                    class="combobox ui-corner-all"
-                    ng-model="config[field.key]"
-                    ng-required="field.required">
-                <option value="">— Select camera —</option>
-                <option ng-repeat="cam in cameras track by cam.idx"
-                        value="{{cam.idx}}">{{cam.Name}}</option>
-            </select>
+            <div ng-if="field.type === 'camera-picker'">
+                <input type="text" class="form-control input-sm" style="margin-bottom:4px"
+                       placeholder="Search cameras..."
+                       ng-model="pickerSearch[field.key]"
+                       ng-show="cameras.length > 5">
+                <select class="combobox ui-corner-all"
+                        ng-model="config[field.key]"
+                        ng-required="field.required">
+                    <option value="">— Select camera —</option>
+                    <option ng-repeat="cam in (cameras | filter:{Name: pickerSearch[field.key]}) track by cam.idx"
+                            value="{{cam.idx}}">{{cam.Name}}</option>
+                </select>
+            </div>
 
             <!-- action-list -->
             <div ng-if="field.type === 'action-list'" class="dd-action-list-editor">
