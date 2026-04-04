@@ -51,7 +51,8 @@ define([
     'dashboardDynamic/widgets/ddSelfSufficiency.widget',
     'dashboardDynamic/widgets/ddCustomChart.widget',
     'dashboardDynamic/widgets/ddGauge.widget',
-    'dashboardDynamic/widgets/ddBatteryMonitor.widget'
+    'dashboardDynamic/widgets/ddBatteryMonitor.widget',
+    'dashboardDynamic/widgets/ddTimeoutMonitor.widget'
 ], function(app) {
     'use strict';
 
@@ -102,6 +103,7 @@ define([
         var _kioskLayouts    = [];
         var _kioskIndex      = 0;
         var _kioskElapsed    = 0;
+        var _kioskWasActive  = false;
 
         // ── Standby state ───────────────────────────────────────
         var LS_STANDBY = 'dd_standby';
@@ -253,7 +255,9 @@ define([
 
         $scope.toggleEditMode = function() {
             if (!$scope.editMode) {
-                // Entering edit mode — take a snapshot for cancel
+                // Entering edit mode — pause kiosk and take a snapshot for cancel
+                _kioskWasActive = $scope.kioskActive;
+                if ($scope.kioskActive) { $scope.stopKiosk(); }
                 _savedDataSnapshot = angular.copy($scope.activeData);
                 $scope.editMode = true;
             } else {
@@ -263,10 +267,12 @@ define([
                     $scope.saveCurrentLayout().then(function() {
                         _savedDataSnapshot = null;
                         $scope.editMode = false;
+                        if (_kioskWasActive) { _kioskWasActive = false; $scope.startKiosk(); }
                     });
                 } else {
                     _savedDataSnapshot = null;
                     $scope.editMode = false;
+                    if (_kioskWasActive) { _kioskWasActive = false; $scope.startKiosk(); }
                 }
             }
         };
@@ -281,6 +287,7 @@ define([
                 $scope.showLibrary = false;
                 $scope.isDirty     = false;
                 refreshGrid();
+                if (_kioskWasActive) { _kioskWasActive = false; $scope.startKiosk(); }
             }
 
             if (!$scope.isDirty) {

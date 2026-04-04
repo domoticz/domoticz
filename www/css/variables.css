@@ -1,5 +1,6 @@
 :root {
   --dz-accent-color:               #337ab7;
+  --dz-accent-red:                 #DF2D3A;
   --dz-widget-bg:                  #F1F5FA;
   --dz-widget-text:                #0D161F;
   --dz-widget-border-radius:       5px;
@@ -18,7 +19,7 @@
   --dz-widget-hover-name-border:   #2B2C74;
   --dz-status-normal:              #D4E1EE;
   --dz-status-protected:           #A4B1EE;
-  --dz-status-timeout:             #DF2D3A;
+  --dz-status-timeout:             var(--dz-accent-red);
   --dz-status-low-battery:         #DDDF2D;
   --dz-status-disabled:            #A6A8AA;
   --dz-status-disabled-opacity:    0.5;

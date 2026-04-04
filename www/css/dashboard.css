@@ -21,8 +21,6 @@
     --dz-widget-energy-price:    #c8a0ff;
     --dz-widget-energy-gas:      #ff7043;
 
-    --dz-widget-energy-net-neg:  #ef5350;
-
     /* Stat card surface */
     --dz-widget-stat-radius:     8px;
     --dz-widget-stat-muted:      rgba(255,255,255,0.55);
@@ -30,7 +28,7 @@
     /* Weather forecast widget */
     --dz-widget-weather-cloud:   #90a4ae;
     --dz-widget-weather-snow:    #e0f7fa;
-    --dz-widget-weather-storm:   #ef5350;
+    --dz-widget-weather-storm:   var(--dz-accent-red);
 
     /* Moon phase widget */
     --dz-widget-moon-color:      #e0d8c8;
@@ -106,6 +104,12 @@ body.dd-navbar-hidden .dd-topbar {
 .dd-topbar-btn:active {
     outline: none !important;
     box-shadow: none !important;
+}
+
+.dd-topbar .caret,
+.dd-toolbar .caret {
+    border-top-color: var(--dz-body-text);
+    border-bottom-color: var(--dz-body-text);
 }
 
 .dd-topbar-edit {
@@ -1771,7 +1775,7 @@ dd-wcp-color {
 }
 
 .dd-bool-icon.fa-toggle-on {
-    color: var(--dz-btn-primary-bg, #337ab7);
+    color: var(--dz-widget-accent);
 }
 
 /* Help text */
@@ -2150,7 +2154,7 @@ dd-wcp-color {
 .dd-balance-bar-fill {
     height: 100%;
     border-radius: 3px;
-    background: linear-gradient(to right, var(--dz-widget-energy-net-neg), var(--dz-widget-sunpv), var(--dz-widget-energy-export));
+    background: linear-gradient(to right, var(--dz-accent-red), var(--dz-widget-sunpv), var(--dz-widget-energy-export));
     transition: width 0.5s ease;
 }
 
@@ -2268,7 +2272,7 @@ dd-wcp-color {
 .dd-forecast-label { font-size: 0.68em; color: var(--dz-widget-stat-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .dd-forecast-precip { font-size: 0.72em; color: var(--dz-widget-accent); }
 .dd-forecast-wind { font-size: 0.72em; color: var(--dz-widget-stat-muted); }
-.dd-forecast-error { font-size: 0.8em; color: var(--dz-widget-energy-net-neg); margin-top: 8px; }
+.dd-forecast-error { font-size: 0.8em; color: var(--dz-accent-red); margin-top: 8px; }
 
 /* ── Domoticz Log Widget ──────────────────────────────────── */
 .dd-widget--domoticz-log > .dd-widget-body { padding: 0; overflow: hidden; position: relative; }
@@ -2281,8 +2285,8 @@ dd-wcp-color {
 .dd-log-filter-btn.active span { color: #000; }
 .dd-log-filter-normal { color: var(--dz-body-text); }
 .dd-log-filter-status { color: var(--dz-widget-accent); }
-.dd-log-filter-error  { color: var(--dz-widget-energy-net-neg); }
-.dd-log-filter-error-alert { color: var(--dz-widget-energy-net-neg); }
+.dd-log-filter-error  { color: var(--dz-accent-red); }
+.dd-log-filter-error-alert { color: var(--dz-accent-red); }
 .dd-log-list { flex: 1; overflow-y: auto; font-size: 0.78em; font-family: monospace; }
 .dd-log-entry { padding: 2px 8px; display: flex; gap: 8px; }
 .dd-log-entry:hover { background: rgba(255,255,255,0.05); }
@@ -2291,7 +2295,7 @@ dd-wcp-color {
 .dd-log-msg { flex: 1; word-break: break-word; }
 .dd-log-entry-normal .dd-log-level { color: var(--dz-body-text); }
 .dd-log-entry-status .dd-log-level { color: var(--dz-widget-accent); }
-.dd-log-entry-error  .dd-log-level { color: var(--dz-widget-energy-net-neg); }
+.dd-log-entry-error  .dd-log-level { color: var(--dz-accent-red); }
 
 /* ── Moon Phase Widget ────────────────────────────────────── */
 .dd-moon { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; text-align: center; gap: 4px; }
@@ -2343,7 +2347,7 @@ dd-wcp-color {
 .dd-battery-monitor { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
 .dd-battery-monitor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-shrink: 0; }
 .dd-battery-monitor-title { font-size: 0.9em; font-weight: 600; }
-.dd-battery-monitor-badge { font-size: 0.75em; padding: 2px 7px; border-radius: 10px; background: var(--dz-widget-energy-net-neg); color: #fff; }
+.dd-battery-monitor-badge { font-size: 0.75em; padding: 2px 7px; border-radius: 10px; background: var(--dz-accent-red); color: #fff; }
 .dd-battery-monitor-badge.ok { background: var(--dz-widget-energy-export); }
 .dd-battery-monitor-list { flex: 1; overflow-y: auto; }
 .dd-battery-monitor-row { display: flex; align-items: center; gap: 8px; padding: 4px 2px; font-size: 0.85em; border-bottom: 1px solid rgba(255,255,255,0.06); }
@@ -2352,6 +2356,7 @@ dd-wcp-color {
 .dd-battery-monitor-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dd-battery-monitor-level { flex-shrink: 0; font-weight: 600; min-width: 36px; text-align: right; }
 .dd-battery-monitor-ok { text-align: center; padding: 16px; color: var(--dz-widget-energy-export); font-size: 0.9em; }
+
 
 /* ── Screen Standby Mode ──────────────────────────────────── */
 body.dd-standby .dd-page {

@@ -30,9 +30,9 @@ define([
         82: { icon: 'fa-cloud-showers-heavy', label: 'Violent Rain Showers',    token: '--dz-widget-accent'  },
         85: { icon: 'fa-snowflake',           label: 'Slight Snow Showers',     token: '--dz-widget-weather-snow'  },
         86: { icon: 'fa-snowflake',           label: 'Heavy Snow Showers',      token: '--dz-widget-weather-snow'  },
-        95: { icon: 'fa-bolt',                label: 'Thunderstorm',            token: '--dz-widget-weather-storm' },
-        96: { icon: 'fa-bolt',                label: 'Thunderstorm w/ Hail',    token: '--dz-widget-weather-storm' },
-        99: { icon: 'fa-bolt',                label: 'Thunderstorm+Heavy Hail', token: '--dz-widget-weather-storm' }
+        95: { icon: 'fa-bolt',                label: 'Thunderstorm',            token: '--dz-accent-red' },
+        96: { icon: 'fa-bolt',                label: 'Thunderstorm w/ Hail',    token: '--dz-accent-red' },
+        99: { icon: 'fa-bolt',                label: 'Thunderstorm+Heavy Hail', token: '--dz-accent-red' }
     };
 
     var CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes

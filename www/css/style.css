@@ -3060,7 +3060,7 @@ body.dd-navbar-hidden #holder > .container-fluid {
 .tips-modal .modal-footer { background: var(--dz-panel-bg); }
 .tips-category-tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 16px; }
 .tips-content       { display: flex; align-items: center; gap: 16px; padding: 16px 0; }
-.tips-icon          { flex-shrink: 0; font-size: 2.5em; color: var(--dz-btn-primary-bg); }
+.tips-icon          { flex-shrink: 0; font-size: 2.5em; color: var(--dz-widget-accent); }
 .tips-text          { flex: 1; font-size: 1.1em; line-height: 1.5; color: var(--dz-panel-text); margin: 0; text-align: left; min-height: 3.3em; }
 .tips-nav           { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 8px; }
 .tips-counter       { color: var(--dz-panel-text); min-width: 50px; text-align: center; }

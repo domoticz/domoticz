@@ -14,7 +14,7 @@
     <div class="dd-topbar" ng-hide="editMode">
         <div class="dd-topbar-left">
             <!-- Dashboard switcher -->
-            <div class="btn-group" ng-show="layouts.length > 1">
+            <div class="btn-group">
                 <button type="button" class="btn btn-xs dd-topbar-btn dropdown-toggle"
                         data-toggle="dropdown">
                     <i class="fa-solid fa-border-all"></i>
@@ -32,9 +32,6 @@
                     </a></li>
                 </ul>
             </div>
-            <!-- Single dashboard: just the name -->
-            <span class="dd-topbar-name" ng-show="layouts.length <= 1"
-                  ng-bind="activeLayout && activeLayout.name"></span>
         </div>
         <button type="button" class="btn btn-xs dd-topbar-btn dd-topbar-fullpage"
                 ng-class="{'dd-topbar-nav-on': !isFullPage}"
@@ -90,7 +87,7 @@
 
         <div class="dd-toolbar-actions">
             <!-- Layout switcher dropdown -->
-            <div class="btn-group" ng-show="layouts.length > 1">
+            <div class="btn-group">
                 <button type="button" class="btn btn-default btn-sm dropdown-toggle"
                         data-toggle="dropdown">
                     <i class="fa-solid fa-list"></i> Dashboards

@@ -117,12 +117,12 @@ define([
                     if (mode === 'high-is-good') {
                         if (v >= crit) { return 'var(--dz-widget-energy-export)'; }
                         if (v >= warn) { return 'var(--dz-widget-sunpv)'; }
-                        return 'var(--dz-widget-energy-net-neg)';
+                        return 'var(--dz-accent-red)';
                     } else {
                         // low-is-good
                         if (v < warn)  { return 'var(--dz-widget-energy-export)'; }
                         if (v < crit)  { return 'var(--dz-widget-sunpv)'; }
-                        return 'var(--dz-widget-energy-net-neg)';
+                        return 'var(--dz-accent-red)';
                     }
                 };
 
