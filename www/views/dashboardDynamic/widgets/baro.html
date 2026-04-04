@@ -1,0 +1,98 @@
+<div class="dd-weather">
+
+    <div ng-if="!ctrl.widgetDef.config.deviceIdx" class="dd-chart-unconfigured">
+        <i class="fa-solid fa-gauge"></i>
+        <p>Select a barometer device in settings</p>
+    </div>
+
+    <div ng-if="ctrl.widgetDef.config.deviceIdx" style="height:100%;position:relative;overflow:hidden;">
+
+        <div class="dd-weather-scene-bg" ng-if="ctrl.forecastStr">
+            <div class="fcw-scene">
+                <div ng-if="ctrl.weatherScene === 'fcw-sunny'">
+                    <div ng-if="!ctrl.isNight">
+                        <div class="fcw-rays fcw-rays-main"></div>
+                        <div class="fcw-sun fcw-sun-main"></div>
+                    </div>
+                    <div ng-if="ctrl.isNight">
+                        <div class="fcw-star fcw-star1"></div>
+                        <div class="fcw-star fcw-star2"></div>
+                        <div class="fcw-star fcw-star3"></div>
+                        <div class="fcw-moon"></div>
+                    </div>
+                </div>
+                <div ng-if="ctrl.weatherScene === 'fcw-partlycloudy'">
+                    <div ng-if="!ctrl.isNight">
+                        <div class="fcw-rays fcw-rays-mini"></div>
+                        <div class="fcw-sun fcw-sun-mini"></div>
+                    </div>
+                    <div ng-if="ctrl.isNight">
+                        <div class="fcw-star fcw-star2"></div>
+                        <div class="fcw-moon"></div>
+                    </div>
+                    <div class="fcw-cloud fcw-cloud-light"></div>
+                </div>
+                <div ng-if="ctrl.weatherScene === 'fcw-cloudy'">
+                    <div class="fcw-cloud fcw-cloud-dark-sm"></div>
+                    <div class="fcw-cloud fcw-cloud-lg"></div>
+                </div>
+                <div ng-if="ctrl.weatherScene === 'fcw-rain'">
+                    <div class="fcw-cloud fcw-cloud-rain"></div>
+                    <div class="fcw-raindrop fcw-rd1"></div>
+                    <div class="fcw-raindrop fcw-rd2"></div>
+                    <div class="fcw-raindrop fcw-rd3"></div>
+                    <div class="fcw-raindrop fcw-rd4"></div>
+                </div>
+                <div ng-if="ctrl.weatherScene === 'fcw-heavyrain'">
+                    <div class="fcw-cloud fcw-cloud-heavyrain"></div>
+                    <div class="fcw-raindrop fcw-rd1"></div>
+                    <div class="fcw-raindrop fcw-rd2"></div>
+                    <div class="fcw-raindrop fcw-rd3"></div>
+                    <div class="fcw-raindrop fcw-rd4"></div>
+                    <div class="fcw-raindrop fcw-rd5"></div>
+                    <div class="fcw-raindrop fcw-rd6"></div>
+                    <div class="fcw-raindrop fcw-rd7"></div>
+                    <div class="fcw-raindrop fcw-rd8"></div>
+                </div>
+                <div ng-if="ctrl.weatherScene === 'fcw-snow'">
+                    <div class="fcw-cloud fcw-cloud-snow"></div>
+                    <div class="fcw-snowdot fcw-sd1"></div>
+                    <div class="fcw-snowdot fcw-sd2"></div>
+                    <div class="fcw-snowdot fcw-sd3"></div>
+                    <div class="fcw-snowdot fcw-sd4"></div>
+                </div>
+                <div ng-if="ctrl.weatherScene === 'fcw-heavysnow'">
+                    <div class="fcw-cloud fcw-cloud-heavysnow"></div>
+                    <div class="fcw-snowdot fcw-sd1"></div>
+                    <div class="fcw-snowdot fcw-sd2"></div>
+                    <div class="fcw-snowdot fcw-sd3"></div>
+                    <div class="fcw-snowdot fcw-sd4"></div>
+                    <div class="fcw-snowdot fcw-sd5"></div>
+                    <div class="fcw-snowdot fcw-sd6"></div>
+                    <div class="fcw-snowdot fcw-sd7"></div>
+                    <div class="fcw-snowdot fcw-sd8"></div>
+                </div>
+                <div ng-if="ctrl.weatherScene === 'fcw-night'">
+                    <div class="fcw-moon"></div>
+                    <div class="fcw-star fcw-star1"></div>
+                    <div class="fcw-star fcw-star2"></div>
+                    <div class="fcw-star fcw-star3"></div>
+                </div>
+            </div>
+        </div>
+
+        <span class="dd-stat-label dd-baro-title" ng-show="ctrl.title" ng-bind="ctrl.title"></span>
+
+        <div class="dd-weather-content">
+            <div class="dd-weather-temp">
+                {{ ctrl.pressure !== null ? ctrl.pressure : '\u2014' }}<span class="dd-weather-unit">hPa</span>
+            </div>
+            <div class="dd-weather-forecast" ng-show="ctrl.forecastStr" ng-bind="ctrl.forecastStr"></div>
+        </div>
+
+        <a ng-href="{{ ctrl.logLink }}" class="dd-baro-log-icon" title="View barometer log">
+            <img src="images/gauge48.png" width="32" height="32">
+        </a>
+
+    </div>
+</div>

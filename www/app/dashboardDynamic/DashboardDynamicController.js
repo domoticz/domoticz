@@ -21,6 +21,7 @@ define([
     'dashboardDynamic/widgets/ddTextNote.widget',
     'dashboardDynamic/widgets/ddQuickActions.widget',
     'dashboardDynamic/widgets/ddWeatherWidget.widget',
+    'dashboardDynamic/widgets/ddBaro.widget',
     'dashboardDynamic/widgets/ddStatCounter.widget',
     'dashboardDynamic/widgets/ddTemperatureGraph.widget',
     'dashboardDynamic/widgets/ddEnergyChart.widget',
@@ -294,10 +295,8 @@ define([
                 $scope.$evalAsync(doCancel);
                 return;
             }
-            bootbox.confirm('Discard unsaved changes?').then(function(result) {
-                if (result) {
-                    $scope.$apply(doCancel);
-                }
+            bootbox.confirm('Discard unsaved changes?').then(function() {
+                $scope.$evalAsync(doCancel);
             }).catch(angular.noop);
         };
 

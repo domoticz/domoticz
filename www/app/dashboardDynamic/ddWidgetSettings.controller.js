@@ -78,7 +78,7 @@ define([
                             if (filter === 'baro') {
                                 return typeof d.Barometer !== 'undefined' ||
                                        (d.Type && (d.Type.indexOf('Baro') >= 0 || d.Type === 'Barometer')) ||
-                                       (d.SubType && d.SubType.indexOf('Barometer') >= 0);
+                                       (d.SubType && d.SubType.indexOf('Baro') >= 0);
                             }
                             if (filter === 'rain') {
                                 return d.Type === 'Rain';

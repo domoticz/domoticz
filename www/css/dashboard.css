@@ -809,6 +809,10 @@ body.dd-navbar-hidden .dd-toolbar {
     text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
+.dd-baro-title { position: absolute; top: 8px; left: 8px; z-index: 1; }
+.dd-baro-log-icon { position: absolute; bottom: 8px; right: 8px; opacity: 0.6; }
+.dd-baro-log-icon:hover { opacity: 1; }
+
 /* ── Weather Widget — forecast card style ─────────────────── */
 .dd-weather-forecast-card {
     height: 100%;
