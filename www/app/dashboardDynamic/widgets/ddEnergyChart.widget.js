@@ -276,7 +276,7 @@ define([
                         chart: {
                             animation:       false,
                             backgroundColor: 'transparent',
-                            margin:          [10, 10, 30, 40],
+                            margin:          [10, 10, 30, 55],
                             style:           { fontFamily: 'inherit' },
                             height:          h,
                             width:           container.offsetWidth || null,
@@ -716,7 +716,7 @@ define([
 
                     var opts = baseChartOptions(container);
                     opts.chart.type   = 'column';
-                    opts.chart.margin = [10, 10, 40, 40];
+                    opts.chart.margin = [10, 10, 40, 55];
                     opts.title.text   = titleForChartType(cfg, 'compare');
                     opts.legend       = {
                         enabled:   years.length > 1,
