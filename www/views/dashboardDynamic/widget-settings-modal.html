@@ -159,19 +159,12 @@
                                    style="flex:3">
                         </dz-picker>
 
-                        <dz-picker ng-if="selectorLevelOptions.length"
-                                   ng-model="newAction.selectorLevel"
-                                   dz-options="selectorLevelOptions"
-                                   placeholder="-- Level --"
-                                   style="flex:2">
-                        </dz-picker>
-
                         <input type="text" class="text ui-widget-content ui-corner-all" ng-model="newAction.label"
                                placeholder="Label (optional)" style="flex:1">
 
                         <button type="button" class="btn btn-sm btn-primary"
                                 ng-click="actionAddItem(field.key)"
-                                ng-disabled="!newAction.idx || (selectorLevelOptions.length && newAction.selectorLevel === null)">
+                                ng-disabled="!newAction.idx">
                             <i class="fa-solid fa-plus"></i>
                         </button>
                     </div>

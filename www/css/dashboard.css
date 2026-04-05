@@ -470,6 +470,10 @@ body.dd-navbar-hidden .dd-toolbar {
     border-radius: 4px;
 }
 
+.dd-page.edit-mode .dd-widget-body * {
+    pointer-events: none;
+}
+
 /* Drag placeholder */
 .grid-stack-placeholder > .placeholder-content {
     background: var(--dz-widget-bg) !important;
@@ -1393,6 +1397,47 @@ body.dd-navbar-hidden .dd-toolbar {
     flex: 0.7;
     font-size: 0.75em;
     opacity: 0.8;
+}
+
+
+.dd-qa-level-text {
+    font-size: 0.75em;
+    opacity: 0.75;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dd-qa-level-picker {
+    flex: 0 0 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px 0;
+}
+
+.dd-qa-level-btn {
+    flex: 1;
+    min-width: 60px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(128,128,128,0.4);
+    background: var(--dz-panel-bg);
+    color: var(--dz-body-text);
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: background 0.15s;
+}
+
+.dd-qa-level-btn:hover {
+    background: rgba(128,128,128,0.4);
+}
+
+.dd-qa-level-btn--active {
+    background: var(--dz-btn-primary-bg);
+    border-color: var(--dz-btn-primary-bg);
+    color: var(--dz-btn-primary-text);
 }
 
 /* ── iFrame Embed widget ──────────────────────────────────── */

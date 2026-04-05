@@ -207,7 +207,6 @@ define([
 
             $scope.actionDeviceOptions  = [];
             $scope.actionSceneOptions   = [];
-            $scope.selectorLevelOptions = [];
 
             var actionDeviceFilter = actionListFields[0] && actionListFields[0].deviceFilter;
 
@@ -222,19 +221,6 @@ define([
                                    d.SubType.indexOf('Confexx') === 0)) ||
                     (d.SwitchType && (d.SwitchType.indexOf('Venetian Blinds') === 0 ||
                                       d.SwitchType.indexOf('Stop') >= 0));
-            }
-
-            function decodeLevelNames(d) {
-                if (!d || !d.LevelNames) { return []; }
-                try {
-                    var names = b64DecodeUnicode(d.LevelNames).split('|');
-                    var result = [];
-                    for (var i = 0; i < names.length; i++) {
-                        if (i === 0 && d.LevelOffHidden) { continue; }
-                        result.push({ value: i * 10, label: names[i] });
-                    }
-                    return result;
-                } catch(e) { return []; }
             }
 
             function lookupActionDevice(idx) {
@@ -274,23 +260,11 @@ define([
             };
 
             // New action form state
-            $scope.newAction = { type: 'switch', idx: '', label: '', selectorLevel: null };
+            $scope.newAction = { type: 'switch', idx: '', label: '' };
 
             $scope.$watch('newAction.type', function(val, old) {
                 if (val !== old) {
-                    $scope.newAction.idx          = '';
-                    $scope.newAction.selectorLevel = null;
-                    $scope.selectorLevelOptions    = [];
-                }
-            });
-
-            $scope.$watch('newAction.idx', function(val) {
-                $scope.newAction.selectorLevel = null;
-                $scope.selectorLevelOptions    = [];
-                if (!val || $scope.newAction.type !== 'switch') { return; }
-                var d = lookupActionDevice(val);
-                if (d && d.SwitchType === 'Selector') {
-                    $scope.selectorLevelOptions = decodeLevelNames(d);
+                    $scope.newAction.idx = '';
                 }
             });
 
@@ -308,12 +282,8 @@ define([
                     $scope.config[fieldKey].push({ type: 'scene', idx: String(a.idx), label: label, icon: 'fa-solid fa-play' });
 
                 } else if (d && d.SwitchType === 'Selector') {
-                    if (a.selectorLevel === null || a.selectorLevel === undefined) { return; }
-                    if (!label) {
-                        var levelOpt = $scope.selectorLevelOptions.find(function(o) { return o.value === a.selectorLevel; });
-                        label = d.Name + (levelOpt ? ': ' + levelOpt.label : '');
-                    }
-                    $scope.config[fieldKey].push({ type: 'selector', idx: String(a.idx), level: a.selectorLevel, label: label });
+                    if (!label) { label = d.Name; }
+                    $scope.config[fieldKey].push({ type: 'selector', idx: String(a.idx), label: label });
 
                 } else if (d && d.SwitchType && d.SwitchType.indexOf('Blinds') >= 0) {
                     if (!label) { label = d.Name; }
@@ -327,8 +297,7 @@ define([
                     $scope.config[fieldKey].push(action);
                 }
 
-                $scope.newAction = { type: a.type, idx: '', label: '', selectorLevel: null };
-                $scope.selectorLevelOptions = [];
+                $scope.newAction = { type: a.type, idx: '', label: '' };
             };
 
             $scope.actionRenameItem = function(fieldKey, index) {

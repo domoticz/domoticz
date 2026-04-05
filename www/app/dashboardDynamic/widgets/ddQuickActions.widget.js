@@ -38,11 +38,15 @@ define([
             bindToController: true,
             controller: ['$scope', '$http', '$timeout', 'ddToast', function($scope, $http, $timeout, ddToast) {
                 var ctrl = this;
-                ctrl.actions   = [];
-                ctrl.busy      = {};
-                ctrl.success   = {};
-                ctrl.error     = {};
-                ctrl.deviceOn  = {};
+                ctrl.actions          = [];
+                ctrl.busy             = {};
+                ctrl.success          = {};
+                ctrl.error            = {};
+                ctrl.deviceOn         = {};
+                ctrl.levelOptions     = {};
+                ctrl.currentLevel     = {};
+                ctrl.currentLevelText = {};
+                ctrl.showLevelPicker  = {};
 
                 ctrl.$onInit = function() {
                     parseActions();
@@ -63,7 +67,8 @@ define([
                         if (String(a.idx) !== String(updated.idx)) { return; }
                         if (a.switchcmd === 'On' || a.switchcmd === 'Off') { return; }
                         if (a.type === 'selector') {
-                            ctrl.deviceOn[a.idx + '_' + a.level] = (updated.LevelInt === a.level);
+                            ctrl.currentLevel[a.idx]     = updated.LevelInt;
+                            ctrl.currentLevelText[a.idx] = getLevelLabel(a.idx, updated.LevelInt);
                         } else if (a.type === 'blind') {
                             ctrl.deviceOn[a.idx] = (updated.Status === 'Open' ||
                                 (updated.Status && updated.Status.indexOf('Set ') === 0) ||
@@ -73,6 +78,18 @@ define([
                         }
                     });
                 });
+
+                function decodeLevelNames(d) {
+                    var raw;
+                    try { raw = b64DecodeUnicode(d.LevelNames); } catch(e) { raw = d.LevelNames || ''; }
+                    return raw.split('|').map(function(n, i) { return { value: i * 10, label: n }; });
+                }
+
+                function getLevelLabel(idx, levelInt) {
+                    var opts = ctrl.levelOptions[idx] || [];
+                    var opt  = opts.find(function(o) { return o.value === levelInt; });
+                    return opt ? opt.label : '';
+                }
 
                 function parseActions() {
                     var raw = ctrl.widgetDef && ctrl.widgetDef.config &&
@@ -99,7 +116,11 @@ define([
                             var item = resp.data && resp.data.result && resp.data.result[0];
                             if (!item) { return; }
                             if (action.type === 'selector') {
-                                ctrl.deviceOn[action.idx + '_' + action.level] = (item.LevelInt === action.level);
+                                if (!ctrl.levelOptions[action.idx]) {
+                                    ctrl.levelOptions[action.idx] = decodeLevelNames(item);
+                                }
+                                ctrl.currentLevel[action.idx]     = item.LevelInt;
+                                ctrl.currentLevelText[action.idx] = getLevelLabel(action.idx, item.LevelInt);
                             } else if (action.type === 'blind') {
                                 ctrl.deviceOn[action.idx] = (item.Status === 'Open' ||
                                     (item.Status && item.Status.indexOf('Set ') === 0) ||
@@ -111,17 +132,49 @@ define([
                 }
 
                 ctrl.activeKey = function(action) {
-                    return action.type === 'selector' ? action.idx + '_' + action.level : action.idx;
+                    return action.idx;
                 };
 
                 function loadDeviceStates() {
                     (ctrl.actions || []).forEach(fetchDeviceState);
                 }
 
+                ctrl.toggleLevelPicker = function(idx) {
+                    ctrl.showLevelPicker[idx] = !ctrl.showLevelPicker[idx];
+                };
+
+                ctrl.selectLevel = function(action, level) {
+                    ctrl.showLevelPicker[action.idx] = false;
+                    var busyKey = action.idx + '_sel';
+                    if (ctrl.busy[busyKey]) { return; }
+                    ctrl.busy[busyKey]  = true;
+                    ctrl.error[busyKey] = false;
+                    $http.get('json.htm', { params: { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: 'Set Level', level: level } })
+                        .then(function(resp) {
+                            var data = resp.data || {};
+                            if (data.status === 'OK') {
+                                ctrl.currentLevel[action.idx]     = level;
+                                ctrl.currentLevelText[action.idx] = getLevelLabel(action.idx, level);
+                                ctrl.success[busyKey] = true;
+                                $timeout(function() { ctrl.success[busyKey] = false; }, 1200);
+                            } else {
+                                ctrl.error[busyKey] = true;
+                                ddToast.error((action.label || action.idx) + ': ' + (data.message || 'Unknown error'));
+                                $timeout(function() { ctrl.error[busyKey] = false; }, 2500);
+                            }
+                        })
+                        .catch(function(err) {
+                            ctrl.error[busyKey] = true;
+                            ddToast.error((action.label || action.idx) + ': ' + ((err && err.statusText) || 'Request failed'));
+                            $timeout(function() { ctrl.error[busyKey] = false; }, 2500);
+                        })
+                        .finally(function() { ctrl.busy[busyKey] = false; });
+                };
+
                 ctrl.execute = function(action, blindCmd) {
                     var busyKey = action.type === 'blind'
                         ? action.idx + '_' + blindCmd
-                        : ctrl.activeKey(action);
+                        : action.idx;
                     if (ctrl.busy[busyKey]) { return; }
                     ctrl.busy[busyKey]  = true;
                     ctrl.error[busyKey] = false;
@@ -129,8 +182,6 @@ define([
                     var params;
                     if (action.type === 'scene') {
                         params = { type: 'command', param: 'switchscene', idx: action.idx, switchcmd: 'On' };
-                    } else if (action.type === 'selector') {
-                        params = { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: 'Set Level', level: action.level };
                     } else if (action.type === 'blind') {
                         params = { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: blindCmd };
                     } else {
