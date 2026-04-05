@@ -341,11 +341,27 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			//Ver bad (Old code!), should be changed soon!
 			$.FiveMinuteHistoryDays = $rootScope.config.FiveMinuteHistoryDays;
 
-			var _screenWidth = window.innerWidth || screen.width;
-			var _isPhone = (_screenWidth < 600);
+			// Detect phone (not tablet) — orientation-independent.
+			// 1. Modern Client Hints API (Chrome/Edge 90+): explicitly phone vs tablet/desktop.
+			// 2. UA string: match phone identifiers only (Android+Mobile, iPhone, iPod, etc.),
+			//    deliberately excluding iPad/Android-tablet so tablets get the desktop view.
+			// 3. Narrow viewport fallback (<480px) for any device not caught above.
+			var _isPhone = false;
+			var _ua = navigator.userAgent || navigator.vendor || window.opera;
+			if (navigator.userAgentData && typeof navigator.userAgentData.mobile === 'boolean') {
+				_isPhone = navigator.userAgentData.mobile;
+			} else if (/iPhone|iPod/i.test(_ua)) {
+				_isPhone = true;
+			} else if (/Android/i.test(_ua) && /Mobile/i.test(_ua)) {
+				_isPhone = true;
+			} else if (/BlackBerry|IEMobile|Opera Mini|webOS/i.test(_ua)) {
+				_isPhone = true;
+			} else {
+				_isPhone = (window.innerWidth || screen.width) < 480;
+			}
 			$.myglobals.ismobile = _isPhone;
 			$.myglobals.ismobileint = _isPhone;
-			// MobileType=1: force desktop view regardless of screen size
+			// MobileType=1: force desktop view regardless of device
 			if ($rootScope.config.MobileType == 1) {
 				$.myglobals.ismobile = false;
 			}
