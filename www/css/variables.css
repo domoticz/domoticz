@@ -192,7 +192,7 @@ body table#itemtablesmalltrippleicon tr td:first-child + td {
 	font-size: var(--dz-widget-value-font-size);
 	font-weight: bold;
 	white-space: nowrap;
-	color: var(--dz-widget-status-text);
+	color: var(--dz-widget-text);
 }
 
 /* --- Shared hover state --- */

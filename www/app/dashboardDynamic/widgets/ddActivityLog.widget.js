@@ -31,12 +31,16 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', function($scope, $http, $interval) {
+            controller: ['$scope', '$http', '$interval', '$q', function($scope, $http, $interval, $q) {
                 var ctrl = this;
                 ctrl.items    = [];
                 ctrl.loading  = false;
+                var cancelToken = null;
 
                 function load() {
+                    if (cancelToken) { cancelToken.resolve(); }
+                    cancelToken = $q.defer();
+
                     var cfg      = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
                     var maxItems = parseInt(cfg.maxItems) || 15;
                     ctrl.loading = true;
@@ -48,11 +52,13 @@ define([
                             used:  'true',
                             order: 'LastUpdate',
                             filter: 'all'
-                        }
+                        },
+                        timeout: cancelToken.promise
                     }).then(function(resp) {
                         ctrl.items   = (resp.data.result || []).slice(0, maxItems);
                         ctrl.loading = false;
-                    }).catch(function() {
+                    }).catch(function(err) {
+                        if (err.status === -1) { return; }
                         ctrl.loading = false;
                     });
                 }
@@ -61,7 +67,10 @@ define([
 
                 var timer = $interval(load, 15000);
 
-                $scope.$on('$destroy', function() { $interval.cancel(timer); });
+                $scope.$on('$destroy', function() {
+                    if (cancelToken) { cancelToken.resolve(); }
+                    $interval.cancel(timer);
+                });
                 $scope.$on('dd:widget:refresh', load);
 
                 ctrl.$onInit = load;

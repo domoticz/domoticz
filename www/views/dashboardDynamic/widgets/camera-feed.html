@@ -5,7 +5,9 @@
         <p class="dd-camera-hint" ng-if="ctrl.editMode">Click the settings icon to choose a camera.</p>
     </div>
 
-    <div ng-if="ctrl.widgetDef.config.cameraIdx" class="dd-camera-frame">
+    <div ng-if="ctrl.widgetDef.config.cameraIdx" class="dd-camera-frame"
+         ng-click="ctrl.openLiveStream()"
+         ng-class="{'dd-camera-frame--clickable': !ctrl.editMode}">
         <img ng-if="ctrl.imageUrl"
              ng-src="{{ctrl.imageUrl}}"
              class="dd-camera-img"

@@ -14,7 +14,7 @@
 
         <!-- Category tab strip — only shown when multiple categories are present and showTabs is enabled -->
         <ul class="nav nav-tabs dd-favorites-tabs" ng-show="ctrl.showTabs()">
-            <li ng-repeat="cat in ctrl.categories"
+            <li ng-repeat="cat in ctrl.categories track by cat.key"
                 ng-class="{ active: ctrl.activeCategory === cat.key }">
                 <a href="" ng-click="ctrl.activeCategory = cat.key; $event.preventDefault()">
                     <img ng-src="{{ cat.icon }}" width="16" height="16" alt="">
@@ -26,7 +26,7 @@
 
         <!-- Device list for the active category -->
         <div class="dd-dz-favorites-body">
-            <div ng-repeat="device in ctrl.activeDevices" class="dd-dz-fav-item">
+            <div ng-repeat="device in ctrl.activeDevices track by device.idx" class="dd-dz-fav-item">
                 <dz-light-widget
                     ng-if="ctrl.isLight(device)"
                     device="device"

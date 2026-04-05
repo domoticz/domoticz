@@ -1,18 +1,92 @@
-<div class="dd-quick-actions">
-    <button class="dd-qa-btn"
-            ng-repeat="action in ctrl.actions"
-            ng-click="ctrl.execute(action)"
-            ng-disabled="ctrl.busy[action.idx]"
-            ng-class="{
-                'dd-qa-btn--scene':   action.type === 'scene',
-                'dd-qa-btn--switch':  action.type !== 'scene',
-                'dd-qa-btn--success': ctrl.success[action.idx],
-                'dd-qa-btn--error':   ctrl.error[action.idx]
-            }"
-            title="{{ action.label }}">
-        <i ng-class="action.icon || 'fa-solid fa-play'"></i>
-        <span class="dd-qa-label" ng-bind="action.label"></span>
-    </button>
+<div class="dd-quick-actions"
+     ng-class="{'dd-quick-actions--list': ctrl.widgetDef.config.layout === true}">
+
+    <div ng-repeat="action in ctrl.actions" style="display:contents">
+
+        <!-- Regular button: switch, scene -->
+        <button class="dd-qa-btn"
+                ng-if="action.type !== 'blind' && action.type !== 'selector'"
+                ng-click="ctrl.execute(action)"
+                ng-class="{
+                    'dd-qa-btn--scene':   action.type === 'scene',
+                    'dd-qa-btn--switch':  action.type !== 'scene',
+                    'dd-qa-btn--success': ctrl.success[ctrl.activeKey(action)],
+                    'dd-qa-btn--error':   ctrl.error[ctrl.activeKey(action)],
+                    'dd-qa-btn--busy':    ctrl.busy[ctrl.activeKey(action)]
+                }"
+                title="{{ action.label }}">
+            <i ng-class="action.icon || 'fa-solid fa-play'"
+               ng-style="ctrl.deviceOn[ctrl.activeKey(action)] ? {'color': 'var(--dz-accent-color)'} : {}"></i>
+            <span class="dd-qa-label" ng-bind="action.label"></span>
+        </button>
+
+        <!-- Selector button + level picker -->
+        <div class="dd-qa-selector-group" ng-if="action.type === 'selector'" style="display:contents">
+            <button class="dd-qa-btn dd-qa-btn--selector"
+                    ng-click="ctrl.toggleLevelPicker(action.idx)"
+                    ng-class="{
+                        'dd-qa-btn--success': ctrl.success[action.idx + '_sel'],
+                        'dd-qa-btn--error':   ctrl.error[action.idx + '_sel'],
+                        'dd-qa-btn--busy':    ctrl.busy[action.idx + '_sel']
+                    }"
+                    title="{{ action.label }}">
+                <i ng-class="action.icon || 'fa-solid fa-sliders'"></i>
+                <span class="dd-qa-label" ng-bind="action.label"></span>
+                <span class="dd-qa-level-text" ng-bind="ctrl.currentLevelText[action.idx]"></span>
+            </button>
+            <div class="dd-qa-level-picker"
+                 ng-show="ctrl.showLevelPicker[action.idx]"
+                 ng-click="$event.stopPropagation()">
+                <button class="dd-qa-level-btn"
+                        ng-repeat="opt in ctrl.levelOptions[action.idx]"
+                        ng-click="ctrl.selectLevel(action, opt.value)"
+                        ng-class="{'dd-qa-level-btn--active': ctrl.currentLevel[action.idx] === opt.value}">
+                    {{ opt.label }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Blind button group -->
+        <div class="dd-qa-blind-group" ng-if="action.type === 'blind'">
+            <span class="dd-qa-label" ng-bind="action.label"></span>
+            <div class="dd-qa-blind-btns">
+                <button class="dd-qa-btn dd-qa-btn--blind"
+                        ng-click="ctrl.execute(action, 'Open')"
+                        ng-class="{
+                            'dd-qa-btn--success': ctrl.success[action.idx + '_Open'],
+                            'dd-qa-btn--error':   ctrl.error[action.idx + '_Open'],
+                            'dd-qa-btn--busy':    ctrl.busy[action.idx + '_Open']
+                        }"
+                        title="Open">
+                    <i class="fa-solid fa-chevron-up"
+                       ng-style="ctrl.deviceOn[action.idx] ? {'color': 'var(--dz-accent-color)'} : {}"></i>
+                </button>
+                <button class="dd-qa-btn dd-qa-btn--blind dd-qa-btn--stop"
+                        ng-if="action.hasStop"
+                        ng-click="ctrl.execute(action, 'Stop')"
+                        ng-class="{
+                            'dd-qa-btn--success': ctrl.success[action.idx + '_Stop'],
+                            'dd-qa-btn--error':   ctrl.error[action.idx + '_Stop'],
+                            'dd-qa-btn--busy':    ctrl.busy[action.idx + '_Stop']
+                        }"
+                        title="Stop">
+                    <i class="fa-solid fa-stop"></i>
+                </button>
+                <button class="dd-qa-btn dd-qa-btn--blind"
+                        ng-click="ctrl.execute(action, 'Close')"
+                        ng-class="{
+                            'dd-qa-btn--success': ctrl.success[action.idx + '_Close'],
+                            'dd-qa-btn--error':   ctrl.error[action.idx + '_Close'],
+                            'dd-qa-btn--busy':    ctrl.busy[action.idx + '_Close']
+                        }"
+                        title="Close">
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
     <div class="dd-qa-empty"
          ng-show="ctrl.actions.length === 0">
         <i class="fa-solid fa-bolt" style="opacity:0.3;font-size:24px"></i>

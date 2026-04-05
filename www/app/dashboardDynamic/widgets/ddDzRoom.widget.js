@@ -77,8 +77,17 @@ define([
                         });
                 }
 
-                $scope.$on('device_update', load);
-                $scope.$on('scene_update',  load);
+                $scope.$on('device_update', function(e, updated) {
+                    var idx = String(updated.idx);
+                    for (var i = 0; i < ctrl.devices.length; i++) {
+                        if (String(ctrl.devices[i].idx) === idx) {
+                            ctrl.devices[i] = updated;
+                            return;
+                        }
+                    }
+                    load();
+                });
+                $scope.$on('scene_update', function() { /* scenes not shown in room widget */ });
                 $scope.$on('dd:widget:refresh', load);
 
                 $scope.$watch(

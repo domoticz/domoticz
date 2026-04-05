@@ -3068,3 +3068,91 @@ body.dd-navbar-hidden #holder > .container-fluid {
 .tips-footer-close       { text-align: center; }
 .tips-footer-startup     { text-align: right; }
 .tips-startup-label      { display: inline-flex; align-items: center; gap: 8px; margin: 0; font-weight: normal; color: var(--dz-panel-text); cursor: pointer; user-select: none; }
+
+/* ── dz-picker: searchable custom dropdown ──────────────────────────────────
+   A themeable replacement for <select> with a live-filter search input.
+   Requires variables.css for --dz-* tokens.
+   ────────────────────────────────────────────────────────────────────────── */
+.dz-picker { position: relative; }
+
+.dz-picker-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px 8px;
+    border: 1px solid rgba(128,128,128,0.4);
+    border-radius: 3px;
+    background: var(--dz-input-bg, #fff);
+    color: var(--dz-input-text, #000);
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+}
+.dz-picker-btn:focus {
+    outline: none;
+    border-color: var(--dz-btn-primary-bg, #337ab7);
+    box-shadow: 0 0 0 2px rgba(51,122,183,0.2);
+}
+.dz-picker-btn-label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.dz-picker-caret {
+    margin-left: 6px;
+    font-size: 11px;
+    opacity: 0.6;
+    transition: transform 0.15s;
+}
+.dz-picker.open .dz-picker-caret { transform: rotate(180deg); }
+
+.dz-picker-dropdown {
+    display: none;
+    position: fixed;
+    z-index: 1060;
+    border: 1px solid rgba(128,128,128,0.4);
+    border-radius: 3px;
+    background: var(--dz-input-bg, #fff);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.dz-picker.open .dz-picker-dropdown { display: block; }
+
+.dz-picker-search {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px 8px;
+    border: none;
+    border-bottom: 1px solid rgba(128,128,128,0.25);
+    background: transparent;
+    color: var(--dz-input-text, #000);
+    font-size: 13px;
+}
+.dz-picker-search:focus { outline: none; }
+
+.dz-picker-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 220px;
+    overflow-y: auto;
+    scrollbar-color: var(--dz-accent-color) transparent;
+}
+.dz-picker-list li > a {
+    display: block;
+    padding: 6px 10px;
+    color: var(--dz-input-text, #000);
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.dz-picker-list li:hover > a { background: var(--dz-btn-hover-bg, #e0e0e0); }
+.dz-picker-list li.highlighted > a { background: var(--dz-btn-hover-bg, #e0e0e0); }
+.dz-picker-list li.active > a {
+    background: var(--dz-btn-primary-bg, #337ab7);
+    color: var(--dz-btn-primary-text, #fff);
+}

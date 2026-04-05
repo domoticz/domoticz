@@ -72,94 +72,72 @@
                 <option value="">-- Select --</option>
             </select>
 
+            <!-- picker (searchable dz-picker for large option lists) -->
+            <dz-picker ng-if="field.type === 'picker'"
+                       ng-model="config[field.key]"
+                       dz-options="field.options"
+                       placeholder="-- Select --"
+                       dz-required="field.required"
+                       name="field_{{ field.key }}">
+            </dz-picker>
+
             <!-- device-picker -->
-            <div ng-if="field.type === 'device-picker'">
-                <input type="text" class="form-control input-sm" style="margin-bottom:4px"
-                       placeholder="Search devices..."
-                       ng-model="pickerSearch[field.key]"
-                       ng-show="deviceListByField[field.key].length > 5">
-                <select class="combobox ui-corner-all"
-                        name="field_{{ field.key }}"
-                        ng-model="config[field.key]"
-                        ng-required="field.required">
-                    <option value="">-- Select Device --</option>
-                    <option ng-repeat="d in deviceListByField[field.key] | filter:{Name: pickerSearch[field.key]}" value="{{ d.idx }}">
-                        {{ field.deviceFilter ? d.Name : deviceLabel(d) }}
-                    </option>
-                </select>
-            </div>
+            <dz-picker ng-if="field.type === 'device-picker'"
+                       ng-model="config[field.key]"
+                       dz-options="pickerOptions[field.key]"
+                       placeholder="-- Select Device --"
+                       dz-required="field.required"
+                       name="field_{{ field.key }}">
+            </dz-picker>
 
             <!-- scene-picker -->
-            <div ng-if="field.type === 'scene-picker'">
-                <input type="text" class="form-control input-sm" style="margin-bottom:4px"
-                       placeholder="Search scenes..."
-                       ng-model="pickerSearch[field.key]"
-                       ng-show="scenes.length > 5">
-                <select class="combobox ui-corner-all"
-                        name="field_{{ field.key }}"
-                        ng-model="config[field.key]"
-                        ng-required="field.required">
-                    <option value="">— select scene —</option>
-                    <option ng-repeat="s in scenes | filter:{Name: pickerSearch[field.key]}" value="{{ s.idx }}">{{ s.Name }}</option>
-                </select>
-            </div>
+            <dz-picker ng-if="field.type === 'scene-picker'"
+                       ng-model="config[field.key]"
+                       dz-options="sceneOptions"
+                       placeholder="— select scene —"
+                       dz-required="field.required"
+                       name="field_{{ field.key }}">
+            </dz-picker>
 
             <!-- plan-picker -->
-            <div ng-if="field.type === 'plan-picker'">
-                <input type="text" class="form-control input-sm" style="margin-bottom:4px"
-                       placeholder="Search rooms / plans..."
-                       ng-model="pickerSearch[field.key]"
-                       ng-show="plans.length > 5">
-                <select class="combobox ui-corner-all"
-                        name="field_{{ field.key }}"
-                        ng-model="config[field.key]"
-                        ng-required="field.required">
-                    <option value="">— Select Room / Plan —</option>
-                    <option ng-repeat="p in (plans | filter:{Name: pickerSearch[field.key]}) track by p.idx" value="{{ p.idx }}">{{ p.Name }}</option>
-                </select>
-            </div>
+            <dz-picker ng-if="field.type === 'plan-picker'"
+                       ng-model="config[field.key]"
+                       dz-options="planOptions"
+                       placeholder="— Select Room / Plan —"
+                       dz-required="field.required"
+                       name="field_{{ field.key }}">
+            </dz-picker>
 
             <!-- camera-picker -->
-            <div ng-if="field.type === 'camera-picker'">
-                <input type="text" class="form-control input-sm" style="margin-bottom:4px"
-                       placeholder="Search cameras..."
-                       ng-model="pickerSearch[field.key]"
-                       ng-show="cameras.length > 5">
-                <select class="combobox ui-corner-all"
-                        ng-model="config[field.key]"
-                        ng-required="field.required">
-                    <option value="">— Select camera —</option>
-                    <option ng-repeat="cam in (cameras | filter:{Name: pickerSearch[field.key]}) track by cam.idx"
-                            value="{{cam.idx}}">{{cam.Name}}</option>
-                </select>
-            </div>
+            <dz-picker ng-if="field.type === 'camera-picker'"
+                       ng-model="config[field.key]"
+                       dz-options="cameraOptions"
+                       placeholder="— Select camera —"
+                       dz-required="field.required"
+                       name="field_{{ field.key }}">
+            </dz-picker>
 
             <!-- action-list -->
             <div ng-if="field.type === 'action-list'" class="dd-action-list-editor">
 
                 <!-- Existing actions -->
-                <div class="dd-al-item" ng-repeat="action in config[field.key] track by $index">
-                    <span class="dd-al-type-badge"
-                          ng-class="action.type === 'scene' ? 'dd-al-badge-scene' : 'dd-al-badge-switch'">
-                        {{ action.type === 'scene' ? 'Scene' : 'Device' }}
-                    </span>
-                    <i ng-class="action.icon || 'fa-solid fa-bolt'" class="dd-al-icon"></i>
-                    <span class="dd-al-label" ng-bind="action.label"></span>
-                    <div class="dd-al-actions">
-                        <button type="button" class="btn btn-xs btn-default"
-                                ng-click="actionMoveUp(field.key, $index)"
-                                ng-disabled="$index === 0" title="Move up">
-                            <i class="fa-solid fa-chevron-up"></i>
-                        </button>
-                        <button type="button" class="btn btn-xs btn-default"
-                                ng-click="actionMoveDown(field.key, $index)"
-                                ng-disabled="$index === config[field.key].length - 1" title="Move down">
-                            <i class="fa-solid fa-chevron-down"></i>
-                        </button>
-                        <button type="button" class="btn btn-xs btn-danger"
-                                ng-click="actionRemoveItem(field.key, $index)" title="Remove">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
+                <div class="dd-al-items" dd-sortable-list="config[field.key]">
+                    <div class="dd-al-item" draggable="true"
+                         data-sort-index="{{ $index }}"
+                         ng-repeat="action in config[field.key] track by $index">
+                        <i class="fa-solid fa-grip-vertical dd-al-drag-handle"></i>
+                        <span class="dd-al-type-badge"
+                              ng-class="{'dd-al-badge-scene':    action.type === 'scene',
+                                         'dd-al-badge-blind':    action.type === 'blind',
+                                         'dd-al-badge-selector': action.type === 'selector',
+                                         'dd-al-badge-switch':   action.type === 'switch'}">
+                            {{ action.type === 'scene' ? 'Scene' : action.type === 'blind' ? 'Blind' : action.type === 'selector' ? 'Selector' : 'Device' }}
+                        </span>
+                        <span class="dd-al-label" ng-bind="action.label"></span>
+                        <i class="fa-solid fa-pencil dd-al-action-icon dd-al-rename-icon"
+                           ng-click="actionRenameItem(field.key, $index)" title="Rename"></i>
+                        <i class="fa-solid fa-trash dd-al-action-icon dd-al-delete-icon"
+                           ng-click="actionRemoveItem(field.key, $index)" title="Remove"></i>
                     </div>
                 </div>
 
@@ -175,15 +153,11 @@
                             <option value="scene">Scene</option>
                         </select>
 
-                        <select class="combobox ui-corner-all" ng-model="newAction.idx" style="flex:1">
-                            <option value="">-- Select --</option>
-                            <option ng-if="newAction.type !== 'scene'"
-                                    ng-repeat="d in actionDevices track by d.idx"
-                                    value="{{ d.idx }}">{{ d.Name }}</option>
-                            <option ng-if="newAction.type === 'scene'"
-                                    ng-repeat="s in actionScenes track by s.idx"
-                                    value="{{ s.idx }}">{{ s.Name }}</option>
-                        </select>
+                        <dz-picker ng-model="newAction.idx"
+                                   dz-options="getActionOptions()"
+                                   placeholder="-- Select --"
+                                   style="flex:3">
+                        </dz-picker>
 
                         <input type="text" class="text ui-widget-content ui-corner-all" ng-model="newAction.label"
                                placeholder="Label (optional)" style="flex:1">
@@ -211,9 +185,18 @@
             </dd-wcp-color>
 
             <!-- group: renders sub-fields side by side -->
-            <div ng-if="field.type === 'group'" class="dd-field-group" style="display:flex;gap:12px;align-items:flex-end">
-                <div ng-repeat="subField in field.fields" style="flex:1;min-width:0">
+            <div ng-if="field.type === 'group'" class="dd-field-group"
+                 ng-style="{'display':'flex','gap':'12px','align-items':'center','justify-content': field.spread ? 'space-between' : 'flex-start'}">
+                <div ng-repeat="subField in field.fields"
+                     ng-style="subField.type === 'boolean' ? {'flex':'0 0 auto'} : {'flex':'1','min-width':'0'}">
                     <label ng-if="subField.type !== 'boolean'" style="display:block;margin-bottom:4px">{{ subField.label }}</label>
+
+                    <div ng-if="subField.type === 'boolean'" class="dd-checkbox-label"
+                         ng-click="config[subField.key] = !config[subField.key]">
+                        <i class="fa-solid dd-bool-icon"
+                           ng-class="config[subField.key] ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                        {{ subField.label }}
+                    </div>
 
                     <input ng-if="subField.type === 'number'"
                            type="number"

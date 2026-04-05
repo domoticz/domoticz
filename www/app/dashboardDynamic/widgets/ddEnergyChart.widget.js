@@ -14,6 +14,17 @@ define([
     var SWITCH_TYPE_WATER            = 2;
     var SWITCH_TYPE_ENERGY_GENERATED = 4;
 
+    function parseDateLocal(str) {
+        var s = str.replace('T', ' ');
+        var dp = s.split(' ');
+        var ymd = dp[0].split('-');
+        if (dp.length === 1) {
+            return new Date(+ymd[0], +ymd[1] - 1, +ymd[2]).getTime();
+        }
+        var hms = dp[1].split(':');
+        return new Date(+ymd[0], +ymd[1] - 1, +ymd[2], +hms[0], +hms[1], +(hms[2] || 0)).getTime();
+    }
+
     function detectDeviceInfo(device) {
         if (!device) {
             return { unit: 'kWh', divider: 1000, isP1: false, hasReturn: false };
@@ -60,19 +71,21 @@ define([
 
     // API parameters for each chartType
     var CHART_TYPE_API = {
-        day:     { sensor: 'counter', range: 'day' },
-        week:    { sensor: 'counter', range: 'week' },
-        month:   { sensor: 'counter', range: 'month' },
-        year:    { sensor: 'counter', range: 'year' },
-        compare: { sensor: 'counter', range: 'compare', groupby: 'month' }
+        day:      { sensor: 'counter', range: 'day' },
+        shortlog: { sensor: 'counter', range: 'day' },
+        week:     { sensor: 'counter', range: 'week' },
+        month:    { sensor: 'counter', range: 'month' },
+        year:     { sensor: 'counter', range: 'year' },
+        compare:  { sensor: 'counter', range: 'compare', groupby: 'month' }
     };
 
     var CHART_TYPE_LABELS = {
-        day:     'Today (hourly)',
-        week:    'Last 7 days',
-        month:   'Last month',
-        year:    'Last year',
-        compare: 'Compare years'
+        day:      'Today (hourly)',
+        shortlog: 'Short Log',
+        week:     'Last 7 days',
+        month:    'Last month',
+        year:     'Last year',
+        compare:  'Compare years'
     };
 
     var MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -102,13 +115,14 @@ define([
                 type:    'select',
                 label:   'Chart type',
                 options: [
-                    { value: 'day',     label: 'Today (hourly)' },
-                    { value: 'week',    label: 'Last 7 days' },
-                    { value: 'month',   label: 'Last month' },
-                    { value: 'year',    label: 'Last year' },
-                    { value: 'compare', label: 'Compare years' }
+                    { value: 'shortlog', label: 'Short Log' },
+                    { value: 'day',      label: 'Today (hourly)' },
+                    { value: 'week',     label: 'Last 7 days' },
+                    { value: 'month',    label: 'Last month' },
+                    { value: 'year',     label: 'Last year' },
+                    { value: 'compare',  label: 'Compare years' }
                 ],
-                default: 'day'
+                default: 'shortlog'
             },
             {
                 key:      'title',
@@ -135,6 +149,7 @@ define([
                 var ctrl = this;
                 ctrl.chartId    = 'dd-energy-chart-' + (++chartIdCounter);
                 ctrl.deviceName = '';
+                ctrl.noData     = false;
                 var chart        = null;
                 var cancelToken  = null;
                 var lastDeviceIdx = null;
@@ -213,18 +228,32 @@ define([
                 function fetchChartData(cfg) {
                     var chartType = resolveChartType(cfg);
                     var api = CHART_TYPE_API[chartType];
-                    var url = 'json.htm?type=command&param=graph&sensor=' + api.sensor +
+                    var info = deviceInfo || { isP1: false };
+                    var url;
+
+                    if (info.isP1 && chartType === 'day') {
+                        url = 'json.htm?type=command&param=graph&sensor=counter&idx=' + cfg.deviceIdx + '&range=hour&resolution=60';
+                    } else if (info.isP1 && chartType === 'compare') {
+                        url = 'json.htm?type=command&param=graph&sensor=counter&idx=' + cfg.deviceIdx + '&range=compare&groupby=month&sensorarea=usage';
+                    } else {
+                        url = 'json.htm?type=command&param=graph&sensor=' + api.sensor +
                               '&idx=' + cfg.deviceIdx + '&range=' + api.range;
-                    if (api.groupby) {
-                        url += '&groupby=' + api.groupby;
+                        if (api.groupby) {
+                            url += '&groupby=' + api.groupby;
+                        }
                     }
 
                     $http.get(url, { timeout: cancelToken.promise })
                         .then(function(resp) {
                             var data      = resp.data.result || [];
                             var firstYear = resp.data.firstYear || null;
+                            var meta      = {
+                                p1DisplayType: resp.data.P1DisplayType,
+                                delivered:     resp.data.delivered === true
+                            };
+                            ctrl.noData   = (data.length === 0);
                             $timeout(function() {
-                                renderChart(data, cfg, chartType, firstYear);
+                                renderChart(data, cfg, chartType, firstYear, meta);
                             }, 0);
                         })
                         .catch(function(err) {
@@ -274,17 +303,24 @@ define([
                 // Render dispatch
                 // ----------------------------------------------------------------
 
-                function renderChart(data, cfg, chartType, firstYear) {
+                function renderChart(data, cfg, chartType, firstYear, meta) {
                     var container = document.getElementById(ctrl.chartId);
                     if (!container || !window.Highcharts) { return; }
 
                     destroyChart();
 
                     var info = deviceInfo || { unit: 'kWh', divider: 1000, isP1: false, hasReturn: false };
+                    meta = meta || {};
 
                     if (chartType === 'compare') {
                         chart = renderCompare(container, data, cfg, info, firstYear);
-                    } else if (info.isP1 && info.hasReturn) {
+                    } else if (chartType === 'shortlog') {
+                        chart = info.isP1
+                            ? renderP1ShortLog(container, data, cfg, info, meta)
+                            : renderSimpleShortLog(container, data, cfg, info);
+                    } else if (info.isP1 && chartType === 'day') {
+                        chart = renderP1HourBars(container, data, cfg, info, chartType);
+                    } else if (info.isP1) {
                         chart = renderP1Bars(container, data, cfg, info, chartType);
                     } else {
                         chart = renderSimpleBars(container, data, cfg, info, chartType);
@@ -299,7 +335,7 @@ define([
 
                 function renderSimpleBars(container, data, cfg, info, chartType) {
                     var series = data.map(function(d) {
-                        var ts  = new Date(d.d).getTime();
+                        var ts  = parseDateLocal(d.d);
                         var raw = parseFloat(d.v !== undefined ? d.v : (d.v1 || 0));
                         // Divide by info.divider: kWh devices use 1000 (Wh→kWh),
                         // Water uses 0.001 (m³→L, i.e. multiply by 1000), Gas uses 1.
@@ -343,21 +379,20 @@ define([
                     var returnSeries = [];
 
                     data.forEach(function(d) {
-                        var ts   = new Date(d.d).getTime();
-                        var imp  = (parseFloat(d.v1 || 0) + parseFloat(d.v2 || 0)) / 1000;
-                        var ret  = (parseFloat(d.r1 || 0) + parseFloat(d.r2 || 0)) / 1000;
+                        var ts  = parseDateLocal(d.d);
+                        // v1/v2 from the backend are already in kWh (divided by the energy divider)
+                        var imp = parseFloat(d.v1 || 0) + parseFloat(d.v2 || 0);
+                        var ret = parseFloat(d.r1 || 0) + parseFloat(d.r2 || 0);
                         if (!isNaN(imp)) { importSeries.push([ts, imp]); }
-                        if (!isNaN(ret) && ret > 0) { returnSeries.push([ts, ret]); }
+                        if (info.hasReturn && !isNaN(ret) && ret > 0) { returnSeries.push([ts, ret]); }
                     });
 
-                    var xFmt = (chartType === 'day') ? '%a %d %b %H:%M' : '%a %d %b %Y';
+                    var xFmt      = '%a %d %b %Y';
                     var textColor = getThemeColor('--dz-body-text', '#ccc');
 
                     var opts = baseChartOptions(container);
-                    opts.chart.type   = 'column';
-                    opts.chart.margin = [10, 10, 30, 40];
-                    opts.title.text   = titleForChartType(cfg, chartType);
-                    opts.legend       = { enabled: true, itemStyle: { fontSize: '10px', color: textColor } };
+                    opts.chart.type = 'column';
+                    opts.title.text = titleForChartType(cfg, chartType);
                     opts.xAxis = {
                         type:   'datetime',
                         labels: { style: { fontSize: '10px' } }
@@ -366,24 +401,261 @@ define([
                         title:  { text: 'kWh', style: { fontSize: '10px' } },
                         labels: { style: { fontSize: '10px' } }
                     };
+
+                    if (info.hasReturn) {
+                        opts.chart.marginBottom = 75;
+                        opts.legend = {
+                            enabled:       true,
+                            verticalAlign: 'bottom',
+                            itemStyle:     { fontSize: '10px', color: textColor }
+                        };
+                        opts.tooltip = {
+                            shared:        true,
+                            valueSuffix:   ' kWh',
+                            valueDecimals: 3,
+                            xDateFormat:   xFmt
+                        };
+                        opts.series = [
+                            {
+                                name:  'Usage',
+                                data:  importSeries,
+                                color: 'rgba(3,190,252,0.8)'
+                            },
+                            {
+                                name:  'Return',
+                                data:  returnSeries,
+                                color: 'rgba(3,252,190,0.8)'
+                            }
+                        ];
+                    } else {
+                        opts.tooltip = {
+                            valueSuffix:   ' kWh',
+                            valueDecimals: 3,
+                            xDateFormat:   xFmt
+                        };
+                        opts.series = [{
+                            name:  'Usage',
+                            data:  importSeries,
+                            color: 'rgba(3,190,252,0.8)'
+                        }];
+                    }
+
+                    return window.Highcharts.chart(ctrl.chartId, opts);
+                }
+
+                // ----------------------------------------------------------------
+                // Chart: P1 hourly bars (day / week) — reads v (usage Wh) + r (return Wh)
+                // ----------------------------------------------------------------
+
+                function renderP1HourBars(container, data, cfg, info, chartType) {
+                    var importSeries = [];
+                    var returnSeries = [];
+                    var hasReturn    = info.hasReturn;
+
+                    data.forEach(function(d) {
+                        var ts  = parseDateLocal(d.d);
+                        var imp = parseFloat(d.v || 0);
+                        var ret = parseFloat(d.r || 0);
+                        if (!isNaN(imp)) { importSeries.push([ts, imp]); }
+                        if (hasReturn && !isNaN(ret) && ret > 0) { returnSeries.push([ts, ret]); }
+                    });
+
+                    var xFmt      = '%a %d %b %H:%M';
+                    var textColor = getThemeColor('--dz-body-text', '#ccc');
+
+                    var opts = baseChartOptions(container);
+                    opts.chart.type = 'column';
+                    opts.title.text = titleForChartType(cfg, chartType);
+                    opts.xAxis = {
+                        type:   'datetime',
+                        labels: { style: { fontSize: '10px' } }
+                    };
+                    opts.yAxis = {
+                        title:  { text: 'Wh', style: { fontSize: '10px' } },
+                        labels: { style: { fontSize: '10px' } }
+                    };
+
+                    if (hasReturn) {
+                        opts.chart.marginBottom = 75;
+                        opts.legend = {
+                            enabled:       true,
+                            verticalAlign: 'bottom',
+                            itemStyle:     { fontSize: '10px', color: textColor }
+                        };
+                        opts.tooltip = {
+                            shared:        true,
+                            valueSuffix:   ' Wh',
+                            valueDecimals: 0,
+                            xDateFormat:   xFmt
+                        };
+                        opts.series = [
+                            {
+                                name:  'Usage',
+                                data:  importSeries,
+                                color: 'rgba(3,190,252,0.8)'
+                            },
+                            {
+                                name:  'Return',
+                                data:  returnSeries,
+                                color: 'rgba(3,252,190,0.8)'
+                            }
+                        ];
+                    } else {
+                        opts.tooltip = {
+                            valueSuffix:   ' Wh',
+                            valueDecimals: 0,
+                            xDateFormat:   xFmt
+                        };
+                        opts.series = [{
+                            name:  'Usage',
+                            data:  importSeries,
+                            color: 'rgba(3,190,252,0.8)'
+                        }];
+                    }
+
+                    return window.Highcharts.chart(ctrl.chartId, opts);
+                }
+
+                // ----------------------------------------------------------------
+                // Chart: P1 short log (range=day) — area, power in W, threshold=0
+                // ----------------------------------------------------------------
+
+                function renderP1ShortLog(container, data, cfg, info, meta) {
+                    var p1DisplayType = (meta.p1DisplayType !== undefined) ? meta.p1DisplayType : 1;
+                    var delivered     = meta.delivered === true;
+                    var textColor     = getThemeColor('--dz-body-text', '#ccc');
+                    var series        = [];
+
+                    var opts = baseChartOptions(container);
+                    opts.chart.type = 'area';
+                    opts.title.text = titleForChartType(cfg, 'shortlog');
+                    opts.xAxis = {
+                        type:   'datetime',
+                        labels: { style: { fontSize: '10px' } }
+                    };
+                    opts.yAxis = {
+                        title:  { text: 'W', style: { fontSize: '10px' } },
+                        labels: { style: { fontSize: '10px' } },
+                        min:    0
+                    };
                     opts.tooltip = {
                         shared:        true,
-                        valueSuffix:   ' kWh',
-                        valueDecimals: 3,
-                        xDateFormat:   xFmt
+                        valueSuffix:   ' W',
+                        valueDecimals: 0,
+                        xDateFormat:   '%a %d %b %H:%M'
                     };
-                    opts.series = [
-                        {
-                            name:  'Import',
-                            data:  importSeries,
-                            color: getThemeColor('--dz-accent-danger', '#e74c3c')
-                        },
-                        {
-                            name:  'Return',
-                            data:  returnSeries,
-                            color: getThemeColor('--dz-accent-success', '#27ae60')
+                    opts.plotOptions = {
+                        area: { marker: { enabled: false }, threshold: 0 }
+                    };
+
+                    if (p1DisplayType === 1) {
+                        // Dynamic mode: v = usage W (positive), r = return W (negative in data, show as positive)
+                        var usageSeries  = [];
+                        var returnSeries = [];
+                        data.forEach(function(d) {
+                            var ts = parseDateLocal(d.d);
+                            var v  = parseFloat(d.v);
+                            var r  = parseFloat(d.r);
+                            usageSeries.push([ts, isNaN(v) ? null : Math.max(0, v)]);
+                            if (delivered) {
+                                returnSeries.push([ts, isNaN(r) ? null : Math.abs(r)]);
+                            }
+                        });
+                        series.push({
+                            name:  'Usage',
+                            data:  usageSeries,
+                            color: {
+                                linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                                stops: [
+                                    [0, 'rgb(160,30,252,1)'],
+                                    [1, 'rgb(3,190,252,0.8)']
+                                ]
+                            }
+                        });
+                        if (delivered) {
+                            series.push({
+                                name:  'Return',
+                                data:  returnSeries,
+                                color: {
+                                    linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                                    stops: [
+                                        [0, 'rgb(3,152,90)'],
+                                        [0.8, 'rgb(3,252,190)']
+                                    ]
+                                }
+                            });
                         }
-                    ];
+                    } else {
+                        // Low/High tariff mode: v1+v2 stacked for usage, r1+r2 stacked for return
+                        var u1 = [], u2 = [], r1 = [], r2 = [];
+                        data.forEach(function(d) {
+                            var ts = parseDateLocal(d.d);
+                            u1.push([ts, parseFloat(d.v1) || null]);
+                            u2.push([ts, parseFloat(d.v2) || null]);
+                            if (delivered) {
+                                r1.push([ts, Math.abs(parseFloat(d.r1)) || null]);
+                                r2.push([ts, Math.abs(parseFloat(d.r2)) || null]);
+                            }
+                        });
+                        opts.plotOptions.area.stacking = 'normal';
+                        series.push({ name: 'Usage 1',  data: u1, color: 'rgba(60,130,252,0.8)',  fillOpacity: 0.5, stack: 'susage'  });
+                        series.push({ name: 'Usage 2',  data: u2, color: 'rgba(3,190,252,0.8)',   fillOpacity: 0.5, stack: 'susage'  });
+                        if (delivered) {
+                            series.push({ name: 'Return 1', data: r1, color: 'rgba(30,242,110,0.8)', fillOpacity: 0.5, stack: 'sreturn' });
+                            series.push({ name: 'Return 2', data: r2, color: 'rgba(3,252,190,0.8)',  fillOpacity: 0.5, stack: 'sreturn' });
+                        }
+                    }
+
+                    opts.series = series;
+
+                    if (series.length > 1) {
+                        opts.chart.marginBottom = 65;
+                        opts.legend = {
+                            enabled:       true,
+                            verticalAlign: 'bottom',
+                            y:             10,
+                            itemStyle:     { fontSize: '10px', color: textColor }
+                        };
+                    }
+
+                    return window.Highcharts.chart(ctrl.chartId, opts);
+                }
+
+                // ----------------------------------------------------------------
+                // Chart: non-P1 short log (range=day) — column, raw v values
+                // ----------------------------------------------------------------
+
+                function renderSimpleShortLog(container, data, cfg, info) {
+                    var series = data.map(function(d) {
+                        var ts  = parseDateLocal(d.d);
+                        var val = parseFloat(d.v);
+                        return [ts, isNaN(val) || val === 0 ? null : val];
+                    }).filter(function(pt) { return pt[1] !== null; });
+
+                    // Shortlog `v` for energy devices is in W (instant power), not kWh
+                    var unit = (info.unit === 'kWh') ? 'W' : info.unit;
+
+                    var opts = baseChartOptions(container);
+                    opts.chart.type = 'column';
+                    opts.title.text = titleForChartType(cfg, 'shortlog');
+                    opts.xAxis = {
+                        type:   'datetime',
+                        labels: { style: { fontSize: '10px' } }
+                    };
+                    opts.yAxis = {
+                        title:  { text: unit, style: { fontSize: '10px' } },
+                        labels: { style: { fontSize: '10px' } }
+                    };
+                    opts.tooltip = {
+                        valueSuffix:   ' ' + unit,
+                        valueDecimals: 0,
+                        xDateFormat:   '%a %d %b %H:%M'
+                    };
+                    opts.series = [{
+                        name:  ctrl.deviceName || unit,
+                        data:  series,
+                        color: getThemeColor('--dz-btn-primary-bg', '#337ab7')
+                    }];
 
                     return window.Highcharts.chart(ctrl.chartId, opts);
                 }

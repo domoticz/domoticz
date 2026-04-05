@@ -180,6 +180,14 @@ body.dd-navbar-hidden .dd-toolbar {
     flex-wrap: wrap;
 }
 
+.dd-toolbar-help {
+    color: var(--dz-body-text);
+    text-decoration: none;
+    padding: 4px 6px;
+    line-height: 1;
+}
+.dd-toolbar-help:hover { color: var(--dz-body-text); text-decoration: none; }
+
 /* Keep the dropdown toggle button dark when open (Bootstrap overrides it white) */
 .dd-toolbar .btn-group.open > .dropdown-toggle {
     background: transparent !important;
@@ -468,6 +476,10 @@ body.dd-navbar-hidden .dd-toolbar {
 .dd-page.edit-mode .dd-grid .grid-stack-item-content {
     outline: 1px dashed var(--dz-btn-warning-bg);
     border-radius: 4px;
+}
+
+.dd-page.edit-mode .dd-widget-body * {
+    pointer-events: none;
 }
 
 /* Drag placeholder */
@@ -808,6 +820,10 @@ body.dd-navbar-hidden .dd-toolbar {
     opacity: 0.7;
     text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
+
+.dd-baro-title { position: absolute; top: 8px; left: 8px; z-index: 1; }
+.dd-baro-log-icon { position: absolute; bottom: 8px; right: 8px; opacity: 0.6; }
+.dd-baro-log-icon:hover { opacity: 1; }
 
 /* ── Weather Widget — forecast card style ─────────────────── */
 .dd-weather-forecast-card {
@@ -1325,6 +1341,11 @@ body.dd-navbar-hidden .dd-toolbar {
     cursor: not-allowed;
 }
 
+.dd-qa-btn--busy {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
 .dd-qa-btn--scene {
     border-color: var(--dz-btn-primary-bg);
 }
@@ -1357,6 +1378,132 @@ body.dd-navbar-hidden .dd-toolbar {
 
 .dd-qa-empty p {
     margin: 6px 0 0 0;
+}
+
+.dd-qa-blind-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    min-width: 80px;
+}
+
+.dd-qa-blind-btns {
+    display: flex;
+    gap: 3px;
+    width: 100%;
+}
+
+.dd-qa-btn--blind {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 4px;
+}
+
+.dd-qa-btn--stop {
+    flex: 0.7;
+    font-size: 0.75em;
+    opacity: 0.8;
+}
+
+
+.dd-qa-level-text {
+    font-size: 0.75em;
+    opacity: 0.75;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dd-qa-level-picker {
+    flex: 0 0 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px 0;
+}
+
+.dd-qa-level-btn {
+    flex: 1;
+    min-width: 60px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(128,128,128,0.4);
+    background: var(--dz-panel-bg);
+    color: var(--dz-body-text);
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: background 0.15s;
+}
+
+.dd-qa-level-btn:hover {
+    background: rgba(128,128,128,0.4);
+}
+
+.dd-qa-level-btn--active {
+    background: var(--dz-btn-primary-bg);
+    border-color: var(--dz-btn-primary-bg);
+    color: var(--dz-btn-primary-text);
+}
+
+.dd-quick-actions--list {
+    flex-direction: column;
+    align-content: flex-start;
+    gap: 4px;
+}
+
+/* Full-width row buttons: switch, scene, selector — excludes blind sub-buttons */
+.dd-quick-actions--list .dd-qa-btn:not(.dd-qa-btn--blind) {
+    flex: none;
+    width: 100%;
+    box-sizing: border-box;
+    flex-direction: row;
+    justify-content: flex-start;
+    min-width: 0;
+    padding: 6px 10px;
+    gap: 8px;
+}
+
+/* Label on left (takes all space), icon on right */
+.dd-quick-actions--list .dd-qa-btn:not(.dd-qa-btn--blind) > .dd-qa-label {
+    order: 1;
+    flex: 1;
+    text-align: left;
+}
+.dd-quick-actions--list .dd-qa-btn:not(.dd-qa-btn--blind) > .dd-qa-level-text {
+    order: 2;
+}
+.dd-quick-actions--list .dd-qa-btn:not(.dd-qa-btn--blind) > i {
+    order: 3;
+}
+
+/* Blind group: label left, buttons right */
+.dd-quick-actions--list .dd-qa-blind-group {
+    flex: none;
+    width: 100%;
+    box-sizing: border-box;
+    flex-direction: row;
+    align-items: center;
+    min-width: 0;
+    padding: 6px 10px;
+    background: var(--dz-panel-bg);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+}
+
+.dd-quick-actions--list .dd-qa-blind-group > .dd-qa-label {
+    flex: 1;
+}
+
+.dd-quick-actions--list .dd-qa-blind-btns {
+    width: auto;
+}
+
+.dd-quick-actions--list .dd-qa-level-picker {
+    flex: 0 0 100%;
+    padding: 2px 0 2px 10px;
 }
 
 /* ── iFrame Embed widget ──────────────────────────────────── */
@@ -1632,6 +1779,10 @@ body.dd-navbar-hidden .dd-toolbar {
     background: #000;
 }
 
+.dd-camera-frame--clickable {
+    cursor: pointer;
+}
+
 .dd-camera-img {
     position: absolute;
     inset: 0;
@@ -1674,7 +1825,7 @@ body.dd-navbar-hidden .dd-toolbar {
 /* ── Widget Settings Form (Bootstrap 2 form-group fix) ───────── */
 .dd-settings-form .form-group {
     display: block;
-    margin-bottom: 14px;
+    margin-bottom: 4px;
 }
 
 /* Block label for all non-boolean fields */
@@ -1891,14 +2042,38 @@ dd-wcp-color {
     gap: 4px;
 }
 
+.dd-al-items {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
 .dd-al-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 5px 8px;
-    background: var(--dz-input-bg, rgba(255,255,255,0.05));
-    border: 1px solid var(--dz-border-color, rgba(255,255,255,0.1));
+    gap: 5px;
+    padding: 2px 5px;
+    background: var(--dz-input-bg);
+    border: 1px solid rgba(128,128,128,0.4);
     border-radius: 4px;
+    cursor: default;
+    user-select: none;
+}
+
+.dd-al-item.dd-al-drag-over {
+    border-color: var(--dz-btn-primary-bg);
+    background: rgba(128,128,128,0.4);
+}
+
+.dd-al-item.dd-al-dragging {
+    opacity: 0.4;
+}
+
+.dd-al-drag-handle {
+    color: var(--dz-btn-text);
+    cursor: grab;
+    flex-shrink: 0;
+    font-size: 12px;
 }
 
 .dd-al-type-badge {
@@ -1910,36 +2085,39 @@ dd-wcp-color {
     text-transform: uppercase;
 }
 
-.dd-al-badge-scene  { background: var(--dz-btn-success-bg, #5cb85c); color: #fff; }
-.dd-al-badge-switch { background: var(--dz-btn-primary-bg, #337ab7); color: #fff; }
-
-.dd-al-icon {
-    font-size: 13px;
-    color: var(--dz-body-text-muted, #999);
-    flex-shrink: 0;
-}
+.dd-al-badge-scene    { background: var(--dz-btn-success-bg); color: var(--dz-body-text); }
+.dd-al-badge-switch   { background: var(--dz-btn-primary-bg); color: var(--dz-body-text); }
+.dd-al-badge-blind    { background: var(--dz-btn-info-bg); color: var(--dz-body-text); }
+.dd-al-badge-selector { background: var(--dz-btn-warning-bg); color: var(--dz-body-text); }
 
 .dd-al-label {
     flex: 1;
     font-size: 13px;
-    color: var(--dz-body-text);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.dd-al-actions {
-    display: flex;
-    gap: 3px;
+.dd-al-action-icon {
+    font-size: 12px;
     flex-shrink: 0;
+    cursor: pointer;
+    padding: 2px 3px;
+    border-radius: 3px;
+    opacity: 0.5;
+    transition: opacity 0.15s;
 }
+.dd-al-action-icon:hover { opacity: 1; }
+.dd-al-rename-icon { color: var(--dz-body-text); }
+.dd-al-delete-icon { color: var(--dz-accent-red); }
+
 
 .dd-al-empty {
     padding: 8px;
     font-size: 12px;
-    color: var(--dz-body-text-muted, #999);
+    color: var(--dz-btn-text);
     text-align: center;
-    border: 1px dashed var(--dz-border-color, rgba(255,255,255,0.2));
+    border: 1px dashed var(--dz-input-border);
     border-radius: 4px;
 }
 
@@ -2267,7 +2445,7 @@ dd-wcp-color {
 .dd-rss-item:last-child { border-bottom: none; }
 .dd-rss-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
 .dd-rss-item-body { flex: 1; min-width: 0; }
-.dd-rss-item-title { font-size: 0.85em; color: inherit; text-decoration: none; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dd-rss-item-title { font-size: 0.85em; color: inherit; text-decoration: none; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .dd-rss-item-title:hover { color: var(--dz-widget-accent); }
 .dd-rss-item-meta { font-size: 0.75em; color: var(--dz-widget-stat-muted); margin-top: 2px; }
 .dd-rss-link-icon { color: var(--dz-widget-accent); font-size: 0.8em; flex-shrink: 0; }
@@ -2362,7 +2540,7 @@ dd-wcp-color {
 .dd-battery-monitor { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
 .dd-battery-monitor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-shrink: 0; }
 .dd-battery-monitor-title { font-size: 0.9em; font-weight: 600; }
-.dd-battery-monitor-badge { font-size: 0.75em; padding: 2px 7px; border-radius: 10px; background: var(--dz-accent-red); color: #fff; }
+.dd-battery-monitor-badge { font-size: 0.75em; padding: 2px 7px; border-radius: 10px; background: var(--dz-accent-red); color: var(--dz-body-text); }
 .dd-battery-monitor-badge.ok { background: var(--dz-widget-energy-export); }
 .dd-battery-monitor-list { flex: 1; overflow-y: auto; }
 .dd-battery-monitor-row { display: flex; align-items: center; gap: 8px; padding: 4px 2px; font-size: 0.85em; border-bottom: 1px solid rgba(255,255,255,0.06); }
