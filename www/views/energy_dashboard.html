@@ -465,7 +465,7 @@ History:
 				</g>
 				<text class="etext" x="50" y="30.5" opacity="0.7" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fTotalHomeUsage | number:3 }} kWh</text>
 				<text class="etext" x="50" y="33" font-size="1.7px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ finalHomeUsage }} Watt</text>
-				<text class="etext" x="50" y="35.5" opacity="0.55" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="idSolar != -1">&#9788; {{ fSelfSufficiency | number:0 }}%</text>
+				<text class="etext" x="50" y="35.5" opacity="0.55" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="idSolar != -1"><tspan font-family="'Font Awesome 7 Free'" font-weight="900" fill="var(--dz-widget-energy-export)">&#xf06c;</tspan> {{ fSelfSufficiency | number:0 }}%</text>
 				</g>
 			<g id="groupNet">
 				<circle class="ecircle ecircle-grid" r="7" cx="10" cy="30" fill="rgba(0,198,218,0.06)" stroke="#00c6da" stroke-width=".5" filter="url(#glowGrid)" ng-class="{'circle-active': fActualNet != 0}"/>
