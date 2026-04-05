@@ -90,11 +90,11 @@ define([
                     var batNet           = batCharge - batDischarge;
                     var houseConsumption = p1Import + solarKwh - p1Export - batNet;
                     var selfSufficiency  = houseConsumption > 0
-                        ? (1 - p1Import / houseConsumption) * 100
+                        ? Math.min(100, Math.max(0, (solarKwh + batDischarge) / houseConsumption * 100))
                         : 0;
 
                     ctrl.balance = {
-                        selfSufficiency: Math.min(100, Math.max(0, selfSufficiency)),
+                        selfSufficiency: selfSufficiency,
                         houseToday:      houseConsumption,
                         solarToday:      solarKwh,
                         batNet:          batNet
