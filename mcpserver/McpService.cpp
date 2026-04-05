@@ -3055,11 +3055,9 @@ namespace mcp		// Model Context Protocol
 					time_t tStart = now - (time_t)(iDays - 1) * 86400LL;
 					localtime_r(&tStart, &tmStart);
 					char buf[16];
-					snprintf(buf, sizeof(buf), "%04d-%02d-%02d",
-						tmNow.tm_year + 1900, tmNow.tm_mon + 1, tmNow.tm_mday);
+					strftime(buf, sizeof(buf), "%Y-%m-%d", &tmNow);
 					szDateEnd = buf;
-					snprintf(buf, sizeof(buf), "%04d-%02d-%02d",
-						tmStart.tm_year + 1900, tmStart.tm_mon + 1, tmStart.tm_mday);
+					strftime(buf, sizeof(buf), "%Y-%m-%d", &tmStart);
 					szDateStart = buf;
 				}
 				auto result = m_sql.safe_query(
@@ -3135,11 +3133,9 @@ namespace mcp		// Model Context Protocol
 			localtime_r(&tStart, &tmStart);
 
 			char buf[16];
-			snprintf(buf, sizeof(buf), "%04d-%02d-%02d",
-				tmNow.tm_year + 1900, tmNow.tm_mon + 1, tmNow.tm_mday);
+			strftime(buf, sizeof(buf), "%Y-%m-%d", &tmNow);
 			szDateEnd = buf;
-			snprintf(buf, sizeof(buf), "%04d-%02d-%02d",
-				tmStart.tm_year + 1900, tmStart.tm_mon + 1, tmStart.tm_mday);
+			strftime(buf, sizeof(buf), "%Y-%m-%d", &tmStart);
 			szDateStart = buf;
 		}
 

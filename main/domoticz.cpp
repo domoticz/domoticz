@@ -1100,7 +1100,9 @@ int main(int argc, char**argv)
 	if (cmdLine.HasSwitch("-nomcp"))
 	{
 		g_bLlmMCPSupport = false;
-		_log.Log(LOG_STATUS, "Model Context Protocol (MCP) Support enabled (/mcp).");
+		_log.Log(LOG_STATUS, "Model Context Protocol (MCP) Support disabled!");
+	} else {
+		_log.Log(LOG_STATUS, "Model Context Protocol (MCP) Support enabled (/mcp) for use with AI Agents.");
 	}
 
 #if defined WIN32

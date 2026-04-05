@@ -328,6 +328,21 @@ std::string FormatMeterRate(double value, _eMeterType metertype)
 
 std::string FormatDate(int year, int month, int day)
 {
+    if (year < 0)
+        year = 0;
+    else if (year > 9999)
+        year = 9999;
+
+    if (month < 1)
+        month = 1;
+    else if (month > 12)
+        month = 12;
+
+    if (day < 1)
+        day = 1;
+    else if (day > 31)
+        day = 31;
+
     char buf[16];
     snprintf(buf, sizeof(buf), "%04d-%02d-%02d", year, month, day);
     return buf;
