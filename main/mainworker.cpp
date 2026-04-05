@@ -5690,7 +5690,6 @@ void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF*
 	uint8_t OID3;
 	uint8_t OID4;
 	int LastLevel = 0;
-	int currentNValue = 0;
 	int llevel = 0;
 	int switchType;
 	int nValue;
@@ -5719,7 +5718,7 @@ void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF*
 			ID = DIDTmp;
 			SourceID = IDTmp;
 		}
-		result = m_sql.safe_query("SELECT Name, SwitchType, Options, LastLevel, Description, nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)",
+		result = m_sql.safe_query("SELECT Name, SwitchType, Options, LastLevel, Description FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)",
 			pHardware->m_HwdID, ID.c_str(), Unit, devType, subType);
 		if (!result.empty())
 		{
@@ -5728,7 +5727,6 @@ void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF*
 			switchType = atoi(result[0][1].c_str());
 			std::string optionsStr = result[0][2];
 			LastLevel = atoi(result[0][3].c_str());
-			currentNValue = atoi(result[0][5].c_str());
 			if(SourceID.empty()) {
 				SourceID = result[0][4];
 			}
@@ -5785,22 +5783,9 @@ void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF*
 		}
 		else
 		{
-			// Ignore "speed" acknowledgment packets sent by the device after level commands
-			// Use the command value directly
-			if (cmnd != fan_Orconspeed)
-			{
-					nValue = cmnd;
-					sValue = std::to_string(cmnd);
-					m_sql.UpdateDeviceValue("LastLevel", cmnd, ID);
-					_log.Debug(DEBUG_HARDWARE, "Orcon: Status command %02X", cmnd);
-			}
-			else
-			{
-					// Use the current DB nValue (not LastLevel)
-					nValue = currentNValue;
-					sValue = std::to_string(currentNValue);
-					_log.Debug(DEBUG_HARDWARE, "Orcon: Ignoring speed acknowledgment, keeping current nValue=%d", currentNValue);
-			}
+					nValue = LastLevel;
+					sValue = std::to_string(LastLevel);
+					_log.Debug(DEBUG_HARDWARE, "Orcon: Status '%s' for command %02X not found in selector configuration, using LastLevel=%d", lstatus.c_str(), cmnd, LastLevel);
 		}
 	}
 	else
