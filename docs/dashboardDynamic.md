@@ -1,7 +1,7 @@
 # Dashboard Dynamic
 
 **Revision:** 2026-04-05
-**Minimum build:** 17584
+**Minimum build:** 17635
 
 ---
 
@@ -280,7 +280,7 @@ Highcharts chart showing temperature history.
 ### Counter / Energy Chart
 **Category:** Charts & Data
 
-Column chart for counter and energy devices (kWh, Gas, Water, P1, generic counter). Automatically detects the device type and display unit.
+Column or area chart for counter and energy devices (kWh, Gas, Water, P1, generic counter). Automatically detects the device type and display unit.
 
 **Configuration:**
 
@@ -294,13 +294,16 @@ Column chart for counter and energy devices (kWh, Gas, Water, P1, generic counte
 
 | Type | Description |
 |------|-------------|
+| Short Log | Area chart of recent power readings (W) — high resolution, last few hours |
 | Today | Hourly bars |
 | Last week | Daily bars |
 | Last month | Daily bars |
 | Last year | Monthly bars |
-| Compare months | Multiple years overlaid as grouped bars |
+| Compare years | Multiple years overlaid as grouped bars per month |
 
 P1 Smart Meters with return capability display import and export as two separate series.
+
+**Zooming:** Drag horizontally on any chart to zoom in on a time range. A *Reset zoom* button appears to return to the full view.
 
 ---
 
@@ -506,9 +509,9 @@ Self-sufficiency formula:
 ```
 batNet           = batCharge - batDischarge
 houseConsumption = p1Import + solar - p1Export - batNet
-selfSufficiency  = (1 − max(0, netGrid) / houseConsumption) × 100
+selfSufficiency  = (solar + batDischarge) / houseConsumption × 100
 ```
-Result is clamped to 0–100%.
+Result is clamped to 0–100%. Battery discharge counts as local generation — energy stored earlier from solar and discharged later correctly reduces grid dependence.
 
 ---
 
@@ -832,16 +835,17 @@ Displays custom text with configurable appearance. Useful for section headers, l
 ### HTML Widget
 **Category:** Custom Content
 
-Renders arbitrary HTML inside a sandboxed `<iframe>`. Full documents and snippets are both supported.
+Renders arbitrary HTML inside a sandboxed `<iframe>`. Full documents (`<html>…</html>`) and plain snippets are both supported.
 
 **Configuration:**
 
-| Field | Description |
-|-------|-------------|
-| Widget Title | Optional label in the header |
-| HTML Content | Full HTML or a snippet |
+| Field | Default | Description |
+|-------|---------|-------------|
+| Widget Title | — | Optional label overlaid at the top of the widget |
+| HTML Content | — | Full HTML document or a snippet |
+| Allow backend API access | off | Adds `allow-same-origin` to the sandbox, enabling scripts to call `json.htm` and other Domoticz API endpoints |
 
-Security: `sandbox="allow-scripts"` — scripts run in isolation but cannot access the parent page.
+**Security:** By default the iframe runs with `sandbox="allow-scripts"` — scripts execute in isolation and cannot access cookies, localStorage, or the parent page. Enabling **Allow backend API access** lifts the origin restriction so scripts can make authenticated requests to the Domoticz backend. Only enable this for HTML you wrote yourself.
 
 ---
 
