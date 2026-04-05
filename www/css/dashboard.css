@@ -1991,7 +1991,7 @@ dd-wcp-color {
 }
 
 /* ── HTML Widget ──────────────────────────────────────────────── */
-.dd-widget--db2HtmlWidget > .dd-widget-body {
+.dd-widget--html-widget > .dd-widget-body {
     padding: 0;
     overflow: hidden;
     position: relative;
@@ -2003,6 +2003,17 @@ dd-wcp-color {
     overflow: hidden;
     box-sizing: border-box;
     color: var(--dz-body-text);
+}
+
+.dd-html-widget-title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    text-align: center;
+    padding: 4px 8px;
+    pointer-events: none;
 }
 
 .dd-html-widget-frame {

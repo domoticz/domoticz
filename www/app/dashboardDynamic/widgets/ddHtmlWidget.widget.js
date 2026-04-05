@@ -31,6 +31,13 @@ define([
                 type:     'textarea',
                 required: false,
                 help:     'Paste your HTML here. Content is sanitized for security.'
+            },
+            {
+                key:     'allowSameOrigin',
+                type:    'boolean',
+                label:   'Allow backend API access (\u26a0 trusted content only)',
+                help:    'Grants scripts access to the Domoticz API (json.htm). Only enable for HTML you wrote yourself.',
+                default: false
             }
         ]
     });
@@ -38,21 +45,34 @@ define([
     // Helper directive: sets iframe.srcdoc directly via DOM to avoid Angular encoding issues.
     // Also uses ResizeObserver to re-stamp srcdoc when the iframe dimensions change so that
     // content inside the iframe reflowss when the widget is resized in the grid editor.
-    app.directive('db2HtmlFrame', [function() {
+    app.directive('ddHtmlFrame', [function() {
         return {
             restrict: 'A',
             link: function(scope, element, attrs) {
-                var el = element[0];
-                var lastDoc = '';
+                var el          = element[0];
+                var lastDoc     = '';
+                var lastSandbox = 'allow-scripts';
 
-                scope.$watch(attrs.db2HtmlFrame, function(doc) {
-                    lastDoc = doc || '';
+                function apply() {
+                    el.setAttribute('sandbox', lastSandbox);
                     if (lastDoc) { el.srcdoc = lastDoc; }
+                }
+
+                scope.$watch(attrs.ddHtmlFrame, function(doc) {
+                    lastDoc = doc || '';
+                    apply();
                 });
+
+                if (attrs.ddHtmlSandbox) {
+                    scope.$watch(attrs.ddHtmlSandbox, function(sandbox) {
+                        lastSandbox = sandbox || 'allow-scripts';
+                        apply();
+                    });
+                }
 
                 if (typeof ResizeObserver !== 'undefined') {
                     var ro = new ResizeObserver(function() {
-                        if (lastDoc) { el.srcdoc = lastDoc; }
+                        apply();
                     });
                     ro.observe(el);
                     scope.$on('$destroy', function() { ro.disconnect(); });
@@ -75,6 +95,7 @@ define([
                 var ctrl = this;
 
                 ctrl.iframeDoc = '';
+                ctrl.sandboxValue = 'allow-scripts';
 
                 // Injected style: override 100vh to fit the iframe, hide scrollbars
                 var FIT_STYLE = '<style>html,body{height:100%!important;max-height:100%!important;overflow:hidden!important;box-sizing:border-box}</style>';
@@ -92,17 +113,23 @@ define([
                         '</head><body>' + raw + '</body></html>';
                 }
 
+                function applyConfig() {
+                    var cfg = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
+                    ctrl.sandboxValue = cfg.allowSameOrigin
+                        ? 'allow-scripts allow-same-origin'
+                        : 'allow-scripts';
+                    ctrl.iframeDoc = buildDoc(cfg.html || '');
+                }
+
                 $scope.$watch(
                     function() {
-                        return ctrl.widgetDef && ctrl.widgetDef.config && ctrl.widgetDef.config.html;
+                        var cfg = ctrl.widgetDef && ctrl.widgetDef.config;
+                        return cfg ? (cfg.html || '') + '|' + !!cfg.allowSameOrigin : '';
                     },
-                    function(raw) {
-                        ctrl.iframeDoc = buildDoc(raw || '');
-                    }
+                    applyConfig
                 );
 
-                var cfg = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
-                ctrl.iframeDoc = buildDoc(cfg.html || '');
+                applyConfig();
             }]
         };
     }]);

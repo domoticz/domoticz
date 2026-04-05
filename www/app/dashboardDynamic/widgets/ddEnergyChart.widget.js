@@ -279,7 +279,8 @@ define([
                             margin:          [10, 10, 30, 40],
                             style:           { fontFamily: 'inherit' },
                             height:          h,
-                            width:           container.offsetWidth || null
+                            width:           container.offsetWidth || null,
+                            zoomType:        'x'
                         },
                         title: {
                             text:  null,
