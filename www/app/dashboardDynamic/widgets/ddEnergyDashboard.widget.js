@@ -205,10 +205,15 @@ define([
                         ctrl.batteryLive = null;
                     }
 
-                    // Energy balance calculation
-                    // battery_net  = energy stored net in battery today (positive = charged)
-                    // house        = P1_import + solar - P1_export - battery_net
-                    // self_suff    = 1 - net_grid_draw / house  (net_grid = P1_import - P1_export)
+                    // Self-sufficiency is defined as the fraction of total house consumption
+                    // that is NOT supplied by the grid.
+                    //
+                    // House consumption already includes battery charge/discharge effects.
+                    // Therefore, self-sufficiency must be based on gross grid import,
+                    // not on net grid balance (import - export).
+                    //
+                    // Formula:
+                    // selfSufficiency = 1 - (gridImport / houseConsumption)
                     if (ctrl.grid && ctrl.solar) {
                         var solarKwh  = parseKwh(ctrl.solar.counterToday);
                         var importKwh = parseKwh(ctrl.grid.counterToday);
@@ -216,7 +221,7 @@ define([
                         var batNet    = batImportedKwh - batExportedKwh;
                         var houseKwh  = importKwh + solarKwh - exportKwh - batNet;
                         var netGrid   = importKwh - exportKwh;
-                        var selfSuff  = (houseKwh > 0) ? Math.max(0, (1 - Math.max(0, netGrid) / houseKwh) * 100) : 0;
+                        var selfSuff  = (houseKwh > 0) ? Math.max(0, (1 - importKwh / houseKwh) * 100) : 0;
                         ctrl.balance = {
                             selfSufficiency: selfSuff,
                             solarToday:      solarKwh.toFixed(1),
