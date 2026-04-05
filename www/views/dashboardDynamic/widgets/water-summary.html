@@ -1,8 +1,8 @@
 <div class="dd-stat-card">
     <!-- Unconfigured state -->
     <div ng-if="!ctrl.widgetDef.config.deviceIdx" class="dd-chart-unconfigured">
-        <i class="fa-solid fa-fire"></i>
-        <p>Select a device in settings</p>
+        <i class="fa-solid fa-droplet"></i>
+        <p>Select a water device in settings</p>
     </div>
 
     <!-- Loaded state -->
@@ -11,8 +11,8 @@
 
         <a ng-if="ctrl.counterToday !== null" class="dd-stat-link"
            ng-href="#/Devices/{{ctrl.widgetDef.config.deviceIdx}}/Log">
-            <div class="dd-stat-value dd-energy-gas">
-                <i class="fa-solid fa-fire"></i> {{ctrl.counterToday}}
+            <div class="dd-stat-value dd-energy-water">
+                <i class="fa-solid fa-droplet"></i> {{ctrl.counterToday}}
             </div>
         </a>
         <div ng-if="ctrl.counterToday === null" class="dd-stat-value">

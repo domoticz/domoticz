@@ -99,6 +99,12 @@ define([
                             if (filter === 'gas') {
                                 return (d.Type || '').indexOf('Meter') >= 0 && d.SwitchTypeVal === 1;
                             }
+                            if (filter === 'water') {
+                                return d.SwitchTypeVal === 2 &&
+                                       ((d.Type || '').indexOf('Meter') >= 0 ||
+                                        ((d.Type || '') === 'General' &&
+                                         (d.SubType === 'Counter Incremental' || d.SubType === 'Managed Counter')));
+                            }
                             if (filter === 'p1') {
                                 return d.Type === 'P1 Smart Meter';
                             }

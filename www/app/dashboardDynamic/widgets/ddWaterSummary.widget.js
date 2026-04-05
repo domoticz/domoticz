@@ -5,12 +5,12 @@ define([
     'use strict';
 
     widgetRegistry.register({
-        type:                  'gas-summary',
+        type:                  'water-summary',
         transparentBackground: true,
-        label:       'Gas Summary',
-        description: 'Compact stat card showing today\'s gas usage and total counter',
+        label:       'Water Summary',
+        description: 'Compact stat card showing today\'s water usage and total counter',
         category:    'Energy',
-        icon:        'fa-solid fa-fire',
+        icon:        'fa-solid fa-droplet',
         defaultW:    2,
         defaultH:    2,
         minW:        2,
@@ -19,11 +19,11 @@ define([
         maxH:        3,
         configSchema: [
             {
-                key:      'deviceIdx',
-                type:     'device-picker',
-                label:    'Device',
-                deviceFilter: 'gas',
-                required: true
+                key:          'deviceIdx',
+                type:         'device-picker',
+                label:        'Device',
+                deviceFilter: 'water',
+                required:     true
             },
             {
                 key:      'title',
@@ -34,10 +34,10 @@ define([
         ]
     });
 
-    app.directive('ddGasSummaryWidget', [function() {
+    app.directive('ddWaterSummaryWidget', [function() {
         return {
             restrict:         'E',
-            templateUrl:      'views/dashboardDynamic/widgets/gas-summary.html',
+            templateUrl:      'views/dashboardDynamic/widgets/water-summary.html',
             scope: {
                 widgetDef: '=',
                 editMode:  '<'
@@ -56,10 +56,10 @@ define([
                     var cfg = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
                     ctrl.title = cfg.title || d.Name || '';
 
-                    // CounterToday: "0.995 m3" — keep full string for display
+                    // CounterToday: "0.123 m3" or "123 Liter" — keep full string for display
                     ctrl.counterToday = d.CounterToday || null;
 
-                    // d.price (lowercase): today's gas cost; 1000 = sentinel meaning "not configured"
+                    // d.price (lowercase): today's water cost; 1000 = sentinel meaning "not configured"
                     var raw = parseFloat(d.price);
                     ctrl.price = (!isNaN(raw) && raw !== 1000 && raw !== 0) ? raw : null;
                 }
@@ -92,7 +92,11 @@ define([
                             var sum = yearData.reduce(function(acc, item) {
                                 return acc + (parseFloat(item.v) || 0);
                             }, 0);
-                            ctrl.counterTotal = sum.toFixed(3) + ' m3';
+                            // Match the unit from today's reading (m3 or Liter)
+                            var isLiter = ctrl.counterToday && ctrl.counterToday.indexOf('Liter') >= 0;
+                            ctrl.counterTotal = isLiter
+                                ? Math.round(sum) + ' Liter'
+                                : sum.toFixed(3) + ' m3';
                         } else {
                             ctrl.counterTotal = null;
                         }

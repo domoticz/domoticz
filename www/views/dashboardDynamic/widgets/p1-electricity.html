@@ -10,16 +10,20 @@
         <div class="dd-stat-label" ng-bind="ctrl.title"></div>
 
         <!-- Exporting: show export watts in export color -->
-        <div ng-if="ctrl.isExporting"
-             class="dd-stat-value dd-energy-export">
-            <i class="fa fa-arrow-up"></i> {{ctrl.exportWatt}} W
-        </div>
+        <a ng-if="ctrl.isExporting" class="dd-stat-link"
+           ng-href="#/Devices/{{ctrl.widgetDef.config.deviceIdx}}/Log">
+            <div class="dd-stat-value dd-energy-export">
+                <i class="fa fa-arrow-up"></i> {{ctrl.exportWatt}} W
+            </div>
+        </a>
 
         <!-- Importing (or zero): show import watts in import color -->
-        <div ng-if="!ctrl.isExporting"
-             class="dd-stat-value dd-energy-import">
-            <i class="fa fa-arrow-down"></i> {{ctrl.importWatt}} W
-        </div>
+        <a ng-if="!ctrl.isExporting" class="dd-stat-link"
+           ng-href="#/Devices/{{ctrl.widgetDef.config.deviceIdx}}/Log">
+            <div class="dd-stat-value dd-energy-import">
+                <i class="fa fa-arrow-down"></i> {{ctrl.importWatt}} W
+            </div>
+        </a>
 
         <!-- Today totals -->
         <div ng-if="ctrl.counterToday !== null || ctrl.counterDelivToday !== null"
@@ -39,7 +43,7 @@
         <div ng-if="ctrl.widgetDef.config.showPrice !== false && ctrl.price !== null"
              class="dd-stat-sub dd-energy-price"
              style="font-weight: bold; margin-top: 4px;">
-            {{ctrl.price | number:4}} {{$root.config.CurrencySign}}
+            {{ctrl.price | number:2}} {{$root.config.CurrencySign}}
         </div>
     </div>
 </div>

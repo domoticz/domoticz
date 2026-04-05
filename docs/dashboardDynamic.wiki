@@ -1,7 +1,7 @@
 <span id="dashboard-dynamic"></span>
 = Dashboard Dynamic =
 
-'''Revision:''' 2026-04-03 '''Minimum build:''' 17584
+'''Revision:''' 2026-04-05 '''Minimum build:''' 17635
 
 -----
 
@@ -55,11 +55,17 @@ Press the pencil button or '''Ctrl+E''' to enter Edit Mode. The full toolbar app
 ! Button
 ! Action
 |-
+| ⓘ (info icon)
+| Opens the Dynamic Dashboard wiki page
+|-
 | Dashboard title
 | Click to rename inline
 |-
 | '''Dashboards'''
-| Switch between or manage dashboards
+| Switch between dashboards, create a new one, or open Dashboard Settings
+|-
+| '''Edit'''
+| Access layout actions (Set as Default, Export/Import, Duplicate, Delete, Clear)
 |-
 | '''Done Editing'''
 | Save changes and exit edit mode
@@ -70,18 +76,59 @@ Press the pencil button or '''Ctrl+E''' to enter Edit Mode. The full toolbar app
 | '''Save'''
 | Manually save current layout
 |-
+| '''Cancel'''
+| Discard unsaved changes (button turns red when there are unsaved changes)
+|}
+
+'''Dashboards dropdown:'''
+
+{| class="wikitable"
+|-
+! Item
+! Action
+|-
+| ''(dashboard name)''
+| Switch to that dashboard (prompts to discard unsaved changes if needed)
+|-
+| '''New Dashboard'''
+| Creates a new dashboard with an auto-generated name; rename it via the title field
+|-
+| '''Dashboard Settings…'''
+| Open kiosk and standby settings
+|}
+
+'''Edit dropdown:'''
+
+{| class="wikitable"
+|-
+! Item
+! Action
+|-
 | '''Export / Import'''
 | Open the export/import dialog
 |-
-| '''Cancel'''
-| Discard unsaved changes
+| '''Reset to Favorites'''
+| Populate the dashboard from your favorite devices
+|-
+| '''Set as Default'''
+| Mark this dashboard as the default (shown with a checkmark when active)
+|-
+| '''Duplicate'''
+| Clone the current dashboard
+|-
+| '''Delete'''
+| Delete the current dashboard
+|-
+| '''Clear All Widgets'''
+| Remove all widgets from the current dashboard
 |}
 
 '''Keyboard shortcuts:'''
 
 * <code>Ctrl+E</code> — toggle edit mode
 * <code>Ctrl+S</code> — save layout
-* <code>Escape</code> — exit edit mode (saves if dirty); also stops Kiosk mode
+* <code>Ctrl+L</code> — toggle widget library panel
+* <code>Escape</code> — close widget library (if open), otherwise exit edit mode; also stops Kiosk mode
 
 <span id="widget-library"></span>
 === Widget Library ===
@@ -100,6 +147,9 @@ Each widget shows a header bar in edit mode with:
 
 Resize any widget by dragging the bottom-right corner handle.
 
+<blockquote>'''Note:''' All interactive elements inside widget content (buttons, links, inputs) are non-clickable in Edit Mode — only the header chrome buttons (configure, duplicate, remove) remain active. This prevents accidental device control while rearranging the layout.
+</blockquote>
+
 -----
 
 <span id="managing-dashboards"></span>
@@ -108,15 +158,33 @@ Resize any widget by dragging the bottom-right corner handle.
 <span id="multiple-dashboards"></span>
 === Multiple Dashboards ===
 
-Click '''Dashboards → Manage Dashboards…''' to open the dashboard manager where you can:
+Dashboard management is done directly from the Edit Mode toolbar:
 
-* Create new dashboards
-* Rename existing dashboards
-* Set a dashboard as default
-* Copy a dashboard
-* Delete dashboards
-* Configure '''Kiosk / Auto-Swipe''' settings
-* Configure '''Screen Standby''' settings
+{| class="wikitable"
+|-
+! Action
+! How
+|-
+| '''Create'''
+| Dashboards → New Dashboard (auto-names; rename inline)
+|-
+| '''Rename'''
+| Click the dashboard title in the toolbar
+|-
+| '''Switch'''
+| Dashboards dropdown → pick a name
+|-
+| '''Set as Default'''
+| Edit → Set as Default
+|-
+| '''Duplicate'''
+| Edit → Duplicate
+|-
+| '''Delete'''
+| Edit → Delete
+|}
+
+'''Dashboard Settings''' (Edit → Dashboard Settings… or Dashboards → Dashboard Settings…) contains only the Kiosk and Screen Standby configuration — no layout management.
 
 <span id="kiosk-auto-swipe-mode"></span>
 === Kiosk / Auto-Swipe Mode ===
@@ -129,7 +197,7 @@ Automatically cycles through a set of dashboards at a fixed interval — useful 
 * '''Escape''' key stops kiosk mode
 * A thin progress bar at the bottom of the screen shows time remaining until the next switch
 
-'''Settings''' (in Dashboard Manager → Kiosk section):
+'''Settings''' (in Dashboard Settings → Kiosk section):
 
 {| class="wikitable"
 |-
@@ -161,7 +229,7 @@ Settings are saved in browser <code>localStorage</code> (<code>dd_kiosk</code>).
 
 Dims or blanks the screen after a period of inactivity — prevents burn-in on wall-mounted displays. Any mouse movement, touch, keystroke, or click wakes the screen.
 
-'''Settings''' (in Dashboard Manager → Screen Standby section):
+'''Settings''' (in Dashboard Settings → Screen Standby section):
 
 {| class="wikitable"
 |-
@@ -243,6 +311,10 @@ Displays the current local time and date. Updates every second.
 | Show date
 | on
 | Show the date line below the time
+|-
+| Timezone
+| local
+| Timezone for the displayed time; search by city or region name
 |-
 | Show panel background
 | on
@@ -396,7 +468,7 @@ Highcharts chart showing temperature history.
 
 '''Category:''' Charts &amp; Data
 
-Column chart for counter and energy devices (kWh, Gas, Water, P1, generic counter). Automatically detects the device type and display unit.
+Column or area chart for counter and energy devices (kWh, Gas, Water, P1, generic counter). Automatically detects the device type and display unit.
 
 '''Configuration:'''
 
@@ -422,6 +494,9 @@ Column chart for counter and energy devices (kWh, Gas, Water, P1, generic counte
 ! Type
 ! Description
 |-
+| Short Log
+| Area chart of recent power readings (W) — high resolution, last few hours
+|-
 | Today
 | Hourly bars
 |-
@@ -434,11 +509,13 @@ Column chart for counter and energy devices (kWh, Gas, Water, P1, generic counte
 | Last year
 | Monthly bars
 |-
-| Compare months
-| Multiple years overlaid as grouped bars
+| Compare years
+| Multiple years overlaid as grouped bars per month
 |}
 
 P1 Smart Meters with return capability display import and export as two separate series.
+
+'''Zooming:''' Drag horizontally on any chart to zoom in on a time range. A ''Reset zoom'' button appears to return to the full view.
 
 -----
 
@@ -824,8 +901,8 @@ Self-sufficiency formula:
 
 <pre>batNet           = batCharge - batDischarge
 houseConsumption = p1Import + solar - p1Export - batNet
-selfSufficiency  = (1 − max(0, netGrid) / houseConsumption) × 100</pre>
-Result is clamped to 0–100%.
+selfSufficiency  = (solar + batDischarge) / houseConsumption × 100</pre>
+Result is clamped to 0–100%. Battery discharge counts as local generation — energy stored earlier from solar and discharged later correctly reduces grid dependence.
 
 -----
 
@@ -1290,11 +1367,65 @@ Updates daily.
 
 '''Category:''' Custom Content
 
-A row of one-click buttons to trigger scenes or toggle switches.
+One-click buttons to trigger scenes and control switch devices, displayed in a grid or list layout.
+
+'''Supported device types:'''
+
+{| class="wikitable"
+|-
+! Type
+! Behaviour
+|-
+| Switch
+| Toggle button; icon tinted when device is On
+|-
+| Push On / Push Off
+| Dedicated On or Off button; no toggle, no state indicator
+|-
+| Selector switch
+| Shows current level text; click opens an inline level picker
+|-
+| Blind
+| Up / Close buttons, plus optional Stop button (shown automatically when the device supports it)
+|-
+| Scene
+| One-click activate button
+|}
 
 '''Configuration:'''
 
-An action list editor lets you add, reorder, and remove actions: | Field | Description | |——-|————-| | Type | Device (toggle) or Scene (activate) | | Device/Scene | Picked from a dropdown | | Label | Button label (auto-filled from device/scene name if blank) |
+{| class="wikitable"
+|-
+! Field
+! Default
+! Description
+|-
+| List layout
+| off
+| Display actions as a vertical list (label left, icon/status right) instead of a grid
+|-
+| Show panel background
+| on
+| Show the widget panel background
+|}
+
+'''Action list editor:'''
+
+Use the action list to add, reorder, and remove actions. Drag the grip handle (⠿) to reorder. Click the pencil icon to rename; click the trash icon to delete.
+
+To add an action:
+
+# Select '''Device''' or '''Scene''' from the type dropdown
+# Pick the device or scene from the searchable picker (only switch-type devices are shown)
+# For '''selector switches''': the level is ''not'' chosen here — it is selected at click-time in the widget
+# Optionally enter a custom label (auto-filled from device/scene name if blank)
+# Click '''+''' to add
+
+'''In the widget:'''
+
+* Click a switch button to toggle it; the icon turns accent-coloured when the device is On
+* Click a selector button to open the inline level picker; the current level is shown beneath the label; the active level is highlighted
+* Blind Up/Stop/Close buttons are shown as a compact group with the label on the left
 
 -----
 
@@ -1349,23 +1480,30 @@ Displays custom text with configurable appearance. Useful for section headers, l
 
 '''Category:''' Custom Content
 
-Renders arbitrary HTML inside a sandboxed <code>&lt;iframe&gt;</code>. Full documents and snippets are both supported.
+Renders arbitrary HTML inside a sandboxed <code>&lt;iframe&gt;</code>. Full documents (<code>&lt;html&gt;…&lt;/html&gt;</code>) and plain snippets are both supported.
 
 '''Configuration:'''
 
 {| class="wikitable"
 |-
 ! Field
+! Default
 ! Description
 |-
 | Widget Title
-| Optional label in the header
+| —
+| Optional label overlaid at the top of the widget
 |-
 | HTML Content
-| Full HTML or a snippet
+| —
+| Full HTML document or a snippet
+|-
+| Allow backend API access
+| off
+| Adds <code>allow-same-origin</code> to the sandbox, enabling scripts to call <code>json.htm</code> and other Domoticz API endpoints
 |}
 
-Security: <code>sandbox=&quot;allow-scripts&quot;</code> — scripts run in isolation but cannot access the parent page.
+'''Security:''' By default the iframe runs with <code>sandbox=&quot;allow-scripts&quot;</code> — scripts execute in isolation and cannot access cookies, localStorage, or the parent page. Enabling '''Allow backend API access''' lifts the origin restriction so scripts can make authenticated requests to the Domoticz backend. Only enable this for HTML you wrote yourself.
 
 -----
 
@@ -1509,6 +1647,76 @@ Battery level colours: ≤10% red, ≤25% orange, ≤50% yellow, &gt;50% green. 
 
 -----
 
+<span id="timeout-monitor"></span>
+=== Timeout Monitor ===
+
+'''Category:''' System
+
+Shows all Domoticz devices that have not reported within their expected timeout interval — a quick way to spot sensors that have gone silent or lost power.
+
+'''Configuration:'''
+
+{| class="wikitable"
+|-
+! Field
+! Default
+! Description
+|-
+| Title
+| ''(empty)''
+| Optional title override
+|-
+| Sort by
+| Last update
+| Sort by last update time (oldest first) or device name (A–Z)
+|-
+| Refresh interval
+| 300s
+| Seconds between refresh
+|}
+
+When no devices are timed out, nothing is shown in the list. The device list shows each device name and how long ago it last reported (e.g. “3h ago”).
+
+-----
+
+<span id="kwh-top-consumers"></span>
+=== kWh Top Consumers ===
+
+'''Category:''' System
+
+Lists kWh-metered devices ranked by today’s energy consumption, highest first. Useful for spotting which appliances are using the most energy on any given day.
+
+Each row shows the device name, current power draw (W), and today’s total (kWh). The list updates instantly via WebSocket when any tracked device reports — including devices currently off-screen due to the row limit, which may move up the ranking in real time.
+
+'''Excluded automatically:''' - Devices from P1 Smart Meter hardware (L1/L2/L3 phase sensors, both serial and LAN variants) - Devices configured as type '''Return / Energy Generated''' (e.g. solar export meters) - Devices that have timed out
+
+'''Configuration:'''
+
+{| class="wikitable"
+|-
+! Field
+! Default
+! Description
+|-
+| Title
+| ''(empty)''
+| Optional title override
+|-
+| Max devices to show
+| 20
+| Maximum number of rows displayed
+|-
+| Exclude device IDX
+| ''(empty)''
+| Semicolon-separated list of device IDX values to hide (e.g. <code>42;107</code>)
+|-
+| Refresh interval
+| 300s
+| Seconds between full refresh from the backend
+|}
+
+-----
+
 <span id="activity-log"></span>
 === Activity Log ===
 
@@ -1622,6 +1830,12 @@ Shows Domoticz version, build number, and hardware count. No configuration requi
 |-
 | Battery Monitor
 | Configurable interval (default 5 min)
+|-
+| Timeout Monitor
+| Configurable interval (default 5 min)
+|-
+| kWh Top Consumers
+| Configurable interval (default 5 min) + instant WebSocket per tracked device
 |-
 | Custom Chart
 | 60s debounced reload on config/range change

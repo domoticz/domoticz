@@ -75,9 +75,9 @@ define([
                     ctrl.exportWatt        = parseWatt(d.UsageDeliv);
                     ctrl.counterToday      = d.CounterToday      || null;
                     ctrl.counterDelivToday = d.CounterDelivToday || null;
-                    ctrl.price             = (d.PriceToday !== undefined && d.PriceToday !== null)
-                                                ? d.PriceToday
-                                                : null;
+                    // d.price (lowercase) is today's grid cost; 1000 = sentinel meaning "not configured"
+                    var raw = parseFloat(d.price);
+                    ctrl.price = (!isNaN(raw) && raw !== 1000 && raw !== 0) ? raw : null;
                     ctrl.isExporting       = ctrl.exportWatt > 0;
                     ctrl.loadError         = false;
                 }

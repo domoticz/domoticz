@@ -143,7 +143,23 @@
             <div class="dd-stat-label">{{'Gas' | translate}}</div>
             <div class="dd-stat-value dd-energy-gas" ng-if="ctrl.gas"><i class="fa fa-fire"></i> {{ctrl.gas.counterToday}}</div>
             <div class="dd-stat-value" ng-if="!ctrl.gas">--</div>
-            <div class="dd-stat-sub" ng-if="ctrl.gas">{{'Total' | translate}}: {{ctrl.gas.counter}} m&sup3;</div>
+            <div class="dd-stat-sub" ng-if="ctrl.gas && ctrl.gas.counterYear">{{'Year' | translate}}: {{ctrl.gas.counterYear}} m&sup3;</div>
+            <div class="dd-stat-sub" ng-if="ctrl.gas && !ctrl.gas.counterYear">{{'Total' | translate}}: {{ctrl.gas.counter}} m&sup3;</div>
+            <div class="dd-stat-sub dd-energy-price" ng-if="ctrl.gas && ctrl.gas.price !== null" style="font-weight: bold;">
+                {{ctrl.gas.price | number:2}} {{$root.config.CurrencySign}}
+            </div>
+        </div>
+
+        <!-- Water card -->
+        <div class="dd-stat-card" ng-if="ctrl.widgetDef.config.showWater !== false">
+            <div class="dd-stat-label">{{'Water' | translate}}</div>
+            <div class="dd-stat-value dd-energy-water" ng-if="ctrl.water"><i class="fa-solid fa-droplet"></i> {{ctrl.water.counterToday}}</div>
+            <div class="dd-stat-value" ng-if="!ctrl.water">--</div>
+            <div class="dd-stat-sub" ng-if="ctrl.water && ctrl.water.counterYear">{{'Year' | translate}}: {{ctrl.water.counterYear}}</div>
+            <div class="dd-stat-sub" ng-if="ctrl.water && !ctrl.water.counterYear">{{'Total' | translate}}: {{ctrl.water.counter}}</div>
+            <div class="dd-stat-sub dd-energy-price" ng-if="ctrl.water && ctrl.water.price !== null" style="font-weight: bold;">
+                {{ctrl.water.price | number:2}} {{$root.config.CurrencySign}}
+            </div>
         </div>
 
         <!-- Battery card -->

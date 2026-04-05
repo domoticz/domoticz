@@ -917,6 +917,46 @@ Battery level colours: ≤10% red, ≤25% orange, ≤50% yellow, >50% green. Whe
 
 ---
 
+### Timeout Monitor
+**Category:** System
+
+Shows all Domoticz devices that have not reported within their expected timeout interval — a quick way to spot sensors that have gone silent or lost power.
+
+**Configuration:**
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| Title | *(empty)* | Optional title override |
+| Sort by | Last update | Sort by last update time (oldest first) or device name (A–Z) |
+| Refresh interval | 300s | Seconds between refresh |
+
+When no devices are timed out, nothing is shown in the list. The device list shows each device name and how long ago it last reported (e.g. "3h ago").
+
+---
+
+### kWh Top Consumers
+**Category:** System
+
+Lists kWh-metered devices ranked by today's energy consumption, highest first. Useful for spotting which appliances are using the most energy on any given day.
+
+Each row shows the device name, current power draw (W), and today's total (kWh). The list updates instantly via WebSocket when any tracked device reports — including devices currently off-screen due to the row limit, which may move up the ranking in real time.
+
+**Excluded automatically:**
+- Devices from P1 Smart Meter hardware (L1/L2/L3 phase sensors, both serial and LAN variants)
+- Devices configured as type **Return / Energy Generated** (e.g. solar export meters)
+- Devices that have timed out
+
+**Configuration:**
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| Title | *(empty)* | Optional title override |
+| Max devices to show | 20 | Maximum number of rows displayed |
+| Exclude device IDX | *(empty)* | Semicolon-separated list of device IDX values to hide (e.g. `42;107`) |
+| Refresh interval | 300s | Seconds between full refresh from the backend |
+
+---
+
 ### Activity Log
 **Category:** System
 
@@ -968,6 +1008,8 @@ Shows Domoticz version, build number, and hardware count. No configuration requi
 | Moon Phase | Daily |
 | Gauge | 30s interval + instant WebSocket |
 | Battery Monitor | Configurable interval (default 5 min) |
+| Timeout Monitor | Configurable interval (default 5 min) |
+| kWh Top Consumers | Configurable interval (default 5 min) + instant WebSocket per tracked device |
 | Custom Chart | 60s debounced reload on config/range change |
 | Sun Info / Text Note / HTML / Image | Static |
 | Website Embed | Configurable auto-reload interval (default off) |

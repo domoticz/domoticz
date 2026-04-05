@@ -20,6 +20,7 @@
     --dz-widget-energy-export:   #66bb6a;
     --dz-widget-energy-price:    #c8a0ff;
     --dz-widget-energy-gas:      #ff7043;
+    --dz-widget-energy-water:    #29b6f6;
 
     /* Stat card surface */
     --dz-widget-stat-radius:     8px;
@@ -980,6 +981,7 @@ body.dd-navbar-hidden .dd-toolbar {
 
 .dd-widget--kwh-summary > .dd-widget-body,
 .dd-widget--gas-summary > .dd-widget-body,
+.dd-widget--water-summary > .dd-widget-body,
 .dd-widget--p1-electricity > .dd-widget-body,
 .dd-widget--battery-status > .dd-widget-body,
 .dd-widget--energy-dashboard > .dd-widget-body,
@@ -2294,6 +2296,7 @@ dd-wcp-color {
 .dd-energy-price   { color: var(--dz-widget-energy-price);  }
 .dd-energy-solar   { color: var(--dz-widget-sunpv);  }
 .dd-energy-gas     { color: var(--dz-widget-energy-gas);    }
+.dd-energy-water   { color: var(--dz-widget-energy-water);  }
 .dd-energy-battery { color: var(--dz-widget-accent); }
 
 /* ── Energy Dashboard widget — cards row ── */
@@ -2311,10 +2314,24 @@ dd-wcp-color {
     max-width: 200px;
     height: auto;
 }
+.dd-fc-conditions .dd-stat-value {
+    white-space: nowrap;
+}
 .dd-fc-conditions .dd-stat-card--wide {
-    min-width: 160px;
-    flex: 1.5 1 160px;
-    max-width: 260px;
+    min-width: 200px;
+    flex: 1.5 1 200px;
+    max-width: 320px;
+}
+
+/* ── Clickable stat value — navigates to device log page ── */
+.dd-stat-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
+.dd-stat-link:hover {
+    opacity: 0.8;
 }
 
 /* ── Energy Balance Bar (self-sufficiency widget) ── */
@@ -2553,7 +2570,7 @@ dd-wcp-color {
 .dd-battery-monitor-title { font-size: 0.9em; font-weight: 600; }
 .dd-battery-monitor-badge { font-size: 0.75em; padding: 2px 7px; border-radius: 10px; background: var(--dz-accent-red); color: var(--dz-body-text); }
 .dd-battery-monitor-badge.ok { background: var(--dz-widget-energy-export); }
-.dd-battery-monitor-list { flex: 1; overflow-y: auto; }
+.dd-battery-monitor-list { flex: 1; min-height: 0; overflow-y: auto; }
 .dd-battery-monitor-row { display: flex; align-items: center; gap: 8px; padding: 4px 2px; font-size: 0.85em; border-bottom: 1px solid rgba(255,255,255,0.06); }
 .dd-battery-monitor-row:last-child { border-bottom: none; }
 .dd-battery-monitor-icon { width: 20px; text-align: center; font-size: 1em; flex-shrink: 0; }
