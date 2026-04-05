@@ -217,7 +217,7 @@ define([
                         var exportKwh = parseKwh(ctrl.grid.counterDelivToday);
                         var batNet    = batImportedKwh - batExportedKwh;
                         var houseKwh  = importKwh + solarKwh - exportKwh - batNet;
-                        var selfSuff  = (houseKwh > 0) ? Math.min(100, Math.max(0, (solarKwh + batExportedKwh) / houseKwh * 100)) : 0;
+                        var selfSuff  = calcSelfSufficiency(solarKwh, batExportedKwh, houseKwh);
                         ctrl.balance = {
                             selfSufficiency: selfSuff,
                             solarToday:      solarKwh.toFixed(1),

@@ -749,6 +749,13 @@ define(['app'], function (app) {
 				$scope.fTotalHomeUsage -= $scope.fBattEnergyIn;
 			}
 
+			// Self-sufficiency: fraction of house consumption covered by solar + battery discharge
+			$scope.fSelfSufficiency = calcSelfSufficiency(
+				$scope.fDaySolar,
+				$scope.idBattEnergyOut != -1 ? $scope.fBattEnergyOut : 0,
+				$scope.fTotalHomeUsage
+			);
+
 			// House price: sum of individual device prices (each price is already the total cost for today)
 			$scope.fHousePrice = 0;
 			if ($scope.p1Price != 1000) {

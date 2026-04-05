@@ -2797,3 +2797,22 @@ function WatchDescriptions(){
 		$(this).css('cursor','auto');
 	});
 };
+
+/**
+ * Calculate self-sufficiency percentage.
+ *
+ * self_sufficiency = min(100, (solar + bat_discharge) / house x 100)
+ *
+ * Uses local generation (solar) and storage discharge as the numerator.
+ * This correctly handles cases where heavy battery charging from the grid
+ * causes gross P1 import to exceed house consumption.
+ *
+ * @param {number} solarKwh        - Solar production today (kWh)
+ * @param {number} batDischargeKwh - Battery discharged today (kWh), 0 if no battery
+ * @param {number} houseKwh        - Total house consumption today (kWh)
+ * @returns {number} Self-sufficiency percentage [0..100]
+ */
+function calcSelfSufficiency(solarKwh, batDischargeKwh, houseKwh) {
+	if (houseKwh <= 0) return 0;
+	return Math.min(100, Math.max(0, (solarKwh + batDischargeKwh) / houseKwh * 100));
+}
