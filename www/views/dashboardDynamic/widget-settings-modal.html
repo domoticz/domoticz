@@ -185,9 +185,18 @@
             </dd-wcp-color>
 
             <!-- group: renders sub-fields side by side -->
-            <div ng-if="field.type === 'group'" class="dd-field-group" style="display:flex;gap:12px;align-items:flex-end">
-                <div ng-repeat="subField in field.fields" style="flex:1;min-width:0">
+            <div ng-if="field.type === 'group'" class="dd-field-group"
+                 ng-style="{'display':'flex','gap':'12px','align-items':'center','justify-content': field.spread ? 'space-between' : 'flex-start'}">
+                <div ng-repeat="subField in field.fields"
+                     ng-style="subField.type === 'boolean' ? {'flex':'0 0 auto'} : {'flex':'1','min-width':'0'}">
                     <label ng-if="subField.type !== 'boolean'" style="display:block;margin-bottom:4px">{{ subField.label }}</label>
+
+                    <div ng-if="subField.type === 'boolean'" class="dd-checkbox-label"
+                         ng-click="config[subField.key] = !config[subField.key]">
+                        <i class="fa-solid dd-bool-icon"
+                           ng-class="config[subField.key] ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                        {{ subField.label }}
+                    </div>
 
                     <input ng-if="subField.type === 'number'"
                            type="number"

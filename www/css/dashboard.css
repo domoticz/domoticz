@@ -180,6 +180,14 @@ body.dd-navbar-hidden .dd-toolbar {
     flex-wrap: wrap;
 }
 
+.dd-toolbar-help {
+    color: var(--dz-body-text);
+    text-decoration: none;
+    padding: 4px 6px;
+    line-height: 1;
+}
+.dd-toolbar-help:hover { color: var(--dz-body-text); text-decoration: none; }
+
 /* Keep the dropdown toggle button dark when open (Bootstrap overrides it white) */
 .dd-toolbar .btn-group.open > .dropdown-toggle {
     background: transparent !important;
@@ -1440,6 +1448,61 @@ body.dd-navbar-hidden .dd-toolbar {
     color: var(--dz-btn-primary-text);
 }
 
+.dd-quick-actions--list {
+    flex-direction: column;
+    align-content: flex-start;
+    gap: 4px;
+}
+
+/* Full-width row buttons: switch, scene, selector — excludes blind sub-buttons */
+.dd-quick-actions--list .dd-qa-btn:not(.dd-qa-btn--blind) {
+    flex: none;
+    width: 100%;
+    box-sizing: border-box;
+    flex-direction: row;
+    justify-content: flex-start;
+    min-width: 0;
+    padding: 6px 10px;
+    gap: 8px;
+}
+
+/* Label on left (takes all space), icon on right */
+.dd-quick-actions--list .dd-qa-btn:not(.dd-qa-btn--blind) > .dd-qa-label {
+    order: 1;
+    flex: 1;
+    text-align: left;
+}
+.dd-quick-actions--list .dd-qa-btn:not(.dd-qa-btn--blind) > .dd-qa-level-text {
+    order: 2;
+}
+.dd-quick-actions--list .dd-qa-btn:not(.dd-qa-btn--blind) > i {
+    order: 3;
+}
+
+/* Blind group: label left, buttons right */
+.dd-quick-actions--list .dd-qa-blind-group {
+    flex: none;
+    width: 100%;
+    box-sizing: border-box;
+    flex-direction: row;
+    align-items: center;
+    min-width: 0;
+    padding: 2px 10px;
+}
+
+.dd-quick-actions--list .dd-qa-blind-group > .dd-qa-label {
+    flex: 1;
+}
+
+.dd-quick-actions--list .dd-qa-blind-btns {
+    width: auto;
+}
+
+.dd-quick-actions--list .dd-qa-level-picker {
+    flex: 0 0 100%;
+    padding: 2px 0 2px 10px;
+}
+
 /* ── iFrame Embed widget ──────────────────────────────────── */
 .dd-widget--iframe-embed > .dd-widget-body {
     padding: 0;
@@ -1759,7 +1822,7 @@ body.dd-navbar-hidden .dd-toolbar {
 /* ── Widget Settings Form (Bootstrap 2 form-group fix) ───────── */
 .dd-settings-form .form-group {
     display: block;
-    margin-bottom: 14px;
+    margin-bottom: 4px;
 }
 
 /* Block label for all non-boolean fields */

@@ -18,6 +18,14 @@ define([
 
         configSchema: [
             {
+                type:   'group',
+                spread: true,
+                fields: [
+                    { key: 'layout',         type: 'boolean', label: 'List layout',          default: false },
+                    { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
+                ]
+            },
+            {
                 key:          'actions',
                 type:         'action-list',
                 label:        'Actions',

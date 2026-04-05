@@ -1,6 +1,6 @@
 # Dashboard Dynamic
 
-**Revision:** 2026-04-03
+**Revision:** 2026-04-05
 **Minimum build:** 17584
 
 ---
@@ -47,19 +47,40 @@ Press the pencil button or **Ctrl+E** to enter Edit Mode. The full toolbar appea
 
 | Button | Action |
 |--------|--------|
+| ⓘ (info icon) | Opens the Dynamic Dashboard wiki page |
 | Dashboard title | Click to rename inline |
-| **Dashboards** | Switch between or manage dashboards |
+| **Dashboards** | Switch between dashboards, create a new one, or open Dashboard Settings |
+| **Edit** | Access layout actions (Set as Default, Export/Import, Duplicate, Delete, Clear) |
 | **Done Editing** | Save changes and exit edit mode |
 | **Add Widget** | Open the widget library panel |
 | **Save** | Manually save current layout |
+| **Cancel** | Discard unsaved changes (button turns red when there are unsaved changes) |
+
+**Dashboards dropdown:**
+
+| Item | Action |
+|------|--------|
+| *(dashboard name)* | Switch to that dashboard (prompts to discard unsaved changes if needed) |
+| **New Dashboard** | Creates a new dashboard with an auto-generated name; rename it via the title field |
+| **Dashboard Settings…** | Open kiosk and standby settings |
+
+**Edit dropdown:**
+
+| Item | Action |
+|------|--------|
 | **Export / Import** | Open the export/import dialog |
-| **Cancel** | Discard unsaved changes |
+| **Reset to Favorites** | Populate the dashboard from your favorite devices |
+| **Set as Default** | Mark this dashboard as the default (shown with a checkmark when active) |
+| **Duplicate** | Clone the current dashboard |
+| **Delete** | Delete the current dashboard |
+| **Clear All Widgets** | Remove all widgets from the current dashboard |
 
 **Keyboard shortcuts:**
 
 - `Ctrl+E` — toggle edit mode
 - `Ctrl+S` — save layout
-- `Escape` — exit edit mode (saves if dirty); also stops Kiosk mode
+- `Ctrl+L` — toggle widget library panel
+- `Escape` — close widget library (if open), otherwise exit edit mode; also stops Kiosk mode
 
 ### Widget Library
 
@@ -76,21 +97,26 @@ Each widget shows a header bar in edit mode with:
 
 Resize any widget by dragging the bottom-right corner handle.
 
+> **Note:** All interactive elements inside widget content (buttons, links, inputs) are non-clickable in Edit Mode — only the header chrome buttons (configure, duplicate, remove) remain active. This prevents accidental device control while rearranging the layout.
+
 ---
 
 ## Managing Dashboards
 
 ### Multiple Dashboards
 
-Click **Dashboards → Manage Dashboards...** to open the dashboard manager where you can:
+Dashboard management is done directly from the Edit Mode toolbar:
 
-- Create new dashboards
-- Rename existing dashboards
-- Set a dashboard as default
-- Copy a dashboard
-- Delete dashboards
-- Configure **Kiosk / Auto-Swipe** settings
-- Configure **Screen Standby** settings
+| Action | How |
+|--------|-----|
+| **Create** | Dashboards → New Dashboard (auto-names; rename inline) |
+| **Rename** | Click the dashboard title in the toolbar |
+| **Switch** | Dashboards dropdown → pick a name |
+| **Set as Default** | Edit → Set as Default |
+| **Duplicate** | Edit → Duplicate |
+| **Delete** | Edit → Delete |
+
+**Dashboard Settings** (Edit → Dashboard Settings… or Dashboards → Dashboard Settings…) contains only the Kiosk and Screen Standby configuration — no layout management.
 
 ### Kiosk / Auto-Swipe Mode
 
@@ -102,7 +128,7 @@ Automatically cycles through a set of dashboards at a fixed interval — useful 
 - **Escape** key stops kiosk mode
 - A thin progress bar at the bottom of the screen shows time remaining until the next switch
 
-**Settings** (in Dashboard Manager → Kiosk section):
+**Settings** (in Dashboard Settings → Kiosk section):
 
 | Setting | Default | Description |
 |---------|---------|-------------|
@@ -117,7 +143,7 @@ Settings are saved in browser `localStorage` (`dd_kiosk`).
 
 Dims or blanks the screen after a period of inactivity — prevents burn-in on wall-mounted displays. Any mouse movement, touch, keystroke, or click wakes the screen.
 
-**Settings** (in Dashboard Manager → Screen Standby section):
+**Settings** (in Dashboard Settings → Screen Standby section):
 
 | Setting | Default | Description |
 |---------|---------|-------------|
@@ -167,6 +193,7 @@ Displays the current local time and date. Updates every second.
 | Show seconds | on | Include seconds in the time display |
 | 24-hour format | on | Use 24h clock; off for 12h with AM/PM |
 | Show date | on | Show the date line below the time |
+| Timezone | local | Timezone for the displayed time; search by city or region name |
 | Show panel background | on | Show the widget panel background |
 
 ---
@@ -744,16 +771,42 @@ Updates daily.
 ### Quick Actions
 **Category:** Custom Content
 
-A row of one-click buttons to trigger scenes or toggle switches.
+One-click buttons to trigger scenes and control switch devices, displayed in a grid or list layout.
+
+**Supported device types:**
+
+| Type | Behaviour |
+|------|-----------|
+| Switch | Toggle button; icon tinted when device is On |
+| Push On / Push Off | Dedicated On or Off button; no toggle, no state indicator |
+| Selector switch | Shows current level text; click opens an inline level picker |
+| Blind | Up / Close buttons, plus optional Stop button (shown automatically when the device supports it) |
+| Scene | One-click activate button |
 
 **Configuration:**
 
-An action list editor lets you add, reorder, and remove actions:
-| Field | Description |
-|-------|-------------|
-| Type | Device (toggle) or Scene (activate) |
-| Device/Scene | Picked from a dropdown |
-| Label | Button label (auto-filled from device/scene name if blank) |
+| Field | Default | Description |
+|-------|---------|-------------|
+| List layout | off | Display actions as a vertical list (label left, icon/status right) instead of a grid |
+| Show panel background | on | Show the widget panel background |
+
+**Action list editor:**
+
+Use the action list to add, reorder, and remove actions. Drag the grip handle (⠿) to reorder. Click the pencil icon to rename; click the trash icon to delete.
+
+To add an action:
+
+1. Select **Device** or **Scene** from the type dropdown
+2. Pick the device or scene from the searchable picker (only switch-type devices are shown)
+3. For **selector switches**: the level is *not* chosen here — it is selected at click-time in the widget
+4. Optionally enter a custom label (auto-filled from device/scene name if blank)
+5. Click **+** to add
+
+**In the widget:**
+
+- Click a switch button to toggle it; the icon turns accent-coloured when the device is On
+- Click a selector button to open the inline level picker; the current level is shown beneath the label; the active level is highlighted
+- Blind Up/Stop/Close buttons are shown as a compact group with the label on the left
 
 ---
 
