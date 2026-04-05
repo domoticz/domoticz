@@ -46,7 +46,7 @@
 /* ── Compact top bar (view mode) ─────────────────────────── */
 .dd-topbar {
     position: fixed;
-    top: 50px;
+    top: var(--dd-navbar-h, 50px);
     left: 16px;
     z-index: 1000;
     display: flex;
@@ -137,7 +137,7 @@ body.dd-navbar-hidden .dd-topbar {
     flex-wrap: wrap;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     position: fixed;
-    top: 50px;
+    top: var(--dd-navbar-h, 50px);
     left: 20px;
     right: 20px;
     z-index: 1020;

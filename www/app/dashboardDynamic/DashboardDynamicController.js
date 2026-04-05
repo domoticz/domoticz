@@ -481,6 +481,19 @@ define([
         }
         document.addEventListener('keydown', onKeyDown);
 
+        // ── Navbar height tracking ────────────────────────────
+        // The toolbar uses position:fixed with top equal to the navbar height.
+        // On tablets in landscape mode the navbar can wrap to two lines, so we
+        // measure the real height and expose it as a CSS variable instead of
+        // using a hardcoded 50 px value.
+        function syncNavbarHeight() {
+            var nav = document.querySelector('.navbar.navbar-fixed-top');
+            var h = nav ? nav.offsetHeight : 50;
+            _body.style.setProperty('--dd-navbar-h', h + 'px');
+        }
+        syncNavbarHeight();
+        window.addEventListener('resize', syncNavbarHeight);
+
         // ── Standby activity listeners ────────────────────────
         var _standbyActivityEvents = ['mousemove', 'touchstart', 'keydown', 'click'];
         _standbyActivityEvents.forEach(function(ev) {
@@ -761,6 +774,8 @@ define([
             _standbyActivityEvents.forEach(function(ev) {
                 document.removeEventListener(ev, resetStandbyTimer);
             });
+            window.removeEventListener('resize', syncNavbarHeight);
+            _body.style.removeProperty('--dd-navbar-h');
             if (_standbyTimer) { $timeout.cancel(_standbyTimer); }
             _body.classList.remove('dd-navbar-hidden');
             _body.classList.remove('dd-standby');
