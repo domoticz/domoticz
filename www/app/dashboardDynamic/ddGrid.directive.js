@@ -76,22 +76,28 @@ define([
                 }
 
                 // ── Item management ──────────────────────────────────
-                function getDescMinH(widget) {
+                function getDescConstraints(widget) {
                     var desc = widgetRegistry.get(widget.type);
-                    return (desc && desc.minH) || 2;
+                    return {
+                        minW: (desc && desc.minW) || 2,
+                        minH: (desc && desc.minH) || 2,
+                        maxW: (desc && desc.maxW) || 12,
+                        maxH: (desc && desc.maxH) || 20
+                    };
                 }
 
                 function addItemToGrid(widget) {
+                    var c  = getDescConstraints(widget);
                     var el = createWidgetElement(widget);
                     grid.addWidget(el, {
-                        x:    widget.x    || 0,
-                        y:    widget.y    || 0,
-                        w:    widget.w    || widget.defaultW || 3,
-                        h:    widget.h    || widget.defaultH || 2,
-                        minW: widget.minW || 2,
-                        minH: widget.minH || getDescMinH(widget),
-                        maxW: widget.maxW || 12,
-                        maxH: widget.maxH || 20,
+                        x:    widget.x || 0,
+                        y:    widget.y || 0,
+                        w:    widget.w || 3,
+                        h:    widget.h || 2,
+                        minW: c.minW,
+                        minH: c.minH,
+                        maxW: c.maxW,
+                        maxH: c.maxH,
                         id:   widget.id
                     });
                 }
@@ -139,15 +145,16 @@ define([
 
                 // Like addItemToGrid but lets GridStack find the nearest free slot
                 function addItemToAutoGrid(widget) {
+                    var c  = getDescConstraints(widget);
                     var el = createWidgetElement(widget);
                     grid.addWidget(el, {
                         autoPosition: true,
-                        w:    widget.w    || widget.defaultW || 3,
-                        h:    widget.h    || widget.defaultH || 2,
-                        minW: widget.minW || 2,
-                        minH: widget.minH || getDescMinH(widget),
-                        maxW: widget.maxW || 12,
-                        maxH: widget.maxH || 20,
+                        w:    widget.w || widget.defaultW || 3,
+                        h:    widget.h || widget.defaultH || 2,
+                        minW: c.minW,
+                        minH: c.minH,
+                        maxW: c.maxW,
+                        maxH: c.maxH,
                         id:   widget.id
                     });
                 }

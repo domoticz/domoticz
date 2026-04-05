@@ -28,7 +28,7 @@
                     </li>
                     <li class="divider"></li>
                     <li><a href ng-click="openDashboardManager()">
-                        <i class="fa-solid fa-gear"></i> Manage Dashboards...
+                        <i class="fa-solid fa-gear"></i> Dashboard Settings...
                     </a></li>
                 </ul>
             </div>
@@ -99,8 +99,11 @@
                         <a href ng-click="switchLayout(l.id)">{{ l.name }}</a>
                     </li>
                     <li class="divider"></li>
+                    <li><a href ng-click="newDashboard()">
+                        <i class="fa-solid fa-plus"></i> New Dashboard
+                    </a></li>
                     <li><a href ng-click="openDashboardManager()">
-                        <i class="fa-solid fa-gear"></i> Manage Dashboards...
+                        <i class="fa-solid fa-gear"></i> Dashboard Settings...
                     </a></li>
                 </ul>
             </div>
@@ -118,6 +121,11 @@
                     </a></li>
                     <li><a ng-click="resetToFavorites()">
                         <i class="fa-solid fa-star"></i> Reset to Favorites
+                    </a></li>
+                    <li><a ng-click="setCurrentAsDefault()">
+                        <i class="fa-solid fa-check fa-fw"
+                           ng-style="{'opacity': (activeLayout && activeLayout.isDefault) ? '1' : '0', 'color': 'var(--dz-accent-color)'}"></i>
+                        Set as Default
                     </a></li>
                     <li class="divider"></li>
                     <li><a ng-click="duplicateLayout()">
@@ -145,15 +153,11 @@
             </button>
 
             <!-- Cancel -->
-            <button type="button" class="btn btn-default btn-sm"
+            <button type="button" class="btn btn-sm"
+                    ng-class="isDirty ? 'btn-danger' : 'btn-default'"
                     ng-click="cancelEdit()">
                 <i class="fa-solid fa-ban"></i> Cancel
             </button>
-
-            <!-- Unsaved indicator -->
-            <span class="text-warning dd-dirty-indicator" ng-show="isDirty">
-                <i class="fa-solid fa-asterisk"></i> Unsaved
-            </span>
 
             <!-- Add widget -->
             <button type="button" class="btn btn-default btn-sm"

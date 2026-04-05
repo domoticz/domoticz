@@ -318,6 +318,10 @@ define(['app'], function (app) {
                         image = 'Rain48_On.png';
                     } else if (typeof device.UVI !== 'undefined') {
                         image = 'uv48.png';
+                    } else if (typeof device.Visibility !== 'undefined') {
+                        image = (device.CustomImage == 0) ? 'visibility48.png' : device.Image + '48_On.png';
+                    } else if (typeof device.Radiation !== 'undefined') {
+                        image = (device.CustomImage == 0) ? 'radiation48.png' : device.Image + '48_On.png';
                     } else {
                         image = (device.CustomImage == 0) ? 'current48.png' : device.Image + '48_On.png';
                     }

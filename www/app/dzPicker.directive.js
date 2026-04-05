@@ -18,7 +18,6 @@ define(['app'], function(app) {
                     '<ul class="dz-picker-list">' +
                         '<li ng-repeat="opt in filteredOptions()"' +
                             ' ng-class="{active: isSelected(opt), highlighted: $index === highlightIdx}"' +
-                            ' ng-mouseenter="highlightIdx = $index"' +
                             ' ng-click="select(opt)">' +
                             '<a>{{ opt.label }}</a>' +
                         '</li>' +

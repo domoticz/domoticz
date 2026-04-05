@@ -51,9 +51,10 @@ define([
             controller: ['$scope', '$http', '$interval', '$sce',
                 function($scope, $http, $interval, $sce) {
                 var ctrl = this;
-                ctrl.imageUrl   = null;
-                ctrl.cameraName = '';
-                ctrl.error      = null;
+                ctrl.imageUrl    = null;
+                ctrl.cameraName  = '';
+                ctrl.cameraAspect = 0;
+                ctrl.error       = null;
                 var timer       = null;
 
                 function getInterval() {
@@ -88,10 +89,20 @@ define([
                             var cam = cameras.find(function(c) {
                                 return String(c.idx) === String(cfg.cameraIdx);
                             });
-                            ctrl.cameraName = cam ? cam.Name : '';
+                            ctrl.cameraName   = cam ? cam.Name : '';
+                            ctrl.cameraAspect = cam ? (cam.CameraAspect || 0) : 0;
                         })
-                        .catch(function() { ctrl.cameraName = ''; });
+                        .catch(function() { ctrl.cameraName = ''; ctrl.cameraAspect = 0; });
                 }
+
+                ctrl.openLiveStream = function() {
+                    if (ctrl.editMode) { return; }
+                    var cfg = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
+                    if (!cfg.cameraIdx) { return; }
+                    if (typeof ShowCameraLiveStream === 'function') {
+                        ShowCameraLiveStream(escape(ctrl.cameraName || ''), cfg.cameraIdx, ctrl.cameraAspect);
+                    }
+                };
 
                 function startTimer() {
                     stopTimer();

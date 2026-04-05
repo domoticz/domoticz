@@ -248,10 +248,18 @@ define([
         }
 
         // ── Public actions ─────────────────────────────────────
+        function confirmIfDirty() {
+            if (!$scope.editMode || !$scope.isDirty) { return $q.when(); }
+            return bootbox.confirm('Discard unsaved changes?');
+        }
+
         $scope.switchLayout = function(id) {
-            try { localStorage.setItem(LS_KEY, id); } catch(e) {}
-            loadLayout(id);
-            resetStandbyTimer();
+            confirmIfDirty().then(function() {
+                $scope.isDirty = false;
+                try { localStorage.setItem(LS_KEY, id); } catch(e) {}
+                loadLayout(id);
+                resetStandbyTimer();
+            }).catch(angular.noop);
         };
 
         $scope.toggleEditMode = function() {
@@ -390,11 +398,9 @@ define([
             $uibModal.open({
                 templateUrl: 'views/dashboardDynamic/dashboard-manager-modal.html',
                 controller:  'DdDashboardManagerCtrl',
-                size:        'lg',
+                size:        'md',
                 resolve: {
                     layouts:         function() { return $scope.layouts; },
-                    currentId:       function() { return $scope.activeLayout && $scope.activeLayout.id; },
-                    onSwitch:        function() { return function(id) { $scope.switchLayout(id); }; },
                     kioskSettings:   function() { return $scope.kiosk; },
                     onKioskChange:   function() {
                         return function(settings) { $scope.saveKioskSettings(settings); };
@@ -404,12 +410,7 @@ define([
                         return function(settings) { $scope.saveStandbySettings(settings); };
                     }
                 }
-            }).result.then(function() {
-                // Refresh layout list after the manager closes
-                return dashboardDynamicService.listLayouts().then(function(l) {
-                    $scope.layouts = l;
-                });
-            }).catch(angular.noop); // dismiss is not an error
+            }).result.catch(angular.noop);
         };
 
         // ── Export / Import ───────────────────────────────────
@@ -607,6 +608,27 @@ define([
             }).catch(angular.noop);
         };
 
+        $scope.newDashboard = function() {
+            confirmIfDirty().then(function() {
+                $scope.isDirty = false;
+                var name     = 'New Dashboard';
+                var existing = $scope.layouts.filter(function(l) { return l.name.indexOf(name) === 0; });
+                if (existing.length) { name = name + ' ' + (existing.length + 1); }
+                var id        = dashboardDynamicService.generateId();
+                var isFirst   = $scope.layouts.length === 0;
+                var emptyData = { version: 1, columns: 12, rowHeight: 60, margin: 8, animate: true, widgets: [] };
+                dashboardDynamicService.saveLayout({ id: id, name: name, isDefault: isFirst }, emptyData)
+                    .then(function() {
+                        $scope.layouts.push({ id: id, name: name, isDefault: isFirst, updated: new Date().toISOString() });
+                        $scope.switchLayout(id);
+                        ddToast.success('Dashboard "' + name + '" created');
+                    })
+                    .catch(function() {
+                        ddToast.error('Failed to create dashboard');
+                    });
+            }).catch(angular.noop);
+        };
+
         $scope.duplicateLayout = function() {
             if (!$scope.activeLayout || !$scope.activeData) { return; }
             var newMeta = {
@@ -629,6 +651,20 @@ define([
                 ddToast.success('Dashboard duplicated');
             }).catch(function() {
                 ddToast.error('Duplicate failed');
+            });
+        };
+
+        $scope.setCurrentAsDefault = function() {
+            if (!$scope.activeLayout || $scope.activeLayout.isDefault) { return; }
+            $scope.layouts.forEach(function(l) { l.isDefault = false; });
+            $scope.activeLayout.isDefault = true;
+            dashboardDynamicService.saveLayout(
+                { id: $scope.activeLayout.id, name: $scope.activeLayout.name, isDefault: true },
+                null
+            ).then(function() {
+                ddToast.success('Set as default dashboard');
+            }).catch(function() {
+                ddToast.error('Failed to set as default');
             });
         };
 

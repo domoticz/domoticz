@@ -205,58 +205,149 @@ define([
                 }
             });
 
+            $scope.actionDeviceOptions  = [];
+            $scope.actionSceneOptions   = [];
+            $scope.selectorLevelOptions = [];
+
+            var actionDeviceFilter = actionListFields[0] && actionListFields[0].deviceFilter;
+
+            function actionDeviceHasStop(d) {
+                return (d.SubType === 'RAEX') ||
+                    (d.SubType && (d.SubType.indexOf('A-OK') === 0 || d.SubType.indexOf('Hasta') >= 0 ||
+                                   d.SubType.indexOf('Media Mount') === 0 || d.SubType.indexOf('Forest') === 0 ||
+                                   d.SubType.indexOf('Chamberlain') === 0 || d.SubType.indexOf('Sunpery') === 0 ||
+                                   d.SubType.indexOf('Dolat') === 0 || d.SubType.indexOf('ASP') === 0 ||
+                                   d.SubType === 'Harrison' || d.SubType.indexOf('RFY') === 0 ||
+                                   d.SubType.indexOf('ASA') === 0 || d.SubType.indexOf('DC106') === 0 ||
+                                   d.SubType.indexOf('Confexx') === 0)) ||
+                    (d.SwitchType && (d.SwitchType.indexOf('Venetian Blinds') === 0 ||
+                                      d.SwitchType.indexOf('Stop') >= 0));
+            }
+
+            function decodeLevelNames(d) {
+                if (!d || !d.LevelNames) { return []; }
+                try {
+                    var names = b64DecodeUnicode(d.LevelNames).split('|');
+                    var result = [];
+                    for (var i = 0; i < names.length; i++) {
+                        if (i === 0 && d.LevelOffHidden) { continue; }
+                        result.push({ value: i * 10, label: names[i] });
+                    }
+                    return result;
+                } catch(e) { return []; }
+            }
+
+            function lookupActionDevice(idx) {
+                return ($scope.actionDevices || []).find(function(d) { return String(d.idx) === String(idx); });
+            }
+
             // Load devices
             $http.get('json.htm?type=command&param=getdevices&order=Name&displayhidden=1&used=true')
                 .then(function(resp) {
-                    $scope.actionDevices = (resp.data && resp.data.result) || [];
+                    var all = (resp.data && resp.data.result) || [];
+                    $scope.actionDevices = actionDeviceFilter === 'switch'
+                        ? all.filter(function(d) { return d.SwitchType && d.SwitchType !== ''; })
+                        : all;
+                    $scope.actionDeviceOptions = $scope.actionDevices.map(function(d) {
+                        return { value: String(d.idx), label: d.Name };
+                    });
                 });
 
             // Load scenes
             $http.get('json.htm?type=command&param=getscenes')
                 .then(function(resp) {
                     $scope.actionScenes = (resp.data && resp.data.result) || [];
+                    $scope.actionSceneOptions = $scope.actionScenes.map(function(s) {
+                        return { value: String(s.idx), label: s.Name };
+                    });
                 });
 
+            $scope.getActionOptions = function() {
+                return $scope.newAction.type === 'scene'
+                    ? $scope.actionSceneOptions
+                    : $scope.actionDeviceOptions;
+            };
+
+            $scope.newActionDevice = function() {
+                if (!$scope.newAction.idx || $scope.newAction.type !== 'switch') { return null; }
+                return lookupActionDevice($scope.newAction.idx);
+            };
+
             // New action form state
-            $scope.newAction = { type: 'switch', idx: '', label: '', icon: '' };
+            $scope.newAction = { type: 'switch', idx: '', label: '', selectorLevel: null };
+
+            $scope.$watch('newAction.type', function(val, old) {
+                if (val !== old) {
+                    $scope.newAction.idx          = '';
+                    $scope.newAction.selectorLevel = null;
+                    $scope.selectorLevelOptions    = [];
+                }
+            });
+
+            $scope.$watch('newAction.idx', function(val) {
+                $scope.newAction.selectorLevel = null;
+                $scope.selectorLevelOptions    = [];
+                if (!val || $scope.newAction.type !== 'switch') { return; }
+                var d = lookupActionDevice(val);
+                if (d && d.SwitchType === 'Selector') {
+                    $scope.selectorLevelOptions = decodeLevelNames(d);
+                }
+            });
 
             $scope.actionAddItem = function(fieldKey) {
                 var a = $scope.newAction;
                 if (!a.idx) { return; }
-                // Auto-fill label from device/scene name if blank
+                var d     = a.type === 'switch' ? lookupActionDevice(a.idx) : null;
                 var label = (a.label || '').trim();
-                if (!label) {
-                    var list = a.type === 'scene' ? $scope.actionScenes : $scope.actionDevices;
-                    var found = list && list.find(function(x) { return String(x.idx) === String(a.idx); });
-                    label = found ? found.Name : a.idx;
+
+                if (a.type === 'scene') {
+                    if (!label) {
+                        var s = ($scope.actionScenes || []).find(function(x) { return String(x.idx) === String(a.idx); });
+                        label = s ? s.Name : a.idx;
+                    }
+                    $scope.config[fieldKey].push({ type: 'scene', idx: String(a.idx), label: label, icon: 'fa-solid fa-play' });
+
+                } else if (d && d.SwitchType === 'Selector') {
+                    if (a.selectorLevel === null || a.selectorLevel === undefined) { return; }
+                    if (!label) {
+                        var levelOpt = $scope.selectorLevelOptions.find(function(o) { return o.value === a.selectorLevel; });
+                        label = d.Name + (levelOpt ? ': ' + levelOpt.label : '');
+                    }
+                    $scope.config[fieldKey].push({ type: 'selector', idx: String(a.idx), level: a.selectorLevel, label: label });
+
+                } else if (d && d.SwitchType && d.SwitchType.indexOf('Blinds') >= 0) {
+                    if (!label) { label = d.Name; }
+                    $scope.config[fieldKey].push({ type: 'blind', idx: String(a.idx), label: label, hasStop: actionDeviceHasStop(d) });
+
+                } else {
+                    if (!label) { label = d ? d.Name : a.idx; }
+                    var action = { type: 'switch', idx: String(a.idx), label: label, icon: 'fa-solid fa-power-off' };
+                    if (d && d.SwitchType === 'Push On Button')  { action.switchcmd = 'On'; }
+                    if (d && d.SwitchType === 'Push Off Button') { action.switchcmd = 'Off'; }
+                    $scope.config[fieldKey].push(action);
                 }
-                $scope.config[fieldKey].push({
-                    type:  a.type,
-                    idx:   String(a.idx),
-                    label: label,
-                    icon:  a.icon || (a.type === 'scene' ? 'fa-solid fa-play' : 'fa-solid fa-power-off')
+
+                $scope.newAction = { type: a.type, idx: '', label: '', selectorLevel: null };
+                $scope.selectorLevelOptions = [];
+            };
+
+            $scope.actionRenameItem = function(fieldKey, index) {
+                var action = $scope.config[fieldKey][index];
+                bootbox.prompt({
+                    title: 'Rename action',
+                    inputType: 'text',
+                    value: action.label || '',
+                    callback: function(result) {
+                        if (result === null) { return; }
+                        $scope.$apply(function() {
+                            action.label = result.trim() || action.label;
+                        });
+                    }
                 });
-                $scope.newAction = { type: a.type, idx: '', label: '', icon: '' };
             };
 
             $scope.actionRemoveItem = function(fieldKey, index) {
                 $scope.config[fieldKey].splice(index, 1);
-            };
-
-            $scope.actionMoveUp = function(fieldKey, index) {
-                if (index === 0) { return; }
-                var arr = $scope.config[fieldKey];
-                var tmp = arr[index - 1];
-                arr[index - 1] = arr[index];
-                arr[index] = tmp;
-            };
-
-            $scope.actionMoveDown = function(fieldKey, index) {
-                var arr = $scope.config[fieldKey];
-                if (index >= arr.length - 1) { return; }
-                var tmp = arr[index + 1];
-                arr[index + 1] = arr[index];
-                arr[index] = tmp;
             };
         }
 
@@ -272,4 +363,59 @@ define([
             $uibModalInstance.dismiss('cancel');
         };
     }]);
+
+    app.directive('ddSortableList', function() {
+        return {
+            restrict: 'A',
+            link: function(scope, element, attrs) {
+                var dragSrcIdx = null;
+
+                element.on('dragstart', '> .dd-al-item', function(e) {
+                    dragSrcIdx = parseInt($(this).data('sortIndex'), 10);
+                    e.originalEvent.dataTransfer.effectAllowed = 'move';
+                    $(this).addClass('dd-al-dragging');
+                });
+
+                element.on('dragover', '> .dd-al-item', function(e) {
+                    if (dragSrcIdx === null) { return; }
+                    e.preventDefault();
+                    e.originalEvent.dataTransfer.dropEffect = 'move';
+                    element.find('> .dd-al-item').removeClass('dd-al-drag-over');
+                    $(this).addClass('dd-al-drag-over');
+                });
+
+                element.on('dragleave', '> .dd-al-item', function() {
+                    $(this).removeClass('dd-al-drag-over');
+                });
+
+                element.on('drop', '> .dd-al-item', function(e) {
+                    e.preventDefault();
+                    var dropIdx = parseInt($(this).data('sortIndex'), 10);
+                    element.find('> .dd-al-item').removeClass('dd-al-drag-over');
+                    if (isNaN(dragSrcIdx) || isNaN(dropIdx) || dragSrcIdx === dropIdx) {
+                        dragSrcIdx = null;
+                        return;
+                    }
+                    var from = dragSrcIdx;
+                    dragSrcIdx = null;
+                    scope.$apply(function() {
+                        var arr = scope.$eval(attrs.ddSortableList);
+                        var item = arr.splice(from, 1)[0];
+                        arr.splice(dropIdx, 0, item);
+                    });
+                });
+
+                element.on('dragend', '> .dd-al-item', function() {
+                    element.find('> .dd-al-item')
+                        .removeClass('dd-al-drag-over')
+                        .removeClass('dd-al-dragging');
+                    dragSrcIdx = null;
+                });
+
+                scope.$on('$destroy', function() {
+                    element.off('dragstart dragover dragleave drop dragend');
+                });
+            }
+        };
+    });
 });

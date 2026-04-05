@@ -121,28 +121,23 @@
             <div ng-if="field.type === 'action-list'" class="dd-action-list-editor">
 
                 <!-- Existing actions -->
-                <div class="dd-al-item" ng-repeat="action in config[field.key] track by $index">
-                    <span class="dd-al-type-badge"
-                          ng-class="action.type === 'scene' ? 'dd-al-badge-scene' : 'dd-al-badge-switch'">
-                        {{ action.type === 'scene' ? 'Scene' : 'Device' }}
-                    </span>
-                    <i ng-class="action.icon || 'fa-solid fa-bolt'" class="dd-al-icon"></i>
-                    <span class="dd-al-label" ng-bind="action.label"></span>
-                    <div class="dd-al-actions">
-                        <button type="button" class="btn btn-xs btn-default"
-                                ng-click="actionMoveUp(field.key, $index)"
-                                ng-disabled="$index === 0" title="Move up">
-                            <i class="fa-solid fa-chevron-up"></i>
-                        </button>
-                        <button type="button" class="btn btn-xs btn-default"
-                                ng-click="actionMoveDown(field.key, $index)"
-                                ng-disabled="$index === config[field.key].length - 1" title="Move down">
-                            <i class="fa-solid fa-chevron-down"></i>
-                        </button>
-                        <button type="button" class="btn btn-xs btn-danger"
-                                ng-click="actionRemoveItem(field.key, $index)" title="Remove">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
+                <div class="dd-al-items" dd-sortable-list="config[field.key]">
+                    <div class="dd-al-item" draggable="true"
+                         data-sort-index="{{ $index }}"
+                         ng-repeat="action in config[field.key] track by $index">
+                        <i class="fa-solid fa-grip-vertical dd-al-drag-handle"></i>
+                        <span class="dd-al-type-badge"
+                              ng-class="{'dd-al-badge-scene':    action.type === 'scene',
+                                         'dd-al-badge-blind':    action.type === 'blind',
+                                         'dd-al-badge-selector': action.type === 'selector',
+                                         'dd-al-badge-switch':   action.type === 'switch'}">
+                            {{ action.type === 'scene' ? 'Scene' : action.type === 'blind' ? 'Blind' : action.type === 'selector' ? 'Selector' : 'Device' }}
+                        </span>
+                        <span class="dd-al-label" ng-bind="action.label"></span>
+                        <i class="fa-solid fa-pencil dd-al-action-icon dd-al-rename-icon"
+                           ng-click="actionRenameItem(field.key, $index)" title="Rename"></i>
+                        <i class="fa-solid fa-trash dd-al-action-icon dd-al-delete-icon"
+                           ng-click="actionRemoveItem(field.key, $index)" title="Remove"></i>
                     </div>
                 </div>
 
@@ -158,22 +153,25 @@
                             <option value="scene">Scene</option>
                         </select>
 
-                        <select class="combobox ui-corner-all" ng-model="newAction.idx" style="flex:1">
-                            <option value="">-- Select --</option>
-                            <option ng-if="newAction.type !== 'scene'"
-                                    ng-repeat="d in actionDevices track by d.idx"
-                                    value="{{ d.idx }}">{{ d.Name }}</option>
-                            <option ng-if="newAction.type === 'scene'"
-                                    ng-repeat="s in actionScenes track by s.idx"
-                                    value="{{ s.idx }}">{{ s.Name }}</option>
-                        </select>
+                        <dz-picker ng-model="newAction.idx"
+                                   dz-options="getActionOptions()"
+                                   placeholder="-- Select --"
+                                   style="flex:3">
+                        </dz-picker>
+
+                        <dz-picker ng-if="selectorLevelOptions.length"
+                                   ng-model="newAction.selectorLevel"
+                                   dz-options="selectorLevelOptions"
+                                   placeholder="-- Level --"
+                                   style="flex:2">
+                        </dz-picker>
 
                         <input type="text" class="text ui-widget-content ui-corner-all" ng-model="newAction.label"
                                placeholder="Label (optional)" style="flex:1">
 
                         <button type="button" class="btn btn-sm btn-primary"
                                 ng-click="actionAddItem(field.key)"
-                                ng-disabled="!newAction.idx">
+                                ng-disabled="!newAction.idx || (selectorLevelOptions.length && newAction.selectorLevel === null)">
                             <i class="fa-solid fa-plus"></i>
                         </button>
                     </div>
