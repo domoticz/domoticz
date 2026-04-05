@@ -88,10 +88,9 @@ define([
                     var batDischarge = battOut ? parseKwh(battOut.CounterToday)    : 0;
 
                     var batNet           = batCharge - batDischarge;
-                    var netGrid          = p1Import - p1Export;
                     var houseConsumption = p1Import + solarKwh - p1Export - batNet;
                     var selfSufficiency  = houseConsumption > 0
-                        ? (1 - Math.max(0, netGrid) / houseConsumption) * 100
+                        ? (1 - p1Import / houseConsumption) * 100
                         : 0;
 
                     ctrl.balance = {

@@ -208,15 +208,14 @@ define([
                     // Energy balance calculation
                     // battery_net  = energy stored net in battery today (positive = charged)
                     // house        = P1_import + solar - P1_export - battery_net
-                    // self_suff    = 1 - net_grid_draw / house  (net_grid = P1_import - P1_export)
+                    // self_suff    = 1 - gross_import / house
                     if (ctrl.grid && ctrl.solar) {
                         var solarKwh  = parseKwh(ctrl.solar.counterToday);
                         var importKwh = parseKwh(ctrl.grid.counterToday);
                         var exportKwh = parseKwh(ctrl.grid.counterDelivToday);
                         var batNet    = batImportedKwh - batExportedKwh;
                         var houseKwh  = importKwh + solarKwh - exportKwh - batNet;
-                        var netGrid   = importKwh - exportKwh;
-                        var selfSuff  = (houseKwh > 0) ? Math.max(0, (1 - Math.max(0, netGrid) / houseKwh) * 100) : 0;
+                        var selfSuff  = (houseKwh > 0) ? Math.max(0, (1 - importKwh / houseKwh) * 100) : 0;
                         ctrl.balance = {
                             selfSufficiency: selfSuff,
                             solarToday:      solarKwh.toFixed(1),
