@@ -56,4 +56,6 @@ private:
 	std::vector<uint8_t> m_vRBuffer;
 	std::mutex m_rbufferMutex;
 	std::shared_ptr<std::thread> m_thread;
+	double m_dTotalEnergyWh;
+	std::chrono::time_point<std::chrono::steady_clock> m_tLastEnergyUpdate;
 };

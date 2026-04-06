@@ -30,6 +30,8 @@ CDaikinModbus::CDaikinModbus(int ID, const std::string& IPAddress, unsigned shor
 	, m_iPollInterval(iPollInterval)
 	, m_bIsAirToAir(bIsAirToAir)
 	, m_iUnitID(iUnitID)
+	, m_dTotalEnergyWh(0.0)
+	, m_tLastEnergyUpdate()
 {
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
@@ -50,6 +52,12 @@ bool CDaikinModbus::StartHardware()
 
 	m_bIsStarted = true;
 	this->CDomoticzHardwareBase::RequestStart();
+
+	bool bExists = false;
+	m_dTotalEnergyWh = GetKwhMeter(m_iUnitID, 152, bExists);
+	if (!bExists)
+		m_dTotalEnergyWh = 0.0;
+	m_tLastEnergyUpdate = std::chrono::steady_clock::now();
 
 	// Set a reasonable reconnect delay (10 seconds)
 	SetReconnectDelay(10);
@@ -333,27 +341,52 @@ void CDaikinModbus::ProcessInputRegisters(const uint8_t* pData, size_t length)
 	if ((val = getReg(35)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 135, 255, val != 0, 0, "Defrost/Startup", m_Name);
 	if ((val = getReg(36)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 136, 255, val != 0, 0, "Hot Start", m_Name);
 	if ((val = getReg(37)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 137, 255, val != 0, 0, "3-way Valve", m_Name);
-	if ((val = getReg(52)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 152, 255, val != 0, 0, "DHW Normal Op", m_Name);
-	if ((val = getReg(53)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 153, 255, val != 0, 0, "Heating/Cooling Normal Op", m_Name);
+	if ((val = getReg(52)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 152, 255, val != 0, 0, "Hot Water Active", m_Name);
+	if ((val = getReg(53)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 153, 255, val != 0, 0, "Heating/Cooling Active", m_Name);
 
 	// Temperatures (40-45, 50) - Scale 0.01
-	if ((val = getReg(40)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 140, 255, val / 100.0f, "LWT PHE");
-	if ((val = getReg(41)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 141, 255, val / 100.0f, "LWT BUH");
+	if ((val = getReg(40)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 140, 255, val / 100.0f, "Heating Leaving Water");
+	if ((val = getReg(41)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 141, 255, val / 100.0f, "Heating Leaving Water (Backup Heater)");
 	if ((val = getReg(42)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 142, 255, val / 100.0f, "Return Water Temp");
-	if ((val = getReg(43)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 143, 255, val / 100.0f, "DHW Temp");
+	if ((val = getReg(43)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 143, 255, val / 100.0f, "Hot Water Temp");
 	if ((val = getReg(44)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 144, 255, val / 100.0f, "Outside Temp");
 	if ((val = getReg(45)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 145, 255, val / 100.0f, "Refrigerant Temp");
 	if ((val = getReg(50)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 150, 255, val / 100.0f, "Room Temp");
 
 	// Limits (54-57) - Scale 0.01
-	if ((val = getReg(54)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 154, 255, val / 100.0f, "LWT Heating Lower Limit");
-	if ((val = getReg(55)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 155, 255, val / 100.0f, "LWT Heating Upper Limit");
-	if ((val = getReg(56)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 156, 255, val / 100.0f, "LWT Cooling Lower Limit");
-	if ((val = getReg(57)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 157, 255, val / 100.0f, "LWT Cooling Upper Limit");
+	if ((val = getReg(54)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 154, 255, val / 100.0f, "Heating Min");
+	if ((val = getReg(55)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 155, 255, val / 100.0f, "Heating Max");
+	if ((val = getReg(56)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 156, 255, val / 100.0f, "Cooling Min");
+	if ((val = getReg(57)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 157, 255, val / 100.0f, "Cooling Max");
 
 	// Sensors (49, 51)
 	if ((val = getReg(49)) != 0x7FFF && val != 32766) SendWaterflowSensor(m_iUnitID, 149, 255, val / 100.0f, "Flow Rate");
-	if ((val = getReg(51)) != 0x7FFF && val != 32766) SendWattMeter(m_iUnitID, 151, 255, (val / 100.0f) * 1000.0f, "Power Consumption");
+	if ((val = getReg(51)) != 0x7FFF && val != 32766)
+	{
+		double dPowerWatt = (val / 100.0) * 1000.0;
+		auto tNow = std::chrono::steady_clock::now();
+		if (m_tLastEnergyUpdate.time_since_epoch().count() != 0)
+		{
+			std::chrono::duration<double> diff = tNow - m_tLastEnergyUpdate;
+			double dDeltaHours = diff.count() / 3600.0;
+
+			// Only update if time advanced and limit max interpolation time
+			// to avoid massive spikes after disconnections or being powered off.
+			// Using 3 times the poll interval as a safe boundary.
+			double dMaxHours = (m_iPollInterval * 3.0) / 3600.0;
+
+			if (dDeltaHours > 0)
+			{
+				if (dDeltaHours > dMaxHours)
+					dDeltaHours = dMaxHours; // Cap the interval to prevent spikes
+
+				m_dTotalEnergyWh += (dPowerWatt * dDeltaHours);
+			}
+		}
+		m_tLastEnergyUpdate = tNow;
+		SendWattMeter(m_iUnitID, 151, 255, dPowerWatt, "Power Consumption");
+		SendKwhMeter(m_iUnitID, 152, 255, dPowerWatt, m_dTotalEnergyWh / 1000.0, "Energy Usage");
+	}
 }
 
 void CDaikinModbus::ProcessHoldingRegisters(const uint8_t* pData, size_t length)
@@ -380,18 +413,18 @@ void CDaikinModbus::ProcessHoldingRegisters(const uint8_t* pData, size_t length)
 
 	int16_t val;
 	// Setpoints (1, 2, 6, 7, 10)
-	if ((val = getReg(1)) != 0x7FFF && val != 32766) SendSetPointSensor(m_iUnitID, 0, 0, 1, 1, 255, (float)val, "LWT Heating Setpoint");
-	if ((val = getReg(2)) != 0x7FFF && val != 32766) SendSetPointSensor(m_iUnitID, 0, 0, 2, 1, 255, (float)val, "LWT Cooling Setpoint");
+	if ((val = getReg(1)) != 0x7FFF && val != 32766) SendSetPointSensor(m_iUnitID, 0, 0, 1, 1, 255, (float)val, "Heating Setpoint");
+	if ((val = getReg(2)) != 0x7FFF && val != 32766) SendSetPointSensor(m_iUnitID, 0, 0, 2, 1, 255, (float)val, "Cooling Setpoint");
 	if ((val = getReg(6)) != 0x7FFF && val != 32766) SendSetPointSensor(m_iUnitID, 0, 0, 6, 1, 255, (float)val, "Room Heating Setpoint");
 	if ((val = getReg(7)) != 0x7FFF && val != 32766) SendSetPointSensor(m_iUnitID, 0, 0, 7, 1, 255, (float)val, "Room Cooling Setpoint");
-	if ((val = getReg(10)) != 0x7FFF && val != 32766) SendSetPointSensor(m_iUnitID, 0, 0, 10, 1, 255, (float)val, "DHW Reheat Setpoint");
+	if ((val = getReg(10)) != 0x7FFF && val != 32766) SendSetPointSensor(m_iUnitID, 0, 0, 10, 1, 255, (float)val, "Hot Water Setpoint");
 
 	// Modes and Other (3, 4, 9, 12, 13, 53, 54, 55, 56, 58, 59)
 	if ((val = getReg(3)) != 0x7FFF && val != 32766) SendSelectorSwitch(m_iUnitID, 3, std::to_string(val * 10), "Operation Mode", 0, false, "Auto|Heating|Cooling", "", false, m_Name);
 	if ((val = getReg(4)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 4, 255, val != 0, 0, "Space Heating/Cooling", m_Name);
 	if ((val = getReg(9)) != 0x7FFF && val != 32766) SendSelectorSwitch(m_iUnitID, 9, std::to_string(val * 10), "Quiet Mode", 0, false, "Off|On (Auto)|On (Manual)", "", false, m_Name);
-	if ((val = getReg(12)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 12, 255, val != 0, 0, "DHW Reheat", m_Name);
-	if ((val = getReg(13)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 13, 255, val != 0, 0, "DHW Booster", m_Name);
+	if ((val = getReg(12)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 12, 255, val != 0, 0, "Hot Water Reheat", m_Name);
+	if ((val = getReg(13)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 13, 255, val != 0, 0, "Hot Water Booster", m_Name);
 	if ((val = getReg(53)) != 0x7FFF && val != 32766) SendSelectorSwitch(m_iUnitID, 53, std::to_string(val * 10), "Weather Dependent Mode", 0, false, "Fixed|Weather Dependent|Fixed+Scheduled|Weather Dependent+Scheduled", "", false, m_Name);
 	if ((val = getReg(54)) != 0x7FFF && val != 32766) SendSetPointSensor(m_iUnitID, 0, 0, 54, 1, 255, (float)val, "Weather Dependent Heating Offset");
 	if ((val = getReg(55)) != 0x7FFF && val != 32766) SendSetPointSensor(m_iUnitID, 0, 0, 55, 1, 255, (float)val, "Weather Dependent Cooling Offset");
