@@ -2924,7 +2924,7 @@ namespace http
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
+							sprintf(szTmp, "%d Liter", ground((meteroffset + (dvalue / divider)) * 1000.0));
 							root["result"][ii]["Data"] = szTmp;
 							root["result"][ii]["Counter"] = szTmp;
 							break;
@@ -2989,8 +2989,8 @@ namespace http
 								sprintf(szTmp, "%.3f m3", musage);
 								break;
 							case MTYPE_WATER:
-								musage = double(total_real) / divider;
-								sprintf(szTmp, "%.3f m3", musage);
+								musage = double(total_real) / divider * 1000.0;
+								sprintf(szTmp, "%d Liter", ground(musage));
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%.10g", double(total_real) / divider);
@@ -3017,7 +3017,7 @@ namespace http
 								sprintf(szTmp, "%.3f m3", 0.0F);
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f m3", 0.0F);
+								sprintf(szTmp, "0 Liter");
 								break;
 							default:
 								strcpy(szTmp, "0");
@@ -3041,9 +3041,12 @@ namespace http
 							sprintf(szTmp, "%.03f", musage);
 							break;
 						case MTYPE_GAS:
-						case MTYPE_WATER:
 							musage = double(total_actual) / divider;
 							sprintf(szTmp, "%.03f", musage);
+							break;
+						case MTYPE_WATER:
+							musage = double(total_actual) / divider * 1000.0;
+							sprintf(szTmp, "%d", ground(musage));
 							break;
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%.10g", double(total_actual) / divider);
@@ -3070,8 +3073,8 @@ namespace http
 							sprintf(szTmp, "%.3f m3", musage);
 							break;
 						case MTYPE_WATER:
-							musage = double(acounter) / divider;
-							sprintf(szTmp, "%.3f m3", musage);
+							musage = double(acounter) / divider * 1000.0;
+							sprintf(szTmp, "%d Liter", ground(musage));
 							break;
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%.10g", double(acounter) / divider);
@@ -3100,7 +3103,7 @@ namespace http
 							sprintf(szTmp, "%s m3", splitresults[1].c_str());
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%s m3", splitresults[1].c_str());
+							sprintf(szTmp, "%s Liter", splitresults[1].c_str());
 							break;
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%s", splitresults[1].c_str());
@@ -3857,8 +3860,8 @@ namespace http
 									sprintf(szTmp, "%.3f m3", musage);
 									break;
 								case MTYPE_WATER:
-									musage = double(total_real) / divider;
-									sprintf(szTmp, "%.3f m3", musage);
+									musage = double(total_real) / divider * 1000.0;
+									sprintf(szTmp, "%d Liter", ground(musage));
 									break;
 								case MTYPE_COUNTER:
 									sprintf(szTmp, "%.10g", double(total_real) / divider);
@@ -3885,7 +3888,7 @@ namespace http
 									sprintf(szTmp, "%.3f m3", 0.0F);
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f m3", 0.0F);
+									sprintf(szTmp, "0 Liter");
 									break;
 								default:
 									strcpy(szTmp, "0.000");
@@ -3918,7 +3921,7 @@ namespace http
 								root["result"][ii]["Counter"] = szTmp;
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
+								sprintf(szTmp, "%d Liter", ground((meteroffset + (dvalue / divider)) * 1000.0));
 								root["result"][ii]["Data"] = szTmp;
 								root["result"][ii]["Counter"] = szTmp;
 								break;
@@ -3987,7 +3990,7 @@ namespace http
 								root["result"][ii]["Counter"] = szTmp;
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
+								sprintf(szTmp, "%d Liter", ground((meteroffset + (dvalue / divider)) * 1000.0));
 								root["result"][ii]["Data"] = szTmp;
 								root["result"][ii]["Counter"] = szTmp;
 								break;
