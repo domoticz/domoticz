@@ -480,6 +480,11 @@ define([
                 e.preventDefault();
                 $scope.$apply(function() { $scope.toggleEditMode(); });
             }
+            // Ctrl+L: toggle widget library (edit mode only)
+            if (e.ctrlKey && e.keyCode === 76 && $scope.editMode) {
+                e.preventDefault();
+                $scope.$apply(function() { $scope.toggleLibrary(); });
+            }
         }
         document.addEventListener('keydown', onKeyDown);
 
