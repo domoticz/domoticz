@@ -191,7 +191,8 @@ define([
                     (ctrl.actions || []).forEach(fetchDeviceState);
                 }
 
-                ctrl.toggleLevelPicker = function(idx) {
+                ctrl.toggleLevelPicker = function(idx, $event) {
+                    if ($event) { $event.stopPropagation(); }
                     ctrl.showLevelPicker[idx] = !ctrl.showLevelPicker[idx];
                 };
 

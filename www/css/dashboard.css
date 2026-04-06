@@ -1460,9 +1460,16 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 .dd-quick-actions--list {
+    height: auto;
+    flex: 1;
+    min-height: 0;
     flex-direction: column;
+    flex-wrap: nowrap;
     align-content: flex-start;
+    align-items: flex-start;
     gap: 4px;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 /* Full-width row buttons: switch, scene, selector — excludes blind sub-buttons */
@@ -1632,9 +1639,63 @@ body.dd-navbar-hidden .dd-toolbar {
     padding: 4px 0 2px;
 }
 
+.dd-quick-actions--list .dd-qa-selector-group {
+    flex: none;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 8px;
+    padding: 0;
+    background: none;
+    border: none;
+}
+
+.dd-quick-actions--list .dd-qa-selector-group > .dd-qa-btn--selector {
+    flex: 1;
+    width: 100%;
+    box-sizing: border-box;
+}
+
 .dd-quick-actions--list .dd-qa-level-picker {
     flex: 0 0 100%;
     padding: 2px 0 2px 10px;
+}
+
+.dd-quick-actions--list .dd-qs-item {
+    flex: none;
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: left;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: var(--dz-panel-bg);
+    box-sizing: border-box;
+    gap: 8px;
+}
+.dd-quick-actions--list .dd-qs-item .dd-qs-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.85em;
+}
+.dd-quick-actions--list .dd-qs-value-wrap,
+.dd-quick-actions--list .dd-qs-secondary {
+    margin-left: auto;
+    flex-shrink: 0;
+    max-width: 45%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* ── iFrame Embed widget ──────────────────────────────────── */

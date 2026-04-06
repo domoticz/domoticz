@@ -1,6 +1,7 @@
 define([
     'app',
-    'dashboardDynamic/widgetRegistry.service'
+    'dashboardDynamic/widgetRegistry.service',
+    'dashboardDynamic/dashboardDynamic.module'
 ], function(app, widgetRegistry) {
     'use strict';
 
@@ -43,7 +44,7 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$q', function($scope, $http, $interval, $q) {
+            controller: ['$scope', '$http', '$interval', '$q', 'ddDeviceClassifier', function($scope, $http, $interval, $q, ddDeviceClassifier) {
                 var ctrl = this;
                 ctrl.items   = [];
                 ctrl.loading = false;
@@ -52,85 +53,15 @@ define([
                 var cancelToken = null;
                 var timer       = null;
 
-                function autoIcon(d) {
-                    var type = (d.Type || '').toLowerCase();
-                    if (d.Temp !== undefined) { return 'fa-solid fa-temperature-half'; }
-                    if (d.Humidity !== undefined) { return 'fa-solid fa-droplet'; }
-                    if (type.indexOf('wind') >= 0) { return 'fa-solid fa-wind'; }
-                    if (type.indexOf('rain') >= 0) { return 'fa-solid fa-cloud-rain'; }
-                    if (d.SwitchType === 'Dimmer') { return 'fa-solid fa-lightbulb'; }
-                    if (type.indexOf('light') >= 0 || type.indexOf('switch') >= 0) { return 'fa-solid fa-toggle-on'; }
-                    if (d.SubType === 'kWh') { return 'fa-solid fa-bolt'; }
-                    return 'fa-solid fa-circle-dot';
-                }
-
-                function extractValue(d) {
-                    var type = (d.Type || '').toLowerCase();
-
-                    if (d.SwitchType !== undefined || type.indexOf('light') >= 0 || type.indexOf('switch') >= 0) {
-                        var statusStr = d.Status || d.Data || '';
-                        return {
-                            value:     statusStr,
-                            isOn:      statusStr === 'On',
-                            unit:      '',
-                            typeClass: 'switch'
-                        };
-                    }
-                    if (type.indexOf('wind') >= 0) {
-                        var dirSpeed = ((d.DirectionStr || '') + ' ' + (d.Speed || '')).trim();
-                        var wTemp    = (d.Temp !== undefined && parseFloat(d.Temp) !== -999) ? String(d.Temp) : null;
-                        return {
-                            value:       dirSpeed || d.Data || '\u2014',
-                            secondValue: wTemp,
-                            isOn:        false,
-                            unit:        dirSpeed ? 'km/h' : '',
-                            unit2:       wTemp !== null ? '\u00b0C' : null,
-                            typeClass:   'wind'
-                        };
-                    }
-                    if (d.Temp !== undefined && d.Humidity !== undefined) {
-                        return {
-                            value:       String(d.Temp),
-                            secondValue: String(d.Humidity),
-                            isOn:        false,
-                            unit:        '\u00b0C',
-                            unit2:       '%',
-                            typeClass:   'temp-hum'
-                        };
-                    }
-                    if (d.Temp !== undefined) {
-                        return {
-                            value:     String(d.Temp),
-                            isOn:      false,
-                            unit:      '\u00b0C',
-                            typeClass: 'temp'
-                        };
-                    }
-                    if (d.Humidity !== undefined) {
-                        return {
-                            value:     String(d.Humidity),
-                            isOn:      false,
-                            unit:      '%',
-                            typeClass: 'humidity'
-                        };
-                    }
-                    return {
-                        value:     d.Data || '\u2014',
-                        isOn:      false,
-                        unit:      '',
-                        typeClass: 'generic'
-                    };
-                }
-
                 function applyDeviceToItem(item, d) {
-                    var extracted  = extractValue(d);
+                    var extracted  = ddDeviceClassifier.extractDeviceValue(d);
                     item.value       = extracted.value;
                     item.secondValue = extracted.secondValue || null;
                     item.isOn        = extracted.isOn;
                     item.unit        = extracted.unit;
                     item.unit2       = extracted.unit2 || null;
                     item.typeClass   = extracted.typeClass;
-                    item.icon        = item.configIcon || autoIcon(d);
+                    item.icon        = item.configIcon || ddDeviceClassifier.autoDeviceIcon(d);
                     item.label       = item.configLabel || d.Name || String(d.idx);
                 }
 

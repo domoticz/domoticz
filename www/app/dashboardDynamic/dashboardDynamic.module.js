@@ -56,7 +56,77 @@ define(['app'], function(app) {
             return 'dz-utility-widget';
         }
 
-        return { getDirective: getDirective };
+        var IMAGE_ICON_MAP = {
+            'Humidity':        'fa-solid fa-droplet',
+            'Fan':             'fa-solid fa-fan',
+            'Fireplace':       'fa-solid fa-fire',
+            'Heating':         'fa-solid fa-fire-flame-curved',
+            'Media':           'fa-solid fa-tv',
+            'Phone':           'fa-solid fa-phone',
+            'Speaker':         'fa-solid fa-volume-high',
+            'WallSocket':      'fa-solid fa-plug',
+            'Siren':           'fa-solid fa-bell',
+            'Door':            'fa-solid fa-door-open',
+            'doorbell':        'fa-solid fa-bell',
+            'Blinds':          'fa-solid fa-blinds',
+            'blinds':          'fa-solid fa-blinds',
+            'Security':        'fa-solid fa-shield-halved',
+            'Water':           'fa-solid fa-faucet',
+            'Generic':         'fa-solid fa-circle-dot',
+            'Light':           'fa-solid fa-lightbulb',
+            'ChristmasTree':   'fa-solid fa-tree',
+            'Computer':        'fa-solid fa-desktop',
+            'Printer':         'fa-solid fa-print',
+            'Washing':         'fa-solid fa-shirt'
+        };
+
+        function autoDeviceIcon(d) {
+            var type = (d.Type || '').toLowerCase();
+            if (d.Temp !== undefined)                                           { return 'fa-solid fa-temperature-half'; }
+            if (d.Humidity !== undefined)                                       { return 'fa-solid fa-droplet'; }
+            if (type.indexOf('wind') >= 0)                                      { return 'fa-solid fa-wind'; }
+            if (type.indexOf('rain') >= 0)                                      { return 'fa-solid fa-cloud-rain'; }
+            if (d.SwitchType === 'Selector')                                    { return 'fa-solid fa-sliders'; }
+            if (d.SwitchType === 'Dimmer')                                      { return 'fa-solid fa-lightbulb'; }
+            if (type.indexOf('light') >= 0 || type.indexOf('switch') >= 0) {
+                if (d.Image && IMAGE_ICON_MAP[d.Image])                         { return IMAGE_ICON_MAP[d.Image]; }
+                return 'fa-solid fa-power-off';
+            }
+            if (d.SubType === 'kWh')                                            { return 'fa-solid fa-bolt'; }
+            if (type.indexOf('scene') >= 0 || type.indexOf('group') >= 0)      { return 'fa-solid fa-play'; }
+            return 'fa-solid fa-circle-dot';
+        }
+
+        function extractDeviceValue(d) {
+            var type = (d.Type || '').toLowerCase();
+            if (d.SwitchType !== undefined || type.indexOf('light') >= 0 || type.indexOf('switch') >= 0) {
+                var statusStr = d.Status || d.Data || '';
+                return { value: statusStr, isOn: statusStr === 'On', unit: '', unit2: null, secondValue: null, typeClass: 'switch' };
+            }
+            if (type.indexOf('scene') >= 0 || type.indexOf('group') >= 0) {
+                var sceneStatus = d.Status || d.Data || '';
+                return { value: sceneStatus, isOn: sceneStatus === 'On', unit: '', unit2: null, secondValue: null, typeClass: 'switch' };
+            }
+            if (type.indexOf('wind') >= 0) {
+                var dirSpeed = ((d.DirectionStr || '') + ' ' + (d.Speed || '')).trim();
+                var wTemp    = (d.Temp !== undefined && parseFloat(d.Temp) !== -999) ? String(d.Temp) : null;
+                return { value: dirSpeed || d.Data || '\u2014', secondValue: wTemp, isOn: false,
+                         unit: dirSpeed ? 'km/h' : '', unit2: wTemp !== null ? '\u00b0C' : null, typeClass: 'wind' };
+            }
+            if (d.Temp !== undefined && d.Humidity !== undefined) {
+                return { value: String(d.Temp), secondValue: String(d.Humidity), isOn: false,
+                         unit: '\u00b0C', unit2: '%', typeClass: 'temp-hum' };
+            }
+            if (d.Temp !== undefined) {
+                return { value: String(d.Temp), isOn: false, unit: '\u00b0C', unit2: null, secondValue: null, typeClass: 'temp' };
+            }
+            if (d.Humidity !== undefined) {
+                return { value: String(d.Humidity), isOn: false, unit: '%', unit2: null, secondValue: null, typeClass: 'humidity' };
+            }
+            return { value: d.Data || '\u2014', isOn: false, unit: '', unit2: null, secondValue: null, typeClass: 'generic' };
+        }
+
+        return { getDirective: getDirective, autoDeviceIcon: autoDeviceIcon, extractDeviceValue: extractDeviceValue };
     }]);
 
     // Small helper directive: auto-focuses an input when it appears in the DOM

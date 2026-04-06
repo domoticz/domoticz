@@ -23,7 +23,7 @@
         <!-- Selector button + level picker -->
         <div class="dd-qa-selector-group" ng-if="action.type === 'selector'" style="display:contents">
             <button class="dd-qa-btn dd-qa-btn--selector"
-                    ng-click="ctrl.toggleLevelPicker(action.idx)"
+                    ng-click="ctrl.toggleLevelPicker(action.idx, $event)"
                     ng-class="{
                         'dd-qa-btn--success': ctrl.success[action.idx + '_sel'],
                         'dd-qa-btn--error':   ctrl.error[action.idx + '_sel'],
