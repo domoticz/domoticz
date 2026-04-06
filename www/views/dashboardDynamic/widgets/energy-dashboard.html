@@ -178,7 +178,7 @@
                 </div>
                 <div ng-if="ctrl.batteryLive">
                     <div class="dd-stat-line" ng-style="{'color': 'var(--dz-widget-energy-export)'}" ng-if="ctrl.batteryLive.soc"><i class="fa fa-battery-three-quarters"></i> {{ctrl.batteryLive.soc}}</div>
-                    <div class="dd-stat-line" ng-style="{'color': 'var(--dz-widget-accent)'}" ng-if="ctrl.batteryLive.watt"><i class="fa fa-bolt"></i> {{ctrl.batteryLive.watt}}</div>
+                    <div class="dd-stat-line" ng-style="{'color': 'var(--dz-widget-accent)'}" ng-if="ctrl.batteryLive.watt !== null"><i class="fa fa-bolt"></i> {{ctrl.batteryLive.watt}} W</div>
                     <div class="dd-stat-line" ng-style="{'color': 'var(--dz-widget-sunpv)'}" ng-if="ctrl.batteryLive.voltage"><i class="fa fa-plug"></i> {{ctrl.batteryLive.voltage}}</div>
                 </div>
             </div>

@@ -276,7 +276,7 @@ define([
                         chart: {
                             animation:       false,
                             backgroundColor: 'transparent',
-                            margin:          [10, 10, 30, 55],
+                            margin:          [10, 10, 30, 65],
                             style:           { fontFamily: 'inherit' },
                             height:          h,
                             width:           container.offsetWidth || null,
@@ -286,6 +286,9 @@ define([
                             text:  null,
                             align: 'center',
                             style: { fontSize: '11px', fontWeight: '600', color: getThemeColor('--dz-body-text', '#ccc') }
+                        },
+                        plotOptions: {
+                            column: { borderWidth: 0, pointPadding: 0.1, groupPadding: 0, minPointLength: 2 }
                         },
                         legend:    { enabled: false },
                         credits:   { enabled: false },
@@ -627,18 +630,32 @@ define([
                 // ----------------------------------------------------------------
 
                 function renderSimpleShortLog(container, data, cfg, info) {
+                    // Shortlog `v` for kWh devices is in W (instant power) — no conversion.
+                    // For all other types (water, gas, etc.) apply the divider just like simpleBars.
+                    var isKwh = (info.unit === 'kWh');
                     var series = data.map(function(d) {
                         var ts  = parseDateLocal(d.d);
-                        var val = parseFloat(d.v);
+                        var raw = parseFloat(d.v);
+                        var val = isKwh ? raw : raw / info.divider;
                         return [ts, isNaN(val) || val === 0 ? null : val];
                     }).filter(function(pt) { return pt[1] !== null; });
 
-                    // Shortlog `v` for energy devices is in W (instant power), not kWh
-                    var unit = (info.unit === 'kWh') ? 'W' : info.unit;
+                    var unit = isKwh ? 'W' : info.unit;
+
+                    // Compute "Last X Days" from data span
+                    var chartTitle;
+                    if (series.length >= 2) {
+                        var spanMs = series[series.length - 1][0] - series[0][0];
+                        var days   = Math.max(1, Math.round(spanMs / 86400000));
+                        var suffix = days === 1 ? 'Last Day' : 'Last ' + days + ' Days';
+                        chartTitle = cfg.title || (ctrl.deviceName ? ctrl.deviceName + ' \u2014 ' + suffix : suffix);
+                    } else {
+                        chartTitle = titleForChartType(cfg, 'shortlog');
+                    }
 
                     var opts = baseChartOptions(container);
                     opts.chart.type = 'column';
-                    opts.title.text = titleForChartType(cfg, 'shortlog');
+                    opts.title.text = chartTitle;
                     opts.xAxis = {
                         type:   'datetime',
                         labels: { style: { fontSize: '10px' } }

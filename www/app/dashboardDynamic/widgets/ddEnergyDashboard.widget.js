@@ -154,7 +154,7 @@ define([
                     var sl = get(ids.solar);
                     if (sl) {
                         ctrl.solar = {
-                            usageWatt:    parseWatt(sl.Usage),
+                            usageWatt:    Math.round(parseWatt(sl.Usage)),
                             counterToday: sl.CounterToday || ''
                         };
                     } else {
@@ -221,7 +221,7 @@ define([
                     if (soc || bw || bv) {
                         ctrl.batteryLive = {
                             soc:     soc ? soc.Data : null,
-                            watt:    bw  ? (bw.Usage || bw.Data) : null,
+                            watt:    bw  ? Math.round(parseWatt(bw.Usage || bw.Data)) : null,
                             voltage: bv  ? bv.Data : null
                         };
                     } else {
@@ -321,7 +321,7 @@ define([
                                     // Detect unit from counterToday (m3 or Liter)
                                     var isLiter = ctrl.water.counterToday && ctrl.water.counterToday.indexOf('Liter') >= 0;
                                     ctrl.water.counterYear = isLiter
-                                        ? Math.round(wSum) + ' Liter'
+                                        ? Math.round(wSum * 1000) + ' Liter'
                                         : wSum.toFixed(3) + ' m3';
                                 }
                             }
