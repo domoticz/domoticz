@@ -23,6 +23,11 @@
                 device="device"
                 dashboard-type="0">
             </dz-light-widget>
+            <dz-scene-widget
+                ng-if="ctrl.isScene(device)"
+                scene="device"
+                dashboard-type="0">
+            </dz-scene-widget>
             <dz-utility-widget
                 ng-if="!ctrl.isLight(device) && !ctrl.isScene(device)"
                 device="device"

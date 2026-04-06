@@ -3,7 +3,8 @@ define([
     'dashboardDynamic/widgetRegistry.service',
     'dashboardDynamic/dashboardDynamic.module',
     'widgets/dzLightWidget',
-    'widgets/dzUtilityWidget'
+    'widgets/dzUtilityWidget',
+    'widgets/dzSceneWidget'
 ], function(app, widgetRegistry) {
     'use strict';
 
@@ -87,7 +88,7 @@ define([
                     }
                     load();
                 });
-                $scope.$on('scene_update', function() { /* scenes not shown in room widget */ });
+                $scope.$on('scene_update', load);
                 $scope.$on('dd:widget:refresh', load);
 
                 $scope.$watch(
