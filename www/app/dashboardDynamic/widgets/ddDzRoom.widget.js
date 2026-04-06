@@ -37,8 +37,8 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$timeout', 'ddDeviceClassifier', 'ddToast',
-                function($scope, $http, $interval, $timeout, ddDeviceClassifier, ddToast) {
+            controller: ['$scope', '$http', '$interval', '$timeout', '$q', 'ddDeviceClassifier', 'ddToast',
+                function($scope, $http, $interval, $timeout, $q, ddDeviceClassifier, ddToast) {
                 var ctrl = this;
                 ctrl.devices           = [];
                 ctrl.listItems         = [];
@@ -187,7 +187,6 @@ define([
                 };
 
                 ctrl.selectLevel = function(item, level) {
-                    ctrl.showLevelPicker[item.idx] = false;
                     var busyKey = item.idx + '_sel';
                     if (ctrl.busy[busyKey]) { return; }
                     ctrl.busy[busyKey]      = true;
@@ -196,6 +195,7 @@ define([
                         .then(function(resp) {
                             var data = resp.data || {};
                             if (data.status === 'OK') {
+                                ctrl.showLevelPicker[item.idx]  = false;
                                 ctrl.currentLevel[item.idx]     = level;
                                 ctrl.currentLevelText[item.idx] = getLevelLabel(item.idx, level);
                                 ctrl.success[busyKey] = true;
@@ -226,6 +226,8 @@ define([
                 }
                 document.addEventListener('click', onDocClick);
 
+                var loadCancel = null;
+
                 function load() {
                     var cfg    = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
                     var planId = cfg.planIdx;
@@ -237,18 +239,22 @@ define([
                         return;
                     }
 
+                    if (loadCancel) { loadCancel.resolve(); }
+                    loadCancel = $q.defer();
+
                     ctrl.loading   = true;
                     ctrl.loadError = null;
 
                     var url = 'json.htm?type=command&param=getdevices&filter=all&used=true&plan=' + planId + '&order=Name';
 
-                    $http.get(url)
+                    $http.get(url, { timeout: loadCancel.promise })
                         .then(function(resp) {
                             ctrl.loading = false;
                             ctrl.devices = (resp.data && resp.data.result) || [];
                             buildListItems();
                         })
-                        .catch(function() {
+                        .catch(function(err) {
+                            if (err && err.status === -1) { return; }
                             ctrl.loading   = false;
                             ctrl.loadError = 'Failed to load room devices';
                         });
@@ -274,7 +280,11 @@ define([
                 );
 
                 var timer = $interval(load, 60000);
-                $scope.$on('$destroy', function() { $interval.cancel(timer); document.removeEventListener('click', onDocClick); });
+                $scope.$on('$destroy', function() {
+                    $interval.cancel(timer);
+                    if (loadCancel) { loadCancel.resolve(); loadCancel = null; }
+                    document.removeEventListener('click', onDocClick);
+                });
 
                 ctrl.$onInit = load;
             }]
