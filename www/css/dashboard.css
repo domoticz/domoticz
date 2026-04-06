@@ -1141,9 +1141,15 @@ body.dd-navbar-hidden .dd-toolbar {
     box-sizing: border-box;
 }
 
-.dd-clock-title {
+.dd-clock-title,
+.dd-moon-title,
+.dd-moon-illumination,
+.dd-moon-next {
     font-size: 0.8em;
     color: var(--dz-widget-stat-muted);
+}
+
+.dd-clock-title {
     margin-bottom: 4px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -1315,6 +1321,18 @@ body.dd-navbar-hidden .dd-toolbar {
     box-sizing: border-box;
 }
 
+.dd-qa-btn,
+.dd-qa-blind-group,
+.dd-qa-group-group,
+.dd-qa-dimmer-group {
+    padding: 8px 6px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: var(--dz-panel-bg);
+    font-size: 0.8em;
+    color: var(--dz-body-text);
+}
+
 .dd-qa-btn {
     flex: 1;
     min-width: 80px;
@@ -1323,14 +1341,8 @@ body.dd-navbar-hidden .dd-toolbar {
     align-items: center;
     justify-content: center;
     gap: 4px;
-    padding: 8px 6px;
-    border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: var(--dz-panel-bg);
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
-    font-size: 0.8em;
-    color: var(--dz-body-text);
 }
 
 .dd-qa-btn:hover:not(:disabled) {
@@ -1348,9 +1360,6 @@ body.dd-navbar-hidden .dd-toolbar {
     opacity: 0.6;
 }
 
-.dd-qa-btn--scene {
-    border-color: var(--dz-btn-primary-bg);
-}
 
 .dd-qa-btn--success {
     background: #dff0d8;
@@ -1389,12 +1398,6 @@ body.dd-navbar-hidden .dd-toolbar {
     gap: 4px;
     flex: 1;
     min-width: 80px;
-    padding: 8px 6px;
-    border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: var(--dz-panel-bg);
-    font-size: 0.8em;
-    color: var(--dz-body-text);
 }
 
 .dd-qa-blind-btns {
@@ -1516,12 +1519,6 @@ body.dd-navbar-hidden .dd-toolbar {
     align-items: stretch;
     flex: 1;
     min-width: 80px;
-    padding: 8px 6px;
-    border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: var(--dz-panel-bg);
-    font-size: 0.8em;
-    color: var(--dz-body-text);
 }
 
 .dd-qa-group-btns {
@@ -1568,12 +1565,6 @@ body.dd-navbar-hidden .dd-toolbar {
     align-items: stretch;
     flex: 1;
     min-width: 80px;
-    padding: 8px 6px;
-    border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: var(--dz-panel-bg);
-    font-size: 0.8em;
-    color: var(--dz-body-text);
 }
 
 .dd-qa-dimmer-controls {
@@ -2588,14 +2579,23 @@ dd-wcp-color {
     margin-bottom: 4px;
     flex-shrink: 0;
 }
-.dd-text-sensor-title {
+.dd-text-sensor-title,
+.dd-calendar-month,
+.dd-calendar-empty {
     font-size: 0.85em;
     color: var(--dz-widget-stat-muted);
+}
+
+.dd-text-sensor-title {
     font-weight: 500;
 }
-.dd-text-sensor-updated {
+.dd-text-sensor-updated,
+.dd-rss-item-meta {
     font-size: 0.75em;
     color: var(--dz-widget-stat-muted);
+}
+
+.dd-text-sensor-updated {
     white-space: nowrap;
     margin-left: 8px;
 }
@@ -2608,7 +2608,11 @@ dd-wcp-color {
 
 /* ── RSS Feed Widget ──────────────────────────────────────── */
 .dd-rss { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
-.dd-rss-header { font-size: 0.9em; font-weight: 600; color: var(--dz-widget-accent); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+.dd-rss-header,
+.dd-log-header,
+.dd-calendar-header,
+.dd-battery-monitor-header { display: flex; justify-content: space-between; align-items: center; }
+.dd-rss-header { font-size: 0.9em; font-weight: 600; color: var(--dz-widget-accent); margin-bottom: 8px; }
 .dd-rss-list { flex: 1; overflow-y: auto; }
 .dd-rss-item { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08); align-items: flex-start; }
 .dd-rss-item:last-child { border-bottom: none; }
@@ -2616,7 +2620,7 @@ dd-wcp-color {
 .dd-rss-item-body { flex: 1; min-width: 0; }
 .dd-rss-item-title { font-size: 0.85em; color: inherit; text-decoration: none; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .dd-rss-item-title:hover { color: var(--dz-widget-accent); }
-.dd-rss-item-meta { font-size: 0.75em; color: var(--dz-widget-stat-muted); margin-top: 2px; }
+.dd-rss-item-meta { margin-top: 2px; }
 .dd-rss-link-icon { color: var(--dz-widget-accent); font-size: 0.8em; flex-shrink: 0; }
 /* Single item mode */
 .dd-rss-single-img { width: 100%; max-height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 8px; }
@@ -2640,7 +2644,7 @@ dd-wcp-color {
 /* ── Domoticz Log Widget ──────────────────────────────────── */
 .dd-widget--domoticz-log > .dd-widget-body { padding: 0; overflow: hidden; position: relative; }
 .dd-log { position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden; }
-.dd-log-header { display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.dd-log-header { padding: 4px 8px; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
 .dd-log-title { font-size: 0.9em; font-weight: 600; }
 .dd-log-filters { display: flex; gap: 4px; align-items: center; }
 .dd-log-filter-btn { padding: 2px 6px; border-radius: 4px; border: 1px solid currentColor; background: transparent; cursor: pointer; font-size: 0.75em; opacity: 0.5; }
@@ -2662,11 +2666,9 @@ dd-wcp-color {
 
 /* ── Moon Phase Widget ────────────────────────────────────── */
 .dd-moon { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; text-align: center; gap: 4px; }
-.dd-moon-title { font-size: 0.8em; color: var(--dz-widget-stat-muted); }
 .dd-moon-emoji { font-size: 3em; line-height: 1.1; color: var(--dz-widget-moon-color); }
 .dd-moon-phase { font-size: 0.9em; font-weight: 600; }
-.dd-moon-illumination { font-size: 0.8em; color: var(--dz-widget-stat-muted); }
-.dd-moon-next { font-size: 0.8em; color: var(--dz-widget-stat-muted); margin-top: 4px; }
+.dd-moon-next { margin-top: 4px; }
 
 /* ── Kiosk mode ───────────────────────────────────────────── */
 .dd-kiosk-progress {
@@ -2694,8 +2696,7 @@ dd-wcp-color {
 
 /* ── Google Calendar Widget ───────────────────────────────── */
 .dd-calendar { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
-.dd-calendar-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.9em; font-weight: 600; margin-bottom: 8px; flex-shrink: 0; }
-.dd-calendar-month { font-size: 0.85em; color: var(--dz-widget-stat-muted); }
+.dd-calendar-header { font-size: 0.9em; font-weight: 600; margin-bottom: 8px; flex-shrink: 0; }
 .dd-calendar-body { flex: 1; overflow-y: auto; }
 .dd-calendar-group { margin-bottom: 10px; }
 .dd-calendar-day-label { font-size: 0.75em; font-weight: 700; text-transform: uppercase; color: var(--dz-widget-accent); margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 2px; }
@@ -2704,11 +2705,11 @@ dd-wcp-color {
 .dd-calendar-allday { font-style: italic; }
 .dd-calendar-title { flex: 1; }
 .dd-calendar-past { opacity: 0.5; }
-.dd-calendar-empty { font-size: 0.85em; color: var(--dz-widget-stat-muted); text-align: center; margin-top: 16px; }
+.dd-calendar-empty { text-align: center; margin-top: 16px; }
 
 /* ── Battery Monitor Widget ───────────────────────────────── */
 .dd-battery-monitor { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
-.dd-battery-monitor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-shrink: 0; }
+.dd-battery-monitor-header { margin-bottom: 8px; flex-shrink: 0; }
 .dd-battery-monitor-title { font-size: 0.9em; font-weight: 600; }
 .dd-battery-monitor-badge { font-size: 0.75em; padding: 2px 7px; border-radius: 10px; background: var(--dz-accent-red); color: var(--dz-body-text); }
 .dd-battery-monitor-badge.ok { background: var(--dz-widget-energy-export); }
@@ -2807,9 +2808,10 @@ body.dd-standby::after {
     color: var(--dz-accent-color);
     opacity: 1;
 }
+.dd-qs-label { font-size: 0.72em; color: var(--dz-body-text); }
+.dd-qs-unit { font-size: 0.72em; color: var(--dz-body-text); }
+
 .dd-qs-label {
-    font-size: 0.72em;
-    color: var(--dz-widget-stat-muted);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2834,8 +2836,6 @@ body.dd-standby::after {
     color: var(--dz-accent-color);
 }
 .dd-qs-unit {
-    font-size: 0.72em;
-    color: var(--dz-widget-stat-muted);
     margin-left: 1px;
 }
 .dd-qs-value-wrap {
