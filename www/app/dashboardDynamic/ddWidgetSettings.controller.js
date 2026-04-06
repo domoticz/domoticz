@@ -281,11 +281,16 @@ define([
                 var label = (a.label || '').trim();
 
                 if (a.type === 'scene') {
+                    var s = ($scope.actionScenes || []).find(function(x) { return String(x.idx) === String(a.idx); });
                     if (!label) {
-                        var s = ($scope.actionScenes || []).find(function(x) { return String(x.idx) === String(a.idx); });
                         label = s ? s.Name : a.idx;
                     }
-                    $scope.config[fieldKey].push({ type: 'scene', idx: String(a.idx), label: label, icon: 'fa-solid fa-play' });
+                    var isGroup = s && s.Type === 'Group';
+                    if (isGroup) {
+                        $scope.config[fieldKey].push({ type: 'group', idx: String(a.idx), label: label, icon: 'fa-solid fa-toggle-on' });
+                    } else {
+                        $scope.config[fieldKey].push({ type: 'scene', idx: String(a.idx), label: label, icon: 'fa-solid fa-play' });
+                    }
 
                 } else if (d && d.SwitchType === 'Selector') {
                     if (!label) { label = d.Name; }

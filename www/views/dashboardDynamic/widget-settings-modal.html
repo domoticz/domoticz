@@ -128,10 +128,11 @@
                         <i class="fa-solid fa-grip-vertical dd-al-drag-handle"></i>
                         <span class="dd-al-type-badge"
                               ng-class="{'dd-al-badge-scene':    action.type === 'scene',
+                                         'dd-al-badge-group':    action.type === 'group',
                                          'dd-al-badge-blind':    action.type === 'blind',
                                          'dd-al-badge-selector': action.type === 'selector',
                                          'dd-al-badge-switch':   action.type === 'switch'}">
-                            {{ action.type === 'scene' ? 'Scene' : action.type === 'blind' ? 'Blind' : action.type === 'selector' ? 'Selector' : 'Device' }}
+                            {{ action.type === 'scene' ? 'Scene' : action.type === 'group' ? 'Group' : action.type === 'blind' ? 'Blind' : action.type === 'selector' ? 'Selector' : 'Device' }}
                         </span>
                         <span class="dd-al-label" ng-bind="action.label"></span>
                         <i class="fa-solid fa-pencil dd-al-action-icon dd-al-rename-icon"

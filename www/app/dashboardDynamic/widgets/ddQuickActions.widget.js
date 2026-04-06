@@ -77,6 +77,8 @@ define([
                         if (a.type === 'selector') {
                             ctrl.currentLevel[a.idx]     = updated.LevelInt;
                             ctrl.currentLevelText[a.idx] = getLevelLabel(a.idx, updated.LevelInt);
+                        } else if (a.type === 'group') {
+                            ctrl.deviceOn[a.idx] = (updated.Status === 'On');
                         } else if (a.type === 'blind') {
                             ctrl.deviceOn[a.idx] = (updated.Status === 'Open' ||
                                 (updated.Status && updated.Status.indexOf('Set ') === 0) ||
@@ -118,6 +120,17 @@ define([
 
                 function fetchDeviceState(action) {
                     if (action.type === 'scene') { return; }
+                    if (action.type === 'group') {
+                        $http.get('json.htm', { params: { type: 'command', param: 'getscenes' } })
+                            .then(function(resp) {
+                                var results = (resp.data && resp.data.result) || [];
+                                var item = results.find(function(s) { return String(s.idx) === String(action.idx); });
+                                if (item) {
+                                    ctrl.deviceOn[action.idx] = (item.Status === 'On');
+                                }
+                            });
+                        return;
+                    }
                     if (action.switchcmd === 'On' || action.switchcmd === 'Off') { return; }
                     $http.get('json.htm', { params: { type: 'command', param: 'getdevices', rid: action.idx } })
                         .then(function(resp) {
@@ -179,9 +192,9 @@ define([
                         .finally(function() { ctrl.busy[busyKey] = false; });
                 };
 
-                ctrl.execute = function(action, blindCmd) {
-                    var busyKey = action.type === 'blind'
-                        ? action.idx + '_' + blindCmd
+                ctrl.execute = function(action, cmd) {
+                    var busyKey = (action.type === 'blind' || action.type === 'group')
+                        ? action.idx + '_' + cmd
                         : action.idx;
                     if (ctrl.busy[busyKey]) { return; }
                     ctrl.busy[busyKey]  = true;
@@ -190,8 +203,10 @@ define([
                     var params;
                     if (action.type === 'scene') {
                         params = { type: 'command', param: 'switchscene', idx: action.idx, switchcmd: 'On' };
+                    } else if (action.type === 'group') {
+                        params = { type: 'command', param: 'switchscene', idx: action.idx, switchcmd: cmd };
                     } else if (action.type === 'blind') {
-                        params = { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: blindCmd };
+                        params = { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: cmd };
                     } else {
                         params = { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: action.switchcmd || 'Toggle' };
                     }

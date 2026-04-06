@@ -5,7 +5,7 @@
 
         <!-- Regular button: switch, scene -->
         <button class="dd-qa-btn"
-                ng-if="action.type !== 'blind' && action.type !== 'selector'"
+                ng-if="action.type !== 'blind' && action.type !== 'selector' && action.type !== 'group'"
                 ng-click="ctrl.execute(action)"
                 ng-class="{
                     'dd-qa-btn--scene':   action.type === 'scene',
@@ -42,6 +42,35 @@
                         ng-click="ctrl.selectLevel(action, opt.value)"
                         ng-class="{'dd-qa-level-btn--active': ctrl.currentLevel[action.idx] === opt.value}">
                     {{ opt.label }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Group button group (On/Off) -->
+        <div class="dd-qa-group-group" ng-if="action.type === 'group'">
+            <span class="dd-qa-label" ng-bind="action.label"></span>
+            <div class="dd-qa-group-btns">
+                <button class="dd-qa-btn dd-qa-btn--group"
+                        ng-click="ctrl.execute(action, 'On')"
+                        ng-class="{
+                            'dd-qa-btn--success': ctrl.success[action.idx + '_On'],
+                            'dd-qa-btn--error':   ctrl.error[action.idx + '_On'],
+                            'dd-qa-btn--busy':    ctrl.busy[action.idx + '_On']
+                        }"
+                        title="On">
+                    <i class="fa-solid fa-power-off"
+                       ng-style="ctrl.deviceOn[action.idx] ? {'color': 'var(--dz-accent-color)'} : {}"></i>
+                </button>
+                <button class="dd-qa-btn dd-qa-btn--group"
+                        ng-click="ctrl.execute(action, 'Off')"
+                        ng-class="{
+                            'dd-qa-btn--success': ctrl.success[action.idx + '_Off'],
+                            'dd-qa-btn--error':   ctrl.error[action.idx + '_Off'],
+                            'dd-qa-btn--busy':    ctrl.busy[action.idx + '_Off']
+                        }"
+                        title="Off">
+                    <i class="fa-solid fa-power-off"
+                       ng-style="!ctrl.deviceOn[action.idx] ? {'color': 'var(--dz-accent-color)'} : {}"></i>
                 </button>
             </div>
         </div>

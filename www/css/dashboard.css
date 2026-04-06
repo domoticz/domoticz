@@ -1457,7 +1457,7 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 /* Full-width row buttons: switch, scene, selector — excludes blind sub-buttons */
-.dd-quick-actions--list .dd-qa-btn:not(.dd-qa-btn--blind) {
+.dd-quick-actions--list .dd-qa-btn:not(.dd-qa-btn--blind):not(.dd-qa-btn--group) {
     flex: none;
     width: 100%;
     box-sizing: border-box;
@@ -1500,6 +1500,49 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 .dd-quick-actions--list .dd-qa-blind-btns {
+    width: auto;
+}
+
+.dd-qa-group-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: stretch;
+}
+
+.dd-qa-group-btns {
+    display: flex;
+    gap: 3px;
+    flex-shrink: 0;
+}
+
+.dd-qa-btn--group {
+    flex: none;
+    min-width: 0;
+    flex-direction: row;
+    align-items: center;
+    padding: 6px 10px;
+    gap: 5px;
+}
+
+.dd-quick-actions--list .dd-qa-group-group {
+    flex: none;
+    width: 100%;
+    box-sizing: border-box;
+    flex-direction: row;
+    align-items: center;
+    min-width: 0;
+    padding: 6px 10px;
+    background: var(--dz-panel-bg);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+}
+
+.dd-quick-actions--list .dd-qa-group-group > .dd-qa-label {
+    flex: 1;
+}
+
+.dd-quick-actions--list .dd-qa-group-btns {
     width: auto;
 }
 
@@ -2099,6 +2142,7 @@ dd-wcp-color {
 }
 
 .dd-al-badge-scene    { background: var(--dz-btn-success-bg); color: var(--dz-body-text); }
+.dd-al-badge-group    { background: var(--dz-btn-success-bg); color: var(--dz-body-text); }
 .dd-al-badge-switch   { background: var(--dz-btn-primary-bg); color: var(--dz-body-text); }
 .dd-al-badge-blind    { background: var(--dz-btn-info-bg); color: var(--dz-body-text); }
 .dd-al-badge-selector { background: var(--dz-btn-warning-bg); color: var(--dz-body-text); }
