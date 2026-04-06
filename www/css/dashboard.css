@@ -2527,6 +2527,7 @@ dd-wcp-color {
 .dd-rss-single-excerpt { font-size: 0.82em; color: var(--dz-widget-stat-muted); line-height: 1.5; flex: 1; overflow: hidden; }
 
 /* ── Weather Forecast Widget ──────────────────────────────── */
+.dd-widget--weather-forecast > .dd-widget-body { overflow: hidden; }
 .dd-forecast { height: 100%; display: flex; flex-direction: column; padding: 4px 8px; overflow: hidden; }
 .dd-forecast-header { font-size: 0.9em; font-weight: 600; margin-bottom: 4px; }
 .dd-forecast-grid { display: flex; flex: 1; gap: 2px; overflow: hidden; align-items: stretch; }
