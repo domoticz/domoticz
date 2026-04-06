@@ -55,7 +55,8 @@ define([
     'dashboardDynamic/widgets/ddBatteryMonitor.widget',
     'dashboardDynamic/widgets/ddTimeoutMonitor.widget',
     'dashboardDynamic/widgets/ddKwhTopConsumers.widget',
-    'dashboardDynamic/widgets/ddWaterSummary.widget'
+    'dashboardDynamic/widgets/ddWaterSummary.widget',
+    'dashboardDynamic/widgets/ddQuickStat.widget'
 ], function(app) {
     'use strict';
 
