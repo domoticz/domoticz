@@ -300,6 +300,10 @@ define([
                     if (!label) { label = d.Name; }
                     $scope.config[fieldKey].push({ type: 'blind', idx: String(a.idx), label: label, hasStop: actionDeviceHasStop(d) });
 
+                } else if (d && d.SwitchType === 'Dimmer') {
+                    if (!label) { label = d.Name; }
+                    $scope.config[fieldKey].push({ type: 'dimmer', idx: String(a.idx), label: label, icon: 'fa-solid fa-power-off' });
+
                 } else {
                     if (!label) { label = d ? d.Name : a.idx; }
                     var action = { type: 'switch', idx: String(a.idx), label: label, icon: 'fa-solid fa-power-off' };

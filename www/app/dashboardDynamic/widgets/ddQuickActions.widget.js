@@ -55,6 +55,8 @@ define([
                 ctrl.currentLevel     = {};
                 ctrl.currentLevelText = {};
                 ctrl.showLevelPicker  = {};
+                ctrl.dimLevel         = {};
+                ctrl.showDimSlider    = {};
 
                 ctrl.$onInit = function() {
                     parseActions();
@@ -83,11 +85,26 @@ define([
                             ctrl.deviceOn[a.idx] = (updated.Status === 'Open' ||
                                 (updated.Status && updated.Status.indexOf('Set ') === 0) ||
                                 updated.Status === 'Stopped');
+                        } else if (a.type === 'dimmer') {
+                            ctrl.deviceOn[a.idx] = (updated.Status === 'On');
+                            if (updated.LevelInt !== undefined) {
+                                ctrl.dimLevel[a.idx] = updated.LevelInt;
+                            }
                         } else {
                             ctrl.deviceOn[a.idx] = (updated.Status === 'On');
                         }
                     });
                 });
+
+                function onDocClick() {
+                    var any = false;
+                    Object.keys(ctrl.showDimSlider).forEach(function(k) {
+                        if (ctrl.showDimSlider[k]) { ctrl.showDimSlider[k] = false; any = true; }
+                    });
+                    if (any && !$scope.$$phase) { $scope.$apply(); }
+                }
+                document.addEventListener('click', onDocClick);
+                $scope.$on('$destroy', function() { document.removeEventListener('click', onDocClick); });
 
                 function decodeLevelNames(d) {
                     var raw;
@@ -120,6 +137,16 @@ define([
 
                 function fetchDeviceState(action) {
                     if (action.type === 'scene') { return; }
+                    if (action.type === 'dimmer') {
+                        $http.get('json.htm', { params: { type: 'command', param: 'getdevices', rid: action.idx } })
+                            .then(function(resp) {
+                                var item = resp.data && resp.data.result && resp.data.result[0];
+                                if (!item) { return; }
+                                ctrl.deviceOn[action.idx] = (item.Status === 'On');
+                                ctrl.dimLevel[action.idx] = item.LevelInt !== undefined ? item.LevelInt : 100;
+                            });
+                        return;
+                    }
                     if (action.type === 'group') {
                         $http.get('json.htm', { params: { type: 'command', param: 'getscenes' } })
                             .then(function(resp) {
@@ -148,6 +175,10 @@ define([
                                     item.Status === 'Stopped');
                             } else {
                                 ctrl.deviceOn[action.idx] = (item.Status === 'On');
+                                if (item.SwitchType === 'Dimmer') {
+                                    action.type = 'dimmer';
+                                    ctrl.dimLevel[action.idx] = item.LevelInt !== undefined ? item.LevelInt : 100;
+                                }
                             }
                         });
                 }
@@ -192,6 +223,29 @@ define([
                         .finally(function() { ctrl.busy[busyKey] = false; });
                 };
 
+                ctrl.toggleDimSlider = function(idx, $event) {
+                    if ($event) { $event.stopPropagation(); }
+                    ctrl.showDimSlider[idx] = !ctrl.showDimSlider[idx];
+                };
+
+                ctrl.applyDimLevel = function(action) {
+                    var level = parseInt(ctrl.dimLevel[action.idx], 10);
+                    if (isNaN(level)) { return; }
+                    $http.get('json.htm', { params: { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: 'Set Level', level: level } })
+                        .then(function(resp) {
+                            if (resp.data && resp.data.status === 'OK') {
+                                ctrl.deviceOn[action.idx] = level > 0;
+                                ctrl.success[action.idx + '_dim'] = true;
+                                $timeout(function() { ctrl.success[action.idx + '_dim'] = false; }, 1200);
+                            } else {
+                                ddToast.error((action.label || action.idx) + ': ' + ((resp.data && resp.data.message) || 'Unknown error'));
+                            }
+                        })
+                        .catch(function(err) {
+                            ddToast.error((action.label || action.idx) + ': ' + ((err && err.statusText) || 'Request failed'));
+                        });
+                };
+
                 ctrl.execute = function(action, cmd) {
                     var busyKey = (action.type === 'blind' || action.type === 'group')
                         ? action.idx + '_' + cmd
@@ -207,6 +261,8 @@ define([
                         params = { type: 'command', param: 'switchscene', idx: action.idx, switchcmd: cmd };
                     } else if (action.type === 'blind') {
                         params = { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: cmd };
+                    } else if (action.type === 'dimmer') {
+                        params = { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: action.switchcmd || 'Toggle' };
                     } else {
                         params = { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: action.switchcmd || 'Toggle' };
                     }

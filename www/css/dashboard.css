@@ -1457,7 +1457,7 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 /* Full-width row buttons: switch, scene, selector — excludes blind sub-buttons */
-.dd-quick-actions--list .dd-qa-btn:not(.dd-qa-btn--blind):not(.dd-qa-btn--group) {
+.dd-quick-actions--list .dd-qa-btn:not(.dd-qa-btn--blind):not(.dd-qa-btn--group):not(.dd-qa-btn--dim-slider):not(.dd-qa-btn--dim-toggle) {
     flex: none;
     width: 100%;
     box-sizing: border-box;
@@ -1544,6 +1544,79 @@ body.dd-navbar-hidden .dd-toolbar {
 
 .dd-quick-actions--list .dd-qa-group-btns {
     width: auto;
+}
+
+/* ── Dimmer button group ────────────────────────────────── */
+.dd-qa-dimmer-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: stretch;
+}
+
+.dd-qa-dimmer-controls {
+    display: flex;
+    gap: 3px;
+    align-items: stretch;
+    flex-shrink: 0;
+}
+
+.dd-qa-btn--dim-slider,
+.dd-qa-btn--dim-toggle {
+    flex: none;
+    min-width: 0;
+    flex-direction: row;
+    align-items: center;
+    padding: 6px 10px;
+}
+
+.dd-qa-dim-slider-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 4px 2px 2px;
+}
+
+.dd-qa-dim-range-h {
+    flex: 1;
+    cursor: pointer;
+    accent-color: var(--dz-accent-color);
+}
+
+.dd-qa-dim-value-text {
+    font-size: 0.78em;
+    color: var(--dz-widget-stat-muted);
+    white-space: nowrap;
+    min-width: 30px;
+    text-align: right;
+}
+
+.dd-quick-actions--list .dd-qa-dimmer-group {
+    flex: none;
+    width: 100%;
+    box-sizing: border-box;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 8px;
+    padding: 6px 10px;
+    background: var(--dz-panel-bg);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+}
+
+.dd-quick-actions--list .dd-qa-dimmer-group > .dd-qa-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dd-quick-actions--list .dd-qa-dim-slider-row {
+    flex: 0 0 100%;
+    padding: 4px 0 2px;
 }
 
 .dd-quick-actions--list .dd-qa-level-picker {
