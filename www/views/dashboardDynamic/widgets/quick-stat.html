@@ -1,0 +1,34 @@
+<div class="dd-quick-stat"
+     ng-class="{'dd-quick-stat--list': ctrl.widgetDef.config.layout === true}">
+
+    <div ng-if="!ctrl.widgetDef.config || !ctrl.widgetDef.config.devices || ctrl.widgetDef.config.devices.length === 0"
+         class="dd-chart-unconfigured">
+        <i class="fa-solid fa-list"></i>
+        <p>Add devices in widget settings</p>
+    </div>
+
+    <div ng-if="ctrl.widgetDef.config && ctrl.widgetDef.config.devices && ctrl.widgetDef.config.devices.length > 0 && ctrl.items.length === 0 && ctrl.loading"
+         class="dd-chart-unconfigured">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+    </div>
+
+    <div class="dd-qs-item"
+         ng-repeat="item in ctrl.items track by $index"
+         ng-class="{'dd-qs-item--on': item.isOn}">
+        <i ng-class="item.icon"></i>
+        <span class="dd-qs-label" ng-bind="item.label"></span>
+        <span class="dd-qs-value-wrap">
+            <span class="dd-qs-value"
+                  ng-class="{'dd-qs-value--on': item.isOn}"
+                  ng-bind="item.value"></span><span class="dd-qs-unit" ng-if="item.unit" ng-bind="item.unit"></span>
+        </span>
+        <span ng-if="item.secondValue !== null" class="dd-qs-secondary">
+            <span class="dd-qs-value" ng-bind="item.secondValue"></span><span class="dd-qs-unit" ng-if="item.unit2" ng-bind="item.unit2"></span>
+        </span>
+    </div>
+
+    <div class="dd-chart-unconfigured" ng-if="ctrl.error">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <p ng-bind="ctrl.error"></p>
+    </div>
+</div>

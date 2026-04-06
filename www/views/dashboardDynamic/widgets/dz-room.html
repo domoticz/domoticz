@@ -10,19 +10,25 @@
         <p>Loading&hellip;</p>
     </div>
 
-    <div class="dd-dz-unconfigured" ng-show="ctrl.error">
+    <div class="dd-dz-unconfigured" ng-show="ctrl.loadError">
         <i class="fa-solid fa-triangle-exclamation" style="font-size:24px;opacity:0.4"></i>
-        <p ng-bind="ctrl.error"></p>
+        <p ng-bind="ctrl.loadError"></p>
     </div>
 
+    <!-- Grid mode (default) -->
     <div class="dd-dz-favorites-body"
-         ng-show="ctrl.widgetDef.config.planIdx && !ctrl.error && (!ctrl.loading || ctrl.devices.length)">
+         ng-show="ctrl.widgetDef.config.planIdx && !ctrl.loadError && (!ctrl.loading || ctrl.devices.length) && ctrl.widgetDef.config.layout !== true">
         <div ng-repeat="device in ctrl.devices track by device.idx" class="dd-dz-fav-item">
             <dz-light-widget
                 ng-if="ctrl.isLight(device)"
                 device="device"
                 dashboard-type="0">
             </dz-light-widget>
+            <dz-scene-widget
+                ng-if="ctrl.isScene(device)"
+                scene="device"
+                dashboard-type="0">
+            </dz-scene-widget>
             <dz-utility-widget
                 ng-if="!ctrl.isLight(device) && !ctrl.isScene(device)"
                 device="device"
@@ -31,6 +37,177 @@
         </div>
         <div class="dd-dz-unconfigured"
              ng-show="!ctrl.loading && !ctrl.devices.length">
+            <i class="fa-solid fa-inbox" style="font-size:28px;opacity:0.3"></i>
+            <p>No devices found in this room</p>
+        </div>
+    </div>
+
+    <!-- List mode -->
+    <div class="dd-quick-actions dd-quick-actions--list"
+         ng-show="ctrl.widgetDef.config.planIdx && !ctrl.loadError && (!ctrl.loading || ctrl.devices.length) && ctrl.widgetDef.config.layout === true">
+
+        <div ng-repeat="item in ctrl.listItems track by item.idx" style="display:contents">
+
+            <!-- Stat (sensor, utility) — read-only Quick Stat style -->
+            <div class="dd-qs-item" ng-if="item.type === 'stat'"
+                 ng-class="{'dd-qs-item--on': item.isOn}">
+                <i ng-class="item.icon"></i>
+                <span class="dd-qs-label" ng-bind="item.label"></span>
+                <span class="dd-qs-value-wrap">
+                    <span class="dd-qs-value" ng-class="{'dd-qs-value--on': item.isOn}" ng-bind="item.value"></span><span class="dd-qs-unit" ng-if="item.unit" ng-bind="item.unit"></span>
+                </span>
+                <span ng-if="item.secondValue !== null" class="dd-qs-secondary">
+                    <span class="dd-qs-value" ng-bind="item.secondValue"></span><span class="dd-qs-unit" ng-if="item.unit2" ng-bind="item.unit2"></span>
+                </span>
+            </div>
+
+            <!-- Switch / Scene — single button -->
+            <button class="dd-qa-btn dd-qa-btn--switch"
+                    ng-if="item.type === 'switch' || item.type === 'scene'"
+                    ng-click="ctrl.execute(item)"
+                    ng-class="{
+                        'dd-qa-btn--success': ctrl.success[item.idx],
+                        'dd-qa-btn--error':   ctrl.itemError[item.idx],
+                        'dd-qa-btn--busy':    ctrl.busy[item.idx]
+                    }"
+                    title="{{ item.label }}">
+                <i ng-class="item.icon"
+                   ng-style="ctrl.deviceOn[item.idx] ? {'color': 'var(--dz-accent-color)'} : {}"></i>
+                <span class="dd-qa-label" ng-bind="item.label"></span>
+            </button>
+
+            <!-- Dimmer -->
+            <div class="dd-qa-dimmer-group" ng-if="item.type === 'dimmer'">
+                <span class="dd-qa-label" ng-bind="item.label"></span>
+                <div class="dd-qa-dimmer-controls">
+                    <button class="dd-qa-btn dd-qa-btn--dim-slider"
+                            ng-click="ctrl.toggleDimSlider(item.idx, $event)"
+                            title="Set dim level">
+                        <i class="fa-solid fa-sliders"
+                           ng-style="ctrl.showDimSlider[item.idx] ? {'color': 'var(--dz-accent-color)'} : {}"></i>
+                    </button>
+                    <button class="dd-qa-btn dd-qa-btn--dim-toggle"
+                            ng-click="ctrl.execute(item)"
+                            ng-class="{
+                                'dd-qa-btn--success': ctrl.success[item.idx],
+                                'dd-qa-btn--error':   ctrl.itemError[item.idx],
+                                'dd-qa-btn--busy':    ctrl.busy[item.idx]
+                            }"
+                            title="{{ item.label }}">
+                        <i ng-class="item.icon"
+                           ng-style="ctrl.deviceOn[item.idx] ? {'color': 'var(--dz-accent-color)'} : {}"></i>
+                    </button>
+                </div>
+                <div class="dd-qa-dim-slider-row"
+                     ng-show="ctrl.showDimSlider[item.idx]"
+                     ng-click="$event.stopPropagation()">
+                    <input type="range" class="dd-qa-dim-range-h"
+                           min="0" max="100" step="5"
+                           ng-model="ctrl.dimLevel[item.idx]"
+                           ng-mouseup="ctrl.applyDimLevel(item)"
+                           ng-touchend="ctrl.applyDimLevel(item)">
+                    <span class="dd-qa-dim-value-text">{{ ctrl.dimLevel[item.idx] }}%</span>
+                </div>
+            </div>
+
+            <!-- Selector -->
+            <div class="dd-qa-selector-group" ng-if="item.type === 'selector'">
+                <button class="dd-qa-btn dd-qa-btn--selector"
+                        ng-click="ctrl.toggleLevelPicker(item.idx, $event)"
+                        ng-class="{
+                            'dd-qa-btn--success': ctrl.success[item.idx + '_sel'],
+                            'dd-qa-btn--error':   ctrl.itemError[item.idx + '_sel'],
+                            'dd-qa-btn--busy':    ctrl.busy[item.idx + '_sel']
+                        }"
+                        title="{{ item.label }}">
+                    <i ng-class="item.icon || 'fa-solid fa-sliders'"></i>
+                    <span class="dd-qa-label" ng-bind="item.label"></span>
+                    <span class="dd-qa-level-text" ng-bind="ctrl.currentLevelText[item.idx]"></span>
+                </button>
+                <div class="dd-qa-level-picker"
+                     ng-show="ctrl.showLevelPicker[item.idx]"
+                     ng-click="$event.stopPropagation()">
+                    <button class="dd-qa-level-btn"
+                            ng-repeat="opt in ctrl.levelOptions[item.idx]"
+                            ng-click="ctrl.selectLevel(item, opt.value)"
+                            ng-class="{'dd-qa-level-btn--active': ctrl.currentLevel[item.idx] === opt.value}">
+                        {{ opt.label }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- Group (On/Off) -->
+            <div class="dd-qa-group-group" ng-if="item.type === 'group'">
+                <span class="dd-qa-label" ng-bind="item.label"></span>
+                <div class="dd-qa-group-btns">
+                    <button class="dd-qa-btn dd-qa-btn--group"
+                            ng-click="ctrl.execute(item, 'On')"
+                            ng-class="{
+                                'dd-qa-btn--success': ctrl.success[item.idx + '_On'],
+                                'dd-qa-btn--error':   ctrl.itemError[item.idx + '_On'],
+                                'dd-qa-btn--busy':    ctrl.busy[item.idx + '_On']
+                            }"
+                            title="On">
+                        <i class="fa-solid fa-power-off"
+                           ng-style="ctrl.deviceOn[item.idx] ? {'color': 'var(--dz-accent-color)'} : {}"></i>
+                    </button>
+                    <button class="dd-qa-btn dd-qa-btn--group"
+                            ng-click="ctrl.execute(item, 'Off')"
+                            ng-class="{
+                                'dd-qa-btn--success': ctrl.success[item.idx + '_Off'],
+                                'dd-qa-btn--error':   ctrl.itemError[item.idx + '_Off'],
+                                'dd-qa-btn--busy':    ctrl.busy[item.idx + '_Off']
+                            }"
+                            title="Off">
+                        <i class="fa-solid fa-power-off"
+                           ng-style="!ctrl.deviceOn[item.idx] ? {'color': 'var(--dz-accent-color)'} : {}"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Blind -->
+            <div class="dd-qa-blind-group" ng-if="item.type === 'blind'">
+                <span class="dd-qa-label" ng-bind="item.label"></span>
+                <div class="dd-qa-blind-btns">
+                    <button class="dd-qa-btn dd-qa-btn--blind"
+                            ng-click="ctrl.execute(item, 'Open')"
+                            ng-class="{
+                                'dd-qa-btn--success': ctrl.success[item.idx + '_Open'],
+                                'dd-qa-btn--error':   ctrl.itemError[item.idx + '_Open'],
+                                'dd-qa-btn--busy':    ctrl.busy[item.idx + '_Open']
+                            }"
+                            title="Open">
+                        <i class="fa-solid fa-chevron-up"
+                           ng-style="ctrl.deviceOn[item.idx] ? {'color': 'var(--dz-accent-color)'} : {}"></i>
+                    </button>
+                    <button class="dd-qa-btn dd-qa-btn--blind dd-qa-btn--stop"
+                            ng-if="item.hasStop"
+                            ng-click="ctrl.execute(item, 'Stop')"
+                            ng-class="{
+                                'dd-qa-btn--success': ctrl.success[item.idx + '_Stop'],
+                                'dd-qa-btn--error':   ctrl.itemError[item.idx + '_Stop'],
+                                'dd-qa-btn--busy':    ctrl.busy[item.idx + '_Stop']
+                            }"
+                            title="Stop">
+                        <i class="fa-solid fa-stop"></i>
+                    </button>
+                    <button class="dd-qa-btn dd-qa-btn--blind"
+                            ng-click="ctrl.execute(item, 'Close')"
+                            ng-class="{
+                                'dd-qa-btn--success': ctrl.success[item.idx + '_Close'],
+                                'dd-qa-btn--error':   ctrl.itemError[item.idx + '_Close'],
+                                'dd-qa-btn--busy':    ctrl.busy[item.idx + '_Close']
+                            }"
+                            title="Close">
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="dd-dz-unconfigured"
+             ng-show="!ctrl.loading && !ctrl.listItems.length">
             <i class="fa-solid fa-inbox" style="font-size:28px;opacity:0.3"></i>
             <p>No devices found in this room</p>
         </div>

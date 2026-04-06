@@ -128,10 +128,12 @@
                         <i class="fa-solid fa-grip-vertical dd-al-drag-handle"></i>
                         <span class="dd-al-type-badge"
                               ng-class="{'dd-al-badge-scene':    action.type === 'scene',
+                                         'dd-al-badge-group':    action.type === 'group',
                                          'dd-al-badge-blind':    action.type === 'blind',
                                          'dd-al-badge-selector': action.type === 'selector',
+                                         'dd-al-badge-dimmer':   action.type === 'dimmer',
                                          'dd-al-badge-switch':   action.type === 'switch'}">
-                            {{ action.type === 'scene' ? 'Scene' : action.type === 'blind' ? 'Blind' : action.type === 'selector' ? 'Selector' : 'Device' }}
+                            {{ action.type === 'scene' ? 'Scene' : action.type === 'group' ? 'Group' : action.type === 'blind' ? 'Blind' : action.type === 'selector' ? 'Selector' : action.type === 'dimmer' ? 'Dimmer' : 'Device' }}
                         </span>
                         <span class="dd-al-label" ng-bind="action.label"></span>
                         <i class="fa-solid fa-pencil dd-al-action-icon dd-al-rename-icon"
@@ -165,6 +167,53 @@
                         <button type="button" class="btn btn-sm btn-primary"
                                 ng-click="actionAddItem(field.key)"
                                 ng-disabled="!newAction.idx">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- device-list -->
+            <div ng-if="field.type === 'device-list'" class="dd-action-list-editor">
+
+                <!-- Existing entries -->
+                <div class="dd-al-items" dd-sortable-list="config[field.key]">
+                    <div class="dd-al-item" draggable="true"
+                         data-sort-index="{{ $index }}"
+                         ng-repeat="entry in config[field.key] track by $index">
+                        <i class="fa-solid fa-grip-vertical dd-al-drag-handle"></i>
+                        <span class="dd-al-type-badge dd-al-badge-switch">Device</span>
+                        <span class="dd-al-label" ng-bind="entry.label || entry.idx"></span>
+                        <i class="fa-solid fa-pencil dd-al-action-icon dd-al-rename-icon"
+                           ng-click="deviceListRenameItem(field.key, $index)" title="Rename"></i>
+                        <i class="fa-solid fa-trash dd-al-action-icon dd-al-delete-icon"
+                           ng-click="deviceListRemoveItem(field.key, $index)" title="Remove"></i>
+                    </div>
+                </div>
+
+                <div class="dd-al-empty" ng-show="!config[field.key] || config[field.key].length === 0">
+                    No devices yet. Add one below.
+                </div>
+
+                <!-- Add new device row -->
+                <div class="dd-al-add">
+                    <dz-picker ng-model="newDeviceEntry.idx"
+                               dz-options="deviceListOptions"
+                               placeholder="-- Select Device --"
+                               style="width:100%;display:block;margin-bottom:6px">
+                    </dz-picker>
+                    <div class="dd-al-add-row">
+                        <input type="text" class="text ui-widget-content ui-corner-all"
+                               ng-model="newDeviceEntry.label"
+                               placeholder="Label (optional)" style="flex:2">
+
+                        <input type="text" class="text ui-widget-content ui-corner-all"
+                               ng-model="newDeviceEntry.icon"
+                               placeholder="Icon (optional, e.g. fa-solid fa-bolt)" style="flex:2">
+
+                        <button type="button" class="btn btn-sm btn-primary"
+                                ng-click="deviceListAddItem(field.key)"
+                                ng-disabled="!newDeviceEntry.idx">
                             <i class="fa-solid fa-plus"></i>
                         </button>
                     </div>

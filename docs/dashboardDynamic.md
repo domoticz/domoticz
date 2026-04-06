@@ -241,10 +241,11 @@ Displays a single large KPI number from any device.
 
 **Configuration:**
 
-| Field | Description |
-|-------|-------------|
-| Device | Any used device |
-| Label | Optional custom label (defaults to device name) |
+| Field | Default | Description |
+|-------|---------|-------------|
+| Device | — | Any used device |
+| Label | — | Optional custom label (defaults to device name) |
+| Show panel background | on | Show the widget panel background |
 
 Live: updates instantly from WebSocket `device_update` events.
 
@@ -294,7 +295,7 @@ Column or area chart for counter and energy devices (kWh, Gas, Water, P1, generi
 
 | Type | Description |
 |------|-------------|
-| Short Log | Area chart of recent power readings (W) — high resolution, last few hours |
+| Short Log | High-resolution bars covering the last 2–3 days. For P1 meters: area chart in Watts. For all other types (water, gas, kWh): column bars in the device's native unit. Chart title shows the actual day span (e.g. "Last 3 Days") |
 | Today | Hourly bars |
 | Last week | Daily bars |
 | Last month | Daily bars |
@@ -426,6 +427,24 @@ Compact stat card showing today's gas usage and cumulative total.
 |-------|-------------|
 | Device | Gas type device |
 | Title | Optional override |
+
+Live: refreshes every 60 seconds and on WebSocket device updates.
+
+---
+
+### Water Summary
+**Category:** Energy
+
+Compact stat card showing today's water usage, year-to-date total, and optionally today's cost.
+
+**Configuration:**
+
+| Field | Description |
+|-------|-------------|
+| Device | Water meter device |
+| Title | Optional override (defaults to device name) |
+
+Displays today's usage (in Liters or m³ depending on device configuration), the year-to-date total derived from the annual graph, and the day's water cost if the price is configured (price = 1000 is treated as "not configured" and hidden).
 
 Live: refreshes every 60 seconds and on WebSocket device updates.
 
@@ -782,8 +801,10 @@ One-click buttons to trigger scenes and control switch devices, displayed in a g
 |------|-----------|
 | Switch | Toggle button; icon tinted when device is On |
 | Push On / Push Off | Dedicated On or Off button; no toggle, no state indicator |
+| Dimmer | Label + slider icon + power toggle. Click the slider icon to open an inline horizontal dim slider; drag to set level. Click the power button to toggle On/Off. Icon tinted when device is On |
 | Selector switch | Shows current level text; click opens an inline level picker |
 | Blind | Up / Close buttons, plus optional Stop button (shown automatically when the device supports it) |
+| Group | On and Off buttons shown as a compact pair |
 | Scene | One-click activate button |
 
 **Configuration:**
@@ -808,8 +829,10 @@ To add an action:
 **In the widget:**
 
 - Click a switch button to toggle it; the icon turns accent-coloured when the device is On
+- Click a dimmer's slider icon to reveal the inline horizontal slider; drag to set dim level; click anywhere outside to dismiss without sending a command
 - Click a selector button to open the inline level picker; the current level is shown beneath the label; the active level is highlighted
 - Blind Up/Stop/Close buttons are shown as a compact group with the label on the left
+- Group On/Off buttons are shown as a compact pair with the label on the left
 
 ---
 
@@ -995,6 +1018,7 @@ Shows Domoticz version, build number, and hardware count. No configuration requi
 | kWh Summary | 30s interval + instant WebSocket |
 | P1 Electricity | 30s interval + instant WebSocket |
 | Gas Summary | 60s interval + instant WebSocket |
+| Water Summary | 60s interval + instant WebSocket |
 | Battery Status | 60s interval |
 | Energy Dashboard | 60s interval |
 | Self-Sufficiency | Configurable interval (default 60s) |
