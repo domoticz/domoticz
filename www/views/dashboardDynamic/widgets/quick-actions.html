@@ -157,45 +157,16 @@
             </div>
         </div>
 
-        <!-- Security Panel button group -->
-        <div class="dd-qa-security-group" ng-if="action.type === 'security'">
+        <!-- Security Panel: navigates to secpanel/ — matches switch-button style -->
+        <button class="dd-qa-btn dd-qa-btn--security-panel"
+                ng-if="action.type === 'security'"
+                ng-click="ctrl.execute(action)"
+                title="Open Security Panel">
+            <i class="fa-solid fa-shield-halved"
+               ng-style="ctrl.securityStatus[action.idx] && ctrl.securityStatus[action.idx] !== 'Normal' ? {'color': 'var(--dz-accent-color)'} : {}"></i>
             <span class="dd-qa-label" ng-bind="action.label"></span>
-            <div class="dd-qa-security-btns">
-                <button class="dd-qa-btn dd-qa-btn--security"
-                        ng-click="ctrl.execute(action, 0)"
-                        ng-class="{
-                            'dd-qa-btn--success': ctrl.success[action.idx + '_sec_0'],
-                            'dd-qa-btn--error':   ctrl.error[action.idx + '_sec_0'],
-                            'dd-qa-btn--busy':    ctrl.busy[action.idx + '_sec_0']
-                        }"
-                        title="Disarm">
-                    <i class="fa-solid fa-shield-xmark"
-                       ng-style="ctrl.securityStatus[action.idx] === 'Normal' ? {'color': 'var(--dz-accent-color)'} : {}"></i>
-                </button>
-                <button class="dd-qa-btn dd-qa-btn--security"
-                        ng-click="ctrl.execute(action, 1)"
-                        ng-class="{
-                            'dd-qa-btn--success': ctrl.success[action.idx + '_sec_1'],
-                            'dd-qa-btn--error':   ctrl.error[action.idx + '_sec_1'],
-                            'dd-qa-btn--busy':    ctrl.busy[action.idx + '_sec_1']
-                        }"
-                        title="Arm Home">
-                    <i class="fa-solid fa-house-lock"
-                       ng-style="ctrl.securityStatus[action.idx] === 'Arm Home' ? {'color': 'var(--dz-accent-color)'} : {}"></i>
-                </button>
-                <button class="dd-qa-btn dd-qa-btn--security"
-                        ng-click="ctrl.execute(action, 2)"
-                        ng-class="{
-                            'dd-qa-btn--success': ctrl.success[action.idx + '_sec_2'],
-                            'dd-qa-btn--error':   ctrl.error[action.idx + '_sec_2'],
-                            'dd-qa-btn--busy':    ctrl.busy[action.idx + '_sec_2']
-                        }"
-                        title="Arm Away">
-                    <i class="fa-solid fa-shield"
-                       ng-style="ctrl.securityStatus[action.idx] === 'Arm Away' ? {'color': 'var(--dz-accent-color)'} : {}"></i>
-                </button>
-            </div>
-        </div>
+            <span class="dd-qa-security-status" ng-if="ctrl.securityStatus[action.idx]" ng-bind="ctrl.securityStatus[action.idx]"></span>
+        </button>
 
     </div>
 

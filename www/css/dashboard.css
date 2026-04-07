@@ -1659,6 +1659,13 @@ body.dd-navbar-hidden .dd-toolbar {
     width: auto;
 }
 
+/* Security panel status: sits between label (order:1) and icon (order:3) */
+.dd-quick-actions--list .dd-qa-btn--security-panel > .dd-qa-security-status {
+    order: 2;
+    opacity: 0.75;
+    white-space: nowrap;
+}
+
 /* ── Dimmer button group ────────────────────────────────── */
 .dd-qa-dimmer-group {
     display: flex;

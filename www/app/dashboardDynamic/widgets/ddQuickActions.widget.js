@@ -279,9 +279,13 @@ define([
                 };
 
                 ctrl.execute = function(action, cmd) {
+                    if (action.type === 'security') {
+                        window.location.href = 'secpanel/';
+                        return;
+                    }
                     var busyKey = (action.type === 'blind' || action.type === 'group')
                         ? action.idx + '_' + cmd
-                        : (action.type === 'security' ? action.idx + '_sec_' + cmd : action.idx);
+                        : action.idx;
                     if (ctrl.busy[busyKey]) { return; }
                     ctrl.busy[busyKey]  = true;
                     ctrl.error[busyKey] = false;
@@ -295,8 +299,6 @@ define([
                         params = { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: cmd };
                     } else if (action.type === 'dimmer') {
                         params = { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: action.switchcmd || 'Toggle' };
-                    } else if (action.type === 'security') {
-                        params = { type: 'command', param: 'setsecstatus', secstatus: cmd, udsecstatus: 0 };
                     } else {
                         params = { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: action.switchcmd || 'Toggle' };
                     }
