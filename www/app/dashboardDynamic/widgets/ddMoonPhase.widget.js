@@ -5,11 +5,12 @@ define([
     'use strict';
 
     widgetRegistry.register({
-        type:        'moon-phase',
-        label:       'Moon Phase',
-        description: 'Displays current moon phase with phase name, illumination %, and next full/new moon date',
-        category:    'Information',
-        icon:        'fa-solid fa-moon',
+        type:                  'moon-phase',
+        label:                 'Moon Phase',
+        description:           'Displays current moon phase with phase name, illumination %, and next full/new moon date',
+        category:              'Information',
+        icon:                  'fa-solid fa-moon',
+        transparentBackground: true,
         defaultW:    2,
         defaultH:    3,
         minW:        2,
@@ -41,7 +42,8 @@ define([
                 type:    'boolean',
                 label:   'Show next full/new moon',
                 default: true
-            }
+            },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 

@@ -16,6 +16,7 @@ define([
         minH:        2,
         maxW:        6,
         maxH:        4,
+        transparentBackground: true,
         configSchema: [
             {
                 key:          'tempIdx',

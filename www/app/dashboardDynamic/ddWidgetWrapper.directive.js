@@ -48,11 +48,16 @@ define([
                         }
                     }
                     ctrl.isTransparent = function() {
+                        // transparentBackground in the descriptor always wins — the widget
+                        // controls its own card background; the outer shell is always transparent.
+                        if (ctrl.descriptor && ctrl.descriptor.transparentBackground) {
+                            return true;
+                        }
                         var cfg = ctrl.widgetDef && ctrl.widgetDef.config;
                         if (cfg && typeof cfg.showBackground === 'boolean') {
                             return !cfg.showBackground;
                         }
-                        return !!(ctrl.descriptor && ctrl.descriptor.transparentBackground);
+                        return false;
                     };
                 };
 

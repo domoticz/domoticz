@@ -21,6 +21,7 @@ define([
         minH:        3,
         maxW:        4,
         maxH:        4,
+        transparentBackground: true,
         configSchema: [
             {
                 key:          'deviceIdx',
@@ -74,7 +75,8 @@ define([
                     { value: 'low-is-good',  label: 'Low is good (e.g. CPU load)' },
                     { value: 'high-is-good', label: 'High is good (e.g. battery %)' }
                 ]
-            }
+            },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 

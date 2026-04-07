@@ -16,6 +16,7 @@ define([
         minH:        3,
         maxW:        8,
         maxH:        8,
+        transparentBackground: true,
         configSchema: [
             {
                 key:      'calendarUrl',

@@ -51,6 +51,7 @@ define([
         minH:        1,
         maxW:        6,
         maxH:        4,
+        transparentBackground: true,
         configSchema: [
             { key: 'title',           type: 'text',    label: 'Title (optional)',                    required: false },
             { key: 'showSeconds',     type: 'boolean', label: 'Show seconds',                        default: true },

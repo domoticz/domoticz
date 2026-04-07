@@ -6,6 +6,7 @@ define([
 
     widgetRegistry.register({
         type:        'sun-info',
+		transparentBackground: true,
         label:       'Sun Info',
         description: 'Sunrise and sunset times with day length',
         category:    'Weather',

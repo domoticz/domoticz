@@ -16,6 +16,7 @@ define([
         minH:        2,
         maxW:        12,
         maxH:        12,
+        transparentBackground: true,
         directiveTag: 'dd-image-widget',
         configSchema: [
             { key: 'url',             type: 'url',    label: 'Image URL',                          required: true },

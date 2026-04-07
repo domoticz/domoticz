@@ -31,6 +31,7 @@ define([
         minH:        2,
         maxW:        12,
         maxH:        8,
+        transparentBackground: true,
         configSchema: [
             {
                 key:          'deviceIdx',

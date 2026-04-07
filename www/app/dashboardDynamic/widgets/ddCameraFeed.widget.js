@@ -16,6 +16,7 @@ define([
         minH:        2,
         maxW:        6,
         maxH:        6,
+        transparentBackground: true,
         configSchema: [
             {
                 key:      'cameraIdx',
