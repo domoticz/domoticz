@@ -16,7 +16,7 @@
     --dz-widget-accent:          #43a4d3;
 
     /* Energy value colors */
-    --dz-widget-sunpv:           #ffb300;
+    --dz-widget-amber:           #ffb300;
     --dz-widget-energy-export:   #66bb6a;
     --dz-widget-energy-price:    #c8a0ff;
     --dz-widget-energy-gas:      #ff7043;
@@ -2594,10 +2594,10 @@ dd-wcp-color {
     margin-top: 2px;
     line-height: 1.5;
 }
-.dd-energy-import  { color: var(--dz-widget-sunpv); }
+.dd-energy-import  { color: var(--dz-widget-amber); }
 .dd-energy-export  { color: var(--dz-widget-energy-export); }
 .dd-energy-price   { color: var(--dz-widget-energy-price);  }
-.dd-energy-solar   { color: var(--dz-widget-sunpv);  }
+.dd-energy-solar   { color: var(--dz-widget-amber);  }
 .dd-energy-gas     { color: var(--dz-widget-energy-gas);    }
 .dd-energy-water   { color: var(--dz-widget-energy-water);  }
 .dd-energy-battery { color: var(--dz-widget-accent); }
@@ -2678,7 +2678,7 @@ dd-wcp-color {
 .dd-balance-bar-fill {
     height: 100%;
     border-radius: 3px;
-    background: linear-gradient(to right, var(--dz-accent-red), var(--dz-widget-sunpv), var(--dz-widget-energy-export));
+    background: linear-gradient(to right, var(--dz-accent-red), var(--dz-widget-amber), var(--dz-widget-energy-export));
     transition: width 0.5s ease;
 }
 
