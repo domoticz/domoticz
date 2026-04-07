@@ -1373,6 +1373,7 @@ body.dd-navbar-hidden .dd-toolbar {
 .dd-qa-btn,
 .dd-qa-blind-group,
 .dd-qa-group-group,
+.dd-qa-security-group,
 .dd-qa-dimmer-group {
     padding: 8px 6px;
     border-radius: 6px;
@@ -1610,6 +1611,51 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 .dd-quick-actions--list .dd-qa-group-btns {
+    width: auto;
+}
+
+.dd-qa-security-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: stretch;
+    flex: 1;
+    min-width: 80px;
+}
+
+.dd-qa-security-btns {
+    display: flex;
+    gap: 3px;
+    flex-shrink: 0;
+}
+
+.dd-qa-btn--security {
+    flex: none;
+    min-width: 0;
+    flex-direction: row;
+    align-items: center;
+    padding: 6px 10px;
+    gap: 5px;
+}
+
+.dd-quick-actions--list .dd-qa-security-group {
+    flex: none;
+    width: 100%;
+    box-sizing: border-box;
+    flex-direction: row;
+    align-items: center;
+    min-width: 0;
+    padding: 6px 10px;
+    background: var(--dz-panel-bg);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+}
+
+.dd-quick-actions--list .dd-qa-security-group > .dd-qa-label {
+    flex: 1;
+}
+
+.dd-quick-actions--list .dd-qa-security-btns {
     width: auto;
 }
 
