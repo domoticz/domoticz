@@ -2801,18 +2801,26 @@ function WatchDescriptions(){
 /**
  * Calculate self-sufficiency percentage.
  *
- * self_sufficiency = min(100, (solar + bat_discharge) / house x 100)
+ * self_sufficiency = min(100, (solar - p1Export + bat_discharge) / house x 100)
  *
- * Uses local generation (solar) and storage discharge as the numerator.
- * This correctly handles cases where heavy battery charging from the grid
- * causes gross P1 import to exceed house consumption.
+ * Subtracting p1Export from solar removes the exported portion, leaving only
+ * solar that stayed in the local system.  Adding bat_discharge back cancels
+ * the battery's contribution to p1Export (battery-to-grid), so the numerator
+ * algebraically reduces to (solarToHouse + batToHouse) — the energy that
+ * actually powered the house from local sources.
+ *
+ * This is exact for:
+ *   - No-battery setups
+ *   - Arbitrage batteries (charge from grid, discharge to grid)
+ *   - Standard daily solar→battery→house cycles (solar covers house → clamps correctly to 100%)
  *
  * @param {number} solarKwh        - Solar production today (kWh)
+ * @param {number} p1ExportKwh     - Total energy exported to grid today (kWh)
  * @param {number} batDischargeKwh - Battery discharged today (kWh), 0 if no battery
  * @param {number} houseKwh        - Total house consumption today (kWh)
  * @returns {number} Self-sufficiency percentage [0..100]
  */
-function calcSelfSufficiency(solarKwh, batDischargeKwh, houseKwh) {
+function calcSelfSufficiency(solarKwh, p1ExportKwh, batDischargeKwh, houseKwh) {
 	if (houseKwh <= 0) return 0;
-	return Math.min(100, Math.max(0, (solarKwh + batDischargeKwh) / houseKwh * 100));
+	return Math.min(100, Math.max(0, (solarKwh - p1ExportKwh + batDischargeKwh) / houseKwh * 100));
 }
