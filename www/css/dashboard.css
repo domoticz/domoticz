@@ -1783,6 +1783,9 @@ body.dd-navbar-hidden .dd-toolbar {
     letter-spacing: 0;
     font-size: 0.85em;
 }
+.dd-quick-actions--list .dd-qa-label {
+    font-size: 1.1em;
+}
 .dd-quick-actions--list .dd-qs-value-wrap,
 .dd-quick-actions--list .dd-qs-secondary {
     margin-left: auto;
@@ -3040,3 +3043,8 @@ body.dd-standby::after {
     gap: 8px;
     font-size: 0.85em;
 }
+
+/* ── List-mode font size modifiers ───────────────────────── */
+.dd-list-font--larger { font-size: 1.1em; }
+.dd-list-font--large  { font-size: 1.25em; }
+.dd-list-font--xl     { font-size: 1.5em; }

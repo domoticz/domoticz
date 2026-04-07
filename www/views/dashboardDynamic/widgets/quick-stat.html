@@ -1,5 +1,11 @@
 <div class="dd-quick-stat"
-     ng-class="{'dd-quick-stat--list': ctrl.widgetDef.config.layout === true, 'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode}">
+     ng-class="{
+         'dd-quick-stat--list': ctrl.widgetDef.config.layout === true,
+         'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode,
+         'dd-list-font--larger': ctrl.widgetDef.config.fontSize === 'larger',
+         'dd-list-font--large':  ctrl.widgetDef.config.fontSize === 'large',
+         'dd-list-font--xl':     ctrl.widgetDef.config.fontSize === 'xl'
+     }">
 
     <div ng-if="!ctrl.widgetDef.config || !ctrl.widgetDef.config.devices || ctrl.widgetDef.config.devices.length === 0"
          class="dd-chart-unconfigured">

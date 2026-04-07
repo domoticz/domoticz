@@ -23,6 +23,15 @@ define([
         configSchema: [
             { key: 'planIdx', type: 'plan-picker', label: 'Room / Plan',  required: true },
             { key: 'layout',  type: 'boolean',     label: 'List layout',  default: false },
+            { key: 'fontSize', type: 'select', label: 'Font size',
+              options: [
+                  { value: '',       label: 'Default' },
+                  { value: 'larger', label: 'Larger' },
+                  { value: 'large',  label: 'Large' },
+                  { value: 'xl',     label: 'Extra large' }
+              ],
+              default: ''
+            },
             { key: 'title',   type: 'text',         label: 'Custom Title', required: false }
         ]
     });

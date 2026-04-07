@@ -44,6 +44,11 @@
 
     <!-- List mode -->
     <div class="dd-quick-actions dd-quick-actions--list"
+         ng-class="{
+             'dd-list-font--larger': ctrl.widgetDef.config.fontSize === 'larger',
+             'dd-list-font--large':  ctrl.widgetDef.config.fontSize === 'large',
+             'dd-list-font--xl':     ctrl.widgetDef.config.fontSize === 'xl'
+         }"
          ng-show="ctrl.widgetDef.config.planIdx && !ctrl.loadError && (!ctrl.loading || ctrl.devices.length) && ctrl.widgetDef.config.layout === true">
 
         <div ng-repeat="item in ctrl.listItems track by item.idx" style="display:contents">
