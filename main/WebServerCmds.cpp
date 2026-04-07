@@ -6933,7 +6933,9 @@ namespace http
 			int spikesFixed = 0;
 			for (const auto& line : spikeResults)
 			{
-				if (line.rfind("Positive spike", 0) == 0 || line.rfind("Negative spike", 0) == 0)
+				// Count both kWh spikes ("Positive/Negative spike") and P1 calendar spikes ("Calendar spike")
+				if (line.rfind("Positive spike", 0) == 0 || line.rfind("Negative spike", 0) == 0 ||
+				    line.rfind("Calendar spike", 0) == 0 || line.rfind("Shortlog corrupt", 0) == 0)
 					spikesFixed++;
 			}
 
@@ -6943,6 +6945,9 @@ namespace http
 			root["kwhStatsFixed"] = changed;
 			root["pricesFixed"] = pricesFixed;
 			root["spikesFixed"] = spikesFixed;
+			// Include detail lines so the frontend can show exactly what was corrected
+			for (int i = 0; i < static_cast<int>(spikeResults.size()); i++)
+				root["result"][i] = spikeResults[i];
 			root["status"] = "OK";
 			root["title"] = "FixCounterPrices";
 		}

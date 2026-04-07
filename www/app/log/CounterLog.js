@@ -225,6 +225,11 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                 if (data && data.spikesFixed > 0) parts.push($.t('Fixed') + ' ' + data.spikesFixed + ' ' + $.t('counter spike(s).'));
                                 if (data && data.kwhStatsFixed) parts.push($.t('Weekly pattern fixed.'));
                                 if (data && data.pricesFixed > 0) parts.push($.t('Repaired') + ' ' + data.pricesFixed + ' ' + $.t('daily rows') + '.');
+                                // Append detail lines returned by the backend (e.g. P1 calendar/shortlog corrections)
+                                if (data && Array.isArray(data.result) && data.result.length > 0) {
+                                    parts.push('');
+                                    parts = parts.concat(data.result);
+                                }
                                 var msg = parts.length > 0 ? parts.join('\n') : $.t('No issues found.');
                                 bootbox.alert(msg, function () { $route.reload(); });
                             });
