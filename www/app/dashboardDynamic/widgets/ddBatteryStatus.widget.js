@@ -59,7 +59,8 @@ define([
                 type:     'text',
                 label:    'Title',
                 default:  'Battery'
-            }
+            },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 

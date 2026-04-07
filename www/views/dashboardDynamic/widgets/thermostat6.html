@@ -1,4 +1,5 @@
-<div class="dd-stat-card dd-setpoint dd-stat-card-full">
+<div class="dd-stat-card dd-setpoint dd-stat-card-full"
+     ng-class="{'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode}">
 
     <!-- Unconfigured state -->
     <div ng-if="!ctrl.widgetDef.config.deviceIdx"

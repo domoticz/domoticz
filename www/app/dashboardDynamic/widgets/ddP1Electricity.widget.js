@@ -36,7 +36,8 @@ define([
                 type:    'boolean',
                 label:   'Show price',
                 default: true
-            }
+            },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 

@@ -51,7 +51,8 @@ define([
                 label:   'Refresh interval (seconds)',
                 default: 900,
                 min:     60
-            }
+            },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 

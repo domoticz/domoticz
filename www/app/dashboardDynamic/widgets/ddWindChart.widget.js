@@ -92,7 +92,8 @@ define([
                 type:     'text',
                 label:    'Custom title',
                 required: false
-            }
+            },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 

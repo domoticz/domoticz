@@ -42,7 +42,8 @@ define([
                     { value: 'export', label: 'Export (green)' },
                     { value: 'gas',    label: 'Gas (orange-red)' }
                 ]
-            }
+            },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 

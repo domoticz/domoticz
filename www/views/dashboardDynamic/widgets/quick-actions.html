@@ -1,5 +1,5 @@
 <div class="dd-quick-actions"
-     ng-class="{'dd-quick-actions--list': ctrl.widgetDef.config.layout === true}">
+     ng-class="{'dd-quick-actions--list': ctrl.widgetDef.config.layout === true, 'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode}">
 
     <div ng-repeat="action in ctrl.actions" style="display:contents">
 

@@ -30,7 +30,8 @@ define([
                 type:     'text',
                 label:    'Custom Title',
                 required: false
-            }
+            },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 

@@ -1,5 +1,5 @@
 <div class="dd-quick-stat"
-     ng-class="{'dd-quick-stat--list': ctrl.widgetDef.config.layout === true}">
+     ng-class="{'dd-quick-stat--list': ctrl.widgetDef.config.layout === true, 'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode}">
 
     <div ng-if="!ctrl.widgetDef.config || !ctrl.widgetDef.config.devices || ctrl.widgetDef.config.devices.length === 0"
          class="dd-chart-unconfigured">
