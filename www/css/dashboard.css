@@ -14,6 +14,7 @@
 :root {
     /* Shared accent color */
     --dz-widget-accent:          #43a4d3;
+    --dz-accent-red:             #DF2D3A;
 
     /* Energy value colors */
     --dz-widget-amber:           #ffb300;
