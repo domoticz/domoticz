@@ -29,7 +29,7 @@ namespace
 	struct TempSensorDef
 	{
 		uint16_t reg;
-		uint16_t childId;
+		uint8_t childId;
 		const char* name;
 	};
 
@@ -50,7 +50,7 @@ namespace
 	struct SwitchDef
 	{
 		uint16_t reg;
-		uint16_t childId;
+		uint8_t childId;
 		const char* name;
 	};
 
@@ -76,7 +76,7 @@ namespace
 	struct SetPointDef
 	{
 		uint16_t reg;
-		uint16_t childId;
+		uint8_t childId;
 		const char* name;
 	};
 
@@ -93,7 +93,7 @@ namespace
 	struct SelectorDef
 	{
 		uint16_t reg;
-		uint16_t childId;
+		uint8_t childId;
 		const char* name;
 		const char* levels;
 	};
@@ -467,7 +467,7 @@ void CDaikinModbus::ProcessInputRegisters(const uint8_t* pData, size_t length)
 
 		// Note: Unit is typically 1 for these auto-created Kwh meters.
 		double dTotalEnergyKWh = m_kWhCounter.CheckTotalCounter(this, m_iUnitID, 152, 1, m_dTotalEnergyWh / 1000.0);
-		SendWattMeter(m_iUnitID, 151, 255, dPowerWatt, "Power Consumption");
+		SendWattMeter(m_iUnitID, 151, 255, static_cast<float>(dPowerWatt), "Power Consumption");
 		SendKwhMeter(m_iUnitID, 152, 255, dPowerWatt, dTotalEnergyKWh, "Energy Usage");
 	}
 }
