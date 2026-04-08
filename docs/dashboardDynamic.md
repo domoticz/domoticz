@@ -1,7 +1,9 @@
 # Dashboard Dynamic
 
-**Revision:** 2026-04-07
-**Minimum build:** 17635
+> **Note:** This page is maintained in the [Domoticz GitHub repository](https://github.com/domoticz/domoticz/tree/development/docs). Please do not edit it directly on the Wiki.
+
+**Revision:** 2026-04-08 (2)\
+**Minimum build:** 17675
 
 ---
 
@@ -254,7 +256,7 @@ Live: updates instantly from WebSocket device updates.
 ### Stat Counter
 **Category:** Charts & Data
 
-Displays a single large KPI number from any device.
+Displays a single large KPI number from any device. Clicking the value navigates to the device log.
 
 **Configuration:**
 
@@ -397,7 +399,7 @@ Circular arc gauge showing the current value of any numeric device against a con
 | Threshold mode | low-is-good | **low-is-good** (e.g. CPU load): green → yellow → red as value rises. **high-is-good** (e.g. battery %): red → yellow → green as value rises |
 | Show panel background | on | Show the widget panel background |
 
-The gauge is rendered as a pure SVG arc — no Highcharts required. The fill animates smoothly on value changes.
+The gauge is rendered as a pure SVG arc — no Highcharts required. The fill animates smoothly on value changes. Clicking the value or unit text navigates to the device log.
 
 Live: refreshes every 30 seconds and on WebSocket `device_update` for the configured device.
 
@@ -424,7 +426,7 @@ The sensor type and y-axis unit are detected automatically from the device type.
 ### kWh Summary
 **Category:** Energy
 
-Compact stat card showing current power (W) and today's energy total (kWh).
+Compact stat card showing current power (W) and today's energy total (kWh). Clicking the current power (W) value navigates to the device log.
 
 **Configuration:**
 
@@ -498,7 +500,7 @@ Live: refreshes every 30 seconds and on WebSocket device updates.
 ### Battery Status
 **Category:** Energy
 
-Battery energy storage widget showing today's imported/exported kWh, net, and live SOC / watts / voltage.
+Battery energy storage widget showing today's imported/exported kWh, net, and live SOC / watts / voltage. Clicking any value navigates to the corresponding device log.
 
 **Configuration:**
 
@@ -522,7 +524,7 @@ Live: refreshes every 60 seconds.
 ### Energy Dashboard
 **Category:** Energy
 
-Full energy overview widget — combines all cards (Weather, Grid, Solar, Gas, Battery) and the self-sufficiency balance bar in one resizable widget. Lifted directly from `forecast.html`.
+Full energy overview widget — combines all cards (Weather, Grid, Solar, Gas, Battery) and the self-sufficiency balance bar in one resizable widget. Lifted directly from `forecast.html`. Clicking any value on a card navigates to the corresponding device log.
 
 **Configuration:**
 
@@ -639,12 +641,13 @@ Shows all devices belonging to a specific Domoticz plan (room), including scenes
 
 | Type | Behaviour |
 |------|-----------|
-| Switch / Scene | Toggle button; icon tinted accent when device is On |
-| Dimmer | Label + slider icon + power toggle. Slider icon opens inline dim slider; power icon toggles On/Off |
-| Selector switch | Shows current level; click opens inline level picker |
-| Blind | Up / Close buttons, plus Stop if the device supports it |
-| Group | On and Off buttons as a compact pair |
-| Sensor / Utility | Read-only row: icon, device name, current value and unit |
+| Switch / Scene | Toggle button; icon tinted accent when device is On. Clicking the icon navigates to the device log |
+| Dimmer | Label + slider icon + power toggle. Slider icon opens inline dim slider; power icon toggles On/Off. Clicking the icon navigates to the device log |
+| Selector switch | Shows current level; click opens inline level picker. Clicking the icon navigates to the device log |
+| Blind | Up / Close buttons, plus Stop if the device supports it. Clicking the icon navigates to the device log |
+| Group | On and Off buttons as a compact pair. Clicking the icon navigates to the device log |
+| Security Panel | Disarm / Arm Home / Arm Away buttons. Clicking the icon navigates to the device log |
+| Sensor / Utility | Read-only row: icon, device name, current value and unit. Clicking the icon navigates to the device log. P1 smart meters show two lines: usage + actual power on the first line, return energy on the second |
 
 **Configuration:**
 
@@ -852,6 +855,7 @@ One-click buttons to trigger scenes and control switch devices, displayed in a g
 | Blind | Up / Close buttons, plus optional Stop button (shown automatically when the device supports it) |
 | Group | On and Off buttons shown as a compact pair |
 | Scene | One-click activate button |
+| Security Panel | Navigates to the Domoticz security panel page. Current arm status shown on the right; icon tinted when armed |
 
 **Configuration:**
 
@@ -879,6 +883,7 @@ To add an action:
 - Click a selector button to open the inline level picker; the current level is shown beneath the label; the active level is highlighted
 - Blind Up/Stop/Close buttons are shown as a compact group with the label on the left
 - Group On/Off buttons are shown as a compact pair with the label on the left
+- Click a Security Panel button to open the security panel page; the current arm status is shown to the right of the label
 
 ---
 
@@ -887,7 +892,7 @@ To add an action:
 
 Compact status panel showing current values for any mix of devices — temperature, switches, kWh meters, humidity, and more. Useful as a at-a-glance status overview.
 
-Each row shows an icon, device name (or custom label), current value, and unit. Switch/light states are highlighted in accent colour when On.
+Each row shows an icon, device name (or custom label), current value, and unit. Switch/light states are highlighted in accent colour when On. Clicking the icon navigates to the device log.
 
 **Display modes:**
 
