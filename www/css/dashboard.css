@@ -1066,7 +1066,8 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 .dd-dz-device {
-    height: 100%;
+    position: absolute;
+    inset: 0;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -1096,7 +1097,7 @@ body.dd-navbar-hidden .dd-toolbar {
     padding: 0 4px;
     box-sizing: border-box;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
 }
 
@@ -1186,6 +1187,7 @@ body.dd-navbar-hidden .dd-toolbar {
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
+    align-items: flex-start;
     gap: 4px;
 }
 

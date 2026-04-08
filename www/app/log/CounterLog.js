@@ -103,7 +103,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                     && parseFloat(device.CounterDelivToday) > 0) {
                                 self.cards.push({ label: $.t('Today'), lines: [
                                     { icon: 'fa-arrow-down', iconColor: '#ff6b6b', value: todayValue, tooltip: $.t('Usage') },
-                                    { icon: 'fa-arrow-up', iconColor: '#4ecdc4', value: String(device.CounterDelivToday), tooltip: $.t('Return') }
+                                    { icon: 'fa-arrow-up', iconColor: '#4ecdc4', value: '-' + String(device.CounterDelivToday), tooltip: $.t('Return') }
                                 ]});
                             } else {
                                 self.cards.push({ label: $.t('Today'), value: todayValue });

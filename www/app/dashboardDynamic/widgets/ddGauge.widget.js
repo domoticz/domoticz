@@ -103,7 +103,7 @@ define([
 
                 ctrl.valueStr = function() {
                     if (ctrl.value === null) { return '--'; }
-                    return String(ctrl.value > 1000 ? Math.round(ctrl.value) : ctrl.value);
+                    return String(Math.abs(ctrl.value) > 1000 ? Math.round(ctrl.value) : ctrl.value);
                 };
 
                 ctrl.gaugeColor = function() {
@@ -148,7 +148,8 @@ define([
                 function applyDevice(d) {
                     var cfg   = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
                     ctrl.title = cfg.title || d.Name || '';
-                    var match = (d.Data || '').match(/^([-\d.]+)/);
+                    var raw   = (d.SubType === 'kWh' && d.Usage) ? d.Usage : (d.Data || '');
+                    var match = raw.match(/^([-\d.]+)/);
                     ctrl.value = match ? parseFloat(match[1]) : null;
                 }
 
