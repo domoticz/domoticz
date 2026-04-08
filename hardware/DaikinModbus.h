@@ -21,6 +21,7 @@
 
 #include "DomoticzHardware.h"
 #include "ASyncTCP.h"
+#include "CounterHelper.h"
 #include <atomic>
 
 class CDaikinModbus : public CDomoticzHardwareBase, ASyncTCP
@@ -58,4 +59,5 @@ private:
 	std::shared_ptr<std::thread> m_thread;
 	double m_dTotalEnergyWh;
 	std::chrono::time_point<std::chrono::steady_clock> m_tLastEnergyUpdate;
+	CounterHelper m_kWhCounter;
 };
