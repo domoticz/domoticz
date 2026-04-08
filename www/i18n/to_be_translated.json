@@ -9,6 +9,7 @@
 	"Fix Weekly Pattern": "Fix Weekly Pattern",
 	"Fix the Weekly Pattern by removing spike contamination?\n\nThis recalculates averages from valid data.": "Fix the Weekly Pattern by removing spike contamination?\n\nThis recalculates averages from valid data.",
 	"It is advised to make a database backup before running this operation.": "It is advised to make a database backup before running this operation.",
+	"No issues detected!": "No issues detected!",
 	"No issues found.": "No issues found.",
 	"Problem spreading data point!": "Problem spreading data point!",
 	"Spread across previous empty days": "Spread across previous empty days",
