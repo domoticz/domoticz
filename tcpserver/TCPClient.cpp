@@ -44,16 +44,8 @@ namespace tcp {
 			{
 				m_recvBuffer.append(buffer_.data(), bytes_transferred);
 
-				// Guard against unbounded growth from a stuck incomplete frame
-				if (m_recvBuffer.size() > 4096)
-				{
-					_log.Log(LOG_ERROR, "Receive buffer overflow from %s, resetting connection", m_endpoint.c_str());
-					m_recvBuffer.clear();
-					pConnectionManager->stopClient(self);
-					return;
-				}
-
-				// Detect old unframed SIGNv* clients (version < REMOTE_PROTOCOL_VERSION)
+				// Detect old unframed SIGNv* clients before framing checks — their data
+				// is not length-prefixed and would be misread as a frame header.
 				if (!m_bIsLoggedIn && m_recvBuffer.size() >= 6 && m_recvBuffer.substr(0, 5) == "SIGNv")
 				{
 					int remoteVer = atoi(m_recvBuffer.substr(5).c_str());
@@ -62,6 +54,22 @@ namespace tcp {
 					m_recvBuffer.clear();
 					pConnectionManager->stopClient(self);
 					return;
+				}
+
+				// Overflow guard: once we have a 4-byte header, validate the declared length
+				// to prevent the buffer growing beyond 1 MB before the frame is processed.
+				if (m_recvBuffer.size() >= 4)
+				{
+					uint32_t msgLen;
+					memcpy(&msgLen, m_recvBuffer.data(), 4);
+					msgLen = ntohl(msgLen);
+					if (msgLen == 0 || msgLen > 1048576)
+					{
+						_log.Log(LOG_ERROR, "Invalid frame length (%u) from %s, resetting connection", msgLen, m_endpoint.c_str());
+						m_recvBuffer.clear();
+						pConnectionManager->stopClient(self);
+						return;
+					}
 				}
 
 				while (m_recvBuffer.size() >= 4)

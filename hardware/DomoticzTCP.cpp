@@ -78,12 +78,19 @@ void DomoticzTCP::OnData(const uint8_t* pData, size_t length)
 
 	m_recvBuffer.append(reinterpret_cast<const char*>(pData), length);
 
-	// Guard against unbounded growth from a stuck incomplete frame (max realistic message ~1KB)
-	if (m_recvBuffer.size() > 4096)
+	// Overflow guard: once we have a 4-byte header, validate the declared length
+	// to prevent the buffer growing beyond 1 MB before the frame is processed.
+	if (m_recvBuffer.size() >= 4)
 	{
-		Log(LOG_ERROR, "Receive buffer overflow from %s:%d, resetting connection", m_szIPAddress.c_str(), m_usIPPort);
-		m_recvBuffer.clear();
-		return;
+		uint32_t msgLen;
+		memcpy(&msgLen, m_recvBuffer.data(), 4);
+		msgLen = ntohl(msgLen);
+		if (msgLen == 0 || msgLen > 1048576)
+		{
+			Log(LOG_ERROR, "Invalid frame length (%u) from %s:%d, resetting connection", msgLen, m_szIPAddress.c_str(), m_usIPPort);
+			m_recvBuffer.clear();
+			return;
+		}
 	}
 
 	while (m_recvBuffer.size() >= 4)
