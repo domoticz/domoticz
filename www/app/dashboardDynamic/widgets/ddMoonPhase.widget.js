@@ -13,7 +13,7 @@ define([
         transparentBackground: true,
         defaultW:    2,
         defaultH:    3,
-        minW:        2,
+        minW:        1,
         minH:        2,
         maxW:        4,
         maxH:        4,

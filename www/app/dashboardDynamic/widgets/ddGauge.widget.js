@@ -102,7 +102,8 @@ define([
                 };
 
                 ctrl.valueStr = function() {
-                    return ctrl.value !== null ? String(ctrl.value) : '--';
+                    if (ctrl.value === null) { return '--'; }
+                    return String(ctrl.value > 1000 ? Math.round(ctrl.value) : ctrl.value);
                 };
 
                 ctrl.gaugeColor = function() {

@@ -854,19 +854,20 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 .dd-weather-scene-bg .fcw-scene {
-    top: 5px;
+    top: 4px;
     left: auto;
     right: 5px;
     transform: scale(0.75);
     transform-origin: top right;
 }
 
-/* Text content anchored to bottom */
+/* Text content centered vertically */
 .dd-weather-content {
     position: absolute;
     left: 10px;
     right: 10px;
-    bottom: 20px;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -2947,6 +2948,10 @@ body.dd-standby::after {
 .dd-gauge-title { margin-bottom: 4px; }
 
 /* ── Quick Stat widget ─────────────────────────────── */
+.dd-quick-stat > .dd-chart-unconfigured {
+    grid-column: 1 / -1;
+    height: auto;
+}
 .dd-quick-stat {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
