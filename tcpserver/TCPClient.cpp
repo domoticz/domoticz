@@ -44,6 +44,15 @@ namespace tcp {
 			{
 				m_recvBuffer.append(buffer_.data(), bytes_transferred);
 
+				// Guard against unbounded growth from a stuck incomplete frame
+				if (m_recvBuffer.size() > 4096)
+				{
+					_log.Log(LOG_ERROR, "Receive buffer overflow from %s, resetting connection", m_endpoint.c_str());
+					m_recvBuffer.clear();
+					pConnectionManager->stopClient(self);
+					return;
+				}
+
 				// Detect old unframed SIGNv* clients (version < REMOTE_PROTOCOL_VERSION)
 				if (!m_bIsLoggedIn && m_recvBuffer.size() >= 6 && m_recvBuffer.substr(0, 5) == "SIGNv")
 				{

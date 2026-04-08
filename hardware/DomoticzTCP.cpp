@@ -48,6 +48,7 @@ void DomoticzTCP::OnConnect()
 {
 	Log(LOG_STATUS, "Connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
 	m_bDataReceived = false;
+	m_recvBuffer.clear();
 	if (!m_username.empty())
 	{
 		std::string sAuth = std_format("SIGNv%d;%s;%s", REMOTE_PROTOCOL_VERSION, m_username.c_str(), m_password.c_str());
@@ -76,6 +77,14 @@ void DomoticzTCP::OnData(const uint8_t* pData, size_t length)
 	}
 
 	m_recvBuffer.append(reinterpret_cast<const char*>(pData), length);
+
+	// Guard against unbounded growth from a stuck incomplete frame (max realistic message ~1KB)
+	if (m_recvBuffer.size() > 4096)
+	{
+		Log(LOG_ERROR, "Receive buffer overflow from %s:%d, resetting connection", m_szIPAddress.c_str(), m_usIPPort);
+		m_recvBuffer.clear();
+		return;
+	}
 
 	while (m_recvBuffer.size() >= 4)
 	{
