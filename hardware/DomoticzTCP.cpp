@@ -47,10 +47,13 @@ bool DomoticzTCP::StopHardware()
 void DomoticzTCP::OnConnect()
 {
 	Log(LOG_STATUS, "Connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
+	m_bDataReceived = false;
+	m_recvBuffer.clear();
 	if (!m_username.empty())
 	{
-		std::string sAuth = std_format("SIGNv2;%s;%s", m_username.c_str(), m_password.c_str());
-		WriteToHardware(sAuth);
+		std::string sAuth = std_format("SIGNv%d;%s;%s", REMOTE_PROTOCOL_VERSION, m_username.c_str(), m_password.c_str());
+		WriteFramed(sAuth);
+		mytime(&m_tAuthSent);
 	}
 	sOnConnected(this);
 }
@@ -62,87 +65,113 @@ void DomoticzTCP::OnDisconnect()
 
 void DomoticzTCP::OnData(const uint8_t* pData, size_t length)
 {
-	if (length == 6 && strstr(reinterpret_cast<const char*>(pData), "NOAUTH") != nullptr)
+	std::lock_guard<std::mutex> l(m_readMutex);
+
+	m_bDataReceived = true;
+
+	// NOAUTH is sent unframed during authentication (before any device data)
+	if (m_recvBuffer.empty() && length == 6 && strncmp(reinterpret_cast<const char*>(pData), "NOAUTH", 6) == 0)
 	{
 		Log(LOG_ERROR, "Authentication failed for user %s on %s:%d", m_username.c_str(), m_szIPAddress.c_str(), m_usIPPort);
 		return;
 	}
 
-	std::lock_guard<std::mutex> l(m_readMutex);
+	m_recvBuffer.append(reinterpret_cast<const char*>(pData), length);
 
-	std::vector<char> uhash = HexToBytes(m_password);
-
-	std::string szEncoded = std::string((const char*)pData, length);
-	std::string szDecoded;
-
-	AESDecryptData(szEncoded, szDecoded, (const uint8_t*)uhash.data());
-
-	Json::Value root;
-
-	bool ret = ParseJSon(szDecoded, root);
-	if ((!ret) || (!root.isObject()))
+	// Guard against unbounded growth from a stuck incomplete frame (max realistic message ~1KB)
+	if (m_recvBuffer.size() > 4096)
 	{
-		Log(LOG_ERROR, "Invalid data received!");
+		Log(LOG_ERROR, "Receive buffer overflow from %s:%d, resetting connection", m_szIPAddress.c_str(), m_usIPPort);
+		m_recvBuffer.clear();
 		return;
 	}
 
-	if (root["OrgHardwareID"].empty() == true)
+	while (m_recvBuffer.size() >= 4)
 	{
-		Log(LOG_ERROR, "Invalid data received, or no data returned!");
-		return;
-	}
+		uint32_t msgLen;
+		memcpy(&msgLen, m_recvBuffer.data(), 4);
+		msgLen = ntohl(msgLen);
 
-	try
-	{
-		int OrgHardwareID = root["OrgHardwareID"].asInt();
-		int OrgDeviceRowID = root["OrgDeviceRowID"].asInt();
-		std::string DeviceID = root["DeviceID"].asString();
-		int Unit = root["Unit"].asInt();
-		std::string Name = root["Name"].asString();
-		int Type = root["Type"].asInt();
-		int SubType = root["SubType"].asInt();
-		int SwitchType = root["SwitchType"].asInt();
-		int SignalLevel = root["SignalLevel"].asInt();
-		int BatteryLevel = root["BatteryLevel"].asInt();
-		int nValue = root["nValue"].asInt();
-		std::string sValue = root["sValue"].asString();
-		std::string LastUpdate = root["LastUpdate"].asString();
-		int LastLevel = root["LastLevel"].asInt();
-		std::string Options = root["Options"].asString();
-		std::string Color = root["Color"].asString();
-
-		uint64_t idx = m_sql.UpdateValue(m_HwdID, OrgHardwareID, DeviceID.c_str(), Unit, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue.c_str(), Name, true, m_Name.c_str());
-		if (idx == (uint64_t)-1)
+		if (msgLen == 0 || msgLen > 1048576)
 		{
-			if (!m_sql.m_bAcceptNewHardware)
-			{
-				Log(LOG_STATUS, "Device creation failed, Domoticz settings prevent accepting new devices. (device ID %s)", DeviceID.c_str());
-				return;
-			}
-
-			Log(LOG_ERROR, "Failed to update device %s", DeviceID.c_str());
+			Log(LOG_ERROR, "Invalid frame length received (%u), resetting buffer", msgLen);
+			m_recvBuffer.clear();
 			return;
 		}
 
-		auto result = m_sql.safe_query("SELECT SwitchType, Options, Color FROM DeviceStatus WHERE (ID==%q)", std::to_string(idx).c_str());
+		if (m_recvBuffer.size() < 4 + (size_t)msgLen)
+			return; // incomplete frame — wait for more data
 
-		int oldSwitchType = atoi(result[0][0].c_str());
-		std::string oldOptions = result[0][1];
-		std::string oldColor = result[0][2];
+		std::string szEncoded(m_recvBuffer.data() + 4, msgLen);
+		m_recvBuffer.erase(0, 4 + msgLen);
 
-		if (SwitchType != oldSwitchType)
-			m_sql.UpdateDeviceValue("SwitchType", SwitchType, std::to_string(idx));
-		if (Options != oldOptions)
-			m_sql.UpdateDeviceValue("Options", Options, std::to_string(idx));
-		if (Color != oldColor)
-			m_sql.UpdateDeviceValue("Color", Color, std::to_string(idx));
+		std::vector<char> uhash = HexToBytes(m_password);
+		std::string szDecoded;
+		AESDecryptData(szEncoded, szDecoded, (const uint8_t*)uhash.data());
 
-		m_sql.UpdateDeviceValue("LastUpdate", LastUpdate, std::to_string(idx));
+		Json::Value root;
+		bool ret = ParseJSon(szDecoded, root);
+		if ((!ret) || (!root.isObject()))
+		{
+			Log(LOG_ERROR, "Invalid data received!");
+			continue;
+		}
 
-	}
-	catch (const std::exception& e)
-	{
-		Log(LOG_ERROR, "Exception: Invalid data received! (%s)", e.what());
+		if (root["OrgHardwareID"].empty())
+		{
+			Log(LOG_ERROR, "Invalid data received, or no data returned!");
+			continue;
+		}
+
+		try
+		{
+			int OrgHardwareID = root["OrgHardwareID"].asInt();
+			int OrgDeviceRowID = root["OrgDeviceRowID"].asInt();
+			std::string DeviceID = root["DeviceID"].asString();
+			int Unit = root["Unit"].asInt();
+			std::string Name = root["Name"].asString();
+			int Type = root["Type"].asInt();
+			int SubType = root["SubType"].asInt();
+			int SwitchType = root["SwitchType"].asInt();
+			int SignalLevel = root["SignalLevel"].asInt();
+			int BatteryLevel = root["BatteryLevel"].asInt();
+			int nValue = root["nValue"].asInt();
+			std::string sValue = root["sValue"].asString();
+			std::string LastUpdate = root["LastUpdate"].asString();
+			int LastLevel = root["LastLevel"].asInt();
+			std::string Options = root["Options"].asString();
+			std::string Color = root["Color"].asString();
+
+			uint64_t idx = m_sql.UpdateValue(m_HwdID, OrgHardwareID, DeviceID.c_str(), Unit, Type, SubType, SignalLevel, BatteryLevel, nValue, sValue.c_str(), Name, true, m_Name.c_str());
+			if (idx == (uint64_t)-1)
+			{
+				if (!m_sql.m_bAcceptNewHardware)
+				{
+					Log(LOG_STATUS, "Device creation failed, Domoticz settings prevent accepting new devices. (device ID %s)", DeviceID.c_str());
+					continue;
+				}
+				Log(LOG_ERROR, "Failed to update device %s", DeviceID.c_str());
+				continue;
+			}
+
+			auto result = m_sql.safe_query("SELECT SwitchType, Options, Color FROM DeviceStatus WHERE (ID==%q)", std::to_string(idx).c_str());
+			int oldSwitchType = atoi(result[0][0].c_str());
+			std::string oldOptions = result[0][1];
+			std::string oldColor = result[0][2];
+
+			if (SwitchType != oldSwitchType)
+				m_sql.UpdateDeviceValue("SwitchType", SwitchType, std::to_string(idx));
+			if (Options != oldOptions)
+				m_sql.UpdateDeviceValue("Options", Options, std::to_string(idx));
+			if (Color != oldColor)
+				m_sql.UpdateDeviceValue("Color", Color, std::to_string(idx));
+
+			m_sql.UpdateDeviceValue("LastUpdate", LastUpdate, std::to_string(idx));
+		}
+		catch (const std::exception& e)
+		{
+			Log(LOG_ERROR, "Exception: Invalid data received! (%s)", e.what());
+		}
 	}
 }
 
@@ -173,7 +202,15 @@ void DomoticzTCP::Do_Work()
 	{
 		sec_counter++;
 		if (sec_counter % 12 == 0)
+		{
 			mytime(&m_LastHeartbeat);
+			if (m_tAuthSent != 0 && !m_bDataReceived)
+			{
+				Log(LOG_ERROR, "No data received from %s:%d after 12 seconds. The remote Domoticz may be running an older version that does not support the SIGNv%d protocol. Please update the remote Domoticz instance.",
+					m_szIPAddress.c_str(), m_usIPPort, REMOTE_PROTOCOL_VERSION);
+				m_tAuthSent = 0; // log only once per connection
+			}
+		}
 	}
 	terminate();
 
@@ -193,6 +230,25 @@ bool DomoticzTCP::WriteToHardware(const std::string& szData)
 	if (!ASyncTCP::isConnected())
 		return false;
 	write(szData);
+	return true;
+}
+
+void DomoticzTCP::WriteFramed(const std::string& szData)
+{
+	uint32_t len = htonl((uint32_t)szData.size());
+	std::string szFramed(reinterpret_cast<const char*>(&len), 4);
+	szFramed += szData;
+	write(szFramed);
+}
+
+bool DomoticzTCP::SendEncrypted(const std::string& szPlaintext)
+{
+	if (!ASyncTCP::isConnected())
+		return false;
+	std::vector<char> uhash = HexToBytes(m_password);
+	std::string szEncrypted;
+	AESEncryptData(szPlaintext, szEncrypted, (const uint8_t*)uhash.data());
+	WriteFramed(szEncrypted);
 	return true;
 }
 
@@ -222,11 +278,7 @@ bool DomoticzTCP::SwitchLight(const uint64_t idx, const std::string& switchcmd, 
 	root["ooc"] = ooc;
 	root["User"] = User;
 
-	std::string szSend = JSonToRawString(root);
-	std::vector<char> uhash = HexToBytes(m_password);
-	std::string szEncrypted;
-	AESEncryptData(szSend, szEncrypted, (const uint8_t*)uhash.data());
-	return WriteToHardware(szEncrypted);
+	return SendEncrypted(JSonToRawString(root));
 }
 
 bool DomoticzTCP::SetSetPoint(const std::string& idx, const float TempValue, const std::string& User)
@@ -238,11 +290,7 @@ bool DomoticzTCP::SetSetPoint(const std::string& idx, const float TempValue, con
 	root["TempValue"] = TempValue;
 	root["User"] = User;
 
-	std::string szSend = JSonToRawString(root);
-	std::vector<char> uhash = HexToBytes(m_password);
-	std::string szEncrypted;
-	AESEncryptData(szSend, szEncrypted, (const uint8_t*)uhash.data());
-	return WriteToHardware(szEncrypted);
+	return SendEncrypted(JSonToRawString(root));
 }
 
 bool DomoticzTCP::SetSetPointEvo(const std::string& idx, float TempValue, const std::string& newMode, const std::string& until, const std::string& User)
@@ -256,11 +304,7 @@ bool DomoticzTCP::SetSetPointEvo(const std::string& idx, float TempValue, const 
 	root["until"] = until;
 	root["User"] = User;
 
-	std::string szSend = JSonToRawString(root);
-	std::vector<char> uhash = HexToBytes(m_password);
-	std::string szEncrypted;
-	AESEncryptData(szSend, szEncrypted, (const uint8_t*)uhash.data());
-	return WriteToHardware(szEncrypted);
+	return SendEncrypted(JSonToRawString(root));
 }
 
 bool DomoticzTCP::SetThermostatState(const std::string& idx, int newState)
@@ -271,11 +315,7 @@ bool DomoticzTCP::SetThermostatState(const std::string& idx, int newState)
 	root["action"] = "SetThermostatState";
 	root["newState"] = newState;
 
-	std::string szSend = JSonToRawString(root);
-	std::vector<char> uhash = HexToBytes(m_password);
-	std::string szEncrypted;
-	AESEncryptData(szSend, szEncrypted, (const uint8_t*)uhash.data());
-	return WriteToHardware(szEncrypted);
+	return SendEncrypted(JSonToRawString(root));
 }
 
 bool DomoticzTCP::SwitchEvoModal(const std::string& idx, const std::string& status, const std::string& action, const std::string& ooc, const std::string& until)
@@ -289,11 +329,7 @@ bool DomoticzTCP::SwitchEvoModal(const std::string& idx, const std::string& stat
 	root["ooc"] = ooc;
 	root["until"] = until;
 
-	std::string szSend = JSonToRawString(root);
-	std::vector<char> uhash = HexToBytes(m_password);
-	std::string szEncrypted;
-	AESEncryptData(szSend, szEncrypted, (const uint8_t*)uhash.data());
-	return WriteToHardware(szEncrypted);
+	return SendEncrypted(JSonToRawString(root));
 }
 
 bool DomoticzTCP::SetTextDevice(const std::string& idx, const std::string& text)
@@ -304,11 +340,7 @@ bool DomoticzTCP::SetTextDevice(const std::string& idx, const std::string& text)
 	root["action"] = "SetTextDevice";
 	root["text"] = text;
 
-	std::string szSend = JSonToRawString(root);
-	std::vector<char> uhash = HexToBytes(m_password);
-	std::string szEncrypted;
-	AESEncryptData(szSend, szEncrypted, (const uint8_t*)uhash.data());
-	return WriteToHardware(szEncrypted);
+	return SendEncrypted(JSonToRawString(root));
 }
 
 
@@ -321,11 +353,7 @@ bool DomoticzTCP::SetZWaveThermostatMode(const std::string& idx, int tMode)
 	root["action"] = "SetZWaveThermostatMode";
 	root["tMode"] = tMode;
 
-	std::string szSend = JSonToRawString(root);
-	std::vector<char> uhash = HexToBytes(m_password);
-	std::string szEncrypted;
-	AESEncryptData(szSend, szEncrypted, (const uint8_t*)uhash.data());
-	return WriteToHardware(szEncrypted);
+	return SendEncrypted(JSonToRawString(root));
 }
 
 bool DomoticzTCP::SetZWaveThermostatFanMode(const std::string& idx, int fMode)
@@ -336,11 +364,7 @@ bool DomoticzTCP::SetZWaveThermostatFanMode(const std::string& idx, int fMode)
 	root["action"] = "SetZWaveThermostatFanMode";
 	root["fMode"] = fMode;
 
-	std::string szSend = JSonToRawString(root);
-	std::vector<char> uhash = HexToBytes(m_password);
-	std::string szEncrypted;
-	AESEncryptData(szSend, szEncrypted, (const uint8_t*)uhash.data());
-	return WriteToHardware(szEncrypted);
+	return SendEncrypted(JSonToRawString(root));
 }
 #endif
 

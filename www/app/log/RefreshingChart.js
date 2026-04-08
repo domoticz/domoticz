@@ -325,6 +325,11 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                         if (self.range !== 'day' && self.range !== 'month' && self.range !== 'year' && self.range !== 'hour') {
                             return;
                         }
+
+                        // Managed Counters can hold future-dated values; don't clamp the axis to today.
+                        if (self.device && self.device.SubType === 'Managed Counter') {
+                            return;
+                        }
                         // For the hour chart, only apply when showing the last 24 hours ('1d' zoom)
                         if (self.range === 'hour' && self.$scope.zoomType !== '1d') {
                             return;
