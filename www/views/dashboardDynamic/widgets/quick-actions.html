@@ -1,11 +1,17 @@
 <div class="dd-quick-actions"
-     ng-class="{'dd-quick-actions--list': ctrl.widgetDef.config.layout === true}">
+     ng-class="{
+         'dd-quick-actions--list': ctrl.widgetDef.config.layout === true,
+         'dd-stat-card--no-bg':    ctrl.widgetDef.config.showBackground === false && !ctrl.editMode,
+         'dd-list-font--larger':   ctrl.widgetDef.config.fontSize === 'larger',
+         'dd-list-font--large':    ctrl.widgetDef.config.fontSize === 'large',
+         'dd-list-font--xl':       ctrl.widgetDef.config.fontSize === 'xl'
+     }">
 
     <div ng-repeat="action in ctrl.actions" style="display:contents">
 
         <!-- Regular button: switch, scene -->
         <button class="dd-qa-btn"
-                ng-if="action.type !== 'blind' && action.type !== 'selector' && action.type !== 'group' && action.type !== 'dimmer'"
+                ng-if="action.type !== 'blind' && action.type !== 'selector' && action.type !== 'group' && action.type !== 'dimmer' && action.type !== 'security'"
                 ng-click="ctrl.execute(action)"
                 ng-class="{
                     'dd-qa-btn--scene':   action.type === 'scene',
@@ -123,7 +129,7 @@
                         }"
                         title="Open">
                     <i class="fa-solid fa-chevron-up"
-                       ng-style="ctrl.deviceOn[action.idx] ? {'color': 'var(--dz-accent-color)'} : {}"></i>
+                       ng-style="ctrl.blindStatus[action.idx] === 'open' ? {'color': 'var(--dz-accent-color)'} : {}"></i>
                 </button>
                 <button class="dd-qa-btn dd-qa-btn--blind dd-qa-btn--stop"
                         ng-if="action.hasStop"
@@ -134,7 +140,8 @@
                             'dd-qa-btn--busy':    ctrl.busy[action.idx + '_Stop']
                         }"
                         title="Stop">
-                    <i class="fa-solid fa-stop"></i>
+                    <i class="fa-solid fa-stop"
+                       ng-style="ctrl.blindStatus[action.idx] === 'stopped' ? {'color': 'var(--dz-accent-color)'} : {}"></i>
                 </button>
                 <button class="dd-qa-btn dd-qa-btn--blind"
                         ng-click="ctrl.execute(action, 'Close')"
@@ -144,10 +151,22 @@
                             'dd-qa-btn--busy':    ctrl.busy[action.idx + '_Close']
                         }"
                         title="Close">
-                    <i class="fa-solid fa-chevron-down"></i>
+                    <i class="fa-solid fa-chevron-down"
+                       ng-style="ctrl.blindStatus[action.idx] === 'closed' ? {'color': 'var(--dz-accent-color)'} : {}"></i>
                 </button>
             </div>
         </div>
+
+        <!-- Security Panel: navigates to secpanel/ — matches switch-button style -->
+        <button class="dd-qa-btn dd-qa-btn--security-panel"
+                ng-if="action.type === 'security'"
+                ng-click="ctrl.execute(action)"
+                title="Open Security Panel">
+            <i class="fa-solid fa-shield-halved"
+               ng-style="ctrl.securityStatus[action.idx] && ctrl.securityStatus[action.idx] !== 'Normal' ? {'color': 'var(--dz-accent-color)'} : {}"></i>
+            <span class="dd-qa-label" ng-bind="action.label"></span>
+            <span class="dd-qa-security-status" ng-if="ctrl.securityStatus[action.idx]" ng-bind="ctrl.securityStatus[action.idx]"></span>
+        </button>
 
     </div>
 

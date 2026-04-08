@@ -21,6 +21,7 @@ define([
         minH:        3,
         maxW:        4,
         maxH:        4,
+        transparentBackground: true,
         configSchema: [
             {
                 key:          'deviceIdx',
@@ -74,7 +75,8 @@ define([
                     { value: 'low-is-good',  label: 'Low is good (e.g. CPU load)' },
                     { value: 'high-is-good', label: 'High is good (e.g. battery %)' }
                 ]
-            }
+            },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 
@@ -100,7 +102,8 @@ define([
                 };
 
                 ctrl.valueStr = function() {
-                    return ctrl.value !== null ? String(ctrl.value) : '--';
+                    if (ctrl.value === null) { return '--'; }
+                    return String(Math.abs(ctrl.value) > 1000 ? Math.round(ctrl.value) : ctrl.value);
                 };
 
                 ctrl.gaugeColor = function() {
@@ -145,7 +148,8 @@ define([
                 function applyDevice(d) {
                     var cfg   = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
                     ctrl.title = cfg.title || d.Name || '';
-                    var match = (d.Data || '').match(/^([-\d.]+)/);
+                    var raw   = (d.SubType === 'kWh' && d.Usage) ? d.Usage : (d.Data || '');
+                    var match = raw.match(/^([-\d.]+)/);
                     ctrl.value = match ? parseFloat(match[1]) : null;
                 }
 

@@ -292,6 +292,10 @@ define([
                         $scope.config[fieldKey].push({ type: 'scene', idx: String(a.idx), label: label, icon: 'fa-solid fa-play' });
                     }
 
+                } else if (d && (d.SwitchType === 'Security Panel' || d.Type === 'Security')) {
+                    if (!label) { label = d.Name; }
+                    $scope.config[fieldKey].push({ type: 'security', idx: String(a.idx), label: label, icon: 'fa-solid fa-shield-halved' });
+
                 } else if (d && d.SwitchType === 'Selector') {
                     if (!label) { label = d.Name; }
                     $scope.config[fieldKey].push({ type: 'selector', idx: String(a.idx), label: label });

@@ -97,6 +97,13 @@ define(['app'], function(app) {
             return 'fa-solid fa-circle-dot';
         }
 
+        function roundIfLarge(str) {
+            var m = String(str || '').match(/^([\d.]+)(\s*.+)$/);
+            if (!m) { return str; }
+            var n = parseFloat(m[1]);
+            return (!isNaN(n) && n > 1000) ? Math.round(n) + m[2] : str;
+        }
+
         function extractDeviceValue(d) {
             var type = (d.Type || '').toLowerCase();
             if (d.SwitchType !== undefined || type.indexOf('light') >= 0 || type.indexOf('switch') >= 0) {
@@ -123,7 +130,7 @@ define(['app'], function(app) {
             if (d.Humidity !== undefined) {
                 return { value: String(d.Humidity), isOn: false, unit: '%', unit2: null, secondValue: null, typeClass: 'humidity' };
             }
-            return { value: d.Data || '\u2014', isOn: false, unit: '', unit2: null, secondValue: null, typeClass: 'generic' };
+            return { value: roundIfLarge(d.Data || '\u2014'), isOn: false, unit: '', unit2: null, secondValue: null, typeClass: 'generic' };
         }
 
         return { getDirective: getDirective, autoDeviceIcon: autoDeviceIcon, extractDeviceValue: extractDeviceValue };

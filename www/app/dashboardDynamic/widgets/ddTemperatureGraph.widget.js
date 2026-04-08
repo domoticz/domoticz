@@ -46,6 +46,7 @@ define([
         minH:        2,
         maxW:        12,
         maxH:        8,
+        transparentBackground: true,
         configSchema: [
             {
                 key:          'deviceIdx',
@@ -74,7 +75,8 @@ define([
                 type:     'text',
                 label:    'Custom title',
                 required: false
-            }
+            },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 

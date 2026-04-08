@@ -16,6 +16,7 @@ define([
         minH:        3,
         maxW:        8,
         maxH:        8,
+        transparentBackground: true,
         configSchema: [
             {
                 key:      'calendarUrl',
@@ -50,7 +51,8 @@ define([
                 label:   'Refresh interval (seconds)',
                 default: 900,
                 min:     60
-            }
+            },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 

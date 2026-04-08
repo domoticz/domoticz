@@ -23,6 +23,15 @@ define([
         configSchema: [
             { key: 'planIdx', type: 'plan-picker', label: 'Room / Plan',  required: true },
             { key: 'layout',  type: 'boolean',     label: 'List layout',  default: false },
+            { key: 'fontSize', type: 'select', label: 'Font size',
+              options: [
+                  { value: '',       label: 'Default' },
+                  { value: 'larger', label: 'Larger' },
+                  { value: 'large',  label: 'Large' },
+                  { value: 'xl',     label: 'Extra large' }
+              ],
+              default: ''
+            },
             { key: 'title',   type: 'text',         label: 'Custom Title', required: false }
         ]
     });
@@ -54,6 +63,8 @@ define([
                 ctrl.currentLevel      = {};
                 ctrl.currentLevelText  = {};
                 ctrl.levelOptions      = {};
+                ctrl.blindStatus       = {};
+                ctrl.securityStatus    = {};
 
                 ctrl.isLight = function(d) {
                     return ddDeviceClassifier.getDirective(d) === 'dz-light-widget';
@@ -67,6 +78,7 @@ define([
                     var type = (d.Type || '').toLowerCase();
                     if (type.indexOf('scene') >= 0)                                         { return 'scene'; }
                     if (type.indexOf('group') >= 0)                                         { return 'group'; }
+                    if (d.SwitchType === 'Security Panel' || d.Type === 'Security')        { return 'security'; }
                     if (d.SwitchType && d.SwitchType.indexOf('Blinds') >= 0)               { return 'blind'; }
                     if (d.SwitchType === 'Selector')                                        { return 'selector'; }
                     if (d.SwitchType === 'Dimmer')                                          { return 'dimmer'; }
@@ -78,7 +90,17 @@ define([
                 function decodeLevelNames(d) {
                     var raw;
                     try { raw = b64DecodeUnicode(d.LevelNames); } catch(e) { raw = d.LevelNames || ''; }
-                    return raw.split('|').map(function(n, i) { return { value: i * 10, label: n }; });
+                    var levels = raw.split('|').map(function(n, i) { return { value: i * 10, label: n }; });
+                    if (d.LevelOffHidden) {
+                        levels = levels.filter(function(l) { return l.value !== 0; });
+                    }
+                    return levels;
+                }
+
+                function getBlindStatus(status) {
+                    if (status === 'Open' || (status && status.indexOf('Set ') === 0)) { return 'open'; }
+                    if (status === 'Stopped') { return 'stopped'; }
+                    return 'closed';
                 }
 
                 function getLevelLabel(idx, levelInt) {
@@ -106,8 +128,13 @@ define([
                             unit2:       extracted.unit2,
                             typeClass:   extracted.typeClass
                         };
-                        if (actionType !== 'stat' && actionType !== 'scene') {
-                            ctrl.deviceOn[item.idx] = extracted.isOn;
+                        if (actionType === 'blind') {
+                            ctrl.blindStatus[item.idx] = getBlindStatus(d.Status);
+                        } else if (actionType === 'security') {
+                            ctrl.securityStatus[item.idx] = d.Status;
+                        } else if (actionType !== 'stat' && actionType !== 'scene') {
+                            var isLocked = d.SwitchType === 'Door Lock' || d.SwitchType === 'Door Lock Inverted';
+                            ctrl.deviceOn[item.idx] = isLocked ? (d.Status === 'Unlocked') : extracted.isOn;
                         }
                         if (actionType === 'dimmer') {
                             ctrl.dimLevel[item.idx] = d.LevelInt !== undefined ? d.LevelInt : 100;
@@ -125,7 +152,8 @@ define([
 
                 ctrl.execute = function(item, cmd) {
                     var busyKey = (item.type === 'blind' || item.type === 'group')
-                        ? item.idx + '_' + cmd : item.idx;
+                        ? item.idx + '_' + cmd
+                        : (item.type === 'security' ? item.idx + '_sec_' + cmd : item.idx);
                     if (ctrl.busy[busyKey]) { return; }
                     ctrl.busy[busyKey]      = true;
                     ctrl.itemError[busyKey] = false;
@@ -136,6 +164,8 @@ define([
                         params = { type: 'command', param: 'switchscene', idx: item.idx, switchcmd: cmd };
                     } else if (item.type === 'blind') {
                         params = { type: 'command', param: 'switchlight', idx: item.idx, switchcmd: cmd };
+                    } else if (item.type === 'security') {
+                        params = { type: 'command', param: 'setsecstatus', secstatus: cmd, udsecstatus: 0 };
                     } else {
                         params = { type: 'command', param: 'switchlight', idx: item.idx, switchcmd: item.switchcmd || 'Toggle' };
                     }
@@ -143,7 +173,9 @@ define([
                         .then(function(resp) {
                             var data = resp.data || {};
                             if (data.status === 'OK') {
-                                ctrl.deviceOn[item.idx] = !ctrl.deviceOn[item.idx];
+                                if (item.type !== 'security') {
+                                    ctrl.deviceOn[item.idx] = !ctrl.deviceOn[item.idx];
+                                }
                                 ctrl.success[busyKey] = true;
                                 $timeout(function() { ctrl.success[busyKey] = false; }, 1200);
                             } else {

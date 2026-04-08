@@ -5,15 +5,16 @@ define([
     'use strict';
 
     widgetRegistry.register({
-        type:        'stat-counter',
-        label:       'Stat Counter',
-        description: 'Single large KPI number from any device',
-        category:    'Charts & Data',
-        icon:        'fa-solid fa-gauge',
+        type:                  'stat-counter',
+        label:                 'Stat Counter',
+        description:           'Single large KPI number from any device',
+        category:              'Charts & Data',
+        icon:                  'fa-solid fa-gauge',
+        transparentBackground: true,
         defaultW:    2,
         defaultH:    2,
         minW:        2,
-        minH:        2,
+        minH:        1,
         maxW:        4,
         maxH:        3,
         configSchema: [
@@ -29,7 +30,7 @@ define([
                 label:    'Label',
                 required: false
             },
-            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
+            { key: 'showCard', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 

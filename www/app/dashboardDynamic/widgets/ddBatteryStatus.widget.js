@@ -13,7 +13,7 @@ define([
         icon:        'fa-solid fa-battery-half',
         defaultW:    3,
         defaultH:    2,
-        minW:        3,
+        minW:        2,
         minH:        2,
         maxW:        6,
         maxH:        4,
@@ -59,7 +59,8 @@ define([
                 type:     'text',
                 label:    'Title',
                 default:  'Battery'
-            }
+            },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 
@@ -125,7 +126,7 @@ define([
                     if (soc || bw || bv) {
                         ctrl.batteryLive = {
                             soc:     soc ? soc.Data : null,
-                            watt:    bw  ? (bw.Usage || bw.Data) : null,
+                            watt:    bw  ? (function(v) { var n = parseFloat(v); return isNaN(n) ? v : Math.round(n) + ' W'; })(bw.Usage || bw.Data) : null,
                             voltage: bv  ? bv.Data : null
                         };
                     } else {

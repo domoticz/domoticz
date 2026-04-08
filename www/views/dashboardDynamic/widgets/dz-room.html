@@ -27,7 +27,7 @@
             <dz-scene-widget
                 ng-if="ctrl.isScene(device)"
                 scene="device"
-                dashboard-type="0">
+                dashboard-type="1">
             </dz-scene-widget>
             <dz-utility-widget
                 ng-if="!ctrl.isLight(device) && !ctrl.isScene(device)"
@@ -44,6 +44,11 @@
 
     <!-- List mode -->
     <div class="dd-quick-actions dd-quick-actions--list"
+         ng-class="{
+             'dd-list-font--larger': ctrl.widgetDef.config.fontSize === 'larger',
+             'dd-list-font--large':  ctrl.widgetDef.config.fontSize === 'large',
+             'dd-list-font--xl':     ctrl.widgetDef.config.fontSize === 'xl'
+         }"
          ng-show="ctrl.widgetDef.config.planIdx && !ctrl.loadError && (!ctrl.loading || ctrl.devices.length) && ctrl.widgetDef.config.layout === true">
 
         <div ng-repeat="item in ctrl.listItems track by item.idx" style="display:contents">
@@ -178,7 +183,7 @@
                             }"
                             title="Open">
                         <i class="fa-solid fa-chevron-up"
-                           ng-style="ctrl.deviceOn[item.idx] ? {'color': 'var(--dz-accent-color)'} : {}"></i>
+                           ng-style="ctrl.blindStatus[item.idx] === 'open' ? {'color': 'var(--dz-accent-color)'} : {}"></i>
                     </button>
                     <button class="dd-qa-btn dd-qa-btn--blind dd-qa-btn--stop"
                             ng-if="item.hasStop"
@@ -189,7 +194,8 @@
                                 'dd-qa-btn--busy':    ctrl.busy[item.idx + '_Stop']
                             }"
                             title="Stop">
-                        <i class="fa-solid fa-stop"></i>
+                        <i class="fa-solid fa-stop"
+                           ng-style="ctrl.blindStatus[item.idx] === 'stopped' ? {'color': 'var(--dz-accent-color)'} : {}"></i>
                     </button>
                     <button class="dd-qa-btn dd-qa-btn--blind"
                             ng-click="ctrl.execute(item, 'Close')"
@@ -199,7 +205,48 @@
                                 'dd-qa-btn--busy':    ctrl.busy[item.idx + '_Close']
                             }"
                             title="Close">
-                        <i class="fa-solid fa-chevron-down"></i>
+                        <i class="fa-solid fa-chevron-down"
+                           ng-style="ctrl.blindStatus[item.idx] === 'closed' ? {'color': 'var(--dz-accent-color)'} : {}"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Security Panel -->
+            <div class="dd-qa-security-group" ng-if="item.type === 'security'">
+                <span class="dd-qa-label" ng-bind="item.label"></span>
+                <div class="dd-qa-security-btns">
+                    <button class="dd-qa-btn dd-qa-btn--security"
+                            ng-click="ctrl.execute(item, 0)"
+                            ng-class="{
+                                'dd-qa-btn--success': ctrl.success[item.idx + '_sec_0'],
+                                'dd-qa-btn--error':   ctrl.itemError[item.idx + '_sec_0'],
+                                'dd-qa-btn--busy':    ctrl.busy[item.idx + '_sec_0']
+                            }"
+                            title="Disarm">
+                        <i class="fa-solid fa-shield-xmark"
+                           ng-style="ctrl.securityStatus[item.idx] === 'Normal' ? {'color': 'var(--dz-accent-color)'} : {}"></i>
+                    </button>
+                    <button class="dd-qa-btn dd-qa-btn--security"
+                            ng-click="ctrl.execute(item, 1)"
+                            ng-class="{
+                                'dd-qa-btn--success': ctrl.success[item.idx + '_sec_1'],
+                                'dd-qa-btn--error':   ctrl.itemError[item.idx + '_sec_1'],
+                                'dd-qa-btn--busy':    ctrl.busy[item.idx + '_sec_1']
+                            }"
+                            title="Arm Home">
+                        <i class="fa-solid fa-house-lock"
+                           ng-style="ctrl.securityStatus[item.idx] === 'Arm Home' ? {'color': 'var(--dz-accent-color)'} : {}"></i>
+                    </button>
+                    <button class="dd-qa-btn dd-qa-btn--security"
+                            ng-click="ctrl.execute(item, 2)"
+                            ng-class="{
+                                'dd-qa-btn--success': ctrl.success[item.idx + '_sec_2'],
+                                'dd-qa-btn--error':   ctrl.itemError[item.idx + '_sec_2'],
+                                'dd-qa-btn--busy':    ctrl.busy[item.idx + '_sec_2']
+                            }"
+                            title="Arm Away">
+                        <i class="fa-solid fa-shield"
+                           ng-style="ctrl.securityStatus[item.idx] === 'Arm Away' ? {'color': 'var(--dz-accent-color)'} : {}"></i>
                     </button>
                 </div>
             </div>

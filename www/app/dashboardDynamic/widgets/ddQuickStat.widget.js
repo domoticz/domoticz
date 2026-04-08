@@ -26,6 +26,15 @@ define([
                     { key: 'showBackground', type: 'boolean', label: 'Show panel background',  default: true }
                 ]
             },
+            { key: 'fontSize', type: 'select', label: 'Font size',
+              options: [
+                  { value: '',       label: 'Default' },
+                  { value: 'larger', label: 'Larger' },
+                  { value: 'large',  label: 'Large' },
+                  { value: 'xl',     label: 'Extra large' }
+              ],
+              default: ''
+            },
             {
                 key:   'devices',
                 type:  'device-list',

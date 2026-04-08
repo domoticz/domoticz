@@ -16,7 +16,7 @@
     --dz-widget-accent:          #43a4d3;
 
     /* Energy value colors */
-    --dz-widget-sunpv:           #ffb300;
+    --dz-widget-amber:           #ffb300;
     --dz-widget-energy-export:   #66bb6a;
     --dz-widget-energy-price:    #c8a0ff;
     --dz-widget-energy-gas:      #ff7043;
@@ -633,12 +633,100 @@ body.dd-navbar-hidden .dd-toolbar {
     }
 }
 
+/* ── dd-stat-card-full: body + content chain for any widget whose template root has this class ── */
+.dd-widget-body:has(> div > * > .dd-stat-card-full) {
+    padding: 4px;
+    background: transparent;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+.dd-widget-body:has(> div > * > .dd-stat-card-full) > div {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+.dd-widget-body:has(> div > * > .dd-stat-card-full) > div > * {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Self-sufficiency: dd-balance fills height; body needs same transparent flex setup */
+.dd-widget--self-sufficiency > .dd-widget-body {
+    padding: 4px;
+    background: transparent;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+.dd-widget--self-sufficiency > .dd-widget-body > div {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+.dd-widget--self-sufficiency > .dd-widget-body > div > * {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Baro: dd-weather fills via position:absolute; inset:4px creates the card gap */
+.dd-widget--baro > .dd-widget-body {
+    padding: 0;
+    overflow: hidden;
+    background: transparent;
+}
+.dd-widget--baro .dd-weather {
+    inset: 4px;
+    border-radius: var(--dz-border-radius, 8px);
+    background: var(--dz-panel-bg);
+}
+
 /* ── Chart widgets ─────────────────────────────────────────── */
-.dd-widget--temperature-graph > .dd-widget-body,
+.dd-widget--temperature-graph > .dd-widget-body {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+    background: transparent;
+}
+.dd-widget--temperature-graph .dd-chart-container {
+    inset: 4px;
+    border-radius: var(--dz-border-radius, 8px);
+    background: var(--dz-panel-bg);
+    overflow: hidden;
+}
+.dd-widget--rain-chart > .dd-widget-body,
+.dd-widget--wind-chart > .dd-widget-body {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+    background: transparent;
+}
+.dd-widget--rain-chart .dd-chart-container,
+.dd-widget--wind-chart .dd-chart-container {
+    inset: 4px;
+    border-radius: var(--dz-border-radius, 8px);
+    background: var(--dz-panel-bg);
+    overflow: hidden;
+}
 .dd-widget--energy-chart > .dd-widget-body {
     padding: 0;
     overflow: hidden;
     position: relative;
+    background: transparent;
+}
+.dd-widget--energy-chart .dd-chart-container {
+    inset: 4px;
+    border-radius: var(--dz-border-radius, 8px);
+    background: var(--dz-panel-bg);
+    overflow: hidden;
 }
 
 .dd-chart-container {
@@ -682,17 +770,9 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 /* ── Stat Counter ─────────────────────────────────────────── */
-.dd-widget--stat-counter > .dd-widget-body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
-.dd-stat-counter {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.dd-stat-card--no-bg {
+    background: transparent !important;
+    box-shadow: none !important;
 }
 
 .dd-stat {
@@ -745,6 +825,12 @@ body.dd-navbar-hidden .dd-toolbar {
     padding: 0;
     overflow: hidden;
     position: relative;
+    background: transparent;
+}
+.dd-widget--weather .dd-weather {
+    inset: 4px;
+    border-radius: var(--dz-border-radius, 8px);
+    background: var(--dz-panel-bg);
 }
 
 .dd-weather {
@@ -768,19 +854,20 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 .dd-weather-scene-bg .fcw-scene {
-    top: 5px;
+    top: 4px;
     left: auto;
     right: 5px;
     transform: scale(0.75);
     transform-origin: top right;
 }
 
-/* Text content anchored to bottom */
+/* Text content centered vertically */
 .dd-weather-content {
     position: absolute;
     left: 10px;
     right: 10px;
-    bottom: 20px;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -905,13 +992,6 @@ body.dd-navbar-hidden .dd-toolbar {
     overflow: hidden;
 }
 
-.dd-sun {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: 4px 8px;
-}
-
 .dd-sun-cols {
     display: flex;
     align-items: center;
@@ -979,23 +1059,15 @@ body.dd-navbar-hidden .dd-toolbar {
     margin-left: 0 !important;
 }
 
-.dd-widget--kwh-summary > .dd-widget-body,
-.dd-widget--gas-summary > .dd-widget-body,
-.dd-widget--water-summary > .dd-widget-body,
-.dd-widget--p1-electricity > .dd-widget-body,
-.dd-widget--battery-status > .dd-widget-body,
-.dd-widget--energy-dashboard > .dd-widget-body,
-.dd-widget--self-sufficiency > .dd-widget-body,
-.dd-widget--setpoint > .dd-widget-body,
-.dd-widget--combo-thermostat > .dd-widget-body,
-.dd-widget--thermostat6 > .dd-widget-body {
-    background: transparent !important;
-    padding: 4px !important;
-    overflow: hidden !important;
+/* Energy dashboard: transparent body only (has its own inline padding/layout) */
+.dd-widget--energy-dashboard > .dd-widget-body {
+    background: transparent;
+    overflow: hidden;
 }
 
 .dd-dz-device {
-    height: 100%;
+    position: absolute;
+    inset: 0;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -1025,7 +1097,7 @@ body.dd-navbar-hidden .dd-toolbar {
     padding: 0 4px;
     box-sizing: border-box;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
 }
 
@@ -1115,6 +1187,7 @@ body.dd-navbar-hidden .dd-toolbar {
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
+    align-items: flex-start;
     gap: 4px;
 }
 
@@ -1123,24 +1196,6 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 /* ── Clock widget ─────────────────────────────────────────── */
-.dd-widget--clock > .dd-widget-body {
-    padding: 0;
-    overflow: hidden;
-    position: relative;
-}
-
-.dd-clock {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 8px;
-    box-sizing: border-box;
-}
-
 .dd-clock-title,
 .dd-moon-title,
 .dd-moon-illumination,
@@ -1274,10 +1329,7 @@ body.dd-navbar-hidden .dd-toolbar {
 
 /* ── System Status widget ─────────────────────────────────── */
 .dd-sysstat {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    align-items: stretch;
     gap: 8px;
     padding: 8px;
 }
@@ -1324,6 +1376,7 @@ body.dd-navbar-hidden .dd-toolbar {
 .dd-qa-btn,
 .dd-qa-blind-group,
 .dd-qa-group-group,
+.dd-qa-security-group,
 .dd-qa-dimmer-group {
     padding: 8px 6px;
     border-radius: 6px;
@@ -1564,6 +1617,58 @@ body.dd-navbar-hidden .dd-toolbar {
     width: auto;
 }
 
+.dd-qa-security-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: stretch;
+    flex: 1;
+    min-width: 80px;
+}
+
+.dd-qa-security-btns {
+    display: flex;
+    gap: 3px;
+    flex-shrink: 0;
+}
+
+.dd-qa-btn--security {
+    flex: none;
+    min-width: 0;
+    flex-direction: row;
+    align-items: center;
+    padding: 6px 10px;
+    gap: 5px;
+}
+
+.dd-quick-actions--list .dd-qa-security-group {
+    flex: none;
+    width: 100%;
+    box-sizing: border-box;
+    flex-direction: row;
+    align-items: center;
+    min-width: 0;
+    padding: 6px 10px;
+    background: var(--dz-panel-bg);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+}
+
+.dd-quick-actions--list .dd-qa-security-group > .dd-qa-label {
+    flex: 1;
+}
+
+.dd-quick-actions--list .dd-qa-security-btns {
+    width: auto;
+}
+
+/* Security panel status: sits between label (order:1) and icon (order:3) */
+.dd-quick-actions--list .dd-qa-btn--security-panel > .dd-qa-security-status {
+    order: 2;
+    opacity: 0.75;
+    white-space: nowrap;
+}
+
 /* ── Dimmer button group ────────────────────────────────── */
 .dd-qa-dimmer-group {
     display: flex;
@@ -1688,6 +1793,9 @@ body.dd-navbar-hidden .dd-toolbar {
     letter-spacing: 0;
     font-size: 0.85em;
 }
+.dd-quick-actions--list .dd-qa-label {
+    font-size: 1.1em;
+}
 .dd-quick-actions--list .dd-qs-value-wrap,
 .dd-quick-actions--list .dd-qs-secondary {
     margin-left: auto;
@@ -1750,6 +1858,12 @@ body.dd-navbar-hidden .dd-toolbar {
     padding: 0;
     overflow: hidden;
     position: relative;
+    background: transparent;
+}
+.dd-widget--image-widget .dd-image-widget {
+    inset: 4px;
+    border-radius: var(--dz-border-radius, 8px);
+    background: var(--dz-panel-bg);
 }
 
 .dd-image-widget {
@@ -1931,6 +2045,12 @@ body.dd-navbar-hidden .dd-toolbar {
     padding: 0;
     overflow: hidden;
     position: relative;
+    background: transparent;
+}
+.dd-widget--camera-feed .dd-camera-widget {
+    inset: 4px;
+    border-radius: var(--dz-border-radius, 8px);
+    background: var(--dz-panel-bg);
 }
 
 .dd-camera-widget {
@@ -1968,7 +2088,7 @@ body.dd-navbar-hidden .dd-toolbar {
     flex: 1;
     min-height: 0;
     overflow: hidden;
-    background: #000;
+    background: var(--dz-panel-bg);
 }
 
 .dd-camera-frame--clickable {
@@ -2451,8 +2571,8 @@ dd-wcp-color {
 .dd-stat-card {
     text-align: center;
     padding: 8px 12px;
-    background: var(--dz-panel-bg);
     border-radius: var(--dz-widget-stat-radius);
+    background: var(--dz-panel-bg);
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -2484,10 +2604,10 @@ dd-wcp-color {
     margin-top: 2px;
     line-height: 1.5;
 }
-.dd-energy-import  { color: var(--dz-widget-sunpv); }
+.dd-energy-import  { color: var(--dz-widget-amber); }
 .dd-energy-export  { color: var(--dz-widget-energy-export); }
 .dd-energy-price   { color: var(--dz-widget-energy-price);  }
-.dd-energy-solar   { color: var(--dz-widget-sunpv);  }
+.dd-energy-solar   { color: var(--dz-widget-amber);  }
 .dd-energy-gas     { color: var(--dz-widget-energy-gas);    }
 .dd-energy-water   { color: var(--dz-widget-energy-water);  }
 .dd-energy-battery { color: var(--dz-widget-accent); }
@@ -2568,7 +2688,7 @@ dd-wcp-color {
 .dd-balance-bar-fill {
     height: 100%;
     border-radius: 3px;
-    background: linear-gradient(to right, var(--dz-accent-red), var(--dz-widget-sunpv), var(--dz-widget-energy-export));
+    background: linear-gradient(to right, var(--dz-accent-red), var(--dz-widget-amber), var(--dz-widget-energy-export));
     transition: width 0.5s ease;
 }
 
@@ -2623,11 +2743,14 @@ dd-wcp-color {
 }
 
 /* ── Text Sensor Widget ───────────────────────────────────── */
+.dd-widget--text-sensor > .dd-widget-body { padding: 4px; background: transparent; }
 .dd-text-sensor {
     padding: 8px;
     height: 100%;
     overflow-y: auto;
     box-sizing: border-box;
+    border-radius: var(--dz-border-radius, 8px);
+    background: var(--dz-panel-bg);
 }
 .dd-text-sensor-inner {
     display: flex;
@@ -2726,7 +2849,6 @@ dd-wcp-color {
 .dd-log-entry-error  .dd-log-level { color: var(--dz-accent-red); }
 
 /* ── Moon Phase Widget ────────────────────────────────────── */
-.dd-moon { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; text-align: center; gap: 4px; }
 .dd-moon-emoji { font-size: 3em; line-height: 1.1; color: var(--dz-widget-moon-color); }
 .dd-moon-phase { font-size: 0.9em; font-weight: 600; }
 .dd-moon-next { margin-top: 4px; }
@@ -2756,6 +2878,11 @@ dd-wcp-color {
 }
 
 /* ── Google Calendar Widget ───────────────────────────────── */
+.dd-widget--google-calendar > .dd-widget-body { padding: 4px; background: transparent; overflow: hidden; }
+.dd-widget--google-calendar .dd-calendar {
+    border-radius: var(--dz-border-radius, 8px);
+    background: var(--dz-panel-bg);
+}
 .dd-calendar { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
 .dd-calendar-header { font-size: 0.9em; font-weight: 600; margin-bottom: 8px; flex-shrink: 0; }
 .dd-calendar-body { flex: 1; overflow-y: auto; }
@@ -2769,6 +2896,11 @@ dd-wcp-color {
 .dd-calendar-empty { text-align: center; margin-top: 16px; }
 
 /* ── Battery Monitor Widget ───────────────────────────────── */
+.dd-widget--kwh-top-consumers > .dd-widget-body { padding: 4px; background: transparent; overflow: hidden; }
+.dd-widget--kwh-top-consumers .dd-battery-monitor {
+    border-radius: var(--dz-border-radius, 8px);
+    background: var(--dz-panel-bg);
+}
 .dd-battery-monitor { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
 .dd-battery-monitor-header { margin-bottom: 8px; flex-shrink: 0; }
 .dd-battery-monitor-title { font-size: 0.9em; font-weight: 600; }
@@ -2809,8 +2941,6 @@ body.dd-standby::after {
 }
 
 /* ── Gauge Widget ─────────────────────────────────────────── */
-.dd-widget--gauge > .dd-widget-body { overflow: hidden; }
-.dd-gauge-wrap { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px; }
 .dd-gauge-svg-wrap { position: relative; width: 100%; max-width: 220px; }
 .dd-gauge-svg { width: 100%; height: auto; display: block; }
 .dd-gauge-bg { stroke: rgba(255,255,255,0.1); }
@@ -2820,6 +2950,10 @@ body.dd-standby::after {
 .dd-gauge-title { margin-bottom: 4px; }
 
 /* ── Quick Stat widget ─────────────────────────────── */
+.dd-quick-stat > .dd-chart-unconfigured {
+    grid-column: 1 / -1;
+    height: auto;
+}
 .dd-quick-stat {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
@@ -2923,3 +3057,8 @@ body.dd-standby::after {
     gap: 8px;
     font-size: 0.85em;
 }
+
+/* ── List-mode font size modifiers ───────────────────────── */
+.dd-list-font--larger { font-size: 1.1em; }
+.dd-list-font--large  { font-size: 1.25em; }
+.dd-list-font--xl     { font-size: 1.5em; }

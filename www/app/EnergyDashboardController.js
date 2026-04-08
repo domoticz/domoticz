@@ -752,6 +752,7 @@ define(['app'], function (app) {
 			// Self-sufficiency: fraction of house consumption covered by solar + battery discharge
 			$scope.fSelfSufficiency = calcSelfSufficiency(
 				$scope.fDaySolar,
+				$scope.fDayNetDeliv,
 				$scope.idBattEnergyOut != -1 ? $scope.fBattEnergyOut : 0,
 				$scope.fTotalHomeUsage
 			);

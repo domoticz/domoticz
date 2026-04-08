@@ -103,7 +103,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                     && parseFloat(device.CounterDelivToday) > 0) {
                                 self.cards.push({ label: $.t('Today'), lines: [
                                     { icon: 'fa-arrow-down', iconColor: '#ff6b6b', value: todayValue, tooltip: $.t('Usage') },
-                                    { icon: 'fa-arrow-up', iconColor: '#4ecdc4', value: String(device.CounterDelivToday), tooltip: $.t('Return') }
+                                    { icon: 'fa-arrow-up', iconColor: '#4ecdc4', value: '-' + String(device.CounterDelivToday), tooltip: $.t('Return') }
                                 ]});
                             } else {
                                 self.cards.push({ label: $.t('Today'), value: todayValue });
@@ -225,6 +225,11 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                 if (data && data.spikesFixed > 0) parts.push($.t('Fixed') + ' ' + data.spikesFixed + ' ' + $.t('counter spike(s).'));
                                 if (data && data.kwhStatsFixed) parts.push($.t('Weekly pattern fixed.'));
                                 if (data && data.pricesFixed > 0) parts.push($.t('Repaired') + ' ' + data.pricesFixed + ' ' + $.t('daily rows') + '.');
+                                // Append detail lines returned by the backend (e.g. P1 calendar/shortlog corrections)
+                                if (data && Array.isArray(data.result) && data.result.length > 0) {
+                                    parts.push('');
+                                    parts = parts.concat(data.result);
+                                }
                                 var msg = parts.length > 0 ? parts.join('\n') : $.t('No issues found.');
                                 bootbox.alert(msg, function () { $route.reload(); });
                             });

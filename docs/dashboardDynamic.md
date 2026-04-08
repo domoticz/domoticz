@@ -1,6 +1,6 @@
 # Dashboard Dynamic
 
-**Revision:** 2026-04-05
+**Revision:** 2026-04-07
 **Minimum build:** 17635
 
 ---
@@ -211,6 +211,23 @@ Shows today's sunrise and sunset times, derived from the configured location in 
 
 ---
 
+### Barometer
+**Category:** Weather
+
+Displays barometric pressure and weather forecast string from a barometer device.
+
+**Configuration:**
+
+| Field | Description |
+|-------|-------------|
+| Barometer device | Any Temp+Baro or Temp+Hum+Baro device |
+| Custom Title | Optional override |
+| Show panel background | Show the widget panel background (default: on) |
+
+Live: updates on WebSocket `device_update` for the configured device.
+
+---
+
 ### Weather
 **Category:** Weather
 
@@ -263,6 +280,7 @@ Highcharts chart showing temperature history.
 | Device | Temperature / Temp+Hum type device |
 | Chart type | See table below |
 | Custom title | Optional override |
+| Show panel background | Show the widget panel background (default: on) |
 
 **Chart types:**
 
@@ -290,6 +308,7 @@ Column or area chart for counter and energy devices (kWh, Gas, Water, P1, generi
 | Device | Counter / kWh / Gas / Water / P1 Meter device |
 | Chart type | See table below |
 | Custom title | Optional override |
+| Show panel background | Show the widget panel background (default: on) |
 
 **Chart types:**
 
@@ -320,6 +339,7 @@ Wind data charts for a Wind type device.
 | Device | Wind type device |
 | Chart type | See table below |
 | Title | Optional override |
+| Show panel background | Show the widget panel background (default: on) |
 
 **Chart types:**
 
@@ -345,6 +365,7 @@ Rain data charts for a Rain type device.
 | Device | Rain type device |
 | Chart type | See table below |
 | Title | Optional override |
+| Show panel background | Show the widget panel background (default: on) |
 
 **Chart types:**
 
@@ -374,6 +395,7 @@ Circular arc gauge showing the current value of any numeric device against a con
 | Warn threshold | 50 | Value where colour shifts from first to second zone |
 | Critical threshold | 80 | Value where colour shifts from second to third zone |
 | Threshold mode | low-is-good | **low-is-good** (e.g. CPU load): green → yellow → red as value rises. **high-is-good** (e.g. battery %): red → yellow → green as value rises |
+| Show panel background | on | Show the widget panel background |
 
 The gauge is rendered as a pure SVG arc — no Highcharts required. The fill animates smoothly on value changes.
 
@@ -411,6 +433,7 @@ Compact stat card showing current power (W) and today's energy total (kWh).
 | Device | Energy / Counter type device |
 | Title | Optional override (defaults to device name) |
 | Color | Token color: import (orange) / export (green) / solar (yellow) / gas (red) |
+| Show panel background | Show the widget panel background (default: on) |
 
 Live: refreshes every 30 seconds and on WebSocket device updates.
 
@@ -427,6 +450,7 @@ Compact stat card showing today's gas usage and cumulative total.
 |-------|-------------|
 | Device | Gas type device |
 | Title | Optional override |
+| Show panel background | Show the widget panel background (default: on) |
 
 Live: refreshes every 60 seconds and on WebSocket device updates.
 
@@ -443,6 +467,7 @@ Compact stat card showing today's water usage, year-to-date total, and optionall
 |-------|-------------|
 | Device | Water meter device |
 | Title | Optional override (defaults to device name) |
+| Show panel background | Show the widget panel background (default: on) |
 
 Displays today's usage (in Liters or m³ depending on device configuration), the year-to-date total derived from the annual graph, and the day's water cost if the price is configured (price = 1000 is treated as "not configured" and hidden).
 
@@ -462,6 +487,7 @@ Dedicated widget for Dutch P1 smart meters showing current import/export power a
 | Device | P1 Electricity Meter device |
 | Title | Optional override |
 | Show price | Show today's cost (if reported by meter) |
+| Show panel background | Show the widget panel background (default: on) |
 
 Displays an up-arrow (exporting) or down-arrow (importing) with current watts, coloured green for export and orange for import. Sub-line shows today's totals for both directions.
 
@@ -485,6 +511,7 @@ Battery energy storage widget showing today's imported/exported kWh, net, and li
 | Battery watts | Manual: current power device |
 | Battery voltage | Manual: voltage sensor |
 | Title | Optional override |
+| Show panel background | Show the widget panel background (default: on) |
 
 When **Auto mode** is on, device IDs are read automatically from `getenergydashboarddevices` — zero extra configuration if the Energy Dashboard is already set up.
 
@@ -547,6 +574,7 @@ Displays the text value (`Data` field) of a Domoticz Text sensor device.
 | Show title | on | Show device name as header |
 | Font size | 14px | Text size in pixels |
 | Refresh interval | 60s | Seconds between refresh |
+| Show panel background | on | Show the widget panel background |
 
 Content preserves whitespace and line breaks. Live: re-fetches immediately on WebSocket `device_update` for the configured device.
 
@@ -603,16 +631,30 @@ Live: WebSocket `device_update` / `scene_update` + 60s polling fallback.
 ### Room / Plan
 **Category:** Devices
 
-Shows all devices belonging to a specific Domoticz plan (room).
+Shows all devices belonging to a specific Domoticz plan (room), including scenes and groups. Supports two display modes selectable in settings.
+
+**Grid mode (default):** Each device is rendered using its native widget tile — the same tiles used in the classic dashboard.
+
+**List mode:** Displays all devices as a compact vertical list. Interactive device types are fully controllable:
+
+| Type | Behaviour |
+|------|-----------|
+| Switch / Scene | Toggle button; icon tinted accent when device is On |
+| Dimmer | Label + slider icon + power toggle. Slider icon opens inline dim slider; power icon toggles On/Off |
+| Selector switch | Shows current level; click opens inline level picker |
+| Blind | Up / Close buttons, plus Stop if the device supports it |
+| Group | On and Off buttons as a compact pair |
+| Sensor / Utility | Read-only row: icon, device name, current value and unit |
 
 **Configuration:**
 
 | Field | Description |
 |-------|-------------|
-| Plan / Room ID | Numeric ID of the plan |
+| Room / Plan | Select the Domoticz plan to display |
+| List layout | Toggle between grid (default) and list mode |
 | Custom Title | Optional override |
 
-Live: WebSocket `device_update` / `scene_update`.
+Live: WebSocket `device_update` / `scene_update` + 60s polling fallback.
 
 ---
 
@@ -627,6 +669,7 @@ Display and control a Domoticz setpoint device with +/− step buttons and a cli
 |-------|---------|-------------|
 | Device | — | Setpoint type device |
 | Title | device name | Optional override |
+| Show panel background | on | Show the widget panel background |
 
 Step, min, max, and unit are read automatically from the device. Clicking the value opens a number input popup (pre-filled with current value) for direct entry. Commands use `setdevice&idx=X&setpoint=Y`. Live: WebSocket device updates re-fetch the current value.
 
@@ -644,6 +687,7 @@ Combined widget showing current temperature from a sensor alongside setpoint con
 | Temperature sensor | — | Temp / Temp+Hum sensor |
 | Setpoint device | — | Setpoint device |
 | Title | — | Optional override |
+| Show panel background | on | Show the widget panel background |
 
 Step, min, max, and unit are read automatically from the setpoint device. Displays the current temperature large and prominent, with +/− setpoint controls below. Both devices are fetched in a single API call.
 
@@ -660,6 +704,7 @@ Widget for the Thermostat6 device type. Displays all available measured values (
 |-------|---------|-------------|
 | Device | — | Thermostat6 device |
 | Title | device name | Optional override |
+| Show panel background | on | Show the widget panel background |
 
 Step, min, and max are read automatically from the device.
 
@@ -725,6 +770,7 @@ Displays upcoming events from a Google Calendar or any ICS-compatible calendar, 
 | Show time | on | Show event start time |
 | Refresh interval | 900s | Seconds between fetches (minimum 60) |
 | Title | Calendar | Optional override |
+| Show panel background | on | Show the widget panel background |
 
 **Getting a Google Calendar ICS URL:**
 In Google Calendar → Settings → click the calendar → *Integrate calendar* → copy the **Secret address in iCal format** (ends in `.ics`).
@@ -836,6 +882,30 @@ To add an action:
 
 ---
 
+### Quick Stat
+**Category:** Custom Content
+
+Compact status panel showing current values for any mix of devices — temperature, switches, kWh meters, humidity, and more. Useful as a at-a-glance status overview.
+
+Each row shows an icon, device name (or custom label), current value, and unit. Switch/light states are highlighted in accent colour when On.
+
+**Display modes:**
+
+- **Grid mode (default):** Devices shown as small cards in a responsive grid (auto-fill, min 110px)
+- **List mode:** Devices shown as full-width rows — icon left, name, value + unit right
+
+**Configuration:**
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| List layout | off | Display as vertical list instead of a grid |
+| Show panel background | on | Show the widget panel background |
+| Devices | — | Add any mix of devices using the device list editor. Drag the grip handle to reorder; pencil to rename; trash to remove |
+
+Live: updates instantly from WebSocket `device_update` events for all configured devices.
+
+---
+
 ### Text Note
 **Category:** Custom Content
 
@@ -900,6 +970,7 @@ Displays a remote image from a URL, with optional auto-refresh.
 | Caption | — | Optional label shown over the image |
 | Fit | Contain | Contain (full image visible) / Cover (fill area, crop) / Stretch to fill |
 | Refresh interval | 0 | Seconds between reloads; 0 = no auto-refresh |
+| Show panel background | on | Show the widget panel background |
 
 ---
 
@@ -977,6 +1048,7 @@ Each row shows the device name, current power draw (W), and today's total (kWh).
 | Max devices to show | 20 | Maximum number of rows displayed |
 | Exclude device IDX | *(empty)* | Semicolon-separated list of device IDX values to hide (e.g. `42;107`) |
 | Refresh interval | 300s | Seconds between full refresh from the backend |
+| Show panel background | on | Show the widget panel background |
 
 ---
 
@@ -998,7 +1070,13 @@ Live: reloads on every WebSocket device update and polls every 15 seconds.
 ### System Status
 **Category:** System
 
-Shows Domoticz version, build number, and hardware count. No configuration required.
+Shows Domoticz version, build number, and hardware count.
+
+**Configuration:**
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| Show panel background | on | Show the widget panel background |
 
 ---
 
@@ -1010,6 +1088,7 @@ Shows Domoticz version, build number, and hardware count. No configuration requi
 | Device / Scene | Instant — WebSocket |
 | Stat Counter | Instant — WebSocket (no HTTP) |
 | Weather | Instant — WebSocket per sensor |
+| Barometer | Instant — WebSocket |
 | Activity Log | Instant — WebSocket |
 | Favorites / Room | Instant — WebSocket + 60s fallback |
 | Temperature Graph | 60s debounced reload on device update |
@@ -1035,6 +1114,7 @@ Shows Domoticz version, build number, and hardware count. No configuration requi
 | Timeout Monitor | Configurable interval (default 5 min) |
 | kWh Top Consumers | Configurable interval (default 5 min) + instant WebSocket per tracked device |
 | Custom Chart | 60s debounced reload on config/range change |
+| Quick Stat | Instant — WebSocket per device |
 | Sun Info / Text Note / HTML / Image | Static |
 | Website Embed | Configurable auto-reload interval (default off) |
 | Camera Feed | Configurable interval (default 5s) |

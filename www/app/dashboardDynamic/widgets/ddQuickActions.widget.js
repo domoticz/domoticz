@@ -25,6 +25,15 @@ define([
                     { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
                 ]
             },
+            { key: 'fontSize', type: 'select', label: 'Font size',
+              options: [
+                  { value: '',       label: 'Default' },
+                  { value: 'larger', label: 'Larger' },
+                  { value: 'large',  label: 'Large' },
+                  { value: 'xl',     label: 'Extra large' }
+              ],
+              default: ''
+            },
             {
                 key:          'actions',
                 type:         'action-list',
@@ -57,6 +66,8 @@ define([
                 ctrl.showLevelPicker  = {};
                 ctrl.dimLevel         = {};
                 ctrl.showDimSlider    = {};
+                ctrl.blindStatus      = {};
+                ctrl.securityStatus   = {};
 
                 ctrl.$onInit = function() {
                     parseActions();
@@ -82,16 +93,17 @@ define([
                         } else if (a.type === 'group') {
                             ctrl.deviceOn[a.idx] = (updated.Status === 'On');
                         } else if (a.type === 'blind') {
-                            ctrl.deviceOn[a.idx] = (updated.Status === 'Open' ||
-                                (updated.Status && updated.Status.indexOf('Set ') === 0) ||
-                                updated.Status === 'Stopped');
+                            ctrl.blindStatus[a.idx] = getBlindStatus(updated.Status);
+                        } else if (a.type === 'security') {
+                            ctrl.securityStatus[a.idx] = updated.Status;
                         } else if (a.type === 'dimmer') {
                             ctrl.deviceOn[a.idx] = (updated.Status === 'On');
                             if (updated.LevelInt !== undefined) {
                                 ctrl.dimLevel[a.idx] = updated.LevelInt;
                             }
                         } else {
-                            ctrl.deviceOn[a.idx] = (updated.Status === 'On');
+                            var isLocked = a.switchType === 'Door Lock' || a.switchType === 'Door Lock Inverted';
+                            ctrl.deviceOn[a.idx] = isLocked ? (updated.Status === 'Unlocked') : (updated.Status === 'On');
                         }
                     });
                 });
@@ -109,7 +121,17 @@ define([
                 function decodeLevelNames(d) {
                     var raw;
                     try { raw = b64DecodeUnicode(d.LevelNames); } catch(e) { raw = d.LevelNames || ''; }
-                    return raw.split('|').map(function(n, i) { return { value: i * 10, label: n }; });
+                    var levels = raw.split('|').map(function(n, i) { return { value: i * 10, label: n }; });
+                    if (d.LevelOffHidden) {
+                        levels = levels.filter(function(l) { return l.value !== 0; });
+                    }
+                    return levels;
+                }
+
+                function getBlindStatus(status) {
+                    if (status === 'Open' || (status && status.indexOf('Set ') === 0)) { return 'open'; }
+                    if (status === 'Stopped') { return 'stopped'; }
+                    return 'closed';
                 }
 
                 function getLevelLabel(idx, levelInt) {
@@ -137,6 +159,15 @@ define([
 
                 function fetchDeviceState(action) {
                     if (action.type === 'scene') { return; }
+                    if (action.type === 'security') {
+                        $http.get('json.htm', { params: { type: 'command', param: 'getdevices', rid: action.idx } })
+                            .then(function(resp) {
+                                var item = resp.data && resp.data.result && resp.data.result[0];
+                                if (!item) { return; }
+                                ctrl.securityStatus[action.idx] = item.Status;
+                            });
+                        return;
+                    }
                     if (action.type === 'dimmer') {
                         $http.get('json.htm', { params: { type: 'command', param: 'getdevices', rid: action.idx } })
                             .then(function(resp) {
@@ -170,11 +201,11 @@ define([
                                 ctrl.currentLevel[action.idx]     = item.LevelInt;
                                 ctrl.currentLevelText[action.idx] = getLevelLabel(action.idx, item.LevelInt);
                             } else if (action.type === 'blind') {
-                                ctrl.deviceOn[action.idx] = (item.Status === 'Open' ||
-                                    (item.Status && item.Status.indexOf('Set ') === 0) ||
-                                    item.Status === 'Stopped');
+                                ctrl.blindStatus[action.idx] = getBlindStatus(item.Status);
                             } else {
-                                ctrl.deviceOn[action.idx] = (item.Status === 'On');
+                                var isLocked = item.SwitchType === 'Door Lock' || item.SwitchType === 'Door Lock Inverted';
+                                ctrl.deviceOn[action.idx] = isLocked ? (item.Status === 'Unlocked') : (item.Status === 'On');
+                                if (isLocked) { action.switchType = item.SwitchType; }
                                 if (item.SwitchType === 'Dimmer') {
                                     action.type = 'dimmer';
                                     ctrl.dimLevel[action.idx] = item.LevelInt !== undefined ? item.LevelInt : 100;
@@ -248,6 +279,10 @@ define([
                 };
 
                 ctrl.execute = function(action, cmd) {
+                    if (action.type === 'security') {
+                        window.location.href = 'secpanel/';
+                        return;
+                    }
                     var busyKey = (action.type === 'blind' || action.type === 'group')
                         ? action.idx + '_' + cmd
                         : action.idx;
