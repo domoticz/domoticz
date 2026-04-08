@@ -53,7 +53,7 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$q', 'ddDeviceClassifier', function($scope, $http, $interval, $q, ddDeviceClassifier) {
+            controller: ['$scope', '$http', '$interval', '$q', '$location', 'ddDeviceClassifier', function($scope, $http, $interval, $q, $location, ddDeviceClassifier) {
                 var ctrl = this;
                 ctrl.items   = [];
                 ctrl.loading = false;
@@ -160,6 +160,10 @@ define([
                     if (cancelToken) { cancelToken.resolve(); cancelToken = null; }
                     if (timer) { $interval.cancel(timer); timer = null; }
                 });
+
+                ctrl.goToLog = function(item) {
+                    $location.path('/Devices/' + item.idx + '/Log');
+                };
 
                 ctrl.$onInit = loadAll;
             }]

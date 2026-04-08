@@ -90,7 +90,7 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$q', function($scope, $http, $interval, $q) {
+            controller: ['$scope', '$http', '$interval', '$q', '$location', function($scope, $http, $interval, $q, $location) {
                 var ctrl      = this;
                 ctrl.title    = '';
                 ctrl.value    = null;
@@ -197,6 +197,11 @@ define([
                         if (val !== old) { load(); }
                     }
                 );
+
+                ctrl.goToLog = function() {
+                    var cfg = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
+                    if (cfg.deviceIdx) { $location.path('/Devices/' + cfg.deviceIdx + '/Log'); }
+                };
 
                 ctrl.$onInit = load;
             }]

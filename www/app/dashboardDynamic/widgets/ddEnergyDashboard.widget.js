@@ -106,6 +106,7 @@ define([
                     battWatt:    -1,
                     battVolt:    -1
                 };
+                ctrl.ids = ids; // exposed to template for ng-href log links
 
                 function parseWatt(str) {
                     if (!str) { return 0; }

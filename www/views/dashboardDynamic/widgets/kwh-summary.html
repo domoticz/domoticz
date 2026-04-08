@@ -10,11 +10,12 @@
     <div ng-if="ctrl.widgetDef.config.deviceIdx">
         <div class="dd-stat-label" ng-bind="ctrl.title"></div>
 
-        <div ng-if="ctrl.usageWatt !== null"
-             class="dd-stat-value"
-             ng-class="ctrl.colorClass()">
-            <i class="fa fa-bolt"></i> {{ctrl.usageWatt}} W
-        </div>
+        <a ng-if="ctrl.usageWatt !== null" class="dd-stat-link"
+           ng-href="#/Devices/{{ctrl.widgetDef.config.deviceIdx}}/Log">
+            <div class="dd-stat-value" ng-class="ctrl.colorClass()">
+                <i class="fa fa-bolt"></i> {{ctrl.usageWatt}} W
+            </div>
+        </a>
         <div ng-if="ctrl.usageWatt === null" class="dd-stat-value">
             &mdash;
         </div>

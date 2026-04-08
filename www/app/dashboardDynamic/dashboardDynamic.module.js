@@ -57,7 +57,6 @@ define(['app'], function(app) {
         }
 
         var IMAGE_ICON_MAP = {
-            'Humidity':        'fa-solid fa-droplet',
             'Fan':             'fa-solid fa-fan',
             'Fireplace':       'fa-solid fa-fire',
             'Heating':         'fa-solid fa-fire-flame-curved',
@@ -129,6 +128,13 @@ define(['app'], function(app) {
             }
             if (d.Humidity !== undefined) {
                 return { value: String(d.Humidity), isOn: false, unit: '%', unit2: null, secondValue: null, typeClass: 'humidity' };
+            }
+            // P1 Smart Meter — has both CounterToday (import) and CounterDelivToday (export)
+            if (d.CounterToday !== undefined && d.CounterDelivToday !== undefined) {
+                var p1Usage  = (d.Usage  || '').trim() || '0 Watt';
+                var p1Value  = 'Usage: ' + d.CounterToday + ', Actual: ' + p1Usage;
+                var p1Second = 'Return: ' + d.CounterDelivToday;
+                return { value: p1Value, secondValue: p1Second, isOn: false, unit: '', unit2: null, typeClass: 'p1' };
             }
             return { value: roundIfLarge(d.Data || '\u2014'), isOn: false, unit: '', unit2: null, secondValue: null, typeClass: 'generic' };
         }

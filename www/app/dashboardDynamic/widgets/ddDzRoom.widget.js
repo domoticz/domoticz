@@ -46,8 +46,8 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$timeout', '$q', 'ddDeviceClassifier', 'ddToast',
-                function($scope, $http, $interval, $timeout, $q, ddDeviceClassifier, ddToast) {
+            controller: ['$scope', '$http', '$interval', '$timeout', '$q', '$location', 'ddDeviceClassifier', 'ddToast',
+                function($scope, $http, $interval, $timeout, $q, $location, ddDeviceClassifier, ddToast) {
                 var ctrl = this;
                 ctrl.devices           = [];
                 ctrl.listItems         = [];
@@ -149,6 +149,11 @@ define([
                         return item;
                     });
                 }
+
+                ctrl.goToLog = function(item, $event) {
+                    if ($event) { $event.stopPropagation(); }
+                    $location.path('/Devices/' + item.idx + '/Log');
+                };
 
                 ctrl.execute = function(item, cmd) {
                     var busyKey = (item.type === 'blind' || item.type === 'group')

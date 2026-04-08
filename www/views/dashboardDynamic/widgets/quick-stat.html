@@ -21,7 +21,7 @@
     <div class="dd-qs-item"
          ng-repeat="item in ctrl.items track by $index"
          ng-class="{'dd-qs-item--on': item.isOn}">
-        <i ng-class="item.icon"></i>
+        <i ng-class="item.icon" class="dd-log-icon" ng-click="ctrl.goToLog(item)" title="View log"></i>
         <span class="dd-qs-label" ng-bind="item.label"></span>
         <span class="dd-qs-value-wrap">
             <span class="dd-qs-value"

@@ -1538,7 +1538,11 @@ body.dd-navbar-hidden .dd-toolbar {
     gap: 8px;
 }
 
-/* Label on left (takes all space), icon on right */
+/* Icon left, label fills middle, value/level on right */
+.dd-quick-actions--list .dd-qa-btn:not(.dd-qa-btn--blind) > i {
+    order: 0;
+    flex-shrink: 0;
+}
 .dd-quick-actions--list .dd-qa-btn:not(.dd-qa-btn--blind) > .dd-qa-label {
     order: 1;
     flex: 1;
@@ -1546,9 +1550,16 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 .dd-quick-actions--list .dd-qa-btn:not(.dd-qa-btn--blind) > .dd-qa-level-text {
     order: 2;
+    font-size: 1em;
+    font-weight: 600;
+    opacity: 1;
 }
-.dd-quick-actions--list .dd-qa-btn:not(.dd-qa-btn--blind) > i {
+.dd-quick-actions--list .dd-qa-btn:not(.dd-qa-btn--blind) > .dd-qa-status-text {
     order: 3;
+    flex-shrink: 0;
+    font-size: 1em;
+    font-weight: 600;
+    white-space: nowrap;
 }
 
 /* Blind group: label left, buttons right */
@@ -1797,14 +1808,32 @@ body.dd-navbar-hidden .dd-toolbar {
 .dd-quick-actions--list .dd-qa-label {
     font-size: 1.1em;
 }
-.dd-quick-actions--list .dd-qs-value-wrap,
-.dd-quick-actions--list .dd-qs-secondary {
+.dd-quick-actions--list .dd-qs-value-col {
     margin-left: auto;
     flex-shrink: 0;
-    max-width: 45%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    max-width: 55%;
+    overflow: hidden;
+}
+.dd-quick-actions--list .dd-qs-value-col--stack {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+    max-width: 60%;
+}
+.dd-quick-actions--list .dd-qs-value-wrap,
+.dd-quick-actions--list .dd-qs-secondary {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+.dd-quick-actions--list .dd-qs-value-col--stack .dd-qs-value-wrap,
+.dd-quick-actions--list .dd-qs-value-col--stack .dd-qs-secondary {
+    white-space: normal;
+    text-align: right;
 }
 
 /* ── iFrame Embed widget ──────────────────────────────────── */
@@ -2948,6 +2977,8 @@ body.dd-standby::after {
 .dd-gauge-fill { transition: stroke-dasharray 0.6s ease, stroke 0.4s ease; }
 .dd-gauge-text-value { font-size: 14px; font-weight: 700; fill: var(--dz-body-text); }
 .dd-gauge-text-unit  { font-size: 8px; fill: var(--dz-body-text); opacity: 0.7; }
+.dd-gauge-text-link  { cursor: pointer; }
+.dd-gauge-text-link:hover { fill: var(--dz-accent-color); opacity: 1; }
 .dd-gauge-title { margin-bottom: 4px; }
 
 /* ── Quick Stat widget ─────────────────────────────── */
@@ -3003,6 +3034,14 @@ body.dd-standby::after {
 .dd-qs-item--on i {
     color: var(--dz-accent-color);
     opacity: 1;
+}
+.dd-log-icon {
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.dd-log-icon:hover {
+    opacity: 1 !important;
+    color: var(--dz-accent-color) !important;
 }
 .dd-qs-label { font-size: 0.72em; color: var(--dz-body-text); }
 .dd-qs-unit { font-size: 0.72em; color: var(--dz-body-text); }

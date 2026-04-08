@@ -56,14 +56,16 @@
             <!-- Stat (sensor, utility) — read-only Quick Stat style -->
             <div class="dd-qs-item" ng-if="item.type === 'stat'"
                  ng-class="{'dd-qs-item--on': item.isOn}">
-                <i ng-class="item.icon"></i>
+                <i ng-class="item.icon" class="dd-log-icon" ng-click="ctrl.goToLog(item)" title="View log"></i>
                 <span class="dd-qs-label" ng-bind="item.label"></span>
-                <span class="dd-qs-value-wrap">
-                    <span class="dd-qs-value" ng-class="{'dd-qs-value--on': item.isOn}" ng-bind="item.value"></span><span class="dd-qs-unit" ng-if="item.unit" ng-bind="item.unit"></span>
-                </span>
-                <span ng-if="item.secondValue !== null" class="dd-qs-secondary">
-                    <span class="dd-qs-value" ng-bind="item.secondValue"></span><span class="dd-qs-unit" ng-if="item.unit2" ng-bind="item.unit2"></span>
-                </span>
+                <div class="dd-qs-value-col" ng-class="{'dd-qs-value-col--stack': item.typeClass === 'p1'}">
+                    <span class="dd-qs-value-wrap">
+                        <span class="dd-qs-value" ng-class="{'dd-qs-value--on': item.isOn}" ng-bind="item.value"></span><span class="dd-qs-unit" ng-if="item.unit" ng-bind="item.unit"></span>
+                    </span>
+                    <span ng-if="item.secondValue !== null" class="dd-qs-secondary">
+                        <span class="dd-qs-value" ng-bind="item.secondValue"></span><span class="dd-qs-unit" ng-if="item.unit2" ng-bind="item.unit2"></span>
+                    </span>
+                </div>
             </div>
 
             <!-- Switch / Scene — single button -->
@@ -76,9 +78,12 @@
                         'dd-qa-btn--busy':    ctrl.busy[item.idx]
                     }"
                     title="{{ item.label }}">
-                <i ng-class="item.icon"
-                   ng-style="ctrl.deviceOn[item.idx] ? {'color': 'var(--dz-accent-color)'} : {}"></i>
+                <i ng-class="item.icon" class="dd-log-icon"
+                   ng-click="ctrl.goToLog(item, $event)"
+                   ng-style="ctrl.deviceOn[item.idx] ? {'color': 'var(--dz-accent-color)'} : {}"
+                   title="View log"></i>
                 <span class="dd-qa-label" ng-bind="item.label"></span>
+                <span class="dd-qa-status-text" ng-if="item.value" ng-bind="item.value"></span>
             </button>
 
             <!-- Dimmer -->
@@ -99,8 +104,10 @@
                                 'dd-qa-btn--busy':    ctrl.busy[item.idx]
                             }"
                             title="{{ item.label }}">
-                        <i ng-class="item.icon"
-                           ng-style="ctrl.deviceOn[item.idx] ? {'color': 'var(--dz-accent-color)'} : {}"></i>
+                        <i ng-class="item.icon" class="dd-log-icon"
+                           ng-click="ctrl.goToLog(item, $event)"
+                           ng-style="ctrl.deviceOn[item.idx] ? {'color': 'var(--dz-accent-color)'} : {}"
+                           title="View log"></i>
                     </button>
                 </div>
                 <div class="dd-qa-dim-slider-row"
@@ -125,7 +132,9 @@
                             'dd-qa-btn--busy':    ctrl.busy[item.idx + '_sel']
                         }"
                         title="{{ item.label }}">
-                    <i ng-class="item.icon || 'fa-solid fa-sliders'"></i>
+                    <i ng-class="item.icon || 'fa-solid fa-sliders'" class="dd-log-icon"
+                       ng-click="ctrl.goToLog(item, $event)"
+                       title="View log"></i>
                     <span class="dd-qa-label" ng-bind="item.label"></span>
                     <span class="dd-qa-level-text" ng-bind="ctrl.currentLevelText[item.idx]"></span>
                 </button>
@@ -143,6 +152,7 @@
 
             <!-- Group (On/Off) -->
             <div class="dd-qa-group-group" ng-if="item.type === 'group'">
+                <i ng-class="item.icon" class="dd-log-icon" ng-click="ctrl.goToLog(item)" title="View log"></i>
                 <span class="dd-qa-label" ng-bind="item.label"></span>
                 <div class="dd-qa-group-btns">
                     <button class="dd-qa-btn dd-qa-btn--group"
@@ -172,6 +182,7 @@
 
             <!-- Blind -->
             <div class="dd-qa-blind-group" ng-if="item.type === 'blind'">
+                <i ng-class="item.icon" class="dd-log-icon" ng-click="ctrl.goToLog(item)" title="View log"></i>
                 <span class="dd-qa-label" ng-bind="item.label"></span>
                 <div class="dd-qa-blind-btns">
                     <button class="dd-qa-btn dd-qa-btn--blind"
@@ -213,6 +224,7 @@
 
             <!-- Security Panel -->
             <div class="dd-qa-security-group" ng-if="item.type === 'security'">
+                <i ng-class="item.icon" class="dd-log-icon" ng-click="ctrl.goToLog(item)" title="View log"></i>
                 <span class="dd-qa-label" ng-bind="item.label"></span>
                 <div class="dd-qa-security-btns">
                     <button class="dd-qa-btn dd-qa-btn--security"
