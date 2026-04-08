@@ -83,8 +83,8 @@ define([
 
                 ctrl.levelColor = function(level) {
                     if (level <= 10) { return 'var(--dz-accent-red)'; }
-                    if (level <= 25) { return 'var(--dz-widget-sunpv)'; }
-                    if (level <= 50) { return 'var(--dz-widget-sunpv)'; }
+                    if (level <= 25) { return 'var(--dz-widget-amber)'; }
+                    if (level <= 50) { return 'var(--dz-widget-amber)'; }
                     return 'var(--dz-widget-energy-export)';
                 };
 

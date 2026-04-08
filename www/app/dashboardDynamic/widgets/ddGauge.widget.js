@@ -119,12 +119,12 @@ define([
 
                     if (mode === 'high-is-good') {
                         if (v >= crit) { return 'var(--dz-widget-energy-export)'; }
-                        if (v >= warn) { return 'var(--dz-widget-sunpv)'; }
+                        if (v >= warn) { return 'var(--dz-widget-amber)'; }
                         return 'var(--dz-accent-red)';
                     } else {
                         // low-is-good
                         if (v < warn)  { return 'var(--dz-widget-energy-export)'; }
-                        if (v < crit)  { return 'var(--dz-widget-sunpv)'; }
+                        if (v < crit)  { return 'var(--dz-widget-amber)'; }
                         return 'var(--dz-accent-red)';
                     }
                 };
