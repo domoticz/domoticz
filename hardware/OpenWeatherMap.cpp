@@ -584,7 +584,7 @@ bool COpenWeatherMap::ProcessForecast(Json::Value &forecast, const std::string &
 			NodeID++;
 			sName.str("");
 			sName.clear();
-			sName << "Minumum Temperature " << period << " " << (count + 0);
+			sName << "Minimum Temperature " << period << " " << (count + 0);
 			if (mintemp != -999.9F)
 			{
 				SendTempSensor(NodeID, 255, mintemp, sName.str());
