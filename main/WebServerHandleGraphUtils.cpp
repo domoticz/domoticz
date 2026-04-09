@@ -116,6 +116,54 @@ DateRange CalcMonthYearRange(const request& req,
 {
     DateRange dr;
 
+    const std::string sactstart = request::findValue(&req, "actstart"); // "YYYY-MM-DD" or empty
+    const std::string sactend   = request::findValue(&req, "actend");   // "YYYY-MM-DD" or empty
+
+    if (!sactstart.empty() && !sactend.empty())
+    {
+        // Validate format YYYY-MM-DD for both strings
+        bool valid = (sactstart.size() == 10 && sactend.size() == 10);
+        if (valid)
+        {
+            // Check digit/dash positions
+            valid = std::isdigit((unsigned char)sactstart[0]) && std::isdigit((unsigned char)sactstart[1]) &&
+                    std::isdigit((unsigned char)sactstart[2]) && std::isdigit((unsigned char)sactstart[3]) &&
+                    sactstart[4] == '-' &&
+                    std::isdigit((unsigned char)sactstart[5]) && std::isdigit((unsigned char)sactstart[6]) &&
+                    sactstart[7] == '-' &&
+                    std::isdigit((unsigned char)sactstart[8]) && std::isdigit((unsigned char)sactstart[9]) &&
+                    std::isdigit((unsigned char)sactend[0])   && std::isdigit((unsigned char)sactend[1]) &&
+                    std::isdigit((unsigned char)sactend[2])   && std::isdigit((unsigned char)sactend[3]) &&
+                    sactend[4] == '-' &&
+                    std::isdigit((unsigned char)sactend[5])   && std::isdigit((unsigned char)sactend[6]) &&
+                    sactend[7] == '-' &&
+                    std::isdigit((unsigned char)sactend[8])   && std::isdigit((unsigned char)sactend[9]);
+        }
+        if (valid)
+        {
+            // Check month (1-12), day (1-31) and year (>= 2000) for both strings
+            int startYear  = std::stoi(sactstart.substr(0, 4));
+            int startMonth = std::stoi(sactstart.substr(5, 2));
+            int startDay   = std::stoi(sactstart.substr(8, 2));
+            int endYear    = std::stoi(sactend.substr(0, 4));
+            int endMonth   = std::stoi(sactend.substr(5, 2));
+            int endDay     = std::stoi(sactend.substr(8, 2));
+
+            int currentYear = tmNow.tm_year + 1900;
+
+            valid = (startMonth >= 1 && startMonth <= 12 && startDay >= 1 && startDay <= 31 &&
+                     startYear  >= 2000 && startYear  <= currentYear + 1 &&
+                     endMonth   >= 1 && endMonth   <= 12 && endDay   >= 1 && endDay   <= 31 &&
+                     endYear    >= 2000 && endYear    <= currentYear + 1);
+        }
+        if (valid)
+        {
+            dr.start = sactstart;
+            dr.end   = sactend;
+            return dr;
+        }
+    }
+
     const std::string sactmonth = request::findValue(&req, "actmonth");
     const std::string sactyear  = request::findValue(&req, "actyear");
 
