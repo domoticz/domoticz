@@ -434,7 +434,7 @@ namespace Plugins
 		std::string sSubject = Subject;
 		std::string sBody = (Body && Body[0]) ? Body : sSubject;
 
-		.AddTaskItem(_tTaskItem::SendNotification(static_cast<float>(Delay), sSubject, sBody, ExtraData, Priority, Sound, SubSystem));
+		m_sql.AddTaskItem(_tTaskItem::SendNotification(static_cast<float>(Delay), sSubject, sBody, ExtraData, Priority, Sound, SubSystem));
 
 		Py_RETURN_NONE;
 	}
@@ -487,13 +487,13 @@ namespace Plugins
 
 				// Update database
 				Py_BEGIN_ALLOW_THREADS
-				m_sql.safe_query("UPDATE Hardware SET Configuration='%q' WHERE (ID == %d)", sConfig.c_str(), pModState->pPlugin->m_HwdID);
+				.safe_query("UPDATE Hardware SET Configuration='%q' WHERE (ID == %d)", sConfig.c_str(), pModState->pPlugin->m_HwdID);
 				Py_END_ALLOW_THREADS
 			}
 			PyErr_Clear();
 
 			// Read the configuration
-			std::vector<std::vector<std::string>> result = m_sql.safe_query("SELECT Configuration FROM Hardware WHERE (ID==%d)", pModState->pPlugin->m_HwdID);
+			std::vector<std::vector<std::string>> result = .safe_query("SELECT Configuration FROM Hardware WHERE (ID==%d)", pModState->pPlugin->m_HwdID);
 			if (result.empty())
 			{
 				pModState->pPlugin->Log(LOG_ERROR, "CPlugin:%s, Hardware ID not found in database '%d'.", __func__, pModState->pPlugin->m_HwdID);
@@ -1631,10 +1631,10 @@ namespace Plugins
 			}
 
 			std::string sLanguage = "en";
-			m_sql.GetPreferencesVar("Language", sLanguage);
+			.GetPreferencesVar("Language", sLanguage);
 
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT Name, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, Settings FROM Hardware WHERE (ID==%d)", m_HwdID);
+			result = .safe_query("SELECT Name, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, Settings FROM Hardware WHERE (ID==%d)", m_HwdID);
 			if (!result.empty())
 			{
 				for (const auto &sd : result)
@@ -1780,7 +1780,7 @@ namespace Plugins
 						std::string sCleaned = Json::writeString(builder, settingsJson);
 						
 						Py_BEGIN_ALLOW_THREADS
-						m_sql.safe_query("UPDATE Hardware SET Settings='%q' WHERE (ID==%d)", sCleaned.c_str(), m_HwdID);
+						.safe_query("UPDATE Hardware SET Settings='%q' WHERE (ID==%d)", sCleaned.c_str(), m_HwdID);
 						Py_END_ALLOW_THREADS
 					}
 
@@ -1802,7 +1802,7 @@ namespace Plugins
 
 			if (brModule)
 			{
-				result = m_sql.safe_query("SELECT '', Unit FROM DeviceStatus WHERE (HardwareID==%d) ORDER BY Unit ASC", m_HwdID);
+				result = .safe_query("SELECT '', Unit FROM DeviceStatus WHERE (HardwareID==%d) ORDER BY Unit ASC", m_HwdID);
 			}
 			else
 			{
@@ -1812,7 +1812,7 @@ namespace Plugins
 					Log(LOG_ERROR, "(%s) %s failed, Domoticz/DomoticzEx modules not found in interpreter.", __func__, m_PluginKey.c_str());
 					goto Error;
 				}
-				result = m_sql.safe_query("SELECT DISTINCT DeviceID, '-1' FROM DeviceStatus WHERE (HardwareID==%d) ORDER BY Unit ASC", m_HwdID);
+				result = .safe_query("SELECT DISTINCT DeviceID, '-1' FROM DeviceStatus WHERE (HardwareID==%d) ORDER BY Unit ASC", m_HwdID);
 				tupleStr = "(s)";
 			}
 
@@ -1875,7 +1875,7 @@ namespace Plugins
 			}
 
 			// load associated custom images to make them available to python
-			result = m_sql.safe_query("SELECT ID, Base, Name, Description FROM CustomImages WHERE Base LIKE '%q%%' ORDER BY ID ASC", m_PluginKey.c_str());
+			result = .safe_query("SELECT ID, Base, Name, Description FROM CustomImages WHERE Base LIKE '%q%%' ORDER BY ID ASC", m_PluginKey.c_str());
 			if (!result.empty())
 			{
 				// Add image objects into the image dictionary with ID as the key
@@ -2846,7 +2846,7 @@ namespace Plugins
 
 			// load associated settings to make them available to python
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT Key, nValue, sValue FROM Preferences");
+			result = .safe_query("SELECT Key, nValue, sValue FROM Preferences");
 			if (!result.empty())
 			{
 				// Add settings strings into the settings dictionary with Unit as the key
