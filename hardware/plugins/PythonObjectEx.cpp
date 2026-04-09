@@ -618,7 +618,10 @@ namespace Plugins {
 							}
 						}
 
-						// All Python-derived values are in C++ types above — safe to release GIL
+						// All Python-derived values are in C++ types above — safe to release GIL.
+						// Capture TimeToString in a named variable to avoid passing a dangling
+						// .c_str() pointer from a temporary into safe_query.
+						std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 						{
 							PyAllowThreads gil;
 							m_sql.safe_query("INSERT INTO DeviceStatus "
@@ -641,12 +644,15 @@ namespace Plugins {
 								sDescription.c_str(),
 								sColor.c_str(),
 								sOptionValue.c_str(),
-								TimeToString(nullptr, TF_DateTime).c_str());
+								sLastUpdate.c_str());
 							result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (OrgHardwareID==0) AND (DeviceID=='%s') AND (Unit==%d)", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
+							// Assign self->ID inside the guard so no other Python thread
+							// can observe a stale value between the SELECT and the assignment.
+							if (!result.empty())
+								self->ID = atoi(result[0][0].c_str());
 						}
 						if (!result.empty())
 						{
-							self->ID = atoi(result[0][0].c_str());
 
 							// Check the parent device is in the plugin dictionary (can happen if this Unit has just been created)
 							if (!PyDict_Contains((PyObject *)pModState->pPlugin->m_DeviceDict, pDevice->DeviceID))
