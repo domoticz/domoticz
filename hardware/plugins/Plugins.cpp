@@ -434,7 +434,7 @@ namespace Plugins
 		std::string sSubject = Subject;
 		std::string sBody = (Body && Body[0]) ? Body : sSubject;
 
-		m_sql.AddTaskItem(_tTaskItem::SendNotification(static_cast<float>(Delay), sSubject, sBody, ExtraData, Priority, Sound, SubSystem));
+		.AddTaskItem(_tTaskItem::SendNotification(static_cast<float>(Delay), sSubject, sBody, ExtraData, Priority, Sound, SubSystem));
 
 		Py_RETURN_NONE;
 	}
@@ -486,7 +486,9 @@ namespace Plugins
 				std::string sConfig = jsonProtocol.PythontoJSON(pNewConfig);
 
 				// Update database
+				Py_BEGIN_ALLOW_THREADS
 				m_sql.safe_query("UPDATE Hardware SET Configuration='%q' WHERE (ID == %d)", sConfig.c_str(), pModState->pPlugin->m_HwdID);
+				Py_END_ALLOW_THREADS
 			}
 			PyErr_Clear();
 
@@ -1776,7 +1778,10 @@ namespace Plugins
 						Json::StreamWriterBuilder builder;
 						builder["indentation"] = "";
 						std::string sCleaned = Json::writeString(builder, settingsJson);
+						
+						Py_BEGIN_ALLOW_THREADS
 						m_sql.safe_query("UPDATE Hardware SET Settings='%q' WHERE (ID==%d)", sCleaned.c_str(), m_HwdID);
+						Py_END_ALLOW_THREADS
 					}
 
 					ADD_STRING_TO_DICT(this, pParamsDict, "DomoticzVersion", szAppVersion);
