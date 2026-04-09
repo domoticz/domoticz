@@ -97,7 +97,7 @@ define([
                         } else if (a.type === 'security') {
                             ctrl.securityStatus[a.idx] = updated.Status;
                         } else if (a.type === 'dimmer') {
-                            ctrl.deviceOn[a.idx] = (updated.Status === 'On');
+                            ctrl.deviceOn[a.idx] = (updated.Status !== '' && updated.Status !== 'Off');
                             if (updated.LevelInt !== undefined) {
                                 ctrl.dimLevel[a.idx] = updated.LevelInt;
                             }
@@ -173,7 +173,7 @@ define([
                             .then(function(resp) {
                                 var item = resp.data && resp.data.result && resp.data.result[0];
                                 if (!item) { return; }
-                                ctrl.deviceOn[action.idx] = (item.Status === 'On');
+                                ctrl.deviceOn[action.idx] = (item.Status !== '' && item.Status !== 'Off');
                                 ctrl.dimLevel[action.idx] = item.LevelInt !== undefined ? item.LevelInt : 100;
                             });
                         return;
@@ -204,9 +204,12 @@ define([
                                 ctrl.blindStatus[action.idx] = getBlindStatus(item.Status);
                             } else {
                                 var isLocked = item.SwitchType === 'Door Lock' || item.SwitchType === 'Door Lock Inverted';
-                                ctrl.deviceOn[action.idx] = isLocked ? (item.Status === 'Unlocked') : (item.Status === 'On');
+                                var isDimmer = item.SwitchType === 'Dimmer';
+                                ctrl.deviceOn[action.idx] = isLocked ? (item.Status === 'Unlocked')
+                                    : isDimmer ? (item.Status !== '' && item.Status !== 'Off')
+                                    : (item.Status === 'On');
                                 if (isLocked) { action.switchType = item.SwitchType; }
-                                if (item.SwitchType === 'Dimmer') {
+                                if (isDimmer) {
                                     action.type = 'dimmer';
                                     ctrl.dimLevel[action.idx] = item.LevelInt !== undefined ? item.LevelInt : 100;
                                 }

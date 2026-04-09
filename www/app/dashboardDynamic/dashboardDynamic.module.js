@@ -107,7 +107,10 @@ define(['app'], function(app) {
             var type = (d.Type || '').toLowerCase();
             if (d.SwitchType !== undefined || type.indexOf('light') >= 0 || type.indexOf('switch') >= 0) {
                 var statusStr = d.Status || d.Data || '';
-                return { value: statusStr, isOn: statusStr === 'On', unit: '', unit2: null, secondValue: null, typeClass: 'switch' };
+                var isOn = (d.SwitchType === 'Dimmer')
+                    ? (statusStr !== '' && statusStr !== 'Off')
+                    : (statusStr === 'On');
+                return { value: statusStr, isOn: isOn, unit: '', unit2: null, secondValue: null, typeClass: 'switch' };
             }
             if (type.indexOf('scene') >= 0 || type.indexOf('group') >= 0) {
                 var sceneStatus = d.Status || d.Data || '';
