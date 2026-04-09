@@ -127,6 +127,38 @@ body.dd-navbar-hidden .dd-topbar {
     border-radius: 10px;
 }
 
+/* Topbar dashboard-selector dropdown: match the toolbar dark theme */
+.dd-topbar .btn-group.open > .dropdown-toggle {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.dd-topbar .dropdown-menu {
+    background: var(--dz-nav-bg, #283750);
+    border-color: rgba(255,255,255,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.dd-topbar .dropdown-menu > li > a {
+    color: var(--dz-body-text, #fff);
+}
+
+.dd-topbar .dropdown-menu > li > a:hover,
+.dd-topbar .dropdown-menu > li > a:focus {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}
+
+.dd-topbar .dropdown-menu > li.active > a,
+.dd-topbar .dropdown-menu > li.active > a:hover {
+    background: var(--dz-btn-primary-bg, #337ab7);
+    color: #fff;
+}
+
+.dd-topbar .dropdown-menu .divider {
+    background-color: rgba(255,255,255,0.15);
+}
+
 /* ── Full Edit Toolbar ────────────────────────────────────── */
 .dd-toolbar {
     display: flex;
