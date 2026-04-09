@@ -344,6 +344,29 @@ namespace Plugins {
 	};
 
 	//
+	//	RAII guard that releases the Python GIL for the duration of its scope.
+	//	Use this around any blocking SQL/IO call made from Python plugin context
+	//	so that other Python threads (AsyncLoop, other plugins) are not starved.
+	//	See GitHub issue #6718.
+	//
+	//	Multiple consecutive SQL calls should share one guard rather than each
+	//	carrying their own Py_BEGIN_ALLOW_THREADS/Py_END_ALLOW_THREADS pair,
+	//	which avoids repeated GIL acquire/release overhead.
+	//
+	//	IMPORTANT: do NOT access any PyObject* inside the guarded scope.
+	//	Evaluate all Python-derived values (std::string, int, …) before the guard.
+	//
+	class PyAllowThreads
+	{
+		PyThreadState *m_save;
+	public:
+		PyAllowThreads()  : m_save(PyEval_SaveThread()) {}
+		~PyAllowThreads() { PyEval_RestoreThread(m_save); }
+		PyAllowThreads(const PyAllowThreads &) = delete;
+		PyAllowThreads &operator=(const PyAllowThreads &) = delete;
+	};
+
+	//
 	//	Holds per plugin state details, specifically plugin object, read using PyModule_GetState(PyObject *module)
 	//
 	struct module_state
