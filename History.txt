@@ -58,6 +58,8 @@ Version 2026.xxxx
 - Fixed: Python plugins, GIL released during blocking SQL calls preventing multi-second latency spikes in other plugin threads (#6718)
 - Fixed: Setup menu, large gaps between dropdown dividers caused by the service worker serving a stale version of the stylesheet after a Domoticz update
 - Fixed: Text device utility widget now preserves HTML style attributes (color, font-size, etc.)
+- Fixed: Thermostat6, bigtext on the favorites dashboard now shows correct order: temperature first, setpoint in parentheses, then humidity and barometer
+- Fixed: Thermostat6, widgets no longer show EvoHome heat-level color (red) when setpoint is high; EvoHome colors are now restricted to EvoHome Zone/Hot Water devices
 - Fixed: Widgets, brief visual flash of incorrect content on initial page load in switches, temperature and weather tabs
 - Fixed: WOL, DNS lookup skipped for magic packet targets; improved getaddrinfo error reporting
 

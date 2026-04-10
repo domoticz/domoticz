@@ -139,6 +139,12 @@ define(['app'], function(app) {
                 var p1Second = 'Return: ' + d.CounterDelivToday;
                 return { value: p1Value, secondValue: p1Second, isOn: false, unit: '', unit2: null, typeClass: 'p1' };
             }
+            // kWh energy counter — show counter value + current Watt (rounded when > 1000)
+            if (d.SubType === 'kWh') {
+                var kwhData = roundIfLarge(d.Data || '\u2014');
+                var kwhVal  = (d.Usage !== undefined) ? kwhData + ' / ' + roundIfLarge(d.Usage) : kwhData;
+                return { value: kwhVal, secondValue: null, isOn: false, unit: '', unit2: null, typeClass: 'generic' };
+            }
             return { value: roundIfLarge(d.Data || '\u2014'), isOn: false, unit: '', unit2: null, secondValue: null, typeClass: 'generic' };
         }
 
