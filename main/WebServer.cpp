@@ -2423,6 +2423,7 @@ namespace http
 						root["result"][ii]["max"] = valuemax;
 						root["result"][ii]["vunit"] = value_unit;
 						root["result"][ii]["HaveSetPoint"] = true;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 
 						std::vector<std::string> strarray;
 						StringSplit(sValue, ";", strarray);
@@ -2452,7 +2453,7 @@ namespace http
 								// Calculate dew point
 								double dewpoint = ConvertTemperature(CalculateDewPoint(temp, humidity), tempsign);
 								root["result"][ii]["DewPoint"] = dewpoint;
-								sprintf(szData, "%.1f %c, (%.1f %c) / %d%%", temp, tempsign, tempSetPoint, tempsign, humidity);
+								sprintf(szData, "%.1f %c (%.1f %c) / %d%%", temp, tempsign, tempSetPoint, tempsign, humidity);
 							}
 							else if (dSubType == sTypeThermostat6TempBaro && strarray.size() >= 4)
 							{
@@ -2461,7 +2462,7 @@ namespace http
 								root["result"][ii]["Barometer"] = barometer;
 								root["result"][ii]["Forecast"] = forecast;
 								root["result"][ii]["ForecastStr"] = RFX_WSForecast_Desc(forecast);
-								sprintf(szData, "%.1f %c, (%.1f %c), %.1f hPa", temp, tempsign, tempSetPoint, tempsign, barometer);
+								sprintf(szData, "%.1f %c (%.1f %c), %.1f hPa", temp, tempsign, tempSetPoint, tempsign, barometer);
 							}
 							else if (dSubType == sTypeThermostat6TempHumBaro && strarray.size() >= 6)
 							{
@@ -2478,11 +2479,11 @@ namespace http
 								root["result"][ii]["Barometer"] = barometer;
 								root["result"][ii]["Forecast"] = forecast;
 								root["result"][ii]["ForecastStr"] = RFX_WSForecast_Desc(forecast);
-								sprintf(szData, "%.1f %c, (%.1f %c), %d%%, %.1f hPa", temp, tempsign, tempSetPoint, tempsign, humidity, barometer);
+								sprintf(szData, "%.1f %c (%.1f %c), %d%%, %.1f hPa", temp, tempsign, tempSetPoint, tempsign, humidity, barometer);
 							}
 							else
 							{
-								sprintf(szData, "%.1f %c, (%.1f %c)", temp, tempsign, tempSetPoint, tempsign);
+								sprintf(szData, "%.1f %c (%.1f %c)", temp, tempsign, tempSetPoint, tempsign);
 							}
 							root["result"][ii]["Data"] = szData;
 						}

@@ -835,7 +835,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		}
 		$rootScope.GetTempBackgroundStatus = function (item) {
 			var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
-			var setpointSubTypes = ['Zone', 'Hot Water', 'Temp/Setpoint', 'Temp/Hum/Setpoint', 'Temp/Baro/Setpoint', 'Temp/Hum/Baro/Setpoint'];
+			var setpointSubTypes = ['Zone', 'Hot Water'];
 			if (setpointSubTypes.indexOf(item.SubType) !== -1 && typeof item.SetPoint !== 'undefined') {
 				if (item.Status === 'HeatingOff' || item.SetPoint === 325.1) {
 					backgroundClass = 'statusEvoSetPointOff';

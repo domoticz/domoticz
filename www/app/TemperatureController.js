@@ -588,7 +588,8 @@ define(['app', 'livesocket'], function (app) {
 
 					ctrl.nbackstyle = function () {
 						var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
-						if(ctrl.displaySetPoint()){
+						var evoSubTypes = ['Zone', 'Hot Water'];
+						if (evoSubTypes.indexOf(item.SubType) !== -1 && ctrl.displaySetPoint()){
 							if (ctrl.sHeatMode() == "HeatingOff" || !ctrl.isSetPointOn())//seems to be used whenever the heating is off
                                         			backgroundClass="statusEvoSetPointOff";
                                 			else if (item.SetPoint >= 25)
@@ -600,7 +601,7 @@ define(['app', 'livesocket'], function (app) {
                                 			else if (item.SetPoint >= 16)
                                         			backgroundClass="statusEvoSetPoint16";
                                 			else //min on temp 5 or greater
-                                        			backgroundClass="statusEvoSetPointMin";	
+                                        			backgroundClass="statusEvoSetPointMin";
 						}
 						return backgroundClass;
 					};
