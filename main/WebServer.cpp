@@ -3269,6 +3269,7 @@ namespace http
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							sprintf(szTmp, "%.03f", atof(sValue.c_str()) / divider);
 							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["vunit"] = "m3";
 						}
 						else
 						{
@@ -3278,6 +3279,7 @@ namespace http
 							sprintf(szTmp, "%.03f m3", 0.0F);
 							root["result"][ii]["CounterToday"] = szTmp;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["vunit"] = "m3";
 						}
 					}
 					else if (dType == pTypeCURRENT)
@@ -3921,7 +3923,7 @@ namespace http
 								root["result"][ii]["Counter"] = szTmp;
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%d Liter", ground((meteroffset + (dvalue / divider)) * 1000.0));
+								sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
 								root["result"][ii]["Data"] = szTmp;
 								root["result"][ii]["Counter"] = szTmp;
 								break;
