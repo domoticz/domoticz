@@ -95,7 +95,8 @@ define([
         var _body               = document.body;
 
         // ── Kiosk state ────────────────────────────────────────
-        var LS_KIOSK = 'dd_kiosk';
+        var LS_KIOSK     = 'dd_kiosk';
+        var LS_FULLPAGE  = 'dd_fullpage';
         var _kioskDefaults = { enabled: false, layoutIds: [], interval: 30, loop: true };
         try {
             $scope.kiosk = angular.extend({}, _kioskDefaults, JSON.parse(localStorage.getItem(LS_KIOSK) || '{}'));
@@ -242,6 +243,13 @@ define([
                                   layouts.find(function(l) { return l.isDefault; }) ||
                                   layouts[0];
                 return loadLayout(startLayout.id).then(function() {
+                    // Restore full-page state
+                    var fp = null;
+                    try { fp = localStorage.getItem(LS_FULLPAGE); } catch(e) {}
+                    if (fp === '1') {
+                        $scope.isFullPage = true;
+                        _body.classList.add('dd-navbar-hidden');
+                    }
                     if ($scope.kiosk.enabled && $scope.layouts.length >= 2) {
                         $timeout(function() { $scope.startKiosk(); }, 0);
                     }
@@ -468,6 +476,7 @@ define([
             } else {
                 _body.classList.remove('dd-navbar-hidden');
             }
+            try { localStorage.setItem(LS_FULLPAGE, $scope.isFullPage ? '1' : '0'); } catch(e) {}
         };
 
         // ── Keyboard shortcuts ────────────────────────────────
