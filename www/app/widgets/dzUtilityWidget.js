@@ -138,7 +138,7 @@ define(['app'], function (app) {
 
                     if (ctrl.isCounter()) {
                         if ((device.SubType === 'Gas') || (device.SubType === 'RFXMeter counter') || (device.SubType === 'Counter Incremental')) {
-                            status = device.Counter;
+                            status = device.Counter + ' ' + device.vunit;
                         } else if (device.SubType !== 'Managed Counter') {
                             if (device.Type === 'P1 Smart Meter') {
                                 status = $.t('Today') + ': ' + device.CounterToday;
@@ -157,13 +157,13 @@ define(['app'], function (app) {
                     } else if (ctrl.isText()) {
                         var sanitized = device.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
                         return $sce.trustAsHtml(DOMPurify.sanitize(sanitized, {
-                            ALLOWED_TAGS: ['br', 'span', 'font', 'a', 'b', 'i', 'u'],
+                            ALLOWED_TAGS: ['br', 'div', 'span', 'font', 'a', 'b', 'i', 'u'],
                             ALLOWED_ATTR: ['style', 'color', 'href', 'target']
                         }));
                     } else if (ctrl.isAlert()) {
                         var sanitized = device.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
                         return $sce.trustAsHtml(DOMPurify.sanitize(sanitized, {
-                            ALLOWED_TAGS: ['br', 'span', 'font', 'a', 'b', 'i', 'u'],
+                            ALLOWED_TAGS: ['br', 'div', 'span', 'font', 'a', 'b', 'i', 'u'],
                             ALLOWED_ATTR: ['style', 'color', 'href', 'target']
                         }));
                     } else if (typeof device.Direction !== 'undefined') {
