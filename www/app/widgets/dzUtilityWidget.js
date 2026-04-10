@@ -141,7 +141,7 @@ define(['app'], function (app) {
                             status = device.Counter + ' ' + device.vunit;
                         } else if (device.SubType !== 'Managed Counter') {
                             if (device.Type === 'P1 Smart Meter') {
-                                status = $.t('Today') + ': ' + device.CounterToday;
+                                status = $.t('Today') + ': ' + device.CounterToday + ', ' + device.Counter;
                             } else {
                                 status = $.t('Today') + ': ' + device.CounterToday + ', ' + device.Counter;
                             }
@@ -186,7 +186,7 @@ define(['app'], function (app) {
 
                     if (typeof device.CounterDeliv !== 'undefined' && device.CounterDeliv != 0) {
                         if (device.Type === 'P1 Smart Meter') {
-                            status += '<br>' + $.t('Return') + ': ' + device.CounterDelivToday;
+                            status += '<br>' + $.t('Return') + ': ' + device.CounterDelivToday + ', ' + device.CounterDeliv;
                         } else {
                             status += '<br>' + $.t('Return') + ': ' + $.t('Today') + ': ' + device.CounterDelivToday + ', ' + device.CounterDeliv;
                         }

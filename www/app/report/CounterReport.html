@@ -1,7 +1,27 @@
+<style>
+.report-forecast-row td {
+    opacity: 0.65;
+    font-style: italic;
+}
+</style>
+
 <div ng-if="::!$ctrl.isMonthView" style="margin-bottom: 12px; user-select: text;">
     <div>{{:: $ctrl.device.SwitchTypeVal == 4 ? 'Total Generated' : 'Total Usage' | translate }}: {{:: $ctrl.data.usage.toFixed($ctrl.data.decimals) }} {{:: $ctrl.unit}}</div>
     <div ng-if="::!$ctrl.isOnlyUsage">{{:: 'Counter' | translate }}: {{:: $ctrl.data.counter.toFixed($ctrl.data.decimals) }} {{:: $ctrl.unit}}</div>
-    <div ng-hide="!$ctrl.data.cost">{{:: $ctrl.device.SwitchTypeVal == 4 ? 'Year Earnings' : 'Year Cost' | translate }}: {{:: $ctrl.data.cost.toFixed(2) }}</div>
+    <div ng-hide="!$ctrl.data.cost">{{:: $ctrl.device.SwitchTypeVal == 4 ? 'Year Earnings' : 'Year Cost' | translate }}: {{:: $ctrl.data.cost.toFixed(2) }} {{:: $ctrl.currencySign}}</div>
+
+    <!-- Forecast summary block (custom contract year only) -->
+    <div ng-if="$ctrl.data.customStartDate && $ctrl.forecastFullYear">
+        {{'Forecast full year' | translate }}:
+        <b>~ {{$ctrl.forecastFullYear.total.toFixed($ctrl.data.decimals)}}</b> {{:: $ctrl.unit}}
+    </div>
+    <div ng-if="$ctrl.data.customStartDate && $ctrl.forecastFullYear">
+        {{'Forecast year cost' | translate }}:
+        <b>~ {{$ctrl.forecastFullYear.forecastCost.toFixed(2)}}</b> {{:: $ctrl.currencySign}}
+    </div>
+    <div ng-if="$ctrl.data.customStartDate && $ctrl.noForecastHistory" style="color:#888; font-style:italic">
+        {{'Forecast full year' | translate }}: &mdash; ({{'No previous year data available' | translate}})
+    </div>
 </div>
 
 <div ng-if="::$ctrl.isMonthView" style="margin-bottom: 12px; user-select: text;">
