@@ -16,7 +16,7 @@
 			<span id="tbIconRoom" class="tbIcon"><i class="fa fa-house-laptop" title="Room"></i> </span>
 			<!-- <span data-i18n="Room">Room</span>:&nbsp; -->
 			<select id="comboroom" class="combobox ui-corner-all" ng-model="ctrl.roomSelected" ng-change="ctrl.changeRoom()">
-				<optgroup ng-if="ctrl.RoomPlans.length" label="{{ 'Roomplans' | translate }}">
+				<optgroup ng-if="ctrl.RoomPlans.length" label="{{ 'Room Plans' | translate }}">
 					<option ng-repeat="room in ctrl.RoomPlans" ng-value="room.idx">{{ room.name }}</option>
 				</optgroup>
 				<optgroup ng-if="ctrl.dynamicLayouts.length" label="{{ 'Dynamic Dashboard' | translate }}">

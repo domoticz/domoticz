@@ -2,7 +2,7 @@
     <button type="button" class="close" ng-click="cancel()">&times;</button>
     <h4 class="modal-title">
         <i ng-class="descriptor.icon" ng-show="descriptor.icon" style="margin-right:6px"></i>
-        {{ descriptor.label }} Settings
+        {{ descriptor.label | translate }} {{'Settings' | translate}}
     </h4>
 </div>
 
@@ -13,7 +13,7 @@
              ng-class="{'has-error': settingsForm['field_' + field.key].$invalid && settingsForm.$submitted}">
 
             <label ng-if="field.type !== 'boolean' && field.type !== 'group'">
-                {{ field.label }}
+                {{ field.label | translate }}
                 <span class="text-danger" ng-show="field.required">*</span>
             </label>
 
@@ -24,7 +24,7 @@
                    name="field_{{ field.key }}"
                    ng-model="config[field.key]"
                    ng-required="field.required"
-                   placeholder="{{ field.placeholder || '' }}">
+                   placeholder="{{ (field.placeholder || '') | translate }}">
 
             <!-- url -->
             <input ng-if="field.type === 'url'"
@@ -33,7 +33,7 @@
                    name="field_{{ field.key }}"
                    ng-model="config[field.key]"
                    ng-required="field.required"
-                   placeholder="{{ field.placeholder || 'https://' }}">
+                   placeholder="{{ (field.placeholder || 'https://') | translate }}">
 
             <!-- textarea -->
             <textarea ng-if="field.type === 'textarea'"
@@ -59,7 +59,7 @@
                  ng-click="config[field.key] = !config[field.key]">
                 <i class="fa-solid dd-bool-icon"
                    ng-class="config[field.key] ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
-                {{ field.label }}
+                {{ field.label | translate }}
             </div>
 
             <!-- select -->
@@ -68,15 +68,15 @@
                     name="field_{{ field.key }}"
                     ng-model="config[field.key]"
                     ng-required="field.required"
-                    ng-options="o.value as o.label for o in field.options">
-                <option value="">-- Select --</option>
+                    ng-options="o.value as (o.label | translate) for o in field.options">
+                <option value="">{{'-- Select --' | translate}}</option>
             </select>
 
             <!-- picker (searchable dz-picker for large option lists) -->
             <dz-picker ng-if="field.type === 'picker'"
                        ng-model="config[field.key]"
                        dz-options="field.options"
-                       placeholder="-- Select --"
+                       placeholder="{{'-- Select --' | translate}}"
                        dz-required="field.required"
                        name="field_{{ field.key }}">
             </dz-picker>
@@ -85,7 +85,7 @@
             <dz-picker ng-if="field.type === 'device-picker'"
                        ng-model="config[field.key]"
                        dz-options="pickerOptions[field.key]"
-                       placeholder="-- Select Device --"
+                       placeholder="{{'-- Select Device --' | translate}}"
                        dz-required="field.required"
                        name="field_{{ field.key }}">
             </dz-picker>
@@ -94,7 +94,7 @@
             <dz-picker ng-if="field.type === 'scene-picker'"
                        ng-model="config[field.key]"
                        dz-options="sceneOptions"
-                       placeholder="— select scene —"
+                       placeholder="{{'-- select scene --' | translate}}"
                        dz-required="field.required"
                        name="field_{{ field.key }}">
             </dz-picker>
@@ -103,7 +103,7 @@
             <dz-picker ng-if="field.type === 'plan-picker'"
                        ng-model="config[field.key]"
                        dz-options="planOptions"
-                       placeholder="— Select Room / Plan —"
+                       placeholder="{{'-- Select Room / Plan --' | translate}}"
                        dz-required="field.required"
                        name="field_{{ field.key }}">
             </dz-picker>
@@ -112,7 +112,7 @@
             <dz-picker ng-if="field.type === 'camera-picker'"
                        ng-model="config[field.key]"
                        dz-options="cameraOptions"
-                       placeholder="— Select camera —"
+                       placeholder="{{'-- Select camera --' | translate}}"
                        dz-required="field.required"
                        name="field_{{ field.key }}">
             </dz-picker>
@@ -132,37 +132,43 @@
                                          'dd-al-badge-blind':    action.type === 'blind',
                                          'dd-al-badge-selector': action.type === 'selector',
                                          'dd-al-badge-dimmer':   action.type === 'dimmer',
-                                         'dd-al-badge-switch':   action.type === 'switch'}">
-                            {{ action.type === 'scene' ? 'Scene' : action.type === 'group' ? 'Group' : action.type === 'blind' ? 'Blind' : action.type === 'selector' ? 'Selector' : action.type === 'dimmer' ? 'Dimmer' : 'Device' }}
+                                         'dd-al-badge-switch':   action.type === 'switch'}"
+                              ng-switch="action.type">
+                            <span ng-switch-when="scene">{{'Scene' | translate}}</span>
+                            <span ng-switch-when="group">{{'Group' | translate}}</span>
+                            <span ng-switch-when="blind">{{'Blind' | translate}}</span>
+                            <span ng-switch-when="selector">{{'Selector' | translate}}</span>
+                            <span ng-switch-when="dimmer">{{'Dimmer' | translate}}</span>
+                            <span ng-switch-default>{{'Device' | translate}}</span>
                         </span>
                         <span class="dd-al-label" ng-bind="action.label"></span>
                         <i class="fa-solid fa-pencil dd-al-action-icon dd-al-rename-icon"
-                           ng-click="actionRenameItem(field.key, $index)" title="Rename"></i>
+                           ng-click="actionRenameItem(field.key, $index)" title="{{'Rename' | translate}}"></i>
                         <i class="fa-solid fa-trash dd-al-action-icon dd-al-delete-icon"
-                           ng-click="actionRemoveItem(field.key, $index)" title="Remove"></i>
+                           ng-click="actionRemoveItem(field.key, $index)" title="{{'Remove' | translate}}"></i>
                     </div>
                 </div>
 
                 <div class="dd-al-empty" ng-show="!config[field.key] || config[field.key].length === 0">
-                    No actions yet. Add one below.
+                    {{'No actions yet. Add one below.' | translate}}
                 </div>
 
                 <!-- Add new action row -->
                 <div class="dd-al-add">
                     <div class="dd-al-add-row">
                         <select class="combobox ui-corner-all" ng-model="newAction.type" style="width:90px;flex-shrink:0">
-                            <option value="switch">Device</option>
-                            <option value="scene">Scene</option>
+                            <option value="switch">{{'Device' | translate}}</option>
+                            <option value="scene">{{'Scene' | translate}}</option>
                         </select>
 
                         <dz-picker ng-model="newAction.idx"
                                    dz-options="getActionOptions()"
-                                   placeholder="-- Select --"
+                                   placeholder="{{'-- Select --' | translate}}"
                                    style="flex:3">
                         </dz-picker>
 
                         <input type="text" class="text ui-widget-content ui-corner-all" ng-model="newAction.label"
-                               placeholder="Label (optional)" style="flex:1">
+                               placeholder="{{'Label (optional)' | translate}}" style="flex:1">
 
                         <button type="button" class="btn btn-sm btn-primary"
                                 ng-click="actionAddItem(field.key)"
@@ -182,34 +188,34 @@
                          data-sort-index="{{ $index }}"
                          ng-repeat="entry in config[field.key] track by $index">
                         <i class="fa-solid fa-grip-vertical dd-al-drag-handle"></i>
-                        <span class="dd-al-type-badge dd-al-badge-switch">Device</span>
+                        <span class="dd-al-type-badge dd-al-badge-switch">{{'Device' | translate}}</span>
                         <span class="dd-al-label" ng-bind="entry.label || entry.idx"></span>
                         <i class="fa-solid fa-pencil dd-al-action-icon dd-al-rename-icon"
-                           ng-click="deviceListRenameItem(field.key, $index)" title="Rename"></i>
+                           ng-click="deviceListRenameItem(field.key, $index)" title="{{'Rename' | translate}}"></i>
                         <i class="fa-solid fa-trash dd-al-action-icon dd-al-delete-icon"
-                           ng-click="deviceListRemoveItem(field.key, $index)" title="Remove"></i>
+                           ng-click="deviceListRemoveItem(field.key, $index)" title="{{'Remove' | translate}}"></i>
                     </div>
                 </div>
 
                 <div class="dd-al-empty" ng-show="!config[field.key] || config[field.key].length === 0">
-                    No devices yet. Add one below.
+                    {{'No devices yet. Add one below.' | translate}}
                 </div>
 
                 <!-- Add new device row -->
                 <div class="dd-al-add">
                     <dz-picker ng-model="newDeviceEntry.idx"
                                dz-options="deviceListOptions"
-                               placeholder="-- Select Device --"
+                               placeholder="{{'-- Select Device --' | translate}}"
                                style="width:100%;display:block;margin-bottom:6px">
                     </dz-picker>
                     <div class="dd-al-add-row">
                         <input type="text" class="text ui-widget-content ui-corner-all"
                                ng-model="newDeviceEntry.label"
-                               placeholder="Label (optional)" style="flex:2">
+                               placeholder="{{'Label (optional)' | translate}}" style="flex:2">
 
                         <input type="text" class="text ui-widget-content ui-corner-all"
                                ng-model="newDeviceEntry.icon"
-                               placeholder="Icon (optional, e.g. fa-solid fa-bolt)" style="flex:2">
+                               placeholder="{{'Icon (optional, e.g.' | translate}} fa-solid fa-bolt)" style="flex:2">
 
                         <button type="button" class="btn btn-sm btn-primary"
                                 ng-click="deviceListAddItem(field.key)"
@@ -238,13 +244,13 @@
                  ng-style="{'display':'flex','gap':'12px','align-items':'center','justify-content': field.spread ? 'space-between' : 'flex-start'}">
                 <div ng-repeat="subField in field.fields"
                      ng-style="subField.type === 'boolean' ? {'flex':'0 0 auto'} : {'flex':'1','min-width':'0'}">
-                    <label ng-if="subField.type !== 'boolean'" style="display:block;margin-bottom:4px">{{ subField.label }}</label>
+                    <label ng-if="subField.type !== 'boolean'" style="display:block;margin-bottom:4px">{{ subField.label | translate }}</label>
 
                     <div ng-if="subField.type === 'boolean'" class="dd-checkbox-label"
                          ng-click="config[subField.key] = !config[subField.key]">
                         <i class="fa-solid dd-bool-icon"
                            ng-class="config[subField.key] ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
-                        {{ subField.label }}
+                        {{ subField.label | translate }}
                     </div>
 
                     <input ng-if="subField.type === 'number'"
@@ -263,9 +269,9 @@
                             name="field_{{ subField.key }}"
                             ng-model="config[subField.key]"
                             ng-required="subField.required"
-                            ng-options="o.value as o.label for o in subField.options"
+                            ng-options="o.value as (o.label | translate) for o in subField.options"
                             style="width:100%">
-                        <option value="">-- Select --</option>
+                        <option value="">{{'-- Select --' | translate}}</option>
                     </select>
 
                     <input ng-if="subField.type === 'color'"
@@ -280,7 +286,7 @@
                            name="field_{{ subField.key }}"
                            ng-model="config[subField.key]"
                            ng-required="subField.required"
-                           placeholder="{{ subField.placeholder || '' }}"
+                           placeholder="{{ (subField.placeholder || '') | translate }}"
                            style="width:100%">
                 </div>
             </div>
@@ -297,16 +303,16 @@
                 <span style="min-width:40px;text-align:right">{{ config[field.key] }}</span>
             </div>
 
-            <span class="help-block" ng-show="field.help">{{ field.help }}</span>
+            <span class="help-block" ng-show="field.help">{{ field.help | translate }}</span>
             <span class="help-block text-danger"
                   ng-show="settingsForm['field_' + field.key].$invalid && settingsForm.$submitted">
-                This field is required.
+                {{'This field is required.' | translate}}
             </span>
         </div>
     </form>
 </div>
 
 <div class="modal-footer">
-    <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
-    <button type="button" class="btn btn-primary" ng-click="save()">Save</button>
+    <button type="button" class="btn btn-default" ng-click="cancel()">{{'Cancel' | translate}}</button>
+    <button type="button" class="btn btn-primary" ng-click="save()">{{'Save' | translate}}</button>
 </div>
