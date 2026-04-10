@@ -13,12 +13,19 @@ Version 2026.xxxx
 - Added: Counter log, right-click context menu on anomalous spike bars with options to spread the value across preceding empty days or delete it (admin only)
 - Added: Counter log, "Fix Weekly Pattern" option in the Weekly Generated Pattern and Days/Hourly Energy chart menus to remove spike contamination from running averages (admin only)
 - Added: Counter log, "Fix Counter/Price Spikes" option in Last Month, Last Year and shortlog chart context menus to repair corrupted price entries and counter resets (admin only)
+- Added: DaikinModbus, energy metering based on accumulated power usage
+- Added: Dashboard, room plan selector lists available dynamic dashboard layouts, and dynamic dashboard navigation lists available room plans for cross-navigation
+- Added: Dashboard, click device name to open the device log; P1 gas/water values shown on two lines in dashboard widgets; switch widgets support list layout
 - Added: Dashboard Dynamic, new opt-in modular drag-and-drop dashboard with a widget library, multiple named dashboards per user, kiosk/auto-swipe mode, screen standby, and layout import/export; enable in My Profile → Use Dynamic Dashboard
 - Added: Dashboard Dynamic, over 35 built-in widgets covering energy, weather, devices, controls, charts, calendars, cameras, and custom content (HTML, text, image, website embed)
+- Added: Dashboard Dynamic, font size option (Default / Larger / Large / Extra large) for Quick Actions, Quick Stat and Room/Plan list mode widgets
 - Added: Devices, search filter is now preserved when navigating to a device log and pressing Back; cleared when changing room plan
+- Added: Gas device, Water counter now displays the value unit (m3) in the device state
 - Added: P1 log, cumulative energy chart with usage/return toggle buttons, Net (usage minus return) series option, and x-axis zoom
+- Added: P1 energy report, custom contract-year date range view with per-period breakdown and forecast for remaining months
 - Added: Theme system, CSS variable-based theming using --dz-* custom properties; theme authors can now override colours with a single :root block in dark.css instead of complex selector chains (see doc/Theming.wiki)
 - Added: Rain report, total rainfall summary row in year and month report tables
+- Added: Text/Alert sensors, HTML <div> elements are now allowed in widget display
 - Added: PhilipsHue, automatic bridge version detection (V2 HTTPS/443, V1 HTTPS/443, V1 HTTP/80); port no longer needs manual configuration
 - Added: PhilipsHue V2, real-time sensor updates via Server-Sent Events (SSE); instant state changes without waiting for the next poll cycle
 - Added: PhilipsHue V2, new sensor types: grouped motion, grouped light level, camera motion, security area motion, button remotes, and bell button (doorbell)
@@ -39,6 +46,7 @@ Version 2026.xxxx
 - Fixed: CounterHelper, MQTT Wh unit mismatch causing incorrect energy offset values
 - Fixed: Dashboard, Security type devices marked as favorites are now displayed in the Dashboard tab
 - Fixed: Dashboard Dynamic, self-sufficiency percentage now correctly credits battery discharge as local generation for battery-equipped systems (#6724)
+- Fixed: Dashboard Dynamic, Weather Forecast widget now refreshes at midnight to show the correct day
 - Fixed: kWh counter, improved auto-detection of spike threshold in FixKwhCounterSpikes
 - Fixed: MCP, server is now enabled by default; use -nomcp flag to disable (previously required -llmmcp flag to enable)
 - Fixed: Mobile dashboard, iOS "Force Desktop Mode" setting is now correctly applied; UA-based phone detection restored for iPhone and Android phones
@@ -47,6 +55,7 @@ Version 2026.xxxx
 - Fixed: PhilipsHue v2, thread-safety race condition causing concurrent API call errors
 - Fixed: Mutex, possible C++ backend deadlock resolved
 - Fixed: Python plugin framework, spurious NullStream initialization errors on Python < 3.13 (#6688)
+- Fixed: Python plugins, GIL released during blocking SQL calls preventing multi-second latency spikes in other plugin threads (#6718)
 - Fixed: Setup menu, large gaps between dropdown dividers caused by the service worker serving a stale version of the stylesheet after a Domoticz update
 - Fixed: Text device utility widget now preserves HTML style attributes (color, font-size, etc.)
 - Fixed: Widgets, brief visual flash of incorrect content on initial page load in switches, temperature and weather tabs
