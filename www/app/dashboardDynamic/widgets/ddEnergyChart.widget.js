@@ -27,7 +27,7 @@ define([
 
     function detectDeviceInfo(device) {
         if (!device) {
-            return { unit: 'kWh', divider: 1000, isP1: false, hasReturn: false };
+            return { unit: 'kWh', divider: 1, isP1: false, hasReturn: false };
         }
 
         var switchTypeVal = device.SwitchTypeVal;
@@ -36,22 +36,24 @@ define([
         if (isP1) {
             var hasReturn = device.CounterDeliv !== undefined && device.CounterDeliv !== null
                 && parseFloat(device.CounterDeliv) > 0;
-            return { unit: 'kWh', divider: 1000, isP1: true, hasReturn: hasReturn };
+            return { unit: 'kWh', divider: 1, isP1: true, hasReturn: hasReturn };
         }
 
         switch (switchTypeVal) {
             case SWITCH_TYPE_GAS:
                 return { unit: 'm\u00b3', divider: 1, isP1: false, hasReturn: false };
             case SWITCH_TYPE_WATER:
+                // API returns m³ (raw / backend-divider); widget converts to Litres (÷ 0.001 = × 1000)
                 return { unit: 'L', divider: 0.001, isP1: false, hasReturn: false };
             case SWITCH_TYPE_ENERGY_GENERATED:
-                return { unit: 'kWh', divider: 1000, isP1: false, hasReturn: false };
+                // API already applies the energy divider (Wh → kWh), so no further division needed
+                return { unit: 'kWh', divider: 1, isP1: false, hasReturn: false };
             case SWITCH_TYPE_ENERGY_USED:
-                return { unit: 'kWh', divider: 1000, isP1: false, hasReturn: false };
+                return { unit: 'kWh', divider: 1, isP1: false, hasReturn: false };
             default:
                 // Generic counter incremental / unknown
                 if (device.SubType === 'kWh' || device.Type === 'kWh') {
-                    return { unit: 'kWh', divider: 1000, isP1: false, hasReturn: false };
+                    return { unit: 'kWh', divider: 1, isP1: false, hasReturn: false };
                 }
                 return { unit: device.Unit || '', divider: 1, isP1: false, hasReturn: false };
         }
@@ -315,7 +317,7 @@ define([
 
                     destroyChart();
 
-                    var info = deviceInfo || { unit: 'kWh', divider: 1000, isP1: false, hasReturn: false };
+                    var info = deviceInfo || { unit: 'kWh', divider: 1, isP1: false, hasReturn: false };
                     meta = meta || {};
 
                     if (chartType === 'compare') {
