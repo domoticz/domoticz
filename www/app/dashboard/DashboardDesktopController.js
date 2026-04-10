@@ -33,6 +33,7 @@ define([
 		'$routeParams',
 		'$window',
 		'$timeout',
+		'$http',
 		'permissions',
 		'livesocket',
 		'dashboardService',
@@ -45,6 +46,7 @@ define([
 			$routeParams,
 			$window,
 			$timeout,
+			$http,
 			permissions,
 			livesocket,
 			dashboardService,
@@ -73,9 +75,18 @@ define([
 			// Room plan controller
 			$scope.ctrl = {
 				RoomPlans: [],
+				dynamicLayouts: [],
 				roomSelected: undefined,
 				changeRoom: function () {
-					var idx = $scope.ctrl.roomSelected;
+					var val = $scope.ctrl.roomSelected;
+					// Dynamic dashboard layout selected
+					if (typeof val === 'string' && val.indexOf('dd:') === 0) {
+						var layoutId = val.slice(3);
+						try { localStorage.setItem('dd_last_layout', layoutId); } catch(e) {}
+						$route.reload();
+						return;
+					}
+					var idx = val;
 					window.myglobals.LastPlanSelected = idx;
 					window.myglobals.LastSearchFilter = '';
 					$('.jsLiveSearch').val('').trigger('change');
@@ -752,6 +763,14 @@ define([
 				var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
 				if (typeof roomPlanId != 'undefined') {
 					$scope.ctrl.roomSelected = roomPlanId;
+				}
+
+				// Load dynamic dashboard layouts when the feature is enabled
+				if ($rootScope.config && $rootScope.config.EnableTabDashboardDynamic) {
+					$http.get('json.htm', { params: { type: 'command', param: 'getdashboardlayouts' } })
+						.then(function(resp) {
+							$scope.ctrl.dynamicLayouts = (resp.data && resp.data.result) || [];
+						});
 				}
 
 				// Load favorites

@@ -61,9 +61,9 @@ define([
     'use strict';
 
     app.controller('DashboardDynamicController', [
-        '$scope', '$timeout', '$interval', '$document', '$location', '$uibModal', '$q', '$http',
+        '$scope', '$timeout', '$interval', '$document', '$location', '$route', '$uibModal', '$q', '$http',
         'dashboardDynamicService', 'widgetRegistry', 'ddToast', 'bootbox',
-        function($scope, $timeout, $interval, $document, $location, $uibModal, $q, $http,
+        function($scope, $timeout, $interval, $document, $location, $route, $uibModal, $q, $http,
                  dashboardDynamicService, widgetRegistry, ddToast, bootbox) {
 
         // One-time migration of legacy localStorage keys
@@ -85,6 +85,7 @@ define([
         $scope.isDirty          = false;
         $scope.isFullPage       = false;
         $scope.layouts          = [];    // list of layout metadata objects
+        $scope.roomPlans        = [];    // list of Domoticz room plans
         $scope.activeLayout      = null; // { id, name, isDefault }
         $scope.activeData        = null; // { version, columns, rowHeight, widgets: [] }
         $scope.error            = null;
@@ -225,6 +226,10 @@ define([
 
         function init() {
             $scope.loading = true;
+            $http.get('json.htm', { params: { type: 'command', param: 'getplans', order: 'name' } })
+                .then(function(resp) {
+                    $scope.roomPlans = (resp.data && resp.data.result) || [];
+                });
             dashboardDynamicService.listLayouts().then(function(layouts) {
                 $scope.layouts = layouts;
                 if (layouts.length === 0) {
@@ -263,6 +268,12 @@ define([
                 loadLayout(id);
                 resetStandbyTimer();
             }).catch(angular.noop);
+        };
+
+        $scope.openRoomPlan = function(planIdx) {
+            if (window.myglobals) { window.myglobals.LastPlanSelected = planIdx; }
+            window._forceClassicDashboard = true;
+            $route.reload();
         };
 
         $scope.toggleEditMode = function() {

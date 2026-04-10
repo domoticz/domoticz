@@ -141,6 +141,7 @@ body.dd-navbar-hidden .dd-topbar {
 
 .dd-topbar .dropdown-menu > li > a {
     color: var(--dz-body-text, #fff);
+    text-decoration: none;
 }
 
 .dd-topbar .dropdown-menu > li > a:hover,
@@ -157,6 +158,13 @@ body.dd-navbar-hidden .dd-topbar {
 
 .dd-topbar .dropdown-menu .divider {
     background-color: rgba(255,255,255,0.15);
+}
+
+.dd-topbar .dropdown-menu .dropdown-header {
+    color: rgba(255,255,255,0.45);
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 /* ── Full Edit Toolbar ────────────────────────────────────── */
@@ -254,6 +262,13 @@ body.dd-navbar-hidden .dd-toolbar {
 
 .dd-toolbar .dropdown-menu .divider {
     background-color: rgba(255,255,255,0.15);
+}
+
+.dd-toolbar .dropdown-menu .dropdown-header {
+    color: rgba(255,255,255,0.45);
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .dd-dirty-indicator {
