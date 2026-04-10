@@ -2932,7 +2932,8 @@ dd-wcp-color {
 .dd-log-entry-error  .dd-log-level { color: var(--dz-accent-red); }
 
 /* ── Moon Phase Widget ────────────────────────────────────── */
-.dd-moon-emoji { font-size: 3em; line-height: 1.1; color: var(--dz-widget-moon-color); }
+.dd-moon-image { line-height: 1.1; }
+.dd-moon-image img { width: 80px; height: 80px; object-fit: contain; }
 .dd-moon-phase { font-size: 0.9em; font-weight: 600; }
 .dd-moon-next { margin-top: 4px; }
 

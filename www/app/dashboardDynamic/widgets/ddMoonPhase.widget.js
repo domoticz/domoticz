@@ -58,14 +58,14 @@ define([
     }
 
     function phaseInfo(phase) {
-        if (phase < 1.85)  { return { name: 'New Moon',        emoji: '\uD83C\uDF11' }; }
-        if (phase < 7.38)  { return { name: 'Waxing Crescent', emoji: '\uD83C\uDF12' }; }
-        if (phase < 9.22)  { return { name: 'First Quarter',   emoji: '\uD83C\uDF13' }; }
-        if (phase < 14.76) { return { name: 'Waxing Gibbous',  emoji: '\uD83C\uDF14' }; }
-        if (phase < 16.61) { return { name: 'Full Moon',       emoji: '\uD83C\uDF15' }; }
-        if (phase < 22.15) { return { name: 'Waning Gibbous',  emoji: '\uD83C\uDF16' }; }
-        if (phase < 24.0)  { return { name: 'Last Quarter',    emoji: '\uD83C\uDF17' }; }
-        return                { name: 'Waning Crescent',       emoji: '\uD83C\uDF18' };
+        if (phase < 1.85)  { return { name: 'New Moon',        image: 'moon-new.png' }; }
+        if (phase < 7.38)  { return { name: 'Waxing Crescent', image: 'moon-waxing-crescent.png' }; }
+        if (phase < 9.22)  { return { name: 'First Quarter',   image: 'moon-first-quarter.png' }; }
+        if (phase < 14.76) { return { name: 'Waxing Gibbous',  image: 'moon-waxing-gibbous.png' }; }
+        if (phase < 16.61) { return { name: 'Full Moon',       image: 'moon-full.png' }; }
+        if (phase < 22.15) { return { name: 'Waning Gibbous',  image: 'moon-waning-gibbous.png' }; }
+        if (phase < 24.0)  { return { name: 'Last Quarter',    image: 'moon-last-quarter.png' }; }
+        return                { name: 'Waning Crescent',       image: 'moon-waning-crescent.png' };
     }
 
     function illumination(phase) {
@@ -122,7 +122,7 @@ define([
                 var timer = null;
 
                 ctrl.title          = '';
-                ctrl.emoji          = '';
+                ctrl.image          = '';
                 ctrl.phaseName      = '';
                 ctrl.illumination   = 0;
                 ctrl.showPhaseName  = true;
@@ -144,7 +144,7 @@ define([
 
                     var phase  = getMoonPhase(now);
                     var info   = phaseInfo(phase);
-                    ctrl.emoji     = info.emoji;
+                    ctrl.image     = info.image;
                     ctrl.phaseName = info.name;
                     ctrl.illumination = illumination(phase);
 
