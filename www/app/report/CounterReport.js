@@ -25,7 +25,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                  + ' ' + endDay.getFullYear();
         }
 
-        function getContractMonthData(rawData, cost, startDateISO) {
+        function getContractMonthData(rawData, cost, startDateISO, prevYearData) {
             var base = new Date(startDateISO + 'T00:00:00');
             var periods = [];
             for (var i = 0; i < 12; i++) {
@@ -40,7 +40,8 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     days:        [],
                     usage:       0,
                     cost:        0,
-                    counter:     0
+                    counter:     0,
+                    forecast:    false
                 });
             }
 
@@ -60,13 +61,67 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 }
             });
 
+            var today = new Date(); today.setHours(0,0,0,0);
+            var futurePeriods = periods.filter(function(p) { return p.start >= today; });
+            var hasFuturePeriods = futurePeriods.length > 0;
+
+            // TODO: implement meter replacement detection
+            var meterReplaced = false;
+            var noHistory = false;
+            var forecastFullYear = null;
+            var prevMonthBuckets = null;
+
+            if (hasFuturePeriods && prevYearData && prevYearData.length) {
+                var prevStartISO = addOneYear(startDateISO, -1);
+                // One level of recursion only — prevYearData has no further prevYearData
+                var prevAgg = getContractMonthData(prevYearData, cost, prevStartISO);
+                var prevTotal = prevAgg.usage;
+                prevMonthBuckets = prevAgg.months;
+
+                // Less than 5 m³/kWh for a full year suggests missing/incomplete data
+                var MIN_YEARLY = 5;
+                if (prevTotal < MIN_YEARLY) {
+                    noHistory = true;
+                } else {
+                    futurePeriods.forEach(function(p) {
+                        var periodIdx = periods.indexOf(p);
+                        var prevBucket = prevMonthBuckets[periodIdx] || null;
+                        var prevUsage = (prevBucket && !isNaN(prevBucket.usage)) ? prevBucket.usage : (prevTotal / 12);
+                        var prevCost  = (prevBucket && !isNaN(prevBucket.cost))  ? prevBucket.cost  : (prevAgg.cost / 12);
+
+                        p.forecast = true;
+                        p.usage = prevUsage;
+                        p.cost  = prevCost;
+                        p.counter = 0;
+                    });
+
+                    // forecastFullYear: actual-to-date + forecast remaining
+                    var actualUsage = periods.filter(function(p) { return !p.forecast; })
+                                             .reduce(function(s, p) { return s + p.usage; }, 0);
+                    var actualCost  = periods.filter(function(p) { return !p.forecast; })
+                                             .reduce(function(s, p) { return s + p.cost; }, 0);
+                    var fUsage = futurePeriods.reduce(function(s, p) { return s + p.usage; }, 0);
+                    var fCost  = futurePeriods.reduce(function(s, p) { return s + p.cost; }, 0);
+                    forecastFullYear = {
+                        total:        actualUsage + fUsage,
+                        forecastCost: actualCost + fCost
+                    };
+                }
+            } else if (hasFuturePeriods && (!prevYearData || !prevYearData.length)) {
+                noHistory = true;
+            }
+
             periods = reportHelpers.addTrendData(periods, 'usage');
 
+            var actualPeriods = periods.filter(function(p) { return !p.forecast; });
             return {
-                months:  periods,
-                usage:   periods.reduce(function(s, p) { return s + p.usage; }, 0),
-                cost:    periods.reduce(function(s, p) { return s + p.cost; }, 0),
-                counter: Math.max.apply(null, periods.map(function(p) { return p.counter; }))
+                months:          periods,
+                usage:           actualPeriods.reduce(function(s, p) { return s + p.usage; }, 0),
+                cost:            actualPeriods.reduce(function(s, p) { return s + p.cost; }, 0),
+                counter:         Math.max.apply(null, actualPeriods.map(function(p) { return p.counter || 0; }).concat([0])),
+                forecastFullYear: forecastFullYear,
+                meterReplaced:   meterReplaced,
+                noHistory:       noHistory && hasFuturePeriods
             };
         }
 
@@ -76,18 +131,37 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             }
             var costs = domoticzApi.sendCommand('getcosts', { idx: device.idx });
 
-            var graphParams = customStartDate
-                ? { sensor: 'counter', range: 'year', idx: device.idx,
-                    actstart: customStartDate, actend: addOneYear(customStartDate) }
-                : { sensor: 'counter', range: 'year', idx: device.idx,
+            var graphParams;
+            if (customStartDate) {
+                var actend = addOneYear(customStartDate);
+                if (!actend) { return $q.resolve(null); }
+                graphParams = { sensor: 'counter', range: 'year', idx: device.idx,
+                    actstart: customStartDate, actend: actend };
+            } else {
+                graphParams = { sensor: 'counter', range: 'year', idx: device.idx,
                     actyear: year, actmonth: month };
+            }
 
             var stats = domoticzApi.sendCommand('graph', graphParams);
 
-            return $q.all([costs, stats]).then(function (responses) {
+            var allPromises;
+            if (customStartDate) {
+                var prevStart = addOneYear(customStartDate, -1);
+                if (!prevStart) { return $q.resolve(null); }
+                var prevStats = domoticzApi.sendCommand('graph', {
+                    sensor: 'counter', range: 'year', idx: device.idx,
+                    actstart: prevStart, actend: customStartDate
+                });
+                allPromises = $q.all([costs, stats, prevStats]);
+            } else {
+                allPromises = $q.all([costs, stats]);
+            }
+
+            return allPromises.then(function (responses) {
                 var cost = getCost(device, responses[0]);
 
                 var stats = responses[1];
+                var prevStats = responses[2] || null;
 
                 if (!stats.result || !stats.result.length) {
                     return null;
@@ -95,7 +169,10 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
                 var source;
                 if (customStartDate) {
-                    var contractData = getContractMonthData(stats.result, cost, customStartDate);
+                    var prevYearData = (prevStats && prevStats.result && prevStats.result.length)
+                        ? prevStats.result
+                        : null;
+                    var contractData = getContractMonthData(stats.result, cost, customStartDate, prevYearData);
                     source = contractData;
                 } else {
                     var data = getGroupedData(stats.result, cost);
@@ -116,7 +193,10 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     decimals:        (device.SwitchTypeVal === 3) ? device.Divider.numDecimalsDiv1() : 3,
                     counter:         month ? source.counter : parseFloat(stats.counter),
                     items:           customStartDate ? source.months : (month ? source.days : source.months),
-                    customStartDate: customStartDate
+                    customStartDate: customStartDate,
+                    forecastFullYear: source.forecastFullYear || null,
+                    meterReplaced:   source.meterReplaced || false,
+                    noHistory:       source.noHistory || false
                 };
             });
         }
@@ -224,13 +304,14 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
         var vm = this;
         vm.$onInit = init;
 
-        vm.exportExcel     = function () { exportTableToExcel(vm.device.Name + '_report.xls'); };
-        vm.exportCSV       = function () { exportTableToCSV(vm.device.Name + '_report.csv'); };
-        vm.exportClipboard = function () { exportTableToClipboard(); };
+        vm.exportExcel     = function () { reportHelpers.exportTableToExcel($element, vm.device.Name + '_report'); };
+        vm.exportCSV       = function () { reportHelpers.exportTableToCSV($element, vm.device.Name + '_report'); };
+        vm.exportClipboard = function () { reportHelpers.exportTableToClipboard($element); };
 
         function init() {
             vm.unit = vm.device.getUnit();
             vm.decimals = (vm.device.SwitchTypeVal == 3) ? vm.device.Divider.numDecimalsDiv1() : 3;
+            vm.currencySign = ($.myglobals.currencysign || '').replace(/[<>"'&]/g, '');
             vm.isMonthView = vm.selectedMonth > 0;
 
 			$.devIdx = vm.device.idx;
@@ -256,6 +337,9 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     }
 
                     vm.data = data;
+                    vm.forecastFullYear  = data.forecastFullYear  || null;
+                    vm.noForecastHistory = data.noHistory || false;
+                    vm.forecastWarning   = null;   // meterReplaced always false for now
                     showTable(data);
                     showUsageChart(data)
                 });
@@ -269,6 +353,8 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 table.empty();
             }
             var columns = [];
+
+            var decimals = vm.decimals;
 
             var counterRendererDecimals = function (data) {
                 return data.toFixed(3);
@@ -320,10 +406,27 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 columns.push({ title: $.t('Counter'), data: 'counter', render: (vm.device.SwitchTypeVal === 3) ? counterRenderer : counterRendererDecimals });
             }
 
-            columns.push({ title: (vm.device.SwitchTypeVal === 4) ? $.t('Generated') : $.t('Usage'), data: 'usage', render: (vm.device.SwitchTypeVal === 3) ? counterRenderer : counterRendererDecimals });
+            columns.push({
+                title: (vm.device.SwitchTypeVal === 4) ? $.t('Generated') : $.t('Usage'),
+                data: 'usage',
+                render: function (val, type, row) {
+                    var formatted = (vm.device.SwitchTypeVal === 3)
+                        ? val.toFixed(vm.device.Divider.numDecimalsDiv1())
+                        : val.toFixed(decimals);
+                    return row.forecast ? ('~' + formatted) : formatted;
+                }
+            });
 
-            if (vm.device.SwitchTypeVal != 3)
-                columns.push({ title: (vm.device.SwitchTypeVal === 4) ? $.t('Earnings') : $.t('Costs'), data: 'cost', render: costRenderer });
+            if (vm.device.SwitchTypeVal != 3) {
+                columns.push({
+                    title: (vm.device.SwitchTypeVal === 4) ? $.t('Earnings') : $.t('Costs'),
+                    data: 'cost',
+                    render: function (val, type, row) {
+                        var formatted = val.toFixed(2) + ' ' + $.myglobals.currencysign;
+                        return row.forecast ? ('~' + formatted) : formatted;
+                    }
+                });
+            }
 
             columns.push({
                 title: '<>',
@@ -341,15 +444,20 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 sDom: '<"H"rC>t<"F">',
                 columns: columns,
                 pageLength: 50,
-                order: [[0, 'asc']]
+                order: [[0, 'asc']],
+                createdRow: function (row, rowData) {
+                    if (rowData.forecast) { $(row).addClass('report-forecast-row'); }
+                }
             }));
 
             table.dataTable().api().rows
                 .add(data.items)
                 .draw();
 
-            // Grand-total footer row
-            var items = data.items;
+            // Grand-total footer row — only actual (non-forecast) items
+            var actualItems = data.items.filter(function(r) { return !r.forecast; });
+            var items = actualItems.length ? actualItems : data.items;
+
             var totalUsage = items.reduce(function (s, r) { return s + (r.usage || 0); }, 0);
             var totalCost  = items.reduce(function (s, r) { return s + (r.cost  || 0); }, 0);
             var maxCounter = items.reduce(function (m, r) { return Math.max(m, r.counter || 0); }, 0);
@@ -385,75 +493,6 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 			window.location.reload();
 		}
 
-        function exportTableToCSV(filename) {
-            var rows = [];
-            var headers = [];
-            $element.find('#reporttable thead th').each(function () { headers.push($(this).text()); });
-            rows.push(headers.join(','));
-            $element.find('#reporttable tbody tr').each(function () {
-                var cols = [];
-                $(this).find('td').each(function () { cols.push('"' + $(this).text().replace(/"/g, '""') + '"'); });
-                rows.push(cols.join(','));
-            });
-            $element.find('#reporttable tfoot tr').each(function () {
-                var cols = [];
-                $(this).find('td').each(function () { cols.push('"' + $(this).text().replace(/"/g, '""') + '"'); });
-                rows.push(cols.join(','));
-            });
-            var blob = new Blob([rows.join('\n')], { type: 'text/csv' });
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a'); a.href = url; a.download = filename; a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function exportTableToExcel(filename) {
-            function escXml(s) {
-                return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-                        .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
-            }
-            function xmlCell(text) {
-                var t = text.trim();
-                var isNum = /^-?\d+(\.\d+)?$/.test(t);
-                return '<Cell><Data ss:Type="' + (isNum ? 'Number' : 'String') + '">' + escXml(t) + '</Data></Cell>';
-            }
-            var xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
-                + '<?mso-application progid="Excel.Sheet"?>\n'
-                + '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"'
-                + ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n'
-                + '<Worksheet ss:Name="Report"><Table>\n';
-            xml += '<Row>';
-            $element.find('#reporttable thead th').each(function () { xml += xmlCell($(this).text()); });
-            xml += '</Row>\n';
-            $element.find('#reporttable tbody tr, #reporttable tfoot tr').each(function () {
-                xml += '<Row>';
-                $(this).find('td').each(function () { xml += xmlCell($(this).text()); });
-                xml += '</Row>\n';
-            });
-            xml += '</Table></Worksheet></Workbook>';
-            var blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a'); a.href = url; a.download = filename; a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function exportTableToClipboard() {
-            var rows = [];
-            var headers = [];
-            $element.find('#reporttable thead th').each(function () { headers.push($(this).text()); });
-            rows.push(headers.join('\t'));
-            $element.find('#reporttable tbody tr').each(function () {
-                var cols = [];
-                $(this).find('td').each(function () { cols.push($(this).text()); });
-                rows.push(cols.join('\t'));
-            });
-            $element.find('#reporttable tfoot tr').each(function () {
-                var cols = [];
-                $(this).find('td').each(function () { cols.push($(this).text()); });
-                rows.push(cols.join('\t'));
-            });
-            navigator.clipboard.writeText(rows.join('\n'));
-        }
-
         function showUsageChart(data) {
             var chartElement = $element.find('#usagegraph');
             var series = [];
@@ -465,18 +504,36 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             var chartName = vm.device.SwitchTypeVal === 4 ? 'Generated' : 'Usage';
             var yAxisName = ['Energy', 'Gas', 'Water', valueQuantity, 'Energy'][vm.device.SwitchTypeVal];
 
+            var forecastItems = data.items.filter(function(r) { return r.forecast; });
+            var actualItems   = data.items.filter(function(r) { return !r.forecast; });
+
+            // Single combined series with per-point colour — avoids the gap between
+            // actual and forecast bars that two separate series would create.
             series.push({
                 name: $.t(chartName),
-                color: 'rgba(3,190,252,0.8)',
                 stack: 'susage',
                 yAxis: 0,
-                data: data.items.map(function (item) {
+                tooltip: { valueSuffix: ' ' + vm.unit },
+                data: data.items.map(function(item) {
                     return {
-                        x: +(new Date(item.date)),
-                        y: parseFloat(item.usage.toFixed(vm.decimals))
-                    }
+                        x: item.date,
+                        y: parseFloat(item.usage.toFixed(vm.decimals)),
+                        color: item.forecast ? 'rgba(3,190,252,0.35)' : 'rgba(3,190,252,0.8)'
+                    };
                 })
             });
+
+            // Phantom series — no data, only used to add the "Forecast" legend entry.
+            if (forecastItems.length) {
+                series.push({
+                    name: $.t('Usage') + ' (' + $.t('Forecast') + ')',
+                    color: 'rgba(3,190,252,0.35)',
+                    data: [],
+                    showInLegend: true,
+                    enableMouseTracking: false
+                });
+            }
+
 			if (vm.device.SwitchTypeVal != 3) {
 				series.push({
 					id: 'CRP',
@@ -495,7 +552,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 					convertZeroToNull: true,
 					showWithoutDatapoints: false,
 					yAxis: 1,
-					data: data.items.map(function (item) {
+					data: actualItems.map(function (item) {
 						return {
 							x: +(new Date(item.date)),
 							y: parseFloat(item.cost.toFixed(vm.decimals))

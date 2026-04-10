@@ -198,6 +198,10 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
         vm.$onInit = init;
 
+        vm.exportExcel     = function () { reportHelpers.exportTableToExcel($element, vm.device.Name + '_report'); };
+        vm.exportCSV       = function () { reportHelpers.exportTableToCSV($element, vm.device.Name + '_report'); };
+        vm.exportClipboard = function () { reportHelpers.exportTableToClipboard($element); };
+
         function init() {
             vm.isMonthView = vm.selectedMonth > 0;
             vm.degreeType = $.myglobals.tempsign;
