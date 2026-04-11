@@ -19,6 +19,9 @@ Version 2026.xxxx
 - Added: Dashboard Dynamic, new opt-in modular drag-and-drop dashboard with a widget library, multiple named dashboards per user, kiosk/auto-swipe mode, screen standby, and layout import/export; enable in My Profile → Use Dynamic Dashboard
 - Added: Dashboard Dynamic, over 35 built-in widgets covering energy, weather, devices, controls, charts, calendars, cameras, and custom content (HTML, text, image, website embed)
 - Added: Dashboard Dynamic, font size option (Default / Larger / Large / Extra large) for Quick Actions, Quick Stat and Room/Plan list mode widgets
+- Added: Dashboard Dynamic, dial widget shows red bezel ring when a device has timed out
+- Added: Dashboard Dynamic, temperature dial now shows barometer pressure and weather forecast when the sensor provides them
+- Changed: Dashboard Dynamic, P1 dial now shows signed net power (negative = importing, positive = exporting) instead of absolute value with direction label
 - Added: Devices, search filter is now preserved when navigating to a device log and pressing Back; cleared when changing room plan
 - Added: Gas device, Water counter now displays the value unit (m3) in the device state
 - Added: P1 log, cumulative energy chart with usage/return toggle buttons, Net (usage minus return) series option, and x-axis zoom
