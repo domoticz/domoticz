@@ -413,8 +413,8 @@ define([
                 ctrl.p1FillColor = function() {
                     if (ctrl.p1Power === null) { return 'none'; }
                     return ctrl.p1Power >= 0
-                        ? 'var(--dz-widget-energy-export)'
-                        : 'var(--dz-widget-amber)';
+                        ? 'var(--dz-widget-amber)'
+                        : 'var(--dz-widget-energy-export)';
                 };
 
                 // ── Arc fill colour (threshold-aware) ────────────────────
@@ -623,7 +623,7 @@ define([
                         ctrl.deviceType = 'p1';
                         var importW = parseFirst(d.Usage)      || 0;
                         var exportW = parseFirst(d.UsageDeliv) || 0;
-                        ctrl.p1Power = exportW - importW;
+                        ctrl.p1Power = importW - exportW;
                         ctrl.value    = ctrl.p1Power;
                         ctrl.valueStr = formatNum(ctrl.p1Power);
                         ctrl.unitStr  = 'W';
