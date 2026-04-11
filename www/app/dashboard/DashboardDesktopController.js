@@ -90,6 +90,7 @@ define([
 					window.myglobals.LastPlanSelected = idx;
 					window.myglobals.LastSearchFilter = '';
 					$('.jsLiveSearch').val('').trigger('change');
+					window._forceClassicDashboard = true;
 					$route.updateParams({
 						room: idx >= 0 ? idx : undefined
 					});

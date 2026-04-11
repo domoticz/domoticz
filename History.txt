@@ -47,7 +47,9 @@ Version 2026.xxxx
 - Fixed: Counter log, Weekly Generated Pattern heatmap could show extreme values caused by spike contamination in running hourly averages
 - Fixed: Contact and DoorContact switches now show correct Open/Closed icon state in the dashboard
 - Fixed: CounterHelper, MQTT Wh unit mismatch causing incorrect energy offset values
+- Fixed: Dashboard, selecting a room plan from the classic dashboard no longer incorrectly switches to the dynamic dashboard
 - Fixed: Dashboard, Security type devices marked as favorites are now displayed in the Dashboard tab
+- Fixed: Dashboard Dynamic, deleting a widget and pressing Save now correctly persists the change
 - Fixed: Dashboard Dynamic, self-sufficiency percentage now correctly credits battery discharge as local generation for battery-equipped systems (#6724)
 - Fixed: Dashboard Dynamic, Weather Forecast widget now refreshes at midnight to show the correct day
 - Fixed: kWh counter, improved auto-detection of spike threshold in FixKwhCounterSpikes
