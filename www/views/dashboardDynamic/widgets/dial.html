@@ -27,7 +27,8 @@
             </defs>
 
             <!-- 1. Outer bezel ring -->
-            <circle class="dd-dial-bezel" cx="50" cy="50" r="49"/>
+            <circle class="dd-dial-bezel" cx="50" cy="50" r="49"
+                    ng-style="ctrl.timedOut ? {'fill': 'var(--dz-status-timeout)'} : {}"/>
 
             <!-- 2. Subtle top highlight for 3-D depth -->
             <ellipse class="dd-dial-highlight" cx="50" cy="34" rx="19" ry="11"/>
@@ -101,7 +102,7 @@
                       class="dd-dial-unit-txt"
                       x="50" y="66"
                       text-anchor="middle" dominant-baseline="middle"
-                      style="font-size:4px;opacity:0.45;">drag to set</text>
+                      style="font-size:4.5px;opacity:0.60;">drag to set</text>
             </g>
 
             <!-- Wind: degrees • direction string • speed/gust • temp/chill -->
@@ -153,7 +154,7 @@
                       class="dd-dial-unit-txt"
                       x="50" y="74"
                       text-anchor="middle" dominant-baseline="middle"
-                      style="font-size:4px;opacity:0.4;">drag up / down</text>
+                      style="font-size:4.5px;opacity:0.60;">drag up / down</text>
             </g>
 
             <!-- Text sensor: text value -->
@@ -165,22 +166,26 @@
                       ng-bind="ctrl.valueStr"></text>
             </g>
 
-            <!-- Temperature: value+unit • humidity • last update -->
+            <!-- Temperature: value+unit • humidity • baro • forecast -->
             <g ng-if="ctrl.deviceType === 'temp'">
                 <text class="dd-dial-value-txt"
-                      x="50" y="43"
+                      x="50" y="40"
                       text-anchor="middle" dominant-baseline="middle"
-                      style="font-size:14px;"
+                      style="font-size:12px;"
                       ng-bind="ctrl.valueStr + ctrl.unitStr"></text>
                 <text ng-if="ctrl.humidity !== null"
                       class="dd-dial-kwh-sub"
-                      x="50" y="54"
+                      x="50" y="50"
                       text-anchor="middle" dominant-baseline="middle">&#9830; {{ ctrl.humidity }}%</text>
-                <text ng-if="ctrl.lastUpdateStr()"
+                <text ng-if="ctrl.baro !== null"
+                      class="dd-dial-kwh-sub"
+                      x="50" y="57"
+                      text-anchor="middle" dominant-baseline="middle">{{ ctrl.baro }} hPa</text>
+                <text ng-if="ctrl.forecastStr"
                       class="dd-dial-update-txt"
-                      x="50" y="63"
+                      x="50" y="64"
                       text-anchor="middle" dominant-baseline="middle"
-                      ng-bind="ctrl.lastUpdateStr()"></text>
+                      ng-bind="ctrl.forecastStr"></text>
             </g>
 
             <!-- kWh: kWh today • unit • power • last update -->
@@ -199,38 +204,28 @@
                       x="50" y="60"
                       text-anchor="middle" dominant-baseline="middle"
                       ng-bind="ctrl.powerStr"></text>
-                <text ng-if="ctrl.lastUpdateStr()"
-                      class="dd-dial-update-txt"
-                      x="50" y="68"
-                      text-anchor="middle" dominant-baseline="middle"
-                      ng-bind="ctrl.lastUpdateStr()"></text>
             </g>
 
-            <!-- P1 Smart Meter: net power • import/export kWh • date -->
+            <!-- P1 Smart Meter: signed net power • import/export kWh • date -->
             <g ng-if="ctrl.deviceType === 'p1'">
                 <text class="dd-dial-value-txt"
-                      x="50" y="37"
+                      x="50" y="40"
                       text-anchor="middle" dominant-baseline="middle"
                       style="font-size:12px;"
                       ng-bind="ctrl.valueStr"></text>
                 <text class="dd-dial-unit-txt"
-                      x="50" y="47"
+                      x="50" y="49"
                       text-anchor="middle" dominant-baseline="middle"
                       style="font-size:5.5px;"
                       ng-bind="ctrl.unitStr"></text>
                 <text ng-if="ctrl.importKwh !== null"
                       class="dd-dial-p1-import"
-                      x="50" y="56"
+                      x="50" y="57"
                       text-anchor="middle" dominant-baseline="middle">&#x2193; {{ ctrl.importKwh }} kWh</text>
                 <text ng-if="ctrl.exportKwh !== null"
                       class="dd-dial-p1-export"
-                      x="50" y="64"
+                      x="50" y="65"
                       text-anchor="middle" dominant-baseline="middle">&#x2191; {{ ctrl.exportKwh }} kWh</text>
-                <text ng-if="ctrl.lastUpdateStr()"
-                      class="dd-dial-update-txt"
-                      x="50" y="71"
-                      text-anchor="middle" dominant-baseline="middle"
-                      ng-bind="ctrl.lastUpdateStr()"></text>
             </g>
 
             <!-- Load error indicator -->

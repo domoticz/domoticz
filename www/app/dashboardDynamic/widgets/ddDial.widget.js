@@ -16,7 +16,7 @@ define([
     // Inner hub geometry — needle is a triangle from NEEDLE_BASE_R to ARC_R;
     // the hub circle (r=INNER_R) is drawn on top, masking the needle base so
     // the visible needle runs from INNER_R to ARC_R only.
-    var NEEDLE_BASE_R = 22; // triangle base depth (inside hub)
+    var NEEDLE_BASE_R = 29; // triangle base depth (inside hub)
     var INNER_R       = 30; // inner hub circle radius
 
     // Arc-fill geometry (for temp / kWh / numeric / P1 modes).
@@ -287,6 +287,7 @@ define([
                 ctrl.selectorItems      = [];
                 ctrl.sending         = false;
                 ctrl.loadError       = false;
+                ctrl.timedOut        = false;
                 ctrl.dragging        = false;
                 ctrl.scaleTicks      = [];
                 // Wind extras
@@ -295,7 +296,9 @@ define([
                 ctrl.windTemp   = null;
                 ctrl.windChill  = null;
                 // Temp extras
-                ctrl.humidity   = null;
+                ctrl.humidity    = null;
+                ctrl.baro        = null;
+                ctrl.forecastStr = '';
                 ctrl.lastUpdate = '';
                 // kWh extras
                 ctrl.kwhToday    = null;
@@ -351,8 +354,7 @@ define([
                     return (CY + ARC_R * Math.sin(rad)).toFixed(2);
                 };
                 ctrl.showTip = function() {
-                    //return ctrl.value !== null || ctrl.deviceType === 'selector';
-					return ctrl.deviceType === 'selector';
+                    return ctrl.deviceType === 'selector';
                 };
 
                 // ── Triangular needle polygon ─────────────────────────────
@@ -363,7 +365,7 @@ define([
                     var angleDeg = needleAngleDeg();
                     var angleRad = angleDeg * Math.PI / 180;
                     var perpRad  = (angleDeg + 90) * Math.PI / 180;
-                    var hw       = 3.0; // half-width at base
+                    var hw       = 2.0; // half-width at base
 
                     var tipX = CX + ARC_R      * Math.cos(angleRad);
                     var tipY = CY + ARC_R      * Math.sin(angleRad);
@@ -378,7 +380,8 @@ define([
                 };
 
                 ctrl.showNeedle = function() {
-                    return (ctrl.value !== null || ctrl.deviceType === 'selector') &&
+                    return ctrl.value !== null &&
+                           ctrl.deviceType !== 'selector' &&
                            ctrl.deviceType !== 'text';
                 };
 
@@ -552,6 +555,7 @@ define([
                     var c = cfg();
                     ctrl.deviceName = d.Name || '';
                     ctrl.title      = c.title || ctrl.deviceName;
+                    ctrl.timedOut   = !!d.HaveTimeout;
 
                     // ── Wind ──────────────────────────────────────────────
                     if (d.Type === 'Wind') {
@@ -620,9 +624,9 @@ define([
                         var importW = parseFirst(d.Usage)      || 0;
                         var exportW = parseFirst(d.UsageDeliv) || 0;
                         ctrl.p1Power = exportW - importW;
-                        ctrl.value   = ctrl.p1Power;
-                        ctrl.valueStr = Math.round(Math.abs(ctrl.p1Power)) + ' W';
-                        ctrl.unitStr  = ctrl.p1Power >= 0 ? '\u2191 export' : '\u2193 import';
+                        ctrl.value    = ctrl.p1Power;
+                        ctrl.valueStr = formatNum(ctrl.p1Power);
+                        ctrl.unitStr  = 'W';
                         ctrl.importKwh = parseFirst(d.CounterToday);
                         ctrl.exportKwh = parseFirst(d.CounterDelivToday);
                         ctrl.lastUpdate = d.LastUpdate || '';
@@ -646,9 +650,10 @@ define([
                         var tempUnit = ($rootScope.config && $rootScope.config.TempSign) || 'C';
                         ctrl.unitStr  = '\u00b0' + tempUnit;
                         ctrl.valueStr = ctrl.value !== null ? String(ctrl.value) : '--';
-                        ctrl.humidity = (d.Humidity !== undefined)
-                            ? parseInt(d.Humidity, 10) : null;
-                        ctrl.lastUpdate = d.LastUpdate || '';
+                        ctrl.humidity    = (d.Humidity  !== undefined) ? parseInt(d.Humidity, 10)    : null;
+                        ctrl.baro        = (d.Barometer !== undefined) ? parseFloat(d.Barometer)     : null;
+                        ctrl.forecastStr = d.ForecastStr || '';
+                        ctrl.lastUpdate  = d.LastUpdate || '';
                         var defMax = tempUnit === 'F' ? 104 : 40;
                         applyConfigRange(0, defMax);
                         rebuildScale();
@@ -685,8 +690,15 @@ define([
                     var dataRaw = d.Data || '';
                     var nm      = dataRaw.match(/^([-\d.]+)/);
                     ctrl.value    = nm ? parseFloat(nm[1]) : null;
-                    var unitN     = dataRaw.match(/[\d.]+\s+([\w°%]+)/);
-                    ctrl.unitStr  = unitN ? unitN[1] : (d.Unit || '');
+                    // Extract unit after the leading number (space optional: "55.1 %" and "55.1%")
+                    var unitN    = dataRaw.match(/^[-\d.]+\s*([^\d\s].*)/);
+                    var rawUnit  = unitN ? unitN[1].trim() : (d.Unit || '');
+                    // Domoticz stores Unit=1 as a dimensionless placeholder — suppress it;
+                    // fall back to SubType for known cases (e.g. Percentage → %)
+                    if (/^\d+$/.test(String(rawUnit))) {
+                        rawUnit = d.SubType === 'Percentage' ? '%' : '';
+                    }
+                    ctrl.unitStr = rawUnit;
                     ctrl.valueStr = formatNum(ctrl.value);
                     applyConfigRange(undefined, undefined);
                     rebuildScale();

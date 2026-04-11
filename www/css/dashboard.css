@@ -3062,8 +3062,8 @@ body.dd-standby::after {
 /* Outer wrapper: column layout — ext title on top, SVG below */
 /* Scoped tokens so dark face/bezel colours are defined once */
 .dd-dial-outer {
-    --dd-bezel-fill: #2d2d2d;
-    --dd-face-fill:  var(--dz-body-bg, #202020);
+    --dd-bezel-fill: var(--dz-panel-bg);
+    --dd-face-fill:  var(--dz-panel-bg-dark);
 
     flex: 1; min-height: 0; min-width: 0; width: 100%; overflow: hidden;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -3105,7 +3105,7 @@ body.dd-standby::after {
 .dd-dial-wind-sub  { font-size: 4.5px; fill: var(--dz-widget-stat-muted); font-family: inherit; }
 /* kWh / temp sub-value and last-update lines */
 .dd-dial-kwh-sub   { font-size: 5.5px; fill: rgba(255,255,255,0.70); font-family: inherit; }
-.dd-dial-update-txt{ font-size: 4px;   fill: rgba(255,255,255,0.38); font-family: inherit; }
+.dd-dial-update-txt{ font-size: 5px;   fill: var(--dz-widget-stat-muted); font-family: inherit; }
 /* P1 import / export coloured lines */
 .dd-dial-p1-import { font-size: 5.5px; fill: var(--dz-widget-amber); font-family: inherit; }
 .dd-dial-p1-export { font-size: 5.5px; fill: var(--dz-widget-energy-export); font-family: inherit; }
