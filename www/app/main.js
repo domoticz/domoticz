@@ -67,6 +67,7 @@ require.config({
 		'dashboardDynamic/widgets/ddDomoticzLog.widget':     'dashboardDynamic/widgets/ddDomoticzLog.widget',
 		'dashboardDynamic/widgets/ddEnergyDashboard.widget': 'dashboardDynamic/widgets/ddEnergyDashboard.widget',
 		'dashboardDynamic/widgets/ddGasSummary.widget':      'dashboardDynamic/widgets/ddGasSummary.widget',
+		'dashboardDynamic/widgets/ddDial.widget':            'dashboardDynamic/widgets/ddDial.widget',
 		'dashboardDynamic/widgets/ddGauge.widget':           'dashboardDynamic/widgets/ddGauge.widget',
 		'dashboardDynamic/widgets/ddGoogleCalendar.widget':  'dashboardDynamic/widgets/ddGoogleCalendar.widget',
 		'dashboardDynamic/widgets/ddHtmlWidget.widget':      'dashboardDynamic/widgets/ddHtmlWidget.widget',

@@ -1243,6 +1243,17 @@ body.dd-navbar-hidden .dd-toolbar {
     flex: 0 0 auto;
 }
 
+/* ── Favorites inline scene rendering ─────────────────────── */
+/* The global variables.css rules for #itemtablesmall / #itemtablesmalldoubleicon
+   use  margin: 0 10px 10px 0  on the floated icon TDs.  That 10px bottom margin
+   inflates scene cards ~35px taller than device cards.  .dd-fav-scene-wrap as a
+   specificity hook gives a higher-specificity override (class beats bare element). */
+.dd-fav-scene-wrap table#itemtablesmall tr td:first-child + td + td,
+.dd-fav-scene-wrap table#itemtablesmalldoubleicon tr td:first-child + td + td,
+.dd-fav-scene-wrap table#itemtablesmalldoubleicon tr td:first-child + td + td + td {
+    margin-bottom: 0;
+}
+
 /* ── Clock widget ─────────────────────────────────────────── */
 .dd-clock-title,
 .dd-moon-title,
@@ -3034,6 +3045,77 @@ body.dd-standby::after {
 .dd-gauge-text-link  { cursor: pointer; }
 .dd-gauge-text-link:hover { fill: var(--dz-accent-color); opacity: 1; }
 .dd-gauge-title { margin-bottom: 4px; }
+
+/* ── Dial widget ──────────────────────────────────────────── */
+
+/* Body override: no scroll/padding, flex pass-through to fill height */
+.dd-widget-body:has(> div > * > .dd-dial-outer) {
+    padding: 0; overflow: hidden;
+    display: flex; flex-direction: column; align-items: stretch; }
+.dd-widget-body:has(> div > * > .dd-dial-outer) > div {
+    flex: 1; min-height: 0;
+    display: flex; flex-direction: column; }
+.dd-widget-body:has(> div > * > .dd-dial-outer) > div > * {
+    flex: 1; min-height: 0;
+    display: flex; flex-direction: column; }
+
+/* Outer wrapper: column layout — ext title on top, SVG below */
+/* Scoped tokens so dark face/bezel colours are defined once */
+.dd-dial-outer {
+    --dd-bezel-fill: #2d2d2d;
+    --dd-face-fill:  var(--dz-body-bg, #202020);
+
+    flex: 1; min-height: 0; min-width: 0; width: 100%; overflow: hidden;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 4px; box-sizing: border-box;
+    container-type: size; }
+
+/* External title label (above the SVG, same style as other widgets) */
+.dd-dial-ext-title { flex-shrink: 0; margin-bottom: 2px; }
+
+/* SVG wrapper: always square, sized to min(available-width, available-height minus title) */
+.dd-dial-svg-wrap {
+    flex: 0 0 auto;
+    width: min(100cqw, calc(100cqh - 22px));
+    height: auto;
+    aspect-ratio: 1;
+    overflow: hidden; }
+
+/* SVG fills its square wrapper */
+.dd-dial-svg { display: block; width: 100%; height: 100%; }
+
+/* Visual elements */
+.dd-dial-bezel     { fill: var(--dd-bezel-fill); }
+.dd-dial-highlight { fill: rgba(255,255,255,0.06); pointer-events: none; }
+.dd-dial-face      { fill: var(--dd-face-fill); }
+.dd-dial-ring      { transition: stroke 0.4s ease; }
+.dd-dial-tick      { stroke: rgba(255,255,255,0.28); stroke-width: 0.8; stroke-linecap: round; }
+.dd-dial-tick-minor{ stroke: rgba(255,255,255,0.14); stroke-width: 0.5; stroke-linecap: round; }
+.dd-dial-scale-lbl { font-size: 5px; fill: var(--dz-widget-stat-muted); font-family: inherit; }
+/* Triangular needle polygon (fill set via ng-style) */
+.dd-dial-needle    { fill-opacity: 0.92; }
+.dd-dial-tip       { }
+/* Inner hub circle — masks needle base, sets visual inner face */
+.dd-dial-hub       { fill: var(--dd-face-fill); stroke: rgba(255,255,255,0.20); stroke-width: 1.2; }
+/* Arc fill track (grey background arc) and fill layer */
+.dd-dial-arc-track { stroke: rgba(255,255,255,0.10); stroke-linecap: round; }
+.dd-dial-arc-fill  { stroke-linecap: round; transition: stroke 0.4s ease; }
+.dd-dial-value-txt { font-size: 16px; font-weight: 700; fill: var(--dz-body-text); font-family: inherit; }
+.dd-dial-unit-txt  { font-size: 6.5px; fill: var(--dz-widget-stat-muted); font-family: inherit; }
+.dd-dial-wind-sub  { font-size: 4.5px; fill: var(--dz-widget-stat-muted); font-family: inherit; }
+/* kWh / temp sub-value and last-update lines */
+.dd-dial-kwh-sub   { font-size: 5.5px; fill: rgba(255,255,255,0.70); font-family: inherit; }
+.dd-dial-update-txt{ font-size: 4px;   fill: rgba(255,255,255,0.38); font-family: inherit; }
+/* P1 import / export coloured lines */
+.dd-dial-p1-import { font-size: 5.5px; fill: var(--dz-widget-amber); font-family: inherit; }
+.dd-dial-p1-export { font-size: 5.5px; fill: var(--dz-widget-energy-export); font-family: inherit; }
+/* Selector: vertical scroll list */
+.dd-dial-sel-active-box { transition: fill 0.2s, stroke 0.2s; }
+.dd-dial-sel-item   { fill: var(--dz-body-text); font-family: inherit; transition: opacity 0.15s; }
+.dd-dial-sel-active { fill: var(--dz-widget-amber) !important; font-weight: 700; }
+/* Cursor hints for drag-to-set */
+.dd-dial-interactive { cursor: grab; user-select: none; -webkit-user-select: none; }
+.dd-dial-dragging    { cursor: grabbing; }
 
 /* ── Quick Stat widget ─────────────────────────────── */
 .dd-quick-stat > .dd-chart-unconfigured {

@@ -51,6 +51,7 @@ define([
     'dashboardDynamic/widgets/ddEnergyDashboard.widget',
     'dashboardDynamic/widgets/ddSelfSufficiency.widget',
     'dashboardDynamic/widgets/ddCustomChart.widget',
+    'dashboardDynamic/widgets/ddDial.widget',
     'dashboardDynamic/widgets/ddGauge.widget',
     'dashboardDynamic/widgets/ddBatteryMonitor.widget',
     'dashboardDynamic/widgets/ddTimeoutMonitor.widget',
