@@ -138,7 +138,7 @@ define(['app'], function (app) {
 
                     if (ctrl.isCounter()) {
                         if ((device.SubType === 'Gas') || (device.SubType === 'RFXMeter counter') || (device.SubType === 'Counter Incremental')) {
-                            status = device.Counter + ' ' + device.vunit;
+                            status = device.Counter + (device.vunit ? ' ' + device.vunit : '');
                         } else if (device.SubType !== 'Managed Counter') {
                             if (device.Type === 'P1 Smart Meter') {
                                 status = $.t('Today') + ': ' + device.CounterToday + ', ' + device.Counter;
