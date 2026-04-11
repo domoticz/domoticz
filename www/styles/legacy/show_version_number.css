@@ -1,0 +1,5 @@
+/* this permanently shows the version number, instead of only on mouse over */
+
+h2#appversion {
+	visibility: visible;
+}

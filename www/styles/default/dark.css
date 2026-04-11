@@ -1,4 +1,5 @@
 /*
+  /*
   dark.css — default theme variable overrides.
 
   The default theme uses light widget defaults from variables.css (light cards on a dark body).
@@ -29,14 +30,34 @@
   --dz-btn-hover-bg:     #505e7a;
 
   /* Content panels */
-  --dz-panel-bg:         #11213d;
+  --dz-panel-bg:         rgba(255, 255, 255, 0.04);
   --dz-panel-text:       #fff;
+
+  /* Glassmorphism widget cards */
+  --dz-widget-bg:                rgba(255, 255, 255, 0.06);
+  --dz-widget-text:              rgba(255, 255, 255, 0.9);
+  --dz-widget-border-radius:     16px;
+  --dz-widget-shadow:            0 8px 32px rgba(0, 0, 0, 0.25);
+  --dz-widget-name-bg:           rgba(100, 200, 255, 0.12);
+  --dz-widget-name-border:       rgba(100, 200, 255, 0.25);
+  --dz-widget-name-text:         rgba(255, 255, 255, 0.95);
+  --dz-widget-hover-name-bg:     rgba(100, 200, 255, 0.22);
+  --dz-widget-hover-name-border: rgba(100, 200, 255, 0.45);
+  --dz-widget-status-text:       rgba(255, 255, 255, 0.7);
+
+  /* Status colours — translucent for glass look */
+  --dz-status-normal:            rgba(100, 200, 255, 0.12);
+  --dz-status-protected:         rgba(140, 160, 255, 0.18);
+  --dz-status-timeout:           rgba(220, 50, 60, 0.35);
+  --dz-status-low-battery:       rgba(220, 220, 50, 0.25);
+  --dz-status-disabled:          rgba(160, 165, 170, 0.18);
 }
 
 .dataTables_length select, .dataTables_filter input {
-  background-color: #fff !important;
-  color: #000 !important;
-  border: 0 !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 10px !important;
   outline: none;
   box-shadow: none !important;  
 }

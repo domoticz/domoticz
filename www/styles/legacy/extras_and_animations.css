@@ -1,0 +1,444 @@
+/* Animations and small cool things */
+/* Animations and small cool things */
+
+
+/*  POPUP ANIMATION  */
+
+/*
+@-webkit-keyframes fadeIn {
+    from { opacity: 0; }
+      to { opacity: 1; }
+    from { transform: scale(0.8); }
+      to { transform: scale(1);  }   
+    
+}  
+@keyframes fadeIn {
+    from { opacity: 0; }
+      to { opacity: 1; }
+    from { transform: scale(0.8); }
+      to { transform: scale(1);  }
+}
+
+body:hover .ui-dialog{
+    -webkit-animation: fadeIn 0.2s;
+    animation: fadeIn 0.2s;
+    animation-fill-mode: forwards;
+}
+*/
+
+/*  Fan spinning animation  */
+
+@-webkit-keyframes rotation {
+	from {
+		-webkit-transform: rotate(0deg);
+	}
+
+	to {
+		-webkit-transform: rotate(359deg);
+	}
+}
+
+body.dashboard div.item.Fan.onn .img1 img {
+	-webkit-animation: rotation 15s infinite linear;
+	border-radius: 50% !important;
+}
+
+	body.dashboard div.item.Fan.onn .img1 img:hover {
+		border-radius: 50% !important;
+		-webkit-animation: rotation 0.5s infinite linear;
+		transition: move 2s ease-in
+	}
+
+
+/*  BAROMETER EFFECTS 
+
+    STABLE = 0,            // "Stable Weather Pattern"
+    SUNNY = 1,            // "Slowly rising Good Weather", "Clear/Sunny "
+    CLOUDY = 2,            // "Slowly falling L-Pressure ", "Cloudy/Rain "
+    UNSTABLE = 3,        // "Quickly rising H-Press",     "Not Stable"
+    THUNDERSTORM = 4,    // "Quickly falling L-Press",    "Thunderstorm"
+    UNKNOWN = 5            // "Unknown (More Time needed)
+
+    Domoticz has these values:
+
+    domoticz.BARO_STABLE
+    domoticz.BARO_SUNNY
+    domoticz.BARO_CLOUDY
+    domoticz.BARO_UNSTABLE
+    domoticz.BARO_THUNDERSTORM
+    domoticz.BARO_UNKNOWN
+    domoticz.BARO_CLOUDY_RAIN
+
+Although I've also seen "some clouds". But that may come from a MySensors custom sensor.
+
+*/
+
+#dashcontent div.item.Barometer tr #img img:hover,
+#dashcontent div.item.Pressure tr #img img:hover,
+#dashcontent div.item.TempHumidityBaro tr #img img:hover,
+#dashcontent div.item.WeatherStation tr #img img:hover {
+	border-radius: 50% !important;
+}
+
+@keyframes baro-unstable {
+	from {
+		-moz-transform: rotate(0deg);
+		-webkit-transform: rotate(0deg);
+		transition: rotate(0deg)
+	}
+
+	to {
+		-moz-transform: rotate(90deg);
+		-webkit-transform: rotate(90deg);
+		transition: rotate(90deg)
+	}
+}
+
+
+@keyframes baro-change {
+	from {
+		-moz-transform: rotate(15deg);
+		-webkit-transform: rotate(15deg);
+		transition: rotate(15deg)
+	}
+
+	to {
+		-moz-transform: rotate(-15deg);
+		-webkit-transform: rotate(-15deg);
+		transition: rotate(-15deg)
+	}
+}
+
+@keyframes baro-unknown-loading {
+	from {
+		-webkit-box-shadow: inset 0px 80px 5px 0px rgba(0,0,100,0);
+		-moz-box-shadow: inset 0px 80px 5px 0px rgba(0,0,100,0);
+		box-shadow: inset 0px 80px 5px 0px rgba(0,0,100,0);
+	}
+
+	to {
+		-webkit-box-shadow: inset 0px 0px 5px 0px rgba(50,150,250,0.8);
+		-moz-box-shadow: inset 0px 0px 5px 0px rgba(50,150,250,0.8);
+		box-shadow: inset 0px 0px 5px 0px rgba(50,150,250,0.8);
+	}
+}
+
+#dashcontent #dashWeather #unknown tr .img1 img {
+	animation: 10s infinite baro-unknown-loading;
+	border-radius: 50% !important;
+	padding: 5px;
+	opacity: 50;
+}
+
+
+
+/*  STORM  */
+#dashcontent #dashWeather #thunderstorm tr {
+	background-image: none;
+	background: rgba(250,250,250,0.1) url('/images/baro-thunderstorm.png') no-repeat right top !important;
+	/*background-color: rgba(250,250,250,0.1)!important;*/
+}
+
+#dashcontent div.item.Barometer#thunderstorm tr .img1 img,
+#dashcontent div.item.Pressure#thunderstorm tr .img1 img,
+#dashcontent div.item.TempHumidityBaro#thunderstorm tr .img1 img,
+#dashcontent div.item.WeatherStation#thunderstorm tr .img1 img {
+	-moz-transform: rotate(-60deg);
+	-webkit-transform: rotate(-60deg);
+	transition: rotate(-60deg)
+}
+
+
+/*  CLOUDY  - this ordering is on purpose, so rain can override cloudy. */
+#dashcontent #dashWeather div#cloudy tr,
+#dashcontent div#someclouds tr,
+#dashcontent div#cloudy tr {
+	background-image: none;
+	background: rgba(250,250,250,0.1) url('/images/baro-cloudy.png') no-repeat right top !important;
+}
+
+/*  RAINY  */
+#dashcontent #dashWeather div.item#rain tr {
+	background-image: none;
+	background: rgba(250,250,250,0.1) url('/images/baro-rain.png') no-repeat right top !important;
+}
+
+#dashcontent #dashWeather div.item[id*=rain] .img1 img,
+#dashcontent #dashWeather div.item.Barometer#rain tr .img1 img,
+#dashcontent #dashWeather div.item.Pressure#rain tr .img1 img,
+#dashcontent #dashWeather div.item.TempHumidityBaro#rain tr .img1 img,
+#dashcontent #dashWeather div.item.WeatherStation#rain tr .img1 img {
+	-moz-transform: rotate(-30deg);
+	-webkit-transform: rotate(-30deg);
+	transition: rotate(-30deg);
+}
+
+
+/*  CHANGE  */
+#dashcontent #dashWeather div.item#change tr {
+	background-image: none;
+	background: rgba(250,250,250,0.1) url('/images/baro-change.png') no-repeat right top !important;
+	/*background-color: rgba(250,250,250,0.1)!important;*/
+}
+
+#dashcontent #dashWeather div.item[id*=change] tr .img1 img,
+#dashcontent div.item.Barometer#change tr .img1 img,
+#dashcontent div.item.Pressure#change tr .img1 img,
+#dashcontent div.item.TempHumidityBaro#change tr .img1 img,
+#dashcontent div.item.WeatherStation#change tr .img1 img {
+	animation: 3s infinite alternate baro-change;
+}
+
+
+/*  SUNNY  */
+#dashcontent div.item.Barometer[id*=sun] tr,
+#dashcontent div.item.Pressure[id*=sun] tr,
+#dashcontent div.item.TempHumidityBaro[id*=sun] tr,
+#dashcontent div.item.WeatherStation[id*=sun] tr {
+	background-image: none;
+	background: rgba(250,250,250,0.1) url('/images/baro-sunny.png') no-repeat right top !important;
+}
+
+	#dashcontent div.item.Barometer[id*=sun] tr .img1 img,
+	#dashcontent div.item.Barometer#sunny tr .img1 img,
+	#dashcontent div.item.Pressure#sunny tr .img1 img,
+	#dashcontent div.item.TempHumidityBaro#sunny tr .img1 img,
+	#dashcontent div.item.WeatherStation#sunny tr .img1 img {
+		-moz-transform: rotate(45deg);
+		-webkit-transform: rotate(45deg);
+		transition: rotate(45deg);
+	}
+
+
+/*  STABLE - very sunny, very dry weather */
+#dashcontent div.item.Barometer#stable tr,
+#dashcontent div.item.Pressure#stable tr,
+#dashcontent div.item.TempHumidityBaro#ustable tr,
+#dashcontent div.item.WeatherStation#stable tr {
+	background-image: none;
+	background: rgba(250,250,250,0.1) url('/images/baro-stable.png') no-repeat right top !important;
+}
+
+	#dashcontent div.item.Barometer#stable tr .img1 img,
+	#dashcontent div.item.Pressure#stable tr .img1 img,
+	#dashcontent div.item.TempHumidityBaro#stable tr .img1 img,
+	#dashcontent div.item.WeatherStation#stable tr .img1 img {
+		-moz-transform: rotate(80deg);
+		-webkit-transform: rotate(80deg);
+		transition: rotate(80deg);
+	}
+
+
+/*  UNSTABLE  - quicky rising high pressure */
+#dashcontent #dashWeather #unstable tr {
+	background-image: none;
+}
+
+	#dashcontent #dashWeather #unstable tr .img1 img,
+	#dashcontent div.item.Barometer#unstable tr .img1 img,
+	#dashcontent div.item.Pressure#unstable tr .img1 img,
+	#dashcontent div.item.TempHumidityBaro#unstable tr .img1 img,
+	#dashcontent div.item.WeatherStation#unstable tr .img1 img {
+		animation: 10s infinite baro-unstable;
+	}
+
+
+
+/*
+*[id*='sunny'] tr{
+    background-image: radial-gradient(circle 150px at 25% 33%, white, yellow, lightyellow, aqua)!important;
+}
+*/
+
+/*
+div.item.Fan tr #name{
+    background: -moz-linear-gradient90deg, rgba(86,153,220,1) 0%, rgba(28,110,191,1) 3%, rgba(39,82,125,1) 6%, rgba(71,120,169,1) 9%, rgba(28,67,107,1) 12%, rgba(63,122,181,1) 13%, rgba(38,105,173,1) 17%, rgba(86,153,220,1) 20%, rgba(45,81,117,1) 23%, rgba(31,64,97,1) 25%, rgba(49,110,168,1) 29%, rgba(25,68,112,1) 32%, rgba(42,85,128,1) 34%, rgba(62,128,194,1) 37%, rgba(43,95,148,1) 40%, rgba(53,128,204,1) 43%, rgba(51,79,107,1) 46%, rgba(59,111,163,1) 49%, rgba(47,91,135,1) 52%, rgba(75,130,185,1) 53%, rgba(30,70,110,1) 56%, rgba(83,132,181,1) 59%, rgba(46,82,112,1) 61%, rgba(62,125,179,1) 61%, rgba(52,90,125,1) 63%, rgba(63,127,184,1) 65%, rgba(47,93,138,1) 67%, rgba(33,69,102,1) 70%, rgba(27,71,112,1) 71%, rgba(86,153,220,1) 73%, rgba(35,81,128,1) 76%, rgba(44,83,122,1) 77%, rgba(67,112,156,1) 80%, rgba(38,88,135,1) 82%, rgba(67,112,156,1) 82%, rgba(60,105,150,1) 84%, rgba(54,100,143,1) 87%, rgba(86,153,220,1) 90%, rgba(54,100,143,1) 93%, rgba(62,125,179,1) 96%, rgba(36,76,122,1) 100%);
+    background: -webkit-gradient(left top, right bottom, color-stop(0%, rgba(86,153,220,1)), color-stop(3%, rgba(28,110,191,1)), color-stop(6%, rgba(39,82,125,1)), color-stop(9%, rgba(71,120,169,1)), color-stop(12%, rgba(28,67,107,1)), color-stop(13%, rgba(63,122,181,1)), color-stop(17%, rgba(38,105,173,1)), color-stop(20%, rgba(86,153,220,1)), color-stop(23%, rgba(45,81,117,1)), color-stop(25%, rgba(31,64,97,1)), color-stop(29%, rgba(49,110,168,1)), color-stop(32%, rgba(25,68,112,1)), color-stop(34%, rgba(42,85,128,1)), color-stop(37%, rgba(62,128,194,1)), color-stop(40%, rgba(43,95,148,1)), color-stop(43%, rgba(53,128,204,1)), color-stop(46%, rgba(51,79,107,1)), color-stop(49%, rgba(59,111,163,1)), color-stop(52%, rgba(47,91,135,1)), color-stop(53%, rgba(75,130,185,1)), color-stop(56%, rgba(30,70,110,1)), color-stop(59%, rgba(83,132,181,1)), color-stop(61%, rgba(46,82,112,1)), color-stop(61%, rgba(62,125,179,1)), color-stop(63%, rgba(52,90,125,1)), color-stop(65%, rgba(63,127,184,1)), color-stop(67%, rgba(47,93,138,1)), color-stop(70%, rgba(33,69,102,1)), color-stop(71%, rgba(27,71,112,1)), color-stop(73%, rgba(86,153,220,1)), color-stop(76%, rgba(35,81,128,1)), color-stop(77%, rgba(44,83,122,1)), color-stop(80%, rgba(67,112,156,1)), color-stop(82%, rgba(38,88,135,1)), color-stop(82%, rgba(67,112,156,1)), color-stop(84%, rgba(60,105,150,1)), color-stop(87%, rgba(54,100,143,1)), color-stop(90%, rgba(86,153,220,1)), color-stop(93%, rgba(54,100,143,1)), color-stop(96%, rgba(62,125,179,1)), color-stop(100%, rgba(36,76,122,1)));
+    background: -webkit-linear-gradient90deg, rgba(86,153,220,1) 0%, rgba(28,110,191,1) 3%, rgba(39,82,125,1) 6%, rgba(71,120,169,1) 9%, rgba(28,67,107,1) 12%, rgba(63,122,181,1) 13%, rgba(38,105,173,1) 17%, rgba(86,153,220,1) 20%, rgba(45,81,117,1) 23%, rgba(31,64,97,1) 25%, rgba(49,110,168,1) 29%, rgba(25,68,112,1) 32%, rgba(42,85,128,1) 34%, rgba(62,128,194,1) 37%, rgba(43,95,148,1) 40%, rgba(53,128,204,1) 43%, rgba(51,79,107,1) 46%, rgba(59,111,163,1) 49%, rgba(47,91,135,1) 52%, rgba(75,130,185,1) 53%, rgba(30,70,110,1) 56%, rgba(83,132,181,1) 59%, rgba(46,82,112,1) 61%, rgba(62,125,179,1) 61%, rgba(52,90,125,1) 63%, rgba(63,127,184,1) 65%, rgba(47,93,138,1) 67%, rgba(33,69,102,1) 70%, rgba(27,71,112,1) 71%, rgba(86,153,220,1) 73%, rgba(35,81,128,1) 76%, rgba(44,83,122,1) 77%, rgba(67,112,156,1) 80%, rgba(38,88,135,1) 82%, rgba(67,112,156,1) 82%, rgba(60,105,150,1) 84%, rgba(54,100,143,1) 87%, rgba(86,153,220,1) 90%, rgba(54,100,143,1) 93%, rgba(62,125,179,1) 96%, rgba(36,76,122,1) 100%);
+    background: -o-linear-gradient90deg, rgba(86,153,220,1) 0%, rgba(28,110,191,1) 3%, rgba(39,82,125,1) 6%, rgba(71,120,169,1) 9%, rgba(28,67,107,1) 12%, rgba(63,122,181,1) 13%, rgba(38,105,173,1) 17%, rgba(86,153,220,1) 20%, rgba(45,81,117,1) 23%, rgba(31,64,97,1) 25%, rgba(49,110,168,1) 29%, rgba(25,68,112,1) 32%, rgba(42,85,128,1) 34%, rgba(62,128,194,1) 37%, rgba(43,95,148,1) 40%, rgba(53,128,204,1) 43%, rgba(51,79,107,1) 46%, rgba(59,111,163,1) 49%, rgba(47,91,135,1) 52%, rgba(75,130,185,1) 53%, rgba(30,70,110,1) 56%, rgba(83,132,181,1) 59%, rgba(46,82,112,1) 61%, rgba(62,125,179,1) 61%, rgba(52,90,125,1) 63%, rgba(63,127,184,1) 65%, rgba(47,93,138,1) 67%, rgba(33,69,102,1) 70%, rgba(27,71,112,1) 71%, rgba(86,153,220,1) 73%, rgba(35,81,128,1) 76%, rgba(44,83,122,1) 77%, rgba(67,112,156,1) 80%, rgba(38,88,135,1) 82%, rgba(67,112,156,1) 82%, rgba(60,105,150,1) 84%, rgba(54,100,143,1) 87%, rgba(86,153,220,1) 90%, rgba(54,100,143,1) 93%, rgba(62,125,179,1) 96%, rgba(36,76,122,1) 100%);
+    background: -ms-linear-gradient90deg, rgba(86,153,220,1) 0%, rgba(28,110,191,1) 3%, rgba(39,82,125,1) 6%, rgba(71,120,169,1) 9%, rgba(28,67,107,1) 12%, rgba(63,122,181,1) 13%, rgba(38,105,173,1) 17%, rgba(86,153,220,1) 20%, rgba(45,81,117,1) 23%, rgba(31,64,97,1) 25%, rgba(49,110,168,1) 29%, rgba(25,68,112,1) 32%, rgba(42,85,128,1) 34%, rgba(62,128,194,1) 37%, rgba(43,95,148,1) 40%, rgba(53,128,204,1) 43%, rgba(51,79,107,1) 46%, rgba(59,111,163,1) 49%, rgba(47,91,135,1) 52%, rgba(75,130,185,1) 53%, rgba(30,70,110,1) 56%, rgba(83,132,181,1) 59%, rgba(46,82,112,1) 61%, rgba(62,125,179,1) 61%, rgba(52,90,125,1) 63%, rgba(63,127,184,1) 65%, rgba(47,93,138,1) 67%, rgba(33,69,102,1) 70%, rgba(27,71,112,1) 71%, rgba(86,153,220,1) 73%, rgba(35,81,128,1) 76%, rgba(44,83,122,1) 77%, rgba(67,112,156,1) 80%, rgba(38,88,135,1) 82%, rgba(67,112,156,1) 82%, rgba(60,105,150,1) 84%, rgba(54,100,143,1) 87%, rgba(86,153,220,1) 90%, rgba(54,100,143,1) 93%, rgba(62,125,179,1) 96%, rgba(36,76,122,1) 100%);
+    background: linear-gradient(135deg, rgba(86,153,220,1) 0%, rgba(28,110,191,1) 3%, rgba(39,82,125,1) 6%, rgba(71,120,169,1) 9%, rgba(28,67,107,1) 12%, rgba(63,122,181,1) 13%, rgba(38,105,173,1) 17%, rgba(86,153,220,1) 20%, rgba(45,81,117,1) 23%, rgba(31,64,97,1) 25%, rgba(49,110,168,1) 29%, rgba(25,68,112,1) 32%, rgba(42,85,128,1) 34%, rgba(62,128,194,1) 37%, rgba(43,95,148,1) 40%, rgba(53,128,204,1) 43%, rgba(51,79,107,1) 46%, rgba(59,111,163,1) 49%, rgba(47,91,135,1) 52%, rgba(75,130,185,1) 53%, rgba(30,70,110,1) 56%, rgba(83,132,181,1) 59%, rgba(46,82,112,1) 61%, rgba(62,125,179,1) 61%, rgba(52,90,125,1) 63%, rgba(63,127,184,1) 65%, rgba(47,93,138,1) 67%, rgba(33,69,102,1) 70%, rgba(27,71,112,1) 71%, rgba(86,153,220,1) 73%, rgba(35,81,128,1) 76%, rgba(44,83,122,1) 77%, rgba(67,112,156,1) 80%, rgba(38,88,135,1) 82%, rgba(67,112,156,1) 82%, rgba(60,105,150,1) 84%, rgba(54,100,143,1) 87%, rgba(86,153,220,1) 90%, rgba(54,100,143,1) 93%, rgba(62,125,179,1) 96%, rgba(36,76,122,1) 100%)!important;
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#5699dc', endColorstr='#244c7a', GradientType=1 );
+}
+
+.LaCrosseTX3 tr #name{
+    background: linear-gradient(135deg, #ECEDDC 25%, transparent 25%) -50px 0, linear-gradient(225deg, #ECEDDC 25%, transparent 25%) -50px 0, linear-gradient(315deg, #ECEDDC 25%, transparent 25%), linear-gradient(45deg, #ECEDDC 25%, transparent 25%)!important;
+    background-size: 100px 100px;
+    background-color: #EC173A;
+}
+
+.Scene tr td#name{
+    background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%, rgba(147,206,222,1)), color-stop(41%, rgba(247,253,255,1)), color-stop(100%, rgba(73,165,191,1)))!important;
+    background: -webkit-radial-gradient(center, ellipse cover, rgba(147,206,222,1) 0%, rgba(247,253,255,1) 41%, rgba(73,165,191,1) 100%)!important;
+    background: -o-radial-gradient(center, ellipse cover, rgba(147,206,222,1) 0%, rgba(247,253,255,1) 41%, rgba(73,165,191,1) 100%);
+    background: -ms-radial-gradient(center, ellipse cover, rgba(147,206,222,1) 0%, rgba(247,253,255,1) 41%, rgba(73,165,191,1) 100%);
+    background: radial-gradient(ellipse at center, rgba(147,206,222,1) 0%, rgba(247,253,255,1) 41%, rgba(73,165,191,1) 100%)!important;
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#93cede', endColorstr='#49a5bf', GradientType=1 );
+}
+*/
+
+/*
+#Sunny tr #name{
+  background-image: radial-gradient(circle 150px at 25% 33%, white, yellow, lightyellow, aqua)!important;
+}*/
+
+
+
+/* background color changes */
+
+
+
+/*
+@-webkit-keyframes AnimationName {
+    0%{background-position:0% 71%}
+    50%{background-position:100% 30%}
+    100%{background-position:0% 71%}
+}
+@-moz-keyframes AnimationName {
+    0%{background-position:0% 71%}
+    50%{background-position:100% 30%}
+    100%{background-position:0% 71%}
+}
+@keyframes AnimationName { 
+    0%{background-position:0% 71%}
+    50%{background-position:100% 30%}
+    100%{background-position:0% 71%}
+}
+
+body{
+
+    background-image:none;
+    background: linear-gradient(296deg, #2bb995, #4dafd4, #d44dc9, #1d70e3, #1dd0e3, #218cc8);
+
+    background-attachment: inherit;
+    background-size: 1400% 1400%;
+    -webkit-animation: AnimationName 59s ease infinite;
+    -moz-animation: AnimationName 59s ease infinite;
+    animation: AnimationName 59s ease infinite;
+}
+
+*/
+
+/*  FANCY CHECKBOXES  */
+
+input[type='checkbox']:not(.noscheck) {
+	max-height: 0;
+	max-width: 0;
+	height: 0;
+	width: 0;
+	opacity: 0;
+}
+
+	input[type='checkbox']:not(.noscheck) + label {
+		display: inline-block;
+		position: relative;
+		box-shadow: inset 0 0 0px 1px rgba(191,29,27,1);
+		text-indent: 44px;
+		white-space: nowrap;
+		height: 18px;
+		width: 40px;
+		border-radius: 0px;
+		background: rgba(191,29,27,1);
+		margin: 3px 28px 3px 0px;
+	}
+
+input[type='checkbox']:not(.noscheck) + label:before {
+	content: "";
+	position: absolute;
+	display: block;
+	height: 18px;
+	width: 30px;
+	top: 0px;
+	left: 0px;
+	border-radius: 0px;
+	-moz-transition: .25s ease-in-out;
+	-webkit-transition: .25s ease-in-out;
+	transition: .25s ease-in-out;
+}
+
+input[type='checkbox']:not(.noscheck) + label:after {
+	content: "";
+	position: absolute;
+	display: block;
+	height: 14px;
+	width: 19px;
+	top: 2px;
+	left: 2px;
+	border-radius: 0px;
+	background: white;
+	box-shadow: inset 0 0 0 1px rgba(0,0,0,.2), 0 2px 4px rgba(0,0,0,.2);
+	-moz-transition: .25s ease-in-out;
+	-webkit-transition: .25s ease-in-out;
+	transition: .25s ease-in-out;
+}
+
+input[type='checkbox']:not(.noscheck):checked + label:before {
+	width: 40px;
+	background: rgba(19,191,17,1);
+}
+
+input[type='checkbox']:not(.noscheck):checked + label:after {
+	left: 20px;
+	box-shadow: inset 0 0 0 1px rgba(19,191,17,1), 0 2px 4px rgba(0,0,0,.2);
+}
+
+/*  EXTRA HOVER GLOSS */
+
+.ui-draggable-dragging tr {
+	transform: scale(1.05);
+}
+
+#settingscontent .row-fluid.related .span2 a:hover {
+	/*box-shadow: 0px 5px 10px -5px rgba(250,250,250,0.1);
+    transition: all 0.2s ease;*/
+}
+/*
+.btnstylerev,
+.btnstyle,
+.btn, 
+.btn-danger{
+    transition: all 0.1s ease;
+}
+
+.btnstylerev:hover,
+.btnstyle:hover,
+.btn:hover, 
+.btn-danger:hover,
+/*{
+    box-shadow: 0px 2px 10px 2px rgba(250,250,250,0.1);
+    transition: all 0.1s ease;    
+}
+*/
+
+
+/*
+.btn-primary,
+.btn-success,
+.btn-primary,
+.btn-info{position:relative;overflow:hidden;transform:translate3d(0,0,0)}
+
+
+.btn-primary,
+.btn-success,
+.btn-primary,
+.btn-info:after{content:"";display:block;position:absolute;width:100%;height:100%;top:0;left:0;pointer-events:none;background-image:radial-gradient(circle,#000 10%,transparent 10.01%);background-repeat:no-repeat;background-position:50%;transform:scale(10,10);opacity:0;transition:transform .5s,opacity 1s}
+
+
+.btn-primary,
+.btn-success,
+.btn-primary,
+.btn-info:active:after{transform:scale(0,0);opacity:.2;transition:0s}
+*/
+
+
+/*
+::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 7px;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, .5);
+  -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, .5);
+}
+*/

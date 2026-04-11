@@ -1,0 +1,15 @@
+@import url("../../css/legacy.css"); /* Don't remove this line! */
+@import url("base.css"); /* Don't remove this line! */
+@import url("extras_and_animations.css"); /* Adds visual extras. */
+/*@import url("navigation_main_sidebar.css"); /* This transforms the main menu to a vertical menu on the left. */
+
+/* Chart panel card styling (default dark theme specific) */
+.device-log-chart,
+wind-direction-chart,
+wind-speed-frequency-chart {
+    display: block;
+    background: rgba(0, 15, 35, 0.6);
+    border: 1px solid rgba(67, 164, 211, 0.15);
+    border-radius: 8px;
+    margin-bottom: 10px;
+}

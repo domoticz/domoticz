@@ -1,0 +1,6 @@
+/*
+  base.css — backward-compatibility shim.
+  The actual content has moved to common.css (utilities) and dark.css (dark overrides).
+*/
+@import url("common.css");
+@import url("dark.css");

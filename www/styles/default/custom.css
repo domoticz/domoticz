@@ -1,3 +1,4 @@
+﻿@import url("../../css/legacy.css"); /* Don't remove this line! */
 @import url("../../css/legacy.css"); /* Don't remove this line! */
 @import url("base.css"); /* Don't remove this line! */
 @import url("extras_and_animations.css"); /* Adds visual extras. */
@@ -12,4 +13,556 @@ wind-speed-frequency-chart {
     border: 1px solid rgba(67, 164, 211, 0.15);
     border-radius: 8px;
     margin-bottom: 10px;
+}
+
+/* ── Glassmorphism widget cards ────────────────────────────────── */
+
+/* Widget card body — frosted glass */
+body table[id^="itemtable"] tbody tr {
+    background: rgba(255, 255, 255, 0.06) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+/* Widget card hover — lift and glow */
+body table[id^="itemtable"] tbody tr:hover {
+    background: rgba(255, 255, 255, 0.10) !important;
+    border-color: rgba(100, 200, 255, 0.3);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), 0 0 15px rgba(100, 200, 255, 0.08);
+    transform: translateY(-2px);
+}
+
+/* Widget name bar — subtle glass accent */
+body table[id^="itemtable"] tr td:first-child {
+    background: rgba(100, 200, 255, 0.12) !important;
+    border: 1px solid rgba(100, 200, 255, 0.25) !important;
+    border-radius: 10px !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+/* Widget name bar hover — brighter accent */
+body table[id^="itemtable"] tr:hover td:first-child {
+    background: rgba(100, 200, 255, 0.22) !important;
+    border-color: rgba(100, 200, 255, 0.45) !important;
+}
+
+/* Widget value text */
+body table[id^="itemtable"] tr td:first-child + td {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Widget status / detail text */
+body table[id^="itemtable"] tr td {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+/* Status name-bar overrides — translucent glass versions */
+div.item.statusNormal td#name {
+    background-color: rgba(100, 200, 255, 0.12) !important;
+}
+div.item.statusProtected td#name {
+    background-color: rgba(140, 160, 255, 0.18) !important;
+}
+div.item.statusTimeout td#name {
+    background-color: rgba(220, 50, 60, 0.35) !important;
+}
+div.item.statusLowBattery td#name {
+    background-color: rgba(220, 220, 50, 0.25) !important;
+}
+div.item.statusDisabled td#name {
+    background-color: rgba(160, 165, 170, 0.18) !important;
+}
+
+/* Content panel areas — frosted glass */
+.row-fluid [class^="span"] {
+    background: rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.row-fluid .span2 {
+    background: transparent !important;
+    border: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+/* Dashboard section headers — glass style */
+#dashcontent h2 {
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 0 20px rgba(100, 200, 255, 0.25);
+    letter-spacing: 1px;
+}
+
+/* Modal / dialog — frosted glass */
+.ui-dialog {
+    background: rgba(10, 25, 50, 0.85) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4) !important;
+}
+
+.ui-dialog-titlebar {
+    background: rgba(100, 200, 255, 0.08) !important;
+    background-image: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 16px 16px 0 0 !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* DataTable — glass rows */
+tr.odd {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+tr.even {
+    background-color: rgba(255, 255, 255, 0.02) !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* ── Glassmorphism option buttons ─────────────────────────────── */
+
+/* Base option button — compact glass chip */
+.btnsmall,
+.btnsmall-sel,
+.btnsmall-dis {
+    display: inline-block;
+    height: auto;
+    padding: 2px 10px;
+    background: rgba(255, 255, 255, 0.08) !important;
+    background-image: none !important;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    line-height: 1.4em;
+    text-decoration: none;
+    text-transform: none;
+    font-size: 0.78em;
+    color: rgba(255, 255, 255, 0.85) !important;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.25s ease;
+}
+
+/* Selected / active option button — accent glow */
+.btnsmall-sel {
+    background: rgba(100, 200, 255, 0.18) !important;
+    border-color: rgba(100, 200, 255, 0.4);
+    color: #fff !important;
+    box-shadow: 0 0 8px rgba(100, 200, 255, 0.15);
+}
+
+/* Disabled option button */
+.btnsmall-dis {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.35) !important;
+    cursor: default;
+}
+
+/* Hover states */
+.btnsmall:hover {
+    background: rgba(100, 200, 255, 0.15) !important;
+    border-color: rgba(100, 200, 255, 0.35);
+    color: #fff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btnsmall-sel:hover {
+    background: rgba(100, 200, 255, 0.28) !important;
+    border-color: rgba(100, 200, 255, 0.55);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(100, 200, 255, 0.25);
+}
+
+/* Bootstrap .btn.btn-default — glass override */
+.btn.btn-default {
+    background: rgba(255, 255, 255, 0.08) !important;
+    background-image: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: none;
+    transition: all 0.25s ease;
+}
+
+.btn.btn-default:hover {
+    background: rgba(100, 200, 255, 0.15) !important;
+    border-color: rgba(100, 200, 255, 0.35);
+    color: #fff;
+}
+
+.btn.btn-default.active {
+    background: rgba(100, 200, 255, 0.22) !important;
+    background-image: none !important;
+    border-color: rgba(100, 200, 255, 0.45);
+    color: #fff;
+}
+
+/* Selector level buttons — glass pill style */
+.btn-group .btn.btn-small {
+    background: rgba(255, 255, 255, 0.06);
+    background-image: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.75);
+    text-shadow: none;
+    margin: 2px;
+    transition: all 0.25s ease;
+}
+
+.btn-group .btn.btn-small:hover {
+    background: rgba(100, 200, 255, 0.12);
+    border-color: rgba(100, 200, 255, 0.3);
+    color: #fff;
+}
+
+.btn-group .btn.btn-small.btn-selected {
+    background: linear-gradient(135deg, rgba(100, 200, 255, 0.25), rgba(100, 150, 255, 0.15)) !important;
+    background-image: none;
+    border-color: rgba(100, 200, 255, 0.45);
+    color: #fff !important;
+    box-shadow: 0 0 10px rgba(100, 200, 255, 0.15);
+}
+
+/* Standalone .btn-selected (selector buttons) */
+.btn-selected {
+    background: linear-gradient(135deg, rgba(100, 200, 255, 0.25), rgba(100, 150, 255, 0.15)) !important;
+    background-image: none;
+    border: 1px solid rgba(100, 200, 255, 0.45);
+    color: #fff !important;
+    text-shadow: none;
+}
+
+.btn-selected:hover,
+.btn-selected:focus,
+.btn-selected:active {
+    background: linear-gradient(135deg, rgba(100, 200, 255, 0.35), rgba(100, 150, 255, 0.25)) !important;
+    border-color: rgba(100, 200, 255, 0.6);
+    color: #fff !important;
+}
+
+/* Contextual buttons — glass tinted variants */
+.btn-primary {
+    background: linear-gradient(135deg, rgba(50, 120, 200, 0.4), rgba(50, 100, 180, 0.25)) !important;
+    border: 1px solid rgba(50, 120, 200, 0.4);
+    color: #fff;
+    text-shadow: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, rgba(50, 120, 200, 0.55), rgba(50, 100, 180, 0.4)) !important;
+    border-color: rgba(50, 120, 200, 0.6);
+}
+
+.btn-info {
+    background: linear-gradient(135deg, rgba(80, 180, 220, 0.3), rgba(60, 160, 200, 0.18)) !important;
+    border: 1px solid rgba(80, 180, 220, 0.35);
+    color: #fff;
+    text-shadow: none;
+}
+
+.btn-info:hover {
+    background: linear-gradient(135deg, rgba(80, 180, 220, 0.45), rgba(60, 160, 200, 0.3)) !important;
+    border-color: rgba(80, 180, 220, 0.55);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, rgba(80, 180, 80, 0.3), rgba(60, 160, 60, 0.18)) !important;
+    border: 1px solid rgba(80, 180, 80, 0.35);
+    color: #fff;
+    text-shadow: none;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, rgba(80, 180, 80, 0.45), rgba(60, 160, 60, 0.3)) !important;
+    border-color: rgba(80, 180, 80, 0.55);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, rgba(240, 170, 70, 0.3), rgba(220, 150, 50, 0.18)) !important;
+    border: 1px solid rgba(240, 170, 70, 0.35);
+    color: #fff;
+    text-shadow: none;
+}
+
+.btn-warning:hover {
+    background: linear-gradient(135deg, rgba(240, 170, 70, 0.45), rgba(220, 150, 50, 0.3)) !important;
+    border-color: rgba(240, 170, 70, 0.55);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, rgba(220, 80, 70, 0.3), rgba(200, 60, 50, 0.18)) !important;
+    border: 1px solid rgba(220, 80, 70, 0.35);
+    color: #fff;
+    text-shadow: none;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, rgba(220, 80, 70, 0.45), rgba(200, 60, 50, 0.3)) !important;
+    border-color: rgba(220, 80, 70, 0.55);
+}
+
+/* Favorite icons — subtle glow on hover */
+td.options .lcursor:hover img,
+td.options img.lcursor:hover {
+    filter: drop-shadow(0 0 4px rgba(100, 200, 255, 0.5));
+    transition: filter 0.2s ease;
+}
+
+/* Select dropdowns inside widgets */
+body table[id^="itemtable"] select {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 4px 8px;
+}
+
+/* ── Glassmorphism dimmer / slider ────────────────────────────── */
+
+/* Track — frosted glass bar */
+.dimslider {
+    background: rgba(255, 255, 255, 0.08) !important;
+    background-image: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    height: 10px !important;
+    box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Filled range — accent glow */
+.dimslider .ui-slider-range {
+    background: linear-gradient(90deg, rgba(100, 200, 255, 0.5), rgba(80, 160, 255, 0.7)) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 0 8px rgba(100, 200, 255, 0.3);
+    border: none !important;
+    filter: none !important;
+}
+
+/* Handle — glass knob */
+.dimslider .ui-slider-handle {
+    width: 20px !important;
+    height: 20px !important;
+    top: -6px !important;
+    margin-left: -10px !important;
+    background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.85), rgba(100, 200, 255, 0.6)) !important;
+    border: 1px solid rgba(100, 200, 255, 0.7) !important;
+    border-radius: 50% !important;
+    box-shadow: 0 0 10px rgba(100, 200, 255, 0.25), 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.dimslider .ui-slider-handle:hover,
+.dimslider .ui-slider-handle:focus {
+    transform: scale(1.15);
+    box-shadow: 0 0 16px rgba(100, 200, 255, 0.45), 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    border-color: rgba(100, 200, 255, 0.7) !important;
+}
+
+.dimslider .ui-slider-handle:active {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(100, 200, 255, 0.55), 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* RGBW popup slider — same glass treatment */
+#rgbw_popup .dimslider {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ── Glassmorphism form controls ─────────────────────────────── */
+
+/* Native select / combobox — glass pill */
+select,
+select.combobox,
+.ui-widget-content select {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ffffff80'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 10px center !important;
+    background-size: 10px 6px !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 10px !important;
+    padding: 4px 28px 4px 10px !important;
+    outline: none;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+select:hover,
+select.combobox:hover {
+    border-color: rgba(100, 200, 255, 0.3) !important;
+}
+
+select:focus,
+select.combobox:focus {
+    border-color: rgba(100, 200, 255, 0.5) !important;
+    box-shadow: 0 0 10px rgba(100, 200, 255, 0.12) !important;
+    outline: none !important;
+}
+
+select option,
+select.combobox option {
+    background: #0a1930;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Text / password / number inputs — glass underline style */
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="email"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+textarea {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    background-image: none !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 10px !important;
+    padding: 5px 12px !important;
+    outline: none;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="search"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+textarea:focus {
+    background-color: rgba(255, 255, 255, 0.09) !important;
+    border-color: rgba(100, 200, 255, 0.45) !important;
+    box-shadow: 0 0 12px rgba(100, 200, 255, 0.12) !important;
+    color: #fff !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: rgba(255, 255, 255, 0.35) !important;
+}
+
+/* jQuery UI widget inputs — same treatment */
+input.ui-widget-content,
+textarea.ui-widget-content {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    background-image: none !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 10px !important;
+}
+
+/* jQuery UI selectmenu button — glass dropdown trigger */
+.ui-selectmenu-button,
+.ui-selectmenu-button.ui-widget {
+    background: rgba(255, 255, 255, 0.08) !important;
+    background-image: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 10px !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    transition: border-color 0.25s ease;
+}
+
+.ui-selectmenu-button:hover {
+    border-color: rgba(100, 200, 255, 0.3) !important;
+}
+
+.ui-selectmenu-button .ui-selectmenu-text {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.ui-selectmenu-button .ui-selectmenu-icon {
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* jQuery UI selectmenu dropdown — glass panel */
+.ui-selectmenu-menu .ui-menu {
+    background: rgba(10, 25, 50, 0.92) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 10px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+    padding: 4px 0 !important;
+}
+
+.ui-selectmenu-menu .ui-menu .ui-menu-item {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.ui-selectmenu-menu .ui-menu .ui-menu-item.ui-state-focus,
+.ui-selectmenu-menu .ui-menu .ui-menu-item:hover {
+    background: rgba(100, 200, 255, 0.15) !important;
+    color: #fff !important;
+    border-radius: 6px;
+    margin: 0 4px;
+}
+
+/* Room combobox in topbar */
+#comboroom.combobox {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 10px !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    padding: 2px 10px !important;
+    font-size: 0.9em;
+}
+
+/* Topbar search input */
+#tbFiltSearch INPUT {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 10px !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+    padding: 2px 10px !important;
+}
+
+#tbFiltSearch INPUT:focus {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(100, 200, 255, 0.4) !important;
+    box-shadow: 0 0 10px rgba(100, 200, 255, 0.1) !important;
+    color: #fff !important;
+}
+
+/* Settings page inputs and selects */
+#settingscontent select,
+#settingscontent input.text,
+#settingscontent textarea,
+#settingscontent .ui-widget-content {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    background-image: none !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 10px !important;
+}
+
+/* DataTables filter/length controls — keep legible */
+.dataTables_length select,
+.dataTables_filter input {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 10px !important;
 }
