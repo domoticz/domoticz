@@ -766,8 +766,9 @@ define([
 					$scope.ctrl.roomSelected = roomPlanId;
 				}
 
-				// Load dynamic dashboard layouts when the feature is enabled
-				if ($rootScope.config && $rootScope.config.EnableTabDashboardDynamic) {
+				// Load dynamic dashboard layouts when the feature is enabled (not on mobile)
+				var isMobileView = !!(window.myglobals && window.myglobals.ismobile) && $rootScope.config.MobileType !== 1;
+				if ($rootScope.config && $rootScope.config.EnableTabDashboardDynamic && !isMobileView) {
 					$http.get('json.htm', { params: { type: 'command', param: 'getdashboardlayouts' } })
 						.then(function(resp) {
 							$scope.ctrl.dynamicLayouts = (resp.data && resp.data.result) || [];
