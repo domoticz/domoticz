@@ -32,8 +32,69 @@
                     device="device"
                     dashboard-type="0">
                 </dz-light-widget>
+                <!-- Scene / Group inline rendering — same structure as dz-scene-widget but
+                     dd-fav-scene-wrap on the inner div lets dashboard.css override the
+                     10px bottom-margin on the floated icon cell that made scenes taller. -->
+                <div ng-if="ctrl.isScene(device)" class="span4">
+                    <div class="item itemBlock statusNormal dd-fav-scene-wrap">
+                        <table ng-attr-id="{{ ctrl.isGroup(device) ? 'itemtablesmalldoubleicon' : 'itemtablesmall' }}"
+                               border="0" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td id="name" class="item-name" ng-bind="device.Name"></td>
+                                <td id="bigtext">{{ ctrl.isGroup(device) ? device.Status : '' }}</td>
+                                <td id="img1">
+                                    <img src="images/Push48_On.png"
+                                         ng-click="ctrl.activateScene(device, 'On')"
+                                         class="lcursor" height="40" width="40"
+                                         title="{{ ctrl.isGroup(device) ? 'Turn On' : 'Activate' }}">
+                                </td>
+                                <td ng-if="ctrl.isGroup(device)" id="img2">
+                                    <img src="images/Push48_Off.png"
+                                         ng-click="ctrl.activateScene(device, 'Off')"
+                                         class="lcursor" height="40" width="40" title="Turn Off">
+                                </td>
+                                <td id="status">
+                                    <span ng-if="!ctrl.isGroup(device)" data-i18n="Scene">Scene</span>
+                                    <span ng-if="ctrl.isGroup(device)" data-i18n="Group">Group</span>
+                                </td>
+                                <td id="lastupdate">
+                                    <span data-i18n="Last Seen" style="font-style:italic">Last Seen</span>: {{ device.LastUpdate }}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <!-- Barometer / Temp+Baro / Temp+Hum+Baro — weather tab only.
+                     Mirrors weather_widget.html using #itemtablenotype so the
+                     barometer value and forecast appear instead of temperature. -->
+                <div ng-if="ctrl.isBaro(device)" class="span4">
+                    <div class="item itemBlock statusNormal">
+                        <table id="itemtablesmall" border="0" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td id="name" class="item-name" ng-bind="device.Name"></td>
+                                <td id="bigtext">{{ device.Barometer }} hPa</td>
+                                <td id="img">
+                                    <a ng-href="#/Devices/{{ device.idx }}/Log">
+                                        <img src="images/baro48.png" height="48" width="48" class="lcursor">
+                                    </a>
+                                </td>
+                                <td id="status">
+                                    <span ng-if="device.ForecastStr">
+                                        <span data-i18n="Prediction">Prediction</span>: {{ device.ForecastStr }}
+                                    </span>
+                                    <span ng-if="device.Temp !== undefined">
+                                        , <span data-i18n="Temp">Temp</span>: {{ device.Temp }}&deg;
+                                    </span>
+                                </td>
+                                <td id="lastupdate">
+                                    <span data-i18n="Last Seen" style="font-style:italic">Last Seen</span>: {{ device.LastUpdate }}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
                 <dz-utility-widget
-                    ng-if="!ctrl.isLight(device) && !ctrl.isScene(device)"
+                    ng-if="!ctrl.isLight(device) && !ctrl.isScene(device) && !ctrl.isBaro(device)"
                     device="device"
                     dashboard-type="0">
                 </dz-utility-widget>
