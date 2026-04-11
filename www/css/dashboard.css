@@ -1240,7 +1240,24 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 .dd-dz-fav-item {
-    flex: 0 0 auto;
+    flex: 0 0 100%;
+    width: 100%;
+    min-width: 0;
+}
+
+/* Override Bootstrap 2 span classes inside the favorites/room grid —
+   force full width, no float, no left margin (mirrors the .dd-dz-inner rule). */
+.dd-dz-favorites-body [class*="span"] {
+    width: 100% !important;
+    float: none !important;
+    margin-left: 0 !important;
+}
+
+.dd-dz-favorites-body .item,
+.dd-dz-favorites-body .itemBlock {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    max-width: 100% !important;
 }
 
 /* ── Favorites inline scene rendering ─────────────────────── */
