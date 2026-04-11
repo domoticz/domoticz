@@ -137,6 +137,8 @@ body.dd-navbar-hidden .dd-topbar {
     background: var(--dz-nav-bg, #283750);
     border-color: rgba(255,255,255,0.15);
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
 }
 
 .dd-topbar .dropdown-menu > li > a {
@@ -166,6 +168,7 @@ body.dd-navbar-hidden .dd-topbar {
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
+
 
 /* ── Full Edit Toolbar ────────────────────────────────────── */
 .dd-toolbar {
@@ -242,6 +245,8 @@ body.dd-navbar-hidden .dd-toolbar {
     background: var(--dz-nav-bg, #283750);
     border-color: rgba(255,255,255,0.15);
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
 }
 
 .dd-toolbar .dropdown-menu > li > a {
