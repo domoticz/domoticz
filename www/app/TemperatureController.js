@@ -684,7 +684,7 @@ define(['app', 'livesocket'], function (app) {
 						return $.t(item.HumidityStatus);
 					};
 					ctrl.displayBarometer = function () {
-						return typeof item.Barometer != 'undefined';
+						return typeof item.Barometer != 'undefined' && item.Type === 'Thermostat 6';
 					};
 					ctrl.displayForecast = function () {
 						return typeof item.ForecastStr != 'undefined';
