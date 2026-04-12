@@ -308,6 +308,9 @@ define([
                 ctrl.p1Power    = null;
                 ctrl.importKwh  = null;
                 ctrl.exportKwh  = null;
+                // Switch extras
+                ctrl.switchOn   = false;
+                ctrl.switchType = '';
 
                 var cancelToken = null;
                 var timer       = null;
@@ -382,7 +385,8 @@ define([
                 ctrl.showNeedle = function() {
                     return ctrl.value !== null &&
                            ctrl.deviceType !== 'selector' &&
-                           ctrl.deviceType !== 'text';
+                           ctrl.deviceType !== 'text'   &&
+                           ctrl.deviceType !== 'switch';
                 };
 
                 // ── Arc fill (for temp / kWh / numeric modes) ─────────────
@@ -420,6 +424,11 @@ define([
                 // ── Arc fill colour (threshold-aware) ────────────────────
                 ctrl.arcFillColor = function() {
                     var type = ctrl.deviceType;
+                    if (type === 'switch') {
+                        return ctrl.switchOn
+                            ? 'var(--dz-accent-color)'
+                            : 'var(--dz-widget-stat-muted)';
+                    }
                     if (type === 'selector' || type === 'text' ||
                         type === 'wind'     || type === 'p1') {
                         return 'var(--dz-widget-amber)';
@@ -607,6 +616,18 @@ define([
                         return;
                     }
 
+                    // ── Switch (On/Off / PushOn / PushOff) ───────────────────────────────
+                    if (d.SwitchType && d.SwitchType !== 'Selector' && d.Status !== undefined) {
+                        ctrl.deviceType  = 'switch';
+                        ctrl.switchOn    = (d.Status === 'On');
+                        ctrl.switchType  = d.SwitchType || '';
+                        ctrl.value       = ctrl.switchOn ? 1 : 0;
+                        ctrl.valueStr    = d.Status || '--';
+                        ctrl.unitStr     = '';
+                        ctrl.scaleTicks  = [];
+                        return;
+                    }
+
                     // ── Text sensor ───────────────────────────────────────
                     if (d.SubType === 'Text') {
                         ctrl.deviceType = 'text';
@@ -748,6 +769,36 @@ define([
                         ctrl.sending  = false;
                     }).catch(function() { ctrl.sending = false; });
                 }
+
+                // ── Switch toggle ─────────────────────────────────────────
+                function toggleSwitch() {
+                    if (ctrl.sending) { return; }
+                    ctrl.sending = true;
+                    var cmd;
+                    if (ctrl.switchType === 'Push On Button')       { cmd = 'On'; }
+                    else if (ctrl.switchType === 'Push Off Button') { cmd = 'Off'; }
+                    else                                            { cmd = 'Toggle'; }
+                    $http.get('json.htm', {
+                        params: { type: 'command', param: 'switchlight',
+                                  idx: cfg().deviceIdx, switchcmd: cmd }
+                    }).then(function(resp) {
+                        if (resp.data && resp.data.status === 'OK') {
+                            if (cmd === 'Toggle') {
+                                ctrl.switchOn = !ctrl.switchOn;
+                            } else {
+                                ctrl.switchOn = (cmd === 'On');
+                            }
+                            ctrl.value    = ctrl.switchOn ? 1 : 0;
+                            ctrl.valueStr = ctrl.switchOn ? 'On' : 'Off';
+                        }
+                        ctrl.sending = false;
+                    }).catch(function() { ctrl.sending = false; });
+                }
+
+                ctrl.handleClick = function() {
+                    if (ctrl.deviceType !== 'switch' || ctrl.editMode) { return; }
+                    toggleSwitch();
+                };
 
                 // ── Drag to set ───────────────────────────────────────────
 

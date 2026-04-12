@@ -15,8 +15,10 @@
     <div ng-if="ctrl.widgetDef.config.deviceIdx" class="dd-dial-svg-wrap">
         <svg viewBox="-6 -6 112 112" class="dd-dial-svg"
              ng-class="{'dd-dial-interactive': (ctrl.deviceType === 'setpoint' || ctrl.deviceType === 'selector') && !ctrl.editMode,
+                         'dd-dial-clickable':   ctrl.deviceType === 'switch' && !ctrl.editMode,
                          'dd-dial-dragging': ctrl.dragging}"
-             ng-mousedown="ctrl.dragStart($event)">
+             ng-mousedown="ctrl.dragStart($event)"
+             ng-click="ctrl.handleClick()">
 
             <!-- Clip path for selector hub content (static id — geometry identical on all dial instances) -->
             <defs>
@@ -162,6 +164,25 @@
                       x="50" y="50"
                       text-anchor="middle" dominant-baseline="middle"
                       style="font-size:10px;"
+                      ng-bind="ctrl.valueStr"></text>
+            </g>
+
+            <!-- Switch: SVG power icon + On/Off status -->
+            <g ng-if="ctrl.deviceType === 'switch'"
+               ng-style="{'stroke': ctrl.arcFillColor(), 'fill': 'none'}">
+                <!-- Arc: 300° circle with gap at top (±30° from 12-o'clock), r=11, centre (50,44) -->
+                <path d="M 55.5,34.5 A 11,11 0 1,1 44.5,34.5"
+                      stroke-width="2" stroke-linecap="round"/>
+                <!-- Vertical line through the gap -->
+                <line x1="50" y1="31.5" x2="50" y2="41.5"
+                      stroke-width="2" stroke-linecap="round"/>
+                <!-- On/Off status text -->
+                <text x="50" y="67"
+                      class="dd-dial-unit-txt"
+                      text-anchor="middle" dominant-baseline="middle"
+                      style="font-size:16px;font-weight:600;"
+                      stroke="none"
+                      ng-style="ctrl.switchOn ? {'fill': 'var(--dz-accent-color)'} : {'fill': 'var(--dz-widget-stat-muted)'}"
                       ng-bind="ctrl.valueStr"></text>
             </g>
 
