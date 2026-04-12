@@ -2928,13 +2928,13 @@ dd-wcp-color {
 .dd-rss-single-excerpt { font-size: 0.82em; color: var(--dz-widget-stat-muted); line-height: 1.5; flex: 1; overflow: hidden; }
 
 /* ── Weather Forecast Widget ──────────────────────────────── */
-.dd-widget--weather-forecast > .dd-widget-body { overflow: hidden; }
+.dd-widget--weather-forecast > .dd-widget-body { overflow: hidden; padding: 0; }
 .dd-forecast { height: 100%; display: flex; flex-direction: column; padding: 4px 8px; overflow: hidden; }
 .dd-forecast-header { font-size: 0.9em; font-weight: 600; margin-bottom: 4px; }
-.dd-forecast-grid { display: flex; flex: 1; gap: 2px; overflow: hidden; align-items: stretch; }
-.dd-forecast-day { flex: 1; min-width: 50px; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 2px; text-align: center; justify-content: center; }
+.dd-forecast-grid { display: flex; flex: 1; gap: 2px; overflow: hidden; align-items: stretch; justify-content: center; }
+.dd-forecast-day { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 2px; text-align: center; justify-content: center; overflow: hidden; }
 .dd-forecast-dayname { font-size: 0.78em; font-weight: 600; color: var(--dz-widget-stat-muted); }
-.dd-forecast-day > i { font-size: 1.2em; }
+.dd-forecast-day > i { font-size: 1.6em; }
 .dd-forecast-temps { font-size: 0.8em; white-space: nowrap; }
 .dd-forecast-label { font-size: 0.68em; color: var(--dz-widget-stat-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .dd-forecast-precip { font-size: 0.72em; color: var(--dz-widget-accent); }
@@ -3136,7 +3136,7 @@ body.dd-standby::after {
 .dd-dial-sel-item   { fill: var(--dz-body-text); font-family: inherit; transition: opacity 0.15s; }
 .dd-dial-sel-active { fill: var(--dz-widget-amber) !important; font-weight: 700; }
 /* Cursor hints for drag-to-set */
-.dd-dial-interactive { cursor: grab; user-select: none; -webkit-user-select: none; }
+.dd-dial-interactive { cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; }
 .dd-dial-dragging    { cursor: grabbing; }
 
 /* ── Quick Stat widget ─────────────────────────────── */

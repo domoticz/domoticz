@@ -927,7 +927,22 @@ define([
                     load();
                     timer = $interval(load, 30000);
                 };
-            }]
+            }],
+            link: function(scope, element) {
+                // AngularJS 1.x has no ng-touchstart directive, so attach a
+                // native touchstart listener via event delegation.  The handler
+                // only fires when the touch originates inside the SVG, and uses
+                // { passive: false } so preventDefault() inside dragStart works.
+                function onTouchStart(e) {
+                    var svgEl = element[0].querySelector('svg.dd-dial-svg');
+                    if (!svgEl || !svgEl.contains(e.target)) { return; }
+                    scope.$apply(function() { scope.ctrl.dragStart(e); });
+                }
+                element[0].addEventListener('touchstart', onTouchStart, { passive: false });
+                scope.$on('$destroy', function() {
+                    element[0].removeEventListener('touchstart', onTouchStart);
+                });
+            }
         };
     }]);
 });

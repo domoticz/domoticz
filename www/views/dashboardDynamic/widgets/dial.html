@@ -16,8 +16,7 @@
         <svg viewBox="-6 -6 112 112" class="dd-dial-svg"
              ng-class="{'dd-dial-interactive': (ctrl.deviceType === 'setpoint' || ctrl.deviceType === 'selector') && !ctrl.editMode,
                          'dd-dial-dragging': ctrl.dragging}"
-             ng-mousedown="ctrl.dragStart($event)"
-             ng-touchstart="ctrl.dragStart($event)">
+             ng-mousedown="ctrl.dragStart($event)">
 
             <!-- Clip path for selector hub content (static id — geometry identical on all dial instances) -->
             <defs>
