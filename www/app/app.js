@@ -728,8 +728,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			},
             credits: {
                 enabled: true,
-                href: "http://www.domoticz.com",
-                text: "Domoticz.com"
+                href:    null,
+                text:    "Domoticz.com"
             },
             title: {
                 style: {
