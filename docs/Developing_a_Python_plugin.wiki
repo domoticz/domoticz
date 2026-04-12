@@ -1,3 +1,7 @@
+<blockquote>'''Note:''' This page is maintained in the [https://github.com/domoticz/domoticz/tree/development/docs Domoticz GitHub repository]. Please do not edit it directly on the Wiki.</blockquote>
+
+'''Revision:''' 2026-04-12<br>
+
 ==Overview==
 This page is aimed at developers wishing to improve Domoticz functionality via Python Plugins. If you simply want to use a plugin that a developer has already created for you, please see [[Using Python plugins]]. To see the Plugins already developed (for a reference) got to page [[Plugins]].
 
@@ -2068,7 +2072,7 @@ All keyword arguments are case-insensitive.
 |String
 |No
 |""
-|Target subsystem (e.g. "telegram", "pushover"). If empty, all active subsystems are used.
+|Target subsystem (e.g. "email", "telegram", "pushover"). If empty, all active subsystems are used.
 |-
 |Delay
 |Integer
@@ -2084,6 +2088,9 @@ Domoticz.SendNotification(Subject="Alert", Body="Something happened")
 
 # Send to a specific subsystem
 Domoticz.SendNotification(Subject="Solar Update", Body="Production started", SubSystem="telegram")
+
+# Send via email (requires email configured in Settings > Notifications)
+Domoticz.SendNotification(Subject="Alert", Body="Temperature is too high!", SubSystem="email")
 
 # With priority and delay
 Domoticz.SendNotification(Subject="Warning", Body="Battery low", Priority=1, Delay=5)
