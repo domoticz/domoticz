@@ -1966,6 +1966,11 @@ namespace Plugins
 			}
 			pConnection->pProtocol = new CPluginProtocol();
 		}
+		else
+		{
+			// Reset retained/fragment state from any previous connection using the same protocol object
+			pConnection->pProtocol->Reset();
+		}
 
 		std::string sTransport = PyBorrowedRef(pConnection->Transport);
 		std::string sAddress = PyBorrowedRef(pConnection->Address);
