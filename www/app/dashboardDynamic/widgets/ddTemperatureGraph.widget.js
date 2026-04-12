@@ -14,14 +14,29 @@ define([
     };
 
     // For each chartType: which sensor/range to request from the API.
+    // Note: range=week is NOT supported for sensor=temp (returns ERR), so last7days
+    // and comfort_zone both use range=day (the short-log table) and apply a client-side
+    // time window via CHART_TYPE_WINDOW below.
     var CHART_TYPE_API = {
         last24h:       { sensor: 'temp', range: 'day' },
-        last7days:     { sensor: 'temp', range: 'week' },
+        last7days:     { sensor: 'temp', range: 'day' },
         last_month:    { sensor: 'temp', range: 'month' },
         last_year:     { sensor: 'temp', range: 'year' },
         dewpoint:      { sensor: 'temp', range: 'day' },
         temp_humidity: { sensor: 'temp', range: 'day' },
-        comfort_zone:  { sensor: 'temp', range: 'week' }
+        comfort_zone:  { sensor: 'temp', range: 'day' }
+    };
+
+    // Visible time window in milliseconds for each chartType.
+    // The backend returns all short-log data without a date filter, so we apply
+    // an explicit x-axis (or data) constraint on the client side.
+    // Absent keys (last_month, last_year) use full calendar data — no windowing.
+    var CHART_TYPE_WINDOW = {
+        last24h:       24 * 3600 * 1000,
+        last7days:     7 * 24 * 3600 * 1000,
+        dewpoint:      24 * 3600 * 1000,
+        temp_humidity: 24 * 3600 * 1000,
+        comfort_zone:  7 * 24 * 3600 * 1000
     };
 
     var CHART_TYPE_LABELS = {
@@ -46,6 +61,7 @@ define([
         minH:        2,
         maxW:        12,
         maxH:        8,
+        transparentBackground: true,
         configSchema: [
             {
                 key:          'deviceIdx',
@@ -74,7 +90,8 @@ define([
                 type:     'text',
                 label:    'Custom title',
                 required: false
-            }
+            },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 
@@ -237,11 +254,16 @@ define([
                         return [new Date(d.d).getTime(), parseFloat(d.te !== undefined ? d.te : d.v)];
                     }).filter(function(pt) { return !isNaN(pt[1]); });
 
+                    var windowMs = CHART_TYPE_WINDOW[chartType] || null;
+                    var now = Date.now();
+
                     var opts = baseChartOptions(container);
                     opts.chart.type = 'spline';
                     opts.title.text = titleForChartType(cfg, chartType);
                     opts.xAxis = {
                         type:   'datetime',
+                        min:    windowMs ? now - windowMs : undefined,
+                        max:    windowMs ? now : undefined,
                         labels: { style: { fontSize: '10px' } }
                     };
                     opts.yAxis = {
@@ -277,12 +299,17 @@ define([
                         if (!isNaN(td)) { dewSeries.push([ts, td]); }
                     });
 
+                    var windowMs = CHART_TYPE_WINDOW['dewpoint'];
+                    var now = Date.now();
+
                     var opts = baseChartOptions(container);
                     opts.chart.type = 'spline';
                     opts.title.text = titleForChartType(cfg, 'dewpoint');
                     opts.legend = { enabled: true, itemStyle: { fontSize: '10px', color: getThemeColor('--dz-body-text', '#ccc') } };
                     opts.xAxis = {
                         type:   'datetime',
+                        min:    now - windowMs,
+                        max:    now,
                         labels: { style: { fontSize: '10px' } }
                     };
                     opts.yAxis = {
@@ -329,6 +356,9 @@ define([
 
                     var textColor = getThemeColor('--dz-body-text', '#ccc');
 
+                    var windowMs = CHART_TYPE_WINDOW['temp_humidity'];
+                    var now = Date.now();
+
                     var opts = baseChartOptions(container);
                     opts.chart.type  = 'spline';
                     opts.chart.margin = [10, 45, 30, 40];
@@ -336,6 +366,8 @@ define([
                     opts.legend = { enabled: true, itemStyle: { fontSize: '10px', color: textColor } };
                     opts.xAxis = {
                         type:   'datetime',
+                        min:    now - windowMs,
+                        max:    now,
                         labels: { style: { fontSize: '10px' } }
                     };
                     opts.yAxis = [
@@ -382,8 +414,11 @@ define([
 
                 function renderComfortZone(container, data, cfg) {
                     var scatterData = [];
+                    var cutoff = Date.now() - CHART_TYPE_WINDOW['comfort_zone'];
 
                     data.forEach(function(d) {
+                        var ts = new Date(d.d).getTime();
+                        if (ts < cutoff) { return; }
                         var te = parseFloat(d.te);
                         var hu = parseFloat(d.hu);
                         if (!isNaN(te) && !isNaN(hu)) {
@@ -449,14 +484,54 @@ define([
                 // Reactivity / lifecycle
                 // ----------------------------------------------------------------
 
-                // Debounced reload on device update — charts show historical data so
-                // reloading more than once per minute is wasteful
+                // Append a live data point to the existing chart and slide the time window.
+                function appendLivePoint(updated, chartType, windowMs) {
+                    var now    = Date.now();
+                    var cutoff = now - windowMs;
+                    var temp   = parseFloat(updated.Temp);
+                    var hum    = parseFloat(updated.Humidity);
+                    var dew    = parseFloat(updated.DewPoint);
+
+                    if (chartType === 'comfort_zone') {
+                        if (!isNaN(temp) && !isNaN(hum)) {
+                            chart.series[0].addPoint([hum, temp], false, false);
+                            chart.redraw();
+                        }
+                        return;
+                    }
+
+                    // Slide the visible window so its right edge is always "now".
+                    chart.xAxis[0].setExtremes(cutoff, now, false);
+
+                    if (chartType === 'dewpoint') {
+                        if (!isNaN(temp)) { chart.series[0].addPoint([now, temp], false, false); }
+                        if (!isNaN(dew))  { chart.series[1].addPoint([now, dew],  false, false); }
+                    } else if (chartType === 'temp_humidity') {
+                        if (!isNaN(temp)) { chart.series[0].addPoint([now, temp], false, false); }
+                        if (!isNaN(hum))  { chart.series[1].addPoint([now, hum],  false, false); }
+                    } else {
+                        if (!isNaN(temp)) { chart.series[0].addPoint([now, temp], false, false); }
+                    }
+
+                    chart.redraw();
+                }
+
                 var refreshDebounce = null;
                 $scope.$on('device_update', function(e, updated) {
                     var cfg = ctrl.widgetDef && ctrl.widgetDef.config;
                     if (!cfg || String(updated.idx) !== String(cfg.deviceIdx)) { return; }
-                    if (refreshDebounce) { $timeout.cancel(refreshDebounce); }
-                    refreshDebounce = $timeout(load, 60000);
+
+                    var chartType = resolveChartType(cfg);
+                    var windowMs  = CHART_TYPE_WINDOW[chartType] || null;
+
+                    if (!chart || !windowMs) {
+                        // month/year or chart not yet rendered → debounce a full reload
+                        if (refreshDebounce) { $timeout.cancel(refreshDebounce); }
+                        refreshDebounce = $timeout(load, 60000);
+                        return;
+                    }
+
+                    appendLivePoint(updated, chartType, windowMs);
                 });
 
                 $scope.$on('$destroy', function() {

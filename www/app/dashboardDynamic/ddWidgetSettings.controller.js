@@ -281,11 +281,20 @@ define([
                 var label = (a.label || '').trim();
 
                 if (a.type === 'scene') {
+                    var s = ($scope.actionScenes || []).find(function(x) { return String(x.idx) === String(a.idx); });
                     if (!label) {
-                        var s = ($scope.actionScenes || []).find(function(x) { return String(x.idx) === String(a.idx); });
                         label = s ? s.Name : a.idx;
                     }
-                    $scope.config[fieldKey].push({ type: 'scene', idx: String(a.idx), label: label, icon: 'fa-solid fa-play' });
+                    var isGroup = s && s.Type === 'Group';
+                    if (isGroup) {
+                        $scope.config[fieldKey].push({ type: 'group', idx: String(a.idx), label: label, icon: 'fa-solid fa-toggle-on' });
+                    } else {
+                        $scope.config[fieldKey].push({ type: 'scene', idx: String(a.idx), label: label, icon: 'fa-solid fa-play' });
+                    }
+
+                } else if (d && (d.SwitchType === 'Security Panel' || d.Type === 'Security')) {
+                    if (!label) { label = d.Name; }
+                    $scope.config[fieldKey].push({ type: 'security', idx: String(a.idx), label: label, icon: 'fa-solid fa-shield-halved' });
 
                 } else if (d && d.SwitchType === 'Selector') {
                     if (!label) { label = d.Name; }
@@ -294,6 +303,10 @@ define([
                 } else if (d && d.SwitchType && d.SwitchType.indexOf('Blinds') >= 0) {
                     if (!label) { label = d.Name; }
                     $scope.config[fieldKey].push({ type: 'blind', idx: String(a.idx), label: label, hasStop: actionDeviceHasStop(d) });
+
+                } else if (d && d.SwitchType === 'Dimmer') {
+                    if (!label) { label = d.Name; }
+                    $scope.config[fieldKey].push({ type: 'dimmer', idx: String(a.idx), label: label, icon: 'fa-solid fa-power-off' });
 
                 } else {
                     if (!label) { label = d ? d.Name : a.idx; }
@@ -308,20 +321,75 @@ define([
 
             $scope.actionRenameItem = function(fieldKey, index) {
                 var action = $scope.config[fieldKey][index];
-                bootbox.prompt({
-                    title: 'Rename action',
-                    inputType: 'text',
-                    value: action.label || '',
-                    callback: function(result) {
-                        if (result === null) { return; }
-                        $scope.$apply(function() {
-                            action.label = result.trim() || action.label;
-                        });
-                    }
+                var dlg = window.bootbox.prompt('Rename action', function(result) {
+                    if (result === null) { return; }
+                    $scope.$apply(function() {
+                        action.label = result.trim() || action.label;
+                    });
                 });
+                dlg.find('input').attr('type', 'text').val(action.label || '');
             };
 
             $scope.actionRemoveItem = function(fieldKey, index) {
+                $scope.config[fieldKey].splice(index, 1);
+            };
+        }
+
+        // For device-list fields: load all devices and set up add/remove helpers
+        var deviceListFields = (descriptor.configSchema || []).filter(function(f) {
+            return f.type === 'device-list';
+        });
+        if (deviceListFields.length) {
+            // Parse legacy JSON string to array
+            deviceListFields.forEach(function(field) {
+                var val = $scope.config[field.key];
+                if (typeof val === 'string') {
+                    try { $scope.config[field.key] = JSON.parse(val); } catch(e) { $scope.config[field.key] = []; }
+                }
+                if (!Array.isArray($scope.config[field.key])) {
+                    $scope.config[field.key] = [];
+                }
+            });
+
+            $scope.deviceListOptions = [];
+            $scope.newDeviceEntry    = { idx: '', label: '', icon: '' };
+
+            $http.get('json.htm?type=command&param=getdevices&order=Name&displayhidden=1&used=true')
+                .then(function(resp) {
+                    var all = (resp.data && resp.data.result) || [];
+                    $scope.allDevicesForList = all;
+                    $scope.deviceListOptions = all.slice().sort(function(a, b) {
+                        return a.Name.localeCompare(b.Name);
+                    }).map(function(d) {
+                        var typeStr = (d.SubType && d.SubType !== d.Type)
+                            ? d.Type + '/' + d.SubType
+                            : d.Type;
+                        return { value: String(d.idx), label: d.Name + (typeStr ? ' (' + typeStr + ')' : '') };
+                    });
+                });
+
+            $scope.deviceListAddItem = function(fieldKey) {
+                var e = $scope.newDeviceEntry;
+                if (!e.idx) { return; }
+                var d     = ($scope.allDevicesForList || []).find(function(x) { return String(x.idx) === String(e.idx); });
+                var label = (e.label || '').trim() || (d ? d.Name : String(e.idx));
+                var icon  = (e.icon  || '').trim();
+                $scope.config[fieldKey].push({ idx: String(e.idx), label: label, icon: icon });
+                $scope.newDeviceEntry = { idx: '', label: '', icon: '' };
+            };
+
+            $scope.deviceListRenameItem = function(fieldKey, index) {
+                var entry = $scope.config[fieldKey][index];
+                var dlg = window.bootbox.prompt('Rename device label', function(result) {
+                    if (result === null) { return; }
+                    $scope.$apply(function() {
+                        entry.label = result.trim() || entry.label;
+                    });
+                });
+                dlg.find('input').attr('type', 'text').val(entry.label || '');
+            };
+
+            $scope.deviceListRemoveItem = function(fieldKey, index) {
                 $scope.config[fieldKey].splice(index, 1);
             };
         }

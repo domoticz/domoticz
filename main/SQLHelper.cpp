@@ -8586,16 +8586,174 @@ void CSQLHelper::VacuumDatabase()
 
 bool CSQLHelper::FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dry_run, std::vector<std::string>& results)
 {
-	// Validate the device is a kWh counter
+	// Validate the device type
 	auto devresult = safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID='%" PRIu64 "')", idx);
 	if (devresult.empty())
 	{
 		results.push_back("Device not found");
 		return false;
 	}
-	if (atoi(devresult[0][0].c_str()) != pTypeGeneral || atoi(devresult[0][1].c_str()) != sTypeKwh)
+	int devType = atoi(devresult[0][0].c_str());
+	int subType = atoi(devresult[0][1].c_str());
+
+	// --- P1 Power meter branch ---
+	// P1 stores 4 cumulative energy counters (import/export T1+T2) in MultiMeter / MultiMeter_Calendar.
+	// In MultiMeter_Calendar: Value[n] = MAX - MIN of the shortlog for that day (the daily delta),
+	// and Counter[n] = MAX (end-of-day absolute). A corrupt P1 telegram that reports 0 for a counter
+	// drives MIN to 0, making Value[n] = Counter[n] instead of the true delta.
+	// Ground-truth delta = Counter[day] - Counter[prev_day] — no threshold guessing needed.
+	if (devType == pTypeP1Power)
 	{
-		results.push_back("Device is not a kWh counter (General/kWh)");
+		// Channel layout  (index → MultiMeter_Calendar columns):
+		//   0: Import T1   Value1 / Counter1
+		//   1: Export T1   Value2 / Counter2
+		//   2: Import T2   Value5 / Counter3
+		//   3: Export T2   Value6 / Counter4
+		static const char* const chNames[4] = { "Import T1", "Export T1", "Import T2", "Export T2" };
+		static const char* const valCols[4] = { "Value1",    "Value2",    "Value5",    "Value6"    };
+
+		// --- Phase 1: detect spikes in MultiMeter_Calendar ---
+		struct P1CalRow
+		{
+			std::string date;
+			int64_t val[4];  // stored daily deltas
+			int64_t cnt[4];  // end-of-day absolute counters
+		};
+		auto calresult = safe_query(
+			"SELECT Date, Value1, Value2, Value5, Value6, Counter1, Counter2, Counter3, Counter4 "
+			"FROM MultiMeter_Calendar WHERE (DeviceRowID='%" PRIu64 "') ORDER BY Date ASC", idx);
+
+		std::vector<P1CalRow> calrows;
+		calrows.reserve(calresult.size());
+		for (const auto& row : calresult)
+		{
+			P1CalRow r;
+			r.date = row[0];
+			for (int i = 0; i < 4; i++)
+			{
+				try { r.val[i] = std::stoll(row[i + 1]); } catch (...) { r.val[i] = 0; }
+				try { r.cnt[i] = std::stoll(row[i + 5]); } catch (...) { r.cnt[i] = 0; }
+			}
+			calrows.push_back(r);
+		}
+
+		// For P1, the Counter columns are the ground truth — no threshold-based heuristic needed.
+		// Detection uses a fixed 1 kWh tolerance to avoid false positives from minor rounding.
+
+		struct P1CalSpike
+		{
+			std::string date;
+			int         channel;
+			int64_t     stored_wh;
+			int64_t     correct_wh;
+		};
+		std::vector<P1CalSpike> cal_spikes;
+
+		int64_t prevCnt[4] = { -1, -1, -1, -1 };
+		for (const auto& r : calrows)
+		{
+			for (int ci = 0; ci < 4; ci++)
+			{
+				if (prevCnt[ci] >= 0 && r.cnt[ci] >= prevCnt[ci])
+				{
+					int64_t expected = r.cnt[ci] - prevCnt[ci];
+					// Counter delta IS the ground truth — no threshold multiplier needed.
+					// Flag any stored Value that exceeds the counter-derived delta by more than
+					// 1 kWh (tolerance for any minor rounding).
+					if (r.val[ci] > expected + 1000LL)
+						cal_spikes.push_back({ r.date, ci, r.val[ci], expected });
+				}
+				if (r.cnt[ci] > 0)
+					prevCnt[ci] = r.cnt[ci];
+			}
+		}
+
+		// --- Phase 2: detect corrupt readings in MultiMeter shortlog (current period) ---
+		// P1 counters are monotonically increasing; a large drop = corrupt telegram (e.g. counter reset to 0).
+		struct P1MMSpike
+		{
+			std::string datetime;
+			int         channel;
+			int64_t     corrupt_val;
+			int64_t     corrected_val;
+		};
+		std::vector<P1MMSpike> mm_spikes;
+
+		auto lastcalrow = safe_query("SELECT MAX(Date) FROM MultiMeter_Calendar WHERE (DeviceRowID='%" PRIu64 "')", idx);
+		std::string last_cal_date = (!lastcalrow.empty() && !lastcalrow[0][0].empty()) ? lastcalrow[0][0] : "1970-01-01";
+
+		auto mm_recent = safe_query(
+			"SELECT Date, Value1, Value2, Value5, Value6 FROM MultiMeter "
+			"WHERE (DeviceRowID='%" PRIu64 "') AND (Date >= '%q') ORDER BY Date ASC",
+			idx, last_cal_date.c_str());
+
+		if (mm_recent.size() >= 2)
+		{
+			int64_t prevVal[4] = { 0, 0, 0, 0 };
+			for (int ci = 0; ci < 4; ci++)
+				try { prevVal[ci] = std::stoll(mm_recent[0][ci + 1]); } catch (...) { prevVal[ci] = 0; }
+
+			for (size_t i = 1; i < mm_recent.size(); i++)
+			{
+				for (int ci = 0; ci < 4; ci++)
+				{
+					int64_t cur = 0;
+					try { cur = std::stoll(mm_recent[i][ci + 1]); } catch (...) { cur = prevVal[ci]; continue; }
+					// P1 counters only increase; any drop > 1 kWh = corrupt telegram
+					if (prevVal[ci] > 0 && (prevVal[ci] - cur) > 1000LL)
+						mm_spikes.push_back({ mm_recent[i][0], ci, cur, prevVal[ci] });
+					else
+						prevVal[ci] = cur;
+				}
+			}
+		}
+
+		if (cal_spikes.empty() && mm_spikes.empty())
+		{
+			results.push_back("No P1 spikes detected (counter-delta check with 1 kWh tolerance)");
+			return true;
+		}
+
+		for (const auto& sp : cal_spikes)
+			results.push_back(std_format("Calendar spike on %s [%s]: stored %.3f kWh, corrected to %.3f kWh",
+				sp.date.c_str(), chNames[sp.channel], sp.stored_wh / 1000.0, sp.correct_wh / 1000.0));
+		for (const auto& ms : mm_spikes)
+			results.push_back(std_format("Shortlog corrupt reading at %s [%s]: %" PRId64 " -> %" PRId64 " Wh",
+				ms.datetime.c_str(), chNames[ms.channel], ms.corrupt_val, ms.corrected_val));
+
+		if (dry_run)
+		{
+			results.push_back("Dry run mode: no changes applied");
+			return true;
+		}
+
+		// Fix calendar spikes: set stored delta = counter-derived delta, zero out price (was calculated on wrong value)
+		for (const auto& sp : cal_spikes)
+		{
+			safe_query(
+				("UPDATE MultiMeter_Calendar SET " + std::string(valCols[sp.channel]) + "='%" PRId64 "', Price=0 "
+				 "WHERE (DeviceRowID='%" PRIu64 "') AND (Date='%q')").c_str(),
+				sp.correct_wh, idx, sp.date.c_str());
+		}
+
+		// Fix shortlog corrupt readings: restore to last valid counter value
+		for (const auto& ms : mm_spikes)
+		{
+			safe_query(
+				("UPDATE MultiMeter SET " + std::string(valCols[ms.channel]) + "='%" PRId64 "' "
+				 "WHERE (DeviceRowID='%" PRIu64 "') AND (Date='%q')").c_str(),
+				ms.corrected_val, idx, ms.datetime.c_str());
+		}
+
+		_log.Log(LOG_STATUS, "FixKwhCounterSpikes (P1): device %" PRIu64 " corrected %d calendar spike(s), %d shortlog corrupt reading(s)",
+			idx, static_cast<int>(cal_spikes.size()), static_cast<int>(mm_spikes.size()));
+
+		return true;
+	}
+
+	if (devType != pTypeGeneral || subType != sTypeKwh)
+	{
+		results.push_back("Device is not a kWh counter (General/kWh) or P1 Power meter");
 		return false;
 	}
 

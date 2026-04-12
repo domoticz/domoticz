@@ -6925,6 +6925,25 @@ namespace http
 				return;
 			uint64_t idx = std::stoull(request::findValue(&req, "idx"));
 
+			// For General/kWh devices the CounterHelper lives in memory inside the hardware plugin.
+			// Stop hardware before fixing so in-memory CounterHelper cannot race with DB writes.
+			int hwID = -1;
+			bool bIsKwhCounter = false;
+			{
+				auto devRes = m_sql.safe_query(
+					"SELECT HardwareID, Type, SubType FROM DeviceStatus WHERE ID='%" PRIu64 "'", idx);
+				if (!devRes.empty())
+				{
+					hwID        = atoi(devRes[0][0].c_str());
+					int devType = atoi(devRes[0][1].c_str());
+					int devSub  = atoi(devRes[0][2].c_str());
+					bIsKwhCounter = (devType == pTypeGeneral && devSub == sTypeKwh);
+				}
+			}
+
+			if (bIsKwhCounter && hwID != -1)
+				m_mainworker.RemoveDomoticzHardware(hwID);
+
 			// Fix actual counter spikes in Meter_Calendar / Meter (kWh devices only).
 			// Uses auto-detected threshold (0.0 = 100x median daily usage).
 			// Non-kWh devices are silently skipped by FixKwhCounterSpikes.
@@ -6933,16 +6952,43 @@ namespace http
 			int spikesFixed = 0;
 			for (const auto& line : spikeResults)
 			{
-				if (line.rfind("Positive spike", 0) == 0 || line.rfind("Negative spike", 0) == 0)
+				// Count both kWh spikes ("Positive/Negative spike") and P1 calendar spikes ("Calendar spike")
+				if (line.rfind("Positive spike", 0) == 0 || line.rfind("Negative spike", 0) == 0 ||
+				    line.rfind("Calendar spike", 0) == 0 || line.rfind("Shortlog corrupt", 0) == 0)
 					spikesFixed++;
 			}
 
 			bool changed = CKWHStats::RemoveSpikeStats(idx);
 			int pricesFixed = m_sql.SanitizeCalendarData(idx);
+
+			// Always restart hardware (was stopped above); only report it when something was actually fixed.
+			if (bIsKwhCounter && hwID != -1)
+			{
+				auto hwRes = m_sql.safe_query(
+					"SELECT ID, Name, Enabled, Type, LogLevel, Address, Port, SerialPort, Username, Password, "
+					"Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware WHERE ID=%d", hwID);
+				if (!hwRes.empty())
+				{
+					const auto& hw = hwRes[0];
+					m_mainworker.AddHardwareFromParams(
+						atoi(hw[0].c_str()), hw[1], atoi(hw[2].c_str()) != 0,
+						(_eHardwareTypes)atoi(hw[3].c_str()), (uint32_t)atoi(hw[4].c_str()),
+						hw[5], (uint16_t)atoi(hw[6].c_str()), hw[7], hw[8], hw[9], hw[10],
+						atoi(hw[11].c_str()), atoi(hw[12].c_str()), atoi(hw[13].c_str()),
+						atoi(hw[14].c_str()), atoi(hw[15].c_str()), atoi(hw[16].c_str()),
+						atoi(hw[17].c_str()), true);
+					if (spikesFixed > 0)
+						spikeResults.push_back("Hardware restarted to reload CounterHelper from corrected values");
+				}
+			}
+
 			root["changed"] = changed || (pricesFixed > 0) || (spikesFixed > 0);
 			root["kwhStatsFixed"] = changed;
 			root["pricesFixed"] = pricesFixed;
 			root["spikesFixed"] = spikesFixed;
+			// Include detail lines so the frontend can show exactly what was corrected
+			for (int i = 0; i < static_cast<int>(spikeResults.size()); i++)
+				root["result"][i] = spikeResults[i];
 			root["status"] = "OK";
 			root["title"] = "FixCounterPrices";
 		}

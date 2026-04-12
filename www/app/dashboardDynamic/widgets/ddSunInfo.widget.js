@@ -6,13 +6,14 @@ define([
 
     widgetRegistry.register({
         type:        'sun-info',
+		transparentBackground: true,
         label:       'Sun Info',
         description: 'Sunrise and sunset times with day length',
         category:    'Weather',
         icon:        'fa-solid fa-sun',
-        defaultW:    2,
+        defaultW:    1,
         defaultH:    2,
-        minW:        2,
+        minW:        1,
         minH:        2,
         maxW:        4,
         maxH:        3,

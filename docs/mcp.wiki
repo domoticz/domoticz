@@ -1,3 +1,5 @@
+<blockquote>'''Note:''' This page is maintained in the [https://github.com/domoticz/domoticz/tree/development/docs Domoticz GitHub repository]. Please do not edit it directly on the Wiki.</blockquote>
+
 Domoticz (from version 2026.1) adds built-in support for the [https://modelcontextprotocol.io/specification/2025-06-18 Model Context Protocol] (MCP), allowing AI assistants and LLM clients to monitor and control your home automation system directly — without any external intermediary process.
 
 ''Only [https://modelcontextprotocol.io/specification/2025-06-18 MCP specification version 2025-06-18] is supported.''

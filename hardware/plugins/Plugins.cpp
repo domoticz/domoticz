@@ -485,13 +485,20 @@ namespace Plugins
 				//  Convert to JSON and store
 				std::string sConfig = jsonProtocol.PythontoJSON(pNewConfig);
 
-				// Update database
-				m_sql.safe_query("UPDATE Hardware SET Configuration='%q' WHERE (ID == %d)", sConfig.c_str(), pModState->pPlugin->m_HwdID);
+				// Update database — release GIL during blocking SQL write
+				{
+					PyAllowThreads gil;
+					m_sql.safe_query("UPDATE Hardware SET Configuration='%q' WHERE (ID == %d)", sConfig.c_str(), pModState->pPlugin->m_HwdID);
+				}
 			}
 			PyErr_Clear();
 
-			// Read the configuration
-			std::vector<std::vector<std::string>> result = m_sql.safe_query("SELECT Configuration FROM Hardware WHERE (ID==%d)", pModState->pPlugin->m_HwdID);
+			// Read the configuration — release GIL during blocking SQL read
+			std::vector<std::vector<std::string>> result;
+			{
+				PyAllowThreads gil;
+				result = m_sql.safe_query("SELECT Configuration FROM Hardware WHERE (ID==%d)", pModState->pPlugin->m_HwdID);
+			}
 			if (result.empty())
 			{
 				pModState->pPlugin->Log(LOG_ERROR, "CPlugin:%s, Hardware ID not found in database '%d'.", __func__, pModState->pPlugin->m_HwdID);
@@ -1629,10 +1636,13 @@ namespace Plugins
 			}
 
 			std::string sLanguage = "en";
-			m_sql.GetPreferencesVar("Language", sLanguage);
-
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT Name, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, Settings FROM Hardware WHERE (ID==%d)", m_HwdID);
+			// Release GIL while doing consecutive SQL reads
+			{
+				PyAllowThreads gil;
+				m_sql.GetPreferencesVar("Language", sLanguage);
+				result = m_sql.safe_query("SELECT Name, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, Settings FROM Hardware WHERE (ID==%d)", m_HwdID);
+			}
 			if (!result.empty())
 			{
 				for (const auto &sd : result)
@@ -1776,7 +1786,10 @@ namespace Plugins
 						Json::StreamWriterBuilder builder;
 						builder["indentation"] = "";
 						std::string sCleaned = Json::writeString(builder, settingsJson);
-						m_sql.safe_query("UPDATE Hardware SET Settings='%q' WHERE (ID==%d)", sCleaned.c_str(), m_HwdID);
+						{
+							PyAllowThreads gil;
+							m_sql.safe_query("UPDATE Hardware SET Settings='%q' WHERE (ID==%d)", sCleaned.c_str(), m_HwdID);
+						}
 					}
 
 					ADD_STRING_TO_DICT(this, pParamsDict, "DomoticzVersion", szAppVersion);
@@ -1797,6 +1810,7 @@ namespace Plugins
 
 			if (brModule)
 			{
+				PyAllowThreads gil;
 				result = m_sql.safe_query("SELECT '', Unit FROM DeviceStatus WHERE (HardwareID==%d) ORDER BY Unit ASC", m_HwdID);
 			}
 			else
@@ -1807,6 +1821,7 @@ namespace Plugins
 					Log(LOG_ERROR, "(%s) %s failed, Domoticz/DomoticzEx modules not found in interpreter.", __func__, m_PluginKey.c_str());
 					goto Error;
 				}
+				PyAllowThreads gil;
 				result = m_sql.safe_query("SELECT DISTINCT DeviceID, '-1' FROM DeviceStatus WHERE (HardwareID==%d) ORDER BY Unit ASC", m_HwdID);
 				tupleStr = "(s)";
 			}
@@ -1870,7 +1885,10 @@ namespace Plugins
 			}
 
 			// load associated custom images to make them available to python
-			result = m_sql.safe_query("SELECT ID, Base, Name, Description FROM CustomImages WHERE Base LIKE '%q%%' ORDER BY ID ASC", m_PluginKey.c_str());
+			{
+				PyAllowThreads gil;
+				result = m_sql.safe_query("SELECT ID, Base, Name, Description FROM CustomImages WHERE Base LIKE '%q%%' ORDER BY ID ASC", m_PluginKey.c_str());
+			}
 			if (!result.empty())
 			{
 				// Add image objects into the image dictionary with ID as the key
@@ -1947,6 +1965,11 @@ namespace Plugins
 				Debug(DEBUG_PYTHON, "Protocol for '%s' not specified, 'None' assumed.", sConnection.c_str());
 			}
 			pConnection->pProtocol = new CPluginProtocol();
+		}
+		else
+		{
+			// Reset retained/fragment state from any previous connection using the same protocol object
+			pConnection->pProtocol->Reset();
 		}
 
 		std::string sTransport = PyBorrowedRef(pConnection->Transport);
@@ -2841,7 +2864,10 @@ namespace Plugins
 
 			// load associated settings to make them available to python
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT Key, nValue, sValue FROM Preferences");
+			{
+				PyAllowThreads gil;
+				result = m_sql.safe_query("SELECT Key, nValue, sValue FROM Preferences");
+			}
 			if (!result.empty())
 			{
 				// Add settings strings into the settings dictionary with Unit as the key
@@ -3136,7 +3162,10 @@ namespace Plugins
 		else // Uploaded icons
 		{
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT Base FROM CustomImages WHERE ID = %d", iIconLine - 100);
+			{
+				PyAllowThreads gil;
+				result = m_sql.safe_query("SELECT Base FROM CustomImages WHERE ID = %d", iIconLine - 100);
+			}
 			if (result.size() == 1)
 			{
 				std::string sBase = result[0][0];

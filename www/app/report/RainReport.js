@@ -154,6 +154,10 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
         vm.$onInit = init;
 
+        vm.exportExcel     = function () { reportHelpers.exportTableToExcel($element, vm.device.Name + '_report'); };
+        vm.exportCSV       = function () { reportHelpers.exportTableToCSV($element, vm.device.Name + '_report'); };
+        vm.exportClipboard = function () { reportHelpers.exportTableToClipboard($element); };
+
         function init() {
             vm.isMonthView = vm.selectedMonth > 0;
             getData();
@@ -259,6 +263,17 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             table.dataTable().api().rows
                 .add(data.items)
                 .draw();
+
+            var totalRain = data.items.reduce(function (s, r) {
+                return s + (vm.isMonthView ? (r.value || 0) : (r.total || 0));
+            }, 0);
+            var cells = [];
+            cells.push('<td style="font-weight:bold">' + $.t('Total') + '</td>');
+            if (vm.isMonthView) { cells.push('<td></td>'); }
+            cells.push('<td style="font-weight:bold">' + totalRain.toFixed(1) + '</td>');
+            cells.push('<td></td>');
+            var tfoot = $('<tfoot><tr style="font-weight:bold; background:var(--dz-accent-color,#337ab7); color:var(--dz-body-text,#fff);">' + cells.join('') + '</tr></tfoot>');
+            table.append(tfoot);
         }
 
         function showChart(data) {

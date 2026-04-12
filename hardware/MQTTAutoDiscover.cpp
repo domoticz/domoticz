@@ -5717,11 +5717,11 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 						// only a single 'white'. check if this is warm or coldwhite. 
 						// If not coldwhite it is warmwhite
 						// Single white is stored as coldwhite within Domoticz
-						if (pSensor->color_temp_command_template.find("coldWhite"))
+						//if (pSensor->color_temp_command_template.find("coldWhite") != std::string::npos)
 						{
 							colorDef["coldWhite"] = root["color"]["c"];
 						}
-						else
+						//if (pSensor->color_temp_command_template.find("warmWhite") != std::string::npos)
 						{
 							colorDef["warmWhite"] = root["color"]["c"];
 						}

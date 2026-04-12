@@ -24,12 +24,96 @@
 #include "hardwaretypes.h"
 #include "../main/mainworker.h"
 
+namespace
+{
+	struct TempSensorDef
+	{
+		uint16_t reg;
+		uint8_t childId;
+		const char* name;
+	};
+
+	const TempSensorDef c_TempSensors[] = {
+		{ 40, 140, "Heating Leaving Water" },
+		{ 41, 141, "Heating Leaving Water (Backup Heater)" },
+		{ 42, 142, "Return Water Temp" },
+		{ 43, 143, "Hot Water Temp" },
+		{ 44, 144, "Outside Temp" },
+		{ 45, 145, "Refrigerant Temp" },
+		{ 50, 150, "Room Temp" },
+		{ 54, 154, "Heating Min" },
+		{ 55, 155, "Heating Max" },
+		{ 56, 156, "Cooling Min" },
+		{ 57, 157, "Cooling Max" }
+	};
+
+	struct SwitchDef
+	{
+		uint16_t reg;
+		uint8_t childId;
+		const char* name;
+	};
+
+	const SwitchDef c_InputSwitches[] = {
+		{ 30, 130, "Circulation Pump" },
+		{ 31, 131, "Compressor" },
+		{ 32, 132, "Booster Heater" },
+		{ 33, 133, "Disinfection" },
+		{ 35, 135, "Defrost/Startup" },
+		{ 36, 136, "Hot Start" },
+		{ 37, 137, "3-way Valve" },
+		{ 52, 152, "Hot Water Active" },
+		{ 53, 153, "Heating/Cooling Active" }
+	};
+
+	const SwitchDef c_HoldingSwitches[] = {
+		{ 4, 4, "Space Heating/Cooling" },
+		{ 12, 12, "Hot Water Reheat" },
+		{ 13, 13, "Hot Water Booster" },
+		{ 59, 59, "Thermostat Main Input A" }
+	};
+
+	struct SetPointDef
+	{
+		uint16_t reg;
+		uint8_t childId;
+		const char* name;
+	};
+
+	const SetPointDef c_SetPoints[] = {
+		{ 1, 1, "Heating Setpoint" },
+		{ 2, 2, "Cooling Setpoint" },
+		{ 6, 6, "Room Heating Setpoint" },
+		{ 7, 7, "Room Cooling Setpoint" },
+		{ 10, 10, "Hot Water Setpoint" },
+		{ 54, 54, "Weather Dependent Heating Offset" },
+		{ 55, 55, "Weather Dependent Cooling Offset" }
+	};
+
+	struct SelectorDef
+	{
+		uint16_t reg;
+		uint8_t childId;
+		const char* name;
+		const char* levels;
+	};
+
+	const SelectorDef c_Selectors[] = {
+		{ 3, 3, "Operation Mode", "Auto|Heating|Cooling" },
+		{ 9, 9, "Quiet Mode", "Off|On (Auto)|On (Manual)" },
+		{ 53, 53, "Weather Dependent Mode", "Fixed|Weather Dependent|Fixed+Scheduled|Weather Dependent+Scheduled" },
+		{ 56, 56, "Smart Grid", "Free|Forced off|Recommended on|Forced on" }
+	};
+}
+
 CDaikinModbus::CDaikinModbus(int ID, const std::string& IPAddress, unsigned short usIPPort, int iPollInterval, bool bIsAirToAir, int iUnitID)
 	: ASyncTCP(false) // MODBUS TCP is NOT secure (no SSL)
 	, m_szIPAddress(IPAddress)
 	, m_iPollInterval(iPollInterval)
 	, m_bIsAirToAir(bIsAirToAir)
 	, m_iUnitID(iUnitID)
+	, m_dTotalEnergyWh(0.0)
+	, m_tLastEnergyUpdate()
 {
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
@@ -50,6 +134,16 @@ bool CDaikinModbus::StartHardware()
 
 	m_bIsStarted = true;
 	this->CDomoticzHardwareBase::RequestStart();
+
+	// Initialize CounterHelper to load the previous state from DB
+	// Note: Unit is typically 1 for these auto-created Kwh meters.
+	m_kWhCounter.CheckTotalCounter(this, m_iUnitID, 152, 1, 0.0);
+
+	// Recover the raw session energy (in Wh) by subtracting the offset from the last known total
+	m_dTotalEnergyWh = (m_kWhCounter.GetLastCounterValue() - m_kWhCounter.GetCounterOffset()) * 1000.0;
+	if (m_dTotalEnergyWh < 0.0)
+		m_dTotalEnergyWh = 0.0;
+	m_tLastEnergyUpdate = std::chrono::steady_clock::now();
 
 	// Set a reasonable reconnect delay (10 seconds)
 	SetReconnectDelay(10);
@@ -83,7 +177,7 @@ void CDaikinModbus::Do_Work()
 	Log(LOG_STATUS, "Worker thread started...");
 
 	int iSecCounter = 0;
-	int iPollCounter = m_iPollInterval; // Trigger poll immediately once connected
+	auto lastPollTime = std::chrono::steady_clock::now() - std::chrono::seconds(m_iPollInterval); // Trigger poll immediately once connected
 
 	while (!this->CDomoticzHardwareBase::IsStopRequested(1000))
 	{
@@ -99,16 +193,16 @@ void CDaikinModbus::Do_Work()
 			if (iSecCounter % 30 == 0)
 				Log(LOG_STATUS, "Waiting for connection...");
 
-			// We reset the poll counter so we poll immediately upon reconnection
-			iPollCounter = m_iPollInterval;
+			// We reset the poll time so we poll immediately upon reconnection
+			lastPollTime = std::chrono::steady_clock::now() - std::chrono::seconds(m_iPollInterval);
 			continue;
 		}
 
 		iSecCounter = 0;
-		iPollCounter++;
-		if (iPollCounter >= m_iPollInterval)
+		auto now = std::chrono::steady_clock::now();
+		if (std::chrono::duration_cast<std::chrono::seconds>(now - lastPollTime).count() >= m_iPollInterval)
 		{
-			iPollCounter = 0;
+			lastPollTime = now;
 			try
 			{
 				Debug(DEBUG_HARDWARE, "Polling registers...");
@@ -199,15 +293,18 @@ bool CDaikinModbus::WriteToHardware(const char* pdata, unsigned char length)
 		float setpoint = pSetpoint->value;
 
 		uint16_t modbus_reg = 0;
-		uint16_t modbus_val = 0;
+		uint16_t modbus_val = (uint16_t)setpoint;
 
-		if (childid == 1) { modbus_reg = 1; modbus_val = (uint16_t)setpoint; }
-		else if (childid == 2) { modbus_reg = 2; modbus_val = (uint16_t)setpoint; }
-		else if (childid == 6) { modbus_reg = 6; modbus_val = (uint16_t)setpoint; }
-		else if (childid == 7) { modbus_reg = 7; modbus_val = (uint16_t)setpoint; }
-		else if (childid == 10) { modbus_reg = 10; modbus_val = (uint16_t)setpoint; }
-		else if (childid == 54) { modbus_reg = 54; modbus_val = (uint16_t)setpoint; }
-		else if (childid == 55) { modbus_reg = 55; modbus_val = (uint16_t)setpoint; }
+		switch (childid)
+		{
+		case 1: modbus_reg = 1; break;
+		case 2: modbus_reg = 2; break;
+		case 6: modbus_reg = 6; break;
+		case 7: modbus_reg = 7; break;
+		case 10: modbus_reg = 10; break;
+		case 54: modbus_reg = 54; break;
+		case 55: modbus_reg = 55; break;
+		}
 
 		if (modbus_reg > 0)
 		{
@@ -226,15 +323,20 @@ bool CDaikinModbus::WriteToHardware(const char* pdata, unsigned char length)
 		uint16_t modbus_reg = 0;
 		uint16_t modbus_val = 0;
 
-		if (childid == 3) { modbus_reg = 3; modbus_val = value / 10; }
-		else if (childid == 4) { modbus_reg = 4; modbus_val = (pSwitch->cmnd == gswitch_sOn) ? 1 : 0; }
-		else if (childid == 9) { modbus_reg = 9; modbus_val = value / 10; }
-		else if (childid == 12) { modbus_reg = 12; modbus_val = (pSwitch->cmnd == gswitch_sOn) ? 1 : 0; }
-		else if (childid == 13) { modbus_reg = 13; modbus_val = (pSwitch->cmnd == gswitch_sOn) ? 1 : 0; }
-		else if (childid == 53) { modbus_reg = 53; modbus_val = value / 10; }
-		else if (childid == 56) { modbus_reg = 56; modbus_val = value / 10; }
-		else if (childid == 59) { modbus_reg = 59; modbus_val = (pSwitch->cmnd == gswitch_sOn) ? 1 : 0; }
-		else if (m_bIsAirToAir && childid == 100) { modbus_reg = 1000; modbus_val = value / 10; }
+		switch (childid)
+		{
+		case 3: modbus_reg = 3; modbus_val = value / 10; break;
+		case 4: modbus_reg = 4; modbus_val = (pSwitch->cmnd == gswitch_sOn) ? 1 : 0; break;
+		case 9: modbus_reg = 9; modbus_val = value / 10; break;
+		case 12: modbus_reg = 12; modbus_val = (pSwitch->cmnd == gswitch_sOn) ? 1 : 0; break;
+		case 13: modbus_reg = 13; modbus_val = (pSwitch->cmnd == gswitch_sOn) ? 1 : 0; break;
+		case 53: modbus_reg = 53; modbus_val = value / 10; break;
+		case 56: modbus_reg = 56; modbus_val = value / 10; break;
+		case 59: modbus_reg = 59; modbus_val = (pSwitch->cmnd == gswitch_sOn) ? 1 : 0; break;
+		case 100:
+			if (m_bIsAirToAir) { modbus_reg = 1000; modbus_val = value / 10; }
+			break;
+		}
 
 		if (modbus_reg > 0)
 		{
@@ -325,35 +427,49 @@ void CDaikinModbus::ProcessInputRegisters(const uint8_t* pData, size_t length)
 		SendAlertSensor((m_iUnitID << 8) | 121, 255, alertLevel, msg, "Unit Status");
 	}
 
-	// Binary States (30-37, 52, 53)
-	if ((val = getReg(30)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 130, 255, val != 0, 0, "Circulation Pump", m_Name);
-	if ((val = getReg(31)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 131, 255, val != 0, 0, "Compressor", m_Name);
-	if ((val = getReg(32)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 132, 255, val != 0, 0, "Booster Heater", m_Name);
-	if ((val = getReg(33)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 133, 255, val != 0, 0, "Disinfection", m_Name);
-	if ((val = getReg(35)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 135, 255, val != 0, 0, "Defrost/Startup", m_Name);
-	if ((val = getReg(36)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 136, 255, val != 0, 0, "Hot Start", m_Name);
-	if ((val = getReg(37)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 137, 255, val != 0, 0, "3-way Valve", m_Name);
-	if ((val = getReg(52)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 152, 255, val != 0, 0, "DHW Normal Op", m_Name);
-	if ((val = getReg(53)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 153, 255, val != 0, 0, "Heating/Cooling Normal Op", m_Name);
+	for (const auto& sw : c_InputSwitches)
+	{
+		if ((val = getReg(sw.reg)) != 0x7FFF && val != 32766)
+			SendSwitch(m_iUnitID, sw.childId, 255, val != 0, 0, sw.name, m_Name);
+	}
 
-	// Temperatures (40-45, 50) - Scale 0.01
-	if ((val = getReg(40)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 140, 255, val / 100.0f, "LWT PHE");
-	if ((val = getReg(41)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 141, 255, val / 100.0f, "LWT BUH");
-	if ((val = getReg(42)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 142, 255, val / 100.0f, "Return Water Temp");
-	if ((val = getReg(43)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 143, 255, val / 100.0f, "DHW Temp");
-	if ((val = getReg(44)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 144, 255, val / 100.0f, "Outside Temp");
-	if ((val = getReg(45)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 145, 255, val / 100.0f, "Refrigerant Temp");
-	if ((val = getReg(50)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 150, 255, val / 100.0f, "Room Temp");
-
-	// Limits (54-57) - Scale 0.01
-	if ((val = getReg(54)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 154, 255, val / 100.0f, "LWT Heating Lower Limit");
-	if ((val = getReg(55)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 155, 255, val / 100.0f, "LWT Heating Upper Limit");
-	if ((val = getReg(56)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 156, 255, val / 100.0f, "LWT Cooling Lower Limit");
-	if ((val = getReg(57)) != 0x7FFF && val != 32766) SendTempSensor((m_iUnitID << 8) | 157, 255, val / 100.0f, "LWT Cooling Upper Limit");
+	for (const auto& ts : c_TempSensors)
+	{
+		if ((val = getReg(ts.reg)) != 0x7FFF && val != 32766)
+			SendTempSensor((m_iUnitID << 8) | ts.childId, 255, val / 100.0f, ts.name);
+	}
 
 	// Sensors (49, 51)
 	if ((val = getReg(49)) != 0x7FFF && val != 32766) SendWaterflowSensor(m_iUnitID, 149, 255, val / 100.0f, "Flow Rate");
-	if ((val = getReg(51)) != 0x7FFF && val != 32766) SendWattMeter(m_iUnitID, 151, 255, (val / 100.0f) * 1000.0f, "Power Consumption");
+	if ((val = getReg(51)) != 0x7FFF && val != 32766)
+	{
+		double dPowerWatt = (val / 100.0) * 1000.0;
+		auto tNow = std::chrono::steady_clock::now();
+		if (m_tLastEnergyUpdate.time_since_epoch().count() != 0)
+		{
+			std::chrono::duration<double> diff = tNow - m_tLastEnergyUpdate;
+			double dDeltaHours = diff.count() / 3600.0;
+
+			// Only update if time advanced and limit max interpolation time
+			// to avoid massive spikes after disconnections or being powered off.
+			// Using 3 times the poll interval as a safe boundary.
+			double dMaxHours = (m_iPollInterval * 3.0) / 3600.0;
+
+			if (dDeltaHours > 0)
+			{
+				if (dDeltaHours > dMaxHours)
+					dDeltaHours = dMaxHours; // Cap the interval to prevent spikes
+
+				m_dTotalEnergyWh += (dPowerWatt * dDeltaHours);
+			}
+		}
+		m_tLastEnergyUpdate = tNow;
+
+		// Note: Unit is typically 1 for these auto-created Kwh meters.
+		double dTotalEnergyKWh = m_kWhCounter.CheckTotalCounter(this, m_iUnitID, 152, 1, m_dTotalEnergyWh / 1000.0);
+		SendWattMeter(m_iUnitID, 151, 255, static_cast<float>(dPowerWatt), "Power Consumption");
+		SendKwhMeter(m_iUnitID, 152, 255, dPowerWatt, dTotalEnergyKWh, "Energy Usage");
+	}
 }
 
 void CDaikinModbus::ProcessHoldingRegisters(const uint8_t* pData, size_t length)
@@ -379,23 +495,24 @@ void CDaikinModbus::ProcessHoldingRegisters(const uint8_t* pData, size_t length)
 	};
 
 	int16_t val;
-	// Setpoints (1, 2, 6, 7, 10)
-	if ((val = getReg(1)) != 0x7FFF && val != 32766) SendSetPointSensor(m_iUnitID, 0, 0, 1, 1, 255, (float)val, "LWT Heating Setpoint");
-	if ((val = getReg(2)) != 0x7FFF && val != 32766) SendSetPointSensor(m_iUnitID, 0, 0, 2, 1, 255, (float)val, "LWT Cooling Setpoint");
-	if ((val = getReg(6)) != 0x7FFF && val != 32766) SendSetPointSensor(m_iUnitID, 0, 0, 6, 1, 255, (float)val, "Room Heating Setpoint");
-	if ((val = getReg(7)) != 0x7FFF && val != 32766) SendSetPointSensor(m_iUnitID, 0, 0, 7, 1, 255, (float)val, "Room Cooling Setpoint");
-	if ((val = getReg(10)) != 0x7FFF && val != 32766) SendSetPointSensor(m_iUnitID, 0, 0, 10, 1, 255, (float)val, "DHW Reheat Setpoint");
 
-	// Modes and Other (3, 4, 9, 12, 13, 53, 54, 55, 56, 58, 59)
-	if ((val = getReg(3)) != 0x7FFF && val != 32766) SendSelectorSwitch(m_iUnitID, 3, std::to_string(val * 10), "Operation Mode", 0, false, "Auto|Heating|Cooling", "", false, m_Name);
-	if ((val = getReg(4)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 4, 255, val != 0, 0, "Space Heating/Cooling", m_Name);
-	if ((val = getReg(9)) != 0x7FFF && val != 32766) SendSelectorSwitch(m_iUnitID, 9, std::to_string(val * 10), "Quiet Mode", 0, false, "Off|On (Auto)|On (Manual)", "", false, m_Name);
-	if ((val = getReg(12)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 12, 255, val != 0, 0, "DHW Reheat", m_Name);
-	if ((val = getReg(13)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 13, 255, val != 0, 0, "DHW Booster", m_Name);
-	if ((val = getReg(53)) != 0x7FFF && val != 32766) SendSelectorSwitch(m_iUnitID, 53, std::to_string(val * 10), "Weather Dependent Mode", 0, false, "Fixed|Weather Dependent|Fixed+Scheduled|Weather Dependent+Scheduled", "", false, m_Name);
-	if ((val = getReg(54)) != 0x7FFF && val != 32766) SendSetPointSensor(m_iUnitID, 0, 0, 54, 1, 255, (float)val, "Weather Dependent Heating Offset");
-	if ((val = getReg(55)) != 0x7FFF && val != 32766) SendSetPointSensor(m_iUnitID, 0, 0, 55, 1, 255, (float)val, "Weather Dependent Cooling Offset");
-	if ((val = getReg(56)) != 0x7FFF && val != 32766) SendSelectorSwitch(m_iUnitID, 56, std::to_string(val * 10), "Smart Grid", 0, false, "Free|Forced off|Recommended on|Forced on", "", false, m_Name);
+	for (const auto& sp : c_SetPoints)
+	{
+		if ((val = getReg(sp.reg)) != 0x7FFF && val != 32766)
+			SendSetPointSensor(m_iUnitID, 0, 0, sp.childId, 1, 255, (float)val, sp.name);
+	}
+
+	for (const auto& sw : c_HoldingSwitches)
+	{
+		if ((val = getReg(sw.reg)) != 0x7FFF && val != 32766)
+			SendSwitch(m_iUnitID, sw.childId, 255, val != 0, 0, sw.name, m_Name);
+	}
+
+	for (const auto& sel : c_Selectors)
+	{
+		if ((val = getReg(sel.reg)) != 0x7FFF && val != 32766)
+			SendSelectorSwitch(m_iUnitID, sel.childId, std::to_string(val * 10), sel.name, 0, false, sel.levels, "", false, m_Name);
+	}
+
 	if ((val = getReg(58)) != 0x7FFF && val != 32766) SendWattMeter(m_iUnitID, 58, 255, (val / 100.0f) * 1000.0f, "General Power Limit");
-	if ((val = getReg(59)) != 0x7FFF && val != 32766) SendSwitch(m_iUnitID, 59, 255, val != 0, 0, "Thermostat Main Input A", m_Name);
 }

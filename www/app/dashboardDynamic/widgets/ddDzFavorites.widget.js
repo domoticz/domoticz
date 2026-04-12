@@ -29,7 +29,8 @@ define([
                     { value: 'lights',  label: 'Switches & Lights only' },
                     { value: 'temp',    label: 'Temperature only' },
                     { value: 'weather', label: 'Weather only' },
-                    { value: 'utility', label: 'Utility only' }
+                    { value: 'utility', label: 'Utility only' },
+                    { value: 'scenes', label: 'Scenes only' }
                 ],
                 default: ''
             },
@@ -49,8 +50,8 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', 'ddDeviceClassifier',
-                function($scope, $http, $interval, ddDeviceClassifier) {
+            controller: ['$scope', '$http', '$interval', '$q', 'ddDeviceClassifier',
+                function($scope, $http, $interval, $q, ddDeviceClassifier) {
                 var ctrl = this;
                 ctrl.categories     = [];
                 ctrl.activeCategory = null;
@@ -100,7 +101,24 @@ define([
                 };
 
                 ctrl.isScene = function(d) {
-                    return ddDeviceClassifier.getDirective(d) === 'dz-scene-widget';
+                    return d && (String(d.Type).indexOf('Scene') === 0 || String(d.Type).indexOf('Group') === 0);
+                };
+
+                ctrl.isGroup = function(d) {
+                    return d && String(d.Type).indexOf('Group') === 0;
+                };
+
+                ctrl.isBaro = function(d) {
+                    return ctrl.activeCategory === 'weather' && d.Barometer !== undefined;
+                };
+
+                ctrl.activateScene = function(scene, cmd) {
+                    $http.get('json.htm', {
+                        params: { type: 'command', param: 'switchscene',
+                                  idx: scene.idx, switchcmd: cmd || 'On' }
+                    }).then(function(resp) {
+                        if (resp.data && resp.data.status === 'OK') { load(); }
+                    });
                 };
 
                 ctrl.showTabs = function() {
@@ -114,26 +132,48 @@ define([
                     ctrl.loading = true;
                     ctrl.error   = null;
 
-                    var url = 'json.htm?type=command&param=getdevices&filter=all&used=true&favorite=1&order=Name';
+                    var filterKey = cfg.filter || '';
+
+                    var deviceUrl = 'json.htm?type=command&param=getdevices&filter=all&used=true&favorite=1&order=Name';
                     if (cfg.planIdx) {
-                        url += '&plan=' + cfg.planIdx;
+                        deviceUrl += '&plan=' + cfg.planIdx;
                     }
 
-                    $http.get(url)
-                        .then(function(resp) {
-                            ctrl.loading = false;
-                            var all = (resp.data && resp.data.result) || [];
+                    var deviceReq = (filterKey !== 'scenes')
+                        ? $http.get(deviceUrl)
+                        : $q.resolve({ data: {} });
 
-                            var filterKey = cfg.filter || '';
+                    var sceneReq = (filterKey === '' || filterKey === 'scenes')
+                        ? $http.get('json.htm?type=command&param=getscenes&order=Name')
+                        : $q.resolve({ data: {} });
+
+                    $q.all([deviceReq, sceneReq])
+                        .then(function(results) {
+                            ctrl.loading = false;
+                            var allDevices = (results[0].data && results[0].data.result) || [];
+                            var allScenes  = (results[1].data && results[1].data.result) || [];
+                            var favScenes  = allScenes.filter(function(s) { return s.Favorite == 1; });
+
                             var newCategories = [];
 
                             CATEGORY_DEFS.forEach(function(cat) {
                                 if (filterKey && filterKey !== cat.key) { return; }
-                                var devices = all.filter(cat.test);
+                                var devices = allDevices.filter(cat.test);
                                 if (devices.length) {
                                     newCategories.push(angular.extend({}, cat, { devices: devices }));
                                 }
                             });
+
+                            if (filterKey === '' || filterKey === 'scenes') {
+                                if (favScenes.length) {
+                                    newCategories.push({
+                                        key:     'scenes',
+                                        label:   'Scenes',
+                                        icon:    'images/scenes.png',
+                                        devices: favScenes
+                                    });
+                                }
+                            }
 
                             ctrl.categories = newCategories;
 

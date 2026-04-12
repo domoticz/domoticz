@@ -16,6 +16,7 @@ define([
         minH:        3,
         maxW:        6,
         maxH:        10,
+        transparentBackground: true,
         configSchema: [
             {
                 key:      'title',
@@ -42,7 +43,8 @@ define([
                 label:   'Refresh interval (seconds)',
                 default: 300,
                 min:     30
-            }
+            },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 

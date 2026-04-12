@@ -1,4 +1,5 @@
-<div class="dd-calendar">
+<div class="dd-calendar"
+     ng-class="{'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode}">
 
     <!-- Unconfigured state -->
     <div ng-if="!ctrl.widgetDef.config.calendarUrl" class="dd-chart-unconfigured">

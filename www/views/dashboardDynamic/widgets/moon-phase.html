@@ -1,6 +1,7 @@
-<div class="dd-moon">
+<div class="dd-stat-card dd-stat-card-full"
+     ng-class="{'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode}">
     <div class="dd-moon-title" ng-show="ctrl.title">{{ ctrl.title }}</div>
-    <div class="dd-moon-emoji">{{ ctrl.emoji }}</div>
+    <div class="dd-moon-image"><img ng-src="images/{{ ctrl.image }}" alt="{{ ctrl.phaseName }}"></div>
     <div class="dd-moon-phase" ng-show="ctrl.showPhaseName">{{ ctrl.phaseName }}</div>
     <div class="dd-moon-illumination" ng-show="ctrl.showIllumination">{{ ctrl.illumination }}% illuminated</div>
     <div class="dd-moon-next" ng-show="ctrl.showNextEvent">

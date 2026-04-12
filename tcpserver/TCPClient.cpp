@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "TCPClient.h"
 #include "TCPServer.h"
+#include "../hardware/DomoticzTCP.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 
@@ -41,38 +42,81 @@ namespace tcp {
 			auto self = shared_from_this();
 			if (!e)
 			{
-				//do something with the data
-				//buffer_.data(), buffer_.data() + bytes_transferred
-				if (bytes_transferred > 7)
+				m_recvBuffer.append(buffer_.data(), bytes_transferred);
+
+				// Detect old unframed SIGNv* clients before framing checks — their data
+				// is not length-prefixed and would be misread as a frame header.
+				if (!m_bIsLoggedIn && m_recvBuffer.size() >= 6 && m_recvBuffer.substr(0, 5) == "SIGNv")
 				{
-					std::string recstr;
-					recstr.append(buffer_.data(), bytes_transferred);
-					if (recstr.find("SIGNv2") == 0)
+					int remoteVer = atoi(m_recvBuffer.substr(5).c_str());
+					_log.Log(LOG_ERROR, "Remote Domoticz at %s uses legacy protocol (SIGNv%d, expected SIGNv%d). Please update the remote Domoticz instance.",
+						m_endpoint.c_str(), remoteVer, REMOTE_PROTOCOL_VERSION);
+					m_recvBuffer.clear();
+					pConnectionManager->stopClient(self);
+					return;
+				}
+
+				// Overflow guard: once we have a 4-byte header, validate the declared length
+				// to prevent the buffer growing beyond 1 MB before the frame is processed.
+				if (m_recvBuffer.size() >= 4)
+				{
+					uint32_t msgLen;
+					memcpy(&msgLen, m_recvBuffer.data(), 4);
+					msgLen = ntohl(msgLen);
+					if (msgLen == 0 || msgLen > 1048576)
 					{
-						//Authentication
-						std::vector<std::string> strarray;
-						StringSplit(recstr, ";", strarray);
-						if (strarray.size() == 3)
+						_log.Log(LOG_ERROR, "Invalid frame length (%u) from %s, resetting connection", msgLen, m_endpoint.c_str());
+						m_recvBuffer.clear();
+						pConnectionManager->stopClient(self);
+						return;
+					}
+				}
+
+				while (m_recvBuffer.size() >= 4)
+				{
+					uint32_t msgLen;
+					memcpy(&msgLen, m_recvBuffer.data(), 4);
+					msgLen = ntohl(msgLen);
+
+					if (msgLen == 0 || msgLen > 1048576)
+					{
+						m_recvBuffer.clear();
+						break;
+					}
+
+					if (m_recvBuffer.size() < 4 + (size_t)msgLen)
+						break; // wait for more data
+
+					std::string payload(m_recvBuffer.data() + 4, msgLen);
+					m_recvBuffer.erase(0, 4 + msgLen);
+
+					if (!m_bIsLoggedIn)
+					{
+						// Authentication message: "SIGNv{REMOTE_PROTOCOL_VERSION};username;password"
+						if (payload.find(std_format("SIGNv%d", REMOTE_PROTOCOL_VERSION)) == 0)
 						{
-							m_bIsLoggedIn = pConnectionManager->HandleAuthentication(self, strarray[1], strarray[2]);
-							if (!m_bIsLoggedIn)
+							std::vector<std::string> strarray;
+							StringSplit(payload, ";", strarray);
+							if (strarray.size() == 3)
 							{
-								//Wrong username/password
-								boost::asio::async_write(*socket_, boost::asio::buffer("NOAUTH", 6), [self](auto&& err, auto) { self->handleWrite(err); });
-								pConnectionManager->stopClient(self);
-								return;
+								m_bIsLoggedIn = pConnectionManager->HandleAuthentication(self, strarray[1], strarray[2]);
+								if (!m_bIsLoggedIn)
+								{
+									boost::asio::async_write(*socket_, boost::asio::buffer("NOAUTH", 6), [self](auto&& err, auto) { self->handleWrite(err); });
+									pConnectionManager->stopClient(self);
+									return;
+								}
+								m_username = strarray[1];
+								_log.Log(LOG_STATUS, "Authentication succeeded for user %s on %s", m_username.c_str(), m_endpoint.c_str());
 							}
-							m_username = strarray[1];
-							_log.Log(LOG_STATUS, "Authentication succeeded for user %s on %s", m_username.c_str(), m_endpoint.c_str());
 						}
 					}
 					else
 					{
-						pConnectionManager->DoDecodeMessage(this, (const uint8_t*)buffer_.data(), bytes_transferred);
+						pConnectionManager->DoDecodeMessage(this, (const uint8_t*)payload.data(), payload.size());
 					}
 				}
 
-				//ready for next read
 				socket_->async_read_some(boost::asio::buffer(buffer_), [self](auto&& err, auto bytes) { self->handleRead(err, bytes); });
 			}
 			else if (e != boost::asio::error::operation_aborted)

@@ -51,18 +51,20 @@ define([
     'dashboardDynamic/widgets/ddEnergyDashboard.widget',
     'dashboardDynamic/widgets/ddSelfSufficiency.widget',
     'dashboardDynamic/widgets/ddCustomChart.widget',
+    'dashboardDynamic/widgets/ddDial.widget',
     'dashboardDynamic/widgets/ddGauge.widget',
     'dashboardDynamic/widgets/ddBatteryMonitor.widget',
     'dashboardDynamic/widgets/ddTimeoutMonitor.widget',
     'dashboardDynamic/widgets/ddKwhTopConsumers.widget',
-    'dashboardDynamic/widgets/ddWaterSummary.widget'
+    'dashboardDynamic/widgets/ddWaterSummary.widget',
+    'dashboardDynamic/widgets/ddQuickStat.widget'
 ], function(app) {
     'use strict';
 
     app.controller('DashboardDynamicController', [
-        '$scope', '$timeout', '$interval', '$document', '$location', '$uibModal', '$q', '$http',
+        '$scope', '$timeout', '$interval', '$document', '$location', '$route', '$uibModal', '$q', '$http',
         'dashboardDynamicService', 'widgetRegistry', 'ddToast', 'bootbox',
-        function($scope, $timeout, $interval, $document, $location, $uibModal, $q, $http,
+        function($scope, $timeout, $interval, $document, $location, $route, $uibModal, $q, $http,
                  dashboardDynamicService, widgetRegistry, ddToast, bootbox) {
 
         // One-time migration of legacy localStorage keys
@@ -84,6 +86,7 @@ define([
         $scope.isDirty          = false;
         $scope.isFullPage       = false;
         $scope.layouts          = [];    // list of layout metadata objects
+        $scope.roomPlans        = [];    // list of Domoticz room plans
         $scope.activeLayout      = null; // { id, name, isDefault }
         $scope.activeData        = null; // { version, columns, rowHeight, widgets: [] }
         $scope.error            = null;
@@ -93,7 +96,8 @@ define([
         var _body               = document.body;
 
         // ── Kiosk state ────────────────────────────────────────
-        var LS_KIOSK = 'dd_kiosk';
+        var LS_KIOSK     = 'dd_kiosk';
+        var LS_FULLPAGE  = 'dd_fullpage';
         var _kioskDefaults = { enabled: false, layoutIds: [], interval: 30, loop: true };
         try {
             $scope.kiosk = angular.extend({}, _kioskDefaults, JSON.parse(localStorage.getItem(LS_KIOSK) || '{}'));
@@ -224,6 +228,10 @@ define([
 
         function init() {
             $scope.loading = true;
+            $http.get('json.htm', { params: { type: 'command', param: 'getplans', order: 'name' } })
+                .then(function(resp) {
+                    $scope.roomPlans = (resp.data && resp.data.result) || [];
+                });
             dashboardDynamicService.listLayouts().then(function(layouts) {
                 $scope.layouts = layouts;
                 if (layouts.length === 0) {
@@ -236,6 +244,13 @@ define([
                                   layouts.find(function(l) { return l.isDefault; }) ||
                                   layouts[0];
                 return loadLayout(startLayout.id).then(function() {
+                    // Restore full-page state
+                    var fp = null;
+                    try { fp = localStorage.getItem(LS_FULLPAGE); } catch(e) {}
+                    if (fp === '1') {
+                        $scope.isFullPage = true;
+                        _body.classList.add('dd-navbar-hidden');
+                    }
                     if ($scope.kiosk.enabled && $scope.layouts.length >= 2) {
                         $timeout(function() { $scope.startKiosk(); }, 0);
                     }
@@ -262,6 +277,12 @@ define([
                 loadLayout(id);
                 resetStandbyTimer();
             }).catch(angular.noop);
+        };
+
+        $scope.openRoomPlan = function(planIdx) {
+            if (window.myglobals) { window.myglobals.LastPlanSelected = planIdx; }
+            window._forceClassicDashboard = true;
+            $route.reload();
         };
 
         $scope.toggleEditMode = function() {
@@ -456,6 +477,7 @@ define([
             } else {
                 _body.classList.remove('dd-navbar-hidden');
             }
+            try { localStorage.setItem(LS_FULLPAGE, $scope.isFullPage ? '1' : '0'); } catch(e) {}
         };
 
         // ── Keyboard shortcuts ────────────────────────────────
@@ -479,6 +501,11 @@ define([
             if (e.ctrlKey && e.keyCode === 69) {
                 e.preventDefault();
                 $scope.$apply(function() { $scope.toggleEditMode(); });
+            }
+            // Ctrl+L: toggle widget library (edit mode only)
+            if (e.ctrlKey && e.keyCode === 76 && $scope.editMode) {
+                e.preventDefault();
+                $scope.$apply(function() { $scope.toggleLibrary(); });
             }
         }
         document.addEventListener('keydown', onKeyDown);

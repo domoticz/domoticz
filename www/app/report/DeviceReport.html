@@ -6,28 +6,38 @@
 
     <div class="pull-right">
         <label for="comboyear" data-i18n="Year"></label>:
-        <select
-                id="comboyear"
-                class="combobox ui-corner-all"
-                style="width:64px"
+        <select id="comboyear" class="combobox ui-corner-all"
+                style="width:80px"
                 ng-model="vm.selectedYear"
                 ng-change="vm.selectYear()"
-                ng-options="year for year in ::vm.getYearsOptions()">
+                ng-options="y.value as y.label for y in vm.yearsOptions">
         </select>
+        <span ng-show="vm.isCustomYear()" style="margin-left:8px;">
+            <label data-i18n="Start date"></label>:
+            <input type="date"
+                   class="ui-corner-all"
+                   style="padding:2px 4px;"
+                   ng-model="vm._datePickerModel"
+                   min="2012-01-01"
+                   max="{{ ::vm.maxDate }}">
+            <button class="btnstyle3" style="margin-left:4px;" ng-click="vm.applyCustomDate()" data-i18n="Set"></button>
+        </span>
     </div>
 
     <device-counter-report
             ng-if="::vm.isCounterReport()"
             device="::vm.device"
-            selected-year="::vm.selectedYear"
+            selected-year="vm.selectedYear"
             selected-month="::vm.selectedMonth"
-            is-only-usage="::vm.isOnlyUsage()"></device-counter-report>
+            is-only-usage="::vm.isOnlyUsage()"
+            custom-start-date="vm.customStartDate"></device-counter-report>
 
     <device-energy-multi-counter-report
             ng-if="::vm.isEnergyMultiCounterReport()"
             device="::vm.device"
-            selected-year="::vm.selectedYear"
-            selected-month="::vm.selectedMonth"></device-energy-multi-counter-report>
+            selected-year="vm.selectedYear"
+            selected-month="::vm.selectedMonth"
+            custom-start-date="vm.customStartDate"></device-energy-multi-counter-report>
 
     <device-temperature-report
             ng-if="::vm.isTemperatureReport()"

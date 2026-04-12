@@ -2423,6 +2423,7 @@ namespace http
 						root["result"][ii]["max"] = valuemax;
 						root["result"][ii]["vunit"] = value_unit;
 						root["result"][ii]["HaveSetPoint"] = true;
+						root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 
 						std::vector<std::string> strarray;
 						StringSplit(sValue, ";", strarray);
@@ -2452,7 +2453,7 @@ namespace http
 								// Calculate dew point
 								double dewpoint = ConvertTemperature(CalculateDewPoint(temp, humidity), tempsign);
 								root["result"][ii]["DewPoint"] = dewpoint;
-								sprintf(szData, "%.1f %c, (%.1f %c) / %d%%", temp, tempsign, tempSetPoint, tempsign, humidity);
+								sprintf(szData, "%.1f %c (%.1f %c) / %d%%", temp, tempsign, tempSetPoint, tempsign, humidity);
 							}
 							else if (dSubType == sTypeThermostat6TempBaro && strarray.size() >= 4)
 							{
@@ -2461,7 +2462,7 @@ namespace http
 								root["result"][ii]["Barometer"] = barometer;
 								root["result"][ii]["Forecast"] = forecast;
 								root["result"][ii]["ForecastStr"] = RFX_WSForecast_Desc(forecast);
-								sprintf(szData, "%.1f %c, (%.1f %c), %.1f hPa", temp, tempsign, tempSetPoint, tempsign, barometer);
+								sprintf(szData, "%.1f %c (%.1f %c), %.1f hPa", temp, tempsign, tempSetPoint, tempsign, barometer);
 							}
 							else if (dSubType == sTypeThermostat6TempHumBaro && strarray.size() >= 6)
 							{
@@ -2478,11 +2479,11 @@ namespace http
 								root["result"][ii]["Barometer"] = barometer;
 								root["result"][ii]["Forecast"] = forecast;
 								root["result"][ii]["ForecastStr"] = RFX_WSForecast_Desc(forecast);
-								sprintf(szData, "%.1f %c, (%.1f %c), %d%%, %.1f hPa", temp, tempsign, tempSetPoint, tempsign, humidity, barometer);
+								sprintf(szData, "%.1f %c (%.1f %c), %d%%, %.1f hPa", temp, tempsign, tempSetPoint, tempsign, humidity, barometer);
 							}
 							else
 							{
-								sprintf(szData, "%.1f %c, (%.1f %c)", temp, tempsign, tempSetPoint, tempsign);
+								sprintf(szData, "%.1f %c (%.1f %c)", temp, tempsign, tempSetPoint, tempsign);
 							}
 							root["result"][ii]["Data"] = szData;
 						}
@@ -2989,8 +2990,8 @@ namespace http
 								sprintf(szTmp, "%.3f m3", musage);
 								break;
 							case MTYPE_WATER:
-								musage = double(total_real) / divider;
-								sprintf(szTmp, "%.3f m3", musage);
+								musage = double(total_real) / divider * 1000.0;
+								sprintf(szTmp, "%d Liter", ground(musage));
 								break;
 							case MTYPE_COUNTER:
 								sprintf(szTmp, "%.10g", double(total_real) / divider);
@@ -3017,7 +3018,7 @@ namespace http
 								sprintf(szTmp, "%.3f m3", 0.0F);
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f m3", 0.0F);
+								sprintf(szTmp, "0 Liter");
 								break;
 							default:
 								strcpy(szTmp, "0");
@@ -3041,9 +3042,12 @@ namespace http
 							sprintf(szTmp, "%.03f", musage);
 							break;
 						case MTYPE_GAS:
-						case MTYPE_WATER:
 							musage = double(total_actual) / divider;
 							sprintf(szTmp, "%.03f", musage);
+							break;
+						case MTYPE_WATER:
+							musage = double(total_actual) / divider * 1000.0;
+							sprintf(szTmp, "%d", ground(musage));
 							break;
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%.10g", double(total_actual) / divider);
@@ -3070,8 +3074,8 @@ namespace http
 							sprintf(szTmp, "%.3f m3", musage);
 							break;
 						case MTYPE_WATER:
-							musage = double(acounter) / divider;
-							sprintf(szTmp, "%.3f m3", musage);
+							musage = double(acounter) / divider * 1000.0;
+							sprintf(szTmp, "%d Liter", ground(musage));
 							break;
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%.10g", double(acounter) / divider);
@@ -3100,7 +3104,7 @@ namespace http
 							sprintf(szTmp, "%s m3", splitresults[1].c_str());
 							break;
 						case MTYPE_WATER:
-							sprintf(szTmp, "%s m3", splitresults[1].c_str());
+							sprintf(szTmp, "%s Liter", splitresults[1].c_str());
 							break;
 						case MTYPE_COUNTER:
 							sprintf(szTmp, "%s", splitresults[1].c_str());
@@ -3266,6 +3270,7 @@ namespace http
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
 							sprintf(szTmp, "%.03f", atof(sValue.c_str()) / divider);
 							root["result"][ii]["Data"] = szTmp;
+							root["result"][ii]["vunit"] = "m3";
 						}
 						else
 						{
@@ -3275,6 +3280,7 @@ namespace http
 							sprintf(szTmp, "%.03f m3", 0.0F);
 							root["result"][ii]["CounterToday"] = szTmp;
 							root["result"][ii]["HaveTimeout"] = bHaveTimeout;
+							root["result"][ii]["vunit"] = "m3";
 						}
 					}
 					else if (dType == pTypeCURRENT)
@@ -3857,8 +3863,8 @@ namespace http
 									sprintf(szTmp, "%.3f m3", musage);
 									break;
 								case MTYPE_WATER:
-									musage = double(total_real) / divider;
-									sprintf(szTmp, "%.3f m3", musage);
+									musage = double(total_real) / divider * 1000.0;
+									sprintf(szTmp, "%d Liter", ground(musage));
 									break;
 								case MTYPE_COUNTER:
 									sprintf(szTmp, "%.10g", double(total_real) / divider);
@@ -3885,7 +3891,7 @@ namespace http
 									sprintf(szTmp, "%.3f m3", 0.0F);
 									break;
 								case MTYPE_WATER:
-									sprintf(szTmp, "%.3f m3", 0.0F);
+									sprintf(szTmp, "0 Liter");
 									break;
 								default:
 									strcpy(szTmp, "0.000");
@@ -3987,7 +3993,7 @@ namespace http
 								root["result"][ii]["Counter"] = szTmp;
 								break;
 							case MTYPE_WATER:
-								sprintf(szTmp, "%.3f m3", meteroffset + (dvalue / divider));
+								sprintf(szTmp, "%d Liter", ground((meteroffset + (dvalue / divider)) * 1000.0));
 								root["result"][ii]["Data"] = szTmp;
 								root["result"][ii]["Counter"] = szTmp;
 								break;

@@ -30,7 +30,8 @@ define([
                 type:     'text',
                 label:    'Title (optional, falls back to device name)',
                 required: false
-            }
+            },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 
@@ -95,7 +96,7 @@ define([
                             // Match the unit from today's reading (m3 or Liter)
                             var isLiter = ctrl.counterToday && ctrl.counterToday.indexOf('Liter') >= 0;
                             ctrl.counterTotal = isLiter
-                                ? Math.round(sum) + ' Liter'
+                                ? Math.round(sum * 1000) + ' Liter'
                                 : sum.toFixed(3) + ' m3';
                         } else {
                             ctrl.counterTotal = null;

@@ -16,6 +16,7 @@ define([
         minH:        1,
         maxW:        12,
         maxH:        6,
+        transparentBackground: true,
         configSchema: [
             {
                 key:          'deviceIdx',
@@ -41,7 +42,8 @@ define([
                 type:    'number',
                 label:   'Refresh interval (seconds)',
                 default: 60
-            }
+            },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 

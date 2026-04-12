@@ -16,6 +16,7 @@ define([
         minH:        2,
         maxW:        12,
         maxH:        12,
+        transparentBackground: true,
         directiveTag: 'dd-image-widget',
         configSchema: [
             { key: 'url',             type: 'url',    label: 'Image URL',                          required: true },
@@ -28,7 +29,8 @@ define([
               ],
               default: 'contain'
             },
-            { key: 'refreshInterval', type: 'number', label: 'Refresh every N seconds (0=off)', default: 0 }
+            { key: 'refreshInterval', type: 'number', label: 'Refresh every N seconds (0=off)', default: 0 },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 

@@ -138,10 +138,10 @@ define(['app'], function (app) {
 
                     if (ctrl.isCounter()) {
                         if ((device.SubType === 'Gas') || (device.SubType === 'RFXMeter counter') || (device.SubType === 'Counter Incremental')) {
-                            // counter total value not shown
+                            status = device.Counter + (device.vunit ? ' ' + device.vunit : '');
                         } else if (device.SubType !== 'Managed Counter') {
                             if (device.Type === 'P1 Smart Meter') {
-                                status = $.t('Today') + ': ' + device.CounterToday;
+                                status = $.t('Today') + ': ' + device.CounterToday + ', ' + device.Counter;
                             } else {
                                 status = $.t('Today') + ': ' + device.CounterToday + ', ' + device.Counter;
                             }
@@ -157,13 +157,13 @@ define(['app'], function (app) {
                     } else if (ctrl.isText()) {
                         var sanitized = device.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
                         return $sce.trustAsHtml(DOMPurify.sanitize(sanitized, {
-                            ALLOWED_TAGS: ['br', 'span', 'font', 'a', 'b', 'i', 'u'],
+                            ALLOWED_TAGS: ['br', 'div', 'span', 'font', 'a', 'b', 'i', 'u'],
                             ALLOWED_ATTR: ['style', 'color', 'href', 'target']
                         }));
                     } else if (ctrl.isAlert()) {
                         var sanitized = device.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
                         return $sce.trustAsHtml(DOMPurify.sanitize(sanitized, {
-                            ALLOWED_TAGS: ['br', 'span', 'font', 'a', 'b', 'i', 'u'],
+                            ALLOWED_TAGS: ['br', 'div', 'span', 'font', 'a', 'b', 'i', 'u'],
                             ALLOWED_ATTR: ['style', 'color', 'href', 'target']
                         }));
                     } else if (typeof device.Direction !== 'undefined') {
@@ -186,7 +186,7 @@ define(['app'], function (app) {
 
                     if (typeof device.CounterDeliv !== 'undefined' && device.CounterDeliv != 0) {
                         if (device.Type === 'P1 Smart Meter') {
-                            status += '<br>' + $.t('Return') + ': ' + device.CounterDelivToday;
+                            status += '<br>' + $.t('Return') + ': ' + device.CounterDelivToday + ', ' + device.CounterDeliv;
                         } else {
                             status += '<br>' + $.t('Return') + ': ' + $.t('Today') + ': ' + device.CounterDelivToday + ', ' + device.CounterDeliv;
                         }

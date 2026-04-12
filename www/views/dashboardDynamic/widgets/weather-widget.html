@@ -1,4 +1,4 @@
-<div class="dd-weather" ng-class="{'dd-weather-fc-style': ctrl.displayStyle === 'forecast'}">
+<div class="dd-weather" ng-class="{'dd-weather-fc-style': ctrl.displayStyle === 'forecast', 'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode}">
     <div ng-if="!ctrl.widgetDef.config.tempIdx && !ctrl.widgetDef.config.windIdx && !ctrl.widgetDef.config.baroIdx"
          class="dd-chart-unconfigured">
         <i class="fa-solid fa-cloud"></i>

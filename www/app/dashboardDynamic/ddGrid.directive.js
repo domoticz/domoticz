@@ -194,6 +194,7 @@ define([
                     }
                     var idx = scope.gridData.widgets.findIndex(function(w) { return w.id === id; });
                     if (idx !== -1) scope.gridData.widgets.splice(idx, 1);
+                    syncToModel();
                 };
 
                 controllerScope.cloneWidget = function(id) {

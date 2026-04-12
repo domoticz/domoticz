@@ -15,6 +15,7 @@ namespace Plugins {
 		virtual void				ProcessInbound(const ReadEvent* Message);
 		virtual std::vector<byte>	ProcessOutbound(const WriteDirective* WriteMessage);
 		virtual void				Flush(CPlugin* pPlugin, CConnection* pConnection);
+		virtual void				Reset() { m_sRetainedData.clear(); };
 		virtual int					Length() { return (int)m_sRetainedData.size(); };
 		virtual bool				Secure() { return m_Secure; };
 
@@ -72,11 +73,14 @@ namespace Plugins {
 	class CPluginProtocolWS : public CPluginProtocolHTTP
 	{
 	private:
-		bool	ProcessWholeMessage(std::vector<byte>& vMessage, const ReadEvent* Message);
+		bool				ProcessWholeMessage(const std::vector<byte>& vMessage, size_t& startOffset, const ReadEvent* Message);
+		std::vector<byte>	m_FragmentBuffer;
+		int					m_FragmentOpCode = 0;
 	public:
 		CPluginProtocolWS(bool Secure) : CPluginProtocolHTTP(Secure) {};
-		void ProcessInbound(const ReadEvent* Message) override;
-		std::vector<byte> ProcessOutbound(const WriteDirective* WriteMessage) override;
+		void				ProcessInbound(const ReadEvent* Message) override;
+		std::vector<byte>	ProcessOutbound(const WriteDirective* WriteMessage) override;
+		void				Reset() override;
 	};
 
 	class CPluginProtocolICMP : CPluginProtocol

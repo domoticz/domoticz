@@ -2413,54 +2413,12 @@ void HandleGraphMonthYear(const GraphContext& ctx, const request& req,
 
 	std::string szDateStart, szDateEnd, szDateStartPrev, szDateEndPrev;
 
-			std::string sactmonth = request::findValue(&req, "actmonth");
-			std::string sactyear = request::findValue(&req, "actyear");
-
-			int actMonth = atoi(sactmonth.c_str());
-			int actYear = atoi(sactyear.c_str());
-
-			if ((!sactmonth.empty()) && (!sactyear.empty()))
 			{
-				szDateStart = FormatDate(actYear, actMonth, 1);
-				szDateStartPrev = FormatDate(actYear - 1, actMonth, 1);
-				actMonth++;
-				if (actMonth == 13)
-				{
-					actMonth = 1;
-					actYear++;
-				}
-				szDateEnd = FormatDate(actYear, actMonth, 1);
-				szDateEndPrev = FormatDate(actYear - 1, actMonth, 1);
-			}
-			else if (!sactyear.empty())
-			{
-				szDateStart = FormatDate(actYear, 1, 1);
-				szDateStartPrev = FormatDate(actYear - 1, 1, 1);
-				actYear++;
-				szDateEnd = FormatDate(actYear, 1, 1);
-				szDateEndPrev = FormatDate(actYear - 1, 1, 1);
-			}
-			else
-			{
-				szDateEnd = FormatDate(tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday);
-				szDateEndPrev = FormatDate(tm1.tm_year + 1900 - 1, tm1.tm_mon + 1, tm1.tm_mday);
-
-				struct tm tm2;
-				if (srange == "month")
-				{
-					// Subtract one month
-					time_t monthbefore;
-					getNoon(monthbefore, tm2, tm1.tm_year + 1900, tm1.tm_mon, tm1.tm_mday);
-				}
-				else
-				{
-					// Subtract one year
-					time_t yearbefore;
-					getNoon(yearbefore, tm2, tm1.tm_year + 1900 - 1, tm1.tm_mon + 1, tm1.tm_mday);
-				}
-
-				szDateStart = FormatDate(tm2.tm_year + 1900, tm2.tm_mon + 1, tm2.tm_mday);
-				szDateStartPrev = FormatDate(tm2.tm_year + 1900 - 1, tm2.tm_mon + 1, tm2.tm_mday);
+				const DateRange dr = CalcMonthYearRange(req, tm1, srange);
+				szDateStart     = dr.start;
+				szDateEnd       = dr.end;
+				szDateStartPrev = dr.startPrev;
+				szDateEndPrev   = dr.endPrev;
 			}
 
 			if (

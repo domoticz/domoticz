@@ -16,7 +16,10 @@ define([
         minH:        2,
         maxW:        6,
         maxH:        4,
-        configSchema: []
+        transparentBackground: true,
+        configSchema: [
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
+        ]
     });
 
     app.directive('ddSystemStatusWidget', [function() {

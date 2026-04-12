@@ -93,7 +93,7 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$q', function($scope, $http, $interval, $q) {
+            controller: ['$scope', '$http', '$interval', '$timeout', '$q', function($scope, $http, $interval, $timeout, $q) {
                 var ctrl       = this;
                 ctrl.days      = [];
                 ctrl.title     = '';
@@ -106,6 +106,7 @@ define([
 
                 var cancelLocation = null;
                 var cancelForecast = null;
+                var midnightTimer  = null;
 
                 function cfg() {
                     return (ctrl.widgetDef && ctrl.widgetDef.config) || {};
@@ -214,11 +215,24 @@ define([
                     });
                 }
 
+                function scheduleMidnightRefresh() {
+                    var now  = new Date();
+                    var next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+                    var msUntilMidnight = next.getTime() - now.getTime();
+                    midnightTimer = $timeout(function() {
+                        ctrl._cache = { data: null, time: 0 };
+                        load();
+                        scheduleMidnightRefresh();
+                    }, msUntilMidnight);
+                }
+
                 var timer = $interval(load, CACHE_TTL_MS);
+                scheduleMidnightRefresh();
 
                 $scope.$on('$destroy', function() {
                     if (cancelLocation) { cancelLocation.resolve(); cancelLocation = null; }
                     if (cancelForecast) { cancelForecast.resolve(); cancelForecast = null; }
+                    if (midnightTimer)  { $timeout.cancel(midnightTimer); midnightTimer = null; }
                     $interval.cancel(timer);
                 });
 

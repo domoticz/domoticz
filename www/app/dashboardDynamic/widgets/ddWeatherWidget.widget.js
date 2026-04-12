@@ -12,10 +12,11 @@ define([
         icon:        'fa-solid fa-cloud',
         defaultW:    3,
         defaultH:    2,
-        minW:        2,
+        minW:        1,
         minH:        2,
         maxW:        6,
         maxH:        4,
+        transparentBackground: true,
         configSchema: [
             {
                 key:          'tempIdx',

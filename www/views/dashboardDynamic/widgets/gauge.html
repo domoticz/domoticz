@@ -1,4 +1,5 @@
-<div class="dd-gauge-wrap">
+<div class="dd-stat-card dd-stat-card-full"
+     ng-class="{'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode}">
     <!-- Unconfigured state -->
     <div ng-if="!ctrl.widgetDef.config.deviceIdx" class="dd-chart-unconfigured">
         <i class="fa-solid fa-gauge-high"></i>
@@ -25,10 +26,12 @@
                         ng-attr-stroke-dasharray="{{ ctrl.strokeDasharray() }}"
                         stroke-dashoffset="0"
                         transform="rotate(160 50 55)"/>
-                <!-- Value text inside arc -->
-                <text class="dd-gauge-text-value" x="50" y="44" text-anchor="middle" dominant-baseline="middle">{{ ctrl.valueStr() }}</text>
-                <!-- Unit text below value -->
-                <text class="dd-gauge-text-unit" x="50" y="59" text-anchor="middle" dominant-baseline="middle" ng-bind="ctrl.unitStr()"></text>
+                <!-- Value text inside arc — clickable to device log -->
+                <text class="dd-gauge-text-value dd-gauge-text-link" x="50" y="44" text-anchor="middle" dominant-baseline="middle"
+                      ng-click="ctrl.goToLog()">{{ ctrl.valueStr() }}</text>
+                <!-- Unit text below value — clickable to device log -->
+                <text class="dd-gauge-text-unit dd-gauge-text-link" x="50" y="59" text-anchor="middle" dominant-baseline="middle"
+                      ng-click="ctrl.goToLog()" ng-bind="ctrl.unitStr()"></text>
             </svg>
         </div>
     </div>

@@ -27,7 +27,7 @@ define([
 
     function detectDeviceInfo(device) {
         if (!device) {
-            return { unit: 'kWh', divider: 1000, isP1: false, hasReturn: false };
+            return { unit: 'kWh', divider: 1, isP1: false, hasReturn: false };
         }
 
         var switchTypeVal = device.SwitchTypeVal;
@@ -36,22 +36,24 @@ define([
         if (isP1) {
             var hasReturn = device.CounterDeliv !== undefined && device.CounterDeliv !== null
                 && parseFloat(device.CounterDeliv) > 0;
-            return { unit: 'kWh', divider: 1000, isP1: true, hasReturn: hasReturn };
+            return { unit: 'kWh', divider: 1, isP1: true, hasReturn: hasReturn };
         }
 
         switch (switchTypeVal) {
             case SWITCH_TYPE_GAS:
                 return { unit: 'm\u00b3', divider: 1, isP1: false, hasReturn: false };
             case SWITCH_TYPE_WATER:
+                // API returns m³ (raw / backend-divider); widget converts to Litres (÷ 0.001 = × 1000)
                 return { unit: 'L', divider: 0.001, isP1: false, hasReturn: false };
             case SWITCH_TYPE_ENERGY_GENERATED:
-                return { unit: 'kWh', divider: 1000, isP1: false, hasReturn: false };
+                // API already applies the energy divider (Wh → kWh), so no further division needed
+                return { unit: 'kWh', divider: 1, isP1: false, hasReturn: false };
             case SWITCH_TYPE_ENERGY_USED:
-                return { unit: 'kWh', divider: 1000, isP1: false, hasReturn: false };
+                return { unit: 'kWh', divider: 1, isP1: false, hasReturn: false };
             default:
                 // Generic counter incremental / unknown
                 if (device.SubType === 'kWh' || device.Type === 'kWh') {
-                    return { unit: 'kWh', divider: 1000, isP1: false, hasReturn: false };
+                    return { unit: 'kWh', divider: 1, isP1: false, hasReturn: false };
                 }
                 return { unit: device.Unit || '', divider: 1, isP1: false, hasReturn: false };
         }
@@ -102,6 +104,7 @@ define([
         minH:        2,
         maxW:        12,
         maxH:        8,
+        transparentBackground: true,
         configSchema: [
             {
                 key:          'deviceIdx',
@@ -129,7 +132,8 @@ define([
                 type:     'text',
                 label:    'Custom title',
                 required: false
-            }
+            },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 
@@ -276,7 +280,7 @@ define([
                         chart: {
                             animation:       false,
                             backgroundColor: 'transparent',
-                            margin:          [10, 10, 30, 55],
+                            margin:          [22, 10, 30, 65],
                             style:           { fontFamily: 'inherit' },
                             height:          h,
                             width:           container.offsetWidth || null,
@@ -286,6 +290,9 @@ define([
                             text:  null,
                             align: 'center',
                             style: { fontSize: '11px', fontWeight: '600', color: getThemeColor('--dz-body-text', '#ccc') }
+                        },
+                        plotOptions: {
+                            column: { borderWidth: 0, pointPadding: 0.1, groupPadding: 0, minPointLength: 2 }
                         },
                         legend:    { enabled: false },
                         credits:   { enabled: false },
@@ -310,7 +317,7 @@ define([
 
                     destroyChart();
 
-                    var info = deviceInfo || { unit: 'kWh', divider: 1000, isP1: false, hasReturn: false };
+                    var info = deviceInfo || { unit: 'kWh', divider: 1, isP1: false, hasReturn: false };
                     meta = meta || {};
 
                     if (chartType === 'compare') {
@@ -627,18 +634,32 @@ define([
                 // ----------------------------------------------------------------
 
                 function renderSimpleShortLog(container, data, cfg, info) {
+                    // Shortlog `v` for kWh devices is in W (instant power) — no conversion.
+                    // For all other types (water, gas, etc.) apply the divider just like simpleBars.
+                    var isKwh = (info.unit === 'kWh');
                     var series = data.map(function(d) {
                         var ts  = parseDateLocal(d.d);
-                        var val = parseFloat(d.v);
+                        var raw = parseFloat(d.v);
+                        var val = isKwh ? raw : raw / info.divider;
                         return [ts, isNaN(val) || val === 0 ? null : val];
                     }).filter(function(pt) { return pt[1] !== null; });
 
-                    // Shortlog `v` for energy devices is in W (instant power), not kWh
-                    var unit = (info.unit === 'kWh') ? 'W' : info.unit;
+                    var unit = isKwh ? 'W' : info.unit;
+
+                    // Compute "Last X Days" from data span
+                    var chartTitle;
+                    if (series.length >= 2) {
+                        var spanMs = series[series.length - 1][0] - series[0][0];
+                        var days   = Math.max(1, Math.round(spanMs / 86400000));
+                        var suffix = days === 1 ? 'Last Day' : 'Last ' + days + ' Days';
+                        chartTitle = cfg.title || (ctrl.deviceName ? ctrl.deviceName + ' \u2014 ' + suffix : suffix);
+                    } else {
+                        chartTitle = titleForChartType(cfg, 'shortlog');
+                    }
 
                     var opts = baseChartOptions(container);
                     opts.chart.type = 'column';
-                    opts.title.text = titleForChartType(cfg, 'shortlog');
+                    opts.title.text = chartTitle;
                     opts.xAxis = {
                         type:   'datetime',
                         labels: { style: { fontSize: '10px' } }

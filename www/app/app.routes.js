@@ -16,6 +16,12 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                             mobileType = $rootScope.config.MobileType || 0;
                         }
                     } catch (e) {}
+                    // A one-shot flag set by openRoomPlan() to force the classic dashboard
+                    // when navigating from the dynamic dashboard to a room plan view.
+                    if (window._forceClassicDashboard) {
+                        window._forceClassicDashboard = false;
+                        enableDynamic = false;
+                    }
                     // Apply MobileType=1 (Force Desktop) directly here so iOS Safari's
                     // async:false timing differences don't leave the early UA detection
                     // in index.html (which has no MobileType knowledge) in control.
@@ -36,7 +42,9 @@ define(['angularAMD', 'angular', 'angular-route'], function (angularAMD) {
                         var d = $q.defer();
                         var isMobile = !!(window.myglobals && window.myglobals.ismobile)
                                        && $rootScope.config.MobileType != 1;
-                        var useDash2 = $rootScope.config.EnableTabDashboardDynamic && !isMobile;
+                        // Honour the one-shot classic flag (templateUrl already cleared it)
+                        var useDash2 = $rootScope.config.EnableTabDashboardDynamic && !isMobile
+                                       && !window._forceClassicDashboard;
                         var ctrlName   = useDash2 ? 'DashboardDynamicController'       : 'DashboardDesktopController';
                         var modulePath = useDash2 ? 'dashboardDynamic/DashboardDynamicController' : 'dashboard/DashboardDesktopController';
                         require([modulePath], function() {

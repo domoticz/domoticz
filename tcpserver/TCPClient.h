@@ -44,12 +44,13 @@ public:
 	void stop() override;
 	void write(const char *pData, size_t Length) override;
 
-      private:
+private:
 	void handleRead(const boost::system::error_code& error, size_t length);
 	void handleWrite(const boost::system::error_code& error);
 
 	/// Buffer for incoming data.
 	std::array<char, 8192> buffer_;
+	std::string m_recvBuffer;
 };
 
 typedef std::shared_ptr<CTCPClientBase> CTCPClient_ptr;

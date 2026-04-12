@@ -30,6 +30,11 @@
                     <li><a href ng-click="openDashboardManager()">
                         <i class="fa-solid fa-gear"></i> Dashboard Settings...
                     </a></li>
+                    <li class="divider" ng-if="roomPlans.length"></li>
+                    <li class="dropdown-header" ng-if="roomPlans.length">{{ 'Room Plans' | translate }}</li>
+                    <li ng-repeat="p in roomPlans">
+                        <a href ng-click="openRoomPlan(p.idx)">{{ p.Name }}</a>
+                    </li>
                 </ul>
             </div>
         </div>
