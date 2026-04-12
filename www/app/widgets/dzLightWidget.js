@@ -385,8 +385,7 @@ define(['app'], function (app) {
                         device.SubType.indexOf('Orcon') == 0 ||
                         device.SubType.indexOf('Lucci') == 0 ||
                         device.SubType.indexOf('Falmec') == 0 ||
-                        device.SubType.indexOf('Westinghouse') == 0 ||
-                        ctrl.isSelector()
+                        device.SubType.indexOf('Westinghouse') == 0
                     )) {
                         return 'images/Fan48_On.png';
                     }
