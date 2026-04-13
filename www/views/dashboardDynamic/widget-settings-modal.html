@@ -10,6 +10,7 @@
     <form name="settingsForm" class="dd-settings-form" novalidate>
         <div class="form-group"
              ng-repeat="field in descriptor.configSchema"
+             ng-if="!(field.hideForSwitch && isSelectedDeviceSwitch())"
              ng-class="{'has-error': settingsForm['field_' + field.key].$invalid && settingsForm.$submitted}">
 
             <label ng-if="field.type !== 'boolean' && field.type !== 'group'">
@@ -220,6 +221,51 @@
                         <button type="button" class="btn btn-sm btn-primary"
                                 ng-click="deviceListAddItem(field.key)"
                                 ng-disabled="!newDeviceEntry.idx">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- range-list -->
+            <div ng-if="field.type === 'range-list'" class="dd-action-list-editor">
+
+                <!-- Existing ranges -->
+                <div class="dd-al-items">
+                    <div class="dd-al-item" ng-repeat="range in config[field.key] track by $index">
+                        <span class="dd-range-from-to">{{ range.from }} &mdash; {{ range.to }}</span>
+                        <span class="dd-al-type-badge"
+                              ng-class="{'dd-range-badge-normal':   range.status === 'normal',
+                                         'dd-range-badge-warning':  range.status === 'warning',
+                                         'dd-range-badge-critical': range.status === 'critical'}">
+                            {{ range.status | translate }}
+                        </span>
+                        <i class="fa-solid fa-trash dd-al-action-icon dd-al-delete-icon"
+                           ng-click="rangeRemoveItem(field.key, $index)" title="{{'Remove' | translate}}"></i>
+                    </div>
+                </div>
+
+                <div class="dd-al-empty" ng-show="!config[field.key] || config[field.key].length === 0">
+                    {{'No ranges defined yet.' | translate}}
+                </div>
+
+                <!-- Add new range -->
+                <div class="dd-al-add">
+                    <div class="dd-al-add-row">
+                        <input type="number" class="text ui-widget-content ui-corner-all"
+                               ng-model="newRange.from"
+                               placeholder="{{'From' | translate}}" style="flex:1;min-width:0">
+                        <input type="number" class="text ui-widget-content ui-corner-all"
+                               ng-model="newRange.to"
+                               placeholder="{{'To' | translate}}" style="flex:1;min-width:0">
+                        <select class="combobox ui-corner-all" ng-model="newRange.status" style="flex:1.5;min-width:0">
+                            <option value="normal">{{'Normal' | translate}}</option>
+                            <option value="warning">{{'Warning' | translate}}</option>
+                            <option value="critical">{{'Critical' | translate}}</option>
+                        </select>
+                        <button type="button" class="btn btn-sm btn-primary"
+                                ng-click="rangeAddItem(field.key)"
+                                ng-disabled="newRange.from === '' || newRange.to === ''">
                             <i class="fa-solid fa-plus"></i>
                         </button>
                     </div>

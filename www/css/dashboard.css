@@ -2573,6 +2573,17 @@ dd-wcp-color {
     align-items: center;
 }
 
+/* ─── Range List Editor (Dial / Gauge value-range settings) */
+.dd-range-badge-normal   { background: var(--dz-widget-energy-export); color: var(--dz-body-bg); }
+.dd-range-badge-warning  { background: var(--dz-widget-amber);         color: var(--dz-body-bg); }
+.dd-range-badge-critical { background: var(--dz-accent-red);           color: #fff; }
+
+.dd-range-from-to {
+    flex: 1;
+    font-size: 12px;
+    color: var(--dz-body-text);
+}
+
 /* ─── Export / Import Modal ─────────────────────────────── */
 .dd-eim-body {
     padding: 0;
@@ -3118,7 +3129,7 @@ body.dd-standby::after {
 .dd-dial-needle    { fill-opacity: 0.92; }
 .dd-dial-tip       { }
 /* Inner hub circle — masks needle base, sets visual inner face */
-.dd-dial-hub       { fill: var(--dd-face-fill); stroke: rgba(255,255,255,0.20); stroke-width: 1.2; }
+.dd-dial-hub       { fill: var(--dd-bezel-fill); stroke: rgba(255,255,255,0.20); stroke-width: 1.2; }
 /* Arc fill track (grey background arc) and fill layer */
 .dd-dial-arc-track { stroke: rgba(255,255,255,0.10); stroke-linecap: round; }
 .dd-dial-arc-fill  { stroke-linecap: round; transition: stroke 0.4s ease; }

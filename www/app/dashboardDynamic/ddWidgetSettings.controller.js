@@ -394,6 +394,45 @@ define([
             };
         }
 
+        // Helper: returns true when the currently selected device (deviceIdx) is a switch
+        $scope.isSelectedDeviceSwitch = function() {
+            var idx = $scope.config.deviceIdx;
+            if (!idx) { return false; }
+            var d = ($scope.deviceList || []).find(function(x) { return String(x.idx) === String(idx); });
+            return !!(d && d.SwitchType && d.SwitchType !== 'Selector');
+        };
+
+        // For range-list fields: initialize arrays and add/remove helpers
+        var rangeListFields = (descriptor.configSchema || []).filter(function(f) {
+            return f.type === 'range-list';
+        });
+        if (rangeListFields.length) {
+            rangeListFields.forEach(function(field) {
+                var val = $scope.config[field.key];
+                if (typeof val === 'string') {
+                    try { $scope.config[field.key] = JSON.parse(val); } catch(e) { $scope.config[field.key] = []; }
+                }
+                if (!Array.isArray($scope.config[field.key])) {
+                    $scope.config[field.key] = [];
+                }
+            });
+
+            $scope.newRange = { from: '', to: '', status: 'normal' };
+
+            $scope.rangeAddItem = function(fieldKey) {
+                var r    = $scope.newRange;
+                var from = parseFloat(r.from);
+                var to   = parseFloat(r.to);
+                if (isNaN(from) || isNaN(to)) { return; }
+                $scope.config[fieldKey].push({ from: from, to: to, status: r.status || 'normal' });
+                $scope.newRange = { from: '', to: '', status: 'normal' };
+            };
+
+            $scope.rangeRemoveItem = function(fieldKey, index) {
+                $scope.config[fieldKey].splice(index, 1);
+            };
+        }
+
         $scope.save = function() {
             if ($scope.settingsForm.$invalid) {
                 $scope.settingsForm.$setSubmitted();

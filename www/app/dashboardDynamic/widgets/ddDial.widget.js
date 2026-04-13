@@ -56,8 +56,9 @@ define([
                 required: false
             },
             {
-                type:   'group',
-                spread: true,
+                type:          'group',
+                spread:        true,
+                hideForSwitch: true,
                 fields: [
                     {
                         key:     'minVal',
@@ -76,24 +77,13 @@ define([
                 ]
             },
             {
-                type:   'group',
-                spread: true,
-                fields: [
-                    { key: 'thresholdWarn', type: 'number', label: 'Warning threshold', default: '' },
-                    { key: 'thresholdCrit', type: 'number', label: 'Critical threshold', default: '' }
-                ]
+                key:           'ranges',
+                type:          'range-list',
+                label:         'Value ranges',
+                help:          'Map value intervals to colors: normal (green), warning (amber), critical (red). Ranges are checked in order; the first match wins.',
+                hideForSwitch: true
             },
-            {
-                key:     'thresholdMode',
-                type:    'select',
-                label:   'Threshold mode',
-                default: 'low-is-good',
-                options: [
-                    { value: 'low-is-good',  label: 'Low is good (e.g. temperature, load)' },
-                    { value: 'high-is-good', label: 'High is good (e.g. battery %)' }
-                ]
-            },
-            { key: 'showMinorTicks', type: 'boolean', label: 'Show intermediate tick marks', default: true }
+            { key: 'showMinorTicks', type: 'boolean', label: 'Show intermediate tick marks', default: true, hideForSwitch: true }
         ]
     });
 
@@ -421,7 +411,7 @@ define([
                         : 'var(--dz-widget-energy-export)';
                 };
 
-                // ── Arc fill colour (threshold-aware) ────────────────────
+                // ── Arc fill colour (range-aware) ────────────────────────
                 ctrl.arcFillColor = function() {
                     var type = ctrl.deviceType;
                     if (type === 'switch') {
@@ -429,13 +419,35 @@ define([
                             ? 'var(--dz-accent-color)'
                             : 'var(--dz-widget-stat-muted)';
                     }
-                    if (type === 'selector' || type === 'text' ||
-                        type === 'wind'     || type === 'p1') {
+                    if (type === 'selector' || type === 'text' || type === 'wind') {
                         return 'var(--dz-widget-amber)';
                     }
                     var v = ctrl.value;
                     if (v === null) { return 'var(--dz-widget-amber)'; }
-                    var c    = cfg();
+                    var c = cfg();
+
+                    // Range-based coloring: narrowest matching range wins
+                    var ranges = c.ranges;
+                    if (Array.isArray(ranges) && ranges.length > 0) {
+                        var matched = null, matchedWidth = Infinity;
+                        for (var i = 0; i < ranges.length; i++) {
+                            var r    = ranges[i];
+                            var from = parseFloat(r.from);
+                            var to   = parseFloat(r.to);
+                            if (!isNaN(from) && !isNaN(to) && v >= from && v <= to) {
+                                var width = Math.abs(to - from);
+                                if (width < matchedWidth) { matched = r; matchedWidth = width; }
+                            }
+                        }
+                        if (matched) {
+                            if (matched.status === 'critical') { return 'var(--dz-accent-red)'; }
+                            if (matched.status === 'warning')  { return 'var(--dz-widget-amber)'; }
+                            return 'var(--dz-widget-energy-export)';
+                        }
+                        return 'var(--dz-widget-amber)';
+                    }
+
+                    // Legacy threshold coloring (backward compat)
                     var warn = parseFloat(c.thresholdWarn);
                     var crit = parseFloat(c.thresholdCrit);
                     if (isNaN(warn) || isNaN(crit)) { return 'var(--dz-widget-amber)'; }

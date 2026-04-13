@@ -55,26 +55,10 @@ define([
                 default: '%'
             },
             {
-                key:     'thresholdWarn',
-                type:    'number',
-                label:   'Warning threshold',
-                default: 50
-            },
-            {
-                key:     'thresholdCrit',
-                type:    'number',
-                label:   'Critical threshold',
-                default: 80
-            },
-            {
-                key:     'thresholdMode',
-                type:    'select',
-                label:   'Threshold mode',
-                default: 'low-is-good',
-                options: [
-                    { value: 'low-is-good',  label: 'Low is good (e.g. CPU load)' },
-                    { value: 'high-is-good', label: 'High is good (e.g. battery %)' }
-                ]
+                key:   'ranges',
+                type:  'range-list',
+                label: 'Value ranges',
+                help:  'Map value intervals to colors: normal (green), warning (amber), critical (red). Ranges are checked in order; the first match wins.'
             },
             { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
@@ -108,21 +92,42 @@ define([
 
                 ctrl.gaugeColor = function() {
                     if (ctrl.value === null) { return 'var(--dz-widget-stat-muted)'; }
-                    var cfg       = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
-                    var warn      = parseFloat(cfg.thresholdWarn);
-                    var crit      = parseFloat(cfg.thresholdCrit);
-                    var mode      = cfg.thresholdMode || 'low-is-good';
+                    var c = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
+                    var v = ctrl.value;
+
+                    // Range-based coloring: narrowest matching range wins
+                    var ranges = c.ranges;
+                    if (Array.isArray(ranges) && ranges.length > 0) {
+                        var matched = null, matchedWidth = Infinity;
+                        for (var i = 0; i < ranges.length; i++) {
+                            var r    = ranges[i];
+                            var from = parseFloat(r.from);
+                            var to   = parseFloat(r.to);
+                            if (!isNaN(from) && !isNaN(to) && v >= from && v <= to) {
+                                var width = Math.abs(to - from);
+                                if (width < matchedWidth) { matched = r; matchedWidth = width; }
+                            }
+                        }
+                        if (matched) {
+                            if (matched.status === 'critical') { return 'var(--dz-accent-red)'; }
+                            if (matched.status === 'warning')  { return 'var(--dz-widget-amber)'; }
+                            return 'var(--dz-widget-energy-export)';
+                        }
+                        return 'var(--dz-widget-amber)';
+                    }
+
+                    // Legacy threshold coloring (backward compat)
+                    var warn = parseFloat(c.thresholdWarn);
+                    var crit = parseFloat(c.thresholdCrit);
+                    var mode = c.thresholdMode || 'low-is-good';
                     if (isNaN(warn)) { warn = 50; }
                     if (isNaN(crit)) { crit = 80; }
-
-                    var v = ctrl.value;
 
                     if (mode === 'high-is-good') {
                         if (v >= crit) { return 'var(--dz-widget-energy-export)'; }
                         if (v >= warn) { return 'var(--dz-widget-amber)'; }
                         return 'var(--dz-accent-red)';
                     } else {
-                        // low-is-good
                         if (v < warn)  { return 'var(--dz-widget-energy-export)'; }
                         if (v < crit)  { return 'var(--dz-widget-amber)'; }
                         return 'var(--dz-accent-red)';
