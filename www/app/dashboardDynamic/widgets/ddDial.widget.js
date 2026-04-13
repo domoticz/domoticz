@@ -615,7 +615,8 @@ define([
 
                     // ── Selector Switch ───────────────────────────────────
                     if (d.SwitchType === 'Selector') {
-                        ctrl.deviceType = 'selector';
+                        ctrl.deviceType      = 'selector';
+                        ctrl.deviceProtected = d.Protected || false;
                         var names = decodeLevelNames(d.LevelNames || '');
                         ctrl.levelOptions = [];
                         for (var ni = 0; ni < names.length; ni++) {
@@ -634,7 +635,8 @@ define([
 
                     // ── Switch (On/Off / PushOn / PushOff) ───────────────────────────────
                     if (d.SwitchType && d.SwitchType !== 'Selector' && d.Status !== undefined) {
-                        ctrl.deviceType  = 'switch';
+                        ctrl.deviceType      = 'switch';
+                        ctrl.deviceProtected = d.Protected || false;
                         ctrl.switchOn    = (d.Status === 'On');
                         ctrl.switchType  = d.SwitchType || '';
                         ctrl.value       = ctrl.switchOn ? 1 : 0;
@@ -787,7 +789,7 @@ define([
                 }
 
                 // ── Switch toggle ─────────────────────────────────────────
-                function toggleSwitch() {
+                function toggleSwitch(passcode) {
                     if (ctrl.sending) { return; }
                     ctrl.sending = true;
                     var cmd;
@@ -796,7 +798,8 @@ define([
                     else                                            { cmd = 'Toggle'; }
                     $http.get('json.htm', {
                         params: { type: 'command', param: 'switchlight',
-                                  idx: cfg().deviceIdx, switchcmd: cmd }
+                                  idx: cfg().deviceIdx, switchcmd: cmd,
+                                  passcode: passcode || '' }
                     }).then(function(resp) {
                         if (resp.data && resp.data.status === 'OK') {
                             if (cmd === 'Toggle') {
@@ -813,7 +816,17 @@ define([
 
                 ctrl.handleClick = function() {
                     if (ctrl.deviceType !== 'switch' || ctrl.editMode) { return; }
-                    toggleSwitch();
+                    var idx = cfg().deviceIdx;
+                    if (ctrl.deviceProtected && !_verifiedDevices[idx]) {
+                        if (typeof HandleProtection === 'function') {
+                            HandleProtection(ctrl.deviceProtected, function(passcode) {
+                                _verifiedDevices[idx] = passcode;
+                                $scope.$apply(function() { toggleSwitch(passcode); });
+                            });
+                        }
+                        return;
+                    }
+                    toggleSwitch(_verifiedDevices[idx] || '');
                 };
 
                 // ── Drag to set ───────────────────────────────────────────
@@ -887,7 +900,7 @@ define([
                     $scope.$apply(function() {
                         ctrl.dragging = false;
                         if (ctrl.deviceType === 'selector') {
-                            ctrl.selectLevel(ctrl.levelInt);
+                            ctrl.selectLevel(ctrl.levelInt, _verifiedDevices[cfg().deviceIdx] || '');
                         } else if (ctrl.value !== null) {
                             sendSetpoint(ctrl.value);
                         }
@@ -926,8 +939,8 @@ define([
                     var idx = cfg().deviceIdx;
                     if (ctrl.deviceProtected && !_verifiedDevices[idx]) {
                         if (typeof HandleProtection === 'function') {
-                            HandleProtection(ctrl.deviceProtected, function() {
-                                _verifiedDevices[idx] = true;
+                            HandleProtection(ctrl.deviceProtected, function(passcode) {
+                                _verifiedDevices[idx] = passcode;
                                 $scope.$apply(function() { startDrag(clientX, clientY); });
                             });
                         }
@@ -937,14 +950,15 @@ define([
                 };
 
                 // ── Selector level switch ─────────────────────────────────
-                ctrl.selectLevel = function(level) {
+                ctrl.selectLevel = function(level, passcode) {
                     if (ctrl.sending) { return; }
                     ctrl.sending = true;
                     $http.get('json.htm', {
                         params: { type: 'command', param: 'switchlight',
                                   idx: cfg().deviceIdx,
                                   switchcmd: level === 0 ? 'Off' : 'Set Level',
-                                  level: level }
+                                  level: level,
+                                  passcode: passcode || '' }
                     }).then(function() {
                         ctrl.levelInt = level;
                         ctrl.value    = level;
