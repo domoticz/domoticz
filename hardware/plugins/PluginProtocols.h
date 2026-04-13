@@ -76,6 +76,7 @@ namespace Plugins {
 		bool				ProcessWholeMessage(const std::vector<byte>& vMessage, size_t& startOffset, const ReadEvent* Message);
 		std::vector<byte>	m_FragmentBuffer;
 		int					m_FragmentOpCode = 0;
+		bool				m_bFragmentDeflate = false;   // RSV1 of the first frame in a fragmented sequence
 	public:
 		CPluginProtocolWS(bool Secure) : CPluginProtocolHTTP(Secure) {};
 		void				ProcessInbound(const ReadEvent* Message) override;

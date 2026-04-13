@@ -2235,7 +2235,8 @@ namespace Plugins {
 	{
 		m_sRetainedData.clear();
 		m_FragmentBuffer.clear();
-		m_FragmentOpCode = 0;
+		m_FragmentOpCode   = 0;
+		m_bFragmentDeflate = false;
 	}
 
 	bool CPluginProtocolWS::ProcessWholeMessage(const std::vector<byte>& vMessage, size_t& startOffset, const ReadEvent* Message)
@@ -2252,8 +2253,9 @@ namespace Plugins {
 
 		auto vAt = [&](size_t i) -> byte { return vMessage[startOffset + i]; };
 
-		bFinish = (vAt(iOffset) & 0x80);				// Indicates that this is the final fragment in a message if true
-		iOpCode = (vAt(iOffset) & 0x0F);
+		bFinish  = (vAt(iOffset) & 0x80);				// Indicates that this is the final fragment in a message if true
+		bool bCompressed = (vAt(iOffset) & 0x40);	// RSV1 — permessage-deflate indicator
+		iOpCode  = (vAt(iOffset) & 0x0F);
 		// %x0 denotes a continuation frame
 		// %x1 denotes a text frame
 		// %x2 denotes a binary frame
@@ -2270,11 +2272,21 @@ namespace Plugins {
 			lPayloadLength = ((size_t)vAt(iOffset + 1) << 8) + vAt(iOffset + 2);
 			iOffset += 2;
 		}
-		else if (lPayloadLength == 127)							// 64 bit lengths not supported
+		else if (lPayloadLength == 127)
 		{
-			_log.Log(LOG_ERROR, "(%s) 64 bit WebSocket messages lengths not supported.", __func__);
-			startOffset = vMessage.size();
-			return false;
+			if (vMessage.size() - startOffset < (iOffset + 9))
+				return false;	// not enough data yet
+			uint64_t u64Length = 0;
+			for (int i = 1; i <= 8; i++)
+				u64Length = (u64Length << 8) | vAt(iOffset + i);
+			if ((u64Length >> 63) || (u64Length > SIZE_MAX))	// RFC 6455: MSB must be 0; guard 32-bit truncation
+			{
+				_log.Log(LOG_ERROR, "(%s) WebSocket frame with invalid or out-of-range 64-bit length.", __func__);
+				startOffset = vMessage.size();
+				return false;
+			}
+			lPayloadLength = static_cast<size_t>(u64Length);
+			iOffset += 8;
 		}
 		iOffset++;
 
@@ -2324,7 +2336,8 @@ namespace Plugins {
 					return false;
 				}
 				// First fragment (or unfragmented message): remember its opcode and start accumulating
-				m_FragmentOpCode = iOpCode;
+				m_FragmentOpCode   = iOpCode;
+				m_bFragmentDeflate = bCompressed;
 				m_FragmentBuffer.clear();
 			}
 			else if (m_FragmentOpCode == 0)
@@ -2343,10 +2356,12 @@ namespace Plugins {
 				return true;	// More fragments to come; frame consumed, keep looping
 
 			// Final fragment: reassemble and dispatch using the stored opcode
-			vPayload = std::move(m_FragmentBuffer);
-			iOpCode = m_FragmentOpCode;
+			vPayload            = std::move(m_FragmentBuffer);
+			iOpCode             = m_FragmentOpCode;
+			bCompressed         = m_bFragmentDeflate;
 			m_FragmentBuffer.clear();
-			m_FragmentOpCode = 0;
+			m_FragmentOpCode    = 0;
+			m_bFragmentDeflate  = false;
 		}
 
 		PyObject* pDataDict = (PyObject*)PyDict_New();
@@ -2363,8 +2378,11 @@ namespace Plugins {
 		{
 		case 0x01:	// Text message
 		{
-			// Force text messages to be returned as Unicode rather than Bytes
-			pPayload = PyNewRef(std::string(vPayload.begin(), vPayload.end()));
+			if (!bCompressed)
+			{
+				// Force text messages to be returned as Unicode rather than Bytes
+				pPayload = PyNewRef(std::string(vPayload.begin(), vPayload.end()));
+			}
 			break;
 		}
 		case 0x02:	// Binary message
