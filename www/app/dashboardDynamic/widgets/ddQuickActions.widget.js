@@ -55,6 +55,7 @@ define([
             bindToController: true,
             controller: ['$scope', '$http', '$timeout', 'ddToast', function($scope, $http, $timeout, ddToast) {
                 var ctrl = this;
+                var _verifiedDevices = {};
                 ctrl.actions          = [];
                 ctrl.busy             = {};
                 ctrl.success          = {};
@@ -173,6 +174,7 @@ define([
                             .then(function(resp) {
                                 var item = resp.data && resp.data.result && resp.data.result[0];
                                 if (!item) { return; }
+                                action.isProtected = item.Protected || false;
                                 ctrl.deviceOn[action.idx] = (item.Status !== '' && item.Status !== 'Off');
                                 ctrl.dimLevel[action.idx] = item.LevelInt !== undefined ? item.LevelInt : 100;
                             });
@@ -194,6 +196,7 @@ define([
                         .then(function(resp) {
                             var item = resp.data && resp.data.result && resp.data.result[0];
                             if (!item) { return; }
+                            action.isProtected = item.Protected || false;
                             if (action.type === 'selector') {
                                 if (!ctrl.levelOptions[action.idx]) {
                                     ctrl.levelOptions[action.idx] = decodeLevelNames(item);
@@ -225,6 +228,19 @@ define([
                     (ctrl.actions || []).forEach(fetchDeviceState);
                 }
 
+                function runProtected(action, fn) {
+                    if (action.isProtected && !_verifiedDevices[action.idx]) {
+                        if (typeof HandleProtection === 'function') {
+                            HandleProtection(action.isProtected, function(passcode) {
+                                _verifiedDevices[action.idx] = passcode;
+                                $scope.$apply(function() { fn(passcode); });
+                            });
+                        }
+                        return;
+                    }
+                    fn(_verifiedDevices[action.idx] || '');
+                }
+
                 ctrl.toggleLevelPicker = function(idx, $event) {
                     if ($event) { $event.stopPropagation(); }
                     ctrl.showLevelPicker[idx] = !ctrl.showLevelPicker[idx];
@@ -236,26 +252,28 @@ define([
                     if (ctrl.busy[busyKey]) { return; }
                     ctrl.busy[busyKey]  = true;
                     ctrl.error[busyKey] = false;
-                    $http.get('json.htm', { params: { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: 'Set Level', level: level } })
-                        .then(function(resp) {
-                            var data = resp.data || {};
-                            if (data.status === 'OK') {
-                                ctrl.currentLevel[action.idx]     = level;
-                                ctrl.currentLevelText[action.idx] = getLevelLabel(action.idx, level);
-                                ctrl.success[busyKey] = true;
-                                $timeout(function() { ctrl.success[busyKey] = false; }, 1200);
-                            } else {
+                    runProtected(action, function(passcode) {
+                        $http.get('json.htm', { params: { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: 'Set Level', level: level, passcode: passcode } })
+                            .then(function(resp) {
+                                var data = resp.data || {};
+                                if (data.status === 'OK') {
+                                    ctrl.currentLevel[action.idx]     = level;
+                                    ctrl.currentLevelText[action.idx] = getLevelLabel(action.idx, level);
+                                    ctrl.success[busyKey] = true;
+                                    $timeout(function() { ctrl.success[busyKey] = false; }, 1200);
+                                } else {
+                                    ctrl.error[busyKey] = true;
+                                    ddToast.error((action.label || action.idx) + ': ' + (data.message || 'Unknown error'));
+                                    $timeout(function() { ctrl.error[busyKey] = false; }, 2500);
+                                }
+                            })
+                            .catch(function(err) {
                                 ctrl.error[busyKey] = true;
-                                ddToast.error((action.label || action.idx) + ': ' + (data.message || 'Unknown error'));
+                                ddToast.error((action.label || action.idx) + ': ' + ((err && err.statusText) || 'Request failed'));
                                 $timeout(function() { ctrl.error[busyKey] = false; }, 2500);
-                            }
-                        })
-                        .catch(function(err) {
-                            ctrl.error[busyKey] = true;
-                            ddToast.error((action.label || action.idx) + ': ' + ((err && err.statusText) || 'Request failed'));
-                            $timeout(function() { ctrl.error[busyKey] = false; }, 2500);
-                        })
-                        .finally(function() { ctrl.busy[busyKey] = false; });
+                            })
+                            .finally(function() { ctrl.busy[busyKey] = false; });
+                    });
                 };
 
                 ctrl.toggleDimSlider = function(idx, $event) {
@@ -266,19 +284,21 @@ define([
                 ctrl.applyDimLevel = function(action) {
                     var level = parseInt(ctrl.dimLevel[action.idx], 10);
                     if (isNaN(level)) { return; }
-                    $http.get('json.htm', { params: { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: 'Set Level', level: level } })
-                        .then(function(resp) {
-                            if (resp.data && resp.data.status === 'OK') {
-                                ctrl.deviceOn[action.idx] = level > 0;
-                                ctrl.success[action.idx + '_dim'] = true;
-                                $timeout(function() { ctrl.success[action.idx + '_dim'] = false; }, 1200);
-                            } else {
-                                ddToast.error((action.label || action.idx) + ': ' + ((resp.data && resp.data.message) || 'Unknown error'));
-                            }
-                        })
-                        .catch(function(err) {
-                            ddToast.error((action.label || action.idx) + ': ' + ((err && err.statusText) || 'Request failed'));
-                        });
+                    runProtected(action, function(passcode) {
+                        $http.get('json.htm', { params: { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: 'Set Level', level: level, passcode: passcode } })
+                            .then(function(resp) {
+                                if (resp.data && resp.data.status === 'OK') {
+                                    ctrl.deviceOn[action.idx] = level > 0;
+                                    ctrl.success[action.idx + '_dim'] = true;
+                                    $timeout(function() { ctrl.success[action.idx + '_dim'] = false; }, 1200);
+                                } else {
+                                    ddToast.error((action.label || action.idx) + ': ' + ((resp.data && resp.data.message) || 'Unknown error'));
+                                }
+                            })
+                            .catch(function(err) {
+                                ddToast.error((action.label || action.idx) + ': ' + ((err && err.statusText) || 'Request failed'));
+                            });
+                    });
                 };
 
                 ctrl.execute = function(action, cmd) {
@@ -293,40 +313,90 @@ define([
                     ctrl.busy[busyKey]  = true;
                     ctrl.error[busyKey] = false;
 
-                    var params;
                     if (action.type === 'scene') {
-                        params = { type: 'command', param: 'switchscene', idx: action.idx, switchcmd: 'On' };
-                    } else if (action.type === 'group') {
-                        params = { type: 'command', param: 'switchscene', idx: action.idx, switchcmd: cmd };
-                    } else if (action.type === 'blind') {
-                        params = { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: cmd };
-                    } else if (action.type === 'dimmer') {
-                        params = { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: action.switchcmd || 'Toggle' };
-                    } else {
-                        params = { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: action.switchcmd || 'Toggle' };
-                    }
-
-                    $http.get('json.htm', { params: params })
-                        .then(function(resp) {
-                            var data = resp.data || {};
-                            if (data.status === 'OK') {
-                                fetchDeviceState(action);
-                                ctrl.success[busyKey] = true;
-                                $timeout(function() { ctrl.success[busyKey] = false; }, 1200);
-                            } else {
-                                var msg = data.message || data.status || 'Unknown error';
+                        var params = { type: 'command', param: 'switchscene', idx: action.idx, switchcmd: 'On' };
+                        $http.get('json.htm', { params: params })
+                            .then(function(resp) {
+                                var data = resp.data || {};
+                                if (data.status === 'OK') {
+                                    fetchDeviceState(action);
+                                    ctrl.success[busyKey] = true;
+                                    $timeout(function() { ctrl.success[busyKey] = false; }, 1200);
+                                } else {
+                                    var msg = data.message || data.status || 'Unknown error';
+                                    ctrl.error[busyKey] = true;
+                                    ddToast.error((action.label || action.idx) + ': ' + msg);
+                                    $timeout(function() { ctrl.error[busyKey] = false; }, 2500);
+                                }
+                            })
+                            .catch(function(err) {
+                                var msg = (err && err.statusText) ? err.statusText : 'Request failed';
                                 ctrl.error[busyKey] = true;
                                 ddToast.error((action.label || action.idx) + ': ' + msg);
                                 $timeout(function() { ctrl.error[busyKey] = false; }, 2500);
-                            }
-                        })
-                        .catch(function(err) {
-                            var msg = (err && err.statusText) ? err.statusText : 'Request failed';
-                            ctrl.error[busyKey] = true;
-                            ddToast.error((action.label || action.idx) + ': ' + msg);
-                            $timeout(function() { ctrl.error[busyKey] = false; }, 2500);
-                        })
-                        .finally(function() { ctrl.busy[busyKey] = false; });
+                            })
+                            .finally(function() { ctrl.busy[busyKey] = false; });
+                        return;
+                    }
+
+                    if (action.type === 'group') {
+                        var params = { type: 'command', param: 'switchscene', idx: action.idx, switchcmd: cmd };
+                        $http.get('json.htm', { params: params })
+                            .then(function(resp) {
+                                var data = resp.data || {};
+                                if (data.status === 'OK') {
+                                    fetchDeviceState(action);
+                                    ctrl.success[busyKey] = true;
+                                    $timeout(function() { ctrl.success[busyKey] = false; }, 1200);
+                                } else {
+                                    var msg = data.message || data.status || 'Unknown error';
+                                    ctrl.error[busyKey] = true;
+                                    ddToast.error((action.label || action.idx) + ': ' + msg);
+                                    $timeout(function() { ctrl.error[busyKey] = false; }, 2500);
+                                }
+                            })
+                            .catch(function(err) {
+                                var msg = (err && err.statusText) ? err.statusText : 'Request failed';
+                                ctrl.error[busyKey] = true;
+                                ddToast.error((action.label || action.idx) + ': ' + msg);
+                                $timeout(function() { ctrl.error[busyKey] = false; }, 2500);
+                            })
+                            .finally(function() { ctrl.busy[busyKey] = false; });
+                        return;
+                    }
+
+                    runProtected(action, function(passcode) {
+                        var params;
+                        if (action.type === 'blind') {
+                            params = { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: cmd, passcode: passcode };
+                        } else if (action.type === 'dimmer') {
+                            params = { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: action.switchcmd || 'Toggle', passcode: passcode };
+                        } else {
+                            params = { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: action.switchcmd || 'Toggle', passcode: passcode };
+                        }
+
+                        $http.get('json.htm', { params: params })
+                            .then(function(resp) {
+                                var data = resp.data || {};
+                                if (data.status === 'OK') {
+                                    fetchDeviceState(action);
+                                    ctrl.success[busyKey] = true;
+                                    $timeout(function() { ctrl.success[busyKey] = false; }, 1200);
+                                } else {
+                                    var msg = data.message || data.status || 'Unknown error';
+                                    ctrl.error[busyKey] = true;
+                                    ddToast.error((action.label || action.idx) + ': ' + msg);
+                                    $timeout(function() { ctrl.error[busyKey] = false; }, 2500);
+                                }
+                            })
+                            .catch(function(err) {
+                                var msg = (err && err.statusText) ? err.statusText : 'Request failed';
+                                ctrl.error[busyKey] = true;
+                                ddToast.error((action.label || action.idx) + ': ' + msg);
+                                $timeout(function() { ctrl.error[busyKey] = false; }, 2500);
+                            })
+                            .finally(function() { ctrl.busy[busyKey] = false; });
+                    });
                 };
             }]
         };
