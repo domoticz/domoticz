@@ -372,6 +372,10 @@ define([
                            rx.toFixed(2)   + ',' + ry.toFixed(2);
                 };
 
+                ctrl.dialContentScale = function() {
+                    return (ctrl.deviceType === 'switch' || ctrl.deviceType === 'selector') ? 1.2 : 1;
+                };
+
                 ctrl.showNeedle = function() {
                     return ctrl.value !== null &&
                            ctrl.deviceType !== 'selector' &&
