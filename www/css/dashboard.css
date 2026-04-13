@@ -3007,13 +3007,15 @@ dd-wcp-color {
 
 /* ── Google Calendar Widget ───────────────────────────────── */
 .dd-widget--google-calendar > .dd-widget-body { padding: 4px; background: transparent; overflow: hidden; }
+.dd-widget--google-calendar > .dd-widget-body > div,
+.dd-widget--google-calendar > .dd-widget-body > div > * { height: 100%; }
 .dd-widget--google-calendar .dd-calendar {
     border-radius: var(--dz-border-radius, 8px);
     background: var(--dz-panel-bg);
 }
 .dd-calendar { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
 .dd-calendar-header { font-size: 0.9em; font-weight: 600; margin-bottom: 8px; flex-shrink: 0; }
-.dd-calendar-body { flex: 1; overflow-y: auto; }
+.dd-calendar-body { flex: 1; overflow-y: auto; min-height: 0; }
 .dd-calendar-group { margin-bottom: 10px; }
 .dd-calendar-day-label { font-size: 0.75em; font-weight: 700; text-transform: uppercase; color: var(--dz-widget-accent); margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 2px; }
 .dd-calendar-event { display: flex; gap: 8px; padding: 3px 0; font-size: 0.85em; align-items: baseline; }
