@@ -620,7 +620,7 @@ define([
                         var names = decodeLevelNames(d.LevelNames || '');
                         ctrl.levelOptions = [];
                         for (var ni = 0; ni < names.length; ni++) {
-                            if (names[ni]) {
+                            if (names[ni] && !(ni === 0 && d.LevelOffHidden)) {
                                 ctrl.levelOptions.push({ level: ni * 10, name: names[ni] });
                             }
                         }
