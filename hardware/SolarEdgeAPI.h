@@ -62,15 +62,17 @@ private:
 	void GetMeterDetails();
 	void GetInverterDetails(const _tInverterSettings* pInverterSettings, int iInverterNumber);
 	int getSunRiseSunSetMinutes(bool bGetSunRise);
+	bool isDaylightWindow();
 
 	void GetBatteryDetails();
 	void GetOverview();
 	void GetEnergyDetails();
 
 	// Web portal methods
+	bool GetLayoutFromAPI(Json::Value& json_output, bool bGetLifeTimeData);
 	bool GetSiteLayout();
 	void GetOptimizerData();
-	void GetEnergyFromLayout(const Json::Value& reportersData);
+	void GetEnergyFromLayout(const Json::Value& reportersData, bool bSetLifeTimeData);
 
 private:
 	int m_SiteID;
