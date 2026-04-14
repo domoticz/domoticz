@@ -199,7 +199,7 @@ define(['app', 'events/factories'], function (app) {
                             try {
                                 var xml = Blockly.Xml.workspaceToDom(blocklyWorkspace);
 
-                                event.xmlstatement = Blockly.Xml.domToText(xml);
+                                event.xmlstatement = Blockly.utils.xml.domToText(xml);
                                 event.logicarray = JSON.stringify(xmlParser.parseXml(xml));
                                 resolve(event);
                             } catch (e) {
@@ -242,7 +242,7 @@ define(['app', 'events/factories'], function (app) {
                     templateUrl: 'app/events/importEventModal.html'
                 }).result.then(function (scriptData) {
                     try {
-                        var xml = Blockly.Xml.textToDom(scriptData);
+                        var xml = Blockly.utils.xml.textToDom(scriptData);
                         Blockly.Xml.domToWorkspace(xml, blocklyWorkspace);
 
                         vm.markEventAsUpdated();
@@ -256,7 +256,7 @@ define(['app', 'events/factories'], function (app) {
                 var xml = Blockly.Xml.workspaceToDom(blocklyWorkspace);
                 var scope = $scope.$new(true);
 
-                scope.scriptData = Blockly.Xml.domToText(xml);
+                scope.scriptData = Blockly.utils.xml.domToText(xml);
 
                 $uibModal.open({
                     scope: scope,
@@ -337,7 +337,7 @@ define(['app', 'events/factories'], function (app) {
                         blocklyWorkspace.clear();
 
                         if (eventData.xmlstatement) {
-                            var xml = Blockly.Xml.textToDom(eventData.xmlstatement);
+                            var xml = Blockly.utils.xml.textToDom(eventData.xmlstatement);
                             Blockly.Xml.domToWorkspace(xml, blocklyWorkspace);
                         }
 
@@ -355,7 +355,11 @@ define(['app', 'events/factories'], function (app) {
                         if (window.ResizeObserver) {
                             var ro = new ResizeObserver(function (entries) {
                                 if (entries.length && entries[0].contentRect.width > 0) {
-                                    Blockly.svgResize(blocklyWorkspace);
+                                    window.requestAnimationFrame(function() {
+                                        if (blocklyWorkspace) {
+                                            Blockly.svgResize(blocklyWorkspace);
+                                        }
+                                    });
                                 }
                             });
 

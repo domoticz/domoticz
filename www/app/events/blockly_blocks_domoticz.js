@@ -479,7 +479,11 @@ define(['blockly', 'blockly-blocks', 'blockly-msg-en', 'app/events/blockly_messa
                 .appendField(Blockly.DOMOTICZCONTROLS_MSG_DO);
             this.setPreviousStatement(true);
             this.setNextStatement(true);
-            this.setMutator(new Blockly.Mutator(['controls_if_elseif']));
+            if (Blockly.Mutator) {
+                this.setMutator(new Blockly.Mutator(['controls_if_elseif']));
+            } else if (Blockly.icons && Blockly.icons.MutatorIcon) {
+                this.setMutator(new Blockly.icons.MutatorIcon(['controls_if_elseif'], this));
+            }
             // Assign 'this' to a variable for use in the tooltip closure below.
             this.setTooltip(Blockly.DOMOTICZCONTROLS_IF_TOOLTIP);
             this.elseifCount_ = 0;
