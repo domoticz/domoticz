@@ -3080,6 +3080,7 @@ body.dd-standby::after {
 .dd-gauge-text-link  { cursor: pointer; }
 .dd-gauge-text-link:hover { fill: var(--dz-accent-color); opacity: 1; }
 .dd-gauge-title { margin-bottom: 4px; }
+.dd-gauge-temp-sub-txt { font-size: 6px; fill: var(--dz-body-text); opacity: 0.70; }
 
 /* ── Dial widget ──────────────────────────────────────────── */
 

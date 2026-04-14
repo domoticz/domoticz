@@ -83,7 +83,8 @@ define([
                 help:          'Map value intervals to colors: normal (green), warning (amber), critical (red). Ranges are checked in order; the first match wins.',
                 hideForSwitch: true
             },
-            { key: 'showMinorTicks', type: 'boolean', label: 'Show intermediate tick marks', default: true, hideForSwitch: true }
+            { key: 'showMinorTicks', type: 'boolean', label: 'Show intermediate tick marks', default: true, hideForSwitch: true },
+            { key: 'unit',          type: 'text',    label: 'Unit override (blank = auto from device)', required: false, hideForSwitch: true }
         ]
     });
 
@@ -743,6 +744,17 @@ define([
                     rebuildScale();
                 }
 
+                // ── Config unit override — runs after every applyDevice call ──
+                // Each device-type branch above sets ctrl.unitStr from the device
+                // data; this function lets the user override it from config, or
+                // leaves it untouched when the config field is blank.
+                function applyUnitOverride() {
+                    var cfgUnit = cfg().unit;
+                    if (cfgUnit && String(cfgUnit).trim()) {
+                        ctrl.unitStr = String(cfgUnit).trim();
+                    }
+                }
+
                 // ── HTTP load ─────────────────────────────────────────────
                 function load() {
                     var c = cfg();
@@ -758,6 +770,7 @@ define([
                         if (!d) { ctrl.loadError = true; return; }
                         ctrl.loadError = false;
                         applyDevice(d);
+                        applyUnitOverride();
                     }).catch(function(err) {
                         if (err.status === -1) { return; }
                         ctrl.loadError = true;
@@ -973,6 +986,7 @@ define([
                     var c = cfg();
                     if (!ctrl.dragging && c && String(updated.idx) === String(c.deviceIdx)) {
                         applyDevice(updated);
+                        applyUnitOverride();
                     }
                 });
 

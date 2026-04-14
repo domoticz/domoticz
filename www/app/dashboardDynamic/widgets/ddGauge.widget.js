@@ -4,10 +4,10 @@ define([
 ], function(app, widgetRegistry) {
     'use strict';
 
-    var RADIUS        = 40;
-    var CIRCUMFERENCE = 2 * Math.PI * RADIUS;   // ~251.33
+    var RADIUS        = 42;
+    var CIRCUMFERENCE = 2 * Math.PI * RADIUS;   // ~263.89
     var ARC_FRACTION  = 220 / 360;               // ~0.6111
-    var ARC_LENGTH    = CIRCUMFERENCE * ARC_FRACTION; // ~153.59
+    var ARC_LENGTH    = CIRCUMFERENCE * ARC_FRACTION; // ~161.49
 
     widgetRegistry.register({
         type:        'gauge',
@@ -24,11 +24,10 @@ define([
         transparentBackground: true,
         configSchema: [
             {
-                key:          'deviceIdx',
-                type:         'device-picker',
-                label:        'Device',
-                required:     true,
-                deviceFilter: 'numeric'
+                key:      'deviceIdx',
+                type:     'device-picker',
+                label:    'Device',
+                required: true
             },
             {
                 key:      'title',
@@ -51,8 +50,8 @@ define([
             {
                 key:     'unit',
                 type:    'text',
-                label:   'Unit suffix',
-                default: '%'
+                label:   'Unit suffix (blank = auto from device)',
+                default: ''
             },
             {
                 key:   'ranges',
@@ -78,11 +77,17 @@ define([
                 var ctrl      = this;
                 ctrl.title    = '';
                 ctrl.value    = null;
+                ctrl.humidity = null;
+                ctrl.baro     = null;
+                ctrl.autoUnit = '';
                 var cancelToken = null;
 
                 ctrl.unitStr = function() {
                     var cfg = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
-                    return (cfg.unit !== undefined && cfg.unit !== null) ? cfg.unit : '%';
+                    var u = cfg.unit;
+                    return (u !== undefined && u !== null && String(u).trim() !== '')
+                        ? String(u).trim()
+                        : ctrl.autoUnit;
                 };
 
                 ctrl.valueStr = function() {
@@ -153,9 +158,29 @@ define([
                 function applyDevice(d) {
                     var cfg   = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
                     ctrl.title = cfg.title || d.Name || '';
+
+                    // Temp / Temp+Hum / Temp+Hum+Baro
+                    if (d.Temp !== undefined) {
+                        ctrl.value    = parseFloat(d.Temp);
+                        if (isNaN(ctrl.value)) { ctrl.value = null; }
+                        ctrl.humidity = (d.Humidity  !== undefined) ? parseInt(d.Humidity,  10) : null;
+                        ctrl.baro     = (d.Barometer !== undefined) ? parseFloat(d.Barometer)   : null;
+                        // Auto-detect unit from data string (e.g. "21.5 C" → "°C")
+                        var tempMatch = String(d.Data || '').match(/^[-\d.]+\s*([CF])\b/);
+                        ctrl.autoUnit = tempMatch ? '\u00b0' + tempMatch[1] : '\u00b0C';
+                        return;
+                    }
+
+                    ctrl.humidity = null;
+                    ctrl.baro     = null;
+
+                    // Generic numeric — extract value and unit from Data string
                     var raw   = (d.SubType === 'kWh' && d.Usage) ? d.Usage : (d.Data || '');
                     var match = raw.match(/^([-\d.]+)/);
                     ctrl.value = match ? parseFloat(match[1]) : null;
+                    var unitMatch = raw.match(/^[-\d.]+\s*([^\d\s].*)/);
+                    var rawUnit   = unitMatch ? unitMatch[1].trim() : (d.Unit || '');
+                    ctrl.autoUnit = /^\d+$/.test(String(rawUnit)) ? '' : rawUnit;
                 }
 
                 function load() {

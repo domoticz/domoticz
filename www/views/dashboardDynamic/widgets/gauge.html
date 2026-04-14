@@ -10,28 +10,38 @@
     <div ng-if="ctrl.widgetDef.config.deviceIdx" style="width:100%;display:flex;flex-direction:column;align-items:center;">
         <div class="dd-gauge-title dd-stat-label" ng-show="ctrl.title">{{ ctrl.title }}</div>
         <div class="dd-gauge-svg-wrap">
-            <svg viewBox="0 10 100 62" class="dd-gauge-svg">
-                <!-- Background arc -->
+            <svg viewBox="0 8 100 66" class="dd-gauge-svg">
+                <!-- Background arc (cy=56 r=42: stroke top at y=10, clear of viewBox edge) -->
                 <circle class="dd-gauge-bg"
-                        cx="50" cy="55" r="40"
+                        cx="50" cy="56" r="42"
                         fill="none" stroke-width="8"
                         ng-attr-stroke-dasharray="{{ ctrl.strokeDasharrayBg() }}"
                         stroke-dashoffset="0"
-                        transform="rotate(160 50 55)"/>
+                        transform="rotate(160 50 56)"/>
                 <!-- Value arc -->
                 <circle class="dd-gauge-fill"
-                        cx="50" cy="55" r="40"
+                        cx="50" cy="56" r="42"
                         fill="none" stroke-width="8"
                         ng-attr-stroke="{{ ctrl.gaugeColor() }}"
                         ng-attr-stroke-dasharray="{{ ctrl.strokeDasharray() }}"
                         stroke-dashoffset="0"
-                        transform="rotate(160 50 55)"/>
+                        transform="rotate(160 50 56)"/>
                 <!-- Value text inside arc — clickable to device log -->
-                <text class="dd-gauge-text-value dd-gauge-text-link" x="50" y="44" text-anchor="middle" dominant-baseline="middle"
+                <text class="dd-gauge-text-value dd-gauge-text-link" x="50" y="41" text-anchor="middle" dominant-baseline="middle"
                       ng-click="ctrl.goToLog()">{{ ctrl.valueStr() }}</text>
                 <!-- Unit text below value — clickable to device log -->
-                <text class="dd-gauge-text-unit dd-gauge-text-link" x="50" y="59" text-anchor="middle" dominant-baseline="middle"
+                <text class="dd-gauge-text-unit dd-gauge-text-link" x="50" y="54" text-anchor="middle" dominant-baseline="middle"
                       ng-click="ctrl.goToLog()" ng-bind="ctrl.unitStr()"></text>
+                <!-- Humidity — Temp+Hum / Temp+Hum+Baro -->
+                <text ng-if="ctrl.humidity !== null"
+                      class="dd-gauge-temp-sub-txt"
+                      x="50" ng-attr-y="{{ ctrl.baro !== null ? 63 : 64 }}"
+                      text-anchor="middle" dominant-baseline="middle">&#9830; {{ ctrl.humidity }}%</text>
+                <!-- Barometric pressure -->
+                <text ng-if="ctrl.baro !== null"
+                      class="dd-gauge-temp-sub-txt"
+                      x="50" ng-attr-y="{{ ctrl.humidity !== null ? 70 : 64 }}"
+                      text-anchor="middle" dominant-baseline="middle">{{ ctrl.baro }} hPa</text>
             </svg>
         </div>
     </div>
