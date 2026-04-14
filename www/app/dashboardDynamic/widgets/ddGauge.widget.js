@@ -84,10 +84,8 @@ define([
 
                 ctrl.unitStr = function() {
                     var cfg = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
-                    var u = cfg.unit;
-                    return (u !== undefined && u !== null && String(u).trim() !== '')
-                        ? String(u).trim()
-                        : ctrl.autoUnit;
+                    var u = String(cfg.unit || '').trim();
+                    return u || ctrl.autoUnit;
                 };
 
                 ctrl.valueStr = function() {
@@ -163,8 +161,10 @@ define([
                     if (d.Temp !== undefined) {
                         ctrl.value    = parseFloat(d.Temp);
                         if (isNaN(ctrl.value)) { ctrl.value = null; }
-                        ctrl.humidity = (d.Humidity  !== undefined) ? parseInt(d.Humidity,  10) : null;
-                        ctrl.baro     = (d.Barometer !== undefined) ? parseFloat(d.Barometer)   : null;
+                        var h = (d.Humidity  !== undefined) ? parseInt(d.Humidity,  10) : NaN;
+                        var b = (d.Barometer !== undefined) ? parseFloat(d.Barometer)   : NaN;
+                        ctrl.humidity = isNaN(h) ? null : h;
+                        ctrl.baro     = isNaN(b) ? null : b;
                         // Auto-detect unit from data string (e.g. "21.5 C" → "°C")
                         var tempMatch = String(d.Data || '').match(/^[-\d.]+\s*([CF])\b/);
                         ctrl.autoUnit = tempMatch ? '\u00b0' + tempMatch[1] : '\u00b0C';
@@ -180,6 +180,7 @@ define([
                     ctrl.value = match ? parseFloat(match[1]) : null;
                     var unitMatch = raw.match(/^[-\d.]+\s*([^\d\s].*)/);
                     var rawUnit   = unitMatch ? unitMatch[1].trim() : (d.Unit || '');
+                    // Reject pure-digit units — they're parsing artifacts, not real units
                     ctrl.autoUnit = /^\d+$/.test(String(rawUnit)) ? '' : rawUnit;
                 }
 

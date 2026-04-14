@@ -3026,7 +3026,11 @@ dd-wcp-color {
 .dd-calendar-empty { text-align: center; margin-top: 16px; }
 
 /* ── Battery Monitor Widget ───────────────────────────────── */
-.dd-widget--kwh-top-consumers > .dd-widget-body { padding: 4px; background: transparent; overflow: hidden; }
+.dd-widget--kwh-top-consumers > .dd-widget-body { padding: 4px; background: transparent; overflow: hidden; display: flex; flex-direction: column; }
+/* Angular inserts a wrapper <div> between .dd-widget-body and the directive element;
+   both levels need flex:1/min-height:0 to propagate a definite height down to .dd-battery-monitor */
+.dd-widget--kwh-top-consumers > .dd-widget-body > div { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.dd-widget--kwh-top-consumers > .dd-widget-body > div > dd-kwh-top-consumers-widget { flex: 1; min-height: 0; }
 .dd-widget--kwh-top-consumers .dd-battery-monitor {
     border-radius: var(--dz-border-radius, 8px);
     background: var(--dz-panel-bg);

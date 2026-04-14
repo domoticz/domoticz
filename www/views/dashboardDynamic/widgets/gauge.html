@@ -32,16 +32,18 @@
                 <!-- Unit text below value — clickable to device log -->
                 <text class="dd-gauge-text-unit dd-gauge-text-link" x="50" y="54" text-anchor="middle" dominant-baseline="middle"
                       ng-click="ctrl.goToLog()" ng-bind="ctrl.unitStr()"></text>
-                <!-- Humidity — Temp+Hum / Temp+Hum+Baro -->
+                <!-- Sub-values for Temp+Hum / Temp+Hum+Baro.
+                     viewBox bottom = y 74; value@41, unit@54; sub-values stacked below.
+                     With both: humidity@63, baro@70. With only one: y=64. -->
                 <text ng-if="ctrl.humidity !== null"
                       class="dd-gauge-temp-sub-txt"
                       x="50" ng-attr-y="{{ ctrl.baro !== null ? 63 : 64 }}"
-                      text-anchor="middle" dominant-baseline="middle">&#9830; {{ ctrl.humidity }}%</text>
+                      text-anchor="middle" dominant-baseline="middle"><tspan style="font-family:'Font Awesome 7 Free';font-weight:900;font-size:4.5px;">&#xf043;</tspan> {{ ctrl.humidity }}%</text>
                 <!-- Barometric pressure -->
                 <text ng-if="ctrl.baro !== null"
                       class="dd-gauge-temp-sub-txt"
                       x="50" ng-attr-y="{{ ctrl.humidity !== null ? 70 : 64 }}"
-                      text-anchor="middle" dominant-baseline="middle">{{ ctrl.baro }} hPa</text>
+                      text-anchor="middle" dominant-baseline="middle"><tspan style="font-family:'Font Awesome 7 Free';font-weight:900;font-size:4.5px;">&#xf624;</tspan> {{ ctrl.baro }} hPa</text>
             </svg>
         </div>
     </div>

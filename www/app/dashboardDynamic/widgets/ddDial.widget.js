@@ -749,10 +749,8 @@ define([
                 // data; this function lets the user override it from config, or
                 // leaves it untouched when the config field is blank.
                 function applyUnitOverride() {
-                    var cfgUnit = cfg().unit;
-                    if (cfgUnit && String(cfgUnit).trim()) {
-                        ctrl.unitStr = String(cfgUnit).trim();
-                    }
+                    var cfgUnit = String(cfg().unit || '').trim();
+                    if (cfgUnit) { ctrl.unitStr = cfgUnit; }
                 }
 
                 // ── HTTP load ─────────────────────────────────────────────
