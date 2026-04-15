@@ -158,6 +158,7 @@
 #include "../hardware/AlfenEve.h"
 #include "../hardware/Enever.h"
 #include "../hardware/MitsubishiWF.h"
+#include "../hardware/Matter.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -1105,6 +1106,13 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_MitsubishiWF:
 		pHardware = new MitsubishiWF(ID, Address);
+		break;
+
+	case HTYPE_Matter:
+		{
+			uint16_t matterPort = (Port == 0) ? 5580 : static_cast<uint16_t>(Port);
+			pHardware = new CMatter(ID, Address, matterPort);
+		}
 		break;
 
 	}

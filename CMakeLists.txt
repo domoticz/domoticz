@@ -294,9 +294,9 @@ hardware/KMTronicUDP.cpp
 hardware/Kodi.cpp
 hardware/Limitless.cpp
 hardware/LogitechMediaServer.cpp
+hardware/Matter.cpp
 hardware/Meteorologisk.cpp
 hardware/Meteostick.cpp
-hardware/OpenMeteo.cpp
 hardware/MitsubishiWF.cpp
 hardware/MochadTCP.cpp
 hardware/MQTT.cpp
@@ -313,6 +313,7 @@ hardware/Netatmo.cpp
 hardware/HttpPoller.cpp
 hardware/OctoPrintMQTT.cpp
 hardware/OnkyoAVTCP.cpp
+hardware/OpenMeteo.cpp
 hardware/OpenWeatherMap.cpp
 hardware/OpenWebNetTCP.cpp
 hardware/OpenWebNetUSB.cpp
