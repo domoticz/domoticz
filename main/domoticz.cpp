@@ -1193,6 +1193,37 @@ int main(int argc, char**argv)
 		/* Deamonize */
 		daemonize(szStartupFolder.c_str(), pidfile.c_str());
 	}
+		else
+	{
+		if (!m_sz_std_out_err_log_file.empty())
+		{
+			int i;
+			/* Close out the standard file descriptors */
+			close(STDIN_FILENO);
+			close(STDOUT_FILENO);
+			close(STDERR_FILENO);
+
+			/* Route I/O connections */
+
+			/* Open STDIN */
+			i = open(m_sz_std_out_err_log_file.c_str(), O_RDWR | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+			_log.Log(LOG_ERROR, "AMR -  OPEN the %s file which is the python redirection file", m_sz_std_out_err_log_file.c_str());
+
+			/* STDOUT */
+			int dret = dup(i);
+			if (dret == -1)
+			{
+				_log.Log(LOG_ERROR, "Could not set STDOUT descriptor !");
+			}
+
+			/* STDERR */
+			dret = dup(i);
+			if (dret == -1)
+			{
+				_log.Log(LOG_ERROR, "Could not set STDERR descriptor !");
+			}
+		}
+	}
 	if ((g_bRunAsDaemon) && (g_bUseSyslog))
 	{
 		syslog(LOG_INFO, "Domoticz running...");
