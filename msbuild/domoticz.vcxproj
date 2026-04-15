@@ -566,6 +566,7 @@
     <ClInclude Include="..\hardware\AnnaThermostat.h" />
     <ClInclude Include="..\hardware\Arilux.h" />
     <ClInclude Include="..\hardware\ASyncTCP.h" />
+    <ClInclude Include="..\hardware\ASyncWebsocket.h" />
     <ClInclude Include="..\hardware\AtagOne.h" />
     <ClInclude Include="..\hardware\Buienradar.h" />
     <ClInclude Include="..\hardware\cayenne_lpp\CayenneLPP.h" />
@@ -864,6 +865,7 @@
     <ClCompile Include="..\hardware\Arilux.cpp" />
     <ClCompile Include="..\hardware\ASyncSerial.cpp" />
     <ClCompile Include="..\hardware\ASyncTCP.cpp" />
+    <ClCompile Include="..\hardware\ASyncWebsocket.cpp" />
     <ClCompile Include="..\hardware\AtagOne.cpp" />
     <ClCompile Include="..\hardware\Buienradar.cpp" />
     <ClCompile Include="..\hardware\cayenne_lpp\CayenneLPP_Dec.cpp" />

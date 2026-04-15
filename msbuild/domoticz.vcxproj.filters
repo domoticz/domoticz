@@ -1606,6 +1606,9 @@
     <ClInclude Include="..\hardware\ASyncTCP.h">
       <Filter>Devices\SerialTCP</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\ASyncWebsocket.h">
+      <Filter>Devices\SerialTCP</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\ICYThermostat.h">
       <Filter>Devices\ICY Thermostat</Filter>
     </ClInclude>
@@ -2383,6 +2386,9 @@
       <Filter>Devices\SerialTCP</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\ASyncTCP.cpp">
+      <Filter>Devices\SerialTCP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ASyncWebsocket.cpp">
       <Filter>Devices\SerialTCP</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\ColorSwitch.cpp">

@@ -225,6 +225,7 @@ hardware/AnnaThermostat.cpp
 hardware/Arilux.cpp
 hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
+hardware/ASyncWebsocket.cpp
 hardware/AtagOne.cpp
 hardware/BleBox.cpp
 hardware/Buienradar.cpp
