@@ -1706,6 +1706,32 @@ define(['app'], function (app) {
 					}
 				});
 			}
+			else if (text.indexOf("Matter") >= 0) {
+				var address = $("#hardwarecontent #divremote #tcpaddress").val();
+				if (address == "") {
+					ShowNotify($.t('Please enter an Address!'), 2500, true);
+					return;
+				}
+				var port = $("#hardwarecontent #divremote #tcpport").val();
+				$.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&address=" + encodeURIComponent(address) +
+					"&port=" + encodeURIComponent(port) +
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled +
+					"&idx=" + idx +
+					"&datatimeout=" + datatimeout,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+			}
 		}
 
 		AddHardware = function () {
@@ -3150,6 +3176,31 @@ define(['app'], function (app) {
 					},
 					error: function () {
 						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+			}
+			else if (text.indexOf("Matter") >= 0) {
+				var address = $("#hardwarecontent #divremote #tcpaddress").val();
+				if (address == "") {
+					ShowNotify($.t('Please enter an Address!'), 2500, true);
+					return;
+				}
+				var port = $("#hardwarecontent #divremote #tcpport").val();
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&address=" + encodeURIComponent(address) +
+					"&port=" + encodeURIComponent(port) +
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled +
+					"&datatimeout=" + datatimeout,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem adding hardware!'), 2500, true);
 					}
 				});
 			}
@@ -4838,6 +4889,10 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
 						}
+						else if (data["Type"].indexOf("Matter") >= 0) {
+							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
+							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
+						}
 						if (
 							(data["Type"].indexOf("Domoticz") >= 0) ||
 							(data["Type"].indexOf("ICY") >= 0) ||
@@ -5631,6 +5686,10 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divlogin #username").val("operator")
 				$("#hardwarecontent #divlogin #password").val("operator")
 				$("#hardwarecontent #divlogin").show();
+			}
+			else if (text.indexOf("Matter") >= 0) {
+				$("#hardwarecontent #divremote").show();
+				$("#hardwarecontent #hardwareparamsremote #tcpport").val(5580);
 			}
 			if (
 				(text.indexOf("ETH8020") >= 0) ||

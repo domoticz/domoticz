@@ -525,6 +525,9 @@
     <Filter Include="Webserver\MCP">
       <UniqueIdentifier>{129c491d-9fbd-4e51-bf25-6ba221b50060}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Matter">
+      <UniqueIdentifier>{6d18ba19-ca77-4fda-91aa-76a44b6a3bd2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -1675,9 +1678,6 @@
     <ClInclude Include="..\hardware\PhilipsHue\PhilipsHueV2Sensors.h">
       <Filter>Devices\Philips Hue</Filter>
     </ClInclude>
-    <ClInclude Include="..\hardware\PhilipsHue\PhilipsHueSSE.h">
-      <Filter>Devices\Philips Hue</Filter>
-    </ClInclude>
     <ClInclude Include="..\hardware\EvohomeBase.h">
       <Filter>Devices\EvoHome</Filter>
     </ClInclude>
@@ -2265,6 +2265,9 @@
     </ClInclude>
     <ClInclude Include="..\mcpserver\McpSessionRegistry.h">
       <Filter>Webserver\MCP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\Matter.h">
+      <Filter>Devices\Matter</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3080,6 +3083,9 @@
     </ClCompile>
     <ClCompile Include="..\mcpserver\McpSessionRegistry.cpp">
       <Filter>Webserver\MCP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Matter.cpp">
+      <Filter>Devices\Matter</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
