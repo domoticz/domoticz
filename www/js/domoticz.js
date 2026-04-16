@@ -192,6 +192,8 @@ function CalculateTrendLine(data) {
 	dReturn.y0 = y0;
 	dReturn.x1 = x1;
 	dReturn.y1 = y1;
+	dReturn.m = m;
+	dReturn.b = b;
 	return dReturn;
 };
 

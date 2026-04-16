@@ -458,10 +458,12 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
             },
             postprocessDatapoints: function (datapoints) {
                 const trendline = CalculateTrendLine(datapoints);
-                datapoints.length = 0;
                 if (trendline !== undefined) {
-                    datapoints.push([trendline.x0, trendline.y0]);
-                    datapoints.push([trendline.x1, trendline.y1]);
+                    for (var i = 0; i < datapoints.length; i++) {
+                        datapoints[i] = [datapoints[i][0], trendline.m * datapoints[i][0] + trendline.b];
+                    }
+                } else {
+                    datapoints.length = 0;
                 }
             },
             label: 'Tt',
@@ -470,6 +472,7 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
                 zIndex: 1,
                 tooltip: {
                     valueSuffix: ' ' + degreeSuffix,
+                    valueDecimals: 2
                 },
                 color: 'rgba(255,3,3,0.8)',
                 dashStyle: 'LongDash',

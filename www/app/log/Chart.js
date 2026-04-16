@@ -138,10 +138,12 @@ define(['app'], function (app) {
 
     function aggregateTrendline(datapoints) {
         const trendline = CalculateTrendLine(datapoints);
-        datapoints.length = 0;
         if (trendline !== undefined) {
-            datapoints.push([trendline.x0, trendline.y0]);
-            datapoints.push([trendline.x1, trendline.y1]);
+            for (var i = 0; i < datapoints.length; i++) {
+                datapoints[i] = [datapoints[i][0], trendline.m * datapoints[i][0] + trendline.b];
+            }
+        } else {
+            datapoints.length = 0;
         }
     }
 
