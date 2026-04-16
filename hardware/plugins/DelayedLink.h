@@ -61,12 +61,12 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(void, Py_Finalize, );
 		DECLARE_PYTHON_SYMBOL(PyThreadState*, Py_NewInterpreter, );
 		DECLARE_PYTHON_SYMBOL(void, Py_EndInterpreter, PyThreadState*);
-		DECLARE_PYTHON_SYMBOL(wchar_t*, Py_GetPath, );
-		DECLARE_PYTHON_SYMBOL(void, Py_SetPath, const wchar_t*);
-		DECLARE_PYTHON_SYMBOL(void, PySys_SetPath, const wchar_t*);
+		DECLARE_PYTHON_SYMBOL(wchar_t*, Py_GetPath, );           // Removed in Python 3.15; will be null on 3.15+
+		DECLARE_PYTHON_SYMBOL(void, Py_SetPath, const wchar_t*); // Removed in Python 3.15; will be null on 3.15+
+		DECLARE_PYTHON_SYMBOL(void, PySys_SetPath, const wchar_t*); // Removed in Python 3.15; will be null on 3.15+
 		DECLARE_PYTHON_SYMBOL(int, PySys_SetObject, const char* COMMA PyObject*);
-		DECLARE_PYTHON_SYMBOL(void, Py_SetProgramName, wchar_t*);
-		DECLARE_PYTHON_SYMBOL(wchar_t*, Py_GetProgramFullPath, );
+		DECLARE_PYTHON_SYMBOL(void, Py_SetProgramName, wchar_t*);       // Removed in Python 3.15; will be null on 3.15+
+		DECLARE_PYTHON_SYMBOL(wchar_t*, Py_GetProgramFullPath, );       // Removed in Python 3.15; will be null on 3.15+
 		DECLARE_PYTHON_SYMBOL(int, PyImport_AppendInittab, const char *COMMA PyObject *(*initfunc)());
 		DECLARE_PYTHON_SYMBOL(int, PyType_Ready, PyTypeObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_Type, PyObject*);
@@ -102,6 +102,8 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyList_Size, PyObject*);
 		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyTuple_Size, PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyList_Append, PyObject* COMMA PyObject*);
+		DECLARE_PYTHON_SYMBOL(int, PyList_Insert, PyObject* COMMA Py_ssize_t COMMA PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PySys_GetObject, const char*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyList_GetItem, PyObject* COMMA Py_ssize_t);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyTuple_GetItem, PyObject* COMMA Py_ssize_t);
 		DECLARE_PYTHON_SYMBOL(int, PyList_SetItem, PyObject* COMMA Py_ssize_t COMMA PyObject*);
@@ -164,8 +166,8 @@ namespace Plugins {
             shared_lib_ = nullptr;
 
             // Define the base Python versions in descending order (latest to oldest)
-			constexpr std::array<const char*, 11> python_versions = {
-				"python3.14", "python3.13", "python3.12", "python3.11", "python3.10",
+			constexpr std::array<const char*, 12> python_versions = {
+				"python3.15", "python3.14", "python3.13", "python3.12", "python3.11", "python3.10",
                 "python3.9", "python3.8", "python3.7", "python3.6",
                 "python3.5", "python3.4"
             };
@@ -239,6 +241,8 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyTuple_GetItem);
 					RESOLVE_PYTHON_SYMBOL(PyList_SetItem);
 					RESOLVE_PYTHON_SYMBOL(PyList_Append);
+					RESOLVE_PYTHON_SYMBOL(PyList_Insert);
+					RESOLVE_PYTHON_SYMBOL(PySys_GetObject);
 					RESOLVE_PYTHON_SYMBOL(PyModule_GetState);
 					RESOLVE_PYTHON_SYMBOL(PyState_FindModule);
 					RESOLVE_PYTHON_SYMBOL(PyErr_Clear);
@@ -466,6 +470,8 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyTuple_GetItem			pythonLib->PyTuple_GetItem
 #define PyList_SetItem			pythonLib->PyList_SetItem
 #define PyList_Append			pythonLib->PyList_Append
+#define PyList_Insert			pythonLib->PyList_Insert
+#define PySys_GetObject			pythonLib->PySys_GetObject
 #define PyModule_GetState		pythonLib->PyModule_GetState
 #define PyState_FindModule		pythonLib->PyState_FindModule
 #define PyErr_Clear				pythonLib->PyErr_Clear

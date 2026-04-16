@@ -1418,61 +1418,57 @@ namespace Plugins
 					}
 				}
 
-				// Prepend plugin directory to path so that python will search it early when importing
-#ifdef WIN32
-				std::wstring sSeparator = L";";
-#else
-				std::wstring sSeparator = L":";
-#endif
-				std::wstringstream ssPath;
-				ssPath << m_HomeFolder.c_str();
-
-				std::wstring sPath = ssPath.str() + sSeparator;
-				sPath += Py_GetPath();
-
-				try
+				// Prepend plugin directory to sys.path so Python searches it first.
+				// Uses list operations instead of the deprecated Py_GetPath/PySys_SetPath
+				// (removed in Python 3.15).
+				PyBorrowedRef pSysPath = PySys_GetObject("path");
+				if (pSysPath)
 				{
-					//
-					//	Python loads the 'site' module automatically and adds extra search directories for module loading
-					//	This code makes the plugin framework function the same way
-					//
-					PyNewRef	pSiteModule = PyImport_ImportModule("site");
-					if (!pSiteModule)
+					PyNewRef pPluginDir = PyUnicode_FromString(m_HomeFolder.c_str());
+					if (pPluginDir)
+						PyList_Insert(pSysPath, 0, pPluginDir);
+
+					try
 					{
-						Log(LOG_ERROR, "(%s) failed to load 'site' module, continuing.", m_PluginKey.c_str());
-					}
-					else
-					{
-						PyNewRef	pFunc = PyObject_GetAttrString((PyObject *)pSiteModule, "getsitepackages");
-						if (pFunc && PyCallable_Check(pFunc))
+						//
+						//	Python loads the 'site' module automatically and adds extra search directories for module loading
+						//	This code makes the plugin framework function the same way
+						//
+						PyNewRef	pSiteModule = PyImport_ImportModule("site");
+						if (!pSiteModule)
 						{
-							PyNewRef	pSites = PyObject_CallObject(pFunc, nullptr);
-							if (!pSites)
+							Log(LOG_ERROR, "(%s) failed to load 'site' module, continuing.", m_PluginKey.c_str());
+						}
+						else
+						{
+							PyNewRef	pFunc = PyObject_GetAttrString((PyObject *)pSiteModule, "getsitepackages");
+							if (pFunc && PyCallable_Check(pFunc))
 							{
-								LogPythonException("getsitepackages");
-							}
-							else
-								for (Py_ssize_t i = 0; i < PyList_Size(pSites); i++)
+								PyNewRef	pSites = PyObject_CallObject(pFunc, nullptr);
+								if (!pSites)
 								{
-									PyBorrowedRef	pSite = PyList_GetItem(pSites, i);
-									if (pSite.IsString())
-									{
-										std::wstringstream ssPath;
-										ssPath << ((std::string)PyBorrowedRef(pSite)).c_str();
-										sPath += sSeparator + ssPath.str();
-									}
+									LogPythonException("getsitepackages");
 								}
+								else
+									for (Py_ssize_t i = 0; i < PyList_Size(pSites); i++)
+									{
+										PyBorrowedRef	pSite = PyList_GetItem(pSites, i);
+										if (pSite.IsString())
+											PyList_Append(pSysPath, pSite);
+									}
+							}
 						}
 					}
+					catch (...)
+					{
+						Log(LOG_ERROR, "(%s) exception loading 'site' module, continuing.", m_PluginKey.c_str());
+						PyErr_Clear();
+					}
 				}
-				catch (...)
+				else
 				{
-					Log(LOG_ERROR, "(%s) exception loading 'site' module, continuing.", m_PluginKey.c_str());
-					PyErr_Clear();
+					Log(LOG_ERROR, "(%s) failed to get sys.path.", m_PluginKey.c_str());
 				}
-
-				// Update the path itself
-				PySys_SetPath((wchar_t *)sPath.c_str());
 
 				// Get reference to global 'Py_None' instance for comparisons
 				if (!Py_None)

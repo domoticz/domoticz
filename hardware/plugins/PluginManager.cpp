@@ -123,7 +123,13 @@ namespace Plugins {
 			}
 
 			// Set program name, this prevents it being set to 'python'
-			Py_SetProgramName(Py_GetProgramFullPath());
+			// Py_SetProgramName/Py_GetProgramFullPath removed in Python 3.15; skip if absent
+			if (Py_SetProgramName && Py_GetProgramFullPath)
+			{
+				wchar_t* sFullPath = Py_GetProgramFullPath();
+				if (sFullPath)
+					Py_SetProgramName(sFullPath);
+			}
 
 			if (PyImport_AppendInittab("Domoticz", PyInit_Domoticz) == -1)
 			{
@@ -160,7 +166,7 @@ namespace Plugins {
 			_log.Log(LOG_STATUS, "PluginSystem: Started, Python version '%s', %d plugin definitions loaded.", sVersion.c_str(), (int)m_PluginXml.size());
 		}
 		catch (...) {
-			_log.Log(LOG_ERROR, "PluginSystem: Failed to start, Python version '%s', Program '%S', Path '%S'.", szPyVersion.c_str(), Py_GetProgramFullPath(), Py_GetPath());
+			_log.Log(LOG_ERROR, "PluginSystem: Failed to start, Python version '%s'.", szPyVersion.c_str());
 			return false;
 		}
 
