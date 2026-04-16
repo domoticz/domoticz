@@ -111,10 +111,10 @@ bool CMatter::StopHardware()
 	{
 		RequestStop();
 		disconnectWS();
-		terminate();
 		if (m_thread->joinable())
 			m_thread->join();
 		m_thread.reset();
+		terminate();
 	}
 	m_bIsStarted = false;
 	return true;
