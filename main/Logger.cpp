@@ -15,7 +15,7 @@
 #include "SQLHelper.h"
 
 #define MAX_LOG_LINE_BUFFER 100
-#define MAX_LOG_LINE_LENGTH (2048 * 3)
+#define MAX_LOG_LINE_LENGTH (4 * 1024)
 
 #define MAX_ACLFLOG_LINES 100000
 
@@ -268,11 +268,25 @@ void CLogger::Log(const _eLogLevel level, const char *logline, ...)
 	if (!(m_log_flags.load(std::memory_order_relaxed) & level))
 		return; // This log level is not enabled!
 
-	va_list argList;
-	char cbuffer[MAX_LOG_LINE_LENGTH];
-	va_start(argList, logline);
-	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
-	va_end(argList);
+	char stackbuf[MAX_LOG_LINE_LENGTH];
+
+	va_list args;
+	va_start(args, logline);
+
+	va_list copy;
+	va_copy(copy, args);
+	int needed = vsnprintf(stackbuf, sizeof(stackbuf), logline, copy);
+	va_end(copy);
+
+	char* cbuffer = stackbuf;
+
+	if (needed >= MAX_LOG_LINE_LENGTH) {
+		cbuffer = static_cast<char*>(malloc(needed + 1));
+		if (cbuffer) {
+			vsnprintf(cbuffer, needed + 1, logline, args);
+		}
+	}
+	va_end(args);
 
 #ifndef WIN32
 	if (g_bUseSyslog)
@@ -362,18 +376,38 @@ void CLogger::Log(const _eLogLevel level, const char *logline, ...)
 	{
 		m_mainworker.ForceLogNotificationCheck();
 	}
+
+	if (cbuffer != stackbuf) free(cbuffer);
 }
 
 void CLogger::Debug(const _eDebugLevel level, const char *logline, ...)
 {
 	if (!IsDebugLevelEnabled(level))
 		return;
-	va_list argList;
-	char cbuffer[MAX_LOG_LINE_LENGTH];
-	va_start(argList, logline);
-	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
-	va_end(argList);
+
+	char stackbuf[MAX_LOG_LINE_LENGTH];
+
+	va_list args;
+	va_start(args, logline);
+
+	va_list copy;
+	va_copy(copy, args);
+	int needed = vsnprintf(stackbuf, sizeof(stackbuf), logline, copy);
+	va_end(copy);
+
+	char* cbuffer = stackbuf;
+
+	if (needed >= MAX_LOG_LINE_LENGTH) {
+		cbuffer = static_cast<char*>(malloc(needed + 1));
+		if (cbuffer) {
+			vsnprintf(cbuffer, needed + 1, logline, args);
+		}
+	}
+	va_end(args);
+
 	Debug(level, std::string(cbuffer));
+
+	if (cbuffer != stackbuf) free(cbuffer);
 }
 
 void CLogger::Debug(const _eDebugLevel level, const std::string &sLogline)
