@@ -1140,11 +1140,11 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 	{
 		std::string cmd;
 		if (cmnd == light2_sOn)
-			cmd = "on";
+			cmd = "On";
 		else if (cmnd == light2_sOff)
-			cmd = "off";
+			cmd = "Off";
 		else
-			cmd = "toggle";
+			cmd = "Toggle";
 
 		Json::Value args;
 		args["node_id"]      = nodeId;
