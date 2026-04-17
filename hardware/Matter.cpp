@@ -130,12 +130,17 @@ bool CMatter::StopHardware()
 
 void CMatter::Do_Work()
 {
+	int sec_counter = 0;
 	while (!IsStopRequested(0))
 	{
 		m_lastPingTime = mytime(nullptr);
 		connectWS(m_serverAddress, m_port, "/ws");
 		while (!IsStopRequested(1000))
 		{
+			sec_counter++;
+			if (sec_counter % 12 == 0)
+				m_LastHeartbeat = mytime(nullptr);
+
 			if (!m_bConnected)
 				break;
 			time_t now = mytime(nullptr);
