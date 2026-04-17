@@ -174,6 +174,11 @@ void DomoticzTCP::OnData(const uint8_t* pData, size_t length)
 				m_sql.UpdateDeviceValue("Color", Color, std::to_string(idx));
 
 			m_sql.UpdateDeviceValue("LastUpdate", LastUpdate, std::to_string(idx));
+
+			if (IsLightOrSwitch(Type, SubType))
+			{
+				m_mainworker.CheckSceneCode(idx, Type, SubType, nValue, sValue.c_str(), m_Name);
+			}
 		}
 		catch (const std::exception& e)
 		{
@@ -211,7 +216,12 @@ void DomoticzTCP::Do_Work()
 		if (sec_counter % 12 == 0)
 		{
 			mytime(&m_LastHeartbeat);
-			if (m_tAuthSent != 0 && !m_bDataReceived)
+		}
+		if (m_tAuthSent != 0 && !m_bDataReceived)
+		{
+			time_t now;
+			mytime(&now);
+			if (now - m_tAuthSent >= 12)
 			{
 				Log(LOG_ERROR, "No data received from %s:%d after 12 seconds. The remote Domoticz may be running an older version that does not support the SIGNv%d protocol. Please update the remote Domoticz instance.",
 					m_szIPAddress.c_str(), m_usIPPort, REMOTE_PROTOCOL_VERSION);
