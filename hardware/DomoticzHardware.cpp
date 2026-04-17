@@ -312,6 +312,20 @@ void CDomoticzHardwareBase::SendSetPointSensor(const uint8_t ID1, const uint8_t 
 	sDecodeRXMessage(this, (const unsigned char *)&setpoint, defaultname.c_str(), -1, nullptr);
 }
 
+void CDomoticzHardwareBase::SendThermostatSensor(const uint8_t ID1, const uint8_t ID2, const uint8_t ID3, const uint8_t ID4, const uint8_t Unit, const int BatteryLevel, const float setpointValue, const float temperatureValue, const std::string& defaultname)
+{
+	_tThermostat6 thermostat;
+	thermostat.subtype = sTypeThermostat6Temp;
+	thermostat.id1 = ID1;
+	thermostat.id2 = ID2;
+	thermostat.id3 = ID3;
+	thermostat.id4 = ID4;
+	thermostat.dunit = Unit;
+	thermostat.setpoint = setpointValue;
+	thermostat.temperature = temperatureValue;
+	thermostat.battery_level = BatteryLevel;
+	sDecodeRXMessage(this, (const unsigned char*)&thermostat, defaultname.c_str(), -1, nullptr);
+}
 
 void CDomoticzHardwareBase::SendDistanceSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float distance, const std::string& defaultname, const int RssiLevel /* =12 */)
 {

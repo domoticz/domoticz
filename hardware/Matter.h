@@ -17,6 +17,7 @@ public:
 	bool StartHardware() override;
 	bool StopHardware() override;
 	bool WriteToHardware(const char* pdata, unsigned char length) override;
+	void SetSetpoint(int idx, float value);
 
 private:
 	void OnWebsocketConnected() override;
@@ -26,9 +27,10 @@ private:
 
 	struct EndpointState {
 		std::string label;
-		float  temp_C     = 0;   bool hasTemp      = false;
+		float  temp_C = 0;   bool hasTemp = false;
 		int    hum_pct    = 0;   bool hasHum       = false;
 		float  baro_hPa   = 0;   bool hasBaro      = false;
+		float  setpoint_C = 0;   bool hasSetpoint  = false;
 		float  lux        = 0;   bool hasLux       = false;
 		double power_W    = 0;   bool hasPower     = false;
 		double energy_kWh = 0;   bool hasEnergy    = false;
@@ -48,7 +50,24 @@ private:
 		double blind_pct  = 0;   bool hasBlind     = false;
 		int    battery_pct = 255;
 	};
-	std::map<int, EndpointState> m_endpointStates;
+
+	struct NodeState {
+		int nodeId = 0;
+		std::string vendorName;
+		uint16_t vendorId = 0;
+		std::string productName;
+		uint16_t productId = 0;
+		std::string nodeLabel;
+		std::string hardwareVersionString;
+		std::string softwareVersionString;
+		float batteryVoltage_V = 0; bool hasBatteryVoltage = false;
+		uint8_t threadChannel = 0;  bool hasThreadChannel = false;
+		std::string threadNetworkName;
+		std::map<int, EndpointState> endpoints; // endpointId -> state
+	};
+
+	std::map<int, NodeState> m_nodes; // nodeId -> state
+
 	mutable std::mutex m_stateMutex;
 
 	void SendCommand(const std::string& command,
@@ -58,8 +77,10 @@ private:
 	void HandleEvent(const Json::Value& msg);
 	void HandleNode(const Json::Value& nodeData);
 	void HandleAttributeUpdate(const Json::Value& data);
-	void _DetectAndSend(int domoticzID);
+	void _DetectAndSend(int nodeId, int endpointId);
+	void _DetectAndSendNode(int nodeId);
 	void ApplyAttributeToState(int cluster_id, int attr_id, const Json::Value& v, EndpointState& state);
+	void ApplyNodeMetadata(int cluster_id, int attr_id, const Json::Value& v, NodeState& node);
 	std::string ExtractLabel(const Json::Value& endpointAttrs, int nodeId, int endpointId) const;
 	void Do_Work();
 
@@ -68,5 +89,5 @@ private:
 	std::atomic<uint32_t> m_msgId{0};
 	std::shared_ptr<std::thread> m_thread;
 	std::atomic<bool> m_bConnected{false};
-	time_t m_lastPingTime = 0;
+	std::atomic<time_t> m_lastPingTime{0};
 };

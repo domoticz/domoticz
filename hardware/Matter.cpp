@@ -7,7 +7,9 @@
 #include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
 #include <json/json.h>
+#include <algorithm>
 #include <cmath>
+#include <set>
 #include <sstream>
 #include <fstream>
 
@@ -37,6 +39,9 @@ static constexpr int      HEARTBEAT_S = 55;
 static constexpr int CLUSTER_POWER_SOURCE              = 47;    // 0x002F
 static constexpr int CLUSTER_ON_OFF                    = 6;     // 0x0006
 static constexpr int CLUSTER_LEVEL_CONTROL             = 8;     // 0x0008
+static constexpr int CLUSTER_DESCRIPTION               = 29;    // 0x001D
+static constexpr int CLUSTER_BASIC_INFORMATION         = 40;    // 0x0028
+static constexpr int CLUSTER_THREAD_DIAGNOSTICS        = 53;    // 0x0035
 static constexpr int CLUSTER_DOOR_LOCK                 = 257;   // 0x0101
 static constexpr int CLUSTER_WINDOW_COVERING           = 258;   // 0x0102
 static constexpr int CLUSTER_THERMOSTAT                = 513;   // 0x0201
@@ -63,14 +68,17 @@ static constexpr int ATTR_OCCUPANCY                    = 0;
 static constexpr int ATTR_STATE_VALUE                  = 0;     // BooleanState
 static constexpr int ATTR_LOCK_STATE                   = 0;     // DoorLock (0=not_fully_locked, 1=locked, 2=unlocked)
 static constexpr int ATTR_LOCAL_TEMPERATURE            = 0;     // Thermostat (0.01 °C)
+static constexpr int ATTR_OCCUPIED_HEATING_SETPOINT    = 17;    // 0x0011 Thermostat (0.01 °C, writable)
 static constexpr int ATTR_CURRENT_POSITION_LIFT        = 10;    // 0x000A WindowCovering (0–10000, 0=open)
+static constexpr int ATTR_BATTERY_VOLTAGE              = 11;    // 0x000B PowerSource (mV)
 static constexpr int ATTR_BATTERY_PERCENT_REMAINING    = 12;    // 0x000C PowerSource
 static constexpr int ATTR_VOLTAGE                      = 4;     // 0x0004 ElectricalPowerMeasurement (mV)
 static constexpr int ATTR_ACTIVE_CURRENT               = 5;     // 0x0005 ElectricalPowerMeasurement (mA)
 static constexpr int ATTR_ACTIVE_POWER                 = 8;     // 0x0008 ElectricalPowerMeasurement (mW)
 
-// ChildID slot offsets within an endpoint (endpointId * 10 + slot).
-// Max safe endpointId is 24 (24*10+11=251 < 255).
+// ChildID slot offsets — unique sensor type identifiers within a domoticzID.
+// domoticzID already encodes the endpoint (nodeId * 256 + endpointId), so no
+// per-endpoint multiplier is needed here.
 static constexpr int CHILD_OCCUPANCY = 1;
 static constexpr int CHILD_ONOFF     = 2;
 static constexpr int CHILD_CONTACT   = 3;
@@ -156,8 +164,10 @@ void CMatter::OnWebsocketMessage(WSOpcode opcode, const std::vector<uint8_t>& pa
 {
 	std::string raw(payload.begin(), payload.end());
 
+	Debug(DEBUG_RECEIVED, raw);
+
 #ifdef DEBUG_CMATTER_WRITE
-	SaveString2Disk(raw, "matter_message.json");
+	SaveString2Disk(raw, "E:\\matter_message.json");
 #endif
 
 	Json::Value msg;
@@ -236,55 +246,74 @@ void CMatter::HandleServerInfo(const Json::Value& msg)
 void CMatter::HandleResult(const Json::Value& msg)
 {
 	const Json::Value& result = msg["result"];
+	std::set<int> nodeIds;
 
-	// start_listening response: result is the nodes array directly
+	auto processNode = [&](const Json::Value& node) {
+		if (!node.isObject()) return;
+		HandleNode(node);
+		if (node.isMember("node_id"))
+			nodeIds.insert(node["node_id"].asInt());
+	};
+
 	if (result.isArray())
 	{
 		for (const auto& node : result)
-		{
-			if (node.isObject())
-				HandleNode(node);
-		}
-		return;
+			processNode(node);
 	}
-
-	// Alternative format: result is an object with a "nodes" array
-	if (result.isObject() && result.isMember("nodes") && result["nodes"].isArray())
+	else if (result.isObject() && result.isMember("nodes") && result["nodes"].isArray())
 	{
 		for (const auto& node : result["nodes"])
-		{
-			if (node.isObject())
-				HandleNode(node);
-		}
+			processNode(node);
 	}
+
+	std::lock_guard<std::mutex> lock(m_stateMutex);
+	for (int nodeId : nodeIds)
+		_DetectAndSendNode(nodeId);
 }
 
 void CMatter::HandleEvent(const Json::Value& msg)
 {
-	const Json::Value& ev = msg["event"];
-	if (!ev.isMember("event_type") || !ev.isMember("data"))
+	if (!msg.isMember("event"))
 	{
-		Log(LOG_ERROR, "Missing event_type or data in event");
+		Log(LOG_ERROR, "Missing 'event' field in message");
 		return;
 	}
-	std::string event_type = ev["event_type"].asString();
-	const Json::Value& data = ev["data"];
+	if (!msg.isMember("data"))
+	{
+		Log(LOG_ERROR, "Missing 'data' field for event '%s'", msg["event"].asString().c_str());
+		return;
+	}
+	std::string event_type = msg["event"].asString();
+	std::transform(event_type.begin(), event_type.end(), event_type.begin(), ::toupper);
+	const Json::Value& data = msg["data"];
 
 	if (event_type == "NODE_ADDED" || event_type == "NODE_UPDATED")
 	{
 		HandleNode(data);
+		if (data.isObject() && data.isMember("node_id"))
+		{
+			std::lock_guard<std::mutex> lock(m_stateMutex);
+			_DetectAndSendNode(data["node_id"].asInt());
+		}
 	}
 	else if (event_type == "NODE_REMOVED")
 	{
-		int nodeId = data["node_id"].asInt();
-		std::lock_guard<std::mutex> lock(m_stateMutex);
-		for (auto it = m_endpointStates.begin(); it != m_endpointStates.end(); )
+		// data may be an object {"node_id":N}, a scalar N, or an array [N]
+		int nodeId = -1;
+		if (data.isObject() && data.isMember("node_id"))
+			nodeId = data["node_id"].asInt();
+		else if (data.isIntegral())
+			nodeId = data.asInt();
+		else if (data.isArray() && data.size() >= 1)
+			nodeId = data[0].asInt();
+
+		if (nodeId < 0)
 		{
-			if (it->first / 256 == nodeId)
-				it = m_endpointStates.erase(it);
-			else
-				++it;
+			Log(LOG_ERROR, "Cannot parse node_id from node_removed event");
+			return;
 		}
+		std::lock_guard<std::mutex> lock(m_stateMutex);
+		m_nodes.erase(nodeId);
 	}
 	else if (event_type == "ATTRIBUTE_UPDATED")
 	{
@@ -300,87 +329,145 @@ void CMatter::HandleEvent(const Json::Value& msg)
 
 void CMatter::HandleNode(const Json::Value& nodeData)
 {
+	if (!nodeData.isMember("node_id") || !nodeData.isMember("attributes"))
+		return;
 	int node_id = nodeData["node_id"].asInt();
+	if (node_id < 1 || node_id > 255)
+	{
+		Log(LOG_DEBUG_INT, "Ignoring node_id %d (controller/out-of-range)", node_id);
+		return;
+	}
 	const Json::Value& attrs = nodeData["attributes"];
+	if (!attrs.isObject())
+		return;
+
+	// Collect endpoint IDs and set labels before iterating attributes.
+	std::set<int> endpointIds;
+	for (const auto& path : attrs.getMemberNames())
+	{
+		size_t p1 = path.find('/');
+		if (p1 == std::string::npos) continue;
+		try {
+			int ep = std::stoi(path.substr(0, p1));
+			if (ep >= 0 && ep <= 255)
+				endpointIds.insert(ep);
+		} catch (...) {}
+	}
 
 	std::lock_guard<std::mutex> lock(m_stateMutex);
-	for (const auto& endpoint_id_str : attrs.getMemberNames())
+	auto& node = m_nodes[node_id];
+	node.nodeId = node_id;
+
+	for (int endpoint_id : endpointIds)
+		node.endpoints[endpoint_id].label = ExtractLabel(attrs, node_id, endpoint_id);
+
+	// Single pass: route each attribute to the endpoint state and, for endpoint 0,
+	// also extract node-level metadata.
+	for (const auto& path : attrs.getMemberNames())
 	{
-		int endpoint_id = std::stoi(endpoint_id_str, nullptr, 10);
-		int domoticzID  = node_id * 256 + endpoint_id;
-		auto& state     = m_endpointStates[domoticzID];
+		size_t p1 = path.find('/');
+		if (p1 == std::string::npos) continue;
+		size_t p2 = path.find('/', p1 + 1);
+		if (p2 == std::string::npos) continue;
 
-		const Json::Value& endpointClusters = attrs[endpoint_id_str];
-		state.label = ExtractLabel(endpointClusters, node_id, endpoint_id);
+		int ep, cluster_id, attr_id;
+		try {
+			ep         = std::stoi(path.substr(0, p1));
+			cluster_id = std::stoi(path.substr(p1 + 1, p2 - p1 - 1));
+			attr_id    = std::stoi(path.substr(p2 + 1));
+		} catch (...) { continue; }
 
-		for (const auto& cluster_str : endpointClusters.getMemberNames())
-		{
-			int cluster_id = std::stoi(cluster_str, nullptr, 10);
-			const Json::Value& clusterAttrs = endpointClusters[cluster_str];
+		if (ep < 0 || ep > 255) continue;
 
-			for (const auto& attr_str : clusterAttrs.getMemberNames())
-			{
-				int attr_id = std::stoi(attr_str, nullptr, 10);
-				const Json::Value& v = clusterAttrs[attr_str];
+		const Json::Value& v = attrs[path];
+		if (v.isNull()) continue;
 
-				if (v.isNull())
-					continue;
+		if (endpointIds.count(ep))
+			ApplyAttributeToState(cluster_id, attr_id, v, node.endpoints[ep]);
 
-				ApplyAttributeToState(cluster_id, attr_id, v, state);
-			}
-		}
-
-		_DetectAndSend(domoticzID);
+		if (ep == 0)
+			ApplyNodeMetadata(cluster_id, attr_id, v, node);
 	}
 }
 
 void CMatter::HandleAttributeUpdate(const Json::Value& data)
 {
-	if (!data.isMember("attribute_path"))
+	// Protocol format: data is a positional array [node_id, "endpoint/cluster/attr", value]
+	if (!data.isArray() || data.size() < 3)
 	{
-		Log(LOG_ERROR, "Missing attribute_path in attribute update");
+		Log(LOG_ERROR, "Unexpected attribute_updated data format");
 		return;
 	}
 
-	int node_id = data["node_id"].asInt();
+	int node_id = data[0].asInt();
+	if (node_id < 1 || node_id > 255)
+		return;
 
-	const std::string& attr_path = data["attribute_path"].asString();
-	std::istringstream ss(attr_path);
-	std::string ep_str, cl_str, at_str;
-	if (!std::getline(ss, ep_str, '/') ||
-	    !std::getline(ss, cl_str, '/') ||
-	    !std::getline(ss, at_str, '/'))
+	const std::string attr_path = data[1].asString();
+	size_t p1 = attr_path.find('/');
+	size_t p2 = (p1 != std::string::npos) ? attr_path.find('/', p1 + 1) : std::string::npos;
+	if (p1 == std::string::npos || p2 == std::string::npos)
 	{
 		Log(LOG_ERROR, "malformed attribute_path: %s", attr_path.c_str());
 		return;
 	}
 
-	int endpoint_id = std::stoi(ep_str, nullptr, 10);
-	int cluster_id  = std::stoi(cl_str, nullptr, 10);
-	int attr_id     = std::stoi(at_str, nullptr, 10);
-	int domoticzID  = node_id * 256 + endpoint_id;
-
-	std::lock_guard<std::mutex> lock(m_stateMutex);
-	auto it = m_endpointStates.find(domoticzID);
-	if (it == m_endpointStates.end())
-	{
-		Log(LOG_ERROR, "Attribute update for unknown endpoint %d", domoticzID);
+	int endpoint_id, cluster_id, attr_id;
+	try {
+		endpoint_id = std::stoi(attr_path.substr(0, p1));
+		cluster_id  = std::stoi(attr_path.substr(p1 + 1, p2 - p1 - 1));
+		attr_id     = std::stoi(attr_path.substr(p2 + 1));
+	} catch (...) {
+		Log(LOG_ERROR, "malformed attribute_path components: %s", attr_path.c_str());
 		return;
 	}
-	auto& state = it->second;
+	if (endpoint_id < 0 || endpoint_id > 255)
+	{
+		Log(LOG_ERROR, "endpoint_id %d out of range in %s", endpoint_id, attr_path.c_str());
+		return;
+	}
 
-	const Json::Value& v = data["value"];
+	const Json::Value& v = data[2];
 	if (v.isNull())
 		return;
 
-	ApplyAttributeToState(cluster_id, attr_id, v, state);
-	_DetectAndSend(domoticzID);
+	std::lock_guard<std::mutex> lock(m_stateMutex);
+	auto nodeIt = m_nodes.find(node_id);
+	if (nodeIt == m_nodes.end())
+	{
+		Log(LOG_DEBUG_INT, "attribute_updated for unknown node %d (%s) — update before start_listening?", node_id, attr_path.c_str());
+		return;
+	}
+	auto epIt = nodeIt->second.endpoints.find(endpoint_id);
+	if (epIt == nodeIt->second.endpoints.end())
+	{
+		Log(LOG_DEBUG_INT, "attribute_updated for unknown endpoint %d/%d (%s)", node_id, endpoint_id, attr_path.c_str());
+		return;
+	}
+
+	ApplyAttributeToState(cluster_id, attr_id, v, epIt->second);
+	if (endpoint_id == 0)
+		ApplyNodeMetadata(cluster_id, attr_id, v, nodeIt->second);
+	_DetectAndSendNode(node_id);
 }
 
 void CMatter::ApplyAttributeToState(int cluster_id, int attr_id, const Json::Value& v, EndpointState& state)
 {
 	switch (cluster_id)
 	{
+		case CLUSTER_DESCRIPTION:
+		case 31: //0x001F AccessControl
+		case CLUSTER_BASIC_INFORMATION:
+		case 42: //0x002A OtaSoftwareUpdateRequestor
+		case 48: //0x0030 GeneralCommissioning
+		case 49: //0x0031 NetworkCommissioning
+		case 51: //0x0033 GeneralDiagnostics
+		case CLUSTER_THREAD_DIAGNOSTICS:
+		case 60: //0x003C AdministratorCommissioning
+		case 62: //0x003E OperationalCredentials
+		case 63: //0x003F GroupKeyManagement
+		case 70: //0x0046 IcdManagement
+			break;
 		case CLUSTER_POWER_SOURCE:
 			if (attr_id == ATTR_BATTERY_PERCENT_REMAINING)
 				state.battery_pct = v.asInt() / 2;
@@ -395,7 +482,8 @@ void CMatter::ApplyAttributeToState(int cluster_id, int attr_id, const Json::Val
 		case CLUSTER_LEVEL_CONTROL:
 			if (attr_id == ATTR_CURRENT_LEVEL)
 			{
-				state.level_pct = v.asInt() * 100.0 / 254.0;
+				int raw = std::max(0, std::min(254, v.asInt()));
+				state.level_pct = raw * 100.0 / 254.0;
 				state.hasLevel  = true;
 			}
 			break;
@@ -444,8 +532,8 @@ void CMatter::ApplyAttributeToState(int cluster_id, int attr_id, const Json::Val
 		case CLUSTER_THERMOSTAT:
 			if (attr_id == ATTR_LOCAL_TEMPERATURE)
 			{
-				state.temp_C  = v.asInt() / 100.0f;
-				state.hasTemp = true;
+				state.setpoint_C  = v.asInt() / 100.0f;
+				state.hasSetpoint = true;
 			}
 			break;
 		case CLUSTER_FLOW_MEASUREMENT:
@@ -531,76 +619,149 @@ void CMatter::ApplyAttributeToState(int cluster_id, int attr_id, const Json::Val
 			}
 			break;
 		default:
-			Log(LOG_STATUS, "unhandled cluster %d (0x%04X), attr %d",
-			    cluster_id, cluster_id, attr_id);
+			break;
+	}
+}
+
+void CMatter::ApplyNodeMetadata(int cluster_id, int attr_id, const Json::Value& v, NodeState& node)
+{
+	switch (cluster_id)
+	{
+		case CLUSTER_BASIC_INFORMATION:
+			if      (attr_id == 1  && v.isString())   node.vendorName             = v.asString();
+			else if (attr_id == 2  && v.isIntegral())  node.vendorId               = static_cast<uint16_t>(v.asUInt());
+			else if (attr_id == 3  && v.isString())   node.productName            = v.asString();
+			else if (attr_id == 4  && v.isIntegral())  node.productId              = static_cast<uint16_t>(v.asUInt());
+			else if (attr_id == 5  && v.isString())   node.nodeLabel              = v.asString();
+			else if (attr_id == 8  && v.isString())   node.hardwareVersionString  = v.asString();
+			else if (attr_id == 10 && v.isString())   node.softwareVersionString  = v.asString();
+			break;
+		case CLUSTER_POWER_SOURCE:
+			if (attr_id == ATTR_BATTERY_VOLTAGE && v.isIntegral())
+			{
+				node.batteryVoltage_V  = v.asInt() / 1000.0f;
+				node.hasBatteryVoltage = true;
+			}
+			break;
+		case CLUSTER_THREAD_DIAGNOSTICS:
+			if      (attr_id == 0 && v.isIntegral())  { node.threadChannel = static_cast<uint8_t>(v.asUInt()); node.hasThreadChannel = true; }
+			else if (attr_id == 2 && v.isString())    node.threadNetworkName = v.asString();
+			break;
+		default:
 			break;
 	}
 }
 
 // Must be called with m_stateMutex already held.
-void CMatter::_DetectAndSend(int domoticzID)
+void CMatter::_DetectAndSendNode(int nodeId)
 {
-	int endpointId = domoticzID % 256;
-	auto it = m_endpointStates.find(domoticzID);
-	if (it == m_endpointStates.end())
+	auto nodeIt = m_nodes.find(nodeId);
+	if (nodeIt == m_nodes.end())
 		return;
-	auto& state = it->second;
+	const auto& node = nodeIt->second;
+
+	// Aggregate environmental sensor readings across all endpoints of this node.
+	float setpoint_C = 0;  bool hasSetpoint = false;
+	float temp_C   = 0;  bool hasTemp = false;
+	int   hum_pct  = 0;  bool hasHum  = false;
+	float baro_hPa = 0;  bool hasBaro = false;
+	int   battery  = 255;
+	std::string label;
+
+	for (const auto& kv : node.endpoints)
+	{
+		const auto& s = kv.second;
+		if (s.battery_pct < battery) battery = s.battery_pct; // report the weakest endpoint's battery
+		if (!hasTemp && s.hasTemp)  { temp_C   = s.temp_C;   hasTemp = true; }
+		if (!hasHum  && s.hasHum)   { hum_pct  = s.hum_pct;  hasHum  = true; }
+		if (!hasBaro && s.hasBaro)  { baro_hPa = s.baro_hPa; hasBaro = true; }
+		if (!hasSetpoint && s.hasSetpoint) { setpoint_C = s.setpoint_C; hasSetpoint = true; }
+		if (label.empty() && !s.label.empty()) label = s.label;
+	}
+
+	// Aggregated environmental sensors use nodeId as domoticzID (1-255),
+	// giving users a direct mapping: device ID == Matter node number.
+	if (hasSetpoint && hasTemp)
+		SendThermostatSensor(0, 0, 0, nodeId, 1, battery, setpoint_C, temp_C, label);
+	else if (hasTemp && hasHum && hasBaro)
+		SendTempHumBaroSensor(nodeId, battery, temp_C, hum_pct, baro_hPa, 0, label);
+	else if (hasTemp && hasHum)
+		SendTempHumSensor(nodeId, battery, temp_C, hum_pct, label);
+	else if (hasTemp)
+		SendTempSensor(nodeId, battery, temp_C, label);
+	else if (hasHum)
+		SendHumiditySensor(nodeId, battery, hum_pct, label);
+
+	if (hasBaro && !hasTemp)
+		SendPressureSensor(nodeId, 0, battery, baro_hPa, label);
+
+	if (hasSetpoint)
+		SendSetPointSensor(0, 0, 0, nodeId, 1, battery, setpoint_C, label);
+
+	// Per-endpoint non-environmental sensors (on/off, power, CO2, etc.)
+	for (const auto& kv : node.endpoints)
+		_DetectAndSend(nodeId, kv.first);
+}
+
+// Must be called with m_stateMutex already held.
+// Sends only non-environmental (non-temp/hum/baro) sensors for one endpoint.
+// Environmental sensors are aggregated and sent at the node level by _DetectAndSendNode.
+// domoticzID = nodeId * 256 + endpointId so commands can be routed back to the
+// correct endpoint via WriteToHardware (nodeId = domoticzID/256, endpointId = domoticzID%256).
+void CMatter::_DetectAndSend(int nodeId, int endpointId)
+{
+	auto nodeIt = m_nodes.find(nodeId);
+	if (nodeIt == m_nodes.end())
+		return;
+	auto epIt = nodeIt->second.endpoints.find(endpointId);
+	if (epIt == nodeIt->second.endpoints.end())
+		return;
+	const auto& state = epIt->second;
 	int battery = state.battery_pct;
+	int domoticzID = nodeId * 256 + endpointId;
 
-	if (state.hasTemp && state.hasHum && state.hasBaro)
-		SendTempHumBaroSensor(domoticzID, battery, state.temp_C, state.hum_pct, state.baro_hPa, 0, state.label);
-	else if (state.hasTemp && state.hasHum)
-		SendTempHumSensor(domoticzID, battery, state.temp_C, state.hum_pct, state.label);
-	else if (state.hasTemp)
-		SendTempSensor(domoticzID, battery, state.temp_C, state.label);
-	else if (state.hasHum)
-		SendHumiditySensor(domoticzID, battery, state.hum_pct, state.label);
-
-	if (state.hasBaro && !state.hasTemp)
-		SendPressureSensor(domoticzID, endpointId, battery, state.baro_hPa, state.label);
-
-	if (state.hasPower)
+	if (state.hasPower && !state.hasEnergy)
 		SendWattMeter(domoticzID, endpointId, battery, static_cast<float>(state.power_W), state.label);
 	if (state.hasEnergy)
 		SendKwhMeter(domoticzID, endpointId, battery, state.power_W, state.energy_kWh, state.label);
 
 	if (state.hasLux)
-		SendLuxSensor((uint8_t)(domoticzID >> 8), (uint8_t)endpointId, (uint8_t)battery, state.lux, state.label);
+		SendLuxSensor((uint8_t)nodeId, (uint8_t)endpointId, (uint8_t)battery, state.lux, state.label);
 
 	if (state.hasOccupancy)
-		SendSwitch(domoticzID, (uint8_t)(endpointId * 10 + CHILD_OCCUPANCY), battery, state.occupied, 0, state.label, "");
+		SendSwitch(domoticzID, CHILD_OCCUPANCY, battery, state.occupied, 0, state.label, "");
 
 	if (state.hasOnOff && state.hasLevel)
-		SendSwitch(domoticzID, (uint8_t)(endpointId * 10 + CHILD_ONOFF), battery, state.onOff, state.level_pct, state.label, "");
+		SendSwitch(domoticzID, CHILD_ONOFF, battery, state.onOff, state.level_pct, state.label, "");
 	else if (state.hasOnOff)
-		SendSwitch(domoticzID, (uint8_t)(endpointId * 10 + CHILD_ONOFF), battery, state.onOff, 0, state.label, "");
+		SendSwitch(domoticzID, CHILD_ONOFF, battery, state.onOff, 0, state.label, "");
 
 	if (state.hasContact)
-		SendSwitch(domoticzID, (uint8_t)(endpointId * 10 + CHILD_CONTACT), battery, state.contact, 0, state.label, "");
+		SendSwitch(domoticzID, CHILD_CONTACT, battery, state.contact, 0, state.label, "");
 
 	if (state.hasCO2)
-		SendAirQualitySensor((uint8_t)(domoticzID >> 8), (uint8_t)(endpointId * 10 + CHILD_CO2), battery, state.co2_ppm, state.label);
+		SendAirQualitySensor((uint8_t)nodeId, (uint8_t)endpointId, battery, state.co2_ppm, state.label);
 
 	if (state.hasCO)
-		SendCustomSensor(domoticzID, (uint8_t)(endpointId * 10 + CHILD_CO), battery, state.co_ppm, state.label + " CO", "ppm");
+		SendCustomSensor(domoticzID, CHILD_CO, battery, state.co_ppm, state.label + " CO", "ppm");
 
 	if (state.hasNO2)
-		SendCustomSensor(domoticzID, (uint8_t)(endpointId * 10 + CHILD_NO2), battery, state.no2_ppm, state.label + " NO2", "ppm");
+		SendCustomSensor(domoticzID, CHILD_NO2, battery, state.no2_ppm, state.label + " NO2", "ppm");
 
 	if (state.hasPM25)
-		SendCustomSensor(domoticzID, (uint8_t)(endpointId * 10 + CHILD_PM25), battery, state.pm25_ugm3, state.label + " PM2.5", "µg/m³");
+		SendCustomSensor(domoticzID, CHILD_PM25, battery, state.pm25_ugm3, state.label + " PM2.5", "µg/m³");
 
 	if (state.hasPM10)
-		SendCustomSensor(domoticzID, (uint8_t)(endpointId * 10 + CHILD_PM10), battery, state.pm10_ugm3, state.label + " PM10", "µg/m³");
+		SendCustomSensor(domoticzID, CHILD_PM10, battery, state.pm10_ugm3, state.label + " PM10", "µg/m³");
 
 	if (state.hasFlow)
-		SendWaterflowSensor(domoticzID, (uint8_t)(endpointId * 10 + CHILD_FLOW), battery, state.flow_lpm, state.label);
+		SendWaterflowSensor(domoticzID, CHILD_FLOW, battery, state.flow_lpm, state.label);
 
 	if (state.hasLock)
-		SendSwitch(domoticzID, (uint8_t)(endpointId * 10 + CHILD_LOCK), battery, state.locked, 0, state.label, "");
+		SendSwitch(domoticzID, CHILD_LOCK, battery, state.locked, 0, state.label, "");
 
 	if (state.hasBlind)
-		SendPercentageSensor(domoticzID, (uint8_t)(endpointId * 10 + CHILD_BLIND), battery, (float)state.blind_pct, state.label);
+		SendPercentageSensor(domoticzID, CHILD_BLIND, battery, (float)state.blind_pct, state.label);
 
 	if (state.hasVolt)
 		SendVoltageSensor(domoticzID, endpointId, battery, state.voltage_V, state.label);
@@ -609,35 +770,109 @@ void CMatter::_DetectAndSend(int domoticzID)
 		SendCurrentSensor(domoticzID, battery, state.current_A, 0, 0, state.label);
 }
 
-std::string CMatter::ExtractLabel(const Json::Value& endpointAttrs, int nodeId, int endpointId) const
+std::string CMatter::ExtractLabel(const Json::Value& attrs, int nodeId, int endpointId) const
 {
-	// cluster 0x0039 (57), attr 0x0001 (1) — bridged node label
-	if (endpointAttrs.isMember("57") && endpointAttrs["57"].isMember("1"))
+	// Helper: try a path in attrs, return the string value if non-empty
+	auto tryPath = [&](const std::string& p) -> std::string {
+		if (attrs.isMember(p)) {
+			const Json::Value& v = attrs[p];
+			if (v.isString()) return v.asString();
+		}
+		return {};
+	};
+
+	std::string ep = std::to_string(endpointId);
+	std::string label;
+
+	// cluster 0x0039 (57), attr 1 — BridgedDeviceBasicInformation: NodeLabel
+	label = tryPath(ep + "/57/1");
+	if (!label.empty()) return label;
+
+	// cluster 0x0028 (40), attr 5 — BasicInformation: NodeLabel (user-set)
+	label = tryPath(ep + "/40/5");
+	if (!label.empty()) return label;
+
+	// cluster 0x0028 (40), attr 3 — BasicInformation: ProductName
+	label = tryPath(ep + "/40/3");
+	if (!label.empty()) return label;
+
+	// For non-zero endpoints the basic info lives on endpoint 0 — fall back there
+	if (endpointId != 0)
 	{
-		std::string label = endpointAttrs["57"]["1"].asString();
-		if (!label.empty())
-			return label;
+		label = tryPath("0/57/1");
+		if (!label.empty()) return label;
+		label = tryPath("0/40/5");
+		if (!label.empty()) return label;
+		label = tryPath("0/40/3");
+		if (!label.empty()) return label;
 	}
-	// cluster 0x0028 (40), attr 0x0001 (1) — node label
-	if (endpointAttrs.isMember("40") && endpointAttrs["40"].isMember("1"))
-	{
-		std::string label = endpointAttrs["40"]["1"].asString();
-		if (!label.empty())
-			return label;
-	}
-	// cluster 0x0028 (40), attr 0x0005 (5) — product name
-	if (endpointAttrs.isMember("40") && endpointAttrs["40"].isMember("5"))
-	{
-		std::string label = endpointAttrs["40"]["5"].asString();
-		if (!label.empty())
-			return label;
-	}
+
 	return "Matter-" + std::to_string(nodeId) + "-" + std::to_string(endpointId);
+}
+
+void CMatter::SetSetpoint(int idx, float value)
+{
+	if (!m_bConnected)
+	{
+		Log(LOG_STATUS, "SetSetpoint: not connected to Matter server");
+		return;
+	}
+
+	// idx is ID4 from the device record; for setpoint sensors we store nodeId there
+	// (via SendSetPointSensor(0, 0, 0, nodeId, 1, ...))
+	int nodeId = idx;
+
+	// Convert to Celsius if the user has Fahrenheit configured
+	float temp_celsius = value;
+	if (m_sql.m_tempsign[0] == 'F')
+		temp_celsius = static_cast<float>(ConvertToCelsius(value));
+
+	// Find the endpoint that has the thermostat cluster
+	int endpointId = -1;
+	{
+		std::lock_guard<std::mutex> lock(m_stateMutex);
+		auto nodeIt = m_nodes.find(nodeId);
+		if (nodeIt == m_nodes.end())
+		{
+			Log(LOG_STATUS, "SetSetpoint: node %d not found", nodeId);
+			return;
+		}
+		for (const auto& kv : nodeIt->second.endpoints)
+		{
+			if (kv.second.hasSetpoint)
+			{
+				endpointId = kv.first;
+				break;
+			}
+		}
+	}
+
+	if (endpointId < 0)
+	{
+		Log(LOG_STATUS, "SetSetpoint: no thermostat endpoint on node %d", nodeId);
+		return;
+	}
+
+	// Matter thermostat cluster uses 0.01 °C units
+	int matter_value = static_cast<int>(std::round(temp_celsius * 100.0f));
+
+	// Write OccupiedHeatingSetpoint (cluster 0x0201, attr 0x0011)
+	Json::Value args;
+	args["node_id"]        = nodeId;
+	args["attribute_path"] = std::to_string(endpointId) + "/" + std::to_string(CLUSTER_THERMOSTAT) + "/" + std::to_string(ATTR_OCCUPIED_HEATING_SETPOINT);
+	args["value"]          = matter_value;
+	SendCommand("write_attribute", args);
 }
 
 bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 {
 	if (!pdata || length == 0) return false;
+
+	if (!m_bConnected)
+	{
+		Log(LOG_STATUS, "WriteToHardware: not connected to Matter server");
+		return false;
+	}
 
 	const tRBUF* pCmd = reinterpret_cast<const tRBUF*>(pdata);
 
@@ -651,6 +886,16 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 	int nodeId     = domoticzID / 256;
 	int endpointId = domoticzID % 256;
 	uint8_t cmnd   = pCmd->LIGHTING2.cmnd;
+
+	{
+		std::lock_guard<std::mutex> lock(m_stateMutex);
+		auto nodeIt = m_nodes.find(nodeId);
+		if (nodeIt == m_nodes.end() || nodeIt->second.endpoints.find(endpointId) == nodeIt->second.endpoints.end())
+		{
+			Log(LOG_STATUS, "WriteToHardware: node %d endpoint %d not found", nodeId, endpointId);
+			return false;
+		}
+	}
 
 	if (cmnd == light2_sSetLevel)
 	{
