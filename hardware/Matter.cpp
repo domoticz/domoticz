@@ -757,8 +757,17 @@ void CMatter::_DetectAndSendNode(int nodeId)
 
 	// Aggregated environmental sensors use nodeId as domoticzID (1-255),
 	// giving users a direct mapping: device ID == Matter node number.
-	if (hasSetpoint && hasTemp)
-		SendThermostatSensor(0, 0, 0, nodeId, 1, battery, setpoint_C, temp_C, label);
+	if (hasSetpoint)
+	{
+		if (hasTemp && hasHum && hasBaro)
+			SendThermostatSensor(0, 0, 0, nodeId, 1, battery, setpoint_C, temp_C, hum_pct, baro_hPa, label);
+		else if (hasTemp && hasHum)
+			SendThermostatSensor(0, 0, 0, nodeId, 1, battery, setpoint_C, temp_C, hum_pct, label);
+		else if (hasTemp)
+			SendThermostatSensor(0, 0, 0, nodeId, 1, battery, setpoint_C, temp_C, label);
+		else
+			SendSetPointSensor(0, 0, 0, nodeId, 1, battery, setpoint_C, label);
+	}
 	else if (hasTemp && hasHum && hasBaro)
 		SendTempHumBaroSensor(nodeId, battery, temp_C, hum_pct, baro_hPa, 0, label);
 	else if (hasTemp && hasHum)
@@ -770,9 +779,6 @@ void CMatter::_DetectAndSendNode(int nodeId)
 
 	if (hasBaro && !hasTemp)
 		SendPressureSensor(nodeId, 0, battery, baro_hPa, label);
-
-	if (hasSetpoint)
-		SendSetPointSensor(0, 0, 0, nodeId, 1, battery, setpoint_C, label);
 
 	// Per-endpoint non-environmental sensors (on/off, power, CO2, etc.)
 	for (const auto& kv : node.endpoints)
