@@ -14,7 +14,7 @@
 #include <fstream>
 
 #ifdef _DEBUG
-	//#define DEBUG_CMATTER_WRITE
+	#define DEBUG_CMATTER_WRITE
 #endif
 
 #ifdef DEBUG_CMATTER_WRITE
@@ -57,8 +57,8 @@ static constexpr int CLUSTER_CO2_CONCENTRATION         = 1037;  // 0x040D
 static constexpr int CLUSTER_NO2_CONCENTRATION         = 1043;  // 0x0413
 static constexpr int CLUSTER_PM25_CONCENTRATION        = 1066;  // 0x042A
 static constexpr int CLUSTER_PM10_CONCENTRATION        = 1069;  // 0x042D
-static constexpr int CLUSTER_ELECTRICAL_ENERGY_MEAS    = 2316;  // 0x090C
-static constexpr int CLUSTER_ELECTRICAL_POWER_MEAS     = 2317;  // 0x090D
+static constexpr int CLUSTER_ELECTRICAL_POWER_MEAS      = 144;   // 0x0090 ElectricalPowerMeasurement (Matter 1.3+)
+static constexpr int CLUSTER_ELECTRICAL_ENERGY_MEAS     = 145;   // 0x0091 ElectricalEnergyMeasurement (Matter 1.3+)
 
 // Matter attribute IDs used per cluster
 static constexpr int ATTR_ON_OFF                       = 0;
@@ -72,9 +72,11 @@ static constexpr int ATTR_OCCUPIED_HEATING_SETPOINT    = 17;    // 0x0011 Thermo
 static constexpr int ATTR_CURRENT_POSITION_LIFT        = 10;    // 0x000A WindowCovering (0–10000, 0=open)
 static constexpr int ATTR_BATTERY_VOLTAGE              = 11;    // 0x000B PowerSource (mV)
 static constexpr int ATTR_BATTERY_PERCENT_REMAINING    = 12;    // 0x000C PowerSource
+static constexpr int ATTR_CUMULATIVE_ENERGY_IMPORTED   = 1;     // 0x0001 ElectricalEnergyMeasurement (struct, field "0" = mWh)
 static constexpr int ATTR_VOLTAGE                      = 4;     // 0x0004 ElectricalPowerMeasurement (mV)
 static constexpr int ATTR_ACTIVE_CURRENT               = 5;     // 0x0005 ElectricalPowerMeasurement (mA)
 static constexpr int ATTR_ACTIVE_POWER                 = 8;     // 0x0008 ElectricalPowerMeasurement (mW)
+static constexpr int ATTR_ACTIVE_FREQUENCY			   = 14;    // 0x000E ElectricalPowerFrequency (Hz)
 
 // ChildID slot offsets — unique sensor type identifiers within a domoticzID.
 // domoticzID already encodes the endpoint (nodeId * 256 + endpointId), so no
@@ -172,7 +174,10 @@ void CMatter::OnWebsocketMessage(WSOpcode opcode, const std::vector<uint8_t>& pa
 	Debug(DEBUG_RECEIVED, raw);
 
 #ifdef DEBUG_CMATTER_WRITE
-	SaveString2Disk(raw, "E:\\matter_message.json");
+	static int cntr = 1;
+	char szFilename[MAX_PATH];
+	sprintf_s(szFilename, "E:\\matter_message_%04d.json", cntr++);
+	SaveString2Disk(raw, szFilename);
 #endif
 
 	Json::Value msg;
@@ -615,11 +620,18 @@ void CMatter::ApplyAttributeToState(int cluster_id, int attr_id, const Json::Val
 				state.current_A = v.asInt() / 1000.0f; // mA → A
 				state.hasCurrent = true;
 			}
+			else if (attr_id == ATTR_ACTIVE_FREQUENCY)
+			{
+				state.frequency_Hz = v.asInt(); // Hz
+				state.hasFrequency = true;
+			}
 			break;
 		case CLUSTER_ELECTRICAL_ENERGY_MEAS:
-			if (v.isObject() && v.isMember("energy") && v["energy"].isNumeric())
+			// CumulativeEnergyImported (attr 1) is a struct; field "0" carries the mWh value.
+			// Example from device: {"0":16275000,"4":12345} where "4" is endSystime.
+			if (attr_id == ATTR_CUMULATIVE_ENERGY_IMPORTED && v.isObject() && v.isMember("0"))
 			{
-				state.energy_kWh = v["energy"].asInt64() / 1000000.0; // mWh → kWh
+				state.energy_kWh = v["0"].asInt64() / 1000000.0; // mWh → kWh
 				state.hasEnergy  = true;
 			}
 			break;

@@ -36,6 +36,7 @@ private:
 		double energy_kWh = 0;   bool hasEnergy    = false;
 		float  voltage_V  = 0;   bool hasVolt      = false;
 		float  current_A  = 0;   bool hasCurrent   = false;
+		int  frequency_Hz = 0;   bool hasFrequency = false;
 		bool   onOff      = false; bool hasOnOff    = false;
 		double level_pct  = 0;   bool hasLevel     = false;
 		bool   occupied   = false; bool hasOccupancy = false;
