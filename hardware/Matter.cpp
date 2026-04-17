@@ -14,7 +14,7 @@
 #include <fstream>
 
 #ifdef _DEBUG
-	#define DEBUG_CMATTER_WRITE
+	//#define DEBUG_CMATTER_WRITE
 #endif
 
 #ifdef DEBUG_CMATTER_WRITE
@@ -68,7 +68,15 @@ static constexpr int ATTR_OCCUPANCY                    = 0;
 static constexpr int ATTR_STATE_VALUE                  = 0;     // BooleanState
 static constexpr int ATTR_LOCK_STATE                   = 0;     // DoorLock (0=not_fully_locked, 1=locked, 2=unlocked)
 static constexpr int ATTR_LOCAL_TEMPERATURE            = 0;     // Thermostat (0.01 °C)
-static constexpr int ATTR_OCCUPIED_HEATING_SETPOINT    = 17;    // 0x0011 Thermostat (0.01 °C, writable)
+static constexpr int ATTR_OCCUPIED_HEATING_SETPOINT    = 18;    // 0x0011 Thermostat (0.01 °C, writable)
+static constexpr int ATTR_ABS_MIN_HEAT_SETPOINT        = 3;     // 0x0003 Thermostat
+static constexpr int ATTR_ABS_MAX_HEAT_SETPOINT        = 4;     // 0x0004 Thermostat
+static constexpr int ATTR_ABS_MIN_COOL_SETPOINT        = 5;     // 0x0005 Thermostat
+static constexpr int ATTR_ABS_MAX_COOL_SETPOINT        = 6;     // 0x0006 Thermostat
+static constexpr int ATTR_CTRL_SEQ_OF_OPERATION        = 27;    // 0x001B Thermostat ControlSequenceOfOperationEnum (writable)
+static constexpr int ATTR_SYSTEM_MODE                  = 28;    // 0x001C Thermostat SystemModeEnum (writable)
+static constexpr int ATTR_ACTIVE_PRESET_HANDLE         = 78;    // 0x004E Thermostat (bytes, writable)
+static constexpr int ATTR_PRESETS                      = 80;    // 0x0050 Thermostat list of PresetStruct
 static constexpr int ATTR_CURRENT_POSITION_LIFT        = 10;    // 0x000A WindowCovering (0–10000, 0=open)
 static constexpr int ATTR_BATTERY_VOLTAGE              = 11;    // 0x000B PowerSource (mV)
 static constexpr int ATTR_BATTERY_PERCENT_REMAINING    = 12;    // 0x000C PowerSource
@@ -90,8 +98,15 @@ static constexpr int CHILD_PM25      = 6;
 static constexpr int CHILD_PM10      = 7;
 static constexpr int CHILD_FLOW      = 8;
 static constexpr int CHILD_LOCK      = 9;
-static constexpr int CHILD_BLIND     = 10;
-static constexpr int CHILD_NO2       = 11;
+static constexpr int CHILD_BLIND        = 10;
+static constexpr int CHILD_NO2          = 11;
+static constexpr int CHILD_SYSTEM_MODE  = 12;
+static constexpr int CHILD_PRESET       = 13;
+static constexpr int CHILD_CTRL_SEQ     = 14;
+
+// Non-contiguous SystemModeEnum values in selector-level order (level = index * 10)
+static constexpr int SYSTEM_MODE_VALUES[]    = {0, 1, 3, 4, 5, 6, 7, 8, 9};
+static constexpr int SYSTEM_MODE_VALUES_SIZE = sizeof(SYSTEM_MODE_VALUES) / sizeof(SYSTEM_MODE_VALUES[0]);
 
 CMatter::CMatter(int ID, const std::string& serverAddress, uint16_t port)
 	: ASyncWebsocket()
@@ -542,8 +557,52 @@ void CMatter::ApplyAttributeToState(int cluster_id, int attr_id, const Json::Val
 		case CLUSTER_THERMOSTAT:
 			if (attr_id == ATTR_LOCAL_TEMPERATURE)
 			{
-				state.setpoint_C  = v.asInt() / 100.0f;
+				state.temp_C  = v.asInt() / 100.0f;
+				state.hasTemp = true;
+			}
+			else if (attr_id == ATTR_OCCUPIED_HEATING_SETPOINT)
+			{
+				state.setpoint_C = v.asInt() / 100.0f;
 				state.hasSetpoint = true;
+			}
+			else if (attr_id == ATTR_SYSTEM_MODE)
+			{
+				state.systemMode    = v.asInt();
+				state.hasSystemMode = true;
+			}
+			else if (attr_id == ATTR_CTRL_SEQ_OF_OPERATION && v.isIntegral())
+			{
+				state.ctrlSeqOp    = v.asInt();
+				state.hasCtrlSeqOp = true;
+			}
+			else if (attr_id == ATTR_ABS_MIN_HEAT_SETPOINT && v.isIntegral())
+				state.minHeatSetpoint_C = v.asInt() / 100.0f;
+			else if (attr_id == ATTR_ABS_MAX_HEAT_SETPOINT && v.isIntegral())
+				state.maxHeatSetpoint_C = v.asInt() / 100.0f;
+			else if (attr_id == ATTR_ABS_MIN_COOL_SETPOINT && v.isIntegral())
+				state.minCoolSetpoint_C = v.asInt() / 100.0f;
+			else if (attr_id == ATTR_ABS_MAX_COOL_SETPOINT && v.isIntegral())
+				state.maxCoolSetpoint_C = v.asInt() / 100.0f;
+			else if (attr_id == ATTR_ACTIVE_PRESET_HANDLE)
+			{
+				state.activePresetHandle = (v.isString()) ? v.asString() : "";
+			}
+			else if (attr_id == ATTR_PRESETS && v.isArray())
+			{
+				state.presets.clear();
+				for (const auto& preset : v)
+				{
+					if (!preset.isObject()) continue;
+					EndpointState::PresetEntry entry;
+					if (preset.isMember("0") && preset["0"].isString())
+						entry.handle = preset["0"].asString();
+					if (preset.isMember("1") && preset["1"].isIntegral())
+						entry.scenario = preset["1"].asInt();
+					if (preset.isMember("2") && preset["2"].isString())
+						entry.name = preset["2"].asString();
+					state.presets.push_back(std::move(entry));
+				}
+				state.hasPresets = !state.presets.empty();
 			}
 			break;
 		case CLUSTER_FLOW_MEASUREMENT:
@@ -780,6 +839,53 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 	if (state.hasBlind)
 		SendPercentageSensor(domoticzID, CHILD_BLIND, battery, (float)state.blind_pct, state.label);
 
+	if (state.hasSystemMode)
+	{
+		static const std::string SystemMode_Names   = "Off|Auto|Cool|Heat|EmergencyHeat|Precooling|FanOnly|Dry|Sleep";
+		static const std::string SystemMode_Actions = "||||||||";
+		int level = 0;
+		for (int i = 0; i < SYSTEM_MODE_VALUES_SIZE; i++)
+		{
+			if (SYSTEM_MODE_VALUES[i] == state.systemMode) { level = i * 10; break; }
+		}
+		SendSelectorSwitch(domoticzID, CHILD_SYSTEM_MODE, std::to_string(level), state.label + " System Mode", 0, true, SystemMode_Names, SystemMode_Actions, false, "");
+	}
+
+	if (state.hasCtrlSeqOp)
+	{
+		static const std::string CtrlSeq_Names   = "CoolingOnly|CoolingWithReheat|HeatingOnly|HeatingWithReheat|CoolingAndHeating|CoolingAndHeatingWithReheat";
+		static const std::string CtrlSeq_Actions = "|||||";
+		SendSelectorSwitch(domoticzID, CHILD_CTRL_SEQ, std::to_string(state.ctrlSeqOp * 10), state.label + " Control Sequence", 0, true, CtrlSeq_Names, CtrlSeq_Actions, false, "");
+	}
+
+	if (state.hasPresets)
+	{
+		// PresetScenarioEnum → display name (matching HASS conventions)
+		static const std::pair<int, const char*> scenarioNames[] = {
+			{1, "Home"}, {2, "Away"}, {3, "Sleep"}, {4, "Wake"}, {5, "Vacation"}, {6, "GoingToSleep"}
+		};
+		auto scenarioName = [](int scenario) -> std::string {
+			for (const auto& p : scenarioNames)
+				if (p.first == scenario) return p.second;
+			return "";
+		};
+
+		std::string names = "None";
+		std::string actions = "";
+		int activeLevel = 0;
+		for (int i = 0; i < (int)state.presets.size(); i++)
+		{
+			const auto& p = state.presets[i];
+			std::string name = p.name.empty() ? scenarioName(p.scenario) : p.name;
+			if (name.empty()) name = "Preset" + std::to_string(i + 1);
+			names  += "|" + name;
+			actions += "|";
+			if (!p.handle.empty() && p.handle == state.activePresetHandle)
+				activeLevel = (i + 1) * 10;
+		}
+		SendSelectorSwitch(domoticzID, CHILD_PRESET, std::to_string(activeLevel), state.label + " Preset", 0, true, names, actions, false, "");
+	}
+
 	if (state.hasVolt)
 		SendVoltageSensor(domoticzID, endpointId, battery, state.voltage_V, state.label);
 
@@ -844,8 +950,9 @@ void CMatter::SetSetpoint(int idx, float value)
 	if (m_sql.m_tempsign[0] == 'F')
 		temp_celsius = static_cast<float>(ConvertToCelsius(value));
 
-	// Find the endpoint that has the thermostat cluster
+	// Find the endpoint that has the thermostat cluster and read its limits
 	int endpointId = -1;
+	float minTemp = 5.0f, maxTemp = 30.0f;
 	{
 		std::lock_guard<std::mutex> lock(m_stateMutex);
 		auto nodeIt = m_nodes.find(nodeId);
@@ -859,6 +966,11 @@ void CMatter::SetSetpoint(int idx, float value)
 			if (kv.second.hasSetpoint)
 			{
 				endpointId = kv.first;
+				// Use cooling limits for Cool (3) and Auto/HEAT_COOL (1) modes
+				const auto& ep = kv.second;
+				bool isCooling = (ep.systemMode == 3 || ep.systemMode == 1);
+				minTemp = isCooling ? ep.minCoolSetpoint_C : ep.minHeatSetpoint_C;
+				maxTemp = isCooling ? ep.maxCoolSetpoint_C : ep.maxHeatSetpoint_C;
 				break;
 			}
 		}
@@ -868,6 +980,17 @@ void CMatter::SetSetpoint(int idx, float value)
 	{
 		Log(LOG_STATUS, "SetSetpoint: no thermostat endpoint on node %d", nodeId);
 		return;
+	}
+
+	if (temp_celsius < minTemp)
+	{
+		Log(LOG_STATUS, "SetSetpoint: clamping %.1f°C to min %.1f°C", temp_celsius, minTemp);
+		temp_celsius = minTemp;
+	}
+	else if (temp_celsius > maxTemp)
+	{
+		Log(LOG_STATUS, "SetSetpoint: clamping %.1f°C to max %.1f°C", temp_celsius, maxTemp);
+		temp_celsius = maxTemp;
 	}
 
 	// Matter thermostat cluster uses 0.01 °C units
@@ -892,6 +1015,86 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 	}
 
 	const tRBUF* pCmd = reinterpret_cast<const tRBUF*>(pdata);
+
+	// Selector switch — SystemMode
+	if (pCmd->ICMND.packettype == pTypeGeneralSwitch && pCmd->ICMND.subtype == sSwitchTypeSelector)
+	{
+		const _tGeneralSwitch* pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pdata);
+		if (pSwitch->unitcode == CHILD_SYSTEM_MODE)
+		{
+			int index = pSwitch->level / 10;
+			if (index < 0 || index >= SYSTEM_MODE_VALUES_SIZE)
+				return false;
+			int enumValue = SYSTEM_MODE_VALUES[index];
+			int domoticzID = (int)pSwitch->id;
+			int nodeId     = domoticzID / 256;
+			int endpointId = domoticzID % 256;
+			{
+				std::lock_guard<std::mutex> lock(m_stateMutex);
+				auto nodeIt = m_nodes.find(nodeId);
+				if (nodeIt == m_nodes.end() || nodeIt->second.endpoints.find(endpointId) == nodeIt->second.endpoints.end())
+				{
+					Log(LOG_STATUS, "WriteToHardware: node %d endpoint %d not found", nodeId, endpointId);
+					return false;
+				}
+			}
+			Json::Value args;
+			args["node_id"]        = nodeId;
+			args["attribute_path"] = std::to_string(endpointId) + "/" + std::to_string(CLUSTER_THERMOSTAT) + "/" + std::to_string(ATTR_SYSTEM_MODE);
+			args["value"]          = enumValue;
+			SendCommand("write_attribute", args);
+			return true;
+		}
+		if (pSwitch->unitcode == CHILD_CTRL_SEQ)
+		{
+			int enumValue  = pSwitch->level / 10;
+			if (enumValue < 0 || enumValue > 5)
+				return false;
+			int domoticzID = (int)pSwitch->id;
+			int nodeId     = domoticzID / 256;
+			int endpointId = domoticzID % 256;
+			Json::Value args;
+			args["node_id"]        = nodeId;
+			args["attribute_path"] = std::to_string(endpointId) + "/" + std::to_string(CLUSTER_THERMOSTAT) + "/" + std::to_string(ATTR_CTRL_SEQ_OF_OPERATION);
+			args["value"]          = enumValue;
+			SendCommand("write_attribute", args);
+			return true;
+		}
+		if (pSwitch->unitcode == CHILD_PRESET)
+		{
+			int domoticzID = (int)pSwitch->id;
+			int nodeId     = domoticzID / 256;
+			int endpointId = domoticzID % 256;
+			// level 0 = None (clear preset), level 10/20/... = preset by index
+			int presetIndex = pSwitch->level / 10 - 1;
+			std::string handle;
+			{
+				std::lock_guard<std::mutex> lock(m_stateMutex);
+				auto nodeIt = m_nodes.find(nodeId);
+				if (nodeIt == m_nodes.end() || nodeIt->second.endpoints.find(endpointId) == nodeIt->second.endpoints.end())
+				{
+					Log(LOG_STATUS, "WriteToHardware: node %d endpoint %d not found", nodeId, endpointId);
+					return false;
+				}
+				const auto& ep = nodeIt->second.endpoints.at(endpointId);
+				if (presetIndex < -1 || presetIndex >= (int)ep.presets.size())
+				{
+					Log(LOG_STATUS, "WriteToHardware: preset index %d out of range (have %d presets)", presetIndex, (int)ep.presets.size());
+					return false;
+				}
+				if (presetIndex >= 0)
+					handle = ep.presets[presetIndex].handle;
+			}
+			Json::Value args;
+			args["node_id"]        = nodeId;
+			args["attribute_path"] = std::to_string(endpointId) + "/" + std::to_string(CLUSTER_THERMOSTAT) + "/" + std::to_string(ATTR_ACTIVE_PRESET_HANDLE);
+			// bytes are encoded as hex strings in the matter.js WebSocket protocol
+			args["value"] = handle.empty() ? Json::Value(Json::nullValue) : Json::Value(handle);
+			SendCommand("write_attribute", args);
+			return true;
+		}
+		return false;
+	}
 
 	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
 		return false;

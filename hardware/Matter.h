@@ -49,6 +49,18 @@ private:
 		float  flow_lpm   = 0;   bool hasFlow      = false;
 		bool   locked     = false; bool hasLock     = false;
 		double blind_pct  = 0;   bool hasBlind     = false;
+		int    systemMode    = 0; bool hasSystemMode    = false;
+		int    ctrlSeqOp     = 0; bool hasCtrlSeqOp     = false;
+		// Thermostat absolute setpoint limits (°C)
+		float  minHeatSetpoint_C = 5.0f;
+		float  maxHeatSetpoint_C = 30.0f;
+		float  minCoolSetpoint_C = 16.0f;
+		float  maxCoolSetpoint_C = 32.0f;
+		// Thermostat presets (Matter 1.3 PRES feature)
+		struct PresetEntry { std::string handle; int scenario; std::string name; };
+		std::vector<PresetEntry> presets;
+		std::string activePresetHandle; // hex string, empty = no active preset
+		bool hasPresets = false;
 		int    battery_pct = 255;
 	};
 
