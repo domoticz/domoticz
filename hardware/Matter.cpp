@@ -867,6 +867,36 @@ void CMatter::_DetectAndSendNode(int nodeId)
 		_DetectAndSend(nodeId, kv.first);
 }
 
+// If wasNew, updates the device's SwitchType in the DB (called after device creation).
+// Centralises the snprintf + UPDATE so both SendGeneralSwitchInt and the color-switch
+// path share identical formatting and SQL.
+void CMatter::_ApplySwitchTypeOnCreate(int domoticzID, int unit, bool wasNew, _eSwitchType switchType)
+{
+	if (!wasNew || switchType == STYPE_OnOff)
+		return;
+	char szDevID[16];
+	snprintf(szDevID, sizeof(szDevID), "%08X", (unsigned int)domoticzID);
+	m_sql.safe_query(
+		"UPDATE DeviceStatus SET SwitchType=%d "
+		"WHERE HardwareID=%d AND DeviceID='%q' AND Unit=%d",
+		(int)switchType, m_HwdID, szDevID, unit);
+}
+
+// Calls SendGeneralSwitch and, on first creation only, sets the correct SwitchType.
+// Avoids touching the DB on every subsequent update cycle.
+void CMatter::SendGeneralSwitchInt(int domoticzID, int unit, int battery, int value, int level,
+                                   const std::string& label, _eSwitchType switchType)
+{
+	char szDevID[16];
+	snprintf(szDevID, sizeof(szDevID), "%08X", (unsigned int)domoticzID);
+	bool isNew = m_sql.safe_query(
+		"SELECT ID FROM DeviceStatus WHERE HardwareID=%d AND DeviceID='%q' AND Unit=%d",
+		m_HwdID, szDevID, unit).empty();
+
+	SendGeneralSwitch(domoticzID, unit, battery, value, level, label, "");
+	_ApplySwitchTypeOnCreate(domoticzID, unit, isNew, switchType);
+}
+
 // Must be called with m_stateMutex already held.
 // Sends only non-environmental (non-temp/hum/baro) sensors for one endpoint.
 // Environmental sensors are aggregated and sent at the node level by _DetectAndSendNode.
@@ -893,12 +923,18 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 		SendLuxSensor((uint8_t)nodeId, (uint8_t)endpointId, (uint8_t)battery, state.lux, state.label);
 
 	if (state.hasOccupancy)
-		SendGeneralSwitch(domoticzID, CHILD_OCCUPANCY, battery, state.occupied ? 1 : 0, 0, state.label, "");
+		SendGeneralSwitchInt(domoticzID, CHILD_OCCUPANCY, battery, state.occupied ? 1 : 0, 0, state.label, STYPE_Motion);
 
 	if (state.hasOnOff)
 	{
 		if (state.hasColorControl)
 		{
+			char szDevID[16];
+			snprintf(szDevID, sizeof(szDevID), "%08X", (unsigned int)domoticzID);
+			bool isNewColorSwitch = m_sql.safe_query(
+				"SELECT ID FROM DeviceStatus WHERE HardwareID=%d AND DeviceID='%q' AND Unit=%d",
+				m_HwdID, szDevID, CHILD_ONOFF).empty();
+
 			// Use ColorCapabilities bitmap (attr 0x400A) to determine true RGB support.
 			// HS bit (0x0001) = device supports hue/saturation; XY alone is insufficient.
 			bool supportsHS   = (state.colorCapabilities >= 0) && ((state.colorCapabilities & 0x0001) != 0);
@@ -927,8 +963,8 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 			{
 				lcmd.command = Color_SetColor;
 				lcmd.value   = state.hasLevel
-					? (uint32_t)std::round(state.level_pct * 255.0 / 100.0)
-					: 255U;
+					? (uint32_t)std::round(state.level_pct)
+					: 100U;
 
 				int effMode = (state.colorMode >= 0) ? state.colorMode
 				                                     : (state.hasColorHS ? 0 : (state.hasColorTemp ? 2 : 1));
@@ -958,15 +994,16 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 
 			m_mainworker.PushAndWaitRxMessage(this, (const uint8_t*)&lcmd,
 				state.label.c_str(), battery, m_Name.c_str());
+			_ApplySwitchTypeOnCreate(domoticzID, CHILD_ONOFF, isNewColorSwitch, STYPE_Dimmer);
 		}
 		else if (state.hasLevel)
-			SendGeneralSwitch(domoticzID, CHILD_ONOFF, battery, state.onOff ? 1 : 0, (uint8_t)ground(state.level_pct), state.label, "");
+			SendGeneralSwitchInt(domoticzID, CHILD_ONOFF, battery, state.onOff ? 1 : 0, (uint8_t)ground(state.level_pct), state.label, STYPE_Dimmer);
 		else
-			SendGeneralSwitch(domoticzID, CHILD_ONOFF, battery, state.onOff ? 1 : 0, 0, state.label, "");
+			SendGeneralSwitchInt(domoticzID, CHILD_ONOFF, battery, state.onOff ? 1 : 0, 0, state.label, STYPE_OnOff);
 	}
 
 	if (state.hasContact)
-		SendGeneralSwitch(domoticzID, CHILD_CONTACT, battery, state.contact ? 1 : 0, 0, state.label, "");
+		SendGeneralSwitchInt(domoticzID, CHILD_CONTACT, battery, state.contact ? 1 : 0, 0, state.label, STYPE_DoorContact);
 
 	if (state.hasCO2)
 		SendAirQualitySensor((uint8_t)nodeId, (uint8_t)endpointId, battery, state.co2_ppm, state.label);
@@ -987,7 +1024,7 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 		SendWaterflowSensor(domoticzID, CHILD_FLOW, battery, state.flow_lpm, state.label);
 
 	if (state.hasLock)
-		SendGeneralSwitch(domoticzID, CHILD_LOCK, battery, state.locked ? 1 : 0, 0, state.label, "");
+		SendGeneralSwitchInt(domoticzID, CHILD_LOCK, battery, state.locked ? 1 : 0, 0, state.label, STYPE_DoorLock);
 
 	if (state.hasBlind)
 		SendPercentageSensor(domoticzID, CHILD_BLIND, battery, (float)state.blind_pct, state.label);
@@ -1049,7 +1086,7 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 		SendCustomSensor(domoticzID, CHILD_FREQ, battery, static_cast<float>(state.frequency_Hz), state.label + " Frequency", "Hz");
 
 	if (state.hasSwitch)
-		SendGeneralSwitch(domoticzID, CHILD_SWITCH, battery, state.switch_on ? 1 : 0, 0, state.label, "");
+		SendGeneralSwitchInt(domoticzID, CHILD_SWITCH, battery, state.switch_on ? 1 : 0, 0, state.label, STYPE_PushOn);
 }
 
 std::string CMatter::ExtractLabel(const Json::Value& attrs, int nodeId, int endpointId) const
@@ -1210,9 +1247,9 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 			SendCommand("device_command", args);
 		};
 
-		auto sendLevel = [&](uint32_t brightness255) {
+		auto sendLevel = [&](uint32_t level100) {
 			int range        = std::max(1, levelMax - levelMin);
-			int matter_level = levelMin + (int)std::round((double)brightness255 * range / 255.0);
+			int matter_level = levelMin + (int)std::round((double)level100 * range / 100.0);
 			matter_level     = std::max(levelMin, std::min(levelMax, matter_level));
 			Json::Value args;
 			args["node_id"]      = nodeId;

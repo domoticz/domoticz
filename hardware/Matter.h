@@ -110,6 +110,9 @@ private:
 	void HandleAttributeUpdate(const Json::Value& data);
 	void _DetectAndSend(int nodeId, int endpointId);
 	void _DetectAndSendNode(int nodeId);
+	void SendGeneralSwitchInt(int domoticzID, int unit, int battery, int value, int level,
+	                          const std::string& label, _eSwitchType switchType);
+	void _ApplySwitchTypeOnCreate(int domoticzID, int unit, bool wasNew, _eSwitchType switchType);
 	void ApplyAttributeToState(int cluster_id, int attr_id, const Json::Value& v, EndpointState& state);
 	void ApplyNodeMetadata(int cluster_id, int attr_id, const Json::Value& v, NodeState& node);
 	std::string ExtractLabel(const Json::Value& endpointAttrs, int nodeId, int endpointId) const;
