@@ -15,7 +15,7 @@
 #include <fstream>
 
 #ifdef _DEBUG
-	//#define DEBUG_CMATTER_WRITE
+	#define DEBUG_CMATTER_WRITE
 #endif
 
 #ifdef DEBUG_CMATTER_WRITE
@@ -91,6 +91,8 @@ static constexpr int ATTR_VOLTAGE                      = 4;     // 0x0004 Electr
 static constexpr int ATTR_ACTIVE_CURRENT               = 5;     // 0x0005 ElectricalPowerMeasurement (mA)
 static constexpr int ATTR_ACTIVE_POWER                 = 8;     // 0x0008 ElectricalPowerMeasurement (mW)
 static constexpr int ATTR_ACTIVE_FREQUENCY			   = 14;    // 0x000E ElectricalPowerFrequency (Hz)
+static constexpr int ATTR_COLOR_CONTROL_HUE          = 0;     // 0x0000 ColorControl CurrentHue (0-254 = 0-360°)
+static constexpr int ATTR_COLOR_CONTROL_SAT          = 1;     // 0x0001 ColorControl CurrentSaturation (0-254 = 0-100%)
 static constexpr int ATTR_COLOR_CURRENT_X            = 3;     // 0x0003 ColorControl CurrentX (* 65536)
 static constexpr int ATTR_COLOR_CURRENT_Y            = 4;     // 0x0004 ColorControl CurrentY (* 65536)
 static constexpr int ATTR_COLOR_TEMP_MIREDS          = 7;     // 0x0007 ColorControl ColorTemperatureMireds
@@ -726,7 +728,19 @@ void CMatter::ApplyAttributeToState(int cluster_id, int attr_id, const Json::Val
 			}
 			break;
 		case CLUSTER_COLOR_CONTROL:
-			if (attr_id == ATTR_COLOR_CURRENT_X && v.isIntegral())
+			if (attr_id == ATTR_COLOR_CONTROL_HUE && v.isIntegral())
+			{
+				state.colorHue        = v.asInt();
+				state.hasColorHS      = true;
+				state.hasColorControl = true;
+			}
+			else if (attr_id == ATTR_COLOR_CONTROL_SAT && v.isIntegral())
+			{
+				state.colorSaturation = v.asInt();
+				state.hasColorHS      = true;
+				state.hasColorControl = true;
+			}
+			else if (attr_id == ATTR_COLOR_CURRENT_X && v.isIntegral())
 			{
 				state.colorX         = v.asInt() / 65536.0f;
 				state.hasColorXY     = true;
@@ -916,8 +930,16 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 					? (uint32_t)std::round(state.level_pct * 255.0 / 100.0)
 					: 255U;
 
-				int effMode = (state.colorMode >= 0) ? state.colorMode : (state.hasColorTemp ? 2 : 1);
-				if (effMode == 1 && state.hasColorXY)
+				int effMode = (state.colorMode >= 0) ? state.colorMode
+				                                     : (state.hasColorHS ? 0 : (state.hasColorTemp ? 2 : 1));
+				if (effMode == 0 && state.hasColorHS)
+				{
+					// Matter HS: hue 0-254 = 0-360°, saturation 0-254 = 0-100%
+					int r = 0, g = 0, b = 0;
+					hsb2rgb(state.colorHue * 360.0f / 254.0f, state.colorSaturation / 254.0f, 1.0f, r, g, b, 255.0);
+					lcmd.color = _tColor((uint8_t)r, (uint8_t)g, (uint8_t)b, 0, 0, ColorModeRGB);
+				}
+				else if (effMode == 1 && state.hasColorXY)
 				{
 					uint8_t r = 0, g = 0, b = 0;
 					_tColor::RgbFromXY(state.colorX, state.colorY, r, g, b);
@@ -926,9 +948,9 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 				else if (state.hasColorTemp)
 				{
 					int mrange = std::max(1, state.colorTempMaxMireds - state.colorTempMinMireds);
-					uint8_t t  = (uint8_t)std::max(0.0f, std::min(255.0f,
+					uint8_t ct = (uint8_t)std::max(0.0f, std::min(255.0f,
 						(state.colorTempMireds - state.colorTempMinMireds) * 255.0f / mrange));
-					lcmd.color = _tColor(t, ColorModeTemp);
+					lcmd.color = _tColor(ct, ColorModeTemp);
 				}
 				else
 					lcmd.color = _tColor(255, ColorModeWhite);
@@ -1161,6 +1183,7 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 		int endpointId = domoticzID % 256;
 
 		int levelMin = 1, levelMax = 254, colorTempMin = 153, colorTempMax = 500;
+		bool supportsHS = false;
 		{
 			std::lock_guard<std::mutex> lock(m_stateMutex);
 			auto nodeIt = m_nodes.find(nodeId);
@@ -1174,6 +1197,7 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 			levelMax     = ep.levelMaxLevel;
 			colorTempMin = ep.colorTempMinMireds;
 			colorTempMax = ep.colorTempMaxMireds;
+			supportsHS   = (ep.colorCapabilities >= 0) && ((ep.colorCapabilities & 0x0001) != 0);
 		}
 
 		auto sendOnOff = [&](const std::string& cmd) {
@@ -1237,29 +1261,54 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 			}
 			else if (pColor->color.mode == ColorModeRGB || pColor->color.mode == ColorModeCustom)
 			{
-				double x = 0, y = 0, Y = 0;
-				_tColor::XYFromRGB(pColor->color.r, pColor->color.g, pColor->color.b, x, y, Y);
-				if (std::isnan(x) || std::isinf(x) || std::isnan(y) || std::isinf(y))
+				if (supportsHS)
 				{
-					Log(LOG_ERROR, "Matter: XY color conversion produced invalid values (r=%d g=%d b=%d)",
-					    pColor->color.r, pColor->color.g, pColor->color.b);
-					return false;
+					// Prefer move_to_hue_and_saturation on devices that support it (HS bit in ColorCapabilities)
+					float hsbvals[3] = {0, 0, 0};
+					rgb2hsb(pColor->color.r, pColor->color.g, pColor->color.b, hsbvals);
+					// hsbvals[0]=hue 0-1, hsbvals[1]=saturation 0-1; Matter range is 0-254
+					int hue = std::max(0, std::min(254, (int)std::round(hsbvals[0] * 254.0f)));
+					int sat = std::max(0, std::min(254, (int)std::round(hsbvals[1] * 254.0f)));
+					Json::Value args;
+					args["node_id"]      = nodeId;
+					args["endpoint_id"]  = endpointId;
+					args["cluster_id"]   = CLUSTER_COLOR_CONTROL;
+					args["command_name"] = "move_to_hue_and_saturation";
+					Json::Value payload;
+					payload["hue"]             = hue;
+					payload["saturation"]      = sat;
+					payload["transitionTime"]  = 0;
+					payload["optionsMask"]     = 1;
+					payload["optionsOverride"] = 1;
+					args["payload"] = payload;
+					SendCommand("device_command", args);
 				}
-				int cx = std::max(0, std::min(65535, (int)std::round(x * 65536)));
-				int cy = std::max(0, std::min(65535, (int)std::round(y * 65536)));
-				Json::Value args;
-				args["node_id"]      = nodeId;
-				args["endpoint_id"]  = endpointId;
-				args["cluster_id"]   = CLUSTER_COLOR_CONTROL;
-				args["command_name"] = "move_to_color";
-				Json::Value payload;
-				payload["colorX"]          = cx;
-				payload["colorY"]          = cy;
-				payload["transitionTime"]  = 0;
-				payload["optionsMask"]     = 1;
-				payload["optionsOverride"] = 1;
-				args["payload"] = payload;
-				SendCommand("device_command", args);
+				else
+				{
+					double x = 0, y = 0, Y = 0;
+					_tColor::XYFromRGB(pColor->color.r, pColor->color.g, pColor->color.b, x, y, Y);
+					if (std::isnan(x) || std::isinf(x) || std::isnan(y) || std::isinf(y))
+					{
+						Log(LOG_ERROR, "Matter: XY color conversion produced invalid values (r=%d g=%d b=%d)",
+						    pColor->color.r, pColor->color.g, pColor->color.b);
+						return false;
+					}
+					int cx = std::max(0, std::min(65535, (int)std::round(x * 65536)));
+					int cy = std::max(0, std::min(65535, (int)std::round(y * 65536)));
+					Json::Value args;
+					args["node_id"]      = nodeId;
+					args["endpoint_id"]  = endpointId;
+					args["cluster_id"]   = CLUSTER_COLOR_CONTROL;
+					args["command_name"] = "move_to_color";
+					Json::Value payload;
+					payload["colorX"]          = cx;
+					payload["colorY"]          = cy;
+					payload["transitionTime"]  = 0;
+					payload["optionsMask"]     = 1;
+					payload["optionsOverride"] = 1;
+					args["payload"] = payload;
+					SendCommand("device_command", args);
+				}
 			}
 			return true;
 		}

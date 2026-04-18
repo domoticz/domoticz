@@ -66,11 +66,14 @@ private:
 		bool hasPresets = false;
 		// ColorControl cluster (0x0300)
 		int    colorMode          = -1;   // attr 8: ColorModeEnum (0=HS,1=XY,2=Temp; -1=unknown)
+		int    colorHue           = 0;    // attr 0: CurrentHue (0-254 = 0-360°)
+		int    colorSaturation    = 0;    // attr 1: CurrentSaturation (0-254 = 0-100%)
 		float  colorX             = 0;    // attr 3: CurrentX / 65536
 		float  colorY             = 0;    // attr 4: CurrentY / 65536
 		int    colorTempMireds    = 370;  // attr 7: ColorTemperatureMireds
 		int    colorTempMinMireds = 153;  // attr 0x400B: ColorTempPhysicalMinMireds
 		int    colorTempMaxMireds = 500;  // attr 0x400C: ColorTempPhysicalMaxMireds
+		bool   hasColorHS         = false;
 		bool   hasColorXY         = false;
 		bool   hasColorTemp       = false;
 		bool   hasColorControl    = false;
