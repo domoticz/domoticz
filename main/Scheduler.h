@@ -50,6 +50,7 @@ public:
   void StopScheduler();
 
   void ReloadSchedules();
+  void HandleTimerPlanSwitch();
 
   void SetSunRiseSetTimes(const std::string &sSunRise, const std::string &sSunSet, const std::string &sSunAtSouth, const std::string &sCivTwStart, const std::string &sCivTwEnd,
 			   const std::string &sNautTwStart, const std::string &sNauTtwEnd, const std::string &sAstTwStart, const std::string &sAstTwEnd);
@@ -80,5 +81,8 @@ private:
 	//will check if anything needs to be scheduled
 	void CheckSchedules();
 	void DeleteExpiredTimers();
+	time_t GetTimerFireTimeToday(const tScheduleItem& item) const;
+	bool   IsTodayValidForItem(const tScheduleItem& item, const struct tm& ltime) const;
+	void   ExecuteTimerItem(const tScheduleItem& item);
 };
 

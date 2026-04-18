@@ -3901,6 +3901,7 @@ namespace http
 					m_sql.UpdatePreferencesVar("ActiveTimerPlan", rnvalue);
 					m_sql.m_ActiveTimerPlan = rnvalue;
 					m_mainworker.m_scheduler.ReloadSchedules();
+					m_mainworker.m_scheduler.HandleTimerPlanSwitch();
 				}
 				cntSettings++;
 

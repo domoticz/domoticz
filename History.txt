@@ -33,6 +33,7 @@ Version 2026.xxxx
 - Added: P1 energy report, custom contract-year date range view with per-period breakdown and forecast for remaining months
 - Added: Theme system, CSS variable-based theming using --dz-* custom properties; theme authors can now override colours with a single :root block in dark.css instead of complex selector chains (see doc/Theming.wiki)
 - Added: Rain report, total rainfall summary row in year and month report tables
+- Added: Scheduler, switching to a timer plan now immediately applies the most recently elapsed timer in the new plan to each device; lights, switches, blinds, dimmers, and thermostat setpoints snap to the correct state at the moment of the plan switch
 - Added: Text/Alert sensors, HTML <div> elements are now allowed in widget display
 - Added: PhilipsHue, automatic bridge version detection (V2 HTTPS/443, V1 HTTPS/443, V1 HTTP/80); port no longer needs manual configuration
 - Added: PhilipsHue V2, real-time sensor updates via Server-Sent Events (SSE); instant state changes without waiting for the next poll cycle
