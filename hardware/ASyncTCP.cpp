@@ -230,11 +230,12 @@ void ASyncTCP::disconnect(const bool silent)
 {
 	m_ReconnectTimer.cancel();
 	m_TimeoutTimer.cancel();
+	m_bIsConnected = false;
 	if (!m_Tcpthread) return;
 
 	try
 	{
-		boost::asio::post(m_io_context, 
+		boost::asio::post(m_io_context,
 			[this] {
 				do_close();
 			}
