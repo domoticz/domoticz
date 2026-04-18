@@ -911,8 +911,13 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 	if (epIt == nodeIt->second.endpoints.end())
 		return;
 	const auto& state = epIt->second;
-	int battery = state.battery_pct;
 	int domoticzID = nodeId * 256 + endpointId;
+
+	// Battery level from any endpoint on this node (PowerSource cluster
+	// typically lives on endpoint 0, not on the sensor endpoint).
+	int battery = 255;
+	for (const auto& kv : nodeIt->second.endpoints)
+		if (kv.second.battery_pct < battery) battery = kv.second.battery_pct;
 
 	if (state.hasPower && !state.hasEnergy)
 		SendWattMeter(domoticzID, endpointId, battery, static_cast<float>(state.power_W), state.label);
