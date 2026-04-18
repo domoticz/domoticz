@@ -39,6 +39,8 @@ private:
 		int  frequency_Hz = 0;   bool hasFrequency = false;
 		bool   onOff      = false; bool hasOnOff    = false;
 		double level_pct  = 0;   bool hasLevel     = false;
+		int    levelMinLevel = 1;   // CLUSTER_LEVEL_CONTROL attr 2
+		int    levelMaxLevel = 254; // CLUSTER_LEVEL_CONTROL attr 3
 		bool   occupied   = false; bool hasOccupancy = false;
 		bool   contact    = false; bool hasContact   = false;
 		int    co2_ppm    = 0;   bool hasCO2       = false;
@@ -49,6 +51,7 @@ private:
 		float  flow_lpm   = 0;   bool hasFlow      = false;
 		bool   locked     = false; bool hasLock     = false;
 		double blind_pct  = 0;   bool hasBlind     = false;
+		bool   switch_on  = false; bool hasSwitch  = false;
 		int    systemMode    = 0; bool hasSystemMode    = false;
 		int    ctrlSeqOp     = 0; bool hasCtrlSeqOp     = false;
 		// Thermostat absolute setpoint limits (°C)
@@ -61,6 +64,17 @@ private:
 		std::vector<PresetEntry> presets;
 		std::string activePresetHandle; // hex string, empty = no active preset
 		bool hasPresets = false;
+		// ColorControl cluster (0x0300)
+		int    colorMode          = -1;   // attr 8: ColorModeEnum (0=HS,1=XY,2=Temp; -1=unknown)
+		float  colorX             = 0;    // attr 3: CurrentX / 65536
+		float  colorY             = 0;    // attr 4: CurrentY / 65536
+		int    colorTempMireds    = 370;  // attr 7: ColorTemperatureMireds
+		int    colorTempMinMireds = 153;  // attr 0x400B: ColorTempPhysicalMinMireds
+		int    colorTempMaxMireds = 500;  // attr 0x400C: ColorTempPhysicalMaxMireds
+		bool   hasColorXY         = false;
+		bool   hasColorTemp       = false;
+		bool   hasColorControl    = false;
+		int    colorCapabilities  = -1;   // attr 0x400A; -1 = not yet received
 		int    battery_pct = 255;
 	};
 
@@ -76,6 +90,7 @@ private:
 		float batteryVoltage_V = 0; bool hasBatteryVoltage = false;
 		uint8_t threadChannel = 0;  bool hasThreadChannel = false;
 		std::string threadNetworkName;
+		bool available = true;
 		std::map<int, EndpointState> endpoints; // endpointId -> state
 	};
 

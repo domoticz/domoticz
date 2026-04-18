@@ -6,6 +6,7 @@
 #include "../main/SQLHelper.h"
 #include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
+#include "ColorSwitch.h"
 #include <json/json.h>
 #include <algorithm>
 #include <cmath>
@@ -57,6 +58,8 @@ static constexpr int CLUSTER_CO2_CONCENTRATION         = 1037;  // 0x040D
 static constexpr int CLUSTER_NO2_CONCENTRATION         = 1043;  // 0x0413
 static constexpr int CLUSTER_PM25_CONCENTRATION        = 1066;  // 0x042A
 static constexpr int CLUSTER_PM10_CONCENTRATION        = 1069;  // 0x042D
+static constexpr int CLUSTER_GENERIC_SWITCH              = 59;    // 0x003B GenericSwitch (button/latch)
+static constexpr int CLUSTER_COLOR_CONTROL               = 768;   // 0x0300 ColorControl
 static constexpr int CLUSTER_ELECTRICAL_POWER_MEAS      = 144;   // 0x0090 ElectricalPowerMeasurement (Matter 1.3+)
 static constexpr int CLUSTER_ELECTRICAL_ENERGY_MEAS     = 145;   // 0x0091 ElectricalEnergyMeasurement (Matter 1.3+)
 
@@ -68,6 +71,9 @@ static constexpr int ATTR_OCCUPANCY                    = 0;
 static constexpr int ATTR_STATE_VALUE                  = 0;     // BooleanState
 static constexpr int ATTR_LOCK_STATE                   = 0;     // DoorLock (0=not_fully_locked, 1=locked, 2=unlocked)
 static constexpr int ATTR_LOCAL_TEMPERATURE            = 0;     // Thermostat (0.01 °C)
+
+static constexpr int ATTR_SWITCH_CURRENT_POSITION	   = 1;
+
 static constexpr int ATTR_OCCUPIED_HEATING_SETPOINT    = 18;    // 0x0011 Thermostat (0.01 °C, writable)
 static constexpr int ATTR_ABS_MIN_HEAT_SETPOINT        = 3;     // 0x0003 Thermostat
 static constexpr int ATTR_ABS_MAX_HEAT_SETPOINT        = 4;     // 0x0004 Thermostat
@@ -85,6 +91,13 @@ static constexpr int ATTR_VOLTAGE                      = 4;     // 0x0004 Electr
 static constexpr int ATTR_ACTIVE_CURRENT               = 5;     // 0x0005 ElectricalPowerMeasurement (mA)
 static constexpr int ATTR_ACTIVE_POWER                 = 8;     // 0x0008 ElectricalPowerMeasurement (mW)
 static constexpr int ATTR_ACTIVE_FREQUENCY			   = 14;    // 0x000E ElectricalPowerFrequency (Hz)
+static constexpr int ATTR_COLOR_CURRENT_X            = 3;     // 0x0003 ColorControl CurrentX (* 65536)
+static constexpr int ATTR_COLOR_CURRENT_Y            = 4;     // 0x0004 ColorControl CurrentY (* 65536)
+static constexpr int ATTR_COLOR_TEMP_MIREDS          = 7;     // 0x0007 ColorControl ColorTemperatureMireds
+static constexpr int ATTR_COLOR_MODE                 = 8;     // 0x0008 ColorControl ColorModeEnum
+static constexpr int ATTR_COLOR_TEMP_PHYS_MIN        = 16395; // 0x400B ColorControl ColorTempPhysicalMinMireds
+static constexpr int ATTR_COLOR_TEMP_PHYS_MAX        = 16396; // 0x400C ColorControl ColorTempPhysicalMaxMireds
+static constexpr int ATTR_COLOR_CAPABILITIES         = 16394; // 0x400A ColorControl ColorCapabilitiesBitmap
 
 // ChildID slot offsets — unique sensor type identifiers within a domoticzID.
 // domoticzID already encodes the endpoint (nodeId * 256 + endpointId), so no
@@ -103,6 +116,8 @@ static constexpr int CHILD_NO2          = 11;
 static constexpr int CHILD_SYSTEM_MODE  = 12;
 static constexpr int CHILD_PRESET       = 13;
 static constexpr int CHILD_CTRL_SEQ     = 14;
+static constexpr int CHILD_SWITCH       = 15;
+static constexpr int CHILD_FREQ         = 16;
 
 // Non-contiguous SystemModeEnum values in selector-level order (level = index * 10)
 static constexpr int SYSTEM_MODE_VALUES[]    = {0, 1, 3, 4, 5, 6, 7, 8, 9};
@@ -382,6 +397,10 @@ void CMatter::HandleNode(const Json::Value& nodeData)
 	std::lock_guard<std::mutex> lock(m_stateMutex);
 	auto& node = m_nodes[node_id];
 	node.nodeId = node_id;
+	if (nodeData.isMember("available") && nodeData["available"].isBool())
+		node.available = nodeData["available"].asBool();
+	else
+		node.available = true;
 
 	for (int endpoint_id : endpointIds)
 		node.endpoints[endpoint_id].label = ExtractLabel(attrs, node_id, endpoint_id);
@@ -507,10 +526,15 @@ void CMatter::ApplyAttributeToState(int cluster_id, int attr_id, const Json::Val
 		case CLUSTER_LEVEL_CONTROL:
 			if (attr_id == ATTR_CURRENT_LEVEL)
 			{
-				int raw = std::max(0, std::min(254, v.asInt()));
-				state.level_pct = raw * 100.0 / 254.0;
+				int raw   = std::max(0, std::min(254, v.asInt()));
+				int range = std::max(1, state.levelMaxLevel - state.levelMinLevel);
+				state.level_pct = std::max(0.0, std::min(100.0, (raw - state.levelMinLevel) * 100.0 / range));
 				state.hasLevel  = true;
 			}
+			else if (attr_id == 2) // MinLevel
+				state.levelMinLevel = std::max(0, v.asInt());
+			else if (attr_id == 3) // MaxLevel
+				state.levelMaxLevel = std::min(254, v.asInt());
 			break;
 		case CLUSTER_ILLUMINANCE_MEASUREMENT:
 			if (attr_id == ATTR_MEASURED_VALUE)
@@ -545,6 +569,13 @@ void CMatter::ApplyAttributeToState(int cluster_id, int attr_id, const Json::Val
 			{
 				state.occupied     = (v.asInt() & 1) != 0;
 				state.hasOccupancy = true;
+			}
+			break;
+		case CLUSTER_GENERIC_SWITCH:
+			if (attr_id == ATTR_SWITCH_CURRENT_POSITION) // 0=released, ≥1=pressed/latched
+			{
+				state.switch_on = (v.asInt() != 0);
+				state.hasSwitch = true;
 			}
 			break;
 		case CLUSTER_BOOLEAN_STATE:
@@ -694,6 +725,37 @@ void CMatter::ApplyAttributeToState(int cluster_id, int attr_id, const Json::Val
 				state.hasEnergy  = true;
 			}
 			break;
+		case CLUSTER_COLOR_CONTROL:
+			if (attr_id == ATTR_COLOR_CURRENT_X && v.isIntegral())
+			{
+				state.colorX         = v.asInt() / 65536.0f;
+				state.hasColorXY     = true;
+				state.hasColorControl = true;
+			}
+			else if (attr_id == ATTR_COLOR_CURRENT_Y && v.isIntegral())
+			{
+				state.colorY         = v.asInt() / 65536.0f;
+				state.hasColorXY     = true;
+				state.hasColorControl = true;
+			}
+			else if (attr_id == ATTR_COLOR_TEMP_MIREDS && v.isIntegral())
+			{
+				state.colorTempMireds  = v.asInt();
+				state.hasColorTemp     = true;
+				state.hasColorControl  = true;
+			}
+			else if (attr_id == ATTR_COLOR_MODE && v.isIntegral())
+			{
+				state.colorMode        = v.asInt();
+				state.hasColorControl  = true;
+			}
+			else if (attr_id == ATTR_COLOR_TEMP_PHYS_MIN && v.isIntegral() && v.asInt() > 0)
+				state.colorTempMinMireds = v.asInt();
+			else if (attr_id == ATTR_COLOR_TEMP_PHYS_MAX && v.isIntegral() && v.asInt() > 0)
+				state.colorTempMaxMireds = v.asInt();
+			else if (attr_id == ATTR_COLOR_CAPABILITIES && v.isIntegral())
+				state.colorCapabilities = v.asInt();
+			break;
 		default:
 			break;
 	}
@@ -735,6 +797,12 @@ void CMatter::_DetectAndSendNode(int nodeId)
 	if (nodeIt == m_nodes.end())
 		return;
 	const auto& node = nodeIt->second;
+
+	if (!node.available)
+	{
+		Log(LOG_DEBUG_INT, "Node %d is unavailable – skipping device update", nodeId);
+		return;
+	}
 
 	// Aggregate environmental sensor readings across all endpoints of this node.
 	float setpoint_C = 0;  bool hasSetpoint = false;
@@ -811,15 +879,72 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 		SendLuxSensor((uint8_t)nodeId, (uint8_t)endpointId, (uint8_t)battery, state.lux, state.label);
 
 	if (state.hasOccupancy)
-		SendSwitch(domoticzID, CHILD_OCCUPANCY, battery, state.occupied, 0, state.label, "");
+		SendGeneralSwitch(domoticzID, CHILD_OCCUPANCY, battery, state.occupied ? 1 : 0, 0, state.label, "");
 
-	if (state.hasOnOff && state.hasLevel)
-		SendSwitch(domoticzID, CHILD_ONOFF, battery, state.onOff, state.level_pct, state.label, "");
-	else if (state.hasOnOff)
-		SendSwitch(domoticzID, CHILD_ONOFF, battery, state.onOff, 0, state.label, "");
+	if (state.hasOnOff)
+	{
+		if (state.hasColorControl)
+		{
+			// Use ColorCapabilities bitmap (attr 0x400A) to determine true RGB support.
+			// HS bit (0x0001) = device supports hue/saturation; XY alone is insufficient.
+			bool supportsHS   = (state.colorCapabilities >= 0) && ((state.colorCapabilities & 0x0001) != 0);
+			bool supportsTemp = (state.colorCapabilities >= 0)
+			                    ? ((state.colorCapabilities & 0x0010) != 0)
+			                    : state.hasColorTemp;
+			uint8_t subtype;
+			if (supportsHS && supportsTemp)
+				subtype = sTypeColor_RGB_CW_WW_Z;
+			else if (supportsHS)
+				subtype = sTypeColor_RGB_CW_WW;
+			else
+				subtype = sTypeColor_CW_WW; // ColorTemp-only or XY-without-HS
+
+			_tColorSwitch lcmd;
+			lcmd.id      = (uint32_t)domoticzID;
+			lcmd.dunit   = CHILD_ONOFF;
+			lcmd.subtype = subtype;
+
+			if (!state.onOff)
+			{
+				lcmd.command = Color_LedOff;
+				lcmd.value   = 0;
+			}
+			else
+			{
+				lcmd.command = Color_SetColor;
+				lcmd.value   = state.hasLevel
+					? (uint32_t)std::round(state.level_pct * 255.0 / 100.0)
+					: 255U;
+
+				int effMode = (state.colorMode >= 0) ? state.colorMode : (state.hasColorTemp ? 2 : 1);
+				if (effMode == 1 && state.hasColorXY)
+				{
+					uint8_t r = 0, g = 0, b = 0;
+					_tColor::RgbFromXY(state.colorX, state.colorY, r, g, b);
+					lcmd.color = _tColor(r, g, b, 0, 0, ColorModeRGB);
+				}
+				else if (state.hasColorTemp)
+				{
+					int mrange = std::max(1, state.colorTempMaxMireds - state.colorTempMinMireds);
+					uint8_t t  = (uint8_t)std::max(0.0f, std::min(255.0f,
+						(state.colorTempMireds - state.colorTempMinMireds) * 255.0f / mrange));
+					lcmd.color = _tColor(t, ColorModeTemp);
+				}
+				else
+					lcmd.color = _tColor(255, ColorModeWhite);
+			}
+
+			m_mainworker.PushAndWaitRxMessage(this, (const uint8_t*)&lcmd,
+				state.label.c_str(), battery, m_Name.c_str());
+		}
+		else if (state.hasLevel)
+			SendGeneralSwitch(domoticzID, CHILD_ONOFF, battery, state.onOff ? 1 : 0, (uint8_t)ground(state.level_pct), state.label, "");
+		else
+			SendGeneralSwitch(domoticzID, CHILD_ONOFF, battery, state.onOff ? 1 : 0, 0, state.label, "");
+	}
 
 	if (state.hasContact)
-		SendSwitch(domoticzID, CHILD_CONTACT, battery, state.contact, 0, state.label, "");
+		SendGeneralSwitch(domoticzID, CHILD_CONTACT, battery, state.contact ? 1 : 0, 0, state.label, "");
 
 	if (state.hasCO2)
 		SendAirQualitySensor((uint8_t)nodeId, (uint8_t)endpointId, battery, state.co2_ppm, state.label);
@@ -840,7 +965,7 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 		SendWaterflowSensor(domoticzID, CHILD_FLOW, battery, state.flow_lpm, state.label);
 
 	if (state.hasLock)
-		SendSwitch(domoticzID, CHILD_LOCK, battery, state.locked, 0, state.label, "");
+		SendGeneralSwitch(domoticzID, CHILD_LOCK, battery, state.locked ? 1 : 0, 0, state.label, "");
 
 	if (state.hasBlind)
 		SendPercentageSensor(domoticzID, CHILD_BLIND, battery, (float)state.blind_pct, state.label);
@@ -897,6 +1022,12 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 
 	if (state.hasCurrent)
 		SendCurrentSensor(domoticzID, battery, state.current_A, 0, 0, state.label);
+
+	if (state.hasFrequency)
+		SendCustomSensor(domoticzID, CHILD_FREQ, battery, static_cast<float>(state.frequency_Hz), state.label + " Frequency", "Hz");
+
+	if (state.hasSwitch)
+		SendGeneralSwitch(domoticzID, CHILD_SWITCH, battery, state.switch_on ? 1 : 0, 0, state.label, "");
 }
 
 std::string CMatter::ExtractLabel(const Json::Value& attrs, int nodeId, int endpointId) const
@@ -1022,6 +1153,119 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 
 	const tRBUF* pCmd = reinterpret_cast<const tRBUF*>(pdata);
 
+	if (pCmd->ICMND.packettype == pTypeColorSwitch)
+	{
+		const _tColorSwitch* pColor = reinterpret_cast<const _tColorSwitch*>(pdata);
+		int domoticzID = (int)pColor->id;
+		int nodeId     = domoticzID / 256;
+		int endpointId = domoticzID % 256;
+
+		int levelMin = 1, levelMax = 254, colorTempMin = 153, colorTempMax = 500;
+		{
+			std::lock_guard<std::mutex> lock(m_stateMutex);
+			auto nodeIt = m_nodes.find(nodeId);
+			if (nodeIt == m_nodes.end() || nodeIt->second.endpoints.find(endpointId) == nodeIt->second.endpoints.end())
+			{
+				Log(LOG_STATUS, "WriteToHardware: node %d endpoint %d not found", nodeId, endpointId);
+				return false;
+			}
+			const auto& ep = nodeIt->second.endpoints.at(endpointId);
+			levelMin     = ep.levelMinLevel;
+			levelMax     = ep.levelMaxLevel;
+			colorTempMin = ep.colorTempMinMireds;
+			colorTempMax = ep.colorTempMaxMireds;
+		}
+
+		auto sendOnOff = [&](const std::string& cmd) {
+			Json::Value args;
+			args["node_id"]      = nodeId;
+			args["endpoint_id"]  = endpointId;
+			args["cluster_id"]   = CLUSTER_ON_OFF;
+			args["command_name"] = cmd;
+			args["payload"]      = Json::Value(Json::objectValue);
+			SendCommand("device_command", args);
+		};
+
+		auto sendLevel = [&](uint32_t brightness255) {
+			int range        = std::max(1, levelMax - levelMin);
+			int matter_level = levelMin + (int)std::round((double)brightness255 * range / 255.0);
+			matter_level     = std::max(levelMin, std::min(levelMax, matter_level));
+			Json::Value args;
+			args["node_id"]      = nodeId;
+			args["endpoint_id"]  = endpointId;
+			args["cluster_id"]   = CLUSTER_LEVEL_CONTROL;
+			args["command_name"] = "move_to_level_with_on_off";
+			Json::Value payload;
+			payload["level"]           = matter_level;
+			payload["optionsMask"]     = 1;
+			payload["optionsOverride"] = 1;
+			payload["transition_time"] = 0;
+			args["payload"] = payload;
+			SendCommand("device_command", args);
+		};
+
+		if (pColor->command == Color_LedOff)   { sendOnOff("off"); return true; }
+		if (pColor->command == Color_LedOn)    { sendOnOff("on");  return true; }
+
+		if (pColor->command == Color_SetBrightnessLevel)
+		{
+			sendLevel(pColor->value);
+			return true;
+		}
+
+		if (pColor->command == Color_SetColor)
+		{
+			sendLevel(pColor->value);
+
+			if (pColor->color.mode == ColorModeTemp)
+			{
+				int mrange = std::max(1, colorTempMax - colorTempMin);
+				int mireds = colorTempMin + (int)std::round((double)pColor->color.t * mrange / 255.0);
+				mireds     = std::max(colorTempMin, std::min(colorTempMax, mireds));
+				Json::Value args;
+				args["node_id"]      = nodeId;
+				args["endpoint_id"]  = endpointId;
+				args["cluster_id"]   = CLUSTER_COLOR_CONTROL;
+				args["command_name"] = "move_to_color_temperature";
+				Json::Value payload;
+				payload["colorTemperatureMireds"] = mireds;
+				payload["transitionTime"]         = 0;
+				payload["optionsMask"]            = 1;
+				payload["optionsOverride"]        = 1;
+				args["payload"] = payload;
+				SendCommand("device_command", args);
+			}
+			else if (pColor->color.mode == ColorModeRGB || pColor->color.mode == ColorModeCustom)
+			{
+				double x = 0, y = 0, Y = 0;
+				_tColor::XYFromRGB(pColor->color.r, pColor->color.g, pColor->color.b, x, y, Y);
+				if (std::isnan(x) || std::isinf(x) || std::isnan(y) || std::isinf(y))
+				{
+					Log(LOG_ERROR, "Matter: XY color conversion produced invalid values (r=%d g=%d b=%d)",
+					    pColor->color.r, pColor->color.g, pColor->color.b);
+					return false;
+				}
+				int cx = std::max(0, std::min(65535, (int)std::round(x * 65536)));
+				int cy = std::max(0, std::min(65535, (int)std::round(y * 65536)));
+				Json::Value args;
+				args["node_id"]      = nodeId;
+				args["endpoint_id"]  = endpointId;
+				args["cluster_id"]   = CLUSTER_COLOR_CONTROL;
+				args["command_name"] = "move_to_color";
+				Json::Value payload;
+				payload["colorX"]          = cx;
+				payload["colorY"]          = cy;
+				payload["transitionTime"]  = 0;
+				payload["optionsMask"]     = 1;
+				payload["optionsOverride"] = 1;
+				args["payload"] = payload;
+				SendCommand("device_command", args);
+			}
+			return true;
+		}
+		return false;
+	}
+
 	// Selector switch — SystemMode
 	if (pCmd->ICMND.packettype == pTypeGeneralSwitch && pCmd->ICMND.subtype == sSwitchTypeSelector)
 	{
@@ -1102,17 +1346,16 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 		return false;
 	}
 
-	if (pCmd->LIGHTING2.packettype != pTypeLighting2)
+	if (pCmd->ICMND.packettype != pTypeGeneralSwitch)
 		return false;
 
-	int domoticzID = (pCmd->LIGHTING2.id1 << 24)
-			| (pCmd->LIGHTING2.id2 << 16)
-			| (pCmd->LIGHTING2.id3 << 8)
-			|  pCmd->LIGHTING2.id4;
+	const _tGeneralSwitch* pSwitch = reinterpret_cast<const _tGeneralSwitch*>(pdata);
+	int domoticzID = (int)pSwitch->id;
 	int nodeId     = domoticzID / 256;
 	int endpointId = domoticzID % 256;
-	uint8_t cmnd   = pCmd->LIGHTING2.cmnd;
+	uint8_t cmnd   = pSwitch->cmnd;
 
+	int levelMin = 1, levelMax = 254;
 	{
 		std::lock_guard<std::mutex> lock(m_stateMutex);
 		auto nodeIt = m_nodes.find(nodeId);
@@ -1121,17 +1364,26 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 			Log(LOG_STATUS, "WriteToHardware: node %d endpoint %d not found", nodeId, endpointId);
 			return false;
 		}
+		const auto& ep = nodeIt->second.endpoints.at(endpointId);
+		levelMin = ep.levelMinLevel;
+		levelMax = ep.levelMaxLevel;
 	}
 
-	if (cmnd == light2_sSetLevel)
+	if (cmnd == gswitch_sSetLevel)
 	{
+		int range        = std::max(1, levelMax - levelMin);
+		int matter_level = levelMin + (int)std::round(pSwitch->level * range / 100.0);
+		matter_level     = std::max(levelMin, std::min(levelMax, matter_level));
+
 		Json::Value args;
 		args["node_id"]      = nodeId;
 		args["endpoint_id"]  = endpointId;
 		args["cluster_id"]   = 8;
 		args["command_name"] = "move_to_level_with_on_off";
 		Json::Value payload;
-		payload["level"]           = (int)(pCmd->LIGHTING2.level * 254 / 100);
+		payload["level"]           = matter_level;
+		payload["optionsMask"]     = 1;
+		payload["optionsOverride"] = 1;
 		payload["transition_time"] = 0;
 		args["payload"] = payload;
 		SendCommand("device_command", args);
@@ -1139,9 +1391,9 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 	else
 	{
 		std::string cmd;
-		if (cmnd == light2_sOn)
+		if (cmnd == gswitch_sOn)
 			cmd = "on";
-		else if (cmnd == light2_sOff)
+		else if (cmnd == gswitch_sOff)
 			cmd = "off";
 		else
 			cmd = "toggle";
