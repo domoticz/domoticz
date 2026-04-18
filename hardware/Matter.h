@@ -63,7 +63,6 @@ private:
 		struct PresetEntry { std::string handle; int scenario; std::string name; };
 		std::vector<PresetEntry> presets;
 		std::string activePresetHandle; // hex string, empty = no active preset
-		bool hasPresets = false;
 		// ColorControl cluster (0x0300)
 		int    colorMode          = -1;   // attr 8: ColorModeEnum (0=HS,1=XY,2=Temp; -1=unknown)
 		int    colorHue           = 0;    // attr 0: CurrentHue (0-254 = 0-360°)
@@ -78,7 +77,6 @@ private:
 		bool   hasColorTemp       = false;
 		bool   hasColorControl    = false;
 		int    colorCapabilities  = -1;   // attr 0x400A; -1 = not yet received
-		int    battery_pct = 255;
 	};
 
 	struct NodeState {
@@ -90,9 +88,38 @@ private:
 		std::string nodeLabel;
 		std::string hardwareVersionString;
 		std::string softwareVersionString;
-		float batteryVoltage_V = 0; bool hasBatteryVoltage = false;
-		uint8_t threadChannel = 0;  bool hasThreadChannel = false;
+		int      battery_pct      = 255;
+		float    batteryVoltage_V = 0;  bool hasBatteryVoltage = false;
+		uint64_t uptime_s      = 0;
+		uint8_t  threadChannel     = 0;     // 0 = not yet received
+		enum class RoutingRoleEnum : uint8_t {
+			Unspecified     = 0,
+			Unassigned      = 1,
+			SleepyEndDevice = 2,
+			EndDevice       = 3,
+			REED            = 4,
+			Router          = 5,
+			Leader          = 6,
+		};
+		RoutingRoleEnum threadRoutingRole = RoutingRoleEnum::Unspecified;
 		std::string threadNetworkName;
+		struct ThreadNeighbor {
+			uint64_t extAddress       = 0;
+			uint32_t age              = 0;
+			uint16_t rloc16           = 0;
+			uint32_t linkFrameCounter = 0;
+			uint32_t mleFrameCounter  = 0;
+			uint8_t  lqi              = 0;
+			int8_t   averageRssi      = 0;
+			int8_t   lastRssi         = 0;
+			uint8_t  frameErrorRate   = 0;
+			uint8_t  messageErrorRate = 0;
+			bool     rxOnWhenIdle     = false;
+			bool     fullThreadDevice = false;
+			bool     fullNetworkData  = false;
+			bool     isChild          = false;
+		};
+		std::vector<ThreadNeighbor> threadNeighbors;
 		bool available = true;
 		std::map<int, EndpointState> endpoints; // endpointId -> state
 	};

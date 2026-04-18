@@ -42,6 +42,7 @@ static constexpr int CLUSTER_ON_OFF                    = 6;     // 0x0006
 static constexpr int CLUSTER_LEVEL_CONTROL             = 8;     // 0x0008
 static constexpr int CLUSTER_DESCRIPTION               = 29;    // 0x001D
 static constexpr int CLUSTER_BASIC_INFORMATION         = 40;    // 0x0028
+static constexpr int CLUSTER_GENERAL_DIAGNOSTICS       = 51;    // 0x0033
 static constexpr int CLUSTER_THREAD_DIAGNOSTICS        = 53;    // 0x0035
 static constexpr int CLUSTER_DOOR_LOCK                 = 257;   // 0x0101
 static constexpr int CLUSTER_WINDOW_COVERING           = 258;   // 0x0102
@@ -84,8 +85,12 @@ static constexpr int ATTR_SYSTEM_MODE                  = 28;    // 0x001C Thermo
 static constexpr int ATTR_ACTIVE_PRESET_HANDLE         = 78;    // 0x004E Thermostat (bytes, writable)
 static constexpr int ATTR_PRESETS                      = 80;    // 0x0050 Thermostat list of PresetStruct
 static constexpr int ATTR_CURRENT_POSITION_LIFT        = 10;    // 0x000A WindowCovering (0–10000, 0=open)
-static constexpr int ATTR_BATTERY_VOLTAGE              = 11;    // 0x000B PowerSource (mV)
-static constexpr int ATTR_BATTERY_PERCENT_REMAINING    = 12;    // 0x000C PowerSource
+static constexpr int ATTR_THREAD_CHANNEL               = 0;     // 0x0000 ThreadNetworkDiagnostics
+static constexpr int ATTR_THREAD_ROUTING_ROLE          = 1;     // 0x0001 ThreadNetworkDiagnostics (RoutingRoleEnum)
+static constexpr int ATTR_THREAD_NETWORK_NAME          = 2;     // 0x0002 ThreadNetworkDiagnostics
+static constexpr int ATTR_THREAD_NEIGHBOR_TABLE        = 7;     // 0x0007 ThreadNetworkDiagnostics (array of NeighborTableStruct)
+static constexpr int ATTR_BATTERY_VOLTAGE              = 11;    // 0x000B PowerSource (mV × 1, so 2636 = 2.636 V)
+static constexpr int ATTR_BATTERY_PERCENT_REMAINING    = 12;    // 0x000C PowerSource (half-percent units, divide by 2)
 static constexpr int ATTR_CUMULATIVE_ENERGY_IMPORTED   = 1;     // 0x0001 ElectricalEnergyMeasurement (struct, field "0" = mWh)
 static constexpr int ATTR_VOLTAGE                      = 4;     // 0x0004 ElectricalPowerMeasurement (mV)
 static constexpr int ATTR_ACTIVE_CURRENT               = 5;     // 0x0005 ElectricalPowerMeasurement (mA)
@@ -186,7 +191,7 @@ void CMatter::Do_Work()
 		}
 		if (IsStopRequested(0))
 			break;
-		if (!IsStopRequested(10000))
+		if (IsStopRequested(10000))
 			break;
 	}
 	disconnectWS();
@@ -507,16 +512,12 @@ void CMatter::ApplyAttributeToState(int cluster_id, int attr_id, const Json::Val
 		case 42: //0x002A OtaSoftwareUpdateRequestor
 		case 48: //0x0030 GeneralCommissioning
 		case 49: //0x0031 NetworkCommissioning
-		case 51: //0x0033 GeneralDiagnostics
-		case CLUSTER_THREAD_DIAGNOSTICS:
+		case CLUSTER_GENERAL_DIAGNOSTICS:
+		case CLUSTER_THREAD_DIAGNOSTICS: // handled in ApplyNodeMetadata
 		case 60: //0x003C AdministratorCommissioning
 		case 62: //0x003E OperationalCredentials
 		case 63: //0x003F GroupKeyManagement
 		case 70: //0x0046 IcdManagement
-			break;
-		case CLUSTER_POWER_SOURCE:
-			if (attr_id == ATTR_BATTERY_PERCENT_REMAINING)
-				state.battery_pct = v.asInt() / 2;
 			break;
 		case CLUSTER_ON_OFF:
 			if (attr_id == ATTR_ON_OFF)
@@ -635,8 +636,7 @@ void CMatter::ApplyAttributeToState(int cluster_id, int attr_id, const Json::Val
 						entry.name = preset["2"].asString();
 					state.presets.push_back(std::move(entry));
 				}
-				state.hasPresets = !state.presets.empty();
-			}
+				}
 			break;
 		case CLUSTER_FLOW_MEASUREMENT:
 			if (attr_id == ATTR_MEASURED_VALUE)
@@ -789,15 +789,52 @@ void CMatter::ApplyNodeMetadata(int cluster_id, int attr_id, const Json::Value& 
 			else if (attr_id == 10 && v.isString())   node.softwareVersionString  = v.asString();
 			break;
 		case CLUSTER_POWER_SOURCE:
-			if (attr_id == ATTR_BATTERY_VOLTAGE && v.isIntegral())
+			if (attr_id == ATTR_BATTERY_PERCENT_REMAINING && v.isIntegral())
+				node.battery_pct = v.asInt() / 2;
+			else if (attr_id == ATTR_BATTERY_VOLTAGE && v.isIntegral())
 			{
 				node.batteryVoltage_V  = v.asInt() / 1000.0f;
 				node.hasBatteryVoltage = true;
 			}
 			break;
+		case CLUSTER_GENERAL_DIAGNOSTICS:
+			if (attr_id == 2 && v.isIntegral())
+			{
+				node.uptime_s = v.asUInt64();
+			}
+			break;
 		case CLUSTER_THREAD_DIAGNOSTICS:
-			if      (attr_id == 0 && v.isIntegral())  { node.threadChannel = static_cast<uint8_t>(v.asUInt()); node.hasThreadChannel = true; }
-			else if (attr_id == 2 && v.isString())    node.threadNetworkName = v.asString();
+			if (attr_id == ATTR_THREAD_CHANNEL && v.isIntegral())
+				node.threadChannel = static_cast<uint8_t>(v.asUInt());
+			else if (attr_id == ATTR_THREAD_ROUTING_ROLE && v.isIntegral())
+				node.threadRoutingRole = static_cast<NodeState::RoutingRoleEnum>(v.asUInt());
+			else if (attr_id == ATTR_THREAD_NETWORK_NAME && v.isString())
+				node.threadNetworkName = v.asString();
+			else if (attr_id == ATTR_THREAD_NEIGHBOR_TABLE && v.isArray())
+			{
+				node.threadNeighbors.clear();
+				for (const auto& entry : v)
+				{
+					if (!entry.isObject()) continue;
+					if (node.threadNeighbors.size() >= 64) break; // Thread spec max routers = 64
+					NodeState::ThreadNeighbor n;
+					if (entry.isMember("0"))  n.extAddress       = entry["0"].asUInt64();
+					if (entry.isMember("1"))  n.age              = entry["1"].asUInt();
+					if (entry.isMember("2"))  n.rloc16           = static_cast<uint16_t>(entry["2"].asUInt());
+					if (entry.isMember("3"))  n.linkFrameCounter = entry["3"].asUInt();
+					if (entry.isMember("4"))  n.mleFrameCounter  = entry["4"].asUInt();
+					if (entry.isMember("5"))  n.lqi              = static_cast<uint8_t>(entry["5"].asUInt());
+					if (entry.isMember("6"))  n.averageRssi      = static_cast<int8_t>(entry["6"].asInt());
+					if (entry.isMember("7"))  n.lastRssi         = static_cast<int8_t>(entry["7"].asInt());
+					if (entry.isMember("8"))  n.frameErrorRate   = static_cast<uint8_t>(entry["8"].asUInt());
+					if (entry.isMember("9"))  n.messageErrorRate = static_cast<uint8_t>(entry["9"].asUInt());
+					if (entry.isMember("10")) n.rxOnWhenIdle     = entry["10"].asBool();
+					if (entry.isMember("11")) n.fullThreadDevice = entry["11"].asBool();
+					if (entry.isMember("12")) n.fullNetworkData  = entry["12"].asBool();
+					if (entry.isMember("13")) n.isChild          = entry["13"].asBool();
+					node.threadNeighbors.push_back(n);
+				}
+			}
 			break;
 		default:
 			break;
@@ -823,13 +860,12 @@ void CMatter::_DetectAndSendNode(int nodeId)
 	float temp_C   = 0;  bool hasTemp = false;
 	int   hum_pct  = 0;  bool hasHum  = false;
 	float baro_hPa = 0;  bool hasBaro = false;
-	int   battery  = 255;
+	int   battery  = node.battery_pct;
 	std::string label;
 
 	for (const auto& kv : node.endpoints)
 	{
 		const auto& s = kv.second;
-		if (s.battery_pct < battery) battery = s.battery_pct; // report the weakest endpoint's battery
 		if (!hasTemp && s.hasTemp)  { temp_C   = s.temp_C;   hasTemp = true; }
 		if (!hasHum  && s.hasHum)   { hum_pct  = s.hum_pct;  hasHum  = true; }
 		if (!hasBaro && s.hasBaro)  { baro_hPa = s.baro_hPa; hasBaro = true; }
@@ -911,7 +947,7 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 	if (epIt == nodeIt->second.endpoints.end())
 		return;
 	const auto& state = epIt->second;
-	int battery = state.battery_pct;
+	int battery = nodeIt->second.battery_pct;
 	int domoticzID = nodeId * 256 + endpointId;
 
 	if (state.hasPower && !state.hasEnergy)
@@ -1048,7 +1084,7 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 		SendSelectorSwitch(domoticzID, CHILD_CTRL_SEQ, std::to_string(state.ctrlSeqOp * 10), state.label + " Control Sequence", 0, true, CtrlSeq_Names, CtrlSeq_Actions, false, "");
 	}
 
-	if (state.hasPresets)
+	if (!state.presets.empty())
 	{
 		// PresetScenarioEnum → display name (matching HASS conventions)
 		static const std::pair<int, const char*> scenarioNames[] = {
