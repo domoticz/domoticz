@@ -8,7 +8,7 @@ Version 2026.xxxx
 - Added: MCP, domoticz://sensor-types resource listing all available virtual sensor types with mapped values
 - Added: MCP, get_sensor_history tool with daily calendar data for all sensor types and event log for switches/scenes
 - Added: MCP, new prompts: battery_status, climate_overview, create_automation, daily_report, energy_report, hardware_health, scene_optimizer, security_check
-- Added: Matter, hardware driver for python-matter-server via WebSocket; supports on/off, dimmer, temperature, humidity, pressure, illuminance, occupancy, contact, CO2/CO/NO2/PM2.5/PM10, power/energy, door lock, window covering, and battery level
+- Added: Matter, hardware driver for python-matterjs-server via WebSocket; supports on/off, dimmer, temperature, humidity, pressure, illuminance, occupancy, contact, CO2/CO/NO2/PM2.5/PM10, power/energy, door lock, window covering, and battery level
 - Added: Counter/Gas report, custom contract-year view with per-period breakdown and forecast for remaining months based on previous year data; forecast bars shown in chart with lighter colour
 - Added: Counter/Gas report, export to Excel, CSV, and clipboard buttons on all device report pages (counter, rain, temperature, wind)
 - Added: Counter log, right-click context menu on anomalous spike bars with options to spread the value across preceding empty days or delete it (admin only)
