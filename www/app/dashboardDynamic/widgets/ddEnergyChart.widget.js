@@ -296,7 +296,8 @@ define([
                         },
                         legend:    { enabled: false },
                         credits:   { enabled: false },
-                        exporting: { enabled: false }
+                        exporting: { enabled: false },
+                        time:      { useUTC: false }
                     };
                 }
 
