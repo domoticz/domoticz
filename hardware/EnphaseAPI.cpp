@@ -26,6 +26,92 @@ Example
 {"production":[{"type":"inverters","activeCount":9,"readingTime":1568991780,"wNow":712,"whLifetime":1448651},{"type":"eim","activeCount":1,"measurementType":"production","readingTime":1568991966,"wNow":624.315,"whLifetime":1455843.527,"varhLeadLifetime":0.001,"varhLagLifetime":311039.158,"vahLifetime":1619431.681,"rmsCurrent":2.803,"rmsVoltage":233.289,"reactPwr":137.092,"apprntPwr":654.245,"pwrFactor":0.95,"whToday":4295.527,"whLastSevenDays":74561.527,"vahToday":5854.681,"varhLeadToday":0.001,"varhLagToday":2350.158}],"consumption":[{"type":"eim","activeCount":1,"measurementType":"total-consumption","readingTime":1568991966,"wNow":1260.785,"whLifetime":2743860.336,"varhLeadLifetime":132372.858,"varhLagLifetime":273043.125,"vahLifetime":3033001.948,"rmsCurrent":5.995,"rmsVoltage":233.464,"reactPwr":437.269,"apprntPwr":1399.886,"pwrFactor":0.9,"whToday":11109.336,"whLastSevenDays":129007.336,"vahToday":13323.948,"varhLeadToday":895.858,"varhLagToday":3700.125},{"type":"eim","activeCount":1,"measurementType":"net-consumption","readingTime":1568991966,"wNow":636.47,"whLifetime":0.0,"varhLeadLifetime":132372.857,"varhLagLifetime":-37996.033,"vahLifetime":3033001.948,"rmsCurrent":3.191,"rmsVoltage":233.376,"reactPwr":574.361,"apprntPwr":744.807,"pwrFactor":0.85,"whToday":0,"whLastSevenDays":0,"vahToday":0,"varhLeadToday":0,"varhLagToday":0}],"storage":[{"type":"acb","activeCount":0,"readingTime":0,"wNow":0,"whNow":0,"state":"idle"}]}
 */
 
+// Number of consecutive below-threshold readings required before accepting a
+// counter reset as genuine.  At the default 30-second poll interval this is
+// 150 seconds – long enough to outlast a typical token-refresh interruption
+// (which usually recovers within 1–2 poll cycles) while still catching a real
+// Envoy reset quickly.
+static constexpr int ENPHASE_RESET_CONFIRM_COUNT = 5;
+
+// Maximum drop (kWh) that is still considered normal noise / rounding error.
+static constexpr double ENPHASE_RESET_TOLERANCE_KWH = 0.5;
+
+// If the reading immediately after a confirmed reset is larger than this
+// fraction of the pre-reset lifetime, treat the "reset" as a false positive
+// caused by a temporary communications glitch and revert the offset.
+// 1 % of 27 498 kWh ≈ 275 kWh; a genuine post-reset reading cannot exceed
+// ~0.4 kWh in the 2.5 minutes the confirmation window takes at max output.
+static constexpr double ENPHASE_FALSE_POSITIVE_RATIO = 0.01;
+
+// Processes one whLifetime reading (in kWh) through the counter tracker and
+// returns the corrected cumulative total to pass to SendKwhMeter.
+// While a potential reset is being confirmed the last known-good total is
+// returned so the database is not corrupted.
+static double ProcessEnphaseCounter(EnphaseCounterTracker& tracker, const double rawKwh, const char* deviceLabel)
+{
+	if (rawKwh <= 0.0)
+		return tracker.lastGoodTotal; // zero/negative from Envoy – keep last good value
+
+	if (!tracker.initialized)
+	{
+		tracker.initialized   = true;
+		tracker.lastGoodTotal = rawKwh;
+		return rawKwh;
+	}
+
+	// First reading after a confirmed reset: validate it is genuinely post-reset
+	// and not a recovery from a communications glitch.
+	if (tracker.justConfirmed)
+	{
+		tracker.justConfirmed = false;
+		if (tracker.preResetTotal > 0.0 && rawKwh > tracker.preResetTotal * ENPHASE_FALSE_POSITIVE_RATIO)
+		{
+			// The value jumped back close to the old lifetime total immediately
+			// after the "reset" was confirmed – this was a communications glitch,
+			// not a real Envoy reset.  Undo the offset and resume normally.
+			_log.Log(LOG_STATUS, "EnphaseAPI %s: spurious reset cancelled (recovered to %.3f kWh, pre-reset was %.3f kWh), reverting offset",
+				deviceLabel, rawKwh, tracker.preResetTotal);
+			tracker.offset          = 0.0;
+			tracker.lowReadingCount = 0;
+			tracker.lastGoodTotal   = rawKwh;
+			return rawKwh;
+		}
+		// Genuine post-reset reading: apply the accumulated offset.
+		double newTotal = tracker.offset + rawKwh;
+		_log.Log(LOG_STATUS, "EnphaseAPI %s: counter reset accepted, new cumulative total %.3f kWh (offset %.3f + device %.3f)",
+			deviceLabel, newTotal, tracker.offset, rawKwh);
+		tracker.lastGoodTotal = newTotal;
+		return newTotal;
+	}
+
+	double candidateTotal = tracker.offset + rawKwh;
+
+	if (candidateTotal >= tracker.lastGoodTotal - ENPHASE_RESET_TOLERANCE_KWH)
+	{
+		// Normal (non-decreasing) reading.
+		tracker.lowReadingCount = 0;
+		tracker.lastGoodTotal   = candidateTotal;
+		return candidateTotal;
+	}
+
+	// Counter dropped below expected – possible reset.
+	tracker.preResetTotal = tracker.lastGoodTotal;
+	tracker.lowReadingCount++;
+
+	if (tracker.lowReadingCount >= ENPHASE_RESET_CONFIRM_COUNT)
+	{
+		_log.Log(LOG_STATUS, "EnphaseAPI %s: counter reset detected after %d consecutive low readings "
+			"(pre-reset %.3f kWh, current device %.3f kWh) – locking in offset",
+			deviceLabel, tracker.lowReadingCount, tracker.lastGoodTotal, rawKwh);
+		tracker.offset          = tracker.lastGoodTotal;
+		tracker.lowReadingCount = 0;
+		tracker.justConfirmed   = true;
+		// Hold the last good total for one more cycle while justConfirmed is checked.
+	}
+
+	return tracker.lastGoodTotal;
+}
+
 #define ENPHASE_API_INFO "{ip}/info.xml"
 #define ENPHASE_API_INFO_OLD "http://{ip}/info.xml" //needs to be http
 #define ENPHASE_API_HOME "{ip}/home.json"
@@ -881,7 +967,21 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 
 	double mtotal = reading["whLifetime"].asDouble() / 1000.0;
 
-	SendKwhMeter(m_HwdID, 1, 255, musage, mtotal, "Enphase kWh Production");
+	// Initialise tracker from DB on first call so a Domoticz restart after an
+	// Envoy reset is also detected (not just resets that happen during uptime).
+	if (!m_productionTracker.initialized)
+	{
+		bool bExists;
+		double dbWh = GetKwhMeter(m_HwdID, 1, bExists);
+		if (bExists && dbWh > 0.0)
+		{
+			m_productionTracker.initialized   = true;
+			m_productionTracker.lastGoodTotal = dbWh / 1000.0;
+		}
+	}
+
+	double adjustedTotal = ProcessEnphaseCounter(m_productionTracker, mtotal, "Production");
+	SendKwhMeter(m_HwdID, 1, 255, musage, adjustedTotal, "Enphase kWh Production");
 }
 
 void EnphaseAPI::parseConsumption(const Json::Value& root)
@@ -904,10 +1004,25 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 		int musage = itt["wNow"].asInt();
 		double mtotal = itt["whLifetime"].asDouble() / 1000.0;
 
-		// Use fixed indices for each consumption type
+		// Use fixed indices for each consumption type.
+		// Total-consumption is always non-decreasing, so guard it with the
+		// same counter-reset tracker as production.
+		// Net-consumption can legitimately decrease when the house is a net
+		// exporter, so it is passed through without reset detection.
 		if (measurementType == "total-consumption")
 		{
-			SendKwhMeter(m_HwdID, 2, 255, musage, mtotal, szName);
+			if (!m_totalConsumptionTracker.initialized)
+			{
+				bool bExists;
+				double dbWh = GetKwhMeter(m_HwdID, 2, bExists);
+				if (bExists && dbWh > 0.0)
+				{
+					m_totalConsumptionTracker.initialized   = true;
+					m_totalConsumptionTracker.lastGoodTotal = dbWh / 1000.0;
+				}
+			}
+			double adjustedTotal = ProcessEnphaseCounter(m_totalConsumptionTracker, mtotal, "Total-Consumption");
+			SendKwhMeter(m_HwdID, 2, 255, musage, adjustedTotal, szName);
 		}
 		else if (measurementType == "net-consumption")
 		{
