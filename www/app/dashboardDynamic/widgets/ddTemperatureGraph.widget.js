@@ -204,6 +204,9 @@ define([
                             align: 'center',
                             style: { fontSize: '11px', fontWeight: '600', color: getThemeColor('--dz-body-text', '#ccc') }
                         },
+                        time: {
+                            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                        },
                         legend:    { enabled: false },
                         credits:   { enabled: false },
                         exporting: { enabled: false }

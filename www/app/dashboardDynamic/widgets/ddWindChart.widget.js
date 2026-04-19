@@ -189,6 +189,9 @@ define([
                 function baseChartOptions(container) {
                     var h = container.offsetHeight || 200;
                     return {
+                        time: {
+                            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                        },
                         chart: {
                             animation:       false,
                             backgroundColor: 'transparent',

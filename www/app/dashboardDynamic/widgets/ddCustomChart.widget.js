@@ -290,6 +290,9 @@ define([
                     var showLegend = cfg.showLegend !== false;
 
                     var opts = {
+                        time: {
+                            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                        },
                         chart: {
                             animation:       false,
                             backgroundColor: 'transparent',

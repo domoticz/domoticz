@@ -294,6 +294,9 @@ define([
                         plotOptions: {
                             column: { borderWidth: 0, pointPadding: 0.1, groupPadding: 0, minPointLength: 2 }
                         },
+                        time: {
+                            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                        },
                         legend:    { enabled: false },
                         credits:   { enabled: false },
                         exporting: { enabled: false }
