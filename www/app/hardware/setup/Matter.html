@@ -1,0 +1,69 @@
+<div id="mattercontent" class="container">
+	<div id="mattersettingscontent">
+		<ul id="mattertabs" class="nav nav-tabs sub-tabs" data-tabs="mattertabs">
+			<li class="active"><a data-target="#mattertabnodes" data-toggle="tab" data-i18n="Nodes">Nodes</a></li>
+			<li><a data-target="#mattertabneighbours" data-toggle="tab" data-i18n="Neighbours">Neighbours</a></li>
+			<li class="pull-right">
+				<div class="dropdown">
+					<button class="btn" type="button" id="matterDropdownMenu" data-toggle="dropdown">
+						<span data-i18n="Node management">Node management</span>
+						<span class="caret"></span>
+					</button>
+					<ul class="dropdown-menu pull-right text-right" role="menu" aria-labelledby="matterDropdownMenu">
+						<li><a href="javascript:;" ng-click="$ctrl.commissionNode()"><button type="button" data-i18n="Commission Node" class="btn btn-primary">Commission Node</button></a></li>
+						<li><a href="javascript:;" ng-click="$ctrl.excludeNode()"><button type="button" data-i18n="Exclude Node" class="btn btn-primary">Exclude Node</button></a></li>
+					</ul>
+				</div>
+			</li>
+		</ul>
+		<div class="tab-content">
+			<div class="tab-pane active" id="mattertabnodes">
+				<section id="matternodes">
+					<div class="page-header-small">
+						<h1 data-i18n="Nodes">Nodes</h1>
+					</div>
+					<div class="row-fluid">
+						<div class="span12">
+							<table class="display" id="matterNodeTable" border="0" cellpadding="0" cellspacing="0" width="100%">
+								<thead>
+									<tr style="height: 35px;">
+										<th width="80" align="center" data-i18n="NodeID">NodeID</th>
+										<th align="left" data-i18n="Domoticz Device(s)">Domoticz Device(s)</th>
+										<th align="left" data-i18n="Vendor">Vendor</th>
+										<th align="left" data-i18n="Description">Description</th>
+										<th align="left" data-i18n="Last Seen">Last Seen</th>
+										<th width="50" align="center" data-i18n="Status">Status</th>
+									</tr>
+								</thead>
+							</table>
+							<table border="0" cellpadding="0" cellspacing="0" width="100%">
+								<tr>
+									<td>
+										<a class="btnstyle3-dis" id="matter_nodedelete" data-i18n="Delete" ng-click="$ctrl.deleteNode()">Delete</a>
+										&nbsp;&nbsp;&nbsp;
+										<a class="btnstyle3-dis" id="matter_noderefreshnodeinfo" data-i18n="Refresh Node Info" ng-click="$ctrl.refreshNodeInfo()">Refresh Node Info</a>
+									</td>
+									<td align="right">
+										<a class="btnstyle3" id="matter_nodelistrefresh" data-i18n="Refresh" ng-click="$ctrl.refreshTable()">Refresh</a>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</section>
+			</div>
+			<div class="tab-pane" id="mattertabneighbours">
+				<section id="matterneighbours">
+					<div class="page-header-small">
+						<h1 data-i18n="Neighbours">Neighbours</h1>
+					</div>
+					<div class="row-fluid">
+						<div class="span12">
+							<p data-i18n="Neighbour information not yet available.">Neighbour information not yet available.</p>
+						</div>
+					</div>
+				</section>
+			</div>
+		</div>
+	</div>
+</div>
