@@ -918,8 +918,9 @@ void CMatter::_ApplySwitchTypeOnCreate(int domoticzID, int unit, bool wasNew, _e
 		(int)switchType, m_HwdID, szDevID, unit);
 }
 
-// Calls SendGeneralSwitch and, on first creation only, sets the correct SwitchType.
-// Avoids touching the DB on every subsequent update cycle.
+// Sends a GeneralSwitch message synchronously and, on first creation only, sets the correct SwitchType.
+// Uses PushAndWaitRxMessage (not SendGeneralSwitch) so the DB row is committed before
+// _ApplySwitchTypeOnCreate issues its UPDATE — same pattern as the colour-switch path.
 void CMatter::SendGeneralSwitchInt(int domoticzID, int unit, int battery, int value, int level,
                                    const std::string& label, _eSwitchType switchType)
 {
@@ -929,7 +930,13 @@ void CMatter::SendGeneralSwitchInt(int domoticzID, int unit, int battery, int va
 		"SELECT ID FROM DeviceStatus WHERE HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d",
 		m_HwdID, szDevID, unit, pTypeGeneralSwitch, sSwitchTypeAC).empty();
 
-	SendGeneralSwitch(domoticzID, unit, battery, value, level, label, "");
+	_tGeneralSwitch gSwitch;
+	gSwitch.id = domoticzID;
+	gSwitch.unitcode = unit;
+	gSwitch.cmnd = (uint8_t)value;
+	gSwitch.level = (uint8_t)level;
+	gSwitch.battery_level = (uint8_t)battery;
+	m_mainworker.PushAndWaitRxMessage(this, (const uint8_t*)&gSwitch, label.c_str(), battery, m_Name.c_str());
 	_ApplySwitchTypeOnCreate(domoticzID, unit, isNew, switchType);
 }
 
