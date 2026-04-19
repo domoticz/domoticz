@@ -494,6 +494,7 @@
 							}
 						}
 						$element.i18n();
+						WatchDescriptions();
 						RefreshLiveSearch();
 					}, 100);
 
