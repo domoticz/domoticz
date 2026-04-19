@@ -926,8 +926,8 @@ void CMatter::SendGeneralSwitchInt(int domoticzID, int unit, int battery, int va
 	char szDevID[16];
 	snprintf(szDevID, sizeof(szDevID), "%08X", (unsigned int)domoticzID);
 	bool isNew = m_sql.safe_query(
-		"SELECT ID FROM DeviceStatus WHERE HardwareID=%d AND DeviceID='%q' AND Unit=%d",
-		m_HwdID, szDevID, unit).empty();
+		"SELECT ID FROM DeviceStatus WHERE HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d",
+		m_HwdID, szDevID, unit, pTypeGeneralSwitch, sSwitchTypeAC).empty();
 
 	SendGeneralSwitch(domoticzID, unit, battery, value, level, label, "");
 	_ApplySwitchTypeOnCreate(domoticzID, unit, isNew, switchType);
