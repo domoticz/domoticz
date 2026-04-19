@@ -846,6 +846,11 @@ body.dd-navbar-hidden .dd-toolbar {
     margin-bottom: 4px;
 }
 
+.dd-labels-uppercase .dd-stat-label {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
 .dd-stat-value-row {
     display: flex;
     align-items: baseline;

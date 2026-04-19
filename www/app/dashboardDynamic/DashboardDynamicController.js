@@ -104,6 +104,7 @@ define([
         } catch(e) {
             $scope.kiosk = angular.copy(_kioskDefaults);
         }
+        $scope.uppercaseLabels = localStorage.getItem('dd_uppercase_labels') === '1';
         $scope.kioskActive   = false;
         $scope.kioskProgress = 0;
         var _kioskTickTimer  = null;
@@ -172,6 +173,15 @@ define([
             if ($scope.standby.enabled) {
                 var ms = Math.max(1, parseInt($scope.standby.timeout, 10) || 5) * 60000;
                 _standbyTimer = $timeout(enterStandby, ms);
+            }
+        };
+
+        $scope.toggleUppercaseLabels = function() {
+            $scope.uppercaseLabels = !$scope.uppercaseLabels;
+            if ($scope.uppercaseLabels) {
+                localStorage.setItem('dd_uppercase_labels', '1');
+            } else {
+                localStorage.removeItem('dd_uppercase_labels');
             }
         };
 

@@ -1,4 +1,4 @@
-<div class="dd-page" ng-class="{'edit-mode': editMode}">
+<div class="dd-page" ng-class="{'edit-mode': editMode, 'dd-labels-uppercase': uppercaseLabels}">
 
     <!-- Loading overlay -->
     <div class="dd-loading" ng-show="loading">
@@ -95,7 +95,7 @@
             <a href="https://wiki.domoticz.com/DynamicDashboard" target="_blank"
                title="Dynamic Dashboard help"
                class="dd-toolbar-help">
-                <i class="fa-regular fa-circle-info fa-lg"></i>
+                <i class="fa-solid fa-circle-info fa-lg"></i>
             </a>
 
             <!-- Layout switcher dropdown -->
@@ -138,6 +138,11 @@
                         <i class="fa-solid fa-check fa-fw"
                            ng-style="{'opacity': (activeLayout && activeLayout.isDefault) ? '1' : '0', 'color': 'var(--dz-accent-color)'}"></i>
                         Set as Default
+                    </a></li>
+                    <li><a ng-click="toggleUppercaseLabels()">
+                        <i class="fa-solid fa-fw"
+                           ng-class="uppercaseLabels ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                        Uppercase labels
                     </a></li>
                     <li class="divider"></li>
                     <li><a ng-click="duplicateLayout()">
