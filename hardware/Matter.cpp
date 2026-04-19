@@ -912,6 +912,18 @@ void CMatter::_ApplySwitchTypeOnCreate(int domoticzID, int unit, bool wasNew, _e
 		return;
 	char szDevID[16];
 	snprintf(szDevID, sizeof(szDevID), "%08X", (unsigned int)domoticzID);
+
+	//check and wait for device creation
+	for (int i = 0; i < 20; i++)
+        {
+            auto result = m_sql.safe_query(
+                "SELECT ID FROM DeviceStatus WHERE HardwareID=%d AND DeviceID='%q' AND Unit=%d",
+                m_HwdID, szDevID, unit);
+            if (!result.empty())
+                break;
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        }
+
 	m_sql.safe_query(
 		"UPDATE DeviceStatus SET SwitchType=%d "
 		"WHERE HardwareID=%d AND DeviceID='%q' AND Unit=%d",
