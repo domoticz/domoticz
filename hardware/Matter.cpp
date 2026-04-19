@@ -921,7 +921,7 @@ void CMatter::_ApplySwitchTypeOnCreate(int domoticzID, int unit, bool wasNew, _e
 			m_HwdID, szDevID, unit);
 		if (!result.empty())
 			break;
-		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+		sleep_milliseconds(50);
 	}
 
 	m_sql.safe_query(
