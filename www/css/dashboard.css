@@ -842,8 +842,7 @@ body.dd-navbar-hidden .dd-toolbar {
 .dd-stat-label {
     font-size: 0.8em;
     color: var(--dz-body-text);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.04em;
     margin-bottom: 4px;
 }
 
