@@ -4200,6 +4200,13 @@ define(['app'], function (app) {
 									HwTypeStr += ' <a href="#/Hardware/' + item.idx + '" class="label ' + lblStatus + ' btn-link">' + $.t("Setup") + '</a>';
 								}
 							}
+							else if (item.Type === 129) { // Matter
+								if (typeof item.version !== 'undefined' && item.version !== '') {
+									HwTypeStr += '<br>Version: ' + item.version;
+									var lblStatus = item.Connected ? "label-info" : "label-important";
+									HwTypeStr += ' <a href="#/Hardware/' + item.idx + '" class="label ' + lblStatus + ' btn-link">' + $.t("Setup") + '</a>';
+								}
+							}
 							else if (HwTypeStr.indexOf("Enphase") >= 0) {
 								HwTypeStr += '<br>Version: ' + item.version;
 							}
