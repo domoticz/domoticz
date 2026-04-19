@@ -908,7 +908,7 @@ void CMatter::_DetectAndSendNode(int nodeId)
 // path share identical formatting and SQL.
 void CMatter::_ApplySwitchTypeOnCreate(int domoticzID, int unit, bool wasNew, _eSwitchType switchType)
 {
-	if (!wasNew || switchType == STYPE_OnOff)
+	if (!wasNew || switchType == STYPE_OnOff || !m_sql.m_bAcceptNewHardware)
 		return;
 	char szDevID[16];
 	snprintf(szDevID, sizeof(szDevID), "%08X", (unsigned int)domoticzID);
