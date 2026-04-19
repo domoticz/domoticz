@@ -287,8 +287,10 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		});
 	}]);
 
-	app.factory('dzTimeAndSun', function($rootScope) {
+	app.factory('dzTimeAndSun', ['$rootScope', '$interval', function($rootScope, $interval) {
 		var currentData = {};
+		var _rawSec = 0;
+		var _ticker = null;
 		init();
 
 		return {
@@ -296,12 +298,45 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			updateData: updateData
 		};
 
+		function _pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+		function _epochToServerTimeString(sec) {
+			var d = new Date(sec * 1000);
+			return d.getFullYear() + '-' + _pad(d.getMonth() + 1) + '-' + _pad(d.getDate()) +
+				   ' ' + _pad(d.getHours()) + ':' + _pad(d.getMinutes()) + ':' + _pad(d.getSeconds());
+		}
+
         function init() {
+            $rootScope.$on('$destroy', function() {
+                if (_ticker) {
+                    $interval.cancel(_ticker);
+                    _ticker = null;
+                }
+            });
+
             $rootScope.$on('time_update', function (event, data) {
             	Object.assign(currentData, data);
-				$rootScope.SetTimeAndSun(currentData.sunrise, currentData.sunset, currentData.serverTime);
+
+				if (data.serverTime) {
+					var newSec = Math.floor(Date.parse(data.serverTime.replace(' ', 'T')) / 1000);
+					if (_rawSec === 0 || Math.abs(newSec - _rawSec) > 1) {
+						_rawSec = newSec;
+					}
+				}
+
+				if (!_ticker) {
+					$rootScope.SetTimeAndSun(currentData.sunrise, currentData.sunset, currentData.serverTime);
+					_ticker = $interval(_tick, 1000);
+				}
             });
         }
+
+		function _tick() {
+			if (_rawSec === 0 || isNaN(_rawSec)) { return; }
+			_rawSec++;
+			currentData.serverTime = _epochToServerTimeString(_rawSec);
+			$rootScope.SetTimeAndSun(currentData.sunrise, currentData.sunset, currentData.serverTime);
+		}
 
 		function getCurrentData() {
 			return currentData;
@@ -309,12 +344,19 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 
 		function updateData(data) {
 			Object.assign(currentData, {
-				sunrise: data.Sunrise,
-				sunset: data.Sunset,
-				serverTime: data.ServerTime
+				sunrise:    data.Sunrise,
+				sunset:     data.Sunset,
+				serverTime: data.ServerTime,
+				actTime:    data.ActTime
 			});
+			if (data.ServerTime) {
+				_rawSec = Math.floor(Date.parse(data.ServerTime.replace(' ', 'T')) / 1000);
+				if (!_ticker) {
+					_ticker = $interval(_tick, 1000);
+				}
+			}
 		}
-	});
+	}]);
 
     app.component('timesun', {
         templateUrl: 'timesuntemplate',

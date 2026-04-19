@@ -62,7 +62,7 @@ define([
         ]
     });
 
-    app.directive('ddClockWidget', ['$interval', function($interval) {
+    app.directive('ddClockWidget', ['$interval', 'dzTimeAndSun', function($interval, dzTimeAndSun) {
         return {
             restrict:         'E',
             templateUrl:      'views/dashboardDynamic/widgets/clock.html',
@@ -72,11 +72,33 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$interval', function($scope, $interval) {
+            controller: ['$scope', '$interval', 'dzTimeAndSun', function($scope, $interval, dzTimeAndSun) {
                 var ctrl = this;
                 ctrl.timeStr = '';
                 ctrl.dateStr = '';
                 ctrl.title   = '';
+
+                var _rawSec = 0;
+                var _initDone = false;
+
+                function _seedFromData(data) {
+                    var newSec = 0;
+                    if (data.actTime) {
+                        newSec = data.actTime;
+                    } else if (data.serverTime) {
+                        var parsed = Math.floor(Date.parse(data.serverTime.replace(' ', 'T')) / 1000);
+                        if (!isNaN(parsed) && parsed > 0) { newSec = parsed; }
+                    }
+                    if (newSec > 0 && (_rawSec === 0 || Math.abs(newSec - _rawSec) > 1)) {
+                        _rawSec = newSec;
+                    }
+                }
+
+                _seedFromData(dzTimeAndSun.getCurrentData());
+
+                $scope.$on('time_update', function(event, data) {
+                    _seedFromData(data);
+                });
 
                 function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
@@ -86,7 +108,9 @@ define([
                     var use24   = cfg.format24h !== false;
                     var showSec = cfg.showSeconds !== false;
                     var tz      = (cfg.timezone || '').trim();
-                    var now     = new Date();
+                    if (_rawSec > 0 && _initDone) { _rawSec++; }
+                    _initDone = true;
+                    var now = (_rawSec > 0) ? new Date(_rawSec * 1000) : new Date();
                     var d;
 
                     if (tz) {

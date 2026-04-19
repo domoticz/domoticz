@@ -112,7 +112,8 @@ define(['app.notifications', 'angular-websocket'], function (appNotificationsMod
 				$rootScope.$broadcast('time_update', {
 					serverTime: msg.ServerTime,
 					sunrise: msg.Sunrise,
-					sunset: msg.Sunset
+					sunset: msg.Sunset,
+					actTime: msg.ActTime
 				});
 				if (!$rootScope.$$phase) {
 					$rootScope.$digest();
