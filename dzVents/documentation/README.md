@@ -751,6 +751,7 @@ The domoticz object holds all information about your Domoticz system. It has glo
 	dz.snapshot({'test', 'test2'}) -- table
 ```
 
+ - **switchTimerPlan(idx)**: *Function*. Switch the active timer plan to the plan with the given database ID. `idx` must be a positive integer matching an existing timer plan ID (as shown in **Settings → Timer Plans**). Invalid or non-existent plan IDs are silently ignored. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **startTime**: *[Time Object](#Time_object)*. Returns the startup time of the Domoticz service.
  - **systemUptime**: *Number*. Number of seconds the system is up.
  - **time**: *[Time Object](#Time_object)*: Current system time. Additional to Time object attributes:

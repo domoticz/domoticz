@@ -1,6 +1,9 @@
 ```{=mediawiki}
 __NOTOC__
 ```
+## 3.1.12 (2026-04-19) ##
+- Added `domoticz.switchTimerPlan(idx)` to switch the active timer plan by its database ID
+
 ## 3.1.11 (2026-02-24) ##
 - Added `at_startup` trigger. Scripts can now use `at_startup = true` in the `on` section to also run when Domoticz starts, e.g. `on = { at_startup = true, timer = { 'every hour' } }`
 - Added Thermostat 6 device adapter with support for Temp/Setpoint, Temp/Hum/Setpoint, Temp/Baro/Setpoint and Temp/Hum/Baro/Setpoint subtypes
