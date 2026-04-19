@@ -560,9 +560,13 @@ define([
 					return;
 				}
 				if (isProtectedOrPasscode === true || isProtectedOrPasscode === 1) {
-					bootbox.prompt($.t("Please enter Password") + ":", function (result) {
-						if (result === null || result === "") return;
-						SwitchLightInt(idx, command, result);
+					bootbox.prompt({
+						title: $.t("Please enter Password") + ":",
+						inputType: 'password',
+						callback: function (result) {
+							if (result === null || result === "") return;
+							SwitchLightInt(idx, command, result);
+						}
 					});
 					return;
 				}
@@ -595,9 +599,13 @@ define([
 					return;
 				}
 				if (isProtectedOrPasscode === true || isProtectedOrPasscode === 1) {
-					bootbox.prompt($.t("Please enter Password") + ":", function (result) {
-						if (result === null || result === "") return;
-						SwitchSceneInt(idx, command, result);
+					bootbox.prompt({
+						title: $.t("Please enter Password") + ":",
+						inputType: 'password',
+						callback: function (result) {
+							if (result === null || result === "") return;
+							SwitchSceneInt(idx, command, result);
+						}
 					});
 					return;
 				}

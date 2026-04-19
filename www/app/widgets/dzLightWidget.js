@@ -191,9 +191,13 @@ define(['app'], function (app) {
                     }
 
                     if (device.Protected) {
-                        bootbox.prompt($.t("Please enter Password") + ":", function (result) {
-                            if (result === null || result === "") return;
-                            SwitchLightInt(device.idx, cmd, result);
+                        bootbox.prompt({
+                            title: $.t("Please enter Password") + ":",
+                            inputType: 'password',
+                            callback: function (result) {
+                                if (result === null || result === "") return;
+                                SwitchLightInt(device.idx, cmd, result);
+                            }
                         });
                     } else {
                         ctrl.executeSwitchCommand(cmd);
@@ -233,14 +237,18 @@ define(['app'], function (app) {
                     }
 
                     if (device.Protected) {
-                        bootbox.prompt($.t("Please enter Password") + ":", function (result) {
-                            if (result === null || result === "") return;
-                            domoticzApi.sendCommand('switchlight', {
-                                idx: device.idx,
-                                switchcmd: 'Set Level',
-                                level: level,
-                                passcode: result
-                            });
+                        bootbox.prompt({
+                            title: $.t("Please enter Password") + ":",
+                            inputType: 'password',
+                            callback: function (result) {
+                                if (result === null || result === "") return;
+                                domoticzApi.sendCommand('switchlight', {
+                                    idx: device.idx,
+                                    switchcmd: 'Set Level',
+                                    level: level,
+                                    passcode: result
+                                });
+                            }
                         });
                     } else {
                         ctrl.executeSetLevel(level);
@@ -268,14 +276,18 @@ define(['app'], function (app) {
                     }
 
                     if (device.Protected) {
-                        bootbox.prompt($.t("Please enter Password") + ":", function (result) {
-                            if (result === null || result === "") return;
-                            domoticzApi.sendCommand('switchlight', {
-                                idx: device.idx,
-                                switchcmd: 'Set Level',
-                                level: level,
-                                passcode: result
-                            });
+                        bootbox.prompt({
+                            title: $.t("Please enter Password") + ":",
+                            inputType: 'password',
+                            callback: function (result) {
+                                if (result === null || result === "") return;
+                                domoticzApi.sendCommand('switchlight', {
+                                    idx: device.idx,
+                                    switchcmd: 'Set Level',
+                                    level: level,
+                                    passcode: result
+                                });
+                            }
                         });
                     } else {
                         ctrl.executeSetSelectorLevel(level, levelName);
@@ -708,9 +720,13 @@ define(['app'], function (app) {
                     }
                     $.devIdx = device.idx;
                     if (device.Protected) {
-                        bootbox.prompt($.t('Please enter Password') + ':', function(result) {
-                            if (!result) return;
-                            SendX10Command(device.idx, cmd, result);
+                        bootbox.prompt({
+                            title: $.t('Please enter Password') + ':',
+                            inputType: 'password',
+                            callback: function(result) {
+                                if (!result) return;
+                                SendX10Command(device.idx, cmd, result);
+                            }
                         });
                     } else {
                         SendX10Command(device.idx, cmd, '');

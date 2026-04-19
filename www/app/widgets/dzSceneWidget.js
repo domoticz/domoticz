@@ -78,10 +78,14 @@ define(['app'], function (app) {
 
 				ctrl.switchOn = function() {
 					if (ctrl.isProtected()) {
-						bootbox.prompt($.t("Please enter Password") + ":", function(result) {
+						bootbox.prompt({
+						title: $.t("Please enter Password") + ":",
+						inputType: 'password',
+						callback: function(result) {
 							if (result === null || result === "") return;
 							SwitchSceneInt(ctrl.scene.idx, 'On', result);
-						});
+						}
+					});
 					} else {
 						ctrl.executeSwitch('On');
 					}
@@ -89,10 +93,14 @@ define(['app'], function (app) {
 
 				ctrl.switchOff = function() {
 					if (ctrl.isProtected()) {
-						bootbox.prompt($.t("Please enter Password") + ":", function(result) {
+						bootbox.prompt({
+						title: $.t("Please enter Password") + ":",
+						inputType: 'password',
+						callback: function(result) {
 							if (result === null || result === "") return;
 							SwitchSceneInt(ctrl.scene.idx, 'Off', result);
-						});
+						}
+					});
 					} else {
 						ctrl.executeSwitch('Off');
 					}
