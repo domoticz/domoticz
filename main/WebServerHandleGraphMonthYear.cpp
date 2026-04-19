@@ -1871,7 +1871,7 @@ static void HandleGraphMonthYear_Counter(
 		if (!sgroupby.empty())
 		{
 			root["title"] = "Comparing " + sensor;
-			webserver.MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value3", 10.0);
+			webserver.MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value3", 1.0);
 			if (sql.m_weightscale != 1.0)
 			{
 				for (auto& itt : root["result"])
