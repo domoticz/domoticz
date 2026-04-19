@@ -252,9 +252,9 @@ bool SolarEdgeAPI::isDaylightWindow()
 	int sunRise = getSunRiseSunSetMinutes(true);
 	int sunSet = getSunRiseSunSetMinutes(false);
 	if (ActHourMin + 60 < sunRise)
-		false;
+		return false;
 	if (ActHourMin - 60 > sunSet)
-		false;
+		return false;
 	return true;
 }
 
