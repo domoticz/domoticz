@@ -77,9 +77,13 @@ define(['app'], function (app) {
 
 				if (typeof data.result !== 'undefined') {
 					$.each(data.result, function (i, item) {
+						var isController = item.RoutingRole === 7;
+
 						var now = Math.floor(Date.now() / 1000);
 						var oneHourAgo = now - 3600;
-						var statusOk = item.available && item.LastSeenTimestamp >= oneHourAgo;
+						var statusOk = isController
+							? item.available
+							: item.available && item.LastSeenTimestamp >= oneHourAgo;
 
 						var tdStatus = $('<td align="center"></td>');
 						tdStatus.append($('<img>').attr('src', statusOk ? 'images/ok.png' : 'images/failed.png'));
@@ -88,21 +92,29 @@ define(['app'], function (app) {
 						var tdBattery = $('<td align="center"></td>');
 						if (item.Battery !== undefined && item.Battery !== null) {
 							var batPct = item.Battery;
-							var batIcon = batPct > 75 ? 'images/battery4.png' : batPct > 50 ? 'images/battery3.png' : batPct > 25 ? 'images/battery2.png' : 'images/battery1.png';
-							tdBattery.append($('<img>').attr({ src: batIcon, title: batPct + '%' }));
-							tdBattery.append($('<span></span>').text(' ' + batPct + '%'));
+							var batClass = batPct < 10 ? 'empty' : batPct < 40 ? 'half' : 'full';
+							var batWidth = Math.ceil(batPct * 14 / 100);
+							tdBattery.append($('<div></div>').attr({ class: 'battery ' + batClass, title: $.t('Battery level') + ': ' + batPct + '%' }).css('width', batWidth + 'px'));
 						}
 
-						// LQI cell
+						// RSSI cell (dBm) — Thread RSSI typically -100 to -30 dBm
 						var tdLqi = $('<td align="center"></td>');
-						if (item.LQI !== undefined && item.LQI !== null) {
-							var lqi = item.LQI;
-							var lqiColor = lqi >= 200 ? '#4CAF50' : lqi >= 100 ? '#FF9800' : '#F44336';
-							tdLqi.append($('<span></span>').css('color', lqiColor).text(lqi));
+						if (item.RSSI !== undefined && item.RSSI !== null) {
+							var rssi = item.RSSI;
+							var rssiColor = rssi >= -70 ? '#4CAF50' : rssi >= -85 ? '#FF9800' : '#F44336';
+							tdLqi.append($('<span></span>').css('color', rssiColor).text(rssi));
 						}
+
+						var $infoIcon = $('<i class="fa fa-info-circle lcursor"></i>').css('color', 'var(--dz-accent-color)');
+						$infoIcon.on('click', function (e) {
+							e.stopPropagation();
+							showNodeDetailPopup(item);
+						});
+						var $nodeIdTd = $('<td></td>');
+						$nodeIdTd.append($infoIcon).append(' ').append(document.createTextNode(item.NodeID));
 
 						var trow = $('<tr class="lcursor"></tr>');
-						$('<td align="center"></td>').text(item.NodeID).appendTo(trow);
+						$nodeIdTd.appendTo(trow);
 						$('<td></td>').text(item.DeviceNames || '').appendTo(trow);
 						$('<td></td>').text(item.VendorName).appendTo(trow);
 						$('<td></td>').text(item.ProductName).appendTo(trow);
@@ -112,17 +124,11 @@ define(['app'], function (app) {
 						tdStatus.appendTo(trow);
 
 						trow.data('nodeId', item.NodeID);
-						trow.data('nodeItem', item);
 						trow.on('click', function () {
-							var wasSelected = $(this).hasClass('row_selected');
 							$('#matterNodeTable tbody tr').removeClass('row_selected');
 							$(this).addClass('row_selected');
 							selectedNodeId = $(this).data('nodeId');
-							setNodeButtonsEnabled(true);
-							if (wasSelected) showNodeDetailPopup($(this).data('nodeItem'));
-						});
-						trow.on('dblclick', function () {
-							showNodeDetailPopup($(this).data('nodeItem'));
+							if (!isController) setNodeButtonsEnabled(true);
 						});
 
 						trow.appendTo(tbody);
@@ -152,34 +158,54 @@ define(['app'], function (app) {
 				if (m || !parts.length) parts.push(m + 'm');
 				return parts.join(' ');
 			}
+			var isController = item.RoutingRole === 7;
 			var roleNames = ['Unspecified','Unassigned','SleepyEndDevice','EndDevice','REED','Router','Leader','Controller'];
 			var roleName = roleNames[item.RoutingRole] || 'Unknown';
 
-			var rows = [
-				['Node ID',          item.NodeID],
-				['Vendor',           item.VendorName + (item.VendorId ? ' (' + item.VendorId + ')' : '')],
-				['Product',          item.ProductName + (item.ProductId ? ' (' + item.ProductId + ')' : '')],
-				['Hardware Version', item.HardwareVersion || '-'],
-				['Software Version', item.SoftwareVersion || '-'],
-				['Role',             roleName],
-				['Uptime',           fmtUptime(item.Uptime)],
-				['Last Seen',        item.LastSeen || '-'],
-			];
-			if (item.Battery !== undefined && item.Battery !== null)
-				rows.push(['Battery', item.Battery + '%']);
-			if (item.LQI !== undefined && item.LQI !== null)
-				rows.push(['LQI', item.LQI]);
-			if (item.IPAddresses)
-				rows.push(['IP Addresses', item.IPAddresses]);
+			var rows;
+			if (isController) {
+				rows = [
+					['Node ID',              item.NodeID],
+					['SDK Version',          item.SoftwareVersion || '-'],
+					['Role',                 roleName],
+					['Fabric ID',            item.FabricId || '-'],
+					['Compressed Fabric ID', item.CompressedFabricId || '-'],
+					['WiFi Credentials',     item.WifiCredentialsSet ? $.t('Set') : $.t('Not set')],
+					['Thread Credentials',   item.ThreadCredentialsSet ? $.t('Set') : $.t('Not set')],
+				];
+			} else {
+				rows = [
+					['Node ID',          item.NodeID],
+					['Vendor',           item.VendorName + (item.VendorId ? ' (' + item.VendorId + ')' : '')],
+					['Product',          item.ProductName + (item.ProductId ? ' (' + item.ProductId + ')' : '')],
+					['Hardware Version', item.HardwareVersion || '-'],
+					['Software Version', item.SoftwareVersion || '-'],
+					['Role',             roleName],
+					['Uptime',           fmtUptime(item.Uptime)],
+					['Last Seen',        item.LastSeen || '-'],
+				];
+				if (item.Battery !== undefined && item.Battery !== null)
+					rows.push(['Battery', item.Battery + '%']);
+				if (item.LQI !== undefined && item.LQI !== null)
+					rows.push(['LQI', item.LQI]);
+				if (item.RSSI !== undefined && item.RSSI !== null)
+					rows.push(['RSSI', item.RSSI + ' dBm']);
+				if (item.IPAddresses)
+					rows.push(['IP Addresses', item.IPAddresses.split(', ').join('<br>')]);
+			}
 
-			var tbl = '<table class="table table-condensed table-bordered" style="margin-bottom:0">';
+			var tbl = '<table class="table table-condensed table-bordered" style="margin-bottom:0;user-select:text">';
 			$.each(rows, function (i, r) {
 				tbl += '<tr><td style="width:140px;font-weight:bold">' + $.t(r[0]) + '</td><td>' + r[1] + '</td></tr>';
 			});
 			tbl += '</table>';
 
+			var title = isController
+				? $.t('Controller') + ' — ' + (item.SoftwareVersion || '')
+				: $.t('Node') + ' ' + item.NodeID + ' — ' + item.VendorName + ' ' + item.ProductName;
+
 			bootbox.dialog({
-				title: $.t('Node') + ' ' + item.NodeID + ' — ' + item.VendorName + ' ' + item.ProductName,
+				title: title,
 				message: tbl,
 				buttons: { ok: { label: $.t('Close'), className: 'btn-default' } }
 			});
@@ -317,6 +343,7 @@ define(['app'], function (app) {
 				$('#matter_compressed_fabric_id').text(data.CompressedFabricId || '-');
 				$('#matter_wifi_set').text(data.WifiCredentialsSet ? $.t('Configured') : $.t('Not configured'));
 				$('#matter_thread_set').text(data.ThreadCredentialsSet ? $.t('Configured') : $.t('Not configured'));
+				if (data.FabricLabel) $('#matter_fabric_label').val(data.FabricLabel);
 			});
 		}
 
@@ -454,6 +481,8 @@ define(['app'], function (app) {
 			var n = nodeMap[String(id)];
 			if (!n) return String(id);
 			var html = '<b>' + n.NodeID + ' ' + n.Name + ' (' + n.RoleName + ')</b>';
+			if (n.FabricLabel) html += '<br>' + $.t('Fabric') + ': ' + n.FabricLabel;
+			else if (n.FabricId) html += '<br>' + $.t('Fabric ID') + ': ' + n.FabricId;
 			var peerBest = {};
 			$.each(edges, function (i, e) {
 				var f = String(e.from), t = String(e.to);
@@ -490,7 +519,7 @@ define(['app'], function (app) {
 			var edgeMap = buildEdgeMap(edges);
 			var datachart = [];
 			$.each(edges, function (i, edge) {
-				var weight = edge.lqi > 0 ? Math.round(edge.lqi / 25.5) : 1;
+				var weight = edge.lqi > 0 ? edge.lqi : 1;
 				datachart.push({ from: String(edge.from), to: String(edge.to), weight: weight || 1 });
 			});
 			var seenIds = {};
@@ -567,10 +596,9 @@ define(['app'], function (app) {
 				vel[id] = { x: 0, y: 0 };
 			});
 
-			var LQI_GOOD = 200, LQI_OK = 100;
 			function lqiColor(lqi) {
-				if (lqi > LQI_GOOD) return '#4CAF50';
-				if (lqi > LQI_OK)   return '#FF9800';
+				if (lqi >= 3) return '#4CAF50';
+				if (lqi >= 2) return '#FF9800';
 				return '#F44336';
 			}
 

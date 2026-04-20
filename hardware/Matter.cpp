@@ -60,6 +60,7 @@ static constexpr int CLUSTER_CO2_CONCENTRATION         = 1037;  // 0x040D
 static constexpr int CLUSTER_NO2_CONCENTRATION         = 1043;  // 0x0413
 static constexpr int CLUSTER_PM25_CONCENTRATION        = 1066;  // 0x042A
 static constexpr int CLUSTER_PM10_CONCENTRATION        = 1069;  // 0x042D
+static constexpr int CLUSTER_OPERATIONAL_CREDENTIALS      = 62;    // 0x003E OperationalCredentials
 static constexpr int CLUSTER_GENERIC_SWITCH              = 59;    // 0x003B GenericSwitch (button/latch)
 static constexpr int CLUSTER_COLOR_CONTROL               = 768;   // 0x0300 ColorControl
 static constexpr int CLUSTER_ELECTRICAL_POWER_MEAS      = 144;   // 0x0090 ElectricalPowerMeasurement (Matter 1.3+)
@@ -86,6 +87,7 @@ static constexpr int ATTR_SYSTEM_MODE                  = 28;    // 0x001C Thermo
 static constexpr int ATTR_ACTIVE_PRESET_HANDLE         = 78;    // 0x004E Thermostat (bytes, writable)
 static constexpr int ATTR_PRESETS                      = 80;    // 0x0050 Thermostat list of PresetStruct
 static constexpr int ATTR_CURRENT_POSITION_LIFT        = 10;    // 0x000A WindowCovering (0–10000, 0=open)
+static constexpr int ATTR_FABRICS                       = 1;     // 0x0001 OperationalCredentials FabricDescriptor list
 static constexpr int ATTR_THREAD_CHANNEL               = 0;     // 0x0000 ThreadNetworkDiagnostics
 static constexpr int ATTR_THREAD_ROUTING_ROLE          = 1;     // 0x0001 ThreadNetworkDiagnostics (RoutingRoleEnum)
 static constexpr int ATTR_THREAD_NETWORK_NAME          = 2;     // 0x0002 ThreadNetworkDiagnostics
@@ -149,6 +151,11 @@ CMatter::~CMatter()
 bool CMatter::StartHardware()
 {
 	RequestStart();
+	{
+		auto rows = m_sql.safe_query("SELECT Extra FROM Hardware WHERE (ID=%d)", m_HwdID);
+		if (!rows.empty() && !rows[0][0].empty())
+			m_szFabricLabel = rows[0][0];
+	}
 	m_bIsStarted = true;
 	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
@@ -846,6 +853,27 @@ void CMatter::ApplyNodeMetadata(int cluster_id, int attr_id, const Json::Value& 
 			else if (attr_id == 2 && v.isIntegral())
 			{
 				node.uptime_s = v.asUInt64();
+			}
+			break;
+		case CLUSTER_OPERATIONAL_CREDENTIALS:
+			// Only seed the label from cluster data if not yet set by the user.
+			// The label varies per-node (each stores it independently), so we use
+			// Hardware.Extra as the authoritative source once the user has set it.
+			if (attr_id == ATTR_FABRICS && v.isArray() && m_szFabricLabel.empty())
+			{
+				// FabricDescriptor fields: 2=VendorID, 3=FabricID(uint64), 4=NodeID, 5=Label
+				for (const auto& entry : v)
+				{
+					if (!entry.isObject() || !entry.isMember("5")) continue;
+					std::string lbl = entry["5"].asString();
+					if (!lbl.empty())
+					{
+						m_szFabricLabel = lbl;
+						m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID=%d)",
+						                 lbl.c_str(), m_HwdID);
+						break;
+					}
+				}
 			}
 			break;
 		case CLUSTER_THREAD_DIAGNOSTICS:
@@ -1689,17 +1717,50 @@ Json::Value CMatter::GetNodesJSON(int hwdID) const
 		entry["RoutingRole"]       = static_cast<int>(node.threadRoutingRole);
 		entry["Uptime"]            = (Json::UInt64)node.uptime_s;
 		if (node.battery_pct != 255)
-			entry["Battery"] = node.battery_pct / 2;
+			entry["Battery"] = node.battery_pct;
 		int bestLqi = -1;
+		int bestRssi = 0;
+		bool hasRssi = false;
 		for (const auto& nb : node.threadNeighbors)
-			if (!nb.isChild && nb.lqi > bestLqi) bestLqi = nb.lqi;
+		{
+			if (!nb.isChild && nb.lqi > bestLqi)
+			{
+				bestLqi  = nb.lqi;
+				bestRssi = static_cast<int>(nb.averageRssi);
+				hasRssi  = true;
+			}
+		}
 		if (bestLqi >= 0)
 			entry["LQI"] = bestLqi;
+		if (hasRssi)
+			entry["RSSI"] = bestRssi;
 		if (!node.ipAddresses.empty())
 			entry["IPAddresses"] = node.ipAddresses;
 
 		root["result"][ii++] = entry;
 	}
+
+	if (m_bConnected)
+	{
+		Json::Value ctrl;
+		ctrl["NodeID"]               = 1;
+		ctrl["VendorName"]           = "Controller";
+		ctrl["ProductName"]          = m_szSoftwareVersion;
+		ctrl["available"]            = true;
+		ctrl["DeviceNames"]          = "Controller";
+		ctrl["LastSeen"]             = "";
+		ctrl["LastSeenTimestamp"]    = 0;
+		ctrl["SoftwareVersion"]      = m_szSoftwareVersion;
+		ctrl["HardwareVersion"]      = "";
+		ctrl["RoutingRole"]          = 7;
+		ctrl["Uptime"]               = (Json::UInt64)0;
+		ctrl["FabricId"]             = m_szFabricId;
+		ctrl["CompressedFabricId"]   = m_szCompressedFabricId;
+		ctrl["WifiCredentialsSet"]   = m_bWifiCredentialsSet;
+		ctrl["ThreadCredentialsSet"] = m_bThreadCredentialsSet;
+		root["result"][ii++] = ctrl;
+	}
+
 	return root;
 }
 
@@ -1800,6 +1861,8 @@ Json::Value CMatter::GetNetworkGraphJSON() const
 		n["RoutingRole"]    = 7;
 		n["RoleName"]       = "Controller";
 		n["isBorderRouter"] = true;
+		n["FabricLabel"]    = m_szFabricLabel;
+		n["FabricId"]       = m_szFabricId;
 		root["nodes"][ni++] = n;
 	}
 
@@ -1860,6 +1923,7 @@ Json::Value CMatter::GetServerInfoJSON() const
 	root["CompressedFabricId"]   = m_szCompressedFabricId;
 	root["WifiCredentialsSet"]   = m_bWifiCredentialsSet;
 	root["ThreadCredentialsSet"] = m_bThreadCredentialsSet;
+	root["FabricLabel"]          = m_szFabricLabel;
 	return root;
 }
 
@@ -1880,6 +1944,8 @@ void CMatter::SetThreadDataset(const std::string& dataset)
 
 void CMatter::SetFabricLabel(const std::string& label)
 {
+	m_szFabricLabel = label;
+	m_sql.safe_query("UPDATE Hardware SET Extra='%q' WHERE (ID=%d)", label.c_str(), m_HwdID);
 	Json::Value args;
 	args["label"] = label;
 	SendCommand("set_default_fabric_label", args);

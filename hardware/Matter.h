@@ -162,6 +162,7 @@ public:
 	bool   m_bThreadCredentialsSet = false;
 	std::string m_szFabricId;
 	std::string m_szCompressedFabricId;
+	std::string m_szFabricLabel;
 	std::atomic<bool> m_bConnected{false};
 
 	Json::Value GetNodesJSON(int hwdID) const;
