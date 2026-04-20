@@ -36,13 +36,6 @@ static constexpr int ENPHASE_RESET_CONFIRM_COUNT = 5;
 // Maximum drop (kWh) that is still considered normal noise / rounding error.
 static constexpr double ENPHASE_RESET_TOLERANCE_KWH = 0.5;
 
-// If the reading immediately after a confirmed reset is larger than this
-// fraction of the pre-reset lifetime, treat the "reset" as a false positive
-// caused by a temporary communications glitch and revert the offset.
-// 1 % of 27 498 kWh ≈ 275 kWh; a genuine post-reset reading cannot exceed
-// ~0.4 kWh in the 2.5 minutes the confirmation window takes at max output.
-static constexpr double ENPHASE_FALSE_POSITIVE_RATIO = 0.01;
-
 // Processes one whLifetime reading (in kWh) through the counter tracker and
 // returns the corrected cumulative total to pass to SendKwhMeter.
 // While a potential reset is being confirmed the last known-good total is
@@ -64,11 +57,11 @@ static double ProcessEnphaseCounter(EnphaseCounterTracker& tracker, const double
 	if (tracker.justConfirmed)
 	{
 		tracker.justConfirmed = false;
-		if (tracker.preResetTotal > 0.0 && rawKwh > tracker.preResetTotal * ENPHASE_FALSE_POSITIVE_RATIO)
+		if (tracker.preResetTotal > 0.0 && rawKwh > tracker.preResetTotal - ENPHASE_RESET_TOLERANCE_KWH)
 		{
-			// The value jumped back close to the old lifetime total immediately
-			// after the "reset" was confirmed – this was a communications glitch,
-			// not a real Envoy reset.  Undo the offset and resume normally.
+			// The value recovered to within tolerance of the old lifetime total –
+			// this was a communications glitch, not a real Envoy reset.
+			// Undo the offset and resume normally.
 			_log.Log(LOG_STATUS, "EnphaseAPI %s: spurious reset cancelled (recovered to %.3f kWh, pre-reset was %.3f kWh), reverting offset",
 				deviceLabel, rawKwh, tracker.preResetTotal);
 			tracker.offset          = 0.0;

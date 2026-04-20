@@ -6926,8 +6926,6 @@ namespace http
 				return;
 			uint64_t idx = std::stoull(request::findValue(&req, "idx"));
 
-			// For General/kWh devices the CounterHelper lives in memory inside the hardware plugin.
-			// Stop hardware before fixing so in-memory CounterHelper cannot race with DB writes.
 			int hwID = -1;
 			bool bIsKwhCounter = false;
 			{
@@ -6941,9 +6939,6 @@ namespace http
 					bIsKwhCounter = (devType == pTypeGeneral && devSub == sTypeKwh);
 				}
 			}
-
-			if (bIsKwhCounter && hwID != -1)
-				m_mainworker.RemoveDomoticzHardware(hwID);
 
 			// Fix actual counter spikes in Meter_Calendar / Meter (kWh devices only).
 			// Uses auto-detected threshold (0.0 = 100x median daily usage).
@@ -6962,9 +6957,15 @@ namespace http
 			bool changed = CKWHStats::RemoveSpikeStats(idx);
 			int pricesFixed = m_sql.SanitizeCalendarData(idx);
 
-			// Always restart hardware (was stopped above); only report it when something was actually fixed.
-			if (bIsKwhCounter && hwID != -1)
+			// Only stop/restart hardware when spikes were actually corrected in the DB.
+			// The CounterHelper (used by MQTT-AD and similar plugins) caches the cumulative
+			// counter in memory and must reload from the corrected DB values.
+			// Plugins that manage their own in-memory state (e.g. EnphaseAPI) must not be
+			// restarted unnecessarily — doing so destroys their tracker state and can cause
+			// a spurious negative spike on the next reading.
+			if (bIsKwhCounter && hwID != -1 && spikesFixed > 0)
 			{
+				m_mainworker.RemoveDomoticzHardware(hwID);
 				auto hwRes = m_sql.safe_query(
 					"SELECT ID, Name, Enabled, Type, LogLevel, Address, Port, SerialPort, Username, Password, "
 					"Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware WHERE ID=%d", hwID);
@@ -6978,8 +6979,7 @@ namespace http
 						atoi(hw[11].c_str()), atoi(hw[12].c_str()), atoi(hw[13].c_str()),
 						atoi(hw[14].c_str()), atoi(hw[15].c_str()), atoi(hw[16].c_str()),
 						atoi(hw[17].c_str()), true);
-					if (spikesFixed > 0)
-						spikeResults.push_back("Hardware restarted to reload CounterHelper from corrected values");
+					spikeResults.push_back("Hardware restarted to reload CounterHelper from corrected values");
 				}
 			}
 
