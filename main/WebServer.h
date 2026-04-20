@@ -368,6 +368,10 @@ private:
 	void Cmd_MatterExcludeNode(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_DeleteMatterNode(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_RequestMatterNodeInfo(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_MatterGetServerInfo(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_MatterSetWifiCredentials(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_MatterSetThreadDataset(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_MatterSetFabricLabel(WebEmSession& session, const request& req, Json::Value& root);
 
 	// Plugin functions
 	void Cmd_PluginCommand(WebEmSession & session, const request& req, Json::Value &root);

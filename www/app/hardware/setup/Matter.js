@@ -26,6 +26,9 @@ define(['app'], function (app) {
 			$element.find('a[data-target="#mattertabneighbours"]').on('shown.bs.tab', function () {
 				RefreshNetworkGraph();
 			});
+			$element.find('a[data-target="#mattertabsettings"]').on('shown.bs.tab', function () {
+				RefreshServerInfo();
+			});
 		};
 
 		function setNodeButtonsEnabled(enabled) {
@@ -81,20 +84,45 @@ define(['app'], function (app) {
 						var tdStatus = $('<td align="center"></td>');
 						tdStatus.append($('<img>').attr('src', statusOk ? 'images/ok.png' : 'images/failed.png'));
 
+						// Battery cell
+						var tdBattery = $('<td align="center"></td>');
+						if (item.Battery !== undefined && item.Battery !== null) {
+							var batPct = item.Battery;
+							var batIcon = batPct > 75 ? 'images/battery4.png' : batPct > 50 ? 'images/battery3.png' : batPct > 25 ? 'images/battery2.png' : 'images/battery1.png';
+							tdBattery.append($('<img>').attr({ src: batIcon, title: batPct + '%' }));
+							tdBattery.append($('<span></span>').text(' ' + batPct + '%'));
+						}
+
+						// LQI cell
+						var tdLqi = $('<td align="center"></td>');
+						if (item.LQI !== undefined && item.LQI !== null) {
+							var lqi = item.LQI;
+							var lqiColor = lqi >= 200 ? '#4CAF50' : lqi >= 100 ? '#FF9800' : '#F44336';
+							tdLqi.append($('<span></span>').css('color', lqiColor).text(lqi));
+						}
+
 						var trow = $('<tr class="lcursor"></tr>');
 						$('<td align="center"></td>').text(item.NodeID).appendTo(trow);
 						$('<td></td>').text(item.DeviceNames || '').appendTo(trow);
 						$('<td></td>').text(item.VendorName).appendTo(trow);
 						$('<td></td>').text(item.ProductName).appendTo(trow);
 						$('<td></td>').text(item.LastSeen).appendTo(trow);
+						tdBattery.appendTo(trow);
+						tdLqi.appendTo(trow);
 						tdStatus.appendTo(trow);
 
 						trow.data('nodeId', item.NodeID);
+						trow.data('nodeItem', item);
 						trow.on('click', function () {
+							var wasSelected = $(this).hasClass('row_selected');
 							$('#matterNodeTable tbody tr').removeClass('row_selected');
 							$(this).addClass('row_selected');
 							selectedNodeId = $(this).data('nodeId');
 							setNodeButtonsEnabled(true);
+							if (wasSelected) showNodeDetailPopup($(this).data('nodeItem'));
+						});
+						trow.on('dblclick', function () {
+							showNodeDetailPopup($(this).data('nodeItem'));
 						});
 
 						trow.appendTo(tbody);
@@ -111,6 +139,49 @@ define(['app'], function (app) {
 				oNodeTable = $('#matterNodeTable').DataTable(oTableSettings);
 			}).fail(function () {
 				bootbox.alert($.t('Error retrieving Matter nodes'));
+			});
+		}
+
+		function showNodeDetailPopup(item) {
+			function fmtUptime(s) {
+				if (!s) return '-';
+				var d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
+				var parts = [];
+				if (d) parts.push(d + 'd');
+				if (h) parts.push(h + 'h');
+				if (m || !parts.length) parts.push(m + 'm');
+				return parts.join(' ');
+			}
+			var roleNames = ['Unspecified','Unassigned','SleepyEndDevice','EndDevice','REED','Router','Leader','Controller'];
+			var roleName = roleNames[item.RoutingRole] || 'Unknown';
+
+			var rows = [
+				['Node ID',          item.NodeID],
+				['Vendor',           item.VendorName + (item.VendorId ? ' (' + item.VendorId + ')' : '')],
+				['Product',          item.ProductName + (item.ProductId ? ' (' + item.ProductId + ')' : '')],
+				['Hardware Version', item.HardwareVersion || '-'],
+				['Software Version', item.SoftwareVersion || '-'],
+				['Role',             roleName],
+				['Uptime',           fmtUptime(item.Uptime)],
+				['Last Seen',        item.LastSeen || '-'],
+			];
+			if (item.Battery !== undefined && item.Battery !== null)
+				rows.push(['Battery', item.Battery + '%']);
+			if (item.LQI !== undefined && item.LQI !== null)
+				rows.push(['LQI', item.LQI]);
+			if (item.IPAddresses)
+				rows.push(['IP Addresses', item.IPAddresses]);
+
+			var tbl = '<table class="table table-condensed table-bordered" style="margin-bottom:0">';
+			$.each(rows, function (i, r) {
+				tbl += '<tr><td style="width:140px;font-weight:bold">' + $.t(r[0]) + '</td><td>' + r[1] + '</td></tr>';
+			});
+			tbl += '</table>';
+
+			bootbox.dialog({
+				title: $.t('Node') + ' ' + item.NodeID + ' — ' + item.VendorName + ' ' + item.ProductName,
+				message: tbl,
+				buttons: { ok: { label: $.t('Close'), className: 'btn-default' } }
 			});
 		}
 
@@ -232,6 +303,54 @@ define(['app'], function (app) {
 
 		$ctrl.refreshTable = function () {
 			RefreshMatterNodeTable();
+		};
+
+		function RefreshServerInfo() {
+			$.ajax({
+				url: 'json.htm?type=command&param=mattergetserverinfo&idx=' + hwIdx,
+				async: true,
+				dataType: 'json'
+			}).done(function (data) {
+				if (data.status !== 'OK') return;
+				$('#matter_sdk_version').text(data.SdkVersion || '-');
+				$('#matter_fabric_id').text(data.FabricId || '-');
+				$('#matter_compressed_fabric_id').text(data.CompressedFabricId || '-');
+				$('#matter_wifi_set').text(data.WifiCredentialsSet ? $.t('Configured') : $.t('Not configured'));
+				$('#matter_thread_set').text(data.ThreadCredentialsSet ? $.t('Configured') : $.t('Not configured'));
+			});
+		}
+
+		$ctrl.setWifiCredentials = function () {
+			var ssid  = $('#matter_wifi_ssid').val().trim();
+			var creds = $('#matter_wifi_password').val();
+			if (!ssid) { bootbox.alert($.t('Please enter WiFi SSID')); return; }
+			matterAjax(
+				'json.htm?type=command&param=mattersetwificredentials&idx=' + hwIdx +
+					'&ssid=' + encodeURIComponent(ssid) + '&credentials=' + encodeURIComponent(creds),
+				function () { bootbox.alert($.t('WiFi credentials set')); RefreshServerInfo(); },
+				'Set WiFi credentials failed'
+			);
+		};
+
+		$ctrl.setThreadDataset = function () {
+			var dataset = $('#matter_thread_dataset').val().trim();
+			if (!dataset) { bootbox.alert($.t('Please enter Thread dataset')); return; }
+			matterAjax(
+				'json.htm?type=command&param=mattersetthreaddataset&idx=' + hwIdx +
+					'&dataset=' + encodeURIComponent(dataset),
+				function () { bootbox.alert($.t('Thread dataset set')); RefreshServerInfo(); },
+				'Set Thread dataset failed'
+			);
+		};
+
+		$ctrl.setFabricLabel = function () {
+			var label = $('#matter_fabric_label').val().trim();
+			matterAjax(
+				'json.htm?type=command&param=mattersetfabriclabel&idx=' + hwIdx +
+					'&label=' + encodeURIComponent(label),
+				function () { bootbox.alert($.t('Fabric label set')); },
+				'Set fabric label failed'
+			);
 		};
 
 		$ctrl.refreshNetworkGraph = function () {

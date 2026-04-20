@@ -287,7 +287,11 @@ void CMatter::HandleServerInfo(const Json::Value& msg)
 	if (minSchema > OUR_SCHEMA)
 		Log(LOG_STATUS, "server schema %d (min %d) is newer than our supported %d — compatibility not guaranteed",
 		    schema, minSchema, OUR_SCHEMA);
-	m_szSoftwareVersion = msg.isMember("sdk_version") ? msg["sdk_version"].asString() : "";
+	m_szSoftwareVersion     = msg.isMember("sdk_version") ? msg["sdk_version"].asString() : "";
+	m_bWifiCredentialsSet   = msg.isMember("wifi_credentials_set")   && msg["wifi_credentials_set"].asBool();
+	m_bThreadCredentialsSet = msg.isMember("thread_credentials_set") && msg["thread_credentials_set"].asBool();
+	m_szFabricId            = msg.isMember("fabric_id")              ? std::to_string(msg["fabric_id"].asUInt64()) : "";
+	m_szCompressedFabricId  = msg.isMember("compressed_fabric_id")   ? std::to_string(msg["compressed_fabric_id"].asUInt64()) : "";
 	Log(LOG_STATUS, "server schema %d, SDK %s",
 	    schema, m_szSoftwareVersion.c_str());
 	m_bConnected = true;
@@ -802,7 +806,44 @@ void CMatter::ApplyNodeMetadata(int cluster_id, int attr_id, const Json::Value& 
 			}
 			break;
 		case CLUSTER_GENERAL_DIAGNOSTICS:
-			if (attr_id == 2 && v.isIntegral())
+			if (attr_id == 0 && v.isArray()) // NetworkInterfaces
+			{
+				std::string ips;
+				for (const auto& iface : v)
+				{
+					if (!iface.isObject() || !iface.isMember("6")) continue;
+					const auto& addrs = iface["6"];
+					if (!addrs.isArray()) continue;
+					for (const auto& addr : addrs)
+					{
+						if (!addr.isString()) continue;
+						std::string b64 = addr.asString();
+						static const std::string b64chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+						std::string bytes;
+						int val = 0, bits = -8;
+						for (unsigned char c : b64)
+						{
+							if (c == '=') break;
+							auto pos = b64chars.find(c);
+							if (pos == std::string::npos) continue;
+							val = (val << 6) | (int)pos;
+							bits += 6;
+							if (bits >= 0) { bytes += (char)((val >> bits) & 0xFF); bits -= 8; }
+						}
+						if (bytes.size() != 16) continue;
+						char ipbuf[40];
+						snprintf(ipbuf, sizeof(ipbuf), "%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x",
+							(uint8_t)bytes[0],(uint8_t)bytes[1],(uint8_t)bytes[2],(uint8_t)bytes[3],
+							(uint8_t)bytes[4],(uint8_t)bytes[5],(uint8_t)bytes[6],(uint8_t)bytes[7],
+							(uint8_t)bytes[8],(uint8_t)bytes[9],(uint8_t)bytes[10],(uint8_t)bytes[11],
+							(uint8_t)bytes[12],(uint8_t)bytes[13],(uint8_t)bytes[14],(uint8_t)bytes[15]);
+						if (!ips.empty()) ips += ", ";
+						ips += ipbuf;
+					}
+				}
+				node.ipAddresses = ips;
+			}
+			else if (attr_id == 2 && v.isIntegral())
 			{
 				node.uptime_s = v.asUInt64();
 			}
@@ -1643,6 +1684,19 @@ Json::Value CMatter::GetNodesJSON(int hwdID) const
 		entry["DeviceNames"]       = names;
 		entry["LastSeen"]          = lastSeenStr;
 		entry["LastSeenTimestamp"] = (int)node.lastSeen;
+		entry["SoftwareVersion"]   = node.softwareVersionString;
+		entry["HardwareVersion"]   = node.hardwareVersionString;
+		entry["RoutingRole"]       = static_cast<int>(node.threadRoutingRole);
+		entry["Uptime"]            = (Json::UInt64)node.uptime_s;
+		if (node.battery_pct != 255)
+			entry["Battery"] = node.battery_pct / 2;
+		int bestLqi = -1;
+		for (const auto& nb : node.threadNeighbors)
+			if (!nb.isChild && nb.lqi > bestLqi) bestLqi = nb.lqi;
+		if (bestLqi >= 0)
+			entry["LQI"] = bestLqi;
+		if (!node.ipAddresses.empty())
+			entry["IPAddresses"] = node.ipAddresses;
 
 		root["result"][ii++] = entry;
 	}
@@ -1797,6 +1851,40 @@ void CMatter::RefreshNodeInfo(int nodeId)
 	SendCommand("interview_node", args);
 }
 
+Json::Value CMatter::GetServerInfoJSON() const
+{
+	Json::Value root;
+	root["status"]               = "OK";
+	root["SdkVersion"]           = m_szSoftwareVersion;
+	root["FabricId"]             = m_szFabricId;
+	root["CompressedFabricId"]   = m_szCompressedFabricId;
+	root["WifiCredentialsSet"]   = m_bWifiCredentialsSet;
+	root["ThreadCredentialsSet"] = m_bThreadCredentialsSet;
+	return root;
+}
+
+void CMatter::SetWifiCredentials(const std::string& ssid, const std::string& credentials)
+{
+	Json::Value args;
+	args["ssid"]        = ssid;
+	args["credentials"] = credentials;
+	SendCommand("set_wifi_credentials", args);
+}
+
+void CMatter::SetThreadDataset(const std::string& dataset)
+{
+	Json::Value args;
+	args["dataset"] = dataset;
+	SendCommand("set_thread_dataset", args);
+}
+
+void CMatter::SetFabricLabel(const std::string& label)
+{
+	Json::Value args;
+	args["label"] = label;
+	SendCommand("set_default_fabric_label", args);
+}
+
 namespace http {
 	namespace server {
 
@@ -1876,6 +1964,43 @@ namespace http {
 			pMatter->RefreshNodeInfo(atoi(sNode.c_str()));
 			root["status"] = "OK";
 			root["title"]  = "RequestMatterNodeInfo";
+		}
+
+		void CWebServer::Cmd_MatterGetServerInfo(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
+			GET_MATTER_HW
+			root = pMatter->GetServerInfoJSON();
+		}
+
+		void CWebServer::Cmd_MatterSetWifiCredentials(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
+			std::string ssid  = request::findValue(&req, "ssid");
+			std::string creds = request::findValue(&req, "credentials");
+			if (ssid.empty()) { root["status"] = "ERR"; root["message"] = "ssid required"; return; }
+			GET_MATTER_HW
+			pMatter->SetWifiCredentials(ssid, creds);
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_MatterSetThreadDataset(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
+			std::string dataset = request::findValue(&req, "dataset");
+			if (dataset.empty()) { root["status"] = "ERR"; root["message"] = "dataset required"; return; }
+			GET_MATTER_HW
+			pMatter->SetThreadDataset(dataset);
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_MatterSetFabricLabel(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
+			std::string label = request::findValue(&req, "label");
+			GET_MATTER_HW
+			pMatter->SetFabricLabel(label);
+			root["status"] = "OK";
 		}
 
 #undef GET_MATTER_HW

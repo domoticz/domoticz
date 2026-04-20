@@ -400,6 +400,10 @@ namespace http
 			RegisterCommandCode("matterexcludenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_MatterExcludeNode(session, req, root); }, true);
 			RegisterCommandCode("deletematternode", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteMatterNode(session, req, root); }, true);
 			RegisterCommandCode("requestmatternodeinfo", [this](auto&& session, auto&& req, auto&& root) { Cmd_RequestMatterNodeInfo(session, req, root); }, true);
+			RegisterCommandCode("mattergetserverinfo",      [this](auto&& session, auto&& req, auto&& root) { Cmd_MatterGetServerInfo(session, req, root); },      true);
+			RegisterCommandCode("mattersetwificredentials", [this](auto&& session, auto&& req, auto&& root) { Cmd_MatterSetWifiCredentials(session, req, root); }, true);
+			RegisterCommandCode("mattersetthreaddataset",   [this](auto&& session, auto&& req, auto&& root) { Cmd_MatterSetThreadDataset(session, req, root); },   true);
+			RegisterCommandCode("mattersetfabriclabel",     [this](auto&& session, auto&& req, auto&& root) { Cmd_MatterSetFabricLabel(session, req, root); },     true);
 
 			RegisterCommandCode("heossetmode", [this](auto&& session, auto&& req, auto&& root) { Cmd_HEOSSetMode(session, req, root); });
 			RegisterCommandCode("heosmediacommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_HEOSMediaCommand(session, req, root); });

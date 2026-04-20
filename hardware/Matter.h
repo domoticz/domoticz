@@ -105,6 +105,8 @@ private:
 		};
 		RoutingRoleEnum threadRoutingRole = RoutingRoleEnum::Unspecified;
 		std::string threadNetworkName;
+		std::string fabricLabel;       // BasicInformation attr 5 (NodeLabel)
+		std::string ipAddresses;       // comma-separated, from GeneralDiagnostics attr 0 NetworkInterfaces IPv6
 		struct ThreadNeighbor {
 			uint64_t extAddress       = 0;
 			uint32_t age              = 0;
@@ -156,6 +158,10 @@ private:
 	std::atomic<time_t> m_lastPingTime{0};
 public:
 	std::string  m_szSoftwareVersion;
+	bool   m_bWifiCredentialsSet   = false;
+	bool   m_bThreadCredentialsSet = false;
+	std::string m_szFabricId;
+	std::string m_szCompressedFabricId;
 	std::atomic<bool> m_bConnected{false};
 
 	Json::Value GetNodesJSON(int hwdID) const;
@@ -163,4 +169,8 @@ public:
 	void CommissionNode(const std::string& code);
 	void RemoveNode(int nodeId);
 	void RefreshNodeInfo(int nodeId);
+	Json::Value GetServerInfoJSON() const;
+	void SetWifiCredentials(const std::string& ssid, const std::string& credentials);
+	void SetThreadDataset(const std::string& dataset);
+	void SetFabricLabel(const std::string& label);
 };
