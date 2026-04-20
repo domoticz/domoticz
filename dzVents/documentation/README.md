@@ -752,17 +752,6 @@ The domoticz object holds all information about your Domoticz system. It has glo
 ```
 
  - **switchTimerPlan(idx)**: *Function*. Switch the active timer plan to the plan with the given database ID. `idx` must be a positive integer matching an existing timer plan ID (as shown in **Settings → Timer Plans**). Invalid or non-existent plan IDs are silently ignored. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
- - **resumeTimerPlan(deviceOrIdx)**: *Function*. Finds the most recent timer that should have fired today (before now) for the given device or scene and executes it immediately. Useful for restoring the correct device state after a Domoticz restart or power cut. Pass a device or scene object (recommended) or a raw integer ID (always treated as a device). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
-	```lua
-	-- Replay last timer for a device object
-	domoticz.resumeTimerPlan(domoticz.devices('My Light'))
-
-	-- Replay last timer for a scene
-	domoticz.resumeTimerPlan(domoticz.scenes('Evening Scene'))
-
-	-- By raw device ID
-	domoticz.resumeTimerPlan(42)
-	```
  - **startTime**: *[Time Object](#Time_object)*. Returns the startup time of the Domoticz service.
  - **systemUptime**: *Number*. Number of seconds the system is up.
  - **time**: *[Time Object](#Time_object)*: Current system time. Additional to Time object attributes:
@@ -992,6 +981,17 @@ If for some reason you miss a specific attribute or data for a device, then like
  - **setDescription(description)**: *Function*. Generic method to update the description for all devices, groups and scenes. E.g.: device.setDescription(device.description .. '/nChanged by '.. item.trigger .. 'at ' .. domoticz.time.raw). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **setIcon(iconNumber)**: *Function*. method to update the icon for devices. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
  - **setState(newState)**: *Function*. Generic update method for switch-like devices. E.g.: device.setState('On'). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **resumeTimerPlan()**: *Function*. Finds the most recent timer that should have fired today (before now) for this device, scene, or group and executes it immediately. Useful for restoring the correct state after a Domoticz restart or power cut. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+	```lua
+	-- Replay last timer for a device
+	domoticz.devices('My Light').resumeTimerPlan()
+
+	-- Replay last timer for a scene
+	domoticz.scenes('Evening Scene').resumeTimerPlan()
+
+	-- Replay last timer for a group
+	domoticz.groups('All Lights').resumeTimerPlan()
+	```
  - **setValues(nValue,[ sValue1, sValue2, ...])**: *Function*. Generic alternative method to update device nValue, sValues. Uses domoticz JSON API to force subsequent pushes like influxdb and MQTT. nValue required but when set to nil it defaults to current nValue. sValue parms are optional and can be many. <sup>3.0.8</sup> If one of sValue parms is 'parsetrigger', subsequent eventscripts will be triggered.
  - **state**: *String*. For switches, holds the state like 'On' or 'Off'. For dimmers that are on, it is also 'On' but there is a level attribute holding the dimming level. **For selector switches** (Dummy switch) the state holds the *name* of the currently selected level. The corresponding numeric level of this state can be found in the **rawData** attribute: `device.rawData[1]`.
  - **signalLevel**: *Number* If applicable for that device then it will be from 0-12

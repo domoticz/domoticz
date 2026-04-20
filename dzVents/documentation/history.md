@@ -3,7 +3,7 @@ __NOTOC__
 ```
 ## 3.1.12 (2026-04-20) ##
 - Added `domoticz.switchTimerPlan(idx)` to switch the active timer plan by its database ID
-- Added `domoticz.resumeTimerPlan(deviceOrIdx)` to replay the last timer that should have fired today for a specific device or scene (useful for catch-up after a restart or power loss)
+- Added `device.resumeTimerPlan()` / `scene.resumeTimerPlan()` / `group.resumeTimerPlan()` to replay the last timer that should have fired today for a device, scene, or group (useful for catch-up after a restart or power loss)
 
 ## 3.1.11 (2026-02-24) ##
 - Added `at_startup` trigger. Scripts can now use `at_startup = true` in the `on` section to also run when Domoticz starts, e.g. `on = { at_startup = true, timer = { 'every hour' } }`
