@@ -1147,6 +1147,50 @@ void CScheduler::HandleTimerPlanSwitch()
 		ExecuteTimerItem(pending.item);
 }
 
+void CScheduler::ReplayLastTimerForDevice(uint64_t rowId, bool isScene)
+{
+	tScheduleItem best{};
+	time_t bestTime = 0;
+	bool found = false;
+
+	{
+		std::lock_guard<std::mutex> l(m_mutex);
+
+		time_t atime = mytime(nullptr);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+
+		for (const auto& item : m_scheduleitems)
+		{
+			if (!item.bEnabled)
+				continue;
+			if (item.RowID != rowId || item.bIsScene != isScene)
+				continue;
+			if (!IsTodayValidForItem(item, ltime))
+				continue;
+			time_t timerTime = GetTimerFireTimeToday(item);
+			if (timerTime == 0 || timerTime >= atime)
+				continue;
+			if (!found || timerTime > bestTime)
+			{
+				best = item;
+				bestTime = timerTime;
+				found = true;
+			}
+		}
+	}
+	// Mutex released before execution: SwitchLight/SwitchScene may acquire locks
+
+	if (!found)
+	{
+		_log.Log(LOG_STATUS, "ReplayLastTimerForDevice: no elapsed timer found for %s %" PRIu64,
+			isScene ? "scene" : "device", rowId);
+		return;
+	}
+
+	ExecuteTimerItem(best);
+}
+
 void CScheduler::CheckSchedules()
 {
 	std::lock_guard<std::mutex> l(m_mutex);

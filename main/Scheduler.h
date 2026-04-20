@@ -51,6 +51,7 @@ public:
 
   void ReloadSchedules();
   void HandleTimerPlanSwitch();
+  void ReplayLastTimerForDevice(uint64_t rowId, bool isScene);
 
   void SetSunRiseSetTimes(const std::string &sSunRise, const std::string &sSunSet, const std::string &sSunAtSouth, const std::string &sCivTwStart, const std::string &sCivTwEnd,
 			   const std::string &sNautTwStart, const std::string &sNauTtwEnd, const std::string &sAstTwStart, const std::string &sAstTwEnd);

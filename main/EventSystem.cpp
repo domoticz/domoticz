@@ -3728,6 +3728,32 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 		}
 		return true;
 	}
+	else if (deviceName.find("ResumeTimerPlan:") == 0)
+	{
+		uint64_t devId = 0;
+		try { devId = std::stoull(deviceName.substr(16)); }
+		catch (const std::exception&)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: ResumeTimerPlan invalid ID: %s", deviceName.c_str());
+			return true;
+		}
+		if (devId > 0)
+			m_mainworker.m_scheduler.ReplayLastTimerForDevice(devId, false);
+		return true;
+	}
+	else if (deviceName.find("ResumeTimerPlanScene:") == 0)
+	{
+		uint64_t sceneId = 0;
+		try { sceneId = std::stoull(deviceName.substr(21)); }
+		catch (const std::exception&)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: ResumeTimerPlanScene invalid ID: %s", deviceName.c_str());
+			return true;
+		}
+		if (sceneId > 0)
+			m_mainworker.m_scheduler.ReplayLastTimerForDevice(sceneId, true);
+		return true;
+	}
 
 	if (isScene) {
 		result = m_sql.safe_query("SELECT ID FROM Scenes WHERE (Name == '%q')",

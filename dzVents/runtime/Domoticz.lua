@@ -370,6 +370,24 @@ local function Domoticz(settings)
 		return TimedCommand(self, 'SwitchTimerPlan:' .. tostring(math.floor(idx)), '', 'device')
 	end
 
+	function self.resumeTimerPlan(deviceOrIdx)
+		local id
+		local prefix = 'ResumeTimerPlan:'
+		if type(deviceOrIdx) == 'table' then
+			id = deviceOrIdx.id
+			if deviceOrIdx.baseType == 'scene' or deviceOrIdx.baseType == 'group' then
+				prefix = 'ResumeTimerPlanScene:'
+			end
+		else
+			id = deviceOrIdx
+		end
+		if type(id) ~= 'number' or id <= 0 then
+			utils.log('resumeTimerPlan: a device/scene object or positive integer id is required', utils.LOG_ERROR)
+			return nil
+		end
+		return TimedCommand(self, prefix .. tostring(math.floor(id)), '', 'device')
+	end
+
 	if (_G.TESTMODE) then
 		function self._getUtilsInstance()
 			return utils

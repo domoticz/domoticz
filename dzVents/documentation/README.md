@@ -752,6 +752,17 @@ The domoticz object holds all information about your Domoticz system. It has glo
 ```
 
  - **switchTimerPlan(idx)**: *Function*. Switch the active timer plan to the plan with the given database ID. `idx` must be a positive integer matching an existing timer plan ID (as shown in **Settings → Timer Plans**). Invalid or non-existent plan IDs are silently ignored. Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+ - **resumeTimerPlan(deviceOrIdx)**: *Function*. Finds the most recent timer that should have fired today (before now) for the given device or scene and executes it immediately. Useful for restoring the correct device state after a Domoticz restart or power cut. Pass a device or scene object (recommended) or a raw integer ID (always treated as a device). Supports [command options](#Command_options_.28delay.2C_duration.2C_event_triggering.29).
+	```lua
+	-- Replay last timer for a device object
+	domoticz.resumeTimerPlan(domoticz.devices('My Light'))
+
+	-- Replay last timer for a scene
+	domoticz.resumeTimerPlan(domoticz.scenes('Evening Scene'))
+
+	-- By raw device ID
+	domoticz.resumeTimerPlan(42)
+	```
  - **startTime**: *[Time Object](#Time_object)*. Returns the startup time of the Domoticz service.
  - **systemUptime**: *Number*. Number of seconds the system is up.
  - **time**: *[Time Object](#Time_object)*: Current system time. Additional to Time object attributes:
