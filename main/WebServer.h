@@ -361,6 +361,14 @@ private:
 	void Cmd_DeleteDashboardLayout(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_CopyDashboardLayout(WebEmSession& session, const request& req, Json::Value& root);
 
+	void Cmd_GetMatterNodes(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_GetMatterNetworkGraph(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_MatterCommissionNode(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_GetMatterCommissionStatus(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_MatterExcludeNode(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_DeleteMatterNode(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_RequestMatterNodeInfo(WebEmSession& session, const request& req, Json::Value& root);
+
 	// Plugin functions
 	void Cmd_PluginCommand(WebEmSession & session, const request& req, Json::Value &root);
 	void PluginList(Json::Value &root);

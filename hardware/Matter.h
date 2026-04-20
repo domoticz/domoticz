@@ -91,7 +91,9 @@ private:
 		int      battery_pct      = 255;
 		float    batteryVoltage_V = 0;  bool hasBatteryVoltage = false;
 		uint64_t uptime_s      = 0;
-		uint8_t  threadChannel     = 0;     // 0 = not yet received
+		uint16_t threadRloc16      = 0;
+		uint8_t  threadChannel     = 0;
+		time_t   lastSeen          = 0;
 		enum class RoutingRoleEnum : uint8_t {
 			Unspecified     = 0,
 			Unassigned      = 1,
@@ -120,6 +122,8 @@ private:
 			bool     isChild          = false;
 		};
 		std::vector<ThreadNeighbor> threadNeighbors;
+		struct RouteTableEntry { uint64_t extAddress = 0; uint16_t rloc16 = 0; bool linkEstablished = true; };
+		std::vector<RouteTableEntry> threadRouteTable;
 		bool available = true;
 		std::map<int, EndpointState> endpoints; // endpointId -> state
 	};
@@ -149,6 +153,14 @@ private:
 	uint16_t     m_port;
 	std::atomic<uint32_t> m_msgId{0};
 	std::shared_ptr<std::thread> m_thread;
-	std::atomic<bool> m_bConnected{false};
 	std::atomic<time_t> m_lastPingTime{0};
+public:
+	std::string  m_szSoftwareVersion;
+	std::atomic<bool> m_bConnected{false};
+
+	Json::Value GetNodesJSON(int hwdID) const;
+	Json::Value GetNetworkGraphJSON() const;
+	void CommissionNode(const std::string& code);
+	void RemoveNode(int nodeId);
+	void RefreshNodeInfo(int nodeId);
 };

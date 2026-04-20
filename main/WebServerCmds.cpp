@@ -73,6 +73,7 @@
 #include "../hardware/OTGWBase.h"
 #include "../hardware/EnphaseAPI.h"
 #include "../hardware/AlfenEve.h"
+#include "../hardware/Matter.h"
 #include "../hardware/RFLinkBase.h"
 #ifdef WITH_OPENZWAVE
 #include "../hardware/OpenZWave.h"
@@ -4682,6 +4683,12 @@ namespace http
 						{
 							AlfenEve* pMyHardware = dynamic_cast<AlfenEve*>(pHardware);
 							root["result"][ii]["version"] = pMyHardware->m_szSoftwareVersion;
+						}
+						else if (pHardware->HwdType == HTYPE_Matter)
+						{
+							CMatter* pMyHardware = dynamic_cast<CMatter*>(pHardware);
+							root["result"][ii]["version"]   = pMyHardware->m_szSoftwareVersion;
+							root["result"][ii]["Connected"] = pMyHardware->m_bConnected.load();
 						}
 #ifdef WITH_OPENZWAVE
 						else if (pHardware->HwdType == HTYPE_OpenZWave)

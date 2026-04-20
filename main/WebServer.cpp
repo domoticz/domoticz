@@ -393,6 +393,14 @@ namespace http
 			RegisterCommandCode("panasonicclearnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_PanasonicClearNodes(session, req, root); });
 			RegisterCommandCode("panasonicmediacommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_PanasonicMediaCommand(session, req, root); });
 
+			RegisterCommandCode("getmatternodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMatterNodes(session, req, root); }, true);
+			RegisterCommandCode("getmatternetworkgraph", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMatterNetworkGraph(session, req, root); }, true);
+			RegisterCommandCode("mattercommissionnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_MatterCommissionNode(session, req, root); }, true);
+			RegisterCommandCode("getmattercommissionstatus", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMatterCommissionStatus(session, req, root); }, true);
+			RegisterCommandCode("matterexcludenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_MatterExcludeNode(session, req, root); }, true);
+			RegisterCommandCode("deletematternode", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteMatterNode(session, req, root); }, true);
+			RegisterCommandCode("requestmatternodeinfo", [this](auto&& session, auto&& req, auto&& root) { Cmd_RequestMatterNodeInfo(session, req, root); }, true);
+
 			RegisterCommandCode("heossetmode", [this](auto&& session, auto&& req, auto&& root) { Cmd_HEOSSetMode(session, req, root); });
 			RegisterCommandCode("heosmediacommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_HEOSMediaCommand(session, req, root); });
 

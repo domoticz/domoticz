@@ -4,6 +4,7 @@
 #include "../main/Helper.h"
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
+#include "../main/WebServer.h"
 #include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
 #include "ColorSwitch.h"
@@ -89,6 +90,8 @@ static constexpr int ATTR_THREAD_CHANNEL               = 0;     // 0x0000 Thread
 static constexpr int ATTR_THREAD_ROUTING_ROLE          = 1;     // 0x0001 ThreadNetworkDiagnostics (RoutingRoleEnum)
 static constexpr int ATTR_THREAD_NETWORK_NAME          = 2;     // 0x0002 ThreadNetworkDiagnostics
 static constexpr int ATTR_THREAD_NEIGHBOR_TABLE        = 7;     // 0x0007 ThreadNetworkDiagnostics (array of NeighborTableStruct)
+static constexpr int ATTR_THREAD_ROUTE_TABLE           = 8;     // 0x0008 ThreadNetworkDiagnostics (array of RouteTableStruct)
+static constexpr int ATTR_THREAD_RLOC16                = 62;    // 0x003E ThreadNetworkDiagnostics (own RLOC16)
 static constexpr int ATTR_BATTERY_VOLTAGE              = 11;    // 0x000B PowerSource (mV × 1, so 2636 = 2.636 V)
 static constexpr int ATTR_BATTERY_PERCENT_REMAINING    = 12;    // 0x000C PowerSource (half-percent units, divide by 2)
 static constexpr int ATTR_CUMULATIVE_ENERGY_IMPORTED   = 1;     // 0x0001 ElectricalEnergyMeasurement (struct, field "0" = mWh)
@@ -284,8 +287,9 @@ void CMatter::HandleServerInfo(const Json::Value& msg)
 	if (minSchema > OUR_SCHEMA)
 		Log(LOG_STATUS, "server schema %d (min %d) is newer than our supported %d — compatibility not guaranteed",
 		    schema, minSchema, OUR_SCHEMA);
+	m_szSoftwareVersion = msg.isMember("sdk_version") ? msg["sdk_version"].asString() : "";
 	Log(LOG_STATUS, "server schema %d, SDK %s",
-	    schema, msg["sdk_version"].asString().c_str());
+	    schema, m_szSoftwareVersion.c_str());
 	m_bConnected = true;
 	SendCommand("start_listening");
 }
@@ -810,6 +814,8 @@ void CMatter::ApplyNodeMetadata(int cluster_id, int attr_id, const Json::Value& 
 				node.threadRoutingRole = static_cast<NodeState::RoutingRoleEnum>(v.asUInt());
 			else if (attr_id == ATTR_THREAD_NETWORK_NAME && v.isString())
 				node.threadNetworkName = v.asString();
+			else if (attr_id == ATTR_THREAD_RLOC16 && v.isIntegral())
+				node.threadRloc16 = static_cast<uint16_t>(v.asUInt());
 			else if (attr_id == ATTR_THREAD_NEIGHBOR_TABLE && v.isArray())
 			{
 				node.threadNeighbors.clear();
@@ -835,6 +841,20 @@ void CMatter::ApplyNodeMetadata(int cluster_id, int attr_id, const Json::Value& 
 					node.threadNeighbors.push_back(n);
 				}
 			}
+			else if (attr_id == ATTR_THREAD_ROUTE_TABLE && v.isArray())
+			{
+				node.threadRouteTable.clear();
+				for (const auto& entry : v)
+				{
+					if (!entry.isObject()) continue;
+					if (node.threadRouteTable.size() >= 64) break;
+					NodeState::RouteTableEntry rt;
+					if (entry.isMember("0")) rt.extAddress       = entry["0"].asUInt64();
+					if (entry.isMember("1")) rt.rloc16           = static_cast<uint16_t>(entry["1"].asUInt());
+					if (entry.isMember("9")) rt.linkEstablished  = entry["9"].asBool();
+					node.threadRouteTable.push_back(rt);
+				}
+			}
 			break;
 		default:
 			break;
@@ -847,13 +867,15 @@ void CMatter::_DetectAndSendNode(int nodeId)
 	auto nodeIt = m_nodes.find(nodeId);
 	if (nodeIt == m_nodes.end())
 		return;
-	const auto& node = nodeIt->second;
+	auto& node = nodeIt->second;
 
 	if (!node.available)
 	{
 		Log(LOG_DEBUG_INT, "Node %d is unavailable – skipping device update", nodeId);
 		return;
 	}
+
+	node.lastSeen = time(nullptr);
 
 	// Aggregate environmental sensor readings across all endpoints of this node.
 	float setpoint_C = 0;  bool hasSetpoint = false;
@@ -1538,3 +1560,325 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 
 	return true;
 }
+
+// Derives the Matter nodeId from a DeviceID string as stored in DeviceStatus.
+// Three storage formats are used by the sensor helpers:
+//   1. Decimal nodeId    – environmental sensors (SendTempHumSensor etc.)
+//   2. %08X(nodeId*256+ep)   – per-endpoint devices (GeneralSwitch, WattMeter …)
+//   3. %08X((nodeId*256+ep)<<8|child) – kWh/General-device sensors (SendKwhMeter)
+static int MatterNodeIdFromDeviceID(const std::string& devId)
+{
+	if (devId.empty()) return -1;
+	bool hasLeadingZero = devId.size() > 1 && devId[0] == '0';
+	bool hasAlpha = devId.find_first_not_of("0123456789") != std::string::npos;
+
+	if (hasAlpha || hasLeadingZero)
+	{
+		// Hex-formatted DeviceID
+		auto v = (uint32_t)strtol(devId.c_str(), nullptr, 16);
+		if (v > 0 && v <= 255)       return (int)v;          // format 1 (hex-stored env sensor)
+		uint32_t kwh = v >> 16;
+		if (kwh > 0 && kwh <= 255)   return (int)kwh;        // format 3
+		uint32_t ep  = v / 256;
+		if (ep  > 0 && ep  <= 255)   return (int)ep;         // format 2
+	}
+	else
+	{
+		// Decimal-formatted DeviceID
+		auto v = (uint32_t)atoi(devId.c_str());
+		if (v > 0 && v <= 255)       return (int)v;          // format 1
+		uint32_t ep = v / 256;
+		if (ep > 0 && ep <= 255)     return (int)ep;         // format 2 stored as decimal
+	}
+	return -1;
+}
+
+Json::Value CMatter::GetNodesJSON(int hwdID) const
+{
+	// Build nodeId → device names map from a single DB query.
+	std::map<int, std::set<std::string>> devNames;
+	for (const auto& row : m_sql.safe_query(
+		"SELECT DeviceID, Name FROM DeviceStatus WHERE HardwareID=%d", hwdID))
+	{
+		int nid = MatterNodeIdFromDeviceID(row[0]);
+		if (nid >= 0)
+			devNames[nid].insert(row[1]);
+	}
+
+	Json::Value root;
+	root["status"] = "OK";
+	root["title"]  = "GetMatterNodes";
+	root["result"] = Json::Value(Json::arrayValue);
+
+	std::lock_guard<std::mutex> lock(m_stateMutex);
+	int ii = 0;
+	for (const auto& kv : m_nodes)
+	{
+		const NodeState& node = kv.second;
+
+		std::string names;
+		auto it = devNames.find(node.nodeId);
+		if (it != devNames.end())
+			for (const auto& n : it->second) { if (!names.empty()) names += ", "; names += n; }
+
+		std::string lastSeenStr;
+		if (node.lastSeen)
+		{
+			char buf[32];
+			struct tm t;
+#ifdef _WIN32
+			localtime_s(&t, &node.lastSeen);
+#else
+			localtime_r(&node.lastSeen, &t);
+#endif
+			strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &t);
+			lastSeenStr = buf;
+		}
+
+		Json::Value entry;
+		entry["NodeID"]            = node.nodeId;
+		entry["VendorName"]        = node.vendorName;
+		entry["ProductName"]       = node.productName;
+		entry["available"]         = node.available;
+		entry["DeviceNames"]       = names;
+		entry["LastSeen"]          = lastSeenStr;
+		entry["LastSeenTimestamp"] = (int)node.lastSeen;
+
+		root["result"][ii++] = entry;
+	}
+	return root;
+}
+
+Json::Value CMatter::GetNetworkGraphJSON() const
+{
+	static const char* roleNames[] = {
+		"Unspecified", "Unassigned", "SleepyEndDevice", "EndDevice", "REED", "Router", "Leader"
+	};
+
+	Json::Value root;
+	root["status"] = "OK";
+	root["nodes"]  = Json::Value(Json::arrayValue);
+	root["edges"]  = Json::Value(Json::arrayValue);
+
+	std::lock_guard<std::mutex> lock(m_stateMutex);
+
+	// Step 1: seed rloc16→nodeId.
+	// Primary source: route table self-entries (linkEstablished=false) identify each node's own RLOC16.
+	// Some firmware zeroes extAddress on self-entry; others (e.g. IKEA) do not — but all set linkEstablished=false.
+	// Fallback: attr 62 (threadRloc16), which in practice is always empty ([]).
+	std::map<uint16_t, int> rloc16ToNodeId;
+	for (const auto& kv : m_nodes)
+	{
+		const NodeState& node = kv.second;
+		if (node.threadRloc16 != 0)
+		{
+			rloc16ToNodeId[node.threadRloc16] = node.nodeId;
+			continue;
+		}
+		for (const auto& rt : node.threadRouteTable)
+		{
+			// Self-entry: linkEstablished=false identifies the node's own router entry.
+			// Some firmware zeroes extAddress on self-entry; others (e.g. IKEA) do not —
+			// but all implementations set linkEstablished=false for the self-entry.
+			if (!rt.linkEstablished && rt.rloc16 != 0)
+			{
+				rloc16ToNodeId[rt.rloc16] = node.nodeId;
+				break;
+			}
+		}
+	}
+
+	// Step 2: build rloc16→extAddress from all neighbor + route table entries.
+	std::map<uint16_t, uint64_t> rloc16ToExtAddr;
+	for (const auto& kv : m_nodes)
+	{
+		for (const auto& nb : kv.second.threadNeighbors)
+			if (nb.rloc16 != 0 && nb.extAddress != 0)
+				rloc16ToExtAddr[nb.rloc16] = nb.extAddress;
+		for (const auto& rt : kv.second.threadRouteTable)
+			if (rt.rloc16 != 0 && rt.extAddress != 0)
+				rloc16ToExtAddr[rt.rloc16] = rt.extAddress;
+	}
+
+	// Step 3: cross-reference extAddress→nodeId to resolve any remaining rloc16s.
+	std::map<uint64_t, int> extAddrToNodeId;
+	for (const auto& [rloc, nid] : rloc16ToNodeId)
+	{
+		auto it = rloc16ToExtAddr.find(rloc);
+		if (it != rloc16ToExtAddr.end() && it->second != 0)
+			extAddrToNodeId[it->second] = nid;
+	}
+	for (const auto& kv : m_nodes)
+		for (const auto& nb : kv.second.threadNeighbors)
+			if (nb.rloc16 != 0 && nb.extAddress != 0 && !rloc16ToNodeId.count(nb.rloc16))
+			{
+				auto it = extAddrToNodeId.find(nb.extAddress);
+				if (it != extAddrToNodeId.end())
+					rloc16ToNodeId[nb.rloc16] = it->second;
+			}
+
+	// Any remaining unmapped rloc16 is the controller/border router.
+	bool hasController = false;
+	for (const auto& kv : m_nodes)
+		for (const auto& nb : kv.second.threadNeighbors)
+			if (nb.rloc16 != 0 && !rloc16ToNodeId.count(nb.rloc16))
+				hasController = true;
+
+	int ni = 0;
+	for (const auto& kv : m_nodes)
+	{
+		const NodeState& node = kv.second;
+		auto role = static_cast<int>(node.threadRoutingRole);
+
+		Json::Value n;
+		n["NodeID"]         = node.nodeId;
+		n["Name"]           = node.vendorName.empty() ? std::to_string(node.nodeId) : (node.vendorName + " " + node.productName);
+		n["RoutingRole"]    = role;
+		n["RoleName"]       = (role >= 0 && role <= 6) ? roleNames[role] : "Unspecified";
+		n["isBorderRouter"] = (role == 5 || role == 6);
+		root["nodes"][ni++] = n;
+	}
+	if (hasController)
+	{
+		Json::Value n;
+		n["NodeID"]         = 1;
+		n["Name"]           = "Controller";
+		n["RoutingRole"]    = 7;
+		n["RoleName"]       = "Controller";
+		n["isBorderRouter"] = true;
+		root["nodes"][ni++] = n;
+	}
+
+	int ei = 0;
+	for (const auto& kv : m_nodes)
+	{
+		const NodeState& node = kv.second;
+		for (const auto& nb : node.threadNeighbors)
+		{
+			if (nb.rloc16 == 0) continue;
+			if (nb.isChild) continue; // child end-devices report their own edge from their side
+			int toId;
+			auto it = rloc16ToNodeId.find(nb.rloc16);
+			if (it != rloc16ToNodeId.end())
+				toId = it->second;
+			else
+				toId = 1; // controller
+
+			Json::Value e;
+			e["from"]      = node.nodeId;
+			e["to"]        = toId;
+			e["lqi"]       = (int)nb.lqi;
+			e["rssi"]      = (int)nb.averageRssi;
+			e["fromRoute"] = false;
+			root["edges"][ei++] = e;
+		}
+	}
+	return root;
+}
+
+void CMatter::CommissionNode(const std::string& code)
+{
+	Json::Value args;
+	args["code"] = code;
+	SendCommand("commission_with_code", args);
+}
+
+void CMatter::RemoveNode(int nodeId)
+{
+	Json::Value args;
+	args["node_id"] = nodeId;
+	SendCommand("remove_node", args);
+}
+
+void CMatter::RefreshNodeInfo(int nodeId)
+{
+	Json::Value args;
+	args["node_id"] = nodeId;
+	SendCommand("interview_node", args);
+}
+
+namespace http {
+	namespace server {
+
+#define GET_MATTER_HW \
+	std::string sIdx = request::findValue(&req, "idx"); \
+	if (sIdx.empty()) return; \
+	CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(sIdx.c_str())); \
+	if (!pHardware || pHardware->HwdType != HTYPE_Matter) return; \
+	CMatter* pMatter = dynamic_cast<CMatter*>(pHardware); \
+	if (!pMatter) return;
+
+		void CWebServer::Cmd_GetMatterNodes(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
+			GET_MATTER_HW
+			root = pMatter->GetNodesJSON(pMatter->m_HwdID);
+		}
+
+		void CWebServer::Cmd_GetMatterNetworkGraph(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
+			GET_MATTER_HW
+			root = pMatter->GetNetworkGraphJSON();
+		}
+
+		void CWebServer::Cmd_MatterCommissionNode(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
+			GET_MATTER_HW
+			std::string sCode = request::findValue(&req, "code");
+			if (sCode.empty()) return;
+			pMatter->CommissionNode(sCode);
+			root["status"] = "OK";
+			root["title"]  = "MatterCommissionNode";
+		}
+
+		void CWebServer::Cmd_GetMatterCommissionStatus(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
+			GET_MATTER_HW
+			root["status"]      = "OK";
+			root["title"]       = "GetMatterCommissionStatus";
+			root["state"]       = "Succeeded";
+			root["nodeId"]      = -1;
+			root["vendorName"]  = "";
+			root["productName"] = "";
+		}
+
+		void CWebServer::Cmd_MatterExcludeNode(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
+			GET_MATTER_HW
+			std::string sNode = request::findValue(&req, "node");
+			if (sNode.empty()) return;
+			pMatter->RemoveNode(atoi(sNode.c_str()));
+			root["status"] = "OK";
+			root["title"]  = "MatterExcludeNode";
+		}
+
+		void CWebServer::Cmd_DeleteMatterNode(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
+			GET_MATTER_HW
+			std::string sNode = request::findValue(&req, "node");
+			if (sNode.empty()) return;
+			pMatter->RemoveNode(atoi(sNode.c_str()));
+			root["status"] = "OK";
+			root["title"]  = "DeleteMatterNode";
+		}
+
+		void CWebServer::Cmd_RequestMatterNodeInfo(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
+			GET_MATTER_HW
+			std::string sNode = request::findValue(&req, "node");
+			if (sNode.empty()) return;
+			pMatter->RefreshNodeInfo(atoi(sNode.c_str()));
+			root["status"] = "OK";
+			root["title"]  = "RequestMatterNodeInfo";
+		}
+
+#undef GET_MATTER_HW
+
+	} // namespace server
+} // namespace http

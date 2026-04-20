@@ -275,11 +275,9 @@ define(['app'], function (app) {
 						aaSorting: [[0, 'asc']],
 						iDisplayLength: 50,
 						createdRow: function (row, data) {
-							// data[0] is NodeID; legendNodeMap is always current when draw() fires
 							var node = legendNodeMap[String(data[0])];
-							if (node && node.isBorderRouter) {
-								$(row).css('color', '#888');
-							}
+							if (!node) return;
+							$(row).css('color', roleColor(node.RoutingRole));
 						}
 					});
 				} else {
@@ -325,6 +323,37 @@ define(['app'], function (app) {
 			return m;
 		}
 
+		function roleColor(r) {
+			if (r === 7)                            return '#FFA726';
+			if (r === 6 || r === 5 || r === 4)      return '#42A5F5';
+			if (r === 2)                            return '#7E57C2';
+			if (r === 3)                            return '#26C6DA';
+			return '#90A4AE';
+		}
+
+		function buildNodeTipHtml(id, nodeMap, edges) {
+			var n = nodeMap[String(id)];
+			if (!n) return String(id);
+			var html = '<b>' + n.NodeID + ' ' + n.Name + ' (' + n.RoleName + ')</b>';
+			var peerBest = {};
+			$.each(edges, function (i, e) {
+				var f = String(e.from), t = String(e.to);
+				if (f !== String(id) && t !== String(id)) return;
+				var other = f === String(id) ? t : f;
+				if (!peerBest[other] || (!e.fromRoute && peerBest[other].fromRoute)) peerBest[other] = e;
+			});
+			var links = [];
+			$.each(peerBest, function (other, e) {
+				var om = nodeMap[other];
+				var line = om ? (om.NodeID + ' ' + om.Name) : other;
+				line += '&nbsp;&nbsp;LQI: ' + (e.lqi || 0);
+				if (!e.fromRoute && e.rssi !== undefined) line += '&nbsp;&nbsp;RSSI: ' + e.rssi + ' dBm';
+				links.push(line);
+			});
+			if (links.length) html += '<hr style="margin:4px 0;border-color:#555">' + links.join('<br>');
+			return html;
+		}
+
 		function edgeTooltipLine(edgeMap, from, to) {
 			var e = edgeMap[String(from) + '|' + String(to)];
 			if (!e) return '';
@@ -360,8 +389,7 @@ define(['app'], function (app) {
 				tooltip: {
 					enabled: true,
 					nodeFormatter: function () {
-						var n = nodeMap[String(this.id)];
-						return n ? '<b>' + n.Name + '</b><br>' + n.RoleName : String(this.id);
+						return buildNodeTipHtml(this.id, nodeMap, edges);
 					},
 					pointFormatter: function () {
 						var from = nodeMap[String(this.from)];
@@ -398,7 +426,7 @@ define(['app'], function (app) {
 				position: 'absolute', background: 'rgba(15,20,35,0.88)', color: '#eee',
 				padding: '6px 10px', borderRadius: '5px', fontSize: '12px',
 				pointerEvents: 'none', display: 'none', zIndex: 10,
-				maxWidth: '220px', lineHeight: '1.6', boxShadow: '0 2px 8px rgba(0,0,0,0.5)'
+				lineHeight: '1.6', whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(0,0,0,0.5)'
 			}).appendTo($chart);
 
 			var width  = $chart.width()  || 700;
@@ -428,14 +456,10 @@ define(['app'], function (app) {
 			}
 
 			function nodeColors(node) {
-				if (node.isBorderRouter)      return { fill: '#FFA726', stroke: '#E65100', text: '#fff' };
 				var r = node.RoutingRole;
-				if (r === 6)                  return { fill: '#FFD54F', stroke: '#F57F17', text: '#222' };  // Leader: gold
-				if (r === 5)                  return { fill: '#42A5F5', stroke: '#1565C0', text: '#fff' };  // Router: blue
-				if (r === 4)                  return { fill: '#7E57C2', stroke: '#4527A0', text: '#fff' };  // REED: purple
-				if (r === 3)                  return { fill: '#00BCD4', stroke: '#006064', text: '#fff' };  // EndDevice: cyan
-				if (r === 2)                  return { fill: '#26C6DA', stroke: '#00838F', text: '#fff' };  // SleepyEndDevice: light cyan
-				return { fill: '#90A4AE', stroke: '#546E7A', text: '#fff' };
+				var c = roleColor(r);
+				var strokes = { '#FFA726': '#E65100', '#42A5F5': '#1565C0', '#7E57C2': '#4527A0', '#26C6DA': '#00838F', '#90A4AE': '#546E7A' };
+				return { fill: c, stroke: strokes[c] || '#546E7A', text: '#fff' };
 			}
 
 			var NR = 24; // node radius
@@ -593,28 +617,8 @@ define(['app'], function (app) {
 			}
 
 			function showNodeTip(id, px, py) {
-				var n = nodeMap[id];
-				if (!n) return;
-				var html = '<b>' + n.Name + '</b><br><i>' + n.RoleName + '</i>';
-				// Collect per-peer best edge (neighbor preferred over route)
-				var peerBest = {};
-				$.each(edges, function (i, e) {
-					var f = String(e.from), t = String(e.to);
-					if (f !== id && t !== id) return;
-					var other = f === id ? t : f;
-					if (!peerBest[other] || (!e.fromRoute && peerBest[other].fromRoute)) {
-						peerBest[other] = e;
-					}
-				});
-				var links = [];
-				$.each(peerBest, function (other, e) {
-					var om = nodeMap[other];
-					var line = (om ? om.Name : other) + ': LQI ' + (e.lqi || 0);
-					if (!e.fromRoute && e.rssi !== undefined) line += ', RSSI ' + e.rssi + ' dBm';
-					links.push(line);
-				});
-				if (links.length) html += '<hr style="margin:3px 0;border-color:#555">' + links.join('<br>');
-				positionTip(html, px, py);
+				if (!nodeMap[id]) return;
+				positionTip(buildNodeTipHtml(id, nodeMap, edges), px, py);
 			}
 
 			function showEdgeTip(edge, px, py) {
