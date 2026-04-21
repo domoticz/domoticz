@@ -63,6 +63,7 @@ private:
 	void GetInverterDetails(const _tInverterSettings* pInverterSettings, int iInverterNumber);
 	int getSunRiseSunSetMinutes(bool bGetSunRise);
 	bool isDaylightWindow();
+	void ResetPowerValues();
 
 	void GetBatteryDetails();
 	void GetOverview();
@@ -94,6 +95,9 @@ private:
 	std::vector<_tWebNodeInfo> m_webInverters;
 	std::vector<_tWebNodeInfo> m_webStrings;
 	std::map<int, CounterHelper> m_counterHelpers;
+
+	bool m_bWasInDaylightWindow = true;
+	std::vector<double> m_lastInverterEnergy;
 
 	std::shared_ptr<std::thread> m_thread;
 };

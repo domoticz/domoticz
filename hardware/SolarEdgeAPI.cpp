@@ -192,6 +192,11 @@ void SolarEdgeAPI::Do_Work()
 				GetBatteryDetails();
 		}
 
+		bool bNowInDaylight = isDaylightWindow();
+		if (m_bWasInDaylightWindow && !bNowInDaylight)
+			ResetPowerValues();
+		m_bWasInDaylightWindow = bNowInDaylight;
+
 		// Web portal polling (requires web credentials)
 		bool bWebCredentials = !m_WebUsername.empty() && !m_WebPassword.empty();
 
@@ -258,6 +263,44 @@ bool SolarEdgeAPI::isDaylightWindow()
 	return true;
 }
 
+void SolarEdgeAPI::ResetPowerValues()
+{
+	Log(LOG_STATUS, "Daylight window ended, resetting power/current values to zero");
+	char szTmp[100];
+
+	SendKwhMeter(1, 1, 255, 0, m_totalEnergy / 1000.0, "kWh Meter Total");
+
+	for (int i = 0; i < (int)m_inverters.size(); i++)
+	{
+		sprintf(szTmp, "kWh Meter %s", m_inverters[i].name.c_str());
+		double energy = (i < (int)m_lastInverterEnergy.size()) ? m_lastInverterEnergy[i] : 0.0;
+		SendKwhMeter(0, 1 + i, 255, 0, energy / 1000.0, szTmp);
+
+		for (int ii = 0; ii < 3; ii++)
+		{
+			int iPhase = ii + 1;
+			sprintf(szTmp, "acCurrent L%d %s", iPhase, m_inverters[i].name.c_str());
+			SendCustomSensor(i, SE_AC_CURRENT + ii, 255, 0, szTmp, "A");
+			sprintf(szTmp, "Power L%d %s", iPhase, m_inverters[i].name.c_str());
+			SendWattMeter(1 + i, iPhase, 255, 0, szTmp);
+		}
+	}
+
+	SendWattMeter(200, SE_OVERVIEW_CURRENT, 255, 0, "Site Current Power");
+	SendWattMeter(200, SE_GRID, 255, 0, "Grid Power");
+	SendWattMeter(200, SE_LOAD, 255, 0, "Load Power");
+	SendWattMeter(200, SE_PV, 255, 0, "PV Power");
+	if (m_bPollBattery)
+		SendWattMeter(200, SE_STORAGE_POWER, 255, 0, "Battery Power");
+
+	for (const auto& opt : m_optimizers)
+	{
+		sprintf(szTmp, "%s Power", opt.displayName.c_str());
+		SendWattMeter(opt.nodeId, SE_OPT_POWER, 255, 0, szTmp);
+		sprintf(szTmp, "%s Current", opt.displayName.c_str());
+		SendCustomSensor(opt.nodeId, SE_OPT_CURRENT, 255, 0, szTmp, "A");
+	}
+}
 
 bool SolarEdgeAPI::GetSite()
 {
@@ -404,6 +447,7 @@ void SolarEdgeAPI::GetInverters()
 		iSettings.SN = reading["serialNumber"].asString();
 		m_inverters.push_back(iSettings);
 	}
+	m_lastInverterEnergy.assign(m_inverters.size(), 0.0);
 }
 
 void SolarEdgeAPI::GetMeterDetails()
@@ -506,6 +550,8 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings* pInverterSetting
 			sprintf(szTmp, "kWh Meter %s", pInverterSettings->name.c_str());
 			SendKwhMeter(0, 1 + iInverterNumber, 255, curActivePower, curEnergy / 1000.0, szTmp);
 		}
+		if (iInverterNumber < (int)m_lastInverterEnergy.size())
+			m_lastInverterEnergy[iInverterNumber] = curEnergy;
 		m_totalActivePower += curActivePower;
 		m_totalEnergy += curEnergy;
 	}
