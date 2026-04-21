@@ -6934,21 +6934,16 @@ namespace http
 			uint64_t idx = std::stoull(request::findValue(&req, "idx"));
 
 			int hwID = -1;
-			int hwType = -1;
 			bool bIsKwhCounter = false;
 			{
 				auto devRes = m_sql.safe_query(
-					"SELECT d.HardwareID, d.Type, d.SubType, h.Type "
-					"FROM DeviceStatus d LEFT JOIN Hardware h ON h.ID = d.HardwareID "
-					"WHERE d.ID='%" PRIu64 "' LIMIT 1", idx);
+					"SELECT HardwareID, Type, SubType FROM DeviceStatus WHERE ID='%" PRIu64 "'", idx);
 				if (!devRes.empty())
 				{
 					hwID        = atoi(devRes[0][0].c_str());
 					int devType = atoi(devRes[0][1].c_str());
 					int devSub  = atoi(devRes[0][2].c_str());
 					bIsKwhCounter = (devType == pTypeGeneral && devSub == sTypeKwh);
-					if (!devRes[0][3].empty())
-						hwType = atoi(devRes[0][3].c_str());
 				}
 			}
 
@@ -6972,11 +6967,13 @@ namespace http
 			// Only stop/restart hardware when spikes were actually corrected in the DB.
 			// The CounterHelper (used by MQTT-AD and similar plugins) caches the cumulative
 			// counter in memory and must reload from the corrected DB values.
-			// EnphaseAPI manages its own in-memory tracker (ProcessEnphaseCounter) which
-			// handles upward spikes via offset correction — restarting it would destroy the
-			// tracker state and cause the spike to be re-introduced on the next Envoy reading.
-			bool bNeedsRestart = bIsKwhCounter && hwID != -1 && spikesFixed > 0
-				&& hwType != HTYPE_EnphaseAPI;
+			// EnphaseAPI also benefits from a restart: FixKwhCounterSpikes corrects
+			// DeviceStatus.sValue to the lower baseline, and the upward-spike detection
+			// in ProcessEnphaseCounter will then catch the gap between that baseline and
+			// the Envoy's still-high whLifetime, applying the correct negative offset so
+			// the tracker continues from the corrected value.  Without the restart the
+			// corrected sValue is overwritten on the very next Envoy poll.
+			bool bNeedsRestart = bIsKwhCounter && hwID != -1 && spikesFixed > 0;
 			if (bNeedsRestart)
 			{
 				m_mainworker.RemoveDomoticzHardware(hwID);
