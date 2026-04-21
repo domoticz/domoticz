@@ -36,6 +36,12 @@ static constexpr int ENPHASE_RESET_CONFIRM_COUNT = 5;
 // Maximum drop (kWh) that is still considered normal noise / rounding error.
 static constexpr double ENPHASE_RESET_TOLERANCE_KWH = 0.5;
 
+// Minimum upward jump (kWh) in one reading that is treated as a spurious spike.
+// Enphase Envoy firmware updates sometimes retroactively recalculate whLifetime,
+// causing sudden large upward steps that are not real production increments.
+// 1000 kWh far exceeds any legitimate single-reading increment for solar panels.
+static constexpr double ENPHASE_UPWARD_SPIKE_KWH = 1000.0;
+
 // Processes one whLifetime reading (in kWh) through the counter tracker and
 // returns the corrected cumulative total to pass to SendKwhMeter.
 // While a potential reset is being confirmed the last known-good total is
@@ -57,6 +63,18 @@ static double ProcessEnphaseCounter(EnphaseCounterTracker& tracker, const double
 	if (tracker.justConfirmed)
 	{
 		tracker.justConfirmed = false;
+		// Guard: a firmware recalibration spike can coincide with a counter reset.
+		// Check before the spurious-reset-cancel test so it cannot slip through.
+		double postResetCandidate = tracker.offset + rawKwh;
+		if (postResetCandidate > tracker.lastGoodTotal + ENPHASE_UPWARD_SPIKE_KWH)
+		{
+			_log.Log(LOG_STATUS, "EnphaseAPI %s: upward spike of +%.1f kWh detected in post-reset reading "
+				"(%.3f -> %.3f kWh), applying offset correction to maintain continuity",
+				deviceLabel, postResetCandidate - tracker.lastGoodTotal,
+				tracker.lastGoodTotal, postResetCandidate);
+			tracker.offset = tracker.lastGoodTotal - rawKwh;
+			return tracker.lastGoodTotal;
+		}
 		if (tracker.preResetTotal > 0.0 && rawKwh > tracker.preResetTotal - ENPHASE_RESET_TOLERANCE_KWH)
 		{
 			// The value recovered to within tolerance of the old lifetime total –
@@ -78,6 +96,24 @@ static double ProcessEnphaseCounter(EnphaseCounterTracker& tracker, const double
 	}
 
 	double candidateTotal = tracker.offset + rawKwh;
+
+	// Detect impossibly large upward jumps (e.g. Envoy firmware retroactively
+	// recalculates whLifetime history).  Apply a negative offset so the adjusted
+	// total stays continuous.  On the very next poll rawKwh will be
+	// (old_rawKwh + tiny_increment), so candidateTotal collapses back to
+	// lastGoodTotal + tiny_increment and normal tracking resumes automatically.
+	// If this was a one-poll glitch (value recovers below lastGoodTotal), the
+	// resulting drop is caught by the downward-reset path below and unwound via
+	// the spurious-reset-cancel logic in the justConfirmed branch.
+	if (candidateTotal > tracker.lastGoodTotal + ENPHASE_UPWARD_SPIKE_KWH)
+	{
+		_log.Log(LOG_STATUS, "EnphaseAPI %s: upward spike of +%.1f kWh detected "
+			"(%.3f -> %.3f kWh), applying offset correction to maintain continuity",
+			deviceLabel, candidateTotal - tracker.lastGoodTotal,
+			tracker.lastGoodTotal, candidateTotal);
+		tracker.offset = tracker.lastGoodTotal - rawKwh;
+		return tracker.lastGoodTotal;
+	}
 
 	if (candidateTotal >= tracker.lastGoodTotal - ENPHASE_RESET_TOLERANCE_KWH)
 	{

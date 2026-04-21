@@ -6934,16 +6934,21 @@ namespace http
 			uint64_t idx = std::stoull(request::findValue(&req, "idx"));
 
 			int hwID = -1;
+			int hwType = -1;
 			bool bIsKwhCounter = false;
 			{
 				auto devRes = m_sql.safe_query(
-					"SELECT HardwareID, Type, SubType FROM DeviceStatus WHERE ID='%" PRIu64 "'", idx);
+					"SELECT d.HardwareID, d.Type, d.SubType, h.Type "
+					"FROM DeviceStatus d LEFT JOIN Hardware h ON h.ID = d.HardwareID "
+					"WHERE d.ID='%" PRIu64 "' LIMIT 1", idx);
 				if (!devRes.empty())
 				{
 					hwID        = atoi(devRes[0][0].c_str());
 					int devType = atoi(devRes[0][1].c_str());
 					int devSub  = atoi(devRes[0][2].c_str());
 					bIsKwhCounter = (devType == pTypeGeneral && devSub == sTypeKwh);
+					if (!devRes[0][3].empty())
+						hwType = atoi(devRes[0][3].c_str());
 				}
 			}
 
@@ -6967,10 +6972,12 @@ namespace http
 			// Only stop/restart hardware when spikes were actually corrected in the DB.
 			// The CounterHelper (used by MQTT-AD and similar plugins) caches the cumulative
 			// counter in memory and must reload from the corrected DB values.
-			// Plugins that manage their own in-memory state (e.g. EnphaseAPI) must not be
-			// restarted unnecessarily — doing so destroys their tracker state and can cause
-			// a spurious negative spike on the next reading.
-			if (bIsKwhCounter && hwID != -1 && spikesFixed > 0)
+			// EnphaseAPI manages its own in-memory tracker (ProcessEnphaseCounter) which
+			// handles upward spikes via offset correction — restarting it would destroy the
+			// tracker state and cause the spike to be re-introduced on the next Envoy reading.
+			bool bNeedsRestart = bIsKwhCounter && hwID != -1 && spikesFixed > 0
+				&& hwType != HTYPE_EnphaseAPI;
+			if (bNeedsRestart)
 			{
 				m_mainworker.RemoveDomoticzHardware(hwID);
 				auto hwRes = m_sql.safe_query(
