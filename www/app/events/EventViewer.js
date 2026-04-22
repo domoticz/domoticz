@@ -318,7 +318,15 @@ define(['app', 'events/factories'], function (app) {
                 var container = $element.find('.js-script-content')[0];
 
                 require(['blockly', 'app/events/blockly_blocks_domoticz.js'], function () {
+                    var suppressChangeEvents = false;
+                    var needsRerender = false;
+
                     blocklyToolbox.get().then(function (toolbox) {
+                        // If the container is hidden at init time (e.g. inactive tab), blocks
+                        // will be measured with zero dimensions.  Flag for re-render on first
+                        // time the workspace becomes visible.
+                        needsRerender = container.offsetWidth === 0;
+
                         blocklyWorkspace = Blockly.inject(container, {
                             path: './',
                             toolbox: toolbox,
@@ -346,8 +354,10 @@ define(['app', 'events/factories'], function (app) {
                         $timeout(function () {
                             //Timeout is required as Blockly fires change event right after it was initialized
                             blocklyWorkspace.addChangeListener(function () {
-                                markEventAsUpdated();
-                                $scope.$apply();
+                                if (!suppressChangeEvents) {
+                                    markEventAsUpdated();
+                                    $scope.$apply();
+                                }
                             });
                         }, 200);
 
@@ -356,6 +366,19 @@ define(['app', 'events/factories'], function (app) {
                             var ro = new ResizeObserver(function (entries) {
                                 if (entries.length && entries[0].contentRect.width > 0) {
                                     Blockly.svgResize(blocklyWorkspace);
+
+                                    // Re-render blocks the first time the workspace becomes
+                                    // visible after having been initialised in a hidden container.
+                                    // svgResize alone cannot fix block dimensions that were
+                                    // measured as zero while the container was display:none.
+                                    if (needsRerender) {
+                                        needsRerender = false;
+                                        suppressChangeEvents = true;
+                                        var savedXml = Blockly.Xml.workspaceToDom(blocklyWorkspace);
+                                        blocklyWorkspace.clear();
+                                        Blockly.Xml.domToWorkspace(savedXml, blocklyWorkspace);
+                                        suppressChangeEvents = false;
+                                    }
                                 }
                             });
 
@@ -363,7 +386,7 @@ define(['app', 'events/factories'], function (app) {
 
                             $scope.$on('$destroy', function() {
                                 ro.disconnect();
-                            })
+                            });
                         }
                     });
 
