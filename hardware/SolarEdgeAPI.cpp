@@ -276,14 +276,15 @@ void SolarEdgeAPI::ResetPowerValues()
 		double energy = (i < (int)m_lastInverterEnergy.size()) ? m_lastInverterEnergy[i] : 0.0;
 		SendKwhMeter(0, 1 + i, 255, 0, energy / 1000.0, szTmp);
 
-		for (int ii = 0; ii < 3; ii++)
-		{
-			int iPhase = ii + 1;
-			sprintf(szTmp, "acCurrent L%d %s", iPhase, m_inverters[i].name.c_str());
-			SendCustomSensor(i, SE_AC_CURRENT + ii, 255, 0, szTmp, "A");
-			sprintf(szTmp, "Power L%d %s", iPhase, m_inverters[i].name.c_str());
-			SendWattMeter(1 + i, iPhase, 255, 0, szTmp);
-		}
+		// No need to reset the next values, API returns 0 before daylight window ends
+		//for (int ii = 0; ii < 3; ii++)
+		//{
+		//	int iPhase = ii + 1;
+		//	sprintf(szTmp, "acCurrent L%d %s", iPhase, m_inverters[i].name.c_str());
+		//	SendCustomSensor(i, SE_AC_CURRENT + ii, 255, 0, szTmp, "A");
+		//	sprintf(szTmp, "Power L%d %s", iPhase, m_inverters[i].name.c_str());
+		//	SendWattMeter(1 + i, iPhase, 255, 0, szTmp);
+		//}
 	}
 
 	SendWattMeter(200, SE_OVERVIEW_CURRENT, 255, 0, "Site Current Power");
@@ -293,12 +294,19 @@ void SolarEdgeAPI::ResetPowerValues()
 	if (m_bPollBattery)
 		SendWattMeter(200, SE_STORAGE_POWER, 255, 0, "Battery Power");
 
-	for (const auto& opt : m_optimizers)
+	if (m_bPollOptimizers) // only reset optimizer values if we are polling them, otherwise they may create unnecessary devices.
 	{
-		sprintf(szTmp, "%s Power", opt.displayName.c_str());
-		SendWattMeter(opt.nodeId, SE_OPT_POWER, 255, 0, szTmp);
-		sprintf(szTmp, "%s Current", opt.displayName.c_str());
-		SendCustomSensor(opt.nodeId, SE_OPT_CURRENT, 255, 0, szTmp, "A");
+		for (const auto& opt : m_optimizers)
+		{
+			sprintf(szTmp, "%s Power", opt.displayName.c_str());
+			SendWattMeter(opt.nodeId, SE_OPT_POWER, 255, 0, szTmp);
+			sprintf(szTmp, "Voltage %s", opt.displayName.c_str());
+			SendVoltageSensor(opt.nodeId, SE_OPT_VOLTAGE, 255, 0, szTmp);
+			sprintf(szTmp, "Optimizer Voltage %s", opt.displayName.c_str());
+			SendVoltageSensor(opt.nodeId, SE_OPT_OPTIMIZER_VOLTAGE, 255, 0, szTmp);
+			sprintf(szTmp, "%s Current", opt.displayName.c_str());
+			SendCustomSensor(opt.nodeId, SE_OPT_CURRENT, 255, 0, szTmp, "A");
+		}
 	}
 }
 
