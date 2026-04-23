@@ -638,10 +638,18 @@ define([
                     if (d.SwitchType && d.SwitchType !== 'Selector' && d.Status !== undefined) {
                         ctrl.deviceType      = 'switch';
                         ctrl.deviceProtected = d.Protected || false;
-                        ctrl.switchOn    = (d.Status === 'On');
                         ctrl.switchType  = d.SwitchType || '';
+                        if (ctrl.switchType === 'Push On Button') {
+                            ctrl.switchOn = true;
+                            ctrl.valueStr = 'On';
+                        } else if (ctrl.switchType === 'Push Off Button') {
+                            ctrl.switchOn = true;
+                            ctrl.valueStr = 'Off';
+                        } else {
+                            ctrl.switchOn = (d.Status === 'On');
+                            ctrl.valueStr = d.Status || '--';
+                        }
                         ctrl.value       = ctrl.switchOn ? 1 : 0;
-                        ctrl.valueStr    = d.Status || '--';
                         ctrl.unitStr     = '';
                         ctrl.scaleTicks  = [];
                         return;
@@ -807,19 +815,36 @@ define([
                     if (ctrl.switchType === 'Push On Button')       { cmd = 'On'; }
                     else if (ctrl.switchType === 'Push Off Button') { cmd = 'Off'; }
                     else                                            { cmd = 'Toggle'; }
+
+                    // Push buttons: dim to muted briefly then restore (uses existing transition)
+                    if (ctrl.switchType === 'Push On Button' || ctrl.switchType === 'Push Off Button') {
+                        ctrl.switchOn = false;
+                        setTimeout(function() {
+                            $scope.$apply(function() { ctrl.switchOn = true; });
+                        }, 300);
+                    }
+
                     $http.get('json.htm', {
                         params: { type: 'command', param: 'switchlight',
                                   idx: cfg().deviceIdx, switchcmd: cmd,
                                   passcode: passcode || '' }
                     }).then(function(resp) {
                         if (resp.data && resp.data.status === 'OK') {
-                            if (cmd === 'Toggle') {
+                            if (ctrl.switchType === 'Push On Button') {
+                                ctrl.valueStr = 'On';
+                                ctrl.value    = 1;
+                            } else if (ctrl.switchType === 'Push Off Button') {
+                                ctrl.valueStr = 'Off';
+                                ctrl.value    = 1;
+                            } else if (cmd === 'Toggle') {
                                 ctrl.switchOn = !ctrl.switchOn;
+                                ctrl.valueStr = ctrl.switchOn ? 'On' : 'Off';
+                                ctrl.value    = ctrl.switchOn ? 1 : 0;
                             } else {
                                 ctrl.switchOn = (cmd === 'On');
+                                ctrl.valueStr = ctrl.switchOn ? 'On' : 'Off';
+                                ctrl.value    = ctrl.switchOn ? 1 : 0;
                             }
-                            ctrl.value    = ctrl.switchOn ? 1 : 0;
-                            ctrl.valueStr = ctrl.switchOn ? 'On' : 'Off';
                         }
                         ctrl.sending = false;
                     }).catch(function() { ctrl.sending = false; });

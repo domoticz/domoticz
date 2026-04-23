@@ -3161,6 +3161,7 @@ body.dd-standby::after {
 .dd-dial-interactive { cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; }
 .dd-dial-dragging    { cursor: grabbing; }
 .dd-dial-clickable   { cursor: pointer; user-select: none; -webkit-user-select: none; }
+.dd-dial-clickable:hover { opacity: 0.8; }
 
 /* ── Quick Stat widget ─────────────────────────────── */
 .dd-quick-stat > .dd-chart-unconfigured {
