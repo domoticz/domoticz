@@ -65,14 +65,14 @@ define([
                         type:    'number',
                         label:   'Min',
                         default: '',
-                        help:    'Scale min (leave empty for auto). Setpoint always uses device range.'
+                        help:    'Scale min (leave empty to use device range).'
                     },
                     {
                         key:     'maxVal',
                         type:    'number',
                         label:   'Max',
                         default: '',
-                        help:    'Scale max (leave empty for auto). Setpoint always uses device range.'
+                        help:    'Scale max (leave empty to use device range).'
                     }
                 ]
             },
@@ -604,8 +604,9 @@ define([
                         ctrl.deviceType      = 'setpoint';
                         ctrl.deviceProtected = d.Protected || false;
                         ctrl.deviceStep   = (d.step !== undefined) ? (parseFloat(d.step) || 0.5) : 0.5;
-                        ctrl.effectiveMin = (d.min  !== undefined) ? parseFloat(d.min) : 0;
-                        ctrl.effectiveMax = (d.max  !== undefined) ? parseFloat(d.max) : 100;
+                        var spMin = (d.min !== undefined) ? parseFloat(d.min) : 0;
+                        var spMax = (d.max !== undefined) ? parseFloat(d.max) : 100;
+                        applyConfigRange(spMin, spMax);
                         ctrl.unitStr      = (d.vunit !== undefined && d.vunit !== '') ? d.vunit : '\u00b0C';
                         var sp = parseFloat(d.SetPoint !== undefined ? d.SetPoint : d.Data);
                         ctrl.value    = isNaN(sp) ? null : sp;

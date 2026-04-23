@@ -2778,6 +2778,16 @@ dd-wcp-color {
     opacity: 0.8;
 }
 
+/* ── Icon inside stat value (kWh/gas/water summary widgets) ── */
+.dd-stat-value .fa-bolt,
+.dd-stat-value .fa-fire,
+.dd-stat-value .fa-droplet {
+    font-size: 0.6em;
+    vertical-align: middle;
+    position: relative;
+    top: -2px;
+}
+
 /* ── Energy Balance Bar (self-sufficiency widget) ── */
 .dd-balance {
     font-size: 0.82em;
@@ -2980,8 +2990,21 @@ dd-wcp-color {
 .dd-log-entry-error  .dd-log-level { color: var(--dz-accent-red); }
 
 /* ── Moon Phase Widget ────────────────────────────────────── */
-.dd-moon-image { line-height: 1.1; }
-.dd-moon-image img { width: 80px; height: 80px; object-fit: contain; }
+.dd-moon-image {
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.dd-moon-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    max-width: 70px;
+    max-height: 70px;
+}
 .dd-moon-phase { font-size: 0.9em; font-weight: 600; }
 .dd-moon-next { margin-top: 4px; }
 
