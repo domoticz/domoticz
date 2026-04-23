@@ -753,6 +753,7 @@ define(['app'], function (app) {
 					}
 					if (typeof data.WebTheme != 'undefined') {
 						$("#settingscontent #combothemes").val(data.WebTheme);
+						$scope.WebTheme = data.WebTheme;
 					}
 					if (typeof data.Title != 'undefined') {
 						sessionStorage.title = data.Title;
@@ -984,7 +985,9 @@ define(['app'], function (app) {
 			if ($("#debugleveltable #DebugSQL").prop("checked")) debugLevel |= 0x80;
 			if ($("#debugleveltable #DebugAuth").prop("checked")) debugLevel |= 0x100;
 			$("#settings #DebugLevel").val(debugLevel);
-			$("#settings #ThemeSettings").val(JSON.stringify($scope.ThemeSettings || {}));
+			if ($scope.ThemeSettings && Object.keys($scope.ThemeSettings).length > 0) {
+				$("#settings #ThemeSettings").val(JSON.stringify($scope.ThemeSettings));
+			}
 
 			$http.post('json.htm?type=command&param=storesettings', new FormData(document.querySelector("#settings")), {
 				transformRequest: angular.identity,

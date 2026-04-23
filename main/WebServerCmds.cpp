@@ -4075,7 +4075,11 @@ namespace http
 				std::string szThemeSettings = request::findValue(&req, "ThemeSettings");
 				if (!szThemeSettings.empty())
 				{
-					m_sql.UpdatePreferencesVar("ThemeSettings", szThemeSettings);
+					Json::Value jvalidate;
+					if (ParseJSon(szThemeSettings, jvalidate))
+					{
+						m_sql.UpdatePreferencesVar("ThemeSettings", szThemeSettings);
+					}
 					cntSettings++;
 				}
 

@@ -1,6 +1,6 @@
 <blockquote>'''Note:''' This page is maintained in the [https://github.com/domoticz/domoticz/tree/development/docs Domoticz GitHub repository]. Please do not edit it directly on the Wiki.</blockquote>
 
-<!-- Last updated: 2026-03-29 — variables.css renamed to variables.css; dark.css has default theme overrides; panel/table variables added -->
+<!-- Last updated: 2026-04-23 — ThemeSettings: per-theme settings storage via Preferences database -->
 == Introduction ==
 
 Domoticz supports visual themes that let you change the look of the web interface without modifying core files.
@@ -319,6 +319,104 @@ Domoticz has three separate button systems. Theme authors need to be aware of al
 |}
 
 The <code>--dz-btn-*</code> variables control Bootstrap <code>.btn*</code> styles. The <code>.btnstyle*</code> and <code>.btnsmall*</code> systems do not yet have variables — override them with explicit selectors if needed.
+
+== Theme settings storage ==
+
+Themes can persist their own configuration in the Domoticz database without using user variables. The settings are stored in the <code>Preferences</code> table under the key <code>ThemeSettings</code> as a single JSON object, and are included in the standard <code>getsettings</code> / <code>storesettings</code> API used by the Settings page.
+
+=== How it works ===
+
+When the Settings page loads, <code>getsettings</code> returns a <code>ThemeSettings</code> object in the JSON response. This object is exposed on the AngularJS scope as <code>$scope.ThemeSettings</code>. The currently active theme name is available on the same scope as <code>$scope.WebTheme</code>.
+
+By convention, the top-level keys of <code>ThemeSettings</code> are theme names. This means multiple themes can store their settings in the same object without overwriting each other — switching between themes leaves every theme's settings intact.
+
+When the user saves the Settings page, the current value of <code>$scope.ThemeSettings</code> is serialised and submitted as part of the normal <code>storesettings</code> POST. No extra API calls are required.
+
+=== Reading settings in custom.js ===
+
+<code>custom.js</code> is loaded on every page. To read settings, get the AngularJS scope from any page that has one (the main content area), then look up your theme by name:
+
+<source lang="javascript">
+var THEME_NAME = 'YourTheme';   // must match the folder name under www/styles/
+
+function getThemeSettings() {
+    var el = document.getElementById('maindiv') || document.body;
+    var scope = angular.element(el).scope();
+    if (!scope) return {};
+    return (scope.ThemeSettings && scope.ThemeSettings[THEME_NAME]) || {};
+}
+</source>
+
+On pages that use a different root element the scope lookup may return nothing — always guard with a null check.
+
+=== Writing settings back ===
+
+Update <code>$scope.ThemeSettings[THEME_NAME]</code> and the value will be included the next time the user saves Settings. If your theme provides its own Save button, you can also trigger the settings save directly:
+
+<source lang="javascript">
+var THEME_NAME = 'YourTheme';
+
+function saveThemeSettings(newSettings) {
+    var el = document.getElementById('maindiv') || document.body;
+    var scope = angular.element(el).scope();
+    if (!scope) return;
+
+    scope.$apply(function () {
+        scope.ThemeSettings = scope.ThemeSettings || {};
+        scope.ThemeSettings[THEME_NAME] = newSettings;
+    });
+}
+</source>
+
+To persist without requiring the user to click the Settings save button, call <code>scope.StoreSettings()</code> after updating — but only do this from within the Settings page (<code>#Setup</code> route), not from general page scripts.
+
+=== Getting the active theme name ===
+
+<code>$scope.WebTheme</code> holds the name of the currently active theme (the folder name under <code>www/styles/</code>, e.g. <code>Nightglass</code>). Your theme's <code>custom.js</code> already knows its own name, so hardcoding it is fine. <code>$scope.WebTheme</code> is useful if you write shared utility code that needs to be theme-agnostic.
+
+=== Example: dark/light mode toggle ===
+
+<source lang="javascript">
+var THEME_NAME = 'YourTheme';
+var DEFAULTS = { style: 'dark', aceTheme: 'ace/theme/tomorrow_night' };
+
+function getSettings() {
+    var el = document.getElementById('maindiv') || document.body;
+    var scope = angular.element(el).scope();
+    if (!scope || !scope.ThemeSettings) return Object.assign({}, DEFAULTS);
+    return Object.assign({}, DEFAULTS, scope.ThemeSettings[THEME_NAME]);
+}
+
+function setStyle(style) {
+    var el = document.getElementById('maindiv') || document.body;
+    var scope = angular.element(el).scope();
+    if (!scope) return;
+    scope.$apply(function () {
+        scope.ThemeSettings = scope.ThemeSettings || {};
+        scope.ThemeSettings[THEME_NAME] = Object.assign(getSettings(), { style: style });
+    });
+    applyStyle(style);
+}
+</source>
+
+=== Storage limits ===
+
+The <code>ThemeSettings</code> value is stored as a text field in SQLite. There is no hard size limit enforced at the application level, but keep the JSON compact — a few kilobytes is plenty for theme configuration. Do not store binary data or per-device state here.
+
+=== Accessing settings outside the Settings page ===
+
+On pages other than Settings, <code>$scope.ThemeSettings</code> is not automatically populated. For applying settings on every page load (e.g. re-applying a dark/light mode), read the settings via a direct API call on page load:
+
+<source lang="javascript">
+(function () {
+    $.getJSON('json.htm?type=command&param=getsettings', function (data) {
+        var settings = (data.ThemeSettings && data.ThemeSettings[THEME_NAME]) || DEFAULTS;
+        applyStyle(settings.style);
+    });
+})();
+</source>
+
+This call is unauthenticated-safe for read-only access on the local network.
 
 == Known limitations ==
 
