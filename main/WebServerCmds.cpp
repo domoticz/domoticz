@@ -4072,6 +4072,13 @@ namespace http
 				std::string szESettings = JSonToRawString(ESettings);
 				m_sql.UpdatePreferencesVar("ESettings", szESettings);
 
+				std::string szThemeSettings = request::findValue(&req, "ThemeSettings");
+				if (!szThemeSettings.empty())
+				{
+					m_sql.UpdatePreferencesVar("ThemeSettings", szThemeSettings);
+					cntSettings++;
+				}
+
 				m_sql.SetUnitsAndScale();
 
 				/* To wrap up everything */
@@ -6626,6 +6633,15 @@ namespace http
 				else if (Key == "PriceResolution")
 				{
 					root["PriceResolution"] = nValue;
+				}
+				else if (Key == "ThemeSettings")
+				{
+					Json::Value jthemesettings;
+					bool ret = ParseJSon(sValue, jthemesettings);
+					if (ret)
+					{
+						root["ThemeSettings"] = jthemesettings;
+					}
 				}
 			}
 			root["DebugLevel"] = static_cast<int>(_log.GetDebugFlags());

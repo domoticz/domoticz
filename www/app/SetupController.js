@@ -913,6 +913,7 @@ define(['app'], function (app) {
 							$("#EUseCustomIcons").prop('checked', data.ESettings.UseCustomIcons == 1);
 						}
 					}
+					$scope.ThemeSettings = (typeof data.ThemeSettings != 'undefined') ? data.ThemeSettings : {};
 				}
 			});
 		}
@@ -983,6 +984,7 @@ define(['app'], function (app) {
 			if ($("#debugleveltable #DebugSQL").prop("checked")) debugLevel |= 0x80;
 			if ($("#debugleveltable #DebugAuth").prop("checked")) debugLevel |= 0x100;
 			$("#settings #DebugLevel").val(debugLevel);
+			$("#settings #ThemeSettings").val(JSON.stringify($scope.ThemeSettings || {}));
 
 			$http.post('json.htm?type=command&param=storesettings', new FormData(document.querySelector("#settings")), {
 				transformRequest: angular.identity,
