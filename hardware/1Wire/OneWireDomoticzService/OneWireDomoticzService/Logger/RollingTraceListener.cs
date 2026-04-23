@@ -62,7 +62,7 @@ namespace OneWireDomoticzService.Logger
 
          if (!File.Exists(logFile))
          {
-            // Le fichier n'existe pas, création de son répertoire si nécessaire
+            // Le fichier n'existe pas, cration de son rpertoire si ncessaire
             if (!string.IsNullOrEmpty(_folder) && !Directory.Exists(_folder))
                Directory.CreateDirectory(_folder);
          }
@@ -83,10 +83,10 @@ namespace OneWireDomoticzService.Logger
 
       /// <summary>
       /// Basculement des fichiers de log :
-      /// - Fichier_3 est supprimé
-      /// - Fichier_2 est renommé en Fichier_3
-      /// - Fichier_1 est renommé en Fichier_2
-      /// - Fichier est renommé en Fichier_1
+      /// - Fichier_3 est supprim
+      /// - Fichier_2 est renomm en Fichier_3
+      /// - Fichier_1 est renomm en Fichier_2
+      /// - Fichier est renomm en Fichier_1
       /// </summary>
       private void RollFiles()
       {
@@ -101,7 +101,7 @@ namespace OneWireDomoticzService.Logger
                if (previousLogFullPath == null)
                   previousLogFullPath = GetLogFullPath(i + 1);
 
-               // La méthode File.Copy permet d'écraser le fichier (contrairement à File.Move)
+               // La mthode File.Copy permet d'craser le fichier (contrairement  File.Move)
                File.Copy(currentLogFullPath, previousLogFullPath, true);
             }
 
