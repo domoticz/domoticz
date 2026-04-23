@@ -1,6 +1,7 @@
 <blockquote>'''Note:''' This page is maintained in the [https://github.com/domoticz/domoticz/tree/development/docs Domoticz GitHub repository]. Please do not edit it directly on the Wiki.</blockquote>
 
-<!-- Last updated: 2026-04-23 — ThemeSettings: per-theme settings storage via Preferences database -->
+'''Revision:''' 2026-04-23<br>
+
 == Introduction ==
 
 Domoticz supports visual themes that let you change the look of the web interface without modifying core files.
