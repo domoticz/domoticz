@@ -110,11 +110,11 @@ define(['app'], function(app) {
                 var isOn = (d.SwitchType === 'Dimmer')
                     ? (statusStr !== '' && statusStr !== 'Off')
                     : (statusStr === 'On');
-                return { value: statusStr, isOn: isOn, unit: '', unit2: null, secondValue: null, typeClass: 'switch' };
+                return { value: $.t(statusStr) || statusStr, isOn: isOn, unit: '', unit2: null, secondValue: null, typeClass: 'switch' };
             }
             if (type.indexOf('scene') >= 0 || type.indexOf('group') >= 0) {
                 var sceneStatus = d.Status || d.Data || '';
-                return { value: sceneStatus, isOn: sceneStatus === 'On', unit: '', unit2: null, secondValue: null, typeClass: 'switch' };
+                return { value: $.t(sceneStatus) || sceneStatus, isOn: sceneStatus === 'On', unit: '', unit2: null, secondValue: null, typeClass: 'switch' };
             }
             if (type.indexOf('wind') >= 0) {
                 var dirSpeed = ((d.DirectionStr || '') + ' ' + (d.Speed || '')).trim();

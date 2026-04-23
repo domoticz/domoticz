@@ -27,7 +27,7 @@ define([
                 key:     'threshold',
                 type:    'number',
                 label:   'Alert threshold % (show devices at or below)',
-                default: 25
+                default: 40
             },
             {
                 key:     'showFull',

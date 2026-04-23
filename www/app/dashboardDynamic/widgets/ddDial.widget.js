@@ -641,13 +641,13 @@ define([
                         ctrl.switchType  = d.SwitchType || '';
                         if (ctrl.switchType === 'Push On Button') {
                             ctrl.switchOn = true;
-                            ctrl.valueStr = 'On';
+                            ctrl.valueStr = $.t('On');
                         } else if (ctrl.switchType === 'Push Off Button') {
                             ctrl.switchOn = true;
-                            ctrl.valueStr = 'Off';
+                            ctrl.valueStr = $.t('Off');
                         } else {
                             ctrl.switchOn = (d.Status === 'On');
-                            ctrl.valueStr = d.Status || '--';
+                            ctrl.valueStr = d.Status ? $.t(d.Status) : '--';
                         }
                         ctrl.value       = ctrl.switchOn ? 1 : 0;
                         ctrl.unitStr     = '';
@@ -820,7 +820,10 @@ define([
                     if (ctrl.switchType === 'Push On Button' || ctrl.switchType === 'Push Off Button') {
                         ctrl.switchOn = false;
                         setTimeout(function() {
-                            $scope.$apply(function() { ctrl.switchOn = true; });
+                            $scope.$apply(function() {
+                                ctrl.switchOn = true;
+                                ctrl.valueStr = $.t(ctrl.switchType === 'Push Off Button' ? 'Off' : 'On');
+                            });
                         }, 300);
                     }
 
@@ -831,18 +834,18 @@ define([
                     }).then(function(resp) {
                         if (resp.data && resp.data.status === 'OK') {
                             if (ctrl.switchType === 'Push On Button') {
-                                ctrl.valueStr = 'On';
+                                ctrl.valueStr = $.t('On');
                                 ctrl.value    = 1;
                             } else if (ctrl.switchType === 'Push Off Button') {
-                                ctrl.valueStr = 'Off';
+                                ctrl.valueStr = $.t('Off');
                                 ctrl.value    = 1;
                             } else if (cmd === 'Toggle') {
                                 ctrl.switchOn = !ctrl.switchOn;
-                                ctrl.valueStr = ctrl.switchOn ? 'On' : 'Off';
+                                ctrl.valueStr = ctrl.switchOn ? $.t('On') : $.t('Off');
                                 ctrl.value    = ctrl.switchOn ? 1 : 0;
                             } else {
                                 ctrl.switchOn = (cmd === 'On');
-                                ctrl.valueStr = ctrl.switchOn ? 'On' : 'Off';
+                                ctrl.valueStr = ctrl.switchOn ? $.t('On') : $.t('Off');
                                 ctrl.value    = ctrl.switchOn ? 1 : 0;
                             }
                         }
