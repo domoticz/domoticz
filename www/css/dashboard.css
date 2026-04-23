@@ -3246,7 +3246,7 @@ body.dd-standby::after {
 .dd-qs-value {
     font-size: 1em;
     font-weight: 600;
-    color: var(--dz-body-text);
+    color: var(--dz-widget-accent);
     white-space: nowrap;
 }
 .dd-qs-value--on {
@@ -3260,6 +3260,8 @@ body.dd-standby::after {
     align-items: baseline;
     gap: 0.3em;
 }
+.dd-qs-value-link { cursor: pointer; }
+.dd-qs-value-link:hover { opacity: 0.8; }
 .dd-quick-stat--list .dd-qs-value-wrap,
 .dd-quick-stat--list .dd-qs-secondary {
     margin-left: auto;

@@ -6,7 +6,7 @@
         <span class="dd-battery-monitor-title" ng-bind="ctrl.title"></span>
         <span ng-if="ctrl.count > 0"
               class="dd-battery-monitor-badge"
-              style="background: var(--dz-widget-sunpv);">
+              style="background: var(--dz-widget-amber);">
             Top {{ctrl.count}}
         </span>
     </div>
@@ -37,7 +37,7 @@
         <div class="dd-battery-monitor-row"
              ng-repeat="device in ctrl.devices track by device.idx">
             <span class="dd-battery-monitor-icon"
-                  style="color: var(--dz-widget-sunpv);">
+                  style="color: var(--dz-widget-amber);">
                 <i class="fa-solid fa-bolt"></i>
             </span>
             <span class="dd-battery-monitor-name"
@@ -47,10 +47,11 @@
                 <span ng-if="device.usageWatt !== null">{{device.usageWatt | number:0}} W</span>
                 <span ng-if="device.usageWatt === null">&mdash;</span>
             </span>
-            <span class="dd-battery-monitor-level"
-                  style="min-width:70px;color:var(--dz-widget-sunpv);">
+            <a class="dd-stat-link dd-battery-monitor-level"
+               style="min-width:70px;color:var(--dz-widget-accent);"
+               ng-href="#/Devices/{{device.idx}}/Log">
                 {{device.counterToday}}
-            </span>
+            </a>
         </div>
     </div>
 
