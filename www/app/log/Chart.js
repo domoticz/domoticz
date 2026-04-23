@@ -175,10 +175,33 @@ define(['app'], function (app) {
         const upperThreshold = q3 + 3 * iqr;
         const lowerThreshold = q1 - 3 * iqr;
         const extremeThreshold = q3 * 10;
+
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        const dayFraction = (now.getHours() * 60 + now.getMinutes()) / (24 * 60);
+        const lastIdx = datapoints.length - 1;
+
         for (let i = 0; i < datapoints.length; i++) {
             const dp = datapoints[i];
             const value = dp[1];
-            if (value !== null && (value > upperThreshold || value < lowerThreshold)) {
+            if (value === null) continue;
+
+            // For the last datapoint, check if it's today (incomplete day)
+            if (i === lastIdx) {
+                const dpDate = new Date(dp[0]);
+                dpDate.setHours(0, 0, 0, 0);
+                if (dpDate.getTime() === todayStart) {
+                    if (dayFraction < 1 / 12) continue; // before 2am: skip anomaly check entirely
+                    // Only flag upward spikes (counter resets) using extrapolated value.
+                    // Never flag as a low anomaly — partial days are always expected to be lower.
+                    const extrapolated = value / dayFraction;
+                    if (extrapolated <= upperThreshold) continue;
+                    datapoints[i] = { x: dp[0], y: dp[1], color: '#FF4444', custom: { isSpike: true } };
+                    continue;
+                }
+            }
+
+            if (value > upperThreshold || value < lowerThreshold) {
                 const isExtreme = value > extremeThreshold || value < -extremeThreshold;
                 if (!isExtreme) {
                     const prevVal = i > 0 ? datapoints[i - 1][1] : null;
