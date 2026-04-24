@@ -77,14 +77,15 @@ MQTTAutoDiscover::MQTTAutoDiscover(const int ID, const std::string& Name, const 
 
 void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 {
+	std::string topic = message->topic;
 	std::lock_guard<std::mutex> lock(m_inc_msg_mutex);
-	if (m_incoming_messages.size() > 1000)
+	if (m_incoming_messages.size() > 10000)
 	{
 		//Prevent flooding
+		Log(LOG_ERROR, "MQTT Auto Discover: Incoming message queue full! Dropping message on topic: %s", topic.c_str());
 		return;
 	}
 
-	std::string topic = message->topic;
 	std::string qMessage;
 	if (message->payload != nullptr && message->payloadlen > 0)
 		qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
