@@ -553,7 +553,7 @@ void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings* pInverterSetting
 	{
 		double curActivePower = reading["totalActivePower"].asDouble();
 		double curEnergy = reading["totalEnergy"].asDouble();
-		if (curEnergy != 0)
+		//if (curEnergy != 0)
 		{
 			sprintf(szTmp, "kWh Meter %s", pInverterSettings->name.c_str());
 			SendKwhMeter(0, 1 + iInverterNumber, 255, curActivePower, curEnergy / 1000.0, szTmp);
