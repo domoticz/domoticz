@@ -817,6 +817,9 @@ define([
                     else if (ctrl.switchType === 'Push Off Button') { cmd = 'Off'; }
                     else                                            { cmd = 'Toggle'; }
 
+                    // Capture expected state now — ctrl.switchOn may change via WS before .then() runs
+                    var expectedOn = (cmd === 'Toggle') ? !ctrl.switchOn : (cmd === 'On');
+
                     // Push buttons: dim to muted briefly then restore (uses existing transition)
                     if (ctrl.switchType === 'Push On Button' || ctrl.switchType === 'Push Off Button') {
                         ctrl.switchOn = false;
@@ -840,14 +843,11 @@ define([
                             } else if (ctrl.switchType === 'Push Off Button') {
                                 ctrl.valueStr = $.t('Off');
                                 ctrl.value    = 1;
-                            } else if (cmd === 'Toggle') {
-                                ctrl.switchOn = !ctrl.switchOn;
-                                ctrl.valueStr = ctrl.switchOn ? $.t('On') : $.t('Off');
-                                ctrl.value    = ctrl.switchOn ? 1 : 0;
                             } else {
-                                ctrl.switchOn = (cmd === 'On');
-                                ctrl.valueStr = ctrl.switchOn ? $.t('On') : $.t('Off');
-                                ctrl.value    = ctrl.switchOn ? 1 : 0;
+                                ctrl.switchOn = expectedOn;
+                                ctrl.valueStr = expectedOn ? $.t('On') : $.t('Off');
+                                ctrl.value    = expectedOn ? 1 : 0;
+                                load();
                             }
                         }
                         ctrl.sending = false;
