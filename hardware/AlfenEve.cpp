@@ -160,8 +160,8 @@ void AlfenEve::Do_Work()
 						if (IsStopRequested(10))
 							break;
 						DoLogout();
-						totRetries++;
 					}
+					totRetries++;
 				}
 			}
 			catch (const std::exception& e)
