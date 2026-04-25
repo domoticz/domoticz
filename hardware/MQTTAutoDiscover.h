@@ -3,6 +3,8 @@
 #include "MQTT.h"
 #include "CounterHelper.h"
 #include <atomic>
+#include <chrono>
+#include <condition_variable>
 #include <deque>
 
 class MQTTAutoDiscover : public MQTT
@@ -284,6 +286,7 @@ private:
 
 	std::deque<_tIncommingMsg> m_incoming_messages;
 	std::mutex m_inc_msg_mutex;
+	std::condition_variable m_inc_msg_cv;
 	std::shared_ptr<std::thread> m_worker_thread;
 	std::atomic<bool> m_bDisconnected{ false };
 };
