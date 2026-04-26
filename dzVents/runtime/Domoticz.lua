@@ -363,7 +363,7 @@ local function Domoticz(settings)
 	end
 
 	function self.switchTimerPlan(idx)
-		if type(idx) ~= 'number' or idx = 0 then
+		if type(idx) ~= 'number' or idx < 0 then
 			utils.log('switchTimerPlan: idx must be a positive integer, got: ' .. tostring(idx), utils.LOG_ERROR)
 			return nil
 		end
