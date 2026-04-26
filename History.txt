@@ -5,6 +5,7 @@ Version 2026.xxxx
 - Added: MCP, completion/complete support with prompt argument and resource URI autocompletion
 - Added: MCP, create_sensor and create_device as aliases for create_virtual_sensor tool
 - Added: MCP, delete_event tool for removing automation event scripts (admin only)
+- Added: MCP, domoticz://hardware, domoticz://notifications, and domoticz://timers resources listing configured hardware instances, device notifications, and device/scene timers
 - Added: MCP, domoticz://sensor-types resource listing all available virtual sensor types with mapped values
 - Added: MCP, get_sensor_history tool with daily calendar data for all sensor types and event log for switches/scenes
 - Added: MCP, new prompts: battery_status, climate_overview, create_automation, daily_report, energy_report, hardware_health, scene_optimizer, security_check
@@ -77,6 +78,7 @@ Version 2026.xxxx
 - Fixed: Enphase, Envoy firmware retroactive whLifetime recalculations (upward spikes) no longer corrupt the kWh counter; "Fix Counter/Price Spikes" now correctly re-bases the in-memory tracker after correction
 - Fixed: kWh counter, improved auto-detection of spike threshold in FixKwhCounterSpikes
 - Fixed: MQTT-AD, cold and warm white channel values are now always sent together (#6719)
+- Fixed: MCP, browser-based MCP clients (e.g. the MCP inspector) now connect correctly; CORS preflight and SSE response headers are handled properly
 - Fixed: MCP, server is now enabled by default; use -nomcp flag to disable (previously required -llmmcp flag to enable)
 - Fixed: Mobile dashboard, iOS "Force Desktop Mode" setting is now correctly applied; UA-based phone detection restored for iPhone and Android phones
 - Fixed: PhilipsHue SSE, application shutdown hang when event stream was idle

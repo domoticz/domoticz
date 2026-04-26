@@ -36,6 +36,7 @@
 #include "../hardware/ColorSwitch.h"
 #include <libwebem/Base64.h>
 #include "../main/RFXtrx.h"
+#include "../main/RFXNames.h"
 #include "../hardware/hardwaretypes.h"
 #include "../main/WebServerHandleGraphInternals.h"
 #include "../mcpserver/McpSseSession.h"
@@ -101,6 +102,15 @@ namespace http
 	{
 		void CWebServer::PostMcp(WebEmSession &session, const request &req, reply &rep)
 		{
+			if (req.method == "OPTIONS")
+			{
+				rep.status = reply::ok;
+				reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
+				reply::add_header(&rep, "Access-Control-Allow-Methods", "GET, HEAD, POST, DELETE, OPTIONS");
+				reply::add_header(&rep, "Access-Control-Allow-Headers", "Content-Type, Accept, Authorization, Mcp-Session-Id, Mcp-Protocol-Version, Last-Event-ID");
+				reply::add_header(&rep, "Access-Control-Max-Age", "86400");
+				return;
+			}
 			if (g_bLlmMCPSupport == false)
 			{
 				_log.Log(LOG_ERROR, "MCP: MCP access requested (IP: %s), but service disabled with -nomcp !", session.remote_host.c_str());
@@ -118,13 +128,21 @@ namespace http
 				rep.content = JSonToRawString(errRep);
 				rep.status = reply::unauthorized;
 				reply::add_header(&rep, "Content-Type", "application/json");
+				// Wildcard CORS intentional: browser must be able to read the 401 error body.
+				// The MCP endpoint does not use cookies/credentials for CORS purposes.
+				reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
 				return;
 			}
-			_log.Debug(DEBUG_RECEIVED, "MCP: Post (%d): %s (%s)", req.content_length, req.content.c_str(), req.uri.c_str());
-
 			if (req.method == "GET")
 			{
 				HandleMcpGet(session, req, rep);
+				return;
+			}
+			if (req.method == "HEAD")
+			{
+				rep.status = reply::ok;
+				reply::add_header(&rep, "Content-Type", "text/event-stream");
+				reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
 				return;
 			}
 			if (req.method == "DELETE")
@@ -136,7 +154,18 @@ namespace http
 			{
 				_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid method: %s", req.method.c_str());
 				rep = reply::stock_reply(reply::method_not_allowed);
-				reply::add_header(&rep, "Allow", "GET, POST, DELETE");
+				reply::add_header(&rep, "Allow", "GET, HEAD, POST, DELETE, OPTIONS");
+				reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
+				return;
+			}
+
+			_log.Debug(DEBUG_RECEIVED, "MCP: Post (%d): %s (%s)", req.content_length, req.content.c_str(), req.uri.c_str());
+
+			// Empty-body POSTs are used as connection health checks by some MCP clients
+			if (req.content.empty())
+			{
+				rep = reply::stock_reply(reply::accepted);
+				reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
 				return;
 			}
 
@@ -348,6 +377,8 @@ namespace http
 
 			// Set headers
 			reply::add_header(&rep, "Content-Type", "application/json");	// "text/event-stream" is also an option if we want to support SSE
+			reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
+			reply::add_header(&rep, "Access-Control-Expose-Headers", "Mcp-Session-Id, Mcp-Protocol-Version");
 			if (!newSessionId.empty())
 				reply::add_header(&rep, "Mcp-Session-Id", newSessionId.c_str());
 			//reply::add_header(&rep, "Cache-Control", "no-cache");
@@ -390,6 +421,7 @@ namespace http
 			rep.status = reply::sse_stream;
 			rep.sse_session = session;
 			rep.sse_context = sseContext;
+			reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
 
 			_log.Debug(DEBUG_WEBSERVER, "MCP: Opening SSE stream for client %s (session: %s)",
 			           session.remote_host.c_str(), mcpSessionId.empty() ? "(anon)" : mcpSessionId.c_str());
@@ -401,6 +433,7 @@ namespace http
 			if (sessionIdHdr != nullptr)
 				CMcpSessionRegistry::Instance().RemoveSession(sessionIdHdr);
 			rep = reply::stock_reply(reply::ok);
+			reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
 		}
 
 	} // namespace server
@@ -1122,6 +1155,33 @@ namespace mcp		// Model Context Protocol
 			resource["mimeType"] = "text/plain";
 			jsonRPCRep["result"]["resources"].append(resource);
 		}
+		{
+			Json::Value resource;
+			resource["uri"] = "domoticz://hardware";
+			resource["name"] = "Hardware";
+			resource["title"] = "Hardware";
+			resource["description"] = "All configured hardware instances with type, enabled status, and ID";
+			resource["mimeType"] = "text/plain";
+			jsonRPCRep["result"]["resources"].append(resource);
+		}
+		{
+			Json::Value resource;
+			resource["uri"] = "domoticz://notifications";
+			resource["name"] = "Notifications";
+			resource["title"] = "Notifications";
+			resource["description"] = "All configured device notifications with trigger conditions and target systems";
+			resource["mimeType"] = "text/plain";
+			jsonRPCRep["result"]["resources"].append(resource);
+		}
+		{
+			Json::Value resource;
+			resource["uri"] = "domoticz://timers";
+			resource["name"] = "Timers";
+			resource["title"] = "Timers";
+			resource["description"] = "All device and scene timers with schedule and command details";
+			resource["mimeType"] = "text/plain";
+			jsonRPCRep["result"]["resources"].append(resource);
+		}
 
 		// Add any available floorplans as resources too
 		auto result = m_sql.safe_query("SELECT ID, Name FROM Floorplans");
@@ -1253,14 +1313,13 @@ namespace mcp		// Model Context Protocol
 		std::string sReadURI = jsonRequest["params"]["uri"].asString();
 		_log.Debug(DEBUG_WEBSERVER, "MCP: Handling resources/read request for %s.", sReadURI.c_str());
 
-		jsonRPCRep["result"]["contents"] = Json::Value(Json::arrayValue);
 		Json::Value resource;
 		resource["uri"] = sReadURI;
 
 		// --- domoticz:// scheme handler ---
-		if (sReadURI.substr(0, 12) == "domoticz://")
+		if (sReadURI.substr(0, 11) == "domoticz://")
 		{
-			std::string sPath = sReadURI.substr(12); // e.g. "device/42" or "devices"
+			std::string sPath = sReadURI.substr(11); // e.g. "device/42" or "devices"
 			std::string sResourceType = sPath.substr(0, sPath.find('/'));
 			std::string sResourceSuffix = (sPath.find('/') != std::string::npos) ? sPath.substr(sPath.find('/') + 1) : "";
 			int nIdx = -1;
@@ -1418,7 +1477,7 @@ namespace mcp		// Model Context Protocol
 			}
 			else if (sResourceType == "scenes")
 			{
-				auto result = m_sql.safe_query("SELECT ID, Name, SceneType, Status FROM Scenes ORDER BY Name");
+				auto result = m_sql.safe_query("SELECT ID, Name, SceneType, nValue FROM Scenes ORDER BY Name");
 				std::string sText;
 				if (result.empty())
 					sText = "No scenes or groups configured.";
@@ -1428,7 +1487,7 @@ namespace mcp		// Model Context Protocol
 					for (const auto &row : result)
 					{
 						std::string sType = (atoi(row[2].c_str()) == 1) ? "Group" : "Scene";
-						std::string sStatus = (row[3] == "1") ? "On" : "Off";
+						std::string sStatus = (atoi(row[3].c_str()) == 1) ? "On" : "Off";
 						sText += "- \"" + row[1] + "\" [" + sType + ", " + sStatus + ", idx=" + row[0] + "]\n";
 					}
 				}
@@ -1623,6 +1682,127 @@ namespace mcp		// Model Context Protocol
 					sText += line;
 				}
 				resource["name"] = "Virtual Sensor Types";
+				resource["mimeType"] = "text/plain";
+				resource["text"] = sText;
+			}
+			else if (sResourceType == "hardware")
+			{
+				auto result = m_sql.safe_query("SELECT ID, Name, Type, Enabled FROM Hardware ORDER BY Name");
+				std::string sText;
+				if (result.empty())
+					sText = "No hardware configured.";
+				else
+				{
+					sText = std::to_string(result.size()) + " hardware instance(s):\n";
+					for (const auto &row : result)
+					{
+						int iType = atoi(row[2].c_str());
+						bool bEnabled = (atoi(row[3].c_str()) != 0);
+						const char *sTypeName = Hardware_Type_Desc(iType);
+						sText += "- \"" + row[1] + "\" [" + (sTypeName ? sTypeName : "Unknown") + ", " + (bEnabled ? "enabled" : "disabled") + ", idx=" + row[0] + "]\n";
+					}
+				}
+				resource["name"] = "Hardware";
+				resource["mimeType"] = "text/plain";
+				resource["text"] = sText;
+			}
+			else if (sResourceType == "notifications")
+			{
+				auto result = m_sql.safe_query(
+					"SELECT N.ID, N.Params, N.CustomMessage, N.ActiveSystems, N.Priority, N.Active, D.Name "
+					"FROM Notifications N LEFT JOIN DeviceStatus D ON D.ID=N.DeviceRowID "
+					"ORDER BY D.Name, N.ID");
+				std::string sText;
+				if (result.empty())
+					sText = "No notifications configured.";
+				else
+				{
+					sText = std::to_string(result.size()) + " notification(s):\n";
+					for (const auto &row : result)
+					{
+						std::string sDevice = row[6].empty() ? "(unknown device)" : row[6];
+						std::string sParams = row[1];
+						std::string sCustomMsg = row[2];
+						std::string sSystems = row[3];
+						int iPriority = atoi(row[4].c_str());
+						bool bActive = (atoi(row[5].c_str()) != 0);
+						sText += "- Device \"" + sDevice + "\": condition=" + sParams;
+						if (!sCustomMsg.empty())
+							sText += ", msg=\"" + sCustomMsg + "\"";
+						if (!sSystems.empty())
+							sText += ", systems=" + sSystems;
+						if (iPriority != 0)
+							sText += ", priority=" + std::to_string(iPriority);
+						sText += " [" + std::string(bActive ? "active" : "inactive") + ", idx=" + row[0] + "]\n";
+					}
+				}
+				resource["name"] = "Notifications";
+				resource["mimeType"] = "text/plain";
+				resource["text"] = sText;
+			}
+			else if (sResourceType == "timers")
+			{
+				static const struct { int bit; const char* name; } kDays[] = {
+					{ 1, "Mon" }, { 2, "Tue" }, { 4, "Wed" }, { 8, "Thu" },
+					{ 16, "Fri" }, { 32, "Sat" }, { 64, "Sun" }
+				};
+				auto buildDays = [&](int iDays) -> std::string {
+					if (iDays & 128) return "Every day";
+					std::string s;
+					for (const auto &d : kDays)
+						if (iDays & d.bit) { if (!s.empty()) s += ","; s += d.name; }
+					return s.empty() ? "?" : s;
+				};
+
+				std::string sText;
+				int iTotal = 0;
+
+				auto devTimers = m_sql.safe_query(
+					"SELECT T.ID, T.Active, T.Time, T.Type, T.Cmd, T.Level, T.Days, D.Name "
+					"FROM Timers T LEFT JOIN DeviceStatus D ON D.ID=T.DeviceRowID "
+					"ORDER BY D.Name, T.Time");
+				for (const auto &row : devTimers)
+				{
+					iTotal++;
+					std::string sDevice = row[7].empty() ? "(unknown)" : row[7];
+					bool bActive = (atoi(row[1].c_str()) != 0);
+					std::string sTime = row[2];
+					int iType = atoi(row[3].c_str());
+					int iCmd = atoi(row[4].c_str());
+					int iLevel = atoi(row[5].c_str());
+					int iDays = atoi(row[6].c_str());
+					const char *sType = Timer_Type_Desc(iType);
+					const char *sCmd = Timer_Cmd_Desc(iCmd);
+					sText += "- Device \"" + sDevice + "\": " + sTime + " [" + (sType ? sType : "?") + ", " + buildDays(iDays) + ", cmd=" + (sCmd ? sCmd : "?");
+					if (iCmd == 2 || iCmd == 13)
+						sText += " level=" + std::to_string(iLevel);
+					sText += ", " + std::string(bActive ? "active" : "inactive") + ", idx=" + row[0] + "]\n";
+				}
+
+				auto sceneTimers = m_sql.safe_query(
+					"SELECT T.ID, T.Active, T.Time, T.Type, T.Cmd, T.Level, T.Days, S.Name "
+					"FROM SceneTimers T LEFT JOIN Scenes S ON S.ID=T.SceneRowID "
+					"ORDER BY S.Name, T.Time");
+				for (const auto &row : sceneTimers)
+				{
+					iTotal++;
+					std::string sScene = row[7].empty() ? "(unknown)" : row[7];
+					bool bActive = (atoi(row[1].c_str()) != 0);
+					std::string sTime = row[2];
+					int iType = atoi(row[3].c_str());
+					int iCmd = atoi(row[4].c_str());
+					int iDays = atoi(row[6].c_str());
+					const char *sType = Timer_Type_Desc(iType);
+					const char *sCmd = Timer_Cmd_Desc(iCmd);
+					sText += "- Scene \"" + sScene + "\": " + sTime + " [" + (sType ? sType : "?") + ", " + buildDays(iDays) + ", cmd=" + (sCmd ? sCmd : "?") + ", " + std::string(bActive ? "active" : "inactive") + ", idx=" + row[0] + "]\n";
+				}
+
+				if (iTotal == 0)
+					sText = "No timers configured.";
+				else
+					sText = std::to_string(iTotal) + " timer(s):\n" + sText;
+
+				resource["name"] = "Timers";
 				resource["mimeType"] = "text/plain";
 				resource["text"] = sText;
 			}
