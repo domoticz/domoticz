@@ -10,6 +10,7 @@ Version 2026.xxxx
 - Added: MCP, get_sensor_history tool with daily calendar data for all sensor types and event log for switches/scenes
 - Added: MCP, new prompts: battery_status, climate_overview, create_automation, daily_report, energy_report, hardware_health, scene_optimizer, security_check
 - Added: Matter, hardware driver for python-matterjs-server via WebSocket; supports on/off, dimmer, temperature, humidity, pressure, illuminance, occupancy, contact, CO2/CO/NO2/PM2.5/PM10, power/energy, door lock, window covering, and battery level
+- Added: Matter, hardware setup page with network topology graph, nodes table showing battery level, RSSI, routing role and connection status, node detail popup with IP addresses and diagnostics, and settings tab for WiFi/Thread credentials and fabric label
 - Added: Counter/Gas report, custom contract-year view with per-period breakdown and forecast for remaining months based on previous year data; forecast bars shown in chart with lighter colour
 - Added: Counter/Gas report, export to Excel, CSV, and clipboard buttons on all device report pages (counter, rain, temperature, wind)
 - Added: Counter log, right-click context menu on anomalous spike bars with options to spread the value across preceding empty days or delete it (admin only)
@@ -36,6 +37,7 @@ Version 2026.xxxx
 - Added: P1 log, cumulative energy chart with usage/return toggle buttons, Net (usage minus return) series option, and x-axis zoom
 - Added: P1 energy report, custom contract-year date range view with per-period breakdown and forecast for remaining months
 - Added: Theme system, CSS variable-based theming using --dz-* custom properties; theme authors can now override colours with a single :root block in dark.css instead of complex selector chains (see doc/Theming.wiki)
+- Added: Theme system, per-user theme settings (dark mode, accent colour, etc.) are now stored in user preferences and restored on next visit
 - Added: Rain report, total rainfall summary row in year and month report tables
 - Added: Scheduler, switching to a timer plan now immediately applies the most recently elapsed timer in the new plan to each device; lights, switches, blinds, dimmers, and thermostat setpoints snap to the correct state at the moment of the plan switch
 - Added: Thermostat6, combined Temp+Hum and Temp+Hum+Baro sensor support via SendThermostat6SensorWithHumidity/Baro hardware API
@@ -50,11 +52,13 @@ Version 2026.xxxx
 - Changed: Netatmo, improved connection handling
 - Changed: Security Panel page redesigned to match Domoticz glass-card style (login/about page look)
 - Changed: Theme system, css/widgets.css renamed to css/variables.css; legacy themes importing via legacy.css are unaffected
+- Fixed: AlfenEve, infinite retry loop when login fails; driver now backs off and retries correctly instead of hammering the charger
 - Fixed: Counter and Temperature log, trendline tooltip now shows the calculated value at every data point instead of only at the start and end of the line (#6757)
 - Fixed: Counter log, calendar entries with negative values caused by counter resets or rollovers are now detected and zeroed by "Fix Counter/Price Spikes"
 - Fixed: Counter log, "Fix Counter/Price Spikes" now detects and repairs value spikes caused by a device being offline for multiple days (accumulated usage spread across the offline period); isolated spikes with no preceding zero-value days are zeroed out
 - Fixed: Counter log, monthly/yearly charts incorrectly spreading a day's value across preceding zero-value days (#6703)
 - Fixed: Counter log, spreading a spiked counter value across previous empty days now also distributes the associated price proportionally
+- Fixed: Counter log, today's partial day no longer incorrectly flagged as a low anomaly in spike detection; partial days are only checked for upward spikes
 - Fixed: Log charts, month/year/day range charts now always extend to today; a red highlight indicates the period with no recorded data
 - Fixed: Log charts, report overview charts did not had a fixed height; this could cause chart regrows on a certain browser
 - Fixed: Counter log, Weekly Generated Pattern heatmap could show extreme values caused by spike contamination in running hourly averages
@@ -77,6 +81,7 @@ Version 2026.xxxx
 - Fixed: Domoticz Remote, remote switches can now trigger scenes; incorrect error message on failure corrected
 - Fixed: Enphase, Envoy firmware retroactive whLifetime recalculations (upward spikes) no longer corrupt the kWh counter; "Fix Counter/Price Spikes" now correctly re-bases the in-memory tracker after correction
 - Fixed: kWh counter, improved auto-detection of spike threshold in FixKwhCounterSpikes
+- Fixed: MQTT, incoming message queue limit increased to 10000 to prevent message loss on high-traffic installations
 - Fixed: MQTT-AD, cold and warm white channel values are now always sent together (#6719)
 - Fixed: MCP, browser-based MCP clients (e.g. the MCP inspector) now connect correctly; CORS preflight and SSE response headers are handled properly
 - Fixed: MCP, server is now enabled by default; use -nomcp flag to disable (previously required -llmmcp flag to enable)
@@ -91,13 +96,17 @@ Version 2026.xxxx
 - Fixed: Python plugins, WebSocket fragmented messages and 64-bit frame lengths are now correctly handled
 - Fixed: Setup menu, large gaps between dropdown dividers caused by the service worker serving a stale version of the stylesheet after a Domoticz update
 - Fixed: SolarEdge, energy sensor data corrected; lifetime data was incorrectly showing accumulated values (#6751)
+- Fixed: SolarEdge, optimizer sensors no longer created unnecessarily when optimizer polling is disabled
 - Fixed: SolarEdge, power and current sensors are now reset to zero at the end of the daylight window (#6785)
+- Fixed: SolarEdge, zero energy values are now correctly reported instead of being suppressed
+- Fixed: Switches, device hover tooltips in the Lights/Switches tab are now restored after page load
 - Fixed: Text device utility widget now preserves HTML style attributes (color, font-size, etc.)
 - Fixed: Thermostat6, bigtext on the favorites dashboard now shows correct order: temperature first, setpoint in parentheses, then humidity and barometer
 - Fixed: Thermostat6, widgets no longer show EvoHome heat-level color (red) when setpoint is high; EvoHome colors are now restricted to EvoHome Zone/Hot Water devices
 - Fixed: Widgets, brief visual flash of incorrect content on initial page load in switches, temperature and weather tabs
 - Fixed: Water meter, counter device now shows value in m³ with 3 decimal places instead of Liter
 - Fixed: WOL, DNS lookup skipped for magic packet targets; improved getaddrinfo error reporting
+- Security: Graph compare endpoint, SQL injection vulnerability in the var_name parameter has been fixed
 
 Version 2026.1 (March 25th 2026)
 - Added: Alexa Smart Home v3 API endpoint (see ALEXA.md)
