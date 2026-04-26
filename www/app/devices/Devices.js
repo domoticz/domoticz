@@ -100,7 +100,22 @@ define(['app', 'livesocket'], function(app) {
                         { title: $.t('Name'), width: '200px', data: 'Name' },
                         { title: $.t('Type'), width: '110px', data: 'Type' },
                         { title: $.t('SubType'), width: '110px', data: 'SubType' },
-                        { title: $.t('Data'), data: 'Data' },
+                        {
+                            title: $.t('Data'),
+                            data: 'Data',
+                            className: 'devices-data-col',
+                            render: function(data, type) {
+                                if (type === 'display' && data) {
+                                    var raw = String(data);
+                                    var tooltipHtml = $('<span>').text(raw).html().replace(/(\r\n|\n\r|\r|\n)/g, '<br>');
+                                    var displayText = raw.replace(/<br\s*\/?>/gi, ' ').replace(/(\r\n|\n\r|\r|\n)/g, ' ');
+                                    return '<span class="devices-data-tip" data-tip="' + tooltipHtml.replace(/"/g, '&quot;') + '">'
+                                        + $('<span>').text(displayText).html()
+                                        + '</span>';
+                                }
+                                return data;
+                            }
+                        },
                         { title: renderSignalLevelTitle(), width: '30px', data: 'SignalLevel' },
                         {
                             title: renderBatteryLevelTitle(),
@@ -120,6 +135,34 @@ define(['app', 'livesocket'], function(app) {
                         { title: $.t('Last Seen'), width: '150px', data: 'LastUpdate', type: 'date-us' },
                     ]
                 }));
+
+                var $tip = $('<div class="devices-data-tooltip"></div>').appendTo('body').hide();
+
+                table.on('mouseenter', '.devices-data-tip', function() {
+                    var html = $(this).data('tip');
+                    if (!html) return;
+                    $tip.html(html).show();
+                });
+
+                table.on('mousemove', '.devices-data-tip', function(e) {
+                    var x = e.pageX + 12;
+                    var y = e.pageY + 12;
+                    if (x + 420 > $(window).width() + $(window).scrollLeft()) {
+                        x = e.pageX - 432;
+                    }
+                    if (y + $tip.outerHeight() > $(window).height() + $(window).scrollTop()) {
+                        y = e.pageY - $tip.outerHeight() - 4;
+                    }
+                    $tip.css({ left: x, top: y });
+                });
+
+                table.on('mouseleave', '.devices-data-tip', function() {
+                    $tip.hide();
+                });
+
+                $scope.$on('$destroy', function() {
+                    $tip.remove();
+                });
 
                 table.on('click', '.js-include-device', function() {
                     var row = table.api().row($(this).closest('tr')).data();

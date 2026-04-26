@@ -62,3 +62,26 @@
 .devices-filters__item {
     list-style: none;
 }
+
+.devices-data-col {
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.devices-data-tooltip {
+    position: absolute;
+    z-index: 9999;
+    background: var(--dz-body-bg, #333);
+    color: var(--dz-body-text, #eee);
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.6;
+    max-width: 420px;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    white-space: normal;
+    word-break: break-word;
+}

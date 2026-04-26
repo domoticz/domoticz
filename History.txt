@@ -78,6 +78,7 @@ Version 2026.xxxx
 - Fixed: Dashboard Dynamic, chart widgets now display timestamps in local time instead of UTC (#6770)
 - Fixed: Dashboard Dynamic, Google Calendar widget now scrolls correctly
 - Fixed: Dashboard Dynamic, quick actions widget now prompts for passcode when activating protected devices
+- Fixed: Devices, multi-line Data column values (text sensors with CR/LF) no longer expand table rows; Data cell is truncated to one line with a hover tooltip showing the full content
 - Fixed: Domoticz Remote, remote switches can now trigger scenes; incorrect error message on failure corrected
 - Fixed: Enphase, Envoy firmware retroactive whLifetime recalculations (upward spikes) no longer corrupt the kWh counter; "Fix Counter/Price Spikes" now correctly re-bases the in-memory tracker after correction
 - Fixed: kWh counter, improved auto-detection of spike threshold in FixKwhCounterSpikes
