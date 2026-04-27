@@ -25,6 +25,11 @@ define(['app'], function (app) {
                 var ctrl = this;
                 var device = $scope.device;
 
+                function scopedDeviceHtml(data, prefix) {
+                    var scopeId = prefix + String(parseInt(device.idx, 10) || 0);
+                    return $sce.trustAsHtml('<div id="' + scopeId + '">' + sanitizeHTML(data, scopeId) + '</div>');
+                }
+
                 ctrl.device = device;
                 ctrl.isMobile = window.myglobals && window.myglobals.ismobile;
                 ctrl.dashboardType = $scope.dashboardType || (window.myglobals && window.myglobals.DashboardType);
@@ -155,17 +160,9 @@ define(['app'], function (app) {
                     } else if (device.SubType === 'Soil Moisture') {
                         status = device.Desc;
                     } else if (ctrl.isText()) {
-                        var sanitized = device.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
-                        return $sce.trustAsHtml(DOMPurify.sanitize(sanitized, {
-                            ALLOWED_TAGS: ['br', 'div', 'span', 'font', 'a', 'b', 'i', 'u'],
-                            ALLOWED_ATTR: ['style', 'color', 'href', 'target']
-                        }));
+                        return scopedDeviceHtml(device.Data, 'dz-uw-');
                     } else if (ctrl.isAlert()) {
-                        var sanitized = device.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
-                        return $sce.trustAsHtml(DOMPurify.sanitize(sanitized, {
-                            ALLOWED_TAGS: ['br', 'div', 'span', 'font', 'a', 'b', 'i', 'u'],
-                            ALLOWED_ATTR: ['style', 'color', 'href', 'target']
-                        }));
+                        return scopedDeviceHtml(device.Data, 'dz-ua-');
                     } else if (typeof device.Direction !== 'undefined') {
                         var windSign = ($.myglobals && $.myglobals.windsign) ? $.myglobals.windsign : 'm/s';
                         var tempSign = ($rootScope.config && $rootScope.config.TempSign) ? $rootScope.config.TempSign : 'C';
@@ -197,24 +194,14 @@ define(['app'], function (app) {
 
                 ctrl.getMobileText = function () {
                     if (ctrl.isText() || ctrl.isAlert()) {
-                        // Render data as HTML: supports <br />, <b>, <a> etc. in device data
-                        // Also convert raw newlines to <br /> for plain-text data
-                        var text = device.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
-                        if (ctrl.isAlert()) {
-                            // Alert images exist for levels 0–4 (Alert48_0.png .. Alert48_4.png)
-                            var aLevel = Math.min(parseInt(device.Level) || 0, 4);
-                            text += ' <img src="images/Alert48_' + aLevel + '.png" height="16" width="16">';
+                        if (ctrl.isText()) {
+                            return scopedDeviceHtml(device.Data, 'dz-um-');
                         }
-                        var allowedTags = ['br', 'span', 'font', 'a', 'b', 'i', 'u'];
-                        var allowedAttr = ['style', 'color', 'href', 'target'];
-                        if (ctrl.isAlert()) {
-                            allowedTags.push('img');
-                            allowedAttr.push('src', 'height', 'width');
-                        }
-                        return $sce.trustAsHtml(DOMPurify.sanitize(text, {
-                            ALLOWED_TAGS: allowedTags,
-                            ALLOWED_ATTR: allowedAttr
-                        }));
+                        var scopeId = 'dz-um-' + String(parseInt(device.idx, 10) || 0);
+                        var aLevel = Math.min(parseInt(device.Level) || 0, 4);
+                        var img = '<img src="images/Alert48_' + aLevel + '.png" height="16" width="16">';
+                        var html = sanitizeHTML(device.Data, scopeId) + ' ' + img;
+                        return $sce.trustAsHtml('<div id="' + scopeId + '">' + html + '</div>');
                     }
                     if (ctrl.isCounter() && device.Type === 'P1 Smart Meter') {
                         var text = '';

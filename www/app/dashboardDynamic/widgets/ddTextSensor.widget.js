@@ -68,18 +68,11 @@ define([
                 var timer        = null;
 
                 function applyDevice(d) {
-                    var raw = (d.Data || '').trim();
-                    // Convert newlines to <br /> then sanitize, matching the original utility widget
-                    var html = raw.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
-                    if (window.DOMPurify) {
-                        html = DOMPurify.sanitize(html, {
-                            ALLOWED_TAGS: ['br', 'span', 'font', 'a', 'b', 'i', 'u'],
-                            ALLOWED_ATTR: ['style', 'color', 'href', 'target']
-                        });
-                    } else if (/<[a-zA-Z]/.test(html)) {
-                        console.warn('ddTextSensor: DOMPurify not loaded; HTML content rendered unsanitized');
-                    }
-                    ctrl.text       = $sce.trustAsHtml(html);
+                    var cfg     = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
+                    var scopeId = 'dz-dd-' + String(parseInt(d.idx || cfg.deviceIdx, 10) || 0);
+                    var raw     = (d.Data || '').trim();
+                    var html    = sanitizeHTML(raw, scopeId);
+                    ctrl.text       = $sce.trustAsHtml('<div id="' + scopeId + '">' + html + '</div>');
                     ctrl.deviceName = d.Name      || '';
                     ctrl.lastUpdate = d.LastUpdate || '';
                 }

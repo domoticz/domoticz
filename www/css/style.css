@@ -113,6 +113,28 @@ hr {
 	transition: transform 0.2s ease;
 }
 
+#lastupdate.lastupdate-spaced {
+	padding-top: 6px;
+}
+
+#status pre,
+[id^="dz-txt-"] pre,
+[id^="dz-uw-"] pre,
+[id^="dz-um-"] pre,
+[id^="dz-ua-"] pre,
+[id^="dz-dd-"] pre {
+	background: transparent;
+	border: none;
+	padding: 0;
+	margin: 0;
+	white-space: pre-wrap;
+	font-family: monospace;
+	font-size: inherit;
+	line-height: normal;
+	color: inherit;
+	border-radius: 0;
+}
+
 .events-editor__tree {
 	padding-top: 14px !important;
 }
