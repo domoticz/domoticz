@@ -230,16 +230,16 @@
             <!-- range-list -->
             <div ng-if="field.type === 'range-list'" class="dd-action-list-editor">
 
-                <!-- Existing ranges -->
+                <!-- Existing ranges (inline-editable) -->
                 <div class="dd-al-items">
-                    <div class="dd-al-item" ng-repeat="range in config[field.key] track by $index">
-                        <span class="dd-range-from-to">{{ range.from }} &mdash; {{ range.to }}</span>
-                        <span class="dd-al-type-badge"
-                              ng-class="{'dd-range-badge-normal':   range.status === 'normal',
-                                         'dd-range-badge-warning':  range.status === 'warning',
-                                         'dd-range-badge-critical': range.status === 'critical'}">
-                            {{ range.status | translate }}
-                        </span>
+                    <div class="dd-al-item dd-range-row" ng-repeat="range in config[field.key] track by $index">
+                        <input type="number" class="text ui-widget-content ui-corner-all dd-range-input"
+                               ng-model="range.from" placeholder="{{'From' | translate}}">
+                        <span class="dd-range-dash">&mdash;</span>
+                        <input type="number" class="text ui-widget-content ui-corner-all dd-range-input"
+                               ng-model="range.to" placeholder="{{'To' | translate}}">
+                        <input type="color" class="dd-range-color-picker" ng-model="range.color"
+                               title="{{'Color' | translate}}">
                         <i class="fa-solid fa-trash dd-al-action-icon dd-al-delete-icon"
                            ng-click="rangeRemoveItem(field.key, $index)" title="{{'Remove' | translate}}"></i>
                     </div>
@@ -247,6 +247,13 @@
 
                 <div class="dd-al-empty" ng-show="!config[field.key] || config[field.key].length === 0">
                     {{'No ranges defined yet.' | translate}}
+                </div>
+
+                <div ng-if="field.seedDefaults && (!config[field.key] || config[field.key].length === 0)" style="margin-bottom:6px">
+                    <button type="button" class="btn btn-sm btn-default"
+                            ng-click="rangeSeedDefaults(field.key, field.seedDefaults)">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> {{'Seed defaults' | translate}}
+                    </button>
                 </div>
 
                 <!-- Add new range -->
@@ -258,11 +265,8 @@
                         <input type="number" class="text ui-widget-content ui-corner-all"
                                ng-model="newRange.to"
                                placeholder="{{'To' | translate}}" style="flex:1;min-width:0">
-                        <select class="combobox ui-corner-all" ng-model="newRange.status" style="flex:1.5;min-width:0">
-                            <option value="normal">{{'Normal' | translate}}</option>
-                            <option value="warning">{{'Warning' | translate}}</option>
-                            <option value="critical">{{'Critical' | translate}}</option>
-                        </select>
+                        <input type="color" class="dd-range-color-picker" ng-model="newRange.color"
+                               title="{{'Color' | translate}}">
                         <button type="button" class="btn btn-sm btn-primary"
                                 ng-click="rangeAddItem(field.key)"
                                 ng-disabled="newRange.from === '' || newRange.to === ''">

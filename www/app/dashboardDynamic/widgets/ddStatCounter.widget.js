@@ -30,7 +30,17 @@ define([
                 label:    'Label',
                 required: false
             },
-            { key: 'showCard', type: 'boolean', label: 'Show panel background', default: true }
+            {
+                key:          'ranges',
+                type:         'range-list',
+                label:        'Bar ranges',
+                help:         'Add value ranges to show a gradient bar. Bar auto-scales to the combined min/max of all ranges.',
+                seedDefaults: [
+                    { from: 0,  to: 50,  color: '#66bb6a' },
+                    { from: 50, to: 100, color: '#DF2D3A' }
+                ]
+            },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 
@@ -46,9 +56,10 @@ define([
             bindToController: true,
             controller: ['$scope', '$http', '$interval', '$q', function($scope, $http, $interval, $q) {
                 var ctrl = this;
-                ctrl.label = '';
-                ctrl.value = '\u2014';
-                ctrl.unit  = '';
+                ctrl.label  = '';
+                ctrl.value  = '\u2014';
+                ctrl.unit   = '';
+                ctrl.numVal = NaN;
                 var cancelToken = null;
 
                 function load() {
@@ -69,7 +80,8 @@ define([
                         var match = (d.Data || '').match(/^([\d.\-]+)\s*(.*)?$/);
                         ctrl.value = match ? match[1] : (d.Data || '\u2014');
                         ctrl.unit  = match ? (match[2] || '') : '';
-                        ctrl.label = cfg.label || d.Name || '';
+                        ctrl.label  = cfg.label || d.Name || '';
+                        ctrl.numVal = match ? parseFloat(match[1]) : NaN;
                     }).catch(function(err) {
                         if (err.status === -1) { return; }
                         ctrl.error = 'Failed to load data';
@@ -85,7 +97,8 @@ define([
                         var match = (d.Data || '').match(/^([\d.\-]+)\s*(.*)?$/);
                         ctrl.value = match ? match[1] : (d.Data || '\u2014');
                         ctrl.unit  = match ? (match[2] || '') : '';
-                        ctrl.label = cfg.label || d.Name || '';
+                        ctrl.label  = cfg.label || d.Name || '';
+                        ctrl.numVal = match ? parseFloat(match[1]) : NaN;
                     }
                 });
 

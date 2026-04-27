@@ -2578,9 +2578,32 @@ dd-wcp-color {
 }
 
 /* ─── Range List Editor (Dial / Gauge value-range settings) */
-.dd-range-badge-normal   { background: var(--dz-widget-energy-export); color: var(--dz-body-bg); }
-.dd-range-badge-warning  { background: var(--dz-widget-amber);         color: var(--dz-body-bg); }
-.dd-range-badge-critical { background: var(--dz-accent-red);           color: #fff; }
+.dd-range-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.dd-range-row .dd-range-input {
+    flex: 1;
+    min-width: 0;
+    width: 60px;
+    padding: 2px 4px;
+    font-size: 12px;
+}
+.dd-range-dash {
+    flex-shrink: 0;
+    color: var(--dz-body-text);
+}
+.dd-range-color-picker {
+    flex-shrink: 0;
+    width: 36px;
+    height: 28px;
+    border: 1px solid var(--dz-border-color, #555);
+    border-radius: 4px;
+    padding: 1px;
+    cursor: pointer;
+    background: none;
+}
 
 .dd-range-from-to {
     flex: 1;
@@ -2734,6 +2757,24 @@ dd-wcp-color {
     color: var(--dz-body-text);
     margin-top: 2px;
     line-height: 1.5;
+}
+.dd-stat-card:has(.dd-stat-bar) {
+    padding-bottom: 20px;
+}
+.dd-stat-bar {
+    position: absolute;
+    bottom: 7px;
+    left: 8px;
+    right: 8px;
+    height: 7px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.dd-stat-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
 }
 .dd-energy-import  { color: var(--dz-widget-amber); }
 .dd-energy-export  { color: var(--dz-widget-energy-export); }

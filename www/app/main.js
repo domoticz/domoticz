@@ -83,7 +83,8 @@ require.config({
 		'dashboardDynamic/widgets/ddThermostat6.widget':     'dashboardDynamic/widgets/ddThermostat6.widget',
 		'dashboardDynamic/widgets/ddWeatherForecast.widget': 'dashboardDynamic/widgets/ddWeatherForecast.widget',
 		'dashboardDynamic/widgets/ddWindChart.widget':       'dashboardDynamic/widgets/ddWindChart.widget',
-		'dashboardDynamic/ddExportImport.controller':        'dashboardDynamic/ddExportImport.controller'
+		'dashboardDynamic/ddExportImport.controller':        'dashboardDynamic/ddExportImport.controller',
+		'dashboardDynamic/ddStatBar.directive':              'dashboardDynamic/ddStatBar.directive'
 	},
 	shim: {
 		'gridstack': { deps: ['jquery'] },

@@ -9,6 +9,7 @@ define([
     'dashboardDynamic/ddGrid',
     'dashboardDynamic/ddWidgetSettings.controller',
     'dashboardDynamic/ddWcpColor.directive',
+    'dashboardDynamic/ddStatBar.directive',
     'dashboardDynamic/ddDashboardManager.controller',
     'dashboardDynamic/ddExportImport.controller',
     'widgets/dzLightWidget',

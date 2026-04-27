@@ -417,19 +417,25 @@ define([
                 }
             });
 
-            $scope.newRange = { from: '', to: '', status: 'normal' };
+            $scope.newRange = { from: '', to: '', color: '#66bb6a' };
 
             $scope.rangeAddItem = function(fieldKey) {
                 var r    = $scope.newRange;
                 var from = parseFloat(r.from);
                 var to   = parseFloat(r.to);
-                if (isNaN(from) || isNaN(to)) { return; }
-                $scope.config[fieldKey].push({ from: from, to: to, status: r.status || 'normal' });
-                $scope.newRange = { from: '', to: '', status: 'normal' };
+                if (isNaN(from) || isNaN(to) || to <= from) { return; }
+                $scope.config[fieldKey].push({ from: from, to: to, color: r.color || '#66bb6a' });
+                $scope.newRange = { from: '', to: '', color: '#66bb6a' };
             };
 
             $scope.rangeRemoveItem = function(fieldKey, index) {
                 $scope.config[fieldKey].splice(index, 1);
+            };
+
+            $scope.rangeSeedDefaults = function(fieldKey, defaults) {
+                $scope.config[fieldKey] = defaults.map(function(r) {
+                    return { from: r.from, to: r.to, color: r.color };
+                });
             };
         }
 

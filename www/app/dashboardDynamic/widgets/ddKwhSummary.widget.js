@@ -43,6 +43,16 @@ define([
                     { value: 'gas',    label: 'Gas (orange-red)' }
                 ]
             },
+            {
+                key:          'ranges',
+                type:         'range-list',
+                label:        'Bar ranges',
+                help:         'Add value ranges to show a gradient bar on current wattage. Bar auto-scales to the combined min/max of all ranges.',
+                seedDefaults: [
+                    { from: 0,    to: 500,  color: '#66bb6a' },
+                    { from: 500,  to: 3000, color: '#DF2D3A' }
+                ]
+            },
             { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
@@ -62,6 +72,7 @@ define([
                 ctrl.title        = '';
                 ctrl.usageWatt    = null;
                 ctrl.counterToday = null;
+                ctrl.numVal       = NaN;
                 var cancelToken   = null;
 
                 function applyDevice(d) {
@@ -71,6 +82,7 @@ define([
                     // Usage: "1234 Watt" or "1234 W" — extract numeric part
                     var wMatch = (d.Usage || '').match(/^([\d.]+)/);
                     ctrl.usageWatt = wMatch ? wMatch[1] : null;
+                    ctrl.numVal = wMatch ? parseFloat(wMatch[1]) : NaN;
 
                     // CounterToday: "3.456 kWh" — keep full string for display
                     ctrl.counterToday = d.CounterToday || null;

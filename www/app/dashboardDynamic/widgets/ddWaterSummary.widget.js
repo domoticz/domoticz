@@ -31,6 +31,16 @@ define([
                 label:    'Title (optional, falls back to device name)',
                 required: false
             },
+            {
+                key:          'ranges',
+                type:         'range-list',
+                label:        'Bar ranges',
+                help:         'Add value ranges to show a gradient bar on today\'s usage. Bar auto-scales to the combined min/max of all ranges.',
+                seedDefaults: [
+                    { from: 0,   to: 100,  color: '#29b6f6' },
+                    { from: 100, to: 1000, color: '#DF2D3A' }
+                ]
+            },
             { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
@@ -51,6 +61,7 @@ define([
                 ctrl.counterToday = null;
                 ctrl.counterTotal = null;
                 ctrl.price        = null;
+                ctrl.numVal       = NaN;
                 var cancelToken   = null;
 
                 function applyDevice(d) {
@@ -63,6 +74,9 @@ define([
                     // d.price (lowercase): today's water cost; 1000 = sentinel meaning "not configured"
                     var raw = parseFloat(d.price);
                     ctrl.price = (!isNaN(raw) && raw !== 1000 && raw !== 0) ? raw : null;
+
+                    var todayMatch = (d.CounterToday || '').match(/^([\d.]+)/);
+                    ctrl.numVal = todayMatch ? parseFloat(todayMatch[1]) : NaN;
                 }
 
                 function load() {

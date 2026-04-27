@@ -7,7 +7,7 @@
     </div>
 
     <!-- Loaded state -->
-    <div ng-if="ctrl.widgetDef.config.deviceIdx">
+    <div ng-if="ctrl.widgetDef.config.deviceIdx" style="width:100%">
         <div class="dd-stat-label" ng-bind="ctrl.title"></div>
 
         <a ng-if="ctrl.usageWatt !== null" class="dd-stat-link"
@@ -23,5 +23,7 @@
         <div ng-if="ctrl.counterToday !== null" class="dd-stat-sub">
             Today: {{ctrl.counterToday}}
         </div>
+
+        <dd-stat-bar num-val="ctrl.numVal" ranges="ctrl.widgetDef.config.ranges"></dd-stat-bar>
     </div>
 </div>
