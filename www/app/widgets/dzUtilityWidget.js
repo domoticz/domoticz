@@ -197,7 +197,7 @@ define(['app'], function (app) {
                         if (ctrl.isText()) {
                             return scopedDeviceHtml(device.Data, 'dz-um-');
                         }
-                        var scopeId = 'dz-um-' + String(parseInt(device.idx, 10) || 0);
+                        var scopeId = 'dz-ua-' + String(parseInt(device.idx, 10) || 0);
                         var aLevel = Math.min(parseInt(device.Level) || 0, 4);
                         var img = '<img src="images/Alert48_' + aLevel + '.png" height="16" width="16">';
                         var html = sanitizeHTML(device.Data, scopeId) + ' ' + img;

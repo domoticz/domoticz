@@ -152,19 +152,27 @@ function stripHTMLTags(text) {
     return text.replace(/<[^>]*>/g, '');
 }
 
+function stripCssComments(cssText) {
+    var out = '', i = 0, len = cssText.length, inStr = false, strCh = '';
+    while (i < len) {
+        var c = cssText[i];
+        if (!inStr && (c === '"' || c === "'")) { inStr = true; strCh = c; out += c; i++; }
+        else if (inStr) { if (c === strCh && cssText[i - 1] !== '\\') inStr = false; out += c; i++; }
+        else if (cssText.substr(i, 2) === '/*') { var e = cssText.indexOf('*/', i + 2); i = e === -1 ? len : e + 2; }
+        else { out += c; i++; }
+    }
+    return out;
+}
+
 function scopeCss(cssText, prefix) {
     if (cssText.length > 10000) return '';
     if (!scopeCss._cache) scopeCss._cache = {};
     var cacheKey = prefix + '\0' + cssText;
     if (scopeCss._cache[cacheKey]) return scopeCss._cache[cacheKey];
+    cssText = stripCssComments(cssText);
     var result = '';
     var i = 0, len = cssText.length;
     while (i < len) {
-        if (cssText.substr(i, 2) === '/*') {
-            var end = cssText.indexOf('*/', i + 2);
-            i = (end === -1) ? len : end + 2;
-            continue;
-        }
         var braceOpen = cssText.indexOf('{', i);
         if (braceOpen === -1) break;
         var selector = cssText.substring(i, braceOpen).trim();
@@ -1981,11 +1989,10 @@ function Text(item) {
         this.hasHTMLContent = /<(?!br[\s/>])[a-zA-Z][^>]*>/i.test(item.Data);
         if (this.hasHTMLContent) {
             this.data = item.Data;
+            this.hasNewLine = this.data.indexOf("<br />") !== -1 || /[\r\n]/.test(this.data);
         } else {
             this.data = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
-        }
-        if (this.data.indexOf("<br />") != -1 || /[\r\n]/.test(this.data)) {
-            this.hasNewLine = true;
+            this.hasNewLine = this.data.indexOf("<br />") !== -1;
         }
         this.status = this.data;
         this.smallStatus = stripHTMLTags(this.data.replace(/<br\s*\/?>/gi, ', ').replace(/[\r\n]/g, ', '));
