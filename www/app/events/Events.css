@@ -330,6 +330,440 @@
     color: #333;
 }
 
+/* Wizard launcher tab */
+.events-editor__file-wizard {
+    font-style: italic;
+    opacity: 0.85;
+}
+
+.events-editor__file-wizard:hover {
+    opacity: 1;
+}
+
+/* ── Automation Wizard ───────────────────────────────────────────── */
+
+.aw-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aw-modal {
+    background: var(--dz-modal-bg, #fff);
+    color: var(--dz-modal-text, #333);
+    border-radius: 6px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    width: 720px;
+    max-width: 96vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Header */
+.aw-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+    background: var(--dz-modal-header-bg, var(--dz-modal-bg, #f5f5f5));
+    flex-shrink: 0;
+}
+
+.aw-title {
+    flex: 1;
+}
+
+.aw-title strong {
+    display: block;
+    font-size: 15px;
+    color: var(--dz-modal-text, #333);
+}
+
+.aw-title small {
+    color: var(--dz-modal-text, #666);
+    opacity: 0.65;
+    font-size: 12px;
+}
+
+.aw-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    line-height: 1;
+    color: var(--dz-modal-text, #666);
+    opacity: 0.6;
+    cursor: pointer;
+    padding: 0 4px;
+    flex-shrink: 0;
+}
+
+.aw-close:hover {
+    opacity: 1;
+}
+
+/* Step indicator */
+.aw-steps {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.aw-step {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aw-step + .aw-step::before {
+    content: '';
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: rgba(128, 128, 128, 0.35);
+    margin-right: 4px;
+}
+
+.aw-step-active + .aw-step::before,
+.aw-step-done + .aw-step::before {
+    background: var(--dz-accent-color, #337ab7);
+}
+
+.aw-step-circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(128, 128, 128, 0.35);
+    color: var(--dz-modal-text, #fff);
+    font-size: 11px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.aw-step-active .aw-step-circle {
+    background: var(--dz-accent-color, #337ab7);
+    color: #fff;
+}
+
+.aw-step-done .aw-step-circle {
+    background: #5cb85c;
+    color: #fff;
+}
+
+.aw-step-label {
+    font-size: 11px;
+    color: var(--dz-modal-text, #888);
+    opacity: 0.55;
+    white-space: nowrap;
+}
+
+.aw-step-active .aw-step-label {
+    color: var(--dz-accent-color, #337ab7);
+    opacity: 1;
+    font-weight: bold;
+}
+
+.aw-step-done .aw-step-label {
+    color: #5cb85c;
+    opacity: 1;
+}
+
+/* Body */
+.aw-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: var(--dz-modal-bg, #fff);
+    color: var(--dz-modal-text, #333);
+}
+
+.aw-step-heading {
+    margin-bottom: 16px;
+}
+
+.aw-step-heading h4 {
+    margin: 0 0 4px;
+    font-size: 15px;
+    color: var(--dz-modal-text, #333);
+}
+
+.aw-step-heading p {
+    margin: 0;
+    color: var(--dz-modal-text, #666);
+    opacity: 0.65;
+    font-size: 13px;
+}
+
+/* Card grid (trigger / action picker) */
+.aw-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+}
+
+.aw-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    border: 2px solid rgba(128, 128, 128, 0.25);
+    border-radius: 5px;
+    cursor: pointer;
+    background: var(--dz-input-bg, #fafafa);
+    color: var(--dz-input-text, #333);
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.aw-card:hover {
+    border-color: var(--dz-accent-color, #337ab7);
+    background: var(--dz-btn-hover-bg, var(--dz-input-bg, #f0f6ff));
+}
+
+.aw-card-selected {
+    border-color: var(--dz-accent-color, #337ab7);
+    background: var(--dz-btn-bg, #e8f0fb);
+}
+
+.aw-card-icon {
+    font-size: 20px;
+    color: var(--dz-accent-color, #337ab7);
+    flex-shrink: 0;
+    width: 24px;
+    text-align: center;
+}
+
+.aw-card-text strong {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 2px;
+    color: var(--dz-input-text, #333);
+}
+
+.aw-card-text span {
+    font-size: 11px;
+    color: var(--dz-input-text, #666);
+    opacity: 0.7;
+    line-height: 1.3;
+}
+
+/* Form layout */
+.aw-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.aw-row {
+    display: flex;
+    gap: 12px;
+}
+
+.aw-row .aw-field {
+    flex: 1;
+}
+
+.aw-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.aw-field label {
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--dz-modal-text, #555);
+    margin: 0;
+}
+
+/* Device picker */
+.aw-device-list {
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    border-radius: 3px;
+    max-height: 180px;
+    overflow-y: auto;
+    background: var(--dz-input-bg, #fff);
+    color: var(--dz-input-text, #333);
+}
+
+.aw-device-loading {
+    padding: 8px 10px;
+    font-size: 12px;
+    color: var(--dz-input-text, #888);
+    opacity: 0.7;
+}
+
+.aw-device-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--dz-input-text, #333);
+    border-bottom: 1px solid rgba(128, 128, 128, 0.12);
+}
+
+.aw-device-row:hover {
+    background: var(--dz-btn-bg, #e8f0fb);
+    color: var(--dz-btn-text, #333);
+}
+
+.aw-device-row-selected {
+    background: var(--dz-btn-bg, #e8f0fb);
+    color: var(--dz-btn-text, #333);
+    font-weight: bold;
+}
+
+.aw-device-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--dz-input-text, #333);
+}
+
+.aw-device-type {
+    font-size: 11px;
+    color: var(--dz-input-text, #888);
+    opacity: 0.6;
+    margin-left: 8px;
+    white-space: nowrap;
+}
+
+.aw-selected-value {
+    font-size: 12px;
+    color: #5cb85c;
+    margin-top: 2px;
+}
+
+/* Actions list */
+.aw-action-list {
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.aw-empty-hint {
+    padding: 20px;
+    text-align: center;
+    color: var(--dz-modal-text, #888);
+    opacity: 0.6;
+    font-size: 13px;
+    border: 2px dashed rgba(128, 128, 128, 0.3);
+    border-radius: 5px;
+}
+
+.aw-empty-hint i {
+    margin-right: 6px;
+}
+
+.aw-action-item {
+    border: 1px solid rgba(128, 128, 128, 0.25);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.aw-action-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--dz-modal-header-bg, var(--dz-modal-bg, #f5f5f5));
+    color: var(--dz-modal-text, #333);
+    font-size: 13px;
+}
+
+.aw-action-header strong {
+    flex: 1;
+}
+
+.aw-action-remove {
+    margin-left: auto;
+}
+
+.aw-action-body {
+    padding: 10px;
+    background: var(--dz-modal-bg, #fff);
+}
+
+.aw-add-action-btn {
+    margin-top: 4px;
+}
+
+/* Action type picker (nested overlay) */
+.aw-action-picker-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aw-action-picker-modal {
+    background: var(--dz-modal-bg, #fff);
+    color: var(--dz-modal-text, #333);
+    border-radius: 6px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    width: 540px;
+    max-width: 94vw;
+    padding: 16px;
+}
+
+.aw-action-picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.aw-action-picker-header strong {
+    font-size: 14px;
+    color: var(--dz-modal-text, #333);
+}
+
+/* Code inputs */
+.aw-code-input,
+.aw-code-review {
+    font-family: monospace;
+    font-size: 12px;
+    resize: vertical;
+    background: var(--dz-input-bg, #fff) !important;
+    color: var(--dz-input-text, #333) !important;
+}
+
+.aw-name-input {
+    font-size: 15px !important;
+    font-weight: 600;
+}
+
+/* Footer */
+.aw-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-top: 1px solid rgba(128, 128, 128, 0.25);
+    background: var(--dz-modal-header-bg, var(--dz-modal-bg, #f5f5f5));
+    flex-shrink: 0;
+}
+
+.aw-footer-right {
+    display: flex;
+    gap: 8px;
+}
+
 /* ACE Status Bar */
 
 .ace-statusbar {

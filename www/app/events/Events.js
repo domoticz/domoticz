@@ -1,4 +1,4 @@
-define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates'], function (app) {
+define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates', 'events/AutomationWizard'], function (app) {
     app.controller('EventsController', EventsController);
 
     function EventsController($scope, $q, $rootScope, $uibModal, domoticzApi, domoticzEventsApi, bootbox) {
@@ -13,6 +13,9 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
 		vm.loadRecentEvents = loadRecentEvents;
         vm.setActiveEventId = setActiveEventId;
         vm.isInterpreterSupported = isInterpreterSupported;
+        vm.openWizard = openWizard;
+        vm.closeWizard = closeWizard;
+        vm.wizardOpen = false;
         vm.toggleFolder = toggleFolder;
         vm.isFolderExpanded = isFolderExpanded;
         vm.showContextMenu = showContextMenu;
@@ -508,6 +511,14 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
 			});
 			domoticzEventsApi.storeRecents(recentEvents);
 		}
+
+        function openWizard() {
+            vm.wizardOpen = true;
+        }
+
+        function closeWizard() {
+            vm.wizardOpen = false;
+        }
     }
 
     app.directive('eventsDragSource', function () {
