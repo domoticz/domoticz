@@ -5972,7 +5972,7 @@ namespace http
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name")); stdstring_trim(name);
 
 			bool bHaveText = request::hasValue(&req, "text");
-			std::string text = HTMLSanitizer::Sanitize(request::findValue(&req, "text")); stdstring_trim(text);
+			std::string text = request::findValue(&req, "text"); stdstring_trim(text);
 
 			bool bHaveDescription = request::hasValue(&req, "description");
 			std::string description = HTMLSanitizer::Sanitize(request::findValue(&req, "description")); stdstring_trim(description);
@@ -6024,6 +6024,8 @@ namespace http
 			unsigned char dType = atoi(sd[0].c_str());
 			unsigned char dSubType = atoi(sd[1].c_str());
 			int HwdID = atoi(sd[2].c_str());
+			// Text sensor devices hold user-authored HTML; preserve tags but strip dangerous attributes
+			text = (dType == pTypeGeneral && dSubType == sTypeTextStatus) ? HTMLSanitizer::SanitizeHTML(text) : HTMLSanitizer::Sanitize(text);
 			std::string sHwdID = sd[2];
 			int OldCustomImage = atoi(sd[3].c_str());
 			std::string OldDescription = sd[4];
