@@ -3712,7 +3712,7 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 			_log.Log(LOG_ERROR, "EventSystem: SwitchTimerPlan invalid ID: %s", deviceName.c_str());
 			return true;
 		}
-		if (planId > 0)
+		if (planId >= 0)
 		{
 			result = m_sql.safe_query("SELECT Name FROM TimerPlans WHERE (ID == %d)", planId);
 			if (result.empty())
