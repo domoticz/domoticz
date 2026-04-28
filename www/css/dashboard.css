@@ -1493,6 +1493,11 @@ body.dd-navbar-hidden .dd-toolbar {
     cursor: not-allowed;
 }
 
+.dd-qa-btn > i {
+    line-height: 1;
+    flex-shrink: 0;
+}
+
 .dd-qa-btn--busy {
     pointer-events: none;
     opacity: 0.6;
@@ -1773,7 +1778,8 @@ body.dd-navbar-hidden .dd-toolbar {
 /* ── Dimmer button group ────────────────────────────────── */
 .dd-qa-dimmer-group {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 4px;
     align-items: center;
     justify-content: center;
@@ -1781,11 +1787,21 @@ body.dd-navbar-hidden .dd-toolbar {
     min-width: 80px;
 }
 
-.dd-qa-dimmer-controls {
-    display: flex;
-    gap: 3px;
-    align-items: stretch;
-    flex-shrink: 0;
+/* Grid mode child order: label top row, two icons centered below, slider row at bottom */
+.dd-qa-dimmer-group > .dd-qa-label {
+    order: 0;
+    flex: 0 0 100%;
+    text-align: center;
+}
+
+.dd-qa-dimmer-group > .dd-qa-btn--dim-toggle,
+.dd-qa-dimmer-group > .dd-qa-btn--dim-slider {
+    order: 1;
+}
+
+.dd-qa-dimmer-group > .dd-qa-dim-slider-row {
+    order: 2;
+    flex: 0 0 100%;
 }
 
 .dd-qa-btn--dim-slider,
@@ -1794,7 +1810,28 @@ body.dd-navbar-hidden .dd-toolbar {
     min-width: 0;
     flex-direction: row;
     align-items: center;
-    padding: 6px 10px;
+    padding: 8px 10px;
+    background: transparent;
+    border: none;
+    font-size: 1em;
+}
+
+.dd-qa-btn--dim-slider:hover:not(:disabled),
+.dd-qa-btn--dim-toggle:hover:not(:disabled) {
+    background: transparent;
+    border: none;
+}
+
+.dd-qa-btn--dim-slider.dd-qa-btn--success,
+.dd-qa-btn--dim-toggle.dd-qa-btn--success {
+    background: #dff0d8;
+    border: 1px solid var(--dz-btn-success-bg, #27ae60);
+}
+
+.dd-qa-btn--dim-slider.dd-qa-btn--error,
+.dd-qa-btn--dim-toggle.dd-qa-btn--error {
+    background: #f2dede;
+    border: 1px solid var(--dz-btn-danger-bg, #d9534f);
 }
 
 .dd-qa-dim-slider-row {
@@ -1833,15 +1870,30 @@ body.dd-navbar-hidden .dd-toolbar {
     border-radius: 6px;
 }
 
+.dd-quick-actions--list .dd-qa-dimmer-group > .dd-qa-btn--dim-toggle {
+    order: 0;
+    flex: none;
+    padding: 0;
+}
+
 .dd-quick-actions--list .dd-qa-dimmer-group > .dd-qa-label {
+    order: 1;
     flex: 1;
+    text-align: left;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.dd-quick-actions--list .dd-qa-dim-slider-row {
+.dd-quick-actions--list .dd-qa-dimmer-group > .dd-qa-btn--dim-slider {
+    order: 2;
+    flex: none;
+    padding: 0;
+}
+
+.dd-quick-actions--list .dd-qa-dimmer-group > .dd-qa-dim-slider-row {
+    order: 3;
     flex: 0 0 100%;
     padding: 4px 0 2px;
 }
