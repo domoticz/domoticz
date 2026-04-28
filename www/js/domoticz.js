@@ -2218,6 +2218,8 @@ function SetSetpoint() {
 			if (data.status == "ERROR") {
 				HideNotify();
 				bootbox.alert($.t('Problem setting Setpoint value'));
+			} else {
+				$(document).trigger('dz:setpoint:saved', { idx: $.devIdx, value: parseFloat(curValue) });
 			}
 			//wait 1 second
 			setTimeout(function () {

@@ -145,6 +145,7 @@ define([
                     }).then(function() {
                         ctrl.setpoint = newVal;
                         ctrl.sending  = false;
+                        $(document).trigger('dz:setpoint:saved', { idx: c.deviceIdx, value: newVal });
                     }).catch(function() {
                         ctrl.sending = false;
                     });
@@ -192,6 +193,14 @@ define([
                     return ctrl.setpoint !== null && ctrl.setpoint >= maxVal();
                 };
 
+                function onSetpointSaved(e, data) {
+                    var c = cfg();
+                    if (c && String(data.idx) === String(c.deviceIdx)) {
+                        $scope.$applyAsync(function() { ctrl.setpoint = data.value; });
+                    }
+                }
+                $(document).on('dz:setpoint:saved', onSetpointSaved);
+
                 ctrl.clickToEdit = function(event) {
                     if (ctrl.sending) { return; }
                     var c = cfg();
@@ -214,6 +223,7 @@ define([
                 $scope.$on('$destroy', function() {
                     if (cancelToken) { cancelToken.resolve(); cancelToken = null; }
                     $interval.cancel(timer);
+                    $(document).off('dz:setpoint:saved', onSetpointSaved);
                 });
 
                 $scope.$on('dd:widget:refresh', load);

@@ -57,10 +57,19 @@ define([
             controller: ['$scope', '$http', '$interval', '$q', function($scope, $http, $interval, $q) {
                 var ctrl = this;
                 ctrl.label  = '';
-                ctrl.value  = '\u2014';
+                ctrl.value  = '—';
                 ctrl.unit   = '';
                 ctrl.numVal = NaN;
                 var cancelToken = null;
+
+                function applyDevice(d, labelOverride) {
+                    // Parse "23.5 °C" or "1234 Wh" style Data string; fall back to vunit for setpoint devices
+                    var match = (d.Data || '').match(/^([\d.\-]+)\s*(.*)?$/);
+                    ctrl.value  = match ? match[1] : (d.Data || '—');
+                    ctrl.unit   = match ? (match[2] || d.vunit || '') : (d.vunit || '');
+                    ctrl.label  = labelOverride || d.Name || '';
+                    ctrl.numVal = match ? parseFloat(match[1]) : NaN;
+                }
 
                 function load() {
                     var cfg = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
@@ -75,13 +84,7 @@ define([
                     }).then(function(resp) {
                         var d = resp.data.result && resp.data.result[0];
                         if (!d) { return; }
-
-                        // Parse "23.5 °C" or "1234 Wh" style Data string
-                        var match = (d.Data || '').match(/^([\d.\-]+)\s*(.*)?$/);
-                        ctrl.value = match ? match[1] : (d.Data || '\u2014');
-                        ctrl.unit  = match ? (match[2] || '') : '';
-                        ctrl.label  = cfg.label || d.Name || '';
-                        ctrl.numVal = match ? parseFloat(match[1]) : NaN;
+                        applyDevice(d, cfg.label);
                     }).catch(function(err) {
                         if (err.status === -1) { return; }
                         ctrl.error = 'Failed to load data';
@@ -92,21 +95,27 @@ define([
                 $scope.$on('device_update', function(e, updated) {
                     var cfg = ctrl.widgetDef && ctrl.widgetDef.config;
                     if (cfg && String(updated.idx) === String(cfg.deviceIdx)) {
-                        // Update directly from broadcast payload to avoid extra HTTP call
-                        var d = updated;
-                        var match = (d.Data || '').match(/^([\d.\-]+)\s*(.*)?$/);
-                        ctrl.value = match ? match[1] : (d.Data || '\u2014');
-                        ctrl.unit  = match ? (match[2] || '') : '';
-                        ctrl.label  = cfg.label || d.Name || '';
-                        ctrl.numVal = match ? parseFloat(match[1]) : NaN;
+                        applyDevice(updated, cfg.label);
                     }
                 });
+
+                function onSetpointSaved(e, data) {
+                    var cfg = ctrl.widgetDef && ctrl.widgetDef.config;
+                    if (cfg && String(data.idx) === String(cfg.deviceIdx)) {
+                        $scope.$applyAsync(function() {
+                            ctrl.value  = String(data.value);
+                            ctrl.numVal = data.value;
+                        });
+                    }
+                }
+                $(document).on('dz:setpoint:saved', onSetpointSaved);
 
                 var timer = $interval(load, 30000);
 
                 $scope.$on('$destroy', function() {
                     if (cancelToken) { cancelToken.resolve(); cancelToken = null; }
                     $interval.cancel(timer);
+                    $(document).off('dz:setpoint:saved', onSetpointSaved);
                 });
                 $scope.$on('dd:widget:refresh', load);
 
