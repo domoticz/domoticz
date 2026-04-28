@@ -42,6 +42,11 @@
     </div>
 </div>
 
+<div ng-if="directionError" class="alert alert-warning" style="margin:8px 15px 0">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    {{'Bar ranges must all go in the same direction. Use all ascending (e.g. -100 to 0) or all descending (e.g. 0 to -100).' | translate}}
+</div>
+
 <div class="modal-footer">
     <button type="button" class="btn btn-danger pull-left" ng-click="clearRanges()">
         <i class="fa-solid fa-trash"></i> Clear all

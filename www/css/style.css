@@ -3198,6 +3198,13 @@ dz-temp-bar {
     border-radius: 4px;
     transition: width 0.4s ease;
 }
+.dz-uw-bar-fill--rtl {
+    position: absolute;
+    right: 0;
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
 .dz-uw-bar-center-wrap {
     position: relative;
     height: 100%;

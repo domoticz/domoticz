@@ -8,65 +8,93 @@ define(['app'], function(app) {
 
         function computeBar(numericValue, ranges) {
             if (!Array.isArray(ranges) || ranges.length === 0) { return null; }
-            var sorted = ranges.slice().filter(function(r) {
-                var f = parseFloat(r.from), t = parseFloat(r.to);
-                return !isNaN(f) && !isNaN(t) && t > f;
-            }).sort(function(a, b) { return parseFloat(a.from) - parseFloat(b.from); });
-            if (sorted.length === 0) { return null; }
-            var min = parseFloat(sorted[0].from);
-            var max = parseFloat(sorted[sorted.length - 1].to);
-            if (isNaN(min) || isNaN(max) || max <= min) { return null; }
-            var span = max - min;
 
-            // Center-origin mode: when ranges span both negative and positive
-            if (min < 0 && max > 0) {
-                var center = (min + max) / 2;
-                var centerPct = (center - min) / span * 100;
-                var clampedVal = Math.min(max, Math.max(min, numericValue));
+            // Allow descending ranges; only reject zero-width
+            var valid = ranges.slice().filter(function(r) {
+                var f = parseFloat(r.from), t = parseFloat(r.to);
+                return !isNaN(f) && !isNaN(t) && t !== f;
+            });
+            if (valid.length === 0) { return null; }
+
+            // Axis direction from first valid range
+            var isRTL = parseFloat(valid[0].from) > parseFloat(valid[0].to);
+
+            // Sort in axis order
+            var sorted = valid.sort(function(a, b) {
+                return isRTL
+                    ? parseFloat(b.from) - parseFloat(a.from)
+                    : parseFloat(a.from) - parseFloat(b.from);
+            });
+
+            var axisStart = parseFloat(sorted[0].from);
+            var axisEnd   = parseFloat(sorted[sorted.length - 1].to);
+            var axisMin   = Math.min(axisStart, axisEnd);
+            var axisMax   = Math.max(axisStart, axisEnd);
+            var span      = axisMax - axisMin;
+            if (span === 0) { return null; }
+
+            // Ranges sorted by numeric min (ascending) — used for all gradient building
+            // so stop positions are always in left-to-right order within the fill div
+            var gradRanges = sorted.slice().sort(function(a, b) {
+                return Math.min(parseFloat(a.from), parseFloat(a.to)) - Math.min(parseFloat(b.from), parseFloat(b.to));
+            });
+
+            // Helper: build proportional gradient stops for a fill spanning [rangeStart, rangeEnd]
+            function buildStops(rangeStart, rangeEnd) {
+                var fillWidth = rangeEnd - rangeStart;
+                var stops = [], lastColor = null;
+                for (var i = 0; i < gradRanges.length; i++) {
+                    var rMin  = Math.min(parseFloat(gradRanges[i].from), parseFloat(gradRanges[i].to));
+                    var rMax  = Math.max(parseFloat(gradRanges[i].from), parseFloat(gradRanges[i].to));
+                    var color = gradRanges[i].color || '#66bb6a';
+                    var oStart = Math.max(rMin, rangeStart);
+                    var oEnd   = Math.min(rMax, rangeEnd);
+                    if (oEnd <= oStart) { continue; }
+                    stops.push(color + ' ' + ((oStart - rangeStart) / fillWidth * 100).toFixed(2) + '%');
+                    lastColor = color;
+                }
+                if (lastColor) { stops.push(lastColor + ' 100%'); }
+                return stops.length ? 'linear-gradient(to right, ' + stops.join(', ') + ')' : 'none';
+            }
+
+            // Center-origin mode: axis spans both negative and positive
+            if (axisMin < 0 && axisMax > 0) {
+                var center    = (axisMin + axisMax) / 2;
+                var centerPct = (center - axisMin) / span * 100;
+                var clampedVal = Math.min(axisMax, Math.max(axisMin, numericValue));
                 var fillWidth = Math.abs(clampedVal - center);
                 if (fillWidth === 0) { return { isCenterOrigin: true, centerPct: centerPct, fillPct: 0, fillDirection: 'left', bgImage: 'none' }; }
                 var fillDirection = clampedVal < center ? 'left' : 'right';
                 var fillPct = fillWidth / span * 100;
+                // Gradient traverses zones between the fill edges (always ascending in value space)
+                var fillMin = Math.min(clampedVal, center);
+                var fillMax = Math.max(clampedVal, center);
+                return { isCenterOrigin: true, centerPct: centerPct, fillPct: fillPct, fillDirection: fillDirection, bgImage: buildStops(fillMin, fillMax) };
+            }
 
-                // Build gradient for zones traversed from center toward value
-                // gradient direction is always left→right within the fill div:
-                //   left-fill: left=value-side, right=center-side  → traverse value→center (ascending)
-                //   right-fill: left=center-side, right=value-side → traverse center→value (ascending)
-                var rangeStart = fillDirection === 'left' ? clampedVal : center;
-                var rangeEnd   = fillDirection === 'left' ? center      : clampedVal;
-                var stops = [];
-                var lastColor = null;
+            // Standard LTR fill (unchanged bgImage + bgSize approach)
+            if (!isRTL) {
+                var pct = Math.min(100, Math.max(0, (numericValue - axisMin) / span * 100));
+                var currentIdx = sorted.length - 1;
                 for (var i = 0; i < sorted.length; i++) {
-                    var rFrom = parseFloat(sorted[i].from);
-                    var rTo   = parseFloat(sorted[i].to);
-                    var color = sorted[i].color || '#66bb6a';
-                    var overlapStart = Math.max(rFrom, rangeStart);
-                    var overlapEnd   = Math.min(rTo,   rangeEnd);
-                    if (overlapEnd <= overlapStart) { continue; }
-                    var startPct = fillWidth > 0 ? ((overlapStart - rangeStart) / fillWidth * 100).toFixed(2) : '0.00';
-                    stops.push(color + ' ' + startPct + '%');
-                    lastColor = color;
+                    if (numericValue <= parseFloat(sorted[i].to)) { currentIdx = i; break; }
                 }
-                if (lastColor) { stops.push(lastColor + ' 100%'); }
-                var bgImage = stops.length ? 'linear-gradient(to right, ' + stops.join(', ') + ')' : 'none';
-                return { isCenterOrigin: true, centerPct: centerPct, fillPct: fillPct, fillDirection: fillDirection, bgImage: bgImage };
+                var stops = [];
+                for (var i = 0; i <= currentIdx; i++) {
+                    var s = ((parseFloat(sorted[i].from) - axisMin) / span * 100).toFixed(2);
+                    stops.push((sorted[i].color || '#66bb6a') + ' ' + s + '%');
+                }
+                stops.push((sorted[currentIdx].color || '#66bb6a') + ' 100.00%');
+                var bgImage = 'linear-gradient(90deg, ' + stops.join(', ') + ')';
+                var bgSize = pct > 0 ? (100 / pct * 100).toFixed(2) + '% 100%' : '10000% 100%';
+                return { pct: pct, bgImage: bgImage, bgSize: bgSize, isRTL: false };
             }
 
-            // Standard left-to-right fill
-            var pct = Math.min(100, Math.max(0, (numericValue - min) / span * 100));
-            var currentIdx = sorted.length - 1;
-            for (var i = 0; i < sorted.length; i++) {
-                if (numericValue <= parseFloat(sorted[i].to)) { currentIdx = i; break; }
-            }
-            var stops = [];
-            for (var i = 0; i <= currentIdx; i++) {
-                var s = ((parseFloat(sorted[i].from) - min) / span * 100).toFixed(2);
-                stops.push((sorted[i].color || '#66bb6a') + ' ' + s + '%');
-            }
-            stops.push((sorted[currentIdx].color || '#66bb6a') + ' 100.00%');
-            var bgImage = 'linear-gradient(90deg, ' + stops.join(', ') + ')';
-            var bgSize = pct > 0 ? (100 / pct * 100).toFixed(2) + '% 100%' : '10000% 100%';
-            return { pct: pct, bgImage: bgImage, bgSize: bgSize };
+            // Standard RTL fill (anchored at right edge; gradient proportional to fill width)
+            var clampedVal = Math.min(axisMax, Math.max(axisMin, numericValue));
+            var pct = Math.abs(clampedVal - axisStart) / span * 100;
+            // Fill left edge = lower numeric value, right edge = axisStart (higher numeric value)
+            return { pct: pct, bgImage: buildStops(Math.min(clampedVal, axisStart), Math.max(clampedVal, axisStart)), isRTL: true };
         }
 
         return {
@@ -115,7 +143,8 @@ define(['app'], function(app) {
             restrict: 'E',
             scope: { value: '<', ranges: '<' },
             template: '<div class="dz-uw-bar" ng-if="bar">' +
-                        '<div ng-if="!bar.isCenterOrigin" class="dz-uw-bar-fill" ng-style="{\'width\': bar.pct + \'%\', \'backgroundImage\': bar.bgImage, \'backgroundSize\': bar.bgSize}"></div>' +
+                        '<div ng-if="!bar.isCenterOrigin && !bar.isRTL" class="dz-uw-bar-fill" ng-style="{\'width\': bar.pct + \'%\', \'backgroundImage\': bar.bgImage, \'backgroundSize\': bar.bgSize}"></div>' +
+                        '<div ng-if="!bar.isCenterOrigin && bar.isRTL" class="dz-uw-bar-fill dz-uw-bar-fill--rtl" ng-style="{\'width\': bar.pct + \'%\', \'backgroundImage\': bar.bgImage}"></div>' +
                         '<div ng-if="bar.isCenterOrigin" class="dz-uw-bar-center-wrap">' +
                             '<div ng-if="bar.fillDirection===\'left\'" class="dz-uw-bar-fill dz-uw-bar-fill--left" ng-style="{\'right\': (100 - bar.centerPct) + \'%\', \'width\': bar.fillPct + \'%\', \'backgroundImage\': bar.bgImage}"></div>' +
                             '<div ng-if="bar.fillDirection===\'right\'" class="dz-uw-bar-fill dz-uw-bar-fill--right" ng-style="{\'left\': bar.centerPct + \'%\', \'width\': bar.fillPct + \'%\', \'backgroundImage\': bar.bgImage}"></div>' +
@@ -149,21 +178,29 @@ define(['app'], function(app) {
                 return parseFloat(String(v).replace(',', '.'));
             }
 
+            $scope.directionError = false;
+
             $scope.addRange = function() {
                 var from = parseDecimal($scope.newRange.from);
                 var to   = parseDecimal($scope.newRange.to);
-                if (isNaN(from) || isNaN(to) || to <= from) { return; }
+                if (isNaN(from) || isNaN(to) || from === to) { return; }
                 $scope.ranges.push({ from: from, to: to, color: $scope.newRange.color || '#66bb6a' });
-                $scope.ranges.sort(function(a, b) { return a.from - b.from; });
+                $scope.directionError = false;
+                var isRTL = $scope.ranges[0] && parseDecimal($scope.ranges[0].from) > parseDecimal($scope.ranges[0].to);
+                $scope.ranges.sort(function(a, b) {
+                    return isRTL ? parseDecimal(b.from) - parseDecimal(a.from) : parseDecimal(a.from) - parseDecimal(b.from);
+                });
                 $scope.newRange = { from: '', to: '', color: $scope.newRange.color || '#66bb6a' };
             };
 
             $scope.removeRange = function(index) {
                 $scope.ranges.splice(index, 1);
+                $scope.directionError = false;
             };
 
             $scope.clearRanges = function() {
                 $scope.ranges = [];
+                $scope.directionError = false;
             };
 
             $scope.seedDefaults = function() {
@@ -178,7 +215,16 @@ define(['app'], function(app) {
                     r.from = parseDecimal(r.from);
                     r.to   = parseDecimal(r.to);
                 });
-                $scope.ranges.sort(function(a, b) { return a.from - b.from; });
+                var hasAsc = false, hasDesc = false;
+                $scope.ranges.forEach(function(r) {
+                    if (r.from < r.to) { hasAsc  = true; }
+                    if (r.from > r.to) { hasDesc = true; }
+                });
+                if (hasAsc && hasDesc) { $scope.directionError = true; return; }
+                $scope.directionError = false;
+                $scope.ranges.sort(function(a, b) {
+                    return hasDesc ? b.from - a.from : a.from - b.from;
+                });
                 $uibModalInstance.close($scope.ranges);
             };
 

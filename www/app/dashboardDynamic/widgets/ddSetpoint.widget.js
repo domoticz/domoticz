@@ -33,7 +33,8 @@ define([
                 label:    'Title (optional, falls back to device name)',
                 required: false
             },
-            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true },
+            { key: 'ranges', type: 'range-list', label: 'Bar ranges (optional)' }
         ]
     });
 

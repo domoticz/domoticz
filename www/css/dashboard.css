@@ -2828,6 +2828,34 @@ dd-wcp-color {
     border-radius: 4px;
     transition: width 0.4s ease;
 }
+.dd-stat-bar-fill--rtl {
+    position: absolute;
+    right: 0;
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+.dd-stat-bar-center-wrap {
+    position: relative;
+    height: 100%;
+}
+.dd-stat-bar-fill--left,
+.dd-stat-bar-fill--right {
+    position: absolute;
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+.dd-stat-bar-center-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    margin-left: -1px;
+    background: rgba(128, 128, 128, 0.7);
+    border-radius: 1px;
+    z-index: 1;
+}
 .dd-energy-import  { color: var(--dz-widget-amber); }
 .dd-energy-export  { color: var(--dz-widget-energy-export); }
 .dd-energy-price   { color: var(--dz-widget-energy-price);  }

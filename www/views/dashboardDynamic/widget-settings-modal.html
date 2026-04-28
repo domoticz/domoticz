@@ -256,6 +256,11 @@
                     </button>
                 </div>
 
+                <div ng-if="rangeDirectionError[field.key]" class="alert alert-warning" style="margin-top:6px;margin-bottom:0">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    {{'Bar ranges must all go in the same direction. Use all ascending (e.g. -100 to 0) or all descending (e.g. 0 to -100).' | translate}}
+                </div>
+
                 <!-- Add new range -->
                 <div class="dd-al-add">
                     <div class="dd-al-add-row">

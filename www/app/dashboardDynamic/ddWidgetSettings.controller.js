@@ -418,6 +418,7 @@ define([
             });
 
             $scope.newRange = { from: '', to: '', color: '#66bb6a' };
+            $scope.rangeDirectionError = {};
 
             function parseDecimal(v) {
                 return parseFloat(String(v).replace(',', '.'));
@@ -427,14 +428,19 @@ define([
                 var r    = $scope.newRange;
                 var from = parseDecimal(r.from);
                 var to   = parseDecimal(r.to);
-                if (isNaN(from) || isNaN(to) || to <= from) { return; }
+                if (isNaN(from) || isNaN(to) || from === to) { return; }
                 $scope.config[fieldKey].push({ from: from, to: to, color: r.color || '#66bb6a' });
-                $scope.config[fieldKey].sort(function(a, b) { return a.from - b.from; });
+                var isRTL = $scope.config[fieldKey][0] && $scope.config[fieldKey][0].from > $scope.config[fieldKey][0].to;
+                $scope.config[fieldKey].sort(function(a, b) {
+                    return isRTL ? b.from - a.from : a.from - b.from;
+                });
+                $scope.rangeDirectionError[fieldKey] = false;
                 $scope.newRange = { from: '', to: '', color: '#66bb6a' };
             };
 
             $scope.rangeRemoveItem = function(fieldKey, index) {
                 $scope.config[fieldKey].splice(index, 1);
+                $scope.rangeDirectionError[fieldKey] = false;
             };
 
             $scope.rangeSeedDefaults = function(fieldKey, defaults) {
@@ -449,6 +455,20 @@ define([
                 $scope.settingsForm.$setSubmitted();
                 return;
             }
+            var hasDirectionError = false;
+            rangeListFields.forEach(function(field) {
+                var ranges = $scope.config[field.key] || [];
+                var hasAsc = false, hasDesc = false;
+                ranges.forEach(function(r) {
+                    if (r.from < r.to) { hasAsc  = true; }
+                    if (r.from > r.to) { hasDesc = true; }
+                });
+                if (hasAsc && hasDesc) {
+                    $scope.rangeDirectionError[field.key] = true;
+                    hasDirectionError = true;
+                }
+            });
+            if (hasDirectionError) { return; }
             $uibModalInstance.close($scope.config);
         };
 

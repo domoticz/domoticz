@@ -1,37 +1,18 @@
-define(['app'], function(app) {
+define(['app', 'widgets/dzBar'], function(app) {
     'use strict';
 
-    function computeBar(numericValue, ranges) {
-        if (!Array.isArray(ranges) || ranges.length === 0) { return null; }
-        var sorted = ranges.slice().filter(function(r) {
-            var f = parseFloat(r.from), t = parseFloat(r.to);
-            return !isNaN(f) && !isNaN(t) && t > f;
-        }).sort(function(a, b) { return parseFloat(a.from) - parseFloat(b.from); });
-        if (sorted.length === 0) { return null; }
-        var min = parseFloat(sorted[0].from);
-        var max = parseFloat(sorted[sorted.length - 1].to);
-        if (isNaN(min) || isNaN(max) || max <= min) { return null; }
-        var span = max - min;
-        var pct = Math.min(100, Math.max(0, (numericValue - min) / span * 100));
-        var currentIdx = sorted.length - 1;
-        for (var i = 0; i < sorted.length; i++) {
-            if (numericValue <= parseFloat(sorted[i].to)) { currentIdx = i; break; }
-        }
-        var stops = [];
-        for (var i = 0; i <= currentIdx; i++) {
-            var s = ((parseFloat(sorted[i].from) - min) / span * 100).toFixed(2);
-            stops.push((sorted[i].color || '#66bb6a') + ' ' + s + '%');
-        }
-        stops.push((sorted[currentIdx].color || '#66bb6a') + ' 100.00%');
-        var bgImage = 'linear-gradient(90deg, ' + stops.join(', ') + ')';
-        var bgSize = pct > 0 ? (100 / pct * 100).toFixed(2) + '% 100%' : '10000% 100%';
-        return { pct: pct, bgImage: bgImage, bgSize: bgSize };
-    }
-
-    app.directive('ddStatBar', [function() {
+    app.directive('ddStatBar', ['dzBarService', function(dzBarService) {
         return {
             restrict: 'E',
-            template: '<div class="dd-stat-bar" ng-if="bar"><div class="dd-stat-bar-fill" ng-style="{\'width\': bar.pct + \'%\', \'backgroundImage\': bar.bgImage, \'backgroundSize\': bar.bgSize}"></div></div>',
+            template: '<div class="dd-stat-bar" ng-if="bar">' +
+                        '<div ng-if="!bar.isCenterOrigin && !bar.isRTL" class="dd-stat-bar-fill" ng-style="{\'width\': bar.pct + \'%\', \'backgroundImage\': bar.bgImage, \'backgroundSize\': bar.bgSize}"></div>' +
+                        '<div ng-if="!bar.isCenterOrigin && bar.isRTL" class="dd-stat-bar-fill dd-stat-bar-fill--rtl" ng-style="{\'width\': bar.pct + \'%\', \'backgroundImage\': bar.bgImage}"></div>' +
+                        '<div ng-if="bar.isCenterOrigin" class="dd-stat-bar-center-wrap">' +
+                            '<div ng-if="bar.fillDirection===\'left\'" class="dd-stat-bar-fill dd-stat-bar-fill--left" ng-style="{\'right\': (100 - bar.centerPct) + \'%\', \'width\': bar.fillPct + \'%\', \'backgroundImage\': bar.bgImage}"></div>' +
+                            '<div ng-if="bar.fillDirection===\'right\'" class="dd-stat-bar-fill dd-stat-bar-fill--right" ng-style="{\'left\': bar.centerPct + \'%\', \'width\': bar.fillPct + \'%\', \'backgroundImage\': bar.bgImage}"></div>' +
+                            '<div class="dd-stat-bar-center-line" ng-style="{\'left\': bar.centerPct + \'%\'}"></div>' +
+                        '</div>' +
+                      '</div>',
             scope: {
                 numVal: '<',
                 ranges: '<'
@@ -39,10 +20,13 @@ define(['app'], function(app) {
             controller: ['$scope', function($scope) {
                 function update() {
                     var val = parseFloat($scope.numVal);
-                    $scope.bar = isNaN(val) ? null : computeBar(val, $scope.ranges);
+                    $scope.bar = (!isNaN(val) && Array.isArray($scope.ranges) && $scope.ranges.length)
+                        ? dzBarService.computeBar(val, $scope.ranges)
+                        : null;
                 }
                 $scope.$watch('numVal', update);
                 $scope.$watchCollection('ranges', update);
+                update();
             }]
         };
     }]);
