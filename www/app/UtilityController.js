@@ -59,7 +59,7 @@
 			});
 		}
 
-		EditUtilityDevice = function (idx, name, description, customimage, deviceID, unitCode, colorJson) {
+		EditUtilityDevice = function (idx, name, description, customimage, deviceID, unitCode, colorJson, showBar) {
 			$.devIdx = idx;
 			$("#dialog-editutilitydevice #deviceidx").text(idx);
 			$("#dialog-editutilitydevice #deviceid").text(deviceID);
@@ -79,14 +79,16 @@
 					$('#dialog-editutilitydevice #combosensoricon').ddslick('select', { index: i });
 				}
 			});
-			dzBarService.setColorJson(colorJson || '');
 			var $utilForm = $('#dialog-editutilitydevice form');
-			$utilForm.css('position', 'relative');
 			$utilForm.find('.dz-bar-btn').remove();
-			$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
-				.css({position: 'absolute', top: '4px', right: '4px'})
-				.click(function() { dzOpenBarPopup(idx, unescape(name)); })
-				.appendTo($utilForm);
+			if (showBar !== false) {
+				dzBarService.setColorJson(colorJson || '');
+				$utilForm.css('position', 'relative');
+				$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
+					.css({position: 'absolute', top: '4px', right: '4px'})
+					.click(function() { dzOpenBarPopup(idx, unescape(name)); })
+					.appendTo($utilForm);
+			}
 			$("#dialog-editutilitydevice").i18n();
 			$("#dialog-editutilitydevice").dialog("open");
 		}

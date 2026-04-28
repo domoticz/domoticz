@@ -10,7 +10,7 @@ define(['app', 'livesocket', 'widgets/dzBar'], function (app) {
 			});
 		};
 
-		EditTempDevice = function (idx, name, description, addjvalue, unit, step, min, max, deviceID, unitCode, colorJson) {
+		EditTempDevice = function (idx, name, description, addjvalue, unit, step, min, max, deviceID, unitCode, colorJson, showBar) {
 			$.devIdx = idx;
 			$("#dialog-edittempdevice #deviceidx").text(idx);
 			$("#dialog-edittempdevice #deviceid").text(deviceID);
@@ -28,14 +28,16 @@ define(['app', 'livesocket', 'widgets/dzBar'], function (app) {
 			} else {
 				$("#setpointfields").hide();
 			}
-			dzBarService.loadForKey(colorJson || '', 'temp');
 			var $form = $('#dialog-edittempdevice form');
-			$form.css('position', 'relative');
 			$form.find('.dz-bar-btn').remove();
-			$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
-				.css({position: 'absolute', top: '4px', right: '4px'})
-				.on('click', function() { window.dzOpenBarPopup(idx, unescape(name)); })
-				.appendTo($form);
+			if (showBar !== false) {
+				dzBarService.loadForKey(colorJson || '', 'temp');
+				$form.css('position', 'relative');
+				$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
+					.css({position: 'absolute', top: '4px', right: '4px'})
+					.on('click', function() { window.dzOpenBarPopup(idx, unescape(name)); })
+					.appendTo($form);
+			}
 			$("#dialog-edittempdevice").i18n();
 			$("#dialog-edittempdevice").dialog("open");
 		}
@@ -730,10 +732,11 @@ define(['app', 'livesocket', 'widgets/dzBar'], function (app) {
 					};
 
 					ctrl.EditTempDevice = function () {
+						var noBar = typeof item.Temp === 'undefined' && typeof item.Humidity === 'undefined';
 						if (item.Type == 'Thermostat 6') {
-							return EditTempDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, escape(item.vunit), item.step, item.min, item.max, item.ID, item.Unit, item.Color || '');
+							return EditTempDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, escape(item.vunit), item.step, item.min, item.max, item.ID, item.Unit, item.Color || '', !noBar);
 						} else {
-							return EditTempDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, undefined, undefined, undefined, undefined, item.ID, item.Unit, item.Color || '');
+							return EditTempDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, undefined, undefined, undefined, undefined, item.ID, item.Unit, item.Color || '', !noBar);
 						}
 					};
 

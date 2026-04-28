@@ -456,6 +456,8 @@ define(['app', 'widgets/dzBar'], function (app) {
                         EditEnergyDevice(device.idx, escape(device.Name), escape(device.Description), device.SwitchTypeVal, energyMeterMode, device.CustomImage, device.ID, device.Unit, device.Color || '');
                     } else if (device.SubType === 'Distance') {
                         EditDistanceDevice(device.idx, escape(device.Name), escape(device.Description), device.SwitchTypeVal, device.CustomImage, device.ID, device.Unit, device.Color || '');
+                    } else if (device.SubType === 'Alert' || device.SubType === 'Thermostat Operating State') {
+                        EditUtilityDevice(device.idx, escape(device.Name), escape(device.Description), device.CustomImage, device.ID, device.Unit, device.Color || '', false);
                     } else {
                         EditUtilityDevice(device.idx, escape(device.Name), escape(device.Description), device.CustomImage, device.ID, device.Unit, device.Color || '');
                     }
