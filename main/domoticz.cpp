@@ -180,7 +180,6 @@ int pidFilehandle = 0;
 
 time_t m_LastHeartbeat = 0;
 
-
 #ifndef WIN32
 
 /* redirectIOconnections */
