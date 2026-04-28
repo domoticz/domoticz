@@ -1,0 +1,56 @@
+<div class="modal-header">
+    <button type="button" class="close" ng-click="cancel()">&times;</button>
+    <h4 class="modal-title"><i class="fa-solid fa-chart-bar" style="margin-right:6px"></i>Bar Ranges &mdash; {{deviceName}}</h4>
+</div>
+
+<div class="modal-body">
+    <div class="dd-action-list-editor">
+        <div class="dd-al-items">
+            <div class="dd-al-item dd-range-row" ng-repeat="range in ranges track by $index">
+                <input type="text" inputmode="decimal" class="text ui-widget-content ui-corner-all dd-range-input"
+                       ng-model="range.from" placeholder="From">
+                <span class="dd-range-dash">&mdash;</span>
+                <input type="text" inputmode="decimal" class="text ui-widget-content ui-corner-all dd-range-input"
+                       ng-model="range.to" placeholder="To">
+                <input type="color" class="dd-range-color-picker" ng-model="range.color"
+                       title="Color">
+                <i class="fa-solid fa-trash dd-al-action-icon dd-al-delete-icon"
+                   ng-click="removeRange($index)" title="Remove"></i>
+            </div>
+        </div>
+
+        <div class="dd-al-empty" ng-show="ranges.length === 0">
+            No ranges defined yet.
+        </div>
+
+        <div ng-show="ranges.length === 0" style="margin-bottom:6px">
+            <button type="button" class="btn btn-sm btn-default" ng-click="seedDefaults()">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Seed defaults
+            </button>
+        </div>
+
+        <div class="dd-al-add" style="margin-top:8px">
+            <div class="dd-al-add-row">
+                <input type="text" inputmode="decimal" class="text ui-widget-content ui-corner-all"
+                       ng-model="newRange.from" placeholder="From" style="flex:1;min-width:0">
+                <input type="text" inputmode="decimal" class="text ui-widget-content ui-corner-all"
+                       ng-model="newRange.to" placeholder="To" style="flex:1;min-width:0">
+                <input type="color" class="dd-range-color-picker" ng-model="newRange.color"
+                       title="Color">
+                <button type="button" class="btn btn-sm btn-primary"
+                        ng-click="addRange()"
+                        ng-disabled="newRange.from === '' || newRange.to === ''">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-danger pull-left" ng-click="clearRanges()">
+        <i class="fa-solid fa-trash"></i> Clear all
+    </button>
+    <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button type="button" class="btn btn-primary" ng-click="save()">Save</button>
+</div>
