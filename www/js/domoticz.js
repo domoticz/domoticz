@@ -2695,7 +2695,7 @@ function RefreshLiveSearch(){
 	$('.jsLiveSearch').trigger('change');
 }
 
-/* Restores saved search filter once both the input and items are in the DOM.
+/* Restores saved search filter once both the input and the page container are in the DOM.
    Called from WatchLiveSearch (topbar loaded) and from controllers (data loaded),
    so whichever event fires last will trigger the restore. ------------------- */
 function ScheduleLiveSearchRestore(){
@@ -2705,7 +2705,10 @@ function ScheduleLiveSearchRestore(){
 	window._lsRestoreInterval = setInterval(function(){
 		var input = $('.jsLiveSearch');
 		var searchable = $('.itemBlock [data-search]');
-		if(input.length > 0 && searchable.length > 0){
+		var container = $('.devicesList');
+		// Restore when items exist, or when the page container is present (handles the case
+		// where all items are filtered out by Angular's ng-repeat, leaving zero itemBlock elements).
+		if(input.length > 0 && (searchable.length > 0 || container.length > 0)){
 			clearInterval(window._lsRestoreInterval);
 			window._lsRestoreInterval = null;
 			input.val(window.myglobals.LastSearchFilter);
