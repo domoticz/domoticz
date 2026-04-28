@@ -3191,9 +3191,31 @@ dz-temp-bar {
     border-radius: 4px;
     overflow: hidden;
     margin: 2px 8px 5px;
+    position: relative;
 }
 .dz-uw-bar-fill {
     height: 100%;
     border-radius: 4px;
     transition: width 0.4s ease;
+}
+.dz-uw-bar-center-wrap {
+    position: relative;
+    height: 100%;
+}
+.dz-uw-bar-fill--left,
+.dz-uw-bar-fill--right {
+    position: absolute;
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+.dz-uw-bar-center-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    margin-left: -1px;
+    background: rgba(128, 128, 128, 0.7);
+    border-radius: 1px;
+    z-index: 1;
 }

@@ -364,18 +364,32 @@ define(['app', 'widgets/dzBar'], function (app) {
                         dataStr = device.CounterToday || '';
                     } else if (device.SubType === 'Managed Counter') {
                         dataStr = device.Counter || '';
+                    } else if (device.Type === 'Setpoint' && device.SubType === 'SetPoint') {
+                        dataStr = device.SetPoint !== undefined ? String(device.SetPoint) : (device.Data || '');
                     } else {
                         dataStr = device.Data || '';
                     }
-                    var m = dataStr.match(/^([\d.,]+)/);
+                    var m = dataStr.match(/^(-?[\d.,]+)/);
                     ctrl.barNumVal = m ? parseFloat(m[1].replace(',', '.')) : undefined;
                 }
 
-                // Keep ctrl.device in sync when parent updates the binding
+                // Keep ctrl.device in sync when parent updates the binding.
+                // Note: RefreshItem uses angular.extend (mutates in place), so a reference
+                // watch on 'device' never fires. Watch the actual value field instead.
                 $scope.$watch('device', function (newVal) {
                     if (newVal) {
                         device = newVal;
                         ctrl.device = newVal;
+                        updateBar();
+                    }
+                });
+                $scope.$watch(function () {
+                    var d = $scope.device;
+                    return d ? (d.SetPoint !== undefined ? d.SetPoint : d.Data) : null;
+                }, function (newVal, oldVal) {
+                    if (newVal !== oldVal && $scope.device) {
+                        device = $scope.device;
+                        ctrl.device = $scope.device;
                         updateBar();
                     }
                 });

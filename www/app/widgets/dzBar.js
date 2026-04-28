@@ -17,6 +17,42 @@ define(['app'], function(app) {
             var max = parseFloat(sorted[sorted.length - 1].to);
             if (isNaN(min) || isNaN(max) || max <= min) { return null; }
             var span = max - min;
+
+            // Center-origin mode: when ranges span both negative and positive
+            if (min < 0 && max > 0) {
+                var center = (min + max) / 2;
+                var centerPct = (center - min) / span * 100;
+                var clampedVal = Math.min(max, Math.max(min, numericValue));
+                var fillWidth = Math.abs(clampedVal - center);
+                if (fillWidth === 0) { return { isCenterOrigin: true, centerPct: centerPct, fillPct: 0, fillDirection: 'left', bgImage: 'none' }; }
+                var fillDirection = clampedVal < center ? 'left' : 'right';
+                var fillPct = fillWidth / span * 100;
+
+                // Build gradient for zones traversed from center toward value
+                // gradient direction is always left→right within the fill div:
+                //   left-fill: left=value-side, right=center-side  → traverse value→center (ascending)
+                //   right-fill: left=center-side, right=value-side → traverse center→value (ascending)
+                var rangeStart = fillDirection === 'left' ? clampedVal : center;
+                var rangeEnd   = fillDirection === 'left' ? center      : clampedVal;
+                var stops = [];
+                var lastColor = null;
+                for (var i = 0; i < sorted.length; i++) {
+                    var rFrom = parseFloat(sorted[i].from);
+                    var rTo   = parseFloat(sorted[i].to);
+                    var color = sorted[i].color || '#66bb6a';
+                    var overlapStart = Math.max(rFrom, rangeStart);
+                    var overlapEnd   = Math.min(rTo,   rangeEnd);
+                    if (overlapEnd <= overlapStart) { continue; }
+                    var startPct = fillWidth > 0 ? ((overlapStart - rangeStart) / fillWidth * 100).toFixed(2) : '0.00';
+                    stops.push(color + ' ' + startPct + '%');
+                    lastColor = color;
+                }
+                if (lastColor) { stops.push(lastColor + ' 100%'); }
+                var bgImage = stops.length ? 'linear-gradient(to right, ' + stops.join(', ') + ')' : 'none';
+                return { isCenterOrigin: true, centerPct: centerPct, fillPct: fillPct, fillDirection: fillDirection, bgImage: bgImage };
+            }
+
+            // Standard left-to-right fill
             var pct = Math.min(100, Math.max(0, (numericValue - min) / span * 100));
             var currentIdx = sorted.length - 1;
             for (var i = 0; i < sorted.length; i++) {
@@ -78,7 +114,14 @@ define(['app'], function(app) {
         return {
             restrict: 'E',
             scope: { value: '<', ranges: '<' },
-            template: '<div class="dz-uw-bar" ng-if="bar"><div class="dz-uw-bar-fill" ng-style="{\'width\': bar.pct + \'%\', \'backgroundImage\': bar.bgImage, \'backgroundSize\': bar.bgSize}"></div></div>',
+            template: '<div class="dz-uw-bar" ng-if="bar">' +
+                        '<div ng-if="!bar.isCenterOrigin" class="dz-uw-bar-fill" ng-style="{\'width\': bar.pct + \'%\', \'backgroundImage\': bar.bgImage, \'backgroundSize\': bar.bgSize}"></div>' +
+                        '<div ng-if="bar.isCenterOrigin" class="dz-uw-bar-center-wrap">' +
+                            '<div ng-if="bar.fillDirection===\'left\'" class="dz-uw-bar-fill dz-uw-bar-fill--left" ng-style="{\'right\': (100 - bar.centerPct) + \'%\', \'width\': bar.fillPct + \'%\', \'backgroundImage\': bar.bgImage}"></div>' +
+                            '<div ng-if="bar.fillDirection===\'right\'" class="dz-uw-bar-fill dz-uw-bar-fill--right" ng-style="{\'left\': bar.centerPct + \'%\', \'width\': bar.fillPct + \'%\', \'backgroundImage\': bar.bgImage}"></div>' +
+                            '<div class="dz-uw-bar-center-line" ng-style="{\'left\': bar.centerPct + \'%\'}"></div>' +
+                        '</div>' +
+                      '</div>',
             link: function(scope) {
                 function update() {
                     var val = parseFloat(scope.value);
