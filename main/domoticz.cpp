@@ -184,7 +184,7 @@ time_t m_LastHeartbeat = 0;
 /* redirectIOconnections */
 void redirectIOconnections(bool flDaemonized)
 {
-	if (!m_sz_std_out_err_log_file.empty() or flDaemonized)
+	if (!m_sz_std_out_err_log_file.empty() || flDaemonized)
 	{
 		int i;
 		/* Close out the standard file descriptors */
