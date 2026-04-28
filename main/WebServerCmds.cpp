@@ -6200,6 +6200,12 @@ namespace http
 				m_sql.safe_query("UPDATE DeviceStatus SET Options='%q' WHERE (ID == '%q')", devoptions.c_str(), idx.c_str());
 			}
 
+			std::string sColorParam = request::findValue(&req, "color");
+			if (request::hasValue(&req, "color"))
+			{
+				m_sql.safe_query("UPDATE DeviceStatus SET Color='%q' WHERE (ID == '%q')", sColorParam.c_str(), idx.c_str());
+			}
+
 			if (used == 0)
 			{
 				bool bRemoveSubDevices = (request::findValue(&req, "RemoveSubDevices") == "true");

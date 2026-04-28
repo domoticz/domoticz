@@ -1,5 +1,5 @@
-define(['app', 'livesocket'], function (app) {
-	app.controller('TemperatureController', function ($scope, $rootScope, $location, $http, $interval, $window, $route, $routeParams, deviceApi, permissions, livesocket) {
+define(['app', 'livesocket', 'widgets/dzBar'], function (app) {
+	app.controller('TemperatureController', function ($scope, $rootScope, $location, $http, $interval, $window, $route, $routeParams, deviceApi, permissions, livesocket, dzBarService) {
 		var $element = $('#main-view #tempcontent').last();
 
 		var ctrl = this;
@@ -10,7 +10,7 @@ define(['app', 'livesocket'], function (app) {
 			});
 		};
 
-		EditTempDevice = function (idx, name, description, addjvalue, unit, step, min, max, deviceID, unitCode) {
+		EditTempDevice = function (idx, name, description, addjvalue, unit, step, min, max, deviceID, unitCode, colorJson) {
 			$.devIdx = idx;
 			$("#dialog-edittempdevice #deviceidx").text(idx);
 			$("#dialog-edittempdevice #deviceid").text(deviceID);
@@ -28,17 +28,33 @@ define(['app', 'livesocket'], function (app) {
 			} else {
 				$("#setpointfields").hide();
 			}
+			dzBarService.loadForKey(colorJson || '', 'temp');
+			var $form = $('#dialog-edittempdevice form');
+			$form.css('position', 'relative');
+			$form.find('.dz-bar-btn').remove();
+			$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
+				.css({position: 'absolute', top: '4px', right: '4px'})
+				.on('click', function() { window.dzOpenBarPopup(idx, unescape(name)); })
+				.appendTo($form);
 			$("#dialog-edittempdevice").i18n();
 			$("#dialog-edittempdevice").dialog("open");
 		}
 
-		EditTempDeviceSmall = function (idx, name, description, addjvalue, deviceID, unitCode) {
+		EditTempDeviceSmall = function (idx, name, description, addjvalue, deviceID, unitCode, colorJson) {
 			$.devIdx = idx;
 			$("#dialog-edittempdevicesmall #deviceidx").text(idx);
 			$("#dialog-edittempdevicesmall #deviceid").text(deviceID);
 			$("#dialog-edittempdevicesmall #deviceunit").text(unitCode);
 			$("#dialog-edittempdevicesmall #devicename").val(unescape(name));
 			$("#dialog-edittempdevicesmall #devicedescription").val(unescape(description));
+			dzBarService.loadForKey(colorJson || '', 'hum');
+			var $form = $('#dialog-edittempdevicesmall form');
+			$form.css('position', 'relative');
+			$form.find('.dz-bar-btn').remove();
+			$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
+				.css({position: 'absolute', top: '4px', right: '4px'})
+				.on('click', function() { window.dzOpenBarPopup(idx, unescape(name)); })
+				.appendTo($form);
 			$("#dialog-edittempdevicesmall").i18n();
 			$("#dialog-edittempdevicesmall").dialog("open");
 		}
@@ -264,6 +280,7 @@ define(['app', 'livesocket'], function (app) {
 						'&name=' + encodeURIComponent($("#dialog-edittempdevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-edittempdevice #devicedescription").val()) +
 						'&addjvalue=' + aValue +
+						'&color=' + encodeURIComponent(dzBarService.getFullColorJson()) +
 						'&used=true';
 
 					if ($("#setpointfields").is(":visible")) {
@@ -463,6 +480,7 @@ define(['app', 'livesocket'], function (app) {
 						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicedescription").val()) +
+						'&color=' + encodeURIComponent(dzBarService.getFullColorJson()) +
 						'&used=true',
 						async: false,
 						dataType: 'json',
@@ -708,14 +726,14 @@ define(['app', 'livesocket'], function (app) {
 					};
 
 					ctrl.EditTempDeviceSmall = function () {
-						return EditTempDeviceSmall(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, item.ID, item.Unit);
+						return EditTempDeviceSmall(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, item.ID, item.Unit, item.Color || '');
 					};
 
 					ctrl.EditTempDevice = function () {
 						if (item.Type == 'Thermostat 6') {
-							return EditTempDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, escape(item.vunit), item.step, item.min, item.max, item.ID, item.Unit);
+							return EditTempDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, escape(item.vunit), item.step, item.min, item.max, item.ID, item.Unit, item.Color || '');
 						} else {
-							return EditTempDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, undefined, undefined, undefined, undefined, item.ID, item.Unit);
+							return EditTempDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, undefined, undefined, undefined, undefined, item.ID, item.Unit, item.Color || '');
 						}
 					};
 

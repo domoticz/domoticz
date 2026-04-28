@@ -1923,6 +1923,7 @@ namespace http
 					s_data << int(nValue) << ", " << sValue;
 					root["result"][ii]["Data"] = s_data.str();
 
+					root["result"][ii]["Color"] = sColor;
 					root["result"][ii]["Notifications"] = (m_notifications.HasNotifications(sd[0]) == true) ? "true" : "false";
 					root["result"][ii]["ShowNotifications"] = true;
 

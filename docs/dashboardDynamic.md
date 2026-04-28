@@ -2,8 +2,8 @@
 
 > **Note:** This page is maintained in the [Domoticz GitHub repository](https://github.com/domoticz/domoticz/tree/development/docs). Please do not edit it directly on the Wiki.
 
-**Revision:** 2026-04-08 (2)\
-**Minimum build:** 17675
+**Revision:** 2026-04-28\
+**Minimum build:** 17826
 
 ---
 
@@ -156,6 +156,12 @@ Dims or blanks the screen after a period of inactivity — prevents burn-in on w
 
 Settings are saved in browser `localStorage` (`dd_standby`).
 
+### Per-Device Dashboard Selection
+
+Each browser/device independently remembers which dashboard it last viewed. When you switch dashboards on a phone, tablet, or desktop, that selection is saved in the browser's `localStorage` — so the next time that specific device opens Domoticz, it returns to the same dashboard automatically. This means a wall tablet can always open to a "Living Room" dashboard while your phone opens to a different one, without any server-side configuration.
+
+The active dashboard selection is stored per-origin in `localStorage` key `dd_active_dashboard`.
+
 ### Export / Import
 
 The **Export / Import** button opens a modal dialog with two tabs:
@@ -174,6 +180,40 @@ The exported JSON includes the Domoticz build revision (`domoticzRevision`) so r
 - *File* — select a `.json` file from disk
 - Choose to import as a **new dashboard** or **replace current**
 - If the imported dashboard was created on a newer Domoticz build, a warning is shown (but import still proceeds)
+
+---
+
+## Bar Indicators
+
+Classic tab device widgets (Utility, Weather, Temperature) support optional color-coded bar indicators — a thin progress bar rendered below each device's last-update timestamp. Bars provide an at-a-glance value status using configurable color ranges (e.g. green for normal values, red for high).
+
+### Configuring a Bar
+
+1. Open a device's **Edit** dialog (Admin permission required) on the Utility, Weather, or Temperature tab.
+2. Click the **bar chart icon** (![bar icon]) in the top-right corner of the dialog form.
+3. In the **Bar Ranges** popup, define one or more ranges:
+   - **From / To** — numeric bounds for this range segment
+   - **Color** — the fill color for this segment (color picker)
+   - Click **+** to add; drag or use the trash icon to remove
+4. Click **Save** in the popup, then **Update** in the Edit dialog to persist.
+
+Ranges are stored in the device's `Color` database field as a keyed JSON object, so each sensor type on a multi-sensor device (e.g. Temp+Hum+Baro) stores its bar configuration independently. Editing the bar from the Temperature tab configures the temperature bar; editing from the Weather tab configures the barometer bar — they do not overwrite each other.
+
+### Supported Device Types
+
+**Utility tab** — all numeric sensor types: Electric usage, kWh energy, Percentage, Gas/Counter, Custom Sensor, Lux, Voltage, Current, Setpoint, Air Quality, Pressure, Distance, Weight, Sound Level, Waterflow, Fan, Leaf Wetness, Soil Moisture, A/D, Power, Energy, Current/Energy, Radiator 1.
+
+**Weather tab** — all six device types: Barometer (value: pressure in hPa), Rain (value: mm), Wind (value: speed), UV (value: UVI), Visibility (value: distance), Radiation (value: from Data field).
+
+**Temperature tab** — temperature sensors (value: °C/°F), humidity sensors (value: %), Temp+Humidity, Temp+Humidity+Baro, Wind+Temp/Chill.
+
+### Bar Display
+
+Configured bars appear:
+- On the respective tab (Utility / Weather / Temperature)
+- On the classic dashboard for favorited devices (both desktop and mobile views)
+
+The bar fills proportionally across the defined ranges and renders a linear gradient through the configured colors.
 
 ---
 

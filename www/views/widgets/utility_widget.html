@@ -33,7 +33,10 @@
                 </td>
 
                 <!-- Last Update -->
-                <td id="lastupdate" ng-class="{'lastupdate-spaced': ctrl.isText()}"><span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: {{ctrl.device.LastUpdate}}</td>
+                <td id="lastupdate" ng-class="{'lastupdate-spaced': ctrl.isText()}">
+                    <dz-bar value="ctrl.barNumVal" ranges="ctrl.barRanges"></dz-bar>
+                    <span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: {{ctrl.device.LastUpdate}}
+                </td>
 
             </tr>
         </table>

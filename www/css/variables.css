@@ -54,6 +54,7 @@
   --dz-panel-bg:                   rgba(0, 0, 0, 0.25);
   --dz-panel-bg-dark:              rgba(0, 0, 0, 0.75);
   --dz-panel-text:                 var(--dz-body-text);
+  --dz-bar-track-bg:               rgba(128,128,128,0.15);
   --dz-table-odd-bg:               #E2E4FF;
   --dz-table-odd-text:             #333;
   --dz-table-even-bg:              #ffffff;

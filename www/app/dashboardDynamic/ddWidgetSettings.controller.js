@@ -419,12 +419,17 @@ define([
 
             $scope.newRange = { from: '', to: '', color: '#66bb6a' };
 
+            function parseDecimal(v) {
+                return parseFloat(String(v).replace(',', '.'));
+            }
+
             $scope.rangeAddItem = function(fieldKey) {
                 var r    = $scope.newRange;
-                var from = parseFloat(r.from);
-                var to   = parseFloat(r.to);
+                var from = parseDecimal(r.from);
+                var to   = parseDecimal(r.to);
                 if (isNaN(from) || isNaN(to) || to <= from) { return; }
                 $scope.config[fieldKey].push({ from: from, to: to, color: r.color || '#66bb6a' });
+                $scope.config[fieldKey].sort(function(a, b) { return a.from - b.from; });
                 $scope.newRange = { from: '', to: '', color: '#66bb6a' };
             };
 

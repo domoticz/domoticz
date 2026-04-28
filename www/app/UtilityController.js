@@ -1,5 +1,5 @@
-﻿define(['app', 'livesocket', 'widgets/dzUtilityWidget'], function (app) {
-	app.controller('UtilityController', function ($scope, $rootScope, $location, $http, $interval, $timeout, $route, $routeParams, deviceApi, domoticzApi, permissions, livesocket) {
+﻿define(['app', 'livesocket', 'widgets/dzUtilityWidget', 'widgets/dzBar'], function (app) {
+	app.controller('UtilityController', function ($scope, $rootScope, $location, $http, $interval, $timeout, $route, $routeParams, deviceApi, domoticzApi, permissions, livesocket, dzBarService) {
 		var $element = $('#main-view #utilitycontent').last();
 
 		$.strPad = function (i, l, s) {
@@ -59,7 +59,7 @@
 			});
 		}
 
-		EditUtilityDevice = function (idx, name, description, customimage, deviceID, unitCode) {
+		EditUtilityDevice = function (idx, name, description, customimage, deviceID, unitCode, colorJson) {
 			$.devIdx = idx;
 			$("#dialog-editutilitydevice #deviceidx").text(idx);
 			$("#dialog-editutilitydevice #deviceid").text(deviceID);
@@ -79,6 +79,14 @@
 					$('#dialog-editutilitydevice #combosensoricon').ddslick('select', { index: i });
 				}
 			});
+			dzBarService.setColorJson(colorJson || '');
+			var $utilForm = $('#dialog-editutilitydevice form');
+			$utilForm.css('position', 'relative');
+			$utilForm.find('.dz-bar-btn').remove();
+			$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
+				.css({position: 'absolute', top: '4px', right: '4px'})
+				.click(function() { dzOpenBarPopup(idx, unescape(name)); })
+				.appendTo($utilForm);
 			$("#dialog-editutilitydevice").i18n();
 			$("#dialog-editutilitydevice").dialog("open");
 		}
@@ -108,7 +116,7 @@
 			$("#dialog-edittextdevice").dialog("open");
 		}
 
-		EditCustomSensorDevice = function (idx, name, description, customimage, sensortype, axislabel, deviceID, unitCode) {
+		EditCustomSensorDevice = function (idx, name, description, customimage, sensortype, axislabel, deviceID, unitCode, colorJson) {
 			$.devIdx = idx;
 			$.sensorType = sensortype;
 			$("#dialog-editcustomsensordevice #deviceidx").text(idx);
@@ -133,11 +141,19 @@
 				}
 			});
 
+			dzBarService.setColorJson(colorJson || '');
+			var $customForm = $('#dialog-editcustomsensordevice form');
+			$customForm.css('position', 'relative');
+			$customForm.find('.dz-bar-btn').remove();
+			$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
+				.css({position: 'absolute', top: '4px', right: '4px'})
+				.click(function() { dzOpenBarPopup(idx, unescape(name)); })
+				.appendTo($customForm);
 			$("#dialog-editcustomsensordevice").i18n();
 			$("#dialog-editcustomsensordevice").dialog("open");
 		}
 
-		EditDistanceDevice = function (idx, name, description, switchtype, customimage, deviceID, unitCode) {
+		EditDistanceDevice = function (idx, name, description, switchtype, customimage, deviceID, unitCode, colorJson) {
 			$.devIdx = idx;
 			$("#dialog-editdistancedevice #deviceidx").text(idx);
 			$("#dialog-editdistancedevice #deviceid").text(deviceID);
@@ -158,11 +174,19 @@
 					$('#dialog-editdistancedevice #combosensoricon').ddslick('select', { index: i });
 				}
 			});
+			dzBarService.setColorJson(colorJson || '');
+			var $distForm = $('#dialog-editdistancedevice form');
+			$distForm.css('position', 'relative');
+			$distForm.find('.dz-bar-btn').remove();
+			$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
+				.css({position: 'absolute', top: '4px', right: '4px'})
+				.on('click', function() { window.dzOpenBarPopup(idx, unescape(name)); })
+				.appendTo($distForm);
 			$("#dialog-editdistancedevice").i18n();
 			$("#dialog-editdistancedevice").dialog("open");
 		}
 
-		EditMeterDevice = function (idx, name, description, switchtype, meteroffset, meterdivider, valuequantity, valueunits, customimage, deviceID, unitCode) {
+		EditMeterDevice = function (idx, name, description, switchtype, meteroffset, meterdivider, valuequantity, valueunits, customimage, deviceID, unitCode, colorJson) {
 			$.devIdx = idx;
 			$("#dialog-editmeterdevice #deviceidx").text(idx);
 			$("#dialog-editmeterdevice #deviceid").text(deviceID);
@@ -204,11 +228,19 @@
 				}
 			});
 
+			dzBarService.setColorJson(colorJson || '');
+			var $meterForm = $('#dialog-editmeterdevice form');
+			$meterForm.css('position', 'relative');
+			$meterForm.find('.dz-bar-btn').remove();
+			$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
+				.css({position: 'absolute', top: '4px', right: '4px'})
+				.click(function() { dzOpenBarPopup(idx, unescape(name)); })
+				.appendTo($meterForm);
 			$("#dialog-editmeterdevice").i18n();
 			$("#dialog-editmeterdevice").dialog("open");
 		}
 
-		EditEnergyDevice = function (idx, name, description, switchtype, EnergyMeterMode, customimage, deviceID, unitCode) {
+		EditEnergyDevice = function (idx, name, description, switchtype, EnergyMeterMode, customimage, deviceID, unitCode, colorJson) {
 			$.devIdx = idx;
 			$("#dialog-editenergydevice #deviceidx").text(idx);
 			$("#dialog-editenergydevice #deviceid").text(deviceID);
@@ -233,11 +265,19 @@
 					$('#dialog-editenergydevice #combosensoricon').ddslick('select', { index: i });
 				}
 			});
+			dzBarService.setColorJson(colorJson || '');
+			var $energyForm = $('#dialog-editenergydevice form');
+			$energyForm.css('position', 'relative');
+			$energyForm.find('.dz-bar-btn').remove();
+			$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
+				.css({position: 'absolute', top: '4px', right: '4px'})
+				.click(function() { dzOpenBarPopup(idx, unescape(name)); })
+				.appendTo($energyForm);
 			$("#dialog-editenergydevice").i18n();
 			$("#dialog-editenergydevice").dialog("open");
 		}
 
-		EditSetPoint = function (idx, name, description, unit, step, min, max, isprotected, customimage, deviceID, unitCode) {
+		EditSetPoint = function (idx, name, description, unit, step, min, max, isprotected, customimage, deviceID, unitCode, colorJson) {
 			HandleProtection(isprotected, function () {
 				$.devIdx = idx;
 				$("#dialog-editsetpointdevice #deviceidx").text(idx);
@@ -263,6 +303,14 @@
 						$('#dialog-editsetpointdevice #combosensoricon').ddslick('select', { index: i });
 					}
 				});
+				dzBarService.setColorJson(colorJson || '');
+				var $setpointForm = $('#dialog-editsetpointdevice form');
+				$setpointForm.css('position', 'relative');
+				$setpointForm.find('.dz-bar-btn').remove();
+				$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
+					.css({position: 'absolute', top: '4px', right: '4px'})
+					.click(function() { dzOpenBarPopup(idx, unescape(name)); })
+					.appendTo($setpointForm);
 				$("#dialog-editsetpointdevice").i18n();
 				$("#dialog-editsetpointdevice").dialog("open");
 			});
@@ -568,6 +616,7 @@
 						'&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) +
 						'&customimage=' + CustomImage +
 						'&description=' + encodeURIComponent($("#dialog-editutilitydevice #devicedescription").val()) +
+						'&color=' + encodeURIComponent(dzBarService.getColorJson()) +
 						'&used=true',
 						async: false,
 						dataType: 'json',
@@ -703,6 +752,7 @@
 					'&switchtype=0' +
 					'&customimage=' + CustomImage +
 					'&devoptions=' + encodeURIComponent(soptions) +
+					'&color=' + encodeURIComponent(dzBarService.getColorJson()) +
 					'&used=true',
 					async: false,
 					dataType: 'json',
@@ -765,6 +815,7 @@
 						'&description=' + encodeURIComponent($("#dialog-editdistancedevice #devicedescription").val()) +
 						'&switchtype=' + $("#dialog-editdistancedevice #combometertype").val() +
 						'&customimage=' + CustomImage +
+						'&color=' + encodeURIComponent(dzBarService.getColorJson()) +
 						'&used=true',
 						async: false,
 						dataType: 'json',
@@ -840,6 +891,7 @@
 						'&addjvalue=' + meteroffset +
 						'&addjvalue2=' + meterdivider +
 						'&customimage=' + CustomImage +
+						'&color=' + encodeURIComponent(dzBarService.getColorJson()) +
 						'&used=true' +
 						'&options=' + b64EncodeUnicode(devOptionsParam.join('')),
 						async: false,
@@ -904,6 +956,7 @@
 						'&description=' + encodeURIComponent($("#dialog-editenergydevice #devicedescription").val()) +
 						'&switchtype=' + $("#dialog-editenergydevice #combometertype").val() + '&EnergyMeterMode=' + $("#dialog-editenergydevice input:radio[name=EnergyMeterMode]:checked").val() +
 						'&customimage=' + CustomImage +
+						'&color=' + encodeURIComponent(dzBarService.getColorJson()) +
 						'&used=true',
 						async: false,
 						dataType: 'json',
@@ -986,6 +1039,7 @@
 						'&options=' + b64EncodeUnicode(devOptions.join('')) +
 						'&protected=' + $('#dialog-editsetpointdevice #protected').is(":checked") +
 						'&customimage=' + CustomImage +
+						'&color=' + encodeURIComponent(dzBarService.getColorJson()) +
 						'&used=true',
 						async: false,
 						dataType: 'json',

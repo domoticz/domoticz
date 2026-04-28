@@ -3178,3 +3178,22 @@ body.dd-navbar-hidden #holder > .container-fluid {
     background: var(--dz-btn-primary-bg, #337ab7);
     color: var(--dz-btn-primary-text, #fff);
 }
+
+/* ── Utility widget gradient bar ─────────────────────────── */
+dz-bar,
+dz-weather-bar,
+dz-temp-bar {
+    display: block;
+}
+.dz-uw-bar {
+    height: 7px;
+    background: var(--dz-bar-track-bg);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 2px 8px 5px;
+}
+.dz-uw-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}

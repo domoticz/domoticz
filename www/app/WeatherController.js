@@ -1,5 +1,5 @@
-define(['app', 'livesocket'], function (app) {
-	app.controller('WeatherController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, deviceApi, permissions, livesocket) {
+define(['app', 'livesocket', 'widgets/dzBar'], function (app) {
+	app.controller('WeatherController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, deviceApi, permissions, livesocket, dzBarService) {
 
 		var ctrl = this;
 
@@ -9,7 +9,7 @@ define(['app', 'livesocket'], function (app) {
 			});
 		};
 
-		EditRainDevice = function (idx, name, description, addjmulti, deviceID, unitCode) {
+		EditRainDevice = function (idx, name, description, addjmulti, deviceID, unitCode, colorJson) {
 			$.devIdx = idx;
 			$("#dialog-editraindevice #deviceidx").text(idx);
 			$("#dialog-editraindevice #deviceid").text(deviceID);
@@ -18,10 +18,18 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editraindevice #devicedescription").val(unescape(description));
 			$("#dialog-editraindevice #multiply").val(addjmulti);
 			$("#dialog-editraindevice").i18n();
+			dzBarService.loadForKey(colorJson || '', 'rain');
+			var $form = $('#dialog-editraindevice form');
+			$form.css('position', 'relative');
+			$form.find('.dz-bar-btn').remove();
+			$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
+				.css({position: 'absolute', top: '4px', right: '4px'})
+				.on('click', function() { window.dzOpenBarPopup(idx, unescape(name)); })
+				.appendTo($form);
 			$("#dialog-editraindevice").dialog("open");
 		}
 
-		EditBaroDevice = function (idx, name, description, addjvalue, deviceID, unitCode) {
+		EditBaroDevice = function (idx, name, description, addjvalue, deviceID, unitCode, colorJson) {
 			$.devIdx = idx;
 			$("#dialog-editbarodevice #deviceidx").text(idx);
 			$("#dialog-editbarodevice #deviceid").text(deviceID);
@@ -30,10 +38,18 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editbarodevice #devicedescription").val(unescape(description));
 			$("#dialog-editbarodevice #adjustment").val(addjvalue);
 			$("#dialog-editbarodevice").i18n();
+			dzBarService.loadForKey(colorJson || '', 'baro');
+			var $form = $('#dialog-editbarodevice form');
+			$form.css('position', 'relative');
+			$form.find('.dz-bar-btn').remove();
+			$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
+				.css({position: 'absolute', top: '4px', right: '4px'})
+				.on('click', function() { window.dzOpenBarPopup(idx, unescape(name)); })
+				.appendTo($form);
 			$("#dialog-editbarodevice").dialog("open");
 		}
 
-		EditVisibilityDevice = function (idx, name, description, switchtype, deviceID, unitCode) {
+		EditVisibilityDevice = function (idx, name, description, switchtype, deviceID, unitCode, colorJson) {
 			$.devIdx = idx;
 			$("#dialog-editvisibilitydevice #deviceidx").text(idx);
 			$("#dialog-editvisibilitydevice #deviceid").text(deviceID);
@@ -42,10 +58,18 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editvisibilitydevice #devicedescription").val(unescape(description));
 			$("#dialog-editvisibilitydevice #combometertype").val(switchtype);
 			$("#dialog-editvisibilitydevice").i18n();
+			dzBarService.loadForKey(colorJson || '', 'data');
+			var $form = $('#dialog-editvisibilitydevice form');
+			$form.css('position', 'relative');
+			$form.find('.dz-bar-btn').remove();
+			$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
+				.css({position: 'absolute', top: '4px', right: '4px'})
+				.on('click', function() { window.dzOpenBarPopup(idx, unescape(name)); })
+				.appendTo($form);
 			$("#dialog-editvisibilitydevice").dialog("open");
 		}
 
-		EditWindDevice = function (idx, name, description, addjvalue2, addjmulti, deviceID, unitCode) {
+		EditWindDevice = function (idx, name, description, addjvalue2, addjmulti, deviceID, unitCode, colorJson) {
 			$.devIdx = idx;
 			$("#dialog-editwinddevice #deviceidx").text(idx);
 			$("#dialog-editwinddevice #deviceid").text(deviceID);
@@ -55,10 +79,18 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editwinddevice #arotation").val(addjvalue2);
 			$("#dialog-editwinddevice #multiply").val(addjmulti);
 			$("#dialog-editwinddevice").i18n();
+			dzBarService.loadForKey(colorJson || '', 'speed');
+			var $form = $('#dialog-editwinddevice form');
+			$form.css('position', 'relative');
+			$form.find('.dz-bar-btn').remove();
+			$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
+				.css({position: 'absolute', top: '4px', right: '4px'})
+				.on('click', function() { window.dzOpenBarPopup(idx, unescape(name)); })
+				.appendTo($form);
 			$("#dialog-editwinddevice").dialog("open");
 		}
 
-		EditUviDevice = function (idx, name, description, addjmulti2, deviceID, unitCode) {
+		EditUviDevice = function (idx, name, description, addjmulti2, deviceID, unitCode, colorJson) {
 			$.devIdx = idx;
 			$("#dialog-edituvidevice #deviceidx").text(idx);
 			$("#dialog-edituvidevice #deviceid").text(deviceID);
@@ -67,10 +99,18 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-edituvidevice #devicedescription").val(unescape(description));
 			$("#dialog-edituvidevice #multiply").val(addjmulti2);
 			$("#dialog-edituvidevice").i18n();
+			dzBarService.loadForKey(colorJson || '', 'uvi');
+			var $form = $('#dialog-edituvidevice form');
+			$form.css('position', 'relative');
+			$form.find('.dz-bar-btn').remove();
+			$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
+				.css({position: 'absolute', top: '4px', right: '4px'})
+				.on('click', function() { window.dzOpenBarPopup(idx, unescape(name)); })
+				.appendTo($form);
 			$("#dialog-edituvidevice").dialog("open");
 		}
 
-		EditWeatherDevice = function (idx, name, description, addjvalue, addjmulti, deviceID, unitCode) {
+		EditWeatherDevice = function (idx, name, description, addjvalue, addjmulti, deviceID, unitCode, colorJson) {
 			$.devIdx = idx;
 			$("#dialog-editweatherdevice #deviceidx").text(idx);
 			$("#dialog-editweatherdevice #deviceid").text(deviceID);
@@ -78,6 +118,14 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editweatherdevice #devicename").val(unescape(name));
 			$("#dialog-editweatherdevice #devicedescription").val(unescape(description));
 			$("#dialog-editweatherdevice").i18n();
+			dzBarService.loadForKey(colorJson || '', 'data');
+			var $form = $('#dialog-editweatherdevice form');
+			$form.css('position', 'relative');
+			$form.find('.dz-bar-btn').remove();
+			$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
+				.css({position: 'absolute', top: '4px', right: '4px'})
+				.on('click', function() { window.dzOpenBarPopup(idx, unescape(name)); })
+				.appendTo($form);
 			$("#dialog-editweatherdevice").dialog("open");
 		}
 
@@ -227,6 +275,7 @@ define(['app', 'livesocket'], function (app) {
 						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-editweatherdevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editweatherdevice #devicedescription").val()) +
+						'&color=' + encodeURIComponent(dzBarService.getFullColorJson()) +
 						'&used=true',
 						async: false,
 						dataType: 'json',
@@ -289,6 +338,7 @@ define(['app', 'livesocket'], function (app) {
 						'&description=' + encodeURIComponent($("#dialog-editwinddevice #devicedescription").val()) +
 						'&addjvalue2=' + $("#dialog-editwinddevice #edittable #arotation").val() +
 						'&addjmulti=' + $("#dialog-editwinddevice #edittable #multiply").val() +
+						'&color=' + encodeURIComponent(dzBarService.getFullColorJson()) +
 						'&used=true',
 						async: false,
 						dataType: 'json',
@@ -351,6 +401,7 @@ define(['app', 'livesocket'], function (app) {
 						'&name=' + encodeURIComponent($("#dialog-editraindevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editraindevice #devicedescription").val()) +
 						'&addjmulti=' + $("#dialog-editraindevice #edittable #multiply").val() +
+						'&color=' + encodeURIComponent(dzBarService.getFullColorJson()) +
 						'&used=true',
 						async: false,
 						dataType: 'json',
@@ -413,6 +464,7 @@ define(['app', 'livesocket'], function (app) {
 						'&name=' + encodeURIComponent($("#dialog-editbarodevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editbarodevice #devicedescription").val()) +
 						'&addjvalue2=' + aValue +
+						'&color=' + encodeURIComponent(dzBarService.getFullColorJson()) +
 						'&used=true',
 						async: false,
 						dataType: 'json',
@@ -472,6 +524,7 @@ define(['app', 'livesocket'], function (app) {
 						'&name=' + encodeURIComponent($("#dialog-editvisibilitydevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editvisibilitydevice #devicedescription").val()) +
 						'&switchtype=' + $("#dialog-editvisibilitydevice #combometertype").val() +
+						'&color=' + encodeURIComponent(dzBarService.getFullColorJson()) +
 						'&used=true',
 						async: false,
 						dataType: 'json',
@@ -534,6 +587,7 @@ define(['app', 'livesocket'], function (app) {
 						'&name=' + encodeURIComponent($("#dialog-edituvidevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-edituvidevice #devicedescription").val()) +
 						'&addjmulti2=' + $("#dialog-edituvidevice #edittable #multiply").val() +
+						'&color=' + encodeURIComponent(dzBarService.getFullColorJson()) +
 						'&used=true',
 						async: false,
 						dataType: 'json',
@@ -744,19 +798,19 @@ define(['app', 'livesocket'], function (app) {
 
 				ctrl.EditDevice = function () {
 					if (typeof item.Rain != 'undefined') {
-						return EditRainDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjMulti, item.ID, item.Unit);
+						return EditRainDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjMulti, item.ID, item.Unit, item.Color || '');
 					}
 					else if (typeof item.Direction != 'undefined') {
-						return EditWindDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue2, item.AddjMulti, item.ID, item.Unit);
+						return EditWindDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue2, item.AddjMulti, item.ID, item.Unit, item.Color || '');
 					} else if (typeof item.Visibility != 'undefined') {
-						return EditVisibilityDevice(item.idx, escape(item.Name), escape(item.Description), item.SwitchTypeVal, item.ID, item.Unit);
+						return EditVisibilityDevice(item.idx, escape(item.Name), escape(item.Description), item.SwitchTypeVal, item.ID, item.Unit, item.Color || '');
 					} else if (typeof item.UVI != 'undefined') {
-						return EditUviDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjMulti2, item.ID, item.Unit);
+						return EditUviDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjMulti2, item.ID, item.Unit, item.Color || '');
 					}
 					else if (typeof item.Barometer != 'undefined') {
-						return EditBaroDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue2, item.ID, item.Unit);
+						return EditBaroDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue2, item.ID, item.Unit, item.Color || '');
 					} else {
-						return EditWeatherDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, item.AddjMulti, item.ID, item.Unit);
+						return EditWeatherDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, item.AddjMulti, item.ID, item.Unit, item.Color || '');
 					}
 				};
 

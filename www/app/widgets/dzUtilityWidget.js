@@ -1,5 +1,5 @@
-define(['app'], function (app) {
-    app.directive('dzUtilityWidget', function ($rootScope, $window, $sce, deviceApi, permissions) {
+define(['app', 'widgets/dzBar'], function (app) {
+    app.directive('dzUtilityWidget', function ($rootScope, $sce, deviceApi, permissions) {
         return {
             restrict: 'E',
             replace: true,
@@ -34,13 +34,71 @@ define(['app'], function (app) {
                 ctrl.isMobile = window.myglobals && window.myglobals.ismobile;
                 ctrl.dashboardType = $scope.dashboardType || (window.myglobals && window.myglobals.DashboardType);
 
+                ctrl.barNumVal = undefined;
+                ctrl.barRanges = undefined;
+
+                function isBarSupported() {
+                    if (device.Type === 'Usage' && device.SubType === 'Electric') return true;
+                    if (device.SubType === 'kWh') return true;
+                    if (device.SubType === 'Percentage') return true;
+                    if (device.SubType === 'Gas' || device.SubType === 'RFXMeter counter' || device.SubType === 'Counter Incremental') return true;
+                    if (device.SubType === 'Managed Counter') return true;
+                    if (device.SubType === 'Custom Sensor') return true;
+                    if (device.Type === 'Lux') return true;
+                    if (device.SubType === 'Voltage') return true;
+                    if (device.SubType === 'Current' || device.Type === 'Current') return true;
+                    if (device.Type === 'Setpoint' && device.SubType === 'SetPoint') return true;
+                    if (device.Type === 'Air Quality') return true;
+                    if (device.SubType === 'Pressure') return true;
+                    if (device.SubType === 'Distance') return true;
+                    if (device.Type === 'Weight') return true;
+                    if (device.SubType === 'Sound Level') return true;
+                    if (device.SubType === 'Waterflow') return true;
+                    if (device.SubType === 'Fan') return true;
+                    if (device.SubType === 'Leaf Wetness') return true;
+                    if (device.SubType === 'Soil Moisture') return true;
+                    if (device.SubType === 'A/D') return true;
+                    if (device.Type === 'Energy' || device.Type === 'Power' || device.Type === 'Current/Energy') return true;
+                    if (device.Type === 'Radiator 1') return true;
+                    return false;
+                }
+
+                ctrl.getBarRanges = function() {
+                    var color = device.Color;
+                    if (!color || typeof color !== 'string') { return []; }
+                    var trimmed = color.trim();
+                    if (trimmed.charAt(0) !== '[') { return []; }
+                    try { return JSON.parse(trimmed); } catch(e) { return []; }
+                };
+
+                function updateBar() {
+                    if (!isBarSupported()) { ctrl.barNumVal = undefined; ctrl.barRanges = undefined; return; }
+                    ctrl.barRanges = ctrl.getBarRanges();
+                    if (!ctrl.barRanges.length) { ctrl.barNumVal = undefined; return; }
+                    var dataStr;
+                    if (device.SubType === 'kWh' || device.Type === 'Energy' || device.Type === 'Power' || device.Type === 'Current/Energy') {
+                        dataStr = device.Usage || '';
+                    } else if (device.SubType === 'Gas' || device.SubType === 'RFXMeter counter' || device.SubType === 'Counter Incremental') {
+                        dataStr = device.CounterToday || '';
+                    } else if (device.SubType === 'Managed Counter') {
+                        dataStr = device.Counter || '';
+                    } else {
+                        dataStr = device.Data || '';
+                    }
+                    var m = dataStr.match(/^([\d.,]+)/);
+                    ctrl.barNumVal = m ? parseFloat(m[1].replace(',', '.')) : undefined;
+                }
+
                 // Keep ctrl.device in sync when parent updates the binding
                 $scope.$watch('device', function (newVal) {
                     if (newVal) {
                         device = newVal;
                         ctrl.device = newVal;
+                        updateBar();
                     }
                 });
+
+                updateBar();
 
                 ctrl.getBackgroundClass = function () {
                     return $rootScope.GetItemBackgroundStatus(device);
@@ -374,16 +432,16 @@ define(['app'], function (app) {
 
                     if (typeof device.Counter !== 'undefined') {
                         if (device.Type === 'P1 Smart Meter') {
-                            EditUtilityDevice(device.idx, escape(device.Name), escape(device.Description), device.CustomImage, device.ID, device.Unit);
+                            EditUtilityDevice(device.idx, escape(device.Name), escape(device.Description), device.CustomImage, device.ID, device.Unit, device.Color || '');
                         } else {
-                            EditMeterDevice(device.idx, escape(device.Name), escape(device.Description), device.SwitchTypeVal, device.AddjValue, device.AddjValue2, escape(device.ValueQuantity), escape(device.ValueUnits), device.CustomImage, device.ID, device.Unit);
+                            EditMeterDevice(device.idx, escape(device.Name), escape(device.Description), device.SwitchTypeVal, device.AddjValue, device.AddjValue2, escape(device.ValueQuantity), escape(device.ValueUnits), device.CustomImage, device.ID, device.Unit, device.Color || '');
                         }
                     } else if (device.SubType === 'Custom Sensor') {
-                        EditCustomSensorDevice(device.idx, escape(device.Name), escape(device.Description), device.CustomImage, device.SensorType, escape(device.SensorUnit), device.ID, device.Unit);
+                        EditCustomSensorDevice(device.idx, escape(device.Name), escape(device.Description), device.CustomImage, device.SensorType, escape(device.SensorUnit), device.ID, device.Unit, device.Color || '');
                     } else if (device.SubType === 'Text') {
                         EditTextDevice(device.idx, escape(device.Name), escape(device.Data), escape(device.Description), device.CustomImage, device.ID, device.Unit);
                     } else if ((device.Type === 'Setpoint' && device.SubType === 'SetPoint') || device.Type === 'Radiator 1') {
-                        EditSetPoint(device.idx, escape(device.Name), escape(device.Description), escape(device.vunit), device.step, device.min, device.max, device.Protected, device.CustomImage, device.ID, device.Unit);
+                        EditSetPoint(device.idx, escape(device.Name), escape(device.Description), escape(device.vunit), device.step, device.min, device.max, device.Protected, device.CustomImage, device.ID, device.Unit, device.Color || '');
                     } else if (device.SubType === 'Thermostat Clock') {
                         EditThermostatClock(device.idx, escape(device.Name), escape(device.Description), device.DayTime, device.Protected, device.CustomImage, device.ID, device.Unit);
                     } else if (device.SubType === 'Thermostat Mode') {
@@ -392,11 +450,11 @@ define(['app'], function (app) {
                         EditThermostatFanMode(device.idx, escape(device.Name), escape(device.Description), device.Mode, device.Modes, device.Protected, device.CustomImage, device.ID, device.Unit);
                     } else if ((device.Type === 'Energy' || device.SubType === 'kWh')) {
                         var energyMeterMode = device.EnergyMeterMode || '0';
-                        EditEnergyDevice(device.idx, escape(device.Name), escape(device.Description), device.SwitchTypeVal, energyMeterMode, device.CustomImage, device.ID, device.Unit);
+                        EditEnergyDevice(device.idx, escape(device.Name), escape(device.Description), device.SwitchTypeVal, energyMeterMode, device.CustomImage, device.ID, device.Unit, device.Color || '');
                     } else if (device.SubType === 'Distance') {
-                        EditDistanceDevice(device.idx, escape(device.Name), escape(device.Description), device.SwitchTypeVal, device.CustomImage, device.ID, device.Unit);
+                        EditDistanceDevice(device.idx, escape(device.Name), escape(device.Description), device.SwitchTypeVal, device.CustomImage, device.ID, device.Unit, device.Color || '');
                     } else {
-                        EditUtilityDevice(device.idx, escape(device.Name), escape(device.Description), device.CustomImage, device.ID, device.Unit);
+                        EditUtilityDevice(device.idx, escape(device.Name), escape(device.Description), device.CustomImage, device.ID, device.Unit, device.Color || '');
                     }
                 };
 
@@ -435,4 +493,5 @@ define(['app'], function (app) {
             }
         };
     });
+
 });

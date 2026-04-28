@@ -1,12 +1,6 @@
 define(['angular'], function () {
     var module = angular.module('domoticz.notifications', []);
 
-    module.run(function($window) {
-        if ($window.Notification && $window.Notification.permission !== "granted") {
-            $window.Notification.requestPermission();
-        }
-    });
-
     /*
 		The notifyBrowser service sets and gets the browser notifications coming on from the domoticz websocket.
 		In livesocket.js the notifications are pushed to the message queue by using the notify() method.
