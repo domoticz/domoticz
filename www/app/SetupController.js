@@ -1149,15 +1149,14 @@ define(['app'], function (app) {
 				resizable: false,
 				buttons: {
 					"OK": function () {
-						var bValid = true;
-						bValid = bValid && checkLength($("#dialog-findlatlong #latitude"), 3, 100);
-						bValid = bValid && checkLength($("#dialog-findlatlong #longitude"), 3, 100);
-						if (bValid) {
-							$("#locationtable #Latitude").val($('#dialog-findlatlong #latitude').val());
-							$("#locationtable #Longitude").val($('#dialog-findlatlong #longitude').val());
-							$(this).dialog("close");
+						var lat = parseFloat($('#dialog-findlatlong #latitude').val());
+						var lon = parseFloat($('#dialog-findlatlong #longitude').val());
+						if (isNaN(lat) || isNaN(lon)) {
+							bootbox.alert($.t('Please enter a Latitude and Longitude!...'));
 						} else {
-							bootbox.alert($.t('Please enter a Latitude and Longitude!...'), 3500, true);
+							$("#locationtable #Latitude").val(lat);
+							$("#locationtable #Longitude").val(lon);
+							$(this).dialog("close");
 						}
 					},
 					Cancel: function () {
@@ -1165,27 +1164,23 @@ define(['app'], function (app) {
 					}
 				},
 				open: function () {
-					$('#getlatlong').click(function () {
+					$('#getlatlong').off('click').on('click', function () {
 						var address = $('#dialog-findlatlong #address').val();
 						if (address == "") {
-							bootbox.alert($.t('Please enter a Address to search for!...'), 3500, true);
+							bootbox.alert($.t('Please enter a Address to search for!...'));
 							return false;
 						}
-						let url = "https://nominatim.openstreetmap.org/search?q="+encodeURIComponent(address)+"&format=json&addressdetails=1";
+						var url = "https://nominatim.openstreetmap.org/search?q=" + encodeURIComponent(address) + "&format=json&addressdetails=1";
 						$http({
 							url: url,
 							async: true,
 							dataType: 'json'
 						}).then(function successCallback(response) {
 							var data = response.data;
-
 							if (data.length > 0) {
-								const location = data[0];
-								const lat = location.lat;
-								const lon = location.lon;
-								//console.log(`Latitude: ${lat}, Longitude: ${lon}`);
-								$('#dialog-findlatlong #latitude').val(lat);
-								$('#dialog-findlatlong #longitude').val(lon);//.toFixed(6)
+								var location = data[0];
+								$('#dialog-findlatlong #latitude').val(location.lat);
+								$('#dialog-findlatlong #longitude').val(location.lon);
 							}
 						}, function errorCallback(response) {
 							bootbox.alert($.t('Geocode was not successful for the following reason') + ': ' + response.statusText);
@@ -1193,7 +1188,7 @@ define(['app'], function (app) {
 						return false;
 					});
 					if ('geolocation' in navigator) {
-						$('#geodetect').click(function () {
+						$('#geodetect').off('click').on('click', function () {
 							navigator.geolocation.getCurrentPosition(function (location) {
 								$('#dialog-findlatlong #latitude').val(location.coords.latitude);
 								$('#dialog-findlatlong #longitude').val(location.coords.longitude);
