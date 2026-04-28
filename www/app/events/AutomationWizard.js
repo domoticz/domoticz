@@ -183,10 +183,9 @@ define(['app'], function (app) {
                 if (vm.step === 3) loadScenes(); // pre-load for action scene pickers
                 vm.step++;
                 if (vm.step === 4) {
-                    vm.generatedCode = generateCode();
                     // Seed name from trigger if still empty
                     if (!vm.name) vm.name = defaultName();
-                    vm.generatedCode = generateCode(); // regenerate with name
+                    vm.generatedCode = generateCode();
                 }
             };
 

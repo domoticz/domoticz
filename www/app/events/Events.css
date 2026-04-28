@@ -330,6 +330,24 @@
     color: #333;
 }
 
+/* ACE Status Bar */
+
+.ace-statusbar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    padding: 0 8px;
+    background-color: #e8e8e8;
+    border-top: 1px solid #ccc;
+    font-size: 11px;
+    line-height: 20px;
+    color: #666;
+    text-align: right;
+    z-index: 1;
+}
+
 /* Wizard launcher tab */
 .events-editor__file-wizard {
     font-style: italic;
@@ -384,6 +402,10 @@
     display: block;
     font-size: 15px;
     color: var(--dz-modal-text, #333);
+}
+
+.aw-title strong i {
+    filter: invert(42%) sepia(93%) saturate(378%) hue-rotate(180deg) brightness(94%) contrast(89%);
 }
 
 .aw-title small {
@@ -530,7 +552,7 @@
 
 .aw-card-selected {
     border-color: var(--dz-accent-color, #337ab7);
-    background: var(--dz-btn-bg, #e8f0fb);
+    background: var(--dz-accent-color, #337ab7);
 }
 
 .aw-card-icon {
@@ -539,6 +561,32 @@
     flex-shrink: 0;
     width: 24px;
     text-align: center;
+}
+
+/* Sprite icons cannot be tinted via `color`; use filter instead */
+.aw-card-icon i {
+    filter: invert(42%) sepia(93%) saturate(378%) hue-rotate(180deg) brightness(94%) contrast(89%);
+}
+
+.aw-card-selected .aw-card-text strong,
+.aw-card-selected .aw-card-text span {
+    color: #fff;
+}
+
+/* White sprite on solid accent-coloured card background */
+.aw-card-selected .aw-card-icon i {
+    filter: brightness(0) invert(1);
+}
+
+/* Icons on the dark modal body (outside card/action backgrounds) */
+.aw-empty-hint i {
+    filter: brightness(0) invert(1);
+}
+
+/* Icons inside primary/success buttons */
+.aw-footer .btn-primary i,
+.aw-footer .btn-success i {
+    filter: brightness(0) invert(1);
 }
 
 .aw-card-text strong {
@@ -762,22 +810,4 @@
 .aw-footer-right {
     display: flex;
     gap: 8px;
-}
-
-/* ACE Status Bar */
-
-.ace-statusbar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 20px;
-    padding: 0 8px;
-    background-color: #e8e8e8;
-    border-top: 1px solid #ccc;
-    font-size: 11px;
-    line-height: 20px;
-    color: #666;
-    text-align: right;
-    z-index: 1;
 }
