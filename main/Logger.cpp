@@ -284,6 +284,8 @@ void CLogger::Log(const _eLogLevel level, const char *logline, ...)
 		cbuffer = static_cast<char*>(malloc(needed + 1));
 		if (cbuffer) {
 			vsnprintf(cbuffer, needed + 1, logline, args);
+		} else {
+			cbuffer = stackbuf; // malloc failed: use truncated stack buffer
 		}
 	}
 	va_end(args);
@@ -401,6 +403,8 @@ void CLogger::Debug(const _eDebugLevel level, const char *logline, ...)
 		cbuffer = static_cast<char*>(malloc(needed + 1));
 		if (cbuffer) {
 			vsnprintf(cbuffer, needed + 1, logline, args);
+		} else {
+			cbuffer = stackbuf; // malloc failed: use truncated stack buffer
 		}
 	}
 	va_end(args);
