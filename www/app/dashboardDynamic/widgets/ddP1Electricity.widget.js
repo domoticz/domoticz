@@ -37,6 +37,16 @@ define([
                 label:   'Show price',
                 default: true
             },
+            {
+                key:          'ranges',
+                type:         'range-list',
+                label:        'Bar ranges',
+                help:         'Add value ranges to show a gradient bar on current power (W). Bar auto-scales to the combined min/max of all ranges.',
+                seedDefaults: [
+                    { from: 0,    to: 500,  color: '#66bb6a' },
+                    { from: 500,  to: 3000, color: '#DF2D3A' }
+                ]
+            },
             { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
@@ -60,6 +70,7 @@ define([
                 ctrl.counterDelivToday  = null;
                 ctrl.price              = null;
                 ctrl.isExporting        = false;
+                ctrl.numVal             = NaN;
                 ctrl.loadError          = false;
                 var cancelToken         = null;
 
@@ -80,6 +91,7 @@ define([
                     var raw = parseFloat(d.price);
                     ctrl.price = (!isNaN(raw) && raw !== 1000 && raw !== 0) ? raw : null;
                     ctrl.isExporting       = ctrl.exportWatt > 0;
+                    ctrl.numVal            = ctrl.isExporting ? ctrl.exportWatt : ctrl.importWatt;
                     ctrl.loadError         = false;
                 }
 

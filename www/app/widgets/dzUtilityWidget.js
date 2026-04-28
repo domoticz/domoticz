@@ -38,6 +38,7 @@ define(['app', 'widgets/dzBar'], function (app) {
                 ctrl.barRanges = undefined;
 
                 function isBarSupported() {
+                    if (device.Type === 'P1 Smart Meter') return true;
                     if (device.Type === 'Usage' && device.SubType === 'Electric') return true;
                     if (device.SubType === 'kWh') return true;
                     if (device.SubType === 'Percentage') return true;
@@ -76,7 +77,9 @@ define(['app', 'widgets/dzBar'], function (app) {
                     ctrl.barRanges = ctrl.getBarRanges();
                     if (!ctrl.barRanges.length) { ctrl.barNumVal = undefined; return; }
                     var dataStr;
-                    if (device.SubType === 'kWh' || device.Type === 'Energy' || device.Type === 'Power' || device.Type === 'Current/Energy') {
+                    if (device.Type === 'P1 Smart Meter') {
+                        dataStr = (parseInt(device.UsageDeliv) > 0 ? device.UsageDeliv : device.Usage) || '';
+                    } else if (device.SubType === 'kWh' || device.Type === 'Energy' || device.Type === 'Power' || device.Type === 'Current/Energy') {
                         dataStr = device.Usage || '';
                     } else if (device.SubType === 'Gas' || device.SubType === 'RFXMeter counter' || device.SubType === 'Counter Incremental') {
                         dataStr = device.CounterToday || '';
