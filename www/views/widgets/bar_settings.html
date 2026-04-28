@@ -23,11 +23,6 @@
             No ranges defined yet.
         </div>
 
-        <div ng-show="ranges.length === 0" style="margin-bottom:6px">
-            <button type="button" class="btn btn-sm btn-default" ng-click="seedDefaults()">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Seed defaults
-            </button>
-        </div>
 
         <div class="dd-al-add" style="margin-top:8px">
             <div class="dd-al-add-row">
@@ -50,6 +45,9 @@
 <div class="modal-footer">
     <button type="button" class="btn btn-danger pull-left" ng-click="clearRanges()">
         <i class="fa-solid fa-trash"></i> Clear all
+    </button>
+    <button type="button" class="btn btn-default pull-left" ng-click="seedDefaults()">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Seed defaults
     </button>
     <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
     <button type="button" class="btn btn-primary" ng-click="save()">Save</button>

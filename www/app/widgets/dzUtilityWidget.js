@@ -1,5 +1,284 @@
 define(['app', 'widgets/dzBar'], function (app) {
-    app.directive('dzUtilityWidget', function ($rootScope, $sce, deviceApi, permissions) {
+
+    app.factory('utilityEditService', ['dzBarService', function (dzBarService) {
+
+        function openUtilityDialog(device) {
+            var showBar = (device.SubType !== 'Alert' && device.SubType !== 'Thermostat Operating State' && device.SubType !== 'Text');
+            var isText = (device.SubType === 'Text');
+            // Alert and ThermostatOpState icons are driven by level value; custom image has no effect
+            var showIcon = (device.SubType !== 'Alert' && device.SubType !== 'Thermostat Operating State');
+            var dialogId = isText ? '#dialog-edittextdevice' : '#dialog-editutilitydevice';
+            $.devIdx = device.idx;
+            $(dialogId + ' #deviceidx').text(device.idx);
+            $(dialogId + ' #deviceid').text(device.ID);
+            $(dialogId + ' #deviceunit').text(device.Unit);
+            $(dialogId + ' #devicename').val(device.Name);
+            $(dialogId + ' #devicedescription').val(device.Description);
+            if (isText) {
+                $(dialogId + ' #devicetext').val(device.Data);
+            }
+            var $iconRow = $(dialogId + ' #combosensoricon').closest('tr');
+            if (showIcon) {
+                $iconRow.show();
+                $(dialogId + ' #combosensoricon').ddslick({
+                    data: $.ddData,
+                    width: 260,
+                    height: isText ? 490 : 390,
+                    selectText: "Sensor Icon",
+                    imagePosition: "left"
+                });
+                //find our custom image index and select it
+                $.each($.ddData, function (i, item) {
+                    if (item.value == device.CustomImage) {
+                        $(dialogId + ' #combosensoricon').ddslick('select', { index: i });
+                    }
+                });
+            } else {
+                $iconRow.hide();
+            }
+            if (!isText) {
+                var $utilForm = $(dialogId + ' form');
+                $utilForm.find('.dz-bar-btn').remove();
+                if (showBar) {
+                    // Utility devices store bar ranges as a flat JSON array in Color (unlike
+                    // weather/temperature which use a keyed object via loadForKey/getFullColorJson).
+                    dzBarService.setColorJson(device.Color || '');
+                    dzBarService.attachBarButton($utilForm, device.idx, device.Name);
+                }
+            }
+            $(dialogId).i18n().dialog('open');
+        }
+
+        function openCustomSensorDialog(device) {
+            var isDistance = (device.SubType === 'Distance');
+            var dialogId = isDistance ? '#dialog-editdistancedevice' : '#dialog-editcustomsensordevice';
+            $.devIdx = device.idx;
+            if (!isDistance) {
+                $.sensorType = device.SensorType;
+            }
+            $(dialogId + ' #deviceidx').text(device.idx);
+            $(dialogId + ' #deviceid').text(device.ID);
+            $(dialogId + ' #deviceunit').text(device.Unit);
+            $(dialogId + ' #devicename').val(device.Name);
+            $(dialogId + ' #devicedescription').val(device.Description);
+            if (isDistance) {
+                $(dialogId + ' #combometertype').val(device.SwitchTypeVal);
+            } else {
+                $(dialogId + ' #sensoraxis').val(device.SensorUnit);
+            }
+            $(dialogId + ' #combosensoricon').ddslick({
+                data: $.ddData,
+                width: 260,
+                height: 390,
+                selectText: "Sensor Icon",
+                imagePosition: "left"
+            });
+            //find our custom image index and select it
+            $.each($.ddData, function (i, item) {
+                if (item.value == device.CustomImage) {
+                    $(dialogId + ' #combosensoricon').ddslick('select', { index: i });
+                }
+            });
+            var $form = $(dialogId + ' form');
+            $form.find('.dz-bar-btn').remove();
+            dzBarService.setColorJson(device.Color || '');
+            dzBarService.attachBarButton($form, device.idx, device.Name);
+            $(dialogId).i18n().dialog('open');
+        }
+
+        function openMeterDialog(device) {
+            var isEnergy = (device.SubType === 'kWh' || device.Type === 'Energy');
+            var dialogId = isEnergy ? '#dialog-editenergydevice' : '#dialog-editmeterdevice';
+            $.devIdx = device.idx;
+            $(dialogId + ' #deviceidx').text(device.idx);
+            $(dialogId + ' #deviceid').text(device.ID);
+            $(dialogId + ' #deviceunit').text(device.Unit);
+            $(dialogId + ' #devicename').val(device.Name);
+            $(dialogId + ' #devicedescription').val(device.Description);
+            $(dialogId + ' #combometertype').val(device.SwitchTypeVal);
+            if (isEnergy) {
+                var EnergyMeterMode = device.EnergyMeterMode || '0';
+                $(dialogId + ' input:radio[name=EnergyMeterMode][value="' + EnergyMeterMode + '"]').attr('checked', true);
+                $(dialogId + ' input:radio[name=EnergyMeterMode][value="' + EnergyMeterMode + '"]').prop('checked', true);
+                $(dialogId + ' input:radio[name=EnergyMeterMode][value="' + EnergyMeterMode + '"]').trigger('change');
+            } else {
+                $(dialogId + ' #meterdivider').val(device.AddjValue2);
+                $(dialogId + ' #meteroffset').val(device.AddjValue);
+                $(dialogId + ' #valuequantity').val(device.ValueQuantity);
+                $(dialogId + ' #valueunits').val(device.ValueUnits);
+                $(dialogId + ' #metertable #customcounter').hide();
+                if (device.SwitchTypeVal == 3) { //Counter
+                    $(dialogId + ' #metertable #customcounter').show();
+                }
+                $(dialogId + ' #combometertype').off('change').on('change', function () {
+                    $(dialogId + ' #metertable #customcounter').hide();
+                    var meterType = $(dialogId + ' #combometertype').val();
+                    if (meterType == 3) { //Counter
+                        if (($(dialogId + ' #valuequantity').val() == '')
+                            && ($(dialogId + ' #valueunits').val() == '')) {
+                            $(dialogId + ' #valuequantity').val('Custom');
+                        }
+                        $(dialogId + ' #metertable #customcounter').show();
+                    }
+                });
+            }
+            $(dialogId + ' #combosensoricon').ddslick({
+                data: $.ddData,
+                width: 260,
+                height: 390,
+                selectText: "Sensor Icon",
+                imagePosition: "left"
+            });
+            //find our custom image index and select it
+            $.each($.ddData, function (i, item) {
+                if (item.value == device.CustomImage) {
+                    $(dialogId + ' #combosensoricon').ddslick('select', { index: i });
+                }
+            });
+            var $form = $(dialogId + ' form');
+            $form.find('.dz-bar-btn').remove();
+            dzBarService.setColorJson(device.Color || '');
+            dzBarService.attachBarButton($form, device.idx, device.Name);
+            $(dialogId).i18n().dialog('open');
+        }
+
+        function openSetPointDialog(device) {
+            HandleProtection(device.Protected, function () {
+                $.devIdx = device.idx;
+                $("#dialog-editsetpointdevice #deviceidx").text(device.idx);
+                $("#dialog-editsetpointdevice #deviceid").text(device.ID);
+                $("#dialog-editsetpointdevice #deviceunit").text(device.Unit);
+                $("#dialog-editsetpointdevice #devicename").val(device.Name);
+                $("#dialog-editsetpointdevice #devicedescription").val(device.Description);
+                $('#dialog-editsetpointdevice #protected').prop('checked', (device.Protected == true));
+                $("#dialog-editsetpointdevice #unit").val(device.vunit);
+                $("#dialog-editsetpointdevice #step").val(device.step);
+                $("#dialog-editsetpointdevice #min").val(device.min);
+                $("#dialog-editsetpointdevice #max").val(device.max);
+                $('#dialog-editsetpointdevice #combosensoricon').ddslick({
+                    data: $.ddData,
+                    width: 260,
+                    height: 390,
+                    selectText: "Sensor Icon",
+                    imagePosition: "left"
+                });
+                //find our custom image index and select it
+                $.each($.ddData, function (i, item) {
+                    if (item.value == device.CustomImage) {
+                        $('#dialog-editsetpointdevice #combosensoricon').ddslick('select', { index: i });
+                    }
+                });
+                var $setpointForm = $('#dialog-editsetpointdevice form');
+                $setpointForm.find('.dz-bar-btn').remove();
+                dzBarService.setColorJson(device.Color || '');
+                dzBarService.attachBarButton($setpointForm, device.idx, device.Name);
+                $("#dialog-editsetpointdevice").i18n().dialog("open");
+            });
+        }
+
+        function openThermostatDialog(device) {
+            HandleProtection(device.Protected, function () {
+                $.devIdx = device.idx;
+                if (device.SubType === 'Thermostat Clock') {
+                    var sarray = (device.DayTime || '').split(';');
+                    $("#dialog-editthermostatclockdevice #deviceidx").text(device.idx);
+                    $("#dialog-editthermostatclockdevice #deviceid").text(device.ID);
+                    $("#dialog-editthermostatclockdevice #deviceunit").text(device.Unit);
+                    $("#dialog-editthermostatclockdevice #devicename").val(device.Name);
+                    $("#dialog-editthermostatclockdevice #devicedescription").val(device.Description);
+                    $('#dialog-editthermostatclockdevice #protected').prop('checked', (device.Protected == true));
+                    $("#dialog-editthermostatclockdevice #comboclockday").val(parseInt(sarray[0]));
+                    $("#dialog-editthermostatclockdevice #clockhour").val(sarray[1]);
+                    $("#dialog-editthermostatclockdevice #clockminute").val(sarray[2]);
+                    $('#dialog-editthermostatclockdevice #combosensoricon').ddslick({
+                        data: $.ddData,
+                        width: 260,
+                        height: 390,
+                        selectText: "Sensor Icon",
+                        imagePosition: "left"
+                    });
+                    //find our custom image index and select it
+                    $.each($.ddData, function (i, item) {
+                        if (item.value == device.CustomImage) {
+                            $('#dialog-editthermostatclockdevice #combosensoricon').ddslick('select', { index: i });
+                        }
+                    });
+                    $("#dialog-editthermostatclockdevice").i18n().dialog("open");
+                } else {
+                    // Thermostat Mode or Thermostat Fan Mode — both use the same dialog
+                    $.isFan = (device.SubType === 'Thermostat Fan Mode');
+                    var sarray = (device.Modes || '').split(';');
+                    $("#dialog-editthermostatmode #deviceidx").text(device.idx);
+                    $("#dialog-editthermostatmode #deviceid").text(device.ID);
+                    $("#dialog-editthermostatmode #deviceunit").text(device.Unit);
+                    $("#dialog-editthermostatmode #devicename").val(device.Name);
+                    $("#dialog-editthermostatmode #devicedescription").val(device.Description);
+                    $('#dialog-editthermostatmode #protected').prop('checked', (device.Protected == true));
+                    //populate mode combo
+                    $("#dialog-editthermostatmode #combomode").html("");
+                    var ii = 0;
+                    while (ii < sarray.length - 1) {
+                        var option = $('<option />');
+                        option.attr('value', sarray[ii]).text(sarray[ii + 1]);
+                        $("#dialog-editthermostatmode #combomode").append(option);
+                        ii += 2;
+                    }
+                    $('#dialog-editthermostatmode #combosensoricon').ddslick({
+                        data: $.ddData,
+                        width: 260,
+                        height: 390,
+                        selectText: "Sensor Icon",
+                        imagePosition: "left"
+                    });
+                    //find our custom image index and select it
+                    $.each($.ddData, function (i, item) {
+                        if (item.value == device.CustomImage) {
+                            $('#dialog-editthermostatmode #combosensoricon').ddslick('select', { index: i });
+                        }
+                    });
+                    $("#dialog-editthermostatmode #combomode").val(parseInt(device.Mode));
+                    $("#dialog-editthermostatmode").i18n().dialog("open");
+                }
+            });
+        }
+
+        function openDialog(device) {
+            if (typeof device.Counter !== 'undefined') {
+                if (device.Type === 'P1 Smart Meter') {
+                    openUtilityDialog(device);
+                } else {
+                    openMeterDialog(device);
+                }
+            } else if (device.SubType === 'Custom Sensor') {
+                openCustomSensorDialog(device);
+            } else if (device.SubType === 'Distance') {
+                openCustomSensorDialog(device);
+            } else if (device.SubType === 'Text') {
+                openUtilityDialog(device);
+            } else if ((device.Type === 'Setpoint' && device.SubType === 'SetPoint') || device.Type === 'Radiator 1') {
+                openSetPointDialog(device);
+            } else if (device.SubType === 'Thermostat Clock' ||
+                       device.SubType === 'Thermostat Mode' ||
+                       device.SubType === 'Thermostat Fan Mode') {
+                openThermostatDialog(device);
+            } else {
+                // Handles Alert, Thermostat Operating State, and other generic utility devices —
+                // openUtilityDialog suppresses the bar button and icon picker for those subtypes.
+                openUtilityDialog(device);
+            }
+        }
+
+        return {
+            openDialog: openDialog,
+            openUtilityDialog: openUtilityDialog,
+            openMeterDialog: openMeterDialog,
+            openCustomSensorDialog: openCustomSensorDialog,
+            openSetPointDialog: openSetPointDialog,
+            openThermostatDialog: openThermostatDialog
+        };
+    }]);
+
+    app.directive('dzUtilityWidget', ['$rootScope', '$sce', 'deviceApi', 'permissions', 'utilityEditService', function ($rootScope, $sce, deviceApi, permissions, utilityEditService) {
         return {
             restrict: 'E',
             replace: true,
@@ -21,7 +300,7 @@ define(['app', 'widgets/dzBar'], function (app) {
                 return 'views/widgets/utility_widget.html';
             },
             controllerAs: 'ctrl',
-            controller: function ($scope, $element) {
+            controller: ['$scope', '$element', function ($scope, $element) {
                 var ctrl = this;
                 var device = $scope.device;
 
@@ -429,38 +708,10 @@ define(['app', 'widgets/dzBar'], function (app) {
                     return '#/Devices/' + device.idx + '/Timers';
                 };
 
-                // Edit function dispatching - calls the appropriate global edit function
+                // Edit function dispatching - delegates to utilityEditService
                 ctrl.editDevice = function() {
                     if (!permissions.hasPermission('Admin')) return;
-
-                    if (typeof device.Counter !== 'undefined') {
-                        if (device.Type === 'P1 Smart Meter') {
-                            EditUtilityDevice(device.idx, escape(device.Name), escape(device.Description), device.CustomImage, device.ID, device.Unit, device.Color || '');
-                        } else {
-                            EditMeterDevice(device.idx, escape(device.Name), escape(device.Description), device.SwitchTypeVal, device.AddjValue, device.AddjValue2, escape(device.ValueQuantity), escape(device.ValueUnits), device.CustomImage, device.ID, device.Unit, device.Color || '');
-                        }
-                    } else if (device.SubType === 'Custom Sensor') {
-                        EditCustomSensorDevice(device.idx, escape(device.Name), escape(device.Description), device.CustomImage, device.SensorType, escape(device.SensorUnit), device.ID, device.Unit, device.Color || '');
-                    } else if (device.SubType === 'Text') {
-                        EditTextDevice(device.idx, escape(device.Name), escape(device.Data), escape(device.Description), device.CustomImage, device.ID, device.Unit);
-                    } else if ((device.Type === 'Setpoint' && device.SubType === 'SetPoint') || device.Type === 'Radiator 1') {
-                        EditSetPoint(device.idx, escape(device.Name), escape(device.Description), escape(device.vunit), device.step, device.min, device.max, device.Protected, device.CustomImage, device.ID, device.Unit, device.Color || '');
-                    } else if (device.SubType === 'Thermostat Clock') {
-                        EditThermostatClock(device.idx, escape(device.Name), escape(device.Description), device.DayTime, device.Protected, device.CustomImage, device.ID, device.Unit);
-                    } else if (device.SubType === 'Thermostat Mode') {
-                        EditThermostatMode(device.idx, escape(device.Name), escape(device.Description), device.Mode, device.Modes, device.Protected, device.CustomImage, device.ID, device.Unit);
-                    } else if (device.SubType === 'Thermostat Fan Mode') {
-                        EditThermostatFanMode(device.idx, escape(device.Name), escape(device.Description), device.Mode, device.Modes, device.Protected, device.CustomImage, device.ID, device.Unit);
-                    } else if ((device.Type === 'Energy' || device.SubType === 'kWh')) {
-                        var energyMeterMode = device.EnergyMeterMode || '0';
-                        EditEnergyDevice(device.idx, escape(device.Name), escape(device.Description), device.SwitchTypeVal, energyMeterMode, device.CustomImage, device.ID, device.Unit, device.Color || '');
-                    } else if (device.SubType === 'Distance') {
-                        EditDistanceDevice(device.idx, escape(device.Name), escape(device.Description), device.SwitchTypeVal, device.CustomImage, device.ID, device.Unit, device.Color || '');
-                    } else if (device.SubType === 'Alert' || device.SubType === 'Thermostat Operating State') {
-                        EditUtilityDevice(device.idx, escape(device.Name), escape(device.Description), device.CustomImage, device.ID, device.Unit, device.Color || '', false);
-                    } else {
-                        EditUtilityDevice(device.idx, escape(device.Name), escape(device.Description), device.CustomImage, device.ID, device.Unit, device.Color || '');
-                    }
+                    utilityEditService.openDialog(device);
                 };
 
                 // Determine if this device type supports a log link
@@ -492,11 +743,11 @@ define(['app', 'widgets/dzBar'], function (app) {
                 }, true);
 
                 $element.i18n();
-            },
+            }],
             link: function(scope, element) {
                 element.i18n();
             }
         };
-    });
+    }]);
 
 });

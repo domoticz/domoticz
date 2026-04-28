@@ -17,8 +17,8 @@
                     <span ng-show="ctrl.displayBarometer() && (ctrl.displayTemp() || ctrl.displaySetPoint() || ctrl.displayState() || ctrl.displayHeat() || ctrl.displayHumidity())">/</span>
                     <span ng-show="ctrl.displayBarometer()">{{item.Barometer}} hPa</span>
 
-                    <span ng-show="ctrl.displayChill() && (ctrl.displayTemp() || ctrl.displaySetPoint() || ctrl.displayState() || ctrl.displayHeat())">/</span>
-                    <span ng-show="ctrl.displayChill()">{{item.Chill}}&#176; {{tempsign}}</span>
+                    <span ng-show="ctrl.displayChill() && item.Chill !== item.Temp && (ctrl.displayTemp() || ctrl.displaySetPoint() || ctrl.displayState() || ctrl.displayHeat())">/</span>
+                    <span ng-show="ctrl.displayChill() && item.Chill !== item.Temp">{{item.Chill}}&#176; {{tempsign}}</span>
                 </td>
                 <td id="img">
                     <img ng-if="item.Type != 'Thermostat 6'" ng-src="images/{{ctrl.image()}}" height="48" width="48">

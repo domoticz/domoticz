@@ -45,6 +45,7 @@ Version 2026.xxxx
 - Added: PhilipsHue, automatic bridge version detection (V2 HTTPS/443, V1 HTTPS/443, V1 HTTP/80); port no longer needs manual configuration
 - Added: PhilipsHue V2, real-time sensor updates via Server-Sent Events (SSE); instant state changes without waiting for the next poll cycle
 - Added: PhilipsHue V2, new sensor types: grouped motion, grouped light level, camera motion, security area motion, button remotes, and bell button (doorbell)
+- Changed: Bar settings popup, "Seed defaults" button is now always accessible in the dialog footer regardless of whether ranges are already defined
 - Changed: Device protection passcode prompts now use a masked password input field so the passcode is not shown as plain text
 - Changed: Counter log, "Fix Counter Spikes" renamed to "Fix Counter/Price Spikes"; now also detects and repairs corrupted price entries in the calendar caused by counter spikes
 - Changed: Counter log, "Fix Counter Spikes" admin button is now visible in the counter log footer
@@ -101,9 +102,13 @@ Version 2026.xxxx
 - Fixed: SolarEdge, power and current sensors are now reset to zero at the end of the daylight window (#6785)
 - Fixed: SolarEdge, zero energy values are now correctly reported instead of being suppressed
 - Fixed: Switches, device hover tooltips in the Lights/Switches tab are now restored after page load
+- Fixed: Temperature widget, wind+temperature sensors no longer display the temperature value twice in the device list when wind chill equals ambient temperature
 - Fixed: Text device utility widget now preserves HTML style attributes (color, font-size, etc.)
 - Fixed: Thermostat6, bigtext on the favorites dashboard now shows correct order: temperature first, setpoint in parentheses, then humidity and barometer
 - Fixed: Thermostat6, widgets no longer show EvoHome heat-level color (red) when setpoint is high; EvoHome colors are now restricted to EvoHome Zone/Hot Water devices
+- Fixed: Utility device edit dialog, sensor icon picker no longer shown for Alert and Thermostat Operating State devices where the icon is determined by the alert level and cannot be customised
+- Fixed: Weather device edit dialog, description changes and visibility unit (km/miles) selection were not reflected when re-opening the dialog after saving
+- Fixed: Weather device, forecast button now correctly renders the forecast content in the weather panel
 - Fixed: Widgets, brief visual flash of incorrect content on initial page load in switches, temperature and weather tabs
 - Fixed: Water meter, counter device now shows value in m³ with 3 decimal places instead of Liter
 - Fixed: WOL, DNS lookup skipped for magic packet targets; improved getaddrinfo error reporting

@@ -1,5 +1,59 @@
 define(['app', 'livesocket', 'widgets/dzBar'], function (app) {
-	app.controller('WeatherController', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, deviceApi, permissions, livesocket, dzBarService) {
+
+	app.factory('weatherEditService', ['dzBarService', function (dzBarService) {
+		function openDialog(device) {
+			var idx  = device.idx;
+			var name = device.Name;
+
+			// Weather devices store bar ranges as a keyed object in Color (e.g. {rain:[...], speed:[...]})
+			// loaded per sensor key via loadForKey / saved via getFullColorJson — unlike utility's flat array.
+			var dialogId;
+			if (typeof device.Rain !== 'undefined') {
+				dialogId = '#dialog-editraindevice';
+				$(dialogId + ' #multiply').val(device.AddjMulti);
+				dzBarService.loadForKey(device.Color || '', 'rain');
+			} else if (typeof device.Direction !== 'undefined') {
+				dialogId = '#dialog-editwinddevice';
+				$(dialogId + ' #arotation').val(device.AddjValue2);
+				$(dialogId + ' #multiply').val(device.AddjMulti);
+				dzBarService.loadForKey(device.Color || '', 'speed');
+			} else if (typeof device.Visibility !== 'undefined') {
+				dialogId = '#dialog-editvisibilitydevice';
+				$(dialogId + ' #combometertype').val(device.SwitchTypeVal);
+				dzBarService.loadForKey(device.Color || '', 'data');
+			} else if (typeof device.UVI !== 'undefined') {
+				dialogId = '#dialog-edituvidevice';
+				$(dialogId + ' #multiply').val(device.AddjMulti2);
+				dzBarService.loadForKey(device.Color || '', 'uvi');
+			} else if (typeof device.Barometer !== 'undefined') {
+				dialogId = '#dialog-editbarodevice';
+				$(dialogId + ' #adjustment').val(device.AddjValue2);
+				dzBarService.loadForKey(device.Color || '', 'baro');
+			} else {
+				dialogId = '#dialog-editweatherdevice';
+				dzBarService.loadForKey(device.Color || '', 'data');
+			}
+
+			// Common fields
+			$.devIdx = idx;
+			$(dialogId + ' #deviceidx').text(idx);
+			$(dialogId + ' #deviceid').text(device.ID);
+			$(dialogId + ' #deviceunit').text(device.Unit);
+			$(dialogId + ' #devicename').val(name);
+			$(dialogId + ' #devicedescription').val(device.Description);
+
+			var $form = $(dialogId + ' form');
+			$form.find('.dz-bar-btn').remove();
+			dzBarService.attachBarButton($form, idx, name);
+
+			$(dialogId).i18n();
+			$(dialogId).dialog('open');
+		}
+
+		return { openDialog: openDialog };
+	}]);
+
+	app.controller('WeatherController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$route', '$routeParams', 'deviceApi', 'permissions', 'livesocket', 'dzBarService', function ($scope, $rootScope, $location, $http, $interval, $route, $routeParams, deviceApi, permissions, livesocket, dzBarService) {
 
 		var ctrl = this;
 
@@ -8,126 +62,6 @@ define(['app', 'livesocket', 'widgets/dzBar'], function (app) {
 				ShowWeathers();
 			});
 		};
-
-		EditRainDevice = function (idx, name, description, addjmulti, deviceID, unitCode, colorJson) {
-			$.devIdx = idx;
-			$("#dialog-editraindevice #deviceidx").text(idx);
-			$("#dialog-editraindevice #deviceid").text(deviceID);
-			$("#dialog-editraindevice #deviceunit").text(unitCode);
-			$("#dialog-editraindevice #devicename").val(unescape(name));
-			$("#dialog-editraindevice #devicedescription").val(unescape(description));
-			$("#dialog-editraindevice #multiply").val(addjmulti);
-			$("#dialog-editraindevice").i18n();
-			dzBarService.loadForKey(colorJson || '', 'rain');
-			var $form = $('#dialog-editraindevice form');
-			$form.css('position', 'relative');
-			$form.find('.dz-bar-btn').remove();
-			$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
-				.css({position: 'absolute', top: '4px', right: '4px'})
-				.on('click', function() { window.dzOpenBarPopup(idx, unescape(name)); })
-				.appendTo($form);
-			$("#dialog-editraindevice").dialog("open");
-		}
-
-		EditBaroDevice = function (idx, name, description, addjvalue, deviceID, unitCode, colorJson) {
-			$.devIdx = idx;
-			$("#dialog-editbarodevice #deviceidx").text(idx);
-			$("#dialog-editbarodevice #deviceid").text(deviceID);
-			$("#dialog-editbarodevice #deviceunit").text(unitCode);
-			$("#dialog-editbarodevice #devicename").val(unescape(name));
-			$("#dialog-editbarodevice #devicedescription").val(unescape(description));
-			$("#dialog-editbarodevice #adjustment").val(addjvalue);
-			$("#dialog-editbarodevice").i18n();
-			dzBarService.loadForKey(colorJson || '', 'baro');
-			var $form = $('#dialog-editbarodevice form');
-			$form.css('position', 'relative');
-			$form.find('.dz-bar-btn').remove();
-			$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
-				.css({position: 'absolute', top: '4px', right: '4px'})
-				.on('click', function() { window.dzOpenBarPopup(idx, unescape(name)); })
-				.appendTo($form);
-			$("#dialog-editbarodevice").dialog("open");
-		}
-
-		EditVisibilityDevice = function (idx, name, description, switchtype, deviceID, unitCode, colorJson) {
-			$.devIdx = idx;
-			$("#dialog-editvisibilitydevice #deviceidx").text(idx);
-			$("#dialog-editvisibilitydevice #deviceid").text(deviceID);
-			$("#dialog-editvisibilitydevice #deviceunit").text(unitCode);
-			$("#dialog-editvisibilitydevice #devicename").val(unescape(name));
-			$("#dialog-editvisibilitydevice #devicedescription").val(unescape(description));
-			$("#dialog-editvisibilitydevice #combometertype").val(switchtype);
-			$("#dialog-editvisibilitydevice").i18n();
-			dzBarService.loadForKey(colorJson || '', 'data');
-			var $form = $('#dialog-editvisibilitydevice form');
-			$form.css('position', 'relative');
-			$form.find('.dz-bar-btn').remove();
-			$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
-				.css({position: 'absolute', top: '4px', right: '4px'})
-				.on('click', function() { window.dzOpenBarPopup(idx, unescape(name)); })
-				.appendTo($form);
-			$("#dialog-editvisibilitydevice").dialog("open");
-		}
-
-		EditWindDevice = function (idx, name, description, addjvalue2, addjmulti, deviceID, unitCode, colorJson) {
-			$.devIdx = idx;
-			$("#dialog-editwinddevice #deviceidx").text(idx);
-			$("#dialog-editwinddevice #deviceid").text(deviceID);
-			$("#dialog-editwinddevice #deviceunit").text(unitCode);
-			$("#dialog-editwinddevice #devicename").val(unescape(name));
-			$("#dialog-editwinddevice #devicedescription").val(unescape(description));
-			$("#dialog-editwinddevice #arotation").val(addjvalue2);
-			$("#dialog-editwinddevice #multiply").val(addjmulti);
-			$("#dialog-editwinddevice").i18n();
-			dzBarService.loadForKey(colorJson || '', 'speed');
-			var $form = $('#dialog-editwinddevice form');
-			$form.css('position', 'relative');
-			$form.find('.dz-bar-btn').remove();
-			$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
-				.css({position: 'absolute', top: '4px', right: '4px'})
-				.on('click', function() { window.dzOpenBarPopup(idx, unescape(name)); })
-				.appendTo($form);
-			$("#dialog-editwinddevice").dialog("open");
-		}
-
-		EditUviDevice = function (idx, name, description, addjmulti2, deviceID, unitCode, colorJson) {
-			$.devIdx = idx;
-			$("#dialog-edituvidevice #deviceidx").text(idx);
-			$("#dialog-edituvidevice #deviceid").text(deviceID);
-			$("#dialog-edituvidevice #deviceunit").text(unitCode);
-			$("#dialog-edituvidevice #devicename").val(unescape(name));
-			$("#dialog-edituvidevice #devicedescription").val(unescape(description));
-			$("#dialog-edituvidevice #multiply").val(addjmulti2);
-			$("#dialog-edituvidevice").i18n();
-			dzBarService.loadForKey(colorJson || '', 'uvi');
-			var $form = $('#dialog-edituvidevice form');
-			$form.css('position', 'relative');
-			$form.find('.dz-bar-btn').remove();
-			$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
-				.css({position: 'absolute', top: '4px', right: '4px'})
-				.on('click', function() { window.dzOpenBarPopup(idx, unescape(name)); })
-				.appendTo($form);
-			$("#dialog-edituvidevice").dialog("open");
-		}
-
-		EditWeatherDevice = function (idx, name, description, addjvalue, addjmulti, deviceID, unitCode, colorJson) {
-			$.devIdx = idx;
-			$("#dialog-editweatherdevice #deviceidx").text(idx);
-			$("#dialog-editweatherdevice #deviceid").text(deviceID);
-			$("#dialog-editweatherdevice #deviceunit").text(unitCode);
-			$("#dialog-editweatherdevice #devicename").val(unescape(name));
-			$("#dialog-editweatherdevice #devicedescription").val(unescape(description));
-			$("#dialog-editweatherdevice").i18n();
-			dzBarService.loadForKey(colorJson || '', 'data');
-			var $form = $('#dialog-editweatherdevice form');
-			$form.css('position', 'relative');
-			$form.find('.dz-bar-btn').remove();
-			$('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
-				.css({position: 'absolute', top: '4px', right: '4px'})
-				.on('click', function() { window.dzOpenBarPopup(idx, unescape(name)); })
-				.appendTo($form);
-			$("#dialog-editweatherdevice").dialog("open");
-		}
 
 		AddWeatherDevice = function () {
 			bootbox.alert($.t('Please use the devices tab for this.'));
@@ -676,7 +610,7 @@ define(['app', 'livesocket', 'widgets/dzBar'], function (app) {
 
 
 		};
-	}).directive('dzweatherwidget', ['$rootScope', '$location', function ($rootScope,$location) {
+	}]).directive('dzweatherwidget', ['$rootScope', '$location', function ($rootScope,$location) {
 		return {
 			priority: 0,
 			restrict: 'E',
@@ -691,9 +625,13 @@ define(['app', 'livesocket', 'widgets/dzBar'], function (app) {
 			},
 			require: 'permissions',
 			controllerAs: 'ctrl',
-			controller: function ($scope, $element, $attrs, permissions) {
+			controller: ['$scope', '$element', '$attrs', 'permissions', 'weatherEditService', function ($scope, $element, $attrs, permissions, weatherEditService) {
 				var ctrl = this;
 				var item = $scope.item;
+
+				$scope.$watch('item', function (newVal) {
+					if (newVal) item = newVal;
+				});
 
 				ctrl.nbackstyle = function () {
 					var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
@@ -797,27 +735,13 @@ define(['app', 'livesocket', 'widgets/dzBar'], function (app) {
 				};
 
 				ctrl.EditDevice = function () {
-					if (typeof item.Rain != 'undefined') {
-						return EditRainDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjMulti, item.ID, item.Unit, item.Color || '');
-					}
-					else if (typeof item.Direction != 'undefined') {
-						return EditWindDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue2, item.AddjMulti, item.ID, item.Unit, item.Color || '');
-					} else if (typeof item.Visibility != 'undefined') {
-						return EditVisibilityDevice(item.idx, escape(item.Name), escape(item.Description), item.SwitchTypeVal, item.ID, item.Unit, item.Color || '');
-					} else if (typeof item.UVI != 'undefined') {
-						return EditUviDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjMulti2, item.ID, item.Unit, item.Color || '');
-					}
-					else if (typeof item.Barometer != 'undefined') {
-						return EditBaroDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue2, item.ID, item.Unit, item.Color || '');
-					} else {
-						return EditWeatherDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, item.AddjMulti, item.ID, item.Unit, item.Color || '');
-					}
+					return weatherEditService.openDialog(item);
 				};
 
 				ctrl.ShowForecast = function () {
 					$('#weatherwidgets').hide(); // TODO delete when multiple views implemented
 					$('#weathertophtm').hide();
-					return ShowForecast(atob(item.forecast_url), escape(item.Name), escape(item.Description), '#weathercontent', 'ShowWeathers');
+					return ShowForecast(atob(item.forecast_url), item.Name, '#weathercontent', 'ShowWeathers');
 				};
 				
 				$element.i18n();
@@ -846,7 +770,7 @@ define(['app', 'livesocket', 'widgets/dzBar'], function (app) {
 						}
 					}
 				}
-			}
+			}]
 		};
 	}]);
 });

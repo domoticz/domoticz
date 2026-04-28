@@ -63,6 +63,13 @@ define(['app'], function(app) {
                 }
                 var keys = Object.keys(_fullColorObj);
                 return keys.length ? JSON.stringify(_fullColorObj) : '';
+            },
+            attachBarButton: function($form, idx, name) {
+                $form.css('position', 'relative');
+                $('<a class="btnsmall dz-bar-btn"><i class="fa-solid fa-chart-bar"></i></a>')
+                    .css({ position: 'absolute', top: '4px', right: '4px' })
+                    .on('click', function() { if (document.activeElement) document.activeElement.blur(); window.dzOpenBarPopup(idx, name); })
+                    .appendTo($form);
             }
         };
     });
