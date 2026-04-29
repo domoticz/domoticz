@@ -330,6 +330,24 @@
     color: #333;
 }
 
+/* ACE Status Bar */
+
+.ace-statusbar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    padding: 0 8px;
+    background-color: #e8e8e8;
+    border-top: 1px solid #ccc;
+    font-size: 11px;
+    line-height: 20px;
+    color: #666;
+    text-align: right;
+    z-index: 1;
+}
+
 /* Wizard launcher tab */
 .events-editor__file-wizard {
     font-style: italic;
@@ -771,22 +789,4 @@
 .aw-footer-right {
     display: flex;
     gap: 8px;
-}
-
-/* ACE Status Bar */
-
-.ace-statusbar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 20px;
-    padding: 0 8px;
-    background-color: #e8e8e8;
-    border-top: 1px solid #ccc;
-    font-size: 11px;
-    line-height: 20px;
-    color: #666;
-    text-align: right;
-    z-index: 1;
 }

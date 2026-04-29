@@ -166,11 +166,6 @@
 				   ng-click="$ctrl.setActiveEventId('states')"
 				   title="{{:: 'Devices current states' | translate}}"><i class="icon-info-sign"></i></a>
 
-				<a class="events-editor__file events-editor__file-wizard"
-				   href="javascript:void(0)"
-				   ng-click="$ctrl.openWizard()"
-				   title="{{:: 'Create a new automation with the step-by-step wizard' | translate}}"><i class="fa-solid fa-wand-magic-sparkles"></i> Wizard</a>
-
 				<a class="events-editor__file"
 				   href="javascript:void(0)"
 				   ng-repeat="event in $ctrl.openedEvents track by event.id"
@@ -226,6 +221,10 @@
 						</li>
 					</ul>
 				</div>
+				<a class="events-editor__file events-editor__file-wizard"
+				   href="javascript:void(0)"
+				   ng-click="$ctrl.openWizard()"
+				   title="{{:: 'Create a new automation with the step-by-step wizard' | translate}}"><i class="fa-solid fa-wand-magic-sparkles"></i> Wizard</a>
 			</nav>
 
 			<events-current-states
@@ -241,10 +240,9 @@
 					on-delete="$ctrl.deleteEvent(event)"></event-viewer>
 		</section>
 	</div>
-
-	<automation-wizard
-		is-open="$ctrl.wizardOpen"
-		on-close="$ctrl.closeWizard()"
-		on-created="$ctrl.openEvent(event)">
-	</automation-wizard>
 </div>
+<automation-wizard
+	is-open="$ctrl.wizardOpen"
+	on-close="$ctrl.closeWizard()"
+	on-created="$ctrl.openEvent(event)">
+</automation-wizard>
