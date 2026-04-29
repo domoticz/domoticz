@@ -673,10 +673,11 @@ namespace mcp		// Model Context Protocol
 		},
 		{
 			"get_sensor_history",
-			"Get history for any device",
-			"Retrieve history for any device: daily aggregated calendar data for sensors "
-			"(temperature, humidity, rain, wind, UV, percentage, fan, P1, energy, gas, water, counters), "
-			"or on/off/dim event log for switches and scenes. "
+			"Get daily-aggregated history for a sensor or event log for a switch",
+			"Retrieve DAILY-AGGREGATED (calendar) data for sensors going back weeks or months, "
+			"or the on/off/dim event log for switches and scenes. "
+			"Use this for multi-day trends or long-term history. "
+			"For intraday data (today, last few hours, last 24 h) use get_sensor_short_log instead. "
 			"For sensors: specify 'days' or 'start_date'+'end_date'. "
 			"For switches/scenes: specify 'days'/'start_date'/'end_date' for date range, "
 			"or 'count' for last N events.",
@@ -691,11 +692,12 @@ namespace mcp		// Model Context Protocol
 		},
 		{
 			"get_sensor_short_log",
-			"Get recent short-log readings for a sensor",
-			"Retrieve recent high-resolution measurements from the short-log tables "
-			"(5-minute interval by default, kept for a configurable number of days). "
-			"Use 'hours' to control the time window, or 'count' to get the last N readings. "
-			"Not applicable to switches/scenes (use get_sensor_history for those).",
+			"Get recent/live sensor readings (last hours or N samples)",
+			"Retrieve recent high-resolution measurements at ~5-minute intervals from the short-log tables. "
+			"Use this for: today's data, last 24 hours, last N readings, live/recent sensor values. "
+			"Kept for a configurable number of days (default 1 day). "
+			"For multi-day or long-term history use get_sensor_history instead. "
+			"Not applicable to switches/scenes.",
 			{
 				{ "name",  "string",  "Name of the device", false, {} },
 				{ "idx",   "integer", "Device IDX (use either this or name)", false, {} },
@@ -2702,7 +2704,7 @@ namespace mcp		// Model Context Protocol
 	bool getDeviceByIdx(int nIdx, Json::Value &device)
 	{
 		Json::Value jsonDevices;
-		m_webservers.GetJSonDevices(jsonDevices, "true", "", "", "", "", "", false, false, false, 0, "", "");
+		m_webservers.GetJSonDevices(jsonDevices, "true", "", "", "", "", "", false, true, false, 0, "", "");
 		for (const auto &dev : jsonDevices["result"])
 		{
 			if (dev.isObject() && dev.isMember("idx") && dev["idx"].asString() == std::to_string(nIdx))
@@ -3292,7 +3294,9 @@ namespace mcp		// Model Context Protocol
 		// Map device type to sensor string (what HandleGraphCustomRange expects)
 		std::string sSensor;
 		if (dType == pTypeTEMP || dType == pTypeTEMP_HUM || dType == pTypeTEMP_HUM_BARO ||
-		    dType == pTypeTEMP_BARO || dType == pTypeHUM)
+		    dType == pTypeTEMP_BARO || dType == pTypeHUM ||
+		    dType == pTypeSetpoint || dType == pTypeRego6XXTemp ||
+		    dType == pTypeRadiator1 || dType == pTypeThermostat6)
 			sSensor = "temp";
 		else if (dType == pTypeRAIN)
 			sSensor = "rain";
@@ -3391,9 +3395,31 @@ namespace mcp		// Model Context Protocol
 			return true;
 		}
 
+		// For pTypeSetpoint: check if the unit is a custom (non-temperature) unit.
+		std::string sSetpointUnit;
+		bool bSetpointIsTemp = true;
+		if (dType == pTypeSetpoint)
+		{
+			auto opts = m_sql.GetDeviceOptions(std::to_string(nIdx));
+			auto it = opts.find("ValueUnit");
+			if (it != opts.end())
+				sSetpointUnit = it->second;
+			bSetpointIsTemp = sSetpointUnit.empty()
+			               || sSetpointUnit == "\xc2\xb0""C" || sSetpointUnit == "\xc2\xb0""F"
+			               || sSetpointUnit == "C" || sSetpointUnit == "F"
+			               || sSetpointUnit == "°C" || sSetpointUnit == "°F";
+			if (bSetpointIsTemp && sSetpointUnit.empty())
+				sSetpointUnit = std::string("\xc2\xb0") + sTempUnit;
+		}
+
 		// Format the JSON result as human-readable text
 		if (sSensor == "temp")
-			sResult = "Daily temperature history for \"" + sName + "\" (\xc2\xb0" + sTempUnit + " min/avg/max):\n";
+		{
+			if (dType == pTypeSetpoint && !bSetpointIsTemp)
+				sResult = "Daily setpoint history for \"" + sName + "\" (" + sSetpointUnit + " min/avg/max):\n";
+			else
+				sResult = "Daily temperature history for \"" + sName + "\" (\xc2\xb0" + sTempUnit + " min/avg/max):\n";
+		}
 		else if (sSensor == "rain")
 			sResult = "Daily rain history for \"" + sName + "\" (mm):\n";
 		else if (sSensor == "wind")
@@ -3419,10 +3445,18 @@ namespace mcp		// Model Context Protocol
 			{
 				std::string sLine = sDate + " |";
 				if (row.isMember("tm") && row.isMember("ta") && row.isMember("te"))
-					sLine += " temp: min=" + cvtTemp(row["tm"].asString()) +
-					         " avg=" + cvtTemp(row["ta"].asString()) +
-					         " max=" + cvtTemp(row["te"].asString()) +
-					         "\xc2\xb0" + sTempUnit;
+				{
+					if (dType == pTypeSetpoint && !bSetpointIsTemp)
+						sLine += " setpoint: min=" + row["tm"].asString() +
+						         " avg=" + row["ta"].asString() +
+						         " max=" + row["te"].asString() +
+						         " " + sSetpointUnit;
+					else
+						sLine += " temp: min=" + cvtTemp(row["tm"].asString()) +
+						         " avg=" + cvtTemp(row["ta"].asString()) +
+						         " max=" + cvtTemp(row["te"].asString()) +
+						         "\xc2\xb0" + sTempUnit;
+				}
 				if (row.isMember("hu"))
 					sLine += "  hum=" + row["hu"].asString() + "%";
 				if (row.isMember("ba"))
@@ -3520,7 +3554,9 @@ namespace mcp		// Model Context Protocol
 		// Map device type to sensor string
 		std::string sSensor;
 		if (dType == pTypeTEMP || dType == pTypeTEMP_HUM || dType == pTypeTEMP_HUM_BARO ||
-		    dType == pTypeTEMP_BARO || dType == pTypeHUM)
+		    dType == pTypeTEMP_BARO || dType == pTypeHUM ||
+		    dType == pTypeSetpoint || dType == pTypeRego6XXTemp ||
+		    dType == pTypeRadiator1 || dType == pTypeThermostat6)
 			sSensor = "temp";
 		else if (dType == pTypeRAIN)
 			sSensor = "rain";
@@ -3569,16 +3605,36 @@ namespace mcp		// Model Context Protocol
 			return buf;
 		};
 
+		// Build explicit column list per table — never use SELECT * so column order is guaranteed.
+		// DeviceRowID is excluded; Date is always last.
+		// Column layout:
+		//   Temperature : Temperature, Chill, Humidity, Barometer, DewPoint, SetPoint, Date  (7 cols, indices 0-6)
+		//   Rain        : Total, Rate, Date                                                   (3 cols, indices 0-2)
+		//   Wind        : Direction, Speed, Gust, Date                                        (4 cols, indices 0-3)
+		//   UV          : Level, Date                                                         (2 cols, indices 0-1)
+		//   Percentage  : Percentage, Date                                                    (2 cols, indices 0-1)
+		//   Fan         : Speed, Date                                                         (2 cols, indices 0-1)
+		//   Meter       : Value, Usage, Price, Date                                           (4 cols, indices 0-3)
+		//   MultiMeter  : Value1,Value2,Value3,Value4,Value5,Value6, Price, Date              (8 cols, indices 0-7)
+		std::string sColumns;
+		if      (dbasetable == "Temperature") sColumns = "Temperature, Chill, Humidity, Barometer, DewPoint, SetPoint, Date";
+		else if (dbasetable == "Rain")        sColumns = "Total, Rate, Date";
+		else if (dbasetable == "Wind")        sColumns = "Direction, Speed, Gust, Date";
+		else if (dbasetable == "UV")          sColumns = "Level, Date";
+		else if (dbasetable == "Percentage")  sColumns = "Percentage, Date";
+		else if (dbasetable == "Fan")         sColumns = "Speed, Date";
+		else if (dbasetable == "Meter")       sColumns = "Value, [Usage], Price, Date";
+		else /* MultiMeter */                 sColumns = "Value1, Value2, Value3, Value4, Value5, Value6, Price, Date";
+
 		std::vector<std::vector<std::string>> result;
 		std::string sWindowDesc;
 
+		// dbasetable and sColumns are derived from internal device-type logic, never user input.
 		if (args.isMember("count") && !args["count"].isNull())
 		{
 			int iCount = std::max(1, std::min(1000, args["count"].asInt()));
-			result = m_sql.safe_query(
-				"SELECT * FROM %q WHERE DeviceRowID=%" PRIu64 " ORDER BY Date DESC LIMIT %d",
-				dbasetable.c_str(), nIdx, iCount);
-			// Reverse so oldest is first
+			std::string sQ = "SELECT " + sColumns + " FROM [" + dbasetable + "] WHERE DeviceRowID=%" PRIu64 " ORDER BY Date DESC LIMIT %d";
+			result = m_sql.safe_query(sQ.c_str(), nIdx, iCount);
 			std::reverse(result.begin(), result.end());
 			sWindowDesc = "last " + std::to_string(iCount) + " readings";
 		}
@@ -3587,10 +3643,9 @@ namespace mcp		// Model Context Protocol
 			int iHours = 24;
 			if (args.isMember("hours") && !args["hours"].isNull())
 				iHours = std::max(1, std::min(168, args["hours"].asInt()));
-			result = m_sql.safe_query(
-				"SELECT * FROM %q WHERE DeviceRowID=%" PRIu64
-				" AND Date >= datetime('now','localtime','-%d hours') ORDER BY Date ASC",
-				dbasetable.c_str(), nIdx, iHours);
+			std::string sQ = "SELECT " + sColumns + " FROM [" + dbasetable + "] WHERE DeviceRowID=%" PRIu64
+			                 " AND Date >= datetime('now','localtime','-%d hours') ORDER BY Date ASC";
+			result = m_sql.safe_query(sQ.c_str(), nIdx, iHours);
 			sWindowDesc = "last " + std::to_string(iHours) + " hour(s)";
 		}
 
@@ -3605,96 +3660,139 @@ namespace mcp		// Model Context Protocol
 			return true;
 		}
 
+		// For pTypeSetpoint: read ValueUnit from device options to decide whether
+		// the value is a temperature (apply conversion + °unit) or a custom unit (show raw).
+		std::string sSetpointUnit;
+		bool bSetpointIsTemp = true;
+		if (dType == pTypeSetpoint)
+		{
+			auto opts = m_sql.GetDeviceOptions(std::to_string(nIdx));
+			auto it = opts.find("ValueUnit");
+			if (it != opts.end())
+				sSetpointUnit = it->second;
+			// Treat as temperature only if unit is empty or explicitly a temperature unit
+			bSetpointIsTemp = sSetpointUnit.empty()
+			               || sSetpointUnit == "\xc2\xb0""C" || sSetpointUnit == "\xc2\xb0""F"
+			               || sSetpointUnit == "C" || sSetpointUnit == "F"
+			               || sSetpointUnit == "°C" || sSetpointUnit == "°F";
+			if (bSetpointIsTemp && sSetpointUnit.empty())
+				sSetpointUnit = std::string("\xc2\xb0") + sTempUnit;
+		}
+
 		std::string sResult = std::to_string((int)result.size()) + " short-log readings for \"" +
 		                      sName + "\" (" + sWindowDesc + "):\n";
-		sResult += "Date                | Data\n";
+		sResult += "Each line: timestamp (YYYY-MM-DD HH:MM:SS) followed by key=value pairs.\n";
+		sResult += "Timestamp           | Data\n";
 		sResult += "--------------------|--------------------------------------\n";
 
 		for (const auto &row : result)
 		{
-			// row[0] = DeviceRowID, row[1..] = data cols, last = Date
-			// Column layout differs per table; use the schema order from SQLHelper.cpp:
-			// Temperature: DeviceRowID, Temperature, Chill, Humidity, Barometer, DewPoint, SetPoint, Date
-			// Rain:        DeviceRowID, Total, Rate, Date
-			// Wind:        DeviceRowID, Direction, Speed, Gust, Date
-			// UV:          DeviceRowID, Level, Date
-			// Percentage:  DeviceRowID, Percentage, Date
-			// Fan:         DeviceRowID, Speed, Date
-			// Meter:       DeviceRowID, Value, Usage, Price, Date
-			// MultiMeter:  DeviceRowID, Value1..Value6, Price, Date
+			// Column layout per sColumns (DeviceRowID is NOT selected):
+			// Temperature: 0=Temp, 1=Chill, 2=Hum, 3=Baro, 4=Dew, 5=SetPoint, 6=Date
+			// Rain:        0=Total, 1=Rate, 2=Date
+			// Wind:        0=Dir, 1=Speed, 2=Gust, 3=Date
+			// UV:          0=Level, 1=Date
+			// Percentage:  0=Percentage, 1=Date
+			// Fan:         0=Speed, 1=Date
+			// Meter:       0=Value, 1=Usage, 2=Price, 3=Date
+			// MultiMeter:  0-5=Value1-6, 6=Price, 7=Date
+			// row.back() is always the Date string.
 			const std::string &sDate = row.back();
 			std::string sLine = sDate + " |";
 
 			if (dbasetable == "Temperature")
 			{
-				// row: 0=DevID, 1=Temp, 2=Chill, 3=Hum, 4=Baro, 5=Dew, 6=SetPoint, 7=Date
-				if (row.size() >= 8)
+				// row: 0=Temp, 1=Chill, 2=Hum, 3=Baro, 4=Dew, 5=SetPoint, 6=Date
+				if (row.size() >= 7)
 				{
-					if (dType == pTypeTEMP || dType == pTypeTEMP_HUM || dType == pTypeTEMP_HUM_BARO || dType == pTypeTEMP_BARO)
-						sLine += " temp=" + cvtTemp(row[1]) + "\xc2\xb0" + sTempUnit;
+					const bool bIsSetpoint = (dType == pTypeSetpoint || dType == pTypeRego6XXTemp ||
+					                          dType == pTypeRadiator1 || dType == pTypeThermostat6);
+					const std::string &sTempVal  = row[0];
+					const std::string &sSetPtVal = row[5];
+					const bool bHasTemp  = !sTempVal.empty()  && sTempVal  != "0" && sTempVal  != "0.00";
+					const bool bHasSetPt = !sSetPtVal.empty() && sSetPtVal != "0" && sSetPtVal != "0.00";
+					if (bIsSetpoint)
+					{
+						if (bHasTemp)
+						{
+							if (bSetpointIsTemp)
+								sLine += " setpoint=" + cvtTemp(sTempVal) + sSetpointUnit;
+							else
+								sLine += " setpoint=" + sTempVal + " " + sSetpointUnit;
+						}
+					}
+					else if (dType == pTypeTEMP || dType == pTypeTEMP_HUM || dType == pTypeTEMP_HUM_BARO || dType == pTypeTEMP_BARO)
+					{
+						if (bHasTemp)
+							sLine += " temp=" + cvtTemp(sTempVal) + "\xc2\xb0" + sTempUnit;
+					}
+					else
+					{
+						if (bHasTemp)  sLine += " temp=" + cvtTemp(sTempVal) + "\xc2\xb0" + sTempUnit;
+						if (bHasSetPt) sLine += "  setpoint=" + cvtTemp(sSetPtVal) + "\xc2\xb0" + sTempUnit;
+					}
 					if (dType == pTypeTEMP_HUM || dType == pTypeTEMP_HUM_BARO || dType == pTypeHUM)
-						sLine += "  hum=" + row[3] + "%";
+						sLine += "  hum=" + row[2] + "%";
 					if (dType == pTypeTEMP_HUM_BARO || dType == pTypeTEMP_BARO)
-						sLine += "  baro=" + row[4] + " hPa";
+						sLine += "  baro=" + row[3] + " hPa";
 					if (dType == pTypeTEMP || dType == pTypeTEMP_HUM || dType == pTypeTEMP_HUM_BARO || dType == pTypeTEMP_BARO)
-						if (!row[5].empty() && row[5] != "0")
-							sLine += "  dew=" + cvtTemp(row[5]) + "\xc2\xb0" + sTempUnit;
+						if (!row[4].empty() && row[4] != "0")
+							sLine += "  dew=" + cvtTemp(row[4]) + "\xc2\xb0" + sTempUnit;
 				}
 			}
 			else if (dbasetable == "Rain")
 			{
-				// row: 0=DevID, 1=Total, 2=Rate, 3=Date
-				if (row.size() >= 4)
-					sLine += " total=" + row[1] + " mm  rate=" + row[2];
+				// row: 0=Total, 1=Rate, 2=Date
+				if (row.size() >= 3)
+					sLine += " total=" + row[0] + " mm  rate=" + row[1];
 			}
 			else if (dbasetable == "Wind")
 			{
-				// row: 0=DevID, 1=Direction, 2=Speed, 3=Gust, 4=Date
-				if (row.size() >= 5)
+				// row: 0=Direction, 1=Speed, 2=Gust, 3=Date
+				if (row.size() >= 4)
 				{
-					double spd  = atof(row[2].c_str()) / 10.0;
-					double gust = atof(row[3].c_str()) / 10.0;
+					double spd  = atof(row[1].c_str()) / 10.0;
+					double gust = atof(row[2].c_str()) / 10.0;
 					char buf[64];
 					snprintf(buf, sizeof(buf), " dir=%.0f\xc2\xb0  speed=%.1f m/s  gust=%.1f m/s",
-						atof(row[1].c_str()), spd, gust);
+						atof(row[0].c_str()), spd, gust);
 					sLine += buf;
 				}
 			}
 			else if (dbasetable == "UV")
 			{
-				// row: 0=DevID, 1=Level, 2=Date
-				if (row.size() >= 3)
-					sLine += " uvi=" + row[1];
+				// row: 0=Level, 1=Date
+				if (row.size() >= 2)
+					sLine += " uvi=" + row[0];
 			}
 			else if (dbasetable == "Percentage")
 			{
-				// row: 0=DevID, 1=Percentage, 2=Date
-				if (row.size() >= 3)
-					sLine += " pct=" + row[1] + "%";
+				// row: 0=Percentage, 1=Date
+				if (row.size() >= 2)
+					sLine += " pct=" + row[0] + "%";
 			}
 			else if (dbasetable == "Fan")
 			{
-				// row: 0=DevID, 1=Speed, 2=Date
-				if (row.size() >= 3)
-					sLine += " speed=" + row[1] + " rpm";
+				// row: 0=Speed, 1=Date
+				if (row.size() >= 2)
+					sLine += " speed=" + row[0] + " rpm";
 			}
 			else if (dbasetable == "Meter")
 			{
-				// row: 0=DevID, 1=Value, 2=Usage, 3=Price, 4=Date
-				if (row.size() >= 5)
-					sLine += " value=" + row[1];
+				// row: 0=Value, 1=Usage, 2=Price, 3=Date
+				if (row.size() >= 4)
+					sLine += " value=" + row[0];
 			}
 			else if (dbasetable == "MultiMeter")
 			{
-				// row: 0=DevID, 1=Value1..6=Value6, 7=Price, 8=Date
-				if (row.size() >= 9)
+				// row: 0=Value1..5=Value6, 6=Price, 7=Date
+				if (row.size() >= 8)
 				{
 					const char *labels[] = { "v1", "v2", "v3", "v4", "v5", "v6" };
 					for (int i = 0; i < 6; ++i)
 					{
-						const std::string &val = row[1 + i];
-						if (!val.empty() && val != "0")
-							sLine += std::string("  ") + labels[i] + "=" + val;
+						if (!row[i].empty())
+							sLine += std::string("  ") + labels[i] + "=" + row[i];
 					}
 				}
 			}
