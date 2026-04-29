@@ -153,8 +153,8 @@
                     <div class="aw-field">
                         <label>{{:: 'Security state' | translate }}</label>
                         <select class="form-control" ng-model="$ctrl.triggerConfig.state">
-                            <option value="SECURITY_ARMED_AWAY">{{:: 'Armed Away' | translate }}</option>
-                            <option value="SECURITY_ARMED_HOME">{{:: 'Armed Home' | translate }}</option>
+                            <option value="SECURITY_ARMEDAWAY">{{:: 'Armed Away' | translate }}</option>
+                            <option value="SECURITY_ARMEDHOME">{{:: 'Armed Home' | translate }}</option>
                             <option value="SECURITY_DISARMED">{{:: 'Disarmed' | translate }}</option>
                         </select>
                     </div>
@@ -196,12 +196,14 @@
                         </div>
                         <div class="aw-action-body">
 
-                            <!-- Switch action -->
+                            <!-- Device action -->
                             <div ng-if="action.type === 'switch'" class="aw-form">
                                 <div class="aw-row">
                                     <div class="aw-field" style="flex:2">
                                         <label>{{:: 'Device' | translate }}</label>
-                                        <select class="form-control" ng-model="action.config.device">
+                                        <select class="form-control"
+                                                ng-model="action.config.device"
+                                                ng-change="$ctrl.onActionDeviceChange(action)">
                                             <option value="">{{:: '— Select —' | translate }}</option>
                                             <option ng-repeat="dev in $ctrl.devices | limitTo:200 track by dev.idx"
                                                     value="{{dev.Name}}">{{dev.Name}}</option>
@@ -209,18 +211,25 @@
                                     </div>
                                     <div class="aw-field">
                                         <label>{{:: 'Action' | translate }}</label>
-                                        <select class="form-control" ng-model="action.config.action">
-                                            <option value="switchOn">{{:: 'Turn On' | translate }}</option>
-                                            <option value="switchOff">{{:: 'Turn Off' | translate }}</option>
-                                            <option value="toggleSwitch">{{:: 'Toggle' | translate }}</option>
-                                            <option value="dim">{{:: 'Dim to %' | translate }}</option>
+                                        <select class="form-control" ng-model="action.config.action"
+                                                ng-options="opt.id as opt.label for opt in $ctrl.getDeviceActionOptions(action)">
                                         </select>
                                     </div>
                                 </div>
-                                <div class="aw-field" ng-if="action.config.action === 'dim'">
-                                    <label>{{:: 'Dim level (%)' | translate }}</label>
-                                    <input type="number" class="form-control" min="0" max="100"
-                                           ng-model="action.config.level" placeholder="50">
+                                <div class="aw-field" ng-if="$ctrl.actionNeedsValue(action)">
+                                    <label>
+                                        {{$ctrl.actionValueLabel(action)}}
+                                        <span ng-if="$ctrl.actionValueUnit(action) && !$ctrl.actionHasOptions(action)">({{$ctrl.actionValueUnit(action)}})</span>
+                                    </label>
+                                    <select ng-if="$ctrl.actionHasOptions(action)"
+                                            class="form-control"
+                                            ng-model="action.config.actionValue"
+                                            ng-options="opt.level as opt.name for opt in action.config.levelOptions">
+                                    </select>
+                                    <input ng-if="!$ctrl.actionHasOptions(action)"
+                                           type="number" class="form-control"
+                                           ng-model="action.config.actionValue"
+                                           placeholder="{{$ctrl.getSelectedActionOption(action).def}}">
                                 </div>
                             </div>
 
