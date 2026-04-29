@@ -690,6 +690,20 @@ namespace mcp		// Model Context Protocol
 			}
 		},
 		{
+			"get_sensor_short_log",
+			"Get recent short-log readings for a sensor",
+			"Retrieve recent high-resolution measurements from the short-log tables "
+			"(5-minute interval by default, kept for a configurable number of days). "
+			"Use 'hours' to control the time window, or 'count' to get the last N readings. "
+			"Not applicable to switches/scenes (use get_sensor_history for those).",
+			{
+				{ "name",  "string",  "Name of the device", false, {} },
+				{ "idx",   "integer", "Device IDX (use either this or name)", false, {} },
+				{ "hours", "integer", "Time window in hours (1-168, default 24). Ignored if count is provided.", false, {} },
+				{ "count", "integer", "Return last N readings (1-1000). When specified, time window is ignored.", false, {} },
+			}
+		},
+		{
 			"get_user_variables",
 			"List all user variables",
 			"List all user-defined variables (name, type, value, last update).",
@@ -1011,6 +1025,7 @@ namespace mcp		// Model Context Protocol
 			{ "create_device",          createVirtualSensor },
 			{ "update_device_value",    updateDeviceValue },
 			{ "get_sensor_history",     getSensorHistory },
+			{ "get_sensor_short_log",   getSensorShortLog },
 			{ "get_scenes",             getScenes },
 			{ "switch_scene",           switchScene },
 			{ "get_rooms",              getRooms },
@@ -3448,6 +3463,243 @@ namespace mcp		// Model Context Protocol
 				if (!row.isMember("v1") && row.isMember("v")) sLine += " value=" + row["v"].asString();
 				sResult += sLine + "\n";
 			}
+		}
+
+		mcp::setToolResult(jsonRPCRep, sResult, false);
+		return true;
+	}
+
+	bool getSensorShortLog(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasIdx  = args.isMember("idx");
+		bool bHasName = args.isMember("name") && !args["name"].asString().empty();
+		if (!bHasIdx && !bHasName)
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: getSensorShortLog: Missing required parameter 'name' or 'idx'");
+			return false;
+		}
+
+		Json::Value device;
+		std::string sName;
+		bool bFound;
+		if (bHasIdx)
+		{
+			bFound = getDeviceByIdx(args["idx"].asInt(), device);
+			sName  = bFound ? device["Name"].asString() : "idx=" + std::to_string(args["idx"].asInt());
+		}
+		else
+		{
+			sName  = args["name"].asString();
+			bFound = getDeviceByName(sName, device);
+		}
+		if (!bFound)
+		{
+			mcp::setToolResult(jsonRPCRep, "No device found with name \"" + sName + "\"", true);
+			return true;
+		}
+		const uint64_t nIdx = (uint64_t)atoll(device["idx"].asString().c_str());
+
+		auto devResult = m_sql.safe_query(
+			"SELECT Type, SubType FROM DeviceStatus WHERE ID=%" PRIu64, nIdx);
+		if (devResult.empty())
+		{
+			mcp::setToolResult(jsonRPCRep, "Device \"" + sName + "\" not found in database.", true);
+			return true;
+		}
+		const unsigned char dType    = (unsigned char)atoi(devResult[0][0].c_str());
+		const unsigned char dSubType = (unsigned char)atoi(devResult[0][1].c_str());
+
+		if (IsLightOrSwitch(dType, dSubType))
+		{
+			mcp::setToolResult(jsonRPCRep,
+				"\"" + sName + "\" is a switch/light device. Use get_sensor_history to retrieve its log.", true);
+			return true;
+		}
+
+		// Map device type to sensor string
+		std::string sSensor;
+		if (dType == pTypeTEMP || dType == pTypeTEMP_HUM || dType == pTypeTEMP_HUM_BARO ||
+		    dType == pTypeTEMP_BARO || dType == pTypeHUM)
+			sSensor = "temp";
+		else if (dType == pTypeRAIN)
+			sSensor = "rain";
+		else if (dType == pTypeWIND)
+			sSensor = "wind";
+		else if (dType == pTypeUV)
+			sSensor = "uv";
+		else if (dType == pTypeGeneral && dSubType == sTypePercentage)
+			sSensor = "Percentage";
+		else if (dType == pTypeGeneral && dSubType == sTypeFan)
+			sSensor = "fan";
+		else
+			sSensor = "counter";
+
+		// Map sensor string to short-log table
+		std::string dbasetable;
+		if (sSensor == "temp")
+			dbasetable = "Temperature";
+		else if (sSensor == "rain")
+			dbasetable = "Rain";
+		else if (sSensor == "wind")
+			dbasetable = "Wind";
+		else if (sSensor == "uv")
+			dbasetable = "UV";
+		else if (sSensor == "Percentage")
+			dbasetable = "Percentage";
+		else if (sSensor == "fan")
+			dbasetable = "Fan";
+		else
+		{
+			// counter: P1Power / CURRENT / CURRENTENERGY use MultiMeter, others use Meter
+			if (dType == pTypeP1Power || dType == pTypeCURRENT || dType == pTypeCURRENTENERGY)
+				dbasetable = "MultiMeter";
+			else
+				dbasetable = "Meter";
+		}
+
+		const char tempsign   = m_sql.m_tempsign[0];
+		const char *sTempUnit = (tempsign == 'F') ? "F" : "C";
+		auto cvtTemp = [&](const std::string &s) -> std::string {
+			if (s.empty()) return "";
+			double v = atof(s.c_str());
+			if (tempsign == 'F') v = v * 1.8 + 32.0;
+			char buf[32];
+			snprintf(buf, sizeof(buf), "%.1f", v);
+			return buf;
+		};
+
+		std::vector<std::vector<std::string>> result;
+		std::string sWindowDesc;
+
+		if (args.isMember("count") && !args["count"].isNull())
+		{
+			int iCount = std::max(1, std::min(1000, args["count"].asInt()));
+			result = m_sql.safe_query(
+				"SELECT * FROM %q WHERE DeviceRowID=%" PRIu64 " ORDER BY Date DESC LIMIT %d",
+				dbasetable.c_str(), nIdx, iCount);
+			// Reverse so oldest is first
+			std::reverse(result.begin(), result.end());
+			sWindowDesc = "last " + std::to_string(iCount) + " readings";
+		}
+		else
+		{
+			int iHours = 24;
+			if (args.isMember("hours") && !args["hours"].isNull())
+				iHours = std::max(1, std::min(168, args["hours"].asInt()));
+			result = m_sql.safe_query(
+				"SELECT * FROM %q WHERE DeviceRowID=%" PRIu64
+				" AND Date >= datetime('now','localtime','-%d hours') ORDER BY Date ASC",
+				dbasetable.c_str(), nIdx, iHours);
+			sWindowDesc = "last " + std::to_string(iHours) + " hour(s)";
+		}
+
+		_log.Debug(DEBUG_WEBSERVER, "MCP: getSensorShortLog: device='%s' table='%s' rows=%d",
+			sName.c_str(), dbasetable.c_str(), (int)result.size());
+
+		if (result.empty())
+		{
+			mcp::setToolResult(jsonRPCRep,
+				"No short-log data found for \"" + sName + "\" in the " + sWindowDesc + ".\n"
+				"Short-log data is only kept for a configurable number of days (default: 1 day).", false);
+			return true;
+		}
+
+		std::string sResult = std::to_string((int)result.size()) + " short-log readings for \"" +
+		                      sName + "\" (" + sWindowDesc + "):\n";
+		sResult += "Date                | Data\n";
+		sResult += "--------------------|--------------------------------------\n";
+
+		for (const auto &row : result)
+		{
+			// row[0] = DeviceRowID, row[1..] = data cols, last = Date
+			// Column layout differs per table; use the schema order from SQLHelper.cpp:
+			// Temperature: DeviceRowID, Temperature, Chill, Humidity, Barometer, DewPoint, SetPoint, Date
+			// Rain:        DeviceRowID, Total, Rate, Date
+			// Wind:        DeviceRowID, Direction, Speed, Gust, Date
+			// UV:          DeviceRowID, Level, Date
+			// Percentage:  DeviceRowID, Percentage, Date
+			// Fan:         DeviceRowID, Speed, Date
+			// Meter:       DeviceRowID, Value, Usage, Price, Date
+			// MultiMeter:  DeviceRowID, Value1..Value6, Price, Date
+			const std::string &sDate = row.back();
+			std::string sLine = sDate + " |";
+
+			if (dbasetable == "Temperature")
+			{
+				// row: 0=DevID, 1=Temp, 2=Chill, 3=Hum, 4=Baro, 5=Dew, 6=SetPoint, 7=Date
+				if (row.size() >= 8)
+				{
+					if (dType == pTypeTEMP || dType == pTypeTEMP_HUM || dType == pTypeTEMP_HUM_BARO || dType == pTypeTEMP_BARO)
+						sLine += " temp=" + cvtTemp(row[1]) + "\xc2\xb0" + sTempUnit;
+					if (dType == pTypeTEMP_HUM || dType == pTypeTEMP_HUM_BARO || dType == pTypeHUM)
+						sLine += "  hum=" + row[3] + "%";
+					if (dType == pTypeTEMP_HUM_BARO || dType == pTypeTEMP_BARO)
+						sLine += "  baro=" + row[4] + " hPa";
+					if (dType == pTypeTEMP || dType == pTypeTEMP_HUM || dType == pTypeTEMP_HUM_BARO || dType == pTypeTEMP_BARO)
+						if (!row[5].empty() && row[5] != "0")
+							sLine += "  dew=" + cvtTemp(row[5]) + "\xc2\xb0" + sTempUnit;
+				}
+			}
+			else if (dbasetable == "Rain")
+			{
+				// row: 0=DevID, 1=Total, 2=Rate, 3=Date
+				if (row.size() >= 4)
+					sLine += " total=" + row[1] + " mm  rate=" + row[2];
+			}
+			else if (dbasetable == "Wind")
+			{
+				// row: 0=DevID, 1=Direction, 2=Speed, 3=Gust, 4=Date
+				if (row.size() >= 5)
+				{
+					double spd  = atof(row[2].c_str()) / 10.0;
+					double gust = atof(row[3].c_str()) / 10.0;
+					char buf[64];
+					snprintf(buf, sizeof(buf), " dir=%.0f\xc2\xb0  speed=%.1f m/s  gust=%.1f m/s",
+						atof(row[1].c_str()), spd, gust);
+					sLine += buf;
+				}
+			}
+			else if (dbasetable == "UV")
+			{
+				// row: 0=DevID, 1=Level, 2=Date
+				if (row.size() >= 3)
+					sLine += " uvi=" + row[1];
+			}
+			else if (dbasetable == "Percentage")
+			{
+				// row: 0=DevID, 1=Percentage, 2=Date
+				if (row.size() >= 3)
+					sLine += " pct=" + row[1] + "%";
+			}
+			else if (dbasetable == "Fan")
+			{
+				// row: 0=DevID, 1=Speed, 2=Date
+				if (row.size() >= 3)
+					sLine += " speed=" + row[1] + " rpm";
+			}
+			else if (dbasetable == "Meter")
+			{
+				// row: 0=DevID, 1=Value, 2=Usage, 3=Price, 4=Date
+				if (row.size() >= 5)
+					sLine += " value=" + row[1];
+			}
+			else if (dbasetable == "MultiMeter")
+			{
+				// row: 0=DevID, 1=Value1..6=Value6, 7=Price, 8=Date
+				if (row.size() >= 9)
+				{
+					const char *labels[] = { "v1", "v2", "v3", "v4", "v5", "v6" };
+					for (int i = 0; i < 6; ++i)
+					{
+						const std::string &val = row[1 + i];
+						if (!val.empty() && val != "0")
+							sLine += std::string("  ") + labels[i] + "=" + val;
+					}
+				}
+			}
+
+			sResult += sLine + "\n";
 		}
 
 		mcp::setToolResult(jsonRPCRep, sResult, false);
