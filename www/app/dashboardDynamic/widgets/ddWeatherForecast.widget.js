@@ -5,7 +5,7 @@ define([
     'use strict';
 
     var WMO = {
-        0:  { icon: 'fa-sun',                 label: 'Clear Sky',               token: '--dz-widget-sunpv'   },
+        0:  { icon: 'fa-sun',                 label: 'Clear Sky',               token: '--dz-widget-amber'   },
         1:  { icon: 'fa-cloud-sun',           label: 'Mainly Clear',            token: '--dz-widget-weather-cloud' },
         2:  { icon: 'fa-cloud-sun',           label: 'Partly Cloudy',           token: '--dz-widget-weather-cloud' },
         3:  { icon: 'fa-cloud',               label: 'Overcast',                token: '--dz-widget-weather-cloud' },
