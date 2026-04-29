@@ -50,8 +50,8 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$q', 'ddDeviceClassifier',
-                function($scope, $http, $interval, $q, ddDeviceClassifier) {
+            controller: ['$scope', '$http', '$q', 'ddDeviceClassifier',
+                function($scope, $http, $q, ddDeviceClassifier) {
                 var ctrl = this;
                 ctrl.categories     = [];
                 ctrl.activeCategory = null;
@@ -232,8 +232,7 @@ define([
                 $scope.$on('scene_update',  load);
                 $scope.$on('dd:widget:refresh', load);
 
-                var timer = $interval(load, 60000);
-                $scope.$on('$destroy', function() { $interval.cancel(timer); });
+                $scope.$on('$destroy', function() {});
 
                 ctrl.$onInit = load;
             }]

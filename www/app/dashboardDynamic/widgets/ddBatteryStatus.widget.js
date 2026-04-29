@@ -74,7 +74,7 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$q', function($scope, $http, $interval, $q) {
+            controller: ['$scope', '$http', '$q', function($scope, $http, $q) {
                 var ctrl = this;
 
                 ctrl.title       = 'Battery';
@@ -83,7 +83,6 @@ define([
                 ctrl.configured  = false;
 
                 var cancelToken  = null;
-                var timer        = null;
 
                 // Device IDs resolved from either auto or manual config
                 var ids = {
@@ -216,9 +215,17 @@ define([
                     return n >= 0 ? 'dd-energy-import' : 'dd-energy-export';
                 };
 
+                $scope.$on('device_update', function(e, updated) {
+                    var idx = String(updated.idx);
+                    if (idx === String(ids.energyIn)  || idx === String(ids.energyOut) ||
+                        idx === String(ids.soc)        || idx === String(ids.watt)      ||
+                        idx === String(ids.volt)) {
+                        fetchDevices();
+                    }
+                });
+
                 $scope.$on('$destroy', function() {
                     if (cancelToken) { cancelToken.resolve(); cancelToken = null; }
-                    if (timer)       { $interval.cancel(timer); timer = null; }
                 });
 
                 $scope.$on('dd:widget:refresh', load);
@@ -240,10 +247,7 @@ define([
                     }
                 );
 
-                ctrl.$onInit = function() {
-                    load();
-                    timer = $interval(load, 60000);
-                };
+                ctrl.$onInit = load;
             }]
         };
     }]);

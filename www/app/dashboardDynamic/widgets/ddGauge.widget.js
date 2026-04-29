@@ -73,7 +73,7 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$q', '$location', function($scope, $http, $interval, $q, $location) {
+            controller: ['$scope', '$http', '$q', '$location', function($scope, $http, $q, $location) {
                 var ctrl      = this;
                 ctrl.title    = '';
                 ctrl.value    = null;
@@ -211,11 +211,8 @@ define([
                     }
                 });
 
-                var timer = $interval(load, 30000);
-
                 $scope.$on('$destroy', function() {
                     if (cancelToken) { cancelToken.resolve(); cancelToken = null; }
-                    $interval.cancel(timer);
                 });
 
                 $scope.$on('dd:widget:refresh', load);

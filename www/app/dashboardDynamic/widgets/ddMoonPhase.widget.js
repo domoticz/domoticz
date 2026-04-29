@@ -172,8 +172,8 @@ define([
                     ctrl.daysToNew   = (newDate.getTime() - now.getTime()) / 86400000;
                 };
 
-                // Refresh daily (86400000 ms = 24 h)
-                timer = $interval(ctrl.update, 86400000);
+                // Refresh every 4 hours
+                timer = $interval(ctrl.update, 4 * 60 * 60 * 1000);
 
                 $scope.$on('$destroy', function() {
                     $interval.cancel(timer);

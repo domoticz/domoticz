@@ -54,7 +54,7 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$q', function($scope, $http, $interval, $q) {
+            controller: ['$scope', '$http', '$q', function($scope, $http, $q) {
                 var ctrl = this;
                 ctrl.title           = '';
                 ctrl.currentTemp     = null;
@@ -224,11 +224,8 @@ define([
                     }
                 });
 
-                var timer = $interval(load, 30000);
-
                 $scope.$on('$destroy', function() {
                     if (cancelToken) { cancelToken.resolve(); cancelToken = null; }
-                    $interval.cancel(timer);
                     $(document).off('dz:setpoint:saved', onSetpointSaved);
                 });
 

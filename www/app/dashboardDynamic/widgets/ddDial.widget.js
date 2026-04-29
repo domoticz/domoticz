@@ -255,8 +255,8 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$q', '$rootScope',
-                function($scope, $http, $interval, $q, $rootScope) {
+            controller: ['$scope', '$http', '$q', '$rootScope',
+                function($scope, $http, $q, $rootScope) {
 
                 var ctrl = this;
 
@@ -304,7 +304,6 @@ define([
                 ctrl.switchType = '';
 
                 var cancelToken = null;
-                var timer       = null;
                 var _svgEl      = null;
 
                 function cfg() { return (ctrl.widgetDef && ctrl.widgetDef.config) || {}; }
@@ -1042,13 +1041,9 @@ define([
                     $document.off('mousemove touchmove', onDragMove);
                     $document.off('mouseup touchend',   onDragEnd);
                     if (cancelToken) { cancelToken.resolve(); cancelToken = null; }
-                    if (timer)       { $interval.cancel(timer); timer = null; }
                 });
 
-                ctrl.$onInit = function() {
-                    load();
-                    timer = $interval(load, 30000);
-                };
+                ctrl.$onInit = load;
             }],
             link: function(scope, element) {
                 // AngularJS 1.x has no ng-touchstart directive, so attach a

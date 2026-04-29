@@ -9,6 +9,8 @@ define([
     var LOG_ERROR  = 0x0000004;
     var LOG_ALL    = 0xFFFFFFF;
 
+    var _activeWidgets = 0;
+
     widgetRegistry.register({
         type:        'domoticz-log',
         label:       'System Log',
@@ -51,12 +53,6 @@ define([
                 type:     'boolean',
                 label:    'Show Error entries',
                 default:  true
-            },
-            {
-                key:      'autoRefresh',
-                type:     'number',
-                label:    'Auto-refresh (seconds, 0 = off)',
-                default:  10
             }
         ]
     });
@@ -71,7 +67,7 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$q', function($scope, $http, $interval, $q) {
+            controller: ['$scope', '$http', '$q', 'livesocket', function($scope, $http, $q, livesocket) {
                 var ctrl = this;
 
                 ctrl.title           = 'System Log';
@@ -81,7 +77,6 @@ define([
                 ctrl.loading         = false;
                 ctrl.loadError       = false;
 
-                var refreshTimer = null;
                 var cancelToken  = null;
 
                 function cfg() {
@@ -212,39 +207,38 @@ define([
                 ctrl.isShowStatus = isShowStatus;
                 ctrl.isShowError  = isShowError;
 
-                function scheduleRefresh() {
-                    if (refreshTimer) { $interval.cancel(refreshTimer); refreshTimer = null; }
-                    var interval = parseInt(cfg().autoRefresh, 10);
-                    if (interval > 0) {
-                        refreshTimer = $interval(ctrl.load, interval * 1000);
+                $scope.$on('log', function(e, entry) {
+                    var maxEntries = parseInt(cfg().maxEntries, 10) || 50;
+                    ctrl.allEntries.unshift({
+                        level:      entry.level,
+                        levelLabel: levelLabel(entry.level),
+                        levelClass: levelClass(entry.level),
+                        timestamp:  parseMessage(entry.message).timestamp,
+                        text:       parseMessage(entry.message).text
+                    });
+                    if (ctrl.allEntries.length > maxEntries) {
+                        ctrl.allEntries.length = maxEntries;
                     }
-                }
+                    computeCounts();
+                    applyFilter();
+                });
 
                 $scope.$on('dd:widget:refresh', ctrl.load);
 
                 $scope.$on('$destroy', function() {
-                    if (cancelToken)  { cancelToken.resolve(); cancelToken = null; }
-                    if (refreshTimer) { $interval.cancel(refreshTimer); refreshTimer = null; }
+                    if (cancelToken) { cancelToken.resolve(); cancelToken = null; }
+                    if (--_activeWidgets === 0) { livesocket.unsubscribeFrom('log'); }
                 });
 
                 ctrl.$onInit = function() {
-                    var c = cfg();
-                    ctrl.title = c.title || 'System Log';
+                    ctrl.title = cfg().title || 'System Log';
+                    if (_activeWidgets++ === 0) { livesocket.subscribeTo('log'); }
                     ctrl.load();
-                    scheduleRefresh();
                 };
 
                 $scope.$watch(
-                    function() {
-                        var c = cfg();
-                        return c.autoRefresh + '|' + c.maxEntries;
-                    },
-                    function(val, old) {
-                        if (val !== old) {
-                            ctrl.load();
-                            scheduleRefresh();
-                        }
-                    }
+                    function() { return cfg().maxEntries; },
+                    function(val, old) { if (val !== old) { ctrl.load(); } }
                 );
             }]
         };

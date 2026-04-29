@@ -45,8 +45,8 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$rootScope', '$q',
-                function($scope, $http, $interval, $rootScope, $q) {
+            controller: ['$scope', '$http', '$rootScope', '$q',
+                function($scope, $http, $rootScope, $q) {
                 var ctrl = this;
                 ctrl.title        = '';
                 ctrl.pressure     = null;
@@ -59,7 +59,6 @@ define([
                 ctrl.sunset       = '';
 
                 var cancelTokens = [];
-                var nightTimer   = null;
 
                 function computeIsNight(sunriseStr, sunsetStr) {
                     var toMinutes = function(s) {
@@ -150,19 +149,15 @@ define([
                     }
                 });
 
-                var timer = $interval(load, 60000);
-
-                nightTimer = $interval(function() {
-                    if (ctrl.sunrise && ctrl.sunset) {
-                        ctrl.isNight = computeIsNight(ctrl.sunrise, ctrl.sunset);
+                $scope.$on('time_update', function(e, data) {
+                    if (data && data.sunrise && data.sunset) {
+                        ctrl.sunrise = data.sunrise;
+                        ctrl.sunset  = data.sunset;
+                        ctrl.isNight = computeIsNight(data.sunrise, data.sunset);
                     }
-                }, 60000);
-
-                $scope.$on('$destroy', function() {
-                    cancelAll();
-                    $interval.cancel(timer);
-                    if (nightTimer) { $interval.cancel(nightTimer); }
                 });
+
+                $scope.$on('$destroy', cancelAll);
 
                 $scope.$on('dd:widget:refresh', load);
 

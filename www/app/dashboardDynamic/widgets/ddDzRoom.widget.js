@@ -46,8 +46,8 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$timeout', '$q', '$location', 'ddDeviceClassifier', 'ddToast',
-                function($scope, $http, $interval, $timeout, $q, $location, ddDeviceClassifier, ddToast) {
+            controller: ['$scope', '$http', '$timeout', '$q', '$location', 'ddDeviceClassifier', 'ddToast',
+                function($scope, $http, $timeout, $q, $location, ddDeviceClassifier, ddToast) {
                 var ctrl = this;
                 ctrl.devices           = [];
                 ctrl.listItems         = [];
@@ -316,9 +316,7 @@ define([
                     function(val, old) { if (val !== old) { load(); } }
                 );
 
-                var timer = $interval(load, 60000);
                 $scope.$on('$destroy', function() {
-                    $interval.cancel(timer);
                     if (loadCancel) { loadCancel.resolve(); loadCancel = null; }
                     document.removeEventListener('click', onDocClick);
                 });

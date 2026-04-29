@@ -35,7 +35,8 @@ define([
         99: { icon: 'fa-bolt',                label: 'Thunderstorm+Heavy Hail', token: '--dz-accent-red' }
     };
 
-    var CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+    var CACHE_TTL_MS  = 3 * 60 * 60 * 1000; // 3 hours
+    var _locationCache = null; // { lat, lon } — rarely changes, shared across instances
 
     widgetRegistry.register({
         type:        'weather-forecast',
@@ -193,6 +194,11 @@ define([
                 function load() {
                     ctrl.error = null;
 
+                    if (_locationCache) {
+                        fetchForecast(_locationCache.lat, _locationCache.lon);
+                        return;
+                    }
+
                     if (cancelLocation) { cancelLocation.resolve(); }
                     cancelLocation = $q.defer();
 
@@ -208,6 +214,7 @@ define([
                             ctrl.error = 'Location not configured in Domoticz';
                             return;
                         }
+                        _locationCache = { lat: latF, lon: lonF };
                         fetchForecast(latF, lonF);
                     }).catch(function(err) {
                         if (err.status === -1) { return; }
@@ -236,7 +243,11 @@ define([
                     $interval.cancel(timer);
                 });
 
-                $scope.$on('dd:widget:refresh', load);
+                $scope.$on('dd:widget:refresh', function() {
+                    _locationCache = null;
+                    ctrl._cache = { data: null, time: 0 };
+                    load();
+                });
 
                 $scope.$watch(
                     function() {

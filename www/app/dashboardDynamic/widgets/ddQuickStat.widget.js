@@ -53,14 +53,13 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$q', '$location', 'ddDeviceClassifier', function($scope, $http, $interval, $q, $location, ddDeviceClassifier) {
+            controller: ['$scope', '$http', '$q', '$location', 'ddDeviceClassifier', function($scope, $http, $q, $location, ddDeviceClassifier) {
                 var ctrl = this;
                 ctrl.items   = [];
                 ctrl.loading = false;
                 ctrl.error   = null;
 
                 var cancelToken = null;
-                var timer       = null;
 
                 function applyDeviceToItem(item, d) {
                     var extracted  = ddDeviceClassifier.extractDeviceValue(d);
@@ -154,11 +153,8 @@ define([
                     }
                 );
 
-                timer = $interval(loadAll, 30000);
-
                 $scope.$on('$destroy', function() {
                     if (cancelToken) { cancelToken.resolve(); cancelToken = null; }
-                    if (timer) { $interval.cancel(timer); timer = null; }
                 });
 
                 ctrl.goToLog = function(item) {
