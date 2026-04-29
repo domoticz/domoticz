@@ -2704,6 +2704,8 @@ namespace mcp		// Model Context Protocol
 	bool getDeviceByIdx(int nIdx, Json::Value &device)
 	{
 		Json::Value jsonDevices;
+		// bDisplayDisabled=true: include disabled devices so sensor history/short-log tools
+		// can still read data for devices that are temporarily disabled.
 		m_webservers.GetJSonDevices(jsonDevices, "true", "", "", "", "", "", false, true, false, 0, "", "");
 		for (const auto &dev : jsonDevices["result"])
 		{
@@ -3791,6 +3793,7 @@ namespace mcp		// Model Context Protocol
 					const char *labels[] = { "v1", "v2", "v3", "v4", "v5", "v6" };
 					for (int i = 0; i < 6; ++i)
 					{
+						// Zero is a valid meter reading (e.g. no solar generation, no return feed).
 						if (!row[i].empty())
 							sLine += std::string("  ") + labels[i] + "=" + row[i];
 					}
