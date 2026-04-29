@@ -64,9 +64,9 @@ define([
 
     app.controller('DashboardDynamicController', [
         '$scope', '$timeout', '$interval', '$document', '$location', '$route', '$uibModal', '$q', '$http',
-        'dashboardDynamicService', 'widgetRegistry', 'ddToast', 'bootbox',
+        'dashboardDynamicService', 'widgetRegistry', 'ddToast', 'bootbox', 'livesocket',
         function($scope, $timeout, $interval, $document, $location, $route, $uibModal, $q, $http,
-                 dashboardDynamicService, widgetRegistry, ddToast, bootbox) {
+                 dashboardDynamicService, widgetRegistry, ddToast, bootbox, livesocket) {
 
         // One-time migration of legacy localStorage keys
         try {
