@@ -1563,8 +1563,8 @@ body.dd-navbar-hidden .dd-toolbar {
 
 
 .dd-qa-level-text {
-    font-size: 0.75em;
-    opacity: 0.75;
+    font-size: 1em;
+    color: var(--dz-accent-color);
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1597,8 +1597,8 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 .dd-qa-level-btn--active {
-    background: var(--dz-btn-primary-bg);
-    border-color: var(--dz-btn-primary-bg);
+    background: var(--dz-accent-color);
+    border-color: var(--dz-accent-color);
     color: var(--dz-btn-primary-text);
 }
 
@@ -1641,7 +1641,6 @@ body.dd-navbar-hidden .dd-toolbar {
     order: 2;
     font-size: 1em;
     font-weight: 600;
-    opacity: 1;
 }
 .dd-quick-actions--list .dd-qa-btn:not(.dd-qa-btn--blind) > .dd-qa-status-text {
     order: 3;
