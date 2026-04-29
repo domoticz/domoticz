@@ -9,8 +9,8 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates',
         vm.updateEvent = updateEvent;
         vm.updateEventState = updateEventState;
         vm.deleteEvent = deleteEvent;
-		vm.storeRecentEvents = storeRecentEvents;
-		vm.loadRecentEvents = loadRecentEvents;
+        vm.storeRecentEvents = storeRecentEvents;
+        vm.loadRecentEvents = loadRecentEvents;
         vm.setActiveEventId = setActiveEventId;
         vm.isInterpreterSupported = isInterpreterSupported;
         vm.openWizard = openWizard;
@@ -32,8 +32,8 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates',
         vm.isEventSelected = isEventSelected;
         vm.getEventsInFolder = getEventsInFolder;
         vm.getRootEvents = getRootEvents;
-		
-		vm.storeRecents = true;
+
+        vm.storeRecents = true;
 
         init();
 
@@ -98,7 +98,7 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates',
         }
 
         function listEvents() {
-			$rootScope.RefreshTimeAndSun();
+            $rootScope.RefreshTimeAndSun();
 
             return domoticzEventsApi.listEvents().then(function (data) {
                 vm.events = data.events;
@@ -111,7 +111,7 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates',
                 }
 
                 if (vm.events.length > 0 && vm.openedEvents.length === 0) {
-					loadRecentEvents();
+                    loadRecentEvents();
                 }
             })
         }
@@ -368,7 +368,7 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates',
                 return item.id === event.id
             })) {
                 vm.openedEvents.push(event);
-				storeRecentEvents();
+                storeRecentEvents();
             }
             setActiveEventId(event.id)
         }
@@ -479,38 +479,38 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates',
 
             closeEvent(event, true);
         }
-		
-		function loadRecentEvents() {
-			vm.storeRecents = false;
 
-			domoticzEventsApi.loadRecents().then(function (data) {
-				if (data.length > 0) {
-					var recentIds = data.split(',');
-					for (var i = 0; i < recentIds.length; i++) {
-						var match = vm.events.find(function (item) {
-							return String(item.id) === recentIds[i];
-						});
-						if (match) {
-							openEvent(match);
-						}
-					}
-				} else {
-					//open first event
-					openEvent(vm.events[0]);
-				}
-				vm.storeRecents = true;
-			});
-		}
+        function loadRecentEvents() {
+            vm.storeRecents = false;
 
-		function storeRecentEvents() {
-			if (vm.storeRecents === false) {
-				return;
-			}
-			var recentEvents = vm.openedEvents.map(function (item) {
-				return item.id;
-			});
-			domoticzEventsApi.storeRecents(recentEvents);
-		}
+            domoticzEventsApi.loadRecents().then(function (data) {
+                if (data.length > 0) {
+                    var recentIds = data.split(',');
+                    for (var i = 0; i < recentIds.length; i++) {
+                        var match = vm.events.find(function (item) {
+                            return String(item.id) === recentIds[i];
+                        });
+                        if (match) {
+                            openEvent(match);
+                        }
+                    }
+                } else {
+                    //open first event
+                    openEvent(vm.events[0]);
+                }
+                vm.storeRecents = true;
+            });
+        }
+
+        function storeRecentEvents() {
+            if (vm.storeRecents === false) {
+                return;
+            }
+            var recentEvents = vm.openedEvents.map(function (item) {
+                return item.id;
+            });
+            domoticzEventsApi.storeRecents(recentEvents);
+        }
 
         function openWizard() {
             vm.wizardOpen = true;
