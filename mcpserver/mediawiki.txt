@@ -1,4 +1,4 @@
-''Last revised: 2026-03-27''
+''Last revised: 2026-04-30 · Domoticz 2026.1 build 17858''
 
 Domoticz (from version 2026.1) adds built-in support for the [https://modelcontextprotocol.io/specification/2025-06-18 Model Context Protocol] (MCP), allowing AI assistants and LLM clients to monitor and control your home automation system directly — without any external intermediary process.
 
@@ -75,6 +75,25 @@ Add the following to your Claude Desktop configuration file (<code>claude_deskto
 
 '''Note:''' Pro and Max Claude users may have access to remote MCP support, in which case you can connect directly using the URL <code>http://domoticz.local:8080/mcp</code> without a proxy.
 
+=== Claude Code (CLI) ===
+
+Run these commands once in a terminal — Claude Code stores the server in its configuration automatically.
+
+Add the server:
+<pre>
+claude mcp add --transport http domoticz http://192.168.x.x:8080/mcp
+</pre>
+
+If authentication is required (client outside the private network range), pass the JWT token as a header:
+<pre>
+claude mcp add --transport http domoticz http://192.168.x.x:8080/mcp --header "Authorization: Bearer <your JWT token>"
+</pre>
+
+Remove the server:
+<pre>
+claude mcp remove domoticz
+</pre>
+
 === Visual Studio Code ===
 
 VS Code has built-in MCP support. Open the Command Palette ('''View → Command Palette''' or <kbd>Ctrl+Shift+P</kbd>) and choose '''MCP: Add Server...''', or edit your settings directly:
@@ -147,6 +166,12 @@ The following named resources expose a summary of each subsystem:
 | <code>domoticz://log</code> || Recent system log entries
 |-
 | <code>domoticz://sensor-types</code> || All sensor types available for <code>create_virtual_sensor</code>, with their names and numeric mapped values
+|-
+| <code>domoticz://hardware</code> || All configured hardware instances with type, enabled status, and ID
+|-
+| <code>domoticz://notifications</code> || All configured device notifications with trigger conditions and target systems
+|-
+| <code>domoticz://timers</code> || All device and scene timers with schedule and command details
 |}
 
 === Per-item resources ===
@@ -182,7 +207,7 @@ Tools are actions an AI agent can invoke. All tools accept and return plain text
 |-
 | <code>search_devices</code> || <code>query</code> (required), <code>filter</code> (optional: light/temp/weather/utility) || Case-insensitive substring search across device name, type and subtype. Returns name, type, current value, idx, battery level (if applicable), and signal level/RSSI (if applicable). Use this first to discover the exact name of a device before calling other tools.
 |-
-| <code>get_all_devices</code> || <code>filter</code> (optional: light/temp/weather/utility) || Return a list of all used devices, optionally filtered by category. Each entry includes name, type, current value, idx, battery level (if applicable; 255 = no battery), and signal level/RSSI (if applicable).
+| <code>get_all_devices</code> || <code>filter</code> (optional: light/temp/weather/utility), <code>hw_idx</code> (optional, integer), <code>include_unused</code> (optional, boolean) || Return a list of devices, optionally filtered by category, hardware adapter IDX, or inclusion of unused/disabled devices. Each entry includes name, type, current value, idx, battery level (if applicable; 255 = no battery), and signal level/RSSI (if applicable).
 |-
 | <code>get_device</code> || <code>name</code> or <code>idx</code> (at least one required) || Return full details for a single device, including hardware, type, current value, last update, battery level (if applicable), and signal level/RSSI (if applicable).
 |}
@@ -265,6 +290,8 @@ Tools are actions an AI agent can invoke. All tools accept and return plain text
 ! Tool !! Parameters !! Description
 |-
 | <code>get_sensor_history</code> || <code>name</code> or <code>idx</code> (one required), <code>days</code> (optional, default 7), <code>start_date</code> / <code>end_date</code> (optional, YYYY-MM-DD), <code>count</code> (optional, 1–500) || Retrieve history for any device or scene. For '''sensors''' (temperature, humidity, barometer, rain, wind, UV, percentage, fan, P1 smart meter, energy/kWh, gas, water, counters): returns daily aggregated min/avg/max calendar data. Specify <code>days</code> for a trailing window or <code>start_date</code>+<code>end_date</code> for a custom range. For '''switches and scenes''': returns on/off/dim event log entries from <code>LightingLog</code>. Use <code>count</code> for the last N events regardless of date, or <code>days</code>/<code>start_date</code>+<code>end_date</code> for a date-filtered log.
+|-
+| <code>get_sensor_short_log</code> || <code>name</code> or <code>idx</code> (one required), <code>hours</code> (optional, 1–168, default 24), <code>count</code> (optional, 1–1000) || Retrieve recent high-resolution measurements at ~5-minute intervals. Use this for today's data, the last 24 hours, or the last N readings. Short-log data is kept for a configurable number of days (default: 1 day). Not applicable to switches or scenes — use <code>get_sensor_history</code> for multi-day or long-term data.
 |}
 
 === User variables ===
