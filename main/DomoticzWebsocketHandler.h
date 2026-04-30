@@ -5,9 +5,10 @@
 #include "../push/WebsocketPush.h"
 #include "StoppableTask.h"
 #include <thread>
+#include <atomic>
 #include <mutex>
 #include <condition_variable>
-#include <deque>
+#include <set>
 #include <vector>
 #include <memory>
 #include <map>
@@ -55,16 +56,19 @@ namespace http
 			std::map<std::string, bool> m_subscribed_topics;
 			std::map<uint64_t, bool> m_subscribed_devices;
 			std::mutex m_subscribe_mutex;
+			std::mutex m_subscribed_devices_mutex;
 
 			void SendDateTime();
 			void ProcessDeviceUpdates(const std::vector<uint64_t>& deviceIndices);
 			void ProcessSceneUpdate(uint64_t SceneRowIdx);
 			void Do_Work();
 			std::shared_ptr<std::thread> m_thread;
+			std::atomic<bool> m_started = false;
+			std::atomic<bool> m_stop_requested = false;
 			std::mutex m_pending_mutex;
 			std::condition_variable m_pending_cv;
-			std::deque<uint64_t> m_pending_device_updates;
-			std::deque<uint64_t> m_pending_scene_updates;
+			std::set<uint64_t> m_pending_device_updates;
+			std::set<uint64_t> m_pending_scene_updates;
 		};
 
 	} // namespace server

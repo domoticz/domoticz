@@ -2,7 +2,6 @@
 #include "DomoticzWebsocketHandler.h"
 
 #include <utility>
-#include <algorithm>
 #include "mainworker.h"
 #include "Helper.h"
 #include "json_helper.h"
@@ -29,6 +28,8 @@ namespace http {
 
 		void CDomoticzWebsocketHandler::Start()
 		{
+			if (m_started.exchange(true))
+				return;
 			RequestStart();
 
 			m_Push.Start();
@@ -40,20 +41,20 @@ namespace http {
 
 		void CDomoticzWebsocketHandler::Stop()
 		{
+			if (!m_started.exchange(false))
+				return;
 			_log.Debug(DEBUG_WEBSERVER, "WebSocket: handler stopping");
 			m_Push.Stop();
-			if (m_thread)
 			{
-				{
-					std::unique_lock<std::mutex> lock(m_pending_mutex);
-					m_pending_device_updates.clear();
-					m_pending_scene_updates.clear();
-				}
-				RequestStop();
-				m_pending_cv.notify_one();
-				m_thread->join();
-				m_thread.reset();
+				std::unique_lock<std::mutex> lock(m_pending_mutex);
+				m_pending_device_updates.clear();
+				m_pending_scene_updates.clear();
 			}
+			RequestStop();
+			m_stop_requested.store(true);
+			m_pending_cv.notify_one();
+			m_thread->join();
+			m_thread.reset();
 			_log.Debug(DEBUG_WEBSERVER, "WebSocket: handler stopped");
 		}
 
@@ -68,9 +69,9 @@ namespace http {
 				{
 					std::unique_lock<std::mutex> lock(m_pending_mutex);
 					m_pending_cv.wait_for(lock, std::chrono::milliseconds(1000), [this] {
-						return IsStopRequested(0) || !m_pending_device_updates.empty() || !m_pending_scene_updates.empty();
+						return m_stop_requested.load() || !m_pending_device_updates.empty() || !m_pending_scene_updates.empty();
 					});
-					if (IsStopRequested(0))
+					if (m_stop_requested.load())
 						break;
 					devicesToProcess.assign(m_pending_device_updates.begin(), m_pending_device_updates.end());
 					m_pending_device_updates.clear();
@@ -153,8 +154,7 @@ namespace http {
 
 					if ((!bInternal) && (querystring.find("param=getdevices") != std::string::npos))
 					{
-						m_subscribed_devices.clear();
-
+						std::vector<uint64_t> newDevices;
 						if (querystring.find("rid=") != std::string::npos)
 						{
 							//We are interested in certain devices only
@@ -168,16 +168,21 @@ namespace http {
 							StringSplit(tstring, ",", strarray);
 							for (const auto& itt : strarray)
 							{
-								uint64_t devIDX = std::stoull(itt);
-								m_subscribed_devices[devIDX] = true;
+								newDevices.push_back(std::stoull(itt));
 							}
+						}
+						std::unique_lock<std::mutex> devLock(m_subscribed_devices_mutex);
+						m_subscribed_devices.clear();
+						for (uint64_t devIDX : newDevices)
+						{
+							m_subscribed_devices[devIDX] = true;
 						}
 					}
 
 					Json::Value jsonValue;
 					jsonValue["request"] = szEvent;
 					jsonValue["event"] = "response";
-					jsonValue["requestid"] = value["requestid"].asInt64();
+					jsonValue["requestid"] = value["requestid"];
 					jsonValue["data"] = rep.content;
 					std::string response = JSonToFormatString(jsonValue);
 					MyWrite(response);
@@ -197,7 +202,7 @@ namespace http {
 			Json::Value jsonValue;
 			jsonValue["request"] = szEvent;
 			jsonValue["event"] = "subscribed";
-			jsonValue["requestid"] = value["requestid"].asInt64();
+			jsonValue["requestid"] = value["requestid"];
 			std::string response = JSonToFormatString(jsonValue);
 			MyWrite(response);
 			return true;
@@ -213,7 +218,7 @@ namespace http {
 			Json::Value jsonValue;
 			jsonValue["request"] = szEvent;
 			jsonValue["event"] = "unsubscribed";
-			jsonValue["requestid"] = value["requestid"].asInt64();
+			jsonValue["requestid"] = value["requestid"];
 			std::string response = JSonToFormatString(jsonValue);
 			MyWrite(response);
 			return true;
@@ -230,12 +235,7 @@ namespace http {
 		bool CDomoticzWebsocketHandler::unsubscribeFrom(const std::string& szTopic)
 		{
 			std::unique_lock<std::mutex> lock(m_subscribe_mutex);
-			if (m_subscribed_topics.find(szTopic) != m_subscribed_topics.end())
-			{
-				m_subscribed_topics.erase(m_subscribed_topics.find(szTopic));
-				return true;
-			}
-			return false;
+			return m_subscribed_topics.erase(szTopic) > 0;
 		}
 
 		bool CDomoticzWebsocketHandler::isSubscribed(const std::string& szTopic)
@@ -246,16 +246,14 @@ namespace http {
 
 		void CDomoticzWebsocketHandler::OnDeviceChanged(const uint64_t DeviceRowIdx)
 		{
-			if (!m_subscribed_devices.empty())
 			{
-				if (m_subscribed_devices.find(DeviceRowIdx) == m_subscribed_devices.end())
+				std::unique_lock<std::mutex> lock(m_subscribed_devices_mutex);
+				if (!m_subscribed_devices.empty() && m_subscribed_devices.find(DeviceRowIdx) == m_subscribed_devices.end())
 					return;
 			}
 			{
 				std::unique_lock<std::mutex> lock(m_pending_mutex);
-				auto it = std::find(m_pending_device_updates.begin(), m_pending_device_updates.end(), DeviceRowIdx);
-				if (it == m_pending_device_updates.end())
-					m_pending_device_updates.push_back(DeviceRowIdx);
+				m_pending_device_updates.insert(DeviceRowIdx);
 			}
 			m_pending_cv.notify_one();
 		}
@@ -264,9 +262,7 @@ namespace http {
 		{
 			{
 				std::unique_lock<std::mutex> lock(m_pending_mutex);
-				auto it = std::find(m_pending_scene_updates.begin(), m_pending_scene_updates.end(), SceneRowIdx);
-				if (it == m_pending_scene_updates.end())
-					m_pending_scene_updates.push_back(SceneRowIdx);
+				m_pending_scene_updates.insert(SceneRowIdx);
 			}
 			m_pending_cv.notify_one();
 		}
