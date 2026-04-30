@@ -3898,7 +3898,7 @@ bool CSQLHelper::OpenDatabase()
 
 void CSQLHelper::CloseDatabase()
 {
-	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+	std::lock_guard<std::timed_mutex> l(m_sqlQueryMutex);
 	if (m_dbase != nullptr)
 	{
 		OptimizeDatabase(m_dbase);
@@ -4630,7 +4630,12 @@ bool CSQLHelper::safe_UpdateBlobInTableWithID(const std::string& Table, const st
 	if (!m_dbase)
 		return false;
 
-	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+	std::unique_lock<std::timed_mutex> l(m_sqlQueryMutex, std::defer_lock);
+	if (!l.try_lock_for(std::chrono::minutes(5)))
+	{
+		_log.Log(LOG_ERROR, "SQL blob-update mutex timeout (Table=%s, ID=%s)", Table.c_str(), sID.c_str());
+		return false;
+	}
 
 	sqlite3_stmt *stmt = nullptr;
 	char* zQuery = sqlite3_mprintf("UPDATE %q SET %q = ? WHERE ID=%q", Table.c_str(), Column.c_str(), sID.c_str());
@@ -4641,20 +4646,17 @@ bool CSQLHelper::safe_UpdateBlobInTableWithID(const std::string& Table, const st
 	}
 	int rc = sqlite3_prepare_v2(m_dbase, zQuery, -1, &stmt, nullptr);
 	sqlite3_free(zQuery);
-	if (rc != SQLITE_OK) {
+	if (rc != SQLITE_OK)
 		return false;
-	}
 	rc = sqlite3_bind_blob(stmt, 1, BlobData.c_str(), static_cast<int>(BlobData.size()), SQLITE_STATIC);
-	if (rc != SQLITE_OK) {
+	if (rc != SQLITE_OK)
+	{
+		sqlite3_finalize(stmt);
 		return false;
 	}
 	rc = sqlite3_step(stmt);
-	if (rc != SQLITE_DONE)
-	{
-		return false;
-	}
 	sqlite3_finalize(stmt);
-	return true;
+	return (rc == SQLITE_DONE);
 }
 
 std::vector<std::vector<std::string>> CSQLHelper::safe_query(const char *fmt, ...)
@@ -4700,11 +4702,16 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string& szQu
 		std::vector<std::vector<std::string> > results;
 		return results;
 	}
-	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+	std::unique_lock<std::timed_mutex> l(m_sqlQueryMutex, std::defer_lock);
+	if (!l.try_lock_for(std::chrono::minutes(5)))
+	{
+		_log.Log(LOG_ERROR, "SQL query mutex timeout (>5min, possible query backlog). Query: %.200s", szQuery.c_str());
+		return {};
+	}
 
 	sqlite3_stmt* statement;
 	std::vector<std::vector<std::string> > results;
-    _log.Debug(DEBUG_SQL, "Query:%s", szQuery.c_str());
+	_log.Debug(DEBUG_SQL, "Query:%s", szQuery.c_str());
 	if (sqlite3_prepare_v2(m_dbase, szQuery.c_str(), -1, &statement, nullptr) == SQLITE_OK)
 	{
 		int cols = sqlite3_column_count(statement);
@@ -4767,7 +4774,7 @@ std::vector<std::vector<std::string> > CSQLHelper::queryBlob(const std::string& 
 		std::vector<std::vector<std::string> > results;
 		return results;
 	}
-	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+	std::lock_guard<std::timed_mutex> l(m_sqlQueryMutex);
 
 	sqlite3_stmt* statement;
 	std::vector<std::vector<std::string> > results;
@@ -8522,7 +8529,7 @@ void CSQLHelper::ClearShortLog()
 int CSQLHelper::PruneUnusedSensorLogs()
 {
 	int total = 0;
-	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+	std::lock_guard<std::timed_mutex> l(m_sqlQueryMutex);
 
 	char* errorMessage = nullptr;
 	int rc = sqlite3_exec(m_dbase, "BEGIN TRANSACTION;", nullptr, nullptr, &errorMessage);
@@ -9746,7 +9753,7 @@ void CSQLHelper::DeleteDevices(const std::string& idx)
 #endif
 	{
 		//Avoid mutex deadlock here
-		std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+		std::lock_guard<std::timed_mutex> l(m_sqlQueryMutex);
 
 		char* errorMessage;
 		sqlite3_exec(m_dbase, "BEGIN TRANSACTION", nullptr, nullptr, &errorMessage);
@@ -9819,7 +9826,7 @@ void CSQLHelper::DeleteScenes(const std::string& idx)
 		return;
 	{
 		//Avoid mutex deadlock here
-		std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+		std::lock_guard<std::timed_mutex> l(m_sqlQueryMutex);
 
 		char* errorMessage;
 		sqlite3_exec(m_dbase, "BEGIN TRANSACTION", nullptr, nullptr, &errorMessage);
@@ -10322,7 +10329,7 @@ bool CSQLHelper::BackupDatabase(const std::string& OutputFile)
 	// Lightweight optimization — no VACUUM (too expensive for large databases
 	// and redundant since the backup API creates a compacted copy)
 	{
-		std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+		std::lock_guard<std::timed_mutex> l(m_sqlQueryMutex);
 		sqlite3_exec(m_dbase, "PRAGMA optimize;", nullptr, nullptr, nullptr);
 	}
 
@@ -10336,7 +10343,7 @@ bool CSQLHelper::BackupDatabase(const std::string& OutputFile)
 
 	// Initialize backup — must hold mutex while accessing m_dbase
 	{
-		std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+		std::lock_guard<std::timed_mutex> l(m_sqlQueryMutex);
 		pBackup = sqlite3_backup_init(pFile, "main", m_dbase, "main");
 	}
 
@@ -10354,7 +10361,7 @@ bool CSQLHelper::BackupDatabase(const std::string& OutputFile)
 	// Mutex is held only during each step, allowing other queries between steps.
 	do {
 		{
-			std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+			std::lock_guard<std::timed_mutex> l(m_sqlQueryMutex);
 			rc = sqlite3_backup_step(pBackup, 256);
 		}
 

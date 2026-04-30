@@ -502,7 +502,10 @@ public:
 
 private:
 	std::mutex m_executeThreadMutex;
-	std::mutex m_sqlQueryMutex;
+	// timed_mutex: query() and safe_UpdateBlobInTableWithID() use try_lock_for(5min) so the
+	// single-threaded web server io_context never hangs indefinitely. All other lock sites
+	// use a blocking lock_guard, which is intentional (shutdown, admin/bulk operations).
+	std::timed_mutex m_sqlQueryMutex;
 	sqlite3 *m_dbase;
 	std::string m_dbase_name;
 	std::string m_journal_mode;
