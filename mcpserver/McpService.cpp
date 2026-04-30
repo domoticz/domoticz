@@ -596,9 +596,11 @@ namespace mcp		// Model Context Protocol
 		{
 			"get_all_devices",
 			"List all devices",
-			"Return a list of all used devices in the system, optionally filtered by category. Use this to discover all available devices.",
+			"Return a list of devices in the system, optionally filtered by category and/or hardware. Use this to discover all available devices.",
 			{
 				{ "filter", "string", "Optional category filter: light, temp, weather, utility (leave empty for all)", false, {} },
+				{ "hw_idx", "integer", "Optional hardware IDX to return only devices belonging to that hardware adapter", false, {} },
+				{ "include_unused", "boolean", "Set to true to also include unused/disabled devices (default: false, only used devices are returned)", false, {} },
 			}
 		},
 		{
@@ -2751,9 +2753,12 @@ namespace mcp		// Model Context Protocol
 
 	bool getAllDevices(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
+		// args access is safe: McpToolsCall guarantees params/arguments exists before dispatching
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+
 		std::string sFilter;
-		if (jsonRequest["params"].isMember("arguments") && jsonRequest["params"]["arguments"].isMember("filter"))
-			sFilter = jsonRequest["params"]["arguments"]["filter"].asString();
+		if (args.isMember("filter"))
+			sFilter = args["filter"].asString();
 
 		// Validate filter against whitelist
 		if (!sFilter.empty() && sFilter != "light" && sFilter != "temp" && sFilter != "weather" && sFilter != "utility")
@@ -2763,9 +2768,26 @@ namespace mcp		// Model Context Protocol
 			return true;
 		}
 
+		// -1 means "not provided"; valid Hardware IDs start at 1 (AUTOINCREMENT primary key)
+		int nHwIdx = -1;
+		if (args.isMember("hw_idx"))
+		{
+			nHwIdx = args["hw_idx"].asInt();
+			auto hwResult = m_sql.safe_query("SELECT ID FROM Hardware WHERE ID=%d", nHwIdx);
+			if (hwResult.empty() || hwResult[0].empty())
+			{
+				mcp::setToolResult(jsonRPCRep, "No hardware found with hw_idx=" + std::to_string(nHwIdx), true);
+				return true;
+			}
+		}
+
+		bool bIncludeUnused = args.isMember("include_unused") && args["include_unused"].asBool();
+		std::string sUsed = bIncludeUnused ? "" : "true";
+
 		Json::Value jsonDevices;
-		std::string sUsed = "true";
-		m_webservers.GetJSonDevices(jsonDevices, sUsed, sFilter, "Name", "", "", "", false, false, false, 0, "", "");
+		std::string sHwIdxFilter = (nHwIdx >= 0 ? std::to_string(nHwIdx) : "");
+		// empty hardwareid = return devices from all hardware adapters
+		m_webservers.GetJSonDevices(jsonDevices, sUsed, sFilter, "Name", "", "", "", false, false, false, 0, "", sHwIdxFilter);
 
 		std::string sResult;
 		int iCount = 0;
@@ -2777,11 +2799,12 @@ namespace mcp		// Model Context Protocol
 					continue;
 				iCount++;
 				sResult += "- \"" + device["Name"].asString() + "\"";
-				if (device.isMember("Type"))
+				bool bHasType = device.isMember("Type");
+				if (bHasType)
 					sResult += " [" + device["Type"].asString();
 				if (device.isMember("SubType"))
 					sResult += "/" + device["SubType"].asString();
-				if (device.isMember("Type"))
+				if (bHasType)
 					sResult += "]";
 				if (device.isMember("Data"))
 					sResult += " = " + device["Data"].asString();
@@ -2790,13 +2813,13 @@ namespace mcp		// Model Context Protocol
 				if (device.isMember("BatteryLevel") && device["BatteryLevel"].isInt())
 				{
 					int iBatt = device["BatteryLevel"].asInt();
-					if (iBatt != 255)
+					if (iBatt != 255) // 255 = not available
 						sResult += " battery=" + std::to_string(iBatt) + "%";
 				}
 				if (device.isMember("SignalLevel") && device["SignalLevel"].isInt())
 				{
 					int iSignalLevel = device["SignalLevel"].asInt();
-					if (iSignalLevel != 12)
+					if (iSignalLevel != 12) // 12 = not available
 						sResult += " rssi=" + std::to_string(iSignalLevel);
 				}
 				sResult += "\n";
@@ -2804,7 +2827,13 @@ namespace mcp		// Model Context Protocol
 		}
 
 		if (iCount == 0)
-			sResult = "No devices found" + (sFilter.empty() ? "" : " with filter \"" + sFilter + "\"");
+		{
+			sResult = "No devices found";
+			if (!sFilter.empty())
+				sResult += " with filter \"" + sFilter + "\"";
+			if (nHwIdx >= 0)
+				sResult += " for hw_idx=" + std::to_string(nHwIdx);
+		}
 		else
 			sResult = std::to_string(iCount) + " device(s):\n" + sResult;
 
