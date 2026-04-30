@@ -2,6 +2,7 @@
 #include "DomoticzWebsocketHandler.h"
 
 #include <utility>
+#include <algorithm>
 #include "mainworker.h"
 #include "Helper.h"
 #include "json_helper.h"
@@ -43,7 +44,13 @@ namespace http {
 			m_Push.Stop();
 			if (m_thread)
 			{
+				{
+					std::unique_lock<std::mutex> lock(m_pending_mutex);
+					m_pending_device_updates.clear();
+					m_pending_scene_updates.clear();
+				}
 				RequestStop();
+				m_pending_cv.notify_one();
 				m_thread->join();
 				m_thread.reset();
 			}
@@ -52,12 +59,34 @@ namespace http {
 
 		void CDomoticzWebsocketHandler::Do_Work()
 		{
-			while (!IsStopRequested(1000))
+			time_t lastSentDateTime = 0;
+
+			while (true)
 			{
-				time_t atime = mytime(nullptr);
-				if (atime % 10 == 0)
+				std::vector<uint64_t> devicesToProcess;
+				std::vector<uint64_t> scenesToProcess;
 				{
-					//Send Date/Time every 10 seconds
+					std::unique_lock<std::mutex> lock(m_pending_mutex);
+					m_pending_cv.wait_for(lock, std::chrono::milliseconds(1000), [this] {
+						return IsStopRequested(0) || !m_pending_device_updates.empty() || !m_pending_scene_updates.empty();
+					});
+					if (IsStopRequested(0))
+						break;
+					devicesToProcess.assign(m_pending_device_updates.begin(), m_pending_device_updates.end());
+					m_pending_device_updates.clear();
+					scenesToProcess.assign(m_pending_scene_updates.begin(), m_pending_scene_updates.end());
+					m_pending_scene_updates.clear();
+				}
+
+				if (!devicesToProcess.empty())
+					ProcessDeviceUpdates(devicesToProcess);
+				for (uint64_t sceneIdx : scenesToProcess)
+					ProcessSceneUpdate(sceneIdx);
+
+				time_t atime = mytime(nullptr);
+				if (atime % 10 == 0 && atime != lastSentDateTime)
+				{
+					lastSentDateTime = atime;
 					SendDateTime();
 				}
 			}
@@ -164,16 +193,14 @@ namespace http {
 			if (szTopic.empty())
 				return false;
 
-			if (subscribeTo(szTopic) == true)
-			{
-				Json::Value jsonValue;
-				jsonValue["request"] = szEvent;
-				jsonValue["event"] = "subscribed";
-				std::string response = JSonToFormatString(jsonValue);
-				MyWrite(response);
-				return true;
-			}
-			return false;
+			subscribeTo(szTopic);
+			Json::Value jsonValue;
+			jsonValue["request"] = szEvent;
+			jsonValue["event"] = "subscribed";
+			jsonValue["requestid"] = value["requestid"].asInt64();
+			std::string response = JSonToFormatString(jsonValue);
+			MyWrite(response);
+			return true;
 		}
 
 		bool CDomoticzWebsocketHandler::HandleUnsubscribe(const std::string& szEvent, const Json::Value& value, const bool outbound)
@@ -182,16 +209,14 @@ namespace http {
 			if (szTopic.empty())
 				return false;
 
-			if (unsubscribeFrom(szTopic) == true)
-			{
-				Json::Value jsonValue;
-				jsonValue["request"] = szEvent;
-				jsonValue["event"] = "unsubscribed";
-				std::string response = JSonToFormatString(jsonValue);
-				MyWrite(response);
-				return true;
-			}
-			return false;
+			unsubscribeFrom(szTopic);
+			Json::Value jsonValue;
+			jsonValue["request"] = szEvent;
+			jsonValue["event"] = "unsubscribed";
+			jsonValue["requestid"] = value["requestid"].asInt64();
+			std::string response = JSonToFormatString(jsonValue);
+			MyWrite(response);
+			return true;
 		}
 
 
@@ -221,16 +246,42 @@ namespace http {
 
 		void CDomoticzWebsocketHandler::OnDeviceChanged(const uint64_t DeviceRowIdx)
 		{
+			if (!m_subscribed_devices.empty())
+			{
+				if (m_subscribed_devices.find(DeviceRowIdx) == m_subscribed_devices.end())
+					return;
+			}
+			{
+				std::unique_lock<std::mutex> lock(m_pending_mutex);
+				auto it = std::find(m_pending_device_updates.begin(), m_pending_device_updates.end(), DeviceRowIdx);
+				if (it == m_pending_device_updates.end())
+					m_pending_device_updates.push_back(DeviceRowIdx);
+			}
+			m_pending_cv.notify_one();
+		}
+
+		void CDomoticzWebsocketHandler::OnSceneChanged(const uint64_t SceneRowIdx)
+		{
+			{
+				std::unique_lock<std::mutex> lock(m_pending_mutex);
+				auto it = std::find(m_pending_scene_updates.begin(), m_pending_scene_updates.end(), SceneRowIdx);
+				if (it == m_pending_scene_updates.end())
+					m_pending_scene_updates.push_back(SceneRowIdx);
+			}
+			m_pending_cv.notify_one();
+		}
+
+		void CDomoticzWebsocketHandler::ProcessDeviceUpdates(const std::vector<uint64_t>& deviceIndices)
+		{
 			try
 			{
-				if (!m_subscribed_devices.empty())
+				std::string ridStr;
+				for (size_t i = 0; i < deviceIndices.size(); ++i)
 				{
-					if (m_subscribed_devices.find(DeviceRowIdx) == m_subscribed_devices.end())
-					{
-						return;
-					}
+					if (i > 0) ridStr += ',';
+					ridStr += std::to_string(deviceIndices[i]);
 				}
-				std::string query = "type=command&param=getdevices&rid=" + std::to_string(DeviceRowIdx);
+				std::string query = "type=command&param=getdevices&rid=" + ridStr;
 				Json::Value request;
 				request["event"] = "device_request";
 				request["internal"] = true;
@@ -245,7 +296,7 @@ namespace http {
 			}
 		}
 
-		void CDomoticzWebsocketHandler::OnSceneChanged(const uint64_t SceneRowIdx)
+		void CDomoticzWebsocketHandler::ProcessSceneUpdate(const uint64_t SceneRowIdx)
 		{
 			try
 			{
@@ -254,7 +305,6 @@ namespace http {
 				request["event"] = "scene_request";
 				request["requestid"] = -1;
 				request["query"] = query;
-
 				std::string packet = JSonToFormatString(request);
 				Handle(packet, true);
 			}

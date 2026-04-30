@@ -6,6 +6,9 @@
 #include "StoppableTask.h"
 #include <thread>
 #include <mutex>
+#include <condition_variable>
+#include <deque>
+#include <vector>
 #include <memory>
 #include <map>
 #include <string>
@@ -54,9 +57,14 @@ namespace http
 			std::mutex m_subscribe_mutex;
 
 			void SendDateTime();
-			std::shared_ptr<std::thread> m_thread;
-			std::mutex m_mutex;
+			void ProcessDeviceUpdates(const std::vector<uint64_t>& deviceIndices);
+			void ProcessSceneUpdate(uint64_t SceneRowIdx);
 			void Do_Work();
+			std::shared_ptr<std::thread> m_thread;
+			std::mutex m_pending_mutex;
+			std::condition_variable m_pending_cv;
+			std::deque<uint64_t> m_pending_device_updates;
+			std::deque<uint64_t> m_pending_scene_updates;
 		};
 
 	} // namespace server
