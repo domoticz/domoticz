@@ -27,7 +27,8 @@ define(['app.notifications', 'angular-websocket'], function (appNotificationsMod
 			getJson: getJson,
 			sendRequest: sendRequest,
 			subscribeTo: subscribeTo,
-			unsubscribeFrom: unsubscribeFrom
+			unsubscribeFrom: unsubscribeFrom,
+			unsubscribeDevices: unsubscribeDevices
 		};
 
 		function init() {
@@ -207,8 +208,12 @@ define(['app.notifications', 'angular-websocket'], function (appNotificationsMod
 				webSocket.$$send(requestobj);
 			});
 		}
-		
-		
+
+		function unsubscribeDevices() {
+			webSocket.$$send({ event: 'unsubscribe_devices' });
+		}
+
+
 	});
 
 	/* The stub below can be used to override all ajax calls to websocket requests at the same time without changing the other code */

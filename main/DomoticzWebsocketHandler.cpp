@@ -119,6 +119,11 @@ namespace http {
 					if (HandleUnsubscribe(szEvent, value, outbound))
 						return true;
 				}
+				else if (szEvent == "unsubscribe_devices")
+				{
+					if (HandleUnsubscribeDevices(value, outbound))
+						return true;
+				}
 			}
 			catch (std::exception& e)
 			{
@@ -177,6 +182,7 @@ namespace http {
 						{
 							m_subscribed_devices[devIDX] = true;
 						}
+						m_device_updates_active.store(true);
 					}
 
 					Json::Value jsonValue;
@@ -225,6 +231,14 @@ namespace http {
 		}
 
 
+		bool CDomoticzWebsocketHandler::HandleUnsubscribeDevices(const Json::Value& value, const bool outbound)
+		{
+			std::unique_lock<std::mutex> devLock(m_subscribed_devices_mutex);
+			m_device_updates_active.store(false);
+			m_subscribed_devices.clear();
+			return true;
+		}
+
 		bool CDomoticzWebsocketHandler::subscribeTo(const std::string& szTopic)
 		{
 			std::unique_lock<std::mutex> lock(m_subscribe_mutex);
@@ -246,6 +260,8 @@ namespace http {
 
 		void CDomoticzWebsocketHandler::OnDeviceChanged(const uint64_t DeviceRowIdx)
 		{
+			if (!m_device_updates_active.load())
+				return;
 			{
 				std::unique_lock<std::mutex> lock(m_subscribed_devices_mutex);
 				if (!m_subscribed_devices.empty() && m_subscribed_devices.find(DeviceRowIdx) == m_subscribed_devices.end())

@@ -52,11 +52,13 @@ namespace http
 			bool HandleRequest(const std::string& szEvent, const Json::Value& value, bool outbound);
 			bool HandleSubscribe(const std::string& szEvent, const Json::Value& value, bool outbound);
 			bool HandleUnsubscribe(const std::string& szEvent, const Json::Value& value, bool outbound);
+			bool HandleUnsubscribeDevices(const Json::Value& value, bool outbound);
 			bool isSubscribed(const std::string& szTopic);
 			std::map<std::string, bool> m_subscribed_topics;
 			std::map<uint64_t, bool> m_subscribed_devices;
 			std::mutex m_subscribe_mutex;
 			std::mutex m_subscribed_devices_mutex;
+			std::atomic<bool> m_device_updates_active = false;
 
 			void SendDateTime();
 			void ProcessDeviceUpdates(const std::vector<uint64_t>& deviceIndices);
