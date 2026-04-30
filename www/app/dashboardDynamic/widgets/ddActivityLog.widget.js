@@ -31,7 +31,7 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$q', function($scope, $http, $interval, $q) {
+            controller: ['$scope', '$http', '$q', function($scope, $http, $q) {
                 var ctrl = this;
                 ctrl.items    = [];
                 ctrl.loading  = false;
@@ -65,11 +65,8 @@ define([
 
                 $scope.$on('device_update', load);
 
-                var timer = $interval(load, 15000);
-
                 $scope.$on('$destroy', function() {
-                    if (cancelToken) { cancelToken.resolve(); }
-                    $interval.cancel(timer);
+                    if (cancelToken) { cancelToken.resolve(); cancelToken = null; }
                 });
                 $scope.$on('dd:widget:refresh', load);
 

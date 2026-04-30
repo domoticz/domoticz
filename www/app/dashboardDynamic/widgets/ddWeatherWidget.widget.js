@@ -63,8 +63,8 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$rootScope', '$q',
-                function($scope, $http, $interval, $rootScope, $q) {
+            controller: ['$scope', '$http', '$rootScope', '$q',
+                function($scope, $http, $rootScope, $q) {
                 var ctrl = this;
                 ctrl.temperature   = '\u2014';
                 ctrl.humidity      = null;
@@ -83,7 +83,6 @@ define([
                 ctrl.displayStyle  = 'compact';
 
                 var cancelTokens = [];
-                var nightTimer   = null;
 
                 function computeIsNight(sunriseStr, sunsetStr) {
                     var toMinutes = function(s) {
@@ -212,19 +211,17 @@ define([
                     }
                 });
 
-                var timer = $interval(load, 60000);
-
-                // Re-evaluate isNight every minute (sunrise/sunset data loaded once on init)
-                nightTimer = $interval(function() {
-                    if (ctrl.sunrise && ctrl.sunset) {
-                        ctrl.isNight = computeIsNight(ctrl.sunrise, ctrl.sunset);
+                // time_update fires every ~10s — use it to keep isNight current
+                $scope.$on('time_update', function(e, data) {
+                    if (data && data.sunrise && data.sunset) {
+                        ctrl.sunrise = data.sunrise;
+                        ctrl.sunset  = data.sunset;
+                        ctrl.isNight = computeIsNight(data.sunrise, data.sunset);
                     }
-                }, 60000);
+                });
 
                 $scope.$on('$destroy', function() {
                     cancelAll();
-                    $interval.cancel(timer);
-                    if (nightTimer) { $interval.cancel(nightTimer); }
                 });
                 $scope.$on('dd:widget:refresh', load);
 

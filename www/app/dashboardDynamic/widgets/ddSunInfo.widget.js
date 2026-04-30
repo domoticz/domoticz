@@ -32,11 +32,11 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$q', function($scope, $http, $interval, $q) {
+            controller: ['$scope', '$http', '$q', function($scope, $http, $q) {
                 var ctrl = this;
-                ctrl.sunrise   = '\u2014';
-                ctrl.sunset    = '\u2014';
-                ctrl.daylength = '\u2014';
+                ctrl.sunrise   = '—';
+                ctrl.sunset    = '—';
+                ctrl.daylength = '—';
                 var cancelToken = null;
 
                 function load() {
@@ -46,23 +46,24 @@ define([
                     $http.get('json.htm?type=command&param=getSunRiseSet', { timeout: cancelToken.promise })
                         .then(function(resp) {
                             var d = resp.data;
-                            ctrl.sunrise   = d.Sunrise   || '\u2014';
-                            ctrl.sunset    = d.Sunset    || '\u2014';
-                            ctrl.daylength = d.DayLength || '\u2014';
+                            ctrl.sunrise   = d.Sunrise   || '—';
+                            ctrl.sunset    = d.Sunset    || '—';
+                            ctrl.daylength = d.DayLength || '—';
                         })
                         .catch(function(err) {
                             if (err.status === -1) { return; }
                             ctrl.error = 'Failed to load data';
-                            ctrl.loading = false;
                         });
                 }
 
-                // Refresh once per hour — sunrise/sunset changes slowly
-                var timer = $interval(load, 3600000);
+                // time_update fires every ~10s and carries current sunrise/sunset
+                $scope.$on('time_update', function(e, data) {
+                    if (data && data.sunrise) { ctrl.sunrise = data.sunrise; }
+                    if (data && data.sunset)  { ctrl.sunset  = data.sunset; }
+                });
 
                 $scope.$on('$destroy', function() {
                     if (cancelToken) { cancelToken.resolve(); cancelToken = null; }
-                    $interval.cancel(timer);
                 });
                 $scope.$on('dd:widget:refresh', load);
 

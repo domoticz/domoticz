@@ -37,13 +37,6 @@ define([
                 label:    'Exclude device IDX (semicolon separated)',
                 required: false
             },
-            {
-                key:     'refreshInterval',
-                type:    'number',
-                label:   'Refresh interval (seconds)',
-                default: 300,
-                min:     30
-            },
             { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
@@ -58,7 +51,7 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$q', function($scope, $http, $interval, $q) {
+            controller: ['$scope', '$http', '$q', function($scope, $http, $q) {
                 var ctrl = this;
 
                 ctrl.title     = 'kWh Top Consumers';
@@ -67,7 +60,6 @@ define([
                 ctrl.loading   = false;
                 ctrl.loadError = false;
 
-                var refreshTimer    = null;
                 var cancelToken     = null;
                 var allKwhDevices   = {};   // idx (string) -> device object; full filtered list for re-ranking
 
@@ -197,38 +189,26 @@ define([
                     applyRanking();
                 });
 
-                function scheduleRefresh() {
-                    if (refreshTimer) { $interval.cancel(refreshTimer); refreshTimer = null; }
-                    var interval = parseInt(cfg().refreshInterval, 10);
-                    if (isNaN(interval) || interval <= 0) { interval = 300; }
-                    refreshTimer = $interval(load, interval * 1000);
-                }
-
                 $scope.$on('dd:widget:refresh', load);
 
                 $scope.$on('$destroy', function() {
-                    if (cancelToken)  { cancelToken.resolve(); cancelToken = null; }
-                    if (refreshTimer) { $interval.cancel(refreshTimer); refreshTimer = null; }
+                    if (cancelToken) { cancelToken.resolve(); cancelToken = null; }
                 });
 
                 ctrl.$onInit = function() {
-                    var c = cfg();
-                    ctrl.title = c.title || 'kWh Top Consumers';
+                    ctrl.title = cfg().title || 'kWh Top Consumers';
                     load();
-                    scheduleRefresh();
                 };
 
                 $scope.$watch(
                     function() {
                         var c = cfg();
-                        return (c.title || '') + '|' + (c.maxDevices) + '|' + (c.refreshInterval) + '|' + (c.excludeIdx || '');
+                        return (c.title || '') + '|' + (c.maxDevices) + '|' + (c.excludeIdx || '');
                     },
                     function(val, old) {
                         if (val !== old) {
-                            var c = cfg();
-                            ctrl.title = c.title || 'kWh Top Consumers';
+                            ctrl.title = cfg().title || 'kWh Top Consumers';
                             load();
-                            scheduleRefresh();
                         }
                     }
                 );

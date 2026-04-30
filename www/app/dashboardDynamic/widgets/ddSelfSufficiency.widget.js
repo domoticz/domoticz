@@ -24,12 +24,6 @@ define([
                 label:   'Show gauge bar',
                 default: true
             },
-            {
-                key:     'refreshInterval',
-                type:    'number',
-                label:   'Refresh interval (seconds)',
-                default: 60
-            }
         ]
     });
 
@@ -43,7 +37,7 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$q', function($scope, $http, $interval, $q) {
+            controller: ['$scope', '$http', '$q', function($scope, $http, $q) {
                 var ctrl = this;
 
                 ctrl.balance   = null;
@@ -51,7 +45,6 @@ define([
 
                 var cancelToken         = null;
                 var cancelSettingsToken = null;
-                var timer               = null;
 
                 var ids = {
                     p1:         -1,
@@ -153,13 +146,6 @@ define([
                     });
                 }
 
-                function startTimer() {
-                    if (timer) { $interval.cancel(timer); }
-                    var cfg      = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
-                    var interval = (cfg.refreshInterval || 60) * 1000;
-                    timer = $interval(load, interval);
-                }
-
                 $scope.$on('device_update', function(event, device) {
                     if (!device || !device.idx) { return; }
                     if (allEnergyIds.indexOf(String(device.idx)) !== -1) {
@@ -172,13 +158,9 @@ define([
                 $scope.$on('$destroy', function() {
                     if (cancelToken)         { cancelToken.resolve();         cancelToken         = null; }
                     if (cancelSettingsToken) { cancelSettingsToken.resolve(); cancelSettingsToken = null; }
-                    if (timer)               { $interval.cancel(timer);       timer               = null; }
                 });
 
-                ctrl.$onInit = function() {
-                    load();
-                    startTimer();
-                };
+                ctrl.$onInit = load;
             }]
         };
     }]);

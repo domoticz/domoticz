@@ -58,7 +58,7 @@ namespace http
 			std::map<uint64_t, bool> m_subscribed_devices;
 			std::mutex m_subscribe_mutex;
 			std::mutex m_subscribed_devices_mutex;
-			std::atomic<bool> m_device_updates_active = false;
+			std::atomic<bool> m_device_updates_active = true;
 
 			void SendDateTime();
 			void ProcessDeviceUpdates(const std::vector<uint64_t>& deviceIndices);
