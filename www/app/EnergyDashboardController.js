@@ -716,7 +716,12 @@ define(['app'], function (app) {
 		$scope.makeTextLines = function() {
 			let ltext = document.getElementById('ltext');
 			if (ltext) {
-				let txt = $scope.txtObjText.replace(/<br\s*\/?>/gi, '\n').replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n/g, '<br>');
+				let txt = $scope.txtObjText
+					.replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
+					.replace(/<\/(?:div|p|h[1-6]|tr)[^>]*>/gi, '\n')
+					.replace(/<\/(?:span|td|th)[^>]*>/gi, ' ')
+					.replace(/<br\s*\/?>/gi, '\n')
+					.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n/g, '<br>');
 				let colored = $scope.lightenDarkColors(txt);
 				ltext.innerHTML = DOMPurify.sanitize(colored, {
 					ALLOWED_TAGS: ['br', 'span', 'font'],
