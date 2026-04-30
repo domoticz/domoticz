@@ -77,6 +77,7 @@ private:
 
 	bool SetPowerActive(const bool bActive);
 	bool SetChargeFromGrid(const bool bEnable);
+	bool SetPowerExportLimit(bool bEnable, float fLimitW = -1.0F);
 
 	bool CheckAuthJWT(const std::string& szToken, const bool bDisplayErrors);
 
@@ -126,6 +127,10 @@ private:
 	bool m_bHaveTariff = false;
 
 	std::string m_szLastTariffData;
+
+	bool m_bPELEnabled = false;
+	float m_fPELLimitW = 3500.0F;
+	float m_fPELSlewRate = 900.0F;
 
 	EnphaseCounterTracker m_productionTracker;
 	EnphaseCounterTracker m_totalConsumptionTracker;

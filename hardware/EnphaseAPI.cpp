@@ -158,21 +158,7 @@ static double ProcessEnphaseCounter(EnphaseCounterTracker& tracker, const double
 #define ENPHASE_API_ENSEMBLE_POWER "{ip}/ivp/ensemble/power"
 #define ENPHASE_API_TARIFF "{ip}/admin/lib/tariff"
 
-/*
-#define ENPAHSE_API_LIMIT_POWER "{ip}/ivp/ss/dpel"
-with data:
-{
-	"dynamic_pel_settings": {
-		"enable": true,
-		"export_limit": true,
-		"limit_value_W": 250.0,
-		"slew_rate": 50.0,
-		"enable_dynamic_limiting": false.
-	},
-	"filename": "site_settings",
-	"version": "00.00.01".
-}
-*/
+#define ENPHASE_API_DPEL "{ip}/ivp/ss/dpel"
 
 //3 August 2025, found a great website with all the API endpoints: https://github.com/Matthew1471/Enphase-API
 
@@ -478,6 +464,13 @@ bool EnphaseAPI::WriteToHardware(const char* pdata, const unsigned char length)
 	{
 		//Charge from Grid on/off
 		SetChargeFromGrid(command == light2_sOn);
+		return true;
+	}
+
+	if (Unit == 4)
+	{
+		//Power Export Limit enable/disable
+		SetPowerExportLimit(command == light2_sOn);
 		return true;
 	}
 
@@ -1723,6 +1716,58 @@ bool EnphaseAPI::SetChargeFromGrid(const bool bEnable)
 
 	// Clear cached tariff so next poll re-reads from device
 	m_szLastTariffData.clear();
+	return true;
+}
+
+bool EnphaseAPI::SetPowerExportLimit(const bool bEnable, const float fLimitW)
+{
+	if (m_szTokenInstaller.empty())
+	{
+		GetInstallerToken();
+	}
+	if (m_szTokenInstaller.empty())
+	{
+		Log(LOG_ERROR, "Problem with (no) installer token! Could not execute command! (dpel)");
+		return false;
+	}
+
+	if (!CheckAuthJWT(m_szTokenInstaller, false))
+	{
+		if (!GetInstallerToken())
+			return false;
+		if (!CheckAuthJWT(m_szTokenInstaller, true))
+			return false;
+	}
+
+	if (fLimitW >= 0.0F)
+		m_fPELLimitW = fLimitW;
+
+	Json::Value jSettings;
+	jSettings["enable"] = bEnable;
+	jSettings["export_limit"] = false;
+	jSettings["limit_value_W"] = m_fPELLimitW;
+	jSettings["slew_rate"] = m_fPELSlewRate;
+	jSettings["enable_dynamic_limiting"] = false;
+
+	Json::Value jdata;
+	jdata["dynamic_pel_settings"] = jSettings;
+	jdata["filename"] = "site_settings";
+	jdata["version"] = "00.00.01";
+
+	std::string szPostdata = JSonToRawString(jdata);
+
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Accept: application/json");
+	ExtraHeaders.push_back("Authorization: Bearer " + m_szTokenInstaller);
+	ExtraHeaders.push_back("Content-Type: application/json");
+
+	std::string sResult;
+	if (!HTTPClient::POST(MakeURL(ENPHASE_API_DPEL), szPostdata, ExtraHeaders, sResult))
+	{
+		Log(LOG_ERROR, "Error setting http data! (dpel)");
+		return false;
+	}
+	m_bPELEnabled = bEnable;
 	return true;
 }
 
