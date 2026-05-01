@@ -1267,10 +1267,18 @@ namespace Plugins
 			}
 			else if (m_bShared)
 			{
-				// Use the main interpreter for shared plugins (PyO3 compatibility)
-				PyEval_RestoreThread((PyThreadState*)m_mainworker.m_pluginsystem.PythonThread());
-				m_PyInterpreter = (PyThreadState*)m_mainworker.m_pluginsystem.PythonThread();
-				Debug(DEBUG_PYTHON, "(%s) using shared (main) interpreter (%p).",
+				// Use the main interpreter for shared plugins (PyO3 compatibility).
+				// We must NOT use m_InitialPythonThread (the main OS thread's PyThreadState)
+				// from this plugin worker thread: doing so corrupts CPython's internals and
+				// causes a segfault in _PyEval_EvalFrameDefault on Python 3.13+.
+				//
+				// PyGILState_Ensure() is the correct API for acquiring the GIL from any OS
+				// thread.  It creates a fresh PyThreadState bound to this worker thread inside
+				// the main interpreter, stores it in thread-local storage, and acquires the GIL.
+				// Available in Py_LIMITED_API since 3.4; always succeeds (Py_FatalError on fail).
+				(void)PyGILState_Ensure();
+				m_PyInterpreter = PyThreadState_Get();
+				Debug(DEBUG_PYTHON, "(%s) using shared (main) interpreter, thread state (%p).",
 				      m_PluginKey.c_str(), m_PyInterpreter);
 
 				// Remove any cached 'plugin' module so we get a fresh import
@@ -2809,9 +2817,15 @@ namespace Plugins
 				}
 				else
 				{
-					Debug(DEBUG_PYTHON, "(%s) shared interpreter, releasing GIL.",
-					      m_PluginKey.c_str());
-					(void)PyEval_SaveThread();
+					// Delete the per-thread state that PyGILState_Ensure() created.
+					// PyThread_tss_create() registers the GILState key with a NULL destructor,
+					// so the stale TLS entry left after Delete() is harmless on thread exit.
+					Debug(DEBUG_PYTHON, "(%s) shared interpreter, deleting thread state (%p).",
+					      m_PluginKey.c_str(), m_PyInterpreter);
+					PyThreadState *tstate = (PyThreadState*)m_PyInterpreter;
+					PyThreadState_Clear(tstate);   // must be called while GIL is held
+					(void)PyEval_SaveThread();     // release GIL
+					PyThreadState_Delete(tstate);  // free the thread state struct
 				}
 			}
 		}

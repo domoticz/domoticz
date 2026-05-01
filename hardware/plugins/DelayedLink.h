@@ -125,6 +125,9 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(void, PyEval_RestoreThread, PyThreadState *);
 		DECLARE_PYTHON_SYMBOL(void, PyEval_ReleaseLock, );
 		DECLARE_PYTHON_SYMBOL(PyThreadState*, PyThreadState_Swap, PyThreadState*);
+		DECLARE_PYTHON_SYMBOL(PyGILState_STATE, PyGILState_Ensure, void);
+		DECLARE_PYTHON_SYMBOL(void, PyThreadState_Clear, PyThreadState*);
+		DECLARE_PYTHON_SYMBOL(void, PyThreadState_Delete, PyThreadState*);
 		DECLARE_PYTHON_SYMBOL(void, _Py_NegativeRefcount, const char* COMMA int COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject *, _PyObject_New, PyTypeObject *);
 		DECLARE_PYTHON_SYMBOL(int, PyObject_IsInstance, PyObject* COMMA PyObject*);
@@ -261,6 +264,9 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyEval_RestoreThread);
 					RESOLVE_PYTHON_SYMBOL(PyEval_ReleaseLock);
 					RESOLVE_PYTHON_SYMBOL(PyThreadState_Swap);
+					RESOLVE_PYTHON_SYMBOL(PyGILState_Ensure);
+					RESOLVE_PYTHON_SYMBOL(PyThreadState_Clear);
+					RESOLVE_PYTHON_SYMBOL(PyThreadState_Delete);
 					RESOLVE_PYTHON_SYMBOL(_Py_NegativeRefcount);
 					RESOLVE_PYTHON_SYMBOL(_PyObject_New);
 					RESOLVE_PYTHON_SYMBOL(PyObject_IsInstance);
@@ -490,6 +496,9 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyEval_RestoreThread	pythonLib->PyEval_RestoreThread
 #define PyEval_ReleaseLock		pythonLib->PyEval_ReleaseLock
 #define PyThreadState_Swap		pythonLib->PyThreadState_Swap
+#define PyGILState_Ensure		pythonLib->PyGILState_Ensure
+#define PyThreadState_Clear		pythonLib->PyThreadState_Clear
+#define PyThreadState_Delete	pythonLib->PyThreadState_Delete
 #define _Py_NegativeRefcount	pythonLib->_Py_NegativeRefcount
 #define _PyObject_New			pythonLib->_PyObject_New
 #define PyObject_IsInstance		pythonLib->PyObject_IsInstance
