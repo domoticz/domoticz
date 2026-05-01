@@ -1,0 +1,24 @@
+<div ng-controller="AccessTokensCtrl">
+	<div class="page-header-small">
+		<h1 data-i18n="Access Tokens">Access Tokens</h1>
+	</div>
+
+	<div style="margin-bottom: 12px;">
+		<button class="btn btn-success" ng-click="createToken()">
+			<i class="fa fa-plus"></i> <span data-i18n="Create New Token">Create New Token</span>
+		</button>
+	</div>
+
+	<table class="display" id="accesstokentable" border="0" cellpadding="0" cellspacing="0" width="100%">
+		<thead>
+			<tr valign="middle">
+				<th align="left" data-i18n="Name">Name</th>
+				<th width="100" align="left" data-i18n="Rights">Rights</th>
+				<th width="160" align="left" data-i18n="Created">Created</th>
+				<th width="160" align="left" data-i18n="Last Used">Last Used</th>
+				<th width="120" align="left" data-i18n="Expiry">Expiry</th>
+				<th width="80" align="center" data-i18n="Actions">Actions</th>
+			</tr>
+		</thead>
+	</table>
+</div>
