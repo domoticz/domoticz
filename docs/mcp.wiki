@@ -149,7 +149,7 @@ This creates a <code>mcp.json</code> file located at <code>%APPDATA%\Code\User\m
 <pre>
 {
   "servers": {
-    "my-mcp-server-XXXXXXX": {
+    "domoticz": {
       "url": "https://YourDomain:YourPort/mcp",
       "type": "http",
       "headers": {
