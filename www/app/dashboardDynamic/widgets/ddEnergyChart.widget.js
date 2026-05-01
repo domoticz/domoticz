@@ -775,8 +775,12 @@ define([
                 $scope.$on('device_update', function(e, updated) {
                     var cfg = ctrl.widgetDef && ctrl.widgetDef.config;
                     if (!cfg || String(updated.idx) !== String(cfg.deviceIdx)) { return; }
-                    if (refreshDebounce) { $timeout.cancel(refreshDebounce); }
-                    refreshDebounce = $timeout(load, 60000);
+                    if (!refreshDebounce) {
+                        refreshDebounce = $timeout(function() {
+                            refreshDebounce = null;
+                            load();
+                        }, 60000);
+                    }
                 });
 
                 $scope.$on('$destroy', function() {

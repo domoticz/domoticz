@@ -134,6 +134,7 @@ define([
                 });
 
                 $scope.$on('dd:widget:refresh', load);
+                $scope.$on('dd:page:visible',  load);
 
                 $scope.$on('$destroy', function() {
                     if (innerScope) {

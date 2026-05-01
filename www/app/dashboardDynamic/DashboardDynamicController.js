@@ -4,6 +4,7 @@ define([
     'dashboardDynamic/dashboardDynamicService',
     'dashboardDynamic/widgetRegistry.service',
     'dashboardDynamic/ddToast.service',
+    'dashboardDynamic/ddVisibility.service',
     'dashboardDynamic/ddWidgetContent.directive',
     'dashboardDynamic/ddWidgetWrapper',
     'dashboardDynamic/ddGrid',

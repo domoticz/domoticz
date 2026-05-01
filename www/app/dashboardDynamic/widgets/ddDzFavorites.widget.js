@@ -229,8 +229,9 @@ define([
                     }
                     load();
                 });
-                $scope.$on('scene_update',  load);
+                $scope.$on('scene_update',    load);
                 $scope.$on('dd:widget:refresh', load);
+                $scope.$on('dd:page:visible',   load);
 
                 $scope.$on('$destroy', function() {});
 

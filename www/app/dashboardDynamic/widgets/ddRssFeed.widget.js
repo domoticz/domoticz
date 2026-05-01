@@ -1,7 +1,8 @@
 define([
     'app',
-    'dashboardDynamic/widgetRegistry.service'
-], function(app, widgetRegistry) {
+    'dashboardDynamic/widgetRegistry.service',
+    'dashboardDynamic/ddVisibility.service'
+], function(app, widgetRegistry, ddVisibility) {
     'use strict';
 
     widgetRegistry.register({
@@ -75,7 +76,7 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$q', function($scope, $http, $interval, $q) {
+            controller: ['$scope', '$http', '$interval', '$q', 'ddVisibility', function($scope, $http, $interval, $q, ddVisibility) {
                 var ctrl = this;
 
                 ctrl.loading     = false;
@@ -252,13 +253,20 @@ define([
                     });
                 };
 
-                function scheduleRefresh() {
-                    if (refreshTimer) { $interval.cancel(refreshTimer); }
+                function stopTimer() {
+                    if (refreshTimer) { $interval.cancel(refreshTimer); refreshTimer = null; }
+                }
+
+                function startTimer() {
+                    stopTimer();
                     var cfg      = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
                     var interval = parseInt(cfg.refreshInterval, 10) || 300;
                     if (interval < 30) { interval = 30; }
                     refreshTimer = $interval(ctrl.load, interval * 1000);
                 }
+
+                $scope.$on('dd:page:hidden',  function() { stopTimer(); });
+                $scope.$on('dd:page:visible', function() { ctrl.load(); startTimer(); });
 
                 $scope.$on('$destroy', function() {
                     if (cancelToken)  { cancelToken.resolve(); cancelToken = null; }
@@ -274,14 +282,14 @@ define([
                     function(val, old) {
                         if (val !== old) {
                             ctrl.load();
-                            scheduleRefresh();
+                            startTimer();
                         }
                     }
                 );
 
                 ctrl.$onInit = function() {
                     ctrl.load();
-                    scheduleRefresh();
+                    if (!ddVisibility.isHidden()) { startTimer(); }
                 };
             }]
         };

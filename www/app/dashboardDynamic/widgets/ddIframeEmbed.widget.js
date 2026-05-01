@@ -1,7 +1,8 @@
 define([
     'app',
-    'dashboardDynamic/widgetRegistry.service'
-], function(app, widgetRegistry) {
+    'dashboardDynamic/widgetRegistry.service',
+    'dashboardDynamic/ddVisibility.service'
+], function(app, widgetRegistry, ddVisibility) {
     'use strict';
 
     widgetRegistry.register({
@@ -35,7 +36,7 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$interval', '$timeout', '$sce', function($scope, $interval, $timeout, $sce) {
+            controller: ['$scope', '$interval', '$timeout', '$sce', 'ddVisibility', function($scope, $interval, $timeout, $sce, ddVisibility) {
                 var ctrl  = this;
                 ctrl.trustedUrl   = null;
                 ctrl.urlError     = false;
@@ -68,21 +69,30 @@ define([
                     ctrl.trustedUrl  = $sce.trustAsResourceUrl(url);
                 }
 
-                function scheduleRefresh() {
+                function refresh() {
+                    // Briefly clear then restore to force iframe reload
+                    var saved       = ctrl.trustedUrl;
+                    ctrl.trustedUrl = null;
+                    $timeout(function() { ctrl.trustedUrl = saved; }, 100);
+                }
+
+                function stopTimer() {
                     if (refreshTimer) { $interval.cancel(refreshTimer); refreshTimer = null; }
+                }
+
+                function startTimer() {
+                    stopTimer();
                     var cfg      = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
                     var interval = parseInt(cfg.refreshInterval) || 0;
                     // Minimum 5 seconds to avoid hammering the target site
                     if (interval > 0 && interval < 5) { interval = 5; }
                     if (interval > 0) {
-                        refreshTimer = $interval(function() {
-                            // Briefly clear then restore to force iframe reload
-                            var saved     = ctrl.trustedUrl;
-                            ctrl.trustedUrl = null;
-                            $timeout(function() { ctrl.trustedUrl = saved; }, 100);
-                        }, interval * 1000);
+                        refreshTimer = $interval(refresh, interval * 1000);
                     }
                 }
+
+                $scope.$on('dd:page:hidden',  function() { stopTimer(); });
+                $scope.$on('dd:page:visible', function() { refresh(); startTimer(); });
 
                 $scope.$watch(
                     function() {
@@ -92,7 +102,7 @@ define([
                     function(val, old) {
                         if (val !== old) {
                             validateAndTrust();
-                            scheduleRefresh();
+                            startTimer();
                         }
                     }
                 );
@@ -103,7 +113,7 @@ define([
 
                 ctrl.$onInit = function() {
                     validateAndTrust();
-                    scheduleRefresh();
+                    if (!ddVisibility.isHidden()) { startTimer(); }
                 };
             }]
         };

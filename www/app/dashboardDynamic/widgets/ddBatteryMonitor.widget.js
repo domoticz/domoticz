@@ -1,7 +1,8 @@
 define([
     'app',
-    'dashboardDynamic/widgetRegistry.service'
-], function(app, widgetRegistry) {
+    'dashboardDynamic/widgetRegistry.service',
+    'dashboardDynamic/ddVisibility.service'
+], function(app, widgetRegistry, ddVisibility) {
     'use strict';
 
     widgetRegistry.register({
@@ -64,7 +65,7 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$q', function($scope, $http, $interval, $q) {
+            controller: ['$scope', '$http', '$interval', '$q', 'ddVisibility', function($scope, $http, $interval, $q, ddVisibility) {
                 var ctrl = this;
 
                 ctrl.title            = 'Battery Monitor';
@@ -167,12 +168,19 @@ define([
                     });
                 }
 
-                function scheduleRefresh() {
+                function stopTimer() {
                     if (refreshTimer) { $interval.cancel(refreshTimer); refreshTimer = null; }
+                }
+
+                function startTimer() {
+                    stopTimer();
                     var interval = parseInt(cfg().refreshInterval, 10);
                     if (isNaN(interval) || interval <= 0) { interval = 300; }
                     refreshTimer = $interval(load, interval * 1000);
                 }
+
+                $scope.$on('dd:page:hidden',  function() { stopTimer(); });
+                $scope.$on('dd:page:visible', function() { load(); startTimer(); });
 
                 $scope.$on('dd:widget:refresh', load);
 
@@ -185,7 +193,7 @@ define([
                     var c      = cfg();
                     ctrl.title = c.title || 'Battery Monitor';
                     load();
-                    scheduleRefresh();
+                    if (!ddVisibility.isHidden()) { startTimer(); }
                 };
 
                 $scope.$watch(
@@ -198,7 +206,7 @@ define([
                             var c      = cfg();
                             ctrl.title = c.title || 'Battery Monitor';
                             load();
-                            scheduleRefresh();
+                            startTimer();
                         }
                     }
                 );

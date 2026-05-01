@@ -1,7 +1,8 @@
 define([
     'app',
-    'dashboardDynamic/widgetRegistry.service'
-], function(app, widgetRegistry) {
+    'dashboardDynamic/widgetRegistry.service',
+    'dashboardDynamic/ddVisibility.service'
+], function(app, widgetRegistry, ddVisibility) {
     'use strict';
 
     var _localTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -72,7 +73,7 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$interval', 'dzTimeAndSun', function($scope, $interval, dzTimeAndSun) {
+            controller: ['$scope', '$interval', 'dzTimeAndSun', 'ddVisibility', function($scope, $interval, dzTimeAndSun, ddVisibility) {
                 var ctrl = this;
                 ctrl.timeStr = '';
                 ctrl.dateStr = '';
@@ -96,7 +97,7 @@ define([
 
                 _seedFromData(dzTimeAndSun.getCurrentData());
 
-                $scope.$on('time_update', function(event, data) {
+                var deregTimeUpdate = $scope.$on('time_update', function(event, data) {
                     _seedFromData(data);
                 });
 
@@ -149,11 +150,26 @@ define([
                     }
                 }
 
-                var timer = $interval(tick, 1000);
+                var timer = null;
 
-                $scope.$on('$destroy', function() { $interval.cancel(timer); });
+                function stopTimer() {
+                    if (timer) { $interval.cancel(timer); timer = null; }
+                }
 
-                ctrl.$onInit = tick;
+                function startTimer() {
+                    stopTimer();
+                    timer = $interval(tick, 1000);
+                }
+
+                $scope.$on('dd:page:hidden',  function() { stopTimer(); });
+                $scope.$on('dd:page:visible', function() { tick(); startTimer(); });
+
+                $scope.$on('$destroy', function() { stopTimer(); deregTimeUpdate(); });
+
+                ctrl.$onInit = function() {
+                    tick();
+                    if (!ddVisibility.isHidden()) { startTimer(); }
+                };
             }]
         };
     }]);

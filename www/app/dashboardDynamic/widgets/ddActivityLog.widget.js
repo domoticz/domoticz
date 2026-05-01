@@ -1,6 +1,7 @@
 define([
     'app',
-    'dashboardDynamic/widgetRegistry.service'
+    'dashboardDynamic/widgetRegistry.service',
+    'dashboardDynamic/ddVisibility.service'
 ], function(app, widgetRegistry) {
     'use strict';
 
@@ -31,11 +32,12 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$q', function($scope, $http, $q) {
+            controller: ['$scope', '$http', '$q', '$timeout', 'ddVisibility', function($scope, $http, $q, $timeout, ddVisibility) {
                 var ctrl = this;
                 ctrl.items    = [];
                 ctrl.loading  = false;
-                var cancelToken = null;
+                var cancelToken    = null;
+                var _debounceTimer = null;
 
                 function load() {
                     if (cancelToken) { cancelToken.resolve(); }
@@ -63,10 +65,22 @@ define([
                     });
                 }
 
-                $scope.$on('device_update', load);
+                function debouncedLoad() {
+                    if (ddVisibility.isHidden()) { return; }
+                    if (_debounceTimer) { $timeout.cancel(_debounceTimer); }
+                    _debounceTimer = $timeout(load, 2000);
+                }
+
+                var deregDeviceUpdate = $scope.$on('device_update', debouncedLoad);
+                $scope.$on('dd:page:hidden',  function() {
+                    if (_debounceTimer) { $timeout.cancel(_debounceTimer); _debounceTimer = null; }
+                });
+                $scope.$on('dd:page:visible', function() { load(); });
 
                 $scope.$on('$destroy', function() {
-                    if (cancelToken) { cancelToken.resolve(); cancelToken = null; }
+                    deregDeviceUpdate();
+                    if (cancelToken)    { cancelToken.resolve(); cancelToken = null; }
+                    if (_debounceTimer) { $timeout.cancel(_debounceTimer); _debounceTimer = null; }
                 });
                 $scope.$on('dd:widget:refresh', load);
 

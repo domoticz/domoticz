@@ -308,8 +308,9 @@ define([
                     }
                     load();
                 });
-                $scope.$on('scene_update', load);
+                $scope.$on('scene_update',    load);
                 $scope.$on('dd:widget:refresh', load);
+                $scope.$on('dd:page:visible',   load);
 
                 $scope.$watch(
                     function() { return ctrl.widgetDef && ctrl.widgetDef.config && ctrl.widgetDef.config.planIdx; },

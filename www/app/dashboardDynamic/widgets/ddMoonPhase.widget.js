@@ -1,7 +1,8 @@
 define([
     'app',
-    'dashboardDynamic/widgetRegistry.service'
-], function(app, widgetRegistry) {
+    'dashboardDynamic/widgetRegistry.service',
+    'dashboardDynamic/ddVisibility.service'
+], function(app, widgetRegistry, ddVisibility) {
     'use strict';
 
     widgetRegistry.register({
@@ -117,7 +118,7 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$interval', function($scope, $interval) {
+            controller: ['$scope', '$interval', 'ddVisibility', function($scope, $interval, ddVisibility) {
                 var ctrl  = this;
                 var timer = null;
 
@@ -172,11 +173,21 @@ define([
                     ctrl.daysToNew   = (newDate.getTime() - now.getTime()) / 86400000;
                 };
 
-                // Refresh every 4 hours
-                timer = $interval(ctrl.update, 4 * 60 * 60 * 1000);
+                function stopTimer() {
+                    if (timer) { $interval.cancel(timer); timer = null; }
+                }
+
+                function startTimer() {
+                    stopTimer();
+                    // Refresh every 4 hours
+                    timer = $interval(ctrl.update, 4 * 60 * 60 * 1000);
+                }
+
+                $scope.$on('dd:page:hidden',  function() { stopTimer(); });
+                $scope.$on('dd:page:visible', function() { ctrl.update(); startTimer(); });
 
                 $scope.$on('$destroy', function() {
-                    $interval.cancel(timer);
+                    stopTimer();
                 });
 
                 $scope.$watch(
@@ -189,7 +200,10 @@ define([
                     true
                 );
 
-                ctrl.$onInit = ctrl.update;
+                ctrl.$onInit = function() {
+                    ctrl.update();
+                    if (!ddVisibility.isHidden()) { startTimer(); }
+                };
             }]
         };
     }]);
