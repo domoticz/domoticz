@@ -358,6 +358,10 @@ namespace http
 			RegisterCommandCode("updateapplication", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateApplication(session, req, root); });
 			RegisterCommandCode("deleteapplication", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteApplication(session, req, root); });
 
+			RegisterCommandCode("getaccesstokens", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetAccessTokens(session, req, root); });
+			RegisterCommandCode("createaccesstoken", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateAccessToken(session, req, root); });
+			RegisterCommandCode("deleteaccesstoken", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteAccessToken(session, req, root); });
+
 			RegisterCommandCode("wolgetnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_WOLGetNodes(session, req, root); });
 			RegisterCommandCode("woladdnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_WOLAddNode(session, req, root); });
 			RegisterCommandCode("wolupdatenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_WOLUpdateNode(session, req, root); });
@@ -867,8 +871,25 @@ namespace http
 						uint32_t refreshexpire = static_cast<uint32_t>(atol(sd[6].c_str()));
 						std::string signingsecret = sd[7];
 						time_t accept_legacy_until = static_cast<time_t>(atol(sd[8].c_str()));
-						AddUser(ID, applicationname, secret, "", "", URIGHTS_CLIENTID, bPublic, pemfile, refreshexpire, signingsecret, accept_legacy_until);
+						// Use asymmetric signing only when a PEM key file is actually configured
+						int useAsymmetric = (bPublic && !pemfile.empty()) ? 1 : 0;
+						AddUser(ID, applicationname, secret, "", "", URIGHTS_CLIENTID, useAsymmetric, pemfile, refreshexpire, signingsecret, accept_legacy_until);
 					}
+				}
+			}
+
+			// Register access tokens as synthetic users so JWT validation resolves "at:<ID>" subjects
+			{
+				auto tokens = m_sql.GetAccessTokens();
+				time_t now = time(nullptr);
+				for (const auto& t : tokens)
+				{
+					if (t.Expiry != 0 && t.Expiry < now)
+						continue; // Skip expired tokens
+					std::string username = "at:" + std::to_string(t.ID);
+					unsigned long syntheticID = 40000UL + t.ID;
+					m_pWebEm->AddUserPassword(syntheticID, username, "", "", "",
+						static_cast<_eUserRights>(t.Rights), 0, "", "", 0, "", 0);
 				}
 			}
 
@@ -4551,6 +4572,30 @@ namespace http
 			std::string rtype = request::findValue(&req, "type");
 			if (rtype == "command")
 			{
+				// Access token: verify still exists and not expired before dispatching command
+				if (session.username.size() > 3 && session.username.substr(0, 3) == "at:")
+				{
+					unsigned long tokenID = static_cast<unsigned long>(atol(session.username.c_str() + 3));
+					CSQLHelper::_tAccessToken at;
+					if (!m_sql.GetAccessToken(tokenID, at))
+					{
+						session.reply_status = reply::forbidden;
+						reply::set_content(&rep, root.toStyledString());
+						rep.status = static_cast<http::server::reply::status_type>(session.reply_status);
+						return;
+					}
+					time_t now = time(nullptr);
+					if (at.Expiry != 0 && at.Expiry < now)
+					{
+						m_sql.DeleteAccessToken(tokenID);
+						LoadUsers();
+						session.reply_status = reply::forbidden;
+						reply::set_content(&rep, root.toStyledString());
+						rep.status = static_cast<http::server::reply::status_type>(session.reply_status);
+						return;
+					}
+					m_sql.safe_query("UPDATE AccessTokens SET LastUpdate=datetime('now','localtime') WHERE ID=%lu", tokenID);
+				}
 				std::string cparam = request::findValue(&req, "param");
 				if (!cparam.empty())
 				{

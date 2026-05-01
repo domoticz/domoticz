@@ -22,6 +22,8 @@ public:
 
 	void RemoveSession(const std::string& sessionId);
 
+	std::shared_ptr<CMcpSession> GetSession(const std::string& sessionId);
+
 	bool WithSession(const std::string& sessionId,
 	                 std::function<void(CMcpSession&)> callback);
 

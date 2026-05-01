@@ -472,6 +472,22 @@ public:
 	bool SaveDashboardLayout(int userid, const std::string& layoutid, const std::string& name, bool isDefault, const std::string& layout_json);
 	bool DeleteDashboardLayout(int userid, const std::string& layoutid);
 	bool CopyDashboardLayout(int userid, const std::string& srcid, const std::string& newid, const std::string& newname);
+
+	// Access Tokens
+	struct _tAccessToken {
+		unsigned long ID = 0;
+		std::string Name;
+		int Rights = 0;        // 0=Viewer, 1=Switcher, 2=Admin
+		time_t Expiry = 0;     // epoch, 0=never
+		std::string TokenHash; // SHA-256 hex of raw JWT
+		std::string CreatedAt;
+		std::string LastUpdate;
+	};
+
+	std::vector<_tAccessToken> GetAccessTokens();
+	bool GetAccessToken(unsigned long ID, _tAccessToken& token);
+	bool CreateAccessToken(const std::string& name, int rights, time_t expiry, const std::string& tokenHash, unsigned long& outID);
+	bool DeleteAccessToken(unsigned long ID);
 public:
 	std::string m_LastSwitchID; // for learning command
 	std::string m_UniqueID;

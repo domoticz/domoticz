@@ -347,6 +347,10 @@ private:
 	void Cmd_UpdateApplication(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteApplication(WebEmSession & session, const request& req, Json::Value &root);
 
+	void Cmd_GetAccessTokens(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_CreateAccessToken(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_DeleteAccessToken(WebEmSession& session, const request& req, Json::Value& root);
+
 	void Cmd_GetDynamicPriceDevices(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_GetEnergyDashboardDevices(WebEmSession& session, const request& req, Json::Value& root);
 

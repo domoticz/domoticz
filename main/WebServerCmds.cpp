@@ -4965,6 +4965,146 @@ namespace http
 			root["status"] = "OK";
 		}
 
+		void CWebServer::Cmd_GetAccessTokens(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "GetAccessTokens";
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+			auto tokens = m_sql.GetAccessTokens();
+			int ii = 0;
+			for (const auto& t : tokens)
+			{
+				root["result"][ii]["idx"] = static_cast<Json::UInt64>(t.ID);
+				root["result"][ii]["Name"] = t.Name;
+				root["result"][ii]["Rights"] = t.Rights;
+				root["result"][ii]["Expiry"] = static_cast<Json::Int64>(t.Expiry);
+				root["result"][ii]["CreatedAt"] = t.CreatedAt;
+				root["result"][ii]["LastUpdate"] = t.LastUpdate;
+				ii++;
+			}
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_CreateAccessToken(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "CreateAccessToken";
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+			std::string name = request::findValue(&req, "name");
+			std::string srights = request::findValue(&req, "rights");
+			std::string sexpiry = request::findValue(&req, "expiry"); // days: 0=never, 30, 90, 365
+
+			if (name.empty())
+			{
+				root["statustext"] = "Name is required";
+				return;
+			}
+
+			int rights = srights.empty() ? 0 : atoi(srights.c_str());
+			if (rights < 0 || rights > 2)
+				rights = 0;
+
+			int expiryDays = sexpiry.empty() ? 0 : atoi(sexpiry.c_str());
+			time_t expiry = 0;
+			uint32_t exptime = 315360000; // ~10 years for "never"
+			if (expiryDays > 0)
+			{
+				expiry = time(nullptr) + static_cast<time_t>(expiryDays) * 86400;
+				exptime = static_cast<uint32_t>(expiryDays) * 86400;
+			}
+
+			// Ensure domoticzUI has a signing secret; it may be empty on fresh installs
+			{
+				auto signingRows = m_sql.safe_query("SELECT SigningSecret FROM Applications WHERE Applicationname='domoticzUI' AND Active=1");
+				if (signingRows.empty())
+				{
+					root["statustext"] = "domoticzUI Application not found or inactive";
+					return;
+				}
+				if (signingRows[0][0].empty())
+				{
+					m_sql.safe_query("UPDATE Applications SET SigningSecret='%q' WHERE Applicationname='domoticzUI'", GenerateUUID().c_str());
+					LoadUsers();
+				}
+			}
+
+			// Insert placeholder row first; JWT generation needs the assigned token ID for the subject claim
+			unsigned long tokenID = 0;
+			if (!m_sql.CreateAccessToken(name, rights, expiry, "placeholder", tokenID))
+			{
+				root["statustext"] = "Failed to create access token";
+				return;
+			}
+
+			std::string jwttoken;
+			std::string subject = "at:" + std::to_string(tokenID);
+			Json::Value payload;
+			payload["roles"][0] = rights;
+
+			// Use a stable issuer not tied to a specific hostname; access tokens must work from any network address.
+			std::string issuer = m_pWebEm->m_DigistRealm;
+
+			try
+			{
+				if (!m_pWebEm->GenerateJwtToken(jwttoken, "domoticzUI", subject, exptime, payload, issuer))
+				{
+					m_sql.DeleteAccessToken(tokenID);
+					root["statustext"] = "Failed to generate token (is domoticzUI Application active?)";
+					return;
+				}
+			}
+			catch (const std::exception&)
+			{
+				m_sql.DeleteAccessToken(tokenID);
+				root["statustext"] = "Failed to generate token";
+				return;
+			}
+
+			// Store SHA-256 hash of the raw JWT — the raw token is never persisted
+			unsigned char hash[SHA256_DIGEST_LENGTH];
+			SHA256(reinterpret_cast<const unsigned char*>(jwttoken.c_str()), jwttoken.size(), hash);
+			char hashHex[SHA256_DIGEST_LENGTH * 2 + 1];
+			for (int i = 0; i < SHA256_DIGEST_LENGTH; i++)
+				snprintf(hashHex + i * 2, 3, "%02x", hash[i]);
+			std::string tokenHash(hashHex);
+
+			m_sql.safe_query("UPDATE AccessTokens SET TokenHash='%q' WHERE ID=%lu", tokenHash.c_str(), tokenID);
+
+			// Register the new token as a synthetic user without calling LoadUsers() (which would wipe all active sessions)
+			m_pWebEm->AddUserPassword(40000UL + tokenID, "at:" + std::to_string(tokenID), "", "", "",
+				static_cast<_eUserRights>(rights), 0, "", "", 0, "", 0);
+
+			root["status"] = "OK";
+			root["idx"] = static_cast<Json::UInt64>(tokenID);
+			root["token"] = jwttoken; // shown exactly once
+		}
+
+		void CWebServer::Cmd_DeleteAccessToken(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "DeleteAccessToken";
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+			std::string sidx = request::findValue(&req, "idx");
+			if (sidx.empty())
+			{
+				session.reply_status = reply::bad_request;
+				return;
+			}
+			unsigned long tokenID = static_cast<unsigned long>(atol(sidx.c_str()));
+			m_sql.DeleteAccessToken(tokenID);
+			m_pWebEm->RemoveUserPassword(40000UL + tokenID);
+			root["status"] = "OK";
+		}
+
 		void CWebServer::Cmd_GetMobiles(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["status"] = "ERR";

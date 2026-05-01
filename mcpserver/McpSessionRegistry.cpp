@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "McpSessionRegistry.h"
 #include "../main/Logger.h"
+#include "../main/json_helper.h"
 
 #include <ctime>
 #include <openssl/rand.h>
@@ -41,6 +42,7 @@ std::string CMcpSessionRegistry::CreateSession(const http::server::WebEmSession&
 	auto session = std::make_shared<CMcpSession>();
 	session->sessionId = id;
 	session->webSession = webSession;
+	session->rights = webSession.rights;
 	session->createdAt = time(nullptr);
 	session->lastActivity = session->createdAt;
 	m_sessions[id] = session;
@@ -70,6 +72,15 @@ void CMcpSessionRegistry::RemoveSession(const std::string& sessionId)
 {
 	std::lock_guard<std::mutex> lock(m_mutex);
 	m_sessions.erase(sessionId);
+}
+
+std::shared_ptr<CMcpSession> CMcpSessionRegistry::GetSession(const std::string& sessionId)
+{
+	std::lock_guard<std::mutex> lock(m_mutex);
+	auto it = m_sessions.find(sessionId);
+	if (it == m_sessions.end())
+		return nullptr;
+	return it->second;
 }
 
 bool CMcpSessionRegistry::WithSession(const std::string& sessionId,
@@ -117,8 +128,20 @@ void CMcpSessionRegistry::SendResourceUpdated(const std::string& uri,
 			CMcpSession& s = *kv.second;
 			if (!s.sseConnected)
 				continue;
-			if (!s.subscribedUris.empty() && s.subscribedUris.find(uri) == s.subscribedUris.end())
-				continue;
+			if (!s.subscribedUris.empty())
+			{
+				bool matched = false;
+				for (const auto& sub : s.subscribedUris)
+				{
+					if (uri == sub || uri.substr(0, sub.size()) == sub)
+					{
+						matched = true;
+						break;
+					}
+				}
+				if (!matched)
+					continue;
+			}
 			active.push_back(kv.second);
 		}
 	}
@@ -128,13 +151,37 @@ void CMcpSessionRegistry::SendResourceUpdated(const std::string& uri,
 
 void CMcpSessionRegistry::PruneExpiredSessions(int timeoutSeconds)
 {
-	std::lock_guard<std::mutex> lock(m_mutex);
-	time_t now = time(nullptr);
-	for (auto it = m_sessions.begin(); it != m_sessions.end();)
+	std::vector<std::shared_ptr<CMcpSession>> expired;
 	{
-		if (it->second->lastActivity + timeoutSeconds < now)
-			it = m_sessions.erase(it);
-		else
-			++it;
+		std::lock_guard<std::mutex> lock(m_mutex);
+		time_t now = time(nullptr);
+		for (auto it = m_sessions.begin(); it != m_sessions.end();)
+		{
+			if (it->second->lastActivity + timeoutSeconds < now)
+			{
+				expired.push_back(it->second);
+				it = m_sessions.erase(it);
+			}
+			else
+				++it;
+		}
+	}
+	for (auto& s : expired)
+	{
+		bool shouldSend = false;
+		{
+			std::lock_guard<std::mutex> sessionLock(s->m_sendMutex);
+			shouldSend = s->sseConnected && s->sseWriter;
+		}
+		if (shouldSend)
+		{
+			Json::Value notif;
+			notif["jsonrpc"] = "2.0";
+			notif["method"] = "notifications/message";
+			notif["params"]["level"] = "warning";
+			notif["params"]["logger"] = "mcp";
+			notif["params"]["data"]["message"] = "Session expired due to inactivity";
+			s->SendSseEvent(JSonToRawString(notif));
+		}
 	}
 }

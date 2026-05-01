@@ -15,6 +15,7 @@ struct CMcpSession
 {
 	std::string sessionId;
 	http::server::WebEmSession webSession;
+	http::server::_eUserRights rights = http::server::URIGHTS_NONE;
 	time_t createdAt;
 	time_t lastActivity;
 
