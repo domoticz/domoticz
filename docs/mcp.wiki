@@ -113,6 +113,48 @@ VS Code has built-in MCP support. Open the Command Palette ('''View → Command 
 
 When you start the server for the first time, VS Code will initiate the OAuth2 authorization flow. You will need to enter the '''Application''' Client ID and Client Secret created in Domoticz. After successful authorization, the token is stored in VS Code's account store (visible under the Account icon at the bottom-left of the screen).
 
+To use Visual Studio Code with a remote mcp server you have to create a Mcp Server in Visual Studio Code :  Open the Command Palette ('''View → Command Palette''' or <kbd>Ctrl+Shift+P</kbd>) and choose '''MCP: Add Server...'''.
+
+It creates a mcp.json file located in windows directory "YourUser\AppData\Roaming\Code\User\"
+
+Add to that file
+"headers": {
+"Authorization": "Bearer TokenID"
+}
+
+as shown below:
+
+{
+"servers": {
+"my-mcp-server-XXXXXXX": {
+"url": "https://YourDomain:YourPort/mcp",
+"type": "http",
+"headers": {
+"Authorization": "Bearer TokenID"
+}
+}
+},
+"inputs": []
+}
+
+To create the TokenID you have to :
+- create an application in domoticz with application name : domoticzmcp and client secret=YourClientSecret
+- create a user in domoticz with name MCP password YourPWD.
+
+and launch the linux command
+
+curl --location --request POST 'https://YourDomain:YourPort/oauth2/v1/token?client_id=domoticzmcp&client_secret=YourClientSecret&username=MCP&password=YourPWD&grant_type=password'
+
+The result is :
+{
+"access_token" : "TokenID",
+"expires_in" : 3600,
+"token_type" : "Bearer"
+}
+
+When starting the mcp server in Visual Studio Code the application prompts you to provide the application name and YourClientSecret then opens the domoticz login page to fill in with MCP as the name and YourPWD as password.
+
+
 === Gemini CLI ===
 
 Add to <code>~/.gemini/settings.json</code> under <code>mcpServers</code>:
