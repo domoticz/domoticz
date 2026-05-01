@@ -1,6 +1,6 @@
 <blockquote>'''Note:''' This page is maintained in the [https://github.com/domoticz/domoticz/tree/development/docs Domoticz GitHub repository]. Please do not edit it directly on the Wiki.</blockquote>
 
-''Last revised: 2026-04-30 · Domoticz 2026.1 build 17858''
+''Last revised: 2026-05-01 · Domoticz 2026.1 build 17858''
 
 Domoticz (from version 2026.1) adds built-in support for the [https://modelcontextprotocol.io/specification/2025-06-18 Model Context Protocol] (MCP), allowing AI assistants and LLM clients to monitor and control your home automation system directly — without any external intermediary process.
 
@@ -18,40 +18,50 @@ A status message in the log will confirm whether MCP support is active.
 
 == Authentication & Security ==
 
-The MCP endpoint at <code>/mcp</code> is subject to the same security rules as the rest of Domoticz. You have two options:
+The MCP endpoint at <code>/mcp</code> is subject to the same security rules as the rest of Domoticz. You have three options:
 
 === Option 1: Private Network (no credentials) ===
 
 If the AI client runs inside the IP range defined in Domoticz's Security Settings ('''Setup → Settings → Security → Local Networks'''), no authentication is required. This is the simplest setup for a local LAN.
 
-=== Option 2: OAuth2 / OIDC (recommended for remote access) ===
+=== Option 2: Access Token (recommended) ===
 
-For AI clients connecting from outside the private network range, create an '''Application''' in Domoticz:
+An Access Token is a long-lived JWT that you create once in the Domoticz UI and paste into your AI client's configuration. No separate user account or OAuth2 application is needed — the token carries its own rights.
+
+See [[#Creating an Access Token|Creating an Access Token]] below for step-by-step instructions.
+
+Once you have a token, pass it as a Bearer token in the <code>Authorization</code> header:
+
+ Authorization: Bearer <your access token>
+
+See the client-specific examples below for how to configure this in each client.
+
+=== Option 3: OAuth2 / OIDC (for clients with built-in OAuth2 support) ===
+
+Some clients (such as VS Code) can perform the full OAuth2 authorization flow automatically. For these, create an '''Application''' in Domoticz:
 
 # Go to '''Setup → More Options → Applications'''
 # Click '''Add Application''' — the '''Application Name''' you enter is the '''Client ID''', and the '''Application Secret''' is the '''Client Secret'''
-# Configure your AI client with these values (see client examples below)
+# Configure your AI client with these values (see the VS Code example below)
 
-The OAuth2 authorization endpoint is at <code>/oauth2/token</code>. Some clients handle the OAuth2 flow automatically; others (like Claude Desktop) need an HTTP proxy that adds the token.
+The OAuth2 authorization endpoint is at <code>/oauth2/token</code>.
 
-=== Option 3: API Access Token (JWT) ===
+== Creating an Access Token ==
 
-Some clients accept a pre-generated JWT token. You can pass it via the <code>API_ACCESS_TOKEN</code> environment variable when using an HTTP proxy (see the Claude Desktop example below).
+Access Tokens are managed under '''Setup → More Options → Access Tokens'''.
 
-Obtain a token via curl (replace the placeholders with your values):
+# Click '''Create Access Token'''
+# Enter a descriptive '''Name''' (e.g. <code>Claude Desktop</code> or <code>VS Code MCP</code>)
+# Choose the '''Rights''' level:
+#* '''Viewer''' — read-only access (sensor values, status queries, history)
+#* '''User''' — can also control devices, scenes, and user variables
+#* '''Admin''' — full access including hardware, settings, events, and user management
+# Choose an '''Expiry''' (30 days, 90 days, 1 year, or Never)
+# Click '''Create''' — the token is displayed '''once'''. Copy it immediately and store it securely; it cannot be retrieved again.
 
-<pre>
-curl --location --request POST 'http://<domoticz_ip>:<domoticz_port>/oauth2/v1/token?client_id=<application_name>&client_secret=<application_secret>&username=<username>&password=<password>&grant_type=password'
-</pre>
+To revoke a token at any time, return to '''Setup → More Options → Access Tokens''' and click '''Delete'''.
 
-The response contains an <code>access_token</code> value — use that as your JWT token.
-
-'''Tip:''' It is recommended to create a dedicated Domoticz user for MCP access rather than using your personal account. Assign the minimum rights needed:
-* '''Viewer''' — read-only access (sensor values, status queries)
-* '''User''' — can also control devices and scenes
-* '''Admin''' — full access including hardware, settings and user management
-
-Create the user under '''Setup → More Options → Users'''.
+'''Tip:''' Use the minimum rights level needed for the intended client. For read-only dashboards or monitoring tools, choose '''Viewer'''. For full home-automation control, choose '''User''' or '''Admin'''.
 
 == Connecting AI clients ==
 
@@ -68,12 +78,14 @@ Add the following to your Claude Desktop configuration file (<code>claude_deskto
       "command": "/path/to/mcp-proxy.exe",
       "args": ["--transport", "streamablehttp", "http://domoticz.local:8080/mcp"],
       "env": {
-        "API_ACCESS_TOKEN": "<a valid JWT token, or omit if client is in private network range>"
+        "API_ACCESS_TOKEN": "<your access token, or omit if client is in private network range>"
       }
     }
   }
 }
 </pre>
+
+Create an Access Token under '''Setup → More Options → Access Tokens''' and paste it as the <code>API_ACCESS_TOKEN</code> value. See [[#Creating an Access Token|Creating an Access Token]] above.
 
 '''Note:''' Pro and Max Claude users may have access to remote MCP support, in which case you can connect directly using the URL <code>http://domoticz.local:8080/mcp</code> without a proxy.
 
@@ -86,9 +98,9 @@ Add the server:
 claude mcp add --transport http domoticz http://192.168.x.x:8080/mcp
 </pre>
 
-If authentication is required (client outside the private network range), pass the JWT token as a header:
+If authentication is required (client outside the private network range), pass your Access Token as a header:
 <pre>
-claude mcp add --transport http domoticz http://192.168.x.x:8080/mcp --header "Authorization: Bearer <your JWT token>"
+claude mcp add --transport http domoticz http://192.168.x.x:8080/mcp --header "Authorization: Bearer <your access token>"
 </pre>
 
 Remove the server:
@@ -111,7 +123,23 @@ VS Code has built-in MCP support. Open the Command Palette ('''View → Command 
 }
 </pre>
 
-When you start the server for the first time, VS Code will initiate the OAuth2 authorization flow. You will need to enter the '''Application''' Client ID and Client Secret created in Domoticz. After successful authorization, the token is stored in VS Code's account store (visible under the Account icon at the bottom-left of the screen).
+When you start the server for the first time, VS Code will initiate the OAuth2 authorization flow. You will need to enter the '''Application''' Client ID and Client Secret created under '''Setup → More Options → Applications'''. After successful authorization, the token is stored in VS Code's account store (visible under the Account icon at the bottom-left of the screen).
+
+Alternatively, if you prefer not to use the OAuth2 flow, you can supply an Access Token directly in the settings:
+
+<pre>
+{
+  "servers": {
+    "domoticz": {
+      "type": "http",
+      "url": "http://127.0.0.1:8080/mcp",
+      "headers": {
+        "Authorization": "Bearer <your access token>"
+      }
+    }
+  }
+}
+</pre>
 
 === Gemini CLI ===
 
@@ -124,7 +152,7 @@ Add to <code>~/.gemini/settings.json</code> under <code>mcpServers</code>:
       "type": "http",
       "url": "http://domoticz.local:8080/mcp",
       "headers": {
-        "Authorization": "Bearer <your JWT token>"
+        "Authorization": "Bearer <your access token>"
       }
     }
   }
@@ -137,7 +165,7 @@ Any MCP-compatible client that supports Streamable HTTP transport can connect to
 
  http://<domoticz-host>:<port>/mcp
 
-Add an <code>Authorization: Bearer &lt;token&gt;</code> header if the client is outside the private network range.
+Add an <code>Authorization: Bearer &lt;access token&gt;</code> header if the client is outside the private network range. Create a token under '''Setup → More Options → Access Tokens'''.
 
 == Resources ==
 
