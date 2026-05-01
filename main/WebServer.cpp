@@ -281,6 +281,7 @@ namespace http
 			}
 
 			m_pWebEm->RegisterPageCode("/mcp", [this](auto&& session, auto&& req, auto&& rep) { PostMcp(session, req, rep); }, false);
+			m_pWebEm->RegisterOptionsCode("/mcp", [this](auto&& session, auto&& req, auto&& rep) { OptionsMcp(session, req, rep); });
 
 			m_pWebEm->RegisterPageCode("/json.htm", [this](auto&& session, auto&& req, auto&& rep) { GetJSonPage(session, req, rep); });
 			m_pWebEm->RegisterPageCode("/alexa.htm", [this](auto&& session, auto&& req, auto&& rep) { GetAlexaPage(session, req, rep); });

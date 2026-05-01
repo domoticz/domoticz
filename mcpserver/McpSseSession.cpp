@@ -76,16 +76,36 @@ CMcpSseHandler::CMcpSseHandler(std::function<void(const std::string&)> writer,
 	: m_writer(std::move(writer))
 	, m_webSession(webSession)
 {
-	// context format: "mcpSessionId" or "mcpSessionId:lastEventId"
-	auto colon = context.find(':');
-	if (colon != std::string::npos)
+	// context format: "mcpSessionId", "mcpSessionId:lastEventId",
+	//                 or "legacy|<sessionId>|<endpointUrl>"
+	// '|' is used as separator in the legacy format because the endpoint URL contains ':'.
+	if (context.substr(0, 7) == "legacy|")
 	{
-		m_mcpSessionId = context.substr(0, colon);
-		m_lastEventId = context.substr(colon + 1);
+		std::string rest = context.substr(7);
+		auto pipe = rest.find('|');
+		if (pipe != std::string::npos)
+		{
+			m_mcpSessionId = rest.substr(0, pipe);
+			m_legacyEndpointUrl = rest.substr(pipe + 1);
+		}
+		else
+		{
+			m_mcpSessionId = rest;
+		}
+		m_isLegacy = true;
 	}
 	else
 	{
-		m_mcpSessionId = context;
+		auto colon = context.find(':');
+		if (colon != std::string::npos)
+		{
+			m_mcpSessionId = context.substr(0, colon);
+			m_lastEventId = context.substr(colon + 1);
+		}
+		else
+		{
+			m_mcpSessionId = context;
+		}
 	}
 }
 
@@ -104,6 +124,19 @@ void CMcpSseHandler::Start()
 				if (m_alive.load())
 					m_writer(event);
 			});
+
+		if (m_isLegacy)
+		{
+			// Legacy SSE transport: send the endpoint event so the client knows where to POST
+			if (m_alive.load())
+			{
+				std::string endpointEvent = "event: endpoint\ndata: " + m_legacyEndpointUrl + "\n\n";
+				m_writer(endpointEvent);
+			}
+			_log.Debug(DEBUG_WEBSERVER, "MCP: Legacy SSE handler started for session %s, endpoint: %s",
+			           m_mcpSessionId.c_str(), m_legacyEndpointUrl.c_str());
+			return;
+		}
 
 		if (!m_lastEventId.empty())
 		{

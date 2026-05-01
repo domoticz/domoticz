@@ -60,6 +60,37 @@ static std::string McpGetSessionIdFromRequest(const http::server::request& req)
 	return hdr ? std::string(hdr) : std::string{};
 }
 
+static bool McpIsValidSessionId(const std::string& sid)
+{
+	if (sid.empty() || sid.size() > 64)
+		return false;
+	return sid.find_first_not_of("0123456789abcdefABCDEF") == std::string::npos;
+}
+
+static std::string McpGetSessionIdFromQuery(const http::server::request& req)
+{
+	// Parse ?sessionId=xxx or &sessionId=xxx from the URI query string
+	const std::string& uri = req.uri;
+	auto qpos = uri.find('?');
+	if (qpos == std::string::npos)
+		return {};
+	std::string query = uri.substr(qpos + 1);
+	const std::string key = "sessionId=";
+	auto kpos = query.find(key);
+	if (kpos == std::string::npos)
+		return {};
+	std::string value = query.substr(kpos + key.size());
+	auto amp = value.find('&');
+	if (amp != std::string::npos)
+		value = value.substr(0, amp);
+	if (!McpIsValidSessionId(value))
+	{
+		_log.Debug(DEBUG_WEBSERVER, "MCP: Rejecting malformed sessionId in query: %s", uri.c_str());
+		return {};
+	}
+	return value;
+}
+
 static bool McpIsValidSubscriptionUri(const std::string& uri)
 {
 	if (uri == "domoticz://devices" || uri == "domoticz://scenes")
@@ -100,17 +131,18 @@ namespace http
 {
 	namespace server
 	{
+		void CWebServer::OptionsMcp(WebEmSession& session, const request& req, reply& rep)
+		{
+			rep.status = http::server::reply::ok;
+			http::server::reply::add_header(&rep, "Content-Length", "0");
+			http::server::reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
+			http::server::reply::add_header(&rep, "Access-Control-Allow-Methods", "GET, HEAD, POST, DELETE, OPTIONS");
+			http::server::reply::add_header(&rep, "Access-Control-Allow-Headers", "Content-Type, Accept, Authorization, Mcp-Session-Id, Mcp-Protocol-Version, Last-Event-ID");
+			http::server::reply::add_header(&rep, "Access-Control-Max-Age", "86400");
+		}
+
 		void CWebServer::PostMcp(WebEmSession &session, const request &req, reply &rep)
 		{
-			if (req.method == "OPTIONS")
-			{
-				rep.status = reply::ok;
-				reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
-				reply::add_header(&rep, "Access-Control-Allow-Methods", "GET, HEAD, POST, DELETE, OPTIONS");
-				reply::add_header(&rep, "Access-Control-Allow-Headers", "Content-Type, Accept, Authorization, Mcp-Session-Id, Mcp-Protocol-Version, Last-Event-ID");
-				reply::add_header(&rep, "Access-Control-Max-Age", "86400");
-				return;
-			}
 			if (g_bLlmMCPSupport == false)
 			{
 				_log.Log(LOG_ERROR, "MCP: MCP access requested (IP: %s), but service disabled with -nomcp !", session.remote_host.c_str());
@@ -174,7 +206,9 @@ namespace http
 			if (req.get_req_header(&req, "Accept") != nullptr)
 			{
 				std::string accept = req.get_req_header(&req, "Accept");
-				if (accept.find("text/event-stream") == std::string::npos && accept.find("application/json") == std::string::npos)
+				if (accept.find("text/event-stream") == std::string::npos &&
+				    accept.find("application/json") == std::string::npos &&
+				    accept.find("*/*") == std::string::npos)
 				{
 					_log.Debug(DEBUG_WEBSERVER, "MCP: Invalid Accept header: %s", accept.c_str());
 					rep = reply::stock_reply(reply::bad_request);
@@ -218,9 +252,13 @@ namespace http
 			std::string sReqMethod = jsonRequest["method"].asString();
 			_log.Debug(DEBUG_WEBSERVER, "MCP: Request method: %s", sReqMethod.c_str());
 
+			// Detect legacy SSE mode: client uses ?sessionId= query param instead of Mcp-Session-Id header
+			std::string querySid = McpGetSessionIdFromQuery(req);
+			bool isLegacySse = !querySid.empty();
+
 			if (sReqMethod != "initialize")
 			{
-				std::string reqSid = McpGetSessionIdFromRequest(req);
+				std::string reqSid = isLegacySse ? querySid : McpGetSessionIdFromRequest(req);
 				if (reqSid.empty())
 				{
 					rep = reply::stock_reply(reply::bad_request);
@@ -235,12 +273,19 @@ namespace http
 				}
 			}
 
+			auto reply202 = [&rep]() {
+				rep = reply::stock_reply(reply::accepted);
+				reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
+				reply::add_header(&rep, "Access-Control-Allow-Methods", "GET, HEAD, POST, DELETE, OPTIONS");
+				reply::add_header(&rep, "Access-Control-Allow-Headers", "Content-Type, Accept, Authorization, Mcp-Session-Id, Mcp-Protocol-Version, Last-Event-ID");
+			};
+
 			if (sReqMethod.find("notifications/") != std::string::npos)
 			{
 				// Handle notifications, notifications don't have an ID and do not require a response
 				// MCP HTTP transport expects 202 Accepted (not 204 No Content) for notifications
 				_log.Debug(DEBUG_WEBSERVER, "MCP: Handling notification %s (do nothing).", sReqMethod.c_str());
-				rep = reply::stock_reply(reply::accepted);
+				reply202();
 				return;
 			}
 
@@ -283,6 +328,14 @@ namespace http
 			else if (sReqMethod == "initialize")
 			{
 				mcp::McpInitialize(jsonRequest, jsonRPCRep);
+				if (isLegacySse)
+				{
+					// Legacy SSE: session already created when GET established the SSE stream.
+					// Send result via SSE and return 202.
+					CMcpSessionRegistry::Instance().SendToSession(querySid, JSonToRawString(jsonRPCRep));
+					reply202();
+					return;
+				}
 				newSessionId = CMcpSessionRegistry::Instance().CreateSession(session);
 			}
 			else if (sReqMethod == "tools/list")
@@ -320,7 +373,7 @@ namespace http
 			else if (sReqMethod == "logging/setLevel")
 			{
 				std::string levelStr = jsonRequest["params"]["level"].asString();
-				std::string sid = McpGetSessionIdFromRequest(req);
+				std::string sid = isLegacySse ? querySid : McpGetSessionIdFromRequest(req);
 				if (!sid.empty())
 				{
 					// Clamp at 3 (error): clients cannot enable info/debug Domoticz log forwarding.
@@ -345,7 +398,7 @@ namespace http
 				}
 				else
 				{
-					std::string sid = McpGetSessionIdFromRequest(req);
+					std::string sid = isLegacySse ? querySid : McpGetSessionIdFromRequest(req);
 					if (!sid.empty())
 					{
 						CMcpSessionRegistry::Instance().WithSession(
@@ -357,7 +410,7 @@ namespace http
 			else if (sReqMethod == "resources/unsubscribe")
 			{
 				std::string uri = jsonRequest["params"]["uri"].asString();
-				std::string sid = McpGetSessionIdFromRequest(req);
+				std::string sid = isLegacySse ? querySid : McpGetSessionIdFromRequest(req);
 				if (!sid.empty())
 				{
 					CMcpSessionRegistry::Instance().WithSession(
@@ -371,16 +424,24 @@ namespace http
 				rep = reply::stock_reply(reply::not_implemented);
 				return;
 			}
-			// Set response content
-			rep.content = JSonToRawString(jsonRPCRep);
-			rep.status = reply::ok;
-
-			// Set headers
-			reply::add_header(&rep, "Content-Type", "application/json");	// "text/event-stream" is also an option if we want to support SSE
-			reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
-			reply::add_header(&rep, "Access-Control-Expose-Headers", "Mcp-Session-Id, Mcp-Protocol-Version");
-			if (!newSessionId.empty())
-				reply::add_header(&rep, "Mcp-Session-Id", newSessionId.c_str());
+			// Set response
+			if (isLegacySse)
+			{
+				// Legacy SSE: send result via the SSE stream and return 202 Accepted
+				CMcpSessionRegistry::Instance().SendToSession(querySid, JSonToRawString(jsonRPCRep));
+				reply202();
+			}
+			else
+			{
+				// Streamable HTTP: return result directly in the POST response body
+				rep.content = JSonToRawString(jsonRPCRep);
+				rep.status = reply::ok;
+				reply::add_header(&rep, "Content-Type", "application/json");
+				reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
+				reply::add_header(&rep, "Access-Control-Expose-Headers", "Mcp-Session-Id, Mcp-Protocol-Version");
+				if (!newSessionId.empty())
+					reply::add_header(&rep, "Mcp-Session-Id", newSessionId.c_str());
+			}
 			//reply::add_header(&rep, "Cache-Control", "no-cache");
 			//reply::add_header(&rep, "Connection", "keep-alive");
 		}
@@ -402,6 +463,7 @@ namespace http
 
 			if (sessionIdHdr != nullptr)
 			{
+				// Streamable HTTP: session already exists, look it up
 				bool found = CMcpSessionRegistry::Instance().WithSession(
 					sessionIdHdr, [](CMcpSession& s) { s.lastActivity = time(nullptr); });
 				if (!found)
@@ -410,21 +472,42 @@ namespace http
 					return;
 				}
 				mcpSessionId = sessionIdHdr;
+
+				// Build sse_context: "sessionId" or "sessionId:lastEventId"
+				const char* lastEventId = req.get_req_header(&req, "Last-Event-ID");
+				std::string sseContext = mcpSessionId;
+				if (lastEventId != nullptr)
+					sseContext = mcpSessionId + ":" + std::string(lastEventId);
+
+				rep.status = reply::sse_stream;
+				rep.sse_session = session;
+				rep.sse_context = sseContext;
+				reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
+
+				_log.Debug(DEBUG_WEBSERVER, "MCP: Opening SSE stream for client %s (session: %s)",
+				           session.remote_host.c_str(), mcpSessionId.c_str());
 			}
+			else
+			{
+				// Legacy SSE transport: no session header — create new session and send endpoint event
+				std::string newSid = CMcpSessionRegistry::Instance().CreateSession(session);
 
-			// Build sse_context: "sessionId" or "sessionId:lastEventId"
-			const char* lastEventId = req.get_req_header(&req, "Last-Event-ID");
-			std::string sseContext = mcpSessionId;
-			if (lastEventId != nullptr && !mcpSessionId.empty())
-				sseContext = mcpSessionId + ":" + std::string(lastEventId);
+				// Build endpoint URL from the actual local socket address (not the Host header,
+				// which is client-supplied and could be spoofed).
+				std::string endpointUrl = "http://" + session.local_host + ":" + session.local_port + "/mcp?sessionId=" + newSid;
 
-			rep.status = reply::sse_stream;
-			rep.sse_session = session;
-			rep.sse_context = sseContext;
-			reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
+				// context format: "legacy|<sessionId>|<endpointUrl>"
+				// Use '|' as separator — ':' cannot be used because the URL contains colons.
+				std::string sseContext = "legacy|" + newSid + "|" + endpointUrl;
 
-			_log.Debug(DEBUG_WEBSERVER, "MCP: Opening SSE stream for client %s (session: %s)",
-			           session.remote_host.c_str(), mcpSessionId.empty() ? "(anon)" : mcpSessionId.c_str());
+				rep.status = reply::sse_stream;
+				rep.sse_session = session;
+				rep.sse_context = sseContext;
+				reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
+
+				_log.Debug(DEBUG_WEBSERVER, "MCP: Opening legacy SSE stream for client %s (new session: %s)",
+				           session.remote_host.c_str(), newSid.c_str());
+			}
 		}
 
 		void CWebServer::HandleMcpDelete(WebEmSession& /*session*/, const request& req, reply& rep)
