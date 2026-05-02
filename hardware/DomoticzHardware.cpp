@@ -324,6 +324,7 @@ void CDomoticzHardwareBase::SendThermostatSensor(const uint8_t ID1, const uint8_
 	thermostat.setpoint = setpointValue;
 	thermostat.temperature = temperatureValue;
 	thermostat.battery_level = BatteryLevel;
+	thermostat.update_flags = 0x03; // temp + setpoint
 	sDecodeRXMessage(this, (const unsigned char*)&thermostat, defaultname.c_str(), -1, nullptr);
 }
 
@@ -341,6 +342,7 @@ void CDomoticzHardwareBase::SendThermostatSensor(const uint8_t ID1, const uint8_
 	thermostat.humidity = static_cast<uint8_t>(humidityValue);
 	thermostat.humidity_status = Get_Humidity_Level(thermostat.humidity);
 	thermostat.battery_level = BatteryLevel;
+	thermostat.update_flags = 0x07; // temp + setpoint + humidity
 	sDecodeRXMessage(this, (const unsigned char*)&thermostat, defaultname.c_str(), -1, nullptr);
 }
 
@@ -374,6 +376,7 @@ void CDomoticzHardwareBase::SendThermostatSensor(const uint8_t ID1, const uint8_
 
 	thermostat.forecast = barometric_forecast;
 	thermostat.battery_level = BatteryLevel;
+	thermostat.update_flags = 0x0F; // temp + setpoint + humidity + barometer
 	sDecodeRXMessage(this, (const unsigned char*)&thermostat, defaultname.c_str(), -1, nullptr);
 }
 
