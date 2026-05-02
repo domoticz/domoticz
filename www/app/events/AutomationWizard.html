@@ -51,7 +51,7 @@
                 <div ng-if="$ctrl.triggerType === 'device'" class="aw-form">
                     <div class="aw-field">
                         <label>{{:: 'Device' | translate }}</label>
-                        <input type="text" class="form-control"
+                        <input type="text" id="aw-device-search" class="form-control"
                                ng-model="$ctrl.deviceSearch"
                                placeholder="{{:: 'Search devices\u2026' | translate }}"
                                autocomplete="off">
@@ -90,8 +90,19 @@
                 <div ng-if="$ctrl.triggerType === 'time'" class="aw-form">
                     <div class="aw-row">
                         <div class="aw-field">
-                            <label>{{:: 'Time' | translate }}</label>
-                            <input type="time" class="form-control" ng-model="$ctrl.triggerConfig.time">
+                            <label data-i18n="Time">{{:: 'Time' | translate }}</label>
+                            <div class="aw-time-selects">
+                                <select class="form-control combobox ui-corner-all aw-time-select"
+                                        ng-model="$ctrl.triggerConfig.hour"
+                                        ng-options="item.value as item.label for item in $ctrl.hourOptions">
+                                </select>
+                                :
+                                <select class="form-control combobox ui-corner-all aw-time-select"
+                                        ng-model="$ctrl.triggerConfig.min"
+                                        ng-options="item.value as item.label for item in $ctrl.minuteOptions">
+                                </select>
+                                <span data-i18n="(hour/minute)"></span>
+                            </div>
                         </div>
                         <div class="aw-field">
                             <label>{{:: 'Days' | translate }}</label>
@@ -163,10 +174,15 @@
                 <!-- Variable trigger -->
                 <div ng-if="$ctrl.triggerType === 'variable'" class="aw-form">
                     <div class="aw-field">
-                        <label>{{:: 'Variable name' | translate }}</label>
-                        <input type="text" class="form-control"
-                               ng-model="$ctrl.triggerConfig.varName"
-                               placeholder="e.g. MyVar">
+                        <label>{{:: 'Variable' | translate }}</label>
+                        <select class="form-control" ng-model="$ctrl.triggerConfig.varName">
+                            <option value="">{{:: '— Select variable —' | translate }}</option>
+                            <option ng-repeat="v in $ctrl.variables track by v.idx"
+                                    value="{{v.Name}}">{{v.Name}}</option>
+                        </select>
+                        <div ng-if="!$ctrl.variablesLoaded" class="aw-device-loading">
+                            {{:: 'Loading…' | translate }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -389,7 +405,7 @@
                     {{:: 'Cancel' | translate }}
                 </button>
                 <button type="button" class="btn btn-primary"
-                        ng-if="$ctrl.step < 4"
+                        ng-if="$ctrl.step > 1 && $ctrl.step < 4"
                         ng-click="$ctrl.goNext()"
                         ng-disabled="!$ctrl.canGoNext()">
                     {{:: 'Next' | translate }} <i class="icon-arrow-right"></i>

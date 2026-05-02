@@ -238,12 +238,25 @@ define(['app'], function (app) {
             vm.name             = '';
             vm.showActionPicker = false;
             vm.deviceSearch     = '';
-            vm.devices          = [];
-            vm.scenes           = [];
-            vm.devicesLoaded    = false;
-            vm.scenesLoaded     = false;
+            vm.devices           = [];
+            vm.scenes            = [];
+            vm.variables         = [];
+            vm.devicesLoaded     = false;
+            vm.scenesLoaded      = false;
+            vm.variablesLoaded   = false;
             vm.deviceConditions = DEVICE_CONDITIONS['switch'];
             vm.conditionNeedsValue = false;
+
+            vm.hourOptions = (function () {
+                var opts = [];
+                for (var i = 0; i < 24; i++) opts.push({ label: ('0' + i).slice(-2), value: i });
+                return opts;
+            })();
+            vm.minuteOptions = (function () {
+                var opts = [];
+                for (var i = 0; i < 60; i++) opts.push({ label: ('0' + i).slice(-2), value: i });
+                return opts;
+            })();
 
             // — lifecycle —
             vm.$onChanges = function (changes) {
@@ -285,8 +298,17 @@ define(['app'], function (app) {
 
             vm.goNext = function () {
                 if (!vm.canGoNext()) return;
-                if (vm.step === 3) loadScenes(); // pre-load for action scene pickers
+                if (vm.step === 3) loadScenes();
                 vm.step++;
+                if (vm.step === 2 && vm.triggerType === 'device') {
+                    $timeout(function () {
+                        var el = document.getElementById('aw-device-search');
+                        if (el) el.focus();
+                    });
+                }
+                if (vm.step === 2 && vm.triggerType === 'variable') {
+                    loadVariables();
+                }
                 if (vm.step === 4) {
                     vm.generatedCode = generateCode();
                     // Seed name from trigger if still empty
@@ -299,9 +321,6 @@ define(['app'], function (app) {
                 vm.onClose();
             };
 
-            vm.closeOnBackdrop = function (e) {
-                if (e.target === e.currentTarget) vm.onClose();
-            };
 
             // — Step 2: device trigger —
             vm.selectDevice = function (dev) {
@@ -446,7 +465,7 @@ define(['app'], function (app) {
 
             function initTriggerDefaults(type) {
                 var tc = vm.triggerConfig;
-                if (type === 'time')     { tc.time = tc.time || '07:00'; tc.days = tc.days || ''; }
+                if (type === 'time')     { tc.hour = tc.hour != null ? tc.hour : 7; tc.min = tc.min != null ? tc.min : 0; tc.days = tc.days || ''; }
                 if (type === 'sun')      { tc.event = tc.event || 'sunrise'; tc.offset = tc.offset != null ? tc.offset : 0; }
                 if (type === 'interval') { tc.value = tc.value || 5; tc.unit = tc.unit || 'minutes'; }
                 if (type === 'security') { tc.state = tc.state || 'SECURITY_ARMEDAWAY'; }
@@ -466,9 +485,14 @@ define(['app'], function (app) {
                 if (vm.devicesLoaded) return;
                 $http.get('json.htm?type=command&param=getdevices&filter=all&used=true&order=Name')
                     .then(function (resp) {
-                        vm.devices       = (resp.data && resp.data.result) ? resp.data.result : [];
+                        var list = (resp.data && resp.data.result) ? resp.data.result : [];
+                        list.sort(function (a, b) {
+                            return (a.Name || '').toLowerCase().localeCompare((b.Name || '').toLowerCase());
+                        });
+                        vm.devices       = list;
                         vm.devicesLoaded = true;
-                    });
+                    })
+                    .catch(function () { vm.devices = []; vm.devicesLoaded = true; });
             }
 
             function loadScenes() {
@@ -477,7 +501,22 @@ define(['app'], function (app) {
                     .then(function (resp) {
                         vm.scenes       = (resp.data && resp.data.result) ? resp.data.result : [];
                         vm.scenesLoaded = true;
-                    });
+                    })
+                    .catch(function () { vm.scenes = []; vm.scenesLoaded = true; });
+            }
+
+            function loadVariables() {
+                if (vm.variablesLoaded) return;
+                $http.get('json.htm?type=command&param=getuservariables')
+                    .then(function (resp) {
+                        var list = (resp.data && resp.data.result) ? resp.data.result : [];
+                        list.sort(function (a, b) {
+                            return (a.Name || '').toLowerCase().localeCompare((b.Name || '').toLowerCase());
+                        });
+                        vm.variables       = list;
+                        vm.variablesLoaded = true;
+                    })
+                    .catch(function () { vm.variables = []; vm.variablesLoaded = true; });
             }
 
             function buildConditionLine(tc, indent) {
@@ -514,7 +553,8 @@ define(['app'], function (app) {
                     var daysVal = DAYS_MAP[tc.days] || tc.days;
                     var days = daysVal ? ' on ' + daysVal : '';
                     L.push(i8 + 'timer = {');
-                    L.push(i12 + "'at " + formatTime(tc.time) + days + "'");
+                    var timeStr = ('0' + (tc.hour || 0)).slice(-2) + ':' + ('0' + (tc.min || 0)).slice(-2);
+                    L.push(i12 + "'at " + timeStr + days + "'");
                     L.push(i8 + '},');
                 } else if (t === 'sun') {
                     var ev  = tc.event || 'sunrise';
