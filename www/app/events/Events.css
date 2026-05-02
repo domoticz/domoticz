@@ -836,3 +836,52 @@
     display: flex;
     gap: 8px;
 }
+
+/* Day-of-week checkboxes */
+.aw-day-checkboxes {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.aw-day-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--dz-input-border);
+    border-radius: 4px;
+    background: var(--dz-input-bg);
+    color: var(--dz-input-text);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    margin: 0;
+    transition: background 0.15s, color 0.15s;
+}
+
+.aw-day-label input[type="checkbox"] {
+    display: none;
+}
+
+.aw-day-label.aw-day-active {
+    background: var(--dz-accent-color);
+    color: #fff;
+    border-color: var(--dz-accent-color);
+}
+
+/* Ace editor in review step */
+.aw-ace-container {
+    height: 280px;
+    border: 1px solid var(--dz-input-border);
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+/* Duplicate name warning */
+.aw-name-warning {
+    color: #e8a838;
+    font-size: 12px;
+    margin-top: 4px;
+}

@@ -11,15 +11,15 @@ define(['app'], function (app) {
     ];
 
     var ACTIONS = [
-        { id: 'switch',   icon: 'fa-solid fa-toggle-off',    label: 'Device',        desc: 'Control any device (switch, dimmer, setpoint, sensor, \u2026)' },
+        { id: 'switch',   icon: 'fa-solid fa-toggle-off',    label: 'Device',        desc: 'Control any device (switch, dimmer, setpoint, sensor, …)' },
         { id: 'notify',   icon: 'fa-solid fa-bell',          label: 'Notification',  desc: 'Send a push notification or alert' },
         { id: 'scene',    icon: 'fa-solid fa-layer-group',   label: 'Scene',         desc: 'Activate or deactivate a scene' },
         { id: 'variable', icon: 'fa-solid fa-pen',           label: 'Set Variable',  desc: 'Update a user variable value' },
         { id: 'http',     icon: 'fa-solid fa-globe',         label: 'HTTP Request',  desc: 'Call a webhook or external service' },
+        { id: 'delay',    icon: 'fa-solid fa-hourglass-half',label: 'Delay',         desc: 'Wait before continuing (using domoticz.after)' },
         { id: 'custom',   icon: 'fa-solid fa-code',          label: 'Custom Code',   desc: 'Write your own dzVents Lua snippet' },
     ];
 
-    // Available sub-actions per device category
     var ACTION_OPTIONS = {
         'switch':      [
             { id: 'switchOn',          label: 'Turn On' },
@@ -53,10 +53,10 @@ define(['app'], function (app) {
             { id: 'switchOff',         label: 'Close' }
         ],
         'temperature': [
-            { id: 'updateTemperature', label: 'Set temperature',  hasValue: true, unit: '\u00b0', def: 20, step: 0.1 }
+            { id: 'updateTemperature', label: 'Set temperature',  hasValue: true, unit: '°', def: 20, step: 0.1 }
         ],
         'temphum':     [
-            { id: 'updateTempHum',     label: 'Set temperature',  hasValue: true, unit: '\u00b0', def: 20, step: 0.1 }
+            { id: 'updateTempHum',     label: 'Set temperature',  hasValue: true, unit: '°', def: 20, step: 0.1 }
         ],
         'humidity':    [
             { id: 'updateHumidity',    label: 'Set humidity',     hasValue: true, unit: '%',  def: 50,  min: 0, max: 100 }
@@ -72,7 +72,7 @@ define(['app'], function (app) {
             { id: 'updateLux',         label: 'Set lux',          hasValue: true, unit: 'lux', def: 0 }
         ],
         'co2':         [
-            { id: 'updateAirQuality',  label: 'Set CO\u2082',     hasValue: true, unit: 'ppm', def: 400 }
+            { id: 'updateAirQuality',  label: 'Set CO₂',     hasValue: true, unit: 'ppm', def: 400 }
         ],
         'custom':      [
             { id: 'updateCustomSensor',label: 'Set value',        hasValue: true, unit: '',   def: 0 }
@@ -116,8 +116,8 @@ define(['app'], function (app) {
         rain:        [{ id: 'any', label: 'Any change' }, { id: 'above', label: 'Rate above', hasValue: true, unit: 'mm/h', def: 5 }],
         uv:          [{ id: 'any', label: 'Any change' }, { id: 'above', label: 'UV index above', hasValue: true, unit: '', def: 5 }],
         co2:         [{ id: 'any', label: 'Any change' },
-                      { id: 'above', label: 'CO\u2082 above', hasValue: true, unit: 'ppm', def: 1000 },
-                      { id: 'below', label: 'CO\u2082 below', hasValue: true, unit: 'ppm', def: 1000 }],
+                      { id: 'above', label: 'CO₂ above', hasValue: true, unit: 'ppm', def: 1000 },
+                      { id: 'below', label: 'CO₂ below', hasValue: true, unit: 'ppm', def: 1000 }],
         lux:         [{ id: 'any', label: 'Any change' },
                       { id: 'above', label: 'Above', hasValue: true, unit: 'lux', def: 500 },
                       { id: 'below', label: 'Below', hasValue: true, unit: 'lux', def: 500 }],
@@ -179,7 +179,7 @@ define(['app'], function (app) {
         if (type === 'air quality')    return 'co2';
         if (type === 'lux')            return 'lux';
         if (type === 'usage' && sub === 'electric') return 'energy';
-        if (/p1 smart meter/.test(type) || sub === 'kwh') return 'power'; // hardware meters — no simple action
+        if (/p1 smart meter/.test(type) || sub === 'kwh') return 'power';
         if (type === 'rfxmeter')       return 'counter';
         if (sub === 'temperature')     return 'temperature';
         if (sub === 'humidity')        return 'humidity';
@@ -210,16 +210,12 @@ define(['app'], function (app) {
         return '07:00';
     }
 
-    var DAYS_MAP = {
-        'mon,tue,wed,thu,fri': 'weekdays',
-        'sat,sun':             'weekends'
-    };
-
     app.component('automationWizard', {
         bindings: {
             isOpen:    '<',
             onClose:   '&',
-            onCreated: '&'
+            onCreated: '&',
+            events:    '<'
         },
         templateUrl: 'app/events/AutomationWizard.html',
         controller: function ($scope, $http, $timeout) {
@@ -227,10 +223,9 @@ define(['app'], function (app) {
 
             vm.triggers     = TRIGGERS;
             vm.actionDefs   = ACTIONS;
-            vm.stepCount    = 4;
-            vm.stepLabels   = ['Trigger', 'Configure', 'Actions', 'Review'];
+            vm.stepCount    = 5;
+            vm.stepLabels   = ['Trigger', 'Configure', 'Condition', 'Actions', 'Review'];
 
-            // — public state —
             vm.step             = 1;
             vm.triggerType      = null;
             vm.triggerConfig    = {};
@@ -247,6 +242,8 @@ define(['app'], function (app) {
             vm.variablesLoaded   = false;
             vm.deviceConditions = DEVICE_CONDITIONS['switch'];
             vm.conditionNeedsValue = false;
+            vm.wizardCondition  = {};
+            vm.aceEditor        = null;
 
             vm.hourOptions = (function () {
                 var opts = [];
@@ -259,7 +256,6 @@ define(['app'], function (app) {
                 return opts;
             })();
 
-            // — lifecycle —
             vm.$onChanges = function (changes) {
                 if (changes.isOpen && changes.isOpen.currentValue) {
                     resetState();
@@ -277,7 +273,6 @@ define(['app'], function (app) {
                 document.removeEventListener('keydown', onKeyDown);
             });
 
-            // — navigation —
             vm.selectTrigger = function (id) {
                 if (vm.triggerType !== id) {
                     vm.triggerType   = id;
@@ -290,6 +285,7 @@ define(['app'], function (app) {
             vm.canGoNext = function () {
                 if (vm.step === 1) return !!vm.triggerType;
                 if (vm.step === 2 && vm.triggerType === 'device') return !!vm.triggerConfig.device;
+                if (vm.step === 3) return true;
                 return true;
             };
 
@@ -299,7 +295,6 @@ define(['app'], function (app) {
 
             vm.goNext = function () {
                 if (!vm.canGoNext()) return;
-                if (vm.step === 3) loadScenes();
                 vm.step++;
                 if (vm.step === 2 && vm.triggerType === 'device') {
                     $timeout(function () {
@@ -310,11 +305,19 @@ define(['app'], function (app) {
                 if (vm.step === 2 && vm.triggerType === 'variable') {
                     loadVariables();
                 }
+                if (vm.step === 3) {
+                    if (!vm.wizardCondition.conditionStates || !vm.wizardCondition.conditionStates.length) {
+                        initWizardCondition();
+                    }
+                    if (!vm.devicesLoaded) loadDevices();
+                }
                 if (vm.step === 4) {
-                    vm.generatedCode = generateCode();
-                    // Seed name from trigger if still empty
+                    loadScenes();
+                }
+                if (vm.step === 5) {
                     if (!vm.name) vm.name = defaultName();
-                    vm.generatedCode = generateCode(); // regenerate with name
+                    vm.generatedCode = generateCode();
+                    $timeout(initAceEditor);
                 }
             };
 
@@ -322,13 +325,10 @@ define(['app'], function (app) {
                 vm.onClose();
             };
 
-
-            // — Step 2: device trigger —
             vm.selectDevice = function (dev) {
                 vm.triggerConfig.device         = dev.Name;
                 vm.triggerConfig.deviceCategory = getDeviceCategory(dev);
                 vm.deviceConditions             = DEVICE_CONDITIONS[vm.triggerConfig.deviceCategory] || DEVICE_CONDITIONS['switch'];
-                // reset condition if no longer valid
                 var valid = vm.deviceConditions.some(function (c) { return c.id === vm.triggerConfig.condition; });
                 if (!valid) { vm.triggerConfig.condition = 'any'; }
                 vm.updateConditionValue();
@@ -350,7 +350,32 @@ define(['app'], function (app) {
                 }
             };
 
-            // — Step 3: actions —
+            vm.onConditionTypeChange = function () {
+                if (vm.wizardCondition.type === 'device' && vm.wizardCondition.device) {
+                    vm.onConditionDeviceChange();
+                }
+            };
+
+            vm.onConditionDeviceChange = function () {
+                var dev = vm.devices.find(function (d) { return d.Name === vm.wizardCondition.device; });
+                vm.wizardCondition.category = getDeviceCategory(dev);
+                vm.wizardCondition.conditionStates = DEVICE_CONDITIONS[vm.wizardCondition.category] || DEVICE_CONDITIONS['switch'];
+                var valid = vm.wizardCondition.conditionStates.some(function (c) { return c.id === vm.wizardCondition.state; });
+                if (!valid) vm.wizardCondition.state = 'any';
+                var sel = vm.wizardCondition.conditionStates.find(function (c) { return c.id === vm.wizardCondition.state; }) || {};
+                vm.wizardCondition.needsValue = !!sel.hasValue;
+                vm.wizardCondition.unit = sel.unit || '';
+                if (sel.hasValue && vm.wizardCondition.value == null) vm.wizardCondition.value = sel.def;
+            };
+
+            vm.onConditionStateChange = function () {
+                var sel = vm.wizardCondition.conditionStates.find(function (c) { return c.id === vm.wizardCondition.state; }) || {};
+                vm.wizardCondition.needsValue = !!sel.hasValue;
+                vm.wizardCondition.unit = sel.unit || '';
+                if (sel.hasValue && vm.wizardCondition.value == null) vm.wizardCondition.value = sel.def;
+                if (!sel.hasValue) vm.wizardCondition.value = null;
+            };
+
             vm.openActionPicker = function () { vm.showActionPicker = true; };
             vm.closeActionPicker = function () { vm.showActionPicker = false; };
 
@@ -360,9 +385,18 @@ define(['app'], function (app) {
                     config.action = 'switchOn';
                     config.deviceCategory = 'switch';
                 }
+                if (actionDef.id === 'notify') {
+                    config.priority = 'PRIORITY_NORMAL';
+                }
+                if (actionDef.id === 'delay') {
+                    config.seconds = 5;
+                }
+                if (actionDef.id === 'variable') {
+                    loadVariables();
+                }
                 vm.actions.push({ type: actionDef.id, config: config });
                 vm.showActionPicker = false;
-                loadScenes(); // pre-fetch in case scene action was picked
+                loadScenes();
             };
 
             vm.removeAction = function (idx) {
@@ -427,9 +461,15 @@ define(['app'], function (app) {
                 return 'Value';
             };
 
-            // — Step 4: review / create —
+            vm.nameIsDuplicate = function () {
+                if (!vm.name || !vm.events || !vm.events.length) return false;
+                var n = vm.name.trim().toLowerCase();
+                return vm.events.some(function (e) { return e.name.toLowerCase() === n; });
+            };
+
             vm.onNameChange = function () {
                 vm.generatedCode = generateCode();
+                if (vm.aceEditor) vm.aceEditor.setValue(vm.generatedCode, -1);
             };
 
             vm.createAutomation = function () {
@@ -450,7 +490,6 @@ define(['app'], function (app) {
                 vm.onClose();
             };
 
-            // — internals —
             function resetState() {
                 vm.step             = 1;
                 vm.triggerType      = null;
@@ -463,11 +502,60 @@ define(['app'], function (app) {
                 vm.deviceConditions = DEVICE_CONDITIONS['switch'];
                 vm.conditionNeedsValue = false;
                 vm.generatedCode    = '';
+                vm.wizardCondition  = {};
+                if (vm.aceEditor) { vm.aceEditor.destroy(); vm.aceEditor = null; }
+                var aceEl = document.getElementById('aw-ace-editor');
+                if (aceEl) aceEl.innerHTML = '';
+            }
+
+            function initWizardCondition() {
+                vm.wizardCondition = {
+                    type: 'none',
+                    device: '',
+                    category: 'switch',
+                    conditionStates: [],
+                    state: 'any',
+                    value: null,
+                    fromHour: 8,
+                    fromMin: 0,
+                    toHour: 22,
+                    toMin: 0
+                };
+            }
+
+            function initAceEditor() {
+                require(['ace'], function () {
+                    $timeout(function () {
+                        var el = document.getElementById('aw-ace-editor');
+                        if (!el) return;
+                        if (vm.aceEditor) {
+                            vm.aceEditor.setValue(vm.generatedCode || '', -1);
+                            return;
+                        }
+                        ace.config.set('workerPath', '../js/ace');
+                        var isDark = !document.body.classList.contains('dz-light');
+                        var storedTheme = localStorage.getItem('dz-ace-theme');
+                        var theme = storedTheme || (isDark ? 'ace/theme/tomorrow_night_blue' : 'ace/theme/github');
+                        var editor = ace.edit(el);
+                        editor.$blockScrolling = Infinity;
+                        editor.setTheme(theme);
+                        editor.session.setMode('ace/mode/lua');
+                        editor.setOption('showPrintMargin', false);
+                        editor.setOption('fontSize', '13px');
+                        editor.setValue(vm.generatedCode || '', -1);
+                        editor.on('change', function () {
+                            $scope.$applyAsync(function () {
+                                vm.generatedCode = editor.getValue();
+                            });
+                        });
+                        vm.aceEditor = editor;
+                    });
+                });
             }
 
             function initTriggerDefaults(type) {
                 var tc = vm.triggerConfig;
-                if (type === 'time')     { tc.hour = tc.hour != null ? tc.hour : 7; tc.min = tc.min != null ? tc.min : 0; tc.days = tc.days || ''; }
+                if (type === 'time')     { tc.hour = tc.hour != null ? tc.hour : 7; tc.min = tc.min != null ? tc.min : 0; tc.days = tc.days || { mon: false, tue: false, wed: false, thu: false, fri: false, sat: false, sun: false }; }
                 if (type === 'sun')      { tc.event = tc.event || 'sunrise'; tc.offset = tc.offset != null ? tc.offset : 0; }
                 if (type === 'interval') { tc.value = tc.value || 5; tc.unit = tc.unit || 'minutes'; }
                 if (type === 'security') { tc.state = tc.state || 'SECURITY_ARMEDAWAY'; }
@@ -521,18 +609,6 @@ define(['app'], function (app) {
                     .catch(function () { vm.variables = []; vm.variablesLoaded = true; });
             }
 
-            function buildConditionLine(tc, indent) {
-                var c   = tc.condition;
-                var cat = tc.deviceCategory || 'switch';
-                var v   = tc.conditionValue != null ? tc.conditionValue : 0;
-                if (!c || c === 'any') return null;
-
-                var expr = COND_EXPR[c];
-                if (typeof expr === 'object') expr = expr[cat];
-                if (!expr) return null;
-                return indent + 'if (' + expr.replace('{v}', v) + ') then';
-            }
-
             function generateCode() {
                 var i4 = '    ', i8 = '        ', i12 = '            ';
                 var t  = vm.triggerType;
@@ -552,11 +628,17 @@ define(['app'], function (app) {
                     L.push(i12 + "'" + luaEsc(tc.device || 'Your Device') + "'");
                     L.push(i8 + '},');
                 } else if (t === 'time') {
-                    var daysVal = DAYS_MAP[tc.days] || tc.days;
-                    var days = daysVal ? ' on ' + daysVal : '';
+                    var DAY_KEYS = ['mon','tue','wed','thu','fri','sat','sun'];
+                    var selectedDays = DAY_KEYS.filter(function(d) { return tc.days && tc.days[d]; });
+                    var daysStr = '';
+                    if (selectedDays.length > 0 && selectedDays.length < 7) {
+                        if (selectedDays.join(',') === 'mon,tue,wed,thu,fri') daysStr = ' on weekdays';
+                        else if (selectedDays.join(',') === 'sat,sun') daysStr = ' on weekends';
+                        else daysStr = ' on ' + selectedDays.join(',');
+                    }
                     L.push(i8 + 'timer = {');
                     var timeStr = ('0' + (tc.hour || 0)).slice(-2) + ':' + ('0' + (tc.min || 0)).slice(-2);
-                    L.push(i12 + "'at " + timeStr + days + "'");
+                    L.push(i12 + "'at " + timeStr + daysStr + "'");
                     L.push(i8 + '},');
                 } else if (t === 'sun') {
                     var ev  = tc.event || 'sunrise';
@@ -591,9 +673,26 @@ define(['app'], function (app) {
                           : t === 'security' ? 'security' : 'timer';
                 L.push(i4 + 'execute = function(domoticz, ' + param + ')');
 
-                var bi       = i8;
-                var condLine = (t === 'device') ? buildConditionLine(tc, i8) : null;
-                if (condLine) { L.push(condLine); bi = i12; }
+                var condExprs = [];
+                if (t === 'device' && tc.condition && tc.condition !== 'any') {
+                    var expr1 = COND_EXPR[tc.condition];
+                    if (typeof expr1 === 'object') expr1 = expr1[tc.deviceCategory || 'switch'];
+                    if (expr1) condExprs.push(expr1.replace('{v}', tc.conditionValue != null ? tc.conditionValue : 0));
+                }
+                var wc = vm.wizardCondition;
+                if (wc && wc.type === 'device' && wc.device && wc.state && wc.state !== 'any') {
+                    var wcExpr = COND_EXPR[wc.state];
+                    if (typeof wcExpr === 'object') wcExpr = wcExpr[wc.category || 'switch'];
+                    if (wcExpr) condExprs.push(wcExpr.replace('{v}', wc.value != null ? wc.value : 0));
+                } else if (wc && wc.type === 'time') {
+                    var from = ('0'+(wc.fromHour||8)).slice(-2)+':'+('0'+(wc.fromMin||0)).slice(-2);
+                    var to   = ('0'+(wc.toHour||22)).slice(-2)+':'+('0'+(wc.toMin||0)).slice(-2);
+                    condExprs.push("domoticz.time.matchesRule('between " + from + " and " + to + "')");
+                }
+
+                var combinedCond = condExprs.length ? i8 + 'if (' + condExprs.join(' and ') + ') then' : null;
+                var bi = i8;
+                if (combinedCond) { L.push(combinedCond); bi = i12; }
 
                 if (!vm.actions.length) {
                     L.push(bi + '-- Add your actions here');
@@ -634,11 +733,10 @@ define(['app'], function (app) {
                             } else if (act === 'updateEnergy') {
                                 L.push(bi + dev + ".updateEnergy(" + numVal(c.actionValue, 0) + ")");
                             } else {
-                                // open(), close(), stop(), switchOn(), switchOff(), toggleSwitch(), etc.
                                 L.push(bi + dev + "." + act + "()");
                             }
                         } else if (a.type === 'notify') {
-                            L.push(bi + "domoticz.notify('" + luaEsc(c.title || 'Alert') + "', '" + luaEsc(c.message || '') + "', domoticz.PRIORITY_NORMAL)");
+                            L.push(bi + "domoticz.notify('" + luaEsc(c.title || 'Alert') + "', '" + luaEsc(c.message || '') + "', domoticz." + (c.priority || 'PRIORITY_NORMAL') + ")");
                         } else if (a.type === 'scene') {
                             var sa = c.action === 'off' ? 'deActivate' : 'activate';
                             L.push(bi + "domoticz.scenes('" + luaEsc(c.scene || 'Scene') + "')." + sa + "()");
@@ -651,13 +749,18 @@ define(['app'], function (app) {
                             L.push(bi + i4 + "url = '" + luaEsc(c.url || 'https://example.com') + "',");
                             L.push(bi + i4 + "method = '" + (c.method || 'GET') + "'");
                             L.push(bi + '})');
+                        } else if (a.type === 'delay') {
+                            var secs = intVal(c.seconds, 5);
+                            L.push(bi + 'domoticz.after(' + secs + ', function()');
+                            L.push(bi + i4 + '-- actions after delay go here');
+                            L.push(bi + 'end)');
                         } else if (a.type === 'custom') {
                             (c.code || '-- your code here').split('\n').forEach(function (line) { L.push(bi + line); });
                         }
                     });
                 }
 
-                if (condLine) L.push(i8 + 'end');
+                if (combinedCond) L.push(i8 + 'end');
                 L.push(i4 + 'end');
                 L.push('}');
                 return L.join('\n');
