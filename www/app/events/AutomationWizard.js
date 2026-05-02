@@ -2,21 +2,27 @@ define(['app'], function (app) {
     'use strict';
 
     var TRIGGERS = [
-        { id: 'device',   icon: 'fa-solid fa-toggle-off', label: 'Device State',  desc: 'When a device turns on, off, or changes value' },
-        { id: 'time',     icon: 'fa-solid fa-clock',      label: 'Time Schedule', desc: 'At a specific time with optional day filter' },
-        { id: 'sun',      icon: 'fa-solid fa-sun',        label: 'Sun Event',     desc: 'At sunrise or sunset with optional offset' },
-        { id: 'interval', icon: 'fa-solid fa-rotate',     label: 'Interval',      desc: 'Repeat every N minutes or hours' },
-        { id: 'security', icon: 'fa-solid fa-lock',       label: 'Security',      desc: 'When the security panel state changes' },
-        { id: 'variable', icon: 'fa-solid fa-sliders',    label: 'Variable',      desc: 'When a user variable is updated' },
+        { id: 'device',   icon: 'fa-solid fa-toggle-off',    label: 'Device State',  desc: 'When a device turns on, off, or changes value' },
+        { id: 'scene',    icon: 'fa-solid fa-layer-group',   label: 'Scene',         desc: 'When a scene is activated or deactivated' },
+        { id: 'group',    icon: 'fa-solid fa-object-group',  label: 'Group',         desc: 'When a group changes state' },
+        { id: 'time',     icon: 'fa-solid fa-clock',         label: 'Time Schedule', desc: 'At a specific time with optional day filter' },
+        { id: 'interval', icon: 'fa-solid fa-rotate',        label: 'Interval',      desc: 'Repeat every N minutes or hours' },
+        { id: 'variable', icon: 'fa-solid fa-sliders',       label: 'Variable',      desc: 'When a user variable is updated' },
+        { id: 'sun',      icon: 'fa-solid fa-sun',           label: 'Sun Event',     desc: 'At sunrise or sunset with optional offset' },
+        { id: 'security', icon: 'fa-solid fa-lock',          label: 'Security',      desc: 'When the security panel state changes' },
+        { id: 'system',   icon: 'fa-solid fa-power-off',     label: 'System',        desc: 'When Domoticz starts or shuts down' },
     ];
 
     var ACTIONS = [
         { id: 'switch',   icon: 'fa-solid fa-toggle-off',    label: 'Device',        desc: 'Control any device (switch, dimmer, setpoint, sensor, …)' },
         { id: 'notify',   icon: 'fa-solid fa-bell',          label: 'Notification',  desc: 'Send a push notification or alert' },
+        { id: 'email',    icon: 'fa-solid fa-envelope',      label: 'Email',         desc: 'Send an email notification' },
         { id: 'scene',    icon: 'fa-solid fa-layer-group',   label: 'Scene',         desc: 'Activate or deactivate a scene' },
+        { id: 'group',    icon: 'fa-solid fa-object-group', label: 'Group',         desc: 'Activate, deactivate or toggle a group' },
         { id: 'variable', icon: 'fa-solid fa-pen',           label: 'Set Variable',  desc: 'Update a user variable value' },
         { id: 'http',     icon: 'fa-solid fa-globe',         label: 'HTTP Request',  desc: 'Call a webhook or external service' },
         { id: 'delay',    icon: 'fa-solid fa-hourglass-half',label: 'Delay',         desc: 'Wait before continuing (using domoticz.after)' },
+        { id: 'log',      icon: 'fa-solid fa-list',           label: 'Log Message',   desc: 'Write a message to the Domoticz log' },
         { id: 'custom',   icon: 'fa-solid fa-code',          label: 'Custom Code',   desc: 'Write your own dzVents Lua snippet' },
     ];
 
@@ -236,6 +242,7 @@ define(['app'], function (app) {
             vm.deviceSearch     = '';
             vm.devices           = [];
             vm.scenes            = [];
+            vm.groups            = [];
             vm.variables         = [];
             vm.devicesLoaded     = false;
             vm.scenesLoaded      = false;
@@ -288,10 +295,38 @@ define(['app'], function (app) {
                 vm.goNext();
             };
 
+            function isValidUrl(s) {
+                try { var u = new URL(s); return u.protocol === 'http:' || u.protocol === 'https:'; } catch (e) { return false; }
+            }
+
+            function isActionValid(a) {
+                var c = a.config || {};
+                if (a.type === 'http')     return isValidUrl(c.url) && (!c.handleResponse || !!(c.callback && c.callback.trim()));
+                if (a.type === 'delay')    return c.seconds !== undefined && c.seconds !== '' && Number(c.seconds) > 0;
+                if (a.type === 'custom')   return !!(c.code && c.code.trim());
+                if (a.type === 'variable') return !!(c.varName && c.varName.trim()) && c.value !== undefined && c.value !== '';
+                if (a.type === 'switch')   return !!(c.device && c.action);
+                if (a.type === 'scene')    return !!(c.scene && c.action);
+                if (a.type === 'group')    return !!(c.group && c.action);
+                if (a.type === 'email')    return !!(c.subject && c.subject.trim()) || !!(c.message && c.message.trim());
+                if (a.type === 'notify')   return !!(c.title && c.title.trim()) || !!(c.message && c.message.trim());
+                if (a.type === 'log')      return !!(c.message && c.message.trim());
+                return true;
+            }
+
+            vm.isActionValid = isActionValid;
+
             vm.canGoNext = function () {
                 if (vm.step === 1) return !!vm.triggerType;
-                if (vm.step === 2 && vm.triggerType === 'device') return !!vm.triggerConfig.device;
+                if (vm.step === 2) {
+                    if (vm.triggerType === 'device')   return !!(vm.triggerConfig.devices && vm.triggerConfig.devices.length);
+                    if (vm.triggerType === 'scene')    return !!(vm.triggerConfig.scenes && vm.triggerConfig.scenes.length);
+                    if (vm.triggerType === 'group')    return !!(vm.triggerConfig.groups && vm.triggerConfig.groups.length);
+                    if (vm.triggerType === 'variable') return !!vm.triggerConfig.varName;
+                    if (vm.triggerType === 'system')   return !!(vm.triggerConfig.onStart || vm.triggerConfig.onStop);
+                }
                 if (vm.step === 3) return true;
+                if (vm.step === 4) return vm.actions.length > 0 && vm.actions.every(isActionValid);
                 return true;
             };
 
@@ -310,6 +345,9 @@ define(['app'], function (app) {
                 }
                 if (vm.step === 2 && vm.triggerType === 'variable') {
                     loadVariables();
+                }
+                if (vm.step === 2 && (vm.triggerType === 'scene' || vm.triggerType === 'group')) {
+                    loadScenes();
                 }
                 if (vm.step === 3) {
                     if (!vm.wizardCondition.conditionStates || !vm.wizardCondition.conditionStates.length) {
@@ -332,12 +370,55 @@ define(['app'], function (app) {
             };
 
             vm.selectDevice = function (dev) {
-                vm.triggerConfig.device         = dev.Name;
-                vm.triggerConfig.deviceCategory = getDeviceCategory(dev);
-                vm.deviceConditions             = DEVICE_CONDITIONS[vm.triggerConfig.deviceCategory] || DEVICE_CONDITIONS['switch'];
-                var valid = vm.deviceConditions.some(function (c) { return c.id === vm.triggerConfig.condition; });
-                if (!valid) { vm.triggerConfig.condition = 'any'; }
-                vm.updateConditionValue();
+                var arr = vm.triggerConfig.devices;
+                var idx = arr.indexOf(dev.Name);
+                if (idx >= 0) {
+                    arr.splice(idx, 1);
+                } else {
+                    arr.push(dev.Name);
+                    vm.triggerConfig.deviceCategory = getDeviceCategory(dev);
+                    vm.deviceConditions             = DEVICE_CONDITIONS[vm.triggerConfig.deviceCategory] || DEVICE_CONDITIONS['switch'];
+                    var valid = vm.deviceConditions.some(function (c) { return c.id === vm.triggerConfig.condition; });
+                    if (!valid) { vm.triggerConfig.condition = 'any'; }
+                    vm.updateConditionValue();
+                }
+            };
+
+            vm.isDeviceSelected = function (dev) {
+                return vm.triggerConfig.devices && vm.triggerConfig.devices.indexOf(dev.Name) >= 0;
+            };
+
+            vm.toggleTriggerScene = function (sc) {
+                var arr = vm.triggerConfig.scenes;
+                var idx = arr.indexOf(sc.Name);
+                if (idx >= 0) arr.splice(idx, 1); else arr.push(sc.Name);
+            };
+            vm.isTriggerSceneSelected = function (sc) {
+                return vm.triggerConfig.scenes && vm.triggerConfig.scenes.indexOf(sc.Name) >= 0;
+            };
+            vm.toggleTriggerGroup = function (gr) {
+                var arr = vm.triggerConfig.groups;
+                var idx = arr.indexOf(gr.Name);
+                if (idx >= 0) arr.splice(idx, 1); else arr.push(gr.Name);
+            };
+            vm.isTriggerGroupSelected = function (gr) {
+                return vm.triggerConfig.groups && vm.triggerConfig.groups.indexOf(gr.Name) >= 0;
+            };
+
+            vm.setDayPreset = function (preset) {
+                var days = vm.triggerConfig.days;
+                var all = ['mon','tue','wed','thu','fri','sat','sun'];
+                all.forEach(function(k) { days[k] = false; });
+                if (preset === 'weekdays') { ['mon','tue','wed','thu','fri'].forEach(function(k) { days[k] = true; }); }
+                else if (preset === 'weekend') { ['sat','sun'].forEach(function(k) { days[k] = true; }); }
+            };
+
+            vm.setConditionDayPreset = function (preset) {
+                var days = vm.wizardCondition.days;
+                var all = ['mon','tue','wed','thu','fri','sat','sun'];
+                all.forEach(function(k) { days[k] = false; });
+                if (preset === 'weekdays') { ['mon','tue','wed','thu','fri'].forEach(function(k) { days[k] = true; }); }
+                else if (preset === 'weekend') { ['sat','sun'].forEach(function(k) { days[k] = true; }); }
             };
 
             vm.onConditionChange = function () {
@@ -397,9 +478,16 @@ define(['app'], function (app) {
                 if (actionDef.id === 'delay') {
                     config.seconds = 5;
                 }
+                if (actionDef.id === 'http') {
+                    config.method = 'GET';
+                    config.handleResponse = false;
+                    config.callback = 'myCallback';
+                }
                 if (actionDef.id === 'variable') {
                     loadVariables();
                 }
+                if (actionDef.id === 'group') { config.action = 'on'; }
+                if (actionDef.id === 'log')   { config.level = 'LOG_INFO'; }
                 vm.actions.push({ type: actionDef.id, config: config });
                 vm.showActionPicker = false;
                 loadScenes();
@@ -525,7 +613,9 @@ define(['app'], function (app) {
                     fromHour: 8,
                     fromMin: 0,
                     toHour: 22,
-                    toMin: 0
+                    toMin: 0,
+                    days: { mon: true, tue: true, wed: true, thu: true, fri: true, sat: false, sun: false },
+                    dayPart: 'daytime'
                 };
             }
 
@@ -565,15 +655,21 @@ define(['app'], function (app) {
                 if (type === 'sun')      { tc.event = tc.event || 'sunrise'; tc.offset = tc.offset != null ? tc.offset : 0; }
                 if (type === 'interval') { tc.value = tc.value || 5; tc.unit = tc.unit || 'minutes'; }
                 if (type === 'security') { tc.state = tc.state || 'SECURITY_ARMEDAWAY'; }
-                if (type === 'device')   { tc.condition = tc.condition || 'any'; }
+                if (type === 'device')   { tc.devices = tc.devices || []; tc.condition = tc.condition || 'any'; tc.deviceCategory = tc.deviceCategory || 'switch'; }
+                if (type === 'scene')    { tc.scenes = tc.scenes || []; }
+                if (type === 'group')    { tc.groups = tc.groups || []; }
+                if (type === 'system')   { tc.onStart = tc.onStart !== false; tc.onStop = tc.onStop || false; }
             }
 
             function defaultName() {
                 var t = TRIGGERS.find(function (x) { return x.id === vm.triggerType; });
                 var label = t ? t.label : 'Automation';
-                if (vm.triggerType === 'device' && vm.triggerConfig.device) {
-                    return vm.triggerConfig.device + ' automation';
-                }
+                if (vm.triggerType === 'device' && vm.triggerConfig.devices && vm.triggerConfig.devices.length)
+                    return vm.triggerConfig.devices[0] + ' automation';
+                if (vm.triggerType === 'scene' && vm.triggerConfig.scenes && vm.triggerConfig.scenes.length)
+                    return vm.triggerConfig.scenes[0] + ' automation';
+                if (vm.triggerType === 'group' && vm.triggerConfig.groups && vm.triggerConfig.groups.length)
+                    return vm.triggerConfig.groups[0] + ' automation';
                 return label + ' automation';
             }
 
@@ -595,10 +691,12 @@ define(['app'], function (app) {
                 if (vm.scenesLoaded) return;
                 $http.get('json.htm?type=command&param=getscenes')
                     .then(function (resp) {
-                        vm.scenes       = (resp.data && resp.data.result) ? resp.data.result : [];
+                        var list = (resp.data && resp.data.result) ? resp.data.result : [];
+                        vm.scenes       = list.filter(function(s) { return s.Type === 'Scene'; });
+                        vm.groups       = list.filter(function(s) { return s.Type === 'Group'; });
                         vm.scenesLoaded = true;
                     })
-                    .catch(function () { vm.scenes = []; vm.scenesLoaded = true; });
+                    .catch(function () { vm.scenes = []; vm.groups = []; vm.scenesLoaded = true; });
             }
 
             function loadVariables() {
@@ -629,10 +727,20 @@ define(['app'], function (app) {
                 L.push(i4 + '},');
                 L.push(i4 + 'on = {');
 
-                if (t === 'device') {
-                    L.push(i8 + 'devices = {');
-                    L.push(i12 + "'" + luaEsc(tc.device || 'Your Device') + "'");
+                function pushLuaArray(key, items) {
+                    L.push(i8 + key + ' = {');
+                    items.forEach(function(name, idx) {
+                        L.push(i12 + "'" + luaEsc(name) + "'" + (idx < items.length - 1 ? ',' : ''));
+                    });
                     L.push(i8 + '},');
+                }
+
+                if (t === 'device') {
+                    pushLuaArray('devices', tc.devices || []);
+                } else if (t === 'scene') {
+                    pushLuaArray('scenes', tc.scenes || []);
+                } else if (t === 'group') {
+                    pushLuaArray('groups', tc.groups || []);
                 } else if (t === 'time') {
                     var DAY_KEYS = ['mon','tue','wed','thu','fri','sat','sun'];
                     var selectedDays = DAY_KEYS.filter(function(d) { return tc.days && tc.days[d]; });
@@ -670,17 +778,38 @@ define(['app'], function (app) {
                     L.push(i8 + 'variables = {');
                     L.push(i12 + "'" + luaEsc(tc.varName || 'YourVariable') + "'");
                     L.push(i8 + '},');
+                } else if (t === 'system') {
+                    var evts = [];
+                    if (tc.onStart) evts.push("'start'");
+                    if (tc.onStop)  evts.push("'stop'");
+                    if (!evts.length) evts.push("'start'");
+                    L.push(i8 + 'system = {');
+                    evts.forEach(function(e) { L.push(i12 + e); });
+                    L.push(i8 + '},');
+                }
+
+                var httpCallbacks = vm.actions
+                    .filter(function(a) { return a.type === 'http' && a.config && a.config.handleResponse && a.config.callback && a.config.callback.trim(); })
+                    .map(function(a) { return a.config.callback.trim(); });
+                if (httpCallbacks.length) {
+                    L.push(i8 + 'httpResponses = {');
+                    httpCallbacks.forEach(function(cb) { L.push(i12 + "'" + luaEsc(cb) + "'"); });
+                    L.push(i8 + '},');
                 }
 
                 L.push(i4 + '},');
 
-                var param = t === 'device'   ? 'device'
+                var param = (httpCallbacks.length || t === 'system') ? 'item'
+                          : t === 'device'   ? 'device'
                           : t === 'variable' ? 'variable'
-                          : t === 'security' ? 'security' : 'timer';
+                          : t === 'security' ? 'security'
+                          : t === 'scene'    ? 'scene'
+                          : t === 'group'    ? 'group'
+                          : 'timer';
                 L.push(i4 + 'execute = function(domoticz, ' + param + ')');
 
                 var condExprs = [];
-                if (t === 'device' && tc.condition && tc.condition !== 'any') {
+                if (t === 'device' && tc.condition && tc.condition !== 'any' && tc.devices && tc.devices.length) {
                     var expr1 = COND_EXPR[tc.condition];
                     if (typeof expr1 === 'object') expr1 = expr1[tc.deviceCategory || 'switch'];
                     if (expr1) condExprs.push(expr1.replace('{v}', tc.conditionValue != null ? tc.conditionValue : 0));
@@ -694,11 +823,40 @@ define(['app'], function (app) {
                     var from = ('0'+(wc.fromHour != null ? wc.fromHour : 8)).slice(-2)+':'+('0'+(wc.fromMin != null ? wc.fromMin : 0)).slice(-2);
                     var to   = ('0'+(wc.toHour   != null ? wc.toHour   : 22)).slice(-2)+':'+('0'+(wc.toMin   != null ? wc.toMin   : 0)).slice(-2);
                     condExprs.push("domoticz.time.matchesRule('between " + from + " and " + to + "')");
+                } else if (wc && wc.type === 'days') {
+                    var DAY_KEYS2 = ['mon','tue','wed','thu','fri','sat','sun'];
+                    var selDays = DAY_KEYS2.filter(function(d) { return wc.days && wc.days[d]; });
+                    if (selDays.length && selDays.length < 7) {
+                        var dayRule = selDays.join(',') === 'mon,tue,wed,thu,fri' ? 'weekdays'
+                                    : selDays.join(',') === 'sat,sun'             ? 'weekends'
+                                    : selDays.join(',');
+                        condExprs.push("domoticz.time.matchesRule('at * on " + dayRule + "')");
+                    }
+                } else if (wc && wc.type === 'daytime') {
+                    condExprs.push(wc.dayPart === 'nighttime' ? 'domoticz.time.isNightTime' : 'domoticz.time.isDayTime');
+                }
+
+                var i16 = i12 + i4;
+                var i20 = i16 + i4;
+                if (httpCallbacks.length) {
+                    L.push(i8 + 'if (item.isHTTPResponse) then');
+                    httpCallbacks.forEach(function (cb, idx) {
+                        var kw = idx === 0 ? 'if' : 'elseif';
+                        L.push(i12 + kw + " (item.trigger == '" + luaEsc(cb) + "') then");
+                        L.push(i16 + 'if (item.ok) then');
+                        L.push(i20 + '-- handle response: item.json, item.data, item.statusCode');
+                        L.push(i16 + 'end');
+                    });
+                    L.push(i12 + 'end');
+                    L.push(i8 + 'else');
                 }
 
                 var combinedCond = condExprs.length ? i8 + 'if (' + condExprs.join(' and ') + ') then' : null;
-                var bi = i8;
-                if (combinedCond) { L.push(combinedCond); bi = i12; }
+                var bi = httpCallbacks.length ? i12 : i8;
+                if (combinedCond) {
+                    L.push(httpCallbacks.length ? i12 + combinedCond.trimStart() : combinedCond);
+                    bi = httpCallbacks.length ? i16 : i12;
+                }
 
                 if (!vm.actions.length) {
                     L.push(bi + '-- Add your actions here');
@@ -741,6 +899,13 @@ define(['app'], function (app) {
                             } else {
                                 L.push(bi + dev + "." + act + "()");
                             }
+                        } else if (a.type === 'group') {
+                            var ga = c.action === 'off' ? 'switchOff' : c.action === 'toggle' ? 'toggleGroup' : 'switchOn';
+                            L.push(bi + "domoticz.groups('" + luaEsc(c.group || 'Group') + "')." + ga + "()");
+                        } else if (a.type === 'email') {
+                            var mailArgs = "'" + luaEsc(c.subject || '') + "', '" + luaEsc(c.message || '') + "'";
+                            if (c.to && c.to.trim()) mailArgs += ", '" + luaEsc(c.to.trim()) + "'";
+                            L.push(bi + 'domoticz.email(' + mailArgs + ')');
                         } else if (a.type === 'notify') {
                             L.push(bi + "domoticz.notify('" + luaEsc(c.title || 'Alert') + "', '" + luaEsc(c.message || '') + "', domoticz." + (c.priority || 'PRIORITY_NORMAL') + ")");
                         } else if (a.type === 'scene') {
@@ -753,20 +918,26 @@ define(['app'], function (app) {
                         } else if (a.type === 'http') {
                             L.push(bi + 'domoticz.openURL({');
                             L.push(bi + i4 + "url = '" + luaEsc(c.url || 'https://example.com') + "',");
-                            L.push(bi + i4 + "method = '" + luaEsc(c.method || 'GET') + "'");
+                            L.push(bi + i4 + "method = '" + luaEsc(c.method || 'GET') + "'" + (c.handleResponse && c.callback ? ',' : ''));
+                            if (c.handleResponse && c.callback && c.callback.trim()) {
+                                L.push(bi + i4 + "callback = '" + luaEsc(c.callback.trim()) + "'");
+                            }
                             L.push(bi + '})');
                         } else if (a.type === 'delay') {
                             var secs = intVal(c.seconds, 5);
                             L.push(bi + 'domoticz.after(' + secs + ', function()');
                             L.push(bi + i4 + '-- actions after delay go here');
                             L.push(bi + 'end)');
+                        } else if (a.type === 'log') {
+                            L.push(bi + "domoticz.log('" + luaEsc(c.message || '') + "', domoticz." + (c.level || 'LOG_INFO') + ")");
                         } else if (a.type === 'custom') {
                             (c.code || '-- your code here').split('\n').forEach(function (line) { L.push(bi + line); });
                         }
                     });
                 }
 
-                if (combinedCond) L.push(i8 + 'end');
+                if (combinedCond) L.push((httpCallbacks.length ? i12 : i8) + 'end');
+                if (httpCallbacks.length) L.push(i8 + 'end');
                 L.push(i4 + 'end');
                 L.push('}');
                 return L.join('\n');

@@ -386,12 +386,18 @@
 /* Header */
 .aw-header {
     display: flex;
-    align-items: flex-start;
-    gap: 16px;
+    flex-direction: column;
+    gap: 10px;
     padding: 16px 20px 12px;
     border-bottom: 1px solid var(--dz-input-border);
     background: var(--dz-modal-bg);
     flex-shrink: 0;
+}
+
+.aw-header-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
 }
 
 .aw-title {
@@ -740,6 +746,10 @@
     overflow: hidden;
 }
 
+.aw-action-item--invalid {
+    border-color: var(--dz-danger-color, #d9534f);
+}
+
 .aw-action-header {
     display: flex;
     align-items: center;
@@ -838,6 +848,12 @@
 }
 
 /* Day-of-week checkboxes */
+.aw-day-presets {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
 .aw-day-checkboxes {
     display: flex;
     gap: 4px;
