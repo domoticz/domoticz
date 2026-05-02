@@ -9,6 +9,8 @@ Version 2026.xxxx
 - Added: MCP, domoticz://sensor-types resource listing all available virtual sensor types with mapped values
 - Added: MCP, get_sensor_history tool with daily calendar data for all sensor types and event log for switches/scenes
 - Added: MCP, new prompts: battery_status, climate_overview, create_automation, daily_report, energy_report, hardware_health, scene_optimizer, security_check
+- Added: MCP, Access Tokens for API key authentication; generate and manage tokens in Settings → Access Tokens; supported by all MCP clients including Claude Desktop, VS Code, and HTTP scripts
+- Added: MCP, hw_idx and include_unused filters for the get_all_devices tool
 - Added: Matter, hardware driver for python-matterjs-server via WebSocket; supports on/off, dimmer, temperature, humidity, pressure, illuminance, occupancy, contact, CO2/CO/NO2/PM2.5/PM10, power/energy, door lock, window covering, and battery level
 - Added: Matter, hardware setup page with network topology graph, nodes table showing battery level, RSSI, routing role and connection status, node detail popup with IP addresses and diagnostics, and settings tab for WiFi/Thread credentials and fabric label
 - Added: Counter/Gas report, custom contract-year view with per-period breakdown and forecast for remaining months based on previous year data; forecast bars shown in chart with lighter colour
@@ -20,6 +22,7 @@ Version 2026.xxxx
 - Added: dzVents, switchTimerPlan(idx) method to switch the active timer plan from a script (dzVents 3.1.12)
 - Added: dzVents, device/scene/group resumeTimerPlan() method to immediately replay the most recently elapsed timer; useful for restoring correct device state after a restart or power cut (dzVents 3.1.12)
 - Added: Enever, current electricity and gas prices are now available in the event system
+- Added: Events, Automation Wizard expanded with Scene, Group, and System (start/stop) triggers; multi-device and multi-scene/group selection; weekday/weekend presets for time triggers; Group control, Email, and Log Message actions; day-of-week and daytime/nighttime conditions
 - Added: Dashboard, room plan selector lists available dynamic dashboard layouts, and dynamic dashboard navigation lists available room plans for cross-navigation
 - Added: Dashboard, click device name to open the device log; P1 gas/water values shown on two lines in dashboard widgets; switch widgets support list layout
 - Added: Dashboard Dynamic, new opt-in modular drag-and-drop dashboard with a widget library, multiple named dashboards per user, kiosk/auto-swipe mode, screen standby, and layout import/export; enable in My Profile → Use Dynamic Dashboard
@@ -79,6 +82,9 @@ Version 2026.xxxx
 - Fixed: Dashboard Dynamic, chart widgets now display timestamps in local time instead of UTC (#6770)
 - Fixed: Dashboard Dynamic, Google Calendar widget now scrolls correctly
 - Fixed: Dashboard Dynamic, quick actions widget now prompts for passcode when activating protected devices
+- Fixed: Dashboard Dynamic, camera widget now recovers from a transient connection failure instead of remaining in the unavailable state
+- Fixed: Dashboard Dynamic, memory leak and browser freeze when the Dashboard tab is left open for an extended period (#6804)
+- Fixed: Dashboard Dynamic, rain total and rate now displayed correctly in device and QuickStat widgets
 - Fixed: Devices, multi-line Data column values (text sensors with CR/LF) no longer expand table rows; Data cell is truncated to one line with a hover tooltip showing the full content
 - Fixed: Domoticz Remote, remote switches can now trigger scenes; incorrect error message on failure corrected
 - Fixed: Enphase, Envoy firmware retroactive whLifetime recalculations (upward spikes) no longer corrupt the kWh counter; "Fix Counter/Price Spikes" now correctly re-bases the in-memory tracker after correction
@@ -88,6 +94,7 @@ Version 2026.xxxx
 - Fixed: MCP, browser-based MCP clients (e.g. the MCP inspector) now connect correctly; CORS preflight and SSE response headers are handled properly
 - Fixed: MCP, server is now enabled by default; use -nomcp flag to disable (previously required -llmmcp flag to enable)
 - Fixed: Mobile dashboard, iOS "Force Desktop Mode" setting is now correctly applied; UA-based phone detection restored for iPhone and Android phones
+- Fixed: P1, corrupt zero-value readings from the meter no longer inflate the daily return energy total
 - Fixed: PhilipsHue SSE, application shutdown hang when event stream was idle
 - Fixed: PhilipsHue V2, battery level for motion/temperature/light level sensors reported as 255 instead of actual level
 - Fixed: PhilipsHue v2, thread-safety race condition causing concurrent API call errors
@@ -96,6 +103,7 @@ Version 2026.xxxx
 - Fixed: Python plugin framework, spurious NullStream initialization errors on Python < 3.13 (#6688)
 - Fixed: Python plugins, GIL released during blocking SQL calls preventing multi-second latency spikes in other plugin threads (#6718)
 - Fixed: Python plugins, WebSocket fragmented messages and 64-bit frame lengths are now correctly handled
+- Fixed: Python plugins, segfault in plugins using shared="true" on Python 3.13+
 - Fixed: Setup menu, large gaps between dropdown dividers caused by the service worker serving a stale version of the stylesheet after a Domoticz update
 - Fixed: SolarEdge, energy sensor data corrected; lifetime data was incorrectly showing accumulated values (#6751)
 - Fixed: SolarEdge, optimizer sensors no longer created unnecessarily when optimizer polling is disabled
@@ -104,6 +112,7 @@ Version 2026.xxxx
 - Fixed: Switches, device hover tooltips in the Lights/Switches tab are now restored after page load
 - Fixed: Temperature widget, wind+temperature sensors no longer display the temperature value twice in the device list when wind chill equals ambient temperature
 - Fixed: Text device utility widget now preserves HTML style attributes (color, font-size, etc.)
+- Fixed: Thermostat, temperature and setpoint values in sensor updates are no longer overwritten by stale database values
 - Fixed: Thermostat6, bigtext on the favorites dashboard now shows correct order: temperature first, setpoint in parentheses, then humidity and barometer
 - Fixed: Thermostat6, widgets no longer show EvoHome heat-level color (red) when setpoint is high; EvoHome colors are now restricted to EvoHome Zone/Hot Water devices
 - Fixed: Utility device edit dialog, sensor icon picker no longer shown for Alert and Thermostat Operating State devices where the icon is determined by the alert level and cannot be customised

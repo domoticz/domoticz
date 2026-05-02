@@ -43,6 +43,10 @@
   ],
   "Automation": [
     {
+      "tip": "Use the Automation Wizard in the Events tab to create dzVents scripts visually — pick triggers, conditions, and actions without writing any Lua code.",
+      "icon": "fa-wand-magic-sparkles"
+    },
+    {
       "tip": "Start automation with Blocky before using scripts.",
       "icon": "fa-project-diagram"
     },
@@ -244,6 +248,10 @@
     {
       "tip": "The Domoticz wiki at wiki.domoticz.com has in-depth documentation for hardware, scripting, and more.",
       "icon": "fa-book-open"
+    },
+    {
+      "tip": "Connect AI assistants (Claude, Copilot) to Domoticz via the built-in MCP server — enable it in Settings and generate an Access Token for secure access.",
+      "icon": "fa-robot"
     }
   ],
   "Fun": [
