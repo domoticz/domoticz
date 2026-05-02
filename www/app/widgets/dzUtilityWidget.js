@@ -483,6 +483,8 @@ define(['app', 'widgets/dzBar'], function (app) {
                         bigtext = device.Data + '\u00B0 ' + $scope.$parent.config.TempSign;
                     } else if (ctrl.isThermostatMode() || ctrl.isThermostatFanMode() || ctrl.isThermostatOperatingState()) {
                         bigtext = device.Data;
+                    } else if (typeof device.Rain !== 'undefined') {
+                        bigtext = device.Rain + ' mm';
                     } else if (typeof device.Direction !== 'undefined') {
                         var windSign = ($.myglobals && $.myglobals.windsign) ? $.myglobals.windsign : 'm/s';
                         bigtext = device.DirectionStr || '';
@@ -523,6 +525,8 @@ define(['app', 'widgets/dzBar'], function (app) {
                         return scopedDeviceHtml(device.Data, 'dz-uw-');
                     } else if (ctrl.isAlert()) {
                         return scopedDeviceHtml(device.Data, 'dz-ua-');
+                    } else if (typeof device.Rain !== 'undefined' && typeof device.RainRate !== 'undefined') {
+                        status = $.t('Rain rate') + ': ' + device.RainRate + ' mm/h';
                     } else if (typeof device.Direction !== 'undefined') {
                         var windSign = ($.myglobals && $.myglobals.windsign) ? $.myglobals.windsign : 'm/s';
                         var tempSign = ($rootScope.config && $rootScope.config.TempSign) ? $rootScope.config.TempSign : 'C';

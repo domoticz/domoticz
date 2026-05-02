@@ -139,6 +139,11 @@ define(['app'], function(app) {
             if (d.Humidity !== undefined) {
                 return { value: String(d.Humidity), isOn: false, unit: '%', unit2: null, secondValue: null, typeClass: 'humidity' };
             }
+            if (d.Rain !== undefined) {
+                return { value: String(d.Rain), isOn: false, unit: 'mm',
+                         unit2: d.RainRate !== undefined ? 'mm/h' : null,
+                         secondValue: d.RainRate !== undefined ? String(d.RainRate) : null, typeClass: 'generic' };
+            }
             // P1 Smart Meter — has both CounterToday (import) and CounterDelivToday (export)
             if (d.CounterToday !== undefined && d.CounterDelivToday !== undefined) {
                 var p1Usage  = (d.Usage  || '').trim() || '0 Watt';
