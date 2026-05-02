@@ -399,7 +399,8 @@
 }
 
 .aw-header i {
-    opacity: 0.65;
+    color: var(--dz-accent-color);
+    filter: none;
 }
 
 .aw-title strong {
@@ -560,7 +561,16 @@
     flex-shrink: 0;
     width: 24px;
     text-align: center;
-    opacity: 0.6;
+}
+
+.aw-card-icon i {
+    color: var(--dz-accent-color);
+    filter: none;
+}
+
+.aw-modal i[class^="icon-"],
+.aw-modal i[class*=" icon-"] {
+    filter: brightness(0) invert(1);
 }
 
 .aw-card-text strong {
@@ -604,6 +614,19 @@
     font-weight: bold;
     color: var(--dz-input-text, #555);
     margin: 0;
+}
+
+.aw-form .form-control {
+    background-color: var(--dz-input-bg);
+    color: var(--dz-input-text);
+    border: 1px solid var(--dz-input-border, #ccc);
+    border-radius: 4px;
+}
+
+.aw-form .form-control:focus {
+    border-color: var(--dz-accent-color);
+    outline: 0;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 6px rgba(51,122,183,.5);
 }
 
 /* Device picker */
@@ -708,7 +731,8 @@
 
 .aw-action-header i {
     flex-shrink: 0;
-    opacity: 0.65;
+    color: var(--dz-accent-color);
+    filter: none;
 }
 
 .aw-action-header strong {

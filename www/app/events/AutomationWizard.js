@@ -2,21 +2,21 @@ define(['app'], function (app) {
     'use strict';
 
     var TRIGGERS = [
-        { id: 'device',   icon: 'icon-off',      label: 'Device State',  desc: 'When a device turns on, off, or changes value' },
-        { id: 'time',     icon: 'icon-time',      label: 'Time Schedule', desc: 'At a specific time with optional day filter' },
-        { id: 'sun',      icon: 'icon-star',      label: 'Sun Event',     desc: 'At sunrise or sunset with optional offset' },
-        { id: 'interval', icon: 'icon-refresh',   label: 'Interval',      desc: 'Repeat every N minutes or hours' },
-        { id: 'security', icon: 'icon-lock',      label: 'Security',      desc: 'When the security panel state changes' },
-        { id: 'variable', icon: 'icon-list-alt',  label: 'Variable',      desc: 'When a user variable is updated' },
+        { id: 'device',   icon: 'fa-solid fa-toggle-off', label: 'Device State',  desc: 'When a device turns on, off, or changes value' },
+        { id: 'time',     icon: 'fa-solid fa-clock',      label: 'Time Schedule', desc: 'At a specific time with optional day filter' },
+        { id: 'sun',      icon: 'fa-solid fa-sun',        label: 'Sun Event',     desc: 'At sunrise or sunset with optional offset' },
+        { id: 'interval', icon: 'fa-solid fa-rotate',     label: 'Interval',      desc: 'Repeat every N minutes or hours' },
+        { id: 'security', icon: 'fa-solid fa-lock',       label: 'Security',      desc: 'When the security panel state changes' },
+        { id: 'variable', icon: 'fa-solid fa-sliders',    label: 'Variable',      desc: 'When a user variable is updated' },
     ];
 
     var ACTIONS = [
-        { id: 'switch',   icon: 'icon-off',       label: 'Device',        desc: 'Control any device (switch, dimmer, setpoint, sensor, \u2026)' },
-        { id: 'notify',   icon: 'icon-bell',       label: 'Notification',  desc: 'Send a push notification or alert' },
-        { id: 'scene',    icon: 'icon-th-large',   label: 'Scene',         desc: 'Activate or deactivate a scene' },
-        { id: 'variable', icon: 'icon-edit',       label: 'Set Variable',  desc: 'Update a user variable value' },
-        { id: 'http',     icon: 'icon-globe',      label: 'HTTP Request',  desc: 'Call a webhook or external service' },
-        { id: 'custom',   icon: 'icon-file',       label: 'Custom Code',   desc: 'Write your own dzVents Lua snippet' },
+        { id: 'switch',   icon: 'fa-solid fa-toggle-off',    label: 'Device',        desc: 'Control any device (switch, dimmer, setpoint, sensor, \u2026)' },
+        { id: 'notify',   icon: 'fa-solid fa-bell',          label: 'Notification',  desc: 'Send a push notification or alert' },
+        { id: 'scene',    icon: 'fa-solid fa-layer-group',   label: 'Scene',         desc: 'Activate or deactivate a scene' },
+        { id: 'variable', icon: 'fa-solid fa-pen',           label: 'Set Variable',  desc: 'Update a user variable value' },
+        { id: 'http',     icon: 'fa-solid fa-globe',         label: 'HTTP Request',  desc: 'Call a webhook or external service' },
+        { id: 'custom',   icon: 'fa-solid fa-code',          label: 'Custom Code',   desc: 'Write your own dzVents Lua snippet' },
     ];
 
     // Available sub-actions per device category
@@ -253,6 +253,16 @@ define(['app'], function (app) {
                 }
             };
 
+            function onKeyDown(e) {
+                if ((e.key === 'Escape' || e.keyCode === 27) && vm.isOpen) {
+                    $scope.$apply(function () { vm.close(); });
+                }
+            }
+            document.addEventListener('keydown', onKeyDown);
+            $scope.$on('$destroy', function () {
+                document.removeEventListener('keydown', onKeyDown);
+            });
+
             // — navigation —
             vm.selectTrigger = function (id) {
                 if (vm.triggerType !== id) {
@@ -260,6 +270,7 @@ define(['app'], function (app) {
                     vm.triggerConfig = {};
                     initTriggerDefaults(id);
                 }
+                vm.goNext();
             };
 
             vm.canGoNext = function () {
