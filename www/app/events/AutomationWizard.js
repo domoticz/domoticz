@@ -236,6 +236,7 @@ define(['app'], function (app) {
             vm.triggerConfig    = {};
             vm.actions          = [];
             vm.name             = '';
+            vm.enabled          = true;
             vm.showActionPicker = false;
             vm.deviceSearch     = '';
             vm.devices           = [];
@@ -436,7 +437,7 @@ define(['app'], function (app) {
                 var name = (vm.name || 'MyAutomation').trim();
                 var event = {
                     id:           name,
-                    eventstatus:  '1',
+                    eventstatus:  vm.enabled ? '1' : '0',
                     name:         name,
                     interpreter:  'dzVents',
                     type:         'All',
@@ -456,6 +457,7 @@ define(['app'], function (app) {
                 vm.triggerConfig    = {};
                 vm.actions          = [];
                 vm.name             = '';
+                vm.enabled          = true;
                 vm.deviceSearch     = '';
                 vm.showActionPicker = false;
                 vm.deviceConditions = DEVICE_CONDITIONS['switch'];

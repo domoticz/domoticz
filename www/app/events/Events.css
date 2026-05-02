@@ -626,6 +626,18 @@
     width: 50px;
 }
 
+.aw-field-inline {
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+}
+
+.aw-checkbox-text {
+    font-weight: bold;
+    font-size: 13px;
+    color: var(--dz-input-text);
+}
+
 .aw-form .form-control {
     background-color: var(--dz-input-bg);
     color: var(--dz-input-text);

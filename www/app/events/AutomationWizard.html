@@ -368,6 +368,11 @@
                     <p>{{:: 'Give your automation a name and review the generated code.' | translate }}</p>
                 </div>
                 <div class="aw-form">
+                    <div class="aw-field aw-field-inline">
+                        <input type="checkbox" id="aw-enabled" ng-model="$ctrl.enabled">
+                        <label for="aw-enabled"></label>
+                        <span class="aw-checkbox-text">{{:: 'Enabled' | translate }}</span>
+                    </div>
                     <div class="aw-field">
                         <label>{{:: 'Automation name' | translate }}</label>
                         <input type="text" class="form-control aw-name-input"
@@ -413,7 +418,7 @@
                 <button type="button" class="btn btn-success"
                         ng-if="$ctrl.step === 4"
                         ng-click="$ctrl.createAutomation()">
-                    <i class="icon-asterisk"></i> {{:: 'Create Automation' | translate }}
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> {{:: 'Create' | translate }}
                 </button>
             </div>
         </div>
