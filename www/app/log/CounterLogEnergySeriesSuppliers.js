@@ -226,13 +226,16 @@
             ];
         }
 		//Month/Year
+        // Spike detection (IQR anomaly filter) is intentionally omitted here.
+        // P1 meters are utility-grade certified hardware — they cannot produce sensor glitches,
+        // and legitimate high days (EV charging, heavy solar return) would be falsely flagged.
+        // The general counter series (counterMonthYearSeriesSuppliers) still uses spike detection.
         function p1MonthYearSeriesSuppliers(deviceType) {
             return [
                 counterLogSeriesSupplier.summingSeriesSupplier({
                     id: 'P1MYSS',
                     dataItemKeys: ['v1', 'v2'],
                     convertZeroToNull: true,
-                    postprocessDatapoints: chart.markSpikeDatapoints,
                     label: 'C',
                     series: {
                         type: 'column',
@@ -240,8 +243,7 @@
                         zIndex: 2,
                         tooltip: {
                             valueSuffix: ' ' + chart.valueUnits.energy(chart.valueMultipliers.m1000),
-                            valueDecimals: 3,
-                            pointFormatter: chart.spikeTooltipPointFormatter
+                            valueDecimals: 3
                         },
                         color: 'rgba(3,190,252,0.8)',
                         yAxis: 0
