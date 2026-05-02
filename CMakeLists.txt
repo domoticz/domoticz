@@ -53,6 +53,7 @@ option(ENABLE_ASAN "Build with address sanitizer" NO)
 ### COMPILER SETTINGS
 #
 #
+CMAKE_POLICY(SET CMP0167 NEW)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -128,9 +129,10 @@ IF(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
 # Update submodules as needed
     IF(GIT_SUBMODULE)
         message(STATUS "Submodule update")
-    execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --remote --force
                         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                         RESULT_VARIABLE GIT_SUBMOD_RESULT)
+        
         IF(NOT GIT_SUBMOD_RESULT EQUAL "0")
             message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
         ENDIF()
@@ -431,9 +433,12 @@ tinyxpath/xpath_syntax.cpp
 IF(USE_BUILTIN_JSONCPP)
   set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build jsoncpp_lib as a shared library." FORCE)
   set(BUILD_STATIC_LIBS ON CACHE BOOL "Build jsoncpp_lib as a static library." FORCE)
+  set(BUILD_OBJECT_LIBS OFF CACHE BOOL "Build jsoncpp_lib as an object library." FORCE)
   set(JSONCPP_WITH_TESTS OFF CACHE BOOL "Enable jsoncpp tests" FORCE)
   set(JSONCPP_WITH_POST_BUILD_UNITTEST OFF CACHE BOOL "Enable jsoncpp post build unit tests" FORCE)
   set(JSONCPP_WITH_PKGCONFIG_SUPPORT OFF CACHE BOOL "Enable jsoncpp pkgconfig support" FORCE)
+  set(JSONCPP_WITH_CMAKE_PACKAGE OFF CACHE BOOL "Generate and install cmake package files" FORCE)
+  set(JSONCPP_WITH_INSTALL OFF CACHE BOOL "Include JsonCpp in the install target" FORCE)
   add_subdirectory(extern/jsoncpp ${CMAKE_CURRENT_BINARY_DIR}/jsoncpp_build EXCLUDE_FROM_ALL)
   if(NOT MSVC)
     target_compile_options(jsoncpp_static PRIVATE -Wno-deprecated-declarations)

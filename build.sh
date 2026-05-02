@@ -69,7 +69,7 @@ if [ "$BUILD_ONLY" = false ]; then
     git fetch --all --recurse-submodules=no
 
     git reset --hard ${BRANCH}
-    git submodule update --init --recursive --force
+    git submodule update --init --remote --force
 
     if [ "$FORCE" != "force" ]; then
         LAST_SUCCESS_FILE="/tmp/build_${MACH}_${BUILD_TYPE}.last_success"
