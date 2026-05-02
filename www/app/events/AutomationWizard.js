@@ -245,6 +245,12 @@ define(['app'], function (app) {
             vm.wizardCondition  = {};
             vm.aceEditor        = null;
 
+            $scope.$on('$destroy', function () {
+                if (vm.aceEditor) { vm.aceEditor.destroy(); vm.aceEditor = null; }
+                var aceEl = document.getElementById('aw-ace-editor');
+                if (aceEl) aceEl.innerHTML = '';
+            });
+
             vm.hourOptions = (function () {
                 var opts = [];
                 for (var i = 0; i < 24; i++) opts.push({ label: ('0' + i).slice(-2), value: i });
@@ -685,8 +691,8 @@ define(['app'], function (app) {
                     if (typeof wcExpr === 'object') wcExpr = wcExpr[wc.category || 'switch'];
                     if (wcExpr) condExprs.push(wcExpr.replace('{v}', wc.value != null ? wc.value : 0));
                 } else if (wc && wc.type === 'time') {
-                    var from = ('0'+(wc.fromHour||8)).slice(-2)+':'+('0'+(wc.fromMin||0)).slice(-2);
-                    var to   = ('0'+(wc.toHour||22)).slice(-2)+':'+('0'+(wc.toMin||0)).slice(-2);
+                    var from = ('0'+(wc.fromHour != null ? wc.fromHour : 8)).slice(-2)+':'+('0'+(wc.fromMin != null ? wc.fromMin : 0)).slice(-2);
+                    var to   = ('0'+(wc.toHour   != null ? wc.toHour   : 22)).slice(-2)+':'+('0'+(wc.toMin   != null ? wc.toMin   : 0)).slice(-2);
                     condExprs.push("domoticz.time.matchesRule('between " + from + " and " + to + "')");
                 }
 
@@ -747,7 +753,7 @@ define(['app'], function (app) {
                         } else if (a.type === 'http') {
                             L.push(bi + 'domoticz.openURL({');
                             L.push(bi + i4 + "url = '" + luaEsc(c.url || 'https://example.com') + "',");
-                            L.push(bi + i4 + "method = '" + (c.method || 'GET') + "'");
+                            L.push(bi + i4 + "method = '" + luaEsc(c.method || 'GET') + "'");
                             L.push(bi + '})');
                         } else if (a.type === 'delay') {
                             var secs = intVal(c.seconds, 5);
