@@ -1,0 +1,511 @@
+<div class="aw-overlay" ng-show="$ctrl.isOpen">
+    <div class="aw-modal">
+
+        <!-- Header -->
+        <div class="aw-header">
+            <div class="aw-steps">
+                <span ng-repeat="label in $ctrl.stepLabels track by $index"
+                      class="aw-step"
+                      ng-class="{'aw-step-active': $ctrl.step === $index + 1, 'aw-step-done': $ctrl.step > $index + 1}">
+                    <span class="aw-step-circle">{{$index + 1}}</span>
+                    <span class="aw-step-label">{{label}}</span>
+                </span>
+            </div>
+            <div class="aw-title">
+                <strong><i class="fa-solid fa-wand-magic-sparkles"></i> Automation Wizard</strong>
+                <small>Build a new dzVents automation</small>
+            </div>
+            <button type="button" class="aw-close" ng-click="$ctrl.close()">&times;</button>
+        </div>
+
+        <!-- Body -->
+        <div class="aw-body">
+
+            <!-- Step 1: Choose trigger type -->
+            <div ng-show="$ctrl.step === 1">
+                <div class="aw-step-heading">
+                    <h4>{{:: 'What triggers this automation?' | translate }}</h4>
+                    <p>{{:: 'Choose the type of event that will start this automation.' | translate }}</p>
+                </div>
+                <div class="aw-card-grid">
+                    <div class="aw-card"
+                         ng-repeat="t in $ctrl.triggers track by t.id"
+                         ng-class="{'aw-card-selected': $ctrl.triggerType === t.id}"
+                         ng-click="$ctrl.selectTrigger(t.id)">
+                        <div class="aw-card-icon"><i ng-class="t.icon"></i></div>
+                        <div class="aw-card-text">
+                            <strong>{{t.label}}</strong>
+                            <span>{{t.desc}}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Configure trigger -->
+            <div ng-show="$ctrl.step === 2">
+                <div class="aw-step-heading">
+                    <h4>{{:: 'Configure the trigger' | translate }}</h4>
+                </div>
+
+                <!-- Device trigger -->
+                <div ng-if="$ctrl.triggerType === 'device'" class="aw-form">
+                    <div class="aw-field">
+                        <label>{{:: 'Device' | translate }}</label>
+                        <input type="text" id="aw-device-search" class="form-control"
+                               ng-model="$ctrl.deviceSearch"
+                               placeholder="{{:: 'Search devices…' | translate }}"
+                               autocomplete="off">
+                        <div class="aw-device-list">
+                            <div ng-if="!$ctrl.devicesLoaded" class="aw-device-loading">
+                                {{:: 'Loading…' | translate }}
+                            </div>
+                            <div class="aw-device-row"
+                                 ng-repeat="dev in $ctrl.devices | filter:{Name: $ctrl.deviceSearch} | limitTo:60 track by dev.idx"
+                                 ng-class="{'aw-device-row-selected': dev.Name === $ctrl.triggerConfig.device}"
+                                 ng-click="$ctrl.selectDevice(dev)">
+                                <span class="aw-device-name">{{dev.Name}}</span>
+                                <span class="aw-device-type">{{dev.Type}}</span>
+                            </div>
+                        </div>
+                        <div class="aw-selected-value" ng-if="$ctrl.triggerConfig.device">
+                            <i class="icon-ok"></i> {{$ctrl.triggerConfig.device}}
+                        </div>
+                    </div>
+                    <div class="aw-field">
+                        <label>{{:: 'Condition' | translate }}</label>
+                        <select class="form-control"
+                                ng-model="$ctrl.triggerConfig.condition"
+                                ng-options="c.id as c.label for c in $ctrl.deviceConditions"
+                                ng-change="$ctrl.onConditionChange()">
+                        </select>
+                    </div>
+                    <div class="aw-field" ng-if="$ctrl.conditionNeedsValue">
+                        <label>{{:: 'Value' | translate }} <span ng-if="$ctrl.conditionUnit">({{$ctrl.conditionUnit}})</span></label>
+                        <input type="number" class="form-control" step="0.1"
+                               ng-model="$ctrl.triggerConfig.conditionValue">
+                    </div>
+                </div>
+
+                <!-- Time trigger -->
+                <div ng-if="$ctrl.triggerType === 'time'" class="aw-form">
+                    <div class="aw-row">
+                        <div class="aw-field">
+                            <label data-i18n="Time">{{:: 'Time' | translate }}</label>
+                            <div class="aw-time-selects">
+                                <select class="form-control combobox ui-corner-all aw-time-select"
+                                        ng-model="$ctrl.triggerConfig.hour"
+                                        ng-options="item.value as item.label for item in $ctrl.hourOptions">
+                                </select>
+                                :
+                                <select class="form-control combobox ui-corner-all aw-time-select"
+                                        ng-model="$ctrl.triggerConfig.min"
+                                        ng-options="item.value as item.label for item in $ctrl.minuteOptions">
+                                </select>
+                                <span data-i18n="(hour/minute)"></span>
+                            </div>
+                        </div>
+                        <div class="aw-field">
+                            <label>{{:: 'Days' | translate }}</label>
+                            <div class="aw-day-checkboxes">
+                                <label ng-repeat="d in [{k:'mon',l:'Mo'},{k:'tue',l:'Tu'},{k:'wed',l:'We'},{k:'thu',l:'Th'},{k:'fri',l:'Fr'},{k:'sat',l:'Sa'},{k:'sun',l:'Su'}] track by d.k"
+                                       class="aw-day-label"
+                                       ng-class="{'aw-day-active': $ctrl.triggerConfig.days[d.k]}">
+                                    <input type="checkbox" class="noscheck" ng-model="$ctrl.triggerConfig.days[d.k]">
+                                    {{d.l}}
+                                </label>
+                            </div>
+                            <small class="text-muted">Leave all unchecked for every day</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sun trigger -->
+                <div ng-if="$ctrl.triggerType === 'sun'" class="aw-form">
+                    <div class="aw-row">
+                        <div class="aw-field">
+                            <label>{{:: 'Event' | translate }}</label>
+                            <select class="form-control" ng-model="$ctrl.triggerConfig.event">
+                                <option value="sunrise">{{:: 'Sunrise' | translate }}</option>
+                                <option value="sunset">{{:: 'Sunset' | translate }}</option>
+                            </select>
+                        </div>
+                        <div class="aw-field">
+                            <label>{{:: 'Offset (minutes)' | translate }}</label>
+                            <input type="number" class="form-control" min="-120" max="120"
+                                   ng-model="$ctrl.triggerConfig.offset"
+                                   placeholder="0 = exact, negative = before">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interval trigger -->
+                <div ng-if="$ctrl.triggerType === 'interval'" class="aw-form">
+                    <div class="aw-row">
+                        <div class="aw-field">
+                            <label>{{:: 'Every' | translate }}</label>
+                            <input type="number" class="form-control" min="1" max="1440"
+                                   ng-model="$ctrl.triggerConfig.value">
+                        </div>
+                        <div class="aw-field">
+                            <label>{{:: 'Unit' | translate }}</label>
+                            <select class="form-control" ng-model="$ctrl.triggerConfig.unit">
+                                <option value="minutes">{{:: 'Minutes' | translate }}</option>
+                                <option value="hours">{{:: 'Hours' | translate }}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security trigger -->
+                <div ng-if="$ctrl.triggerType === 'security'" class="aw-form">
+                    <div class="aw-field">
+                        <label>{{:: 'Security state' | translate }}</label>
+                        <select class="form-control" ng-model="$ctrl.triggerConfig.state">
+                            <option value="SECURITY_ARMEDAWAY">{{:: 'Armed Away' | translate }}</option>
+                            <option value="SECURITY_ARMEDHOME">{{:: 'Armed Home' | translate }}</option>
+                            <option value="SECURITY_DISARMED">{{:: 'Disarmed' | translate }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Variable trigger -->
+                <div ng-if="$ctrl.triggerType === 'variable'" class="aw-form">
+                    <div class="aw-field">
+                        <label>{{:: 'Variable' | translate }}</label>
+                        <select class="form-control" ng-model="$ctrl.triggerConfig.varName">
+                            <option value="">{{:: '— Select variable —' | translate }}</option>
+                            <option ng-repeat="v in $ctrl.variables track by v.idx"
+                                    value="{{v.Name}}">{{v.Name}}</option>
+                        </select>
+                        <div ng-if="!$ctrl.variablesLoaded" class="aw-device-loading">
+                            {{:: 'Loading…' | translate }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Condition -->
+            <div ng-show="$ctrl.step === 3">
+                <div class="aw-step-heading">
+                    <h4>Add a condition <small class="text-muted">(optional)</small></h4>
+                    <p>Only run actions if this condition is met. Leave as "No condition" to always run.</p>
+                </div>
+                <div class="aw-form">
+                    <div class="aw-field">
+                        <label>Condition type</label>
+                        <select class="form-control" ng-model="$ctrl.wizardCondition.type" ng-change="$ctrl.onConditionTypeChange()">
+                            <option value="none">No condition — always run</option>
+                            <option value="device">Only if a device is in a specific state</option>
+                            <option value="time">Only between certain hours</option>
+                        </select>
+                    </div>
+                    <!-- Device condition -->
+                    <div ng-if="$ctrl.wizardCondition.type === 'device'">
+                        <div class="aw-field">
+                            <label>Device</label>
+                            <select class="form-control" ng-model="$ctrl.wizardCondition.device" ng-change="$ctrl.onConditionDeviceChange()">
+                                <option value="">— Select device —</option>
+                                <option ng-repeat="dev in $ctrl.devices | limitTo:200 track by dev.idx" value="{{dev.Name}}">{{dev.Name}}</option>
+                            </select>
+                        </div>
+                        <div class="aw-row" ng-if="$ctrl.wizardCondition.device">
+                            <div class="aw-field">
+                                <label>State</label>
+                                <select class="form-control" ng-model="$ctrl.wizardCondition.state"
+                                        ng-options="c.id as c.label for c in $ctrl.wizardCondition.conditionStates"
+                                        ng-change="$ctrl.onConditionStateChange()">
+                                </select>
+                            </div>
+                            <div class="aw-field" ng-if="$ctrl.wizardCondition.needsValue">
+                                <label>Value <span ng-if="$ctrl.wizardCondition.unit">({{$ctrl.wizardCondition.unit}})</span></label>
+                                <input type="number" class="form-control" step="0.1" ng-model="$ctrl.wizardCondition.value">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Time condition -->
+                    <div ng-if="$ctrl.wizardCondition.type === 'time'">
+                        <div class="aw-row">
+                            <div class="aw-field">
+                                <label>From</label>
+                                <div class="aw-time-selects">
+                                    <select class="form-control aw-time-select" ng-model="$ctrl.wizardCondition.fromHour"
+                                            ng-options="item.value as item.label for item in $ctrl.hourOptions"></select>
+                                    :
+                                    <select class="form-control aw-time-select" ng-model="$ctrl.wizardCondition.fromMin"
+                                            ng-options="item.value as item.label for item in $ctrl.minuteOptions"></select>
+                                </div>
+                            </div>
+                            <div class="aw-field">
+                                <label>To</label>
+                                <div class="aw-time-selects">
+                                    <select class="form-control aw-time-select" ng-model="$ctrl.wizardCondition.toHour"
+                                            ng-options="item.value as item.label for item in $ctrl.hourOptions"></select>
+                                    :
+                                    <select class="form-control aw-time-select" ng-model="$ctrl.wizardCondition.toMin"
+                                            ng-options="item.value as item.label for item in $ctrl.minuteOptions"></select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Actions -->
+            <div ng-show="$ctrl.step === 4">
+                <div class="aw-step-heading">
+                    <h4>{{:: 'What should happen?' | translate }}</h4>
+                    <p>{{:: 'Add one or more actions. They run in order when the trigger fires.' | translate }}</p>
+                </div>
+
+                <!-- Action list -->
+                <div class="aw-action-list">
+                    <div class="aw-empty-hint" ng-if="!$ctrl.actions.length">
+                        <i class="icon-asterisk"></i>
+                        {{:: 'No actions yet — click "Add Action" below.' | translate }}
+                    </div>
+
+                    <div class="aw-action-item" ng-repeat="action in $ctrl.actions track by $index">
+                        <div class="aw-action-header">
+                            <i ng-class="$ctrl.getActionDef(action.type).icon"></i>
+                            <strong>{{$ctrl.getActionDef(action.type).label}}</strong>
+                            <button type="button" class="aw-action-remove btn btn-xs btn-default"
+                                    ng-click="$ctrl.removeAction($index)" title="{{:: 'Remove' | translate }}">
+                                &times;
+                            </button>
+                        </div>
+                        <div class="aw-action-body">
+
+                            <!-- Device action -->
+                            <div ng-if="action.type === 'switch'" class="aw-form">
+                                <div class="aw-row">
+                                    <div class="aw-field" style="flex:2">
+                                        <label>{{:: 'Device' | translate }}</label>
+                                        <select class="form-control"
+                                                ng-model="action.config.device"
+                                                ng-change="$ctrl.onActionDeviceChange(action)">
+                                            <option value="">{{:: '— Select —' | translate }}</option>
+                                            <option ng-repeat="dev in $ctrl.devices | limitTo:200 track by dev.idx"
+                                                    value="{{dev.Name}}">{{dev.Name}}</option>
+                                        </select>
+                                    </div>
+                                    <div class="aw-field">
+                                        <label>{{:: 'Action' | translate }}</label>
+                                        <select class="form-control" ng-model="action.config.action"
+                                                ng-options="opt.id as opt.label for opt in $ctrl.getDeviceActionOptions(action)">
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="aw-field" ng-if="$ctrl.actionNeedsValue(action)">
+                                    <label>
+                                        {{$ctrl.actionValueLabel(action)}}
+                                        <span ng-if="$ctrl.actionValueUnit(action) && !$ctrl.actionHasOptions(action)">({{$ctrl.actionValueUnit(action)}})</span>
+                                    </label>
+                                    <select ng-if="$ctrl.actionHasOptions(action)"
+                                            class="form-control"
+                                            ng-model="action.config.actionValue"
+                                            ng-options="opt.level as opt.name for opt in action.config.levelOptions">
+                                    </select>
+                                    <input ng-if="!$ctrl.actionHasOptions(action)"
+                                           type="number" class="form-control"
+                                           ng-model="action.config.actionValue"
+                                           placeholder="{{$ctrl.getSelectedActionOption(action).def}}">
+                                </div>
+                            </div>
+
+                            <!-- Notify action -->
+                            <div ng-if="action.type === 'notify'" class="aw-form">
+                                <div class="aw-field">
+                                    <label>{{:: 'Title' | translate }}</label>
+                                    <input type="text" class="form-control" ng-model="action.config.title"
+                                           placeholder="{{:: 'Alert title' | translate }}">
+                                </div>
+                                <div class="aw-field">
+                                    <label>{{:: 'Message' | translate }}</label>
+                                    <input type="text" class="form-control" ng-model="action.config.message"
+                                           placeholder="{{:: 'Something happened!' | translate }}">
+                                </div>
+                                <div class="aw-field">
+                                    <label>Priority</label>
+                                    <select class="form-control" ng-model="action.config.priority">
+                                        <option value="PRIORITY_LOW">Low</option>
+                                        <option value="PRIORITY_NORMAL">Normal</option>
+                                        <option value="PRIORITY_HIGH">High</option>
+                                        <option value="PRIORITY_EMERGENCY">Emergency</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Scene action -->
+                            <div ng-if="action.type === 'scene'" class="aw-form">
+                                <div class="aw-row">
+                                    <div class="aw-field" style="flex:2">
+                                        <label>{{:: 'Scene' | translate }}</label>
+                                        <select class="form-control" ng-model="action.config.scene">
+                                            <option value="">{{:: '— Select —' | translate }}</option>
+                                            <option ng-repeat="sc in $ctrl.scenes track by sc.idx"
+                                                    value="{{sc.Name}}">{{sc.Name}}</option>
+                                        </select>
+                                    </div>
+                                    <div class="aw-field">
+                                        <label>{{:: 'Action' | translate }}</label>
+                                        <select class="form-control" ng-model="action.config.action">
+                                            <option value="on">{{:: 'Activate' | translate }}</option>
+                                            <option value="off">{{:: 'Deactivate' | translate }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Variable action -->
+                            <div ng-if="action.type === 'variable'" class="aw-form">
+                                <div class="aw-row">
+                                    <div class="aw-field">
+                                        <label>{{:: 'Variable' | translate }}</label>
+                                        <select class="form-control" ng-model="action.config.varName">
+                                            <option value="">— Select variable —</option>
+                                            <option ng-repeat="v in $ctrl.variables track by v.idx" value="{{v.Name}}">{{v.Name}}</option>
+                                        </select>
+                                    </div>
+                                    <div class="aw-field">
+                                        <label>{{:: 'New value' | translate }}</label>
+                                        <input type="text" class="form-control" ng-model="action.config.value"
+                                               placeholder="42">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- HTTP action -->
+                            <div ng-if="action.type === 'http'" class="aw-form">
+                                <div class="aw-row">
+                                    <div class="aw-field" style="flex:3">
+                                        <label>URL</label>
+                                        <input type="url" class="form-control" ng-model="action.config.url"
+                                               placeholder="https://example.com/webhook">
+                                    </div>
+                                    <div class="aw-field">
+                                        <label>{{:: 'Method' | translate }}</label>
+                                        <select class="form-control" ng-model="action.config.method">
+                                            <option value="GET">GET</option>
+                                            <option value="POST">POST</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Delay action -->
+                            <div ng-if="action.type === 'delay'" class="aw-form">
+                                <div class="aw-row">
+                                    <div class="aw-field">
+                                        <label>Wait (seconds)</label>
+                                        <input type="number" class="form-control" min="1" ng-model="action.config.seconds" placeholder="5">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Custom code action -->
+                            <div ng-if="action.type === 'custom'" class="aw-form">
+                                <div class="aw-field">
+                                    <label>{{:: 'Lua snippet' | translate }}</label>
+                                    <textarea class="form-control aw-code-input"
+                                              ng-model="action.config.code"
+                                              rows="4"
+                                              placeholder="-- your code here"
+                                              spellcheck="false"></textarea>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-default aw-add-action-btn"
+                        ng-click="$ctrl.openActionPicker()">
+                    <i class="icon-plus"></i> {{:: 'Add Action' | translate }}
+                </button>
+
+                <!-- Action type picker (inline) -->
+                <div class="aw-action-picker-overlay" ng-show="$ctrl.showActionPicker"
+                     ng-click="$ctrl.closeActionPicker()">
+                    <div class="aw-action-picker-modal" ng-click="$event.stopPropagation()">
+                        <div class="aw-action-picker-header">
+                            <strong>{{:: 'Choose an action type' | translate }}</strong>
+                            <button type="button" class="aw-close" ng-click="$ctrl.closeActionPicker()">&times;</button>
+                        </div>
+                        <div class="aw-card-grid">
+                            <div class="aw-card" ng-repeat="a in $ctrl.actionDefs track by a.id"
+                                 ng-click="$ctrl.pickAction(a)">
+                                <div class="aw-card-icon"><i ng-class="a.icon"></i></div>
+                                <div class="aw-card-text">
+                                    <strong>{{a.label}}</strong>
+                                    <span>{{a.desc}}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5: Review -->
+            <div ng-show="$ctrl.step === 5">
+                <div class="aw-step-heading">
+                    <h4>{{:: 'Name &amp; review' | translate }}</h4>
+                    <p>{{:: 'Give your automation a name and review the generated code.' | translate }}</p>
+                </div>
+                <div class="aw-form">
+                    <div class="aw-field aw-field-inline">
+                        <input type="checkbox" id="aw-enabled" ng-model="$ctrl.enabled">
+                        <label for="aw-enabled"></label>
+                        <span class="aw-checkbox-text">{{:: 'Enabled' | translate }}</span>
+                    </div>
+                    <div class="aw-field">
+                        <label>{{:: 'Automation name' | translate }}</label>
+                        <input type="text" class="form-control aw-name-input"
+                               ng-model="$ctrl.name"
+                               ng-change="$ctrl.onNameChange()"
+                               placeholder="e.g. Evening lights on">
+                        <div class="aw-name-warning" ng-if="$ctrl.nameIsDuplicate()">
+                            <i class="icon-warning-sign"></i> An automation with this name already exists — saving will overwrite it.
+                        </div>
+                    </div>
+                    <div class="aw-field">
+                        <label>
+                            {{:: 'Generated dzVents code' | translate }}
+                            <small class="text-muted">&mdash; {{:: 'you can edit after creation' | translate }}</small>
+                        </label>
+                        <div id="aw-ace-editor" class="aw-ace-container"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /aw-body -->
+
+        <!-- Footer -->
+        <div class="aw-footer">
+            <div class="aw-footer-left">
+                <button type="button" class="btn btn-default"
+                        ng-show="$ctrl.step > 1"
+                        ng-click="$ctrl.goBack()">
+                    <i class="icon-arrow-left"></i> {{:: 'Back' | translate }}
+                </button>
+            </div>
+            <div class="aw-footer-right">
+                <button type="button" class="btn btn-default"
+                        ng-click="$ctrl.close()">
+                    {{:: 'Cancel' | translate }}
+                </button>
+                <button type="button" class="btn btn-primary"
+                        ng-if="$ctrl.step > 1 && $ctrl.step < 5"
+                        ng-click="$ctrl.goNext()"
+                        ng-disabled="!$ctrl.canGoNext()">
+                    {{:: 'Next' | translate }} <i class="icon-arrow-right"></i>
+                </button>
+                <button type="button" class="btn btn-success"
+                        ng-if="$ctrl.step === 5"
+                        ng-click="$ctrl.createAutomation()">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> {{:: 'Create' | translate }}
+                </button>
+            </div>
+        </div>
+
+    </div><!-- /aw-modal -->
+</div><!-- /aw-overlay -->

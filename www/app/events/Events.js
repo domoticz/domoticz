@@ -1,4 +1,4 @@
-define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates'], function (app) {
+define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates', 'events/AutomationWizard'], function (app) {
     app.controller('EventsController', EventsController);
 
     function EventsController($scope, $q, $rootScope, $uibModal, domoticzApi, domoticzEventsApi, bootbox) {
@@ -13,6 +13,11 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
 		vm.loadRecentEvents = loadRecentEvents;
         vm.setActiveEventId = setActiveEventId;
         vm.isInterpreterSupported = isInterpreterSupported;
+        vm.deleteEventFromSidebar = deleteEventFromSidebar;
+        vm.openWizard = openWizard;
+        vm.closeWizard = closeWizard;
+        vm.saveAndOpenEvent = saveAndOpenEvent;
+        vm.wizardOpen = false;
         vm.toggleFolder = toggleFolder;
         vm.isFolderExpanded = isFolderExpanded;
         vm.showContextMenu = showContextMenu;
@@ -507,6 +512,43 @@ define(['app', 'events/factories', 'events/EventViewer', 'events/CurrentStates']
 				return item.id;
 			});
 			domoticzEventsApi.storeRecents(recentEvents);
+		}
+
+        function deleteEventFromSidebar(event) {
+            hideContextMenu();
+            bootbox.confirm($.t('Are you sure to delete this Event?\n\nThis action can not be undone...'))
+                .then(function () {
+                    return domoticzEventsApi.deleteEvent(event.id);
+                })
+                .then(function () {
+                    ShowNotify($.t('Script successfully removed'), 1500);
+                    deleteEvent(event);
+                })
+                .catch(function (err) {
+                    ShowNotify($.t('Failed to delete script'), 2500, true);
+                });
+        }
+
+        function saveAndOpenEvent(event) {
+            var toSave = Object.assign({}, event, { id: undefined, logicarray: event.logicarray || '' });
+            domoticzEventsApi.updateEvent(toSave)
+                .then(listEvents)
+                .then(function () {
+                    var saved = vm.events.find(function (e) { return e.name === event.name; });
+                    if (saved) { openEvent(saved); }
+                })
+                .catch(function (err) {
+                    var msg = (err && typeof err === 'string') ? err : $.t('Failed to create automation');
+                    bootbox.alert(msg);
+                });
+        }
+
+		function openWizard() {
+			vm.wizardOpen = true;
+		}
+
+		function closeWizard() {
+			vm.wizardOpen = false;
 		}
     }
 

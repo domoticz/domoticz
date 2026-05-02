@@ -347,3 +347,541 @@
     text-align: right;
     z-index: 1;
 }
+
+/* Wizard launcher tab */
+.events-editor__file-wizard {
+    font-style: italic;
+    opacity: 0.85;
+}
+
+.events-editor__file-wizard:hover {
+    opacity: 1;
+}
+
+/* ── Automation Wizard ───────────────────────────────────────────── */
+
+.aw-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aw-modal {
+    background: var(--dz-input-bg);
+    color: var(--dz-input-text);
+    border-radius: 6px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    width: 720px;
+    max-width: 96vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Header */
+.aw-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--dz-input-border);
+    background: var(--dz-modal-bg);
+    flex-shrink: 0;
+}
+
+.aw-title {
+    flex: 1;
+}
+
+.aw-header i {
+    color: var(--dz-accent-color);
+    filter: none;
+}
+
+.aw-title strong {
+    display: block;
+    font-size: 15px;
+    color: var(--dz-modal-text);
+}
+
+.aw-title small {
+    color: var(--dz-modal-text);
+    opacity: 0.7;
+    font-size: 12px;
+}
+
+.aw-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    line-height: 1;
+    color: var(--dz-modal-text);
+    opacity: 0.6;
+    cursor: pointer;
+    padding: 0 4px;
+    flex-shrink: 0;
+}
+
+.aw-close:hover {
+    opacity: 1;
+}
+
+/* Step indicator */
+.aw-steps {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.aw-step {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.aw-step + .aw-step::before {
+    content: '';
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: rgba(128, 128, 128, 0.35);
+    margin-right: 4px;
+}
+
+.aw-step-active + .aw-step::before,
+.aw-step-done + .aw-step::before {
+    background: var(--dz-accent-color);
+}
+
+.aw-step-circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(128, 128, 128, 0.35);
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.aw-step-active .aw-step-circle {
+    background: var(--dz-accent-color);
+    color: #fff;
+}
+
+.aw-step-done .aw-step-circle {
+    background: #5cb85c;
+    color: #fff;
+}
+
+.aw-step-label {
+    font-size: 11px;
+    color: var(--dz-modal-text);
+    opacity: 0.6;
+    white-space: nowrap;
+}
+
+.aw-step-active .aw-step-label {
+    color: var(--dz-accent-color);
+    opacity: 1;
+    font-weight: bold;
+}
+
+.aw-step-done .aw-step-label {
+    color: #5cb85c;
+    opacity: 1;
+}
+
+/* Body */
+.aw-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: var(--dz-input-bg);
+    color: var(--dz-input-text);
+}
+
+.aw-step-heading {
+    margin-bottom: 16px;
+}
+
+.aw-step-heading h4 {
+    margin: 0 0 4px;
+    font-size: 15px;
+    color: var(--dz-input-text);
+}
+
+.aw-step-heading p {
+    margin: 0;
+    color: var(--dz-input-text);
+    opacity: 0.65;
+    font-size: 13px;
+}
+
+/* Card grid (trigger / action picker) */
+.aw-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+}
+
+.aw-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    border: 2px solid rgba(128, 128, 128, 0.25);
+    border-radius: 5px;
+    cursor: pointer;
+    background: var(--dz-input-bg);
+    color: var(--dz-input-text);
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.aw-card:hover {
+    border-color: var(--dz-accent-color);
+    background: var(--dz-btn-hover-bg);
+}
+
+.aw-card-selected {
+    border-color: var(--dz-accent-color);
+    background: var(--dz-btn-bg);
+}
+
+.aw-card-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    width: 24px;
+    text-align: center;
+}
+
+.aw-card-icon i {
+    color: var(--dz-accent-color);
+    filter: none;
+}
+
+.aw-modal i[class^="icon-"],
+.aw-modal i[class*=" icon-"] {
+    filter: brightness(0) invert(1);
+}
+
+.aw-card-text strong {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 2px;
+    color: var(--dz-input-text);
+}
+
+.aw-card-text span {
+    font-size: 11px;
+    color: var(--dz-input-text);
+    opacity: 0.7;
+    line-height: 1.3;
+}
+
+/* Form layout */
+.aw-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.aw-row {
+    display: flex;
+    gap: 12px;
+}
+
+.aw-row .aw-field {
+    flex: 1;
+}
+
+.aw-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.aw-field label {
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--dz-input-text);
+    margin: 0;
+}
+
+.aw-time-selects {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.aw-time-selects .aw-time-select {
+    width: 50px;
+}
+
+.aw-field-inline {
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+}
+
+.aw-checkbox-text {
+    font-weight: bold;
+    font-size: 13px;
+    color: var(--dz-input-text);
+}
+
+.aw-form .form-control {
+    background-color: var(--dz-input-bg);
+    color: var(--dz-input-text);
+    border: 1px solid var(--dz-input-border);
+    border-radius: 4px;
+}
+
+.aw-form .form-control:focus {
+    border-color: var(--dz-accent-color);
+    outline: 0;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 6px rgba(51,122,183,.5);
+}
+
+/* Device picker */
+.aw-device-list {
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    border-radius: 3px;
+    max-height: 180px;
+    overflow-y: auto;
+    background: var(--dz-input-bg);
+    color: var(--dz-input-text);
+}
+
+.aw-device-loading {
+    padding: 8px 10px;
+    font-size: 12px;
+    color: var(--dz-input-text);
+    opacity: 0.7;
+}
+
+.aw-device-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--dz-input-text);
+    border-bottom: 1px solid rgba(128, 128, 128, 0.12);
+}
+
+.aw-device-row:hover {
+    background: var(--dz-btn-bg);
+    color: var(--dz-btn-text);
+}
+
+.aw-device-row-selected {
+    background: var(--dz-btn-bg);
+    color: var(--dz-btn-text);
+    font-weight: bold;
+}
+
+.aw-device-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--dz-input-text);
+}
+
+.aw-device-type {
+    font-size: 11px;
+    color: var(--dz-input-text);
+    opacity: 0.6;
+    margin-left: 8px;
+    white-space: nowrap;
+}
+
+.aw-selected-value {
+    font-size: 12px;
+    color: #5cb85c;
+    margin-top: 2px;
+}
+
+/* Actions list */
+.aw-action-list {
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.aw-empty-hint {
+    padding: 20px;
+    text-align: center;
+    color: var(--dz-input-text);
+    opacity: 0.6;
+    font-size: 13px;
+    border: 2px dashed rgba(128, 128, 128, 0.3);
+    border-radius: 5px;
+}
+
+.aw-empty-hint i {
+    margin-right: 6px;
+}
+
+.aw-action-item {
+    border: 1px solid rgba(128, 128, 128, 0.25);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.aw-action-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--dz-btn-bg);
+    color: var(--dz-btn-text);
+    border-bottom: 1px solid var(--dz-input-border);
+    font-size: 13px;
+}
+
+.aw-action-header i {
+    flex-shrink: 0;
+    color: var(--dz-accent-color);
+    filter: none;
+}
+
+.aw-action-header strong {
+    flex: 1;
+    color: var(--dz-btn-text);
+}
+
+.aw-action-remove {
+    margin-left: auto;
+}
+
+.aw-action-body {
+    padding: 10px;
+    background: var(--dz-input-bg);
+}
+
+.aw-add-action-btn {
+    margin-top: 4px;
+}
+
+/* Action type picker (nested overlay) */
+.aw-action-picker-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aw-action-picker-modal {
+    background: var(--dz-input-bg);
+    color: var(--dz-input-text);
+    border-radius: 6px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    width: 540px;
+    max-width: 94vw;
+    padding: 16px;
+}
+
+.aw-action-picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.aw-action-picker-header strong {
+    font-size: 14px;
+    color: var(--dz-btn-text);
+}
+
+/* Code inputs */
+.aw-code-input,
+.aw-code-review {
+    font-family: monospace;
+    font-size: 12px;
+    resize: vertical;
+}
+
+.aw-name-input {
+    font-size: 15px !important;
+    font-weight: 600;
+}
+
+/* Footer */
+.aw-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-top: 1px solid var(--dz-input-border);
+    background: var(--dz-modal-bg);
+    flex-shrink: 0;
+}
+
+.aw-footer-right {
+    display: flex;
+    gap: 8px;
+}
+
+/* Day-of-week checkboxes */
+.aw-day-checkboxes {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.aw-day-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--dz-input-border);
+    border-radius: 4px;
+    background: var(--dz-input-bg);
+    color: var(--dz-input-text);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    margin: 0;
+    transition: background 0.15s, color 0.15s;
+}
+
+.aw-day-label input[type="checkbox"] {
+    display: none;
+}
+
+.aw-day-label.aw-day-active {
+    background: var(--dz-accent-color);
+    color: #fff;
+    border-color: var(--dz-accent-color);
+}
+
+/* Ace editor in review step */
+.aw-ace-container {
+    height: 280px;
+    border: 1px solid var(--dz-input-border);
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+/* Duplicate name warning */
+.aw-name-warning {
+    color: #e8a838;
+    font-size: 12px;
+    margin-top: 4px;
+}
