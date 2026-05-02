@@ -103,18 +103,19 @@ define([
                         return;
                     }
 
-                    fetchCanceller = $q.defer();
+                    var thisCanceller = $q.defer();
+                    fetchCanceller = thisCanceller;
 
                     $http.get('camsnapshot.jpg', {
                         params:   { idx: cfg.cameraIdx, _t: Date.now() },
                         responseType: 'blob',
-                        timeout:  fetchCanceller.promise
+                        timeout:  thisCanceller.promise
                     }).then(function(resp) {
                         // Guard: widget may have been destroyed while the request was in flight.
-                        if ($scope.$$destroyed) {
-                            // Discard the newly received blob immediately — nothing to revoke.
-                            return;
-                        }
+                        if ($scope.$$destroyed) { return; }
+
+                        // Reject non-image responses (e.g. camera returning an HTML error page with HTTP 200).
+                        if (!resp.data || !resp.data.type || resp.data.type.indexOf('image/') !== 0) { return; }
 
                         var newBlobUrl = URL.createObjectURL(resp.data);
 
@@ -124,7 +125,9 @@ define([
                         currentBlobUrl = newBlobUrl;
                         ctrl.imageUrl  = $sce.trustAsResourceUrl(newBlobUrl);
                     }).catch(function() {
-                        fetchCanceller = null;
+                        // Only clear the canceller if it still refers to this request — a concurrent
+                        // refresh() may have already replaced it with a newer deferred.
+                        if (fetchCanceller === thisCanceller) { fetchCanceller = null; }
                         // leave currentBlobUrl and ctrl.imageUrl intact — keep last good frame
                     });
                 }

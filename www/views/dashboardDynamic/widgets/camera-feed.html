@@ -12,6 +12,7 @@
              ng-src="{{ctrl.imageUrl}}"
              class="dd-camera-img"
              alt="Camera feed"
+             onload="this.style.display=''; this.nextElementSibling.style.display='none'"
              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
         <div class="dd-camera-error" style="display:none">
             <i class="fa-solid fa-circle-exclamation"></i>
