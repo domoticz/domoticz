@@ -50,16 +50,17 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$interval', '$sce', '$q', 'ddVisibility',
-                function($scope, $http, $interval, $sce, $q, ddVisibility) {
+            controller: ['$scope', '$http', '$interval', '$sce', '$q', '$timeout', 'ddVisibility',
+                function($scope, $http, $interval, $sce, $q, $timeout, ddVisibility) {
                 var ctrl = this;
                 ctrl.imageUrl    = null;
                 ctrl.cameraName  = '';
                 ctrl.cameraAspect = 0;
                 ctrl.error       = null;
-                var timer           = null;
-                var currentBlobUrl  = null;
-                var fetchCanceller  = null;
+                var timer              = null;
+                var currentBlobUrl     = null;
+                var fetchCanceller     = null;
+                var requestTimeoutHnd  = null;
 
                 // Blob URL lifecycle is supported by all browsers we target; this
                 // guard provides a graceful fallback for very old environments.
@@ -78,7 +79,15 @@ define([
                     }
                 }
 
+                function clearRequestTimeout() {
+                    if (requestTimeoutHnd) {
+                        $timeout.cancel(requestTimeoutHnd);
+                        requestTimeoutHnd = null;
+                    }
+                }
+
                 function abortInflight() {
+                    clearRequestTimeout();
                     if (fetchCanceller) {
                         fetchCanceller.resolve('cancelled');
                         fetchCanceller = null;
@@ -106,11 +115,22 @@ define([
                     var thisCanceller = $q.defer();
                     fetchCanceller = thisCanceller;
 
+                    // Auto-cancel if the server takes too long to respond. Without this, a slow or
+                    // unavailable camera causes camsnapshot.jpg to hang, accumulating connections that
+                    // exhaust the browser's per-host connection pool and freeze all other widgets.
+                    var timeoutMs = Math.max(3000, Math.min(10000, (getInterval() - 1) * 1000));
+                    requestTimeoutHnd = $timeout(function() {
+                        requestTimeoutHnd = null;
+                        if (fetchCanceller === thisCanceller) { abortInflight(); }
+                    }, timeoutMs);
+
                     $http.get('camsnapshot.jpg', {
                         params:   { idx: cfg.cameraIdx, _t: Date.now() },
                         responseType: 'blob',
                         timeout:  thisCanceller.promise
                     }).then(function(resp) {
+                        clearRequestTimeout();
+
                         // Guard: widget may have been destroyed while the request was in flight.
                         if ($scope.$$destroyed) { return; }
 
@@ -125,6 +145,7 @@ define([
                         currentBlobUrl = newBlobUrl;
                         ctrl.imageUrl  = $sce.trustAsResourceUrl(newBlobUrl);
                     }).catch(function() {
+                        clearRequestTimeout();
                         // Only clear the canceller if it still refers to this request — a concurrent
                         // refresh() may have already replaced it with a newer deferred.
                         if (fetchCanceller === thisCanceller) { fetchCanceller = null; }
