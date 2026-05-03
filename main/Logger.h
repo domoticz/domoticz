@@ -108,7 +108,8 @@ private:
 	uint8_t m_aclf_flags = 0;
 	uint32_t m_aclf_loggedlinescnt = 0;
 
-	std::mutex m_mutex;
+	std::mutex m_mutex;    // guards in-memory log data structures
+	std::mutex m_io_mutex; // guards console/file I/O (avoids blocking m_mutex on slow writes)
 	std::ofstream m_outputfile;
 	const char* m_aclflogfile = nullptr;
 	std::ofstream m_aclfoutputfile;

@@ -186,7 +186,7 @@ bool CLogger::IsACLFlogEnabled()
 
 void CLogger::SetOutputFile(const char *OutputFile)
 {
-	std::unique_lock<std::mutex> lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_io_mutex);
 	if (m_outputfile.is_open())
 		m_outputfile.close();
 
@@ -228,7 +228,7 @@ void CLogger::SetACLFOutputFile(const char *OutputFile)
 
 void CLogger::OpenACLFOutputFile()
 {
-	std::unique_lock<std::mutex> lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_io_mutex);
 	if (m_aclfoutputfile.is_open())
 		m_aclfoutputfile.close();
 
@@ -331,7 +331,6 @@ void CLogger::Log(const _eLogLevel level, const char *logline, ...)
 
 	bool bForceNotificationCheck = false;
 	{
-		// Locked region to allow multiple threads to print at the same time
 		std::unique_lock<std::mutex> lock(m_mutex);
 
 		if ((level & LOG_ERROR) && (m_bEnableErrorsToNotificationSystem))
@@ -345,9 +344,21 @@ void CLogger::Log(const _eLogLevel level, const char *logline, ...)
 			}
 		}
 
+		auto itt = m_lastlog.find(level);
+		if (itt != m_lastlog.end())
+		{
+			if (m_lastlog[level].size() >= MAX_LOG_LINE_BUFFER)
+				m_lastlog[level].erase(m_lastlog[level].begin());
+		}
+		m_lastlog[level].push_back(_tLogLineStruct(level, szIntLog));
+	}
+
+	{
+		// I/O under a separate mutex so a blocking write never stalls readers of m_mutex
+		std::unique_lock<std::mutex> iolock(m_io_mutex);
+
 		if (!g_bRunAsDaemon)
 		{
-			// output to console
 #ifndef WIN32
 			if (level != LOG_ERROR)
 #endif
@@ -360,18 +371,9 @@ void CLogger::Log(const _eLogLevel level, const char *logline, ...)
 
 		if (m_outputfile.is_open())
 		{
-			// output to file
 			m_outputfile << szIntLog << std::endl;
 			m_outputfile.flush();
 		}
-
-		auto itt = m_lastlog.find(level);
-		if (itt != m_lastlog.end())
-		{
-			if (m_lastlog[level].size() >= MAX_LOG_LINE_BUFFER)
-				m_lastlog[level].erase(m_lastlog[level].begin());
-		}
-		m_lastlog[level].push_back(_tLogLineStruct(level, szIntLog));
 	}
 
 	if (bForceNotificationCheck)
