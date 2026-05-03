@@ -220,14 +220,21 @@ void CNetatmo::Do_Work()
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(nullptr);
-		}
+		}		
 		if (mytime(nullptr) > m_nextRefreshTs)
 		{
 			//Time is bigger than 2/3 off duration access token
-			if (RefreshToken(true))
-				Log(LOG_STATUS,"Refresh token %d",  m_isLogged);
+			if (!m_ErrorFlag)
+			{
+				if (RefreshToken(true))
+					Log(LOG_STATUS,"Refresh token %d",  m_isLogged);
+			}
 			else
-				Log(LOG_ERROR, "Refresh token false %d",  m_isLogged);
+			{
+				Debug(DEBUG_HARDWARE, "RefreshToken Time %s", ctime(& m_nextRefreshTs));
+				m_ErrorFlag = true;
+				Log(LOG_ERROR, "Refresh token false %d  %d",  m_isLogged, sec_counter);
+			}
 		}
 		if (sec_counter % NETAMO_ERROR_INTERVALL == 0)
 		{
