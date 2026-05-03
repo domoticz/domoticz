@@ -44,7 +44,7 @@ define([
         ]
     });
 
-    app.directive('ddStatCounterWidget', ['$q', function($q) {
+    app.directive('ddStatCounterWidget', [function() {
         return {
             restrict:         'E',
             templateUrl:      'views/dashboardDynamic/widgets/stat-counter.html',
@@ -56,19 +56,51 @@ define([
             bindToController: true,
             controller: ['$scope', '$http', '$q', function($scope, $http, $q) {
                 var ctrl = this;
-                ctrl.label  = '';
-                ctrl.value  = '—';
-                ctrl.unit   = '';
-                ctrl.numVal = NaN;
+                ctrl.label             = '';
+                ctrl.value             = '—';
+                ctrl.unit              = '';
+                ctrl.numVal            = NaN;
+                ctrl.counterTotal      = null;
+                ctrl.valueDeliv        = null;
+                ctrl.unitDeliv         = '';
+                ctrl.counterDelivTotal = null;
                 var cancelToken = null;
 
+                function formatTotal(str, fallbackUnit) {
+                    if (str === null || str === undefined || str === '') return null;
+                    var m = String(str).trim().match(/^([\d.\-]+)\s*(.*)?$/);
+                    if (!m) return String(str) || null;
+                    var num  = String(parseFloat(m[1]));
+                    var unit = m[2] || fallbackUnit;
+                    return unit ? num + ' ' + unit : num;
+                }
+
                 function applyDevice(d, labelOverride) {
-                    // Parse "23.5 °C" or "1234 Wh" style Data string; fall back to vunit for setpoint devices
-                    var match = (d.Data || '').match(/^([\d.\-]+)\s*(.*)?$/);
-                    ctrl.value  = match ? match[1] : (d.Data || '—');
-                    ctrl.unit   = match ? (match[2] || d.vunit || '') : (d.vunit || '');
+                    var fallbackUnit = d.vunit || d.ValueUnits || '';
+                    var hasToday     = !!d.CounterToday;
+                    var primary      = hasToday ? d.CounterToday : (d.Counter || d.Data || '—');
+
+                    var match   = (primary || '').match(/^([\d.\-]+)\s*(.*)?$/);
+                    var unit    = match ? (match[2] || fallbackUnit) : fallbackUnit;
+                    ctrl.value  = match ? String(parseFloat(match[1])) : (primary || '—');
+                    ctrl.unit   = unit;
                     ctrl.label  = labelOverride || d.Name || '';
                     ctrl.numVal = match ? parseFloat(match[1]) : NaN;
+
+                    ctrl.counterTotal = hasToday ? formatTotal(d.Counter || d.Data, unit) : null;
+
+                    var hasDeliv = typeof d.CounterDeliv !== 'undefined' && d.CounterDeliv != 0;
+                    if (hasDeliv) {
+                        var dm          = (d.CounterDelivToday || '').match(/^([\d.\-]+)\s*(.*)?$/);
+                        var delivUnit   = dm ? (dm[2] || unit) : unit;
+                        ctrl.valueDeliv        = dm ? String(parseFloat(dm[1])) : (d.CounterDelivToday || '—');
+                        ctrl.unitDeliv         = delivUnit;
+                        ctrl.counterDelivTotal = formatTotal(d.CounterDeliv, delivUnit);
+                    } else {
+                        ctrl.valueDeliv        = null;
+                        ctrl.unitDeliv         = '';
+                        ctrl.counterDelivTotal = null;
+                    }
                 }
 
                 function load() {
@@ -87,8 +119,6 @@ define([
                         applyDevice(d, cfg.label);
                     }).catch(function(err) {
                         if (err.status === -1) { return; }
-                        ctrl.error = 'Failed to load data';
-                        ctrl.loading = false;
                     });
                 }
 
