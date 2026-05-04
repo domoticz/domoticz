@@ -318,9 +318,9 @@ namespace Plugins {
 		}
 		else if (pObj.IsBytes())
 		{
-			char* buf = nullptr;
-			Py_ssize_t len = 0;
-			if (PyBytes_AsStringAndSize(pObj, &buf, &len) == 0)
+			const char* buf = PyBytes_AsString(pObj);
+			Py_ssize_t len = PyBytes_Size(pObj);
+			if (buf && len >= 0)
 				sJson += Json::valueToQuotedString(buf, (size_t)len);
 			else
 				sJson += "\"\"";
