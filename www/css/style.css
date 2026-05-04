@@ -762,7 +762,7 @@ table.mobileitem {
 .mobileitem td, .mobileitem th {
 	border-left: none;
 	border-top: 1px solid rgba(128,128,128,0.15);
-	padding: 6px;
+	padding: 4px;
 	text-align: left;
 }
 
@@ -2166,11 +2166,16 @@ span.evomobile {
 	}
 	#tbFiltRooms SELECT{
 		width: 130px;
+		margin-bottom: 2px;
 	}
 	#tbTimeSun{
 		display: block;
 		width: 100%;
 		text-align: center;
+	}
+	#topBar{
+		line-height: 26px;
+		padding-bottom: 2px;
 	}
 }
 /* mimic the margins done by the (removed when filtering) 'row' Bootstrap Class */
