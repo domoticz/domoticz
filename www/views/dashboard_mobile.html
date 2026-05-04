@@ -31,8 +31,10 @@
 			<table class="mobileitem">
 				<thead>
 					<tr>
-						<th data-i18n="Scenes">Scenes</th>
-						<th style="text-align:right"><a href="javascript:SwitchLayout('Scenes')"><img src="images/next.png"></a></th>
+						<th colspan="2">
+							<span data-i18n="Scenes">Scenes</span>
+							<a href="javascript:SwitchLayout('Scenes')" style="float:right"><img src="images/next.png"></a>
+						</th>
 					</tr>
 				</thead>
 				<tr ng-repeat="item in scenes track by item.idx" id="scene_{{item.idx}}">
@@ -63,13 +65,14 @@
 		</section>
 
 		<!-- Lights/Switches section -->
-		<br ng-if="config.EnableTabScenes && scenes.length > 0 && config.EnableTabLights && lights.length > 0">
 		<section ng-if="config.EnableTabLights && lights.length > 0" class="dashCategory" id="dashSwitches">
 			<table class="mobileitem">
 				<thead>
 					<tr>
-						<th data-i18n="Light/Switch Devices">Light/Switch Devices</th>
-						<th style="text-align:right"><a href="javascript:SwitchLayout('LightSwitches')"><img src="images/next.png"></a></th>
+						<th colspan="2">
+							<span data-i18n="Light/Switch Devices">Light/Switch Devices</span>
+							<a href="javascript:SwitchLayout('LightSwitches')" style="float:right"><img src="images/next.png"></a>
+						</th>
 					</tr>
 				</thead>
 				<tbody ng-repeat="item in lights track by item.idx">
@@ -449,13 +452,14 @@
 		</section>
 
 		<!-- Temperature section -->
-		<br ng-if="(config.EnableTabScenes && scenes.length > 0 || config.EnableTabLights && lights.length > 0) && config.EnableTabTemp && temperature.length > 0">
 		<section ng-if="config.EnableTabTemp && temperature.length > 0" class="dashCategory" id="dashTemperature">
 			<table class="mobileitem">
 				<thead>
 					<tr>
-						<th data-i18n="Temperature Sensors">Temperature Sensors</th>
-						<th style="text-align:right"><a href="javascript:SwitchLayout('Temperature')"><img src="images/next.png"></a></th>
+						<th colspan="2">
+							<span data-i18n="Temperature Sensors">Temperature Sensors</span>
+							<a href="javascript:SwitchLayout('Temperature')" style="float:right"><img src="images/next.png"></a>
+						</th>
 					</tr>
 				</thead>
 				<tr ng-repeat="item in temperature track by item.idx" id="temp_{{item.idx}}">
@@ -486,13 +490,14 @@
 		</section>
 
 		<!-- Weather section -->
-		<br ng-if="(config.EnableTabScenes && scenes.length > 0 || config.EnableTabLights && lights.length > 0 || config.EnableTabTemp && temperature.length > 0) && config.EnableTabWeather && weather.length > 0">
 		<section ng-if="config.EnableTabWeather && weather.length > 0" class="dashCategory" id="dashWeather">
 			<table class="mobileitem">
 				<thead>
 					<tr>
-						<th data-i18n="Weather Sensors">Weather Sensors</th>
-						<th style="text-align:right"><a href="javascript:SwitchLayout('Weather')"><img src="images/next.png"></a></th>
+						<th colspan="2">
+							<span data-i18n="Weather Sensors">Weather Sensors</span>
+							<a href="javascript:SwitchLayout('Weather')" style="float:right"><img src="images/next.png"></a>
+						</th>
 					</tr>
 				</thead>
 				<tr ng-repeat="item in weather track by item.idx" id="weather_{{item.idx}}">
@@ -525,13 +530,14 @@
 		</section>
 
 		<!-- Utility section -->
-		<br ng-if="(config.EnableTabScenes && scenes.length > 0 || config.EnableTabLights && lights.length > 0 || config.EnableTabTemp && temperature.length > 0 || config.EnableTabWeather && weather.length > 0) && config.EnableTabUtility && utility.length > 0">
 		<section ng-if="config.EnableTabUtility && utility.length > 0" class="dashCategory" id="dashUtility">
 			<table class="mobileitem">
 				<thead>
 					<tr>
-						<th data-i18n="Utility Sensors">Utility Sensors</th>
-						<th style="text-align:right"><a href="javascript:SwitchLayout('Utility')"><img src="images/next.png"></a></th>
+						<th colspan="2">
+							<span data-i18n="Utility Sensors">Utility Sensors</span>
+							<a href="javascript:SwitchLayout('Utility')" style="float:right"><img src="images/next.png"></a>
+						</th>
 					</tr>
 				</thead>
 				<tr ng-repeat="item in utility track by item.idx" id="utility_{{item.idx}}">
