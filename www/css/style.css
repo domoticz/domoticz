@@ -795,6 +795,24 @@ table.mobileitem {
 	font-family: Arial,Helvetica,sans-serif;
 	font-size: 10pt;
 	font-weight: bold;
+	background: var(--dz-btn-bg);
+	color: var(--dz-btn-text);
+	border: 1px solid var(--dz-btn-border);
+	border-radius: 4px;
+	text-shadow: none;
+	box-shadow: none;
+}
+
+.mobileitem .btn-mini.btn-info {
+	background: var(--dz-btn-info-bg);
+	color: #fff;
+	border-color: var(--dz-btn-info-bg);
+}
+
+.mobileitem .btn-mini.btn-danger {
+	background: var(--dz-btn-danger-bg);
+	color: #fff;
+	border-color: var(--dz-btn-danger-bg);
 }
 
 .mobileitem #status {

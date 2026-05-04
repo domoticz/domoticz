@@ -35,6 +35,7 @@ Version 2026.xxxx
 - Added: Dashboard Dynamic, gauge widget auto-detects unit from device data; humidity and barometer values displayed inside the arc
 - Added: Dashboard Dynamic, uppercase labels toggle in the edit menu for Quick Actions and Quick Stat widgets
 - Changed: Dashboard Dynamic, P1 dial now shows signed net power (negative = importing, positive = exporting) instead of absolute value with direction label
+- Changed: Dashboard Mobile, restyled to match the active theme using --dz-* CSS variables; section cards use panel backgrounds with per-row card styling, themed section headers, and theme-aware On/Off buttons consistent with the Dynamic Dashboard
 - Added: Devices, search filter is now preserved when navigating to a device log and pressing Back; cleared when changing room plan
 - Added: Gas device, Water counter now displays the value unit (m3) in the device state
 - Added: P1 log, cumulative energy chart with usage/return toggle buttons, Net (usage minus return) series option, and x-axis zoom
