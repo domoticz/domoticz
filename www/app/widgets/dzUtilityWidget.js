@@ -14,10 +14,33 @@ define(['app', 'widgets/dzBar'], function (app) {
             $(dialogId + ' #deviceunit').text(device.Unit);
             $(dialogId + ' #devicename').val(device.Name);
             $(dialogId + ' #devicedescription').val(device.Description);
+            var $iconRow = $(dialogId + ' #combosensoricon').closest('tr');
             if (isText) {
                 $(dialogId + ' #devicetext').val(device.Data);
+                showIcon = (device.ShowIcon !== '0');
+                $(dialogId + ' #deviceshowicon').prop('checked', showIcon);
+                $(dialogId + ' #deviceshowicon').off('change').on('change', function () {
+                    if ($(this).is(':checked')) {
+                        $iconRow.show();
+                        if (!$(dialogId + ' #combosensoricon').data('ddslick')) {
+                            $(dialogId + ' #combosensoricon').ddslick({
+                                data: $.ddData,
+                                width: 260,
+                                height: 490,
+                                selectText: "Sensor Icon",
+                                imagePosition: "left"
+                            });
+                            $.each($.ddData, function (i, item) {
+                                if (item.value == device.CustomImage) {
+                                    $(dialogId + ' #combosensoricon').ddslick('select', { index: i });
+                                }
+                            });
+                        }
+                    } else {
+                        $iconRow.hide();
+                    }
+                });
             }
-            var $iconRow = $(dialogId + ' #combosensoricon').closest('tr');
             if (showIcon) {
                 $iconRow.show();
                 $(dialogId + ' #combosensoricon').ddslick({
@@ -434,6 +457,10 @@ define(['app', 'widgets/dzBar'], function (app) {
 
                 ctrl.isText = function () {
                     return device.SubType === 'Text';
+                };
+
+                ctrl.hideTextIcon = function () {
+                    return device.ShowIcon === '0';
                 };
 
                 ctrl.isAlert = function () {

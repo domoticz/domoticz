@@ -3693,6 +3693,7 @@ namespace http
 							root["result"][ii]["TypeImg"] = "text";
 							root["result"][ii]["HaveTimeout"] = false;
 							root["result"][ii]["ShowNotifications"] = false;
+							root["result"][ii]["ShowIcon"] = (options.count("ShowIcon") && options.at("ShowIcon") == "0") ? "0" : "1";
 						}
 						else if (dSubType == sTypeAlert)
 						{

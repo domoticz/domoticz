@@ -309,8 +309,8 @@
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-edittextdevice #devicename"), 2, 100);
 				if (bValid) {
-					var cval = $('#dialog-edittextdevice #combosensoricon').data('ddslick').selectedIndex;
-					var CustomImage = $.ddData[cval].value;
+					var ddData = $('#dialog-edittextdevice #combosensoricon').data('ddslick');
+					var CustomImage = ddData ? $.ddData[ddData.selectedIndex].value : 0;
 					$(this).dialog("close");
 					$.ajax({
 						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
@@ -318,6 +318,7 @@
 						'&customimage=' + CustomImage +
 						'&text=' + encodeURIComponent($("#dialog-edittextdevice #devicetext").val()) +
 						'&description=' + encodeURIComponent($("#dialog-edittextdevice #devicedescription").val()) +
+						'&ShowIcon=' + ($("#dialog-edittextdevice #deviceshowicon").is(':checked') ? '1' : '0') +
 						'&used=true',
 						async: false,
 						dataType: 'json',

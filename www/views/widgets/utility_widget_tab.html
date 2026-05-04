@@ -4,7 +4,7 @@
             <tr>
                 <td id="name" class="item-name" data-idx="{{ctrl.device.idx}}" data-desc="{{ctrl.device.Description}}" data-search="{{ctrl.searchText}}">{{ctrl.device.Name}}</td>
                 <td id="bigtext">{{ctrl.getBigText()}}</td>
-                <td id="img" ng-hide="ctrl.isText()">
+                <td id="img" ng-hide="ctrl.isText() && ctrl.hideTextIcon()">
                     <a ng-if="ctrl.device.SubType === 'Sound Level'"
                        ng-href="#/Devices/{{ctrl.device.idx}}/Log">
                         <img ng-src="{{ctrl.getDeviceIcon()}}" class="lcursor" height="48" width="48">
@@ -16,7 +16,7 @@
                          ng-click="ctrl.showSetpointPopup($event)" height="48" width="48">
                 </td>
                 <td id="status" ng-bind-html="ctrl.getStatusText()"></td>
-                <td id="lastupdate" ng-class="{'lastupdate-spaced': ctrl.isText()}">
+                <td id="lastupdate" ng-class="{'lastupdate-spaced': ctrl.isText() && ctrl.hideTextIcon()}">
                     <dz-bar value="ctrl.barNumVal" ranges="ctrl.barRanges"></dz-bar>
                     <span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: {{ctrl.device.LastUpdate}}
                 </td>

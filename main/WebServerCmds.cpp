@@ -6142,6 +6142,7 @@ namespace http
 			std::string sOptions = HTMLSanitizer::Sanitize(base64_decode(request::findValue(&req, "options")));
 			std::string devoptions = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "devoptions")));
 			std::string EnergyMeterMode = CURLEncode::URLDecode(request::findValue(&req, "EnergyMeterMode"));
+			std::string sShowIcon = request::findValue(&req, "ShowIcon");
 
 			char szTmp[200];
 
@@ -6327,10 +6328,15 @@ namespace http
 					faddjmulti2 = 1;
 				m_sql.safe_query("UPDATE DeviceStatus SET AddjMulti2=%f WHERE (ID == '%q')", faddjmulti2, idx.c_str());
 			}
-			if (!EnergyMeterMode.empty())
+			bool bNeedShowIcon = (!sShowIcon.empty() && (sShowIcon == "0" || sShowIcon == "1") &&
+				atoi(result[0][0].c_str()) == pTypeGeneral && atoi(result[0][1].c_str()) == sTypeTextStatus);
+			if (!EnergyMeterMode.empty() || bNeedShowIcon)
 			{
 				auto options = m_sql.GetDeviceOptions(idx);
-				options["EnergyMeterMode"] = EnergyMeterMode;
+				if (!EnergyMeterMode.empty())
+					options["EnergyMeterMode"] = EnergyMeterMode;
+				if (bNeedShowIcon)
+					options["ShowIcon"] = sShowIcon;
 				uint64_t ullidx = std::stoull(idx);
 				m_sql.SetDeviceOptions(ullidx, options);
 			}
