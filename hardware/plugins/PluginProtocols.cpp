@@ -318,11 +318,20 @@ namespace Plugins {
 		}
 		else if (pObj.IsBytes())
 		{
-			sJson += '"' + std::string(PyBytes_AsString(pObj)) + '"';
+			char* buf = nullptr;
+			Py_ssize_t len = 0;
+			if (PyBytes_AsStringAndSize(pObj, &buf, &len) == 0)
+				sJson += Json::valueToQuotedString(buf, (size_t)len);
+			else
+				sJson += "\"\"";
 		}
 		else if (pObj.IsByteArray())
 		{
-			sJson += '"' + std::string(PyByteArray_AsString(pObj)) + '"';
+			const char* buf = PyByteArray_AsString(pObj);
+			if (buf)
+				sJson += Json::valueToQuotedString(buf, (size_t)PyByteArray_Size(pObj));
+			else
+				sJson += "\"\"";
 		}
 		else
 		{
@@ -330,7 +339,11 @@ namespace Plugins {
 			PyNewRef	pStr = PyObject_Str(pObject);
 			if (pStr)
 			{
-				sJson += '"' + std::string(PyUnicode_AsUTF8(pStr)) + '"';
+				const char* pUtf8 = PyUnicode_AsUTF8(pStr);
+				if (pUtf8)
+					sJson += Json::valueToQuotedString(pUtf8);
+				else
+					_log.Log(LOG_ERROR, "(%s) Unable to convert string to UTF-8, ignored.", __func__);
 			}
 			else
 				_log.Log(LOG_ERROR, "(%s) Unable to convert data type (%s) to string representation, ignored.", __func__, pObj.Type().c_str());
