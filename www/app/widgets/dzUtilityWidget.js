@@ -266,7 +266,7 @@ define(['app', 'widgets/dzBar'], function (app) {
         }
 
         function openDialog(device) {
-            if (typeof device.Counter !== 'undefined') {
+            if (typeof device.Counter !== 'undefined' || device.SubType === 'kWh' || device.Type === 'Energy') {
                 if (device.Type === 'P1 Smart Meter') {
                     openUtilityDialog(device);
                 } else {
