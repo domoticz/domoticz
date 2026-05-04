@@ -33,7 +33,7 @@
 					<tr>
 						<th colspan="2">
 							<span data-i18n="Scenes">Scenes</span>
-							<a href="javascript:SwitchLayout('Scenes')" style="float:right"><img src="images/next.png"></a>
+							<a href="javascript:SwitchLayout('Scenes')" style="float:right;color:var(--dz-widget-accent)"><i class="fa fa-clapperboard"></i></a>
 						</th>
 					</tr>
 				</thead>
@@ -71,7 +71,7 @@
 					<tr>
 						<th colspan="2">
 							<span data-i18n="Light/Switch Devices">Light/Switch Devices</span>
-							<a href="javascript:SwitchLayout('LightSwitches')" style="float:right"><img src="images/next.png"></a>
+							<a href="javascript:SwitchLayout('LightSwitches')" style="float:right;color:var(--dz-widget-accent)"><i class="fa fa-lightbulb"></i></a>
 						</th>
 					</tr>
 				</thead>
@@ -458,13 +458,13 @@
 					<tr>
 						<th colspan="2">
 							<span data-i18n="Temperature Sensors">Temperature Sensors</span>
-							<a href="javascript:SwitchLayout('Temperature')" style="float:right"><img src="images/next.png"></a>
+							<a href="javascript:SwitchLayout('Temperature')" style="float:right;color:var(--dz-widget-accent)"><i class="fa fa-temperature-half"></i></a>
 						</th>
 					</tr>
 				</thead>
 				<tr ng-repeat="item in temperature track by item.idx" id="temp_{{item.idx}}">
 					<td id="name" class="name item-name" data-idx="{{item.idx}}" data-desc="{{item.Description}}">
-						<a href="#/Devices/{{item.idx}}/Log"><img src="images/next.png" height="16" width="16"></a> {{item.Name}}
+						<a href="#/Devices/{{item.idx}}/Log" class="log-link"><i class="fa fa-chart-line"></i></a> {{item.Name}}
 					</td>
 					<td id="status" class="status" style="white-space: nowrap">
 						<!-- SetPoint button -->
@@ -496,13 +496,13 @@
 					<tr>
 						<th colspan="2">
 							<span data-i18n="Weather Sensors">Weather Sensors</span>
-							<a href="javascript:SwitchLayout('Weather')" style="float:right"><img src="images/next.png"></a>
+							<a href="javascript:SwitchLayout('Weather')" style="float:right;color:var(--dz-widget-accent)"><i class="fa fa-cloud-sun"></i></a>
 						</th>
 					</tr>
 				</thead>
 				<tr ng-repeat="item in weather track by item.idx" id="weather_{{item.idx}}">
 					<td id="name" class="name item-name" data-idx="{{item.idx}}" data-desc="{{item.Description}}">
-						<a href="#/Devices/{{item.idx}}/Log{{item.Barometer != undefined ? '?sensor=baro' : ''}}"><img src="images/next.png" height="16" width="16"></a> {{item.Name}}
+						<a href="#/Devices/{{item.idx}}/Log{{item.Barometer != undefined ? '?sensor=baro' : ''}}" class="log-link"><i class="fa fa-chart-line"></i></a> {{item.Name}}
 					</td>
 					<td id="status" class="status">
 						<!-- Rain -->
@@ -536,13 +536,13 @@
 					<tr>
 						<th colspan="2">
 							<span data-i18n="Utility Sensors">Utility Sensors</span>
-							<a href="javascript:SwitchLayout('Utility')" style="float:right"><img src="images/next.png"></a>
+							<a href="javascript:SwitchLayout('Utility')" style="float:right;color:var(--dz-widget-accent)"><i class="fa fa-gauge-high"></i></a>
 						</th>
 					</tr>
 				</thead>
 				<tr ng-repeat="item in utility track by item.idx" id="utility_{{item.idx}}">
 					<td id="name" class="name item-name" data-idx="{{item.idx}}" data-desc="{{item.Description}}">
-						<a href="#/Devices/{{item.idx}}/Log"><img src="images/next.png" height="16" width="16"></a> {{item.Name}}
+						<a href="#/Devices/{{item.idx}}/Log" class="log-link"><i class="fa fa-chart-line"></i></a> {{item.Name}}
 					</td>
 					<td id="status" class="status">
 						<span>

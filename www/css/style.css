@@ -771,8 +771,6 @@ table.mobileitem {
 	color: var(--dz-panel-text);
 	border-top: none;
 	font-weight: bold;
-	padding-top: 4px;
-	padding-bottom: 4px;
 	vertical-align: middle;
 }
 
@@ -782,13 +780,14 @@ table.mobileitem {
 	align-items: center;
 }
 
-.mobileitem td:first-child, .mobileitem th:first-child {
-	border-left: none;
-}
-
 .mobileitem td:last-child {
 	font-weight: bold;
 	text-align: right;
+}
+
+.mobileitem .log-link {
+	color: var(--dz-widget-accent);
+	margin-right: 4px;
 }
 
 .mobileitem .btn-mini {
