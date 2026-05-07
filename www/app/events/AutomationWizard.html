@@ -62,7 +62,7 @@
                                 {{:: 'Loading…' | translate }}
                             </div>
                             <div class="aw-device-row"
-                                 ng-repeat="dev in $ctrl.devices | filter:{Name: $ctrl.deviceSearch} | limitTo:60 track by dev.idx"
+                                 ng-repeat="dev in $ctrl.devices | filter:{Name: $ctrl.deviceSearch} track by dev.idx"
                                  ng-class="{'aw-device-row-selected': $ctrl.isDeviceSelected(dev)}"
                                  ng-click="$ctrl.selectDevice(dev)">
                                 <span class="aw-device-name">{{dev.Name}}</span>
@@ -272,7 +272,7 @@
                             <label>Device</label>
                             <select class="form-control" ng-model="$ctrl.wizardCondition.device" ng-change="$ctrl.onConditionDeviceChange()">
                                 <option value="">— Select device —</option>
-                                <option ng-repeat="dev in $ctrl.devices | limitTo:200 track by dev.idx" value="{{dev.Name}}">{{dev.Name}}</option>
+                                <option ng-repeat="dev in $ctrl.devices track by dev.idx" value="{{dev.Name}}">{{dev.Name}}</option>
                             </select>
                         </div>
                         <div class="aw-row" ng-if="$ctrl.wizardCondition.device">
@@ -382,7 +382,7 @@
                                                 ng-model="action.config.device"
                                                 ng-change="$ctrl.onActionDeviceChange(action)">
                                             <option value="">{{:: '— Select —' | translate }}</option>
-                                            <option ng-repeat="dev in $ctrl.devices | limitTo:200 track by dev.idx"
+                                            <option ng-repeat="dev in $ctrl.devices track by dev.idx"
                                                     value="{{dev.Name}}">{{dev.Name}}</option>
                                         </select>
                                     </div>
