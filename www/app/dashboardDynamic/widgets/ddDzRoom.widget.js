@@ -21,8 +21,9 @@ define([
         maxW:        12,
         maxH:        20,
         configSchema: [
-            { key: 'planIdx', type: 'plan-picker', label: 'Room / Plan',  required: true },
-            { key: 'layout',  type: 'boolean',     label: 'List layout',  default: false },
+            { key: 'planIdx',   type: 'plan-picker', label: 'Room / Plan',         required: true },
+            { key: 'layout',   type: 'boolean',     label: 'List layout',          default: false },
+            { key: 'showTabs', type: 'boolean',     label: 'Show category tabs',   default: false },
             { key: 'fontSize', type: 'select', label: 'Font size',
               options: [
                   { value: '',       label: 'Default' },
@@ -51,6 +52,9 @@ define([
                 var ctrl = this;
                 ctrl.devices           = [];
                 ctrl.listItems         = [];
+                ctrl.categories        = [];
+                ctrl.activeCategory    = null;
+                ctrl.filteredDevices   = [];
                 ctrl.loading           = false;
                 ctrl.loadError         = null;
                 ctrl.busy              = {};
@@ -107,6 +111,50 @@ define([
                     var opts = ctrl.levelOptions[idx] || [];
                     var opt  = opts.find(function(o) { return o.value === levelInt; });
                     return opt ? opt.label : '';
+                }
+
+                var CATEGORY_DEFS = [
+                    { key: 'lights',  label: 'Switches',    icon: 'images/lightbulb.png',
+                      test: function(d) { return ddDeviceClassifier.getDirective(d) === 'dz-light-widget'; } },
+                    { key: 'temp',    label: 'Temperature',  icon: 'images/temperature.png',
+                      test: function(d) { return d.Temp !== undefined || d.Humidity !== undefined; } },
+                    { key: 'weather', label: 'Weather',      icon: 'images/rain.png',
+                      test: function(d) { return d.Rain !== undefined || d.Barometer !== undefined || d.Direction !== undefined || d.UVI !== undefined; } },
+                    { key: 'utility', label: 'Utility',      icon: 'images/utility.png',
+                      test: function(d) { return ddDeviceClassifier.getDirective(d) === 'dz-utility-widget' && d.Temp === undefined && d.Rain === undefined; } },
+                    { key: 'scenes',  label: 'Scenes',       icon: 'images/scenes.png',
+                      test: function(d) { return ddDeviceClassifier.getDirective(d) === 'dz-scene-widget'; } }
+                ];
+
+                ctrl.showTabs = function() {
+                    var cfg = ctrl.widgetDef && ctrl.widgetDef.config;
+                    return !!(cfg && cfg.showTabs) && ctrl.categories.length > 1;
+                };
+
+                function buildCategories() {
+                    var cats = [];
+                    CATEGORY_DEFS.forEach(function(cat) {
+                        var devs = ctrl.devices.filter(cat.test);
+                        if (devs.length) { cats.push(angular.extend({}, cat, { devices: devs })); }
+                    });
+                    ctrl.categories = cats;
+                    var stillExists = cats.some(function(c) { return c.key === ctrl.activeCategory; });
+                    if (!stillExists) { ctrl.activeCategory = cats.length ? cats[0].key : null; }
+                    updateFilteredDevices();
+                }
+
+                function updateFilteredDevices() {
+                    if (!ctrl.showTabs()) {
+                        ctrl.filteredDevices = ctrl.devices;
+                        return;
+                    }
+                    for (var i = 0; i < ctrl.categories.length; i++) {
+                        if (ctrl.categories[i].key === ctrl.activeCategory) {
+                            ctrl.filteredDevices = ctrl.categories[i].devices;
+                            return;
+                        }
+                    }
+                    ctrl.filteredDevices = [];
                 }
 
                 function buildListItems() {
@@ -288,6 +336,7 @@ define([
                         .then(function(resp) {
                             ctrl.loading = false;
                             ctrl.devices = (resp.data && resp.data.result) || [];
+                            buildCategories();
                             buildListItems();
                         })
                         .catch(function(err) {
@@ -302,6 +351,7 @@ define([
                     for (var i = 0; i < ctrl.devices.length; i++) {
                         if (String(ctrl.devices[i].idx) === idx) {
                             ctrl.devices[i] = updated;
+                            buildCategories();
                             buildListItems();
                             return;
                         }
@@ -313,6 +363,13 @@ define([
                 $scope.$watch(
                     function() { return ctrl.widgetDef && ctrl.widgetDef.config && ctrl.widgetDef.config.planIdx; },
                     function(val, old) { if (val !== old) { load(); } }
+                );
+
+                $scope.$watch('ctrl.activeCategory', updateFilteredDevices);
+
+                $scope.$watch(
+                    function() { return ctrl.widgetDef && ctrl.widgetDef.config && ctrl.widgetDef.config.showTabs; },
+                    function(val, old) { if (val !== old) { buildCategories(); } }
                 );
 
                 $scope.$on('$destroy', function() {

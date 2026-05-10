@@ -16,29 +16,43 @@
     </div>
 
     <!-- Grid mode (default) -->
-    <div class="dd-dz-favorites-body"
+    <div class="dd-favorites-main"
          ng-show="ctrl.widgetDef.config.planIdx && !ctrl.loadError && (!ctrl.loading || ctrl.devices.length) && ctrl.widgetDef.config.layout !== true">
-        <div ng-repeat="device in ctrl.devices track by device.idx" class="dd-dz-fav-item">
-            <dz-light-widget
-                ng-if="ctrl.isLight(device)"
-                device="device"
-                dashboard-type="0">
-            </dz-light-widget>
-            <dz-scene-widget
-                ng-if="ctrl.isScene(device)"
-                scene="device"
-                dashboard-type="1">
-            </dz-scene-widget>
-            <dz-utility-widget
-                ng-if="!ctrl.isLight(device) && !ctrl.isScene(device)"
-                device="device"
-                dashboard-type="0">
-            </dz-utility-widget>
-        </div>
-        <div class="dd-dz-unconfigured"
-             ng-show="!ctrl.loading && !ctrl.devices.length">
-            <i class="fa-solid fa-inbox" style="font-size:28px;opacity:0.3"></i>
-            <p>No devices found in this room</p>
+
+        <ul class="nav nav-tabs dd-favorites-tabs" ng-show="ctrl.showTabs()">
+            <li ng-repeat="cat in ctrl.categories track by cat.key"
+                ng-class="{ active: ctrl.activeCategory === cat.key }">
+                <a href="" ng-click="ctrl.activeCategory = cat.key; $event.preventDefault()">
+                    <img ng-src="{{ cat.icon }}" width="16" height="16" alt="">
+                    {{ cat.label }}
+                    <span class="badge">{{ cat.devices.length }}</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="dd-dz-favorites-body">
+            <div ng-repeat="device in ctrl.filteredDevices track by device.idx" class="dd-dz-fav-item">
+                <dz-light-widget
+                    ng-if="ctrl.isLight(device)"
+                    device="device"
+                    dashboard-type="0">
+                </dz-light-widget>
+                <dz-scene-widget
+                    ng-if="ctrl.isScene(device)"
+                    scene="device"
+                    dashboard-type="1">
+                </dz-scene-widget>
+                <dz-utility-widget
+                    ng-if="!ctrl.isLight(device) && !ctrl.isScene(device)"
+                    device="device"
+                    dashboard-type="0">
+                </dz-utility-widget>
+            </div>
+            <div class="dd-dz-unconfigured"
+                 ng-show="!ctrl.loading && !ctrl.filteredDevices.length">
+                <i class="fa-solid fa-inbox" style="font-size:28px;opacity:0.3"></i>
+                <p>No devices found in this room</p>
+            </div>
         </div>
     </div>
 
