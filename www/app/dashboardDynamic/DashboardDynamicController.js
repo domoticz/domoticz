@@ -388,6 +388,14 @@ define([
         // Using a live getter would return a new object every digest → infinite loop.
         $scope.widgetCatalogGrouped = widgetRegistry.getGrouped();
 
+        $scope.libraryItemFilter = function(item) {
+            var q = ($scope.librarySearch || '').trim().toLowerCase();
+            if (!q) { return true; }
+            return (item.label       || '').toLowerCase().indexOf(q) !== -1 ||
+                   (item.description || '').toLowerCase().indexOf(q) !== -1 ||
+                   (item.category    || '').toLowerCase().indexOf(q) !== -1;
+        };
+
         $scope.saveCurrentLayout = function() {
             if (!$scope.activeLayout || !$scope.activeData) { return $q.when(); }
             return dashboardDynamicService.saveLayout($scope.activeLayout, $scope.activeData)
