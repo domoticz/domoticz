@@ -66,8 +66,15 @@ define([
                     }
                 ]
             },
-            { key: 'textColor', type: 'color-alpha', label: 'Text color', default: 'rgba(255,255,255,1)' },
-            { key: 'bgColor',   type: 'color-alpha', label: 'Background color', default: 'rgba(0,0,0,0)' }
+            {
+                type: 'group',
+                fields: [
+                    { key: 'textColor', type: 'color-alpha', label: 'Text color',       default: 'rgba(255,255,255,1)' },
+                    { key: 'bgColor',   type: 'color-alpha', label: 'Background color', default: 'rgba(0,0,0,0)' }
+                ]
+            },
+            { key: 'showDivider',  type: 'boolean',    label: 'Show divider line', default: false },
+            { key: 'dividerColor', type: 'color-alpha', label: 'Divider color (leave empty for accent color)', default: '' }
         ]
     });
 

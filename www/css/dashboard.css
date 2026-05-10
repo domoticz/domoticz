@@ -1352,10 +1352,10 @@ body.dd-navbar-hidden .dd-toolbar {
     overflow: hidden;
     padding: 8px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
-    box-sizing: border-box;
     box-sizing: border-box;
     white-space: pre-wrap;
     word-break: break-word;
@@ -1368,6 +1368,13 @@ body.dd-navbar-hidden .dd-toolbar {
     color: var(--dz-text-muted, #999);
     font-size: 0.8em;
     padding: 4px 0;
+}
+.dd-text-note-divider {
+    height: 2px;
+    width: 100%;
+    margin-top: 6px;
+    border-radius: 1px;
+    background-color: var(--dz-accent-color);
 }
 
 /* ── Activity Log widget ──────────────────────────────────── */
@@ -2400,6 +2407,11 @@ dd-wcp-color {
     color: transparent !important;
     text-shadow: none !important;
     font-size: 0 !important;
+}
+
+.dd-wcp-swatch--auto {
+    border-style: dashed !important;
+    opacity: 0.75;
 }
 
 .dd-wcp-drop {

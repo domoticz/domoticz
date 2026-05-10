@@ -335,6 +335,11 @@
                            name="field_{{ subField.key }}"
                            ng-model="config[subField.key]">
 
+                    <dd-wcp-color ng-if="subField.type === 'color-alpha'"
+                                  name="field_{{ subField.key }}"
+                                  ng-model="config[subField.key]">
+                    </dd-wcp-color>
+
                     <input ng-if="subField.type === 'text'"
                            type="text"
                            class="text ui-widget-content ui-corner-all"

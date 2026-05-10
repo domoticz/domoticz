@@ -1,8 +1,11 @@
 <div class="dd-text-note" ng-style="ctrl.getStyle()">
-    <span style="white-space:pre-wrap" ng-bind="(ctrl.widgetDef.config.content) || (ctrl.editMode ? '' : 'Double-click to edit in settings')"></span>
+    <span style="white-space:pre-wrap" ng-bind="(ctrl.widgetDef.config.content) || (ctrl.editMode ? '' : (ctrl.widgetDef.config.showDivider ? '' : 'Double-click to edit in settings'))"></span>
     <span class="dd-text-note-hint"
           ng-show="ctrl.editMode && !ctrl.widgetDef.config.content">
         <i class="fa-solid fa-pencil"></i>
         Configure text in widget settings
     </span>
+    <div ng-if="ctrl.widgetDef.config.showDivider"
+         class="dd-text-note-divider"
+         ng-style="ctrl.widgetDef.config.dividerColor ? {'background-color': ctrl.widgetDef.config.dividerColor} : {}"></div>
 </div>
