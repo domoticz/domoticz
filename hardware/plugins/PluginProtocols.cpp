@@ -212,9 +212,8 @@ namespace Plugins {
     					if (!pObj) {
         					_log.Log(LOG_ERROR, "(%s) failed to build Python string object.", __func__);
     					} else {
-        					if (PyList_SetItem(pRetVal, Index++, pObj) == -1) {  // steals reference only on success
+        					if (PyList_SetItem(pRetVal, Index++, pObj) == -1) {  // always steals reference, even on failure
             						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd' to list for string.", __func__, Index - 1);
-            						Py_DECREF(pObj);  // clean up because PyList_SetItem failed
         					}
     					}
 				}
