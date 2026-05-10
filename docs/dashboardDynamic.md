@@ -954,7 +954,7 @@ Live: updates instantly from WebSocket `device_update` events for all configured
 ### Text Note
 **Category:** Custom Content
 
-Displays custom text with configurable appearance. Useful for section headers, labels, or status messages.
+Displays custom text with configurable appearance. Useful for section headers, labels, or status messages. An optional divider line can be shown below the text, making it easy to create visual section separators.
 
 **Configuration:**
 
@@ -967,6 +967,8 @@ Displays custom text with configurable appearance. Useful for section headers, l
 | Style | Normal | Normal / Bold / Italic / Bold + Italic / Underline |
 | Text color | rgba(255,255,255,1) | Color + opacity picker |
 | Background color | rgba(0,0,0,0) | Color + opacity picker (default: transparent) |
+| Show divider line | off | Show a horizontal line below the text |
+| Divider color | Accent color | Color + opacity picker; leave empty to use the theme accent color |
 
 ---
 
