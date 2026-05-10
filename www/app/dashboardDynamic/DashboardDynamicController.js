@@ -419,6 +419,8 @@ define([
             var name = ($scope.titleEditValue || '').trim();
             if (name && $scope.activeLayout) {
                 $scope.activeLayout.name = name;
+                var entry = $scope.layouts.find(function(l) { return l.id === $scope.activeLayout.id; });
+                if (entry) { entry.name = name; }
                 dashboardDynamicService.saveLayout($scope.activeLayout, null)
                     .catch(function() { ddToast.error('Rename failed'); });
             }
