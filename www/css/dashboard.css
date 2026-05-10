@@ -1206,33 +1206,61 @@ body.dd-navbar-hidden .dd-toolbar {
     font-size: 0.85em;
 }
 
-/* ── Favorites / Room tab strip ───────────────────────────── */
-.dd-favorites-tabs {
+/* ── Favorites / Room category tab strip ──────────────────── */
+.dd-cat-tabs {
     flex-shrink: 0;
-    margin-bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 6px 6px 6px;
     border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
-.dd-favorites-tabs > li > a {
-    color: var(--dz-body-text);
-    padding: 6px 10px;
-    font-size: 0.82em;
-    display: flex;
+.dd-cat-tab {
+    display: inline-flex;
     align-items: center;
-    gap: 4px;
-}
-
-.dd-favorites-tabs > li.active > a,
-.dd-favorites-tabs > li.active > a:hover,
-.dd-favorites-tabs > li.active > a:focus {
-    background: var(--dz-panel-bg);
-    border-color: rgba(255,255,255,0.08);
-    border-bottom-color: var(--dz-panel-bg);
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: transparent;
     color: var(--dz-body-text);
+    font-size: 0.82em;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, border-color 0.15s;
+    line-height: 1.4;
+    font-family: inherit;
 }
 
-.dd-favorites-tabs > li > a:hover {
+.dd-cat-tab:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.2);
+}
+
+.dd-cat-tab--active {
+    background: rgba(67,164,211,0.18);
+    border-color: var(--dz-widget-accent);
+}
+
+.dd-cat-tab--active:hover {
+    background: rgba(67,164,211,0.28);
+}
+
+.dd-cat-badge {
+    display: inline-block;
     background: rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 0 6px;
+    font-size: 0.85em;
+    line-height: 1.6;
+    min-width: 18px;
+    text-align: center;
+}
+
+.dd-cat-tab--active .dd-cat-badge {
+    background: var(--dz-widget-accent);
+    color: #fff;
 }
 
 /* ── Device tile grid ─────────────────────────────────────── */

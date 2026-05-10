@@ -19,16 +19,16 @@
     <div class="dd-favorites-main"
          ng-show="ctrl.widgetDef.config.planIdx && !ctrl.loadError && (!ctrl.loading || ctrl.devices.length) && ctrl.widgetDef.config.layout !== true">
 
-        <ul class="nav nav-tabs dd-favorites-tabs" ng-show="ctrl.showTabs()">
-            <li ng-repeat="cat in ctrl.categories track by cat.key"
-                ng-class="{ active: ctrl.activeCategory === cat.key }">
-                <a href="" ng-click="ctrl.activeCategory = cat.key; $event.preventDefault()">
-                    <img ng-src="{{ cat.icon }}" width="16" height="16" alt="">
-                    {{ cat.label }}
-                    <span class="badge">{{ cat.devices.length }}</span>
-                </a>
-            </li>
-        </ul>
+        <div class="dd-cat-tabs" ng-show="ctrl.showTabs()">
+            <button class="dd-cat-tab"
+                    ng-repeat="cat in ctrl.categories track by cat.key"
+                    ng-class="{ 'dd-cat-tab--active': ctrl.activeCategory === cat.key }"
+                    ng-click="ctrl.activeCategory = cat.key">
+                <img ng-src="{{ cat.icon }}" width="14" height="14" alt="">
+                {{ cat.label }}
+                <span class="dd-cat-badge">{{ cat.devices.length }}</span>
+            </button>
+        </div>
 
         <div class="dd-dz-favorites-body">
             <div ng-repeat="device in ctrl.filteredDevices track by device.idx" class="dd-dz-fav-item">
