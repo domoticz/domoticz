@@ -858,7 +858,20 @@ namespace Plugins {
 				}
 			}
 
-			// Add Server header if it is not supplied
+			// Add Host header if not supplied (required by HTTP/1.1)
+			if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "Host");
+			if (!pHead)
+			{
+				std::string sAddress = PyBorrowedRef(WriteMessage->m_pConnection->Address);
+				std::string sPort = PyBorrowedRef(WriteMessage->m_pConnection->Port);
+				bool bSecure = WriteMessage->m_pConnection->pProtocol->Secure();
+				if ((!bSecure && sPort != "80") || (bSecure && sPort != "443"))
+					sHttp += "Host: " + sAddress + ":" + sPort + "\r\n";
+				else
+					sHttp += "Host: " + sAddress + "\r\n";
+			}
+
+			// Add User-Agent header if not supplied
 			if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "User-Agent");
 			if (!pHead)
 			{
