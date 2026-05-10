@@ -62,7 +62,7 @@
                                 {{:: 'Loading…' | translate }}
                             </div>
                             <div class="aw-device-row"
-                                 ng-repeat="dev in $ctrl.devices | filter:{Name: $ctrl.deviceSearch} track by dev.idx"
+                                 ng-repeat="dev in $ctrl.devices | filter:{Name: $ctrl.deviceSearch} | limitTo:100 track by dev.idx"
                                  ng-class="{'aw-device-row-selected': $ctrl.isDeviceSelected(dev)}"
                                  ng-click="$ctrl.selectDevice(dev)">
                                 <span class="aw-device-name">{{dev.Name}}</span>
