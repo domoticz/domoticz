@@ -190,6 +190,7 @@ define([
                     var h = container.offsetHeight || 200;
                     return {
                         time: {
+                            useUTC:   false,
                             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
                         },
                         chart: {
@@ -278,7 +279,8 @@ define([
                         shared:      true,
                         xDateFormat: '%a %d %b %H:%M',
                         formatter: function() {
-                            var s = '<b>' + window.Highcharts.dateFormat('%a %d %b %H:%M', this.x) + '</b>';
+                            var chartTime = this.points[0].series.chart.time;
+                            var s = '<b>' + chartTime.dateFormat('%a %d %b %H:%M', this.x) + '</b>';
                             this.points.forEach(function(pt) {
                                 var bf = beaufortFromMs(pt.y);
                                 s += '<br><span style="color:' + pt.color + '">\u25CF</span> ' +

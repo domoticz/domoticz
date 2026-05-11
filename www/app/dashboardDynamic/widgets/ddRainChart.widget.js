@@ -171,6 +171,7 @@ define([
                         credits:   { enabled: false },
                         exporting: { enabled: false },
                         time: {
+                            useUTC:   false,
                             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
                         }
                     };

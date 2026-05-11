@@ -295,6 +295,7 @@ define([
                             column: { borderWidth: 0, pointPadding: 0.1, groupPadding: 0, minPointLength: 2 }
                         },
                         time: {
+                            useUTC:   false,
                             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
                         },
                         legend:    { enabled: false },
