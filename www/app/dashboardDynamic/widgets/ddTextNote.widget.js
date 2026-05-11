@@ -8,7 +8,7 @@ define([
         type:                  'text-note',
         transparentBackground: true,
         label:       'Text Note',
-        description: 'Plain text note with font and color options',
+        description: 'Text note with font/color options and optional sanitized HTML content',
         category:    'Custom Content',
         icon:        'fa-solid fa-pencil',
         defaultW:    3,
@@ -18,7 +18,9 @@ define([
         maxW:        12,
         maxH:        12,
         configSchema: [
-            { key: 'content', type: 'textarea', label: 'Text content', required: false },
+            { key: 'content', type: 'textarea', label: 'Text content',
+              help: 'Plain text or a safe subset of HTML/CSS. Scripts, iframes, and event handlers are stripped (DOMPurify).',
+              required: false },
             {
                 type: 'group',
                 fields: [
@@ -46,13 +48,21 @@ define([
             {
                 type: 'group',
                 fields: [
-                    { key: 'textAlign', type: 'select', label: 'Alignment',
+                    { key: 'textAlign', type: 'select', label: 'Horizontal align',
                       options: [
                           { value: 'left',   label: 'Left' },
                           { value: 'center', label: 'Center' },
                           { value: 'right',  label: 'Right' }
                       ],
                       default: 'center'
+                    },
+                    { key: 'verticalAlign', type: 'select', label: 'Vertical align',
+                      options: [
+                          { value: 'top',    label: 'Top' },
+                          { value: 'middle', label: 'Middle' },
+                          { value: 'bottom', label: 'Bottom' }
+                      ],
+                      default: 'middle'
                     },
                     { key: 'textStyle', type: 'select', label: 'Style',
                       options: [
@@ -88,19 +98,51 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', function($scope) {
+            controller: ['$scope', '$sce', function($scope, $sce) {
                 var ctrl = this;
+
+                ctrl.scopeId = 'dd-tn-' + Math.random().toString(36).slice(2, 10);
+
+                ctrl.renderedHtml = null;
+
+                function rebuildHtml() {
+                    var cfg = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
+                    var raw = cfg.content || '';
+                    if (!raw) {
+                        ctrl.renderedHtml = null;
+                        return;
+                    }
+                    // sanitizeHTML (www/js/domoticzdevices.js) runs DOMPurify with a strict
+                    // allow-list and CSS-scopes any embedded <style> blocks to scopeId.
+                    var clean = (typeof sanitizeHTML === 'function')
+                        ? sanitizeHTML(raw, ctrl.scopeId)
+                        : raw;
+                    ctrl.renderedHtml = $sce.trustAsHtml(
+                        '<div id="' + ctrl.scopeId + '">' + clean + '</div>'
+                    );
+                }
+
+                $scope.$watch(
+                    function() {
+                        var cfg = ctrl.widgetDef && ctrl.widgetDef.config;
+                        return cfg ? (cfg.content || '') : '';
+                    },
+                    rebuildHtml
+                );
 
                 ctrl.getStyle = function() {
                     var cfg = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
-                    var align = cfg.textAlign || 'left';
-                    var ts    = cfg.textStyle || 'normal';
-                    var justifyMap = { left: 'flex-start', center: 'center', right: 'flex-end' };
+                    var halign = cfg.textAlign     || 'center';
+                    var valign = cfg.verticalAlign || 'middle';
+                    var ts     = cfg.textStyle     || 'normal';
+                    var alignItemsMap   = { left: 'flex-start', center: 'center', right: 'flex-end' };
+                    var justifyContentMap = { top: 'flex-start', middle: 'center', bottom: 'flex-end' };
                     return {
-                        'font-size':       (cfg.fontSize   || 14) + 'px',
+                        'font-size':        (cfg.fontSize   || 14) + 'px',
                         'font-family':      cfg.fontFamily || 'inherit',
-                        'text-align':       align,
-                        'justify-content':  justifyMap[align] || 'flex-start',
+                        'text-align':       halign,
+                        'align-items':      alignItemsMap[halign]    || 'center',
+                        'justify-content':  justifyContentMap[valign] || 'center',
                         'font-weight':      (ts === 'bold' || ts === 'bold-italic') ? 'bold' : 'normal',
                         'font-style':       (ts === 'italic' || ts === 'bold-italic') ? 'italic' : 'normal',
                         'text-decoration':  ts === 'underline' ? 'underline' : 'none',
