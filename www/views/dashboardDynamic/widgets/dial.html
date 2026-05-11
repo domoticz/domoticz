@@ -28,8 +28,25 @@
             </defs>
 
             <!-- 1. Outer bezel ring -->
-            <circle class="dd-dial-bezel" cx="50" cy="50" r="49"
-                    ng-style="ctrl.timedOut ? {'fill': 'var(--dz-status-timeout)'} : {}"/>
+            <circle class="dd-dial-bezel" cx="50" cy="50" r="49"/>
+
+            <!-- 1b. Timeout indicator: thin red outline + small badge in top-right -->
+            <g ng-if="ctrl.timedOut" class="dd-dial-timeout">
+                <circle cx="50" cy="50" r="49"
+                        fill="none"
+                        stroke="var(--dz-status-timeout)"
+                        stroke-width="1.5"
+                        stroke-dasharray="3 2"/>
+                <circle cx="84" cy="16" r="7"
+                        fill="var(--dz-status-timeout)"
+                        stroke="var(--dz-panel-bg)" stroke-width="1.5"/>
+                <text x="84" y="16.5"
+                      text-anchor="middle" dominant-baseline="middle"
+                      fill="#fff"
+                      style="font-size:8px;font-weight:700;pointer-events:none;">!</text>
+                <title>Device timeout
+Last update: {{ctrl.lastUpdate}}</title>
+            </g>
 
             <!-- 2. Subtle top highlight for 3-D depth -->
             <ellipse class="dd-dial-highlight" cx="50" cy="34" rx="19" ry="11"/>

@@ -444,6 +444,9 @@ define([
                             }
                         }
                         if (matched) {
+                            // Prefer explicit color (consistent with kwh-summary, gauge, etc.)
+                            if (matched.color) { return matched.color; }
+                            // Legacy status-based mapping (backwards compat)
                             if (matched.status === 'critical') { return 'var(--dz-accent-red)'; }
                             if (matched.status === 'warning')  { return 'var(--dz-widget-amber)'; }
                             return 'var(--dz-widget-energy-export)';
@@ -581,6 +584,7 @@ define([
                     ctrl.deviceName = d.Name || '';
                     ctrl.title      = c.title || ctrl.deviceName;
                     ctrl.timedOut   = !!d.HaveTimeout;
+                    ctrl.lastUpdate = d.LastUpdate || '';
 
                     // ── Wind ──────────────────────────────────────────────
                     if (d.Type === 'Wind') {
