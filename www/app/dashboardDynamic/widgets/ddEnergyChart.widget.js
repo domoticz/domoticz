@@ -133,6 +133,13 @@ define([
                 label:    'Custom title',
                 required: false
             },
+            {
+                key:     'barColor',
+                type:    'color',
+                label:   'Bar color',
+                help:    'Applies to single-series counter charts (gas, water, kWh non-P1).',
+                default: '#03befc'
+            },
             { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
@@ -292,7 +299,9 @@ define([
                             style: { fontSize: '11px', fontWeight: '600', color: getThemeColor('--dz-body-text', '#ccc') }
                         },
                         plotOptions: {
-                            column: { borderWidth: 0, pointPadding: 0.1, groupPadding: 0, minPointLength: 2 }
+                            column: { borderWidth: 0, pointPadding: 0.1, groupPadding: 0, minPointLength: 2 },
+                            // Don't fade non-hovered bars (Highcharts default inactive opacity is 0.2)
+                            series: { states: { inactive: { opacity: 1 } } }
                         },
                         time: {
                             useUTC:   false,
@@ -364,6 +373,14 @@ define([
                         type:   'datetime',
                         labels: { style: { fontSize: '10px' } }
                     };
+                    // chartType=day means "Today (hourly)" — same as the Domoticz log
+                    // page: a rolling 24-hour window. Counter short-log returns ~5 days
+                    // of data, so clip the x-axis to [now-24h .. now].
+                    if (chartType === 'day') {
+                        var nowMs = Date.now();
+                        opts.xAxis.min = nowMs - 24 * 60 * 60 * 1000;
+                        opts.xAxis.max = nowMs;
+                    }
                     opts.yAxis = {
                         title:  { text: info.unit, style: { fontSize: '10px' } },
                         labels: { style: { fontSize: '10px' } }
@@ -376,7 +393,8 @@ define([
                     opts.series = [{
                         name:  titleForChartType(cfg, chartType) || info.unit,
                         data:  series,
-                        color: getThemeColor('--dz-btn-primary-bg', '#337ab7')
+                        // User-configurable; defaults to the same cyan as the P1 "Usage" series
+                        color: cfg.barColor || '#03befc'
                     }];
 
                     return window.Highcharts.chart(ctrl.chartId, opts);
@@ -797,7 +815,8 @@ define([
                     function() {
                         var cfg = ctrl.widgetDef && ctrl.widgetDef.config;
                         if (!cfg) { return ''; }
-                        return cfg.deviceIdx + '|' + resolveChartType(cfg) + '|' + (cfg.title || '');
+                        return cfg.deviceIdx + '|' + resolveChartType(cfg) + '|' +
+                               (cfg.title || '') + '|' + (cfg.barColor || '');
                     },
                     function(val, old) {
                         if (val === old) { return; }
@@ -807,7 +826,8 @@ define([
                         var newParts = val.split('|');
 
                         // Only the title changed — update chart title in-place
-                        if (chart && oldParts[0] === newParts[0] && oldParts[1] === newParts[1]) {
+                        if (chart && oldParts[0] === newParts[0] && oldParts[1] === newParts[1] &&
+                            oldParts[3] === newParts[3]) {
                             ctrl.deviceName = cfg.title || ctrl.deviceName;
                             chart.setTitle({ text: ctrl.deviceName || null });
                         } else {
