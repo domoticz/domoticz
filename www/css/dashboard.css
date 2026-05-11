@@ -781,6 +781,18 @@ body.dd-navbar-hidden .dd-toolbar {
     background: var(--dz-panel-bg);
     overflow: hidden;
 }
+.dd-widget--custom-chart > .dd-widget-body {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+    background: transparent;
+}
+.dd-widget--custom-chart .dd-chart-container {
+    inset: 4px;
+    border-radius: var(--dz-border-radius, 8px);
+    background: var(--dz-panel-bg);
+    overflow: hidden;
+}
 
 .dd-chart-container {
     position: absolute;
@@ -1363,6 +1375,11 @@ body.dd-navbar-hidden .dd-toolbar {
     color: var(--dz-body-text);
 }
 
+.dd-text-note-html {
+    display: block;
+    width: 100%;
+    white-space: normal;
+}
 .dd-text-note-hint {
     display: block;
     color: var(--dz-text-muted, #999);
@@ -3315,6 +3332,7 @@ body.dd-standby::after {
 .dd-dial-highlight { fill: rgba(255,255,255,0.06); pointer-events: none; }
 .dd-dial-face      { fill: var(--dd-face-fill); }
 .dd-dial-ring      { transition: stroke 0.4s ease; }
+.dd-dial-timeout   { opacity: 0.85; }
 .dd-dial-tick      { stroke: rgba(255,255,255,0.28); stroke-width: 0.8; stroke-linecap: round; }
 .dd-dial-tick-minor{ stroke: rgba(255,255,255,0.14); stroke-width: 0.5; stroke-linecap: round; }
 .dd-dial-scale-lbl { font-size: 5px; fill: var(--dz-widget-stat-muted); font-family: inherit; }

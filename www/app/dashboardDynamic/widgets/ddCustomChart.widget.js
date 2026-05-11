@@ -26,6 +26,11 @@ define([
         if (type === 'P1 Smart Meter') {
             return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v1; }, unit: 'kWh' };
         }
+        // Usage devices (instantaneous Watts — P1 phase power, smart plugs, etc.)
+        // The graph endpoint returns the wattage in field `u` for these devices.
+        if (type === 'Usage') {
+            return { sensor: 'counter', field: function(d){ return d.u !== undefined ? d.u : d.v; }, unit: 'W' };
+        }
         if (sub === 'SetPoint' || type === 'Thermostat') {
             return { sensor: 'temp', field: function(d){ return d.se !== undefined ? d.se : d.te; }, unit: '°' };
         }
@@ -47,7 +52,8 @@ define([
                        'device6','device7','device8','device9','device10'];
 
     widgetRegistry.register({
-        type:        'custom-chart',
+        type:                  'custom-chart',
+        transparentBackground: true,
         label:       'Custom Chart',
         description: 'Free-form chart combining multiple sensors',
         category:    'Charts & Data',
@@ -271,8 +277,15 @@ define([
 
                         var data = result.data
                             .map(function(d) {
-                                var ts  = new Date(d.d.replace(' ', 'T')).getTime();
-                                var val = parseFloat(fieldFn(d));
+                                // Parse "YYYY-MM-DD[ HH:MM[:SS]]" as LOCAL time —
+                                // ISO strings without a TZ suffix are interpreted as UTC
+                                // by many engines, which shifts the chart by the local offset.
+                                var parts = (d.d || '').split(' ');
+                                var ymd   = parts[0].split('-');
+                                var hms   = (parts[1] || '0:0:0').split(':');
+                                var ts    = new Date(+ymd[0], +ymd[1] - 1, +ymd[2],
+                                                     +hms[0], +hms[1] || 0, +hms[2] || 0).getTime();
+                                var val   = parseFloat(fieldFn(d));
                                 return [ts, val];
                             })
                             .filter(function(pt) {
@@ -291,6 +304,7 @@ define([
 
                     var opts = {
                         time: {
+                            useUTC:   false,
                             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
                         },
                         chart: {
@@ -323,7 +337,10 @@ define([
                             shared:    true,
                             formatter: function() {
                                 var x = this.x;
-                                var s = '<b>' + window.Highcharts.dateFormat('%a %d %b %H:%M', x) + '</b>';
+                                // Use the chart's own time object so per-chart useUTC/timezone
+                                // is honored (Highcharts.dateFormat is global and ignores it).
+                                var chartTime = this.points[0].series.chart.time;
+                                var s = '<b>' + chartTime.dateFormat('%a %d %b %H:%M', x) + '</b>';
                                 var pointMap = {};
                                 this.points.forEach(function(p) { pointMap[p.series.name] = p; });
                                 this.points[0].series.chart.series.forEach(function(series) {
