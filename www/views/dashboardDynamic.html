@@ -72,6 +72,12 @@
                   ng-class="{'dd-title-editable': editMode}"
                   ng-click="editMode && startTitleEdit()"
                   title="{{ editMode ? 'Click to rename' : '' }}"></span>
+            <button type="button" class="dd-title-link-btn"
+                    ng-if="editMode"
+                    title="Copy deep-link URL for this dashboard"
+                    ng-click="copyLayoutLink(activeLayout, $event)">
+                <i class="fa-solid fa-link"></i>
+            </button>
         </div>
         <div class="dd-toolbar-title-edit" ng-show="editingTitle">
             <div class="input-group input-group-sm">

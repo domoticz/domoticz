@@ -249,12 +249,22 @@ define([
                 if (layouts.length === 0) {
                     return createStarterLayout();
                 }
-                // Prefer the layout the user was last viewing (stored in localStorage)
-                var lastId = null;
+                // Selection priority:
+                //   1. ?id=<uuid> in the URL (deep-link from "Copy link")
+                //   2. ?name=<name> in the URL (case-insensitive match on layout name)
+                //   3. layout the user was last viewing (localStorage)
+                //   4. layout marked isDefault
+                //   5. first layout
+                var urlId   = $location.search().id;
+                var urlName = $location.search().name;
+                var lastId  = null;
                 try { lastId = localStorage.getItem(LS_KEY); } catch(e) {}
-                var startLayout = (lastId && layouts.find(function(l) { return l.id === lastId; })) ||
-                                  layouts.find(function(l) { return l.isDefault; }) ||
-                                  layouts[0];
+                var startLayout =
+                      (urlId   && layouts.find(function(l) { return l.id === urlId; })) ||
+                      (urlName && layouts.find(function(l) { return l.name && l.name.toLowerCase() === String(urlName).toLowerCase(); })) ||
+                      (lastId  && layouts.find(function(l) { return l.id === lastId; })) ||
+                      layouts.find(function(l) { return l.isDefault; }) ||
+                      layouts[0];
                 return loadLayout(startLayout.id).then(function() {
                     // Restore full-page state
                     var fp = null;
@@ -289,6 +299,35 @@ define([
                 loadLayout(id);
                 resetStandbyTimer();
             }).catch(angular.noop);
+        };
+
+        // Build a deep-link URL for a specific dashboard and copy it to the clipboard.
+        // The link uses `?id=<uuid>` so the destination machine doesn't depend on
+        // dashboard ordering or the visitor's localStorage.
+        $scope.copyLayoutLink = function(layout, $event) {
+            if ($event) { $event.preventDefault(); $event.stopPropagation(); }
+            if (!layout || !layout.id) { return; }
+            var base = window.location.origin + window.location.pathname;
+            var url  = base + '#/Dashboard?id=' + encodeURIComponent(layout.id);
+            var done = function(ok) {
+                if (ok) { ddToast.success('Link copied: ' + layout.name); }
+                else    { ddToast.error('Failed to copy link'); }
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(function() { done(true); }, function() { done(false); });
+            } else {
+                // Fallback for non-secure contexts (HTTP without TLS)
+                try {
+                    var ta = document.createElement('textarea');
+                    ta.value = url;
+                    ta.style.position = 'fixed'; ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    done(true);
+                } catch(e) { done(false); }
+            }
         };
 
         $scope.openRoomPlan = function(planIdx) {

@@ -2,8 +2,8 @@
 
 > **Note:** This page is maintained in the [Domoticz GitHub repository](https://github.com/domoticz/domoticz/tree/development/docs). Please do not edit it directly on the Wiki.
 
-**Revision:** 2026-04-28\
-**Minimum build:** 17826
+**Revision:** 2026-05-11\
+**Minimum build:** 17950
 
 ---
 
@@ -117,8 +117,23 @@ Dashboard management is done directly from the Edit Mode toolbar:
 | **Set as Default** | Edit → Set as Default |
 | **Duplicate** | Edit → Duplicate |
 | **Delete** | Edit → Delete |
+| **Copy deep-link** | Edit Mode → click the chain icon (`🔗`) next to the dashboard title |
 
 **Dashboard Settings** (Edit → Dashboard Settings… or Dashboards → Dashboard Settings…) contains only the Kiosk and Screen Standby configuration — no layout management.
+
+### Deep-linking to a specific dashboard
+
+You can open any dashboard directly via the URL, bypassing the normal "last viewed / default" lookup:
+
+| URL | Opens |
+|-----|-------|
+| `#/Dashboard` | Last viewed (localStorage) → default → first dashboard (existing behaviour) |
+| `#/Dashboard?id=<uuid>` | The dashboard with the matching UUID |
+| `#/Dashboard?name=<name>` | The dashboard whose name matches (case-insensitive) — e.g. `#/Dashboard?name=Smart%20Meter%20(P1)` |
+
+**Getting the UUID:** in Edit Mode, click the chain icon (`🔗`) immediately to the right of the dashboard title in the toolbar. The full deep-link URL is copied to the clipboard with a toast confirmation. Paste it into a browser bookmark, a wall-tablet shortcut, a chat message, etc.
+
+Switching dashboards through the dropdown does **not** update the URL — the deep-link only takes effect on page load.
 
 ### Kiosk / Auto-Swipe Mode
 

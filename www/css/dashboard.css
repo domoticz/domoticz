@@ -2443,6 +2443,18 @@ dd-wcp-color {
     box-shadow: 1px 1px 6px rgba(0,0,0,.4);
 }
 
+/* Copy-deep-link button next to the editable dashboard title (edit mode only) */
+.dd-title-link-btn {
+    background: transparent;
+    border: 0;
+    padding: 2px 8px;
+    margin-left: 6px;
+    color: var(--dz-text-muted, #888);
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+.dd-title-link-btn:hover { color: var(--dz-accent-color, #43A4D3); }
+
 /* Range / slider row */
 .dd-settings-form .form-group > div[style*="flex"] {
     display: flex;
