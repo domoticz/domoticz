@@ -1,6 +1,6 @@
 <blockquote>'''Note:''' This page is maintained in the [https://github.com/domoticz/domoticz/tree/development/docs Domoticz GitHub repository]. Please do not edit it directly on the Wiki.</blockquote>
 
-'''Revision:''' 2026-04-12<br>
+'''Revision:''' 2026-05-14<br>
 
 ==Overview==
 This page is aimed at developers wishing to improve Domoticz functionality via Python Plugins. If you simply want to use a plugin that a developer has already created for you, please see [[Using Python plugins]]. To see the Plugins already developed (for a reference) got to page [[Plugins]].
@@ -233,6 +233,100 @@ true
 |}
 |-
 |}
+
+==Extended Parameter Settings==
+In addition to the basic <code><param></code> attributes documented above, the parameter definition supports a richer set of input types, validation hints, conditional visibility, and grouping. These extended settings let the Hardware page render plugin configuration as proper number inputs, checkboxes, sliders, password fields, and collapsible groups instead of plain text boxes.
+
+A complete working example is shipped with Domoticz at <code>plugins/examples/TestExtendedSettings/plugin.py</code>.
+
+===New <param> attributes===
+{| class="wikitable"
+|-
+!Attribute
+!Purpose
+|-
+|type
+|Optional. Selects the input control rendered on the Hardware page. Valid values:
+* <code>number</code> &mdash; numeric spinner. Honours <code>min</code>, <code>max</code>, <code>step</code>.
+* <code>boolean</code> &mdash; checkbox. <code>default</code> accepts <code>"true"</code> or <code>"false"</code>.
+* <code>slider</code> &mdash; range slider. Honours <code>min</code>, <code>max</code>, <code>step</code>.
+If <code>type</code> is omitted (or set to a value the UI does not recognise) the field falls back to a plain text input, matching legacy behaviour.
+|-
+|min
+|Optional. Minimum value for <code>number</code> and <code>slider</code> types.
+|-
+|max
+|Optional. Maximum value for <code>number</code> and <code>slider</code> types.
+|-
+|step
+|Optional. Increment used by <code>number</code> and <code>slider</code> types.
+|-
+|password
+|Optional. <code>password="true"</code> masks the value during entry and on subsequent views of the Hardware page. Works on any text field, not just the <code>Password</code> column.
+|-
+|visible_when
+|Optional. Conditional visibility expression of the form <code>OtherField=value</code>. The field is shown only when the referenced parameter currently equals the given value. Useful for revealing fields that only make sense for a particular protocol or mode (e.g. show a certificate path only when <code>Protocol=https</code>).
+|-
+|default
+|Optional. Default value used when the plugin is first added. For <code>boolean</code> use <code>"true"</code>/<code>"false"</code>; for <code>number</code>/<code>slider</code> use a numeric string.
+|}
+
+===<group>===
+Parameters can be wrapped in a <code><group label="..."></code> block to render them as a collapsible section on the Hardware page. Groups can be used to hide advanced or rarely-changed options behind a single click. Groups contain one or more <code><param></code> elements and may be mixed with ungrouped parameters in the same <code><params></code> block.
+
+{| class="wikitable"
+|-
+!Attribute
+!Purpose
+|-
+|label
+|Required. Heading shown for the group. Translated if a translation exists.
+|}
+
+===Worked example===
+The following plugin definition (from <code>plugins/examples/TestExtendedSettings/plugin.py</code>) demonstrates every extended setting:
+
+<pre>
+"""
+<plugin key="TestExtSettings" name="Test Extended Settings Plugin" author="test" version="1.0.0">
+    <description>
+        <h2>Test Extended Settings</h2><br/>
+        This plugin is for testing the extended plugin settings feature.
+    </description>
+    <params>
+        <param field="Address" label="IP Address" width="200px" required="true" default="127.0.0.1"/>
+        <param field="Port" label="Port" width="100px" required="true" default="8080"/>
+        <param field="Interval" type="number" label="Poll Interval (s)" min="5" max="3600" step="5" default="30" width="100px"/>
+        <param field="EnableDebug" type="boolean" label="Debug Mode" default="false"/>
+        <param field="Brightness" type="slider" label="Default Brightness" min="0" max="100" default="50" width="200px"/>
+        <param field="Protocol" label="Protocol" width="150px">
+            <options>
+                <option label="HTTP" value="http" default="true"/>
+                <option label="HTTPS" value="https"/>
+            </options>
+        </param>
+        <param field="Certificate" label="Certificate Path" width="200px" visible_when="Protocol=https" default=""/>
+        <param field="ApiKey" label="API Key" password="true" width="200px" default=""/>
+        <group label="Advanced Settings">
+            <param field="RetryCount" type="number" label="Retry Count" min="0" max="10" default="3" width="100px"/>
+            <param field="Timeout" type="number" label="Timeout (s)" min="1" max="60" default="10" width="100px"/>
+            <param field="EnableNotifications" type="boolean" label="Enable Notifications" default="true"/>
+        </group>
+        <param field="Mode6" label="Legacy Debug" width="150px">
+            <options>
+                <option label="None" value="0" default="true"/>
+                <option label="All" value="-1"/>
+            </options>
+        </param>
+    </params>
+</plugin>
+"""
+</pre>
+
+Notes:
+* All values still arrive in the plugin via the <code>Parameters</code> dictionary as strings &mdash; convert with <code>int()</code>, <code>float()</code>, or compare against <code>"true"</code>/<code>"false"</code> as appropriate.
+* <code>visible_when</code> only controls UI visibility; the underlying value is still stored and exposed in <code>Parameters</code>.
+* Extended attributes are ignored by older Domoticz versions, so a plugin that uses them remains parseable; the fields will simply render as plain text inputs.
 
 ==Runtime Structure==
 Domoticz exposes settings and device details through four Python dictionaries.
