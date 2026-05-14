@@ -3055,6 +3055,8 @@ namespace Plugins
 		if (!m_DeviceDict)
 			return true;
 
+		AccessPython	Guard(this, __func__);
+
 		PyObject *key, *value;
 		Py_ssize_t pos = 0;
 		while (PyDict_Next((PyObject *)m_DeviceDict, &pos, &key, &value))
