@@ -466,6 +466,11 @@ namespace Plugins {
 
 		if ((pModState->pPlugin) && (pModState->pPlugin->m_HwdID != -1) && (self->Unit != -1))
 		{
+			if (!(CDeviceEx*)self->Parent)
+			{
+				_log.Log(LOG_ERROR, "(%s) Unit is not associated with a Device.", __func__);
+				Py_RETURN_NONE;
+			}
 			CDeviceEx *pDevice = (CDeviceEx*)self->Parent;
 			std::string sDevice = PyBorrowedRef(pDevice->DeviceID);
 			// load associated devices to make them available to python
@@ -739,6 +744,11 @@ namespace Plugins {
 				Py_RETURN_NONE;
 			}
 
+			if (!(CDeviceEx*)self->Parent)
+			{
+				_log.Log(LOG_ERROR, "(%s) Unit is not associated with a Device.", __func__);
+				Py_RETURN_NONE;
+			}
 			CDeviceEx *pDevice = (CDeviceEx *)self->Parent;
 			std::string sDeviceID = PyBorrowedRef(pDevice->DeviceID);
 			std::string sID = std::to_string(self->ID);
