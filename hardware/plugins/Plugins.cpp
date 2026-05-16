@@ -2674,7 +2674,12 @@ namespace Plugins
 						if (pReturnValue.IsLong())
 						{
 							lRetVal = PyLong_AsLong(pReturnValue) - 1;
-							if (lRetVal)
+							if (lRetVal < 0)
+							{
+								Debug(DEBUG_PYTHON, "PythonThreadCount: active_count() returned 0 (abnormal at shutdown), treating as 0 threads.");
+								lRetVal = 0;
+							}
+							else if (lRetVal)
 							{
 								Log(LOG_ERROR, "Plugin has %d Python threads still running.", (int)lRetVal);
 							}
