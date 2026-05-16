@@ -11,6 +11,7 @@
 #include "PluginMessages.h"
 #include "PluginProtocols.h"
 #include "PluginTransports.h"
+#include "PluginWebSocketRegistry.h"
 #include "PythonObjects.h"
 #include "PythonPluginUtils.h"
 
@@ -650,6 +651,61 @@ namespace Plugins
 		Py_RETURN_NONE;
 	}
 
+	static PyObject *PyDomoticz_WebSocketSend(PyObject *self, PyObject *args, PyObject *kwds)
+	{
+		module_state *pModState = CPlugin::FindModule();
+		if (!pModState)
+		{
+			Py_RETURN_NONE;
+		}
+		else if (!pModState->pPlugin)
+		{
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
+			Py_RETURN_NONE;
+		}
+
+		PyObject *pPayload = nullptr;
+		static char *kwlist[] = { "data", nullptr };
+		if (!PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "O", kwlist, &pPayload))
+		{
+			pModState->pPlugin->Log(LOG_ERROR, "%s: Failed to parse parameters, expected a str or dict.", __func__);
+			pModState->pPlugin->LogPythonException(std::string(__func__));
+			Py_RETURN_NONE;
+		}
+
+		std::string sPayload;
+		PyBorrowedRef brPayload(pPayload);
+		if (brPayload.IsString())
+		{
+			// JSON-encode the Python str as a JSON string literal so that
+			// SendPluginMessage's ParseJSon round-trip always succeeds and
+			// json["data"] receives the correct string value.  Without this,
+			// a bare unquoted string like "raw-string-..." would be passed to
+			// ParseJSon, which fails on it (not valid JSON), and the else-branch
+			// assigns the raw string directly — but only if ParseJSon truly
+			// returns false every time.  Encoding here makes the behaviour
+			// explicit and identical on all jsoncpp build configurations.
+			std::string rawStr = std::string(brPayload);
+			sPayload = Json::valueToQuotedString(rawStr.c_str());
+		}
+		else if (brPayload.IsDict())
+		{
+			CPluginProtocolJSON jsonProtocol;
+			sPayload = jsonProtocol.PythontoJSON(pPayload);
+		}
+		else
+		{
+			pModState->pPlugin->Log(LOG_ERROR, "%s: Parameter must be a str or dict.", __func__);
+			Py_RETURN_NONE;
+		}
+
+		std::string sPluginKey = pModState->pPlugin->m_PluginKey;
+		int hwId = pModState->pPlugin->m_HwdID;
+		pModState->pPlugin->MessagePlugin(new WebSocketSendDirective(sPluginKey, hwId, sPayload));
+
+		Py_RETURN_NONE;
+	}
+
 	static PyMethodDef DomoticzMethods[] = { { "Debug", PyDomoticz_Debug, METH_VARARGS, "Write a message to Domoticz log only if verbose logging is turned on." },
 						 { "Log", PyDomoticz_Log, METH_VARARGS, "Write a message to Domoticz log." },
 						 { "Status", PyDomoticz_Status, METH_VARARGS, "Write a status message to Domoticz log." },
@@ -663,6 +719,8 @@ namespace Plugins
 						 { "Configuration", (PyCFunction)PyDomoticz_Configuration, METH_VARARGS | METH_KEYWORDS, "Retrieve and Store structured plugin configuration." },
 						 { "Register", (PyCFunction)PyDomoticz_Register, METH_VARARGS | METH_KEYWORDS, "Register Device override class." },
 						 { "Dump", (PyCFunction)PyDomoticz_Dump, METH_VARARGS | METH_KEYWORDS, "Dump string values of an object or all locals to the log." },
+						 { "WebSocketSend", (PyCFunction)PyDomoticz_WebSocketSend, METH_VARARGS | METH_KEYWORDS,
+										   "Send a message to frontend pages subscribed to this plugin's websocket channel. Accepts a str (raw text/JSON) or a dict (serialised to JSON)." },
 						 { nullptr, nullptr, 0, nullptr } };
 
 	PyType_Slot ConnectionSlots[] = {
@@ -1921,6 +1979,7 @@ namespace Plugins
 			m_bIsStarted = true;
 			m_bIsStarting = false;
 			m_bIsStopped = false;
+			CPluginWebSocketRegistry::Get().Register(m_PluginKey, m_HwdID);
 			return true;
 		}
 		catch (...)
@@ -2409,6 +2468,15 @@ namespace Plugins
 	{
 		CPluginMessageBase *pMessage = new onDeviceRemovedCallback(DeviceID, Unit);
 		MessagePlugin(pMessage);
+	}
+
+	void CPlugin::onWebSocketMessage(const std::string &Data)
+	{
+		if (m_bDebug & PDM_QUEUE)
+		{
+			Debug(DEBUG_PYTHON, "onWebSocketMessage: queuing message, data length %zu", Data.length());
+		}
+		MessagePlugin(new onWebSocketMessageCallback(Data));
 	}
 
 	void CPlugin::DisconnectEvent(CEventBase *pMess)

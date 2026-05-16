@@ -309,7 +309,42 @@ namespace Plugins {
 		}
 		else if (pObj.IsLong())
 		{
-			sJson += std::to_string(PyLong_AsLong(pObj));
+			// Use PyLong_AsLongLong to avoid OverflowError on Windows where
+			// C `long` is 32-bit (LLP64) but Python ints can be arbitrarily large
+			// (e.g. JS Date.now() ms timestamps ~1.7e12 > INT32_MAX).
+			long long llv = PyLong_AsLongLong(pObj);
+			if (!PyErr_Occurred())
+			{
+				sJson += std::to_string(llv);
+			}
+			else
+			{
+				// Signed 64-bit overflow — try unsigned 64-bit (values up to 2^64-1)
+				PyErr_Clear();
+				unsigned long long ullv = PyLong_AsUnsignedLongLong(pObj);
+				if (!PyErr_Occurred())
+				{
+					sJson += std::to_string(ullv);
+				}
+				else
+				{
+					// Value exceeds uint64 range; fall back to decimal string
+					// representation so the send never raises/aborts.
+					PyErr_Clear();
+					PyObject* pStr = PyObject_Str(pObj);
+					if (pStr)
+					{
+						const char* sz = PyUnicode_AsUTF8(pStr);
+						sJson += (sz ? sz : "0");
+						Py_DECREF(pStr);
+					}
+					else
+					{
+						PyErr_Clear();
+						sJson += "0";
+					}
+				}
+			}
 		}
 		else if (pObj.IsFloat())
 		{

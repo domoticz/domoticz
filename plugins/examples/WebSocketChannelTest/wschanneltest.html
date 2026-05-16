@@ -1,0 +1,180 @@
+<style>
+.wsct-page { padding: 8px 4px; color: var(--dz-text, #ddd); }
+.wsct-table-wrap {
+  max-height: 340px; overflow-y: auto;
+  border-radius: var(--dz-border-radius, 8px);
+  background: var(--dz-panel-bg, #1e1e1e); margin-top: 8px;
+}
+.wsct-table { width: 100%; border-collapse: collapse; font-size: 0.88em; font-family: monospace; }
+.wsct-table th {
+  position: sticky; top: 0; background: var(--dz-panel-bg, #1e1e1e);
+  color: var(--dz-text-muted, #9ab); font-weight: normal;
+  text-align: left; padding: 6px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.wsct-table td { padding: 4px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); word-break: break-all; }
+.wsct-col-time { white-space: nowrap; color: var(--dz-text-muted, #9ab); }
+.wsct-empty { text-align: center; padding: 24px; color: var(--dz-text-muted, #9ab); opacity: 0.6; }
+.wsct-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.wsct-status { color: var(--dz-text-muted, #9ab); font-size: 0.85em; }
+/* Force text selection on the messages table — this page is a debug/inspection tool.
+   !important is required to override the Domoticz theme and any .noselect / inherited
+   user-select:none rules that cascade from parent layouts (e.g. style.css device tables,
+   Nightglass pages.css command-palette items). Selectors are scoped to .wsct-page so no
+   other Domoticz page is affected. */
+.wsct-page .wsct-table,
+.wsct-page .wsct-table td,
+.wsct-page .wsct-table th {
+  -webkit-user-select: text !important;
+  -moz-user-select:    text !important;
+  -ms-user-select:     text !important;
+  user-select:         text !important;
+}
+.wsct-col-data-value {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+/* Direction badge — scoped to .wsct-page; --dz-* vars only, no hardcoded colours */
+.wsct-dir-badge {
+  display: inline-block;
+  font-size: 0.82em;
+  white-space: nowrap;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+.wsct-dir-badge--sent {
+  color: var(--dz-text-muted, #9ab);
+  background: var(--dz-panel-header-bg, rgba(255,255,255,0.06));
+}
+.wsct-dir-badge--recv {
+  color: var(--dz-accent, #5bf);
+  background: var(--dz-accent-muted, rgba(85,187,255,0.12));
+}
+/* Sent rows are visually de-emphasised relative to received rows */
+.wsct-row-sent td {
+  opacity: 0.7;
+}
+</style>
+
+<div ng-app="domoticz" ng-controller="myCtrl" class="wsct-page">
+  <a class="btnstylerev" back-button>{{ ::'Back' | translate }}</a>
+  <h2 class="page-header">WebSocket Channel Test</h2>
+
+  <div class="wsct-toolbar">
+    <button class="btnstyle3" ng-click="sendPing()">{{ ::'Send command to plugin' | translate }}</button>
+    <span class="wsct-status" ng-if="lastSentAt">{{ ::'Sent' | translate }}: {{lastSentAt}}</span>
+  </div>
+
+  <h3>{{ ::'Messages (sent &amp; received)' | translate }}
+    <small ng-if="messages.length" class="wsct-status">&nbsp;({{messages.length}})</small>
+  </h3>
+
+  <div class="wsct-table-wrap" id="wsct-scroll">
+    <table class="wsct-table">
+      <thead>
+        <tr>
+          <th class="wsct-col-time">{{ ::'Time' | translate }}</th>
+          <th class="wsct-col-dir">{{ ::'Dir' | translate }}</th>
+          <th class="wsct-col-hwid">{{ ::'HW' | translate }}</th>
+          <th class="wsct-col-data">{{ ::'Data' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-if="!messages.length">
+          <td colspan="4" class="wsct-empty">{{ ::'Waiting for messages…' | translate }}</td>
+        </tr>
+        <tr ng-repeat="m in messages track by m.seq"
+            ng-class="{'wsct-row-sent': m.dir === 'sent'}">
+          <td class="wsct-col-time">{{m.time}}</td>
+          <td class="wsct-col-dir">
+            <span class="wsct-dir-badge"
+                  ng-class="m.dir === 'sent' ? 'wsct-dir-badge--sent' : 'wsct-dir-badge--recv'">
+              {{m.dir === 'sent' ? '→ sent' : '← recv'}}
+            </span>
+          </td>
+          <td class="wsct-col-hwid">{{m.hwid}}</td>
+          <td class="wsct-col-data"><span class="wsct-col-data-value">{{m.display}}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+var app = angular.module(['myApp'], []);
+app.controller('myCtrl', function ($scope, $element, $timeout, livesocket) {
+
+  var PLUGIN   = 'WSChannelTest';
+  var MAX_ROWS = 200;
+  var seq      = 0;
+
+  $scope.messages   = [];   // [{seq, time, hwid, display, dir}]
+  $scope.lastSentAt = '';
+
+  function formatData(data) {
+    if (data === null || data === undefined) { return String(data); }
+    if (typeof data === 'string')            { return data; }
+    try { return JSON.stringify(data); } catch (e) { return String(data); }
+  }
+
+  function nowTime() {
+    var now = new Date();
+    var pad = function (n) { return n < 10 ? '0' + n : n; };
+    return pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+  }
+
+  function trimMessages() {
+    if ($scope.messages.length > MAX_ROWS) {
+      $scope.messages.splice(0, $scope.messages.length - MAX_ROWS);
+    }
+  }
+
+  function scrollToBottom() {
+    $timeout(function () {
+      var el = document.getElementById('wsct-scroll');
+      if (el) { el.scrollTop = el.scrollHeight; }
+    }, 0);
+  }
+
+  // F5: subscribe + receive (verifies F1 outbound + multi-instance + hwid tagging)
+  livesocket.subscribePlugin(PLUGIN);
+
+  var offMessage = livesocket.onPluginMessage(PLUGIN, function (msg) {
+    seq++;
+    $scope.messages.push({
+      seq:     seq,
+      time:    nowTime(),
+      hwid:    msg.hwid,
+      display: formatData(msg.data),
+      dir:     'recv'
+    });
+    trimMessages();
+    scrollToBottom();
+  });
+
+  // F5: send command (verifies F3 inbound + F4 callback + round-trip echo)
+  $scope.sendPing = function () {
+    var payload = { cmd: 'ping', ts: Date.now() };
+    // Push the outgoing row BEFORE sending so it appears above the pong reply.
+    seq++;
+    $scope.messages.push({
+      seq:     seq,
+      time:    nowTime(),
+      hwid:    '(me)',
+      display: formatData(payload),
+      dir:     'sent'
+    });
+    trimMessages();
+    scrollToBottom();
+    livesocket.sendPluginCommand(PLUGIN, payload);
+    $scope.lastSentAt = new Date().toLocaleTimeString();
+  };
+
+  // Cleanup on page leave (mirrors Forecast.html $destroy handler)
+  $scope.$on('$destroy', function () {
+    if (offMessage) { offMessage(); offMessage = null; }
+    livesocket.unsubscribePlugin(PLUGIN);
+  });
+
+});
+</script>

@@ -689,6 +689,8 @@
     <ClInclude Include="..\hardware\plugins\PluginProtocols.h" />
     <ClInclude Include="..\hardware\plugins\Plugins.h" />
     <ClInclude Include="..\hardware\plugins\PluginTransports.h" />
+    <ClInclude Include="..\hardware\plugins\PluginWebSocketRegistry.h" />
+    <ClInclude Include="..\hardware\plugins\PluginWebSocketBridge.h" />
     <ClInclude Include="..\hardware\plugins\PythonObjects.h" />
     <ClInclude Include="..\hardware\plugins\PythonPluginUtils.h" />
     <ClInclude Include="..\hardware\PVOutput_Input.h" />
@@ -995,6 +997,8 @@
     <ClCompile Include="..\hardware\plugins\PluginProtocols.cpp" />
     <ClCompile Include="..\hardware\plugins\Plugins.cpp" />
     <ClCompile Include="..\hardware\plugins\PluginTransports.cpp" />
+    <ClCompile Include="..\hardware\plugins\PluginWebSocketRegistry.cpp" />
+    <ClCompile Include="..\hardware\plugins\PluginWebSocketBridge.cpp" />
     <ClCompile Include="..\hardware\plugins\PythonObjects.cpp" />
     <ClCompile Include="..\hardware\PVOutput_Input.cpp" />
     <ClCompile Include="..\hardware\RAVEn.cpp" />

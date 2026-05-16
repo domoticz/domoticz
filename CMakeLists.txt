@@ -394,6 +394,8 @@ hardware/plugins/Plugins.cpp
 hardware/plugins/PluginManager.cpp
 hardware/plugins/PluginProtocols.cpp
 hardware/plugins/PluginTransports.cpp
+hardware/plugins/PluginWebSocketRegistry.cpp
+hardware/plugins/PluginWebSocketBridge.cpp
 hardware/plugins/PythonObjects.cpp
 hardware/plugins/PythonObjectEx.cpp
 notifications/NotificationBase.cpp

@@ -85,6 +85,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(char*, PyByteArray_AsString, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyLong_FromLong, long);
 		DECLARE_PYTHON_SYMBOL(PY_LONG_LONG, PyLong_AsLongLong, PyObject*);
+		DECLARE_PYTHON_SYMBOL(unsigned PY_LONG_LONG, PyLong_AsUnsignedLongLong, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyModule_GetDict, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyDict_New, );
 		DECLARE_PYTHON_SYMBOL(void, PyDict_Clear, PyObject *);
@@ -224,6 +225,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyByteArray_AsString);
 					RESOLVE_PYTHON_SYMBOL(PyLong_FromLong);
 					RESOLVE_PYTHON_SYMBOL(PyLong_AsLongLong);
+					RESOLVE_PYTHON_SYMBOL(PyLong_AsUnsignedLongLong);
 					RESOLVE_PYTHON_SYMBOL(PyModule_GetDict);
 					RESOLVE_PYTHON_SYMBOL(PyDict_New);
 					RESOLVE_PYTHON_SYMBOL(PyDict_Contains);
@@ -456,6 +458,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyByteArray_AsString	pythonLib->PyByteArray_AsString
 #define PyLong_FromLong			pythonLib->PyLong_FromLong
 #define PyLong_AsLongLong		pythonLib->PyLong_AsLongLong
+#define PyLong_AsUnsignedLongLong	pythonLib->PyLong_AsUnsignedLongLong
 #define PyModule_GetDict		pythonLib->PyModule_GetDict
 #define PyDict_New				pythonLib->PyDict_New
 #define PyDict_Contains			pythonLib->PyDict_Contains

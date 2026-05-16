@@ -7,6 +7,9 @@
 typedef unsigned char byte;
 #endif
 
+#include <boost/signals2.hpp>
+extern boost::signals2::signal<void(const std::string& pluginKey, int hwId, const std::string& jsonPayload)> sOnPluginWebSocketMessage;
+
 namespace Plugins {
 
 	extern struct PyModuleDef DomoticzExModuleDef;
@@ -589,6 +592,22 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	  };
 	};
 
+	class onWebSocketMessageCallback : public CCallbackBase
+	{
+	public:
+		onWebSocketMessageCallback(const std::string &Data) : CCallbackBase("onWebSocketMessage"), m_Data(Data)
+		{
+			m_Name = __func__;
+		};
+		std::string m_Data;
+	protected:
+		void ProcessLocked(CPlugin* pPlugin) override
+		{
+			PyNewRef pParams = Py_BuildValue("(s)", m_Data.c_str());
+			Callback(pPlugin, pParams);
+		};
+	};
+
 	class onStopCallback : public CCallbackBase
 	{
 	public:
@@ -714,6 +733,28 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		void ProcessLocked(CPlugin* pPlugin) override
 		{
 			pPlugin->Notifier(m_NotifierName);
+		};
+	};
+
+	class WebSocketSendDirective : public CDirectiveBase
+	{
+	public:
+		WebSocketSendDirective(const std::string& pluginKey, int hwId, const std::string& payload)
+			: CDirectiveBase(), m_PluginKey(pluginKey), m_HwdID(hwId), m_Payload(payload)
+		{
+			m_Name = __func__;
+		};
+		std::string m_PluginKey;
+		int         m_HwdID;
+		std::string m_Payload;
+		void ProcessLocked(CPlugin* pPlugin) override
+		{
+			// Release the GIL before emitting the signal: the connected CWebSocketPush
+			// slots are pure C++ (no Python calls) but may acquire their own mutexes,
+			// and holding the GIL across them risks lock-order issues with the web-server
+			// thread.  PyAllowThreads releases GIL on construction, restores on destruction.
+			PyAllowThreads gil;
+			sOnPluginWebSocketMessage(m_PluginKey, m_HwdID, m_Payload);
 		};
 	};
 
