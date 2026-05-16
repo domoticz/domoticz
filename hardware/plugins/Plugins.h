@@ -111,6 +111,7 @@ namespace Plugins {
 	  void onDeviceAdded(const std::string DeviceID, int Unit);
 	  void onDeviceModified(const std::string DeviceID, int Unit);
 	  void onDeviceRemoved(const std::string DeviceID, int Unit);
+	  void onWebSocketMessage(const std::string &Data);
 	  void MessagePlugin(CPluginMessageBase *pMessage);
 	  void DeviceAdded(const std::string DeviceID, int Unit);
 	  void DeviceModified(const std::string DeviceID, int Unit);

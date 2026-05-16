@@ -12,6 +12,7 @@
 #include "Plugins.h"
 #include "PluginMessages.h"
 #include "PluginTransports.h"
+#include "PluginWebSocketRegistry.h"
 
 #include <json/json.h>
 #include "../../main/EventSystem.h"
@@ -296,11 +297,16 @@ namespace Plugins {
 
 	void CPluginSystem::DeregisterPlugin(const int HwdID)
 	{
-		if (m_pPlugins.count(HwdID))
+		// Hold PluginMutex for the entire count+erase sequence to avoid a TOCTOU gap.
+		// Unregister is called after erase so any concurrent lookup by the worker thread
+		// (which holds its own registry mutex) cannot see a partially-torn-down entry.
+		// Callers must invoke DeregisterPlugin only after device->Stop() has joined the
+		// plugin worker thread, guaranteeing Register() cannot race with Unregister().
 		{
 			std::lock_guard<std::mutex> l(PluginMutex);
 			m_pPlugins.erase(HwdID);
 		}
+		CPluginWebSocketRegistry::Get().Unregister(HwdID);
 	}
 
 	void* CPluginSystem::GetPreservedInterpreter(const std::string& pluginKey)

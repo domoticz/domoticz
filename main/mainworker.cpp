@@ -323,10 +323,10 @@ void MainWorker::StopDomoticzHardware()
 
 	for (auto& device : OrgHardwaredevices)
 	{
+		device->Stop(); // joins the plugin worker thread before deregistering
 #ifdef ENABLE_PYTHON
 		m_pluginsystem.DeregisterPlugin(device->m_HwdID);
 #endif
-		device->Stop();
 		delete device;
 	}
 }
@@ -398,10 +398,10 @@ void MainWorker::RemoveDomoticzHardware(int HwdId)
 	int dpos = FindDomoticzHardware(HwdId);
 	if (dpos == -1)
 		return;
+	RemoveDomoticzHardware(m_hardwaredevices[dpos]); // calls Stop() which joins the worker thread
 #ifdef ENABLE_PYTHON
-	m_pluginsystem.DeregisterPlugin(HwdId);
+	m_pluginsystem.DeregisterPlugin(HwdId); // safe: worker is joined before this point
 #endif
-	RemoveDomoticzHardware(m_hardwaredevices[dpos]);
 }
 
 int MainWorker::FindDomoticzHardware(int HwdId)
