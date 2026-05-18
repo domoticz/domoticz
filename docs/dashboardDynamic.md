@@ -64,7 +64,7 @@ Press the pencil button or **Ctrl+E** to enter Edit Mode. The full toolbar appea
 |------|--------|
 | *(dashboard name)* | Switch to that dashboard (prompts to discard unsaved changes if needed) |
 | **New Dashboard** | Creates a new dashboard with an auto-generated name; rename it via the title field |
-| **Dashboard Settings…** | Open kiosk and standby settings |
+| **Dashboard Settings…** | Open kiosk, standby and swipe settings |
 
 **Edit dropdown:**
 
@@ -119,7 +119,7 @@ Dashboard management is done directly from the Edit Mode toolbar:
 | **Delete** | Edit → Delete |
 | **Copy deep-link** | Edit Mode → click the chain icon (`🔗`) next to the dashboard title |
 
-**Dashboard Settings** (Edit → Dashboard Settings… or Dashboards → Dashboard Settings…) contains only the Kiosk and Screen Standby configuration — no layout management.
+**Dashboard Settings** (Edit → Dashboard Settings… or Dashboards → Dashboard Settings…) contains only the Kiosk, Screen Standby and Swipe Navigation configuration — no layout management.
 
 ### Deep-linking to a specific dashboard
 
@@ -170,6 +170,20 @@ Dims or blanks the screen after a period of inactivity — prevents burn-in on w
 | Opacity when dimmed | 5% | Screen brightness when dimmed (0–30%) |
 
 Settings are saved in browser `localStorage` (`dd_standby`).
+
+### Swipe Navigation
+
+When enabled, swiping left or right on a touch device (tablet/phone) moves to the next or previous dashboard, using the dashboard order. The gesture is ignored while editing or when a dialog is open, and does not interfere with vertical scrolling.
+
+**Note:** Swipe navigation has no effect while in Edit Mode, when a dialog (such as Dashboard Settings) is open, or when only one dashboard exists.
+
+**Settings** (in Dashboard Settings → Swipe Navigation section):
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| Swipe left/right to switch dashboard | off | Enable horizontal swipe navigation on touch devices |
+
+Settings are saved in browser `localStorage` (`dd_swipe`).
 
 ### Per-Device Dashboard Selection
 

@@ -57,6 +57,22 @@
         </div>
     </div>
 
+    <!-- Swipe navigation settings -->
+    <div class="dd-swipe-settings" style="padding:14px 16px;border-top:1px solid rgba(255,255,255,0.1)">
+        <div style="font-size:0.9em;font-weight:600;color:var(--dz-body-text);margin-bottom:10px">
+            <i class="fa fa-arrows-h" style="margin-right:5px"></i> Swipe Navigation
+        </div>
+        <div class="dd-settings-form">
+            <div class="form-group" style="margin-bottom:4px">
+                <label class="dd-checkbox-label" ng-click="swipe.enabled = !swipe.enabled; saveSwipeSettings({enabled: swipe.enabled})">
+                    <i class="fa dd-bool-icon"
+                       ng-class="swipe.enabled ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                    Swipe left/right to switch dashboard (touch devices)
+                </label>
+            </div>
+        </div>
+    </div>
+
     <!-- Screen Standby settings -->
     <div class="dd-standby-settings" style="padding:14px 16px;border-top:1px solid rgba(255,255,255,0.1)">
         <div style="font-size:0.9em;font-weight:600;color:var(--dz-body-text);margin-bottom:10px">

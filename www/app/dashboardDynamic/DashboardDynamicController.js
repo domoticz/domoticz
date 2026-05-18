@@ -126,6 +126,20 @@ define([
         $scope.standbyActive = false;
         var _standbyTimer    = null;
 
+        // ── Swipe navigation state ─────────────────────────────
+        // Lets the user swipe left/right (e.g. on a tablet) to move to the
+        // next/previous dashboard, mirroring the floorplan swipe gesture.
+        var LS_SWIPE = 'dd_swipe';
+        var _swipeDefaults = { enabled: false };
+        try {
+            $scope.swipe = angular.extend({}, _swipeDefaults, JSON.parse(localStorage.getItem(LS_SWIPE) || '{}'));
+        } catch(e) {
+            $scope.swipe = angular.copy(_swipeDefaults);
+        }
+        var _swipeStartX = 0;
+        var _swipeStartY = 0;
+        var _swipeMoved  = false;
+
         // Cycle gridReady false→true so ng-if fully destroys and recreates the grid,
         // ensuring compiled widget cells always reference the current activeData.
         function refreshGrid() {
@@ -492,6 +506,10 @@ define([
                     standbySettings: function() { return $scope.standby; },
                     onStandbyChange: function() {
                         return function(settings) { $scope.saveStandbySettings(settings); };
+                    },
+                    swipeSettings:   function() { return $scope.swipe; },
+                    onSwipeChange:   function() {
+                        return function(settings) { $scope.saveSwipeSettings(settings); };
                     }
                 }
             }).result.catch(angular.noop);
@@ -589,6 +607,56 @@ define([
         _standbyActivityEvents.forEach(function(ev) {
             document.addEventListener(ev, resetStandbyTimer, { passive: true });
         });
+
+        // ── Swipe navigation ──────────────────────────────────
+        // Navigate to the previous/next dashboard relative to the one
+        // currently shown, using the order of $scope.layouts. Does not wrap.
+        function swipeToLayout(direction) {
+            if (!$scope.layouts || $scope.layouts.length < 2 || !$scope.activeLayout) { return; }
+            var idx = $scope.layouts.findIndex(function(l) {
+                return l.id === $scope.activeLayout.id;
+            });
+            if (idx === -1) { return; }
+            var nextIdx = idx + direction;
+            if (nextIdx < 0 || nextIdx >= $scope.layouts.length) { return; }
+            // Fired from a passive DOM touch handler (outside the digest);
+            // $timeout safely enters a digest even if one is in progress.
+            $timeout(function() {
+                $scope.switchLayout($scope.layouts[nextIdx].id);
+            });
+        }
+
+        function onSwipeStart(e) {
+            _swipeMoved = false;
+            var touch = e.changedTouches ? e.changedTouches[0] : null;
+            _swipeStartX = touch ? touch.pageX : 0;
+            _swipeStartY = touch ? touch.pageY : 0;
+        }
+        function onSwipeMove() { _swipeMoved = true; }
+        function onSwipeEnd(e) {
+            if (!$scope.swipe.enabled || !_swipeMoved) { return; }
+            // Don't hijack gestures while editing or when a modal is open.
+            if ($scope.editMode || $('.modal.in').length) { return; }
+            var touch = e.changedTouches ? e.changedTouches[0] : null;
+            if (!touch) { return; }
+            var deltaX = touch.pageX - _swipeStartX;
+            var deltaY = touch.pageY - _swipeStartY;
+            // Higher than the floorplan's 50px: the dashboard scrolls
+            // vertically and has interactive widgets, so require a firmer
+            // horizontal gesture to avoid accidental dashboard switches.
+            var SWIPE_THRESHOLD = 70;
+            if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY) * 2) {
+                swipeToLayout(deltaX < 0 ? 1 : -1);
+            }
+        }
+        document.addEventListener('touchstart', onSwipeStart, { passive: true });
+        document.addEventListener('touchmove', onSwipeMove, { passive: true });
+        document.addEventListener('touchend', onSwipeEnd, { passive: true });
+
+        $scope.saveSwipeSettings = function(patch) {
+            angular.extend($scope.swipe, patch);
+            try { localStorage.setItem(LS_SWIPE, JSON.stringify($scope.swipe)); } catch(e) {}
+        };
 
         // ── Clear all widgets ──────────────────────────────────
         $scope.clearAllWidgets = function() {
@@ -861,6 +929,9 @@ define([
         // ── Cleanup ────────────────────────────────────────────
         $scope.$on('$destroy', function() {
             document.removeEventListener('keydown', onKeyDown);
+            document.removeEventListener('touchstart', onSwipeStart);
+            document.removeEventListener('touchmove', onSwipeMove);
+            document.removeEventListener('touchend', onSwipeEnd);
             _standbyActivityEvents.forEach(function(ev) {
                 document.removeEventListener(ev, resetStandbyTimer);
             });

@@ -7,8 +7,10 @@ define([
     app.controller('DdDashboardManagerCtrl', [
         '$scope', '$uibModalInstance',
         'layouts', 'kioskSettings', 'onKioskChange', 'standbySettings', 'onStandbyChange',
+        'swipeSettings', 'onSwipeChange',
         function($scope, $uibModalInstance,
-                 layouts, kioskSettings, onKioskChange, standbySettings, onStandbyChange) {
+                 layouts, kioskSettings, onKioskChange, standbySettings, onStandbyChange,
+                 swipeSettings, onSwipeChange) {
 
         $scope.layouts = angular.copy(layouts);
 
@@ -38,6 +40,15 @@ define([
         $scope.saveStandbySettings = function(patch) {
             angular.extend($scope.standby, patch);
             onStandbyChange($scope.standby);
+        };
+
+        // ── Swipe navigation settings ───────────────────────────
+        var _swipeDefaults = { enabled: false };
+        $scope.swipe = angular.extend({}, _swipeDefaults, swipeSettings || {});
+
+        $scope.saveSwipeSettings = function(patch) {
+            angular.extend($scope.swipe, patch);
+            onSwipeChange($scope.swipe);
         };
 
         $scope.dismiss = function() {
