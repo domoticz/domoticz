@@ -32,7 +32,7 @@ void CPluginWebSocketRegistry::Register(const std::string &pluginKey, int hwId)
 		{
 			// Already present under the same key; expected on a framework-driven restart
 			// where the previous Unregister was skipped (e.g. plugin re-enabled in-place).
-			_log.Log(LOG_STATUS, "PluginWebSocketRegistry: HwdID %d re-registered under '%s' (framework restart).", hwId, pluginKey.c_str());
+			_log.Debug(DEBUG_NORM, "PluginWebSocketRegistry: HwdID %d re-registered under '%s' (framework restart).", hwId, pluginKey.c_str());
 			return;
 		}
 		// Stale entry under a different key; clean it up.
@@ -50,7 +50,7 @@ void CPluginWebSocketRegistry::Register(const std::string &pluginKey, int hwId)
 	m_keyToHwIds[pluginKey].insert(hwId);
 	m_hwIdToKey[hwId] = pluginKey;
 
-	_log.Log(LOG_STATUS, "PluginWebSocketRegistry: HwdID %d registered under '%s' (%d instance(s)).",
+	_log.Debug(DEBUG_NORM, "PluginWebSocketRegistry: HwdID %d registered under '%s' (%d instance(s)).",
 		hwId, pluginKey.c_str(), (int)m_keyToHwIds[pluginKey].size());
 }
 
@@ -73,7 +73,7 @@ void CPluginWebSocketRegistry::Unregister(int hwId)
 			m_keyToHwIds.erase(itFwd);
 	}
 
-	_log.Log(LOG_STATUS, "PluginWebSocketRegistry: HwdID %d unregistered from '%s'.", hwId, key.c_str());
+	_log.Debug(DEBUG_NORM, "PluginWebSocketRegistry: HwdID %d unregistered from '%s'.", hwId, key.c_str());
 }
 
 std::vector<int> CPluginWebSocketRegistry::GetInstances(const std::string &pluginKey) const
