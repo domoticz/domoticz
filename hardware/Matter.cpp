@@ -150,6 +150,7 @@ CMatter::~CMatter()
 
 bool CMatter::StartHardware()
 {
+	SetReconnectDelay(0); // Do_Work drives reconnects; disable ASyncTCP's internal reconnect to avoid racing connect() calls
 	RequestStart();
 	{
 		auto rows = m_sql.safe_query("SELECT Extra FROM Hardware WHERE (ID=%d)", m_HwdID);
