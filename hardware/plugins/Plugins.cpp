@@ -2667,16 +2667,75 @@ namespace Plugins
 				PyBorrowedRef	pThreadModule = PyDict_GetItemString(pModuleDict, "threading");
 				if (pThreadModule)
 				{
-					PyNewRef pFunc = PyObject_GetAttrString(pThreadModule, "active_count");
+					// Use threading.enumerate() instead of threading.active_count() so
+					// we can filter out _DummyThread instances. A _DummyThread is
+					// created by CPython the first time a non-Python OS thread (e.g.
+					// one of Domoticz's own native worker threads) calls into the
+					// interpreter via PyGILState_Ensure(). The entry is never reaped
+					// — _DummyThread has no real OS thread for Python to observe —
+					// so active_count() permanently overcounts by the number of host
+					// threads that touched the sub-interpreter. That used to make
+					// every clean plugin disable look like a hang ("Plugin has N
+					// Python threads still running" for 10s). Filtering them here
+					// fixes it for every plugin without each author having to know.
+					PyNewRef pFunc = PyObject_GetAttrString(pThreadModule, "enumerate");
 					if (pFunc && PyCallable_Check(pFunc))
 					{
-						PyNewRef	pReturnValue = PyObject_CallObject(pFunc, nullptr);
-						if (pReturnValue.IsLong())
+						PyNewRef pList = PyObject_CallObject(pFunc, nullptr);
+						// threading.enumerate() always returns a list; skipping
+						// PyList_Check because it expands to PyType_HasFeature /
+						// PyType_GetFlags, which aren't in DelayedLink.h.
+						if (pList)
 						{
-							lRetVal = PyLong_AsLong(pReturnValue) - 1;
+							Py_ssize_t nThreads = PyList_Size((PyObject*)pList);
+							long lReal = 0;
+							for (Py_ssize_t i = 0; i < nThreads; i++)
+							{
+								PyObject* pThread = PyList_GetItem((PyObject*)pList, i); // borrowed
+								if (!pThread)
+									continue;
+								// Skip _DummyThread — these are phantom entries CPython
+								// keeps for foreign host threads that have called into
+								// Python; they are not joinable and never exit on their
+								// own. We compare on __class__.__name__ rather than
+								// Py_TYPE()->tp_name because the limited API only
+								// forward-declares _typeobject and tp_name isn't
+								// reachable.
+								bool isDummy = false;
+								PyNewRef pClass = PyObject_GetAttrString(pThread, "__class__");
+								if (pClass)
+								{
+									PyNewRef pName = PyObject_GetAttrString(pClass, "__name__");
+									if (pName)
+									{
+										// PyUnicode_AsUTF8 returns NULL + sets TypeError
+										// for non-unicode objects; clearing the error
+										// avoids needing PyUnicode_Check (which pulls in
+										// PyType_GetFlags, not in the delayed-link table).
+										const char* sName = PyUnicode_AsUTF8((PyObject*)pName);
+										PyErr_Clear();
+										if (sName && std::string(sName) == "_DummyThread")
+											isDummy = true;
+									}
+									else
+									{
+										PyErr_Clear();
+									}
+								}
+								else
+								{
+									PyErr_Clear();
+								}
+								if (isDummy)
+									continue;
+								lReal++;
+							}
+							// MainThread (or the equivalent in a sub-interpreter) is
+							// always present and is not the plugin's responsibility.
+							lRetVal = lReal - 1;
 							if (lRetVal < 0)
 							{
-								Debug(DEBUG_PYTHON, "PythonThreadCount: active_count() returned 0 (abnormal at shutdown), treating as 0 threads.");
+								Debug(DEBUG_PYTHON, "PythonThreadCount: enumerate() returned no real threads (abnormal at shutdown), treating as 0 threads.");
 								lRetVal = 0;
 							}
 							else if (lRetVal)
