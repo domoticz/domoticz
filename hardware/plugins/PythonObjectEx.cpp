@@ -72,7 +72,7 @@ namespace Plugins {
 
 		try
 		{
-			PyBorrowedRef pModule = PyState_FindModule(&DomoticzExModuleDef);
+			PyBorrowedRef pModule = CPlugin::FindPyModule("DomoticzEx");
 			if (!pModule)
 			{
 				_log.Log(LOG_ERROR, "(%s) DomoticzEx module not found in interpreter.", __func__);
@@ -202,7 +202,7 @@ namespace Plugins {
 	{
 		if (pObject)
 		{
-			PyBorrowedRef brModule = PyState_FindModule(&DomoticzExModuleDef);
+			PyBorrowedRef brModule = CPlugin::FindPyModule("DomoticzEx");
 			if (brModule)
 			{
 				module_state* pModState = ((struct module_state*)PyModule_GetState(brModule));
@@ -331,7 +331,7 @@ namespace Plugins {
 
 		try
 		{
-			PyBorrowedRef pModule = PyState_FindModule(&DomoticzExModuleDef);
+			PyBorrowedRef pModule = CPlugin::FindPyModule("DomoticzEx");
 			if (!pModule)
 			{
 				_log.Log(LOG_ERROR, "(%s) Domoticz module not found in interpreter.", __func__);
@@ -1087,7 +1087,7 @@ namespace Plugins {
 	{
 		if (pObject)
 		{
-			PyBorrowedRef brModule = PyState_FindModule(&DomoticzExModuleDef);
+			PyBorrowedRef brModule = CPlugin::FindPyModule("DomoticzEx");
 			if (brModule)
 			{
 				module_state* pModState = ((struct module_state*)PyModule_GetState(brModule));

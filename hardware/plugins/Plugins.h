@@ -71,6 +71,11 @@ namespace Plugins {
 
 	  static module_state *FindModule();
 	  static CPlugin*	FindPlugin();
+	  // Look up the Domoticz / DomoticzEx module object in the current
+	  // (sub-)interpreter via sys.modules. Replaces PyState_FindModule(&def),
+	  // which does not work for multi-phase init modules.
+	  // Returns a borrowed reference or nullptr.
+	  static PyObject*	FindPyModule(const char *name);
 
 	  bool StartHardware() override;
 	  bool StopHardware() override;

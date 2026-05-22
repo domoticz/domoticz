@@ -759,14 +759,57 @@ namespace Plugins
 		return 0;
 	}
 
-	struct PyModuleDef DomoticzModuleDef = { PyModuleDef_HEAD_INIT, "Domoticz", nullptr, sizeof(struct module_state), DomoticzMethods, nullptr, DomoticzTraverse, DomoticzClear, nullptr };
+	// ------------------------------------------------------------------
+	// Multi-phase init (PEP 489) for the Domoticz / DomoticzEx modules.
+	//
+	// The single-phase init these modules used to use shares the module's
+	// md_state (notably module_state.pPlugin) across sub-interpreters,
+	// because CPython's import machinery takes a shortcut on second/third
+	// imports and reuses the cached state. That made Domoticz.Log() calls
+	// from one plugin's sub-interpreter route to whichever plugin most
+	// recently called CPlugin::Initialise() (which sets pPlugin = this).
+	//
+	// Multi-phase init guarantees a fresh module instance + fresh
+	// md_state per (sub-)interpreter, so pPlugin properly identifies the
+	// owning plugin. The Py_mod_exec slot below is what used to be the
+	// body of the old PyInit_* functions.
+	//
+	// The CDeviceType / CConnectionType / CImageType PyTypeObjects remain
+	// process-global heap types — they store no per-interpreter state, so
+	// sharing them is benign and avoids churning the heap on every import.
+	// ------------------------------------------------------------------
 
-	PyMODINIT_FUNC PyInit_Domoticz(void)
+	// Py_LIMITED_API is pinned to 0x03040000 in DelayedLink.h to keep the
+	// rest of the plugin host on the 3.4 stable ABI. That cap hides the
+	// multi-phase-init symbols below (Py_mod_exec added in 3.5;
+	// PyModuleDef_Slot full struct exposed only at >= 3.5; the multi-
+	// interpreter slot added in 3.12). Provide local fallback definitions
+	// matching the values in CPython's moduleobject.h so we don't have to
+	// bump the project-wide limited-API cap just to flip module init mode.
+#ifndef Py_mod_create
+	#define Py_mod_create 1
+#endif
+#ifndef Py_mod_exec
+	#define Py_mod_exec 2
+#endif
+#ifndef Py_mod_multiple_interpreters
+	#define Py_mod_multiple_interpreters 3
+#endif
+#ifndef Py_MOD_MULTIPLE_INTERPRETERS_SUPPORTED
+	#define Py_MOD_MULTIPLE_INTERPRETERS_SUPPORTED ((void *)1)
+#endif
+	struct DomoticzModuleDef_Slot { int slot; void *value; };
+
+	// Forward declarations so the *_exec slots can reference the module defs
+	// (the defs are declared further down because they need the *Slots arrays,
+	// which in turn need the *_exec function addresses).
+	extern struct PyModuleDef DomoticzModuleDef;
+	extern struct PyModuleDef DomoticzExModuleDef;
+
+	static int Domoticz_exec(PyObject *pModule)
 	{
-		// This is called during the import of the plugin module
-		// triggered by the "import Domoticz" statement
-		PyObject *pModule = PyModule_Create2(&DomoticzModuleDef, PYTHON_API_VERSION);
 		module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
+		if (!pModState) return -1;
 
 		if (!CDeviceType)
 		{
@@ -784,41 +827,63 @@ namespace Plugins
 								  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HEAPTYPE, DeviceSlots };
 
 			CDeviceType = (PyTypeObject*)PyType_FromSpec(&DeviceSpec);
+			if (!CDeviceType) return -1;
 			PyType_Ready(CDeviceType);
 		}
 		pModState->pDeviceClass = CDeviceType;
 		pModState->pUnitClass = nullptr;
 		Py_INCREF(CDeviceType);	// PyModule_AddObject steals a reference
-		PyModule_AddObject(pModule, "Device", (PyObject*)CDeviceType);
+		if (PyModule_AddObject(pModule, "Device", (PyObject*)CDeviceType) < 0) {
+			Py_DECREF(CDeviceType);
+			return -1;
+		}
 
 		if (!CConnectionType)
 		{
 			CConnectionType = (PyTypeObject*)PyType_FromSpec(&ConnectionSpec);
+			if (!CConnectionType) return -1;
 			PyType_Ready(CConnectionType);
 		}
 		Py_INCREF(CConnectionType);	// PyModule_AddObject steals a reference
-		PyModule_AddObject(pModule, "Connection", (PyObject*)CConnectionType);
+		if (PyModule_AddObject(pModule, "Connection", (PyObject*)CConnectionType) < 0) {
+			Py_DECREF(CConnectionType);
+			return -1;
+		}
 
 		if (!CImageType)
 		{
 			CImageType = (PyTypeObject*)PyType_FromSpec(&ImageSpec);
+			if (!CImageType) return -1;
 			PyType_Ready(CImageType);
 		}
-		PyObject* refTracker = (PyObject*)CImageType;
 		Py_INCREF(CImageType);	// PyModule_AddObject steals a reference
-		PyModule_AddObject(pModule, "Image", (PyObject*)CImageType);
+		if (PyModule_AddObject(pModule, "Image", (PyObject*)CImageType) < 0) {
+			Py_DECREF(CImageType);
+			return -1;
+		}
 
-		return pModule;
+		return 0;
 	}
 
-	struct PyModuleDef DomoticzExModuleDef = { PyModuleDef_HEAD_INIT, "DomoticzEx", nullptr, sizeof(struct module_state), DomoticzMethods, nullptr, DomoticzTraverse, DomoticzClear, nullptr };
+	static DomoticzModuleDef_Slot DomoticzSlots[] = {
+		{ Py_mod_exec, (void*)Domoticz_exec },
+		{ Py_mod_multiple_interpreters, Py_MOD_MULTIPLE_INTERPRETERS_SUPPORTED },
+		{ 0, NULL }
+	};
 
-	PyMODINIT_FUNC PyInit_DomoticzEx(void)
+	struct PyModuleDef DomoticzModuleDef = { PyModuleDef_HEAD_INIT, "Domoticz", nullptr, sizeof(struct module_state), DomoticzMethods, (PyModuleDef_Slot*)DomoticzSlots, DomoticzTraverse, DomoticzClear, nullptr };
+
+	PyMODINIT_FUNC PyInit_Domoticz(void)
 	{
-		// This is called during the import of the plugin module
-		// triggered by the "import DomoticzEx" statement
-		PyObject *pModule = PyModule_Create2(&DomoticzExModuleDef, PYTHON_API_VERSION);
+		// Multi-phase init: framework creates the module + state, then runs
+		// Domoticz_exec(pModule) once per (sub-)interpreter that imports us.
+		return PyModuleDef_Init(&DomoticzModuleDef);
+	}
+
+	static int DomoticzEx_exec(PyObject *pModule)
+	{
 		module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
+		if (!pModState) return -1;
 
 		PyType_Slot DeviceExSlots[] = {
 			{ Py_tp_doc, (void*)"DomoticzEx Device" },
@@ -833,9 +898,13 @@ namespace Plugins
 		PyType_Spec DeviceExSpec = { "DomoticzEx.Device", sizeof(CDeviceEx), 0,
 							  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HEAPTYPE, DeviceExSlots };
 
-		pModState->pDeviceClass = (PyTypeObject*)PyType_FromSpec(&DeviceExSpec);	// Calls PyType_Ready internally from, 3.9 onwards
+		pModState->pDeviceClass = (PyTypeObject*)PyType_FromSpec(&DeviceExSpec);	// Calls PyType_Ready internally from 3.9 onwards
+		if (!pModState->pDeviceClass) return -1;
 		Py_INCREF(pModState->pDeviceClass);	// PyModule_AddObject steals a reference
-		PyModule_AddObject(pModule, "Device", (PyObject *)pModState->pDeviceClass);
+		if (PyModule_AddObject(pModule, "Device", (PyObject *)pModState->pDeviceClass) < 0) {
+			Py_DECREF(pModState->pDeviceClass);
+			return -1;
+		}
 		PyType_Ready(pModState->pDeviceClass);
 
 		PyType_Slot UnitExSlots[] = {
@@ -852,27 +921,53 @@ namespace Plugins
 								Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HEAPTYPE, UnitExSlots };
 
 		pModState->pUnitClass = (PyTypeObject*)PyType_FromSpec(&UnitExSpec);
+		if (!pModState->pUnitClass) return -1;
 		Py_INCREF(pModState->pUnitClass);	// PyModule_AddObject steals a reference
-		PyModule_AddObject(pModule, "Unit", (PyObject*)pModState->pUnitClass);
+		if (PyModule_AddObject(pModule, "Unit", (PyObject*)pModState->pUnitClass) < 0) {
+			Py_DECREF(pModState->pUnitClass);
+			return -1;
+		}
 		PyType_Ready(pModState->pUnitClass);
 
 		if (!CConnectionType)
 		{
 			CConnectionType = (PyTypeObject*)PyType_FromSpec(&ConnectionSpec);
+			if (!CConnectionType) return -1;
 			PyType_Ready(CConnectionType);
 		}
 		Py_INCREF(CConnectionType);	// PyModule_AddObject steals a reference
-		PyModule_AddObject(pModule, "Connection", (PyObject*)CConnectionType);
+		if (PyModule_AddObject(pModule, "Connection", (PyObject*)CConnectionType) < 0) {
+			Py_DECREF(CConnectionType);
+			return -1;
+		}
 
 		if (!CImageType)
 		{
 			CImageType = (PyTypeObject*)PyType_FromSpec(&ImageSpec);
+			if (!CImageType) return -1;
 			PyType_Ready(CImageType);
 		}
 		Py_INCREF(CImageType);	// PyModule_AddObject steals a reference
-		PyModule_AddObject(pModule, "Image", (PyObject*)CImageType);
+		if (PyModule_AddObject(pModule, "Image", (PyObject*)CImageType) < 0) {
+			Py_DECREF(CImageType);
+			return -1;
+		}
 
-		return pModule;
+		return 0;
+	}
+
+	static DomoticzModuleDef_Slot DomoticzExSlots[] = {
+		{ Py_mod_exec, (void*)DomoticzEx_exec },
+		{ Py_mod_multiple_interpreters, Py_MOD_MULTIPLE_INTERPRETERS_SUPPORTED },
+		{ 0, NULL }
+	};
+
+	struct PyModuleDef DomoticzExModuleDef = { PyModuleDef_HEAD_INIT, "DomoticzEx", nullptr, sizeof(struct module_state), DomoticzMethods, (PyModuleDef_Slot*)DomoticzExSlots, DomoticzTraverse, DomoticzClear, nullptr };
+
+	PyMODINIT_FUNC PyInit_DomoticzEx(void)
+	{
+		// Multi-phase init: see Domoticz comment above.
+		return PyModuleDef_Init(&DomoticzExModuleDef);
 	}
 
 	CPlugin::CPlugin(const int HwdID, const std::string &sName, const std::string &sPluginKey)
@@ -902,9 +997,15 @@ namespace Plugins
 
 	module_state* CPlugin::FindModule()
 	{
-		// Domoticz potentially has only two possible modules and only one can be loaded
-		PyBorrowedRef brModule = PyState_FindModule(&DomoticzModuleDef);
-		PyBorrowedRef brModuleEx = PyState_FindModule(&DomoticzExModuleDef);
+		// Look the modules up by name in the current interpreter's sys.modules.
+		// PyState_FindModule cannot be used here: with the modules converted to
+		// multi-phase init (PEP 489) the import machinery refuses
+		// PyState_AddModule on slotted module defs, so PyState_FindModule never
+		// has anything to return. FindPyModule() goes through PyImport_GetModuleDict,
+		// which gives us the current sub-interpreter's own sys.modules — exactly
+		// the per-interpreter isolation we want.
+		PyBorrowedRef brModule(FindPyModule("Domoticz"));
+		PyBorrowedRef brModuleEx(FindPyModule("DomoticzEx"));
 
 		// Check author has not loaded both Domoticz modules
 		if ((brModule) && (brModuleEx))
@@ -936,6 +1037,13 @@ namespace Plugins
 	{
 		module_state *pModState = FindModule();
 		return pModState ? pModState->pPlugin : nullptr;
+	}
+
+	PyObject* CPlugin::FindPyModule(const char *name)
+	{
+		PyObject *pSysModules = PyImport_GetModuleDict();
+		if (!pSysModules) return nullptr;
+		return PyDict_GetItemString(pSysModules, name);  // borrowed
 	}
 
 	void CPlugin::LogPythonException()
@@ -1410,6 +1518,30 @@ namespace Plugins
 				const char *pPyVer = Py_GetVersion();
 				int iPyMajor = 0, iPyMinor = 0;
 				if (pPyVer) sscanf(pPyVer, "%d.%d", &iPyMajor, &iPyMinor);
+
+				// Warn once per process if running on Python < 3.12 with sub-interpreter
+				// plugins. CPython 3.11's _asyncio extension is single-phase init and keeps
+				// a process-global static cache of the running event loop
+				// (cached_running_holder / cached_running_holder_tsid in
+				// Modules/_asynciomodule.c). That cache is shared across all
+				// sub-interpreters, so two asyncio-based plugins running concurrently in
+				// separate sub-interpreters will see each other's loops via
+				// asyncio.events._get_running_loop(), corrupting awaits with
+				// "got Future attached to a different loop". Fixed in 3.12 where _asyncio
+				// is multi-phase init with per-interpreter module state. Affected plugins
+				// can work around it by setting shared="true" in their plugin XML.
+				static bool sSubInterpAsyncioWarned = false;
+				if (!sSubInterpAsyncioWarned && (iPyMajor < 3 || (iPyMajor == 3 && iPyMinor < 12)))
+				{
+					sSubInterpAsyncioWarned = true;
+					Log(LOG_STATUS,
+					    "Note: Python %d.%d detected. Plugins using asyncio inside sub-interpreters "
+					    "(shared=\"true\" not set) can leak event-loop state between plugins on "
+					    "Python < 3.12 due to a global cache in CPython's _asyncio extension. "
+					    "If multiple asyncio-based plugins are active, prefer Python 3.12+ or set "
+					    "shared=\"true\" in the plugin's XML manifest.",
+					    iPyMajor, iPyMinor);
+				}
 				if (iPyMajor > 3 || (iPyMajor == 3 && iPyMinor >= 13))
 				{
 					try
@@ -1868,7 +2000,7 @@ namespace Plugins
 			}
 
 			std::string tupleStr = "(si)";
-			PyBorrowedRef brModule = PyState_FindModule(&DomoticzModuleDef);
+			PyBorrowedRef brModule = CPlugin::FindPyModule("Domoticz");
 
 			if (brModule)
 			{
@@ -1877,7 +2009,7 @@ namespace Plugins
 			}
 			else
 			{
-				brModule = PyState_FindModule(&DomoticzExModuleDef);
+				brModule = CPlugin::FindPyModule("DomoticzEx");
 				if (!brModule)
 				{
 					Log(LOG_ERROR, "(%s) %s failed, Domoticz/DomoticzEx modules not found in interpreter.", __func__, m_PluginKey.c_str());
@@ -2282,7 +2414,7 @@ namespace Plugins
 	void CPlugin::onDeviceAdded(const std::string DeviceID, int Unit)
 	{
 		PyBorrowedRef pObject;
-		PyBorrowedRef pModule = PyState_FindModule(&DomoticzExModuleDef);
+		PyBorrowedRef pModule = CPlugin::FindPyModule("DomoticzEx");
 		if (pModule)
 		{
 			module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
@@ -2383,7 +2515,7 @@ namespace Plugins
 	void CPlugin::onDeviceModified(const std::string DeviceID, int Unit)
 	{
 		PyBorrowedRef pObject;
-		PyBorrowedRef pModule = PyState_FindModule(&DomoticzExModuleDef);
+		PyBorrowedRef pModule = CPlugin::FindPyModule("DomoticzEx");
 		if (pModule)
 		{
 			pObject = FindUnitInDevice(DeviceID, Unit);
@@ -2418,7 +2550,7 @@ namespace Plugins
 	void CPlugin::onDeviceRemoved(const std::string DeviceID, int Unit)
 	{
 		PyNewRef pKey = PyLong_FromLong(Unit);
-		PyBorrowedRef pModule = PyState_FindModule(&DomoticzExModuleDef);
+		PyBorrowedRef pModule = CPlugin::FindPyModule("DomoticzEx");
 		if (pModule)
 		{
 			PyBorrowedRef pObject = FindDevice(DeviceID.c_str());
@@ -2761,10 +2893,10 @@ namespace Plugins
 			// Validate Device dictionary prior to shutdown
 			if (m_DeviceDict)
 			{
-				PyBorrowedRef brModule = PyState_FindModule(&DomoticzModuleDef);
+				PyBorrowedRef brModule = CPlugin::FindPyModule("Domoticz");
 				if (!brModule)
 				{
-					brModule = PyState_FindModule(&DomoticzExModuleDef);
+					brModule = CPlugin::FindPyModule("DomoticzEx");
 				}
 
 				module_state *pModState = nullptr;

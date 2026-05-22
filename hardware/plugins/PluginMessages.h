@@ -99,7 +99,7 @@ namespace Plugins {
 		bool UpdateEventTarget(const std::string DeviceID, int Unit)
 		{
 			// Used by some events in DomoticzEx.  Looks for callback existance on Unit, Device and Plugin in that order
-			PyBorrowedRef pModule = PyState_FindModule(&DomoticzExModuleDef);
+			PyBorrowedRef pModule = CPlugin::FindPyModule("DomoticzEx");
 			if (pModule)
 			{
 				module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
