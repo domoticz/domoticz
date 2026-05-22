@@ -1411,9 +1411,22 @@ namespace Plugins
 		Log(LOG_STATUS, "Exiting work loop.");
 	}
 
+	// Serialises the shared-plugin "scrub sys.modules['plugin'] + prepend
+	// sys.path + import 'plugin'" sequence below. Without this, two shared
+	// plugins starting concurrently can interleave between the scrub and
+	// the import: thread A's PyImport_ImportModule('plugin') begins, sets
+	// sys.modules['plugin'] = A_module, starts exec_module on A's plugin.py,
+	// releases the GIL during some C call, thread B then runs the scrub,
+	// removing A's still-loading entry; when A resumes the bookkeeping in
+	// importlib._bootstrap raises 'KeyError: plugin'. The mutex guarantees
+	// the scrub + import is atomic from one shared plugin's POV.
+	static std::mutex s_SharedPluginInitMutex;
+
 	bool CPlugin::Initialise()
 	{
 		m_bIsStarted = false;
+
+		std::unique_lock<std::mutex> sharedInitLock(s_SharedPluginInitMutex, std::defer_lock);
 
 		try
 		{
@@ -1477,6 +1490,13 @@ namespace Plugins
 				// thread.  It creates a fresh PyThreadState bound to this worker thread inside
 				// the main interpreter, stores it in thread-local storage, and acquires the GIL.
 				// Available in Py_LIMITED_API since 3.4; always succeeds (Py_FatalError on fail).
+				//
+				// Take the shared-init serialisation lock BEFORE acquiring the GIL so that
+				// two shared plugins cannot interleave their scrub-then-import sequences
+				// (see s_SharedPluginInitMutex comment near the top of this function).
+				// The lock is released right after PyImport_ImportModule("plugin") returns
+				// below.
+				sharedInitLock.lock();
 				(void)PyGILState_Ensure();
 				m_PyInterpreter = PyThreadState_Get();
 				Debug(DEBUG_PYTHON, "(%s) using shared (main) interpreter, thread state (%p).",
@@ -1759,6 +1779,13 @@ namespace Plugins
 			try
 			{
 				m_PyModule = PyImport_ImportModule("plugin");
+				// Shared-init lock can be released as soon as the import has
+				// fully resolved (success or failure): once 'plugin' is back
+				// in sys.modules under this plugin's HomeFolder, the next
+				// shared plugin's scrub will not race against an in-flight
+				// import. For non-shared plugins this is a no-op (lock was
+				// never taken).
+				if (sharedInitLock.owns_lock()) sharedInitLock.unlock();
 				if (!m_PyModule)
 				{
 					Log(LOG_ERROR, "(%s) failed to load 'plugin.py'.", m_PluginKey.c_str());
