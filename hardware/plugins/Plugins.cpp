@@ -812,6 +812,10 @@ namespace Plugins
 		module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
 		if (!pModState) return -1;
 
+		// DIAGNOSTIC: prove per-interpreter md_state isolation (or expose the lack thereof).
+		_log.Log(LOG_STATUS, "[diag Domoticz_exec] module=%p md_state=%p",
+		         (void*)pModule, (void*)pModState);
+
 		if (!CDeviceType)
 		{
 			PyType_Slot DeviceSlots[] = {
@@ -884,6 +888,10 @@ namespace Plugins
 	{
 		module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
 		if (!pModState) return -1;
+
+		// DIAGNOSTIC: prove per-interpreter md_state isolation (or expose the lack thereof).
+		_log.Log(LOG_STATUS, "[diag DomoticzEx_exec] module=%p md_state=%p",
+		         (void*)pModule, (void*)pModState);
 
 		PyType_Slot DeviceExSlots[] = {
 			{ Py_tp_doc, (void*)"DomoticzEx Device" },
@@ -1753,6 +1761,11 @@ namespace Plugins
 				Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
 				goto Error;
 			}
+			// DIAGNOSTIC: see [diag *_exec] entries above to correlate this md_state
+			// with the per-interpreter module instance. Identical md_state across
+			// plugins == multi-phase init isolation is not happening.
+			Log(LOG_STATUS, "[diag Initialise] this=%p md_state=%p prev_pPlugin=%p (set to %p)",
+			    (void*)this, (void*)pModState, (void*)pModState->pPlugin, (void*)this);
 			pModState->pPlugin = this;
 
 			//	Add start command to message queue
