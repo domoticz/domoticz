@@ -812,10 +812,6 @@ namespace Plugins
 		module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
 		if (!pModState) return -1;
 
-		// DIAGNOSTIC: prove per-interpreter md_state isolation (or expose the lack thereof).
-		_log.Log(LOG_STATUS, "[diag Domoticz_exec] module=%p md_state=%p",
-		         (void*)pModule, (void*)pModState);
-
 		if (!CDeviceType)
 		{
 			PyType_Slot DeviceSlots[] = {
@@ -888,10 +884,6 @@ namespace Plugins
 	{
 		module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
 		if (!pModState) return -1;
-
-		// DIAGNOSTIC: prove per-interpreter md_state isolation (or expose the lack thereof).
-		_log.Log(LOG_STATUS, "[diag DomoticzEx_exec] module=%p md_state=%p",
-		         (void*)pModule, (void*)pModState);
 
 		PyType_Slot DeviceExSlots[] = {
 			{ Py_tp_doc, (void*)"DomoticzEx Device" },
@@ -988,6 +980,7 @@ namespace Plugins
 		, m_SettingsDict(nullptr)
 		, m_bDebug(PDM_NONE)
 		, m_bShared(false)
+		, m_pInterpModulesDict(nullptr)
 	{
 		m_HwdID = HwdID;
 		m_Name = sName;
@@ -997,9 +990,27 @@ namespace Plugins
 		m_bTracing = false;
 	}
 
+	// Per-interpreter (sys.modules dict pointer) -> CPlugin* map. Used by
+	// FindPlugin() to route Domoticz.* calls to the correct CPlugin even on
+	// Python versions where CPython collapses multi-phase init modules'
+	// md_state between sub-interpreters (3.11 and earlier — fixed upstream
+	// in 3.12). The dict pointer itself is unique per (sub-)interpreter,
+	// because each interpreter owns its own sys.modules dict; we use it
+	// only as an opaque key and never dereference it.
+	static std::map<void*, CPlugin*>	s_PluginByModulesDict;
+	static std::mutex					s_PluginByModulesDictMutex;
+
 	CPlugin::~CPlugin()
 	{
 		m_bIsStarted = false;
+		if (m_pInterpModulesDict)
+		{
+			std::lock_guard<std::mutex> g(s_PluginByModulesDictMutex);
+			auto it = s_PluginByModulesDict.find(m_pInterpModulesDict);
+			if (it != s_PluginByModulesDict.end() && it->second == this)
+				s_PluginByModulesDict.erase(it);
+			m_pInterpModulesDict = nullptr;
+		}
 	}
 
 	module_state* CPlugin::FindModule()
@@ -1042,6 +1053,23 @@ namespace Plugins
 
 	CPlugin *CPlugin::FindPlugin()
 	{
+		// Prefer the per-interpreter sys.modules-dict map. On CPython 3.11
+		// the multi-phase init md_state is shared between sub-interpreters
+		// (see s_PluginByModulesDict above), so module_state.pPlugin is not
+		// a reliable identifier on its own; the map is.
+		PyObject *pModules = PyImport_GetModuleDict();
+		if (pModules)
+		{
+			std::lock_guard<std::mutex> g(s_PluginByModulesDictMutex);
+			auto it = s_PluginByModulesDict.find((void*)pModules);
+			if (it != s_PluginByModulesDict.end()) return it->second;
+		}
+		// Fallback for shared="true" plugins (and any pre-Initialise path).
+		// In shared mode all plugins live in the main interpreter so the
+		// dict pointer is identical for every shared plugin — the map can
+		// only hold one entry per dict, so shared plugins are deliberately
+		// not registered. RestoreThread() keeps module_state.pPlugin current
+		// across shared-plugin activations.
 		module_state *pModState = FindModule();
 		return pModState ? pModState->pPlugin : nullptr;
 	}
@@ -1761,12 +1789,25 @@ namespace Plugins
 				Log(LOG_ERROR, "CPlugin:%s, unable to obtain module state.", __func__);
 				goto Error;
 			}
-			// DIAGNOSTIC: see [diag *_exec] entries above to correlate this md_state
-			// with the per-interpreter module instance. Identical md_state across
-			// plugins == multi-phase init isolation is not happening.
-			Log(LOG_STATUS, "[diag Initialise] this=%p md_state=%p prev_pPlugin=%p (set to %p)",
-			    (void*)this, (void*)pModState, (void*)pModState->pPlugin, (void*)this);
 			pModState->pPlugin = this;
+
+			// Register this CPlugin against the current (sub-)interpreter's
+			// sys.modules dict pointer so FindPlugin() can route correctly
+			// on Python versions that share md_state between sub-interpreters
+			// (3.11 and earlier). Shared plugins are skipped: they all share
+			// the main interpreter's sys.modules so the dict pointer is the
+			// same for every shared plugin — module_state.pPlugin (kept
+			// current by RestoreThread()) is the right routing key there.
+			if (!m_bShared)
+			{
+				PyObject *pModules = PyImport_GetModuleDict();
+				if (pModules)
+				{
+					m_pInterpModulesDict = (void*)pModules;
+					std::lock_guard<std::mutex> g(s_PluginByModulesDictMutex);
+					s_PluginByModulesDict[m_pInterpModulesDict] = this;
+				}
+			}
 
 			//	Add start command to message queue
 			MessagePlugin(new onStartCallback());

@@ -46,6 +46,13 @@ namespace Plugins {
 
 		PyThreadState*	m_PyInterpreter;
 		PyObject*		m_PyModule;			// plugin module itself
+		// Snapshot (never dereferenced) of this interpreter's sys.modules dict
+		// pointer. Used as the key for the s_PluginByModulesDict map below so
+		// FindPlugin() can route correctly on Python versions where multi-phase
+		// init does not isolate module_state between sub-interpreters
+		// (CPython 3.11 reuses the cached module on second import, sharing
+		// md_state with the first interpreter; fixed in 3.12).
+		void*			m_pInterpModulesDict;
 
 		std::string		m_Version;
 		std::string		m_Author;
