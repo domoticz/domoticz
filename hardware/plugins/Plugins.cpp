@@ -782,21 +782,22 @@ namespace Plugins
 	// Py_LIMITED_API is pinned to 0x03040000 in DelayedLink.h to keep the
 	// rest of the plugin host on the 3.4 stable ABI. That cap hides the
 	// multi-phase-init symbols below (Py_mod_exec added in 3.5;
-	// PyModuleDef_Slot full struct exposed only at >= 3.5; the multi-
-	// interpreter slot added in 3.12). Provide local fallback definitions
-	// matching the values in CPython's moduleobject.h so we don't have to
-	// bump the project-wide limited-API cap just to flip module init mode.
+	// PyModuleDef_Slot full struct exposed only at >= 3.5). Provide local
+	// fallback definitions matching the values in CPython's moduleobject.h
+	// so we don't have to bump the project-wide limited-API cap just to
+	// flip module init mode.
+	//
+	// Note: we deliberately do NOT pass Py_mod_multiple_interpreters
+	// (slot ID 3, added in 3.12). On 3.12+ the default for a multi-phase
+	// module without that slot is already Py_MOD_MULTIPLE_INTERPRETERS_
+	// SUPPORTED, which is exactly what we want. On 3.11 the slot ID is
+	// unknown and CPython raises SystemError on import, so including it
+	// would break Python 3.11 hosts.
 #ifndef Py_mod_create
 	#define Py_mod_create 1
 #endif
 #ifndef Py_mod_exec
 	#define Py_mod_exec 2
-#endif
-#ifndef Py_mod_multiple_interpreters
-	#define Py_mod_multiple_interpreters 3
-#endif
-#ifndef Py_MOD_MULTIPLE_INTERPRETERS_SUPPORTED
-	#define Py_MOD_MULTIPLE_INTERPRETERS_SUPPORTED ((void *)1)
 #endif
 	struct DomoticzModuleDef_Slot { int slot; void *value; };
 
@@ -867,7 +868,6 @@ namespace Plugins
 
 	static DomoticzModuleDef_Slot DomoticzSlots[] = {
 		{ Py_mod_exec, (void*)Domoticz_exec },
-		{ Py_mod_multiple_interpreters, Py_MOD_MULTIPLE_INTERPRETERS_SUPPORTED },
 		{ 0, NULL }
 	};
 
@@ -958,7 +958,6 @@ namespace Plugins
 
 	static DomoticzModuleDef_Slot DomoticzExSlots[] = {
 		{ Py_mod_exec, (void*)DomoticzEx_exec },
-		{ Py_mod_multiple_interpreters, Py_MOD_MULTIPLE_INTERPRETERS_SUPPORTED },
 		{ 0, NULL }
 	};
 
