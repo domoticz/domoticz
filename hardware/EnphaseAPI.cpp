@@ -991,6 +991,11 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 
 	// Initialise tracker from DB on first call so a Domoticz restart after an
 	// Envoy reset is also detected (not just resets that happen during uptime).
+	// The offset is not persisted across restarts, but it is fully recoverable:
+	// if the device's raw whLifetime is already below the stored adjusted total,
+	// a counter reset happened during downtime, so seed offset = lastGoodTotal -
+	// rawKwh immediately. This avoids the 5-poll reset-confirm + spike-correction
+	// dance (and the two log lines it produces) on every cold start.
 	if (!m_productionTracker.initialized)
 	{
 		bool bExists;
@@ -999,6 +1004,10 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 		{
 			m_productionTracker.initialized   = true;
 			m_productionTracker.lastGoodTotal = dbWh / 1000.0;
+			if (mtotal > 0.0 && mtotal + ENPHASE_RESET_TOLERANCE_KWH < m_productionTracker.lastGoodTotal)
+			{
+				m_productionTracker.offset = m_productionTracker.lastGoodTotal - mtotal;
+			}
 		}
 	}
 
@@ -1041,6 +1050,10 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 				{
 					m_totalConsumptionTracker.initialized   = true;
 					m_totalConsumptionTracker.lastGoodTotal = dbWh / 1000.0;
+					if (mtotal > 0.0 && mtotal + ENPHASE_RESET_TOLERANCE_KWH < m_totalConsumptionTracker.lastGoodTotal)
+					{
+						m_totalConsumptionTracker.offset = m_totalConsumptionTracker.lastGoodTotal - mtotal;
+					}
 				}
 			}
 			double adjustedTotal = ProcessEnphaseCounter(m_totalConsumptionTracker, mtotal, "Total-Consumption");
