@@ -1398,6 +1398,8 @@ body.dd-navbar-hidden .dd-toolbar {
 .dd-activity-log {
     height: 100%;
     overflow-y: auto;
+    border-radius: var(--dz-border-radius, 8px);
+    background: var(--dz-panel-bg);
 }
 
 .dd-activity-list {
@@ -3119,7 +3121,7 @@ dd-wcp-color {
 }
 
 /* ── RSS Feed Widget ──────────────────────────────────────── */
-.dd-rss { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
+.dd-rss { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; border-radius: var(--dz-border-radius, 8px); background: var(--dz-panel-bg); }
 .dd-rss-header,
 .dd-log-header,
 .dd-calendar-header,
@@ -3154,7 +3156,8 @@ dd-wcp-color {
 .dd-forecast-error { font-size: 0.8em; color: var(--dz-accent-red); margin-top: 8px; }
 
 /* ── Domoticz Log Widget ──────────────────────────────────── */
-.dd-widget--domoticz-log > .dd-widget-body { padding: 0; overflow: hidden; position: relative; }
+.dd-widget--domoticz-log > .dd-widget-body { padding: 0; overflow: hidden; position: relative; background: transparent; }
+.dd-widget--domoticz-log .dd-log { border-radius: var(--dz-border-radius, 8px); background: var(--dz-panel-bg); }
 .dd-log { position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden; }
 .dd-log-header { padding: 4px 8px; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
 .dd-log-title { font-size: 0.9em; font-weight: 600; }
@@ -3250,7 +3253,7 @@ dd-wcp-color {
     border-radius: var(--dz-border-radius, 8px);
     background: var(--dz-panel-bg);
 }
-.dd-battery-monitor { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
+.dd-battery-monitor { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; border-radius: var(--dz-border-radius, 8px); background: var(--dz-panel-bg); }
 .dd-battery-monitor-header { margin-bottom: 8px; flex-shrink: 0; }
 .dd-battery-monitor-title { font-size: 0.9em; font-weight: 600; }
 .dd-battery-monitor-badge { font-size: 0.75em; padding: 2px 7px; border-radius: 10px; background: var(--dz-accent-red); color: var(--dz-body-text); }

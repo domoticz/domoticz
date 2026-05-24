@@ -23,12 +23,19 @@ define([
         minH:        3,
         maxW:        12,
         maxH:        10,
+        transparentBackground: true,
         configSchema: [
             {
                 key:      'title',
                 type:     'text',
                 label:    'Title (optional)',
                 required: false
+            },
+            {
+                key:     'showBackground',
+                type:    'boolean',
+                label:   'Show panel background',
+                default: true
             },
             {
                 key:      'maxEntries',
