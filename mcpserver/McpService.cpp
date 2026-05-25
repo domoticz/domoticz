@@ -65,6 +65,7 @@ static const std::unordered_map<std::string, http::server::_eUserRights> s_toolM
     { "send_notification",      http::server::URIGHTS_SWITCHER },
     { "rename_device",          http::server::URIGHTS_ADMIN },
     { "delete_device",          http::server::URIGHTS_ADMIN },
+    { "hide_device",            http::server::URIGHTS_ADMIN },
     { "create_sensor",          http::server::URIGHTS_ADMIN },
     { "create_virtual_sensor",  http::server::URIGHTS_ADMIN },
     { "create_device",          http::server::URIGHTS_ADMIN },
@@ -991,10 +992,19 @@ namespace mcp		// Model Context Protocol
 		},
 		{
 			"delete_device",
-			"Delete (hide) a device",
-			"Hide any device (switch, sensor, virtual, etc.) by setting its Used flag to 0. The device is not permanently deleted; it can be re-enabled. Use with caution.",
+			"Permanently delete a device",
+			"Permanently delete a device (switch, sensor, virtual, etc.) and all its associated data (logs, history, scene/timer references). This cannot be undone. To only hide a device, use hide_device instead.",
 			{
-				{ "name", "string", "Name of the device to hide/delete", false, {} },
+				{ "name", "string", "Name of the device to delete", false, {} },
+				{ "idx", "integer", "Device IDX (use either this or name)", false, {} },
+			}
+		},
+		{
+			"hide_device",
+			"Hide a device",
+			"Hide a device by setting its Used flag to 0. The device is not deleted and can be re-enabled later. Use delete_device to permanently remove a device.",
+			{
+				{ "name", "string", "Name of the device to hide", false, {} },
 				{ "idx", "integer", "Device IDX (use either this or name)", false, {} },
 			}
 		},
@@ -1372,7 +1382,7 @@ namespace mcp		// Model Context Protocol
 		};
 		static const std::unordered_set<std::string> kAdminTools = {
 			"create_sensor", "create_virtual_sensor", "create_device",
-			"rename_device", "delete_device",
+			"rename_device", "delete_device", "hide_device",
 			"add_user_variable", "update_user_variable", "delete_user_variable",
 			"create_event", "update_event", "delete_event",
 			"update_device_value", "set_security_status"
@@ -1420,6 +1430,7 @@ namespace mcp		// Model Context Protocol
 			{ "get_device",             getDevice },
 			{ "rename_device",          renameDevice },
 			{ "delete_device",          deleteDevice },
+			{ "hide_device",            hideDevice },
 			{ "create_sensor",          createVirtualSensor },
 			{ "create_virtual_sensor",  createVirtualSensor },
 			{ "create_device",          createVirtualSensor },
@@ -3423,6 +3434,45 @@ namespace mcp		// Model Context Protocol
 		if (!bHasIdx && !bHasName)
 		{
 			_log.Debug(DEBUG_WEBSERVER, "MCP: deleteDevice: Missing required parameter 'name' or 'idx'");
+			return false;
+		}
+		Json::Value device;
+		std::string sName;
+		bool bFound;
+		if (bHasIdx)
+		{
+			bFound = getDeviceByIdx(jsonAsIdx(args["idx"]), device);
+			sName = bFound ? device["Name"].asString() : "idx=" + std::to_string(jsonAsIdx(args["idx"]));
+		}
+		else
+		{
+			sName = args["name"].asString();
+			bFound = getDeviceByName(sName, device);
+		}
+		std::string sResult;
+		if (bFound)
+		{
+			std::string sIdx = device["idx"].asString();
+			m_sql.DeleteDevices(sIdx);
+			sResult = "Device \"" + sName + "\" (idx=" + sIdx + ") has been permanently deleted.";
+		}
+		else
+		{
+			sResult = "No device found with name \"" + sName + "\"";
+		}
+
+		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
+		return true;
+	}
+
+	bool hideDevice(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasIdx = args.isMember("idx");
+		bool bHasName = args.isMember("name") && !args["name"].asString().empty();
+		if (!bHasIdx && !bHasName)
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: hideDevice: Missing required parameter 'name' or 'idx'");
 			return false;
 		}
 		Json::Value device;

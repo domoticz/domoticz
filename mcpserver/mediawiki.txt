@@ -276,7 +276,9 @@ Tools are actions an AI agent can invoke. All tools accept and return plain text
 |-
 | <code>rename_device</code> || <code>name</code> or <code>idx</code> (one required), <code>new_name</code> (required) || Rename a device.
 |-
-| <code>delete_device</code> || <code>name</code> or <code>idx</code> (one required) || Hide a device (sets Used=0; does not permanently delete data).
+| <code>delete_device</code> || <code>name</code> or <code>idx</code> (one required) || Permanently delete a device and all its associated data. Cannot be undone.
+|-
+| <code>hide_device</code> || <code>name</code> or <code>idx</code> (one required) || Hide a device (sets Used=0; data is preserved and the device can be re-enabled).
 |-
 | <code>create_virtual_sensor</code> || <code>hw_idx</code> (required), <code>sensorname</code> (required), <code>sensortype</code> (required, integer) || Create a new virtual sensor on a virtual hardware adapter. Common sensor types: 80=Temperature, 81=Humidity, 5=Text, 6=Switch, 113=Counter.
 |-
@@ -497,7 +499,7 @@ Sessions are created by <code>initialize</code> and terminated by:
 * SSE sessions are pruned after 1 hour of inactivity. Long-running AI agents should periodically send a request to keep the session alive.
 * The minimum log forwarding level is <code>error</code>. Status and debug messages from Domoticz are intentionally not forwarded to avoid flooding AI clients during normal operation.
 * The <code>send_notification</code> tool sends to real devices (phone, email, etc.). Avoid invoking it in automated loops.
-* The <code>delete_device</code> tool hides a device (sets Used=0) rather than permanently deleting it. Historical data is preserved.
+* The <code>delete_device</code> tool permanently deletes a device and all its data — this cannot be undone. Use <code>hide_device</code> to only hide a device (sets Used=0) while preserving its data.
 * The <code>create_event</code> and <code>update_event</code> tools take effect immediately — the event system reloads after each change.
 * Device and scene names passed to tools are matched exactly (case-sensitive). All tools that accept a name also accept a numeric <code>idx</code> parameter as an alternative — use whichever is more convenient. Command values like On/Off/Open/Close are normalised automatically (case-insensitive).
 * Signal level (RSSI) is reported for wireless devices as <code>rssi=&lt;value&gt;</code> (compact format in list tools) or <code>SignalLevel: &lt;value&gt;</code> (detail format in <code>get_device</code>). The value 12 is the default/unknown value and is omitted from output.
