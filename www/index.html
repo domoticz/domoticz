@@ -341,6 +341,18 @@ $(document).ready(function() {
 		$('a#cMoreOptions').trigger('mouseenter');
 	});
 
+	$('a#cPlans').click(function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$('a#cPlans').trigger('mouseenter');
+	});
+
+	$('a#cDataPush').click(function(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$('a#cDataPush').trigger('mouseenter');
+	});
+
 	var highcharts_menuItems= [
 		'viewFullscreen',
 		'printChart',

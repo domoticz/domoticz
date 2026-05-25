@@ -14,6 +14,7 @@ public:
 public:
 	void on_message(const struct mosquitto_message* message) override;
 	void on_connect(int rc) override;
+	void DoMQTTPush(const uint64_t DeviceRowIdx, const bool bForced = false);
 private:
 	struct _tPushItem
 	{
@@ -23,7 +24,6 @@ private:
 		time_t stimestamp;
 	};
 	void OnDeviceReceived(int HwdID, uint64_t DeviceRowIdx, const std::string& DeviceName, const unsigned char* pRXCommand);
-	void DoMQTTPush(const uint64_t DeviceRowIdx, const bool bForced = false);
 
 	std::shared_ptr<std::thread> m_thread;
 	std::mutex m_background_task_mutex;

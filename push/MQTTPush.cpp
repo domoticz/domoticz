@@ -194,7 +194,12 @@ void CMQTTPush::DoMQTTPush(const uint64_t DeviceRowIdx, const bool bForced)
 		std::string szKey = vType + ",idx=" + sd[0] + ",name=" + sanitizedName;
 
 		if (is_number(sendValue))
-			root[vType] = std::stod(sendValue);
+		{
+			if (sendValue.find_first_of(".eE") == std::string::npos)
+				root[vType] = static_cast<Json::Int64>(std::stoll(sendValue));
+			else
+				root[vType] = std::stod(sendValue);
+		}
 		else
 			root[vType] = sendValue;
 
@@ -431,6 +436,8 @@ namespace http
 					targettypei, atoi(linkactive.c_str()), idx.c_str());
 			}
 			m_mqttpush.ReloadPushLinks(CBasePush::PushType::PUSHTYPE_MQTT);
+			if (atoi(linkactive.c_str()) == 1)
+				m_mqttpush.DoMQTTPush(deviceidi, true);
 			root["status"] = "OK";
 			root["title"] = "SaveMQTTLink";
 		}
