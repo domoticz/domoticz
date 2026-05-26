@@ -494,14 +494,14 @@ void CMatter::HandleNodeEvent(const Json::Value& node_event)
 			eventNumber = node_event["event_number"].asInt();
 		if (node_event.isMember("priority"))
 			priority = node_event["priority"].asInt();
-		if (node_event.isMember("data") and node_event["data"].isObject())
+		if (node_event.isMember("data") && node_event["data"].isObject())
 		{
 			const Json::Value& data = node_event["data"];
 			// Robot Vacuum and Cleaner Error State management
-			if (data.isMember("errorState") and data["errorState"].isObject())
+			if (data.isMember("errorState") && data["errorState"].isObject())
 			{
 				const Json::Value& errorState = data["errorState"];
-				if (errorState.isMember("errorStateId") and errorState["errorStateId"].isInt())
+				if (errorState.isMember("errorStateId") && errorState["errorStateId"].isInt())
 				{
 					int operationalError=errorState["errorStateId"].asInt();
 					std::string szOperationalErrorLabel=Getrvc_OperationalErrorLabel(operationalError);
@@ -1062,7 +1062,7 @@ void CMatter::ApplyAttributeToState(int cluster_id, int attr_id, const Json::Val
 				state.hasRvc_OperationalState  = true;
 				Log(LOG_DEBUG_INT, "RVC_OPERATIONAL_STATE : Attrib %d Valeur %d ",attr_id, state.rvc_OperationalState );
 			}
-			else if (attr_id==ATTR_RVC_OPERATIONAL_ERROR && v.isObject() and v.isMember("0"))
+			else if (attr_id==ATTR_RVC_OPERATIONAL_ERROR && v.isObject() && v.isMember("0"))
 			{
 				state.rvc_OperationalError = v["0"].asInt();
 				state.hasRvc_OperationalState  = true;
@@ -2151,7 +2151,7 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 		Json::Value args;
 		args["node_id"]      = nodeId;
 		args["endpoint_id"]  = endpointId;
-		if ( hasRvc_OperationalState and pSwitch->unitcode == CHILD_RVC_GO_HOME and cmd == "on")
+		if ( hasRvc_OperationalState && pSwitch->unitcode == CHILD_RVC_GO_HOME && cmd == "on")
 		{
 			// Go Home push on button in the RVC implementation
 			args["cluster_id"]   = CLUSTER_RVC_OPERATIONAL_STATE;
