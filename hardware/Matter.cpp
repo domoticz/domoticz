@@ -1306,7 +1306,7 @@ void CMatter::SendGeneralSwitchInt(int domoticzID, int unit, int battery, int va
 	snprintf(szDevID, sizeof(szDevID), "%08X", (unsigned int)domoticzID);
 	bool isNew = m_sql.safe_query(
 		"SELECT ID FROM DeviceStatus WHERE HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d",
-		m_HwdID, szDevID, unit, pTypeGeneralSwitch, sSwitchType).empty();
+		m_HwdID, szDevID, unit, pTypeGeneralSwitch, switchType).empty();
 
 	_tGeneralSwitch gSwitch;
 	gSwitch.id = domoticzID;
