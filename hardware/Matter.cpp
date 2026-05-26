@@ -1055,7 +1055,8 @@ void CMatter::ApplyAttributeToState(int cluster_id, int attr_id, const Json::Val
 			{
 				state.rvc_OperationalError = v["0"].asInt();
 				state.hasRvc_OperationalState  = true;
-				Log(LOG_ERROR, "RVC_OPERATIONAL_ERROR : Attrib %d Value %d ",attr_id, state.rvc_OperationalError );
+				if (state.rvc_OperationalError!=OperationalError_kNoError)
+					Log(LOG_ERROR, "RVC_OPERATIONAL_ERROR : Attrib %d Value %d ",attr_id, state.rvc_OperationalError );
 			}
 			break;
 		default:
