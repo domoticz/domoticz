@@ -146,10 +146,10 @@ static constexpr int CHILD_FREQ         = 16;
 // rechargeable batteries
 static constexpr int CHILD_BAT_PERCENT_REMAINING  = 1;
 static constexpr int CHILD_BAT_CHARGE_STATE  = 2;
-#define  BatChargeState_kUnknown 0
-#define  BatChargeState_kIsCharging 1
-#define  BatChargeState_kIsAtFullCharge 2
-#define  BatChargeState_kIsNotCharging 3
+static constexpr int  BatChargeState_kUnknown = 0;
+static constexpr int  BatChargeState_kIsCharging = 1;
+static constexpr int  BatChargeState_kIsAtFullCharge = 2;
+static constexpr int  BatChargeState_kIsNotCharging = 3;
 
 // service areas
 static constexpr int CHILD_SUPPORTED_AREAS = 3;
@@ -161,47 +161,45 @@ static constexpr int CHILD_RVC_START_PAUSE_STOP  = 6;
 static constexpr int CHILD_RVC_RUN_MODE = 7;
 static constexpr int CHILD_RVC_OPERATIONAL_STATE = 8;
 static constexpr int CHILD_RVC_OPERATIONAL_ERROR = 9;
-static constexpr int CHILD_RVC_UPTIME  = 10;
-static constexpr int CHILD_RVC_TOTAL_OPERATIONAL_HOURS  = 11;
 
 // Selector switch RVC START_PAUSE_STOP
-#define rvcStartOrResume	10
-#define rvcPause			20
-#define rvcStop				30
+static constexpr int rvcStartOrResume = 10;
+static constexpr int rvcPause = 20;
+static constexpr int rvcStop = 30;
 
 // Operational State List in RVC
-#define OperationalState_kStopped 0
-#define OperationalState_kRunning 1
-#define OperationalState_kPaused 2
-#define OperationalState_kError 3
-#define OperationalState_kSeekingCharger 64
-#define OperationalState_kCharging 65
-#define OperationalState_kDocked 66
-#define OperationalState_kEmptyingDustBin 67
-#define OperationalState_kCleaningMop 68
-#define OperationalState_kFillingWaterTank 69
-#define OperationalState_kUpdatingMaps 70
+static constexpr int OperationalState_kStopped = 0;
+static constexpr int OperationalState_kRunning = 1;
+static constexpr int OperationalState_kPaused = 2;
+static constexpr int OperationalState_kError = 3;
+static constexpr int OperationalState_kSeekingCharger = 64;
+static constexpr int OperationalState_kCharging = 65;
+static constexpr int OperationalState_kDocked = 66;
+static constexpr int OperationalState_kEmptyingDustBin = 67;
+static constexpr int OperationalState_kCleaningMop = 68;
+static constexpr int OperationalState_kFillingWaterTank = 69;
+static constexpr int OperationalState_kUpdatingMaps = 70;
 
 // Operational Error List in RVC
-#define OperationalError_kNoError 0
-#define OperationalError_kUnableToStartOrResume 1
-#define OperationalError_kUnableToCompleteOperation 2
-#define OperationalError_kCommandInvalidInState 3
-#define OperationalError_kFailedToFindChargingDock 64
-#define OperationalError_kStuck 65
-#define OperationalError_kDustBinMissing 66
-#define OperationalError_kDustBinFull 67
-#define OperationalError_kWaterTankEmpty 68
-#define OperationalError_kWaterTankMissing 69
-#define OperationalError_kWaterTankLidOpen 70
-#define OperationalError_kMopCleaningPadMissing 71
-#define OperationalError_kLowBattery 72
-#define OperationalError_kCannotReachTargetArea 73
-#define OperationalError_kDirtyWaterTankFull 74
-#define OperationalError_kDirtyWaterTankMissing 75
-#define OperationalError_kWheelsJammed 76
-#define OperationalError_kBrushJammed 77
-#define OperationalError_kNavigationSensorObscured 78
+static constexpr int OperationalError_kNoError = 0;
+static constexpr int OperationalError_kUnableToStartOrResume = 1;
+static constexpr int OperationalError_kUnableToCompleteOperation = 2;
+static constexpr int OperationalError_kCommandInvalidInState = 3;
+static constexpr int OperationalError_kFailedToFindChargingDock = 64;
+static constexpr int OperationalError_kStuck = 65;
+static constexpr int OperationalError_kDustBinMissing = 66;
+static constexpr int OperationalError_kDustBinFull = 67;
+static constexpr int OperationalError_kWaterTankEmpty = 68;
+static constexpr int OperationalError_kWaterTankMissing = 69;
+static constexpr int OperationalError_kWaterTankLidOpen = 70;
+static constexpr int OperationalError_kMopCleaningPadMissing = 71;
+static constexpr int OperationalError_kLowBattery = 72;
+static constexpr int OperationalError_kCannotReachTargetArea = 73;
+static constexpr int OperationalError_kDirtyWaterTankFull = 74;
+static constexpr int OperationalError_kDirtyWaterTankMissing = 75;
+static constexpr int OperationalError_kWheelsJammed = 76;
+static constexpr int OperationalError_kBrushJammed = 77;
+static constexpr int OperationalError_kNavigationSensorObscured = 78;
 
 
 // Non-contiguous SystemModeEnum values in selector-level order (level = index * 10)
@@ -476,9 +474,6 @@ void CMatter::HandleNodeEvent(const Json::Value& node_event)
 	int nodeId = -1;
 	int endpointId = -1;
 	int clusterId = -1;
-	int eventId = -1;
-	int eventNumber = 0;
-	int priority = 0;
 	if (node_event.isObject())
 	{		
 		// Event Error management
@@ -488,12 +483,6 @@ void CMatter::HandleNodeEvent(const Json::Value& node_event)
 			endpointId = node_event["endpoint_id"].asInt();
 		if (node_event.isMember("cluster_id"))
 			clusterId = node_event["cluster_id"].asInt();
-		if (node_event.isMember("event_id"))
-			eventId = node_event["event_id"].asInt();
-		if (node_event.isMember("event_number"))
-			eventNumber = node_event["event_number"].asInt();
-		if (node_event.isMember("priority"))
-			priority = node_event["priority"].asInt();
 		if (node_event.isMember("data") && node_event["data"].isObject())
 		{
 			const Json::Value& data = node_event["data"];
@@ -506,7 +495,7 @@ void CMatter::HandleNodeEvent(const Json::Value& node_event)
 					int operationalError=errorState["errorStateId"].asInt();
 					std::string szOperationalErrorLabel=Getrvc_OperationalErrorLabel(operationalError);
 					if (operationalError!=0)
-						Log(LOG_ERROR, "Node %d Endpoint %d rvc_OperationalError %s", nodeId, endpointId,szOperationalErrorLabel.c_str());
+						Log(LOG_ERROR, "Node %d Endpoint %d Cluster %d rvc_OperationalError %s", nodeId, endpointId, clusterId, szOperationalErrorLabel.c_str());
 				}
 			}	
 		}
@@ -1026,7 +1015,7 @@ void CMatter::ApplyAttributeToState(int cluster_id, int attr_id, const Json::Val
 			}
 			else if (attr_id==ATTR_RVC_RUN_MODE_CURRENT_MODE && v.isIntegral() && v.asInt() >= 0)
 			{
-				Log(LOG_DEBUG_INT, "RVC_CURRENT_RUN_MODE : Attrib %d Valeur %d ",attr_id, v.asInt() );
+				Log(LOG_DEBUG_INT, "RVC_CURRENT_RUN_MODE : Attrib %d Value %d ",attr_id, v.asInt() );
 				state.rvc_CurrentRunMode = v.asInt();
 				state.hasRvc_RunMode  = true;
 			}
@@ -1050,7 +1039,7 @@ void CMatter::ApplyAttributeToState(int cluster_id, int attr_id, const Json::Val
 			}
 			else if (attr_id==ATTR_RVC_CLEAN_MODE_CURRENT_MODE && v.isIntegral() && v.asInt() >= 0)
 			{
-				Log(LOG_DEBUG_INT, "RVC_CURRENT_CLEAN_MODE : Attrib %d Valeur %d ",attr_id, v.asInt() );
+				Log(LOG_DEBUG_INT, "RVC_CURRENT_CLEAN_MODE : Attrib %d Value %d ",attr_id, v.asInt() );
 				state.rvc_CurrentCleanMode = v.asInt();
 				state.hasRvc_CleanMode  = true;
 			}
@@ -1060,13 +1049,13 @@ void CMatter::ApplyAttributeToState(int cluster_id, int attr_id, const Json::Val
 			{
 				state.rvc_OperationalState = v.asInt();
 				state.hasRvc_OperationalState  = true;
-				Log(LOG_DEBUG_INT, "RVC_OPERATIONAL_STATE : Attrib %d Valeur %d ",attr_id, state.rvc_OperationalState );
+				Log(LOG_DEBUG_INT, "RVC_OPERATIONAL_STATE : Attrib %d Value %d ",attr_id, state.rvc_OperationalState );
 			}
 			else if (attr_id==ATTR_RVC_OPERATIONAL_ERROR && v.isObject() && v.isMember("0"))
 			{
 				state.rvc_OperationalError = v["0"].asInt();
 				state.hasRvc_OperationalState  = true;
-				Log(LOG_ERROR, "RVC_OPERATIONAL_ERROR : Attrib %d Valeur %d ",attr_id, state.rvc_OperationalError );
+				Log(LOG_ERROR, "RVC_OPERATIONAL_ERROR : Attrib %d Value %d ",attr_id, state.rvc_OperationalError );
 			}
 			break;
 		default:
@@ -1350,7 +1339,8 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 	}		
 	if (state.hasAreas && !state.areaEntries.empty())
 	{
-		int levelArea=(state.currentArea+1)*10;		// state.currentArea 0 (levelArea 10) : All areas, subsequent integers for the areaIds
+		// state.currentArea=0 (levelArea 10) select All areas, otherwise subsequent state.currentArea=i (level i*10) select the area which areaId=i
+		int levelArea=(state.currentArea+1)*10;	
 		std::string area_Names   = "Off| ";		// " " for all areas
 		std::string area_Actions = "|";
 		for (int i = 0; i < (int)state.areaEntries.size(); i++)
@@ -1540,12 +1530,21 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 		// RVC Run Mode
 		if (state.rvc_CurrentRunMode<0 || state.rvc_CurrentRunMode>=state.rvc_RunModeEntries.size())
 			Log(LOG_ERROR, "rvc RunMode Node %d Endpoint %d DomoticzID %d Label %s RunMode %d out of range", nodeId, endpointId,domoticzID,state.label.c_str(),state.rvc_CurrentRunMode);
-		else if (state.rvc_RunModeEntries[state.rvc_CurrentRunMode].mode!=state.rvc_CurrentRunMode)
-			Log(LOG_ERROR, "rvc RunMode Node %d Endpoint %d DomoticzID %d Label %s RunMode %d not consistent", nodeId, endpointId,domoticzID,state.label.c_str(),state.rvc_CurrentRunMode);
 		else
-		{	
-			std::string szRunMode=state.rvc_RunModeEntries[state.rvc_CurrentRunMode].label.c_str();
-			SendTextSensor(domoticzID, CHILD_RVC_RUN_MODE, 255, szRunMode, state.label + "_RunMode" );
+		{
+			bool flCurrentRunModeFound=false;
+			for (const auto& rvc_RunModeEntry : state.rvc_RunModeEntries)
+			{
+				if (rvc_RunModeEntry.mode==state.rvc_CurrentRunMode)
+				{	
+					flCurrentRunModeFound=true;
+					std::string szRunMode=rvc_RunModeEntry.label.c_str();
+					SendTextSensor(domoticzID, CHILD_RVC_RUN_MODE, 255, szRunMode, state.label + "_RunMode" );
+					break;
+				}	
+			}
+			if (!flCurrentRunModeFound)
+				Log(LOG_ERROR, "rvc RunMode Node %d Endpoint %d DomoticzID %d Label %s RunMode %d not consistent", nodeId, endpointId,domoticzID,state.label.c_str(),state.rvc_CurrentRunMode);
 		}	
 	}
 	if (state.hasRvc_CleanMode && !state.rvc_CleanModeEntries.empty())
@@ -1954,7 +1953,6 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 				}
 			}
 			int selectedArea=pSwitch->level/10-1;
-			int nbSelectedAreas=1;
 			Json::Value args;
 			args["node_id"]      = nodeId;
 			args["endpoint_id"]  = endpointId;
@@ -1962,10 +1960,9 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 			args["command_name"] = "Select_Areas";
 			if (selectedArea>0)
 			{
-				// select the areas in case of multi selection
+				// select the area
 				Json::Value payload(Json::objectValue);
-				for (int i=0; i<nbSelectedAreas; i++)
-					payload["newAreas"].append(static_cast<Json::UInt>(selectedArea));
+				payload["newAreas"].append(static_cast<Json::UInt>(selectedArea));
 				args["payload"] = payload;
 				SendCommand("device_command", args);
 
