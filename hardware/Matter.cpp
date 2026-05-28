@@ -1529,36 +1529,39 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 	if (state.hasRvc_RunMode && !state.rvc_RunModeEntries.empty())
 	{
 		// RVC Run Mode
-		if (state.rvc_CurrentRunMode<0 || state.rvc_CurrentRunMode>=state.rvc_RunModeEntries.size())
-			Log(LOG_ERROR, "rvc RunMode Node %d Endpoint %d DomoticzID %d Label %s RunMode %d out of range", nodeId, endpointId,domoticzID,state.label.c_str(),state.rvc_CurrentRunMode);
-		else
+		bool flCurrentRunModeFound=false;
+		for (const auto& rvc_RunModeEntry : state.rvc_RunModeEntries)
 		{
-			bool flCurrentRunModeFound=false;
-			for (const auto& rvc_RunModeEntry : state.rvc_RunModeEntries)
-			{
-				if (rvc_RunModeEntry.mode==state.rvc_CurrentRunMode)
-				{	
-					flCurrentRunModeFound=true;
-					std::string szRunMode=rvc_RunModeEntry.label.c_str();
-					SendTextSensor(domoticzID, CHILD_RVC_RUN_MODE, 255, szRunMode, state.label + "_RunMode" );
-					break;
-				}	
-			}
-			if (!flCurrentRunModeFound)
-				Log(LOG_ERROR, "rvc RunMode Node %d Endpoint %d DomoticzID %d Label %s RunMode %d not consistent", nodeId, endpointId,domoticzID,state.label.c_str(),state.rvc_CurrentRunMode);
-		}	
+			if (rvc_RunModeEntry.mode==state.rvc_CurrentRunMode)
+			{	
+				flCurrentRunModeFound=true;
+				std::string szRunMode=rvc_RunModeEntry.label.c_str();
+				SendTextSensor(domoticzID, CHILD_RVC_RUN_MODE, 255, szRunMode, state.label + "_RunMode" );
+				break;
+			}	
+		}
+		if (!flCurrentRunModeFound)
+		{	
+			SendTextSensor(domoticzID, CHILD_RVC_RUN_MODE, 255, "Unknown", state.label + "_RunMode" );
+			Log(LOG_ERROR, "rvc RunMode Node %d Endpoint %d DomoticzID %d Label %s RunMode %d not consistent", nodeId, endpointId,domoticzID,state.label.c_str(),state.rvc_CurrentRunMode);
+		}
 	}
 	if (state.hasRvc_CleanMode && !state.rvc_CleanModeEntries.empty())
 	{
 		// RVC Clean Mode
-		int levelCleanMode=state.rvc_CurrentCleanMode*10;
+		int levelCleanMode=0;
 		std::string Rvc_CleanMode_Names   = "Off";
 		std::string Rvc_CleanMode_Actions = "";
-		for (int i = 0; i < (int)state.rvc_CleanModeEntries.size(); i++)
+		bool flCurrentCleanModeFound=false;
+		for (const auto& CleanModeEntry : state.rvc_CleanModeEntries)
 		{
-			const auto& CleanModeEntry = state.rvc_CleanModeEntries[i];
-			if (i+1!=CleanModeEntry.mode)
-				Log(LOG_ERROR, "Node %d Endpoint %d DomoticzID %d Label %s CleanMode incorrect %d <> %d", nodeId, endpointId,domoticzID,state.label.c_str(), CleanModeEntry.mode, i);
+			if (state.rvc_CurrentCleanMode==CleanModeEntry.mode)
+			{	
+				flCurrentCleanModeFound=true;
+				levelCleanMode=CleanModeEntry.mode*10;
+			}
+			else if (!flCurrentCleanModeFound)
+				levelCleanMode=CleanModeEntry.mode*10;
 			Rvc_CleanMode_Names  += "|" + CleanModeEntry.label;
 			Rvc_CleanMode_Actions += "|";
 		}
@@ -1944,6 +1947,7 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 			int domoticzID = (int)pSwitch->id;
 			int nodeId     = domoticzID / 256;
 			int endpointId = domoticzID % 256;
+			int selectedArea;	
 			{
 				std::lock_guard<std::mutex> lock(m_stateMutex);
 				auto nodeIt = m_nodes.find(nodeId);
@@ -1952,8 +1956,18 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 					Log(LOG_STATUS, "WriteToHardware: node %d endpoint %d not found", nodeId, endpointId);
 					return false;
 				}
+				auto epIt = nodeIt->second.endpoints.find(endpointId);
+				if (epIt == nodeIt->second.endpoints.end())
+					return false;
+				const auto& state = epIt->second;
+				// check level
+				if (pSwitch->level<10)
+					return false;
+				if (pSwitch->level==10)
+					selectedArea=0; // all areas
+				else 
+					selectedArea=state.areaEntries[pSwitch->level/10-2].areaId; // specific area
 			}
-			int selectedArea=pSwitch->level/10-1;
 			Json::Value args;
 			args["node_id"]      = nodeId;
 			args["endpoint_id"]  = endpointId;
@@ -1993,6 +2007,25 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 				{
 					Log(LOG_STATUS, "WriteToHardware: node %d endpoint %d not found", nodeId, endpointId);
 					return false;
+					auto epIt = nodeIt->second.endpoints.find(endpointId);
+					if (epIt == nodeIt->second.endpoints.end())
+						return false;
+					const auto& state = epIt->second;
+					// check if mode selected exists
+					bool flCurrentCleanModeFound=false;
+					for (const auto& CleanModeEntry : state.rvc_CleanModeEntries)
+					{
+						if (pSwitch->level/10==CleanModeEntry.mode)
+						{	
+							flCurrentCleanModeFound=true;
+							break;
+						}
+					}
+					if (!flCurrentCleanModeFound)
+					{	
+						Log(LOG_ERROR, "WriteToHardware: node %d endpoint %d rvc clean mode %d not defined", nodeId, endpointId, pSwitch->level/10);
+						return false;
+					}
 				}
 			}
 			Json::Value args;
@@ -2034,7 +2067,7 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 			Json::Value args;
 			args["node_id"]      = nodeId;
 			args["endpoint_id"]  = endpointId;
-			if (rvc_CurrentRunMode==0)
+			if (rvc_CurrentRunMode==rvc_IdleRunMode)
 			{	
 				// case idle 
 				switch (pSwitch->level)
@@ -2488,15 +2521,6 @@ void CMatter::SetFabricLabel(const std::string& label)
 	args["label"] = label;
 	SendCommand("set_default_fabric_label", args);
 }
-
-void CMatter::ReadAttribute(int nodeId,const std::string& attributePath)
-{
-	Json::Value args;
-	args["node_id"] = nodeId;
-	args["attribute_path"] = attributePath;
-	SendCommand("read_attribute", args);
-}
-
 
 std::string CMatter::Getrvc_OperationalErrorLabel(int OperationalError)
 {
