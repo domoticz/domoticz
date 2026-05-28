@@ -1341,7 +1341,7 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 	if (state.hasAreas && !state.areaEntries.empty())
 	{
 		// state.currentArea=0 (levelArea 10) select All areas, otherwise subsequent state.currentArea=i (level i*10) select the area which areaId=i
-		int levelArea=(state.currentArea+1)*10;	
+		int levelArea=10;	
 		std::string area_Names   = "Off| ";		// " " for all areas
 		std::string area_Actions = "|";
 		for (int i = 0; i < (int)state.areaEntries.size(); i++)
@@ -1349,6 +1349,8 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 			const auto& areaEntry = state.areaEntries[i];
 			area_Names  += "|" + areaEntry.locationName;
 			area_Actions += "|";
+			if (state.currentArea==areaEntry.areaId)
+				levelArea=(i+2)*10;
 		}
 		SendSelectorSwitch(domoticzID, CHILD_SUPPORTED_AREAS, std::to_string(levelArea), state.label + "_Areas" , 0, true, area_Names.c_str(), area_Actions.c_str(), true, "");
 	}
@@ -1986,7 +1988,7 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 			{
 				// all areas allowed
 				Json::Value payload;
-				payload["NewAreas"] = Json::Value(Json::arrayValue);
+				payload["newAreas"] = Json::Value(Json::arrayValue);
 				args["payload"] = payload;
 				SendCommand("device_command", args);
 			}	
@@ -2007,25 +2009,25 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 				{
 					Log(LOG_STATUS, "WriteToHardware: node %d endpoint %d not found", nodeId, endpointId);
 					return false;
-					auto epIt = nodeIt->second.endpoints.find(endpointId);
-					if (epIt == nodeIt->second.endpoints.end())
-						return false;
-					const auto& state = epIt->second;
-					// check if mode selected exists
-					bool flCurrentCleanModeFound=false;
-					for (const auto& CleanModeEntry : state.rvc_CleanModeEntries)
-					{
-						if (pSwitch->level/10==CleanModeEntry.mode)
-						{	
-							flCurrentCleanModeFound=true;
-							break;
-						}
-					}
-					if (!flCurrentCleanModeFound)
+				}	
+				auto epIt = nodeIt->second.endpoints.find(endpointId);
+				if (epIt == nodeIt->second.endpoints.end())
+					return false;
+				const auto& state = epIt->second;
+				// check if mode selected exists
+				bool flCurrentCleanModeFound=false;
+				for (const auto& CleanModeEntry : state.rvc_CleanModeEntries)
+				{
+					if (pSwitch->level/10==CleanModeEntry.mode)
 					{	
-						Log(LOG_ERROR, "WriteToHardware: node %d endpoint %d rvc clean mode %d not defined", nodeId, endpointId, pSwitch->level/10);
-						return false;
+						flCurrentCleanModeFound=true;
+						break;
 					}
+				}
+				if (!flCurrentCleanModeFound)
+				{	
+					Log(LOG_ERROR, "WriteToHardware: node %d endpoint %d rvc clean mode %d not defined", nodeId, endpointId, pSwitch->level/10);
+					return false;
 				}
 			}
 			Json::Value args;
@@ -2115,7 +2117,7 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 					}	
 					default:
 					{
-						Log(LOG_ERROR, "WriteToHArdware Node %d Endpoint %d DomoticzID %d StartPauseStop command incorrect %d", nodeId, endpointId,domoticzID, pSwitch->level); 
+						Log(LOG_ERROR, "WriteToHardware Node %d Endpoint %d DomoticzID %d StartPauseStop command incorrect %d", nodeId, endpointId,domoticzID, pSwitch->level); 
 						return false;
 					}	
 				}	
