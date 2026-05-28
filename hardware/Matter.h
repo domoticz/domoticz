@@ -164,7 +164,6 @@ private:
 	void _ApplySwitchTypeOnCreate(int domoticzID, int unit, bool wasNew, _eSwitchType switchType);
 	void ApplyAttributeToState(int cluster_id, int attr_id, const Json::Value& v, EndpointState& state);
 	void ApplyNodeMetadata(int cluster_id, int attr_id, const Json::Value& v, NodeState& node);
-	void ReadAttribute(int nodeID,const std::string& attributePath);
 	std::string ExtractLabel(const Json::Value& endpointAttrs, int nodeId, int endpointId) const;
 	std::string Getrvc_OperationalStateLabel(int OperationalState);
 	std::string Getrvc_OperationalErrorLabel(int OperationalError);
