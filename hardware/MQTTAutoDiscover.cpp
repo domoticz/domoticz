@@ -4670,11 +4670,13 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			else if ((pSensor->supported_color_modes.find("rgb") != pSensor->supported_color_modes.end())
 				&& (pSensor->supported_color_modes.find("white") != pSensor->supported_color_modes.end()))
 			{
-				// if RGB and white, check if white contains coldWhite and warmWhite
-				if (
-					(pSensor->color_temp_command_template.find("coldWhite") != std::string::npos)
-					&& (pSensor->color_temp_command_template.find("warmWhite") != std::string::npos)
-					)
+				// Per the HA MQTT Light spec, "white" denotes a single white channel and is
+				// mutually exclusive with "color_temp"; a device with two white channels
+				// advertises "color_temp" (handled below) or "rgbww". Z-Wave JS emits a
+				// coldWhite/warmWhite color_temp_command_template even for single-white
+				// devices, so scanning that template is ambiguous. Treat
+				// supported_color_modes as authoritative.
+				if (bHaveColorTemp)
 				{
 					pSensor->subType = sTypeColor_RGB_CW_WW_Z;
 				}
