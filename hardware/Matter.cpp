@@ -1551,22 +1551,24 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 	if (state.hasRvc_CleanMode && !state.rvc_CleanModeEntries.empty())
 	{
 		// RVC Clean Mode
-		int levelCleanMode=0;
+		int levelCleanMode=10;
 		std::string Rvc_CleanMode_Names   = "Off";
 		std::string Rvc_CleanMode_Actions = "";
 		bool flCurrentCleanModeFound=false;
-		for (const auto& CleanModeEntry : state.rvc_CleanModeEntries)
+		for (int i = 0; i < (int)state.rvc_CleanModeEntries.size(); i++)
 		{
+			const auto& CleanModeEntry = state.rvc_CleanModeEntries[i];
 			if (state.rvc_CurrentCleanMode==CleanModeEntry.mode)
-			{	
+			{
 				flCurrentCleanModeFound=true;
-				levelCleanMode=CleanModeEntry.mode*10;
+				levelCleanMode=(i+1)*10;
 			}
-			else if (!flCurrentCleanModeFound)
-				levelCleanMode=CleanModeEntry.mode*10;
 			Rvc_CleanMode_Names  += "|" + CleanModeEntry.label;
 			Rvc_CleanMode_Actions += "|";
 		}
+		// rvc_CurrentCleanMode == 0 means the attribute hasn't been reported yet — not an error
+		if (!flCurrentCleanModeFound && state.rvc_CurrentCleanMode != 0)
+			Log(LOG_ERROR, "rvc CleanMode Node %d Endpoint %d DomoticzID %d Label %s CleanMode %d not consistent", nodeId, endpointId, domoticzID, state.label.c_str(), state.rvc_CurrentCleanMode);
 		SendSelectorSwitch(domoticzID, CHILD_RVC_CLEAN_MODE, std::to_string(levelCleanMode), state.label + "_CleanMode" , 0, true, Rvc_CleanMode_Names.c_str(), Rvc_CleanMode_Actions.c_str(), true, "");
 	}
 	if (state.hasRvc_OperationalState)
@@ -2002,6 +2004,7 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 			int domoticzID = (int)pSwitch->id;
 			int nodeId     = domoticzID / 256;
 			int endpointId = domoticzID % 256;
+			int selectedCleanMode = 0;
 			{
 				std::lock_guard<std::mutex> lock(m_stateMutex);
 				auto nodeIt = m_nodes.find(nodeId);
@@ -2009,26 +2012,19 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 				{
 					Log(LOG_STATUS, "WriteToHardware: node %d endpoint %d not found", nodeId, endpointId);
 					return false;
-				}	
+				}
 				auto epIt = nodeIt->second.endpoints.find(endpointId);
 				if (epIt == nodeIt->second.endpoints.end())
 					return false;
 				const auto& state = epIt->second;
-				// check if mode selected exists
-				bool flCurrentCleanModeFound=false;
-				for (const auto& CleanModeEntry : state.rvc_CleanModeEntries)
+				// selector level maps positionally to the entry list (level 10 = first entry)
+				int posIndex = pSwitch->level/10 - 1;
+				if (posIndex < 0 || posIndex >= (int)state.rvc_CleanModeEntries.size())
 				{
-					if (pSwitch->level/10==CleanModeEntry.mode)
-					{	
-						flCurrentCleanModeFound=true;
-						break;
-					}
-				}
-				if (!flCurrentCleanModeFound)
-				{	
-					Log(LOG_ERROR, "WriteToHardware: node %d endpoint %d rvc clean mode %d not defined", nodeId, endpointId, pSwitch->level/10);
+					Log(LOG_ERROR, "WriteToHardware: node %d endpoint %d rvc clean mode index %d out of range", nodeId, endpointId, posIndex);
 					return false;
 				}
+				selectedCleanMode = state.rvc_CleanModeEntries[posIndex].mode;
 			}
 			Json::Value args;
 			args["node_id"]      = nodeId;
@@ -2036,7 +2032,7 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 			args["cluster_id"]   = CLUSTER_RVC_CLEAN_MODE;
 			args["command_name"] = "change_to_mode";
 			Json::Value payload;
-			payload["newMode"] = pSwitch->level/10;
+			payload["newMode"] = selectedCleanMode;
 			args["payload"] = payload;
 			SendCommand("device_command", args);
 			return true;
