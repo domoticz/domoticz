@@ -738,6 +738,9 @@ define([
                     }
 
                     // ── Humidity-only sensor (no Temp) ─────────────────────
+                    // pTypeHUM devices carry the value in d.Humidity, not d.Data
+                    // ("Humidity 50 %"), so the generic numeric branch below would
+                    // fail to parse it. Temp+Hum devices are handled earlier.
                     if (d.Humidity !== undefined) {
                         ctrl.deviceType = 'numeric';
                         var hum = parseInt(d.Humidity, 10);
