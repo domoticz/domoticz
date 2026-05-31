@@ -174,6 +174,14 @@ define([
                     ctrl.humidity = null;
                     ctrl.baro     = null;
 
+                    // Humidity-only sensor (no Temp) — value lives in d.Humidity
+                    if (d.Humidity !== undefined) {
+                        var hv = parseInt(d.Humidity, 10);
+                        ctrl.value    = isNaN(hv) ? null : hv;
+                        ctrl.autoUnit = '%';
+                        return;
+                    }
+
                     // Generic numeric — extract value and unit from Data string
                     var raw   = (d.SubType === 'kWh' && d.Usage) ? d.Usage : (d.Data || '');
                     var match = raw.match(/^([-\d.]+)/);

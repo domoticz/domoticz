@@ -737,6 +737,18 @@ define([
                         return;
                     }
 
+                    // ── Humidity-only sensor (no Temp) ─────────────────────
+                    if (d.Humidity !== undefined) {
+                        ctrl.deviceType = 'numeric';
+                        var hum = parseInt(d.Humidity, 10);
+                        ctrl.value    = isNaN(hum) ? null : hum;
+                        ctrl.unitStr  = '%';
+                        ctrl.valueStr = ctrl.value !== null ? formatNum(ctrl.value) : '--';
+                        applyConfigRange(0, 100);
+                        rebuildScale();
+                        return;
+                    }
+
                     // ── Generic numeric ───────────────────────────────────
                     ctrl.deviceType = 'numeric';
                     var dataRaw = d.Data || '';
