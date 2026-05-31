@@ -1,0 +1,20 @@
+<div class="dd-activity-log dd-stat-card-full"
+     ng-class="{'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode}">
+    <ul class="dd-activity-list">
+        <li class="dd-activity-item"
+            ng-repeat="item in ctrl.items">
+            <span class="dd-activity-dot"
+                  ng-class="item.nvalue > 0 ? 'dd-activity-dot--on' : 'dd-activity-dot--off'">
+            </span>
+            <div class="dd-activity-info">
+                <span class="dd-activity-name" ng-bind="item.Name"></span>
+                <span class="dd-activity-value" ng-bind="item.Data"></span>
+            </div>
+            <span class="dd-activity-time" ng-bind="item.LastUpdate | date:'HH:mm'"></span>
+        </li>
+    </ul>
+    <div class="dd-activity-empty"
+         ng-show="!ctrl.loading && ctrl.items.length === 0">
+        No recent activity
+    </div>
+</div>

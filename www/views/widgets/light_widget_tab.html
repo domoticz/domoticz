@@ -76,8 +76,8 @@
                     </div></span>
                 </td>
                 <td class="options">
-                    <span ng-show="ctrl.device.Favorite == 0"><img src="images/nofavorite.png" data-i18n="[title]Add to Dashboard" ng-click="ctrl.makeFavorite(1)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                    <span ng-show="ctrl.device.Favorite != 0"><img src="images/favorite.png" data-i18n="[title]Remove from Dashboard" ng-click="ctrl.makeFavorite(0)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span ng-if="ctrl.device.Favorite == 0"><img src="images/nofavorite.png" data-i18n="[title]Add to Dashboard" ng-click="ctrl.makeFavorite(1)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span ng-if="ctrl.device.Favorite != 0"><img src="images/favorite.png" data-i18n="[title]Remove from Dashboard" ng-click="ctrl.makeFavorite(0)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>
                     <a class="btnsmall" ng-href="{{ctrl.getGraphLogLink()}}" data-i18n="Log">Log</a>
                     <a ng-if="ctrl.isAdmin" class="btnsmall" ng-click="ctrl.editDevice()" data-i18n="Edit">Edit</a>
                     <a ng-if="ctrl.isAdmin && ctrl.hasTimers()" class="btnsmall-sel" ng-href="{{ctrl.getTimerLink()}}" data-i18n="Timers">Timers</a>

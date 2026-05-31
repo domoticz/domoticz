@@ -48,13 +48,7 @@ bool CNotificationPushover::SendMessageImplementation(
 	}
 	std::vector<std::string> ExtraHeaders;
 
-#ifndef WIN32
-	HTTPClient::SetSecurityOptions(true, true);
-#endif
 	bRet = HTTPClient::POST("https://api.pushover.net/1/messages.json",sPostData.str(),ExtraHeaders,sResult);
-#ifndef WIN32
-	HTTPClient::SetSecurityOptions(false, false);
-#endif
 	if (!bRet)
 	{
 		_log.Log(LOG_ERROR, "Pushover: Could not send message!");

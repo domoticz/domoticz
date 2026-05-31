@@ -99,13 +99,14 @@ History:
 	width: calc(100vw - 50px);
 	height: calc(100vh - 110px);
 	margin: 0 auto auto auto;
+	position: relative;
 }
 
 .eicon {
 	fill: rgba(255, 255, 255, 0.85);
 }
 
-.etext, #ltext {
+.etext {
 	fill: rgba(255, 255, 255, 0.85);
 }
 </style>
@@ -184,17 +185,12 @@ History:
 					<feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
 				</filter>
 			</defs>
-			<g id="groupText" ng-show="txtObjText">
-				<foreignObject x="0.5" y="3" width="21" height="19.2">
-					<div id="ltext" xmlns="http://www.w3.org/1999/xhtml" style="font-size: 1.0px; font-weight: normal; white-space: pre-wrap; color: rgba(255, 255, 255, 0.85); overflow: hidden; width: 100%; height: 100%;"></div>
-				</foreignObject>
-			</g>
 			<text class="etext" x="46" y="6" opacity="0.7" font-size="2.0px" text-anchor="center" dy="0" style="font-weight: normal; white-space: pre;" ng-show="ServerTime">{{ ServerTime }}</text>
 			<text class="etext" x="46" y="7.5" opacity="0.6" font-size="1.0px" text-anchor="center" dy="0" style="font-weight: normal; white-space: pre;" ng-show="SunRise">↑{{ SunRise }} ↓{{ SunSet }}</text>
-			<g transform="matrix(0.065, 0, 0, 0.065, 61, 6.4)" ng-show="imgOutsideTemp">
+			<g transform="matrix(0.065, 0, 0, 0.065, 61, 6.4)" ng-show="idOutsideTemp != -1">
 				<image width="48" height="48" xlink:href="{{imgOutsideTemp}}" />
 			</g>
-			<text class="etext" x="56" y="6" opacity="1.0" font-size="2.0px" text-anchor="right" dy="0" style="font-weight: normal; white-space: pre;" ng-show="txtOutsideTemp">{{ txtOutsideTemp }}&deg; {{ config.TempSign }}</text>
+			<text class="etext" x="56" y="6" opacity="1.0" font-size="2.0px" text-anchor="right" dy="0" style="font-weight: normal; white-space: pre;" ng-show="idOutsideTemp != -1">{{ txtOutsideTemp }}&deg; {{ config.TempSign }}</text>
 			<g id="groupBatt" ng-show="idBattWatt != -1">
 				<line id="SolarToBatt" x1="30" y1="17.25" x2="30" y2="42.75" style="stroke:#ffd050;stroke-width:{{flowStrokeBack}}" ng-show="idSolar != -1"/>
 				<g ng-show="fSolarToBatt>0">
@@ -465,6 +461,7 @@ History:
 				</g>
 				<text class="etext" x="50" y="30.5" opacity="0.7" font-size="1.6px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fTotalHomeUsage | number:3 }} kWh</text>
 				<text class="etext" x="50" y="33" font-size="1.7px" text-anchor="middle" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; font-weight: bold; white-space: pre;">{{ finalHomeUsage }} Watt</text>
+				<text class="etext" x="50" y="35.5" opacity="0.55" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="idSolar != -1"><tspan font-family="'Font Awesome 7 Free'" font-weight="900" fill="var(--dz-widget-energy-export)">&#xf06c;</tspan> {{ fSelfSufficiency | number:0 }}%</text>
 				</g>
 			<g id="groupNet">
 				<circle class="ecircle ecircle-grid" r="7" cx="10" cy="30" fill="rgba(0,198,218,0.06)" stroke="#00c6da" stroke-width=".5" filter="url(#glowGrid)" ng-class="{'circle-active': fActualNet != 0}"/>
@@ -483,5 +480,6 @@ History:
 				<text class="etext" x="10" y="35.8" opacity="0.55" font-size="1.2px" text-anchor="middle" style="white-space: pre;" ng-show="p1Price!=1000">{{ p1Price | number:2 }} {{ config.CurrencySign }}</text>
 			</g>
 		</svg>
+		<div id="ltext" ng-show="txtObjText" ng-style="textOverlayStyle" style="position: absolute; z-index: 10; overflow: hidden; box-sizing: border-box;"></div>
 	</div>
 </div>

@@ -78,7 +78,7 @@ namespace
 		"\t-webroot additional web root, useful with proxy servers (for example domoticz)\n"
 		"\t-nocache ask browser not to cache pages\n"
 		"\t-nomdns do not enable mDNS broadcast and listening\n"
-		"\t-mcp enable Model Context Protocol (/mcp) for use with LLM Agents\n"
+		"\t-nomcp do not enable Model Context Protocol (/mcp) for use with LLM Agents\n"
 		"\t-startupdelay seconds (default=0)\n"
 		"\t-nowwwpwd (in case you forgot the web server username/password)\n"
 		"\t-wwwcompress mode (on = always compress [default], off = always decompress, static = no processing but try precompressed first)\n"
@@ -165,7 +165,7 @@ http::server::server_settings webserver_settings;
 http::server::ssl_server_settings secure_webserver_settings;
 #endif
 iamserver::iam_settings iamserver_settings;
-bool g_bLlmMCPSupport = false;
+bool g_bLlmMCPSupport = true;
 
 bool bStartWebBrowser = true;
 bool g_bUseWatchdog = true;
@@ -181,6 +181,37 @@ int pidFilehandle = 0;
 time_t m_LastHeartbeat = 0;
 
 #ifndef WIN32
+bool redirectIOconnections(bool flDaemonized)
+{
+	if (!m_sz_std_out_err_log_file.empty() || flDaemonized)
+	{
+		int i;
+		if (m_sz_std_out_err_log_file.empty())
+			i = open("/dev/null", O_RDWR);
+		else
+		{
+			i = open(m_sz_std_out_err_log_file.c_str(), O_RDWR | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+			if (i == -1)
+			{
+				_log.Log(LOG_ERROR, "Could not open std_out_err_log_file: %s", m_sz_std_out_err_log_file.c_str());
+				return false;
+			}
+			_log.Log(LOG_STATUS, "Open the %s file which is the python redirection file", m_sz_std_out_err_log_file.c_str());
+		}
+
+		/* Redirect stdin, stdout, stderr to the opened file */
+		if (dup2(i, STDIN_FILENO) == -1)
+			_log.Log(LOG_ERROR, "Could not redirect STDIN !");
+		if (dup2(i, STDOUT_FILENO) == -1)
+			_log.Log(LOG_ERROR, "Could not set STDOUT descriptor !");
+		if (dup2(i, STDERR_FILENO) == -1)
+			_log.Log(LOG_ERROR, "Could not set STDERR descriptor !");
+
+		close(i);
+	}
+	return true;
+}
+
 void daemonShutdown()
 {
 	if (pidFilehandle != 0) {
@@ -191,7 +222,7 @@ void daemonShutdown()
 
 void daemonize(const char *rundir, const char *pidfile)
 {
-	int pid, sid, i;
+	int pid, sid;
 	char str[10];
 	struct sigaction newSigAction;
 	sigset_t newSigSet;
@@ -278,32 +309,8 @@ void daemonize(const char *rundir, const char *pidfile)
 		exit(EXIT_FAILURE);
 	}
 
-	/* Close out the standard file descriptors */
-	close(STDIN_FILENO);
-	close(STDOUT_FILENO);
-	close(STDERR_FILENO);
-
 	/* Route I/O connections */
-
-	/* Open STDIN */
-	if (m_sz_std_out_err_log_file.empty())	
-		i = open("/dev/null", O_RDWR);
-	else
-		i = open(m_sz_std_out_err_log_file.c_str(), O_RDWR | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-
-	/* STDOUT */
-	int dret = dup(i);
-	if (dret == -1)
-	{
-		_log.Log(LOG_ERROR, "Could not set STDOUT descriptor !");
-	}
-
-	/* STDERR */
-	dret = dup(i);
-	if (dret == -1)
-	{
-		_log.Log(LOG_ERROR, "Could not set STDERR descriptor !");
-	}
+	redirectIOconnections(true);
 
 	int cdret = chdir(rundir); /* change running directory */
 	if (cdret == -1)
@@ -1097,10 +1104,12 @@ int main(int argc, char**argv)
 		bEnableMDNS = false;
 		_log.Log(LOG_STATUS, "mDNS Support disabled!");
 	}
-	if (cmdLine.HasSwitch("-mcp"))
+	if (cmdLine.HasSwitch("-nomcp"))
 	{
-		g_bLlmMCPSupport = true;
-		_log.Log(LOG_STATUS, "Model Context Protocol (MCP) Support enabled (/mcp).");
+		g_bLlmMCPSupport = false;
+		_log.Log(LOG_STATUS, "Model Context Protocol (MCP) Support disabled!");
+	} else {
+		_log.Log(LOG_STATUS, "Model Context Protocol (MCP) Support enabled (/mcp) for use with AI Agents.");
 	}
 
 #if defined WIN32
@@ -1190,6 +1199,11 @@ int main(int argc, char**argv)
 	{
 		/* Deamonize */
 		daemonize(szStartupFolder.c_str(), pidfile.c_str());
+	}
+	else
+	{
+		/* Route I/O connections */
+		redirectIOconnections(false);
 	}
 	if ((g_bRunAsDaemon) && (g_bUseSyslog))
 	{

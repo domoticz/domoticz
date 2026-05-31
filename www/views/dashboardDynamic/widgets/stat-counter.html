@@ -1,0 +1,25 @@
+<div class="dd-stat-card dd-stat-card-full"
+     ng-class="{'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode}">
+
+    <div ng-if="!ctrl.widgetDef.config.deviceIdx" class="dd-chart-unconfigured">
+        <i class="fa-solid fa-gauge"></i>
+        <p>Select a device in settings</p>
+    </div>
+
+    <div ng-if="ctrl.widgetDef.config.deviceIdx" style="width:100%">
+        <div class="dd-stat-label" ng-bind="ctrl.label"></div>
+        <a class="dd-stat-link" ng-href="#/Devices/{{ctrl.widgetDef.config.deviceIdx}}/Log">
+            <div class="dd-stat-value-row">
+                <span class="dd-stat-value" ng-bind="ctrl.value"></span><span ng-if="ctrl.valueDeliv !== null" class="dd-stat-value"> / </span><span ng-if="ctrl.valueDeliv !== null" class="dd-stat-value" ng-bind="ctrl.valueDeliv"></span><span class="dd-stat-unit" ng-if="ctrl.unit">&thinsp;{{ ctrl.unit }}</span>
+            </div>
+        </a>
+        <div ng-if="ctrl.counterTotal !== null" class="dd-stat-sub">
+            {{(ctrl.counterDelivTotal !== null ? 'Total Usage' : 'Total') | translate}}: {{ctrl.counterTotal}}
+        </div>
+        <div ng-if="ctrl.counterDelivTotal !== null" class="dd-stat-sub">
+            {{'Total Delivery' | translate}}: {{ctrl.counterDelivTotal}}
+        </div>
+        <dd-stat-bar num-val="ctrl.numVal" ranges="ctrl.widgetDef.config.ranges"></dd-stat-bar>
+    </div>
+
+</div>

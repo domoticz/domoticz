@@ -53,6 +53,9 @@ option(ENABLE_ASAN "Build with address sanitizer" NO)
 ### COMPILER SETTINGS
 #
 #
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.30")
+  CMAKE_POLICY(SET CMP0167 NEW)
+endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -91,7 +94,9 @@ MACRO(History_GET_REVISION variable)
   IF(EXISTS ${CMAKE_SOURCE_DIR}/History.txt)
     MESSAGE(STATUS "Read ProjectRevision from History.txt")
     CMAKE_POLICY(SET CMP0007 NEW)
-    CMAKE_POLICY(SET CMP0167 NEW)
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.30")
+      CMAKE_POLICY(SET CMP0167 NEW)
+    endif()
     FILE(STRINGS ${CMAKE_SOURCE_DIR}/History.txt AppVersionContent)
     LIST(GET AppVersionContent 0 AppVersionContent)
     STRING(REPLACE " " ";" AppVersionContent ${AppVersionContent})
@@ -128,9 +133,10 @@ IF(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
 # Update submodules as needed
     IF(GIT_SUBMODULE)
         message(STATUS "Submodule update")
-    execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --remote --force
                         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                         RESULT_VARIABLE GIT_SUBMOD_RESULT)
+        
         IF(NOT GIT_SUBMOD_RESULT EQUAL "0")
             message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
         ENDIF()
@@ -201,6 +207,8 @@ main/WindCalculation.cpp
 mdns/mdns.cpp
 iamserver/IamService.cpp
 mcpserver/McpService.cpp
+mcpserver/McpSseSession.cpp
+mcpserver/McpSessionRegistry.cpp
 push/BasePush.cpp
 push/FibaroPush.cpp
 push/GooglePubSubPush.cpp
@@ -208,6 +216,7 @@ push/HttpPush.cpp
 push/InfluxPush.cpp
 push/MQTTPush.cpp
 push/WebsocketPush.cpp
+push/McpPush.cpp
 httpclient/HTTPClient.cpp
 httpclient/UrlEncode.cpp
 hardware/1Wire.cpp
@@ -222,6 +231,7 @@ hardware/AnnaThermostat.cpp
 hardware/Arilux.cpp
 hardware/ASyncSerial.cpp
 hardware/ASyncTCP.cpp
+hardware/ASyncWebsocket.cpp
 hardware/AtagOne.cpp
 hardware/BleBox.cpp
 hardware/Buienradar.cpp
@@ -236,6 +246,7 @@ hardware/CurrentCostMeterBase.cpp
 hardware/CurrentCostMeterSerial.cpp
 hardware/CurrentCostMeterTCP.cpp
 hardware/Daikin.cpp
+hardware/DaikinModbus.cpp
 hardware/DarkSky.cpp
 hardware/DavisLoggerSerial.cpp
 hardware/DenkoviDevices.cpp
@@ -289,9 +300,9 @@ hardware/KMTronicUDP.cpp
 hardware/Kodi.cpp
 hardware/Limitless.cpp
 hardware/LogitechMediaServer.cpp
+hardware/Matter.cpp
 hardware/Meteorologisk.cpp
 hardware/Meteostick.cpp
-hardware/OpenMeteo.cpp
 hardware/MitsubishiWF.cpp
 hardware/MochadTCP.cpp
 hardware/MQTT.cpp
@@ -308,6 +319,7 @@ hardware/Netatmo.cpp
 hardware/HttpPoller.cpp
 hardware/OctoPrintMQTT.cpp
 hardware/OnkyoAVTCP.cpp
+hardware/OpenMeteo.cpp
 hardware/OpenWeatherMap.cpp
 hardware/OpenWebNetTCP.cpp
 hardware/OpenWebNetUSB.cpp
@@ -326,6 +338,7 @@ hardware/PhilipsHue/PhilipsHue.cpp
 hardware/PhilipsHue/PhilipsHueHelper.cpp
 hardware/PhilipsHue/PhilipsHueSensors.cpp
 hardware/PhilipsHue/PhilipsHueV2Sensors.cpp
+hardware/PhilipsHue/PhilipsHueSSE.cpp
 hardware/PiFace.cpp
 hardware/Pinger.cpp
 hardware/PVOutput_Input.cpp
@@ -381,6 +394,8 @@ hardware/plugins/Plugins.cpp
 hardware/plugins/PluginManager.cpp
 hardware/plugins/PluginProtocols.cpp
 hardware/plugins/PluginTransports.cpp
+hardware/plugins/PluginWebSocketRegistry.cpp
+hardware/plugins/PluginWebSocketBridge.cpp
 hardware/plugins/PythonObjects.cpp
 hardware/plugins/PythonObjectEx.cpp
 notifications/NotificationBase.cpp
@@ -424,9 +439,12 @@ tinyxpath/xpath_syntax.cpp
 IF(USE_BUILTIN_JSONCPP)
   set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build jsoncpp_lib as a shared library." FORCE)
   set(BUILD_STATIC_LIBS ON CACHE BOOL "Build jsoncpp_lib as a static library." FORCE)
+  set(BUILD_OBJECT_LIBS OFF CACHE BOOL "Build jsoncpp_lib as an object library." FORCE)
   set(JSONCPP_WITH_TESTS OFF CACHE BOOL "Enable jsoncpp tests" FORCE)
   set(JSONCPP_WITH_POST_BUILD_UNITTEST OFF CACHE BOOL "Enable jsoncpp post build unit tests" FORCE)
   set(JSONCPP_WITH_PKGCONFIG_SUPPORT OFF CACHE BOOL "Enable jsoncpp pkgconfig support" FORCE)
+  set(JSONCPP_WITH_CMAKE_PACKAGE OFF CACHE BOOL "Generate and install cmake package files" FORCE)
+  set(JSONCPP_WITH_INSTALL OFF CACHE BOOL "Include JsonCpp in the install target" FORCE)
   add_subdirectory(extern/jsoncpp ${CMAKE_CURRENT_BINARY_DIR}/jsoncpp_build EXCLUDE_FROM_ALL)
   if(NOT MSVC)
     target_compile_options(jsoncpp_static PRIVATE -Wno-deprecated-declarations)
@@ -472,7 +490,7 @@ ELSE(LUA_LIBRARIES AND LUA_INCLUDE_DIRS)
   IF(LUA_FOUND)
     MESSAGE(STATUS "LUA library found at  : ${LUA_LIBRARIES}")
     MESSAGE(STATUS "LUA includes found at : ${LUA_INCLUDE_DIR}")
-    INCLUDE_DIRECTORIES(${LUA_INCLUDE_DIR}) 
+    INCLUDE_DIRECTORIES(${LUA_INCLUDE_DIR})
   ELSE(LUA_FOUND)
     MESSAGE(FATAL_ERROR "LUA 5.3 not found! use sudo apt-get install liblua5.3-dev")
   ENDIF(LUA_FOUND)
@@ -577,7 +595,7 @@ ELSE(USE_BUILTIN_JSONCPP)
     MESSAGE(FATAL_ERROR "JSONCPP not found on your system! try 'sudo apt-get install jsoncpp-dev'")
   ENDIF(JSONCPP_FOUND)
 ENDIF(USE_BUILTIN_JSONCPP)
- 
+
 # mosquitto
 find_library(MQTT_LIBRARIES NAMES libmosquitto.so)
 find_path(MQTT_INCLUDE_DIRS NAMES mosquitto.h)
@@ -587,7 +605,7 @@ IF(MQTT_LIBRARIES AND MQTT_INCLUDE_DIRS)
 ELSE(MQTT_LIBRARIES AND MQTT_INCLUDE_DIRS)
   MESSAGE(FATAL_ERROR "Mosquitto library not found on your system, see install.txt how to get them installed. (for example 'sudo apt-get install libmosquitto-dev')")
 ENDIF(MQTT_LIBRARIES AND MQTT_INCLUDE_DIRS)
- 
+
 # sqlite3
 IF(USE_BUILTIN_SQLITE)
   MESSAGE(STATUS "Using builtin SQLite library")

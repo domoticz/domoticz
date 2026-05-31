@@ -133,27 +133,31 @@ function HandleProtection(isprotected, callbackfunction) {
 		callbackfunction("");
 		return;
 	}
-	bootbox.prompt($.t("Please enter Password") + ":", function (result) {
-		if (result === null) {
-			return;
-		} else {
-			if (result == "") {
+	bootbox.prompt({
+		title: $.t("Please enter Password") + ":",
+		inputType: 'password',
+		callback: function (result) {
+			if (result === null) {
 				return;
-			}
-			//verify password
-			$.ajax({
-				url: "json.htm?type=command&param=verifypasscode" +
-				"&passcode=" + result,
-				async: false,
-				dataType: 'json',
-				success: function (data) {
-					if (data.status == "OK") {
-						callbackfunction(result);
-					}
-				},
-				error: function () {
+			} else {
+				if (result == "") {
+					return;
 				}
-			});
+				//verify password
+				$.ajax({
+					url: "json.htm?type=command&param=verifypasscode" +
+					"&passcode=" + result,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						if (data.status == "OK") {
+							callbackfunction(result);
+						}
+					},
+					error: function () {
+					}
+				});
+			}
 		}
 	});
 }
@@ -192,6 +196,8 @@ function CalculateTrendLine(data) {
 	dReturn.y0 = y0;
 	dReturn.x1 = x1;
 	dReturn.y1 = y1;
+	dReturn.m = m;
+	dReturn.b = b;
 	return dReturn;
 };
 
@@ -260,15 +266,19 @@ function ArmSystem(idx, switchcmd, isprotected) {
 	var passcode = "";
 	if (typeof isprotected != 'undefined') {
 		if (isprotected == true) {
-			bootbox.prompt($.t("Please enter Password") + ":", function (result) {
-				if (result === null) {
-					return;
-				} else {
-					if (result == "") {
+			bootbox.prompt({
+				title: $.t("Please enter Password") + ":",
+				inputType: 'password',
+				callback: function (result) {
+					if (result === null) {
 						return;
+					} else {
+						if (result == "") {
+							return;
+						}
+						passcode = result;
+						ArmSystemInt(idx, switchcmd, passcode);
 					}
-					passcode = result;
-					ArmSystemInt(idx, switchcmd, passcode);
 				}
 			});
 		}
@@ -338,15 +348,19 @@ function ArmSystemMeiantech(idx, switchcmd, isprotected) {
 	var passcode = "";
 	if (typeof isprotected != 'undefined') {
 		if (isprotected == true) {
-			bootbox.prompt($.t("Please enter Password") + ":", function (result) {
-				if (result === null) {
-					return;
-				} else {
-					if (result == "") {
+			bootbox.prompt({
+				title: $.t("Please enter Password") + ":",
+				inputType: 'password',
+				callback: function (result) {
+					if (result === null) {
 						return;
+					} else {
+						if (result == "") {
+							return;
+						}
+						passcode = result;
+						ArmSystemMeiantechInt(idx, switchcmd, passcode);
 					}
-					passcode = result;
-					ArmSystemMeiantechInt(idx, switchcmd, passcode);
 				}
 			});
 		}
@@ -468,15 +482,19 @@ function ArmSystemX10(idx, switchcmd, isprotected) {
 	var passcode = "";
 	if (typeof isprotected != 'undefined') {
 		if (isprotected == true) {
-			bootbox.prompt($.t("Please enter Password") + ":", function (result) {
-				if (result === null) {
-					return;
-				} else {
-					if (result == "") {
+			bootbox.prompt({
+				title: $.t("Please enter Password") + ":",
+				inputType: 'password',
+				callback: function (result) {
+					if (result === null) {
 						return;
+					} else {
+						if (result == "") {
+							return;
+						}
+						passcode = result;
+						ArmSystemX10Int(idx, switchcmd, passcode);
 					}
-					passcode = result;
-					ArmSystemX10Int(idx, switchcmd, passcode);
 				}
 			});
 		}
@@ -529,15 +547,19 @@ function SwitchLight(idx, switchcmd, isprotected) {
 	var passcode = "";
 	if (typeof isprotected != 'undefined') {
 		if (isprotected == true) {
-			bootbox.prompt($.t("Please enter Password") + ":", function (result) {
-				if (result === null) {
-					return;
-				} else {
-					if (result == "") {
+			bootbox.prompt({
+				title: $.t("Please enter Password") + ":",
+				inputType: 'password',
+				callback: function (result) {
+					if (result === null) {
 						return;
+					} else {
+						if (result == "") {
+							return;
+						}
+						passcode = result;
+						SwitchLightInt(idx, switchcmd, passcode);
 					}
-					passcode = result;
-					SwitchLightInt(idx, switchcmd, passcode);
 				}
 			});
 		}
@@ -588,15 +610,19 @@ function SwitchSelectorLevel(idx, levelName, levelValue, isprotected) {
 	var passcode = "";
 	if (typeof isprotected != 'undefined') {
 		if (isprotected == true) {
-			bootbox.prompt($.t("Please enter Password") + ":", function (result) {
-				if (result === null) {
-					return;
-				} else {
-					if (result == "") {
+			bootbox.prompt({
+				title: $.t("Please enter Password") + ":",
+				inputType: 'password',
+				callback: function (result) {
+					if (result === null) {
 						return;
+					} else {
+						if (result == "") {
+							return;
+						}
+						passcode = result;
+						SwitchSelectorLevelInt(idx, levelName, levelValue, passcode);
 					}
-					passcode = result;
-					SwitchSelectorLevelInt(idx, levelName, levelValue, passcode);
 				}
 			});
 		}
@@ -645,15 +671,19 @@ function SwitchScene(idx, switchcmd, isprotected) {
 	var passcode = "";
 	if (typeof isprotected != 'undefined') {
 		if (isprotected == true) {
-			bootbox.prompt($.t("Please enter Password") + ":", function (result) {
-				if (result === null) {
-					return;
-				} else {
-					if (result == "") {
+			bootbox.prompt({
+				title: $.t("Please enter Password") + ":",
+				inputType: 'password',
+				callback: function (result) {
+					if (result === null) {
 						return;
+					} else {
+						if (result == "") {
+							return;
+						}
+						passcode = result;
+						SwitchSceneInt(idx, switchcmd, passcode);
 					}
-					passcode = result;
-					SwitchSceneInt(idx, switchcmd, passcode);
 				}
 			});
 		}
@@ -2188,6 +2218,8 @@ function SetSetpoint() {
 			if (data.status == "ERROR") {
 				HideNotify();
 				bootbox.alert($.t('Problem setting Setpoint value'));
+			} else {
+				$(document).trigger('dz:setpoint:saved', { idx: $.devIdx, value: parseFloat(curValue) });
 			}
 			//wait 1 second
 			setTimeout(function () {
@@ -2665,6 +2697,31 @@ function RefreshLiveSearch(){
 	$('.jsLiveSearch').trigger('change');
 }
 
+/* Restores saved search filter once both the input and the page container are in the DOM.
+   Called from WatchLiveSearch (topbar loaded) and from controllers (data loaded),
+   so whichever event fires last will trigger the restore. ------------------- */
+function ScheduleLiveSearchRestore(){
+	if(!window.myglobals || !window.myglobals.LastSearchFilter) return;
+	if(window._lsRestoreInterval) clearInterval(window._lsRestoreInterval);
+	var _attempts = 0;
+	window._lsRestoreInterval = setInterval(function(){
+		var input = $('.jsLiveSearch');
+		var searchable = $('.itemBlock [data-search]');
+		var container = $('.devicesList');
+		// Restore when items exist, or when the page container is present (handles the case
+		// where all items are filtered out by Angular's ng-repeat, leaving zero itemBlock elements).
+		if(input.length > 0 && (searchable.length > 0 || container.length > 0)){
+			clearInterval(window._lsRestoreInterval);
+			window._lsRestoreInterval = null;
+			input.val(window.myglobals.LastSearchFilter);
+			RefreshLiveSearch();
+		} else if(++_attempts >= 100){
+			clearInterval(window._lsRestoreInterval);
+			window._lsRestoreInterval = null;
+		}
+	}, 50);
+}
+
 /* Watches the LiveSearch INPUT field -------------------------------- */
 function WatchLiveSearch(){
 	if(_debug_livesearch) console.log('LiveSearch: Start Watching ...');
@@ -2674,6 +2731,7 @@ function WatchLiveSearch(){
 	$('.jsLiveSearch').off().on('keyup change',function(e){
 		if(_debug_livesearch)  console.log('LiveSearch: processing on keyup - "'+$(this).val()+'"');
 		var query	=$(this).val();
+		if(window.myglobals) window.myglobals.LastSearchFilter = query;
 		var div		=$('.divider');
 		var cont	=$('.devicesList');
 		var items	=$('.itemBlock');
@@ -2688,7 +2746,7 @@ function WatchLiveSearch(){
 				div.css('display','block');
 				div.addClass('row');
 				div.find('.clearfix').show(); /* only for Weather and Temperatures pages */
-				items.show().removeClass('liveSearchShown');	
+				items.show().removeClass('liveSearchShown').trigger('dz:livesearch:show');
 			}
 		}
 		else{
@@ -2709,7 +2767,7 @@ function WatchLiveSearch(){
 				var to_hide=$(this);
 
 				if (searchText.match(searchRegEx) !== null) {
-					to_hide.show();
+					to_hide.show().trigger('dz:livesearch:show');
 					to_hide.addClass(cl_shown);
 				}
 				else{
@@ -2728,8 +2786,11 @@ function WatchLiveSearch(){
 	$(".jsTbResultsClose,.jsTbResults").off().on('click',function(e) {
 		e.preventDefault();
 		if(_debug_livesearch)  console.log('LiveSearch: Close Clicked');
+		if(window.myglobals) window.myglobals.LastSearchFilter = '';
 		$('.jsLiveSearch').val('').trigger('change');
 	});
+
+	ScheduleLiveSearchRestore();
 }
 
 /* Toggle Results display ------------------------------------------ */
@@ -2771,3 +2832,30 @@ function WatchDescriptions(){
 		$(this).css('cursor','auto');
 	});
 };
+
+/**
+ * Calculate self-sufficiency percentage.
+ *
+ * self_sufficiency = min(100, (solar - p1Export + bat_discharge) / house x 100)
+ *
+ * Subtracting p1Export from solar removes the exported portion, leaving only
+ * solar that stayed in the local system.  Adding bat_discharge back cancels
+ * the battery's contribution to p1Export (battery-to-grid), so the numerator
+ * algebraically reduces to (solarToHouse + batToHouse) — the energy that
+ * actually powered the house from local sources.
+ *
+ * This is exact for:
+ *   - No-battery setups
+ *   - Arbitrage batteries (charge from grid, discharge to grid)
+ *   - Standard daily solar→battery→house cycles (solar covers house → clamps correctly to 100%)
+ *
+ * @param {number} solarKwh        - Solar production today (kWh)
+ * @param {number} p1ExportKwh     - Total energy exported to grid today (kWh)
+ * @param {number} batDischargeKwh - Battery discharged today (kWh), 0 if no battery
+ * @param {number} houseKwh        - Total house consumption today (kWh)
+ * @returns {number} Self-sufficiency percentage [0..100]
+ */
+function calcSelfSufficiency(solarKwh, p1ExportKwh, batDischargeKwh, houseKwh) {
+	if (houseKwh <= 0) return 0;
+	return Math.min(100, Math.max(0, (solarKwh - p1ExportKwh + batDischargeKwh) / houseKwh * 100));
+}

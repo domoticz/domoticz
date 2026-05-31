@@ -1,0 +1,59 @@
+<div class="dd-battery-monitor dd-stat-card-full"
+     ng-class="{'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode}">
+
+    <!-- Header -->
+    <div class="dd-battery-monitor-header">
+        <span class="dd-battery-monitor-title" ng-bind="ctrl.title"></span>
+        <span ng-if="ctrl.count > 0"
+              class="dd-battery-monitor-badge"
+              style="background: var(--dz-status-timeout);">
+            {{ctrl.count}} timed out
+        </span>
+        <span ng-if="ctrl.count === 0 && !ctrl.loading && !ctrl.loadError"
+              class="dd-battery-monitor-badge ok">
+            All OK
+        </span>
+    </div>
+
+    <!-- Loading state -->
+    <div ng-if="ctrl.loading && !ctrl.devices.length"
+         class="dd-chart-unconfigured">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+    </div>
+
+    <!-- Error state -->
+    <div ng-if="ctrl.loadError && !ctrl.loading && !ctrl.devices.length"
+         class="dd-chart-unconfigured">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <p>Could not load devices</p>
+    </div>
+
+    <!-- All OK state -->
+    <div ng-if="!ctrl.loading && !ctrl.loadError && ctrl.count === 0"
+         class="dd-battery-monitor-ok">
+        <i class="fa-solid fa-circle-check"></i>
+        <div>All devices OK</div>
+        <div style="font-size: 0.8em; opacity: 0.65; margin-top: 4px;">
+            {{ctrl.totalMonitored}} device<span ng-if="ctrl.totalMonitored !== 1">s</span> monitored
+        </div>
+    </div>
+
+    <!-- Device list -->
+    <div class="dd-battery-monitor-list"
+         ng-if="!ctrl.loading && !ctrl.loadError && ctrl.devices.length > 0">
+        <div class="dd-battery-monitor-row"
+             ng-repeat="device in ctrl.devices track by device.idx">
+            <span class="dd-battery-monitor-icon"
+                  style="color: var(--dz-status-timeout);">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+            </span>
+            <span class="dd-battery-monitor-name"
+                  title="{{device.name}}">{{device.name}}</span>
+            <span class="dd-battery-monitor-level"
+                  style="color: var(--dz-widget-stat-muted);">
+                {{ctrl.timeAgo(device.lastUpdate)}}
+            </span>
+        </div>
+    </div>
+
+</div>

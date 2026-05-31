@@ -55,6 +55,9 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void GetOpenIDConfiguration(WebEmSession &session, const request &req, reply &rep);
 
 	void PostMcp(WebEmSession &session, const request &req, reply &rep);
+	void OptionsMcp(WebEmSession& session, const request& req, reply& rep);
+	void HandleMcpGet(WebEmSession &session, const request &req, reply &rep);
+	void HandleMcpDelete(WebEmSession &session, const request &req, reply &rep);
 
 	void SetRFXCOMMode(WebEmSession & session, const request& req, std::string & redirect_uri);
 	void UploadFloorplanImage(WebEmSession & session, const request& req, std::string & redirect_uri);
@@ -144,6 +147,7 @@ private:
 	void Cmd_GetMeterTypes(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_GetThemes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetTitle(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_FetchUrl(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_LoginCheck(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PostSettings(WebEmSession &session, const request &req, Json::Value &root);
 	void Cmd_GetHardwareTypes(WebEmSession & session, const request& req, Json::Value &root);
@@ -303,6 +307,7 @@ private:
 	void Cmd_VacuumDatabase(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDbStats(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_FixKwhCounterSpikes(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_SpreadCounterSpike(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PanasonicSetMode(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PanasonicGetNodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_PanasonicAddNode(WebEmSession & session, const request& req, Json::Value &root);
@@ -342,11 +347,36 @@ private:
 	void Cmd_UpdateApplication(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteApplication(WebEmSession & session, const request& req, Json::Value &root);
 
+	void Cmd_GetAccessTokens(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_CreateAccessToken(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_DeleteAccessToken(WebEmSession& session, const request& req, Json::Value& root);
+
 	void Cmd_GetDynamicPriceDevices(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_GetEnergyDashboardDevices(WebEmSession& session, const request& req, Json::Value& root);
 
 	void Cmd_GetkWhStats(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_ResetkWhStats(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_FixkWhStats(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_FixCounterPrices(WebEmSession& session, const request& req, Json::Value& root);
+
+	// Dashboard 2.0 layout management
+	void Cmd_GetDashboardLayouts(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_GetDashboardLayout(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_SaveDashboardLayout(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_DeleteDashboardLayout(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_CopyDashboardLayout(WebEmSession& session, const request& req, Json::Value& root);
+
+	void Cmd_GetMatterNodes(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_GetMatterNetworkGraph(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_MatterCommissionNode(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_GetMatterCommissionStatus(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_MatterExcludeNode(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_DeleteMatterNode(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_RequestMatterNodeInfo(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_MatterGetServerInfo(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_MatterSetWifiCredentials(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_MatterSetThreadDataset(WebEmSession& session, const request& req, Json::Value& root);
+	void Cmd_MatterSetFabricLabel(WebEmSession& session, const request& req, Json::Value& root);
 
 	// Plugin functions
 	void Cmd_PluginCommand(WebEmSession & session, const request& req, Json::Value &root);

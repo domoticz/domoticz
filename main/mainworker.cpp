@@ -126,6 +126,7 @@
 #include "../hardware/Ec3kMeterTCP.h"
 #include "../hardware/OpenWeatherMap.h"
 #include "../hardware/Daikin.h"
+#include "../hardware/DaikinModbus.h"
 #include "../hardware/HEOS.h"
 #include "../hardware/MultiFun.h"
 #include "../hardware/ZiBlueSerial.h"
@@ -157,6 +158,7 @@
 #include "../hardware/AlfenEve.h"
 #include "../hardware/Enever.h"
 #include "../hardware/MitsubishiWF.h"
+#include "../hardware/Matter.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -321,10 +323,10 @@ void MainWorker::StopDomoticzHardware()
 
 	for (auto& device : OrgHardwaredevices)
 	{
+		device->Stop(); // joins the plugin worker thread before deregistering
 #ifdef ENABLE_PYTHON
 		m_pluginsystem.DeregisterPlugin(device->m_HwdID);
 #endif
-		device->Stop();
 		delete device;
 	}
 }
@@ -396,10 +398,10 @@ void MainWorker::RemoveDomoticzHardware(int HwdId)
 	int dpos = FindDomoticzHardware(HwdId);
 	if (dpos == -1)
 		return;
+	RemoveDomoticzHardware(m_hardwaredevices[dpos]); // calls Stop() which joins the worker thread
 #ifdef ENABLE_PYTHON
-	m_pluginsystem.DeregisterPlugin(HwdId);
+	m_pluginsystem.DeregisterPlugin(HwdId); // safe: worker is joined before this point
 #endif
-	RemoveDomoticzHardware(m_hardwaredevices[dpos]);
 }
 
 int MainWorker::FindDomoticzHardware(int HwdId)
@@ -921,6 +923,9 @@ bool MainWorker::AddHardwareFromParams(
 	case HTYPE_Daikin:
 		pHardware = new CDaikin(ID, Address, Port, Username, Password, Mode1);
 		break;
+	case HTYPE_DaikinModbus:
+		pHardware = new CDaikinModbus(ID, Address, Port, Mode1, Mode2 != 0, Mode3);
+		break;
 	case HTYPE_SBFSpot:
 		pHardware = new CSBFSpot(ID, Username);
 		break;
@@ -1101,6 +1106,13 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_MitsubishiWF:
 		pHardware = new MitsubishiWF(ID, Address);
+		break;
+
+	case HTYPE_Matter:
+		{
+			uint16_t matterPort = (Port == 0) ? 5580 : static_cast<uint16_t>(Port);
+			pHardware = new CMatter(ID, Address, matterPort);
+		}
 		break;
 
 	}
@@ -2331,7 +2343,7 @@ void MainWorker::ProcessRXMessage(const CDomoticzHardwareBase* pHardware, const 
 	if ((BatteryLevel != -1) && (procResult.bProcessBatteryValue))
 	{
 		m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d WHERE (ID==%" PRIu64 ")", BatteryLevel, DeviceRowIdx);
-		m_eventsystem.UpdateBatteryLevel(DeviceRowIdx, BatteryLevel); //GizMoCuz, temporarily... 
+		m_eventsystem.UpdateBatteryLevel(DeviceRowIdx, BatteryLevel); //GizMoCuz, temporarily...
 	}
 
 	if ((defaultName != nullptr) && ((DeviceName == "Unknown") || (DeviceName.empty())))
@@ -5686,6 +5698,7 @@ void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF*
 	uint8_t OID3;
 	uint8_t OID4;
 	int LastLevel = 0;
+	int currentNValue = 0;
 	int llevel = 0;
 	int switchType;
 	int nValue;
@@ -5714,7 +5727,7 @@ void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF*
 			ID = DIDTmp;
 			SourceID = IDTmp;
 		}
-		result = m_sql.safe_query("SELECT Name, SwitchType, Options, LastLevel, Description FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)",
+		result = m_sql.safe_query("SELECT Name, SwitchType, Options, LastLevel, Description, nValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (SubType==%d)",
 			pHardware->m_HwdID, ID.c_str(), Unit, devType, subType);
 		if (!result.empty())
 		{
@@ -5723,6 +5736,7 @@ void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF*
 			switchType = atoi(result[0][1].c_str());
 			std::string optionsStr = result[0][2];
 			LastLevel = atoi(result[0][3].c_str());
+			currentNValue = atoi(result[0][5].c_str());
 			if(SourceID.empty()) {
 				SourceID = result[0][4];
 			}
@@ -5779,9 +5793,22 @@ void MainWorker::decode_Fan(const CDomoticzHardwareBase* pHardware, const tRBUF*
 		}
 		else
 		{
-					nValue = LastLevel;
-					sValue = std::to_string(LastLevel);
-					_log.Debug(DEBUG_HARDWARE, "Orcon: Status '%s' for command %02X not found in selector configuration, using LastLevel=%d", lstatus.c_str(), cmnd, LastLevel);
+			// Ignore "speed" acknowledgment packets sent by the device after level commands
+			// Use the command value directly
+			if (cmnd != fan_Orconspeed)
+			{
+					nValue = cmnd;
+					sValue = std::to_string(cmnd);
+					m_sql.UpdateDeviceValue("LastLevel", cmnd, ID);
+					_log.Debug(DEBUG_HARDWARE, "Orcon: Status command %02X", cmnd);
+			}
+			else
+			{
+					// Use the current DB nValue (not LastLevel)
+					nValue = currentNValue;
+					sValue = std::to_string(currentNValue);
+					_log.Debug(DEBUG_HARDWARE, "Orcon: Ignoring speed acknowledgment, keeping current nValue=%d", currentNValue);
+			}
 		}
 	}
 	else
@@ -9723,10 +9750,10 @@ void MainWorker::decode_RFXMeter(const CDomoticzHardwareBase* pHardware, const t
 		uint8_t SignalLevel = pResponse->RFXMETER.rssi;
 		uint8_t BatteryLevel = 255;
 
-		unsigned long counter = (pResponse->RFXMETER.count1 << 24) + (pResponse->RFXMETER.count2 << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4;
+		uint32_t counter = (static_cast<uint32_t>(pResponse->RFXMETER.count1) << 24) + (static_cast<uint32_t>(pResponse->RFXMETER.count2) << 16) + (static_cast<uint32_t>(pResponse->RFXMETER.count3) << 8) + static_cast<uint32_t>(pResponse->RFXMETER.count4);
 		//float RFXPwr = float(counter) / 1000.0f;
 
-		sprintf(szTmp, "%lu", counter);
+		sprintf(szTmp, "%u", counter);
 		DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
 		if (DevRowIdx == (uint64_t)-1)
 			return;
@@ -9735,7 +9762,7 @@ void MainWorker::decode_RFXMeter(const CDomoticzHardwareBase* pHardware, const t
 	if (_log.IsDebugLevelEnabled(DEBUG_RECEIVED))
 	{
 		WriteMessageStart();
-		unsigned long counter;
+		uint32_t counter;
 
 		switch (pResponse->RFXMETER.subtype)
 		{
@@ -9745,8 +9772,8 @@ void MainWorker::decode_RFXMeter(const CDomoticzHardwareBase* pHardware, const t
 			WriteMessage(szTmp);
 			sprintf(szTmp, "ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
-			counter = (pResponse->RFXMETER.count1 << 24) + (pResponse->RFXMETER.count2 << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4;
-			sprintf(szTmp, "Counter       = %lu", counter);
+			counter = (static_cast<uint32_t>(pResponse->RFXMETER.count1) << 24) + (static_cast<uint32_t>(pResponse->RFXMETER.count2) << 16) + (static_cast<uint32_t>(pResponse->RFXMETER.count3) << 8) + static_cast<uint32_t>(pResponse->RFXMETER.count4);
+			sprintf(szTmp, "Counter       = %u", counter);
 			WriteMessage(szTmp);
 			sprintf(szTmp, "if RFXPwr     = %.3f kWh", float(counter) / 1000.0F);
 			WriteMessage(szTmp);
@@ -9851,8 +9878,8 @@ void MainWorker::decode_RFXMeter(const CDomoticzHardwareBase* pHardware, const t
 			WriteMessage(szTmp);
 			sprintf(szTmp, "ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
-			counter = (pResponse->RFXMETER.count1 << 24) + (pResponse->RFXMETER.count2 << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4;
-			sprintf(szTmp, "Counter       = %lu", counter);
+			counter = (static_cast<uint32_t>(pResponse->RFXMETER.count1) << 24) + (static_cast<uint32_t>(pResponse->RFXMETER.count2) << 16) + (static_cast<uint32_t>(pResponse->RFXMETER.count3) << 8) + static_cast<uint32_t>(pResponse->RFXMETER.count4);
+			sprintf(szTmp, "Counter       = %u", counter);
 			WriteMessage(szTmp);
 			break;
 		case sTypeRFXMeterSetInterval:
@@ -13465,6 +13492,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		|| (pHardware->HwdType == HTYPE_MQTT)
 		|| (pHardware->HwdType == HTYPE_MQTTAutoDiscovery)
 		|| (pHardware->HwdType == HTYPE_AlfenEveCharger)
+		|| (pHardware->HwdType == HTYPE_Matter)
 		)
 	{
 		if (pHardware->HwdType == HTYPE_OpenThermGateway)
@@ -13544,6 +13572,11 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		else if (pHardware->HwdType == HTYPE_AlfenEveCharger)
 		{
 			AlfenEve* pGateway = dynamic_cast<AlfenEve*>(pHardware);
+			pGateway->SetSetpoint(ID4, TempValue);
+		}
+		else if (pHardware->HwdType == HTYPE_Matter)
+		{
+			CMatter* pGateway = dynamic_cast<CMatter*>(pHardware);
 			pGateway->SetSetpoint(ID4, TempValue);
 		}
 	}
@@ -14302,7 +14335,7 @@ void MainWorker::HeartbeatCheck()
 				if (diff > 60)
 				{
 					_log.Log(LOG_ERROR, "%s hardware (%d) thread seems to have ended unexpectedly", pHardware->m_Name.c_str(), pHardware->m_HwdID);
-					
+
 				}
 			}
 

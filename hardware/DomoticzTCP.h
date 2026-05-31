@@ -1,5 +1,7 @@
 #pragma once
 
+#define REMOTE_PROTOCOL_VERSION 3
+
 #include "DomoticzHardware.h"
 #include "RFXBase.h"
 #if defined WIN32
@@ -31,12 +33,17 @@ private:
 	bool StopHardware() override;
 	void Do_Work();
 	bool WriteToHardware(const std::string& szData);
+	void WriteFramed(const std::string& szData);
+	bool SendEncrypted(const std::string& szPlaintext);
 
 	std::string m_szIPAddress;
 	unsigned short m_usIPPort;
 	std::string m_username;
 	std::string m_password;
 	std::mutex m_readMutex;
+	std::string m_recvBuffer;
+	time_t m_tAuthSent = 0;
+	bool m_bDataReceived = false;
 	std::shared_ptr<std::thread> m_thread;
 protected:
 	void OnConnect() override;

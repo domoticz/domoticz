@@ -56,15 +56,27 @@ std::string HTMLSanitizer::Sanitize(const std::string& szText)
 	if (result.empty())
 		return "Invalid!?";
 
-	// Also remove on* event handlers (onclick, onerror, etc.)
-	std::regex eventRegex("\\s+on\\w+\\s*=\\s*[\"'][^\"']*[\"']",
-		std::regex::icase);
-	result = std::regex_replace(result, eventRegex, "");
-
-	// Remove javascript: protocol
-	std::regex jsProtocol("javascript:", std::regex::icase);
-	result = std::regex_replace(result, jsProtocol, "");
+	result = StripDangerousAttributes(result);
 
 	return result;
 }
 
+// Strips on* event handlers (quoted and unquoted) and javascript: protocol
+std::string HTMLSanitizer::StripDangerousAttributes(const std::string& szText)
+{
+	std::string result = szText;
+	// Match both quoted (onclick="...") and unquoted (onclick=foo) attribute values
+	std::regex eventRegex("\\s+on\\w+\\s*=\\s*(?:[\"'][^\"']*[\"']|[^\\s>]+)", std::regex::icase);
+	result = std::regex_replace(result, eventRegex, "");
+	std::regex jsProtocol("javascript:", std::regex::icase);
+	result = std::regex_replace(result, jsProtocol, "");
+	return result;
+}
+
+// For text sensor devices: preserve HTML tags, strip only dangerous attributes/protocols
+std::string HTMLSanitizer::SanitizeHTML(const std::string& szText)
+{
+	if (szText.empty())
+		return szText;
+	return StripDangerousAttributes(szText);
+}

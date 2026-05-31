@@ -1,0 +1,81 @@
+<div class="dd-stat-card dd-setpoint dd-stat-card-full"
+     ng-class="{'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode}">
+
+    <!-- Unconfigured state -->
+    <div ng-if="!ctrl.widgetDef.config.tempDeviceIdx || !ctrl.widgetDef.config.setpointDeviceIdx"
+         class="dd-chart-unconfigured">
+        <i class="fa-solid fa-temperature-half"></i>
+        <p>Select temperature and setpoint devices in settings</p>
+    </div>
+
+    <!-- Configured state -->
+    <div ng-if="ctrl.widgetDef.config.tempDeviceIdx && ctrl.widgetDef.config.setpointDeviceIdx"
+         style="width:100%;text-align:center;">
+
+        <!-- Title -->
+        <div class="dd-stat-label" ng-bind="ctrl.title"></div>
+
+        <!-- Current temperature display -->
+        <div style="font-size:2.4em;font-weight:bold;line-height:1.1;
+                    color:var(--dz-widget-accent);margin-bottom:8px;"
+             ng-if="ctrl.currentTemp !== null && !ctrl.loadError">
+            {{ctrl.currentTemp}}
+            <span style="font-size:0.6em;font-weight:normal;">{{ctrl.deviceUnit}}</span>
+        </div>
+        <div style="font-size:2.4em;font-weight:bold;line-height:1.1;
+                    color:var(--dz-widget-stat-muted);margin-bottom:8px;"
+             ng-if="ctrl.currentTemp === null && !ctrl.loadError">
+            &mdash;
+        </div>
+        <div style="font-size:1.4em;margin-bottom:8px;color:var(--dz-status-timeout);"
+             ng-if="ctrl.loadError">
+            <i class="fa fa-exclamation-triangle"></i>
+        </div>
+
+        <!-- Setpoint controls row -->
+        <div class="dd-setpoint-controls">
+
+            <!-- Decrement button -->
+            <button class="dd-setpoint-btn"
+                    ng-click="ctrl.decrement()"
+                    ng-disabled="ctrl.atMin() || ctrl.sending || ctrl.setpoint === null"
+                    title="Decrease">
+                <i class="fa fa-minus"></i>
+            </button>
+
+            <!-- Setpoint value — click to edit -->
+            <span class="dd-setpoint-value"
+                  ng-if="ctrl.setpoint !== null && !ctrl.loadError"
+                  ng-click="ctrl.clickToEdit($event)"
+                  title="Click to edit">
+                {{ctrl.setpoint}} {{ctrl.deviceUnit}}
+            </span>
+            <span class="dd-setpoint-value"
+                  ng-if="ctrl.setpoint === null && !ctrl.loadError">
+                &mdash;
+            </span>
+            <span class="dd-setpoint-value"
+                  ng-if="ctrl.loadError"
+                  style="font-size:0.9em;color:var(--dz-status-timeout);">
+                <i class="fa fa-exclamation-triangle"></i>
+            </span>
+
+            <!-- Increment button -->
+            <button class="dd-setpoint-btn"
+                    ng-click="ctrl.increment()"
+                    ng-disabled="ctrl.atMax() || ctrl.sending || ctrl.setpoint === null"
+                    title="Increase">
+                <i class="fa fa-plus"></i>
+            </button>
+
+        </div>
+
+        <!-- Hint text -->
+        <div ng-if="ctrl.setpoint !== null && !ctrl.loadError"
+             style="font-size:0.72em;color:var(--dz-widget-stat-muted);margin-top:4px;">
+            click setpoint to edit
+        </div>
+
+    </div>
+
+</div>

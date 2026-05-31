@@ -1,0 +1,9 @@
+<div class="dd-dz-device">
+    <div class="dd-dz-unconfigured" ng-show="!ctrl.scene">
+        <i class="fa-solid fa-circle-question" style="font-size:32px;opacity:0.3"></i>
+        <p ng-show="!ctrl.widgetDef.config.sceneIdx">Select a scene in widget settings</p>
+        <p ng-show="ctrl.widgetDef.config.sceneIdx && ctrl.loading">Loading&hellip;</p>
+        <p ng-show="ctrl.widgetDef.config.sceneIdx && ctrl.error" ng-bind="ctrl.error"></p>
+    </div>
+    <div class="dd-dz-inner" ng-show="ctrl.scene"></div>
+</div>

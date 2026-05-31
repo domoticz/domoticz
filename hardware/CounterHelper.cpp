@@ -22,10 +22,18 @@ constexpr double COUNTER_RESET_TOLERANCE_KWH = 0.1;
 
 CounterHelper::CounterHelper()
 {
+	m_devtype = pTypeGeneral;
+	m_subtype = sTypeKwh;
 }
 
 CounterHelper::~CounterHelper()
 {
+}
+
+void CounterHelper::SetType(const int devtype, const int subtype)
+{
+	m_devtype = devtype;
+	m_subtype = subtype;
 }
 
 void CounterHelper::Reset()
@@ -39,7 +47,7 @@ void CounterHelper::Reset()
 	m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=0, LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type=%d) AND (SubType=%d)",
 		TimeToString(nullptr, TF_DateTime).c_str(),
 		m_HwdID, m_szID.c_str(), m_Unit,
-		pTypeGeneral, sTypeKwh
+		m_devtype, m_subtype
 		);
 }
 
@@ -81,12 +89,14 @@ void CounterHelper::Init(const CDomoticzHardwareBase* pHardwareBase, const std::
 
 void CounterHelper::InitInt()
 {
-	auto result = m_sql.safe_query("SELECT sValue, LastLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type=%d) AND (SubType=%d)",
+	auto result = m_sql.safe_query("SELECT sValue, LastLevel, ID, Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type=%d) AND (SubType=%d)",
 		m_HwdID, m_szID.c_str(), m_Unit,
-		pTypeGeneral, sTypeKwh);
+		m_devtype, m_subtype);
 	if (!result.empty())
 	{
 		std::string sValue = result[0][0];
+		m_DeviceIdx = std::stoi(result[0][2]);
+		m_DeviceName = result[0][3];
 
 		try
 		{
@@ -112,19 +122,51 @@ void CounterHelper::InitInt()
 			}
 		}
 
-		// Sanity check: The offset should always be less than the combined total.
-		// If offset >= total, the data is corrupted (e.g., LastLevel was incorrectly
-		// set to the total value instead of the offset). In this case, reset the offset
-		// to 0 to prevent counter values from doubling after restart.
+		// Sanity check: offset should always be less than the combined total
+		// (combined total = offset + device reading, so offset < total always).
+		//
+		// Three distinct failure modes when offset >= total:
+		//
+		// (A) offset ≈ total (ratio ~1): LastLevel was incorrectly set to the combined
+		//     total instead of the offset. Reset offset to 0 to prevent double-counting.
+		//
+		// (B) offset/1000 < total: legacy Wh unit mismatch from MQTT sensors reporting in Wh.
+		//     Before normalization was added, CheckTotalCounter was called with raw Wh values
+		//     while InitInt always divides by 1000, so the offset was stored as Wh×1000 in
+		//     LastLevel but read back as Wh while total was read as kWh. Scale offset by
+		//     /1000 to migrate to kWh and persist the corrected LastLevel.
+		//
+		// (C) otherwise: unrecognised state — log and continue without destroying data.
 		if ((m_CounterOffset > 0) && (m_nLastCounterValue > 0) && (m_CounterOffset >= m_nLastCounterValue))
 		{
-			_log.Log(LOG_ERROR, "CounterHelper: Detected corrupted counter data (offset %.3f >= total %.3f). Resetting offset to 0.",
-				m_CounterOffset, m_nLastCounterValue);
-			m_CounterOffset = 0;
-			m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=0, LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type=%d) AND (SubType=%d)",
-				TimeToString(nullptr, TF_DateTime).c_str(),
-				m_HwdID, m_szID.c_str(), m_Unit,
-				pTypeGeneral, sTypeKwh);
+			if (m_CounterOffset <= m_nLastCounterValue * 1.001)
+			{
+				// (A) Genuine corruption: offset should never equal or exceed combined total
+				_log.Log(LOG_ERROR, "CounterHelper: Detected corrupted counter data (offset %.3f >= total %.3f). Resetting offset to 0.", m_CounterOffset, m_nLastCounterValue);
+				m_CounterOffset = 0;
+				m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=0, LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type=%d) AND (SubType=%d)",
+					TimeToString(nullptr, TF_DateTime).c_str(),
+					m_HwdID, m_szID.c_str(), m_Unit,
+					m_devtype, m_subtype);
+			}
+			else if (m_CounterOffset / 1000.0 < m_nLastCounterValue)
+			{
+				// (B) Legacy MQTT Wh sensor: offset is in Wh but total is in kWh (factor ~1000).
+				// Divide offset by 1000 to convert to kWh and persist the corrected value.
+				m_CounterOffset /= 1000.0;
+				_log.Log(LOG_STATUS, "CounterHelper: Device %d (%s): migrating legacy Wh offset to kWh (%.3f kWh). Updating LastLevel.",
+					m_DeviceIdx, m_DeviceName.c_str(), m_CounterOffset);
+				m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=%lld, LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type=%d) AND (SubType=%d)",
+					static_cast<long long int>(m_CounterOffset * 1000.0), TimeToString(nullptr, TF_DateTime).c_str(),
+					m_HwdID, m_szID.c_str(), m_Unit,
+					m_devtype, m_subtype);
+			}
+			else
+			{
+				// (C) Unknown state — log for diagnostics but do not reset data
+				_log.Log(LOG_STATUS, "CounterHelper: Device %d (%s): unexpected offset (%.3f) >= total (%.3f); continuing without reset.",
+					m_DeviceIdx, m_DeviceName.c_str(), m_CounterOffset, m_nLastCounterValue);
+			}
 		}
 	}
 
@@ -165,7 +207,12 @@ double CounterHelper::CheckTotalCounter(const double mtotal, bool& bLooped)
 {
 	if (mtotal == 0)
 	{
-		_log.Log(LOG_STATUS, "CounterHelper: Received 0 reading, returning cached value (%.3f) to avoid DB corruption", m_nLastCounterValue);
+/*
+		if (m_nLastCounterValue >= 0.0005)
+		{
+			_log.Log(LOG_STATUS, "CounterHelper: Device %d (%s): Received 0 reading, returning cached value (%.3f) to avoid DB corruption", m_DeviceIdx, m_DeviceName.c_str(), m_nLastCounterValue);
+		}
+*/
 		return m_nLastCounterValue; //ignore 0 readings, return last known value to avoid corrupting the DB
 	}
 
@@ -194,7 +241,7 @@ double CounterHelper::CheckTotalCounter(const double mtotal, bool& bLooped)
 			m_sql.safe_query("UPDATE DeviceStatus SET LastLevel=%lld, LastUpdate='%s' WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type=%d) AND (SubType=%d)",
 				static_cast<long long int>(m_CounterOffset * 1000.0), TimeToString(nullptr, TF_DateTime).c_str(),
 				m_HwdID, m_szID.c_str(), m_Unit,
-				pTypeGeneral, sTypeKwh);
+				m_devtype, m_subtype);
 
 			rTotal = m_CounterOffset + mtotal;
 		}

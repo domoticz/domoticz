@@ -150,6 +150,13 @@ namespace http
 					urights = (int)m_users[iUser].userrights;
 					Username = m_users[iUser].Username;
 				}
+				else
+				{
+					// Synthetic users (e.g. access tokens "at:<id>") are not in m_users;
+					// use the rights resolved from JWT auth instead.
+					if (session.rights >= URIGHTS_VIEWER && session.rights <= URIGHTS_ADMIN)
+						urights = (int)session.rights;
+				}
 			}
 
 			// Check if user has the proper access rights for the command (so we don't have to check this in every command)

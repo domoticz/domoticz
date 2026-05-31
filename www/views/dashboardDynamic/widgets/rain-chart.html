@@ -1,0 +1,10 @@
+<div class="dd-chart-container"
+     ng-class="{'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode}">
+    <div ng-if="!ctrl.widgetDef.config.deviceIdx" class="dd-chart-unconfigured">
+        <i class="fa-solid fa-cloud-rain"></i>
+        <p>Select a rain device in settings</p>
+    </div>
+    <div ng-if="ctrl.widgetDef.config.deviceIdx" class="dd-chart-wrap">
+        <div id="{{ ctrl.chartId }}" class="dd-highchart"></div>
+    </div>
+</div>

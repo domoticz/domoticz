@@ -312,6 +312,73 @@ void CDomoticzHardwareBase::SendSetPointSensor(const uint8_t ID1, const uint8_t 
 	sDecodeRXMessage(this, (const unsigned char *)&setpoint, defaultname.c_str(), -1, nullptr);
 }
 
+void CDomoticzHardwareBase::SendThermostatSensor(const uint8_t ID1, const uint8_t ID2, const uint8_t ID3, const uint8_t ID4, const uint8_t Unit, const int BatteryLevel, const float setpointValue, const float temperatureValue, const std::string& defaultname)
+{
+	_tThermostat6 thermostat;
+	thermostat.subtype = sTypeThermostat6Temp;
+	thermostat.id1 = ID1;
+	thermostat.id2 = ID2;
+	thermostat.id3 = ID3;
+	thermostat.id4 = ID4;
+	thermostat.dunit = Unit;
+	thermostat.setpoint = setpointValue;
+	thermostat.temperature = temperatureValue;
+	thermostat.battery_level = BatteryLevel;
+	thermostat.update_flags = 0x03; // temp + setpoint
+	sDecodeRXMessage(this, (const unsigned char*)&thermostat, defaultname.c_str(), -1, nullptr);
+}
+
+void CDomoticzHardwareBase::SendThermostatSensor(const uint8_t ID1, const uint8_t ID2, const uint8_t ID3, const uint8_t ID4, const uint8_t Unit, const int BatteryLevel, const float setpointValue, const float temperatureValue, const int humidityValue, const std::string& defaultname)
+{
+	_tThermostat6 thermostat;
+	thermostat.subtype = sTypeThermostat6TempHum;
+	thermostat.id1 = ID1;
+	thermostat.id2 = ID2;
+	thermostat.id3 = ID3;
+	thermostat.id4 = ID4;
+	thermostat.dunit = Unit;
+	thermostat.setpoint = setpointValue;
+	thermostat.temperature = temperatureValue;
+	thermostat.humidity = static_cast<uint8_t>(humidityValue);
+	thermostat.humidity_status = Get_Humidity_Level(thermostat.humidity);
+	thermostat.battery_level = BatteryLevel;
+	thermostat.update_flags = 0x07; // temp + setpoint + humidity
+	sDecodeRXMessage(this, (const unsigned char*)&thermostat, defaultname.c_str(), -1, nullptr);
+}
+
+void CDomoticzHardwareBase::SendThermostatSensor(const uint8_t ID1, const uint8_t ID2, const uint8_t ID3, const uint8_t ID4, const uint8_t Unit, const int BatteryLevel, const float setpointValue, const float temperatureValue, const int humidityValue, const float pressureValue, const std::string& defaultname)
+{
+	_tThermostat6 thermostat;
+	thermostat.subtype = sTypeThermostat6TempHumBaro;
+	thermostat.id1 = ID1;
+	thermostat.id2 = ID2;
+	thermostat.id3 = ID3;
+	thermostat.id4 = ID4;
+	thermostat.dunit = Unit;
+	thermostat.setpoint = setpointValue;
+	thermostat.temperature = temperatureValue;
+	thermostat.humidity = static_cast<uint8_t>(humidityValue);
+	thermostat.humidity_status = Get_Humidity_Level(thermostat.humidity);
+	thermostat.barometer = ground(pressureValue);
+	uint8_t barometric_forecast = wsbaroforecast_unknown;
+	if (pressureValue < 1000)
+	{
+		barometric_forecast = wsbaroforecast_rain;
+		if (temperatureValue <= 0)
+			barometric_forecast = wsbaroforecast_snow;
+	}
+	else if (pressureValue < 1020)
+		barometric_forecast = wsbaroforecast_cloudy;
+	else if (pressureValue < 1030)
+		barometric_forecast = wsbaroforecast_some_clouds;
+	else
+		barometric_forecast = wsbaroforecast_sunny;
+
+	thermostat.forecast = barometric_forecast;
+	thermostat.battery_level = BatteryLevel;
+	thermostat.update_flags = 0x0F; // temp + setpoint + humidity + barometer
+	sDecodeRXMessage(this, (const unsigned char*)&thermostat, defaultname.c_str(), -1, nullptr);
+}
 
 void CDomoticzHardwareBase::SendDistanceSensor(const int NodeID, const int ChildID, const int BatteryLevel, const float distance, const std::string& defaultname, const int RssiLevel /* =12 */)
 {
@@ -1084,7 +1151,7 @@ void CDomoticzHardwareBase::SendSelectorSwitch(const int NodeID, const uint8_t C
 		//Check Level (sValue in SQL Query)
 		if (xcmd.level == std::stoi(result[0][1]))
 			return; // no need to uodate
-		result = m_sql.safe_query("UPDATE DeviceStatus SET sValue=%i WHERE (HardwareID==%d) AND (DeviceID=='%08X')", xcmd.level, m_HwdID, NodeID);
+		result = m_sql.safe_query("UPDATE DeviceStatus SET sValue=%i WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", xcmd.level, m_HwdID, NodeID, xcmd.unitcode);
 	}
 }
                             

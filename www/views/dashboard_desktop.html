@@ -40,7 +40,7 @@
 		</div>
 
 		<!-- Scenes section -->
-		<section ng-if="!loading && (scenes | filter:filterDevices).length > 0" class="dashCategory" id="dashScenes">
+		<section ng-if="!loading && config.EnableTabScenes && (scenes | filter:filterDevices).length > 0" class="dashCategory" id="dashScenes">
 			<h2>
 				<span data-i18n="Scenes">::Scenes</span>:
 			</h2>
@@ -58,7 +58,7 @@
 		</section>
 
 		<!-- Lights/Switches section -->
-		<section ng-if="!loading && (lights | filter:filterDevices).length > 0" class="dashCategory" id="dashLights">
+		<section ng-if="!loading && config.EnableTabLights && (lights | filter:filterDevices).length > 0" class="dashCategory" id="dashLights">
 			<h2>
 				<span data-i18n="Lights/Switches">::Lights/Switches</span>:
 			</h2>
@@ -76,7 +76,7 @@
 		</section>
 
 		<!-- Temperature section -->
-		<section ng-if="!loading && (temperature | filter:filterDevices).length > 0" class="dashCategory" id="dashTemp">
+		<section ng-if="!loading && config.EnableTabTemp && (temperature | filter:filterDevices).length > 0" class="dashCategory" id="dashTemp">
 			<h2>
 				<span data-i18n="Temperature">::Temperature</span>:
 			</h2>
@@ -90,10 +90,11 @@
 							<tr>
 								<td id="name" class="item-name" data-idx="{{device.idx}}" data-search="{{device.idx}} {{device.Name}} {{device.Description}} {{device.Type}} {{device.HardwareName}} {{device.SubType}} {{device.HumidityStatus}} {{device.Gust}}">{{device.Name}}</td>
 								<td id="bigtext"><span>
-									<span ng-if="device.SetPoint != undefined">{{device.SetPoint}}&deg; {{config.TempSign}}</span>
-									<span ng-if="device.SetPoint != undefined && device.Temp != undefined"> / </span>
 									<span ng-if="device.Temp != undefined">{{device.Temp}}&deg; {{config.TempSign}}</span>
+									<span ng-if="device.SetPoint != undefined && device.Temp != undefined"> / </span>
+									<span ng-if="device.SetPoint != undefined">({{device.SetPoint}}&deg; {{config.TempSign}})</span>
 									<span ng-if="device.Humidity != undefined"> / {{device.Humidity}}%</span>
+									<span ng-if="device.Barometer != undefined && device.Type == 'Thermostat 6'"> / {{device.Barometer}} hPa</span>
 									</span></td>
 								<td id="img" class="img img1">
 									<a ng-href="#/Devices/{{device.idx}}/Log">
@@ -108,7 +109,10 @@
 									<span ng-if="device.DewPoint != undefined"><span ng-if="device.HumidityStatus">, </span><span data-i18n="Dew Point">Dew Point</span>: {{device.DewPoint | number:2}}&deg;</span>
 									<span ng-if="device.ForecastStr != undefined && device.Barometer == undefined"><br>{{device.ForecastStr}}</span>
 								</span></td>
-								<td id="lastupdate" class="lastupdate"><span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: <span>{{device.LastUpdate}}</span></td>
+								<td id="lastupdate" class="lastupdate">
+									<dz-temp-bar device="device"></dz-temp-bar>
+									<span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: <span>{{device.LastUpdate}}</span>
+								</td>
 							</tr>
 						</table>
 					</div>
@@ -117,7 +121,7 @@
 		</section>
 
 		<!-- Weather section -->
-		<section ng-if="!loading && (weather | filter:filterDevices).length > 0" class="dashCategory" id="dashWeather">
+		<section ng-if="!loading && config.EnableTabWeather && (weather | filter:filterDevices).length > 0" class="dashCategory" id="dashWeather">
 			<h2>
 				<span data-i18n="Weather">::Weather</span>:
 			</h2>
@@ -150,7 +154,10 @@
 									</a>
 								</td>
 								<td id="status"><span ng-if="device.ForecastStr != undefined">{{device.ForecastStr}}</span></td>
-								<td id="lastupdate"><span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: {{device.LastUpdate}}</td>
+								<td id="lastupdate">
+									<dz-weather-bar device="device"></dz-weather-bar>
+									<span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: {{device.LastUpdate}}
+								</td>
 							</tr>
 						</table>
 					</div>
@@ -159,7 +166,7 @@
 		</section>
 
 		<!-- Utility section -->
-		<section ng-if="!loading && (utility | filter:filterDevices).length > 0" class="dashCategory" id="dashUtility">
+		<section ng-if="!loading && config.EnableTabUtility && (utility | filter:filterDevices).length > 0" class="dashCategory" id="dashUtility">
 			<h2>
 				<span data-i18n="Utility">::Utility</span>:
 			</h2>

@@ -1,0 +1,14 @@
+<div class="dd-text-note" ng-style="ctrl.getStyle()">
+    <span ng-if="ctrl.renderedHtml"
+          class="dd-text-note-html"
+          ng-bind-html="ctrl.renderedHtml"></span>
+    <span ng-if="!ctrl.renderedHtml && !ctrl.widgetDef.config.content"
+          class="dd-text-note-hint"
+          ng-show="ctrl.editMode">
+        <i class="fa-solid fa-pencil"></i>
+        Configure text in widget settings
+    </span>
+    <div ng-if="ctrl.widgetDef.config.showDivider"
+         class="dd-text-note-divider"
+         ng-style="ctrl.widgetDef.config.dividerColor ? {'background-color': ctrl.widgetDef.config.dividerColor} : {}"></div>
+</div>

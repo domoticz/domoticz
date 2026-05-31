@@ -309,7 +309,8 @@ bool Enever::GetPriceElectricity()
 
 												//Store for later usage
 												std::string szName = "Enever_Electricity_" + std::to_string(m_HwdID);
-												m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", m_szCurrentElectricityPrices.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
+												std::string errorMessage;
+												m_sql.AddUserVariableEx(szName, USERVARTYPE_STRING, m_szCurrentElectricityPrices, true, errorMessage);
 												return true;
 											}
 										}
@@ -346,7 +347,8 @@ bool Enever::GetPriceElectricity()
 
 		//Store for later usage
 		std::string szName = "Enever_Electricity_" + std::to_string(m_HwdID);
-		m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", sResult.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
+		std::string errorMessage;
+		m_sql.AddUserVariableEx(szName, USERVARTYPE_STRING, sResult, true, errorMessage);
 
 		Json::Value result;
 		bool ret = ParseJSon(sResult, result);
@@ -437,7 +439,8 @@ bool Enever::GetPriceElectricity_Tomorrow()
 
 		//Store for later usage
 		std::string szName = "Enever_Electricity_tomorrow_" + std::to_string(m_HwdID);
-		m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", sResult.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
+		std::string errorMessage;
+		m_sql.AddUserVariableEx(szName, USERVARTYPE_STRING, sResult, true, errorMessage);
 
 		Json::Value result;
 		bool ret = ParseJSon(sResult, result);
@@ -670,7 +673,8 @@ bool Enever::GetPriceGas(const bool bForce)
 
 		//Store for later usage
 		std::string szName = "Enever_Gas_" + std::to_string(m_HwdID);
-		m_sql.safe_query("UPDATE UserVariables SET Value='%q', LastUpdate='%s' WHERE (Name=='%q')", sResult.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), szName.c_str());
+		std::string sErrorMessage;
+		m_sql.AddUserVariableEx(szName, USERVARTYPE_STRING, sResult, true, sErrorMessage);
 
 		Json::Value result;
 		bool ret = ParseJSon(sResult, result);

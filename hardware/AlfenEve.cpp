@@ -160,8 +160,8 @@ void AlfenEve::Do_Work()
 						if (IsStopRequested(10))
 							break;
 						DoLogout();
-						totRetries++;
 					}
+					totRetries++;
 				}
 			}
 			catch (const std::exception& e)
@@ -1051,6 +1051,16 @@ void AlfenEve::parseProperties(const Json::Value& root)
 				|| socket1_StateLeds == 43
 				);
 			SendSwitch(1, 10, 255, bCharging, 0, "Charging", m_Name);
+
+			// Is a vehicle physically connected? State IDs 0..4 cover Unknown / Off /
+			// Booting / Booting Check Mains / Available — all "no car connected".
+			// Any state >= 5 means a car is plugged in (preparing, charging, charging
+			// suspended, waiting to disconnect, load-balanced, solar wait, or a fault
+			// while connected). This is distinct from Charging — e.g. "Vehicle connected"
+			// (10), "Load Balancing Forced Off" (36) and "Not Charging" (38) all mean
+			// plugged-in but no energy flowing.
+			bool bConnected = (socket1_StateLeds >= 5);
+			SendSwitch(1, 11, 255, bConnected, 0, "Connected", m_Name);
 		}
 		else if (id == "2129_0")
 		{

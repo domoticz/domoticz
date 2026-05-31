@@ -8,6 +8,7 @@
  */
 
 #include "stdafx.h"
+#include <set>
 #include "WebServer.h"
 #include "WebServerHandleGraphInternals.h"
 
@@ -567,8 +568,16 @@ static void HandleGraphMonthYear_Counter_P1Energy(
 						root["result"][ii]["c"] = "0";
 					break;
 				}
-				snprintf(szTmp, sizeof(szTmp), "%.4f", fPrice);
-				root["result"][ii]["p"] = szTmp; // Json::Value::null;
+				{
+					const double dValue = atof(szValue.c_str());
+					if (dValue == 0.0 || std::abs(fPrice) > (std::abs(static_cast<float>(dValue)) / divider) * 3.0f)
+						root["result"][ii]["p"] = "0";
+					else
+					{
+						snprintf(szTmp, sizeof(szTmp), "%.4f", fPrice);
+						root["result"][ii]["p"] = szTmp;
+					}
+				}
 				ii++;
 			}
 		}
@@ -1863,7 +1872,7 @@ static void HandleGraphMonthYear_Counter(
 		if (!sgroupby.empty())
 		{
 			root["title"] = "Comparing " + sensor;
-			webserver.MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value3", 10.0);
+			webserver.MakeCompareDataSensor(root, sgroupby, dbasetable, idx, "Value3", 1.0);
 			if (sql.m_weightscale != 1.0)
 			{
 				for (auto& itt : root["result"])
@@ -2405,54 +2414,12 @@ void HandleGraphMonthYear(const GraphContext& ctx, const request& req,
 
 	std::string szDateStart, szDateEnd, szDateStartPrev, szDateEndPrev;
 
-			std::string sactmonth = request::findValue(&req, "actmonth");
-			std::string sactyear = request::findValue(&req, "actyear");
-
-			int actMonth = atoi(sactmonth.c_str());
-			int actYear = atoi(sactyear.c_str());
-
-			if ((!sactmonth.empty()) && (!sactyear.empty()))
 			{
-				szDateStart = FormatDate(actYear, actMonth, 1);
-				szDateStartPrev = FormatDate(actYear - 1, actMonth, 1);
-				actMonth++;
-				if (actMonth == 13)
-				{
-					actMonth = 1;
-					actYear++;
-				}
-				szDateEnd = FormatDate(actYear, actMonth, 1);
-				szDateEndPrev = FormatDate(actYear - 1, actMonth, 1);
-			}
-			else if (!sactyear.empty())
-			{
-				szDateStart = FormatDate(actYear, 1, 1);
-				szDateStartPrev = FormatDate(actYear - 1, 1, 1);
-				actYear++;
-				szDateEnd = FormatDate(actYear, 1, 1);
-				szDateEndPrev = FormatDate(actYear - 1, 1, 1);
-			}
-			else
-			{
-				szDateEnd = FormatDate(tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday);
-				szDateEndPrev = FormatDate(tm1.tm_year + 1900 - 1, tm1.tm_mon + 1, tm1.tm_mday);
-
-				struct tm tm2;
-				if (srange == "month")
-				{
-					// Subtract one month
-					time_t monthbefore;
-					getNoon(monthbefore, tm2, tm1.tm_year + 1900, tm1.tm_mon, tm1.tm_mday);
-				}
-				else
-				{
-					// Subtract one year
-					time_t yearbefore;
-					getNoon(yearbefore, tm2, tm1.tm_year + 1900 - 1, tm1.tm_mon + 1, tm1.tm_mday);
-				}
-
-				szDateStart = FormatDate(tm2.tm_year + 1900, tm2.tm_mon + 1, tm2.tm_mday);
-				szDateStartPrev = FormatDate(tm2.tm_year + 1900 - 1, tm2.tm_mon + 1, tm2.tm_mday);
+				const DateRange dr = CalcMonthYearRange(req, tm1, srange);
+				szDateStart     = dr.start;
+				szDateEnd       = dr.end;
+				szDateStartPrev = dr.startPrev;
+				szDateEndPrev   = dr.endPrev;
 			}
 
 			if (
@@ -2466,6 +2433,19 @@ void HandleGraphMonthYear(const GraphContext& ctx, const request& req,
 				{
 					root["title"] = "Comparing " + sensor;
 					std::string var_name = request::findValue(&req, "var_name");
+					static const std::set<std::string> allowedFields = {
+						"Temp_Min", "Temp_Max", "Temp_Avg",
+						"Chill_Min", "Chill_Max",
+						"Humidity",
+						"Barometer",
+						"DewPoint",
+						"SetPoint_Min", "SetPoint_Max", "SetPoint_Avg"
+					};
+					if (allowedFields.find(var_name) == allowedFields.end())
+					{
+						root["status"] = "ERR";
+						return;
+					}
 					webserver.MakeCompareDataSensor(root, sgroupby, dbasetable, idx, var_name);
 
 					if (sensor == "temp")

@@ -1,3 +1,4 @@
+<form autocomplete="off">
 <div id="usercontent" class="container">
 </div>
 <div id="userdevices" style="display:none;">
@@ -57,6 +58,14 @@
                 </td>
             </tr>
             <tr>
+                <td align="right" style="width:110px"><label for="combodashboardtype"><span data-i18n="Dashboard">Dashboard</span>:</label></td>
+                <td><select id="combodashboardtype" style="width:200px" class="combobox ui-corner-all">
+                        <option value="0" data-i18n="Favorites">Favorites</option>
+                        <option value="1" data-i18n="Dynamic">Dynamic</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
                 <td align="right" style="width:110px"><span data-i18n="Sharing"></span>:</td>
                 <td><input type="checkbox" id="enablesharing"> <label for="enablesharing"><span data-i18n="(Enables remote sharing of devices with this user)"></span></label></td>
             </tr>
@@ -79,3 +88,4 @@
         </table>
     </div>
 </div>
+</form>

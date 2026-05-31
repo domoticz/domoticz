@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('ForecastController', ['$scope', '$rootScope', '$location', '$http', '$interval', function ($scope, $rootScope, $location, $http, $interval) {
+	app.controller('ForecastController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'livesocket', function ($scope, $rootScope, $location, $http, $interval, livesocket) {
 		init();
 
 		goBack = function () {
@@ -7,6 +7,7 @@ define(['app'], function (app) {
 		}
 
 		function init() {
+			livesocket.unsubscribeDevices();
 			$scope.MakeGlobalConfig();
 			$http({
 				url: "json.htm?type=command&param=getforecastconfig",

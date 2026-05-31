@@ -162,6 +162,13 @@ define(['app'], function (app) {
 				"aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
 				"iDisplayLength": 25,
 				"sPaginationType": "full_numbers",
+				"aoColumns": [
+					{ "sWidth": "50px" },
+					{ "sWidth": "18%" },
+					{ "sWidth": "90px" },
+					null,
+					{ "sWidth": "160px" }
+				],
 				language: $.DataTableLanguage
 			});
 

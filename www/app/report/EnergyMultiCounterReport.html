@@ -1,4 +1,17 @@
-<div ng-if="::!$ctrl.isMonthView" style="margin-bottom: 12px">
+<style>
+.report-forecast-row td {
+    opacity: 0.65;
+    font-style: italic;
+}
+.report-forecast-warning {
+    color: var(--dz-widget-amber, #f0a500);
+    margin-left: 4px;
+    cursor: help;
+    font-style: normal;
+}
+</style>
+
+<div ng-if="::!$ctrl.isMonthView" style="margin-bottom: 12px; user-select: text;">
     <div>{{:: 'Total Usage' | translate }}:
 	<div ng-show="$ctrl.P1DisplayType==0">
         {{:: 'T1' | translate }}: <b>{{:: $ctrl.data.usage1.usage.toFixed(3) }}</b> {{:: $ctrl.unit}}<span ng-if="$ctrl.data.totalUsage"> ({{ ((100.0 / $ctrl.data.totalUsage)*$ctrl.data.usage1.usage).toFixed(0) }}%)</span>,
@@ -20,10 +33,25 @@
         {{:: 'R2' | translate }}: <b>{{:: $ctrl.data.return2.counter.toFixed(3) }}</b>
     </div>
 	<div>{{:: 'Total nett usage' | translate }}: <b>{{$ctrl.data.usage.toFixed(3) }}</b> {{:: $ctrl.unit}}</div>
-    	<div>{{:: 'Year Cost' | translate }}: <b>{{:: $ctrl.data.cost.toFixed(2) }}</b></div>
+    	<div>{{ ($ctrl.data.customStartDate ? 'Period Cost' : 'Year Cost') | translate }}: <b>{{$ctrl.data.cost.toFixed(2) }}</b> {{:: $ctrl.currencySign}}</div>
+
+    <!-- Forecast summary block (custom contract year only) -->
+    <div ng-if="$ctrl.data.customStartDate && $ctrl.forecastFullYear">
+        {{'Forecast full year' | translate }}:
+        <b>~ {{($ctrl.forecastFullYear.total).toFixed(3)}}</b> {{:: $ctrl.unit}}
+        <span ng-if="$ctrl.forecastWarning" class="report-forecast-warning" title="{{$ctrl.forecastWarning}}">&#9888;</span>
+    </div>
+    <div ng-if="$ctrl.data.customStartDate && $ctrl.forecastFullYear">
+        {{'Forecast year cost' | translate }}:
+        <b>~ {{$ctrl.forecastFullYear.forecastCost.toFixed(2)}}</b> {{:: $ctrl.currencySign}}
+        <span ng-if="$ctrl.forecastWarning" class="report-forecast-warning" title="{{$ctrl.forecastWarning}}">&#9888;</span>
+    </div>
+    <div ng-if="$ctrl.data.customStartDate && $ctrl.noForecastHistory" style="color:#888; font-style:italic">
+        {{'Forecast full year' | translate }}: &mdash; ({{'No previous year data available' | translate}})
+    </div>
 </div>
 
-<div ng-if="::$ctrl.isMonthView" style="margin-bottom: 12px">
+<div ng-if="::$ctrl.isMonthView" style="margin-bottom: 12px; user-select: text;">
     <div>{{:: 'Total Usage' | translate }}:
         {{:: 'T1' | translate }}: {{:: $ctrl.data.usage1.usage.toFixed(3) }} {{:: $ctrl.unit}},
         {{:: 'T2' | translate }}: {{:: $ctrl.data.usage2.usage.toFixed(3) }} {{:: $ctrl.unit}},
@@ -40,12 +68,29 @@
 	    {{:: 'Total' | translate }}: {{$ctrl.data.usage.toFixed(3) }} {{:: $ctrl.unit}}
     </div>
 
-    <div>{{:: 'Monthly Cost' | translate }}: {{:: $ctrl.data.cost.toFixed(2) }}</div>
+    <div>{{:: 'Monthly Cost' | translate }}: {{:: $ctrl.data.cost.toFixed(2) }} {{:: $ctrl.currencySign}}</div>
+</div>
+
+<!-- Meter-replaced forecast warning banner -->
+<div ng-if="$ctrl.forecastWarning" style="margin-bottom:8px; padding:6px 10px; background:#fff3cd; border:1px solid #ffc107; border-radius:4px; color:#856404;">
+    <span class="report-forecast-warning">&#9888;</span>
+    {{$ctrl.forecastWarning}}
 </div>
 
 <div ng-if="::$ctrl.noDataAvailable" class="no-data">
     {{ ::'No data available' | translate}}
 </div>
 
-<table class="display myrighttable"></table>
-<div id="usagegraph" class="device-log-chart"></div>
+<div style="text-align:right; margin:4px 0;">
+    <i class="far fa-file-alt" ng-click="$ctrl.exportExcel()"
+       title="{{ 'Export to Excel' | translate }}"
+       style="cursor:pointer; font-size:1.1em; margin-left:5px;"></i>
+    <i class="far fa-file" ng-click="$ctrl.exportCSV()"
+       title="{{ 'Export to CSV' | translate }}"
+       style="cursor:pointer; font-size:1.1em; margin-left:5px;"></i>
+    <i class="far fa-clipboard" ng-click="$ctrl.exportClipboard()"
+       title="{{ 'Copy to clipboard' | translate }}"
+       style="cursor:pointer; font-size:1.1em; margin-left:5px;"></i>
+</div>
+<table id="reporttable" class="display myrighttable"></table>
+<div id="usagegraph" class="device-log-chart" style="height: 300px;"></div>

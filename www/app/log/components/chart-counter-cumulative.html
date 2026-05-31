@@ -5,6 +5,11 @@
         </div>
     </div>
     <div class="chartarea">
+        <div class="zoom-buttons-container" ng-if="$ctrl.hasReturn">
+            <button class="zoom-button" ng-class="{'zoom-button-active-blue': $ctrl.sensorarea === 'usage'}" ng-click="$ctrl.toggleSensorArea('usage')" ng-bind="$ctrl.usageLabel"></button>
+            <button class="zoom-button" ng-class="{'zoom-button-active': $ctrl.sensorarea === 'delivery'}" ng-click="$ctrl.toggleSensorArea('delivery')" ng-bind="$ctrl.returnLabel"></button>
+            <button class="zoom-button" ng-class="{'zoom-button-active-orange': $ctrl.sensorarea === 'net'}" ng-click="$ctrl.toggleSensorArea('net')" ng-bind="$ctrl.netLabel"></button>
+        </div>
         <highchart id="chart-{{$ctrl.device.idx}}-cumulative" config="$ctrl.chartDefinition" style="display: block; width: 100%; height: 300px;"></highchart>
     </div>
 </div>

@@ -77,14 +77,15 @@ MQTTAutoDiscover::MQTTAutoDiscover(const int ID, const std::string& Name, const 
 
 void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 {
+	std::string topic = message->topic;
 	std::lock_guard<std::mutex> lock(m_inc_msg_mutex);
-	if (m_incoming_messages.size() > 1000)
+	if (m_incoming_messages.size() > 10000)
 	{
 		//Prevent flooding
+		Log(LOG_ERROR, "MQTT Auto Discover: Incoming message queue full! Dropping message on topic: %s", topic.c_str());
 		return;
 	}
 
-	std::string topic = message->topic;
 	std::string qMessage;
 	if (message->payload != nullptr && message->payloadlen > 0)
 		qMessage = std::string((char*)message->payload, (char*)message->payload + message->payloadlen);
@@ -97,6 +98,7 @@ void MQTTAutoDiscover::on_message(const struct mosquitto_message* message)
 	incmsg.retain = message->retain;
 
 	m_incoming_messages.push_back(incmsg);
+	m_inc_msg_cv.notify_one();
 }
 
 void MQTTAutoDiscover::on_connect(int rc)
@@ -1871,7 +1873,8 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 		{
 			if (!root["linkquality"].empty())
 			{
-				pSensor->SignalLevel = (int)round((10.0F / 255.0F) * root["linkquality"].asFloat());
+				int linkquality = std::min(root["linkquality"].asInt(), 132);
+				pSensor->SignalLevel = static_cast<int>(round((10.0F / 132.0F) * linkquality));
 			}
 			if (!root["battery"].empty())
 			{
@@ -2155,7 +2158,12 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 
 		if (bTotalIncreasing)
 		{
-			dkWh = m_kwh_counter_helper[pSensor->unique_id].CheckTotalCounter(this, pSensor->unique_id, 1, dkWh);
+			// CounterHelper always works in kWh. Convert to kWh regardless of the sensor's
+			// native unit before passing in, then convert the combined total back.
+			// (For kWh sensors multiply=1000, so the round-trip is a no-op.)
+			double dkWh_kwh = dkWh * multiply / 1000.0;
+			dkWh_kwh = m_kwh_counter_helper[pSensor->unique_id].CheckTotalCounter(this, pSensor->unique_id, 1, dkWh_kwh);
+			dkWh = dkWh_kwh * 1000.0 / multiply;
 		}
 		pSensor->prev_value = dkWh;
 		double dUsage = 0;
@@ -4662,11 +4670,13 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			else if ((pSensor->supported_color_modes.find("rgb") != pSensor->supported_color_modes.end())
 				&& (pSensor->supported_color_modes.find("white") != pSensor->supported_color_modes.end()))
 			{
-				// if RGB and white, check if white contains coldWhite and warmWhite
-				if (
-					(pSensor->color_temp_command_template.find("coldWhite") != std::string::npos)
-					&& (pSensor->color_temp_command_template.find("warmWhite") != std::string::npos)
-					)
+				// Per the HA MQTT Light spec, "white" denotes a single white channel and is
+				// mutually exclusive with "color_temp"; a device with two white channels
+				// advertises "color_temp" (handled below) or "rgbww". Z-Wave JS emits a
+				// coldWhite/warmWhite color_temp_command_template even for single-white
+				// devices, so scanning that template is ambiguous. Treat
+				// supported_color_modes as authoritative.
+				if (bHaveColorTemp)
 				{
 					pSensor->subType = sTypeColor_RGB_CW_WW_Z;
 				}
@@ -5711,11 +5721,11 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 						// only a single 'white'. check if this is warm or coldwhite. 
 						// If not coldwhite it is warmwhite
 						// Single white is stored as coldwhite within Domoticz
-						if (pSensor->color_temp_command_template.find("coldWhite"))
+						//if (pSensor->color_temp_command_template.find("coldWhite") != std::string::npos)
 						{
 							colorDef["coldWhite"] = root["color"]["c"];
 						}
-						else
+						//if (pSensor->color_temp_command_template.find("warmWhite") != std::string::npos)
 						{
 							colorDef["warmWhite"] = root["color"]["c"];
 						}
@@ -6553,8 +6563,12 @@ bool MQTTAutoDiscover::StartHardware()
 
 bool MQTTAutoDiscover::StopHardware()
 {
-	// Request stop first so Do_Work exits its loop
+	// Request stop first so Do_Work exits its loop.
+	// Any messages arriving after this point may be lost, but that is safe:
+	// MQTT::StopHardware() (called below) disconnects the broker, so no new
+	// retained bursts can arrive after the thread is joined.
 	RequestStop();
+	m_inc_msg_cv.notify_all();
 	// Join the worker thread before stopping MQTT to avoid
 	// on_disconnect clearing m_discovered_sensors while Do_Work
 	// is still processing messages
@@ -6569,7 +6583,7 @@ bool MQTTAutoDiscover::StopHardware()
 
 void MQTTAutoDiscover::Do_Work()
 {
-	while (!IsStopRequested(1000))
+	while (!IsStopRequested(0))
 	{
 		if (m_bDisconnected)
 		{
@@ -6578,12 +6592,13 @@ void MQTTAutoDiscover::Do_Work()
 			m_discovered_sensors.clear();
 		}
 		std::unique_lock<std::mutex> lock(m_inc_msg_mutex);
+		m_inc_msg_cv.wait_for(lock, std::chrono::seconds(1), [this] { return !m_incoming_messages.empty(); });
 		if (m_incoming_messages.empty())
 			continue;
 		std::list<_tIncommingMsg> mlist;
 		std::copy(m_incoming_messages.begin(), m_incoming_messages.end(), std::back_inserter(mlist));
 		m_incoming_messages.clear();
-		lock.unlock();
+		lock.unlock(); // Release before processing so on_message() can queue new messages concurrently
 
 		for (const auto& msg : mlist)
 		{

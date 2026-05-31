@@ -1,0 +1,227 @@
+<div style="padding: 4px; height: 100%; overflow: hidden; box-sizing: border-box;">
+
+<div style="width: fit-content; max-width: 100%; margin: 0 auto;">
+
+    <!-- Live stat cards -->
+    <div class="dd-fc-conditions">
+
+        <!-- Weather card -->
+        <div class="dd-stat-card" ng-if="ctrl.widgetDef.config.showWeather !== false">
+            <div class="fc-weather-icon" ng-if="ctrl.weather" ng-switch="ctrl.weather.forecastStr">
+                <div class="fcw-scene" ng-switch-when="Sunny">
+                    <div ng-if="!ctrl.isNight">
+                        <div class="fcw-rays fcw-rays-main"></div>
+                        <div class="fcw-sun  fcw-sun-main"></div>
+                    </div>
+                    <div ng-if="ctrl.isNight">
+                        <div class="fcw-star fcw-star1"></div>
+                        <div class="fcw-star fcw-star2"></div>
+                        <div class="fcw-star fcw-star3"></div>
+                        <div class="fcw-moon"></div>
+                    </div>
+                </div>
+                <div class="fcw-scene" ng-switch-when="Partly Cloudy">
+                    <div ng-if="!ctrl.isNight">
+                        <div class="fcw-rays  fcw-rays-mini"></div>
+                        <div class="fcw-sun   fcw-sun-mini"></div>
+                    </div>
+                    <div ng-if="ctrl.isNight">
+                        <div class="fcw-star fcw-star2"></div>
+                        <div class="fcw-moon"></div>
+                    </div>
+                    <div class="fcw-cloud fcw-cloud-light"></div>
+                </div>
+                <div class="fcw-scene" ng-switch-when="Cloudy">
+                    <div class="fcw-cloud fcw-cloud-dark-sm"></div>
+                    <div class="fcw-cloud fcw-cloud-lg"></div>
+                </div>
+                <div class="fcw-scene" ng-switch-when="Some Clouds">
+                    <div ng-if="!ctrl.isNight">
+                        <div class="fcw-rays  fcw-rays-mini"></div>
+                        <div class="fcw-sun   fcw-sun-mini"></div>
+                    </div>
+                    <div ng-if="ctrl.isNight">
+                        <div class="fcw-star fcw-star2"></div>
+                        <div class="fcw-moon"></div>
+                    </div>
+                    <div class="fcw-cloud fcw-cloud-light"></div>
+                </div>
+                <div class="fcw-scene" ng-switch-when="Rain">
+                    <div class="fcw-raindrop fcw-rd1"></div>
+                    <div class="fcw-raindrop fcw-rd2"></div>
+                    <div class="fcw-raindrop fcw-rd3"></div>
+                    <div class="fcw-raindrop fcw-rd4"></div>
+                    <div class="fcw-cloud fcw-cloud-rain"></div>
+                </div>
+                <div class="fcw-scene" ng-switch-when="Heavy Rain">
+                    <div class="fcw-raindrop fcw-rd1"></div>
+                    <div class="fcw-raindrop fcw-rd2"></div>
+                    <div class="fcw-raindrop fcw-rd3"></div>
+                    <div class="fcw-raindrop fcw-rd4"></div>
+                    <div class="fcw-raindrop fcw-rd5"></div>
+                    <div class="fcw-raindrop fcw-rd6"></div>
+                    <div class="fcw-raindrop fcw-rd7"></div>
+                    <div class="fcw-raindrop fcw-rd8"></div>
+                    <div class="fcw-cloud fcw-cloud-heavyrain"></div>
+                </div>
+                <div class="fcw-scene" ng-switch-when="Snow">
+                    <div class="fcw-snowdot fcw-sd1"></div>
+                    <div class="fcw-snowdot fcw-sd2"></div>
+                    <div class="fcw-snowdot fcw-sd3"></div>
+                    <div class="fcw-snowdot fcw-sd4"></div>
+                    <div class="fcw-cloud fcw-cloud-snow"></div>
+                </div>
+                <div class="fcw-scene" ng-switch-when="Heavy Snow">
+                    <div class="fcw-snowdot fcw-sd1"></div>
+                    <div class="fcw-snowdot fcw-sd2"></div>
+                    <div class="fcw-snowdot fcw-sd3"></div>
+                    <div class="fcw-snowdot fcw-sd4"></div>
+                    <div class="fcw-snowdot fcw-sd5"></div>
+                    <div class="fcw-snowdot fcw-sd6"></div>
+                    <div class="fcw-snowdot fcw-sd7"></div>
+                    <div class="fcw-snowdot fcw-sd8"></div>
+                    <div class="fcw-cloud fcw-cloud-heavysnow"></div>
+                </div>
+                <div class="fcw-scene" ng-switch-when="Stable">
+                    <div ng-if="!ctrl.isNight">
+                        <div class="fcw-rays fcw-rays-main"></div>
+                        <div class="fcw-sun  fcw-sun-main"></div>
+                    </div>
+                    <div ng-if="ctrl.isNight">
+                        <div class="fcw-star fcw-star1"></div>
+                        <div class="fcw-star fcw-star2"></div>
+                        <div class="fcw-star fcw-star3"></div>
+                        <div class="fcw-moon"></div>
+                    </div>
+                </div>
+                <div class="fcw-scene" ng-switch-when="Unstable">
+                    <div class="fcw-cloud fcw-cloud-dark-sm"></div>
+                    <div class="fcw-cloud fcw-cloud-lg"></div>
+                </div>
+                <div class="fcw-scene" ng-switch-default>
+                    <div class="fcw-cloud fcw-cloud-dark-sm"></div>
+                    <div class="fcw-cloud fcw-cloud-lg"></div>
+                </div>
+            </div>
+            <div class="dd-stat-label">{{'Outside' | translate}}</div>
+            <a ng-if="ctrl.weather" class="dd-stat-link" ng-href="#/Devices/{{ctrl.ids.weather}}/Log">
+                <div class="dd-stat-value">{{ctrl.weather.temp | number:1}} &deg;C</div>
+            </a>
+            <div class="dd-stat-value" ng-if="!ctrl.weather">--</div>
+            <div class="dd-stat-sub" ng-if="ctrl.weather">
+                {{ctrl.weather.forecastStr}} &bull; {{'Dew Point' | translate}} {{ctrl.weather.dewPoint | number:1}}&deg;C<br/>
+                <i class="fa fa-tint"></i> {{ctrl.weather.humidity | number:0}}%
+                &nbsp;&bull;&nbsp;
+                <i class="fa-solid fa-gauge"></i> {{ctrl.weather.barometer}} hPa
+            </div>
+        </div>
+
+        <!-- Grid card (always shown) -->
+        <div class="dd-stat-card">
+            <div class="dd-stat-label">{{'Grid' | translate}}</div>
+            <a ng-if="ctrl.grid" class="dd-stat-link" ng-href="#/Devices/{{ctrl.ids.p1}}/Log">
+                <div class="dd-stat-line dd-energy-export" ng-if="ctrl.grid.usageDelivWatt > 0"><i class="fa fa-arrow-up"></i> {{ctrl.grid.usageDelivWatt}} W</div>
+                <div class="dd-stat-line dd-energy-import" ng-if="ctrl.grid.usageDelivWatt == 0"><i class="fa fa-arrow-down"></i> {{ctrl.grid.usageWatt}} W</div>
+            </a>
+            <div class="dd-stat-value" ng-if="!ctrl.grid">--</div>
+            <div class="dd-stat-sub" ng-if="ctrl.grid">
+                &darr; {{ctrl.grid.counterToday}} &nbsp;&bull;&nbsp; &uarr; {{ctrl.grid.counterDelivToday}}
+            </div>
+            <div ng-if="ctrl.grid && ctrl.grid.price !== null" class="dd-energy-price" style="font-size:1em;font-weight:bold;margin-top:4px;">
+                {{ctrl.grid.price | number:4}} {{$root.config.CurrencySign}}
+            </div>
+        </div>
+
+        <!-- Solar card -->
+        <div class="dd-stat-card" ng-if="ctrl.widgetDef.config.showSolar !== false">
+            <div class="dd-stat-label">{{'Solar' | translate}}</div>
+            <a ng-if="ctrl.solar" class="dd-stat-link" ng-href="#/Devices/{{ctrl.ids.solar}}/Log">
+                <div class="dd-stat-value dd-energy-solar"><i class="fa-solid fa-sun"></i> {{ctrl.solar.usageWatt}} W</div>
+            </a>
+            <div class="dd-stat-value" ng-if="!ctrl.solar">--</div>
+            <div class="dd-stat-sub" ng-if="ctrl.solar">{{'Today' | translate | lowercase}}: {{ctrl.solar.counterToday}}</div>
+        </div>
+
+        <!-- Gas card -->
+        <div class="dd-stat-card" ng-if="ctrl.widgetDef.config.showGas !== false">
+            <div class="dd-stat-label">{{'Gas' | translate}}</div>
+            <a ng-if="ctrl.gas" class="dd-stat-link" ng-href="#/Devices/{{ctrl.ids.gas}}/Log">
+                <div class="dd-stat-value dd-energy-gas"><i class="fa fa-fire"></i> {{ctrl.gas.counterToday}}</div>
+            </a>
+            <div class="dd-stat-value" ng-if="!ctrl.gas">--</div>
+            <div class="dd-stat-sub" ng-if="ctrl.gas && ctrl.gas.counterYear">{{'Year' | translate}}: {{ctrl.gas.counterYear}} m&sup3;</div>
+            <div class="dd-stat-sub" ng-if="ctrl.gas && !ctrl.gas.counterYear">{{'Total' | translate}}: {{ctrl.gas.counter}} m&sup3;</div>
+            <div class="dd-stat-sub dd-energy-price" ng-if="ctrl.gas && ctrl.gas.price !== null" style="font-weight: bold;">
+                {{ctrl.gas.price | number:2}} {{$root.config.CurrencySign}}
+            </div>
+        </div>
+
+        <!-- Water card -->
+        <div class="dd-stat-card" ng-if="ctrl.widgetDef.config.showWater !== false">
+            <div class="dd-stat-label">{{'Water' | translate}}</div>
+            <a ng-if="ctrl.water" class="dd-stat-link" ng-href="#/Devices/{{ctrl.ids.water}}/Log">
+                <div class="dd-stat-value dd-energy-water"><i class="fa-solid fa-droplet"></i> {{ctrl.water.counterToday}}</div>
+            </a>
+            <div class="dd-stat-value" ng-if="!ctrl.water">--</div>
+            <div class="dd-stat-sub" ng-if="ctrl.water && ctrl.water.counterYear">{{'Year' | translate}}: {{ctrl.water.counterYear}}</div>
+            <div class="dd-stat-sub" ng-if="ctrl.water && !ctrl.water.counterYear">{{'Total' | translate}}: {{ctrl.water.counter}}</div>
+            <div class="dd-stat-sub dd-energy-price" ng-if="ctrl.water && ctrl.water.price !== null" style="font-weight: bold;">
+                {{ctrl.water.price | number:2}} {{$root.config.CurrencySign}}
+            </div>
+        </div>
+
+        <!-- Battery card -->
+        <div class="dd-stat-card dd-stat-card--wide" ng-if="ctrl.widgetDef.config.showBattery !== false">
+            <div class="dd-stat-label">{{'Battery' | translate}}</div>
+            <div style="display:flex;gap:16px;justify-content:center;align-items:flex-start;">
+                <div ng-if="ctrl.battery">
+                    <a class="dd-stat-link" ng-href="#/Devices/{{ctrl.ids.battEnergyIn}}/Log">
+                        <div class="dd-stat-line dd-energy-import"><i class="fa fa-arrow-circle-down"></i> {{ctrl.battery.importedKwh | number:2}} kWh</div>
+                    </a>
+                    <a class="dd-stat-link" ng-href="#/Devices/{{ctrl.ids.battEnergyOut}}/Log">
+                        <div class="dd-stat-line dd-energy-export"><i class="fa fa-arrow-circle-up"></i> {{ctrl.battery.exportedKwh | number:2}} kWh</div>
+                    </a>
+                    <div class="dd-stat-sub">
+                        {{'Net' | translate}}:
+                        <span ng-class="ctrl.battNetClass()">
+                            {{ctrl.battNetSign()}}{{(ctrl.battery.importedKwh - ctrl.battery.exportedKwh) | number:2}} kWh
+                        </span>
+                    </div>
+                </div>
+                <div ng-if="ctrl.batteryLive">
+                    <a ng-if="ctrl.batteryLive.soc" class="dd-stat-link" ng-href="#/Devices/{{ctrl.ids.battSoc}}/Log">
+                        <div class="dd-stat-line" ng-style="{'color': 'var(--dz-widget-energy-export)'}"><i class="fa fa-battery-three-quarters"></i> {{ctrl.batteryLive.soc}}</div>
+                    </a>
+                    <a ng-if="ctrl.batteryLive.watt !== null" class="dd-stat-link" ng-href="#/Devices/{{ctrl.ids.battWatt}}/Log">
+                        <div class="dd-stat-line" ng-style="{'color': 'var(--dz-widget-accent)'}"><i class="fa fa-bolt"></i> {{ctrl.batteryLive.watt}} W</div>
+                    </a>
+                    <a ng-if="ctrl.batteryLive.voltage" class="dd-stat-link" ng-href="#/Devices/{{ctrl.ids.battVolt}}/Log">
+                        <div class="dd-stat-line" ng-style="{'color': 'var(--dz-widget-sunpv)'}"><i class="fa fa-plug"></i> {{ctrl.batteryLive.voltage}}</div>
+                    </a>
+                </div>
+            </div>
+            <div class="dd-stat-value" ng-if="!ctrl.battery && !ctrl.batteryLive">--</div>
+        </div>
+
+    </div>
+
+    <!-- Energy balance bar -->
+    <div class="dd-balance" ng-if="ctrl.widgetDef.config.showBalance !== false">
+        <div class="dd-balance-stats" ng-if="ctrl.balance">
+            <span>
+                <i class="fa fa-leaf" ng-style="{'color': 'var(--dz-widget-energy-export)'}"></i>
+                {{'Self-sufficiency' | translate}}:
+                <span>{{ctrl.balance.selfSufficiency | number:0}}%</span>
+            </span>
+            <span>{{'House consumption' | translate}}: <span>{{ctrl.balance.houseToday | number:1}} kWh</span></span>
+            <span>{{'Solar yield' | translate}}: <span>{{ctrl.balance.solarToday}} kWh</span></span>
+            <span>
+                {{'Battery net' | translate}}:
+                <span ng-class="ctrl.batNetClass()">{{ctrl.batNetSign()}}{{ctrl.balance.batNet | number:2}} kWh</span>
+            </span>
+        </div>
+    </div>
+
+</div><!-- /.fit-content wrapper -->
+
+</div>

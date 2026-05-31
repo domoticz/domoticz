@@ -38,6 +38,7 @@
 #include <libwebem/Base64.h>
 #include "../smtpclient/SMTPClient.h"
 #include "../push/BasePush.h"
+#include "../push/McpPush.h"
 #include "../notifications/NotificationHelper.h"
 
 #ifdef ENABLE_PYTHON
@@ -72,6 +73,7 @@
 #include "../hardware/OTGWBase.h"
 #include "../hardware/EnphaseAPI.h"
 #include "../hardware/AlfenEve.h"
+#include "../hardware/Matter.h"
 #include "../hardware/RFLinkBase.h"
 #ifdef WITH_OPENZWAVE
 #include "../hardware/OpenZWave.h"
@@ -198,12 +200,46 @@ namespace http
 				root["Title"] = "Domoticz";
 		}
 
+		void CWebServer::Cmd_FetchUrl(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "FetchUrl";
+			std::string sUrl = request::findValue(&req, "url");
+			if (sUrl.empty())
+			{
+				session.reply_status = reply::bad_request;
+				root["message"] = "url parameter missing";
+				return;
+			}
+			// Only allow http/https URLs
+			if (sUrl.substr(0, 7) != "http://" && sUrl.substr(0, 8) != "https://")
+			{
+				session.reply_status = reply::bad_request;
+				root["message"] = "Only http/https URLs are allowed";
+				return;
+			}
+			std::string sResult;
+			if (!HTTPClient::GET(sUrl, sResult))
+			{
+				session.reply_status = reply::bad_request;
+				root["message"] = "Fetch failed";
+				return;
+			}
+			root["status"] = "OK";
+			root["data"] = sResult;
+		}
+
 		void CWebServer::Cmd_LoginCheck(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			root["status"] = "ERR";
+			root["title"] = "logincheck";
 			std::string tmpusrname = request::findValue(&req, "username");
 			std::string tmpusrpass = request::findValue(&req, "password");
 			if ((tmpusrname.empty()) || (tmpusrpass.empty()))
+			{
+				session.reply_status = reply::bad_request;
 				return;
+			}
 
 			std::string rememberme = request::findValue(&req, "rememberme");
 
@@ -219,17 +255,20 @@ namespace http
 					{
 						// log brute force attack
 						_log.Log(LOG_ERROR, "Failed login attempt from %s for user '%s' !", session.remote_host.c_str(), usrname.c_str());
+						session.reply_status = reply::unauthorized;
 						return;
 					}
 					if (m_users[iUser].Password != usrpass)
 					{
 						// log brute force attack
 						_log.Log(LOG_ERROR, "Failed login attempt from %s for '%s' !", session.remote_host.c_str(), m_users[iUser].Username.c_str());
+						session.reply_status = reply::unauthorized;
 						return;
 					}
 					if (m_users[iUser].userrights == URIGHTS_CLIENTID) {
 						// Not a right for users to login with
 						_log.Log(LOG_ERROR, "Failed login attempt from %s for '%s' !", session.remote_host.c_str(), m_users[iUser].Username.c_str());
+						session.reply_status = reply::unauthorized;
 						return;
 					}
 					if (!m_users[iUser].Mfatoken.empty())
@@ -242,13 +281,13 @@ namespace http
 							// Unable to decode the 2FA token
 							_log.Log(LOG_ERROR, "Failed login attempt from %s for '%s' !", session.remote_host.c_str(), m_users[iUser].Username.c_str());
 							_log.Debug(DEBUG_AUTH, "Failed to base32_decode the Users 2FA token: %s", m_users[iUser].Mfatoken.c_str());
+							session.reply_status = reply::internal_server_error;
 							return;
 						}
 						if (tmp2fa.empty())
 						{
 							// No 2FA token given (yet), request one
 							root["status"] = "OK";
-							root["title"] = "logincheck";
 							root["require2fa"] = "true";
 							return;
 						}
@@ -257,13 +296,13 @@ namespace http
 							// Not a match for the given 2FA token
 							_log.Log(LOG_ERROR, "Failed login attempt from %s for '%s' !", session.remote_host.c_str(), m_users[iUser].Username.c_str());
 							_log.Debug(DEBUG_AUTH, "Failed login attempt with 2FA token: %s", tmp2fa.c_str());
+							session.reply_status = reply::unauthorized;
 							return;
 						}
 					}
 					_log.Log(LOG_STATUS, "Login successful from %s for user '%s'", session.remote_host.c_str(), m_users[iUser].Username.c_str());
 					root["status"] = "OK";
 					root["version"] = szAppVersion;
-					root["title"] = "logincheck";
 					session.isnew = true;
 					session.username = m_users[iUser].Username;
 					session.rights = m_users[iUser].userrights;
@@ -561,6 +600,9 @@ namespace http
 		// ---------------------------------------------------------------------------
 		void CWebServer::Cmd_GetMyPasskeys(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			root["status"] = "ERR";
+			root["title"] = "getmypasskeys";
+
 			if (session.username.empty())
 			{
 				session.reply_status = reply::forbidden;
@@ -573,9 +615,6 @@ namespace http
 				session.reply_status = reply::forbidden;
 				return;
 			}
-
-			root["status"] = "OK";
-			root["title"] = "getmypasskeys";
 
 			Json::Value passkeys = ParsePasskeys(m_users[iUser].Passkeys);
 			Json::Value result(Json::arrayValue);
@@ -590,6 +629,7 @@ namespace http
 				result.append(entry);
 			}
 			root["result"] = result;
+			root["status"] = "OK";
 		}
 
 		// ---------------------------------------------------------------------------
@@ -597,6 +637,8 @@ namespace http
 		// ---------------------------------------------------------------------------
 		void CWebServer::Cmd_DeletePasskey(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			root["status"] = "ERR";
+			root["title"] = "deletepasskey";
 			if (session.username.empty())
 			{
 				session.reply_status = reply::forbidden;
@@ -606,7 +648,7 @@ namespace http
 			std::string credentialId = request::findValue(&req, "credentialId");
 			if (credentialId.empty())
 			{
-				root["status"] = "ERR";
+				session.reply_status = reply::bad_request;
 				root["message"] = "Missing credentialId";
 				return;
 			}
@@ -631,21 +673,20 @@ namespace http
 			}
 			if (!found)
 			{
-				root["status"] = "ERR";
+				session.reply_status = reply::bad_request;
 				root["message"] = "Credential not found for this user";
 				return;
 			}
 
 			if (!RemovePasskeyFromUser(m_users[iUser].ID, credentialId))
 			{
-				root["status"] = "ERR";
+				session.reply_status = reply::internal_server_error;
 				root["message"] = "Failed to delete passkey";
 				return;
 			}
 
 			_log.Log(LOG_STATUS, "Passkey deleted for user '%s' (credentialId: %.16s...)", session.username.c_str(), credentialId.c_str());
 			root["status"] = "OK";
-			root["title"] = "deletepasskey";
 		}
 
 		// ---------------------------------------------------------------------------
@@ -653,6 +694,8 @@ namespace http
 		// ---------------------------------------------------------------------------
 		void CWebServer::Cmd_RegisterPasskeyBegin(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			root["title"] = "registerpasskey-begin";
+			root["status"] = "ERR";
 			if (session.username.empty())
 			{
 				session.reply_status = reply::forbidden;
@@ -670,7 +713,7 @@ namespace http
 			uint8_t challengeBytes[32];
 			if (RAND_bytes(challengeBytes, sizeof(challengeBytes)) != 1)
 			{
-				root["status"] = "ERR";
+				session.reply_status = reply::internal_server_error;
 				root["message"] = "Failed to generate challenge";
 				return;
 			}
@@ -702,7 +745,6 @@ namespace http
 			std::string userIdB64 = base64url_encode(userIdStr);
 
 			root["status"]              = "OK";
-			root["title"]               = "registerpasskey-begin";
 			root["challenge"]           = challengeB64;
 			root["timeout"]             = 300000;
 			root["attestation"]         = "none";
@@ -738,6 +780,8 @@ namespace http
 		// ---------------------------------------------------------------------------
 		void CWebServer::Cmd_RegisterPasskeyComplete(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			root["status"]  = "ERR";
+			root["title"]  = "registerpasskey-complete";
 			if (session.username.empty())
 			{
 				session.reply_status = reply::forbidden;
@@ -758,16 +802,16 @@ namespace http
 				auto it = m_webauthn_challenges.find(session.id);
 				if (it == m_webauthn_challenges.end())
 				{
-					root["status"]  = "ERR";
 					root["message"] = "No pending challenge for this session";
+					session.reply_status = reply::bad_request;
 					return;
 				}
 				time_t now = mytime(nullptr);
 				if (now - it->second.created > 300)
 				{
 					m_webauthn_challenges.erase(it);
-					root["status"]  = "ERR";
 					root["message"] = "Challenge expired";
+					session.reply_status = reply::unauthorized;
 					return;
 				}
 				storedChallenge = it->second.challenge;
@@ -784,6 +828,7 @@ namespace http
 			{
 				root["status"]  = "ERR";
 				root["message"] = "Missing required parameters";
+				session.reply_status = reply::bad_request;
 				return;
 			}
 			if (credentialName.empty())
@@ -795,6 +840,7 @@ namespace http
 			{
 				root["status"]  = "ERR";
 				root["message"] = "Invalid clientDataJSON encoding";
+				session.reply_status = reply::internal_server_error;
 				return;
 			}
 			Json::Value clientData;
@@ -802,18 +848,21 @@ namespace http
 			{
 				root["status"]  = "ERR";
 				root["message"] = "Failed to parse clientDataJSON";
+				session.reply_status = reply::internal_server_error;
 				return;
 			}
 			if (clientData["type"].asString() != "webauthn.create")
 			{
 				root["status"]  = "ERR";
 				root["message"] = "Invalid clientDataJSON type";
+				session.reply_status = reply::bad_request;
 				return;
 			}
 			if (clientData["challenge"].asString() != storedChallenge)
 			{
 				root["status"]  = "ERR";
 				root["message"] = "Challenge mismatch";
+				session.reply_status = reply::bad_request;
 				return;
 			}
 			// Origin check – log mismatch but don't reject (users may access via different URLs)
@@ -833,6 +882,7 @@ namespace http
 			{
 				root["status"]  = "ERR";
 				root["message"] = "Invalid attestationObject encoding";
+				session.reply_status = reply::internal_server_error;
 				return;
 			}
 			std::vector<uint8_t> attObjBuf(attObjRaw.begin(), attObjRaw.end());
@@ -843,6 +893,7 @@ namespace http
 			{
 				root["status"]  = "ERR";
 				root["message"] = "Failed to parse attestationObject CBOR";
+				session.reply_status = reply::internal_server_error;
 				return;
 			}
 
@@ -852,6 +903,7 @@ namespace http
 			{
 				root["status"]  = "ERR";
 				root["message"] = "authData too short";
+				session.reply_status = reply::internal_server_error;
 				return;
 			}
 
@@ -872,6 +924,7 @@ namespace http
 			{
 				root["status"]  = "ERR";
 				root["message"] = "User presence flag not set";
+				session.reply_status = reply::bad_request;
 				return;
 			}
 
@@ -880,6 +933,7 @@ namespace http
 			{
 				root["status"]  = "ERR";
 				root["message"] = "Attested credential data not present";
+				session.reply_status = reply::bad_request;
 				return;
 			}
 
@@ -890,6 +944,7 @@ namespace http
 			{
 				root["status"]  = "ERR";
 				root["message"] = "authData truncated before credIdLen";
+				session.reply_status = reply::internal_server_error;
 				return;
 			}
 			adPos += 16;
@@ -902,6 +957,7 @@ namespace http
 			{
 				root["status"]  = "ERR";
 				root["message"] = "authData truncated in credId";
+				session.reply_status = reply::internal_server_error;
 				return;
 			}
 			adPos += credIdLen;
@@ -911,6 +967,7 @@ namespace http
 			{
 				root["status"]  = "ERR";
 				root["message"] = "No public key data in authData";
+				session.reply_status = reply::bad_request;
 				return;
 			}
 			std::vector<uint8_t> credPubKeyBytes(authData.begin() + adPos, authData.end());
@@ -929,12 +986,12 @@ namespace http
 			{
 				root["status"]  = "ERR";
 				root["message"] = "Failed to store passkey";
+				session.reply_status = reply::internal_server_error;
 				return;
 			}
 
 			_log.Log(LOG_STATUS, "Passkey registered for user '%s' (credentialId: %.16s...)", session.username.c_str(), credentialId.c_str());
 			root["status"] = "OK";
-			root["title"]  = "registerpasskey-complete";
 		}
 
 		// ---------------------------------------------------------------------------
@@ -1496,9 +1553,9 @@ namespace http
 					|| (htype == HTYPE_EVOHOME_SCRIPT) || (htype == HTYPE_EVOHOME_SERIAL) || (htype == HTYPE_EVOHOME_WEB) || (htype == HTYPE_EVOHOME_TCP)
 					|| (htype == HTYPE_PiFace) || (htype == HTYPE_HTTPPOLLER) || (htype == HTYPE_BleBox) || (htype == HTYPE_HEOS) || (htype == HTYPE_Yeelight) || (htype == HTYPE_XiaomiGateway)
 					|| (htype == HTYPE_Arilux) || (htype == HTYPE_USBtinGateway) || (htype == HTYPE_BuienRadar) || (htype == HTYPE_Honeywell) ||(htype == HTYPE_RaspberryGPIO)
-					|| (htype == HTYPE_SysfsGpio) || (htype == HTYPE_OpenWebNetTCP) || (htype == HTYPE_Daikin) || (htype == HTYPE_PythonPlugin) || (htype == HTYPE_RaspberryPCF8574)
+					|| (htype == HTYPE_SysfsGpio) || (htype == HTYPE_OpenWebNetTCP) || (htype == HTYPE_Daikin) || (htype == HTYPE_DaikinModbus) || (htype == HTYPE_PythonPlugin) || (htype == HTYPE_RaspberryPCF8574)
 					|| (htype == HTYPE_OpenWebNetUSB) || (htype == HTYPE_IntergasInComfortLAN2RF) || (htype == HTYPE_EnphaseAPI) || (htype == HTYPE_EcoCompteur) || (htype == HTYPE_Meteorologisk) || (htype == HTYPE_OpenMeteo)
-					|| (htype == HTYPE_AirconWithMe) || (htype == HTYPE_EneverPriceFeeds) || (htype == HTYPE_Tado))
+					|| (htype == HTYPE_AirconWithMe) || (htype == HTYPE_EneverPriceFeeds) || (htype == HTYPE_Tado) || (htype == HTYPE_Matter))
 			{
 				return true;
 			}
@@ -1705,6 +1762,7 @@ namespace http
 
 				m_mainworker.AddHardwareFromParams(ID, name, (senabled == "true") ? true : false, htype, iLogLevelEnabled, address, port, sport, username, password, extra, mode1,
 					mode2, mode3, mode4, mode5, mode6, iDataTimeout, true);
+				g_McpPush.onDeviceTableChanged();
 			}
 		}
 
@@ -1813,7 +1871,7 @@ namespace http
 				}
 				else if ((htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868))
 				{
-					// No Extra field here, handled in CWebServer::SetRFXCOMMode 
+					// No Extra field here, handled in CWebServer::SetRFXCOMMode
 					m_sql.safe_query("UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, LogLevel=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', "
 						"Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
 						name.c_str(), (bEnabled == true) ? 1 : 0, htype, iLogLevelEnabled, address.c_str(), port, sport.c_str(), username.c_str(), password.c_str(),
@@ -1840,6 +1898,8 @@ namespace http
 
 		void CWebServer::Cmd_GetDeviceValueOptions(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			root["status"] = "ERR";
+			root["title"] = "GetDeviceValueOptions";
 			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
@@ -1847,7 +1907,10 @@ namespace http
 			}
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
+			{
+				session.reply_status = reply::bad_request;
 				return;
+			}
 			std::vector<std::vector<std::string>> devresult;
 			devresult = m_sql.safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID=='%q')", idx.c_str());
 			if (!devresult.empty())
@@ -1865,11 +1928,12 @@ namespace http
 				}
 			}
 			root["status"] = "OK";
-			root["title"] = "GetDeviceValueOptions";
 		}
 
 		void CWebServer::Cmd_GetDeviceValueOptionWording(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			root["status"] = "ERR";
+			root["title"] = "GetDeviceValueOptions";
 			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
@@ -1878,7 +1942,10 @@ namespace http
 			std::string idx = request::findValue(&req, "idx");
 			std::string pos = request::findValue(&req, "pos");
 			if ((idx.empty()) || (pos.empty()))
+			{
+				session.reply_status = reply::bad_request;
 				return;
+			}
 			std::string wording;
 			std::vector<std::vector<std::string>> devresult;
 			devresult = m_sql.safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID=='%q')", idx.c_str());
@@ -1890,11 +1957,12 @@ namespace http
 			}
 			root["wording"] = wording;
 			root["status"] = "OK";
-			root["title"] = "GetDeviceValueOptions";
 		}
 
 		void CWebServer::Cmd_AddUserVariable(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			root["title"] = "AddUserVariable";
+			root["status"] = "ERR";
 			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
@@ -1904,9 +1972,6 @@ namespace http
 			std::string variablename = HTMLSanitizer::Sanitize(request::findValue(&req, "vname"));
 			std::string variablevalue = HTMLSanitizer::Sanitize(request::findValue(&req, "vvalue"));
 			std::string variabletype = request::findValue(&req, "vtype");
-
-			root["title"] = "AddUserVariable";
-			root["status"] = "ERR";
 
 			if (!std::isdigit(variabletype[0]))
 			{
@@ -1924,6 +1989,7 @@ namespace http
 				else
 				{
 					root["message"] = "Invalid variabletype " + variabletype;
+					session.reply_status = reply::bad_request;
 					return;
 				}
 			}
@@ -1933,6 +1999,7 @@ namespace http
 				((variablevalue.empty()) && (variabletype != "2")))
 			{
 				root["message"] = "Invalid variabletype " + variabletype;
+				session.reply_status = reply::bad_request;
 				return;
 			}
 
@@ -1940,15 +2007,16 @@ namespace http
 			if (!m_sql.AddUserVariable(variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue, errorMessage))
 			{
 				root["message"] = errorMessage;
+				session.reply_status = reply::internal_server_error;
+				return;
 			}
-			else
-			{
-				root["status"] = "OK";
-			}
+			root["status"] = "OK";
 		}
 
 		void CWebServer::Cmd_DeleteUserVariable(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			root["title"] = "DeleteUserVariable";
+			root["status"] = "ERR";
 			if (session.rights != URIGHTS_ADMIN)
 			{
 				_log.Log(LOG_ERROR, "User: %s tried to delete a uservariable!", session.username.c_str());
@@ -1957,15 +2025,19 @@ namespace http
 			}
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
+			{
+				session.reply_status = reply::bad_request;
 				return;
+			}
 
 			m_sql.DeleteUserVariable(idx);
 			root["status"] = "OK";
-			root["title"] = "DeleteUserVariable";
 		}
 
 		void CWebServer::Cmd_UpdateUserVariable(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			root["title"] = "UpdateUserVariable";
+			root["status"] = "ERR";
 			if (session.rights != URIGHTS_ADMIN)
 			{
 				_log.Log(LOG_ERROR, "User: %s tried to update a uservariable!", session.username.c_str());
@@ -1978,9 +2050,6 @@ namespace http
 			std::string variablevalue = HTMLSanitizer::Sanitize(request::findValue(&req, "vvalue"));
 			std::string variabletype = request::findValue(&req, "vtype");
 
-			root["title"] = "UpdateUserVariable";
-			root["status"] = "ERR";
-
 			if (!std::isdigit(variabletype[0]))
 			{
 				stdlower(variabletype);
@@ -1997,6 +2066,7 @@ namespace http
 				else
 				{
 					root["message"] = "Invalid variabletype " + variabletype;
+					session.reply_status = reply::bad_request;
 					return;
 				}
 			}
@@ -2006,6 +2076,7 @@ namespace http
 				((variablevalue.empty()) && (variabletype != "2")))
 			{
 				root["message"] = "Invalid variabletype " + variabletype;
+				session.reply_status = reply::bad_request;
 				return;
 			}
 
@@ -2016,6 +2087,7 @@ namespace http
 				if (result.empty())
 				{
 					root["message"] = "Uservariable " + variablename + " does not exist";
+					session.reply_status = reply::bad_request;
 					return;
 				}
 				idx = result[0][0];
@@ -2025,6 +2097,7 @@ namespace http
 			if (result.empty())
 			{
 				root["message"] = "Uservariable " + variablename + " does not exist";
+				session.reply_status = reply::bad_request;
 				return;
 			}
 
@@ -2038,16 +2111,16 @@ namespace http
 			if (!m_sql.UpdateUserVariable(idx, variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue, !bTypeNameChanged, errorMessage))
 			{
 				root["message"] = errorMessage;
+				session.reply_status = reply::bad_request;
+				return;
 			}
-			else
+
+			if (bTypeNameChanged)
 			{
-				root["status"] = "OK";
-				if (bTypeNameChanged)
-				{
-					if (m_sql.m_bEnableEventSystem)
-						m_mainworker.m_eventsystem.GetCurrentUserVariables();
-				}
+				if (m_sql.m_bEnableEventSystem)
+					m_mainworker.m_eventsystem.GetCurrentUserVariables();
 			}
+			root["status"] = "OK";
 		}
 
 		void CWebServer::Cmd_GetUserVariables(WebEmSession& session, const request& req, Json::Value& root)
@@ -2132,6 +2205,7 @@ namespace http
 
 			m_mainworker.RemoveDomoticzHardware(hwID);
 			m_sql.DeleteHardware(idx);
+			g_McpPush.onDeviceTableChanged();
 		}
 
 		void CWebServer::Cmd_GetLog(WebEmSession& session, const request& req, Json::Value& root)
@@ -2589,6 +2663,7 @@ namespace http
 		void CWebServer::Cmd_SetupWizardCreateAdmin(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["title"] = "SetupWizardCreateAdmin";
+			root["status"] = "ERR";
 
 			static std::mutex setupMutex;
 			std::lock_guard<std::mutex> lock(setupMutex);
@@ -2597,7 +2672,7 @@ namespace http
 			if (FindAdminUser())
 			{
 				_log.Log(LOG_ERROR, "Setup wizard attempt blocked: admin account already exists (IP: %s)", session.remote_host.c_str());
-				root["status"] = "ERR";
+				session.reply_status = reply::bad_request;
 				root["message"] = "Setup has already been completed";
 				return;
 			}
@@ -2607,14 +2682,14 @@ namespace http
 
 			if (username.empty() || password.empty())
 			{
-				root["status"] = "ERR";
+				session.reply_status = reply::bad_request;
 				root["message"] = "Username and password are required";
 				return;
 			}
 
 			if (username.length() > 128)
 			{
-				root["status"] = "ERR";
+				session.reply_status = reply::bad_request;
 				root["message"] = "Username is too long";
 				return;
 			}
@@ -2639,6 +2714,7 @@ namespace http
 			root["title"] = "GetMyProfile";
 			if (session.rights == URIGHTS_NONE)	// Viewer cannot change his profile
 			{
+				session.reply_status = reply::forbidden;
 				return;
 			}
 
@@ -2660,6 +2736,7 @@ namespace http
 
 			if (req.method != "POST" || session.rights == URIGHTS_NONE)	// Viewer cannot change his profile
 			{
+				session.reply_status = reply::forbidden;
 				return;
 			}
 
@@ -2668,11 +2745,13 @@ namespace http
 			if (iUser == -1)
 			{
 				root["error"] = "User not found!";
+				session.reply_status = reply::bad_request;
 				return;
 			}
 			if (m_users[iUser].Username != sUsername)
 			{
 				root["error"] = "User mismatch!";
+				session.reply_status = reply::bad_request;
 				return;
 			}
 
@@ -2690,6 +2769,7 @@ namespace http
 				else
 				{
 					root["error"] = "Old password mismatch!";
+					session.reply_status = reply::unauthorized;
 					return;
 				}
 			}
@@ -2700,6 +2780,7 @@ namespace http
 			if (bEnablemfa && sTotpsecret.empty())
 			{
 				root["error"] = "Not a valid TOTP secret!";
+				session.reply_status = reply::unauthorized;
 				return;
 			}
 			// Update the User Profile
@@ -2718,6 +2799,7 @@ namespace http
 						if (!VerifySHA1TOTP(sTotpCode, sTotpKey))
 						{
 							root["error"] = "Incorrect/expired 6 digit code!";
+							session.reply_status = reply::unauthorized;
 							return;
 						}
 					}
@@ -2725,6 +2807,22 @@ namespace http
 			}
 			m_users[iUser].Mfatoken = sTotpsecret;
 			m_sql.safe_query("UPDATE Users SET MFAsecret='%q' WHERE (ID=%d)", sTotpsecret.c_str(), m_users[iUser].ID);
+
+			// Update dashboard type preference (bit 7 of TabsEnabled)
+			std::string sUseDynamicDashboard = request::findValue(&req, "usedynamicdashboard");
+			if (!sUseDynamicDashboard.empty())
+			{
+				auto result2 = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID=%d)", m_users[iUser].ID);
+				if (!result2.empty())
+				{
+					int tabsEnabled = atoi(result2[0][0].c_str());
+					if (sUseDynamicDashboard == "true")
+						tabsEnabled |= (1 << 7);
+					else
+						tabsEnabled &= ~(1 << 7);
+					m_sql.safe_query("UPDATE Users SET TabsEnabled=%d WHERE (ID=%d)", tabsEnabled, m_users[iUser].ID);
+				}
+			}
 
 			LoadUsers();
 			root["status"] = "OK";
@@ -2899,6 +2997,7 @@ namespace http
 				int bEnableTabWeather = 1;
 				int bEnableTabUtility = 1;
 				int bEnableTabCustom = 0;
+				int bEnableTabDashboardDynamic = 0;
 
 				std::vector<std::vector<std::string>> result;
 				result = m_sql.safe_query("SELECT TabsEnabled FROM Users WHERE (ID==%lu)", UserID);
@@ -2912,6 +3011,7 @@ namespace http
 					bEnableTabUtility = (TabsEnabled & (1 << 4));
 					bEnableTabCustom = (TabsEnabled & (1 << 5));
 					bEnableTabFloorplans = (TabsEnabled & (1 << 6));
+					bEnableTabDashboardDynamic = (TabsEnabled & (1 << 7));
 				}
 
 				if (iDashboardType == 3)
@@ -2927,6 +3027,7 @@ namespace http
 				root["result"]["EnableTabWeather"] = bEnableTabWeather != 0;
 				root["result"]["EnableTabUtility"] = bEnableTabUtility != 0;
 				root["result"]["EnableTabCustom"] = bEnableTabCustom != 0;
+				root["result"]["EnableTabDashboardDynamic"] = bEnableTabDashboardDynamic != 0;
 
 				if (bEnableTabCustom)
 				{
@@ -3801,6 +3902,7 @@ namespace http
 					m_sql.UpdatePreferencesVar("ActiveTimerPlan", rnvalue);
 					m_sql.m_ActiveTimerPlan = rnvalue;
 					m_mainworker.m_scheduler.ReloadSchedules();
+					m_mainworker.m_scheduler.HandleTimerPlanSwitch();
 				}
 				cntSettings++;
 
@@ -3970,6 +4072,17 @@ namespace http
 				std::string szESettings = JSonToRawString(ESettings);
 				m_sql.UpdatePreferencesVar("ESettings", szESettings);
 
+				std::string szThemeSettings = request::findValue(&req, "ThemeSettings");
+				if (!szThemeSettings.empty())
+				{
+					Json::Value jvalidate;
+					if (ParseJSon(szThemeSettings, jvalidate))
+					{
+						m_sql.UpdatePreferencesVar("ThemeSettings", szThemeSettings);
+					}
+					cntSettings++;
+				}
+
 				m_sql.SetUnitsAndScale();
 
 				/* To wrap up everything */
@@ -4035,10 +4148,13 @@ namespace http
 			root["title"] = "DeleteDevice";
 			m_sql.DeleteDevices(idx);
 			m_mainworker.m_scheduler.ReloadSchedules();
+			g_McpPush.onDeviceTableChanged();
 		}
 
 		void CWebServer::Cmd_AddScene(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			root["title"] = "AddScene";
+			root["status"] = "ERR";
 			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
@@ -4049,34 +4165,35 @@ namespace http
 			name = HTMLSanitizer::Sanitize(name);
 			if (name.empty())
 			{
-				root["status"] = "ERR";
+				session.reply_status = reply::bad_request;
 				root["message"] = "No Scene Name specified!";
 				return;
 			}
 			std::string stype = request::findValue(&req, "scenetype");
 			if (stype.empty())
 			{
-				root["status"] = "ERR";
+				session.reply_status = reply::bad_request;
 				root["message"] = "No Scene Type specified!";
 				return;
 			}
 			if (m_sql.DoesSceneByNameExits(name) == true)
 			{
-				root["status"] = "ERR";
+				session.reply_status = reply::bad_request;
 				root["message"] = "A Scene with this Name already Exits!";
 				return;
 			}
-			root["status"] = "OK";
-			root["title"] = "AddScene";
 			m_sql.safe_query("INSERT INTO Scenes (Name,SceneType) VALUES ('%q',%d)", name.c_str(), atoi(stype.c_str()));
 			if (m_sql.m_bEnableEventSystem)
 			{
 				m_mainworker.m_eventsystem.GetCurrentScenesGroups();
 			}
+			root["status"] = "OK";
 		}
 
 		void CWebServer::Cmd_DeleteScene(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			root["title"] = "DeleteScene";
+			root["status"] = "ERR";
 			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
@@ -4085,14 +4202,18 @@ namespace http
 
 			std::string idx = CURLEncode::URLDecode(request::findValue(&req, "idx"));
 			if (idx.empty())
+			{
+				session.reply_status = reply::bad_request;
 				return;
-			root["status"] = "OK";
-			root["title"] = "DeleteScene";
+			}
 			m_sql.DeleteScenes(idx);
+			root["status"] = "OK";
 		}
 
 		void CWebServer::Cmd_UpdateScene(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			root["title"] = "UpdateScene";
+			root["status"] = "ERR";
 			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
@@ -4107,11 +4228,14 @@ namespace http
 			description = HTMLSanitizer::Sanitize(description);
 
 			if ((idx.empty()) || (name.empty()))
+			{
+				session.reply_status = reply::bad_request;
 				return;
+			}
 			std::string stype = request::findValue(&req, "scenetype");
 			if (stype.empty())
 			{
-				root["status"] = "ERR";
+				session.reply_status = reply::bad_request;
 				root["message"] = "No Scene Type specified!";
 				return;
 			}
@@ -4121,12 +4245,11 @@ namespace http
 			std::string onaction = base64_decode(request::findValue(&req, "onaction"));
 			std::string offaction = base64_decode(request::findValue(&req, "offaction"));
 
-			root["status"] = "OK";
-			root["title"] = "UpdateScene";
 			m_sql.safe_query("UPDATE Scenes SET Name='%q', Description='%q', SceneType=%d, Protected=%d, OnAction='%q', OffAction='%q' WHERE (ID == '%q')", name.c_str(),
 				description.c_str(), atoi(stype.c_str()), iProtected, onaction.c_str(), offaction.c_str(), idx.c_str());
 			uint64_t ullidx = std::stoull(idx);
 			m_mainworker.m_eventsystem.WWWUpdateSingleState(ullidx, name, m_mainworker.m_eventsystem.REASON_SCENEGROUP);
+			root["status"] = "OK";
 		}
 
 		// Helper function for sorting in Cmd_CustomLightIcons
@@ -4288,6 +4411,11 @@ namespace http
 			std::string sLastUpdate = request::findValue(&req, "lastupdate");
 
 			std::string rid = request::findValue(&req, "rid");
+			if (!rid.empty() && rid.find_first_not_of("0123456789") != std::string::npos)
+				rid.clear();
+			std::string planid = request::findValue(&req, "plan");
+			if (!planid.empty() && planid.find_first_not_of("0123456789") != std::string::npos)
+				planid.clear();
 
 			time_t LastUpdate = 0;
 			if (!sLastUpdate.empty())
@@ -4306,11 +4434,19 @@ namespace http
 			root["ActTime"] = static_cast<int>(now);
 
 			std::vector<std::vector<std::string>> result, result2;
-			std::string szQuery = "SELECT ID, Name, Activators, Favorite, nValue, SceneType, LastUpdate, Protected, OnAction, OffAction, Description FROM Scenes";
+			bool bFilterByPlan = (!planid.empty() && planid != "0");
 			if (!rid.empty())
-				szQuery += " WHERE (ID == " + rid + ")";
-			szQuery += " ORDER BY [Order]";
-			result = m_sql.safe_query(szQuery.c_str());
+			{
+				result = m_sql.safe_query("SELECT ID, Name, Activators, Favorite, nValue, SceneType, LastUpdate, Protected, OnAction, OffAction, Description FROM Scenes WHERE (ID == %q) ORDER BY [Order]", rid.c_str());
+			}
+			else if (bFilterByPlan)
+			{
+				result = m_sql.safe_query("SELECT ID, Name, Activators, Favorite, nValue, SceneType, LastUpdate, Protected, OnAction, OffAction, Description FROM Scenes WHERE ID IN (SELECT DeviceRowID FROM DeviceToPlansMap WHERE DevSceneType=1 AND PlanID=%q) ORDER BY [Order]", planid.c_str());
+			}
+			else
+			{
+				result = m_sql.safe_query("SELECT ID, Name, Activators, Favorite, nValue, SceneType, LastUpdate, Protected, OnAction, OffAction, Description FROM Scenes ORDER BY [Order]");
+			}
 			if (!result.empty())
 			{
 				int ii = 0;
@@ -4572,6 +4708,12 @@ namespace http
 							AlfenEve* pMyHardware = dynamic_cast<AlfenEve*>(pHardware);
 							root["result"][ii]["version"] = pMyHardware->m_szSoftwareVersion;
 						}
+						else if (pHardware->HwdType == HTYPE_Matter)
+						{
+							CMatter* pMyHardware = dynamic_cast<CMatter*>(pHardware);
+							root["result"][ii]["version"]   = pMyHardware->m_szSoftwareVersion;
+							root["result"][ii]["Connected"] = pMyHardware->m_bConnected.load();
+						}
 #ifdef WITH_OPENZWAVE
 						else if (pHardware->HwdType == HTYPE_OpenZWave)
 						{ // Special case for openzwave (status for nodes queried)
@@ -4630,7 +4772,10 @@ namespace http
 			root["title"] = "Users";
 
 			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
 				return;
+			}
 
 			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT ID, Active, Username, Password, Rights, RemoteSharing, TabsEnabled FROM USERS ORDER BY ID ASC");
@@ -4740,6 +4885,7 @@ namespace http
 
 		void CWebServer::Cmd_UpdateApplication(WebEmSession & session, const request& req, Json::Value &root)
 		{
+			root["status"] = "ERR";
 			root["title"] = "UpdateApplication";
 			if (session.rights != URIGHTS_ADMIN)
 			{
@@ -4767,11 +4913,13 @@ namespace http
 				if ((spublic != "true") && secret.empty())
 				{
 					root["statustext"] = "Secret's can only be empty for Public Clients!";
+					session.reply_status = reply::bad_request;
 					return;
 				}
 				if ((spublic == "true") && pemfile.empty())
 				{
 					root["statustext"] = "A PEM file containing private and public key must be given for Public Clients!";
+					session.reply_status = reply::bad_request;
 					return;
 				}
 				// Check for duplicate application name
@@ -4783,6 +4931,7 @@ namespace http
 					if (oidx != idx)
 					{
 						root["statustext"] = "Duplicate Applicationname!";
+						session.reply_status = reply::bad_request;
 						return;
 					}
 				}
@@ -4800,33 +4949,173 @@ namespace http
 		void CWebServer::Cmd_DeleteApplication(WebEmSession & session, const request& req, Json::Value &root)
 		{
 			root["title"] = "DeleteApplication";
+			root["status"] = "ERR";
+
 			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
+				return;
 			}
-			else
+			std::string idx = request::findValue(&req, "idx");
+			if (idx.empty())
 			{
-				std::string idx = request::findValue(&req, "idx");
-				if (idx.empty())
-				{
-					session.reply_status = reply::bad_request;
-					return;
-				}
-
-				// Remove Application
-				std::vector<std::vector<std::string>> result;
-				result = m_sql.safe_query("SELECT ID FROM Applications WHERE (ID == '%q')", idx.c_str());
-				if (result.size() != 1)
-				{
-					session.reply_status = reply::bad_request;
-					return;
-				}
-				m_sql.safe_query("DELETE FROM Applications WHERE (ID == '%q')", idx.c_str());
-
-				// Reload the applications (and users)
-				LoadUsers();
-				root["status"] = "OK";
+				session.reply_status = reply::bad_request;
+				return;
 			}
+
+			// Remove Application
+			std::vector<std::vector<std::string>> result;
+			result = m_sql.safe_query("SELECT ID FROM Applications WHERE (ID == '%q')", idx.c_str());
+			if (result.size() != 1)
+			{
+				session.reply_status = reply::bad_request;
+				return;
+			}
+			m_sql.safe_query("DELETE FROM Applications WHERE (ID == '%q')", idx.c_str());
+
+			// Reload the applications (and users)
+			LoadUsers();
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_GetAccessTokens(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "GetAccessTokens";
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+			auto tokens = m_sql.GetAccessTokens();
+			int ii = 0;
+			for (const auto& t : tokens)
+			{
+				root["result"][ii]["idx"] = static_cast<Json::UInt64>(t.ID);
+				root["result"][ii]["Name"] = t.Name;
+				root["result"][ii]["Rights"] = t.Rights;
+				root["result"][ii]["Expiry"] = static_cast<Json::Int64>(t.Expiry);
+				root["result"][ii]["CreatedAt"] = t.CreatedAt;
+				root["result"][ii]["LastUpdate"] = t.LastUpdate;
+				ii++;
+			}
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_CreateAccessToken(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "CreateAccessToken";
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+			std::string name = request::findValue(&req, "name");
+			std::string srights = request::findValue(&req, "rights");
+			std::string sexpiry = request::findValue(&req, "expiry"); // days: 0=never, 30, 90, 365
+
+			if (name.empty())
+			{
+				root["statustext"] = "Name is required";
+				return;
+			}
+
+			int rights = srights.empty() ? 0 : atoi(srights.c_str());
+			if (rights < 0 || rights > 2)
+				rights = 0;
+
+			int expiryDays = sexpiry.empty() ? 0 : atoi(sexpiry.c_str());
+			time_t expiry = 0;
+			uint32_t exptime = 315360000; // ~10 years for "never"
+			if (expiryDays > 0)
+			{
+				expiry = time(nullptr) + static_cast<time_t>(expiryDays) * 86400;
+				exptime = static_cast<uint32_t>(expiryDays) * 86400;
+			}
+
+			// Ensure domoticzUI has a signing secret; it may be empty on fresh installs
+			{
+				auto signingRows = m_sql.safe_query("SELECT SigningSecret FROM Applications WHERE Applicationname='domoticzUI' AND Active=1");
+				if (signingRows.empty())
+				{
+					root["statustext"] = "domoticzUI Application not found or inactive";
+					return;
+				}
+				if (signingRows[0][0].empty())
+				{
+					m_sql.safe_query("UPDATE Applications SET SigningSecret='%q' WHERE Applicationname='domoticzUI'", GenerateUUID().c_str());
+					LoadUsers();
+				}
+			}
+
+			// Insert placeholder row first; JWT generation needs the assigned token ID for the subject claim
+			unsigned long tokenID = 0;
+			if (!m_sql.CreateAccessToken(name, rights, expiry, "placeholder", tokenID))
+			{
+				root["statustext"] = "Failed to create access token";
+				return;
+			}
+
+			std::string jwttoken;
+			std::string subject = "at:" + std::to_string(tokenID);
+			Json::Value payload;
+			payload["roles"][0] = rights;
+
+			// Use a stable issuer not tied to a specific hostname; access tokens must work from any network address.
+			std::string issuer = m_pWebEm->m_DigistRealm;
+
+			try
+			{
+				if (!m_pWebEm->GenerateJwtToken(jwttoken, "domoticzUI", subject, exptime, payload, issuer))
+				{
+					m_sql.DeleteAccessToken(tokenID);
+					root["statustext"] = "Failed to generate token (is domoticzUI Application active?)";
+					return;
+				}
+			}
+			catch (const std::exception&)
+			{
+				m_sql.DeleteAccessToken(tokenID);
+				root["statustext"] = "Failed to generate token";
+				return;
+			}
+
+			// Store SHA-256 hash of the raw JWT — the raw token is never persisted
+			unsigned char hash[SHA256_DIGEST_LENGTH];
+			SHA256(reinterpret_cast<const unsigned char*>(jwttoken.c_str()), jwttoken.size(), hash);
+			char hashHex[SHA256_DIGEST_LENGTH * 2 + 1];
+			for (int i = 0; i < SHA256_DIGEST_LENGTH; i++)
+				snprintf(hashHex + i * 2, 3, "%02x", hash[i]);
+			std::string tokenHash(hashHex);
+
+			m_sql.safe_query("UPDATE AccessTokens SET TokenHash='%q' WHERE ID=%lu", tokenHash.c_str(), tokenID);
+
+			// Register the new token as a synthetic user without calling LoadUsers() (which would wipe all active sessions)
+			m_pWebEm->AddUserPassword(40000UL + tokenID, "at:" + std::to_string(tokenID), "", "", "",
+				static_cast<_eUserRights>(rights), 0, "", "", 0, "", 0);
+
+			root["status"] = "OK";
+			root["idx"] = static_cast<Json::UInt64>(tokenID);
+			root["token"] = jwttoken; // shown exactly once
+		}
+
+		void CWebServer::Cmd_DeleteAccessToken(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "DeleteAccessToken";
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+			std::string sidx = request::findValue(&req, "idx");
+			if (sidx.empty())
+			{
+				session.reply_status = reply::bad_request;
+				return;
+			}
+			unsigned long tokenID = static_cast<unsigned long>(atol(sidx.c_str()));
+			m_sql.DeleteAccessToken(tokenID);
+			m_pWebEm->RemoveUserPassword(40000UL + tokenID);
+			root["status"] = "OK";
 		}
 
 		void CWebServer::Cmd_GetMobiles(WebEmSession& session, const request& req, Json::Value& root)
@@ -4835,7 +5124,10 @@ namespace http
 			root["title"] = "Mobiles";
 
 			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
 				return;
+			}
 
 			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT ID, Active, Name, UUID, LastUpdate, DeviceType FROM MobileDevices ORDER BY Name COLLATE NOCASE ASC");
@@ -5364,6 +5656,7 @@ namespace http
 					logLevel = LOG_ERROR;
 				else
 				{
+					session.reply_status = reply::bad_request;
 					root["status"] = "ERR";
 					return;
 				}
@@ -5375,6 +5668,8 @@ namespace http
 
 		void CWebServer::Cmd_FixKwhCounterSpikes(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			root["status"] = "ERR";
+			root["title"] = "FixKwhCounterSpikes";
 			if (session.rights != URIGHTS_ADMIN)
 			{
 				session.reply_status = reply::forbidden;
@@ -5384,7 +5679,7 @@ namespace http
 			std::string sidx = request::findValue(&req, "idx");
 			if (sidx.empty())
 			{
-				root["status"] = "ERR";
+				session.reply_status = reply::bad_request;
 				root["message"] = "idx parameter missing";
 				return;
 			}
@@ -5395,13 +5690,13 @@ namespace http
 			}
 			catch (const std::exception&)
 			{
-				root["status"] = "ERR";
+				session.reply_status = reply::bad_request;
 				root["message"] = "Invalid idx format";
 				return;
 			}
 
 			std::string sthreshold = request::findValue(&req, "threshold");
-			double max_daily_kwh = 1000.0;
+			double max_daily_kwh = 0.0; // 0 = auto-detect from device history
 			if (!sthreshold.empty())
 			{
 				char* endptr = nullptr;
@@ -5416,8 +5711,42 @@ namespace http
 			bool ok = m_sql.FixKwhCounterSpikes(idx, max_daily_kwh, dry_run, results);
 
 			root["status"] = ok ? "OK" : "ERR";
-			root["title"] = "FixKwhCounterSpikes";
 			root["dryrun"] = dry_run;
+			for (int i = 0; i < static_cast<int>(results.size()); i++)
+				root["result"][i] = results[i];
+		}
+
+		void CWebServer::Cmd_SpreadCounterSpike(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "SpreadCounterSpike";
+			root["status"] = "ERR";
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			std::string sidx = request::findValue(&req, "idx");
+			std::string sdate = request::findValue(&req, "date");
+			if (sidx.empty() || sdate.empty())
+			{
+				session.reply_status = reply::bad_request;
+				root["message"] = "idx and date parameters required";
+				return;
+			}
+
+			uint64_t idx = 0;
+			try { idx = std::stoull(sidx); }
+			catch (const std::exception&)
+			{
+				session.reply_status = reply::bad_request;
+				root["message"] = "Invalid idx format";
+				return;
+			}
+
+			std::vector<std::string> results;
+			bool ok = m_sql.SpreadCounterSpike(idx, sdate, results);
+			root["status"] = ok ? "OK" : "ERR";
 			for (int i = 0; i < static_cast<int>(results.size()); i++)
 				root["result"][i] = results[i];
 		}
@@ -5796,7 +6125,7 @@ namespace http
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name")); stdstring_trim(name);
 
 			bool bHaveText = request::hasValue(&req, "text");
-			std::string text = HTMLSanitizer::Sanitize(request::findValue(&req, "text")); stdstring_trim(text);
+			std::string text = request::findValue(&req, "text"); stdstring_trim(text);
 
 			bool bHaveDescription = request::hasValue(&req, "description");
 			std::string description = HTMLSanitizer::Sanitize(request::findValue(&req, "description")); stdstring_trim(description);
@@ -5826,6 +6155,7 @@ namespace http
 			std::string sOptions = HTMLSanitizer::Sanitize(base64_decode(request::findValue(&req, "options")));
 			std::string devoptions = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "devoptions")));
 			std::string EnergyMeterMode = CURLEncode::URLDecode(request::findValue(&req, "EnergyMeterMode"));
+			std::string sShowIcon = request::findValue(&req, "ShowIcon");
 
 			char szTmp[200];
 
@@ -5848,6 +6178,8 @@ namespace http
 			unsigned char dType = atoi(sd[0].c_str());
 			unsigned char dSubType = atoi(sd[1].c_str());
 			int HwdID = atoi(sd[2].c_str());
+			// Text sensor devices hold user-authored HTML; preserve tags but strip dangerous attributes
+			text = (dType == pTypeGeneral && dSubType == sTypeTextStatus) ? HTMLSanitizer::SanitizeHTML(text) : HTMLSanitizer::Sanitize(text);
 			std::string sHwdID = sd[2];
 			int OldCustomImage = atoi(sd[3].c_str());
 			std::string OldDescription = sd[4];
@@ -6009,10 +6341,15 @@ namespace http
 					faddjmulti2 = 1;
 				m_sql.safe_query("UPDATE DeviceStatus SET AddjMulti2=%f WHERE (ID == '%q')", faddjmulti2, idx.c_str());
 			}
-			if (!EnergyMeterMode.empty())
+			bool bNeedShowIcon = (!sShowIcon.empty() && (sShowIcon == "0" || sShowIcon == "1") &&
+				atoi(result[0][0].c_str()) == pTypeGeneral && atoi(result[0][1].c_str()) == sTypeTextStatus);
+			if (!EnergyMeterMode.empty() || bNeedShowIcon)
 			{
 				auto options = m_sql.GetDeviceOptions(idx);
-				options["EnergyMeterMode"] = EnergyMeterMode;
+				if (!EnergyMeterMode.empty())
+					options["EnergyMeterMode"] = EnergyMeterMode;
+				if (bNeedShowIcon)
+					options["ShowIcon"] = sShowIcon;
 				uint64_t ullidx = std::stoull(idx);
 				m_sql.SetDeviceOptions(ullidx, options);
 			}
@@ -6020,6 +6357,12 @@ namespace http
 			if (!devoptions.empty())
 			{
 				m_sql.safe_query("UPDATE DeviceStatus SET Options='%q' WHERE (ID == '%q')", devoptions.c_str(), idx.c_str());
+			}
+
+			std::string sColorParam = request::findValue(&req, "color");
+			if (request::hasValue(&req, "color"))
+			{
+				m_sql.safe_query("UPDATE DeviceStatus SET Color='%q' WHERE (ID == '%q')", sColorParam.c_str(), idx.c_str());
 			}
 
 			if (used == 0)
@@ -6462,6 +6805,15 @@ namespace http
 				{
 					root["PriceResolution"] = nValue;
 				}
+				else if (Key == "ThemeSettings")
+				{
+					Json::Value jthemesettings;
+					bool ret = ParseJSon(sValue, jthemesettings);
+					if (ret)
+					{
+						root["ThemeSettings"] = jthemesettings;
+					}
+				}
 			}
 			root["DebugLevel"] = static_cast<int>(_log.GetDebugFlags());
 		}
@@ -6740,6 +7092,106 @@ namespace http
 			root["title"] = "ResetkWhStats";
 		}
 
+		void CWebServer::Cmd_FixkWhStats(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+			if (request::findValue(&req, "idx").empty())
+				return;
+			uint64_t idx = std::stoull(request::findValue(&req, "idx"));
+
+			bool changed = CKWHStats::RemoveSpikeStats(idx);
+			root["changed"] = changed;
+			root["status"] = "OK";
+			root["title"] = "FixkWhStats";
+		}
+
+		void CWebServer::Cmd_FixCounterPrices(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return; //Only admin user allowed
+			}
+			if (request::findValue(&req, "idx").empty())
+				return;
+			uint64_t idx = std::stoull(request::findValue(&req, "idx"));
+
+			int hwID = -1;
+			bool bIsKwhCounter = false;
+			{
+				auto devRes = m_sql.safe_query(
+					"SELECT HardwareID, Type, SubType FROM DeviceStatus WHERE ID='%" PRIu64 "'", idx);
+				if (!devRes.empty())
+				{
+					hwID        = atoi(devRes[0][0].c_str());
+					int devType = atoi(devRes[0][1].c_str());
+					int devSub  = atoi(devRes[0][2].c_str());
+					bIsKwhCounter = (devType == pTypeGeneral && devSub == sTypeKwh);
+				}
+			}
+
+			// Fix actual counter spikes in Meter_Calendar / Meter (kWh devices only).
+			// Uses auto-detected threshold (0.0 = 100x median daily usage).
+			// Non-kWh devices are silently skipped by FixKwhCounterSpikes.
+			std::vector<std::string> spikeResults;
+			m_sql.FixKwhCounterSpikes(idx, 0.0, false, spikeResults);
+			int spikesFixed = 0;
+			for (const auto& line : spikeResults)
+			{
+				// Count both kWh spikes ("Positive/Negative spike") and P1 calendar spikes ("Calendar spike")
+				if (line.rfind("Positive spike", 0) == 0 || line.rfind("Negative spike", 0) == 0 ||
+				    line.rfind("Calendar spike", 0) == 0 || line.rfind("Shortlog corrupt", 0) == 0)
+					spikesFixed++;
+			}
+
+			bool changed = CKWHStats::RemoveSpikeStats(idx);
+			int pricesFixed = m_sql.SanitizeCalendarData(idx);
+
+			// Only stop/restart hardware when spikes were actually corrected in the DB.
+			// The CounterHelper (used by MQTT-AD and similar plugins) caches the cumulative
+			// counter in memory and must reload from the corrected DB values.
+			// EnphaseAPI also benefits from a restart: FixKwhCounterSpikes corrects
+			// DeviceStatus.sValue to the lower baseline, and the upward-spike detection
+			// in ProcessEnphaseCounter will then catch the gap between that baseline and
+			// the Envoy's still-high whLifetime, applying the correct negative offset so
+			// the tracker continues from the corrected value.  Without the restart the
+			// corrected sValue is overwritten on the very next Envoy poll.
+			bool bNeedsRestart = bIsKwhCounter && hwID != -1 && spikesFixed > 0;
+			if (bNeedsRestart)
+			{
+				m_mainworker.RemoveDomoticzHardware(hwID);
+				auto hwRes = m_sql.safe_query(
+					"SELECT ID, Name, Enabled, Type, LogLevel, Address, Port, SerialPort, Username, Password, "
+					"Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, DataTimeout FROM Hardware WHERE ID=%d", hwID);
+				if (!hwRes.empty())
+				{
+					const auto& hw = hwRes[0];
+					m_mainworker.AddHardwareFromParams(
+						atoi(hw[0].c_str()), hw[1], atoi(hw[2].c_str()) != 0,
+						(_eHardwareTypes)atoi(hw[3].c_str()), (uint32_t)atoi(hw[4].c_str()),
+						hw[5], (uint16_t)atoi(hw[6].c_str()), hw[7], hw[8], hw[9], hw[10],
+						atoi(hw[11].c_str()), atoi(hw[12].c_str()), atoi(hw[13].c_str()),
+						atoi(hw[14].c_str()), atoi(hw[15].c_str()), atoi(hw[16].c_str()),
+						atoi(hw[17].c_str()), true);
+					spikeResults.push_back("Hardware restarted to reload CounterHelper from corrected values");
+				}
+			}
+
+			root["changed"] = changed || (pricesFixed > 0) || (spikesFixed > 0);
+			root["kwhStatsFixed"] = changed;
+			root["pricesFixed"] = pricesFixed;
+			root["spikesFixed"] = spikesFixed;
+			// Include detail lines so the frontend can show exactly what was corrected
+			for (int i = 0; i < static_cast<int>(spikeResults.size()); i++)
+				root["result"][i] = spikeResults[i];
+			root["status"] = "OK";
+			root["title"] = "FixCounterPrices";
+		}
+
 		// Helper function to convert ANSI color codes to HTML spans
 		// Also handles progress indicators (dots, ===>, percentages) from tar/wget
 		static std::string ConvertAnsiToHtml(const std::string& input)
@@ -6934,6 +7386,222 @@ namespace http
 			{
 				root["updatestatus"] = "running";
 			}
+		}
+
+		// ---------------------------------------------------------------------------
+		// Dashboard 2.0 layout management commands
+		// ---------------------------------------------------------------------------
+
+		void CWebServer::Cmd_GetDashboardLayouts(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "GetDashboardLayouts";
+
+			if (session.username.empty())
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			int iUser = FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			Json::Value layouts;
+			if (!m_sql.GetDashboardLayouts((int)m_users[iUser].ID, layouts))
+			{
+				root["message"] = "Failed to retrieve dashboard layouts";
+				return;
+			}
+			root["status"] = "OK";
+			root["result"] = layouts;
+		}
+
+		void CWebServer::Cmd_GetDashboardLayout(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "GetDashboardLayout";
+
+			if (session.username.empty())
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			int iUser = FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			std::string layoutid = request::findValue(&req, "id");
+			if (layoutid.empty())
+			{
+				root["message"] = "Missing parameter: id";
+				return;
+			}
+
+			Json::Value layout;
+			if (!m_sql.GetDashboardLayout((int)m_users[iUser].ID, layoutid, layout))
+			{
+				root["message"] = "Layout not found";
+				return;
+			}
+			root["status"] = "OK";
+			root["result"] = layout;
+		}
+
+		void CWebServer::Cmd_SaveDashboardLayout(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "SaveDashboardLayout";
+
+			if (session.username.empty())
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			int iUser = FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			std::string id         = request::findValue(&req, "id");
+			std::string name       = request::findValue(&req, "name");
+			std::string isdefstr   = request::findValue(&req, "isDefault");
+			std::string layoutjson = request::findValue(&req, "layout");
+
+			if (id.empty() || name.empty())
+			{
+				root["message"] = "Missing required parameters: id, name";
+				return;
+			}
+
+			if (id.size() > 64)
+			{
+				root["message"] = "Invalid id: too long";
+				return;
+			}
+			for (char c : id)
+			{
+				if (!isalnum((unsigned char)c) && c != '-' && c != '_')
+				{
+					root["message"] = "Invalid id format";
+					return;
+				}
+			}
+
+			if (name.size() > 100)
+			{
+				root["message"] = "Invalid name: too long";
+				return;
+			}
+
+			bool bUpdateLayout = !layoutjson.empty();
+
+			if (bUpdateLayout)
+			{
+				const size_t MAX_LAYOUT_SIZE = 1048576; // 1 MB
+				if (layoutjson.size() > MAX_LAYOUT_SIZE)
+				{
+					root["message"] = "Layout JSON exceeds maximum allowed size";
+					return;
+				}
+
+				Json::Value parsedLayout;
+				std::string parseError;
+				if (!ParseJSon(layoutjson, parsedLayout, &parseError))
+				{
+					root["message"] = "Invalid layout JSON: " + parseError;
+					return;
+				}
+			}
+
+			bool isDefault = (isdefstr == "true" || isdefstr == "1");
+			if (!m_sql.SaveDashboardLayout((int)m_users[iUser].ID, id, name, isDefault, bUpdateLayout ? layoutjson : std::string()))
+			{
+				root["message"] = "Failed to save layout";
+				return;
+			}
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_DeleteDashboardLayout(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "DeleteDashboardLayout";
+
+			if (session.username.empty())
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			int iUser = FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			std::string id = request::findValue(&req, "id");
+			if (id.empty())
+			{
+				root["message"] = "Missing parameter: id";
+				return;
+			}
+
+			m_sql.DeleteDashboardLayout((int)m_users[iUser].ID, id);
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_CopyDashboardLayout(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "CopyDashboardLayout";
+
+			if (session.username.empty())
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			int iUser = FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			std::string srcid   = request::findValue(&req, "id");
+			std::string newname = request::findValue(&req, "newname");
+			if (srcid.empty() || newname.empty())
+			{
+				root["message"] = "Missing parameters: id, newname";
+				return;
+			}
+
+			if (newname.size() > 100)
+			{
+				root["message"] = "Invalid newname: too long";
+				return;
+			}
+
+			std::string newid = GenerateUUID();
+			if (!m_sql.CopyDashboardLayout((int)m_users[iUser].ID, srcid, newid, newname))
+			{
+				root["message"] = "Failed to copy layout (source not found?)";
+				return;
+			}
+			root["status"] = "OK";
+			root["id"] = newid;
 		}
 
 	} // namespace server

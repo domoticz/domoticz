@@ -1,0 +1,23 @@
+<div class="dd-stat-card dd-stat-card-full dd-sysstat"
+     ng-class="{'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode}">
+    <div class="dd-sysstat-row">
+        <i class="fa-solid fa-server"></i>
+        <span class="dd-sysstat-label">Domoticz</span>
+        <span class="dd-sysstat-value dd-sysstat-running">Running</span>
+    </div>
+    <div class="dd-sysstat-row" ng-show="ctrl.version">
+        <i class="fa-solid fa-circle-info"></i>
+        <span class="dd-sysstat-label">Version</span>
+        <span class="dd-sysstat-value" ng-bind="ctrl.version"></span>
+    </div>
+    <div class="dd-sysstat-row" ng-show="ctrl.hardwareCount !== null">
+        <i class="fa-solid fa-wrench"></i>
+        <span class="dd-sysstat-label">Hardware</span>
+        <span class="dd-sysstat-value">{{ ctrl.hardwareCount }} active</span>
+    </div>
+    <div class="dd-sysstat-row" ng-show="ctrl.deviceCount !== null">
+        <i class="fa-solid fa-border-all"></i>
+        <span class="dd-sysstat-label">Devices</span>
+        <span class="dd-sysstat-value" ng-bind="ctrl.deviceCount"></span>
+    </div>
+</div>

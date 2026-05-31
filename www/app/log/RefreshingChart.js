@@ -45,6 +45,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
         });
         self.refreshTimestamp = new Date().getTime();
         configureZoomingAndPanning();
+        configureSpikeContextMenu();
 
         self.$scope.$on('$routeChangeStart', function($event, next, current) {
             self.chart.tooltip.hide();
@@ -180,7 +181,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                                                     self.dataSupplier.isShortLogChart,
                                                     Intl.DateTimeFormat().resolvedOptions().timeZone
                                                 ).then(function () {
-													window.location.reload();
+                                                    self.$route.reload();
                                                 });
                                             }
                                         }
@@ -291,8 +292,10 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
                     const stopwatchCycle = stopwatch('cycle');
                     loadDataInChart(data);
+                    prepareAxisRange();
                     synchronizeYaxes();
                     redrawChart();
+                    addMissingDataPlotBand();
                     self.consoledebug(function () { return stopwatchCycle.log(); });
                     if (afterRefreshChartData !== undefined) {
                         afterRefreshChartData();
@@ -312,6 +315,82 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                         // Forces the legend to be redrawn as well
                         // self.chart.isDirtyLegend = true;
                         self.chart.redraw();
+                    }
+
+                    function prepareAxisRange() {
+                        // Computes the window end (today) and updates the x-axis range before redraw.
+                        // self._missingDataWindowEnd is used by zoom/reset buttons to end at today.
+                        self._missingDataWindowEnd = null;
+
+                        if (self.range !== 'day' && self.range !== 'month' && self.range !== 'year' && self.range !== 'hour') {
+                            return;
+                        }
+
+                        // Managed Counters can hold future-dated values; don't clamp the axis to today.
+                        if (self.device && self.device.SubType === 'Managed Counter') {
+                            return;
+                        }
+                        // For the hour chart, only apply when showing the last 24 hours ('1d' zoom)
+                        if (self.range === 'hour' && self.$scope.zoomType !== '1d') {
+                            return;
+                        }
+
+                        var now = Date.now();
+                        var windowEnd, windowStart = null;
+
+                        if (self.range === 'hour') {
+                            windowEnd = now;
+                            windowStart = now - 24 * 3600 * 1000;
+                        } else if (self.range === 'day') {
+                            windowEnd = now;
+                            var shortLogDays = (self.$scope.$root.config.FiveMinuteHistoryDays || 1);
+                            windowStart = now - shortLogDays * 86400 * 1000;
+                        } else if (self.range === 'month') {
+                            var d = new Date(); d.setHours(23, 59, 59, 999);
+                            windowEnd = d.getTime();
+                        } else { // year
+                            var d = new Date(); d.setHours(23, 59, 59, 999);
+                            windowEnd = d.getTime();
+                        }
+
+                        self._missingDataWindowEnd = windowEnd;
+
+                        // Extend the axis to cover the current period (only when not user-zoomed)
+                        if (!self.isZoomed) {
+                            self.chart.xAxis[0].update({ min: windowStart, max: windowEnd }, false);
+                        }
+                    }
+
+                    function addMissingDataPlotBand() {
+                        // Called after redraw so the band renders on top of the chart.
+                        var xAxis = self.chart.xAxis[0];
+                        xAxis.removePlotBand('missing-data-indicator');
+
+                        var windowEnd = self._missingDataWindowEnd;
+                        if (!windowEnd) return;
+
+                        var now = Date.now();
+                        var dataMax = xAxis.dataMax;
+                        if (!dataMax || !isFinite(dataMax)) return;
+
+                        var today = new Date(); today.setHours(0, 0, 0, 0);
+                        var lastDataDay = new Date(dataMax); lastDataDay.setHours(0, 0, 0, 0);
+
+                        var hasMissingData = (self.range === 'hour')
+                            ? (dataMax < now - 3600000)         // more than 1 hour gap for hour chart
+                            : (self.range === 'day')
+                            ? (dataMax < now - 300000)          // more than 5 min gap for short log
+                            : (lastDataDay.getTime() < today.getTime()); // last entry before today
+
+                        if (!hasMissingData) return;
+
+                        xAxis.addPlotBand({
+                            id: 'missing-data-indicator',
+                            from: dataMax,
+                            to: windowEnd,
+                            color: 'rgba(255, 80, 80, 0.15)',
+                            zIndex: 3
+                        });
                     }
                 });
 
@@ -591,7 +670,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             self.$scope.zoomHours = function (hours) {
                 self.$scope.activeZoom = hours + 'H';
                 const xAxis = self.chart.xAxis[0];
-                const right = Math.min(xAxis.max, xAxis.dataMax);
+                const right = self._missingDataWindowEnd || xAxis.dataMax;
 				let cLabel = hours.toString() + ' ';
 				if (hours == 1)
 					cLabel = $.t('Hour');
@@ -603,7 +682,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             self.$scope.zoomDays = function (days) {
                 self.$scope.activeZoom = (days % 7 === 0) ? (days / 7) + 'w' : days + 'd';
                 const xAxis = self.chart.xAxis[0];
-                const right = Math.min(xAxis.max, xAxis.dataMax);
+                const right = self._missingDataWindowEnd || xAxis.dataMax;
 				let cLabel = days.toString() + ' ';
 				if (days == 1)
 					cLabel = $.t('Day');
@@ -623,7 +702,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             self.$scope.zoomMonths = function (months) {
                 self.$scope.activeZoom = months + 'M';
                 const xAxis = self.chart.xAxis[0];
-                const right = Math.min(xAxis.max, xAxis.dataMax);
+                const right = self._missingDataWindowEnd || xAxis.dataMax;
 				let cLabel = months.toString() + ' ';
 				if (months == 1)
 					cLabel = $.t('Month');
@@ -652,7 +731,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             self.$scope.zoomreset = function () {
                 self.$scope.activeZoom = null;
                 const xAxis = self.chart.xAxis[0];
-                zoom(xAxis.dataMin, xAxis.dataMax, '');
+                zoom(xAxis.dataMin, self._missingDataWindowEnd || xAxis.dataMax, '');
             }
 
 			self.$scope.changeCompTypeTemp = function() {
@@ -892,6 +971,139 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
         function deletePointIsSupported() {
             return ['day', 'month', 'year'].includes(self.range);
+        }
+
+        function configureSpikeContextMenu() {
+            if (!deletePointIsSupported()) return;
+
+            var menu = document.createElement('div');
+            menu.style.cssText = 'display:none;position:fixed;z-index:9999;background:#2a2a2a;border:1px solid #555;border-radius:4px;padding:4px 0;box-shadow:2px 6px 16px rgba(0,0,0,0.6);min-width:220px;';
+
+            var spreadItem = document.createElement('div');
+            spreadItem.setAttribute('data-spike-action', 'spread');
+            spreadItem.style.cssText = 'padding:8px 16px;cursor:pointer;color:#ddd;white-space:nowrap;font-size:13px;';
+            spreadItem.innerHTML = '<i class="fa fa-share-alt fa-fw" style="margin-right:8px;color:#aaa;"></i>' + $.t('Spread across previous empty days');
+
+            var deleteItem = document.createElement('div');
+            deleteItem.setAttribute('data-spike-action', 'delete');
+            deleteItem.style.cssText = 'padding:8px 16px;cursor:pointer;color:#ddd;white-space:nowrap;font-size:13px;';
+            deleteItem.innerHTML = '<i class="fa fa-trash fa-fw" style="margin-right:8px;color:#aaa;"></i>' + $.t('Delete this value');
+
+            var dividerItem = document.createElement('div');
+            dividerItem.style.cssText = 'margin:4px 0;border-top:1px solid #444;';
+
+            var fixItem = document.createElement('div');
+            fixItem.setAttribute('data-spike-action', 'fix');
+            fixItem.style.cssText = 'padding:8px 16px;cursor:pointer;color:#ddd;white-space:nowrap;font-size:13px;';
+            fixItem.innerHTML = '<i class="fa fa-wrench fa-fw" style="margin-right:8px;color:#aaa;"></i>' + $.t('Fix Counter/Price Spikes');
+
+            [spreadItem, deleteItem, fixItem].forEach(function (item) {
+                item.addEventListener('mouseenter', function () { item.style.background = '#3a3a3a'; });
+                item.addEventListener('mouseleave', function () { item.style.background = ''; });
+            });
+
+            menu.appendChild(spreadItem);
+            menu.appendChild(deleteItem);
+            menu.appendChild(dividerItem);
+            menu.appendChild(fixItem);
+            document.body.appendChild(menu);
+
+            function hideMenu() {
+                menu.style.display = 'none';
+                self._spikeMenuPoint = null;
+            }
+
+            function showMenu(clientX, clientY, point) {
+                var hasPrevEmpty = false;
+                var series = point.series;
+                if (series && series.data) {
+                    for (var i = Math.max(0, point.index - 14); i < point.index; i++) {
+                        var p = series.data[i];
+                        if (p && (p.y === 0 || p.y === null || p.y === undefined)) {
+                            hasPrevEmpty = true;
+                            break;
+                        }
+                    }
+                }
+                spreadItem.style.display = hasPrevEmpty ? 'block' : 'none';
+                self._spikeMenuPoint = point;
+
+                menu.style.left = clientX + 'px';
+                menu.style.top = clientY + 'px';
+                menu.style.display = 'block';
+
+                setTimeout(function () {
+                    var rect = menu.getBoundingClientRect();
+                    if (rect.right > window.innerWidth) {
+                        menu.style.left = (clientX - rect.width) + 'px';
+                    }
+                    if (rect.bottom > window.innerHeight) {
+                        menu.style.top = (clientY - rect.height) + 'px';
+                    }
+                }, 0);
+            }
+
+            spreadItem.addEventListener('click', function () {
+                var point = self._spikeMenuPoint;
+                hideMenu();
+                if (!point) return;
+                self.domoticzDatapointApi.spreadPoint(
+                    self.device.idx,
+                    point,
+                    Intl.DateTimeFormat().resolvedOptions().timeZone
+                ).then(function () { self.$route.reload(); });
+            });
+
+            deleteItem.addEventListener('click', function () {
+                var point = self._spikeMenuPoint;
+                hideMenu();
+                if (!point) return;
+                self.domoticzDatapointApi.deletePoint(
+                    self.device.idx,
+                    point,
+                    self.dataSupplier.isShortLogChart,
+                    Intl.DateTimeFormat().resolvedOptions().timeZone
+                ).then(function () { self.$route.reload(); });
+            });
+
+            fixItem.addEventListener('click', function () {
+                hideMenu();
+                bootbox.confirm($.t('Fix the Weekly Pattern by removing spike contamination?\n\nThis recalculates averages from valid data.'), function (result) {
+                    if (!result) return;
+                    $.ajax({ url: 'json.htm?type=command&param=fixcounterprices&idx=' + self.device.idx })
+                        .then(function (data) {
+                            var parts = [];
+                            if (data && data.spikesFixed > 0) parts.push($.t('Fixed') + ' ' + data.spikesFixed + ' ' + $.t('counter spike(s).'));
+                            if (data && data.kwhStatsFixed) parts.push($.t('Weekly pattern fixed.'));
+                            if (data && data.pricesFixed > 0) parts.push($.t('Repaired') + ' ' + data.pricesFixed + ' ' + $.t('daily rows') + '.');
+                            var msg = parts.length > 0 ? parts.join('\n') : $.t('No issues found.');
+                            bootbox.alert(msg, function () { self.$route.reload(); });
+                        });
+                });
+            });
+
+            function onDocClick(e) {
+                if (!menu.contains(e.target)) hideMenu();
+            }
+            function onKeyDown(e) {
+                if (e.key === 'Escape') hideMenu();
+            }
+            document.addEventListener('click', onDocClick);
+            document.addEventListener('keydown', onKeyDown);
+
+            self.chart.container.addEventListener('contextmenu', function (e) {
+                var hoverPoint = self.chart.hoverPoint;
+                if (!hoverPoint || !hoverPoint.custom || !hoverPoint.custom.isSpike) return;
+                e.preventDefault();
+                e.stopPropagation();
+                showMenu(e.clientX, e.clientY, hoverPoint);
+            });
+
+            self.$scope.$on('$routeChangeStart', function () {
+                document.removeEventListener('click', onDocClick);
+                document.removeEventListener('keydown', onKeyDown);
+                if (menu.parentNode) menu.parentNode.removeChild(menu);
+            });
         }
     }
 

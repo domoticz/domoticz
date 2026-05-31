@@ -1,0 +1,505 @@
+''Last revised: 2026-04-30 · Domoticz 2026.1 build 17858''
+
+Domoticz (from version 2026.1) adds built-in support for the [https://modelcontextprotocol.io/specification/2025-06-18 Model Context Protocol] (MCP), allowing AI assistants and LLM clients to monitor and control your home automation system directly — without any external intermediary process.
+
+''Only [https://modelcontextprotocol.io/specification/2025-06-18 MCP specification version 2025-06-18] is supported.''
+
+''Streamable HTTP transport is supported, including persistent SSE streams for real-time async notifications. STDIO transport is not natively supported; use an HTTP proxy if your client requires it.''
+
+== Enabling MCP support ==
+
+MCP is enabled by default. To disable it, start Domoticz with the <code>-nomcp</code> flag:
+
+ ./domoticz -nomcp
+
+A status message in the log will confirm whether MCP support is active.
+
+== Authentication & Security ==
+
+The MCP endpoint at <code>/mcp</code> is subject to the same security rules as the rest of Domoticz. You have two options:
+
+=== Option 1: Private Network (no credentials) ===
+
+If the AI client runs inside the IP range defined in Domoticz's Security Settings ('''Setup → Settings → Security → Local Networks'''), no authentication is required. This is the simplest setup for a local LAN.
+
+=== Option 2: OAuth2 / OIDC (recommended for remote access) ===
+
+For AI clients connecting from outside the private network range, create an '''Application''' in Domoticz:
+
+# Go to '''Setup → More Options → Applications'''
+# Click '''Add Application''' — the '''Application Name''' you enter is the '''Client ID''', and the '''Application Secret''' is the '''Client Secret'''
+# Configure your AI client with these values (see client examples below)
+
+The OAuth2 authorization endpoint is at <code>/oauth2/token</code>. Some clients handle the OAuth2 flow automatically; others (like Claude Desktop) need an HTTP proxy that adds the token.
+
+=== Option 3: API Access Token (JWT) ===
+
+Some clients accept a pre-generated JWT token. You can pass it via the <code>API_ACCESS_TOKEN</code> environment variable when using an HTTP proxy (see the Claude Desktop example below).
+
+Obtain a token via curl (replace the placeholders with your values):
+
+<pre>
+curl --location --request POST 'http://<domoticz_ip>:<domoticz_port>/oauth2/v1/token?client_id=<application_name>&client_secret=<application_secret>&username=<username>&password=<password>&grant_type=password'
+</pre>
+
+The response contains an <code>access_token</code> value — use that as your JWT token.
+
+'''Tip:''' It is recommended to create a dedicated Domoticz user for MCP access rather than using your personal account. Assign the minimum rights needed:
+* '''Viewer''' — read-only access (sensor values, status queries)
+* '''User''' — can also control devices and scenes
+* '''Admin''' — full access including hardware, settings and user management
+
+Create the user under '''Setup → More Options → Users'''.
+
+== Connecting AI clients ==
+
+=== Claude Desktop ===
+
+Claude Desktop currently only supports STDIO transport for standard users. Use [https://github.com/sparfenyuk/mcp-proxy mcp-proxy] as an intermediary to bridge STDIO ↔ Streamable HTTP.
+
+Add the following to your Claude Desktop configuration file (<code>claude_desktop_config.json</code>):
+
+<pre>
+{
+  "mcpServers": {
+    "domoticz": {
+      "command": "/path/to/mcp-proxy.exe",
+      "args": ["--transport", "streamablehttp", "http://domoticz.local:8080/mcp"],
+      "env": {
+        "API_ACCESS_TOKEN": "<a valid JWT token, or omit if client is in private network range>"
+      }
+    }
+  }
+}
+</pre>
+
+'''Note:''' Pro and Max Claude users may have access to remote MCP support, in which case you can connect directly using the URL <code>http://domoticz.local:8080/mcp</code> without a proxy.
+
+=== Claude Code (CLI) ===
+
+Run these commands once in a terminal — Claude Code stores the server in its configuration automatically.
+
+Add the server:
+<pre>
+claude mcp add --transport http domoticz http://192.168.x.x:8080/mcp
+</pre>
+
+If authentication is required (client outside the private network range), pass the JWT token as a header:
+<pre>
+claude mcp add --transport http domoticz http://192.168.x.x:8080/mcp --header "Authorization: Bearer <your JWT token>"
+</pre>
+
+Remove the server:
+<pre>
+claude mcp remove domoticz
+</pre>
+
+=== Visual Studio Code ===
+
+VS Code has built-in MCP support. Open the Command Palette ('''View → Command Palette''' or <kbd>Ctrl+Shift+P</kbd>) and choose '''MCP: Add Server...''', or edit your settings directly:
+
+<pre>
+{
+  "servers": {
+    "domoticz": {
+      "type": "http",
+      "url": "http://127.0.0.1:8080/mcp"
+    }
+  }
+}
+</pre>
+
+When you start the server for the first time, VS Code will initiate the OAuth2 authorization flow. You will need to enter the '''Application''' Client ID and Client Secret created in Domoticz. After successful authorization, the token is stored in VS Code's account store (visible under the Account icon at the bottom-left of the screen).
+
+=== Gemini CLI ===
+
+Add to <code>~/.gemini/settings.json</code> under <code>mcpServers</code>:
+
+<pre>
+{
+  "mcpServers": {
+    "domoticz": {
+      "type": "http",
+      "url": "http://domoticz.local:8080/mcp",
+      "headers": {
+        "Authorization": "Bearer <your JWT token>"
+      }
+    }
+  }
+}
+</pre>
+
+=== Other MCP clients ===
+
+Any MCP-compatible client that supports Streamable HTTP transport can connect to:
+
+ http://<domoticz-host>:<port>/mcp
+
+Add an <code>Authorization: Bearer &lt;token&gt;</code> header if the client is outside the private network range.
+
+== Resources ==
+
+Resources provide read-only context that AI clients can subscribe to or read on demand.
+
+=== Aggregate resources ===
+
+The following named resources expose a summary of each subsystem:
+
+{| class="wikitable"
+|-
+! URI !! Description
+|-
+| <code>domoticz://devices</code> || All used devices (name, type, current value)
+|-
+| <code>domoticz://rooms</code> || All configured rooms/plans
+|-
+| <code>domoticz://scenes</code> || All scenes and groups with their status
+|-
+| <code>domoticz://user-variables</code> || All user-defined variables
+|-
+| <code>domoticz://events</code> || All automation event scripts (name, interpreter, status)
+|-
+| <code>domoticz://security</code> || Current security panel status
+|-
+| <code>domoticz://settings</code> || Key system configuration values
+|-
+| <code>domoticz://log</code> || Recent system log entries
+|-
+| <code>domoticz://sensor-types</code> || All sensor types available for <code>create_virtual_sensor</code>, with their names and numeric mapped values
+|-
+| <code>domoticz://hardware</code> || All configured hardware instances with type, enabled status, and ID
+|-
+| <code>domoticz://notifications</code> || All configured device notifications with trigger conditions and target systems
+|-
+| <code>domoticz://timers</code> || All device and scene timers with schedule and command details
+|}
+
+=== Per-item resources ===
+
+Individual items can be addressed with these URI patterns:
+
+{| class="wikitable"
+|-
+! URI pattern !! Description
+|-
+| <code>domoticz://device/{idx}</code> || A single device by its numeric IDX
+|-
+| <code>domoticz://room/{idx}</code> || All devices assigned to a room
+|-
+| <code>domoticz://scene/{idx}</code> || Devices and commands belonging to a scene
+|-
+| <code>domoticz://user-variable/{idx}</code> || A single user variable by IDX
+|-
+| <code>domoticz://event/{id}</code> || The source code of an event script
+|-
+| <code>floorplan:///image/{idx}</code> || A floorplan image (PNG/JPEG/SVG) by IDX
+|}
+
+== Tools ==
+
+Tools are actions an AI agent can invoke. All tools accept and return plain text so they work with any LLM.
+
+=== Device discovery ===
+
+{| class="wikitable"
+|-
+! Tool !! Parameters !! Description
+|-
+| <code>search_devices</code> || <code>query</code> (required), <code>filter</code> (optional: light/temp/weather/utility) || Case-insensitive substring search across device name, type and subtype. Returns name, type, current value, idx, battery level (if applicable), and signal level/RSSI (if applicable). Use this first to discover the exact name of a device before calling other tools.
+|-
+| <code>get_all_devices</code> || <code>filter</code> (optional: light/temp/weather/utility), <code>hw_idx</code> (optional, integer), <code>include_unused</code> (optional, boolean) || Return a list of devices, optionally filtered by category, hardware adapter IDX, or inclusion of unused/disabled devices. Each entry includes name, type, current value, idx, battery level (if applicable; 255 = no battery), and signal level/RSSI (if applicable).
+|-
+| <code>get_device</code> || <code>name</code> or <code>idx</code> (at least one required) || Return full details for a single device, including hardware, type, current value, last update, battery level (if applicable), and signal level/RSSI (if applicable).
+|}
+
+=== Switch & sensor control ===
+
+{| class="wikitable"
+|-
+! Tool !! Parameters !! Description
+|-
+| <code>get_switch_state</code> || <code>switchname</code> or <code>idx</code> (one required) || Get the current on/off state of a switch by name or IDX.
+|-
+| <code>toggle_switch_state</code> || <code>switchname</code> or <code>idx</code> (one required) || Toggle a switch between on and off.
+|-
+| <code>set_switch_state</code> || <code>switchname</code> or <code>idx</code> (one required), <code>state</code> (required: On/Off) || Explicitly set a switch to On or Off. State is case-insensitive.
+|-
+| <code>get_sensor_value</code> || <code>sensorname</code> or <code>idx</code> (one required) || Get the current reading of any sensor by name or IDX.
+|-
+| <code>set_setpoint_value</code> || <code>thermostatname</code> or <code>idx</code> (one required), <code>setpoint</code> (required, number) || Set the target temperature setpoint of a thermostat.
+|}
+
+=== Dimmer & lighting control ===
+
+{| class="wikitable"
+|-
+! Tool !! Parameters !! Description
+|-
+| <code>set_dimmer_level</code> || <code>switchname</code> or <code>idx</code> (one required), <code>level</code> (required, 0–100) || Set a dimmable light to a specific brightness level.
+|-
+| <code>set_color_brightness</code> || <code>switchname</code> or <code>idx</code> (one required), <code>hue</code> (required, 0–360), <code>brightness</code> (required, 0–100), <code>iswhite</code> (optional, boolean) || Set the colour and brightness of an RGB light.
+|-
+| <code>set_color_temperature</code> || <code>switchname</code> or <code>idx</code> (one required), <code>kelvin</code> (required, 2700–6500) || Set the colour temperature of a tunable-white light in Kelvin. 2700K is warm white, 6500K is cool daylight.
+|}
+
+=== Blind & shutter control ===
+
+{| class="wikitable"
+|-
+! Tool !! Parameters !! Description
+|-
+| <code>control_blinds</code> || <code>switchname</code> or <code>idx</code> (one required), <code>command</code> (required: Open/Close/Stop) || Send an Open, Close or Stop command to a blind or shutter. Command is case-insensitive.
+|}
+
+=== Scene & room control ===
+
+{| class="wikitable"
+|-
+! Tool !! Parameters !! Description
+|-
+| <code>get_scenes</code> || — || List all scenes and groups with their current status.
+|-
+| <code>switch_scene</code> || <code>scenename</code> or <code>scene_id</code> (one required), <code>command</code> (required: On/Off) || Activate or deactivate a scene or group by name or IDX.
+|-
+| <code>get_rooms</code> || — || List all configured rooms (plans).
+|-
+| <code>get_room_devices</code> || <code>roomname</code> or <code>room_id</code> (one required) || List all devices assigned to a specific room.
+|-
+| <code>get_scene_devices</code> || <code>scenename</code> or <code>scene_id</code> (one required) || List the devices and commands that make up a specific scene.
+|}
+
+=== Device management ===
+
+{| class="wikitable"
+|-
+! Tool !! Parameters !! Description
+|-
+| <code>rename_device</code> || <code>name</code> or <code>idx</code> (one required), <code>new_name</code> (required) || Rename a device.
+|-
+| <code>delete_device</code> || <code>name</code> or <code>idx</code> (one required) || Permanently delete a device and all its associated data. Cannot be undone.
+|-
+| <code>hide_device</code> || <code>name</code> or <code>idx</code> (one required) || Hide a device (sets Used=0; data is preserved and the device can be re-enabled).
+|-
+| <code>create_virtual_sensor</code> || <code>hw_idx</code> (required), <code>sensorname</code> (required), <code>sensortype</code> (required, integer) || Create a new virtual sensor on a virtual hardware adapter. Common sensor types: 80=Temperature, 81=Humidity, 5=Text, 6=Switch, 113=Counter.
+|-
+| <code>update_device_value</code> || <code>name</code> or <code>idx</code> (one required), <code>nvalue</code> (required, integer), <code>svalue</code> (optional, string) || Directly update the value of a device (useful for virtual sensors).
+|}
+
+=== History ===
+
+{| class="wikitable"
+|-
+! Tool !! Parameters !! Description
+|-
+| <code>get_sensor_history</code> || <code>name</code> or <code>idx</code> (one required), <code>days</code> (optional, default 7), <code>start_date</code> / <code>end_date</code> (optional, YYYY-MM-DD), <code>count</code> (optional, 1–500) || Retrieve history for any device or scene. For '''sensors''' (temperature, humidity, barometer, rain, wind, UV, percentage, fan, P1 smart meter, energy/kWh, gas, water, counters): returns daily aggregated min/avg/max calendar data. Specify <code>days</code> for a trailing window or <code>start_date</code>+<code>end_date</code> for a custom range. For '''switches and scenes''': returns on/off/dim event log entries from <code>LightingLog</code>. Use <code>count</code> for the last N events regardless of date, or <code>days</code>/<code>start_date</code>+<code>end_date</code> for a date-filtered log.
+|-
+| <code>get_sensor_short_log</code> || <code>name</code> or <code>idx</code> (one required), <code>hours</code> (optional, 1–168, default 24), <code>count</code> (optional, 1–1000) || Retrieve recent high-resolution measurements at ~5-minute intervals. Use this for today's data, the last 24 hours, or the last N readings. Short-log data is kept for a configurable number of days (default: 1 day). Not applicable to switches or scenes — use <code>get_sensor_history</code> for multi-day or long-term data.
+|}
+
+=== User variables ===
+
+{| class="wikitable"
+|-
+! Tool !! Parameters !! Description
+|-
+| <code>get_user_variables</code> || — || List all user-defined variables with their current values and types.
+|-
+| <code>add_user_variable</code> || <code>name</code> (required), <code>vtype</code> (required, 0–4), <code>value</code> (required) || Create a new user variable. Types: 0=Integer, 1=Float, 2=String, 3=Date (DD/MM/YYYY), 4=Time (HH:MM).
+|-
+| <code>update_user_variable</code> || <code>name</code> or <code>variable_id</code> (one required), <code>value</code> (required), <code>vtype</code> (optional) || Update an existing user variable's value (and optionally its type).
+|-
+| <code>delete_user_variable</code> || <code>name</code> or <code>variable_id</code> (one required) || Delete a user variable by name or IDX.
+|}
+
+=== System information ===
+
+{| class="wikitable"
+|-
+! Tool !! Parameters !! Description
+|-
+| <code>get_status</code> || — || System overview: version, build, uptime, active device/hardware/scene counts, and sunrise/sunset times.
+|-
+| <code>get_hardware</code> || — || List all configured hardware adapters with their type, address and enabled status.
+|-
+| <code>get_settings</code> || — || Return key system configuration values (title, location, temperature scale, language, etc.).
+|-
+| <code>get_sun_times</code> || — || Full solar data for today: sunrise, sunset, dawn, dusk, solar noon, civil/nautical twilight times and day length.
+|-
+| <code>get_cameras</code> || — || List all configured cameras (name, address, port, enabled status — no credentials).
+|-
+| <code>get_floorplans</code> || — || List all available floorplans by name and IDX (use <code>get_floorplan</code> to retrieve the actual image).
+|-
+| <code>get_floorplan</code> || <code>floorplan</code> or <code>floorplan_id</code> (one required) || Retrieve a floorplan image by name or IDX (returned as base64-encoded image data).
+|-
+| <code>get_users</code> || — || List system users with their username, rights level and active status (no password information).
+|}
+
+=== Logging & notifications ===
+
+{| class="wikitable"
+|-
+! Tool !! Parameters !! Description
+|-
+| <code>get_logging</code> || <code>logdate</code> (optional, Unix timestamp) || Retrieve system log messages, optionally filtered to entries since a given timestamp.
+|-
+| <code>add_log_message</code> || <code>message</code> (required), <code>level</code> (optional: normal/status/error, default: normal) || Write a message to the Domoticz system log. Entries are prefixed with <code>MCP:</code> for identification.
+|-
+| <code>send_notification</code> || <code>subject</code> (required), <code>body</code> (required), <code>priority</code> (optional, −2 to 2, default: 0) || Send a push notification through all configured Domoticz notification services. Use sparingly.
+|}
+
+=== Security panel ===
+
+{| class="wikitable"
+|-
+! Tool !! Parameters !! Description
+|-
+| <code>get_security_status</code> || — || Get the current state of the security panel: Disarmed, Armed Home, or Armed Away.
+|-
+| <code>set_security_status</code> || <code>status</code> (required, 0=Disarmed/1=Armed Home/2=Armed Away), <code>seccode</code> (required) || Change the security panel state. Requires the security PIN configured in Domoticz Setup → Settings → Security.
+|}
+
+=== Event/automation scripts ===
+
+{| class="wikitable"
+|-
+! Tool !! Parameters !! Description
+|-
+| <code>get_events</code> || — || List all automation event scripts with their interpreter (dzVents/Lua/Python/Blockly) and enabled status.
+|-
+| <code>get_event</code> || <code>event_name</code> or <code>event_id</code> (one required) || Retrieve the full source code of a specific event script by name or IDX.
+|-
+| <code>create_event</code> || <code>name</code> (required), <code>interpreter</code> (required: Lua/dzVents/Python/Blockly), <code>code</code> (required), <code>enabled</code> (optional, default: true) || Create a new automation event script.
+|-
+| <code>update_event</code> || <code>event_name</code> or <code>event_id</code> (one required), <code>code</code> (optional), <code>enabled</code> (optional), <code>new_name</code> (optional) || Update an existing event script's code, enabled state, or name.
+|-
+| <code>delete_event</code> || <code>event_name</code> or <code>event_id</code> (one required) || Permanently delete an event script by name or IDX. This cannot be undone.
+|}
+
+== Prompts ==
+
+Prompts are pre-written instruction templates that guide the AI through common tasks. Select a prompt from your MCP client's interface to get started.
+
+{| class="wikitable"
+|-
+! Prompt !! Arguments !! Description
+|-
+| <code>housesummary</code> || <code>room</code> (optional) || Summarize the current status of all sensors and devices in the house, grouped by room. Optionally limit the summary to a specific room.
+|-
+| <code>systemanalysis</code> || — || Analyze the current status of the system and provide insights.
+|-
+| <code>troubleshoot_device</code> || <code>device</code> (required) || Ask the AI to diagnose a specific device by checking its state, recent history, system logs, and hardware status.
+|-
+| <code>analyze_automations</code> || — || Review all event scripts for logic issues, inefficiencies, or improvement opportunities.
+|-
+| <code>analyze_event</code> || <code>event</code> (required) || Review a specific event script for logic issues, inefficiencies, or improvement opportunities.
+|-
+| <code>energy_report</code> || — || Summarize power and energy consumption across all electric sensors, identify high consumers, and compare to recent history.
+|-
+| <code>security_check</code> || — || Review security panel status, door/window sensors, cameras, and recent alerts.
+|-
+| <code>battery_status</code> || — || List all battery-powered devices, flag low-battery ones, and suggest replacements.
+|-
+| <code>climate_overview</code> || — || Summarize temperature, humidity, and thermostat setpoints per room and suggest comfort improvements.
+|-
+| <code>scene_optimizer</code> || — || Review all scenes and groups, identify redundant or conflicting ones, and suggest consolidation.
+|-
+| <code>hardware_health</code> || — || Check all hardware instances for connectivity and errors, and flag anything offline or problematic.
+|-
+| <code>create_automation</code> || <code>rule</code> (required) || Guide through creating a new dzVents event script for a described automation rule.
+|-
+| <code>daily_report</code> || — || Generate a daily digest covering overnight anomalies, battery warnings, offline devices, and energy highlights.
+|}
+
+== Async notifications (SSE) ==
+
+Domoticz supports the full MCP Streamable HTTP transport, including server-sent event (SSE) streams for real-time push notifications. This allows AI clients such as VS Code Copilot to stay current on device state without polling.
+
+=== How it works ===
+
+After calling <code>initialize</code>, the server returns an <code>Mcp-Session-Id</code> header. The client then opens a persistent SSE stream with:
+
+<pre>
+GET /mcp HTTP/1.1
+Accept: text/event-stream
+Mcp-Session-Id: <session-id>
+MCP-Protocol-Version: 2025-06-18
+</pre>
+
+The server keeps this connection open and pushes JSON-RPC notification events as they occur. The client must include <code>Mcp-Session-Id</code> on all subsequent POST requests to associate them with the correct session.
+
+=== Notification types ===
+
+{| class="wikitable"
+|-
+! Notification !! Trigger
+|-
+| <code>notifications/resources/updated</code> || A device or scene state changed. The <code>params.uri</code> field contains the resource URI, e.g. <code>domoticz://devices/42</code> or <code>domoticz://scenes/3</code>.
+|-
+| <code>notifications/resources/list_changed</code> || A device was added or removed (virtual sensor created, device deleted, hardware added/removed).
+|-
+| <code>notifications/tools/list_changed</code> || Same trigger as above — the tool list changes whenever the device list changes.
+|-
+| <code>notifications/message</code> || A Domoticz error log entry, or an MCP-specific operational message (e.g. SSE stream connected). See [[#Log forwarding|Log forwarding]] below.
+|}
+
+=== Resource subscriptions ===
+
+By default a session receives <code>notifications/resources/updated</code> for '''all''' device and scene changes. To restrict notifications to specific resources, send a <code>resources/subscribe</code> request:
+
+<pre>
+POST /mcp
+{
+  "jsonrpc": "2.0", "id": 1,
+  "method": "resources/subscribe",
+  "params": { "uri": "domoticz://devices/42" }
+}
+</pre>
+
+Once any subscription is registered, only events matching a subscribed URI are sent. Use <code>resources/unsubscribe</code> with the same body to remove a subscription.
+
+=== Log forwarding ===
+
+By default, only Domoticz <code>LOG_ERROR</code> messages are forwarded as <code>notifications/message</code> events. MCP-specific operational messages (such as "SSE stream connected") are always sent regardless of the log level setting.
+
+Clients can adjust the log level via <code>logging/setLevel</code>:
+
+<pre>
+POST /mcp
+{
+  "jsonrpc": "2.0", "id": 2,
+  "method": "logging/setLevel",
+  "params": { "level": "error" }
+}
+</pre>
+
+Valid levels are <code>debug</code>, <code>info</code>, <code>notice</code>, <code>warning</code>, <code>error</code>, <code>critical</code>, <code>alert</code>, <code>emergency</code>. Note: to prevent flooding, the minimum effective level is always <code>error</code> — requesting <code>debug</code> or <code>info</code> has no additional effect.
+
+=== Reconnection and event replay ===
+
+Each SSE event carries a numeric <code>id:</code> field. If a client disconnects and reconnects, it can send a <code>Last-Event-ID</code> header to replay any events it missed (up to the last 100 events, or events from the last 5 minutes):
+
+<pre>
+GET /mcp HTTP/1.1
+Accept: text/event-stream
+Mcp-Session-Id: <session-id>
+Last-Event-ID: 17
+</pre>
+
+=== Session lifecycle ===
+
+Sessions are created by <code>initialize</code> and terminated by:
+* A <code>DELETE /mcp</code> request with the <code>Mcp-Session-Id</code> header
+* Automatic pruning after 1 hour of inactivity
+
+== Notes and limitations ==
+
+* Only [https://modelcontextprotocol.io/specification/2025-06-18 MCP specification version 2025-06-18] is supported.
+* Streamable HTTP transport is implemented, including SSE streams for async notifications. STDIO is not natively supported; use an HTTP proxy if your client requires it.
+* All tool responses are plain text, making them compatible with any LLM regardless of multimodal support (except <code>get_floorplan</code> which returns image data).
+* SSE sessions are pruned after 1 hour of inactivity. Long-running AI agents should periodically send a request to keep the session alive.
+* The minimum log forwarding level is <code>error</code>. Status and debug messages from Domoticz are intentionally not forwarded to avoid flooding AI clients during normal operation.
+* The <code>send_notification</code> tool sends to real devices (phone, email, etc.). Avoid invoking it in automated loops.
+* The <code>delete_device</code> tool permanently deletes a device and all its data — this cannot be undone. Use <code>hide_device</code> to only hide a device (sets Used=0) while preserving its data.
+* The <code>create_event</code> and <code>update_event</code> tools take effect immediately — the event system reloads after each change.
+* Device and scene names passed to tools are matched exactly (case-sensitive). All tools that accept a name also accept a numeric <code>idx</code> parameter as an alternative — use whichever is more convenient. Command values like On/Off/Open/Close are normalised automatically (case-insensitive).
+* Signal level (RSSI) is reported for wireless devices as <code>rssi=&lt;value&gt;</code> (compact format in list tools) or <code>SignalLevel: &lt;value&gt;</code> (detail format in <code>get_device</code>). The value 12 is the default/unknown value and is omitted from output.

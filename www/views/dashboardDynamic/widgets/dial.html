@@ -1,0 +1,282 @@
+<div class="dd-dial-outer">
+
+    <!-- Unconfigured state -->
+    <div ng-if="!ctrl.widgetDef.config.deviceIdx" class="dd-chart-unconfigured">
+        <i class="fa-solid fa-gauge"></i>
+        <p>Select a device in settings</p>
+    </div>
+
+    <!-- Title above the dial (matches dd-stat-label style of other widgets) -->
+    <div ng-if="ctrl.widgetDef.config.deviceIdx && ctrl.title"
+         class="dd-stat-label dd-dial-ext-title"
+         ng-bind="ctrl.title"></div>
+
+    <!-- Dial SVG -->
+    <div ng-if="ctrl.widgetDef.config.deviceIdx" class="dd-dial-svg-wrap">
+        <svg viewBox="-6 -6 112 112" class="dd-dial-svg"
+             ng-class="{'dd-dial-interactive': (ctrl.deviceType === 'setpoint' || ctrl.deviceType === 'selector') && !ctrl.editMode,
+                         'dd-dial-clickable':   ctrl.deviceType === 'switch' && !ctrl.editMode,
+                         'dd-dial-dragging': ctrl.dragging}"
+             ng-mousedown="ctrl.dragStart($event)"
+             ng-click="ctrl.handleClick()">
+
+            <!-- Clip path for selector hub content (static id — geometry identical on all dial instances) -->
+            <defs>
+                <clipPath id="dd-dial-hub-clip">
+                    <circle cx="50" cy="50" r="28.5"/>
+                </clipPath>
+            </defs>
+
+            <!-- 1. Outer bezel ring -->
+            <circle class="dd-dial-bezel" cx="50" cy="50" r="49"/>
+
+            <!-- 1b. Timeout indicator: thin red outline + small badge in top-right -->
+            <g ng-if="ctrl.timedOut" class="dd-dial-timeout">
+                <circle cx="50" cy="50" r="49"
+                        fill="none"
+                        stroke="var(--dz-status-timeout)"
+                        stroke-width="1.5"
+                        stroke-dasharray="3 2"/>
+                <circle cx="84" cy="16" r="7"
+                        fill="var(--dz-status-timeout)"
+                        stroke="var(--dz-panel-bg)" stroke-width="1.5"/>
+                <text x="84" y="16.5"
+                      text-anchor="middle" dominant-baseline="middle"
+                      fill="#fff"
+                      style="font-size:8px;font-weight:700;pointer-events:none;">!</text>
+                <title>Device timeout
+Last update: {{ctrl.lastUpdate}}</title>
+            </g>
+
+            <!-- 2. Subtle top highlight for 3-D depth -->
+            <ellipse class="dd-dial-highlight" cx="50" cy="34" rx="19" ry="11"/>
+
+            <!-- 3. Dark face -->
+            <circle class="dd-dial-face" cx="50" cy="50" r="41"/>
+
+            <!-- 4a. Arc track (background grey arc for arc-fill modes) -->
+            <circle ng-if="ctrl.showArcFill()"
+                    class="dd-dial-arc-track"
+                    cx="50" cy="50" r="34"
+                    fill="none" stroke-width="4"
+                    transform="rotate(135, 50, 50)"
+                    ng-attr-stroke-dasharray="{{ctrl.arcTrackDasharray()}}"/>
+
+            <!-- 4c. P1 bidirectional arc fill (path from 12-o'clock toward current) -->
+            <path ng-if="ctrl.deviceType === 'p1' && ctrl.p1FillPath()"
+                  class="dd-dial-arc-fill"
+                  fill="none" stroke-width="4"
+                  stroke-linecap="round"
+                  ng-attr-d="{{ctrl.p1FillPath()}}"
+                  ng-style="{'stroke': ctrl.p1FillColor()}"/>
+
+            <!-- 5. Scale ticks (bezel ring space, outside amber ring) -->
+            <line ng-repeat="t in ctrl.scaleTicks"
+                  ng-if="ctrl.deviceType !== 'selector'"
+                  ng-class="t.minor ? 'dd-dial-tick-minor' : 'dd-dial-tick'"
+                  ng-attr-x1="{{t.x1}}" ng-attr-y1="{{t.y1}}"
+                  ng-attr-x2="{{t.x2}}" ng-attr-y2="{{t.y2}}"/>
+
+            <!-- 6. Scale labels (rotated so top points outward from centre) -->
+            <text ng-if="ctrl.deviceType !== 'selector'"
+                  ng-repeat="t in ctrl.scaleTicks"
+                  class="dd-dial-scale-lbl"
+                  ng-attr-x="{{t.textX}}" ng-attr-y="{{t.textY}}"
+                  text-anchor="middle" dominant-baseline="middle"
+                  ng-attr-transform="rotate({{t.textRot}}, {{t.textX}}, {{t.textY}})"
+                  ng-bind="t.label"></text>
+
+			<g ng-attr-transform="translate(50,50) scale({{ctrl.dialContentScale()}}) translate(-50,-50)">
+				<!-- 7. Amber border ring (always full circle) -->
+				<circle class="dd-dial-ring"
+						cx="50" cy="50" r="37"
+						fill="none" stroke-width="2"
+						ng-style="{'stroke': ctrl.arcFillColor()}"/>
+
+				<!-- 8. Triangular needle (from NEEDLE_BASE_R base toward ARC_R tip) -->
+				<polygon ng-if="ctrl.showNeedle()"
+						 class="dd-dial-needle"
+						 ng-attr-points="{{ctrl.needlePoints()}}"
+						 ng-style="{'fill': ctrl.arcFillColor()}"/>
+
+				<!-- 9. Inner hub circle (masks needle base so only INNER_R→ARC_R is visible) -->
+				<circle ng-if="ctrl.deviceType !== 'text'"
+						class="dd-dial-hub"
+						cx="50" cy="50" r="30"/>
+
+				<!-- ── Center content (inside hub r<28) ──────────────────── -->
+
+				<!-- Setpoint / numeric: value • unit -->
+				<g ng-if="ctrl.deviceType === 'setpoint' || ctrl.deviceType === 'numeric'">
+					<text class="dd-dial-value-txt"
+						  x="50" y="46"
+						  text-anchor="middle" dominant-baseline="middle"
+						  ng-bind="ctrl.valueStr"></text>
+					<text ng-if="ctrl.unitStr"
+						  class="dd-dial-unit-txt"
+						  x="50" y="57"
+						  text-anchor="middle" dominant-baseline="middle"
+						  ng-bind="ctrl.unitStr"></text>
+					<!-- Drag hint for setpoint -->
+					<text ng-if="ctrl.deviceType === 'setpoint' && !ctrl.editMode && !ctrl.sending"
+						  class="dd-dial-unit-txt"
+						  x="50" y="66"
+						  text-anchor="middle" dominant-baseline="middle"
+						  style="font-size:4.5px;opacity:0.60;">drag to set</text>
+				</g>
+
+				<!-- Wind: degrees • direction string • speed/gust • temp/chill -->
+				<g ng-if="ctrl.deviceType === 'wind'">
+					<text class="dd-dial-value-txt"
+						  x="50" y="37"
+						  text-anchor="middle" dominant-baseline="middle"
+						  style="font-size:13px;"
+						  ng-bind="ctrl.valueStr"></text>
+					<text ng-if="ctrl.unitStr"
+						  class="dd-dial-unit-txt"
+						  x="50" y="47"
+						  text-anchor="middle" dominant-baseline="middle"
+						  style="font-size:8px;"
+						  ng-bind="ctrl.unitStr"></text>
+					<text class="dd-dial-wind-sub"
+						  x="50" y="57"
+						  text-anchor="middle" dominant-baseline="middle"
+						  ng-bind="ctrl.windSubLine()"></text>
+					<text ng-if="ctrl.windTempLine()"
+						  class="dd-dial-wind-sub"
+						  x="50" y="65"
+						  text-anchor="middle" dominant-baseline="middle"
+						  ng-bind="ctrl.windTempLine()"></text>
+				</g>
+
+				<!-- Selector: vertical scroll list, active item centred in hub -->
+				<g ng-if="ctrl.deviceType === 'selector'">
+					<!-- Clip all content to hub interior -->
+					<g clip-path="url(#dd-dial-hub-clip)">
+						<!-- Amber highlight bar behind active item -->
+						<rect class="dd-dial-sel-active-box"
+							  x="21" y="44.5" width="58" height="11" rx="2"
+							  fill-opacity="0.18" stroke-width="0.8"
+							  ng-style="{'fill': ctrl.arcFillColor(), 'stroke': ctrl.arcFillColor()}"/>
+						<!-- Items: -2 above to +2 below, centred at y=50 -->
+						<text ng-repeat="item in ctrl.selectorItems"
+							  class="dd-dial-sel-item"
+							  x="50"
+							  ng-attr-y="{{ item.y }}"
+							  ng-attr-font-size="{{ item.fontSize }}"
+							  ng-attr-fill-opacity="{{ item.opacity }}"
+							  ng-class="{'dd-dial-sel-active': item.isActive}"
+							  text-anchor="middle" dominant-baseline="middle"
+							  ng-bind="item.name"></text>
+					</g>
+					<!-- Drag hint (not clipped) -->
+					<text ng-if="!ctrl.editMode && !ctrl.sending"
+						  class="dd-dial-unit-txt"
+						  x="50" y="74"
+						  text-anchor="middle" dominant-baseline="middle"
+						  style="font-size:4.5px;opacity:0.60;">drag up / down</text>
+				</g>
+
+				<!-- Text sensor: text value -->
+				<g ng-if="ctrl.deviceType === 'text'">
+					<text class="dd-dial-value-txt"
+						  x="50" y="50"
+						  text-anchor="middle" dominant-baseline="middle"
+						  style="font-size:10px;"
+						  ng-bind="ctrl.valueStr"></text>
+				</g>
+
+				<!-- Switch: SVG power icon + On/Off status -->
+				<g ng-if="ctrl.deviceType === 'switch'"
+				   ng-style="{'stroke': ctrl.arcFillColor(), 'fill': 'none'}">
+					<!-- Arc: 300° circle with gap at top (±30° from 12-o'clock), r=11, centre (50,44) -->
+					<path d="M 55.5,34.5 A 11,11 0 1,1 44.5,34.5"
+						  stroke-width="2" stroke-linecap="round"/>
+					<!-- Vertical line through the gap -->
+					<line x1="50" y1="31.5" x2="50" y2="41.5"
+						  stroke-width="2" stroke-linecap="round"/>
+					<!-- On/Off status text -->
+					<text x="50" y="67"
+						  class="dd-dial-unit-txt"
+						  text-anchor="middle" dominant-baseline="middle"
+						  style="font-size:16px;font-weight:600;"
+						  stroke="none"
+						  ng-style="ctrl.switchOn ? {'fill': 'var(--dz-accent-color)'} : {'fill': 'var(--dz-widget-stat-muted)'}"
+						  ng-bind="ctrl.valueStr"></text>
+				</g>
+
+				<!-- Temperature: value+unit • humidity • baro • forecast -->
+				<g ng-if="ctrl.deviceType === 'temp'">
+					<text class="dd-dial-value-txt"
+						  x="50" y="40"
+						  text-anchor="middle" dominant-baseline="middle"
+						  style="font-size:12px;"
+						  ng-bind="ctrl.valueStr + ctrl.unitStr"></text>
+					<text ng-if="ctrl.humidity !== null"
+						  class="dd-dial-kwh-sub"
+						  x="50" y="50"
+						  text-anchor="middle" dominant-baseline="middle">&#9830; {{ ctrl.humidity }}%</text>
+					<text ng-if="ctrl.baro !== null"
+						  class="dd-dial-kwh-sub"
+						  x="50" y="57"
+						  text-anchor="middle" dominant-baseline="middle">{{ ctrl.baro }} hPa</text>
+					<text ng-if="ctrl.forecastStr"
+						  class="dd-dial-update-txt"
+						  x="50" y="64"
+						  text-anchor="middle" dominant-baseline="middle"
+						  ng-bind="ctrl.forecastStr"></text>
+				</g>
+
+				<!-- kWh: kWh today • unit • power • last update -->
+				<g ng-if="ctrl.deviceType === 'kwh'">
+					<text class="dd-dial-value-txt"
+						  x="50" y="42"
+						  text-anchor="middle" dominant-baseline="middle"
+						  style="font-size:13px;"
+						  ng-bind="ctrl.valueStr"></text>
+					<text class="dd-dial-unit-txt"
+						  x="50" y="52"
+						  text-anchor="middle" dominant-baseline="middle"
+						  ng-bind="ctrl.unitStr"></text>
+					<text ng-if="ctrl.kwhToday !== null"
+						  class="dd-dial-kwh-sub"
+						  x="50" y="60"
+						  text-anchor="middle" dominant-baseline="middle"
+						  ng-bind="ctrl.powerStr"></text>
+				</g>
+
+				<!-- P1 Smart Meter: signed net power • import/export kWh • date -->
+				<g ng-if="ctrl.deviceType === 'p1'">
+					<text class="dd-dial-value-txt"
+						  x="50" y="40"
+						  text-anchor="middle" dominant-baseline="middle"
+						  style="font-size:12px;"
+						  ng-bind="ctrl.valueStr"></text>
+					<text class="dd-dial-unit-txt"
+						  x="50" y="49"
+						  text-anchor="middle" dominant-baseline="middle"
+						  style="font-size:5.5px;"
+						  ng-bind="ctrl.unitStr"></text>
+					<text ng-if="ctrl.importKwh !== null"
+						  class="dd-dial-p1-import"
+						  x="50" y="57"
+						  text-anchor="middle" dominant-baseline="middle">&#x2193; {{ ctrl.importKwh }} kWh</text>
+					<text ng-if="ctrl.exportKwh !== null"
+						  class="dd-dial-p1-export"
+						  x="50" y="65"
+						  text-anchor="middle" dominant-baseline="middle">&#x2191; {{ ctrl.exportKwh }} kWh</text>
+				</g>
+
+				<!-- Load error indicator -->
+				<text ng-if="ctrl.loadError"
+					  class="dd-dial-unit-txt"
+					  x="50" y="73"
+					  text-anchor="middle" dominant-baseline="middle"
+					  style="fill:var(--dz-status-timeout);">
+					&#xf071; error
+				</text>
+			</g>
+        </svg>
+    </div>
+
+</div>

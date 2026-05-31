@@ -152,12 +152,83 @@ function stripHTMLTags(text) {
     return text.replace(/<[^>]*>/g, '');
 }
 
-function sanitizeHTML(text) {
+function stripCssComments(cssText) {
+    var out = '', i = 0, len = cssText.length, inStr = false, strCh = '';
+    while (i < len) {
+        var c = cssText[i];
+        if (!inStr && (c === '"' || c === "'")) { inStr = true; strCh = c; out += c; i++; }
+        else if (inStr) { if (c === strCh && cssText[i - 1] !== '\\') inStr = false; out += c; i++; }
+        else if (cssText.substr(i, 2) === '/*') { var e = cssText.indexOf('*/', i + 2); i = e === -1 ? len : e + 2; }
+        else { out += c; i++; }
+    }
+    return out;
+}
+
+function scopeCss(cssText, prefix) {
+    if (cssText.length > 10000) return '';
+    if (!scopeCss._cache) scopeCss._cache = {};
+    var cacheKey = prefix + '\0' + cssText;
+    if (scopeCss._cache[cacheKey]) return scopeCss._cache[cacheKey];
+    cssText = stripCssComments(cssText);
+    var result = '';
+    var i = 0, len = cssText.length;
+    while (i < len) {
+        var braceOpen = cssText.indexOf('{', i);
+        if (braceOpen === -1) break;
+        var selector = cssText.substring(i, braceOpen).trim();
+        if (!selector) { i = braceOpen + 1; continue; }
+        var depth = 1, j = braceOpen + 1;
+        while (j < len && depth > 0) {
+            if (cssText[j] === '{') depth++;
+            else if (cssText[j] === '}') depth--;
+            j++;
+        }
+        var blockContent = cssText.substring(braceOpen + 1, j - 1);
+        if (/^@(media|supports)/i.test(selector)) {
+            result += selector + ' {\n' + scopeCss(blockContent, prefix) + '}\n';
+        } else if (/^@/.test(selector)) {
+            result += selector + ' {' + blockContent + '}\n';
+        } else {
+            var prefixed = selector.split(',').map(function(s) {
+                s = s.trim();
+                if (!s) return '';
+                if (/^(html|body|:root)$/i.test(s)) return prefix;
+                return prefix + ' ' + s;
+            }).filter(Boolean).join(',\n');
+            result += prefixed + ' {' + blockContent + '}\n';
+        }
+        i = j;
+        while (i < len && /\s/.test(cssText[i])) i++;
+    }
+    if (Object.keys(scopeCss._cache).length > 100) scopeCss._cache = {};
+    scopeCss._cache[cacheKey] = result;
+    return result;
+}
+
+function sanitizeHTML(text, scopeId) {
     if (typeof text !== 'string') return text;
-    return DOMPurify.sanitize(text, {
-        ALLOWED_TAGS: ['br', 'b', 'i', 'u', 'em', 'strong', 'font', 'span'],
-        ALLOWED_ATTR: ['color', 'style']
-    });
+    if (!/<(?!br[\s/>])[a-zA-Z][^>]*>/i.test(text)) {
+        text = text.replace(/(\r\n|\n\r|\r|\n)/g, '<br />');
+    }
+    var clean;
+    try {
+        clean = DOMPurify.sanitize(text, {
+            ALLOWED_TAGS: ['br', 'b', 'i', 'u', 'em', 'strong', 'font', 'span',
+                           'div', 'p', 'pre', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
+                           'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'a', 'ul', 'ol', 'li', 'style'],
+            ALLOWED_ATTR: ['color', 'style', 'class', 'href', 'target'],
+            FORCE_BODY: true
+        });
+    } catch (e) {
+        clean = stripHTMLTags(text);
+    }
+    if (scopeId) {
+        var prefix = '#' + scopeId;
+        clean = clean.replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gi, function(match, css) {
+            return '<style>' + scopeCss(css, prefix) + '</style>';
+        });
+    }
+    return clean;
 }
 
 function Transform(tag) {
@@ -464,12 +535,12 @@ function Device(item) {
         var el;
         //Draw device values if option(s) is turned on
         if ((this.showStatus == true) && (this.smallStatus.length > 0)) {
-            var nbackcolor = "#D4E1EE";
+            var nbackcolor = "var(--dz-status-normal)";
             if (this.protected == true) {
-                nbackcolor = "#A4B1EE";
+                nbackcolor = "var(--dz-status-protected)";
             }
             if (this.haveTimeout == true) {
-                nbackcolor = "#DF2D3A";
+                nbackcolor = "var(--dz-status-timeout)";
             }
             if (Device.useSVGtags == true) {
                 var tileMaxWidth = this.hasHTMLContent ? Device.iconSize * 5 : Device.iconSize * 3;
@@ -550,16 +621,16 @@ function Device(item) {
         return el;
     };
     this.drawDetails = function (parent, display) {
-        var nbackcolor = "#D4E1EE";
+        var nbackcolor = "var(--dz-status-normal)";
         var showme = (display == false) ? 'none' : 'inline';
         if (this.protected == true) {
-            nbackcolor = "#A4B1EE";
+            nbackcolor = "var(--dz-status-protected)";
         }
         if (this.haveTimeout == true) {
-            nbackcolor = "#DF2D3A";
+            nbackcolor = "var(--dz-status-timeout)";
         }
         if (this.batteryLevel <= 10) {
-            nbackcolor = "#DDDF2D";
+            nbackcolor = "var(--dz-status-low-battery)";
         }
         var existing = document.getElementById(this.uniquename + "_Detail");
         var el;
@@ -622,15 +693,17 @@ function Device(item) {
                     oStatus.setAttribute('y', Device.elementPadding * 0.5);
                     oStatus.setAttribute('width', foWidth);
                     oStatus.setAttribute('height', foHeight);
+                    var scopeId = 'dz-txt-' + this.index;
                     var div = document.createElement('div');
                     div.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+                    div.id = scopeId;
                     div.style.fontWeight = 'bold';
                     div.style.fontSize = '75%';
                     div.style.overflow = 'hidden';
                     div.style.maxHeight = foHeight + 'px';
                     div.style.lineHeight = '1.3';
                     div.style.color = '#000000';
-                    div.innerHTML = sanitizeHTML(TranslateStatus(this.status));
+                    div.innerHTML = sanitizeHTML(TranslateStatus(this.status), scopeId);
                     oStatus.appendChild(div);
                 }
                 else if (this.hasNewLine) {
@@ -1913,17 +1986,20 @@ function Text(item) {
         this.imagetext = "";
         this.NotifyLink = "";
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
-        this.data = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
-        if (this.data.indexOf("<br />") != -1) {
-            this.hasNewLine = true;
+        this.hasHTMLContent = /<(?!br[\s/>])[a-zA-Z][^>]*>/i.test(item.Data);
+        if (this.hasHTMLContent) {
+            this.data = item.Data;
+            this.hasNewLine = this.data.indexOf("<br />") !== -1 || /[\r\n]/.test(this.data);
+        } else {
+            this.data = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+            this.hasNewLine = this.data.indexOf("<br />") !== -1;
         }
-        this.hasHTMLContent = /<(?!br\s*\/?)[a-zA-Z][^>]*>/i.test(this.data);
         this.status = this.data;
-        this.smallStatus = stripHTMLTags(this.data.replace(/<br\s*\/?>/gi, ', '));
+        this.smallStatus = stripHTMLTags(this.data.replace(/<br\s*\/?>/gi, ', ').replace(/[\r\n]/g, ', '));
         this.data = "";
-        // Increase popup size for text sensors with multiline/HTML content
         if (this.hasNewLine || this.hasHTMLContent) {
-            var lineCount = (this.status.match(/<br\s*\/?>/gi) || []).length + 1;
+            var lineCount = (this.status.match(/<br\s*\/?>/gi) || []).length +
+                            (this.status.match(/\n/g) || []).length + 1;
             this.width = Device.elementPadding * 55;
             this.height = Math.max(Device.elementPadding * 15, Device.elementPadding * (10 + lineCount * 3));
         }

@@ -11,6 +11,7 @@
 #include "PluginMessages.h"
 #include "PluginProtocols.h"
 #include "PluginTransports.h"
+#include "PluginWebSocketRegistry.h"
 #include "PythonObjects.h"
 #include "PythonPluginUtils.h"
 
@@ -485,13 +486,20 @@ namespace Plugins
 				//  Convert to JSON and store
 				std::string sConfig = jsonProtocol.PythontoJSON(pNewConfig);
 
-				// Update database
-				m_sql.safe_query("UPDATE Hardware SET Configuration='%q' WHERE (ID == %d)", sConfig.c_str(), pModState->pPlugin->m_HwdID);
+				// Update database — release GIL during blocking SQL write
+				{
+					PyAllowThreads gil;
+					m_sql.safe_query("UPDATE Hardware SET Configuration='%q' WHERE (ID == %d)", sConfig.c_str(), pModState->pPlugin->m_HwdID);
+				}
 			}
 			PyErr_Clear();
 
-			// Read the configuration
-			std::vector<std::vector<std::string>> result = m_sql.safe_query("SELECT Configuration FROM Hardware WHERE (ID==%d)", pModState->pPlugin->m_HwdID);
+			// Read the configuration — release GIL during blocking SQL read
+			std::vector<std::vector<std::string>> result;
+			{
+				PyAllowThreads gil;
+				result = m_sql.safe_query("SELECT Configuration FROM Hardware WHERE (ID==%d)", pModState->pPlugin->m_HwdID);
+			}
 			if (result.empty())
 			{
 				pModState->pPlugin->Log(LOG_ERROR, "CPlugin:%s, Hardware ID not found in database '%d'.", __func__, pModState->pPlugin->m_HwdID);
@@ -643,6 +651,61 @@ namespace Plugins
 		Py_RETURN_NONE;
 	}
 
+	static PyObject *PyDomoticz_WebSocketSend(PyObject *self, PyObject *args, PyObject *kwds)
+	{
+		module_state *pModState = CPlugin::FindModule();
+		if (!pModState)
+		{
+			Py_RETURN_NONE;
+		}
+		else if (!pModState->pPlugin)
+		{
+			_log.Log(LOG_ERROR, "CPlugin:%s, illegal operation, Plugin has not started yet.", __func__);
+			Py_RETURN_NONE;
+		}
+
+		PyObject *pPayload = nullptr;
+		static char *kwlist[] = { "data", nullptr };
+		if (!PyArg_ParseTupleAndNormalizedKeywords(args, kwds, "O", kwlist, &pPayload))
+		{
+			pModState->pPlugin->Log(LOG_ERROR, "%s: Failed to parse parameters, expected a str or dict.", __func__);
+			pModState->pPlugin->LogPythonException(std::string(__func__));
+			Py_RETURN_NONE;
+		}
+
+		std::string sPayload;
+		PyBorrowedRef brPayload(pPayload);
+		if (brPayload.IsString())
+		{
+			// JSON-encode the Python str as a JSON string literal so that
+			// SendPluginMessage's ParseJSon round-trip always succeeds and
+			// json["data"] receives the correct string value.  Without this,
+			// a bare unquoted string like "raw-string-..." would be passed to
+			// ParseJSon, which fails on it (not valid JSON), and the else-branch
+			// assigns the raw string directly — but only if ParseJSon truly
+			// returns false every time.  Encoding here makes the behaviour
+			// explicit and identical on all jsoncpp build configurations.
+			std::string rawStr = std::string(brPayload);
+			sPayload = Json::valueToQuotedString(rawStr.c_str());
+		}
+		else if (brPayload.IsDict())
+		{
+			CPluginProtocolJSON jsonProtocol;
+			sPayload = jsonProtocol.PythontoJSON(pPayload);
+		}
+		else
+		{
+			pModState->pPlugin->Log(LOG_ERROR, "%s: Parameter must be a str or dict.", __func__);
+			Py_RETURN_NONE;
+		}
+
+		std::string sPluginKey = pModState->pPlugin->m_PluginKey;
+		int hwId = pModState->pPlugin->m_HwdID;
+		pModState->pPlugin->MessagePlugin(new WebSocketSendDirective(sPluginKey, hwId, sPayload));
+
+		Py_RETURN_NONE;
+	}
+
 	static PyMethodDef DomoticzMethods[] = { { "Debug", PyDomoticz_Debug, METH_VARARGS, "Write a message to Domoticz log only if verbose logging is turned on." },
 						 { "Log", PyDomoticz_Log, METH_VARARGS, "Write a message to Domoticz log." },
 						 { "Status", PyDomoticz_Status, METH_VARARGS, "Write a status message to Domoticz log." },
@@ -656,6 +719,8 @@ namespace Plugins
 						 { "Configuration", (PyCFunction)PyDomoticz_Configuration, METH_VARARGS | METH_KEYWORDS, "Retrieve and Store structured plugin configuration." },
 						 { "Register", (PyCFunction)PyDomoticz_Register, METH_VARARGS | METH_KEYWORDS, "Register Device override class." },
 						 { "Dump", (PyCFunction)PyDomoticz_Dump, METH_VARARGS | METH_KEYWORDS, "Dump string values of an object or all locals to the log." },
+						 { "WebSocketSend", (PyCFunction)PyDomoticz_WebSocketSend, METH_VARARGS | METH_KEYWORDS,
+										   "Send a message to frontend pages subscribed to this plugin's websocket channel. Accepts a str (raw text/JSON) or a dict (serialised to JSON)." },
 						 { nullptr, nullptr, 0, nullptr } };
 
 	PyType_Slot ConnectionSlots[] = {
@@ -694,14 +759,58 @@ namespace Plugins
 		return 0;
 	}
 
-	struct PyModuleDef DomoticzModuleDef = { PyModuleDef_HEAD_INIT, "Domoticz", nullptr, sizeof(struct module_state), DomoticzMethods, nullptr, DomoticzTraverse, DomoticzClear, nullptr };
+	// ------------------------------------------------------------------
+	// Multi-phase init (PEP 489) for the Domoticz / DomoticzEx modules.
+	//
+	// The single-phase init these modules used to use shares the module's
+	// md_state (notably module_state.pPlugin) across sub-interpreters,
+	// because CPython's import machinery takes a shortcut on second/third
+	// imports and reuses the cached state. That made Domoticz.Log() calls
+	// from one plugin's sub-interpreter route to whichever plugin most
+	// recently called CPlugin::Initialise() (which sets pPlugin = this).
+	//
+	// Multi-phase init guarantees a fresh module instance + fresh
+	// md_state per (sub-)interpreter, so pPlugin properly identifies the
+	// owning plugin. The Py_mod_exec slot below is what used to be the
+	// body of the old PyInit_* functions.
+	//
+	// The CDeviceType / CConnectionType / CImageType PyTypeObjects remain
+	// process-global heap types — they store no per-interpreter state, so
+	// sharing them is benign and avoids churning the heap on every import.
+	// ------------------------------------------------------------------
 
-	PyMODINIT_FUNC PyInit_Domoticz(void)
+	// Py_LIMITED_API is pinned to 0x03040000 in DelayedLink.h to keep the
+	// rest of the plugin host on the 3.4 stable ABI. That cap hides the
+	// multi-phase-init symbols below (Py_mod_exec added in 3.5;
+	// PyModuleDef_Slot full struct exposed only at >= 3.5). Provide local
+	// fallback definitions matching the values in CPython's moduleobject.h
+	// so we don't have to bump the project-wide limited-API cap just to
+	// flip module init mode.
+	//
+	// Note: we deliberately do NOT pass Py_mod_multiple_interpreters
+	// (slot ID 3, added in 3.12). On 3.12+ the default for a multi-phase
+	// module without that slot is already Py_MOD_MULTIPLE_INTERPRETERS_
+	// SUPPORTED, which is exactly what we want. On 3.11 the slot ID is
+	// unknown and CPython raises SystemError on import, so including it
+	// would break Python 3.11 hosts.
+#ifndef Py_mod_create
+	#define Py_mod_create 1
+#endif
+#ifndef Py_mod_exec
+	#define Py_mod_exec 2
+#endif
+	struct DomoticzModuleDef_Slot { int slot; void *value; };
+
+	// Forward declarations so the *_exec slots can reference the module defs
+	// (the defs are declared further down because they need the *Slots arrays,
+	// which in turn need the *_exec function addresses).
+	extern struct PyModuleDef DomoticzModuleDef;
+	extern struct PyModuleDef DomoticzExModuleDef;
+
+	static int Domoticz_exec(PyObject *pModule)
 	{
-		// This is called during the import of the plugin module
-		// triggered by the "import Domoticz" statement
-		PyObject *pModule = PyModule_Create2(&DomoticzModuleDef, PYTHON_API_VERSION);
 		module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
+		if (!pModState) return -1;
 
 		if (!CDeviceType)
 		{
@@ -719,41 +828,62 @@ namespace Plugins
 								  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HEAPTYPE, DeviceSlots };
 
 			CDeviceType = (PyTypeObject*)PyType_FromSpec(&DeviceSpec);
+			if (!CDeviceType) return -1;
 			PyType_Ready(CDeviceType);
 		}
 		pModState->pDeviceClass = CDeviceType;
 		pModState->pUnitClass = nullptr;
 		Py_INCREF(CDeviceType);	// PyModule_AddObject steals a reference
-		PyModule_AddObject(pModule, "Device", (PyObject*)CDeviceType);
+		if (PyModule_AddObject(pModule, "Device", (PyObject*)CDeviceType) < 0) {
+			Py_DECREF(CDeviceType);
+			return -1;
+		}
 
 		if (!CConnectionType)
 		{
 			CConnectionType = (PyTypeObject*)PyType_FromSpec(&ConnectionSpec);
+			if (!CConnectionType) return -1;
 			PyType_Ready(CConnectionType);
 		}
 		Py_INCREF(CConnectionType);	// PyModule_AddObject steals a reference
-		PyModule_AddObject(pModule, "Connection", (PyObject*)CConnectionType);
+		if (PyModule_AddObject(pModule, "Connection", (PyObject*)CConnectionType) < 0) {
+			Py_DECREF(CConnectionType);
+			return -1;
+		}
 
 		if (!CImageType)
 		{
 			CImageType = (PyTypeObject*)PyType_FromSpec(&ImageSpec);
+			if (!CImageType) return -1;
 			PyType_Ready(CImageType);
 		}
-		PyObject* refTracker = (PyObject*)CImageType;
 		Py_INCREF(CImageType);	// PyModule_AddObject steals a reference
-		PyModule_AddObject(pModule, "Image", (PyObject*)CImageType);
+		if (PyModule_AddObject(pModule, "Image", (PyObject*)CImageType) < 0) {
+			Py_DECREF(CImageType);
+			return -1;
+		}
 
-		return pModule;
+		return 0;
 	}
 
-	struct PyModuleDef DomoticzExModuleDef = { PyModuleDef_HEAD_INIT, "DomoticzEx", nullptr, sizeof(struct module_state), DomoticzMethods, nullptr, DomoticzTraverse, DomoticzClear, nullptr };
+	static DomoticzModuleDef_Slot DomoticzSlots[] = {
+		{ Py_mod_exec, (void*)Domoticz_exec },
+		{ 0, NULL }
+	};
 
-	PyMODINIT_FUNC PyInit_DomoticzEx(void)
+	struct PyModuleDef DomoticzModuleDef = { PyModuleDef_HEAD_INIT, "Domoticz", nullptr, sizeof(struct module_state), DomoticzMethods, (PyModuleDef_Slot*)DomoticzSlots, DomoticzTraverse, DomoticzClear, nullptr };
+
+	PyMODINIT_FUNC PyInit_Domoticz(void)
 	{
-		// This is called during the import of the plugin module
-		// triggered by the "import DomoticzEx" statement
-		PyObject *pModule = PyModule_Create2(&DomoticzExModuleDef, PYTHON_API_VERSION);
+		// Multi-phase init: framework creates the module + state, then runs
+		// Domoticz_exec(pModule) once per (sub-)interpreter that imports us.
+		return PyModuleDef_Init(&DomoticzModuleDef);
+	}
+
+	static int DomoticzEx_exec(PyObject *pModule)
+	{
 		module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
+		if (!pModState) return -1;
 
 		PyType_Slot DeviceExSlots[] = {
 			{ Py_tp_doc, (void*)"DomoticzEx Device" },
@@ -768,9 +898,13 @@ namespace Plugins
 		PyType_Spec DeviceExSpec = { "DomoticzEx.Device", sizeof(CDeviceEx), 0,
 							  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HEAPTYPE, DeviceExSlots };
 
-		pModState->pDeviceClass = (PyTypeObject*)PyType_FromSpec(&DeviceExSpec);	// Calls PyType_Ready internally from, 3.9 onwards
+		pModState->pDeviceClass = (PyTypeObject*)PyType_FromSpec(&DeviceExSpec);	// Calls PyType_Ready internally from 3.9 onwards
+		if (!pModState->pDeviceClass) return -1;
 		Py_INCREF(pModState->pDeviceClass);	// PyModule_AddObject steals a reference
-		PyModule_AddObject(pModule, "Device", (PyObject *)pModState->pDeviceClass);
+		if (PyModule_AddObject(pModule, "Device", (PyObject *)pModState->pDeviceClass) < 0) {
+			Py_DECREF(pModState->pDeviceClass);
+			return -1;
+		}
 		PyType_Ready(pModState->pDeviceClass);
 
 		PyType_Slot UnitExSlots[] = {
@@ -787,27 +921,52 @@ namespace Plugins
 								Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HEAPTYPE, UnitExSlots };
 
 		pModState->pUnitClass = (PyTypeObject*)PyType_FromSpec(&UnitExSpec);
+		if (!pModState->pUnitClass) return -1;
 		Py_INCREF(pModState->pUnitClass);	// PyModule_AddObject steals a reference
-		PyModule_AddObject(pModule, "Unit", (PyObject*)pModState->pUnitClass);
+		if (PyModule_AddObject(pModule, "Unit", (PyObject*)pModState->pUnitClass) < 0) {
+			Py_DECREF(pModState->pUnitClass);
+			return -1;
+		}
 		PyType_Ready(pModState->pUnitClass);
 
 		if (!CConnectionType)
 		{
 			CConnectionType = (PyTypeObject*)PyType_FromSpec(&ConnectionSpec);
+			if (!CConnectionType) return -1;
 			PyType_Ready(CConnectionType);
 		}
 		Py_INCREF(CConnectionType);	// PyModule_AddObject steals a reference
-		PyModule_AddObject(pModule, "Connection", (PyObject*)CConnectionType);
+		if (PyModule_AddObject(pModule, "Connection", (PyObject*)CConnectionType) < 0) {
+			Py_DECREF(CConnectionType);
+			return -1;
+		}
 
 		if (!CImageType)
 		{
 			CImageType = (PyTypeObject*)PyType_FromSpec(&ImageSpec);
+			if (!CImageType) return -1;
 			PyType_Ready(CImageType);
 		}
 		Py_INCREF(CImageType);	// PyModule_AddObject steals a reference
-		PyModule_AddObject(pModule, "Image", (PyObject*)CImageType);
+		if (PyModule_AddObject(pModule, "Image", (PyObject*)CImageType) < 0) {
+			Py_DECREF(CImageType);
+			return -1;
+		}
 
-		return pModule;
+		return 0;
+	}
+
+	static DomoticzModuleDef_Slot DomoticzExSlots[] = {
+		{ Py_mod_exec, (void*)DomoticzEx_exec },
+		{ 0, NULL }
+	};
+
+	struct PyModuleDef DomoticzExModuleDef = { PyModuleDef_HEAD_INIT, "DomoticzEx", nullptr, sizeof(struct module_state), DomoticzMethods, (PyModuleDef_Slot*)DomoticzExSlots, DomoticzTraverse, DomoticzClear, nullptr };
+
+	PyMODINIT_FUNC PyInit_DomoticzEx(void)
+	{
+		// Multi-phase init: see Domoticz comment above.
+		return PyModuleDef_Init(&DomoticzExModuleDef);
 	}
 
 	CPlugin::CPlugin(const int HwdID, const std::string &sName, const std::string &sPluginKey)
@@ -821,6 +980,7 @@ namespace Plugins
 		, m_SettingsDict(nullptr)
 		, m_bDebug(PDM_NONE)
 		, m_bShared(false)
+		, m_pInterpModulesDict(nullptr)
 	{
 		m_HwdID = HwdID;
 		m_Name = sName;
@@ -830,16 +990,40 @@ namespace Plugins
 		m_bTracing = false;
 	}
 
+	// Per-interpreter (sys.modules dict pointer) -> CPlugin* map. Used by
+	// FindPlugin() to route Domoticz.* calls to the correct CPlugin even on
+	// Python versions where CPython collapses multi-phase init modules'
+	// md_state between sub-interpreters (3.11 and earlier — fixed upstream
+	// in 3.12). The dict pointer itself is unique per (sub-)interpreter,
+	// because each interpreter owns its own sys.modules dict; we use it
+	// only as an opaque key and never dereference it.
+	static std::map<void*, CPlugin*>	s_PluginByModulesDict;
+	static std::mutex					s_PluginByModulesDictMutex;
+
 	CPlugin::~CPlugin()
 	{
 		m_bIsStarted = false;
+		if (m_pInterpModulesDict)
+		{
+			std::lock_guard<std::mutex> g(s_PluginByModulesDictMutex);
+			auto it = s_PluginByModulesDict.find(m_pInterpModulesDict);
+			if (it != s_PluginByModulesDict.end() && it->second == this)
+				s_PluginByModulesDict.erase(it);
+			m_pInterpModulesDict = nullptr;
+		}
 	}
 
 	module_state* CPlugin::FindModule()
 	{
-		// Domoticz potentially has only two possible modules and only one can be loaded
-		PyBorrowedRef brModule = PyState_FindModule(&DomoticzModuleDef);
-		PyBorrowedRef brModuleEx = PyState_FindModule(&DomoticzExModuleDef);
+		// Look the modules up by name in the current interpreter's sys.modules.
+		// PyState_FindModule cannot be used here: with the modules converted to
+		// multi-phase init (PEP 489) the import machinery refuses
+		// PyState_AddModule on slotted module defs, so PyState_FindModule never
+		// has anything to return. FindPyModule() goes through PyImport_GetModuleDict,
+		// which gives us the current sub-interpreter's own sys.modules — exactly
+		// the per-interpreter isolation we want.
+		PyBorrowedRef brModule(FindPyModule("Domoticz"));
+		PyBorrowedRef brModuleEx(FindPyModule("DomoticzEx"));
 
 		// Check author has not loaded both Domoticz modules
 		if ((brModule) && (brModuleEx))
@@ -869,8 +1053,32 @@ namespace Plugins
 
 	CPlugin *CPlugin::FindPlugin()
 	{
+		// Prefer the per-interpreter sys.modules-dict map. On CPython 3.11
+		// the multi-phase init md_state is shared between sub-interpreters
+		// (see s_PluginByModulesDict above), so module_state.pPlugin is not
+		// a reliable identifier on its own; the map is.
+		PyObject *pModules = PyImport_GetModuleDict();
+		if (pModules)
+		{
+			std::lock_guard<std::mutex> g(s_PluginByModulesDictMutex);
+			auto it = s_PluginByModulesDict.find((void*)pModules);
+			if (it != s_PluginByModulesDict.end()) return it->second;
+		}
+		// Fallback for shared="true" plugins (and any pre-Initialise path).
+		// In shared mode all plugins live in the main interpreter so the
+		// dict pointer is identical for every shared plugin — the map can
+		// only hold one entry per dict, so shared plugins are deliberately
+		// not registered. RestoreThread() keeps module_state.pPlugin current
+		// across shared-plugin activations.
 		module_state *pModState = FindModule();
 		return pModState ? pModState->pPlugin : nullptr;
+	}
+
+	PyObject* CPlugin::FindPyModule(const char *name)
+	{
+		PyObject *pSysModules = PyImport_GetModuleDict();
+		if (!pSysModules) return nullptr;
+		return PyDict_GetItemString(pSysModules, name);  // borrowed
 	}
 
 	void CPlugin::LogPythonException()
@@ -1203,9 +1411,22 @@ namespace Plugins
 		Log(LOG_STATUS, "Exiting work loop.");
 	}
 
+	// Serialises the shared-plugin "scrub sys.modules['plugin'] + prepend
+	// sys.path + import 'plugin'" sequence below. Without this, two shared
+	// plugins starting concurrently can interleave between the scrub and
+	// the import: thread A's PyImport_ImportModule('plugin') begins, sets
+	// sys.modules['plugin'] = A_module, starts exec_module on A's plugin.py,
+	// releases the GIL during some C call, thread B then runs the scrub,
+	// removing A's still-loading entry; when A resumes the bookkeeping in
+	// importlib._bootstrap raises 'KeyError: plugin'. The mutex guarantees
+	// the scrub + import is atomic from one shared plugin's POV.
+	static std::mutex s_SharedPluginInitMutex;
+
 	bool CPlugin::Initialise()
 	{
 		m_bIsStarted = false;
+
+		std::unique_lock<std::mutex> sharedInitLock(s_SharedPluginInitMutex, std::defer_lock);
 
 		try
 		{
@@ -1260,10 +1481,25 @@ namespace Plugins
 			}
 			else if (m_bShared)
 			{
-				// Use the main interpreter for shared plugins (PyO3 compatibility)
-				PyEval_RestoreThread((PyThreadState*)m_mainworker.m_pluginsystem.PythonThread());
-				m_PyInterpreter = (PyThreadState*)m_mainworker.m_pluginsystem.PythonThread();
-				Debug(DEBUG_PYTHON, "(%s) using shared (main) interpreter (%p).",
+				// Use the main interpreter for shared plugins (PyO3 compatibility).
+				// We must NOT use m_InitialPythonThread (the main OS thread's PyThreadState)
+				// from this plugin worker thread: doing so corrupts CPython's internals and
+				// causes a segfault in _PyEval_EvalFrameDefault on Python 3.13+.
+				//
+				// PyGILState_Ensure() is the correct API for acquiring the GIL from any OS
+				// thread.  It creates a fresh PyThreadState bound to this worker thread inside
+				// the main interpreter, stores it in thread-local storage, and acquires the GIL.
+				// Available in Py_LIMITED_API since 3.4; always succeeds (Py_FatalError on fail).
+				//
+				// Take the shared-init serialisation lock BEFORE acquiring the GIL so that
+				// two shared plugins cannot interleave their scrub-then-import sequences
+				// (see s_SharedPluginInitMutex comment near the top of this function).
+				// The lock is released right after PyImport_ImportModule("plugin") returns
+				// below.
+				sharedInitLock.lock();
+				(void)PyGILState_Ensure();
+				m_PyInterpreter = PyThreadState_Get();
+				Debug(DEBUG_PYTHON, "(%s) using shared (main) interpreter, thread state (%p).",
 				      m_PluginKey.c_str(), m_PyInterpreter);
 
 				// Remove any cached 'plugin' module so we get a fresh import
@@ -1328,14 +1564,43 @@ namespace Plugins
 					goto Error;
 				}
 
-				// Ensure sys.stdin/stdout/stderr are set immediately after interpreter creation.
-				// Python 3.13+ sub-interpreters don't inherit stdio from the main interpreter,
-				// causing "RuntimeError: sys.stderr is None" during any subsequent import.
+				// NullStream is only needed on Python 3.13+, where sub-interpreters no longer
+				// inherit sys.stderr/stdout/stdin from the main interpreter, causing
+				// "RuntimeError: sys.stderr is None" during any subsequent import.
 				// Plugins use Domoticz.Log() not print(), so a NullStream is sufficient.
 				// Explicitly inject __builtins__ before PyEval_EvalCode so the class definition
 				// works in fresh sub-interpreters where auto-injection may fail.
-				try
+				const char *pPyVer = Py_GetVersion();
+				int iPyMajor = 0, iPyMinor = 0;
+				if (pPyVer) sscanf(pPyVer, "%d.%d", &iPyMajor, &iPyMinor);
+
+				// Warn once per process if running on Python < 3.12 with sub-interpreter
+				// plugins. CPython 3.11's _asyncio extension is single-phase init and keeps
+				// a process-global static cache of the running event loop
+				// (cached_running_holder / cached_running_holder_tsid in
+				// Modules/_asynciomodule.c). That cache is shared across all
+				// sub-interpreters, so two asyncio-based plugins running concurrently in
+				// separate sub-interpreters will see each other's loops via
+				// asyncio.events._get_running_loop(), corrupting awaits with
+				// "got Future attached to a different loop". Fixed in 3.12 where _asyncio
+				// is multi-phase init with per-interpreter module state. Affected plugins
+				// can work around it by setting shared="true" in their plugin XML.
+				static bool sSubInterpAsyncioWarned = false;
+				if (!sSubInterpAsyncioWarned && (iPyMajor < 3 || (iPyMajor == 3 && iPyMinor < 12)))
 				{
+					sSubInterpAsyncioWarned = true;
+					Log(LOG_STATUS,
+					    "Note: Python %d.%d detected. Plugins using asyncio inside sub-interpreters "
+					    "(shared=\"true\" not set) can leak event-loop state between plugins on "
+					    "Python < 3.12 due to a global cache in CPython's _asyncio extension. "
+					    "If multiple asyncio-based plugins are active, prefer Python 3.12+ or set "
+					    "shared=\"true\" in the plugin's XML manifest.",
+					    iPyMajor, iPyMinor);
+				}
+				if (iPyMajor > 3 || (iPyMajor == 3 && iPyMinor >= 13))
+				{
+					try
+					{
 					PyNewRef	pCode = Py_CompileString(
 						"class _NullStream:\n"
 						"    encoding = 'utf-8'\n"
@@ -1399,67 +1664,64 @@ namespace Plugins
 					}
 					if (PyErr_Occurred()) PyErr_Clear();
 				}
-				catch (...)
-				{
-					Log(LOG_ERROR, "(%s) exception initializing stdio streams, continuing.", m_PluginKey.c_str());
-					if (PyErr_Occurred()) PyErr_Clear();
+					catch (...)
+					{
+						Log(LOG_ERROR, "(%s) exception initializing stdio streams, continuing.", m_PluginKey.c_str());
+						if (PyErr_Occurred()) PyErr_Clear();
+					}
 				}
 
-				// Prepend plugin directory to path so that python will search it early when importing
-#ifdef WIN32
-				std::wstring sSeparator = L";";
-#else
-				std::wstring sSeparator = L":";
-#endif
-				std::wstringstream ssPath;
-				ssPath << m_HomeFolder.c_str();
-
-				std::wstring sPath = ssPath.str() + sSeparator;
-				sPath += Py_GetPath();
-
-				try
+				// Prepend plugin directory to sys.path so Python searches it first.
+				// Uses list operations instead of the deprecated Py_GetPath/PySys_SetPath
+				// (removed in Python 3.15).
+				PyBorrowedRef pSysPath = PySys_GetObject("path");
+				if (pSysPath)
 				{
-					//
-					//	Python loads the 'site' module automatically and adds extra search directories for module loading
-					//	This code makes the plugin framework function the same way
-					//
-					PyNewRef	pSiteModule = PyImport_ImportModule("site");
-					if (!pSiteModule)
+					PyNewRef pPluginDir = PyUnicode_FromString(m_HomeFolder.c_str());
+					if (pPluginDir)
+						PyList_Insert(pSysPath, 0, pPluginDir);
+
+					try
 					{
-						Log(LOG_ERROR, "(%s) failed to load 'site' module, continuing.", m_PluginKey.c_str());
-					}
-					else
-					{
-						PyNewRef	pFunc = PyObject_GetAttrString((PyObject *)pSiteModule, "getsitepackages");
-						if (pFunc && PyCallable_Check(pFunc))
+						//
+						//	Python loads the 'site' module automatically and adds extra search directories for module loading
+						//	This code makes the plugin framework function the same way
+						//
+						PyNewRef	pSiteModule = PyImport_ImportModule("site");
+						if (!pSiteModule)
 						{
-							PyNewRef	pSites = PyObject_CallObject(pFunc, nullptr);
-							if (!pSites)
+							Log(LOG_ERROR, "(%s) failed to load 'site' module, continuing.", m_PluginKey.c_str());
+						}
+						else
+						{
+							PyNewRef	pFunc = PyObject_GetAttrString((PyObject *)pSiteModule, "getsitepackages");
+							if (pFunc && PyCallable_Check(pFunc))
 							{
-								LogPythonException("getsitepackages");
-							}
-							else
-								for (Py_ssize_t i = 0; i < PyList_Size(pSites); i++)
+								PyNewRef	pSites = PyObject_CallObject(pFunc, nullptr);
+								if (!pSites)
 								{
-									PyBorrowedRef	pSite = PyList_GetItem(pSites, i);
-									if (pSite.IsString())
-									{
-										std::wstringstream ssPath;
-										ssPath << ((std::string)PyBorrowedRef(pSite)).c_str();
-										sPath += sSeparator + ssPath.str();
-									}
+									LogPythonException("getsitepackages");
 								}
+								else
+									for (Py_ssize_t i = 0; i < PyList_Size(pSites); i++)
+									{
+										PyBorrowedRef	pSite = PyList_GetItem(pSites, i);
+										if (pSite.IsString())
+											PyList_Append(pSysPath, pSite);
+									}
+							}
 						}
 					}
+					catch (...)
+					{
+						Log(LOG_ERROR, "(%s) exception loading 'site' module, continuing.", m_PluginKey.c_str());
+						PyErr_Clear();
+					}
 				}
-				catch (...)
+				else
 				{
-					Log(LOG_ERROR, "(%s) exception loading 'site' module, continuing.", m_PluginKey.c_str());
-					PyErr_Clear();
+					Log(LOG_ERROR, "(%s) failed to get sys.path.", m_PluginKey.c_str());
 				}
-
-				// Update the path itself
-				PySys_SetPath((wchar_t *)sPath.c_str());
 
 				// Get reference to global 'Py_None' instance for comparisons
 				if (!Py_None)
@@ -1517,6 +1779,13 @@ namespace Plugins
 			try
 			{
 				m_PyModule = PyImport_ImportModule("plugin");
+				// Shared-init lock can be released as soon as the import has
+				// fully resolved (success or failure): once 'plugin' is back
+				// in sys.modules under this plugin's HomeFolder, the next
+				// shared plugin's scrub will not race against an in-flight
+				// import. For non-shared plugins this is a no-op (lock was
+				// never taken).
+				if (sharedInitLock.owns_lock()) sharedInitLock.unlock();
 				if (!m_PyModule)
 				{
 					Log(LOG_ERROR, "(%s) failed to load 'plugin.py'.", m_PluginKey.c_str());
@@ -1548,6 +1817,24 @@ namespace Plugins
 				goto Error;
 			}
 			pModState->pPlugin = this;
+
+			// Register this CPlugin against the current (sub-)interpreter's
+			// sys.modules dict pointer so FindPlugin() can route correctly
+			// on Python versions that share md_state between sub-interpreters
+			// (3.11 and earlier). Shared plugins are skipped: they all share
+			// the main interpreter's sys.modules so the dict pointer is the
+			// same for every shared plugin — module_state.pPlugin (kept
+			// current by RestoreThread()) is the right routing key there.
+			if (!m_bShared)
+			{
+				PyObject *pModules = PyImport_GetModuleDict();
+				if (pModules)
+				{
+					m_pInterpModulesDict = (void*)pModules;
+					std::lock_guard<std::mutex> g(s_PluginByModulesDictMutex);
+					s_PluginByModulesDict[m_pInterpModulesDict] = this;
+				}
+			}
 
 			//	Add start command to message queue
 			MessagePlugin(new onStartCallback());
@@ -1623,10 +1910,13 @@ namespace Plugins
 			}
 
 			std::string sLanguage = "en";
-			m_sql.GetPreferencesVar("Language", sLanguage);
-
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT Name, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, Settings FROM Hardware WHERE (ID==%d)", m_HwdID);
+			// Release GIL while doing consecutive SQL reads
+			{
+				PyAllowThreads gil;
+				m_sql.GetPreferencesVar("Language", sLanguage);
+				result = m_sql.safe_query("SELECT Name, Address, Port, SerialPort, Username, Password, Extra, Mode1, Mode2, Mode3, Mode4, Mode5, Mode6, Settings FROM Hardware WHERE (ID==%d)", m_HwdID);
+			}
 			if (!result.empty())
 			{
 				for (const auto &sd : result)
@@ -1770,7 +2060,10 @@ namespace Plugins
 						Json::StreamWriterBuilder builder;
 						builder["indentation"] = "";
 						std::string sCleaned = Json::writeString(builder, settingsJson);
-						m_sql.safe_query("UPDATE Hardware SET Settings='%q' WHERE (ID==%d)", sCleaned.c_str(), m_HwdID);
+						{
+							PyAllowThreads gil;
+							m_sql.safe_query("UPDATE Hardware SET Settings='%q' WHERE (ID==%d)", sCleaned.c_str(), m_HwdID);
+						}
 					}
 
 					ADD_STRING_TO_DICT(this, pParamsDict, "DomoticzVersion", szAppVersion);
@@ -1787,20 +2080,22 @@ namespace Plugins
 			}
 
 			std::string tupleStr = "(si)";
-			PyBorrowedRef brModule = PyState_FindModule(&DomoticzModuleDef);
+			PyBorrowedRef brModule = CPlugin::FindPyModule("Domoticz");
 
 			if (brModule)
 			{
+				PyAllowThreads gil;
 				result = m_sql.safe_query("SELECT '', Unit FROM DeviceStatus WHERE (HardwareID==%d) ORDER BY Unit ASC", m_HwdID);
 			}
 			else
 			{
-				brModule = PyState_FindModule(&DomoticzExModuleDef);
+				brModule = CPlugin::FindPyModule("DomoticzEx");
 				if (!brModule)
 				{
 					Log(LOG_ERROR, "(%s) %s failed, Domoticz/DomoticzEx modules not found in interpreter.", __func__, m_PluginKey.c_str());
 					goto Error;
 				}
+				PyAllowThreads gil;
 				result = m_sql.safe_query("SELECT DISTINCT DeviceID, '-1' FROM DeviceStatus WHERE (HardwareID==%d) ORDER BY Unit ASC", m_HwdID);
 				tupleStr = "(s)";
 			}
@@ -1864,7 +2159,10 @@ namespace Plugins
 			}
 
 			// load associated custom images to make them available to python
-			result = m_sql.safe_query("SELECT ID, Base, Name, Description FROM CustomImages WHERE Base LIKE '%q%%' ORDER BY ID ASC", m_PluginKey.c_str());
+			{
+				PyAllowThreads gil;
+				result = m_sql.safe_query("SELECT ID, Base, Name, Description FROM CustomImages WHERE Base LIKE '%q%%' ORDER BY ID ASC", m_PluginKey.c_str());
+			}
 			if (!result.empty())
 			{
 				// Add image objects into the image dictionary with ID as the key
@@ -1893,6 +2191,7 @@ namespace Plugins
 			m_bIsStarted = true;
 			m_bIsStarting = false;
 			m_bIsStopped = false;
+			CPluginWebSocketRegistry::Get().Register(m_PluginKey, m_HwdID);
 			return true;
 		}
 		catch (...)
@@ -1941,6 +2240,11 @@ namespace Plugins
 				Debug(DEBUG_PYTHON, "Protocol for '%s' not specified, 'None' assumed.", sConnection.c_str());
 			}
 			pConnection->pProtocol = new CPluginProtocol();
+		}
+		else
+		{
+			// Reset retained/fragment state from any previous connection using the same protocol object
+			pConnection->pProtocol->Reset();
 		}
 
 		std::string sTransport = PyBorrowedRef(pConnection->Transport);
@@ -2190,7 +2494,7 @@ namespace Plugins
 	void CPlugin::onDeviceAdded(const std::string DeviceID, int Unit)
 	{
 		PyBorrowedRef pObject;
-		PyBorrowedRef pModule = PyState_FindModule(&DomoticzExModuleDef);
+		PyBorrowedRef pModule = CPlugin::FindPyModule("DomoticzEx");
 		if (pModule)
 		{
 			module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
@@ -2291,7 +2595,7 @@ namespace Plugins
 	void CPlugin::onDeviceModified(const std::string DeviceID, int Unit)
 	{
 		PyBorrowedRef pObject;
-		PyBorrowedRef pModule = PyState_FindModule(&DomoticzExModuleDef);
+		PyBorrowedRef pModule = CPlugin::FindPyModule("DomoticzEx");
 		if (pModule)
 		{
 			pObject = FindUnitInDevice(DeviceID, Unit);
@@ -2326,7 +2630,7 @@ namespace Plugins
 	void CPlugin::onDeviceRemoved(const std::string DeviceID, int Unit)
 	{
 		PyNewRef pKey = PyLong_FromLong(Unit);
-		PyBorrowedRef pModule = PyState_FindModule(&DomoticzExModuleDef);
+		PyBorrowedRef pModule = CPlugin::FindPyModule("DomoticzEx");
 		if (pModule)
 		{
 			PyBorrowedRef pObject = FindDevice(DeviceID.c_str());
@@ -2376,6 +2680,15 @@ namespace Plugins
 	{
 		CPluginMessageBase *pMessage = new onDeviceRemovedCallback(DeviceID, Unit);
 		MessagePlugin(pMessage);
+	}
+
+	void CPlugin::onWebSocketMessage(const std::string &Data)
+	{
+		if (m_bDebug & PDM_QUEUE)
+		{
+			Debug(DEBUG_PYTHON, "onWebSocketMessage: queuing message, data length %zu", Data.length());
+		}
+		MessagePlugin(new onWebSocketMessageCallback(Data));
 	}
 
 	void CPlugin::DisconnectEvent(CEventBase *pMess)
@@ -2566,14 +2879,78 @@ namespace Plugins
 				PyBorrowedRef	pThreadModule = PyDict_GetItemString(pModuleDict, "threading");
 				if (pThreadModule)
 				{
-					PyNewRef pFunc = PyObject_GetAttrString(pThreadModule, "active_count");
+					// Use threading.enumerate() instead of threading.active_count() so
+					// we can filter out _DummyThread instances. A _DummyThread is
+					// created by CPython the first time a non-Python OS thread (e.g.
+					// one of Domoticz's own native worker threads) calls into the
+					// interpreter via PyGILState_Ensure(). The entry is never reaped
+					// — _DummyThread has no real OS thread for Python to observe —
+					// so active_count() permanently overcounts by the number of host
+					// threads that touched the sub-interpreter. That used to make
+					// every clean plugin disable look like a hang ("Plugin has N
+					// Python threads still running" for 10s). Filtering them here
+					// fixes it for every plugin without each author having to know.
+					PyNewRef pFunc = PyObject_GetAttrString(pThreadModule, "enumerate");
 					if (pFunc && PyCallable_Check(pFunc))
 					{
-						PyNewRef	pReturnValue = PyObject_CallObject(pFunc, nullptr);
-						if (pReturnValue.IsLong())
+						PyNewRef pList = PyObject_CallObject(pFunc, nullptr);
+						// threading.enumerate() always returns a list; skipping
+						// PyList_Check because it expands to PyType_HasFeature /
+						// PyType_GetFlags, which aren't in DelayedLink.h.
+						if (pList)
 						{
-							lRetVal = PyLong_AsLong(pReturnValue) - 1;
-							if (lRetVal)
+							Py_ssize_t nThreads = PyList_Size((PyObject*)pList);
+							long lReal = 0;
+							for (Py_ssize_t i = 0; i < nThreads; i++)
+							{
+								PyObject* pThread = PyList_GetItem((PyObject*)pList, i); // borrowed
+								if (!pThread)
+									continue;
+								// Skip _DummyThread — these are phantom entries CPython
+								// keeps for foreign host threads that have called into
+								// Python; they are not joinable and never exit on their
+								// own. We compare on __class__.__name__ rather than
+								// Py_TYPE()->tp_name because the limited API only
+								// forward-declares _typeobject and tp_name isn't
+								// reachable.
+								bool isDummy = false;
+								PyNewRef pClass = PyObject_GetAttrString(pThread, "__class__");
+								if (pClass)
+								{
+									PyNewRef pName = PyObject_GetAttrString(pClass, "__name__");
+									if (pName)
+									{
+										// PyUnicode_AsUTF8 returns NULL + sets TypeError
+										// for non-unicode objects; clearing the error
+										// avoids needing PyUnicode_Check (which pulls in
+										// PyType_GetFlags, not in the delayed-link table).
+										const char* sName = PyUnicode_AsUTF8((PyObject*)pName);
+										PyErr_Clear();
+										if (sName && std::string(sName) == "_DummyThread")
+											isDummy = true;
+									}
+									else
+									{
+										PyErr_Clear();
+									}
+								}
+								else
+								{
+									PyErr_Clear();
+								}
+								if (isDummy)
+									continue;
+								lReal++;
+							}
+							// MainThread (or the equivalent in a sub-interpreter) is
+							// always present and is not the plugin's responsibility.
+							lRetVal = lReal - 1;
+							if (lRetVal < 0)
+							{
+								Debug(DEBUG_PYTHON, "PythonThreadCount: enumerate() returned no real threads (abnormal at shutdown), treating as 0 threads.");
+								lRetVal = 0;
+							}
+							else if (lRetVal)
 							{
 								Log(LOG_ERROR, "Plugin has %d Python threads still running.", (int)lRetVal);
 							}
@@ -2596,10 +2973,10 @@ namespace Plugins
 			// Validate Device dictionary prior to shutdown
 			if (m_DeviceDict)
 			{
-				PyBorrowedRef brModule = PyState_FindModule(&DomoticzModuleDef);
+				PyBorrowedRef brModule = CPlugin::FindPyModule("Domoticz");
 				if (!brModule)
 				{
-					brModule = PyState_FindModule(&DomoticzExModuleDef);
+					brModule = CPlugin::FindPyModule("DomoticzEx");
 				}
 
 				module_state *pModState = nullptr;
@@ -2737,8 +3114,42 @@ namespace Plugins
 				PyObject* pSysModules = PyImport_GetModuleDict();
 				if (pSysModules)
 				{
-					PyDict_DelItemString(pSysModules, "plugin");
-					PyErr_Clear();
+					// Remove 'plugin' and any sub-modules loaded from the plugin directory.
+					// Only removing "plugin" leaves imported sub-modules cached in sys.modules,
+					// so changes to those files would not be picked up on reload.
+					std::vector<std::string> modsToRemove;
+					modsToRemove.push_back("plugin");
+					if (!m_HomeFolder.empty())
+					{
+						PyObject *pKey, *pValue;
+						Py_ssize_t pos = 0;
+						while (PyDict_Next(pSysModules, &pos, &pKey, &pValue))
+						{
+							if (!pKey || !pValue)
+								continue;
+							// PyUnicode_AsUTF8 returns NULL (+ sets TypeError) for non-unicode keys;
+							// PyErr_Clear() below suppresses that without needing PyUnicode_Check.
+							const char* pModName = PyUnicode_AsUTF8(pKey);
+							PyErr_Clear();
+							if (!pModName || std::string(pModName) == "plugin")
+								continue;
+							// Check if the module was loaded from the plugin's directory
+							PyNewRef pFile = PyObject_GetAttrString(pValue, "__file__");
+							PyErr_Clear();
+							if (pFile)
+							{
+								const char* pFilePath = PyUnicode_AsUTF8(pFile);
+								PyErr_Clear();
+								if (pFilePath && std::string(pFilePath).find(m_HomeFolder) == 0)
+									modsToRemove.push_back(pModName);
+							}
+						}
+					}
+					for (const auto& name : modsToRemove)
+					{
+						PyDict_DelItemString(pSysModules, name.c_str());
+						PyErr_Clear();
+					}
 				}
 				if (!m_bShared)
 				{
@@ -2750,9 +3161,15 @@ namespace Plugins
 				}
 				else
 				{
-					Debug(DEBUG_PYTHON, "(%s) shared interpreter, releasing GIL.",
-					      m_PluginKey.c_str());
-					(void)PyEval_SaveThread();
+					// Delete the per-thread state that PyGILState_Ensure() created.
+					// PyThread_tss_create() registers the GILState key with a NULL destructor,
+					// so the stale TLS entry left after Delete() is harmless on thread exit.
+					Debug(DEBUG_PYTHON, "(%s) shared interpreter, deleting thread state (%p).",
+					      m_PluginKey.c_str(), m_PyInterpreter);
+					PyThreadState *tstate = (PyThreadState*)m_PyInterpreter;
+					PyThreadState_Clear(tstate);   // must be called while GIL is held
+					(void)PyEval_SaveThread();     // release GIL
+					PyThreadState_Delete(tstate);  // free the thread state struct
 				}
 			}
 		}
@@ -2801,7 +3218,10 @@ namespace Plugins
 
 			// load associated settings to make them available to python
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT Key, nValue, sValue FROM Preferences");
+			{
+				PyAllowThreads gil;
+				result = m_sql.safe_query("SELECT Key, nValue, sValue FROM Preferences");
+			}
 			if (!result.empty())
 			{
 				// Add settings strings into the settings dictionary with Unit as the key
@@ -2979,6 +3399,8 @@ namespace Plugins
 		if (!m_DeviceDict)
 			return true;
 
+		AccessPython	Guard(this, __func__);
+
 		PyObject *key, *value;
 		Py_ssize_t pos = 0;
 		while (PyDict_Next((PyObject *)m_DeviceDict, &pos, &key, &value))
@@ -3096,7 +3518,10 @@ namespace Plugins
 		else // Uploaded icons
 		{
 			std::vector<std::vector<std::string>> result;
-			result = m_sql.safe_query("SELECT Base FROM CustomImages WHERE ID = %d", iIconLine - 100);
+			{
+				PyAllowThreads gil;
+				result = m_sql.safe_query("SELECT Base FROM CustomImages WHERE ID = %d", iIconLine - 100);
+			}
 			if (result.size() == 1)
 			{
 				std::string sBase = result[0][0];

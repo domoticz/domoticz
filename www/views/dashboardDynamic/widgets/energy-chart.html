@@ -1,0 +1,14 @@
+<div class="dd-chart-container"
+     ng-class="{'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode}">
+    <div ng-if="!ctrl.widgetDef.config.deviceIdx" class="dd-chart-unconfigured">
+        <i class="fa-solid fa-bolt"></i>
+        <p>Select a counter or energy device in settings</p>
+    </div>
+    <div ng-if="ctrl.widgetDef.config.deviceIdx" class="dd-chart-wrap">
+        <div ng-if="ctrl.noData" class="dd-chart-unconfigured">
+            <i class="fa-solid fa-chart-column"></i>
+            <p>No data available for this period</p>
+        </div>
+        <div id="{{ ctrl.chartId }}" class="dd-highchart" ng-style="{'visibility': ctrl.noData ? 'hidden' : 'visible'}"></div>
+    </div>
+</div>

@@ -25,8 +25,8 @@
                 <td id="lastupdate" class="lastupdate"><span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: {{ctrl.scene.LastUpdate}}</td>
                 <td id="type">{{ctrl.getTypeText()}}</td>
                 <td class="options">
-                    <span ng-show="ctrl.scene.Favorite == 0"><img src="images/nofavorite.png" data-i18n="[title]Add to Dashboard" ng-click="ctrl.makeFavorite(1)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                    <span ng-show="ctrl.scene.Favorite != 0"><img src="images/favorite.png" data-i18n="[title]Remove from Dashboard" ng-click="ctrl.makeFavorite(0)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span ng-if="ctrl.scene.Favorite == 0"><img src="images/nofavorite.png" data-i18n="[title]Add to Dashboard" ng-click="ctrl.makeFavorite(1)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span ng-if="ctrl.scene.Favorite != 0"><img src="images/favorite.png" data-i18n="[title]Remove from Dashboard" ng-click="ctrl.makeFavorite(0)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>
                     <a class="btnsmall" href="#/Scenes/{{ctrl.scene.idx}}/Log" data-i18n="Log">Log</a>
                     <a ng-if="ctrl.isAdmin" class="btnsmall" ng-click="ctrl.editScene()" data-i18n="Edit">Edit</a>
                     <a ng-if="ctrl.isAdmin && ctrl.hasTimers()" class="btnsmall-sel" href="#/Scenes/{{ctrl.scene.idx}}/Timers" data-i18n="Timers">Timers</a>

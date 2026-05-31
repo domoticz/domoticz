@@ -40,8 +40,8 @@ namespace
 } // namespace
 
 #ifdef _DEBUG
- //#define DEBUG_BUIENRADARR
- //#define DEBUG_BUIENRADARW
+	//#define DEBUG_BUIENRADARR
+	//#define DEBUG_BUIENRADARW
 #endif
 
 #ifdef DEBUG_BUIENRADARW
@@ -74,6 +74,8 @@ CBuienRadar::CBuienRadar(const int ID, const int iForecast, const int iThreshold
 	m_HwdID = ID;
 	m_iForecast = (iForecast >= 5) ? iForecast : 15;
 	m_iThreshold = (iThreshold > 0) ? iThreshold : 25;
+
+	m_rain_counter_helper.SetType(pTypeRAIN, sTypeRAINWU);
 }
 
 void CBuienRadar::Init()
@@ -160,7 +162,7 @@ bool CBuienRadar::StopHardware()
 void CBuienRadar::Do_Work()
 {
 #ifdef DEBUG_BUIENRADARR
-	GetMeterDetails();
+	GetStationDetails();
 #endif
 	int sec_counter = 593;
 	Log(LOG_STATUS, "Worker started...");
@@ -531,9 +533,26 @@ void CBuienRadar::ParseMeterDetails(const Json::Value& root)
 	if (!root["precipitation"].empty())
 	{
 		float precipitation = root["precipitation"].asFloat();
+
+		double total_rain = -1;
+		float rain_rate = precipitation;
+		if (!root["rainFallLastHour"].empty())
+		{
+			rain_rate = root["rainFallLastHour"].asFloat();
+		}
+		if (!root["rainFallLast24Hour"].empty())
+		{
+			total_rain = root["rainFallLast24Hour"].asDouble();
+		}
+
 		SendRainRateSensor(1, 255, precipitation, "Rain");
 		m_itIsRaining = precipitation > 0;
 		SendSwitch(1, 1, 255, m_itIsRaining, 0, "Is it Raining", m_Name);
+
+		if (total_rain != -1)
+		{
+			SendRainSensorWU(1, 255, static_cast<float>(m_rain_counter_helper.CheckTotalCounter(this, "1", 0, static_cast<double>(total_rain / 1000.0)) * 1000.0), rain_rate, "Rain");
+		}
 	}
 }
 

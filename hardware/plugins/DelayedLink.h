@@ -61,12 +61,12 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(void, Py_Finalize, );
 		DECLARE_PYTHON_SYMBOL(PyThreadState*, Py_NewInterpreter, );
 		DECLARE_PYTHON_SYMBOL(void, Py_EndInterpreter, PyThreadState*);
-		DECLARE_PYTHON_SYMBOL(wchar_t*, Py_GetPath, );
-		DECLARE_PYTHON_SYMBOL(void, Py_SetPath, const wchar_t*);
-		DECLARE_PYTHON_SYMBOL(void, PySys_SetPath, const wchar_t*);
+		DECLARE_PYTHON_SYMBOL(wchar_t*, Py_GetPath, );           // Removed in Python 3.15; will be null on 3.15+
+		DECLARE_PYTHON_SYMBOL(void, Py_SetPath, const wchar_t*); // Removed in Python 3.15; will be null on 3.15+
+		DECLARE_PYTHON_SYMBOL(void, PySys_SetPath, const wchar_t*); // Removed in Python 3.15; will be null on 3.15+
 		DECLARE_PYTHON_SYMBOL(int, PySys_SetObject, const char* COMMA PyObject*);
-		DECLARE_PYTHON_SYMBOL(void, Py_SetProgramName, wchar_t*);
-		DECLARE_PYTHON_SYMBOL(wchar_t*, Py_GetProgramFullPath, );
+		DECLARE_PYTHON_SYMBOL(void, Py_SetProgramName, wchar_t*);       // Removed in Python 3.15; will be null on 3.15+
+		DECLARE_PYTHON_SYMBOL(wchar_t*, Py_GetProgramFullPath, );       // Removed in Python 3.15; will be null on 3.15+
 		DECLARE_PYTHON_SYMBOL(int, PyImport_AppendInittab, const char *COMMA PyObject *(*initfunc)());
 		DECLARE_PYTHON_SYMBOL(int, PyType_Ready, PyTypeObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyObject_Type, PyObject*);
@@ -85,6 +85,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(char*, PyByteArray_AsString, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyLong_FromLong, long);
 		DECLARE_PYTHON_SYMBOL(PY_LONG_LONG, PyLong_AsLongLong, PyObject*);
+		DECLARE_PYTHON_SYMBOL(unsigned PY_LONG_LONG, PyLong_AsUnsignedLongLong, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyModule_GetDict, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyDict_New, );
 		DECLARE_PYTHON_SYMBOL(void, PyDict_Clear, PyObject *);
@@ -102,6 +103,8 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyList_Size, PyObject*);
 		DECLARE_PYTHON_SYMBOL(Py_ssize_t, PyTuple_Size, PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyList_Append, PyObject* COMMA PyObject*);
+		DECLARE_PYTHON_SYMBOL(int, PyList_Insert, PyObject* COMMA Py_ssize_t COMMA PyObject*);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PySys_GetObject, const char*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyList_GetItem, PyObject* COMMA Py_ssize_t);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyTuple_GetItem, PyObject* COMMA Py_ssize_t);
 		DECLARE_PYTHON_SYMBOL(int, PyList_SetItem, PyObject* COMMA Py_ssize_t COMMA PyObject*);
@@ -123,12 +126,16 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(void, PyEval_RestoreThread, PyThreadState *);
 		DECLARE_PYTHON_SYMBOL(void, PyEval_ReleaseLock, );
 		DECLARE_PYTHON_SYMBOL(PyThreadState*, PyThreadState_Swap, PyThreadState*);
+		DECLARE_PYTHON_SYMBOL(PyGILState_STATE, PyGILState_Ensure, void);
+		DECLARE_PYTHON_SYMBOL(void, PyThreadState_Clear, PyThreadState*);
+		DECLARE_PYTHON_SYMBOL(void, PyThreadState_Delete, PyThreadState*);
 		DECLARE_PYTHON_SYMBOL(void, _Py_NegativeRefcount, const char* COMMA int COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject *, _PyObject_New, PyTypeObject *);
 		DECLARE_PYTHON_SYMBOL(int, PyObject_IsInstance, PyObject* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyObject_IsSubclass, PyObject *COMMA PyObject *);
 		DECLARE_PYTHON_SYMBOL(PyObject *, PyObject_Dir, PyObject *);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyModule_Create2, struct PyModuleDef* COMMA int);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyModuleDef_Init, struct PyModuleDef*);
 		DECLARE_PYTHON_SYMBOL(int, PyModule_AddObject, PyObject* COMMA const char* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyArg_ParseTuple, PyObject* COMMA const char* COMMA ...);
 		DECLARE_PYTHON_SYMBOL(int, PyArg_ParseTupleAndKeywords, PyObject* COMMA PyObject* COMMA const char* COMMA char*[] COMMA ...);
@@ -164,8 +171,8 @@ namespace Plugins {
             shared_lib_ = nullptr;
 
             // Define the base Python versions in descending order (latest to oldest)
-			constexpr std::array<const char*, 11> python_versions = {
-				"python3.14", "python3.13", "python3.12", "python3.11", "python3.10",
+			constexpr std::array<const char*, 12> python_versions = {
+				"python3.15", "python3.14", "python3.13", "python3.12", "python3.11", "python3.10",
                 "python3.9", "python3.8", "python3.7", "python3.6",
                 "python3.5", "python3.4"
             };
@@ -219,6 +226,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyByteArray_AsString);
 					RESOLVE_PYTHON_SYMBOL(PyLong_FromLong);
 					RESOLVE_PYTHON_SYMBOL(PyLong_AsLongLong);
+					RESOLVE_PYTHON_SYMBOL(PyLong_AsUnsignedLongLong);
 					RESOLVE_PYTHON_SYMBOL(PyModule_GetDict);
 					RESOLVE_PYTHON_SYMBOL(PyDict_New);
 					RESOLVE_PYTHON_SYMBOL(PyDict_Contains);
@@ -239,6 +247,8 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyTuple_GetItem);
 					RESOLVE_PYTHON_SYMBOL(PyList_SetItem);
 					RESOLVE_PYTHON_SYMBOL(PyList_Append);
+					RESOLVE_PYTHON_SYMBOL(PyList_Insert);
+					RESOLVE_PYTHON_SYMBOL(PySys_GetObject);
 					RESOLVE_PYTHON_SYMBOL(PyModule_GetState);
 					RESOLVE_PYTHON_SYMBOL(PyState_FindModule);
 					RESOLVE_PYTHON_SYMBOL(PyErr_Clear);
@@ -257,12 +267,16 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyEval_RestoreThread);
 					RESOLVE_PYTHON_SYMBOL(PyEval_ReleaseLock);
 					RESOLVE_PYTHON_SYMBOL(PyThreadState_Swap);
+					RESOLVE_PYTHON_SYMBOL(PyGILState_Ensure);
+					RESOLVE_PYTHON_SYMBOL(PyThreadState_Clear);
+					RESOLVE_PYTHON_SYMBOL(PyThreadState_Delete);
 					RESOLVE_PYTHON_SYMBOL(_Py_NegativeRefcount);
 					RESOLVE_PYTHON_SYMBOL(_PyObject_New);
 					RESOLVE_PYTHON_SYMBOL(PyObject_IsInstance);
 					RESOLVE_PYTHON_SYMBOL(PyObject_IsSubclass);
 					RESOLVE_PYTHON_SYMBOL(PyObject_Dir);
 					RESOLVE_PYTHON_SYMBOL(PyModule_Create2);
+					RESOLVE_PYTHON_SYMBOL(PyModuleDef_Init);
 					RESOLVE_PYTHON_SYMBOL(PyModule_AddObject);
 					RESOLVE_PYTHON_SYMBOL(PyArg_ParseTuple);
 					RESOLVE_PYTHON_SYMBOL(PyArg_ParseTupleAndKeywords);
@@ -446,6 +460,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyByteArray_AsString	pythonLib->PyByteArray_AsString
 #define PyLong_FromLong			pythonLib->PyLong_FromLong
 #define PyLong_AsLongLong		pythonLib->PyLong_AsLongLong
+#define PyLong_AsUnsignedLongLong	pythonLib->PyLong_AsUnsignedLongLong
 #define PyModule_GetDict		pythonLib->PyModule_GetDict
 #define PyDict_New				pythonLib->PyDict_New
 #define PyDict_Contains			pythonLib->PyDict_Contains
@@ -466,6 +481,8 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyTuple_GetItem			pythonLib->PyTuple_GetItem
 #define PyList_SetItem			pythonLib->PyList_SetItem
 #define PyList_Append			pythonLib->PyList_Append
+#define PyList_Insert			pythonLib->PyList_Insert
+#define PySys_GetObject			pythonLib->PySys_GetObject
 #define PyModule_GetState		pythonLib->PyModule_GetState
 #define PyState_FindModule		pythonLib->PyState_FindModule
 #define PyErr_Clear				pythonLib->PyErr_Clear
@@ -484,6 +501,9 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyEval_RestoreThread	pythonLib->PyEval_RestoreThread
 #define PyEval_ReleaseLock		pythonLib->PyEval_ReleaseLock
 #define PyThreadState_Swap		pythonLib->PyThreadState_Swap
+#define PyGILState_Ensure		pythonLib->PyGILState_Ensure
+#define PyThreadState_Clear		pythonLib->PyThreadState_Clear
+#define PyThreadState_Delete	pythonLib->PyThreadState_Delete
 #define _Py_NegativeRefcount	pythonLib->_Py_NegativeRefcount
 #define _PyObject_New			pythonLib->_PyObject_New
 #define PyObject_IsInstance		pythonLib->PyObject_IsInstance
@@ -493,6 +513,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define Py_BuildValue			pythonLib->Py_BuildValue
 #define PyMem_Free				pythonLib->PyMem_Free
 #define PyModule_Create2		pythonLib->PyModule_Create2
+#define PyModuleDef_Init		pythonLib->PyModuleDef_Init
 #define PyModule_AddObject		pythonLib->PyModule_AddObject
 #define PyArg_ParseTupleAndKeywords pythonLib->PyArg_ParseTupleAndKeywords
 #define PyArg_VaParseTupleAndKeywords pythonLib->PyArg_VaParseTupleAndKeywords

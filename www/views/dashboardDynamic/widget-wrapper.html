@@ -1,0 +1,53 @@
+<div class="dd-widget"
+     ng-class="['dd-widget--' + ctrl.widgetDef.type, {'dd-widget--error': ctrl.error, 'dd-widget--loading': ctrl.loading, 'dd-widget--no-bg': ctrl.isTransparent() && !editMode}]"
+     role="article"
+     aria-label="{{ (ctrl.descriptor && ctrl.descriptor.label || ctrl.widgetDef.type) + ': ' + (ctrl.widgetDef.config.title || '') }}"
+     tabindex="{{ editMode ? 0 : -1 }}">
+
+    <!-- Widget header — only visible in edit mode (drag handle + actions) -->
+    <div class="dd-widget-header"
+         ng-show="editMode"
+         ng-class="{'dd-widget-drag-handle': editMode}">
+
+        <span class="dd-widget-icon"
+              ng-class="ctrl.descriptor.icon"
+              ng-show="ctrl.descriptor && ctrl.descriptor.icon"></span>
+
+        <span class="dd-widget-title"
+              ng-bind="ctrl.widgetDef.config.title || (ctrl.descriptor && ctrl.descriptor.label) || ctrl.widgetDef.type"></span>
+
+        <!-- Edit mode action buttons: stopPropagation prevents GridStack drag from intercepting clicks -->
+        <div class="dd-widget-actions" ng-show="editMode"
+             ng-mousedown="$event.stopPropagation()">
+            <button class="btn btn-xs dd-widget-btn" title="Configure widget"
+                    ng-show="ctrl.descriptor && ctrl.descriptor.configSchema && ctrl.descriptor.configSchema.length"
+                    ng-click="onConfigure()">
+                <i class="fa-solid fa-gear"></i>
+            </button>
+            <button class="btn btn-xs dd-widget-btn" title="Duplicate widget"
+                    ng-click="onClone()">
+                <i class="fa-solid fa-copy"></i>
+            </button>
+            <button class="btn btn-xs dd-widget-btn dd-widget-btn--remove" title="Remove widget"
+                    ng-click="onRemove()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Error state -->
+    <div class="dd-widget-error" ng-show="ctrl.error">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span ng-bind="ctrl.error"></span>
+    </div>
+
+    <!-- Skeleton loader shown while widget data is loading -->
+    <div class="dd-skeleton" ng-show="ctrl.loading" aria-hidden="true"></div>
+
+    <!-- Widget content — dynamically compiled by ddWidgetContent -->
+    <div class="dd-widget-body" ng-hide="ctrl.error || ctrl.loading">
+        <div dd-widget-content
+             widget-def="ctrl.widgetDef"
+             edit-mode="editMode"></div>
+    </div>
+</div>

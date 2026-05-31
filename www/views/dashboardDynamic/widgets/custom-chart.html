@@ -1,0 +1,13 @@
+<div class="dd-chart-container">
+    <div ng-if="ctrl.isEmpty" class="dd-chart-unconfigured">
+        <i class="fa-solid fa-chart-line"></i>
+        <p>Select devices in settings to display a chart</p>
+    </div>
+    <div ng-if="ctrl.error" class="dd-chart-unconfigured">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <p>{{ ctrl.error }}</p>
+    </div>
+    <div ng-if="!ctrl.isEmpty && !ctrl.error" class="dd-chart-wrap">
+        <div id="{{ ctrl.chartId }}" class="dd-highchart"></div>
+    </div>
+</div>

@@ -1,3 +1,160 @@
+Version 2026.2 (May 31st 2026)
+- Added: AlfenEve, 'Connected' state switch
+- Added: BuienRadar, new rain sensor based on last 24 hour value instead of rain rate
+- Added: CounterHelper, support for additional counter device types
+- Added: MCP, battery level and RSSI/signal level included in device search and listing tools
+- Added: MCP, completion/complete support with prompt argument and resource URI autocompletion
+- Added: MCP, create_sensor and create_device as aliases for create_virtual_sensor tool
+- Added: MCP, delete_event tool for removing automation event scripts (admin only)
+- Added: MCP, domoticz://hardware, domoticz://notifications, and domoticz://timers resources listing configured hardware instances, device notifications, and device/scene timers
+- Added: MCP, domoticz://sensor-types resource listing all available virtual sensor types with mapped values
+- Added: MCP, get_sensor_history tool with daily calendar data for all sensor types and event log for switches/scenes
+- Added: MCP, new prompts: battery_status, climate_overview, create_automation, daily_report, energy_report, hardware_health, scene_optimizer, security_check
+- Added: MCP, Access Tokens for API key authentication; generate and manage tokens in Settings → Access Tokens; supported by all MCP clients including Claude Desktop, VS Code, and HTTP scripts
+- Added: MCP, hw_idx and include_unused filters for the get_all_devices tool
+- Added: MCP, delete_device now permanently deletes a device; new hide_device tool hides a device without removing it
+- Added: Matter, hardware driver for python-matterjs-server via WebSocket; supports on/off, dimmer, temperature, humidity, pressure, illuminance, occupancy, contact, CO2/CO/NO2/PM2.5/PM10, power/energy, door lock, window covering, and battery level
+- Added: Matter, hardware setup page with network topology graph, nodes table showing battery level, RSSI, routing role and connection status, node detail popup with IP addresses and diagnostics, and settings tab for WiFi/Thread credentials and fabric label
+- Added: Matter, Robot Vacuum Cleaner support with run mode and clean mode selectors, operational state and error text sensors, go-home and start/pause/stop controls, and rechargeable battery level
+- Added: Counter/Gas report, custom contract-year view with per-period breakdown and forecast for remaining months based on previous year data; forecast bars shown in chart with lighter colour
+- Added: Counter/Gas report, export to Excel, CSV, and clipboard buttons on all device report pages (counter, rain, temperature, wind)
+- Added: Counter log, right-click context menu on anomalous spike bars with options to spread the value across preceding empty days or delete it (admin only)
+- Added: Counter log, "Fix Weekly Pattern" option in the Weekly Generated Pattern and Days/Hourly Energy chart menus to remove spike contamination from running averages (admin only)
+- Added: Counter log, "Fix Counter/Price Spikes" option in Last Month, Last Year and shortlog chart context menus to repair corrupted price entries and counter resets (admin only)
+- Added: DaikinModbus, energy metering based on accumulated power usage
+- Added: dzVents, switchTimerPlan(idx) method to switch the active timer plan from a script (dzVents 3.1.12)
+- Added: dzVents, device/scene/group resumeTimerPlan() method to immediately replay the most recently elapsed timer; useful for restoring correct device state after a restart or power cut (dzVents 3.1.12)
+- Added: Enever, current electricity and gas prices are now available in the event system
+- Added: Events, Automation Wizard expanded with Scene, Group, and System (start/stop) triggers; multi-device and multi-scene/group selection; weekday/weekend presets for time triggers; Group control, Email, and Log Message actions; day-of-week and daytime/nighttime conditions
+- Added: Dashboard, room plan selector lists available dynamic dashboard layouts, and dynamic dashboard navigation lists available room plans for cross-navigation
+- Added: Dashboard, click device name to open the device log; P1 gas/water values shown on two lines in dashboard widgets; switch widgets support list layout
+- Added: Dashboard Dynamic, new opt-in modular drag-and-drop dashboard with a widget library, multiple named dashboards per user, kiosk/auto-swipe mode, screen standby, and layout import/export; enable in My Profile → Use Dynamic Dashboard
+- Added: Dashboard Dynamic, over 35 built-in widgets covering energy, weather, devices, controls, charts, calendars, cameras, and custom content (HTML, text, image, website embed)
+- Added: Dashboard Dynamic, font size option (Default / Larger / Large / Extra large) for Quick Actions, Quick Stat and Room/Plan list mode widgets
+- Added: Dashboard Dynamic, dial widget shows red bezel ring when a device has timed out
+- Added: Dashboard Dynamic, temperature dial now shows barometer pressure and weather forecast when the sensor provides them
+- Added: Dashboard Dynamic, dial widget supports On/Off and PushOn/PushOff switch devices
+- Added: Dashboard Dynamic, dial and gauge widgets support configurable multi-range color zones (normal/warning/critical); replaces the single warn/crit threshold pair
+- Added: Dashboard Dynamic, gauge widget auto-detects unit from device data; humidity and barometer values displayed inside the arc
+- Added: Dashboard Dynamic, uppercase labels toggle in the edit menu for Quick Actions and Quick Stat widgets
+- Added: Dashboard Dynamic, category tabs (Lights, Temperature, Weather, Utility, Scenes) for Favorites and Room/Plan widgets; devices render in a responsive multi-column grid (3–4 per row) like the classic dashboard
+- Added: Dashboard Dynamic, deep-link to a specific dashboard by ID or name via the URL
+- Added: Dashboard Dynamic, swipe left/right to switch between dashboards on touch devices
+- Added: Dashboard Dynamic, per-widget "Show panel background" toggle (#6816)
+- Added: Dashboard Dynamic, Counter/Energy Chart widget bar colour option and 24-hour Today window
+- Added: Dashboard Dynamic, Text Note widget renders sanitized HTML with vertical alignment and an optional divider line
+- Changed: Dashboard Dynamic, P1 dial now shows signed net power (negative = importing, positive = exporting) instead of absolute value with direction label
+- Changed: Dashboard Mobile, restyled to match the active theme using --dz-* CSS variables; section cards use panel backgrounds with per-row card styling, themed section headers, and theme-aware On/Off buttons consistent with the Dynamic Dashboard
+- Added: Devices, search filter is now preserved when navigating to a device log and pressing Back; cleared when changing room plan
+- Added: Gas device, Water counter now displays the value unit (m3) in the device state
+- Added: P1 log, cumulative energy chart with usage/return toggle buttons, Net (usage minus return) series option, and x-axis zoom
+- Added: P1 energy report, custom contract-year date range view with per-period breakdown and forecast for remaining months
+- Added: Theme system, CSS variable-based theming using --dz-* custom properties; theme authors can now override colours with a single :root block in dark.css instead of complex selector chains (see doc/Theming.wiki)
+- Added: Theme system, per-user theme settings (dark mode, accent colour, etc.) are now stored in user preferences and restored on next visit
+- Added: Rain report, total rainfall summary row in year and month report tables
+- Added: Scenes, room plan filter dropdown in the topbar; select a room plan to show only scenes assigned to it
+- Added: Scheduler, switching to a timer plan now immediately applies the most recently elapsed timer in the new plan to each device; lights, switches, blinds, dimmers, and thermostat setpoints snap to the correct state at the moment of the plan switch
+- Added: Thermostat6, combined Temp+Hum and Temp+Hum+Baro sensor support via SendThermostat6SensorWithHumidity/Baro hardware API
+- Added: Text/Alert sensors, HTML <div> elements are now allowed in widget display
+- Added: Text sensor, option to show or hide the device icon per device (Edit Device → Show Icon; default: shown)
+- Added: PhilipsHue, automatic bridge version detection (V2 HTTPS/443, V1 HTTPS/443, V1 HTTP/80); port no longer needs manual configuration
+- Added: PhilipsHue V2, real-time sensor updates via Server-Sent Events (SSE); instant state changes without waiting for the next poll cycle
+- Added: PhilipsHue V2, new sensor types: grouped motion, grouped light level, camera motion, security area motion, button remotes, and bell button (doorbell)
+- Added: Python plugins, bidirectional plugin-frontend WebSocket channel (WebSocketSend / onWebSocketMessage) with a livesocket client API and WebSocketChannelTest example plugin
+- Changed: Bar settings popup, "Seed defaults" button is now always accessible in the dialog footer regardless of whether ranges are already defined
+- Changed: Device protection passcode prompts now use a masked password input field so the passcode is not shown as plain text
+- Changed: Counter log, "Fix Counter Spikes" renamed to "Fix Counter/Price Spikes"; now also detects and repairs corrupted price entries in the calendar caused by counter spikes
+- Changed: Counter log, "Fix Counter Spikes" admin button is now visible in the counter log footer
+- Changed: DaikinModbus, improved register handling, NodeID/ChildID stability, and hardware name included in API calls
+- Changed: Netatmo, improved connection handling
+- Changed: Security Panel page redesigned to match Domoticz glass-card style (login/about page look)
+- Changed: Theme system, css/widgets.css renamed to css/variables.css; legacy themes importing via legacy.css are unaffected
+- Fixed: AlfenEve, infinite retry loop when login fails; driver now backs off and retries correctly instead of hammering the charger
+- Fixed: Automation Wizard, trigger device list is capped after filtering to prevent render overload with large device counts
+- Fixed: Counter and Temperature log, trendline tooltip now shows the calculated value at every data point instead of only at the start and end of the line (#6757)
+- Fixed: Counter log, calendar entries with negative values caused by counter resets or rollovers are now detected and zeroed by "Fix Counter/Price Spikes"
+- Fixed: Counter log, "Fix Counter/Price Spikes" now detects and repairs value spikes caused by a device being offline for multiple days (accumulated usage spread across the offline period); isolated spikes with no preceding zero-value days are zeroed out
+- Fixed: Counter log, monthly/yearly charts incorrectly spreading a day's value across preceding zero-value days (#6703)
+- Fixed: Counter log, spreading a spiked counter value across previous empty days now also distributes the associated price proportionally
+- Fixed: Counter log, today's partial day no longer incorrectly flagged as a low anomaly in spike detection; partial days are only checked for upward spikes
+- Fixed: Log charts, month/year/day range charts now always extend to today; a red highlight indicates the period with no recorded data
+- Fixed: Log charts, report overview charts did not had a fixed height; this could cause chart regrows on a certain browser
+- Fixed: Counter log, Weekly Generated Pattern heatmap could show extreme values caused by spike contamination in running hourly averages
+- Fixed: Contact and DoorContact switches now show correct Open/Closed icon state in the dashboard
+- Fixed: CounterHelper, MQTT Wh unit mismatch causing incorrect energy offset values
+- Fixed: Dashboard, mobile dashboard no longer shows dynamic dashboard layouts in the room plan selector
+- Fixed: Dashboard, selecting a room plan from the classic dashboard no longer incorrectly switches to the dynamic dashboard
+- Fixed: Dashboard Dynamic, room plan dropdown now scrolls vertically instead of overflowing; added divider above room plan section
+- Fixed: Dashboard, counter devices no longer show 'undefined' after their value when vunit is absent
+- Fixed: Dashboard, Security type devices marked as favorites are now displayed in the Dashboard tab
+- Fixed: Dashboard Dynamic, deleting a widget and pressing Save now correctly persists the change
+- Fixed: Dashboard Dynamic, self-sufficiency percentage now correctly credits battery discharge as local generation for battery-equipped systems (#6724)
+- Fixed: Dashboard Dynamic, Weather Forecast widget now refreshes at midnight to show the correct day
+- Fixed: Dashboard Dynamic, dial widget hides Off level in selector when LevelOffHidden is set
+- Fixed: Dashboard Dynamic, dial widget now prompts for passcode when activating protected switch or selector devices
+- Fixed: AirQuality, compare chart monthly averages were 10× too low due to an incorrect divisor
+- Fixed: Dashboard Dynamic, chart widgets now display timestamps in local time instead of UTC (#6770)
+- Fixed: Dashboard Dynamic, Google Calendar widget now scrolls correctly
+- Fixed: Dashboard Dynamic, quick actions widget now prompts for passcode when activating protected devices
+- Fixed: Dashboard Dynamic, camera widget now recovers from a transient connection failure instead of remaining in the unavailable state
+- Fixed: Dashboard Dynamic, memory leak and browser freeze when the Dashboard tab is left open for an extended period (#6804)
+- Fixed: Dashboard Dynamic, rain total and rate now displayed correctly in device and QuickStat widgets
+- Fixed: Dashboard Dynamic, Favorites and Room/Plan widgets no longer reload all data on every system-wide device update event
+- Fixed: Dashboard Dynamic, P1 Electricity usage bar now fills leftward when exporting
+- Fixed: Dashboard Dynamic, Custom Chart widget panel styling, Usage devices (P1 phase power, smart plugs) now render data, and X-axis timestamps shown in local time
+- Fixed: Dashboard Dynamic, widget library search no longer matches on internal config properties
+- Fixed: Dashboard Dynamic, dashboard name in the dropdown now syncs after an inline title rename
+- Fixed: Floorplan, swipe gesture navigation on Android/touch devices
+- Fixed: Devices, multi-line Data column values (text sensors with CR/LF) no longer expand table rows; Data cell is truncated to one line with a hover tooltip showing the full content
+- Fixed: Domoticz Remote, remote switches can now trigger scenes; incorrect error message on failure corrected
+- Fixed: Energy calendar, negative energy prices (earned during grid overproduction) are no longer incorrectly flagged as anomalous and removed from the data
+- Fixed: Enphase, Envoy firmware retroactive whLifetime recalculations (upward spikes) no longer corrupt the kWh counter; "Fix Counter/Price Spikes" now correctly re-bases the in-memory tracker after correction
+- Fixed: Enphase, counter offset is now seeded from the database on startup to avoid spurious usage noise after a restart
+- Fixed: kWh counter, improved auto-detection of spike threshold in FixKwhCounterSpikes
+- Fixed: MQTT, incoming message queue limit increased to 10000 to prevent message loss on high-traffic installations
+- Fixed: MQTT-AD, cold and warm white channel values are now always sent together (#6719)
+- Fixed: MQTT-AD, single-white RGBW Z-Wave lights (e.g. Fibaro FGRGBW-442) are now classified as RGBWZ instead of RGBWWZ (#6829)
+- Fixed: MQTT/Google PubSub push, integer values (e.g. switch status) are no longer serialised as 0.0/1.0; the current value is force-published when a push link is saved and enabled
+- Fixed: Matter, disabled the ASyncTCP internal reconnect to avoid racing connect() calls
+- Fixed: MCP, browser-based MCP clients (e.g. the MCP inspector) now connect correctly; CORS preflight and SSE response headers are handled properly
+- Fixed: MCP, server is now enabled by default; use -nomcp flag to disable (previously required -llmmcp flag to enable)
+- Fixed: Mobile dashboard, iOS "Force Desktop Mode" setting is now correctly applied; UA-based phone detection restored for iPhone and Android phones
+- Fixed: P1, corrupt zero-value readings from the meter no longer inflate the daily return energy total
+- Fixed: PhilipsHue SSE, application shutdown hang when event stream was idle
+- Fixed: PhilipsHue V2, battery level for motion/temperature/light level sensors reported as 255 instead of actual level
+- Fixed: PhilipsHue v2, thread-safety race condition causing concurrent API call errors
+- Fixed: Mutex, possible C++ backend deadlock resolved
+- Fixed: Python plugins, compatibility with Python 3.15; deprecated API symbols replaced and bundled Python 3.5 headers removed
+- Fixed: Python plugin framework, spurious NullStream initialization errors on Python < 3.13 (#6688)
+- Fixed: Python plugins, GIL released during blocking SQL calls preventing multi-second latency spikes in other plugin threads (#6718)
+- Fixed: Python plugins, WebSocket fragmented messages and 64-bit frame lengths are now correctly handled
+- Fixed: Python plugins, segfault in plugins using shared="true" on Python 3.13+
+- Fixed: Python plugins, HTTP requests automatically include the Host header required by HTTP/1.1; plugins that supply their own Host header are unaffected
+- Fixed: Python plugins, special characters (newlines, quotes, backslashes) in string and bytes values are now correctly escaped in JSON serialization; fixes Configuration storage for plugins using base64-encoded data (#6807)
+- Fixed: Python plugins, Domoticz and DomoticzEx modules converted to multi-phase initialization (PEP 489) for proper per-sub-interpreter state isolation; improves stability for plugins using asyncio
+- Fixed: RFXMeter, counter byte values are no longer sign-extended on 64-bit platforms
+- Fixed: Setup menu, large gaps between dropdown dividers caused by the service worker serving a stale version of the stylesheet after a Domoticz update
+- Fixed: SolarEdge, energy sensor data corrected; lifetime data was incorrectly showing accumulated values (#6751)
+- Fixed: SolarEdge, optimizer sensors no longer created unnecessarily when optimizer polling is disabled
+- Fixed: SolarEdge, power and current sensors are now reset to zero at the end of the daylight window (#6785)
+- Fixed: SolarEdge, zero energy values are now correctly reported instead of being suppressed
+- Fixed: Selector switches sharing a DeviceID no longer overwrite each other's value; the update query now matches on unit code (#6824)
+- Fixed: Sliders rendered at full width after clearing a LiveSearch filter following a dashboard round-trip (#6821)
+- Fixed: Switches, device hover tooltips in the Lights/Switches tab are now restored after page load
+- Fixed: Temperature widget, wind+temperature sensors no longer display the temperature value twice in the device list when wind chill equals ambient temperature
+- Fixed: Text device utility widget now preserves HTML style attributes (color, font-size, etc.)
+- Fixed: Thermostat, temperature and setpoint values in sensor updates are no longer overwritten by stale database values
+- Fixed: Thermostat6, bigtext on the favorites dashboard now shows correct order: temperature first, setpoint in parentheses, then humidity and barometer
+- Fixed: Thermostat6, widgets no longer show EvoHome heat-level color (red) when setpoint is high; EvoHome colors are now restricted to EvoHome Zone/Hot Water devices
+- Fixed: Utility, kWh/Energy devices now correctly open the energy edit dialog with the Usage/Return type selector
+- Fixed: Utility device edit dialog, sensor icon picker no longer shown for Alert and Thermostat Operating State devices where the icon is determined by the alert level and cannot be customised
+- Fixed: Weather device edit dialog, description changes and visibility unit (km/miles) selection were not reflected when re-opening the dialog after saving
+- Fixed: Weather device, forecast button now correctly renders the forecast content in the weather panel
+- Fixed: Widgets, brief visual flash of incorrect content on initial page load in switches, temperature and weather tabs
+- Fixed: Water meter, counter device now shows value in m³ with 3 decimal places instead of Liter
+- Fixed: WOL, DNS lookup skipped for magic packet targets; improved getaddrinfo error reporting
+- Security: Graph compare endpoint, SQL injection vulnerability in the var_name parameter has been fixed
+
 Version 2026.1 (March 25th 2026)
 - Added: Alexa Smart Home v3 API endpoint (see ALEXA.md)
 - Added: Battery SOC mode selection for Energy Dashboard with voltage display

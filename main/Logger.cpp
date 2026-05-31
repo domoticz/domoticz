@@ -15,7 +15,7 @@
 #include "SQLHelper.h"
 
 #define MAX_LOG_LINE_BUFFER 100
-#define MAX_LOG_LINE_LENGTH (2048 * 3)
+#define MAX_LOG_LINE_LENGTH (4 * 1024)
 
 #define MAX_ACLFLOG_LINES 100000
 
@@ -186,7 +186,7 @@ bool CLogger::IsACLFlogEnabled()
 
 void CLogger::SetOutputFile(const char *OutputFile)
 {
-	std::unique_lock<std::mutex> lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_io_mutex);
 	if (m_outputfile.is_open())
 		m_outputfile.close();
 
@@ -228,7 +228,7 @@ void CLogger::SetACLFOutputFile(const char *OutputFile)
 
 void CLogger::OpenACLFOutputFile()
 {
-	std::unique_lock<std::mutex> lock(m_mutex);
+	std::unique_lock<std::mutex> lock(m_io_mutex);
 	if (m_aclfoutputfile.is_open())
 		m_aclfoutputfile.close();
 
@@ -268,11 +268,27 @@ void CLogger::Log(const _eLogLevel level, const char *logline, ...)
 	if (!(m_log_flags.load(std::memory_order_relaxed) & level))
 		return; // This log level is not enabled!
 
-	va_list argList;
-	char cbuffer[MAX_LOG_LINE_LENGTH];
-	va_start(argList, logline);
-	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
-	va_end(argList);
+	char stackbuf[MAX_LOG_LINE_LENGTH];
+
+	va_list args;
+	va_start(args, logline);
+
+	va_list copy;
+	va_copy(copy, args);
+	int needed = vsnprintf(stackbuf, sizeof(stackbuf), logline, copy);
+	va_end(copy);
+
+	char* cbuffer = stackbuf;
+
+	if (needed >= MAX_LOG_LINE_LENGTH) {
+		cbuffer = static_cast<char*>(malloc(needed + 1));
+		if (cbuffer) {
+			vsnprintf(cbuffer, needed + 1, logline, args);
+		} else {
+			cbuffer = stackbuf; // malloc failed: use truncated stack buffer
+		}
+	}
+	va_end(args);
 
 #ifndef WIN32
 	if (g_bUseSyslog)
@@ -313,8 +329,8 @@ void CLogger::Log(const _eLogLevel level, const char *logline, ...)
 
 	sOnLogMessage(level, szIntLog);
 
+	bool bForceNotificationCheck = false;
 	{
-		// Locked region to allow multiple threads to print at the same time
 		std::unique_lock<std::mutex> lock(m_mutex);
 
 		if ((level & LOG_ERROR) && (m_bEnableErrorsToNotificationSystem))
@@ -324,13 +340,25 @@ void CLogger::Log(const _eLogLevel level, const char *logline, ...)
 			m_notification_log.push_back(_tLogLineStruct(level, szIntLog));
 			if ((m_notification_log.size() == 1) && (mytime(nullptr) - m_LastLogNotificationsSend >= 5))
 			{
-				m_mainworker.ForceLogNotificationCheck();
+				bForceNotificationCheck = true;
 			}
 		}
 
+		auto itt = m_lastlog.find(level);
+		if (itt != m_lastlog.end())
+		{
+			if (m_lastlog[level].size() >= MAX_LOG_LINE_BUFFER)
+				m_lastlog[level].erase(m_lastlog[level].begin());
+		}
+		m_lastlog[level].push_back(_tLogLineStruct(level, szIntLog));
+	}
+
+	{
+		// I/O under a separate mutex so a blocking write never stalls readers of m_mutex
+		std::unique_lock<std::mutex> iolock(m_io_mutex);
+
 		if (!g_bRunAsDaemon)
 		{
-			// output to console
 #ifndef WIN32
 			if (level != LOG_ERROR)
 #endif
@@ -343,31 +371,49 @@ void CLogger::Log(const _eLogLevel level, const char *logline, ...)
 
 		if (m_outputfile.is_open())
 		{
-			// output to file
 			m_outputfile << szIntLog << std::endl;
 			m_outputfile.flush();
 		}
-
-		auto itt = m_lastlog.find(level);
-		if (itt != m_lastlog.end())
-		{
-			if (m_lastlog[level].size() >= MAX_LOG_LINE_BUFFER)
-				m_lastlog[level].erase(m_lastlog[level].begin());
-		}
-		m_lastlog[level].push_back(_tLogLineStruct(level, szIntLog));
 	}
+
+	if (bForceNotificationCheck)
+	{
+		m_mainworker.ForceLogNotificationCheck();
+	}
+
+	if (cbuffer != stackbuf) free(cbuffer);
 }
 
 void CLogger::Debug(const _eDebugLevel level, const char *logline, ...)
 {
 	if (!IsDebugLevelEnabled(level))
 		return;
-	va_list argList;
-	char cbuffer[MAX_LOG_LINE_LENGTH];
-	va_start(argList, logline);
-	vsnprintf(cbuffer, sizeof(cbuffer), logline, argList);
-	va_end(argList);
+
+	char stackbuf[MAX_LOG_LINE_LENGTH];
+
+	va_list args;
+	va_start(args, logline);
+
+	va_list copy;
+	va_copy(copy, args);
+	int needed = vsnprintf(stackbuf, sizeof(stackbuf), logline, copy);
+	va_end(copy);
+
+	char* cbuffer = stackbuf;
+
+	if (needed >= MAX_LOG_LINE_LENGTH) {
+		cbuffer = static_cast<char*>(malloc(needed + 1));
+		if (cbuffer) {
+			vsnprintf(cbuffer, needed + 1, logline, args);
+		} else {
+			cbuffer = stackbuf; // malloc failed: use truncated stack buffer
+		}
+	}
+	va_end(args);
+
 	Debug(level, std::string(cbuffer));
+
+	if (cbuffer != stackbuf) free(cbuffer);
 }
 
 void CLogger::Debug(const _eDebugLevel level, const std::string &sLogline)

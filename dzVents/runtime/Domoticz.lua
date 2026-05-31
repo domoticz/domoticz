@@ -361,6 +361,15 @@ local function Domoticz(settings)
 		utils.log('switchGroup is deprecated. Please use the group object directly.', utils.LOG_INFO)
 		return TimedCommand(self, 'Group:' .. group, value, 'device', group.state)
 	end
+
+	function self.switchTimerPlan(idx)
+		if type(idx) ~= 'number' or idx < 0 then
+			utils.log('switchTimerPlan: idx must be a positive integer, got: ' .. tostring(idx), utils.LOG_ERROR)
+			return nil
+		end
+		return TimedCommand(self, 'SwitchTimerPlan:' .. tostring(math.floor(idx)), '', 'device')
+	end
+
 	if (_G.TESTMODE) then
 		function self._getUtilsInstance()
 			return utils

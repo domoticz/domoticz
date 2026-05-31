@@ -1,5 +1,50 @@
-define(['app', 'livesocket'], function (app) {
-	app.controller('TemperatureController', function ($scope, $rootScope, $location, $http, $interval, $window, $route, $routeParams, deviceApi, permissions, livesocket) {
+define(['app', 'livesocket', 'widgets/dzBar'], function (app) {
+
+	app.factory('tempEditService', ['dzBarService', '$rootScope', function (dzBarService, $rootScope) {
+		function openDialog(device) {
+			var idx      = device.idx;
+			var name     = device.Name;
+			var isHumOnly = device.Type === 'Humidity';
+			var dialogId  = isHumOnly ? '#dialog-edittempdevicesmall' : '#dialog-edittempdevice';
+			var sensorKey = isHumOnly ? 'hum' : 'temp';
+			var canBar    = typeof device.Temp !== 'undefined' || typeof device.Humidity !== 'undefined';
+
+			$.devIdx = idx;
+			$(dialogId + ' #deviceidx').text(idx);
+			$(dialogId + ' #deviceid').text(device.ID);
+			$(dialogId + ' #deviceunit').text(device.Unit);
+			$(dialogId + ' #devicename').val(name);
+			$(dialogId + ' #devicedescription').val(device.Description);
+			$(dialogId + ' #adjustment').val(device.AddjValue);
+
+			if (!isHumOnly) {
+				$(dialogId + ' #tempcf').html($rootScope.config.TempSign);
+				if (device.Type === 'Thermostat 6' && typeof device.vunit !== 'undefined') {
+					$(dialogId + ' #unit').val(device.vunit);
+					$(dialogId + ' #step').val(device.step);
+					$(dialogId + ' #min').val(device.min);
+					$(dialogId + ' #max').val(device.max);
+					$(dialogId + ' #setpointfields').show();
+				} else {
+					$(dialogId + ' #setpointfields').hide();
+				}
+			}
+
+			var $form = $(dialogId + ' form');
+			$form.find('.dz-bar-btn').remove();
+			if (canBar) {
+				dzBarService.loadForKey(device.Color || '', sensorKey);
+				dzBarService.attachBarButton($form, idx, name);
+			}
+
+			$(dialogId).i18n();
+			$(dialogId).dialog('open');
+		}
+
+		return { openDialog: openDialog };
+	}]);
+
+	app.controller('TemperatureController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$window', '$route', '$routeParams', 'deviceApi', 'permissions', 'livesocket', 'dzBarService', function ($scope, $rootScope, $location, $http, $interval, $window, $route, $routeParams, deviceApi, permissions, livesocket, dzBarService) {
 		var $element = $('#main-view #tempcontent').last();
 
 		var ctrl = this;
@@ -9,39 +54,6 @@ define(['app', 'livesocket'], function (app) {
 				ShowTemps();
 			});
 		};
-
-		EditTempDevice = function (idx, name, description, addjvalue, unit, step, min, max, deviceID, unitCode) {
-			$.devIdx = idx;
-			$("#dialog-edittempdevice #deviceidx").text(idx);
-			$("#dialog-edittempdevice #deviceid").text(deviceID);
-			$("#dialog-edittempdevice #deviceunit").text(unitCode);
-			$("#dialog-edittempdevice #devicename").val(unescape(name));
-			$("#dialog-edittempdevice #devicedescription").val(unescape(description));
-			$("#dialog-edittempdevice #adjustment").val(addjvalue);
-			$("#dialog-edittempdevice #tempcf").html($scope.config.TempSign);
-			if (typeof unit !== 'undefined') {
-				$("#dialog-edittempdevice #unit").val(unescape(unit));
-				$("#dialog-edittempdevice #step").val(step);
-				$("#dialog-edittempdevice #min").val(min);
-				$("#dialog-edittempdevice #max").val(max);
-				$("#setpointfields").show();
-			} else {
-				$("#setpointfields").hide();
-			}
-			$("#dialog-edittempdevice").i18n();
-			$("#dialog-edittempdevice").dialog("open");
-		}
-
-		EditTempDeviceSmall = function (idx, name, description, addjvalue, deviceID, unitCode) {
-			$.devIdx = idx;
-			$("#dialog-edittempdevicesmall #deviceidx").text(idx);
-			$("#dialog-edittempdevicesmall #deviceid").text(deviceID);
-			$("#dialog-edittempdevicesmall #deviceunit").text(unitCode);
-			$("#dialog-edittempdevicesmall #devicename").val(unescape(name));
-			$("#dialog-edittempdevicesmall #devicedescription").val(unescape(description));
-			$("#dialog-edittempdevicesmall").i18n();
-			$("#dialog-edittempdevicesmall").dialog("open");
-		}
 
 		//evohome
 		//FIXME some of this functionality would be good in a shared js / class library
@@ -60,8 +72,8 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editsetpoint #deviceidx").text(idx);
 			$("#dialog-editsetpoint #deviceid").text(deviceID);
 			$("#dialog-editsetpoint #deviceunit").text(unitCode);
-			$("#dialog-editsetpoint #devicename").val(unescape(name));
-			$("#dialog-editsetpoint #devicedescription").val(unescape(description));
+			$("#dialog-editsetpoint #devicename").val(name);
+			$("#dialog-editsetpoint #devicedescription").val(description);
 			$("#dialog-editsetpoint #setpoint").val(setpoint);
 			if (mode.indexOf("Override") == -1)
 				$(":button:contains('Cancel Override')").attr("disabled", "disabled").addClass('ui-state-disabled');
@@ -81,8 +93,8 @@ define(['app', 'livesocket'], function (app) {
 			$("#dialog-editstate #deviceidx").text(idx);
 			$("#dialog-editstate #deviceid").text(deviceID);
 			$("#dialog-editstate #deviceunit").text(unitCode);
-			$("#dialog-editstate #devicename").val(unescape(name));
-			$("#dialog-editstate #devicedescription").val(unescape(description));
+			$("#dialog-editstate #devicename").val(name);
+			$("#dialog-editstate #devicedescription").val(description);
 			$("#dialog-editstate #state").val(state);
 			if (mode.indexOf("Override") == -1)
 				$(":button:contains('Cancel Override')").attr("disabled", "d‌​isabled").addClass('ui-state-disabled');
@@ -208,6 +220,7 @@ define(['app', 'livesocket'], function (app) {
 					$element.i18n();
 
 					$rootScope.RefreshTimeAndSun();
+					ScheduleLiveSearchRestore();
 					RefreshTemps();
 				},
 				error: function () {
@@ -263,9 +276,10 @@ define(['app', 'livesocket'], function (app) {
 						'&name=' + encodeURIComponent($("#dialog-edittempdevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-edittempdevice #devicedescription").val()) +
 						'&addjvalue=' + aValue +
+						'&color=' + encodeURIComponent(dzBarService.getFullColorJson()) +
 						'&used=true';
 
-					if ($("#setpointfields").is(":visible")) {
+					if ($("#dialog-edittempdevice #setpointfields").is(":visible")) {
 						var devOptions = [];
 						devOptions.push("ValueStep:" + $("#dialog-edittempdevice #step").val() + ";");
 						devOptions.push("ValueMin:" + $("#dialog-edittempdevice #min").val() + ";");
@@ -292,8 +306,8 @@ define(['app', 'livesocket'], function (app) {
 					if (result == true) {
 						$.ajax({
 							url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
-							'&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) +
-							'&description=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicedescription").val()) +
+							'&name=' + encodeURIComponent($("#dialog-edittempdevice #devicename").val()) +
+							'&description=' + encodeURIComponent($("#dialog-edittempdevice #devicedescription").val()) +
 							'&used=false',
 							async: false,
 							dataType: 'json',
@@ -462,6 +476,7 @@ define(['app', 'livesocket'], function (app) {
 						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-edittempdevicesmall #devicedescription").val()) +
+						'&color=' + encodeURIComponent(dzBarService.getFullColorJson()) +
 						'&used=true',
 						async: false,
 						dataType: 'json',
@@ -544,6 +559,8 @@ define(['app', 'livesocket'], function (app) {
 		ctrl.changeRoom = function () {
 			var idx = ctrl.roomSelected;
 			window.myglobals.LastPlanSelected = idx;
+			window.myglobals.LastSearchFilter = '';
+			$('.jsLiveSearch').val('').trigger('change');
 
 			$route.updateParams({
 					room: idx >= 0 ? idx : undefined
@@ -551,8 +568,8 @@ define(['app', 'livesocket'], function (app) {
 				$location.replace();
 		};
 
-	})
-		.directive('dztemperaturewidget', function ($rootScope,$location) {
+	}])
+		.directive('dztemperaturewidget', ['$rootScope', '$location', function ($rootScope,$location) {
 			return {
 				priority: 0,
 				restrict: 'E',
@@ -567,7 +584,7 @@ define(['app', 'livesocket'], function (app) {
 				templateUrl: 'views/temperature_widget.html',
 				require: 'permissions',
 				controllerAs: 'ctrl',
-				controller: function ($scope, $element, $attrs, permissions) {
+				controller: ['$scope', '$element', '$attrs', 'permissions', 'tempEditService', function ($scope, $element, $attrs, permissions, tempEditService) {
 					var ctrl = this;
 					var item = $scope.item;
 
@@ -585,7 +602,8 @@ define(['app', 'livesocket'], function (app) {
 
 					ctrl.nbackstyle = function () {
 						var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
-						if(ctrl.displaySetPoint()){
+						var evoSubTypes = ['Zone', 'Hot Water'];
+						if (evoSubTypes.indexOf(item.SubType) !== -1 && ctrl.displaySetPoint()){
 							if (ctrl.sHeatMode() == "HeatingOff" || !ctrl.isSetPointOn())//seems to be used whenever the heating is off
                                         			backgroundClass="statusEvoSetPointOff";
                                 			else if (item.SetPoint >= 25)
@@ -597,7 +615,7 @@ define(['app', 'livesocket'], function (app) {
                                 			else if (item.SetPoint >= 16)
                                         			backgroundClass="statusEvoSetPoint16";
                                 			else //min on temp 5 or greater
-                                        			backgroundClass="statusEvoSetPointMin";	
+                                        			backgroundClass="statusEvoSetPointMin";
 						}
 						return backgroundClass;
 					};
@@ -680,7 +698,7 @@ define(['app', 'livesocket'], function (app) {
 						return $.t(item.HumidityStatus);
 					};
 					ctrl.displayBarometer = function () {
-						return typeof item.Barometer != 'undefined';
+						return typeof item.Barometer != 'undefined' && item.Type === 'Thermostat 6';
 					};
 					ctrl.displayForecast = function () {
 						return typeof item.ForecastStr != 'undefined';
@@ -704,25 +722,21 @@ define(['app', 'livesocket'], function (app) {
 					};
 
 					ctrl.EditTempDeviceSmall = function () {
-						return EditTempDeviceSmall(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, item.ID, item.Unit);
+						tempEditService.openDialog(item);
 					};
 
 					ctrl.EditTempDevice = function () {
-						if (item.Type == 'Thermostat 6') {
-							return EditTempDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, escape(item.vunit), item.step, item.min, item.max, item.ID, item.Unit);
-						} else {
-							return EditTempDevice(item.idx, escape(item.Name), escape(item.Description), item.AddjValue, undefined, undefined, undefined, undefined, item.ID, item.Unit);
-						}
+						tempEditService.openDialog(item);
 					};
 
 					ctrl.ShowForecast = function (divId, fn) {
 						$('#tempwidgets').hide(); // TODO delete when multiple views implemented
 						$('#temptophtm').hide();
-						return ShowForecast(atob(item.forecast_url), escape(item.Name), divId, fn);
+						return ShowForecast(atob(item.forecast_url), item.Name, divId, fn);
 					};
 
 					ctrl.EditSetPoint = function (fn) {
-						return EditSetPoint(item.idx, escape(item.Name), escape(item.Description), item.SetPoint, item.Status, item.Until, fn, item.ID, item.Unit);
+						return EditSetPoint(item.idx, item.Name, item.Description, item.SetPoint, item.Status, item.Until, fn, item.ID, item.Unit);
 					};
 					
 					ctrl.ShowSetpointPopup = function (event) {
@@ -733,7 +747,7 @@ define(['app', 'livesocket'], function (app) {
 					};
 
 					ctrl.EditState = function (fn) {
-						return EditState(item.idx, escape(item.Name), escape(item.Description), item.State, item.Status, item.Until, fn, item.ID, item.Unit);
+						return EditState(item.idx, item.Name, item.Description, item.State, item.Status, item.Until, fn, item.ID, item.Unit);
 					};
 
 					$element.i18n();
@@ -763,7 +777,7 @@ define(['app', 'livesocket'], function (app) {
 						}
 					}
 
-				}
+				}]
 			};
-		});
+		}]);
 });

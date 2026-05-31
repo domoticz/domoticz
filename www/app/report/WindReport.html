@@ -19,8 +19,19 @@
     {{ 'No data available' | translate}}
 </div>
 
+<div style="text-align:right; margin:4px 0;">
+    <i class="far fa-file-alt" ng-click="$ctrl.exportExcel()"
+       title="{{ 'Export to Excel' | translate }}"
+       style="cursor:pointer; font-size:1.1em; margin-left:5px;"></i>
+    <i class="far fa-file" ng-click="$ctrl.exportCSV()"
+       title="{{ 'Export to CSV' | translate }}"
+       style="cursor:pointer; font-size:1.1em; margin-left:5px;"></i>
+    <i class="far fa-clipboard" ng-click="$ctrl.exportClipboard()"
+       title="{{ 'Copy to clipboard' | translate }}"
+       style="cursor:pointer; font-size:1.1em; margin-left:5px;"></i>
+</div>
 <table class="display myrighttable" id="reporttable"></table>
 <br>
-<div id="windgraph" class="device-log-chart"></div>
+<div id="windgraph" class="device-log-chart" style="height: 300px;"></div>
 <br>
-<div id="gustgraph" class="device-log-chart" ng-if="$ctrl.isMonthView"></div>
+<div id="gustgraph" class="device-log-chart" style="height: 300px;" ng-if="$ctrl.isMonthView"></div>

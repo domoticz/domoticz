@@ -62,15 +62,18 @@ private:
 	void GetMeterDetails();
 	void GetInverterDetails(const _tInverterSettings* pInverterSettings, int iInverterNumber);
 	int getSunRiseSunSetMinutes(bool bGetSunRise);
+	bool isDaylightWindow();
+	void ResetPowerValues();
 
 	void GetBatteryDetails();
 	void GetOverview();
 	void GetEnergyDetails();
 
 	// Web portal methods
+	bool GetLayoutFromAPI(Json::Value& json_output, bool bGetLifeTimeData);
 	bool GetSiteLayout();
 	void GetOptimizerData();
-	void GetEnergyFromLayout(const Json::Value& reportersData);
+	void GetEnergyFromLayout(const Json::Value& reportersData, bool bSetLifeTimeData);
 
 private:
 	int m_SiteID;
@@ -92,6 +95,9 @@ private:
 	std::vector<_tWebNodeInfo> m_webInverters;
 	std::vector<_tWebNodeInfo> m_webStrings;
 	std::map<int, CounterHelper> m_counterHelpers;
+
+	bool m_bWasInDaylightWindow = true;
+	std::vector<double> m_lastInverterEnergy;
 
 	std::shared_ptr<std::thread> m_thread;
 };

@@ -321,6 +321,28 @@ describe('Domoticz', function()
 			assert.is_same({ { ['Group:group1'] = 'on' } }, domoticz.commandArray)
 		end)
 
+		it('should switch timer plan', function()
+			local res = domoticz.switchTimerPlan(3)
+			assert.is_table(res)
+			assert.is_same({ { ['SwitchTimerPlan:3'] = '' } }, domoticz.commandArray)
+		end)
+
+		it('should floor float idx for timer plan', function()
+			domoticz.commandArray = {}
+			local res = domoticz.switchTimerPlan(3.7)
+			assert.is_table(res)
+			assert.is_same({ { ['SwitchTimerPlan:3'] = '' } }, domoticz.commandArray)
+		end)
+
+		it('should reject invalid timer plan idx', function()
+			domoticz.commandArray = {}
+			assert.is_nil(domoticz.switchTimerPlan(0))
+			assert.is_nil(domoticz.switchTimerPlan(-1))
+			assert.is_nil(domoticz.switchTimerPlan('abc'))
+			assert.is_nil(domoticz.switchTimerPlan(nil))
+			assert.is_same({}, domoticz.commandArray)
+		end)
+
 		it('should create a url call when triggerHTTPResponse is called', function()
 			domoticz.commandArray = {}
 			domoticz.triggerHTTPResponse('call me Back',12,'hi there')

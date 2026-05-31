@@ -86,6 +86,9 @@ class CDomoticzHardwareBase : public StoppableTask
 	void SendTempHumBaroSensorFloat(int NodeID, int BatteryLevel, float temperature, int humidity, float pressure, uint8_t forecast, const std::string &defaultname, int RssiLevel = 12);
 	void SendTempBaroSensor(uint8_t NodeID, int BatteryLevel, float temperature, float pressure, const std::string &defaultname);
 	void SendSetPointSensor(const uint8_t ID1, const uint8_t ID2, const uint8_t ID3, const uint8_t ID4, const uint8_t Unit, const int BatteryLevel, const float Value, const std::string &defaultname);
+	void SendThermostatSensor(const uint8_t ID1, const uint8_t ID2, const uint8_t ID3, const uint8_t ID4, const uint8_t Unit, const int BatteryLevel, const float setpointValue, const float temperatureValue, const std::string& defaultname);
+	void SendThermostatSensor(const uint8_t ID1, const uint8_t ID2, const uint8_t ID3, const uint8_t ID4, const uint8_t Unit, const int BatteryLevel, const float setpointValue, const float temperatureValue, const int humidityValue, const std::string& defaultname);
+	void SendThermostatSensor(const uint8_t ID1, const uint8_t ID2, const uint8_t ID3, const uint8_t ID4, const uint8_t Unit, const int BatteryLevel, const float setpointValue, const float temperatureValue, const int humidityValue, const float pressureValue, const std::string& defaultname);
 	void SendKwhMeterOldWay(int NodeID, int ChildID, int BatteryLevel, double musage, double mtotal, const std::string &defaultname, int RssiLevel = 12);
 	void SendKwhMeter(int NodeID, int ChildID, int BatteryLevel, double musage, double mtotal, const std::string &defaultname, int RssiLevel = 12);
 	void SendWattMeter(int NodeID, uint8_t ChildID, int BatteryLevel, float musage, const std::string &defaultname, int RssiLevel = 12);

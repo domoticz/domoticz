@@ -1,0 +1,23 @@
+<div class="dd-camera-widget">
+    <div ng-if="!ctrl.widgetDef.config.cameraIdx" class="dd-camera-placeholder">
+        <i class="fa-solid fa-video dd-camera-placeholder-icon"></i>
+        <p>No camera selected</p>
+        <p class="dd-camera-hint" ng-if="ctrl.editMode">Click the settings icon to choose a camera.</p>
+    </div>
+
+    <div ng-if="ctrl.widgetDef.config.cameraIdx" class="dd-camera-frame"
+         ng-click="ctrl.openLiveStream()"
+         ng-class="{'dd-camera-frame--clickable': !ctrl.editMode}">
+        <img ng-if="ctrl.imageUrl"
+             ng-src="{{ctrl.imageUrl}}"
+             class="dd-camera-img"
+             alt="Camera feed"
+             onload="this.style.display=''; this.nextElementSibling.style.display='none'"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+        <div class="dd-camera-error" style="display:none">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>Camera unavailable</span>
+        </div>
+        <div ng-if="ctrl.cameraName" class="dd-camera-name">{{ctrl.cameraName}}</div>
+    </div>
+</div>

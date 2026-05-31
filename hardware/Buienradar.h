@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DomoticzHardware.h"
+#include "CounterHelper.h"
 
 class CBuienRadar : public CDomoticzHardwareBase
 {
@@ -33,4 +34,6 @@ private:
 	bool m_stationidprovided = false;
 	bool m_itIsRaining = false;
 	int m_rainShowerLeadTime = 0;
+
+	CounterHelper m_rain_counter_helper;
 };

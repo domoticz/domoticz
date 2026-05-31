@@ -12,11 +12,11 @@
 #include "../../httpclient/HTTPClient.h"
 #include "../../main/json_helper.h"
 #include "../hardwaretypes.h"
+#include <curl/curl.h>
 
 #define HUE_DEFAULT_POLL_INTERVAL 10
 #define HUE_NOT_ADD_GROUPS 0x01
 #define HUE_NOT_ADD_SCENES 0x02
-#define HUE_USE_V2_SENSORS 0x04
 
 #define SensorTypeDaylight "Daylight"
 #define SensorTypeZGPSwitch "ZGPSwitch"
@@ -93,54 +93,117 @@ CPhilipsHue::CPhilipsHue(const int ID, const std::string& IPAddress, const unsig
 		Log(LOG_STATUS, "Using poll interval of %d seconds.", m_poll_interval);
 	}
 
-	// Force-enable V2 sensors by default by OR-ing the option in here.
-	// This keeps callers unchanged but makes the behavior default-on.
-	int effectiveOptions = Options | HUE_USE_V2_SENSORS;
-
-	m_add_groups = (effectiveOptions & HUE_NOT_ADD_GROUPS) != 0;
-	m_add_scenes = (effectiveOptions & HUE_NOT_ADD_SCENES) != 0;
-
-	m_use_v2_sensors = (effectiveOptions & HUE_USE_V2_SENSORS) != 0;
-
-	if (Port == 443)
-		m_html_schema = "https";
-	else
-		m_html_schema = "http";
-
-	Init();
+	m_add_groups = (Options & HUE_NOT_ADD_GROUPS) != 0;
+	m_add_scenes = (Options & HUE_NOT_ADD_SCENES) != 0;
 }
 
-void CPhilipsHue::Init()
+bool CPhilipsHue::CheckIsV2Bridge()
 {
-	// instantiate V2 sensors helper when Port is 443 (HTTPS) and if enabled
-	if (m_Port == 443) {
-		if (m_use_v2_sensors) {
-			// Use m_UserName as hue-application-key for now (same field used for v1 username).
-			try {
-				m_v2sensors = std::make_unique<CPhilipsHueV2Sensors>(m_html_schema, m_IPAddress, std::to_string(m_Port), m_UserName);
-				Log(LOG_STATUS, "PhilipsHue: v2 sensors support enabled (Port==443).");
-			}
-			catch (const std::exception& e) {
-				Log(LOG_ERROR, "PhilipsHue: failed to create v2 sensors helper: %s", e.what());
-				m_use_v2_sensors = false;
-			}
-		} else {
-			// no v2 sensors when disabled/false
-			Log(LOG_STATUS, "PhilipsHue: v2 sensors support disabled.");
+	std::string url = "https://" + m_IPAddress + "/clip/v2/resource";
+	CURL* curl = curl_easy_init();
+	if (!curl)
+		return false;
+	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 3L);
+	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+	curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
+	CURLcode res = curl_easy_perform(curl);
+	long httpCode = 0;
+	if (res == CURLE_OK)
+		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+	curl_easy_cleanup(curl);
+	_log.Debug(DEBUG_HARDWARE, "PhilipsHue: CheckIsV2Bridge HTTP %ld from %s (403 = V2)", httpCode, url.c_str());
+	return (httpCode == 403);
+}
+
+bool CPhilipsHue::CheckV1Bridge(int port)
+{
+	const std::string schema = (port == 443) ? "https" : "http";
+	std::string url = schema + "://" + m_IPAddress + ":" + std::to_string(port) + "/api/";
+	CURL* curl = curl_easy_init();
+	if (!curl)
+		return false;
+	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 3L);
+	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+	curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
+	CURLcode res = curl_easy_perform(curl);
+	long httpCode = 0;
+	if (res == CURLE_OK)
+		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
+	curl_easy_cleanup(curl);
+	_log.Debug(DEBUG_HARDWARE, "PhilipsHue: CheckV1Bridge port %d HTTP %ld (200/405 = V1)", port, httpCode);
+	return (httpCode == 200 || httpCode == 405);
+}
+
+bool CPhilipsHue::Init()
+{
+	m_use_v2_sensors = false;
+	m_html_schema = "http";
+
+	if (CheckIsV2Bridge())
+	{
+		m_html_schema = "https";
+		m_Port = 443;
+		try {
+			m_v2sensors = std::make_unique<CPhilipsHueV2Sensors>(m_html_schema, m_IPAddress, std::to_string(m_Port), m_UserName);
+			m_use_v2_sensors = true;
+			Log(LOG_STATUS, "V2 bridge detected, using V2 API.");
 		}
-	} else {
-		// no v2 sensors on non-HTTPS connections
-		Log(LOG_STATUS, "PhilipsHue: v2 sensors support disabled (Port<>443).");
-		m_use_v2_sensors = false;
+		catch (const std::exception& e) {
+			Log(LOG_ERROR, "Failed to create V2 sensors helper: %s", e.what());
+			return false;
+		}
+		return true;
 	}
+
+	if (CheckV1Bridge(443))
+	{
+		m_html_schema = "https";
+		m_Port = 443;
+		Log(LOG_STATUS, "V1 bridge detected on port 443 (HTTPS).");
+		return true;
+	}
+
+	if (CheckV1Bridge(80))
+	{
+		m_html_schema = "http";
+		m_Port = 80;
+		Log(LOG_STATUS, "V1 bridge detected on port 80 (HTTP).");
+		return true;
+	}
+
+	Log(LOG_ERROR, "No Philips Hue bridge found at %s (tried V2 HTTPS/443, V1 HTTPS/443, V1 HTTP/80). Check IP address and network connectivity.", m_IPAddress.c_str());
+	return false;
 }
 
 bool CPhilipsHue::StartHardware()
 {
 	RequestStart();
 
-	Init();
-	//Start worker thread
+	if (!Init())
+		return false;
+
+	if (m_use_v2_sensors && m_v2sensors)
+	{
+		{
+			std::lock_guard<std::mutex> lock(m_http_mutex);
+			GetV2Sensors();
+		}
+
+		m_sse = std::make_unique<CPhilipsHueSSE>(
+			m_IPAddress,
+			std::to_string(m_Port),
+			m_UserName,
+			[this](const std::string& data) { OnSSEEvent(data); }
+		);
+		m_sse->Start();
+	}
+
 	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
 	m_bIsStarted = true;
@@ -150,6 +213,11 @@ bool CPhilipsHue::StartHardware()
 
 bool CPhilipsHue::StopHardware()
 {
+	if (m_sse)
+	{
+		m_sse->Stop();
+		m_sse.reset();
+	}
 	if (m_thread)
 	{
 		RequestStop();
@@ -178,6 +246,11 @@ void CPhilipsHue::Do_Work()
 			{
 				m_LastHeartbeat = mytime(nullptr);
 				GetStates();
+			}
+			if (m_use_v2_sensors && m_v2sensors && sec_counter % 600 == 0)
+			{
+				std::lock_guard<std::mutex> lock(m_http_mutex);
+				GetV2Sensors();
 			}
 		}
 	}
@@ -420,35 +493,38 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string& LCmd, const i
 	}
 
 	// Update cached state
-	_tHueLightState* pState = nullptr;
+	{
+		std::lock_guard<std::mutex> lock(m_mutex);
+		_tHueLightState* pState = nullptr;
 
-	if (nodeID < 1000)
-	{
-		//Light
-		auto&& ittLight = m_lights.find(nodeID);
-		if (ittLight != m_lights.end())
+		if (nodeID < 1000)
 		{
-			pState = &ittLight->second;
+			//Light
+			auto&& ittLight = m_lights.find(nodeID);
+			if (ittLight != m_lights.end())
+			{
+				pState = &ittLight->second;
+			}
 		}
-	}
-	else if (nodeID < 2000)
-	{
-		//Group
-		auto&& ittGroup = m_groups.find(nodeID - 1000);
-		if (ittGroup != m_groups.end())
+		else if (nodeID < 2000)
 		{
-			pState = &ittGroup->second.gstate;
+			//Group
+			auto&& ittGroup = m_groups.find(nodeID - 1000);
+			if (ittGroup != m_groups.end())
+			{
+				pState = &ittGroup->second.gstate;
+			}
 		}
-	}
-	if (pState)
-	{
-		if (setOn) pState->on = On;
-		if (setLevel)
-			pState->level = int((100.0F / 254.0F) * float(svalue));
-		if (setHueSat) pState->hue = svalue2;
-		if (setHueSat) pState->sat = svalue3;
-		if (setCt) pState->ct = int((float(svalue2) - 153.0) / (500.0 - 153.0));
-		if (setMode) pState->mode = mode;
+		if (pState)
+		{
+			if (setOn) pState->on = On;
+			if (setLevel)
+				pState->level = int((100.0F / 254.0F) * float(svalue));
+			if (setHueSat) pState->hue = svalue2;
+			if (setHueSat) pState->sat = svalue3;
+			if (setCt) pState->ct = int((float(svalue2) - 153.0) / (500.0 - 153.0));
+			if (setMode) pState->mode = mode;
+		}
 	}
 
 	std::stringstream sstr2;
@@ -490,10 +566,13 @@ bool CPhilipsHue::SwitchLight(const int nodeID, const std::string& LCmd, const i
 			<< "/groups/0/action";
 	}
 	std::string sURL = sstr2.str();
-	if (!HTTPClient::PUT(sURL, sPostData.str(), ExtraHeaders, sResult))
 	{
-		Log(LOG_ERROR, "Error connecting to Hue bridge (Switch Light/Scene), (Check IPAddress/Username)");
-		return false;
+		std::lock_guard<std::mutex> lock(m_http_mutex);
+		if (!HTTPClient::PUT(sURL, sPostData.str(), ExtraHeaders, sResult))
+		{
+			Log(LOG_ERROR, "Error sending command to Hue bridge (Switch Light/Scene)");
+			return false;
+		}
 	}
 #ifdef DEBUG_PhilipsHue_W
 	SaveString2Disk(sResult, urlToFilename("PhilipsHue", sURL));
@@ -824,10 +903,13 @@ bool CPhilipsHue::GetStates()
 	//Get Data
 	std::string sURL = sstr2.str();
 	std::vector<std::string> ExtraHeaders;
-	if (!hue_http_get(sURL, ExtraHeaders, sResult))
 	{
-		Log(LOG_ERROR, "Error getting Light States, (Check IPAddress/Username)");
-		return false;
+		std::lock_guard<std::mutex> lock(m_http_mutex);
+		if (!hue_http_get(sURL, ExtraHeaders, sResult))
+		{
+			Log(LOG_ERROR, "Error getting Light States, (Check IPAddress/Username)");
+			return false;
+		}
 	}
 	Json::Value root;
 	bool ret = ParseJSon(sResult, root);
@@ -885,13 +967,17 @@ bool CPhilipsHue::GetStates()
 	{
 		Log(LOG_ERROR, "Error processing Sensors: %s", e.what());
 	}
-	try
+	if (m_use_v2_sensors && m_v2sensors && (!m_sse || !m_sse->IsConnected()))
 	{
-		GetV2Sensors();
-	}
-	catch (const std::exception& e)
-	{
-		Log(LOG_ERROR, "Error processing V2 Sensors: %s", e.what());
+		try
+		{
+			std::lock_guard<std::mutex> lock(m_http_mutex);
+			GetV2Sensors();
+		}
+		catch (const std::exception& e)
+		{
+			Log(LOG_ERROR, "Error processing V2 Sensors: %s", e.what());
+		}
 	}
 
 	return true;
@@ -1012,20 +1098,26 @@ bool CPhilipsHue::GetLights(const Json::Value& root)
 			continue;
 		}
 
-		auto myLight = m_lights.find(lID);
-		if (myLight != m_lights.end())
 		{
-			if (StatesSimilar(myLight->second, tlight))
-				bDoSend = false;
+			std::lock_guard<std::mutex> lock(m_mutex);
+			auto myLight = m_lights.find(lID);
+			if (myLight != m_lights.end())
+			{
+				if (StatesSimilar(myLight->second, tlight))
+					bDoSend = false;
+			}
 		}
 		if (bDoSend)
 		{
 			//Log(LOG_STATUS, "HueBridge state change: tbri = %d, level = %d", tbri, tlight.level);
 			if (!light["modelid"].empty())
 			{
-				m_lights[lID] = tlight;
 				std::string modelid = light["modelid"].asString();
-				m_lightModels[lID] = modelid;
+				{
+					std::lock_guard<std::mutex> lock(m_mutex);
+					m_lights[lID] = tlight;
+					m_lightModels[lID] = modelid;
+				}
 				InsertUpdateLamp(lID, LType, tlight, light["name"].asString(), "", modelid, true);
 			}
 		}
@@ -1062,17 +1154,29 @@ bool CPhilipsHue::GetGroups(const Json::Value& root)
 				}
 			}
 
-			auto myGroup = m_groups.find(gID);
-			if (myGroup != m_groups.end())
 			{
-				if (StatesSimilar(myGroup->second.gstate, tstate))
-					bDoSend = false;
+				std::lock_guard<std::mutex> lock(m_mutex);
+				auto myGroup = m_groups.find(gID);
+				if (myGroup != m_groups.end())
+				{
+					if (StatesSimilar(myGroup->second.gstate, tstate))
+						bDoSend = false;
+				}
 			}
 			if (bDoSend)
 			{
-				m_groups[gID].gstate = tstate;
 				std::string oname = (!group["name"].empty()) ? group["name"].asString() : "??";
+				if (m_use_v2_sensors && m_v2sensors && (oname.empty() || oname == "??" || oname.rfind("Group", 0) == 0))
+				{
+					std::string v2name = m_v2sensors->GetRoomNameByV1GroupId(gID);
+					if (!v2name.empty())
+						oname = v2name;
+				}
 				std::string Name = "Group " + oname;
+				{
+					std::lock_guard<std::mutex> lock(m_mutex);
+					m_groups[gID].gstate = tstate;
+				}
 				InsertUpdateLamp(1000 + gID, LType, tstate, Name, "", "", m_add_groups);
 			}
 		}
@@ -1148,15 +1252,23 @@ bool CPhilipsHue::GetGroups(const Json::Value& root)
 	}
 
 	int gID = 0;
-	std::map<int, _tHueGroup>::iterator myGroup = m_groups.find(gID);
-	if (myGroup != m_groups.end())
+	bool bDoSendGroup0 = false;
 	{
-		if (!StatesSimilar(myGroup->second.gstate, tstate))
+		std::lock_guard<std::mutex> lock(m_mutex);
+		std::map<int, _tHueGroup>::iterator myGroup = m_groups.find(gID);
+		if (myGroup != m_groups.end())
 		{
-			myGroup->second.gstate = tstate;
-			std::string Name = "Group All Lights";
-			InsertUpdateLamp(1000 + gID, LType, tstate, Name, "", "", m_add_groups);
+			if (!StatesSimilar(myGroup->second.gstate, tstate))
+			{
+				myGroup->second.gstate = tstate;
+				bDoSendGroup0 = true;
+			}
 		}
+	}
+	if (bDoSendGroup0)
+	{
+		std::string Name = "Group All Lights";
+		InsertUpdateLamp(1000 + gID, LType, tstate, Name, "", "", m_add_groups);
 	}
 	else {
 		//Should we add Group 0? Seems we are not doing anything with Group 0
@@ -1236,6 +1348,30 @@ bool CPhilipsHue::GetScenes(const Json::Value& root)
 		}
 	}
 	return true;
+}
+
+static int ParseV1NumericId(const std::string& id_v1)
+{
+	if (id_v1.empty())
+		return -1;
+	auto pos = id_v1.rfind('/');
+	if (pos == std::string::npos || pos + 1 >= id_v1.size())
+		return -1;
+	try { return std::stoi(id_v1.substr(pos + 1)); }
+	catch (...) { return -1; }
+}
+
+void CPhilipsHue::LogV2MigrationWarning(const std::string& ownerRid, int v1NodeID, int hashNodeID, const std::string& friendlyName)
+{
+	if (v1NodeID == hashNodeID)
+		return;
+	if (m_v2_migration_warned.find(ownerRid) != m_v2_migration_warned.end())
+		return;
+	Log(LOG_STATUS, "PhilipsHue: Sensor '%s' has been re-created with a new device ID (old: %d, new: %d). "
+		"To keep your automations and scripts working: go to Settings > Devices, find the old device, "
+		"click Edit > Replace, and select the new device.",
+		friendlyName.c_str(), hashNodeID, v1NodeID);
+	m_v2_migration_warned.insert(ownerRid);
 }
 
 bool CPhilipsHue::GetV2Sensors()
@@ -1335,6 +1471,8 @@ bool CPhilipsHue::GetV2Sensors()
 			}
 
 			// Map device_power to battery updates; only update existing devices and only when battery level changed
+			// Note: m_v2_battery_level is always accessed under m_http_mutex (held by all callers of GetV2Sensors
+			// and by OnSSEEvent before dispatching SSE handlers), so no additional lock is needed here.
 			for (const auto& p : m_v2sensors->GetDevicePowers())
 			{
 				const std::string ownerRid = p.owner_rid;
@@ -1365,6 +1503,7 @@ bool CPhilipsHue::GetV2Sensors()
 					batteryLevel = 100;
 				if (batteryLevel == 255)
 					continue;
+				m_v2_battery_level[ownerRid] = batteryLevel;
 
 				// Determine the Domoticz node IDs (owner-based)
 				int baseNode = NodeIDFromRid(ownerRid);
@@ -1375,7 +1514,7 @@ bool CPhilipsHue::GetV2Sensors()
 				char szID[16];
 				std::vector<std::vector<std::string>> result;
 
-				sprintf(szID, "%08X", domoticzNodeID_contact);
+				snprintf(szID, sizeof(szID), "%08X", domoticzNodeID_contact);
 				result = m_sql.safe_query("SELECT ID, BatteryLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d)",
 					m_HwdID, szID, 1);
 				if (!result.empty())
@@ -1398,7 +1537,7 @@ bool CPhilipsHue::GetV2Sensors()
 				}
 
 				// Tamper device (same approach)
-				sprintf(szID, "%08X", domoticzNodeID_tamper);
+				snprintf(szID, sizeof(szID), "%08X", domoticzNodeID_tamper);
 				result = m_sql.safe_query("SELECT ID, BatteryLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d)",
 					m_HwdID, szID, 1);
 				if (!result.empty())
@@ -1418,6 +1557,215 @@ bool CPhilipsHue::GetV2Sensors()
 						m_v2_battery_level[ownerRid] = batteryLevel;
 					}
 				}
+			}
+
+			for (const auto& mo : m_v2sensors->GetMotions())
+			{
+				const std::string& ownerRid = mo.owner_rid;
+				if (ownerRid.empty())
+					continue;
+
+				int v1Num = ParseV1NumericId(mo.id_v1);
+				int nodeID;
+				if (v1Num >= 0)
+					nodeID = v1Num + 3000;
+				else
+					nodeID = NodeIDFromRid(ownerRid) + 3000;
+
+				std::string name;
+				auto dit = deviceById.find(ownerRid);
+				if (dit != deviceById.end() && !dit->second.name.empty())
+					name = dit->second.name + " (Motion)";
+				else
+					name = "Hue Motion";
+
+				if (v1Num >= 0)
+					LogV2MigrationWarning(ownerRid, nodeID, NodeIDFromRid(ownerRid) + 3000, name);
+
+				uint8_t motBattery = GetBatteryForOwner(ownerRid);
+				InsertUpdateSwitch(nodeID, 1, STYPE_Motion, mo.motion, name, motBattery);
+			}
+
+			for (const auto& te : m_v2sensors->GetTemperatures())
+			{
+				const std::string& ownerRid = te.owner_rid;
+				if (ownerRid.empty())
+					continue;
+
+				int v1Num = ParseV1NumericId(te.id_v1);
+				int nodeID;
+				if (v1Num >= 0)
+					nodeID = v1Num + 3000;
+				else
+					nodeID = NodeIDFromRid(ownerRid) + 3000;
+
+				std::string name;
+				auto dit = deviceById.find(ownerRid);
+				if (dit != deviceById.end() && !dit->second.name.empty())
+					name = dit->second.name + " (Temp)";
+				else
+					name = "Hue Temperature";
+
+				if (v1Num >= 0)
+					LogV2MigrationWarning(ownerRid, nodeID, NodeIDFromRid(ownerRid) + 3000, name);
+
+				uint8_t tempBattery = GetBatteryForOwner(ownerRid);
+				SendTempSensor(nodeID, tempBattery, te.temperature, name);
+			}
+
+			for (const auto& ll : m_v2sensors->GetLightLevels())
+			{
+				const std::string& ownerRid = ll.owner_rid;
+				if (ownerRid.empty())
+					continue;
+
+				int v1Num = ParseV1NumericId(ll.id_v1);
+				int nodeID;
+				if (v1Num >= 0)
+					nodeID = v1Num + 3000;
+				else
+					nodeID = NodeIDFromRid(ownerRid) + 3000;
+
+				if (v1Num >= 0)
+				{
+					std::string friendlyName;
+					auto wdit = deviceById.find(ownerRid);
+					if (wdit != deviceById.end() && !wdit->second.name.empty())
+						friendlyName = wdit->second.name;
+					else
+						friendlyName = ownerRid;
+					LogV2MigrationWarning(ownerRid, nodeID, NodeIDFromRid(ownerRid) + 3000, friendlyName);
+				}
+
+				std::string darkName;
+				std::string luxName;
+				auto dit = deviceById.find(ownerRid);
+				if (dit != deviceById.end() && !dit->second.name.empty())
+				{
+					darkName = dit->second.name + " (Dark)";
+					luxName = dit->second.name + " Lux";
+				}
+				else
+				{
+					darkName = "Hue LightLevel";
+					luxName = "Hue LightLevel Lux";
+				}
+
+				uint8_t llBattery = GetBatteryForOwner(ownerRid);
+				InsertUpdateSwitch(nodeID, 1, STYPE_Dusk, ll.dark, darkName, llBattery);
+
+				double lux = 0.00001;
+				if (ll.lightlevel != 0)
+				{
+					double convertedLightLevel = (double)(ll.lightlevel - 1) / 10000.0;
+					lux = pow(10.0, convertedLightLevel);
+				}
+				SendLuxSensor(nodeID, 0, llBattery, (const float)lux, luxName);
+			}
+
+			for (const auto& gm : m_v2sensors->GetGroupedMotions())
+			{
+				const std::string& ownerRid = gm.owner_rid;
+				if (ownerRid.empty())
+					continue;
+
+				int nodeID = NodeIDFromRid(ownerRid) + 5000;
+
+				std::string name;
+				auto dit = deviceById.find(ownerRid);
+				if (dit != deviceById.end() && !dit->second.name.empty())
+					name = dit->second.name + " (Group Motion)";
+				else
+				{
+					for (const auto& room : m_v2sensors->GetRooms())
+					{
+						if (room.id == ownerRid)
+						{
+							name = room.name + " (Group Motion)";
+							break;
+						}
+					}
+					if (name.empty())
+						name = "Hue Group Motion";
+				}
+
+				uint8_t motBattery = GetBatteryForOwner(ownerRid);
+				InsertUpdateSwitch(nodeID, 1, STYPE_Motion, gm.motion, name, motBattery);
+			}
+
+			for (const auto& gl : m_v2sensors->GetGroupedLightLevels())
+			{
+				const std::string& ownerRid = gl.owner_rid;
+				if (ownerRid.empty())
+					continue;
+
+				int nodeID = NodeIDFromRid(ownerRid) + 6000;
+
+				std::string darkName;
+				std::string luxName;
+				for (const auto& room : m_v2sensors->GetRooms())
+				{
+					if (room.id == ownerRid)
+					{
+						darkName = room.name + " Group (Dark)";
+						luxName = room.name + " Group Lux";
+						break;
+					}
+				}
+				if (darkName.empty())
+				{
+					darkName = "Hue Group LightLevel";
+					luxName = "Hue Group LightLevel Lux";
+				}
+
+				uint8_t llBattery = GetBatteryForOwner(ownerRid);
+				InsertUpdateSwitch(nodeID, 1, STYPE_Dusk, gl.dark, darkName, llBattery);
+
+				double lux = 0.00001;
+				if (gl.lightlevel != 0)
+				{
+					double convertedLightLevel = (double)(gl.lightlevel - 1) / 10000.0;
+					lux = pow(10.0, convertedLightLevel);
+				}
+				SendLuxSensor(nodeID, 0, llBattery, (const float)lux, luxName);
+			}
+
+			for (const auto& cm : m_v2sensors->GetCameraMotions())
+			{
+				const std::string& ownerRid = cm.owner_rid;
+				if (ownerRid.empty())
+					continue;
+
+				int nodeID = NodeIDFromRid(ownerRid) + 7000;
+
+				std::string name;
+				auto dit = deviceById.find(ownerRid);
+				if (dit != deviceById.end() && !dit->second.name.empty())
+					name = dit->second.name + " (Camera Motion)";
+				else
+					name = "Hue Camera Motion";
+
+				uint8_t motBattery = GetBatteryForOwner(ownerRid);
+				InsertUpdateSwitch(nodeID, 1, STYPE_Motion, cm.motion, name, motBattery);
+			}
+
+			for (const auto& sam : m_v2sensors->GetSecurityAreaMotions())
+			{
+				const std::string& ownerRid = sam.owner_rid;
+				if (ownerRid.empty())
+					continue;
+
+				int nodeID = NodeIDFromRid(ownerRid) + 9000;
+
+				std::string name;
+				auto dit = deviceById.find(ownerRid);
+				if (dit != deviceById.end() && !dit->second.name.empty())
+					name = dit->second.name + " (Security Motion)";
+				else
+					name = "Hue Security Motion";
+
+				uint8_t motBattery = GetBatteryForOwner(ownerRid);
+				InsertUpdateSwitch(nodeID, 1, STYPE_Motion, sam.motion, name, motBattery);
 			}
 		}
 		else
@@ -1524,8 +1872,8 @@ bool CPhilipsHue::GetSensors(const Json::Value& root)
 				double lux = 0.00001;
 				if (current_sensor.m_state.m_lightlevel != 0)
 				{
-					float convertedLightLevel = float((current_sensor.m_state.m_lightlevel - 1) / 10000.00F);
-					lux = pow(10, convertedLightLevel);
+					double convertedLightLevel = (double)(current_sensor.m_state.m_lightlevel - 1) / 10000.0;
+					lux = pow(10.0, convertedLightLevel);
 				}
 				SendLuxSensor(sID, 0, current_sensor.m_config.m_battery, (const float)lux, current_sensor.m_type + " Lux " + current_sensor.m_name);
 			}
@@ -1600,6 +1948,652 @@ void CPhilipsHue::SetSwitchOptions(const int NodeID, const uint8_t Unitcode, con
 	}
 }
 
+
+uint8_t CPhilipsHue::GetBatteryForOwner(const std::string& ownerRid) const
+{
+	auto bit = m_v2_battery_level.find(ownerRid);
+	if (bit != m_v2_battery_level.end())
+		return (uint8_t)bit->second;
+	return 255;
+}
+
+std::string CPhilipsHue::GetV2DeviceName(const std::string& ownerRid) const
+{
+	if (!m_v2sensors)
+		return "";
+	for (const auto& d : m_v2sensors->GetDevices())
+	{
+		if (d.id == ownerRid)
+			return d.name;
+	}
+	return "";
+}
+
+void CPhilipsHue::OnSSEEvent(const std::string& jsonData)
+{
+	Json::Value events;
+	if (!ParseJSon(jsonData, events) || !events.isArray())
+		return;
+
+	std::lock_guard<std::mutex> lock(m_mutex);
+	std::lock_guard<std::mutex> httpLock(m_http_mutex);
+
+	for (const auto& event : events)
+	{
+		if (!event.isObject())
+			continue;
+		std::string eventType = event["type"].asString();
+		if (eventType != "update" && eventType != "add")
+			continue;
+
+		const auto& dataArr = event["data"];
+		if (!dataArr.isArray())
+			continue;
+
+		for (const auto& resource : dataArr)
+		{
+			if (!resource.isObject())
+				continue;
+			std::string rtype = resource["type"].asString();
+			DispatchSSEResource(rtype, resource);
+		}
+	}
+}
+
+void CPhilipsHue::DispatchSSEResource(const std::string& rtype, const Json::Value& resource)
+{
+	if (rtype == "contact")
+		HandleSSEContact(resource);
+	else if (rtype == "tamper")
+		HandleSSETamper(resource);
+	else if (rtype == "motion")
+		HandleSSEMotion(resource);
+	else if (rtype == "temperature")
+		HandleSSETemperature(resource);
+	else if (rtype == "light_level")
+		HandleSSELightLevel(resource);
+	else if (rtype == "grouped_motion")
+		HandleSSEGroupedMotion(resource);
+	else if (rtype == "grouped_light_level")
+		HandleSSEGroupedLightLevel(resource);
+	else if (rtype == "camera_motion")
+		HandleSSECameraMotion(resource);
+	else if (rtype == "security_area_motion")
+		HandleSSESecurityAreaMotion(resource);
+	else if (rtype == "bell_button")
+		HandleSSEBellButton(resource);
+	else if (rtype == "button")
+		HandleSSEButton(resource);
+	else if (rtype == "device_power")
+		HandleSSEDevicePower(resource);
+}
+
+void CPhilipsHue::HandleSSEContact(const Json::Value& r)
+{
+	std::string ownerRid;
+	if (r.isMember("owner") && r["owner"].isMember("rid"))
+		ownerRid = r["owner"]["rid"].asString();
+	if (ownerRid.empty())
+		return;
+
+	if (!r.isMember("contact_report"))
+		return;
+
+	const auto& report = r["contact_report"];
+	std::string state;
+	std::string changed;
+	if (report.isMember("state"))
+		state = report["state"].asString();
+	if (report.isMember("changed"))
+		changed = report["changed"].asString();
+
+	if (state.empty() || changed.empty())
+		return;
+
+	auto itCState = m_v2_contact_state.find(ownerRid);
+	auto itCChanged = m_v2_contact_changed.find(ownerRid);
+	if (itCState != m_v2_contact_state.end() && itCChanged != m_v2_contact_changed.end())
+		if (itCState->second == state && itCChanged->second == changed)
+			return;
+
+	int nodeID = NodeIDFromRid(ownerRid) + 3000;
+	bool isOpen = (state == "no_contact");
+
+	std::string deviceName = GetV2DeviceName(ownerRid);
+	std::string name = !deviceName.empty() ? (deviceName + " (Contact)") : "Hue V2 Contact";
+
+	InsertUpdateSwitch(nodeID, 1, STYPE_DoorContact, isOpen, name, 0);
+
+	m_v2_contact_state[ownerRid] = state;
+	m_v2_contact_changed[ownerRid] = changed;
+}
+
+void CPhilipsHue::HandleSSETamper(const Json::Value& r)
+{
+	std::string ownerRid;
+	if (r.isMember("owner") && r["owner"].isMember("rid"))
+		ownerRid = r["owner"]["rid"].asString();
+	if (ownerRid.empty())
+		return;
+
+	if (!r.isMember("tamper_reports"))
+		return;
+
+	const auto& reports = r["tamper_reports"];
+	if (!reports.isArray() || reports.empty())
+		return;
+
+	const auto& report = reports[0];
+	std::string state;
+	std::string changed;
+	if (report.isMember("state"))
+		state = report["state"].asString();
+	if (report.isMember("changed"))
+		changed = report["changed"].asString();
+
+	if (state.empty() || changed.empty())
+		return;
+
+	auto itTState = m_v2_tamper_state.find(ownerRid);
+	auto itTChanged = m_v2_tamper_changed.find(ownerRid);
+	if (itTState != m_v2_tamper_state.end() && itTChanged != m_v2_tamper_changed.end())
+		if (itTState->second == state && itTChanged->second == changed)
+			return;
+
+	int nodeID = NodeIDFromRid(ownerRid) + 4000;
+	bool isTampered = (state == "tampered");
+
+	std::string deviceName = GetV2DeviceName(ownerRid);
+	std::string name = !deviceName.empty() ? (deviceName + " (Tamper)") : "Hue V2 Tamper";
+
+	InsertUpdateSwitch(nodeID, 1, STYPE_OnOff, isTampered, name, 0);
+
+	m_v2_tamper_state[ownerRid] = state;
+	m_v2_tamper_changed[ownerRid] = changed;
+}
+
+void CPhilipsHue::HandleSSEMotion(const Json::Value& r)
+{
+	std::string ownerRid;
+	if (r.isMember("owner") && r["owner"].isMember("rid"))
+		ownerRid = r["owner"]["rid"].asString();
+	if (ownerRid.empty())
+		return;
+
+	if (!r.isMember("motion") || !r["motion"].isObject())
+		return;
+
+	const auto& motObj = r["motion"];
+	bool motion = false;
+	if (motObj.isMember("motion"))
+		motion = motObj["motion"].asBool();
+
+	std::string id_v1;
+	if (r.isMember("id_v1"))
+		id_v1 = r["id_v1"].asString();
+
+	int v1Num = ParseV1NumericId(id_v1);
+	int nodeID;
+	if (v1Num >= 0)
+		nodeID = v1Num + 3000;
+	else
+		nodeID = NodeIDFromRid(ownerRid) + 3000;
+
+	std::string deviceName = GetV2DeviceName(ownerRid);
+	std::string name = !deviceName.empty() ? (deviceName + " (Motion)") : "Hue Motion";
+
+	uint8_t motBattery = GetBatteryForOwner(ownerRid);
+	InsertUpdateSwitch(nodeID, 1, STYPE_Motion, motion, name, motBattery);
+}
+
+void CPhilipsHue::HandleSSETemperature(const Json::Value& r)
+{
+	std::string ownerRid;
+	if (r.isMember("owner") && r["owner"].isMember("rid"))
+		ownerRid = r["owner"]["rid"].asString();
+	if (ownerRid.empty())
+		return;
+
+	if (!r.isMember("temperature"))
+		return;
+
+	const auto& tempObj = r["temperature"];
+	if (!tempObj.isMember("temperature"))
+		return;
+
+	float temperature = tempObj["temperature"].asFloat();
+
+	std::string id_v1;
+	if (r.isMember("id_v1"))
+		id_v1 = r["id_v1"].asString();
+
+	int v1Num = ParseV1NumericId(id_v1);
+	int nodeID;
+	if (v1Num >= 0)
+		nodeID = v1Num + 3000;
+	else
+		nodeID = NodeIDFromRid(ownerRid) + 3000;
+
+	std::string deviceName = GetV2DeviceName(ownerRid);
+	std::string name = !deviceName.empty() ? (deviceName + " (Temp)") : "Hue Temperature";
+
+	uint8_t tempBattery = GetBatteryForOwner(ownerRid);
+	SendTempSensor(nodeID, tempBattery, temperature, name);
+}
+
+void CPhilipsHue::HandleSSELightLevel(const Json::Value& r)
+{
+	std::string ownerRid;
+	if (r.isMember("owner") && r["owner"].isMember("rid"))
+		ownerRid = r["owner"]["rid"].asString();
+	if (ownerRid.empty())
+		return;
+
+	if (!r.isMember("light"))
+		return;
+
+	const auto& lightObj = r["light"];
+	if (!lightObj.isMember("light_level"))
+		return;
+
+	int lightlevel = lightObj["light_level"].asInt();
+	bool dark = false;
+	if (lightObj.isMember("dark"))
+		dark = lightObj["dark"].asBool();
+
+	std::string id_v1;
+	if (r.isMember("id_v1"))
+		id_v1 = r["id_v1"].asString();
+
+	int v1Num = ParseV1NumericId(id_v1);
+	int nodeID;
+	if (v1Num >= 0)
+		nodeID = v1Num + 3000;
+	else
+		nodeID = NodeIDFromRid(ownerRid) + 3000;
+
+	std::string deviceName = GetV2DeviceName(ownerRid);
+	std::string darkName;
+	std::string luxName;
+	if (!deviceName.empty())
+	{
+		darkName = deviceName + " (Dark)";
+		luxName = deviceName + " Lux";
+	}
+	else
+	{
+		darkName = "Hue LightLevel";
+		luxName = "Hue LightLevel Lux";
+	}
+
+	uint8_t llBattery = GetBatteryForOwner(ownerRid);
+	InsertUpdateSwitch(nodeID, 1, STYPE_Dusk, dark, darkName, llBattery);
+
+	double lux = 0.00001;
+	if (lightlevel != 0)
+	{
+		double convertedLightLevel = (double)(lightlevel - 1) / 10000.0;
+		lux = pow(10.0, convertedLightLevel);
+	}
+	SendLuxSensor(nodeID, 0, llBattery, (const float)lux, luxName);
+}
+
+void CPhilipsHue::HandleSSEGroupedMotion(const Json::Value& r)
+{
+	std::string ownerRid;
+	if (r.isMember("owner") && r["owner"].isMember("rid"))
+		ownerRid = r["owner"]["rid"].asString();
+	if (ownerRid.empty())
+		return;
+
+	if (!r.isMember("motion") || !r["motion"].isObject())
+		return;
+
+	const auto& motObj = r["motion"];
+	bool motion = false;
+	if (motObj.isMember("motion"))
+		motion = motObj["motion"].asBool();
+
+	int nodeID = NodeIDFromRid(ownerRid) + 5000;
+
+	std::string name;
+	for (const auto& room : m_v2sensors->GetRooms())
+	{
+		if (room.id == ownerRid)
+		{
+			name = room.name + " (Group Motion)";
+			break;
+		}
+	}
+	if (name.empty())
+		name = "Hue Group Motion";
+
+	uint8_t motBattery = GetBatteryForOwner(ownerRid);
+	InsertUpdateSwitch(nodeID, 1, STYPE_Motion, motion, name, motBattery);
+}
+
+void CPhilipsHue::HandleSSEGroupedLightLevel(const Json::Value& r)
+{
+	std::string ownerRid;
+	if (r.isMember("owner") && r["owner"].isMember("rid"))
+		ownerRid = r["owner"]["rid"].asString();
+	if (ownerRid.empty())
+		return;
+
+	if (!r.isMember("light"))
+		return;
+
+	const auto& lightObj = r["light"];
+	if (!lightObj.isMember("light_level"))
+		return;
+
+	int lightlevel = lightObj["light_level"].asInt();
+	bool dark = false;
+	if (lightObj.isMember("dark"))
+		dark = lightObj["dark"].asBool();
+
+	int nodeID = NodeIDFromRid(ownerRid) + 6000;
+
+	std::string darkName;
+	std::string luxName;
+	for (const auto& room : m_v2sensors->GetRooms())
+	{
+		if (room.id == ownerRid)
+		{
+			darkName = room.name + " Group (Dark)";
+			luxName = room.name + " Group Lux";
+			break;
+		}
+	}
+	if (darkName.empty())
+	{
+		darkName = "Hue Group LightLevel";
+		luxName = "Hue Group LightLevel Lux";
+	}
+
+	uint8_t llBattery = GetBatteryForOwner(ownerRid);
+
+	InsertUpdateSwitch(nodeID, 1, STYPE_Dusk, dark, darkName, llBattery);
+
+	double lux = 0.00001;
+	if (lightlevel != 0)
+	{
+		double convertedLightLevel = (double)(lightlevel - 1) / 10000.0;
+		lux = pow(10.0, convertedLightLevel);
+	}
+	SendLuxSensor(nodeID, 0, llBattery, (const float)lux, luxName);
+}
+
+void CPhilipsHue::HandleSSECameraMotion(const Json::Value& r)
+{
+	std::string ownerRid;
+	if (r.isMember("owner") && r["owner"].isMember("rid"))
+		ownerRid = r["owner"]["rid"].asString();
+	if (ownerRid.empty())
+		return;
+
+	if (!r.isMember("motion") || !r["motion"].isObject())
+		return;
+
+	const auto& motObj = r["motion"];
+	bool motion = false;
+	if (motObj.isMember("motion"))
+		motion = motObj["motion"].asBool();
+
+	int nodeID = NodeIDFromRid(ownerRid) + 7000;
+
+	std::string deviceName = GetV2DeviceName(ownerRid);
+	std::string name = !deviceName.empty() ? (deviceName + " (Camera Motion)") : "Hue Camera Motion";
+
+	uint8_t motBattery = GetBatteryForOwner(ownerRid);
+	InsertUpdateSwitch(nodeID, 1, STYPE_Motion, motion, name, motBattery);
+}
+
+void CPhilipsHue::HandleSSESecurityAreaMotion(const Json::Value& r)
+{
+	std::string ownerRid;
+	if (r.isMember("owner") && r["owner"].isMember("rid"))
+		ownerRid = r["owner"]["rid"].asString();
+	if (ownerRid.empty())
+		return;
+
+	if (!r.isMember("motion") || !r["motion"].isObject())
+		return;
+
+	const auto& motObj = r["motion"];
+	bool motion = false;
+	if (motObj.isMember("motion"))
+		motion = motObj["motion"].asBool();
+
+	int nodeID = NodeIDFromRid(ownerRid) + 9000;
+
+	std::string deviceName = GetV2DeviceName(ownerRid);
+	std::string name = !deviceName.empty() ? (deviceName + " (Security Motion)") : "Hue Security Motion";
+
+	uint8_t motBattery = GetBatteryForOwner(ownerRid);
+	InsertUpdateSwitch(nodeID, 1, STYPE_Motion, motion, name, motBattery);
+}
+
+void CPhilipsHue::HandleSSEBellButton(const Json::Value& r)
+{
+	std::string ownerRid;
+	if (r.isMember("owner") && r["owner"].isMember("rid"))
+		ownerRid = r["owner"]["rid"].asString();
+	if (ownerRid.empty())
+		return;
+
+	if (!r.isMember("bell") || !r["bell"].isObject())
+		return;
+
+	const auto& bellObj = r["bell"];
+	std::string event;
+	if (bellObj.isMember("bell_report") && bellObj["bell_report"].isObject())
+	{
+		if (bellObj["bell_report"].isMember("event"))
+			event = bellObj["bell_report"]["event"].asString();
+	}
+	if (event.empty() && bellObj.isMember("last_event"))
+		event = bellObj["last_event"].asString();
+
+	if (event != "ring")
+		return;
+
+	int nodeID = NodeIDFromRid(ownerRid) + 10000;
+
+	std::string deviceName = GetV2DeviceName(ownerRid);
+	std::string name = !deviceName.empty() ? (deviceName + " (Bell)") : "Hue Bell";
+
+	uint8_t battery = GetBatteryForOwner(ownerRid);
+	InsertUpdateSwitch(nodeID, 1, STYPE_Doorbell, true, name, battery);
+}
+
+void CPhilipsHue::HandleSSEButton(const Json::Value& r)
+{
+	std::string ownerRid;
+	if (r.isMember("owner") && r["owner"].isMember("rid"))
+		ownerRid = r["owner"]["rid"].asString();
+	if (ownerRid.empty())
+		return;
+
+	if (!r.isMember("button") || !r["button"].isObject())
+		return;
+
+	const auto& btnObj = r["button"];
+	std::string event;
+	if (btnObj.isMember("button_report") && btnObj["button_report"].isObject())
+	{
+		if (btnObj["button_report"].isMember("event"))
+			event = btnObj["button_report"]["event"].asString();
+	}
+	if (event.empty() && btnObj.isMember("last_event"))
+		event = btnObj["last_event"].asString();
+
+	if (event == "initial_press" || event == "repeat" || event == "long_press" || event.empty())
+		return;
+
+	int control_id = 0;
+	if (r.isMember("metadata") && r["metadata"].isMember("control_id"))
+		control_id = r["metadata"]["control_id"].asInt();
+
+	if (!m_v2sensors)
+		return;
+
+	const auto& allButtons = m_v2sensors->GetButtons();
+	int button_count = 0;
+	bool any_long_press = false;
+	std::string base_id_v1;
+	int lowest_ctrl = INT_MAX;
+
+	for (const auto& btn : allButtons)
+	{
+		if (btn.owner_rid != ownerRid)
+			continue;
+		button_count++;
+		if (btn.supports_long_press)
+			any_long_press = true;
+		if (btn.control_id < lowest_ctrl && !btn.id_v1.empty())
+		{
+			lowest_ctrl = btn.control_id;
+			base_id_v1 = btn.id_v1;
+		}
+	}
+
+	if (button_count == 0)
+		button_count = 1;
+
+	int v1Num = ParseV1NumericId(base_id_v1);
+	int nodeID = (v1Num >= 0) ? (v1Num + 3000) : (NodeIDFromRid(ownerRid) + 8000);
+
+	int button_nr = (control_id > 0) ? (control_id - 1) : 0;
+	if (button_nr > 255)
+	{
+		Log(LOG_ERROR, "PhilipsHue: button control_id out of range: %d", control_id);
+		return;
+	}
+	int selectorLevel = button_nr * 10;
+	if (any_long_press)
+		selectorLevel *= 2;
+	selectorLevel += 10;
+	if (event == "long_release")
+		selectorLevel += 10;
+
+	std::string deviceName = GetV2DeviceName(ownerRid);
+	std::string name = !deviceName.empty() ? deviceName : "Hue Switch";
+
+	uint8_t battery = GetBatteryForOwner(ownerRid);
+
+	if (selectorLevel > 255) selectorLevel = 255;
+	bool isNew = InsertUpdateSelectorSwitch(nodeID, 1, (uint8_t)selectorLevel, name, battery);
+	if (isNew)
+	{
+		std::map<std::string, std::string> options;
+		options["SelectorStyle"] = "1";
+		options["LevelOffHidden"] = "true";
+		options["LevelNames"] = "Off";
+		for (int b = 0; b < button_count; b++)
+		{
+			if (any_long_press)
+			{
+				options["LevelNames"] += "|Button " + std::to_string(b + 1) + " short";
+				options["LevelNames"] += "|Button " + std::to_string(b + 1) + " long";
+			}
+			else
+			{
+				options["LevelNames"] += "|Button " + std::to_string(b + 1);
+			}
+		}
+		SetSwitchOptions(nodeID, 1, options);
+	}
+}
+
+void CPhilipsHue::HandleSSEDevicePower(const Json::Value& r)
+{
+	std::string ownerRid;
+	if (r.isMember("owner") && r["owner"].isMember("rid"))
+		ownerRid = r["owner"]["rid"].asString();
+	if (ownerRid.empty())
+		return;
+
+	if (!r.isMember("power_state"))
+		return;
+
+	const auto& powerObj = r["power_state"];
+
+	int batteryLevel = -1;
+	if (powerObj.isMember("battery_level"))
+		batteryLevel = powerObj["battery_level"].asInt();
+
+	if (batteryLevel < 0 && powerObj.isMember("battery_state"))
+	{
+		const std::string bstate = powerObj["battery_state"].asString();
+		if (bstate == "full" || bstate == "normal")
+			batteryLevel = 100;
+		else if (bstate == "high")
+			batteryLevel = 90;
+		else if (bstate == "low")
+			batteryLevel = 20;
+		else if (bstate == "critical")
+			batteryLevel = 5;
+		else
+			batteryLevel = 255;
+	}
+
+	if (batteryLevel < 0 || batteryLevel == 255)
+		return;
+	if (batteryLevel > 100)
+		batteryLevel = 100;
+
+	m_v2_battery_level[ownerRid] = batteryLevel;
+	int baseNode = NodeIDFromRid(ownerRid);
+	int domoticzNodeID_contact = baseNode + 3000;
+	int domoticzNodeID_tamper = baseNode + 4000;
+
+	std::string deviceName = GetV2DeviceName(ownerRid);
+	char szID[16];
+	std::vector<std::vector<std::string>> result;
+
+	snprintf(szID, sizeof(szID), "%08X", domoticzNodeID_contact);
+	result = m_sql.safe_query("SELECT ID, BatteryLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d)",
+		m_HwdID, szID, 1);
+	if (!result.empty())
+	{
+		int deviceRowId = atoi(result[0][0].c_str());
+		int prevBattery = atoi(result[0][1].c_str());
+		if (prevBattery != batteryLevel)
+		{
+			int nValue = 0;
+			auto res2 = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE ID=%d", deviceRowId);
+			if (!res2.empty())
+				nValue = atoi(res2[0][0].c_str());
+			bool contactIsOn = (nValue != 0);
+			std::string contactName = !deviceName.empty() ? (deviceName + " (Contact)") : "Hue V2 Contact";
+			InsertUpdateSwitch(domoticzNodeID_contact, 1, STYPE_DoorContact, contactIsOn, contactName, (uint8_t)batteryLevel);
+			m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d, LastUpdate=datetime('now','localtime') WHERE ID=%d", batteryLevel, deviceRowId);
+			m_v2_battery_level[ownerRid] = batteryLevel;
+		}
+	}
+
+	snprintf(szID, sizeof(szID), "%08X", domoticzNodeID_tamper);
+	result = m_sql.safe_query("SELECT ID, BatteryLevel FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit == %d)",
+		m_HwdID, szID, 1);
+	if (!result.empty())
+	{
+		int deviceRowId = atoi(result[0][0].c_str());
+		int prevBattery = atoi(result[0][1].c_str());
+		if (prevBattery != batteryLevel)
+		{
+			int nValue = 0;
+			auto res2 = m_sql.safe_query("SELECT nValue FROM DeviceStatus WHERE ID=%d", deviceRowId);
+			if (!res2.empty())
+				nValue = atoi(res2[0][0].c_str());
+			bool tamperIsOn = (nValue != 0);
+			std::string tamperName = !deviceName.empty() ? (deviceName + " (Tamper)") : "Hue V2 Tamper";
+			InsertUpdateSwitch(domoticzNodeID_tamper, 1, STYPE_OnOff, tamperIsOn, tamperName, (uint8_t)batteryLevel);
+			m_sql.safe_query("UPDATE DeviceStatus SET BatteryLevel=%d, LastUpdate=datetime('now','localtime') WHERE ID=%d", batteryLevel, deviceRowId);
+			m_v2_battery_level[ownerRid] = batteryLevel;
+		}
+	}
+}
 
 //Webserver helpers
 namespace http {

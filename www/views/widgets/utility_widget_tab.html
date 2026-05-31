@@ -4,7 +4,7 @@
             <tr>
                 <td id="name" class="item-name" data-idx="{{ctrl.device.idx}}" data-desc="{{ctrl.device.Description}}" data-search="{{ctrl.searchText}}">{{ctrl.device.Name}}</td>
                 <td id="bigtext">{{ctrl.getBigText()}}</td>
-                <td id="img">
+                <td id="img" ng-hide="ctrl.isText() && ctrl.hideTextIcon()">
                     <a ng-if="ctrl.device.SubType === 'Sound Level'"
                        ng-href="#/Devices/{{ctrl.device.idx}}/Log">
                         <img ng-src="{{ctrl.getDeviceIcon()}}" class="lcursor" height="48" width="48">
@@ -16,11 +16,14 @@
                          ng-click="ctrl.showSetpointPopup($event)" height="48" width="48">
                 </td>
                 <td id="status" ng-bind-html="ctrl.getStatusText()"></td>
-                <td id="lastupdate"><span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: {{ctrl.device.LastUpdate}}</td>
+                <td id="lastupdate" ng-class="{'lastupdate-spaced': ctrl.isText() && ctrl.hideTextIcon()}">
+                    <dz-bar value="ctrl.barNumVal" ranges="ctrl.barRanges"></dz-bar>
+                    <span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: {{ctrl.device.LastUpdate}}
+                </td>
                 <td id="type">{{ctrl.getTypeSubTypeText()}}</td>
                 <td class="options">
-                    <span ng-show="ctrl.device.Favorite == 0"><img src="images/nofavorite.png" data-i18n="[title]Add to Dashboard" ng-click="ctrl.makeFavorite(1)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                    <span ng-show="ctrl.device.Favorite != 0"><img src="images/favorite.png" data-i18n="[title]Remove from Dashboard" ng-click="ctrl.makeFavorite(0)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span ng-if="ctrl.device.Favorite == 0"><img src="images/nofavorite.png" data-i18n="[title]Add to Dashboard" ng-click="ctrl.makeFavorite(1)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span ng-if="ctrl.device.Favorite != 0"><img src="images/favorite.png" data-i18n="[title]Remove from Dashboard" ng-click="ctrl.makeFavorite(0)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>
                     <a ng-if="ctrl.hasLogLink()" class="btnsmall" ng-href="{{ctrl.getGraphLogLink()}}" data-i18n="Log">Log</a>
                     <a ng-if="ctrl.isAdmin" class="btnsmall" ng-click="ctrl.editDevice()" data-i18n="Edit">Edit</a>
                     <a ng-if="ctrl.isAdmin && ctrl.hasTimerSupport() && ctrl.hasTimers()" class="btnsmall-sel" ng-href="{{ctrl.getTimerLink()}}" data-i18n="Timers">Timers</a>

@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('EnergyDashboardController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'livesocket', function ($scope, $rootScope, $location, $http, $interval, livesocket) {
+	app.controller('EnergyDashboardController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$window', '$timeout', 'livesocket', function ($scope, $rootScope, $location, $http, $interval, $window, $timeout, livesocket) {
 
 /*
   fTotalHomeUsage (kWh today):
@@ -64,6 +64,7 @@ define(['app'], function (app) {
 		$scope.txtDayWaterUsage = '-';
 		$scope.txtDayNetDeliv = "-";
 		$scope.txtObjText = "";
+		$scope.textOverlayStyle = {};
 		$scope.ServerTime = "";
 		$scope.ServerTimeRaw = 0;
 		$scope.SunRise = "";
@@ -122,12 +123,59 @@ define(['app'], function (app) {
 
 			$scope.viewBox = "-1.5 -1.5 " + (dash_width + 3) + " " + (dash_height + 3);
 
+			$timeout($scope.updateTextOverlayStyle, 0);
+
 			$scope.bDisplayRT1 = ($scope.idGas != -1) || (($scope.idGas == -1)&&($scope.idWater != -1));
 			$scope.bDisplayRB1 = ($scope.idWater != -1) && (!(($scope.idGas == -1)&&($scope.idWater != -1)));
 			
 			let water_y_offset = (($scope.idGas == -1)&&($scope.idWater != -1)) ? -32 : 0;
 			$scope.water_transform = "matrix(1, 0, 0, 1, 0, " + water_y_offset + ")";
 		}
+
+		$scope.updateTextOverlayStyle = function() {
+			let emain = document.getElementById('emain');
+			if (!emain || !$scope.viewBox) return;
+			let cw = emain.clientWidth;
+			let ch = emain.clientHeight;
+			if (!cw || !ch) return;
+
+			let vb = $scope.viewBox.split(' ').map(Number);
+			let vbX = vb[0], vbY = vb[1], vbW = vb[2], vbH = vb[3];
+
+			// SVG default preserveAspectRatio: xMidYMid meet
+			let scale = Math.min(cw / vbW, ch / vbH);
+			let xOff  = (cw - vbW * scale) / 2;
+			let yOff  = (ch - vbH * scale) / 2;
+
+			// foreignObject x="0.5" y="3" width="21" height="19.2"
+			$scope.textOverlayStyle = {
+				left:   (xOff + (-0.5 - vbX) * scale) + 'px',
+				top:    (yOff + (3   - vbY) * scale) + 'px',
+				width:  (23   * scale) + 'px',
+				height: (19.2 * scale) + 'px'
+			};
+
+			$timeout($scope.rescaleContent, 0);
+		};
+
+		$scope.rescaleContent = function() {
+			let ltext = document.getElementById('ltext');
+			let inner = document.getElementById('ltext-inner');
+			if (!ltext || !inner) return;
+
+			// Reset to measure natural rendered size
+			inner.style.transform = 'none';
+			let naturalW = inner.scrollWidth;
+			let naturalH = inner.scrollHeight;
+			let overlayW = ltext.clientWidth;
+			let overlayH = ltext.clientHeight;
+			if (!naturalW || !overlayW) return;
+
+			let s = Math.min(overlayW / naturalW, overlayH / naturalH);
+			let leftOffset = (overlayW - naturalW * s) / 2;
+			inner.style.left = leftOffset + 'px';
+			inner.style.transform = 'scale(' + s + ')';
+		};
 
 		$scope.GetInitialDevices = function() {
 			let devArray = [];
@@ -716,12 +764,10 @@ define(['app'], function (app) {
 		$scope.makeTextLines = function() {
 			let ltext = document.getElementById('ltext');
 			if (ltext) {
-				let txt = $scope.txtObjText.replace(/<br\s*\/?>/gi, '\n').replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n/g, '<br>');
-				let colored = $scope.lightenDarkColors(txt);
-				ltext.innerHTML = DOMPurify.sanitize(colored, {
-					ALLOWED_TAGS: ['br', 'span', 'font','iframe'],
-					ALLOWED_ATTR: ['style', 'color','allow','allowfullscreen','frameborder','scrolling','src']
-				});
+				let colored = $scope.lightenDarkColors($scope.txtObjText);
+				ltext.innerHTML = '<div id="ltext-inner" style="position:absolute;top:0;left:0;transform-origin:top left;">'
+					+ sanitizeHTML(colored, 'ltext') + '</div>';
+				$timeout($scope.rescaleContent, 0);
 			}
 		}
 
@@ -748,6 +794,14 @@ define(['app'], function (app) {
 			if ($scope.idBattEnergyIn != -1) {
 				$scope.fTotalHomeUsage -= $scope.fBattEnergyIn;
 			}
+
+			// Self-sufficiency: fraction of house consumption covered by solar + battery discharge
+			$scope.fSelfSufficiency = calcSelfSufficiency(
+				$scope.fDaySolar,
+				$scope.fDayNetDeliv,
+				$scope.idBattEnergyOut != -1 ? $scope.fBattEnergyOut : 0,
+				$scope.fTotalHomeUsage
+			);
 
 			// House price: sum of individual device prices (each price is already the total cost for today)
 			$scope.fHousePrice = 0;
@@ -902,7 +956,13 @@ define(['app'], function (app) {
 
 		$scope.init();
 
+		let _resizeHandler = function() {
+			$scope.$apply($scope.updateTextOverlayStyle);
+		};
+		angular.element($window).on('resize', _resizeHandler);
+
 		$scope.$on('$destroy', function () {
+			angular.element($window).off('resize', _resizeHandler);
 			if (typeof $scope.mytimer != 'undefined') {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;

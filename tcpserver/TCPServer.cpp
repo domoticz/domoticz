@@ -207,7 +207,11 @@ namespace tcp {
 			std::vector<char> uhash = HexToBytes(pUser->Password);
 			std::string szEncrypted;
 			AESEncryptData(szData, szEncrypted, (const uint8_t*)uhash.data());
-			pClient->write(szEncrypted.c_str(), szEncrypted.size());
+
+			uint32_t len = htonl((uint32_t)szEncrypted.size());
+			std::string szFramed(reinterpret_cast<const char*>(&len), 4);
+			szFramed += szEncrypted;
+			pClient->write(szFramed.c_str(), szFramed.size());
 		}
 
 		void CTCPServerIntBase::SendToAll(const int HardwareID, const uint64_t DeviceRowID, const CTCPClientBase* pClient2Ignore)

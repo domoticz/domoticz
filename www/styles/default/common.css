@@ -1,0 +1,332 @@
+/* GENERAL STYLING AND RESETS */
+
+
+body {
+	color: var(--dz-body-text);
+	background-color: var(--dz-body-bg) !important;
+	background-image: linear-gradient(to bottom, var(--dz-body-bg-start, var(--dz-body-bg)) 0%, var(--dz-body-bg-end, var(--dz-body-bg)) 100%);
+	background-attachment: fixed;
+}
+
+.row-fluid .span12,
+.row-fluid .span6 {
+	padding: 10px;
+	margin-bottom: 15px;
+	margin-top: 5px;
+}
+
+div.divider .span3,
+div.divider .span4 {
+	margin-bottom: 1em;
+	padding: 0;
+}
+
+/* settings/hardware background color*/
+#settingscontent textarea,
+#settingscontent textarea.ui-widget-content {
+	border: none;
+	color: var(--dz-input-text);
+	background: var(--dz-input-bg);
+	font-weight: normal;
+	margin-bottom: 5px;
+}
+
+#settingscontent textarea + span,
+#settingscontent textarea + span + span,
+#settingscontent textarea + span + span + span,
+#settingscontent textarea + br + span,
+#settingscontent textarea + br + span + span,
+#settingscontent textarea + br + span + span + span {
+		color: var(--dz-input-text);
+		font-size: 10px;
+}
+
+select {
+	background-color: var(--dz-input-bg);
+	color: var(--dz-input-text);
+	border: 0;
+}
+
+
+div:not(.ui-dialog) input.ui-widget-content,
+.ui-widget-content select {
+	background-color: var(--dz-input-bg);
+	background-image: none !important;
+	border: none;
+}
+
+.ui-dialog, .ui-dialog-buttonpane, .ui-widget-content {
+	color: var(--dz-modal-text);
+	background-color: var(--dz-modal-bg);
+	background-image: linear-gradient(to bottom, var(--dz-modal-bg-start, var(--dz-modal-bg)) 0%, var(--dz-modal-bg-end, var(--dz-modal-bg)) 100%);
+	background-attachment: fixed;
+}
+
+.ui-dialog-titlebar,
+.ui-state-default:not(.ui-slider-handle),
+.ui-widget-header:not(.ui-slider-handle):not(.ui-slider-range),
+.ui-timepicker-div .ui-slider-handle {
+	background-color: var(--dz-modal-bg);
+	background-image: url("images/ui-bg_gloss-wave_25_333333_500x100.png") !important;
+}
+
+textarea.ui-widget-content,
+input.ui-widget-content {
+	padding: .2em;
+	border: none;
+	color: var(--dz-input-text);
+	background-color: var(--dz-input-bg);
+	background-image: none !important;
+	border-bottom: 1px solid transparent;
+}
+
+input:focus {
+	background-color: var(--dz-input-focus-bg, var(--dz-input-bg)) !important;
+	color: var(--dz-input-text) !important;
+	border-bottom: 1px solid var(--dz-input-border);
+	box-shadow: none;
+}
+
+textarea:focus {
+	color: var(--dz-input-text);
+	background-color: var(--dz-input-focus-bg, var(--dz-input-bg));
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="email"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+textarea {
+	background-color: var(--dz-input-bg);
+	color: var(--dz-input-text);
+}
+
+.row-fluid [class^="span"] {
+	background-color: var(--dz-panel-bg);
+	color: var(--dz-panel-text) !important;
+}
+
+.row-fluid .span2 {
+	background-color: transparent;
+}
+
+#settingscontent input.text {
+	width: calc(100% - 65px) !important;
+}
+
+#settingscontent .ui-widget-content,
+#settingscontent input.text {
+	padding: 3px;
+}
+
+#settingscontent .sub-tabs {
+	border-bottom: 1px solid var(--dz-input-border);
+}
+
+#zwavesettingscontent .sub-tabs {
+	border-bottom: 1px solid var(--dz-input-border);
+}
+
+#settingscontent .sub-tabs li.active a {
+	background-color: var(--dz-accent-color);
+	color: var(--dz-modal-text);
+	border: none;
+	border-bottom: 4px solid var(--dz-accent-color);
+}
+
+#settingscontent .sub-tabs li:not(.active) {
+	margin-bottom: 1px;
+}
+
+#settingscontent .sub-tabs li:not(.active) a {
+	border-bottom: 2px solid transparent;
+	margin-bottom: 1px;
+}
+
+#settingscontent .sub-tabs > li > a.btn-succes, .sub-tabs-apply, .btn-succes {
+	color: var(--dz-modal-text) !important;
+	text-shadow: none;
+}
+
+#settingscontent .span6 .btn-info {
+	line-height: 12px;
+}
+
+#settingscontent #ActiveTabs {
+	padding-left: 20px;
+}
+
+#settingscontent {
+	margin-bottom: 80px;
+}
+
+#tabs.ui-widget-content {
+	border: none;
+}
+
+#zwavesettingscontent .sub-tabs li.active a {
+	background-color: var(--dz-accent-color);
+	color: var(--dz-modal-text);
+	border: none;
+	border-bottom: 4px solid var(--dz-accent-color);
+}
+
+#zwavesettingscontent .sub-tabs li:not(.active) {
+	margin-bottom: 1px;
+}
+
+#zwavesettingscontent .sub-tabs li:not(.active) a {
+	border-bottom: 2px solid transparent;
+	margin-bottom: 1px;
+}
+
+#zwavesettingscontent .sub-tabs > li > a.btn-succes, .sub-tabs-apply, .btn-succes {
+	color: var(--dz-modal-text) !important;
+	text-shadow: none;
+}
+
+#zwavesettingscontent #ActiveTabs {
+	padding-left: 20px;
+}
+
+/* SETTINGS */
+
+#settingscontent .span6 tr:first-of-type {
+	border-top: none;
+}
+
+#settingscontent .span6 td {
+	padding: 5px;
+	vertical-align: top;
+}
+
+	#settingscontent .span6 td:first-of-type {
+		min-width: 80px;
+		text-align: left !important;
+		padding-top: 7px;
+	}
+
+	#settingscontent .span6 td span {
+		padding-top: 0;
+	}
+
+#fibaromain #uservariablesedittable td {
+	display: table-cell;
+}
+
+#divprogress span {
+	font-size: 130%;
+	display: block;
+	background-color: var(--dz-status-timeout);
+	padding: 20px;
+	color: #fff;
+}
+
+#settingscontent div.row-fluid.related {
+	display: flex;
+	flex-flow: row wrap;
+	align-items: stretch;
+}
+
+	#settingscontent div.row-fluid.related .span2 {
+		width: auto;
+	}
+
+		#settingscontent div.row-fluid.related .span2 img {
+			margin-right: 3px;
+		}
+
+#settingscontent input {
+	background-image: none;
+}
+
+#settingscontent select {
+	min-width: 120px;
+	padding: 5px 0;
+}
+
+
+#settingscontent td > span {
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+
+#acceptnewhardwaretable td:first-of-type {
+	position: relative;
+}
+
+#acceptnewhardwaretable td:first-child button {
+	width: 50%;
+	margin: 10px 50% 10px 0;
+}
+
+#hardwarecontent > div:not(.page-header-small):not(.page-content-container):not(.bannav):not(#bannav),
+#hardwarecontent > table:not(.page-header-small):not(.bannav):not(#bannav),
+#hardwarecontent #ipnodeparamstable,
+#nodeparamstable,
+#utilitycontent #notificationparamstable,
+#usercontent #userparamstable, #cameracontent #activeparamstable, #hardwarecontent #hardwareparamstable,
+#lightcontent #paramstable:not(:nth-of-type(1)):not(:nth-of-type(2)),
+#scenecontent #paramstable:not(:nth-of-type(1)):not(:nth-of-type(2)),
+#weathercontent #notificationparamstable, #lightcontent #timerparamstable,
+#tempnotifications #notificationparamstable, #lightcontent #notificationparamstable,
+#scenecontent #timerparamstable,
+#notificationtable:not(.dataTable),
+#notifications > table,
+#paramstable, #fibaromain #uservariablesedittable,
+#customlog, #timerparamstable,
+#linkparamstable, #influxremote,
+#linkhttpparamstable, #httpremote,
+#linkgooglepubsubparamstable, #googlepubsubremote,
+#fibaromain #linkparamstable, #fibaromain #fibaroremote, #mqttremote,
+#userparamstable, #activeparamstable, #lightcontent paramstable,
+#scenecontent #paramstable,
+#notificationparamstable, #hardwareparamstable,
+#profiletable, #passwdtable, #updelclr,
+#eventparamstable, #mobileparamstable, #applicationparamstable,
+#customiconedittable
+{
+	background-color: none;
+	border: none;
+	padding: 10px 0;
+}
+
+.modal, .modal-footer {
+	background-color: var(--dz-modal-bg);
+	background-image: linear-gradient(to bottom, var(--dz-modal-bg-start, var(--dz-modal-bg)) 0%, var(--dz-modal-bg-end, var(--dz-modal-bg)) 100%);
+	color: var(--dz-modal-text);
+}
+
+.modal-title {
+	color: var(--dz-modal-text);
+}
+
+.modal-header, .modal-footer {
+	border-color: var(--dz-input-border);
+	box-shadow: none;
+}
+
+.bootbox-body {
+	color: var(--dz-modal-text);
+}
+
+.btn.btn-default {
+	background: url(../../css/images/img03b.jpg) repeat right top;
+	color: #FFFFFF;
+	text-shadow: none;
+}
+.btn.btn-default.active {
+	background-image: url(../../css/images/img03bs.jpg);
+}
+.btn-primary { background-color: var(--dz-btn-primary-bg); color: var(--dz-btn-primary-text); }
+.btn-warning { background-color: var(--dz-btn-warning-bg); }
+.btn-danger  { background-color: var(--dz-btn-danger-bg); }
+.btn-info    { background-color: var(--dz-btn-info-bg); }
+.btn-success { background-color: var(--dz-btn-success-bg); }
+
+/* DataTable row colours */
+tr.odd  { background-color: var(--dz-table-odd-bg)  !important; color: var(--dz-table-odd-text)  !important; }
+tr.even { background-color: var(--dz-table-even-bg) !important; color: var(--dz-table-even-text) !important; }

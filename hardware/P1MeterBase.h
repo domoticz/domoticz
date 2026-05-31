@@ -102,8 +102,9 @@ private:
 
 	unsigned char m_p1version;
 
-	unsigned char m_buffer[2000];
-	int m_bufferpos;
+	uint16_t m_runningCRC;
+	bool m_crcDone;
+	int m_msgLen;
 	unsigned char m_exclmarkfound;
 	unsigned char m_linecount;
 	unsigned char m_CRfound;

@@ -20,6 +20,8 @@ define(['app.notifications', 'angular-websocket'], function (appNotificationsMod
 		var webSocket;
 		var requestsCount = 0;
 		var requestsQueue = [];
+		var pluginListeners = {};
+		var activePluginTopics = {};
 
 		init();
 
@@ -27,7 +29,12 @@ define(['app.notifications', 'angular-websocket'], function (appNotificationsMod
 			getJson: getJson,
 			sendRequest: sendRequest,
 			subscribeTo: subscribeTo,
-			unsubscribeFrom: unsubscribeFrom
+			unsubscribeFrom: unsubscribeFrom,
+			unsubscribeDevices: unsubscribeDevices,
+			subscribePlugin: subscribePlugin,
+			unsubscribePlugin: unsubscribePlugin,
+			sendPluginCommand: sendPluginCommand,
+			onPluginMessage: onPluginMessage
 		};
 
 		function init() {
@@ -43,7 +50,18 @@ define(['app.notifications', 'angular-websocket'], function (appNotificationsMod
 				enqueue: true
 			});
 
-			webSocket.$on('$message', handleMessage)
+			webSocket.$on('$message', handleMessage);
+
+			webSocket.$on('$open', function () {
+				// Re-subscribe through subscribeTo so reconnect goes through the same
+				// requestid/ack path as initial subscriptions (via subscribePlugin).
+				// subscribeTo is safe here: the socket is open, $$send is available, and
+				// handleRequestResponse (registered on $message) will resolve the promise
+				// when the ack arrives.  No recursion risk — $open does not call $open.
+				Object.keys(activePluginTopics).forEach(function (name) {
+					subscribeTo('plugin:' + name);
+				});
+			});
 		}
 
 		function handleMessage(msg) {
@@ -60,6 +78,9 @@ define(['app.notifications', 'angular-websocket'], function (appNotificationsMod
 					return;
 				case "log":
 					handleLog(msg);
+					return;
+				case "plugin":
+					handlePluginMessage(msg);
 					return;
 			}
 
@@ -112,7 +133,8 @@ define(['app.notifications', 'angular-websocket'], function (appNotificationsMod
 				$rootScope.$broadcast('time_update', {
 					serverTime: msg.ServerTime,
 					sunrise: msg.Sunrise,
-					sunset: msg.Sunset
+					sunset: msg.Sunset,
+					actTime: msg.ActTime
 				});
 				if (!$rootScope.$$phase) {
 					$rootScope.$digest();
@@ -126,6 +148,34 @@ define(['app.notifications', 'angular-websocket'], function (appNotificationsMod
 					level: msg.level,
 					message: msg.message
 				});
+			}
+		}
+
+		function handlePluginMessage(msg) {
+			var name = msg.plugin;
+			if (typeof name === 'undefined') {
+				return;
+			}
+			var payload = { plugin: name, hwid: msg.hwid, data: msg.data };
+			// Deliver only via the callback registry (onPluginMessage).
+			// $rootScope.$broadcast was removed to avoid double-dispatch; all
+			// consumers should register via onPluginMessage instead.
+			var listeners = pluginListeners[name];
+			if (listeners) {
+				// Defensive copy so an unsubscribe inside a callback does not
+				// corrupt the iteration (fix-4).
+				listeners.slice().forEach(function (cb) {
+					try {
+						cb(payload);
+					} catch (e) {
+						console.error('[livesocket] plugin listener threw for "' + name + '":', e);
+					}
+				});
+			}
+			// Trigger a digest so data-bound UI reacts to the pushed payload,
+			// consistent with handleTimeUpdate's own explicit $digest pattern.
+			if (!$rootScope.$$phase) {
+				$rootScope.$digest();
 			}
 		}
 
@@ -206,8 +256,95 @@ define(['app.notifications', 'angular-websocket'], function (appNotificationsMod
 				webSocket.$$send(requestobj);
 			});
 		}
-		
-		
+
+		function unsubscribeDevices() {
+			webSocket.$$send({ event: 'unsubscribe_devices' });
+		}
+
+		/**
+		 * Subscribe to plugin push messages by name.
+		 * The subscription is automatically restored on websocket reconnect.
+		 *
+		 * @param {string} name - Plugin name (matches the `plugin` field in pushed frames).
+		 * @returns {Promise} Resolves with the server ack when the subscribe frame is confirmed.
+		 */
+		function subscribePlugin(name) {
+			if (activePluginTopics[name]) {
+				return $q.when();
+			}
+			activePluginTopics[name] = true;
+			return subscribeTo('plugin:' + name);
+		}
+
+		/**
+		 * Cancel a plugin subscription by name.
+		 * Future pushes for this plugin name will not be delivered.
+		 *
+		 * @param {string} name - Plugin name to unsubscribe.
+		 * @returns {Promise} Resolves with the server ack.
+		 */
+		function unsubscribePlugin(name) {
+			delete activePluginTopics[name];
+			return unsubscribeFrom('plugin:' + name);
+		}
+
+		/**
+		 * Send a command to a plugin.
+		 * If hwid is supplied it must be an integer; if not, the call is rejected
+		 * with a console error and nothing is sent.
+		 * When hwid is omitted the key is not included in the frame.
+		 *
+		 * @param {string} name      - Plugin name.
+		 * @param {*}      data      - Arbitrary payload forwarded to the plugin.
+		 * @param {number} [hwid]    - Optional hardware-instance id (integer).
+		 */
+		function sendPluginCommand(name, data, hwid) {
+			if (typeof hwid !== 'undefined') {
+				if (typeof hwid !== 'number' || hwid !== Math.floor(hwid)) {
+					console.error('[livesocket] sendPluginCommand: hwid must be an integer, got:', hwid);
+					return;
+				}
+			}
+			var msg = { event: 'plugin_command', plugin: name, data: data };
+			if (typeof hwid !== 'undefined') {
+				msg.hwid = hwid;
+			}
+			var serialized = JSON.stringify(msg);
+			if (serialized.length > 65536) {
+				console.error('[livesocket] sendPluginCommand: payload too large (' + serialized.length + ' bytes); limit is 65536 bytes. Message not sent.');
+				return;
+			}
+			webSocket.$$send(msg);
+		}
+
+		/**
+		 * Register a callback for inbound plugin push messages.
+		 * Subscriptions are auto-restored on reconnect when subscribePlugin was used.
+		 *
+		 * @param {string}   name - Plugin name to listen for.
+		 * @param {Function} cb   - Called with `{plugin, hwid, data}` on each push.
+		 * @returns {Function} Unbind function — call it to remove this listener.
+		 */
+		function onPluginMessage(name, cb) {
+			if (!pluginListeners[name]) {
+				pluginListeners[name] = [];
+			}
+			pluginListeners[name].push(cb);
+			return function () {
+				var arr = pluginListeners[name];
+				if (!arr) { return; }
+				var idx = arr.indexOf(cb);
+				if (idx !== -1) {
+					arr.splice(idx, 1);
+					// Reclaim the slot when the last listener is removed (fix-1).
+					if (arr.length === 0) {
+						delete pluginListeners[name];
+					}
+				}
+			};
+		}
+
+
 	});
 
 	/* The stub below can be used to override all ajax calls to websocket requests at the same time without changing the other code */

@@ -72,7 +72,7 @@ namespace Plugins {
 
 		try
 		{
-			PyBorrowedRef pModule = PyState_FindModule(&DomoticzExModuleDef);
+			PyBorrowedRef pModule = CPlugin::FindPyModule("DomoticzEx");
 			if (!pModule)
 			{
 				_log.Log(LOG_ERROR, "(%s) DomoticzEx module not found in interpreter.", __func__);
@@ -202,7 +202,7 @@ namespace Plugins {
 	{
 		if (pObject)
 		{
-			PyBorrowedRef brModule = PyState_FindModule(&DomoticzExModuleDef);
+			PyBorrowedRef brModule = CPlugin::FindPyModule("DomoticzEx");
 			if (brModule)
 			{
 				module_state* pModState = ((struct module_state*)PyModule_GetState(brModule));
@@ -331,7 +331,7 @@ namespace Plugins {
 
 		try
 		{
-			PyBorrowedRef pModule = PyState_FindModule(&DomoticzExModuleDef);
+			PyBorrowedRef pModule = CPlugin::FindPyModule("DomoticzEx");
 			if (!pModule)
 			{
 				_log.Log(LOG_ERROR, "(%s) Domoticz module not found in interpreter.", __func__);
@@ -466,6 +466,11 @@ namespace Plugins {
 
 		if ((pModState->pPlugin) && (pModState->pPlugin->m_HwdID != -1) && (self->Unit != -1))
 		{
+			if (!(CDeviceEx*)self->Parent)
+			{
+				_log.Log(LOG_ERROR, "(%s) Unit is not associated with a Device.", __func__);
+				Py_RETURN_NONE;
+			}
 			CDeviceEx *pDevice = (CDeviceEx*)self->Parent;
 			std::string sDevice = PyBorrowedRef(pDevice->DeviceID);
 			// load associated devices to make them available to python
@@ -573,7 +578,10 @@ namespace Plugins {
 				else
 				{
 					std::vector<std::vector<std::string>> result;
-					result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
+					{
+						PyAllowThreads gil;
+						result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d)", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
+					}
 					if (result.empty())
 					{
 						std::string sValue = PyBorrowedRef(self->sValue);
@@ -615,31 +623,41 @@ namespace Plugins {
 							}
 						}
 
-						m_sql.safe_query("INSERT INTO DeviceStatus "
-							"(HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Description, Color, Options, LastUpdate) "
-							"VALUES (%d, %d,'%q',%d,%d,%d,%d,%d,%d,%d,'%q',%d,'%q',%d,'%q','%q','%q','%q')",
-							pModState->pPlugin->m_HwdID,
-							0,
-							sDeviceID.c_str(),
-							self->Unit,
-							self->Type,
-							self->SubType,
-							self->SwitchType,
-							self->Used,
-							self->SignalLevel,
-							self->BatteryLevel,
-							sName.c_str(),
-							self->nValue,
-							sValue.c_str(),
-							self->Image,
-							sDescription.c_str(),
-							sColor.c_str(),
-							sOptionValue.c_str(),
-							TimeToString(nullptr, TF_DateTime).c_str());
-						result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (OrgHardwareID==0) AND (DeviceID=='%s') AND (Unit==%d)", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
+						// All Python-derived values are in C++ types above — safe to release GIL.
+						// Capture TimeToString in a named variable to avoid passing a dangling
+						// .c_str() pointer from a temporary into safe_query.
+						std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
+						{
+							PyAllowThreads gil;
+							m_sql.safe_query("INSERT INTO DeviceStatus "
+								"(HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Description, Color, Options, LastUpdate) "
+								"VALUES (%d, %d,'%q',%d,%d,%d,%d,%d,%d,%d,'%q',%d,'%q',%d,'%q','%q','%q','%q')",
+								pModState->pPlugin->m_HwdID,
+								0,
+								sDeviceID.c_str(),
+								self->Unit,
+								self->Type,
+								self->SubType,
+								self->SwitchType,
+								self->Used,
+								self->SignalLevel,
+								self->BatteryLevel,
+								sName.c_str(),
+								self->nValue,
+								sValue.c_str(),
+								self->Image,
+								sDescription.c_str(),
+								sColor.c_str(),
+								sOptionValue.c_str(),
+								sLastUpdate.c_str());
+							result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (OrgHardwareID==0) AND (DeviceID=='%s') AND (Unit==%d)", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
+							// Assign self->ID inside the guard so no other Python thread
+							// can observe a stale value between the SELECT and the assignment.
+							if (!result.empty())
+								self->ID = atoi(result[0][0].c_str());
+						}
 						if (!result.empty())
 						{
-							self->ID = atoi(result[0][0].c_str());
 
 							// Check the parent device is in the plugin dictionary (can happen if this Unit has just been created)
 							if (!PyDict_Contains((PyObject *)pModState->pPlugin->m_DeviceDict, pDevice->DeviceID))
@@ -726,6 +744,11 @@ namespace Plugins {
 				Py_RETURN_NONE;
 			}
 
+			if (!(CDeviceEx*)self->Parent)
+			{
+				_log.Log(LOG_ERROR, "(%s) Unit is not associated with a Device.", __func__);
+				Py_RETURN_NONE;
+			}
 			CDeviceEx *pDevice = (CDeviceEx *)self->Parent;
 			std::string sDeviceID = PyBorrowedRef(pDevice->DeviceID);
 			std::string sID = std::to_string(self->ID);
@@ -999,12 +1022,13 @@ namespace Plugins {
 
 				// Make sure the entry to delete exists and is for the correct hardware
 				std::vector<std::vector<std::string>> result;
-				result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%d)", pModState->pPlugin->m_HwdID, self->ID);
-				if (!result.empty())
 				{
-					m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%d)", pModState->pPlugin->m_HwdID, self->ID);
+					PyAllowThreads gil;
+					result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%d)", pModState->pPlugin->m_HwdID, self->ID);
+					if (!result.empty())
+						m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%d)", pModState->pPlugin->m_HwdID, self->ID);
 				}
-				else
+				if (result.empty())
 				{
 					pModState->pPlugin->Log(LOG_ERROR, "(%s) Unit deletion failed, Hardware %d does not have a Unit with ID %d in the database.",
 								pModState->pPlugin->m_Name.c_str(), pModState->pPlugin->m_HwdID, self->ID);
@@ -1063,7 +1087,7 @@ namespace Plugins {
 	{
 		if (pObject)
 		{
-			PyBorrowedRef brModule = PyState_FindModule(&DomoticzExModuleDef);
+			PyBorrowedRef brModule = CPlugin::FindPyModule("DomoticzEx");
 			if (brModule)
 			{
 				module_state* pModState = ((struct module_state*)PyModule_GetState(brModule));

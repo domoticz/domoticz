@@ -28,11 +28,11 @@ define(['app.permissions', 'livesocket'], function(appPermissionsModule, websock
         }
 
         function postCommand(command, data) {
-			$http.post('json.htm?type=command&param=' + command, data, {
-				transformRequest: angular.identity,
-				headers: { 'Content-Type': undefined }
-			}).then(function(response) {
-                    return response.data;
+            return $http.post('json.htm?type=command&param=' + command, data, {
+                transformRequest: angular.identity,
+                headers: { 'Content-Type': undefined }
+            }).then(function(response) {
+                return response.data;
             });
         }
 

@@ -12,6 +12,7 @@
 #include "Plugins.h"
 #include "PluginMessages.h"
 #include "PluginTransports.h"
+#include "PluginWebSocketRegistry.h"
 
 #include <json/json.h>
 #include "../../main/EventSystem.h"
@@ -123,7 +124,13 @@ namespace Plugins {
 			}
 
 			// Set program name, this prevents it being set to 'python'
-			Py_SetProgramName(Py_GetProgramFullPath());
+			// Py_SetProgramName/Py_GetProgramFullPath removed in Python 3.15; skip if absent
+			if (Py_SetProgramName && Py_GetProgramFullPath)
+			{
+				wchar_t* sFullPath = Py_GetProgramFullPath();
+				if (sFullPath)
+					Py_SetProgramName(sFullPath);
+			}
 
 			if (PyImport_AppendInittab("Domoticz", PyInit_Domoticz) == -1)
 			{
@@ -160,7 +167,7 @@ namespace Plugins {
 			_log.Log(LOG_STATUS, "PluginSystem: Started, Python version '%s', %d plugin definitions loaded.", sVersion.c_str(), (int)m_PluginXml.size());
 		}
 		catch (...) {
-			_log.Log(LOG_ERROR, "PluginSystem: Failed to start, Python version '%s', Program '%S', Path '%S'.", szPyVersion.c_str(), Py_GetProgramFullPath(), Py_GetPath());
+			_log.Log(LOG_ERROR, "PluginSystem: Failed to start, Python version '%s'.", szPyVersion.c_str());
 			return false;
 		}
 
@@ -290,11 +297,16 @@ namespace Plugins {
 
 	void CPluginSystem::DeregisterPlugin(const int HwdID)
 	{
-		if (m_pPlugins.count(HwdID))
+		// Hold PluginMutex for the entire count+erase sequence to avoid a TOCTOU gap.
+		// Unregister is called after erase so any concurrent lookup by the worker thread
+		// (which holds its own registry mutex) cannot see a partially-torn-down entry.
+		// Callers must invoke DeregisterPlugin only after device->Stop() has joined the
+		// plugin worker thread, guaranteeing Register() cannot race with Unregister().
 		{
 			std::lock_guard<std::mutex> l(PluginMutex);
 			m_pPlugins.erase(HwdID);
 		}
+		CPluginWebSocketRegistry::Get().Unregister(HwdID);
 	}
 
 	void* CPluginSystem::GetPreservedInterpreter(const std::string& pluginKey)

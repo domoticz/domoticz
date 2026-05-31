@@ -112,14 +112,17 @@ bool CWOL::SendWOLPacket(const std::vector<unsigned char>& magic_packet)
 
 		// Setup address hints for getaddrinfo
 		addrinfo hints = {};
-		hints.ai_family = AF_UNSPEC;      // Support both IPv4 and IPv6
-		hints.ai_socktype = SOCK_DGRAM;   // UDP
+		hints.ai_family = AF_UNSPEC;                          // Support both IPv4 and IPv6
+		hints.ai_socktype = SOCK_DGRAM;                       // UDP
 		hints.ai_protocol = IPPROTO_UDP;
+		hints.ai_flags = AI_NUMERICHOST | AI_NUMERICSERV;     // Broadcast addresses are always numeric IPs, skip DNS lookup
 
 		addrinfo* result = nullptr;
 		std::string portStr = std::to_string(m_wol_port);
 
-		if (getaddrinfo(targetAddr.c_str(), portStr.c_str(), &hints, &result) != 0) {
+		int ret = getaddrinfo(targetAddr.c_str(), portStr.c_str(), &hints, &result);
+		if (ret != 0) {
+			Log(LOG_ERROR, "WOL: Failed to resolve address '%s': %s", targetAddr.c_str(), gai_strerror(ret));
 			return false;
 		}
 
@@ -133,14 +136,13 @@ bool CWOL::SendWOLPacket(const std::vector<unsigned char>& magic_packet)
 				continue;
 			}
 
-			if (ptr->ai_family == AF_INET) { // For IPv4 multicast
-				
+			if (ptr->ai_family == AF_INET) { // IPv4 broadcast
 				// Enable broadcast
 				int broadcastEnable = 1;
 				setsockopt(sock, SOL_SOCKET, SO_BROADCAST,
 					(const char*)&broadcastEnable, sizeof(broadcastEnable));
 			}
-			else if (ptr->ai_family == AF_INET6) { // For IPv6 multicast
+			else if (ptr->ai_family == AF_INET6) { // IPv6 multicast
 				// Set multicast hop limit
 				int hopLimit = 1;
 				setsockopt(sock, IPPROTO_IPV6, IPV6_MULTICAST_HOPS,

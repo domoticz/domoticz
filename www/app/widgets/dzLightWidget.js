@@ -46,7 +46,15 @@ define(['app'], function (app) {
             controllerAs: 'ctrl',
             controller: function ($scope, $element, $location) {
                 var ctrl = this;
-                var device = $scope.device;
+
+                function normalizeDevice(dev) {
+                    if (dev && dev.Type === 'Security' && dev.SubType === 'Security Panel' && dev.Status === 'Normal') {
+                        return Object.assign({}, dev, { Status: 'Disarm' });
+                    }
+                    return dev;
+                }
+
+                var device = normalizeDevice($scope.device);
 
                 ctrl.device = device;
                 ctrl.isMobile = window.myglobals && window.myglobals.ismobile;
@@ -55,8 +63,8 @@ define(['app'], function (app) {
                 // Keep ctrl.device in sync when parent replaces the binding
                 $scope.$watch('device', function (newVal) {
                     if (newVal) {
-                        device = newVal;
-                        ctrl.device = newVal;
+                        device = normalizeDevice(newVal);
+                        ctrl.device = device;
                         ctrl.updateSelectorLevels();
                         ctrl.updateSearchText();
                     }
@@ -72,6 +80,7 @@ define(['app'], function (app) {
                 };
 
                 ctrl.getStatusText = function () {
+                    if (ctrl.dragText) return ctrl.dragText;
                     if (device.SubType == "Evohome") {
                         return ctrl.evoDisplayTextMode(device.Status);
                     } else if (device.SwitchType === "Selector") {
@@ -182,9 +191,13 @@ define(['app'], function (app) {
                     }
 
                     if (device.Protected) {
-                        bootbox.prompt($.t("Please enter Password") + ":", function (result) {
-                            if (result === null || result === "") return;
-                            SwitchLightInt(device.idx, cmd, result);
+                        bootbox.prompt({
+                            title: $.t("Please enter Password") + ":",
+                            inputType: 'password',
+                            callback: function (result) {
+                                if (result === null || result === "") return;
+                                SwitchLightInt(device.idx, cmd, result);
+                            }
                         });
                     } else {
                         ctrl.executeSwitchCommand(cmd);
@@ -224,14 +237,18 @@ define(['app'], function (app) {
                     }
 
                     if (device.Protected) {
-                        bootbox.prompt($.t("Please enter Password") + ":", function (result) {
-                            if (result === null || result === "") return;
-                            domoticzApi.sendCommand('switchlight', {
-                                idx: device.idx,
-                                switchcmd: 'Set Level',
-                                level: level,
-                                passcode: result
-                            });
+                        bootbox.prompt({
+                            title: $.t("Please enter Password") + ":",
+                            inputType: 'password',
+                            callback: function (result) {
+                                if (result === null || result === "") return;
+                                domoticzApi.sendCommand('switchlight', {
+                                    idx: device.idx,
+                                    switchcmd: 'Set Level',
+                                    level: level,
+                                    passcode: result
+                                });
+                            }
                         });
                     } else {
                         ctrl.executeSetLevel(level);
@@ -259,14 +276,18 @@ define(['app'], function (app) {
                     }
 
                     if (device.Protected) {
-                        bootbox.prompt($.t("Please enter Password") + ":", function (result) {
-                            if (result === null || result === "") return;
-                            domoticzApi.sendCommand('switchlight', {
-                                idx: device.idx,
-                                switchcmd: 'Set Level',
-                                level: level,
-                                passcode: result
-                            });
+                        bootbox.prompt({
+                            title: $.t("Please enter Password") + ":",
+                            inputType: 'password',
+                            callback: function (result) {
+                                if (result === null || result === "") return;
+                                domoticzApi.sendCommand('switchlight', {
+                                    idx: device.idx,
+                                    switchcmd: 'Set Level',
+                                    level: level,
+                                    passcode: result
+                                });
+                            }
                         });
                     } else {
                         ctrl.executeSetSelectorLevel(level, levelName);
@@ -374,6 +395,7 @@ define(['app'], function (app) {
                     // Fan subtypes always show Fan48_On.png
                     if (device.SubType && (
                         device.SubType.indexOf('Itho') == 0 ||
+                        device.SubType.indexOf('Orcon') == 0 ||
                         device.SubType.indexOf('Lucci') == 0 ||
                         device.SubType.indexOf('Falmec') == 0 ||
                         device.SubType.indexOf('Westinghouse') == 0
@@ -412,6 +434,15 @@ define(['app'], function (app) {
                         }
                         var isUnlocked = device.InternalState == 'Unlocked';
                         return 'images/' + lockImage + '48_' + (isUnlocked ? 'On' : 'Off') + '.png';
+                    }
+
+                    // Contact and Door Contact: backend sets Status='Open' (not 'On') when nValue=1
+                    if (device.SwitchType == 'Contact' || device.SwitchType == 'Door Contact') {
+                        var contactImage = device.Image || (device.SwitchType == 'Door Contact' ? 'Door' : 'Contact');
+                        if (device.CustomImage == 0) {
+                            contactImage = contactImage.charAt(0).toUpperCase() + contactImage.slice(1);
+                        }
+                        return 'images/' + contactImage + '48_' + (device.Status == 'Open' ? 'On' : 'Off') + '.png';
                     }
 
                     // Use device.Image as-is from backend
@@ -482,7 +513,7 @@ define(['app'], function (app) {
                     if (!ctrl.isClickable()) return;
 
                     // Fan subtypes - show specialized popups
-                    if (device.SubType && device.SubType.indexOf('Itho') == 0) {
+                    if (device.SubType && (device.SubType.indexOf('Itho') == 0 || device.SubType.indexOf('Orcon') == 0)) {
                         ShowIthoPopup($event || event, device.idx, device.Protected, window.myglobals.ismobile);
                         return;
                     }
@@ -663,6 +694,49 @@ define(['app'], function (app) {
                     }
                 };
 
+                ctrl.isSecurityType = function() {
+                    return device.Type === 'Security';
+                };
+
+                ctrl.isSecurityPanel = function() {
+                    return device.Type === 'Security' && device.SubType === 'Security Panel';
+                };
+
+                ctrl.isSecurityArmable = function() {
+                    return device.Type === 'Security' && (
+                        (device.SubType && device.SubType.indexOf('remote') > 0) ||
+                        (device.SubType && device.SubType.indexOf('Meiantech') >= 0)
+                    );
+                };
+
+                ctrl.isSecurityArmed = function() {
+                    return device.Status && (device.Status.indexOf('Arm') >= 0 || device.Status.indexOf('Panic') >= 0);
+                };
+
+                ctrl.sendSecurityCommand = function(cmd) {
+                    if (window.my_config && window.my_config.userrights == 0) {
+                        ShowNotify($.t('You do not have permission to do that!'), 2500, true);
+                        return;
+                    }
+                    $.devIdx = device.idx;
+                    if (device.Protected) {
+                        bootbox.prompt({
+                            title: $.t('Please enter Password') + ':',
+                            inputType: 'password',
+                            callback: function(result) {
+                                if (!result) return;
+                                SendX10Command(device.idx, cmd, result);
+                            }
+                        });
+                    } else {
+                        SendX10Command(device.idx, cmd, '');
+                    }
+                };
+
+                ctrl.navigateToSecPanel = function() {
+                    window.location.href = 'secpanel/';
+                };
+
                 ctrl.isRFY = function () {
                     return device.Type === 'RFY';
                 };
@@ -777,7 +851,7 @@ define(['app'], function (app) {
                                     var deviceElem = element.closest('.itemBlock');
                                     if (deviceElem.length > 0) {
                                         var bigtext = fPercentage + " %";
-                                        deviceElem.find('#bigtext').text(bigtext);
+                                        scope.$apply(function() { scope.ctrl.dragText = bigtext; });
 
                                         // Update icon for non-blinds non-LED dimmers
                                         if ((dtype != "blinds") && !isled) {
@@ -868,6 +942,7 @@ define(['app'], function (app) {
 
                 // Update slider/selectmenu value when device.LevelInt changes (e.g. WebSocket updates)
                 scope.$watch('device.LevelInt', function(newVal) {
+                    scope.ctrl.dragText = null;
                     if (typeof newVal !== 'undefined') {
                         element.find('.dimslider').each(function() {
                             var $slider = $(this);
@@ -897,8 +972,15 @@ define(['app'], function (app) {
                 };
                 $(window).on('resize', resizeHandler);
 
+                var itemBlock = element.closest('.itemBlock');
+                var liveSearchShowHandler = function() {
+                    resizeSliders();
+                };
+                itemBlock.on('dz:livesearch:show', liveSearchShowHandler);
+
                 scope.$on('$destroy', function() {
                     $(window).off('resize', resizeHandler);
+                    itemBlock.off('dz:livesearch:show', liveSearchShowHandler);
                 });
 
             }

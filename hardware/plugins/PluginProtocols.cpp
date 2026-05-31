@@ -212,9 +212,8 @@ namespace Plugins {
     					if (!pObj) {
         					_log.Log(LOG_ERROR, "(%s) failed to build Python string object.", __func__);
     					} else {
-        					if (PyList_SetItem(pRetVal, Index++, pObj) == -1) {  // steals reference only on success
+        					if (PyList_SetItem(pRetVal, Index++, pObj) == -1) {  // always steals reference, even on failure
             						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd' to list for string.", __func__, Index - 1);
-            						Py_DECREF(pObj);  // clean up because PyList_SetItem failed
         					}
     					}
 				}
@@ -310,7 +309,42 @@ namespace Plugins {
 		}
 		else if (pObj.IsLong())
 		{
-			sJson += std::to_string(PyLong_AsLong(pObj));
+			// Use PyLong_AsLongLong to avoid OverflowError on Windows where
+			// C `long` is 32-bit (LLP64) but Python ints can be arbitrarily large
+			// (e.g. JS Date.now() ms timestamps ~1.7e12 > INT32_MAX).
+			long long llv = PyLong_AsLongLong(pObj);
+			if (!PyErr_Occurred())
+			{
+				sJson += std::to_string(llv);
+			}
+			else
+			{
+				// Signed 64-bit overflow — try unsigned 64-bit (values up to 2^64-1)
+				PyErr_Clear();
+				unsigned long long ullv = PyLong_AsUnsignedLongLong(pObj);
+				if (!PyErr_Occurred())
+				{
+					sJson += std::to_string(ullv);
+				}
+				else
+				{
+					// Value exceeds uint64 range; fall back to decimal string
+					// representation so the send never raises/aborts.
+					PyErr_Clear();
+					PyObject* pStr = PyObject_Str(pObj);
+					if (pStr)
+					{
+						const char* sz = PyUnicode_AsUTF8(pStr);
+						sJson += (sz ? sz : "0");
+						Py_DECREF(pStr);
+					}
+					else
+					{
+						PyErr_Clear();
+						sJson += "0";
+					}
+				}
+			}
 		}
 		else if (pObj.IsFloat())
 		{
@@ -318,11 +352,20 @@ namespace Plugins {
 		}
 		else if (pObj.IsBytes())
 		{
-			sJson += '"' + std::string(PyBytes_AsString(pObj)) + '"';
+			const char* buf = PyBytes_AsString(pObj);
+			Py_ssize_t len = PyBytes_Size(pObj);
+			if (buf && len >= 0)
+				sJson += Json::valueToQuotedString(buf, (size_t)len);
+			else
+				sJson += "\"\"";
 		}
 		else if (pObj.IsByteArray())
 		{
-			sJson += '"' + std::string(PyByteArray_AsString(pObj)) + '"';
+			const char* buf = PyByteArray_AsString(pObj);
+			if (buf)
+				sJson += Json::valueToQuotedString(buf, (size_t)PyByteArray_Size(pObj));
+			else
+				sJson += "\"\"";
 		}
 		else
 		{
@@ -330,7 +373,11 @@ namespace Plugins {
 			PyNewRef	pStr = PyObject_Str(pObject);
 			if (pStr)
 			{
-				sJson += '"' + std::string(PyUnicode_AsUTF8(pStr)) + '"';
+				const char* pUtf8 = PyUnicode_AsUTF8(pStr);
+				if (pUtf8)
+					sJson += Json::valueToQuotedString(pUtf8);
+				else
+					_log.Log(LOG_ERROR, "(%s) Unable to convert string to UTF-8, ignored.", __func__);
 			}
 			else
 				_log.Log(LOG_ERROR, "(%s) Unable to convert data type (%s) to string representation, ignored.", __func__, pObj.Type().c_str());
@@ -846,7 +893,20 @@ namespace Plugins {
 				}
 			}
 
-			// Add Server header if it is not supplied
+			// Add Host header if not supplied (required by HTTP/1.1)
+			if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "Host");
+			if (!pHead)
+			{
+				std::string sAddress = PyBorrowedRef(WriteMessage->m_pConnection->Address);
+				std::string sPort = PyBorrowedRef(WriteMessage->m_pConnection->Port);
+				bool bSecure = WriteMessage->m_pConnection->pProtocol->Secure();
+				if ((!bSecure && sPort != "80") || (bSecure && sPort != "443"))
+					sHttp += "Host: " + sAddress + ":" + sPort + "\r\n";
+				else
+					sHttp += "Host: " + sAddress + "\r\n";
+			}
+
+			// Add User-Agent header if not supplied
 			if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "User-Agent");
 			if (!pHead)
 			{
@@ -2231,148 +2291,224 @@ namespace Plugins {
 
 	*/
 
-	bool CPluginProtocolWS::ProcessWholeMessage(std::vector<byte>& vMessage, const ReadEvent* Message)
+	void CPluginProtocolWS::Reset()
 	{
-		if (vMessage.size() > 1)
+		m_sRetainedData.clear();
+		m_FragmentBuffer.clear();
+		m_FragmentOpCode   = 0;
+		m_bFragmentDeflate = false;
+	}
+
+	bool CPluginProtocolWS::ProcessWholeMessage(const std::vector<byte>& vMessage, size_t& startOffset, const ReadEvent* Message)
+	{
+		// Need at least 2 bytes for the frame header
+		if (vMessage.size() - startOffset < 2)
+			return false;
+
+		// All accesses are relative to startOffset; iOffset is the within-frame position
+		std::vector<byte>	vPayload;
+		size_t		iOffset = 0;
+		int			iOpCode = 0;
+		bool		bFinish = false;
+
+		auto vAt = [&](size_t i) -> byte { return vMessage[startOffset + i]; };
+
+		bFinish  = (vAt(iOffset) & 0x80);				// Indicates that this is the final fragment in a message if true
+		bool bCompressed = (vAt(iOffset) & 0x40);	// RSV1 — permessage-deflate indicator
+		iOpCode  = (vAt(iOffset) & 0x0F);
+		// %x0 denotes a continuation frame
+		// %x1 denotes a text frame
+		// %x2 denotes a binary frame
+		// %x8 denotes a connection close
+		// %x9 denotes a ping
+		// %xA denotes a pong
+		iOffset++;
+		bool	bMasked = (vAt(iOffset) & 0x80);			// Is the payload masked?
+		size_t	lPayloadLength = (vAt(iOffset) & 0x7F);	// if < 126 then this is the length
+		if (lPayloadLength == 126)
 		{
-			// Look for a complete message
-			std::vector<byte>	vPayload;
-			size_t		iOffset = 0;
-			int			iOpCode = 0;
-			long		lMaskingKey = 0;
-			bool		bFinish = false;
-
-			bFinish = (vMessage[iOffset] & 0x80);				// Indicates that this is the final fragment in a message if true
-			if (vMessage[iOffset] & 0x0F)
+			if (vMessage.size() - startOffset < (iOffset + 3))
+				return false;
+			lPayloadLength = ((size_t)vAt(iOffset + 1) << 8) + vAt(iOffset + 2);
+			iOffset += 2;
+		}
+		else if (lPayloadLength == 127)
+		{
+			if (vMessage.size() - startOffset < (iOffset + 9))
+				return false;	// not enough data yet
+			uint64_t u64Length = 0;
+			for (int i = 1; i <= 8; i++)
+				u64Length = (u64Length << 8) | vAt(iOffset + i);
+			if ((u64Length >> 63) || (u64Length > SIZE_MAX))	// RFC 6455: MSB must be 0; guard 32-bit truncation
 			{
-				iOpCode = (vMessage[iOffset] & 0x0F);			// %x0 denotes a continuation frame
-			}
-			// %x1 denotes a text frame
-			// %x2 denotes a binary frame
-			// %x8 denotes a connection close
-			// %x9 denotes a ping
-			// %xA denotes a pong
-			iOffset++;
-			bool	bMasked = (vMessage[iOffset] & 0x80);			// Is the payload masked?
-			long	lPayloadLength = (vMessage[iOffset] & 0x7F);	// if < 126 then this is the length
-			if (lPayloadLength == 126)
-			{
-				if (vMessage.size() < (iOffset + 2))
-					return false;
-				lPayloadLength = (vMessage[iOffset + 1] << 8) + vMessage[iOffset + 2];
-				iOffset += 2;
-			}
-			else if (lPayloadLength == 127)							// 64 bit lengths not supported
-			{
-				_log.Log(LOG_ERROR, "(%s) 64 bit WebSocket messages lengths not supported.", __func__);
-				vMessage.clear();
-				iOffset += 5;
+				_log.Log(LOG_ERROR, "(%s) WebSocket frame with invalid or out-of-range 64-bit length.", __func__);
+				startOffset = vMessage.size();
 				return false;
 			}
-			iOffset++;
+			lPayloadLength = static_cast<size_t>(u64Length);
+			iOffset += 8;
+		}
+		iOffset++;
 
-			byte* pbMask = nullptr;
-			if (bMasked)
-			{
-				if (vMessage.size() < iOffset)
-					return false;
-				lMaskingKey = (long)vMessage[iOffset];
-				pbMask = &vMessage[iOffset];
-				iOffset += 4;
-			}
-
-			if (vMessage.size() < (iOffset + lPayloadLength))
+		const byte* pbMask = nullptr;
+		if (bMasked)
+		{
+			if (vMessage.size() - startOffset < iOffset + 4)
 				return false;
+			pbMask = &vMessage[startOffset + iOffset];
+			iOffset += 4;
+		}
 
-			// Append the payload to the existing (maybe) payload
-			if (lPayloadLength)
+		if (vMessage.size() - startOffset < iOffset + lPayloadLength)
+			return false;
+
+		// Extract and unmask this frame's payload
+		if (lPayloadLength)
+		{
+			vPayload.reserve(lPayloadLength);
+			for (size_t i = 0; i < lPayloadLength; i++)
 			{
-				vPayload.reserve(vPayload.size() + lPayloadLength);
-				for (size_t i = iOffset; i < iOffset + lPayloadLength; i++)
-				{
-					vPayload.push_back(vMessage[i]);
-				}
-				iOffset += lPayloadLength;
+				byte b = vAt(iOffset + i);
+				if (bMasked)
+					b ^= pbMask[i % 4];
+				vPayload.push_back(b);
 			}
+			iOffset += lPayloadLength;
+		}
 
-			PyObject* pDataDict = (PyObject*)PyDict_New();
-			PyNewRef pPayload;
+		// Advance the caller's start offset to consume this frame
+		startOffset += iOffset;
 
-			// Handle full message
-			AddBoolToDict(pDataDict, "Finish", bFinish);
+		// Control frames (ping/pong/close) must never be fragmented (RFC 6455 §5.5).
+		// Data frames (text/binary) may be fragmented: opcode 0x00 is a continuation frame.
+		bool bIsControl = (iOpCode >= 0x08);
 
-			// Masked data?
-			if (lMaskingKey)
+		if (!bIsControl)
+		{
+			if (iOpCode != 0x00)
 			{
-				// Unmask data
-				for (int i = 0; i < lPayloadLength; i++)
+				if (m_FragmentOpCode != 0)
 				{
-					vPayload[i] ^= pbMask[i % 4];
+					// RFC 6455 §5.4 violation: new data frame arrived while a fragment sequence is still open
+					_log.Log(LOG_ERROR, "(%s) WebSocket protocol violation: new data frame (0x%02X) received while fragment in progress.", __func__, iOpCode);
+					m_FragmentBuffer.clear();
+					m_FragmentOpCode = 0;
+					return false;
 				}
-
-				AddLongToDict(pDataDict, "Mask", lMaskingKey);
+				// First fragment (or unfragmented message): remember its opcode and start accumulating
+				m_FragmentOpCode   = iOpCode;
+				m_bFragmentDeflate = bCompressed;
+				m_FragmentBuffer.clear();
 			}
-
-			switch (iOpCode)
+			else if (m_FragmentOpCode == 0)
 			{
-			case 0x01:	// Text message
+				// RFC 6455 §5.4 violation: continuation frame with no initiating data frame.
+				// startOffset has already been advanced past this frame, so it is discarded.
+				_log.Log(LOG_ERROR, "(%s) WebSocket protocol violation: continuation frame (0x00) without initiating data frame.", __func__);
+				m_FragmentBuffer.clear();
+				m_FragmentOpCode = 0;
+				return false;
+			}
+			// Accumulate payload (works for both first and continuation frames)
+			m_FragmentBuffer.insert(m_FragmentBuffer.end(), vPayload.begin(), vPayload.end());
+
+			if (!bFinish)
+				return true;	// More fragments to come; frame consumed, keep looping
+
+			// Final fragment: reassemble and dispatch using the stored opcode
+			vPayload            = std::move(m_FragmentBuffer);
+			iOpCode             = m_FragmentOpCode;
+			bCompressed         = m_bFragmentDeflate;
+			m_FragmentBuffer.clear();
+			m_FragmentOpCode    = 0;
+			m_bFragmentDeflate  = false;
+		}
+
+		PyObject* pDataDict = (PyObject*)PyDict_New();
+		if (!pDataDict)
+		{
+			_log.Log(LOG_ERROR, "(%s) failed to create Python dictionary.", __func__);
+			return true;
+		}
+		PyNewRef pPayload;
+
+		AddBoolToDict(pDataDict, "Finish", bFinish);
+
+		switch (iOpCode)
+		{
+		case 0x01:	// Text message
+		{
+			if (!bCompressed)
 			{
 				// Force text messages to be returned as Unicode rather than Bytes
 				pPayload = PyNewRef(std::string(vPayload.begin(), vPayload.end()));
-				break;
 			}
-			case 0x02:	// Binary message
-				break;
-			case 0x08:	// Connection Close
+			break;
+		}
+		case 0x02:	// Binary message
+			break;
+		case 0x08:	// Connection Close
+		{
+			AddStringToDict(pDataDict, "Operation", "Close");
+			if (vPayload.size() == 2)
 			{
-				AddStringToDict(pDataDict, "Operation", "Close");
-				if (vPayload.size() == 2)
-				{
-					int		iReasonCode = (vPayload[0] << 8) + vPayload[1];
-					pPayload = Py_BuildValue("i", iReasonCode);
-				}
-				break;
+				int		iReasonCode = (vPayload[0] << 8) + vPayload[1];
+				pPayload = Py_BuildValue("i", iReasonCode);
 			}
-			case 0x09:	// Ping
+			break;
+		}
+		case 0x09:	// Ping
+		{
+			// Allocate new dict before releasing old to avoid use-after-free if PyDict_New fails
+			PyObject* pNewDict = (PyObject*)PyDict_New();
+			if (!pNewDict)
 			{
-				pDataDict = (PyObject*)PyDict_New();
-				AddStringToDict(pDataDict, "Operation", "Ping");
-				break;
+				_log.Log(LOG_ERROR, "(%s) failed to create Python dictionary for Ping.", __func__);
+				Py_XDECREF(pDataDict);
+				return true;
 			}
-			case 0x0A:	// Pong
+			Py_XDECREF(pDataDict);
+			pDataDict = pNewDict;
+			AddStringToDict(pDataDict, "Operation", "Ping");
+			break;
+		}
+		case 0x0A:	// Pong
+		{
+			// Allocate new dict before releasing old to avoid use-after-free if PyDict_New fails
+			PyObject* pNewDict = (PyObject*)PyDict_New();
+			if (!pNewDict)
 			{
-				pDataDict = (PyObject*)PyDict_New();
-				AddStringToDict(pDataDict, "Operation", "Pong");
-				break;
+				_log.Log(LOG_ERROR, "(%s) failed to create Python dictionary for Pong.", __func__);
+				Py_XDECREF(pDataDict);
+				return true;
 			}
-			default:
-				_log.Log(LOG_ERROR, "(%s) Unknown Operation Code (%d) encountered.", __func__, iOpCode);
-			}
-
-			// If there is a payload but not handled then map it as binary
-			if (!vPayload.empty() && !pPayload)
-			{
-				pPayload = PyNewRef(vPayload);
-				if (!pPayload)
-					_log.Log(LOG_ERROR, "(%s) failed build Python object for payload.", __func__);
-			}
-
-			// If there is a payload then add it
-			if (pPayload)
-			{
-				if (PyDict_SetItemString(pDataDict, "Payload", pPayload) == -1)
-					_log.Log(LOG_ERROR, "(%s) failed to add key '%s' to dictionary.", __func__, "Payload");
-			}
-
-			Message->m_pConnection->pPlugin->MessagePlugin(new onMessageCallback(Message->m_pConnection, pDataDict));
-
-			// Remove the processed message from retained data
-			vMessage.erase(vMessage.begin(), vMessage.begin() + iOffset);
-
-			return true;
+			Py_XDECREF(pDataDict);
+			pDataDict = pNewDict;
+			AddStringToDict(pDataDict, "Operation", "Pong");
+			break;
+		}
+		default:
+			_log.Log(LOG_ERROR, "(%s) Unknown Operation Code (%d) encountered.", __func__, iOpCode);
 		}
 
-		return false;
+		// If there is a payload but not handled then map it as binary
+		if (!vPayload.empty() && !pPayload)
+		{
+			pPayload = PyNewRef(vPayload);
+			if (!pPayload)
+				_log.Log(LOG_ERROR, "(%s) failed build Python object for payload.", __func__);
+		}
+
+		// If there is a payload then add it
+		if (pPayload)
+		{
+			if (PyDict_SetItemString(pDataDict, "Payload", pPayload) == -1)
+				_log.Log(LOG_ERROR, "(%s) failed to add key '%s' to dictionary.", __func__, "Payload");
+		}
+
+		Message->m_pConnection->pPlugin->MessagePlugin(new onMessageCallback(Message->m_pConnection, pDataDict));
+
+		return true;
 	}
 
 	void CPluginProtocolWS::ProcessInbound(const ReadEvent* Message)
@@ -2388,16 +2524,21 @@ namespace Plugins {
 			}
 		}
 
-		// Add new message to retained data, process all messages if this one is the finish of a message
+		// Append incoming data to the retained buffer
 		m_sRetainedData.insert(m_sRetainedData.end(), Message->m_Buffer.begin(), Message->m_Buffer.end());
 
 		// Although messages can be fragmented, control messages can be inserted in between fragments.
 		// see https://datatracker.ietf.org/doc/html/rfc6455#section-5.4
-		// Always process the whole buffer because we can't know if we have whole, multiple or even complete messages unless we work through from the start
-		while (ProcessWholeMessage(m_sRetainedData, Message))
+		// Process frames using a rolling offset to avoid O(n²) erasing per frame.
+		size_t startOffset = 0;
+		while (ProcessWholeMessage(m_sRetainedData, startOffset, Message))
 		{
 			continue;		// Message processed
 		}
+
+		// Discard all fully consumed bytes in one erase
+		if (startOffset > 0)
+			m_sRetainedData.erase(m_sRetainedData.begin(), m_sRetainedData.begin() + startOffset);
 	}
 
 	std::vector<byte> CPluginProtocolWS::ProcessOutbound(const WriteDirective* WriteMessage)

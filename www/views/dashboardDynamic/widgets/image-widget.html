@@ -1,0 +1,40 @@
+<div class="dd-image-widget"
+     ng-class="{'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode}">
+
+    <!-- Unconfigured state -->
+    <div class="dd-image-placeholder"
+         ng-show="!ctrl.displayUrl && !ctrl.widgetDef.config.url">
+        <i class="fa-solid fa-image" style="font-size:36px;opacity:0.3"></i>
+        <p>Configure an image URL in settings</p>
+    </div>
+
+    <!-- Invalid URL -->
+    <div class="dd-image-placeholder dd-image-error-state"
+         ng-show="ctrl.urlError">
+        <i class="fa-solid fa-ban" style="font-size:36px;opacity:0.5"></i>
+        <p>Invalid URL — only http:// and https:// are allowed</p>
+    </div>
+
+    <!-- Image -->
+    <img ng-show="ctrl.displayUrl"
+         ng-src="{{ ctrl.displayUrl }}"
+         class="dd-image-img"
+         ng-style="{'object-fit': ctrl.widgetDef.config.objectFit || 'contain'}"
+         alt="{{ ctrl.widgetDef.config.title || 'Remote image' }}"
+         ng-error="ctrl.loadError = true"
+         ng-load="ctrl.loadError = false">
+
+    <!-- Load error overlay -->
+    <div class="dd-image-load-error"
+         ng-show="ctrl.loadError">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        Image could not be loaded
+    </div>
+
+    <!-- Caption -->
+    <div class="dd-image-caption"
+         ng-show="ctrl.widgetDef.config.title"
+         ng-bind="ctrl.widgetDef.config.title">
+    </div>
+
+</div>

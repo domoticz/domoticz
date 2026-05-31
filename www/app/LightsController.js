@@ -494,6 +494,7 @@
 							}
 						}
 						$element.i18n();
+						WatchDescriptions();
 						RefreshLiveSearch();
 					}, 100);
 
@@ -1501,6 +1502,8 @@
 			ctrl.changeRoom = function () {
 				var idx = ctrl.roomSelected;
 				window.myglobals.LastPlanSelected = idx;
+				window.myglobals.LastSearchFilter = '';
+				$('.jsLiveSearch').val('').trigger('change');
 	
 				$route.updateParams({
 						room: idx >= 0 ? idx : undefined

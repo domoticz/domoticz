@@ -1,0 +1,73 @@
+<div class="dd-stat-card dd-stat-card-full"
+     ng-class="{'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode}">
+
+    <!-- Unconfigured state -->
+    <div ng-if="!ctrl.configured" class="dd-chart-unconfigured">
+        <i class="fa-solid fa-battery-half"></i>
+        <p>Configure Battery Status in settings</p>
+    </div>
+
+    <!-- Configured state -->
+    <div ng-if="ctrl.configured" style="width:100%;">
+        <div class="dd-stat-label" ng-bind="ctrl.title"></div>
+
+        <div style="display:flex;gap:16px;justify-content:center;align-items:flex-start;margin-top:4px;">
+
+            <!-- Today totals: import, export, net -->
+            <div ng-if="ctrl.battery">
+                <a class="dd-stat-link" ng-href="#/Devices/{{ctrl.ids.energyIn}}/Log">
+                    <div class="dd-stat-line dd-energy-import">
+                        <i class="fa fa-arrow-circle-down"></i>
+                        {{ctrl.battery.importedKwh | number:2}} kWh
+                    </div>
+                </a>
+                <a class="dd-stat-link" ng-href="#/Devices/{{ctrl.ids.energyOut}}/Log">
+                    <div class="dd-stat-line dd-energy-export">
+                        <i class="fa fa-arrow-circle-up"></i>
+                        {{ctrl.battery.exportedKwh | number:2}} kWh
+                    </div>
+                </a>
+                <div class="dd-stat-sub">
+                    {{'Net' | translate}}:
+                    <span ng-class="ctrl.netClass()">
+                        {{ctrl.netKwh() >= 0 ? '+' : ''}}{{ctrl.netKwh() | number:2}} kWh
+                    </span>
+                </div>
+            </div>
+            <div ng-if="!ctrl.battery" class="dd-stat-sub" style="align-self:center;">
+                &mdash;
+            </div>
+
+            <!-- Live data: SOC, watts, voltage -->
+            <div ng-if="ctrl.batteryLive">
+                <a ng-if="ctrl.batteryLive.soc" class="dd-stat-link" ng-href="#/Devices/{{ctrl.ids.soc}}/Log">
+                    <div class="dd-stat-line"
+                         ng-style="{'color':'var(--dz-widget-energy-export)'}">
+                        <i class="fa fa-battery-three-quarters"></i>
+                        {{ctrl.batteryLive.soc}}
+                    </div>
+                </a>
+                <a ng-if="ctrl.batteryLive.watt" class="dd-stat-link" ng-href="#/Devices/{{ctrl.ids.watt}}/Log">
+                    <div class="dd-stat-line"
+                         ng-style="{'color':'var(--dz-widget-accent)'}">
+                        <i class="fa fa-bolt"></i>
+                        {{ctrl.batteryLive.watt}}
+                    </div>
+                </a>
+                <a ng-if="ctrl.batteryLive.voltage" class="dd-stat-link" ng-href="#/Devices/{{ctrl.ids.volt}}/Log">
+                    <div class="dd-stat-line"
+                         ng-style="{'color':'var(--dz-widget-sunpv)'}">
+                        <i class="fa fa-plug"></i>
+                        {{ctrl.batteryLive.voltage}}
+                    </div>
+                </a>
+            </div>
+
+        </div>
+
+        <div ng-if="!ctrl.battery && !ctrl.batteryLive" class="dd-stat-value" style="margin-top:8px;">
+            &mdash;
+        </div>
+    </div>
+
+</div>

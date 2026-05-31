@@ -206,6 +206,12 @@ return {
 			return TimedCommand(domoticz, device.name, newState, 'device', device.state)
 		end
 
+		function device.resumeTimerPlan()
+			local prefix = (device.baseType == 'scene' or device.baseType == 'group')
+				and 'ResumeTimerPlanScene:' or 'ResumeTimerPlan:'
+			return TimedCommand(domoticz, prefix .. tostring(device.id), '', 'device')
+		end
+
 		function device.updateQuiet(nValue, sValue)
 
 			if not(nValue or sValue) then

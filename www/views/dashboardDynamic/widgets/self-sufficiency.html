@@ -1,0 +1,20 @@
+<div class="dd-balance">
+    <div class="dd-balance-stats" ng-if="ctrl.balance">
+        <span>
+            <i class="fa fa-leaf" ng-style="{'color': 'var(--dz-widget-energy-export)'}"></i>
+            {{'Self-sufficiency' | translate}}: <span>{{ ctrl.balance.selfSufficiency | number:0 }}%</span>
+        </span>
+        <span>{{'House consumption' | translate}}: <span>{{ ctrl.balance.houseToday | number:1 }} kWh</span></span>
+        <span>{{'Solar yield' | translate}}: <span>{{ ctrl.balance.solarToday | number:1 }} kWh</span></span>
+        <span ng-if="ctrl.balance.batNet !== null && ctrl.balance.batNet !== undefined">
+            {{'Battery net' | translate}}:
+            <span ng-class="ctrl.balance.batNet >= 0 ? 'dd-energy-import' : 'dd-energy-export'">
+                {{ ctrl.balance.batNet >= 0 ? '+' : '' }}{{ ctrl.balance.batNet | number:2 }} kWh
+            </span>
+        </span>
+    </div>
+    <div class="dd-balance-bar-wrap" ng-if="ctrl.showGauge && ctrl.balance">
+        <div class="dd-balance-bar-fill"
+             ng-style="{'width': ctrl.balance.selfSufficiency + '%'}"></div>
+    </div>
+</div>

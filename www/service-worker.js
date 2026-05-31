@@ -40,14 +40,29 @@ workbox.routing.registerRoute(
   })
 );
 
-// ─── Static JS & CSS: StaleWhileRevalidate ───
+// ─── Static CSS: NetworkFirst ───
+// Always fetch fresh CSS from network when online so that layout changes
+// (e.g. menu sizing, theme updates) take effect immediately after a Domoticz
+// update.  Falls back to cache when offline.
+workbox.routing.registerRoute(
+  ({ request }) => request.destination === 'style',
+  new workbox.strategies.NetworkFirst({
+    cacheName: 'static-css',
+    plugins: [
+      new workbox.cacheableResponse.CacheableResponsePlugin({ statuses: [200] }),
+      new workbox.expiration.ExpirationPlugin({ maxEntries: 50 }),
+    ],
+  })
+);
+
+// ─── Static JS: StaleWhileRevalidate ───
 // Serve from cache instantly, update in background.
 // Safe because #BuildHash forces SW update on new builds,
 // and these files have stable URLs with no content hashing.
 workbox.routing.registerRoute(
-  ({ request }) => request.destination === 'script' || request.destination === 'style',
+  ({ request }) => request.destination === 'script',
   new workbox.strategies.StaleWhileRevalidate({
-    cacheName: 'static-assets',
+    cacheName: 'static-js',
     plugins: [
       new workbox.cacheableResponse.CacheableResponsePlugin({ statuses: [200] }),
       new workbox.expiration.ExpirationPlugin({ maxEntries: 200 }),

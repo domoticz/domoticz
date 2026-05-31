@@ -1,0 +1,311 @@
+{
+  "Beginner": [
+    {
+      "tip": "Add new devices quickly by enabling 'Accept new hardware devices' in Settings.",
+      "icon": "fa-plus-circle"
+    },
+    {
+      "tip": "Rename devices right after adding them to stay organized.",
+      "icon": "fa-edit"
+    },
+    {
+      "tip": "Use 'Favorites' to keep your most-used devices accessible.",
+      "icon": "fa-star"
+    },
+    {
+      "tip": "Group devices into Rooms or Plans for a cleaner dashboard.",
+      "icon": "fa-layer-group"
+    },
+    {
+      "tip": "Use the mobile interface for quick control on the go.",
+      "icon": "fa-mobile-alt"
+    },
+    {
+      "tip": "Check the 'Log' tab if something isn\u2019t working as expected.",
+      "icon": "fa-file-alt"
+    },
+    {
+      "tip": "Disable unused devices to reduce clutter.",
+      "icon": "fa-eye-slash"
+    },
+    {
+      "tip": "Use clear naming like 'Living Room Light' instead of 'Switch 1.'",
+      "icon": "fa-tag"
+    },
+    {
+      "tip": "Add icons to devices to visually distinguish them.",
+      "icon": "fa-icons"
+    },
+    {
+      "tip": "Start simple\u2014add a few devices before building automations.",
+      "icon": "fa-seedling"
+    }
+  ],
+  "Automation": [
+    {
+      "tip": "Use the Automation Wizard in the Events tab to create dzVents scripts visually — pick triggers, conditions, and actions without writing any Lua code.",
+      "icon": "fa-wand-magic-sparkles"
+    },
+    {
+      "tip": "Start automation with Blocky before using scripts.",
+      "icon": "fa-project-diagram"
+    },
+    {
+      "tip": "Combine triggers like time + motion for smarter actions.",
+      "icon": "fa-random"
+    },
+    {
+      "tip": "Add delays to prevent lights from turning off too quickly.",
+      "icon": "fa-clock"
+    },
+    {
+      "tip": "Use timers to automate repetitive daily tasks.",
+      "icon": "fa-hourglass-half"
+    },
+    {
+      "tip": "Turn devices off automatically to save energy.",
+      "icon": "fa-power-off"
+    },
+    {
+      "tip": "Use sunrise/sunset triggers for natural lighting control.",
+      "icon": "fa-sun"
+    },
+    {
+      "tip": "Avoid overlapping automations that may conflict.",
+      "icon": "fa-exclamation-triangle"
+    },
+    {
+      "tip": "Test automations during setup to avoid surprises later.",
+      "icon": "fa-vial"
+    },
+    {
+      "tip": "Use dummy switches to control complex logic.",
+      "icon": "fa-toggle-on"
+    },
+    {
+      "tip": "Keep automations simple and modular.",
+      "icon": "fa-cubes"
+    }
+  ],
+  "Integration": [
+    {
+      "tip": "Use MQTT for flexible device communication.",
+      "icon": "fa-exchange-alt"
+    },
+    {
+      "tip": "Integrate weather services for smarter automation.",
+      "icon": "fa-cloud-sun"
+    },
+    {
+      "tip": "Connect Domoticz to voice assistants for hands-free control.",
+      "icon": "fa-microphone"
+    },
+    {
+      "tip": "Use virtual sensors for custom data tracking.",
+      "icon": "fa-thermometer-half"
+    },
+    {
+      "tip": "Combine multiple systems into one dashboard.",
+      "icon": "fa-th-large"
+    },
+    {
+      "tip": "Explore plugins for additional hardware support.",
+      "icon": "fa-plug"
+    },
+    {
+      "tip": "Use APIs to connect Domoticz with other apps.",
+      "icon": "fa-code"
+    },
+    {
+      "tip": "Sync with smart thermostats for better climate control.",
+      "icon": "fa-temperature-high"
+    },
+    {
+      "tip": "Integrate cameras for monitoring and alerts.",
+      "icon": "fa-video"
+    },
+    {
+      "tip": "Use external scripts to extend functionality.",
+      "icon": "fa-terminal"
+    },
+    {
+      "tip": "Domoticz can push data to InfluxDB for rich historical graphs in Grafana.",
+      "icon": "fa-chart-bar"
+    },
+    {
+      "tip": "Use the HTTP Push feature to send device state changes to any webhook or service.",
+      "icon": "fa-share-from-square"
+    },
+    {
+      "tip": "Home Assistant users can bridge devices into Domoticz via MQTT Auto Discovery.",
+      "icon": "fa-arrows-left-right"
+    }
+  ],
+  "Security": [
+    {
+      "tip": "Always enable authentication if accessing remotely.",
+      "icon": "fa-lock"
+    },
+    {
+      "tip": "Use strong passwords for your Domoticz instance.",
+      "icon": "fa-key"
+    },
+    {
+      "tip": "Regularly update Domoticz to stay secure.",
+      "icon": "fa-sync"
+    },
+    {
+      "tip": "Backup your configuration frequently.",
+      "icon": "fa-database"
+    },
+    {
+      "tip": "Limit external access via firewall rules.",
+      "icon": "fa-shield-alt"
+    },
+    {
+      "tip": "Use HTTPS instead of HTTP for remote access.",
+      "icon": "fa-lock"
+    },
+    {
+      "tip": "Monitor logs for suspicious activity.",
+      "icon": "fa-search"
+    },
+    {
+      "tip": "Disable unused user accounts.",
+      "icon": "fa-user-slash"
+    },
+    {
+      "tip": "Avoid exposing your system directly to the internet.",
+      "icon": "fa-globe"
+    },
+    {
+      "tip": "Use VPN (Wireguard) access for safer remote control.",
+      "icon": "fa-network-wired"
+    },
+    {
+      "tip": "Enable Two-Factor Authentication in My Profile for an extra layer of login security.",
+      "icon": "fa-shield-halved"
+    },
+    {
+      "tip": "Use Passkeys in My Profile for passwordless login — supported by modern browsers.",
+      "icon": "fa-fingerprint"
+    }
+  ],
+  "Advanced": [
+    {
+      "tip": "Try the Dynamic Dashboard for a fully customizable widget-based layout — enable it in My Profile.",
+      "icon": "fa-table-cells-large",
+      "url": "https://wiki.domoticz.com/DynamicDashboard"
+    },
+    {
+      "tip": "Use DzVents for powerful event-driven automation.",
+      "icon": "fa-bolt"
+    },
+    {
+      "tip": "Optimize performance by reducing polling intervals.",
+      "icon": "fa-tachometer-alt"
+    },
+    {
+      "tip": "Monitor CPU and memory usage regularly.",
+      "icon": "fa-microchip"
+    },
+    {
+      "tip": "Use scripting to create custom alerts.",
+      "icon": "fa-bell"
+    },
+    {
+      "tip": "Build advanced logic using conditions and variables.",
+      "icon": "fa-code-branch"
+    },
+    {
+      "tip": "Customize dashboards with third-party tools.",
+      "icon": "fa-paint-brush"
+    },
+    {
+      "tip": "Use device indexing carefully when scripting.",
+      "icon": "fa-list-ol"
+    },
+    {
+      "tip": "Track long-term trends with logging tools.",
+      "icon": "fa-chart-line"
+    },
+    {
+      "tip": "Debug scripts using detailed logs.",
+      "icon": "fa-bug"
+    },
+    {
+      "tip": "Keep your setup documented for easier maintenance.",
+      "icon": "fa-book"
+    },
+    {
+      "tip": "Use User Variables to pass data between DzVents scripts without needing a physical device.",
+      "icon": "fa-database"
+    },
+    {
+      "tip": "Add a Notification device to a script to get push alerts with custom messages.",
+      "icon": "fa-envelope"
+    },
+    {
+      "tip": "The Domoticz wiki at wiki.domoticz.com has in-depth documentation for hardware, scripting, and more.",
+      "icon": "fa-book-open"
+    },
+    {
+      "tip": "Connect AI assistants (Claude, Copilot) to Domoticz via the built-in MCP server — enable it in Settings and generate an Access Token for secure access.",
+      "icon": "fa-robot"
+    }
+  ],
+  "Fun": [
+    {
+      "tip": "Simulate presence by turning lights on/off randomly.",
+      "icon": "fa-home"
+    },
+    {
+      "tip": "Get notified if doors or windows stay open too long.",
+      "icon": "fa-door-open"
+    },
+    {
+      "tip": "Automate coffee machines or morning routines.",
+      "icon": "fa-coffee"
+    },
+    {
+      "tip": "Dim lights automatically at night.",
+      "icon": "fa-lightbulb"
+    },
+    {
+      "tip": "Flash lights when someone rings the doorbell.",
+      "icon": "fa-bell"
+    },
+    {
+      "tip": "Change lighting based on weather conditions.",
+      "icon": "fa-cloud"
+    },
+    {
+      "tip": "Use motion sensors for hands-free lighting.",
+      "icon": "fa-walking"
+    },
+    {
+      "tip": "Create a 'movie mode' with one button.",
+      "icon": "fa-film"
+    },
+    {
+      "tip": "Turn on heating before you arrive home.",
+      "icon": "fa-fire"
+    },
+    {
+      "tip": "Get alerts when energy usage spikes.",
+      "icon": "fa-bolt"
+    },
+    {
+      "tip": "Set your porch light to flash a color when your team scores — connect to a sports API via script.",
+      "icon": "fa-trophy"
+    },
+    {
+      "tip": "Create a 'good morning' scene that gradually brightens lights, starts the coffee maker, and reads the weather.",
+      "icon": "fa-mug-hot"
+    },
+    {
+      "tip": "Did you know Domoticz has Easter eggs? Keep an eye out on special days — or try the Konami code! \uD83E\uDD5A",
+      "icon": "fa-egg"
+    }
+  ]
+}

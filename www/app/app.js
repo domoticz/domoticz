@@ -4,9 +4,9 @@ function formatBytes(bytes) {
 	return (bytes / 1048576).toFixed(1) + ' MB';
 }
 
-define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.permissions', 'domoticz.api', 'livesocket', 'devices/deviceFactory', 'angular-animate', 'ui-grid', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue'], function (angularAMD, appRoutesModule, appConstantsModule, appNotificationsModule, appPermissionsModule, apiModule, websocketModule, deviceFactory) {
+define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.permissions', 'domoticz.api', 'livesocket', 'devices/deviceFactory', 'ui-grid', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue'], function (angularAMD, appRoutesModule, appConstantsModule, appNotificationsModule, appPermissionsModule, apiModule, websocketModule, deviceFactory) {
 	var app = angular.module('domoticz', [
-		'ngRoute', 'ngAnimate', 'ui.grid', 'ngSanitize',
+		'ngRoute', 'ui.grid', 'ngSanitize',
 		'highcharts-ng', 'treeControl', 'ngDraggable', 'angular-md5',
 		'ui.bootstrap', 'angular.directives-round-progress', 'angular.directives-round-progress', 'angular.scrollglue',
 		appRoutesModule.name, appPermissionsModule.name, appNotificationsModule.name,
@@ -249,12 +249,27 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 
 	app.controller('NavbarController', function ($scope, $location) {
 		$scope.getClass = function (path) {
-			if ($location.path().substr(0, path.length) == path) {
-				return true
+			return $location.path().substr(0, path.length) === path;
+		};
+
+		var body = document.body;
+
+		$scope.$watch(function () { return $location.path(); }, function (path) {
+			var isDash2 = path === '/Dashboard'
+				&& $scope.$root.config.EnableTabDashboardDynamic
+				&& !(window.myglobals && window.myglobals.ismobile);
+			if (isDash2) {
+				body.classList.add('dd-dashboard-active');
 			} else {
-				return false;
+				body.classList.remove('dd-dashboard-active');
+				body.classList.remove('dd-navbar-hidden');
 			}
-		}
+		});
+
+		$scope.$on('$destroy', function () {
+			body.classList.remove('dd-dashboard-active');
+			body.classList.remove('dd-navbar-hidden');
+		});
 	});
 
 	app.controller('MainController', ['$scope', '$location', '$http', function ($scope, $location, $http) {
@@ -272,8 +287,10 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		});
 	}]);
 
-	app.factory('dzTimeAndSun', function($rootScope) {
+	app.factory('dzTimeAndSun', ['$rootScope', '$interval', function($rootScope, $interval) {
 		var currentData = {};
+		var _rawSec = 0;
+		var _ticker = null;
 		init();
 
 		return {
@@ -281,12 +298,45 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			updateData: updateData
 		};
 
+		function _pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+		function _epochToServerTimeString(sec) {
+			var d = new Date(sec * 1000);
+			return d.getFullYear() + '-' + _pad(d.getMonth() + 1) + '-' + _pad(d.getDate()) +
+				   ' ' + _pad(d.getHours()) + ':' + _pad(d.getMinutes()) + ':' + _pad(d.getSeconds());
+		}
+
         function init() {
+            $rootScope.$on('$destroy', function() {
+                if (_ticker) {
+                    $interval.cancel(_ticker);
+                    _ticker = null;
+                }
+            });
+
             $rootScope.$on('time_update', function (event, data) {
             	Object.assign(currentData, data);
-				$rootScope.SetTimeAndSun(currentData.sunrise, currentData.sunset, currentData.serverTime);
+
+				if (data.serverTime) {
+					var newSec = Math.floor(Date.parse(data.serverTime.replace(' ', 'T')) / 1000);
+					if (_rawSec === 0 || Math.abs(newSec - _rawSec) > 1) {
+						_rawSec = newSec;
+					}
+				}
+
+				if (!_ticker) {
+					$rootScope.SetTimeAndSun(currentData.sunrise, currentData.sunset, currentData.serverTime);
+					_ticker = $interval(_tick, 1000);
+				}
             });
         }
+
+		function _tick() {
+			if (_rawSec === 0 || isNaN(_rawSec)) { return; }
+			_rawSec++;
+			currentData.serverTime = _epochToServerTimeString(_rawSec);
+			$rootScope.SetTimeAndSun(currentData.sunrise, currentData.sunset, currentData.serverTime);
+		}
 
 		function getCurrentData() {
 			return currentData;
@@ -294,12 +344,19 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 
 		function updateData(data) {
 			Object.assign(currentData, {
-				sunrise: data.Sunrise,
-				sunset: data.Sunset,
-				serverTime: data.ServerTime
+				sunrise:    data.Sunrise,
+				sunset:     data.Sunset,
+				serverTime: data.ServerTime,
+				actTime:    data.ActTime
 			});
+			if (data.ServerTime) {
+				_rawSec = Math.floor(Date.parse(data.ServerTime.replace(' ', 'T')) / 1000);
+				if (!_ticker) {
+					_ticker = $interval(_tick, 1000);
+				}
+			}
 		}
-	});
+	}]);
 
     app.component('timesun', {
         templateUrl: 'timesuntemplate',
@@ -313,7 +370,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
     	template: '<section class="page-spinner">{{:: "Loading..." | translate }}</section>'
 	});
 
-	app.run(function ($rootScope, $location, $window, $route, $http, dzTimeAndSun, permissions) {
+	app.run(function ($rootScope, $location, $window, $route, $http, dzTimeAndSun, permissions, $uibModal) {
 		var permissionList = {
 			isloggedin: false,
 			rights: -1,
@@ -326,20 +383,33 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			//Ver bad (Old code!), should be changed soon!
 			$.FiveMinuteHistoryDays = $rootScope.config.FiveMinuteHistoryDays;
 
-			$.myglobals.ismobileint = false;
-			if (typeof $rootScope.config.MobileType != 'undefined') {
-				if (/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
-					$.myglobals.ismobile = true;
-					$.myglobals.ismobileint = true;
-				}
-				if ($rootScope.config.MobileType != 0) {
-					if (!(/iPhone/i.test(navigator.userAgent))) {
-						$.myglobals.ismobile = false;
-					}
-				}
+			// Detect phone (not tablet) — orientation-independent.
+			// 1. Modern Client Hints API (Chrome/Edge 90+): explicitly phone vs tablet/desktop.
+			// 2. UA string: match phone identifiers only (Android+Mobile, iPhone, iPod, etc.),
+			//    deliberately excluding iPad/Android-tablet so tablets get the desktop view.
+			// 3. Narrow viewport fallback (<480px) for any device not caught above.
+			var _isPhone = false;
+			var _ua = navigator.userAgent || navigator.vendor || window.opera;
+			if (navigator.userAgentData && typeof navigator.userAgentData.mobile === 'boolean') {
+				_isPhone = navigator.userAgentData.mobile;
+			} else if (/iPhone|iPod/i.test(_ua)) {
+				_isPhone = true;
+			} else if (/Android/i.test(_ua) && /Mobile/i.test(_ua)) {
+				_isPhone = true;
+			} else if (/BlackBerry|IEMobile|Opera Mini|webOS/i.test(_ua)) {
+				_isPhone = true;
+			} else {
+				_isPhone = (window.innerWidth || screen.width) < 480;
+			}
+			$.myglobals.ismobile = _isPhone;
+			$.myglobals.ismobileint = _isPhone;
+			// MobileType=1: force desktop view regardless of device
+			if ($rootScope.config.MobileType == 1) {
+				$.myglobals.ismobile = false;
 			}
 
 			$.myglobals.DashboardType = $rootScope.config.DashboardType;
+			$.myglobals.enableDashboardDynamic = $rootScope.config.EnableTabDashboardDynamic;
 			$.myglobals.DateFormat = $rootScope.config.DateFormat;
 
 			if (typeof $rootScope.config.WindScale != 'undefined') {
@@ -369,6 +439,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		$rootScope.currentyear = new Date().getFullYear();
 		$rootScope.config = {
 			EnableTabDashboard: false,
+			EnableTabDashboardDynamic: false,
 			EnableTabFloorplans: false,
 			EnableTabLights: false,
 			EnableTabScenes: false,
@@ -429,6 +500,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.EnableTabTemp = data.result.EnableTabTemp;
 						$rootScope.config.EnableTabWeather = data.result.EnableTabWeather;
 						$rootScope.config.EnableTabUtility = data.result.EnableTabUtility;
+						$rootScope.config.EnableTabDashboardDynamic = data.result.EnableTabDashboardDynamic || false;
 						$rootScope.config.ShowUpdatedEffect = data.result.ShowUpdatedEffect;
 						if (typeof data.UserName != 'undefined') {
 							$rootScope.config.userName = data.UserName;
@@ -575,6 +647,12 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						if ((data.HaveUpdate == true) && (data.UseUpdate)) {
 							ShowUpdateNotification(data.Revision, data.SystemName, data.DomoticzUpdateURL);
 						}
+
+						try {
+							if (localStorage.getItem('dz_easter_eggs') !== 'false') {
+								require(['EasterEggs'], function (EE) { EE.init(); });
+							}
+						} catch (e) {}
 					}
 				},
 				error: function () {
@@ -653,6 +731,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 					return;
 				}
 
+
 				if (next && next.$$route && next.$$route.permission) {
 					var permission = next.$$route.permission;
 					if (!permissions.hasPermission(permission)) {
@@ -660,6 +739,25 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 					}
 				}
 			}
+		});
+
+		var _tipsShown = false;
+		$rootScope.$on('$routeChangeSuccess', function() {
+			if (_tipsShown) return;
+			var path = $location.path();
+			if (path === '/Login' || path === '/Setup' || path === '/SetupWizard' || path === '/Offline') return;
+			var enabled = true;
+			try { enabled = localStorage.getItem('dz_tips_enabled') !== 'false'; } catch(e) {}
+			if (!enabled) return;
+			_tipsShown = true;
+			require(['TipsController'], function() {
+				$uibModal.open({
+					templateUrl: 'views/tips.html',
+					controller: 'TipsController',
+					size: 'md',
+					windowClass: 'tips-modal'
+				}).result.catch(angular.noop);
+			});
 		});
 
 		permissions.setPermissions(permissionList);
@@ -672,8 +770,8 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			},
             credits: {
                 enabled: true,
-                href: "http://www.domoticz.com",
-                text: "Domoticz.com"
+                href:    null,
+                text:    "Domoticz.com"
             },
             title: {
                 style: {
@@ -779,7 +877,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		}
 		$rootScope.GetTempBackgroundStatus = function (item) {
 			var backgroundClass = $rootScope.GetItemBackgroundStatus(item);
-			var setpointSubTypes = ['Zone', 'Hot Water', 'Temp/Setpoint', 'Temp/Hum/Setpoint', 'Temp/Baro/Setpoint', 'Temp/Hum/Baro/Setpoint'];
+			var setpointSubTypes = ['Zone', 'Hot Water'];
 			if (setpointSubTypes.indexOf(item.SubType) !== -1 && typeof item.SetPoint !== 'undefined') {
 				if (item.Status === 'HeatingOff' || item.SetPoint === 325.1) {
 					backgroundClass = 'statusEvoSetPointOff';

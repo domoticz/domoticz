@@ -27,6 +27,7 @@
 #include "clx_unzip.h"
 #include "../notifications/NotificationHelper.h"
 #include "IFTTT.h"
+#include "KWHStats.h"
 #ifdef ENABLE_PYTHON
 #include "../hardware/plugins/Plugins.h"
 #endif
@@ -637,6 +638,28 @@ constexpr auto sqlCreateApplications =
 "[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime'))"
 ");";
 
+constexpr auto sqlCreateAccessTokens =
+"CREATE TABLE IF NOT EXISTS [AccessTokens]("
+"[ID] INTEGER PRIMARY KEY, "
+"[Name] VARCHAR(100) NOT NULL DEFAULT '', "
+"[Rights] INTEGER NOT NULL DEFAULT 0, "
+"[Expiry] INTEGER NOT NULL DEFAULT 0, "
+"[TokenHash] VARCHAR(64) NOT NULL DEFAULT '', "
+"[CreatedAt] DATETIME DEFAULT(datetime('now', 'localtime')), "
+"[LastUpdate] DATETIME DEFAULT NULL"
+");";
+
+constexpr auto sqlCreateDashboardLayouts =
+"CREATE TABLE IF NOT EXISTS [DashboardLayouts]("
+"[id] TEXT NOT NULL PRIMARY KEY,"
+"[userid] INTEGER NOT NULL,"
+"[name] TEXT NOT NULL DEFAULT 'My Dashboard',"
+"[isdefault] INTEGER NOT NULL DEFAULT 0,"
+"[layout] TEXT NOT NULL DEFAULT '{}',"
+"[created] DATETIME NOT NULL DEFAULT (datetime('now','localtime')),"
+"[updated] DATETIME NOT NULL DEFAULT (datetime('now','localtime'))"
+");";
+
 extern std::string szUserDataFolder;
 
 CSQLHelper::CSQLHelper()
@@ -768,6 +791,8 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateUserSessions);
 	query(sqlCreateMobileDevices);
 	query(sqlCreateApplications);
+	query(sqlCreateAccessTokens);
+	query(sqlCreateDashboardLayouts);
 	//Add indexes to log tables
 	query("create index if not exists ds_hduts_idx	on DeviceStatus(HardwareID, DeviceID, Unit, Type, SubType);");
 	query("create index if not exists f_id_idx		on Fan(DeviceRowID);");
@@ -806,6 +831,7 @@ bool CSQLHelper::OpenDatabase()
 	query("create index if not exists w_id_date_idx   on Wind(DeviceRowID, Date);");
 	query("create index if not exists wc_id_idx	   on Wind_Calendar(DeviceRowID);");
 	query("create index if not exists wc_id_date_idx  on Wind_Calendar(DeviceRowID, Date);");
+	query("CREATE INDEX IF NOT EXISTS [ix_DashboardLayouts_userid] ON [DashboardLayouts]([userid]);");
 	sqlite3_exec(m_dbase, "END TRANSACTION;", nullptr, nullptr, nullptr);
 
 	if ((!bNewInstall) && (dbversion < DB_VERSION))
@@ -3884,7 +3910,7 @@ bool CSQLHelper::OpenDatabase()
 
 void CSQLHelper::CloseDatabase()
 {
-	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+	std::lock_guard<std::timed_mutex> l(m_sqlQueryMutex);
 	if (m_dbase != nullptr)
 	{
 		OptimizeDatabase(m_dbase);
@@ -4616,7 +4642,12 @@ bool CSQLHelper::safe_UpdateBlobInTableWithID(const std::string& Table, const st
 	if (!m_dbase)
 		return false;
 
-	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+	std::unique_lock<std::timed_mutex> l(m_sqlQueryMutex, std::defer_lock);
+	if (!l.try_lock_for(std::chrono::minutes(5)))
+	{
+		_log.Log(LOG_ERROR, "SQL blob-update mutex timeout (Table=%s, ID=%s)", Table.c_str(), sID.c_str());
+		return false;
+	}
 
 	sqlite3_stmt *stmt = nullptr;
 	char* zQuery = sqlite3_mprintf("UPDATE %q SET %q = ? WHERE ID=%q", Table.c_str(), Column.c_str(), sID.c_str());
@@ -4627,20 +4658,17 @@ bool CSQLHelper::safe_UpdateBlobInTableWithID(const std::string& Table, const st
 	}
 	int rc = sqlite3_prepare_v2(m_dbase, zQuery, -1, &stmt, nullptr);
 	sqlite3_free(zQuery);
-	if (rc != SQLITE_OK) {
+	if (rc != SQLITE_OK)
 		return false;
-	}
 	rc = sqlite3_bind_blob(stmt, 1, BlobData.c_str(), static_cast<int>(BlobData.size()), SQLITE_STATIC);
-	if (rc != SQLITE_OK) {
+	if (rc != SQLITE_OK)
+	{
+		sqlite3_finalize(stmt);
 		return false;
 	}
 	rc = sqlite3_step(stmt);
-	if (rc != SQLITE_DONE)
-	{
-		return false;
-	}
 	sqlite3_finalize(stmt);
-	return true;
+	return (rc == SQLITE_DONE);
 }
 
 std::vector<std::vector<std::string>> CSQLHelper::safe_query(const char *fmt, ...)
@@ -4686,11 +4714,16 @@ std::vector<std::vector<std::string> > CSQLHelper::query(const std::string& szQu
 		std::vector<std::vector<std::string> > results;
 		return results;
 	}
-	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+	std::unique_lock<std::timed_mutex> l(m_sqlQueryMutex, std::defer_lock);
+	if (!l.try_lock_for(std::chrono::minutes(5)))
+	{
+		_log.Log(LOG_ERROR, "SQL query mutex timeout (>5min, possible query backlog). Query: %.200s", szQuery.c_str());
+		return {};
+	}
 
 	sqlite3_stmt* statement;
 	std::vector<std::vector<std::string> > results;
-    _log.Debug(DEBUG_SQL, "Query:%s", szQuery.c_str());
+	_log.Debug(DEBUG_SQL, "Query:%s", szQuery.c_str());
 	if (sqlite3_prepare_v2(m_dbase, szQuery.c_str(), -1, &statement, nullptr) == SQLITE_OK)
 	{
 		int cols = sqlite3_column_count(statement);
@@ -4753,7 +4786,7 @@ std::vector<std::vector<std::string> > CSQLHelper::queryBlob(const std::string& 
 		std::vector<std::vector<std::string> > results;
 		return results;
 	}
-	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+	std::lock_guard<std::timed_mutex> l(m_sqlQueryMutex);
 
 	sqlite3_stmt* statement;
 	std::vector<std::vector<std::string> > results;
@@ -7996,6 +8029,15 @@ void CSQLHelper::AddCalendarUpdateMeter()
 
 				price = 0;
 				CalcMeterPrice(ID, divider, szDateStart, szDateEnd, price);
+				if (price != 0.0f && total_real > 0)
+				{
+					// Spike protection: discard price if implied tariff exceeds max plausible rate
+					constexpr float max_unit_price = 3.0f;  
+					if (std::abs(price) > (static_cast<float>(total_real) / divider) * max_unit_price)
+						price = 0;
+				}
+				else if (total_real <= 0)
+					price = 0;
 				
 				result = safe_query(
 					"INSERT INTO Meter_Calendar (DeviceRowID, Value, Counter, Price, Date) "
@@ -8174,6 +8216,14 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 				//counters are values 1(u1), 5(u2), 2(d1), 6(d2)
 				price = 0;
 				CalcMultiMeterPrice(ID, EnergyDivider, szDateStart, szDateEnd, price);
+				if (price != 0.0f)
+				{
+					// Spike protection: discard price if implied tariff exceeds max plausible rate
+					float gross_energy = (total_real[0] + total_real[1] + total_real[4] + total_real[5]) / EnergyDivider;
+					constexpr float max_unit_price = 3.0f;  
+					if (gross_energy <= 0 || std::abs(price) > gross_energy * max_unit_price)
+						price = 0;
+				}
 			}
 			else
 			{
@@ -8491,7 +8541,7 @@ void CSQLHelper::ClearShortLog()
 int CSQLHelper::PruneUnusedSensorLogs()
 {
 	int total = 0;
-	std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+	std::lock_guard<std::timed_mutex> l(m_sqlQueryMutex);
 
 	char* errorMessage = nullptr;
 	int rc = sqlite3_exec(m_dbase, "BEGIN TRANSACTION;", nullptr, nullptr, &errorMessage);
@@ -8555,27 +8605,220 @@ void CSQLHelper::VacuumDatabase()
 
 bool CSQLHelper::FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dry_run, std::vector<std::string>& results)
 {
-	// Validate the device is a kWh counter
+	// Validate the device type
 	auto devresult = safe_query("SELECT Type, SubType FROM DeviceStatus WHERE (ID='%" PRIu64 "')", idx);
 	if (devresult.empty())
 	{
 		results.push_back("Device not found");
 		return false;
 	}
-	if (atoi(devresult[0][0].c_str()) != pTypeGeneral || atoi(devresult[0][1].c_str()) != sTypeKwh)
+	int devType = atoi(devresult[0][0].c_str());
+	int subType = atoi(devresult[0][1].c_str());
+
+	// --- P1 Power meter branch ---
+	// P1 stores 4 cumulative energy counters (import/export T1+T2) in MultiMeter / MultiMeter_Calendar.
+	// In MultiMeter_Calendar: Value[n] = MAX - MIN of the shortlog for that day (the daily delta),
+	// and Counter[n] = MAX (end-of-day absolute). A corrupt P1 telegram that reports 0 for a counter
+	// drives MIN to 0, making Value[n] = Counter[n] instead of the true delta.
+	// Ground-truth delta = Counter[day] - Counter[prev_day] — no threshold guessing needed.
+	if (devType == pTypeP1Power)
 	{
-		results.push_back("Device is not a kWh counter (General/kWh)");
-		return false;
+		// Channel layout  (index → MultiMeter_Calendar columns):
+		//   0: Import T1   Value1 / Counter1
+		//   1: Export T1   Value2 / Counter2
+		//   2: Import T2   Value5 / Counter3
+		//   3: Export T2   Value6 / Counter4
+		static const char* const chNames[4] = { "Import T1", "Export T1", "Import T2", "Export T2" };
+		static const char* const valCols[4] = { "Value1",    "Value2",    "Value5",    "Value6"    };
+
+		// --- Phase 1: detect spikes in MultiMeter_Calendar ---
+		struct P1CalRow
+		{
+			std::string date;
+			int64_t val[4];  // stored daily deltas
+			int64_t cnt[4];  // end-of-day absolute counters
+		};
+		auto calresult = safe_query(
+			"SELECT Date, Value1, Value2, Value5, Value6, Counter1, Counter2, Counter3, Counter4 "
+			"FROM MultiMeter_Calendar WHERE (DeviceRowID='%" PRIu64 "') ORDER BY Date ASC", idx);
+
+		std::vector<P1CalRow> calrows;
+		calrows.reserve(calresult.size());
+		for (const auto& row : calresult)
+		{
+			P1CalRow r;
+			r.date = row[0];
+			for (int i = 0; i < 4; i++)
+			{
+				try { r.val[i] = std::stoll(row[i + 1]); } catch (...) { r.val[i] = 0; }
+				try { r.cnt[i] = std::stoll(row[i + 5]); } catch (...) { r.cnt[i] = 0; }
+			}
+			calrows.push_back(r);
+		}
+
+		// For P1, the Counter columns are the ground truth — no threshold-based heuristic needed.
+		// Detection uses a fixed 1 kWh tolerance to avoid false positives from minor rounding.
+
+		struct P1CalSpike
+		{
+			std::string date;
+			int         channel;
+			int64_t     stored_wh;
+			int64_t     correct_wh;
+		};
+		std::vector<P1CalSpike> cal_spikes;
+
+		int64_t prevCnt[4] = { -1, -1, -1, -1 };
+		for (const auto& r : calrows)
+		{
+			for (int ci = 0; ci < 4; ci++)
+			{
+				if (prevCnt[ci] >= 0 && r.cnt[ci] >= prevCnt[ci])
+				{
+					int64_t expected = r.cnt[ci] - prevCnt[ci];
+					// Counter delta IS the ground truth — no threshold multiplier needed.
+					// Flag any stored Value that exceeds the counter-derived delta by more than
+					// 1 kWh (tolerance for any minor rounding).
+					if (r.val[ci] > expected + 1000LL)
+						cal_spikes.push_back({ r.date, ci, r.val[ci], expected });
+				}
+				if (r.cnt[ci] > 0)
+					prevCnt[ci] = r.cnt[ci];
+			}
+		}
+
+		// --- Phase 2: detect corrupt readings in MultiMeter shortlog (current period) ---
+		// P1 counters are monotonically increasing; a large drop = corrupt telegram (e.g. counter reset to 0).
+		struct P1MMSpike
+		{
+			std::string datetime;
+			int         channel;
+			int64_t     corrupt_val;
+			int64_t     corrected_val;
+		};
+		std::vector<P1MMSpike> mm_spikes;
+
+		auto lastcalrow = safe_query("SELECT MAX(Date) FROM MultiMeter_Calendar WHERE (DeviceRowID='%" PRIu64 "')", idx);
+		std::string last_cal_date = (!lastcalrow.empty() && !lastcalrow[0][0].empty()) ? lastcalrow[0][0] : "1970-01-01";
+
+		auto mm_recent = safe_query(
+			"SELECT Date, Value1, Value2, Value5, Value6 FROM MultiMeter "
+			"WHERE (DeviceRowID='%" PRIu64 "') AND (Date >= '%q') ORDER BY Date ASC",
+			idx, last_cal_date.c_str());
+
+		if (mm_recent.size() >= 2)
+		{
+			int64_t prevVal[4] = { 0, 0, 0, 0 };
+			for (int ci = 0; ci < 4; ci++)
+				try { prevVal[ci] = std::stoll(mm_recent[0][ci + 1]); } catch (...) { prevVal[ci] = 0; }
+
+			for (size_t i = 1; i < mm_recent.size(); i++)
+			{
+				for (int ci = 0; ci < 4; ci++)
+				{
+					int64_t cur = 0;
+					try { cur = std::stoll(mm_recent[i][ci + 1]); } catch (...) { cur = prevVal[ci]; continue; }
+					// P1 counters only increase; any drop > 1 kWh = corrupt telegram
+					if (prevVal[ci] > 0 && (prevVal[ci] - cur) > 1000LL)
+						mm_spikes.push_back({ mm_recent[i][0], ci, cur, prevVal[ci] });
+					else
+						prevVal[ci] = cur;
+				}
+			}
+		}
+
+		if (cal_spikes.empty() && mm_spikes.empty())
+		{
+			results.push_back("No P1 spikes detected (counter-delta check with 1 kWh tolerance)");
+			return true;
+		}
+
+		for (const auto& sp : cal_spikes)
+			results.push_back(std_format("Calendar spike on %s [%s]: stored %.3f kWh, corrected to %.3f kWh",
+				sp.date.c_str(), chNames[sp.channel], sp.stored_wh / 1000.0, sp.correct_wh / 1000.0));
+		for (const auto& ms : mm_spikes)
+			results.push_back(std_format("Shortlog corrupt reading at %s [%s]: %" PRId64 " -> %" PRId64 " Wh",
+				ms.datetime.c_str(), chNames[ms.channel], ms.corrupt_val, ms.corrected_val));
+
+		if (dry_run)
+		{
+			results.push_back("Dry run mode: no changes applied");
+			return true;
+		}
+
+		// Fix calendar spikes: set stored delta = counter-derived delta, zero out price (was calculated on wrong value)
+		for (const auto& sp : cal_spikes)
+		{
+			safe_query(
+				("UPDATE MultiMeter_Calendar SET " + std::string(valCols[sp.channel]) + "='%" PRId64 "', Price=0 "
+				 "WHERE (DeviceRowID='%" PRIu64 "') AND (Date='%q')").c_str(),
+				sp.correct_wh, idx, sp.date.c_str());
+		}
+
+		// Fix shortlog corrupt readings: restore to last valid counter value
+		for (const auto& ms : mm_spikes)
+		{
+			safe_query(
+				("UPDATE MultiMeter SET " + std::string(valCols[ms.channel]) + "='%" PRId64 "' "
+				 "WHERE (DeviceRowID='%" PRIu64 "') AND (Date='%q')").c_str(),
+				ms.corrected_val, idx, ms.datetime.c_str());
+		}
+
+		_log.Log(LOG_STATUS, "FixKwhCounterSpikes (P1): device %" PRIu64 " corrected %d calendar spike(s), %d shortlog corrupt reading(s)",
+			idx, static_cast<int>(cal_spikes.size()), static_cast<int>(mm_spikes.size()));
+
+		return true;
 	}
 
-	double clamped_threshold = std::min(max_daily_kwh, 1e9);
-	int64_t threshold_wh = static_cast<int64_t>(clamped_threshold * 1000.0);
+	if (devType != pTypeGeneral || subType != sTypeKwh)
+	{
+		results.push_back("Device is not a kWh counter (General/kWh) or P1 Power meter");
+		return false;
+	}
 
 	// --- Phase 1: Detect anomalous days in Meter_Calendar ---
 	//   Positive spike: Value > threshold  — false counter jump upward (e.g. reset artefact)
 	//   Negative spike: Value < -threshold — counter reset stored without offset correction
 	auto calresult = safe_query(
 		"SELECT Date, Value FROM Meter_Calendar WHERE (DeviceRowID='%" PRIu64 "') ORDER BY Date ASC", idx);
+
+	// Auto-detect threshold when max_daily_kwh <= 0:
+	// Compute the median of positive daily values, then use 100x as the spike threshold.
+	// Using the median (not the mean) ensures that a small number of spike days cannot
+	// inflate the baseline and hide themselves from detection.
+	// This scales correctly for all device types:
+	//   - Low-power sensor  (median ~0.45 kWh) → threshold ~45 kWh
+	//   - EV charger        (median ~50 kWh)   → threshold ~5000 kWh  (300 kWh real peaks not flagged)
+	//   - Heavy power user  (median ~1000 kWh) → threshold ~100000 kWh (large-but-real days not flagged)
+	if (max_daily_kwh <= 0.0)
+	{
+		std::vector<int64_t> positive_values;
+		positive_values.reserve(calresult.size());
+		for (const auto& row : calresult)
+		{
+			int64_t v = 0;
+			try { v = std::stoll(row[1]); } catch (...) { continue; }
+			if (v > 0)
+				positive_values.push_back(v);
+		}
+		if (positive_values.size() >= 5)
+		{
+			std::sort(positive_values.begin(), positive_values.end());
+			int64_t median_wh = positive_values[positive_values.size() / 2];
+			int64_t auto_threshold_wh = std::max(median_wh * int64_t(100), int64_t(1000)); // floor: 1 kWh
+			max_daily_kwh = auto_threshold_wh / 1000.0;
+			results.push_back(std_format("Auto-detected threshold: %.1f kWh (100x median daily usage of %.3f kWh)",
+				max_daily_kwh, median_wh / 1000.0));
+		}
+		else
+		{
+			max_daily_kwh = 1000.0; // not enough history, fall back to safe default
+			results.push_back("Not enough history for auto-detection; using default 1000 kWh threshold");
+		}
+	}
+
+	double clamped_threshold = std::min(max_daily_kwh, 1e9);
+	int64_t threshold_wh = static_cast<int64_t>(clamped_threshold * 1000.0);
 
 	struct SpikeDay
 	{
@@ -8660,6 +8903,7 @@ bool CSQLHelper::FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dr
 	}
 
 	int64_t total_positive_delta_wh = 0;
+	int64_t total_meter_spike_delta_wh = 0; // sum of per-jump shortlog corrections (for DeviceStatus)
 	for (const auto& spike : spikes)
 	{
 		if (spike.is_positive)
@@ -8676,7 +8920,7 @@ bool CSQLHelper::FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dr
 	{
 		if (ms.is_positive)
 		{
-			total_positive_delta_wh += ms.delta;
+			total_meter_spike_delta_wh += ms.delta;
 			results.push_back(std_format("Positive spike in Meter at %s: +%.3f kWh (current period, not yet in Meter_Calendar)",
 				ms.date.c_str(), ms.delta / 1000.0));
 		}
@@ -8688,6 +8932,8 @@ bool CSQLHelper::FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dr
 	}
 	if (total_positive_delta_wh > 0)
 		results.push_back(std_format("Positive spike total correction: -%.3f kWh", total_positive_delta_wh / 1000.0));
+	if (total_meter_spike_delta_wh > 0)
+		results.push_back(std_format("Shortlog correction total: -%.3f kWh", total_meter_spike_delta_wh / 1000.0));
 
 	if (dry_run)
 	{
@@ -8697,8 +8943,12 @@ bool CSQLHelper::FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dr
 
 	// --- Fix positive spikes in Meter_Calendar ---
 	// Each positive spike inflated the cumulative Counter for all subsequent days.
-	// Process in chronological order; each UPDATE operates on the already-corrected DB,
-	// so sequentially subtracting each spike_delta gives the correct cumulative result.
+	// We estimate the real daily production from sub-threshold Meter increments so we
+	// can subtract only the spike component (anomaly minus real production) from the
+	// cumulative Counter, preserving the real production in the calendar Value.
+	// NOTE: The Meter shortlog is corrected by the Phase 2 meter_spikes fix below via
+	// per-jump deltas. Applying a bulk correction here too causes double-subtraction
+	// that zeros all shortlog data — so we do NOT touch the Meter table here.
 	for (const auto& spike : spikes)
 	{
 		if (!spike.is_positive)
@@ -8706,23 +8956,48 @@ bool CSQLHelper::FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dr
 
 		const std::string& spike_date = spike.date;
 
-		// Subtract spike_delta from Counter for spike day and all subsequent days
+		// Estimate real daily production by summing sub-threshold Meter increments for
+		// this day. Spike jumps (> threshold_wh) are excluded, so only genuine increments
+		// are counted. Uses the same logic as the negative-spike handler below.
+		int64_t actual_production_wh = 0;
+		auto spike_day_rows = safe_query(
+			"SELECT Value FROM Meter WHERE (DeviceRowID='%" PRIu64 "') "
+			"AND (Date >= '%q 00:00:00') AND (Date < datetime('%q', '+1 day')) ORDER BY Date ASC",
+			idx, spike_date.c_str(), spike_date.c_str());
+		if (spike_day_rows.size() >= 2)
+		{
+			int64_t prev_val = 0;
+			try { prev_val = std::stoll(spike_day_rows[0][0]); } catch (...) {}
+			for (size_t i = 1; i < spike_day_rows.size(); i++)
+			{
+				int64_t cur_val = 0;
+				try { cur_val = std::stoll(spike_day_rows[i][0]); } catch (...) { continue; }
+				int64_t delta = cur_val - prev_val;
+				if (delta > 0 && delta < threshold_wh)
+					actual_production_wh += delta;
+				prev_val = cur_val;
+			}
+			results.push_back(std_format("Spike day %s: real production %.3f kWh, spike component %.3f kWh",
+				spike_date.c_str(), actual_production_wh / 1000.0, (spike.value - actual_production_wh) / 1000.0));
+		}
+		else
+		{
+			results.push_back(std_format("Spike day %s: no Meter data, zeroing calendar Value", spike_date.c_str()));
+		}
+
+		// Subtract only the spike component (anomaly minus real production) from the
+		// cumulative Counter for the spike day and all subsequent days.
+		int64_t spike_component = spike.value - actual_production_wh;
 		safe_query(
 			"UPDATE Meter_Calendar SET Counter = Counter - %" PRId64 " "
 			"WHERE (DeviceRowID='%" PRIu64 "') AND (Date >= '%q')",
-			spike.value, idx, spike_date.c_str());
+			spike_component, idx, spike_date.c_str());
 
-		// Zero out Value for the spike day itself
+		// Set Value for the spike day to the real estimated production (not 0).
 		safe_query(
-			"UPDATE Meter_Calendar SET Value = 0 "
+			"UPDATE Meter_Calendar SET Value = %" PRId64 " "
 			"WHERE (DeviceRowID='%" PRIu64 "') AND (Date = '%q')",
-			idx, spike_date.c_str());
-
-		// Subtract spike_delta from cumulative counter Values in the short log
-		safe_query(
-			"UPDATE Meter SET Value = MAX(0, Value - %" PRId64 ") "
-			"WHERE (DeviceRowID='%" PRIu64 "') AND (Date >= '%q 00:00:00')",
-			spike.value, idx, spike_date.c_str());
+			actual_production_wh, idx, spike_date.c_str());
 	}
 
 	// --- Fix negative spikes in Meter_Calendar (counter reset stored without offset correction) ---
@@ -8764,7 +9039,6 @@ bool CSQLHelper::FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dr
 				}
 				catch (const std::exception&)
 				{
-					prev_val = cur_val;
 					continue;
 				}
 				int64_t delta = cur_val - prev_val;
@@ -8788,6 +9062,7 @@ bool CSQLHelper::FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dr
 	}
 
 	// --- Fix positive spikes found in recent Meter short log (current period, not yet in Meter_Calendar) ---
+	// Apply each per-jump spike correction to the Meter shortlog.
 	for (const auto& ms : meter_spikes)
 	{
 		if (!ms.is_positive)
@@ -8800,9 +9075,12 @@ bool CSQLHelper::FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dr
 			ms.delta, idx, ms.date.c_str());
 	}
 
-	// Correct DeviceStatus: fix sValue total and LastLevel for positive spikes only.
-	// Negative spikes do not affect the current sValue (the live counter is already correct).
-	if (total_positive_delta_wh > 0)
+	// Correct DeviceStatus: fix sValue total and LastLevel.
+	// Use total_meter_spike_delta_wh (sum of per-jump corrections Phase 2 applied to the
+	// shortlog) so the DeviceStatus correction matches the corrected Meter value exactly.
+	// Negative calendar spikes do not affect the current sValue (the live counter is correct).
+	int64_t total_shortlog_correction_wh = total_meter_spike_delta_wh;
+	if (total_shortlog_correction_wh > 0)
 	{
 		auto devstatus = safe_query("SELECT sValue, LastLevel FROM DeviceStatus WHERE (ID='%" PRIu64 "')", idx);
 		if (!devstatus.empty())
@@ -8825,7 +9103,7 @@ bool CSQLHelper::FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dr
 				double total_wh = atof(sValue.substr(pos + 1).c_str());
 				if (usage >= 0 && total_wh >= 0)
 				{
-					double new_total_wh = std::max(0.0, total_wh - static_cast<double>(total_positive_delta_wh));
+					double new_total_wh = std::max(0.0, total_wh - static_cast<double>(total_shortlog_correction_wh));
 					std::string new_svalue = std_format("%.3f;%.3f", usage, new_total_wh);
 
 					// Only correct LastLevel if it was inflated by a post-spike reset confirmation.
@@ -8833,7 +9111,7 @@ bool CSQLHelper::FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dr
 					// the inflated post-spike value as the new offset; subtract the spike delta.
 					int64_t new_last_level = last_level;
 					if (last_level > static_cast<int64_t>(std::floor(new_total_wh)))
-						new_last_level = std::max(int64_t(0), last_level - total_positive_delta_wh);
+						new_last_level = std::max(int64_t(0), last_level - total_shortlog_correction_wh);
 
 					safe_query(
 						"UPDATE DeviceStatus SET sValue='%q', LastLevel='%" PRId64 "' WHERE (ID='%" PRIu64 "')",
@@ -8846,8 +9124,569 @@ bool CSQLHelper::FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dr
 		}
 	}
 
-	_log.Log(LOG_STATUS, "FixKwhCounterSpikes: device %" PRIu64 " corrected %d spike(s), total -%.3f kWh",
-		idx, static_cast<int>(spikes.size() + meter_spikes.size()), total_positive_delta_wh / 1000.0);
+	_log.Log(LOG_STATUS, "FixKwhCounterSpikes: device %" PRIu64 " corrected %d calendar spike(s), %d shortlog spike(s), shortlog correction -%.3f kWh",
+		idx, static_cast<int>(spikes.size()), static_cast<int>(meter_spikes.size()), total_meter_spike_delta_wh / 1000.0);
+
+	if (CKWHStats::RemoveSpikeStats(idx))
+		results.push_back("Weekly pattern: removed contaminated hourly/daily averages");
+	int pricesFixed = SanitizeCalendarData(idx);
+	if (pricesFixed > 0)
+		results.push_back(std_format("Fixed %d invalid price entries in calendar", pricesFixed));
+
+	// Immediately refresh the cached today-price so the month chart shows the correct
+	// "earned/costs" value without waiting for the next UpdateMeter() cycle (up to 5 min).
+	{
+		int tValue = 0;
+		float energyDivider = 1000.0F;
+		if (GetPreferencesVar("MeterDividerEnergy", tValue))
+			energyDivider = float(tValue);
+		time_t now = mytime(nullptr);
+		struct tm tm1;
+		localtime_r(&now, &tm1);
+		char szDateStart[40], szDateEnd[40];
+		sprintf(szDateStart, "%04d-%02d-%02d", tm1.tm_year + 1900, tm1.tm_mon + 1, tm1.tm_mday);
+		sprintf(szDateEnd, "%s 23:59:59", szDateStart);
+		float freshPrice = 0;
+		if (CalcMeterPrice(idx, energyDivider, szDateStart, szDateEnd, freshPrice))
+			m_actual_prices[idx] = freshPrice;
+		else
+			m_actual_prices.erase(idx);
+	}
+
+	return true;
+}
+
+int CSQLHelper::SanitizeCalendarData(uint64_t idx)
+{
+	int pricesFixed = 0;
+
+	int tValue = 0;
+	float EnergyDivider = 1000.0F;
+	float GasDivider = 100.0F;
+	float WaterDivider = 100.0F;
+	if (GetPreferencesVar("MeterDividerEnergy", tValue)) EnergyDivider = float(tValue);
+	if (GetPreferencesVar("MeterDividerGas", tValue)) GasDivider = float(tValue);
+	if (GetPreferencesVar("MeterDividerWater", tValue)) WaterDivider = float(tValue);
+
+	auto dev_result = safe_query("SELECT Type, SubType, SwitchType, AddjValue2 FROM DeviceStatus WHERE ID=%" PRIu64, idx);
+	if (!dev_result.empty())
+	{
+		unsigned char devType = static_cast<unsigned char>(atoi(dev_result[0][0].c_str()));
+		_eMeterType metertype = (_eMeterType)atoi(dev_result[0][2].c_str());
+		float addjvalue2 = static_cast<float>(atof(dev_result[0][3].c_str()));
+		if (addjvalue2 == 0) addjvalue2 = 1;
+
+		if (devType == pTypeP1Power) metertype = MTYPE_ENERGY;
+		else if (devType == pTypeP1Gas) metertype = MTYPE_GAS;
+
+		float divider = 1.0F;
+		switch (metertype)
+		{
+		case MTYPE_ENERGY:
+		case MTYPE_ENERGY_GENERATED:
+			divider = EnergyDivider; break;
+		case MTYPE_GAS:
+			divider = GasDivider; break;
+		case MTYPE_WATER:
+			divider = WaterDivider; break;
+		default:
+			divider = addjvalue2; break;
+		}
+
+		constexpr float fallback_max_unit_rate = 3.0f;
+		constexpr size_t min_samples_for_iqr = 5;
+
+		auto computeIQRFence = [min_samples_for_iqr](std::vector<float>& rates, float& fence_lo, float& fence_hi) -> bool {
+			if (rates.size() < min_samples_for_iqr)
+				return false;
+			std::sort(rates.begin(), rates.end());
+			const size_t n = rates.size();
+			const float q1 = rates[n / 4];
+			const float q3 = rates[n * 3 / 4];
+			const float iqr = q3 - q1;
+			if (iqr > 0)
+			{
+				fence_lo = q1 - 3.0f * iqr;
+				fence_hi = q3 + 3.0f * iqr;
+				return true;
+			}
+			const float med = rates[n / 2];
+			if (med != 0.0f)
+			{
+				fence_lo = med - 10.0f * std::abs(med);
+				fence_hi = med + 10.0f * std::abs(med);
+				return true;
+			}
+			return false;
+		};
+
+		{
+			auto cal_result = safe_query("SELECT ROWID, Value, Price FROM Meter_Calendar WHERE DeviceRowID=%" PRIu64 " ORDER BY Date ASC", idx);
+
+			for (auto& row : cal_result)
+			{
+				if (atof(row[1].c_str()) < 0)
+				{
+					safe_query("UPDATE Meter_Calendar SET Value=0, Price=0 WHERE ROWID=%s", row[0].c_str());
+					row[1] = "0";
+					row[2] = "0";
+					pricesFixed++;
+				}
+			}
+
+			std::vector<float> rates;
+			rates.reserve(cal_result.size());
+			for (const auto& row : cal_result)
+			{
+				const float value = static_cast<float>(atof(row[1].c_str()));
+				const float price = static_cast<float>(atof(row[2].c_str()));
+				if (price > 0.0f && value > 0)
+					rates.push_back(price / (value / divider));
+			}
+
+			float fence_lo = 0, fence_hi = 0;
+			const bool use_iqr = computeIQRFence(rates, fence_lo, fence_hi);
+
+			for (size_t i = 0; i < cal_result.size(); i++)
+			{
+				auto& row = cal_result[i];
+				const float value = static_cast<float>(atof(row[1].c_str()));
+				const float price = static_cast<float>(atof(row[2].c_str()));
+				if (price == 0.0f) continue;
+
+				bool bad;
+				if (value <= 0)
+					bad = true;
+				else if (price < 0.0f)
+					bad = false;  // negative prices (earned money at negative tariffs) are always valid
+				else if (use_iqr)
+				{
+					const float rate = price / (value / divider);
+					bad = (rate < fence_lo || rate > fence_hi);
+				}
+				else
+					bad = (price > (value / divider) * fallback_max_unit_rate);
+
+				if (!bad) continue;
+
+				if (value <= 0)
+				{
+					safe_query("UPDATE Meter_Calendar SET Price=0 WHERE ROWID=%s", row[0].c_str());
+					row[2] = "0";
+					pricesFixed++;
+				}
+				else
+				{
+					std::vector<size_t> dead_indices;
+					for (int j = static_cast<int>(i) - 1; j >= 0; j--)
+					{
+						const float dv = static_cast<float>(atof(cal_result[j][1].c_str()));
+						const float dp = static_cast<float>(atof(cal_result[j][2].c_str()));
+						if (dv > 0 && dp == 0.0f)
+							dead_indices.push_back(static_cast<size_t>(j));
+						else
+							break;
+					}
+
+					if (!dead_indices.empty())
+					{
+						float total_value = value;
+						for (size_t didx : dead_indices)
+							total_value += static_cast<float>(atof(cal_result[didx][1].c_str()));
+
+						const float spread_rate = price / (total_value / divider);
+						bool spread_ok;
+						if (price < 0.0f)
+							spread_ok = false;  // don't spread earned credits across dead days
+						else if (use_iqr)
+							spread_ok = (spread_rate >= fence_lo && spread_rate <= fence_hi);
+						else
+							spread_ok = (price <= (total_value / divider) * fallback_max_unit_rate);
+
+						if (spread_ok)
+						{
+							for (size_t didx : dead_indices)
+							{
+								const float dv = static_cast<float>(atof(cal_result[didx][1].c_str()));
+								const float share = price * (dv / total_value);
+								safe_query("UPDATE Meter_Calendar SET Price=%.4f WHERE ROWID=%s", share, cal_result[didx][0].c_str());
+								char buf[32];
+								snprintf(buf, sizeof(buf), "%.4f", share);
+								cal_result[didx][2] = buf;
+								pricesFixed++;
+							}
+							const float remaining = price * (value / total_value);
+							safe_query("UPDATE Meter_Calendar SET Price=%.4f WHERE ROWID=%s", remaining, row[0].c_str());
+							char buf[32];
+							snprintf(buf, sizeof(buf), "%.4f", remaining);
+							row[2] = buf;
+						}
+						else
+						{
+							safe_query("UPDATE Meter_Calendar SET Price=0 WHERE ROWID=%s", row[0].c_str());
+							row[2] = "0";
+							pricesFixed++;
+						}
+					}
+					else
+					{
+						safe_query("UPDATE Meter_Calendar SET Price=0 WHERE ROWID=%s", row[0].c_str());
+						row[2] = "0";
+						pricesFixed++;
+					}
+				}
+			}
+		}
+
+		if (devType != pTypeP1Power)
+		{
+			auto vspike_result = safe_query(
+				"SELECT ROWID, Value, Counter, Price FROM Meter_Calendar "
+				"WHERE DeviceRowID=%" PRIu64 " ORDER BY Date ASC", idx);
+
+			std::vector<float> vvalues;
+			vvalues.reserve(vspike_result.size());
+			for (const auto& row : vspike_result)
+			{
+				const float v = static_cast<float>(atof(row[1].c_str()));
+				if (v > 0)
+					vvalues.push_back(v);
+			}
+
+			float vfence_lo = 0, vfence_hi = 0;
+			const bool use_iqr_values = computeIQRFence(vvalues, vfence_lo, vfence_hi);
+
+			if (use_iqr_values)
+			{
+				for (size_t i = 0; i < vspike_result.size(); i++)
+				{
+					auto& row = vspike_result[i];
+					const int64_t spike_value = static_cast<int64_t>(atoll(row[1].c_str()));
+					if (static_cast<float>(spike_value) <= vfence_hi)
+						continue;
+
+					std::vector<size_t> dead_indices;
+					for (int64_t j = static_cast<int64_t>(i) - 1; j >= 0; j--)
+					{
+						const int64_t v = static_cast<int64_t>(atoll(vspike_result[static_cast<size_t>(j)][1].c_str()));
+						if (v != 0)
+							break;
+						dead_indices.push_back(static_cast<size_t>(j));
+					}
+
+					if (dead_indices.empty())
+					{
+						// Standalone spike with no preceding zero-value days — zero it out.
+						// Reset Counter to the previous day's Counter so the cumulative line stays consistent.
+						const int64_t prev_counter = (i > 0)
+							? static_cast<int64_t>(atoll(vspike_result[i - 1][2].c_str()))
+							: static_cast<int64_t>(atoll(row[2].c_str()));
+						safe_query("UPDATE Meter_Calendar SET Value=0, Counter=%" PRId64 ", Price=0 WHERE ROWID=%s",
+							prev_counter, row[0].c_str());
+						row[1] = "0";
+						char cbuf[32];
+						snprintf(cbuf, sizeof(cbuf), "%" PRId64, prev_counter);
+						row[2] = cbuf;
+						row[3] = "0";
+						pricesFixed++;
+						continue;
+					}
+
+					const int64_t total_value = spike_value;
+					const float total_price = static_cast<float>(atof(row[3].c_str()));
+					const int64_t n_days = static_cast<int64_t>(dead_indices.size()) + 1;
+					const int64_t share_value = total_value / n_days;
+
+					if (share_value <= 0 || static_cast<float>(share_value) > vfence_hi)
+						continue;
+
+					const float share_price = total_price / static_cast<float>(n_days);
+
+					std::reverse(dead_indices.begin(), dead_indices.end());
+
+					const int64_t start_counter = static_cast<int64_t>(atoll(vspike_result[dead_indices[0]][2].c_str()));
+					int64_t running_counter = start_counter;
+
+					for (size_t didx : dead_indices)
+					{
+						running_counter += share_value;
+						safe_query("UPDATE Meter_Calendar SET Value=%" PRId64 ", Counter=%" PRId64 ", Price=%.4f WHERE ROWID=%s",
+							share_value, running_counter, share_price, vspike_result[didx][0].c_str());
+						char vbuf[32], cbuf[32], pbuf[32];
+						snprintf(vbuf, sizeof(vbuf), "%" PRId64, share_value);
+						snprintf(cbuf, sizeof(cbuf), "%" PRId64, running_counter);
+						snprintf(pbuf, sizeof(pbuf), "%.4f", share_price);
+						vspike_result[didx][1] = vbuf;
+						vspike_result[didx][2] = cbuf;
+						vspike_result[didx][3] = pbuf;
+						pricesFixed++;
+					}
+
+					const int64_t spike_remainder = total_value - share_value * static_cast<int64_t>(dead_indices.size());
+					const float spike_price = (total_value > 0) ? (total_price * static_cast<float>(spike_remainder) / static_cast<float>(total_value)) : 0.0f;
+					safe_query("UPDATE Meter_Calendar SET Value=%" PRId64 ", Price=%.4f WHERE ROWID=%s",
+						spike_remainder, spike_price, row[0].c_str());
+					char vbuf[32], pbuf[32];
+					snprintf(vbuf, sizeof(vbuf), "%" PRId64, spike_remainder);
+					snprintf(pbuf, sizeof(pbuf), "%.4f", spike_price);
+					row[1] = vbuf;
+					row[3] = pbuf;
+					pricesFixed++;
+				}
+			}
+		}
+
+		if (devType == pTypeP1Power)
+		{
+			auto mmcal = safe_query("SELECT ROWID, Value1, Value2, Value5, Value6, Price FROM MultiMeter_Calendar WHERE DeviceRowID=%" PRIu64 " ORDER BY Date ASC", idx);
+
+			std::vector<float> rates;
+			rates.reserve(mmcal.size());
+			for (const auto& row : mmcal)
+			{
+				const float price = static_cast<float>(atof(row[5].c_str()));
+				const float gross = (static_cast<float>(atof(row[1].c_str())) + static_cast<float>(atof(row[2].c_str()))
+					+ static_cast<float>(atof(row[3].c_str())) + static_cast<float>(atof(row[4].c_str()))) / EnergyDivider;
+				if (price != 0.0f && gross > 0)
+					rates.push_back(price / gross);
+			}
+
+			float fence_lo = 0, fence_hi = 0;
+			const bool use_iqr = computeIQRFence(rates, fence_lo, fence_hi);
+
+			for (size_t i = 0; i < mmcal.size(); i++)
+			{
+				auto& row = mmcal[i];
+				const float price = static_cast<float>(atof(row[5].c_str()));
+				if (price == 0.0f) continue;
+				const float gross = (static_cast<float>(atof(row[1].c_str())) + static_cast<float>(atof(row[2].c_str()))
+					+ static_cast<float>(atof(row[3].c_str())) + static_cast<float>(atof(row[4].c_str()))) / EnergyDivider;
+
+				bool bad;
+				if (gross <= 0)
+					bad = true;
+				else if (use_iqr)
+				{
+					const float rate = price / gross;
+					bad = (rate < fence_lo || rate > fence_hi);
+				}
+				else
+					bad = (std::abs(price) > gross * fallback_max_unit_rate);
+
+				if (!bad) continue;
+
+				if (gross <= 0)
+				{
+					safe_query("UPDATE MultiMeter_Calendar SET Price=0 WHERE ROWID=%s", row[0].c_str());
+					row[5] = "0";
+					pricesFixed++;
+				}
+				else
+				{
+					std::vector<size_t> dead_indices;
+					for (int j = static_cast<int>(i) - 1; j >= 0; j--)
+					{
+						const float dg = (static_cast<float>(atof(mmcal[j][1].c_str())) + static_cast<float>(atof(mmcal[j][2].c_str()))
+							+ static_cast<float>(atof(mmcal[j][3].c_str())) + static_cast<float>(atof(mmcal[j][4].c_str()))) / EnergyDivider;
+						const float dp = static_cast<float>(atof(mmcal[j][5].c_str()));
+						if (dg > 0 && dp == 0.0f)
+							dead_indices.push_back(static_cast<size_t>(j));
+						else
+							break;
+					}
+
+					if (!dead_indices.empty())
+					{
+						float total_gross = gross;
+						for (size_t didx : dead_indices)
+							total_gross += (static_cast<float>(atof(mmcal[didx][1].c_str())) + static_cast<float>(atof(mmcal[didx][2].c_str()))
+								+ static_cast<float>(atof(mmcal[didx][3].c_str())) + static_cast<float>(atof(mmcal[didx][4].c_str()))) / EnergyDivider;
+
+						const float spread_rate = price / total_gross;
+						bool spread_ok;
+						if (use_iqr)
+							spread_ok = (spread_rate >= fence_lo && spread_rate <= fence_hi);
+						else
+							spread_ok = (std::abs(price) <= total_gross * fallback_max_unit_rate);
+
+						if (spread_ok)
+						{
+							for (size_t didx : dead_indices)
+							{
+								const float dg = (static_cast<float>(atof(mmcal[didx][1].c_str())) + static_cast<float>(atof(mmcal[didx][2].c_str()))
+									+ static_cast<float>(atof(mmcal[didx][3].c_str())) + static_cast<float>(atof(mmcal[didx][4].c_str()))) / EnergyDivider;
+								const float share = price * (dg / total_gross);
+								safe_query("UPDATE MultiMeter_Calendar SET Price=%.4f WHERE ROWID=%s", share, mmcal[didx][0].c_str());
+								char buf[32];
+								snprintf(buf, sizeof(buf), "%.4f", share);
+								mmcal[didx][5] = buf;
+								pricesFixed++;
+							}
+							const float remaining = price * (gross / total_gross);
+							safe_query("UPDATE MultiMeter_Calendar SET Price=%.4f WHERE ROWID=%s", remaining, row[0].c_str());
+							char buf[32];
+							snprintf(buf, sizeof(buf), "%.4f", remaining);
+							row[5] = buf;
+						}
+						else
+						{
+							safe_query("UPDATE MultiMeter_Calendar SET Price=0 WHERE ROWID=%s", row[0].c_str());
+							row[5] = "0";
+							pricesFixed++;
+						}
+					}
+					else
+					{
+						safe_query("UPDATE MultiMeter_Calendar SET Price=0 WHERE ROWID=%s", row[0].c_str());
+						row[5] = "0";
+						pricesFixed++;
+					}
+				}
+			}
+		}
+	}
+
+	return pricesFixed;
+}
+
+bool CSQLHelper::SpreadCounterSpike(uint64_t idx, const std::string& sdate, std::vector<std::string>& results)
+{
+	// Validate device exists
+	auto devresult = safe_query("SELECT ID FROM DeviceStatus WHERE (ID='%" PRIu64 "')", idx);
+	if (devresult.empty())
+	{
+		results.push_back("Device not found");
+		return false;
+	}
+
+	// Get spike row
+	auto spikerow = safe_query(
+		"SELECT Value, Counter, Price FROM Meter_Calendar WHERE (DeviceRowID='%" PRIu64 "') AND (Date='%q')",
+		idx, sdate.c_str());
+	if (spikerow.empty())
+	{
+		results.push_back("No calendar entry for this date");
+		return false;
+	}
+	int64_t spike_value = 0;
+	int64_t spike_counter = 0;
+	try { spike_value = std::stoll(spikerow[0][0]); } catch (...) {}
+	try { spike_counter = std::stoll(spikerow[0][1]); } catch (...) {}
+	float spike_price = 0.0f;
+	try { spike_price = std::stof(spikerow[0][2]); } catch (...) {}
+
+	if (spike_value <= 0)
+	{
+		results.push_back("No positive value on this date to spread");
+		return false;
+	}
+
+	// Get up to 30 rows preceding this date, to find consecutive dead days
+	auto prev_rows = safe_query(
+		"SELECT Date, Value, Counter FROM Meter_Calendar "
+		"WHERE (DeviceRowID='%" PRIu64 "') AND (Date < '%q') "
+		"ORDER BY Date DESC LIMIT 30",
+		idx, sdate.c_str());
+
+	// Build a map of date -> {value, counter} from the preceding rows
+	std::map<std::string, std::pair<int64_t, int64_t>> row_map;
+	for (const auto& row : prev_rows)
+	{
+		int64_t v = 0, c = 0;
+		try { v = std::stoll(row[1]); } catch (...) {}
+		try { c = std::stoll(row[2]); } catch (...) {}
+		row_map[row[0]] = { v, c };
+	}
+
+	// The counter to use for any inserted missing rows
+	int64_t dead_counter = spike_counter - spike_value;
+
+	// Walk backward day by day from sdate-1, collecting consecutive dead days
+	struct DeadDay
+	{
+		std::string date;
+		bool existing; // true = row exists with Value=0 (UPDATE); false = missing (INSERT)
+	};
+	std::vector<DeadDay> dead_days;
+
+	int sy = 0, sm = 0, sd_day = 0;
+	sscanf(sdate.c_str(), "%d-%d-%d", &sy, &sm, &sd_day);
+	struct tm t = {};
+	t.tm_year = sy - 1900;
+	t.tm_mon  = sm - 1;
+	t.tm_mday = sd_day;
+	mktime(&t);
+
+	for (int i = 0; i < 30; i++)
+	{
+		t.tm_mday--;
+		mktime(&t);
+		char datebuf[16];
+		strftime(datebuf, sizeof(datebuf), "%Y-%m-%d", &t);
+		std::string check_date(datebuf);
+
+		auto it = row_map.find(check_date);
+		if (it == row_map.end())
+		{
+			// Missing row — counts as dead day
+			dead_days.push_back({ check_date, false });
+		}
+		else if (it->second.first == 0)
+		{
+			// Row exists but Value=0 — dead day
+			dead_days.push_back({ check_date, true });
+		}
+		else
+		{
+			// Real production day — stop
+			break;
+		}
+	}
+
+	if (dead_days.empty())
+	{
+		results.push_back("No empty days found before the spike; nothing to spread");
+		return true;
+	}
+
+	// Spread spike_value evenly across dead days + spike day
+	int64_t total_days = static_cast<int64_t>(dead_days.size()) + 1;
+	int64_t spread = spike_value / total_days;
+	int64_t remainder = spike_value - spread * total_days;
+	const float price_per_day = (spike_price != 0.0f) ? spike_price / float(total_days) : 0.0f;
+	const float price_spike_day = (spike_price != 0.0f) ? (spike_price - price_per_day * float(dead_days.size())) : 0.0f;
+
+	for (const auto& dd : dead_days)
+	{
+		if (dd.existing)
+		{
+			safe_query(
+				"UPDATE Meter_Calendar SET Value=%" PRId64 ", Price=%.4f "
+				"WHERE (DeviceRowID='%" PRIu64 "') AND (Date='%q')",
+				spread, price_per_day, idx, dd.date.c_str());
+		}
+		else
+		{
+			safe_query(
+				"INSERT INTO Meter_Calendar (DeviceRowID, Value, Date, Counter, Price) "
+				"VALUES ('%" PRIu64 "', %" PRId64 ", '%q', %" PRId64 ", %.4f)",
+				idx, spread, dd.date.c_str(), dead_counter, price_per_day);
+		}
+	}
+
+	// Spike day gets spread + remainder
+	safe_query(
+		"UPDATE Meter_Calendar SET Value=%" PRId64 ", Price=%.4f "
+		"WHERE (DeviceRowID='%" PRIu64 "') AND (Date='%q')",
+		spread + remainder, price_spike_day, idx, sdate.c_str());
+
+	results.push_back(std_format("Spread %" PRId64 " across %" PRId64 " day(s) (%" PRId64 " per day)",
+		spike_value, total_days, spread));
+	_log.Log(LOG_STATUS, "SpreadCounterSpike: device %" PRIu64 " date %s spread %" PRId64 " across %" PRId64 " days",
+		idx, sdate.c_str(), spike_value, total_days);
+
+	CKWHStats::RemoveSpikeStats(idx);
+	SanitizeCalendarData(idx);
 
 	return true;
 }
@@ -8930,7 +9769,7 @@ void CSQLHelper::DeleteDevices(const std::string& idx)
 #endif
 	{
 		//Avoid mutex deadlock here
-		std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+		std::lock_guard<std::timed_mutex> l(m_sqlQueryMutex);
 
 		char* errorMessage;
 		sqlite3_exec(m_dbase, "BEGIN TRANSACTION", nullptr, nullptr, &errorMessage);
@@ -9003,7 +9842,7 @@ void CSQLHelper::DeleteScenes(const std::string& idx)
 		return;
 	{
 		//Avoid mutex deadlock here
-		std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+		std::lock_guard<std::timed_mutex> l(m_sqlQueryMutex);
 
 		char* errorMessage;
 		sqlite3_exec(m_dbase, "BEGIN TRANSACTION", nullptr, nullptr, &errorMessage);
@@ -9506,7 +10345,7 @@ bool CSQLHelper::BackupDatabase(const std::string& OutputFile)
 	// Lightweight optimization — no VACUUM (too expensive for large databases
 	// and redundant since the backup API creates a compacted copy)
 	{
-		std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+		std::lock_guard<std::timed_mutex> l(m_sqlQueryMutex);
 		sqlite3_exec(m_dbase, "PRAGMA optimize;", nullptr, nullptr, nullptr);
 	}
 
@@ -9520,7 +10359,7 @@ bool CSQLHelper::BackupDatabase(const std::string& OutputFile)
 
 	// Initialize backup — must hold mutex while accessing m_dbase
 	{
-		std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+		std::lock_guard<std::timed_mutex> l(m_sqlQueryMutex);
 		pBackup = sqlite3_backup_init(pFile, "main", m_dbase, "main");
 	}
 
@@ -9538,7 +10377,7 @@ bool CSQLHelper::BackupDatabase(const std::string& OutputFile)
 	// Mutex is held only during each step, allowing other queries between steps.
 	do {
 		{
-			std::lock_guard<std::mutex> l(m_sqlQueryMutex);
+			std::lock_guard<std::timed_mutex> l(m_sqlQueryMutex);
 			rc = sqlite3_backup_step(pBackup, 256);
 		}
 
@@ -11150,5 +11989,154 @@ bool CSQLHelper::TransferDevice(const std::string& sOldIdx, const std::string& s
 	return true;
 }
 
+bool CSQLHelper::GetDashboardLayouts(int userid, Json::Value &result)
+{
+	result = Json::Value(Json::arrayValue);
+	auto dbresult = safe_query(
+		"SELECT id, name, isdefault, updated FROM DashboardLayouts "
+		"WHERE userid=%d ORDER BY isdefault DESC, name ASC",
+		userid);
+	for (const auto &sd : dbresult)
+	{
+		Json::Value item;
+		item["id"]        = sd[0];
+		item["name"]      = sd[1];
+		item["isDefault"] = (sd[2] == "1");
+		item["updated"]   = sd[3];
+		result.append(item);
+	}
+	return true;
+}
+
+bool CSQLHelper::GetDashboardLayout(int userid, const std::string &layoutid, Json::Value &result)
+{
+	auto dbresult = safe_query(
+		"SELECT id, name, isdefault, layout, updated FROM DashboardLayouts "
+		"WHERE userid=%d AND id='%q'",
+		userid, layoutid.c_str());
+	if (dbresult.empty())
+		return false;
+	const auto &sd    = dbresult[0];
+	result["id"]      = sd[0];
+	result["name"]    = sd[1];
+	result["isDefault"] = (sd[2] == "1");
+	result["layout"]  = sd[3];
+	result["updated"] = sd[4];
+	return true;
+}
+
+bool CSQLHelper::SaveDashboardLayout(int userid, const std::string &layoutid, const std::string &name, bool isDefault, const std::string &layout_json)
+{
+	bool bUpdateLayout = !layout_json.empty();
+
+	// Check if the row already exists (owned by this user)
+	auto existing = safe_query(
+		"SELECT id FROM DashboardLayouts WHERE userid=%d AND id='%q'",
+		userid, layoutid.c_str());
+	if (existing.empty())
+	{
+		safe_query(
+			"INSERT INTO DashboardLayouts (id, userid, name, isdefault, layout, created, updated) "
+			"VALUES ('%q', %d, '%q', %d, '%q', datetime('now','localtime'), datetime('now','localtime'))",
+			layoutid.c_str(), userid, name.c_str(), isDefault ? 1 : 0, layout_json.c_str());
+	}
+	else
+	{
+		if (bUpdateLayout)
+		{
+			safe_query(
+				"UPDATE DashboardLayouts SET name='%q', isdefault=%d, layout='%q', updated=datetime('now','localtime') "
+				"WHERE userid=%d AND id='%q'",
+				name.c_str(), isDefault ? 1 : 0, layout_json.c_str(), userid, layoutid.c_str());
+		}
+		else
+		{
+			safe_query(
+				"UPDATE DashboardLayouts SET name='%q', isdefault=%d, updated=datetime('now','localtime') "
+				"WHERE userid=%d AND id='%q'",
+				name.c_str(), isDefault ? 1 : 0, userid, layoutid.c_str());
+		}
+	}
+	// Atomically set the new default and clear all others for this user in one statement,
+	// after the layout row is guaranteed to exist.
+	if (isDefault)
+	{
+		safe_query(
+			"UPDATE [DashboardLayouts] SET [isdefault] = CASE WHEN [id]='%q' THEN 1 ELSE 0 END WHERE [userid]=%d",
+			layoutid.c_str(), userid);
+	}
+	return true;
+}
+
+bool CSQLHelper::DeleteDashboardLayout(int userid, const std::string &layoutid)
+{
+	safe_query("DELETE FROM DashboardLayouts WHERE userid=%d AND id='%q'",
+		userid, layoutid.c_str());
+	return true;
+}
+
+bool CSQLHelper::CopyDashboardLayout(int userid, const std::string &srcid, const std::string &newid, const std::string &newname)
+{
+	auto dbresult = safe_query(
+		"SELECT layout FROM DashboardLayouts WHERE userid=%d AND id='%q'",
+		userid, srcid.c_str());
+	if (dbresult.empty())
+		return false;
+	const std::string &layout_json = dbresult[0][0];
+	safe_query(
+		"INSERT INTO DashboardLayouts (id, userid, name, isdefault, layout, created, updated) "
+		"VALUES ('%q', %d, '%q', 0, '%q', datetime('now','localtime'), datetime('now','localtime'))",
+		newid.c_str(), userid, newname.c_str(), layout_json.c_str());
+	return true;
+}
+
+std::vector<CSQLHelper::_tAccessToken> CSQLHelper::GetAccessTokens()
+{
+	std::vector<_tAccessToken> result;
+	auto rows = safe_query("SELECT ID, Name, Rights, Expiry, CreatedAt, LastUpdate FROM AccessTokens ORDER BY ID ASC");
+	for (const auto& row : rows)
+	{
+		_tAccessToken t;
+		t.ID = static_cast<unsigned long>(atol(row[0].c_str()));
+		t.Name = row[1];
+		t.Rights = atoi(row[2].c_str());
+		t.Expiry = static_cast<time_t>(atol(row[3].c_str()));
+		t.CreatedAt = row[4];
+		t.LastUpdate = row[5];
+		result.push_back(t);
+	}
+	return result;
+}
+
+bool CSQLHelper::GetAccessToken(unsigned long ID, _tAccessToken& token)
+{
+	auto rows = safe_query("SELECT ID, Name, Rights, Expiry, CreatedAt, LastUpdate FROM AccessTokens WHERE ID=%lu", ID);
+	if (rows.empty())
+		return false;
+	token.ID = static_cast<unsigned long>(atol(rows[0][0].c_str()));
+	token.Name = rows[0][1];
+	token.Rights = atoi(rows[0][2].c_str());
+	token.Expiry = static_cast<time_t>(atol(rows[0][3].c_str()));
+	token.CreatedAt = rows[0][4];
+	token.LastUpdate = rows[0][5];
+	return true;
+}
+
+bool CSQLHelper::CreateAccessToken(const std::string& name, int rights, time_t expiry, const std::string& tokenHash, unsigned long& outID)
+{
+	safe_query("INSERT INTO AccessTokens (Name, Rights, Expiry, TokenHash) VALUES ('%q', %d, %lld, '%q')",
+		name.c_str(), rights, static_cast<long long>(expiry), tokenHash.c_str());
+	auto rows = safe_query("SELECT last_insert_rowid()");
+	if (rows.empty() || rows[0][0].empty())
+		return false;
+	outID = static_cast<unsigned long>(atol(rows[0][0].c_str()));
+	return true;
+}
+
+bool CSQLHelper::DeleteAccessToken(unsigned long ID)
+{
+	safe_query("DELETE FROM AccessTokens WHERE ID=%lu", ID);
+	return true;
+}
 
 

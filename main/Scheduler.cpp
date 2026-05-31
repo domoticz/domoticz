@@ -874,6 +874,323 @@ void CScheduler::Do_Work()
 	_log.Log(LOG_STATUS, "Scheduler stopped...");
 }
 
+bool CScheduler::IsTodayValidForItem(const tScheduleItem& item, const struct tm& ltime) const
+{
+	// FIXEDDATETIME fires once and is never in m_scheduleitems after its time has passed.
+	// MONTHLY/MONTHLY_WD/YEARLY/YEARLY_WD use item.startTime for an exact calendar date;
+	// computing a reliable "today" fire time for them is not supported, so they are skipped.
+	if (item.timerType == TTYPE_FIXEDDATETIME ||
+		item.timerType == TTYPE_MONTHLY       ||
+		item.timerType == TTYPE_MONTHLY_WD    ||
+		item.timerType == TTYPE_YEARLY        ||
+		item.timerType == TTYPE_YEARLY_WD)
+		return false;
+
+	if (item.timerType == TTYPE_DAYSODD)
+		return (ltime.tm_mday % 2 != 0);
+
+	if (item.timerType == TTYPE_DAYSEVEN)
+		return (ltime.tm_mday % 2 == 0);
+
+	bool bOkToFire = false;
+	if (item.Days & 0x80)
+	{
+		bOkToFire = true;
+	}
+	else if (item.Days & 0x100)
+	{
+		bOkToFire = (ltime.tm_wday > 0 && ltime.tm_wday < 6);
+	}
+	else if (item.Days & 0x200)
+	{
+		bOkToFire = (ltime.tm_wday == 0 || ltime.tm_wday == 6);
+	}
+	else
+	{
+		if ((item.Days & 0x01) && (ltime.tm_wday == 1)) bOkToFire = true;
+		if ((item.Days & 0x02) && (ltime.tm_wday == 2)) bOkToFire = true;
+		if ((item.Days & 0x04) && (ltime.tm_wday == 3)) bOkToFire = true;
+		if ((item.Days & 0x08) && (ltime.tm_wday == 4)) bOkToFire = true;
+		if ((item.Days & 0x10) && (ltime.tm_wday == 5)) bOkToFire = true;
+		if ((item.Days & 0x20) && (ltime.tm_wday == 6)) bOkToFire = true;
+		if ((item.Days & 0x40) && (ltime.tm_wday == 0)) bOkToFire = true;
+	}
+
+	if (bOkToFire && (item.timerType == TTYPE_WEEKSODD || item.timerType == TTYPE_WEEKSEVEN))
+	{
+		boost::gregorian::date d = boost::gregorian::date(
+			ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+		int w = d.week_number();
+		bOkToFire = (item.timerType == TTYPE_WEEKSODD) ? (w % 2 != 0) : (w % 2 == 0);
+	}
+
+	return bOkToFire;
+}
+
+time_t CScheduler::GetTimerFireTimeToday(const tScheduleItem& item) const
+{
+	time_t atime = mytime(nullptr);
+	struct tm ltime;
+	localtime_r(&atime, &ltime);
+
+	unsigned long offset = (item.startHour * 3600UL) + (item.startMin * 60UL);
+
+	if (item.timerType == TTYPE_ONTIME    ||
+		item.timerType == TTYPE_DAYSODD   ||
+		item.timerType == TTYPE_DAYSEVEN  ||
+		item.timerType == TTYPE_WEEKSODD  ||
+		item.timerType == TTYPE_WEEKSEVEN)
+	{
+		time_t rtime;
+		struct tm tm1;
+		memset(&tm1, 0, sizeof(struct tm));
+		tm1.tm_isdst = -1;
+		constructTime(rtime, tm1,
+			ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday,
+			item.startHour, item.startMin, 0, ltime.tm_isdst);
+		return rtime;
+	}
+
+	// NOTE: m_tSun* members are protected by m_mutex; caller must hold it.
+	if (item.timerType == TTYPE_BEFORESUNRISE)     return (m_tSunRise     != 0) ? m_tSunRise     - (time_t)offset : 0;
+	if (item.timerType == TTYPE_AFTERSUNRISE)      return (m_tSunRise     != 0) ? m_tSunRise     + (time_t)offset : 0;
+	if (item.timerType == TTYPE_BEFORESUNSET)      return (m_tSunSet      != 0) ? m_tSunSet      - (time_t)offset : 0;
+	if (item.timerType == TTYPE_AFTERSUNSET)       return (m_tSunSet      != 0) ? m_tSunSet      + (time_t)offset : 0;
+	if (item.timerType == TTYPE_BEFORESUNATSOUTH)  return (m_tSunAtSouth  != 0) ? m_tSunAtSouth  - (time_t)offset : 0;
+	if (item.timerType == TTYPE_AFTERSUNATSOUTH)   return (m_tSunAtSouth  != 0) ? m_tSunAtSouth  + (time_t)offset : 0;
+	if (item.timerType == TTYPE_BEFORECIVTWSTART)  return (m_tCivTwStart  != 0) ? m_tCivTwStart  - (time_t)offset : 0;
+	if (item.timerType == TTYPE_AFTERCIVTWSTART)   return (m_tCivTwStart  != 0) ? m_tCivTwStart  + (time_t)offset : 0;
+	if (item.timerType == TTYPE_BEFORECIVTWEND)    return (m_tCivTwEnd    != 0) ? m_tCivTwEnd    - (time_t)offset : 0;
+	if (item.timerType == TTYPE_AFTERCIVTWEND)     return (m_tCivTwEnd    != 0) ? m_tCivTwEnd    + (time_t)offset : 0;
+	if (item.timerType == TTYPE_BEFORENAUTTWSTART) return (m_tNautTwStart != 0) ? m_tNautTwStart - (time_t)offset : 0;
+	if (item.timerType == TTYPE_AFTERNAUTTWSTART)  return (m_tNautTwStart != 0) ? m_tNautTwStart + (time_t)offset : 0;
+	if (item.timerType == TTYPE_BEFORENAUTTWEND)   return (m_tNautTwEnd   != 0) ? m_tNautTwEnd   - (time_t)offset : 0;
+	if (item.timerType == TTYPE_AFTERNAUTTWEND)    return (m_tNautTwEnd   != 0) ? m_tNautTwEnd   + (time_t)offset : 0;
+	if (item.timerType == TTYPE_BEFOREASTTWSTART)  return (m_tAstTwStart  != 0) ? m_tAstTwStart  - (time_t)offset : 0;
+	if (item.timerType == TTYPE_AFTERASTTWSTART)   return (m_tAstTwStart  != 0) ? m_tAstTwStart  + (time_t)offset : 0;
+	if (item.timerType == TTYPE_BEFOREASTTWEND)    return (m_tAstTwEnd    != 0) ? m_tAstTwEnd    - (time_t)offset : 0;
+	if (item.timerType == TTYPE_AFTERASTTWEND)     return (m_tAstTwEnd    != 0) ? m_tAstTwEnd    + (time_t)offset : 0;
+
+	return 0;
+}
+
+void CScheduler::ExecuteTimerItem(const tScheduleItem& item)
+{
+	time_t atime = mytime(nullptr);
+	struct tm ltime;
+	localtime_r(&atime, &ltime);
+	char ltimeBuf[30];
+	strftime(ltimeBuf, sizeof(ltimeBuf), "%Y-%m-%d %H:%M:%S", &ltime);
+
+	if (item.bIsScene)
+		_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, SceneID: %" PRIu64 ", Time: %s",
+			item.DeviceName.c_str(), Timer_Type_Desc(item.timerType), item.RowID, ltimeBuf);
+	else if (item.bIsThermostat)
+		_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, ThermostatID: %" PRIu64 ", Time: %s",
+			item.DeviceName.c_str(), Timer_Type_Desc(item.timerType), item.RowID, ltimeBuf);
+	else
+		_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, DevID: %" PRIu64 ", Time: %s",
+			item.DeviceName.c_str(), Timer_Type_Desc(item.timerType), item.RowID, ltimeBuf);
+
+	std::string switchcmd;
+	if (item.timerCmd == TCMD_ON)
+		switchcmd = "On";
+	else if (item.timerCmd == TCMD_OFF)
+		switchcmd = "Off";
+
+	if (switchcmd.empty())
+	{
+		_log.Log(LOG_ERROR, "Unknown switch command in timer!!....");
+		return;
+	}
+
+	if (item.bIsScene)
+	{
+		if (!m_mainworker.SwitchScene(item.RowID, switchcmd, "timer"))
+			_log.Log(LOG_ERROR, "Error switching Scene command, SceneID: %" PRIu64 ", Time: %s",
+				item.RowID, ltimeBuf);
+		return;
+	}
+
+	if (item.bIsThermostat)
+	{
+		if (!m_mainworker.SetSetPoint(std::to_string(item.RowID), item.Temperature, "timer"))
+			_log.Log(LOG_ERROR, "Error setting thermostat setpoint, ThermostatID: %" PRIu64 ", Time: %s",
+				item.RowID, ltimeBuf);
+		return;
+	}
+
+	std::vector<std::vector<std::string>> result;
+	result = m_sql.safe_query(
+		"SELECT Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
+		item.RowID);
+	if (result.empty())
+		return;
+
+	unsigned char dType    = (unsigned char)atoi(result[0][0].c_str());
+	unsigned char dSubType = (unsigned char)atoi(result[0][1].c_str());
+	_eSwitchType switchtype = (_eSwitchType)atoi(result[0][2].c_str());
+	std::string lstatus;
+	int llevel = 0;
+	bool bHaveDimmer = false;
+	bool bHaveGroupCmd = false;
+	int maxDimLevel = 0;
+	GetLightStatus(dType, dSubType, switchtype, 0, "", lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
+	int ilevel = maxDimLevel;
+
+	if (switchtype == STYPE_Blinds || switchtype == STYPE_BlindsWithStop)
+	{
+		switchcmd = (item.timerCmd == TCMD_ON) ? "Open" : "Close";
+	}
+	else if (switchtype == STYPE_BlindsPercentage || switchtype == STYPE_BlindsPercentageWithStop)
+	{
+		if ((item.Level > 0) && (item.Level < 100))
+		{
+			switchcmd = "Set Level";
+			float fLevel = (maxDimLevel / 100.0F) * item.Level;
+			ilevel = ground(fLevel);
+			if (ilevel > maxDimLevel)
+				ilevel = maxDimLevel;
+		}
+		else if (item.timerCmd == TCMD_ON)
+		{
+			switchcmd = "Open";
+			ilevel = 100;
+		}
+		else
+		{
+			switchcmd = "Close";
+			ilevel = 0;
+		}
+	}
+	else if ((switchtype == STYPE_Dimmer) && (maxDimLevel != 0))
+	{
+		if (item.timerCmd == TCMD_ON)
+		{
+			switchcmd = "Set Level";
+			float fLevel = (maxDimLevel / 100.0F) * item.Level;
+			ilevel = ground(fLevel);
+			if (ilevel > maxDimLevel)
+				ilevel = maxDimLevel;
+		}
+	}
+	else if (switchtype == STYPE_Selector)
+	{
+		if (item.timerCmd == TCMD_ON)
+		{
+			switchcmd = "Set Level";
+			ilevel = item.Level;
+		}
+		else
+		{
+			ilevel = 0;
+		}
+	}
+
+	if (m_mainworker.SwitchLight(item.RowID, switchcmd, ilevel, item.Color, false, 0, "timer") == MainWorker::SL_ERROR)
+		_log.Log(LOG_ERROR, "Error sending switch command, DevID: %" PRIu64 ", Time: %s",
+			item.RowID, ltimeBuf);
+}
+
+void CScheduler::HandleTimerPlanSwitch()
+{
+	struct PendingAction
+	{
+		tScheduleItem item;
+		time_t        firedAt;
+	};
+	std::vector<PendingAction> toExecute;
+
+	{
+		std::lock_guard<std::mutex> l(m_mutex);
+
+		time_t atime = mytime(nullptr);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+
+		using DevKey = std::pair<uint64_t, bool>;
+		std::map<DevKey, PendingAction> bestPerDevice;
+
+		for (const auto& item : m_scheduleitems)
+		{
+			if (!item.bEnabled)
+				continue;
+
+			if (!IsTodayValidForItem(item, ltime))
+				continue;
+
+			time_t timerTime = GetTimerFireTimeToday(item);
+			if (timerTime == 0 || timerTime >= atime)
+				continue;
+
+			DevKey key = { item.RowID, item.bIsScene };
+			auto it = bestPerDevice.find(key);
+			if (it == bestPerDevice.end() || timerTime > it->second.firedAt)
+				bestPerDevice[key] = { item, timerTime };
+		}
+
+		toExecute.reserve(bestPerDevice.size());
+		for (const auto& kv : bestPerDevice)
+			toExecute.push_back(kv.second);
+	}
+
+	if (toExecute.empty())
+	{
+		_log.Log(LOG_STATUS, "HandleTimerPlanSwitch: no elapsed timers found for current plan");
+		return;
+	}
+
+	_log.Log(LOG_STATUS, "HandleTimerPlanSwitch: applying last timer state to %zu device(s)/scene(s)",
+		toExecute.size());
+
+	for (const auto& pending : toExecute)
+		ExecuteTimerItem(pending.item);
+}
+
+void CScheduler::ReplayLastTimerForDevice(uint64_t rowId, bool isScene)
+{
+	tScheduleItem best{};
+	time_t bestTime = 0;
+	bool found = false;
+
+	{
+		std::lock_guard<std::mutex> l(m_mutex);
+
+		time_t atime = mytime(nullptr);
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+
+		for (const auto& item : m_scheduleitems)
+		{
+			if (!item.bEnabled)
+				continue;
+			if (item.RowID != rowId || item.bIsScene != isScene)
+				continue;
+			if (!IsTodayValidForItem(item, ltime))
+				continue;
+			time_t timerTime = GetTimerFireTimeToday(item);
+			if (timerTime == 0 || timerTime >= atime)
+				continue;
+			if (!found || timerTime > bestTime)
+			{
+				best = item;
+				bestTime = timerTime;
+				found = true;
+			}
+		}
+	}
+	// Mutex released before execution: SwitchLight/SwitchScene may acquire locks
+
+	if (!found)
+	{
+		_log.Log(LOG_STATUS, "ReplayLastTimerForDevice: no elapsed timer found for %s %" PRIu64,
+			isScene ? "scene" : "device", rowId);
+		return;
+	}
+
+	ExecuteTimerItem(best);
+}
+
 void CScheduler::CheckSchedules()
 {
 	std::lock_guard<std::mutex> l(m_mutex);
@@ -959,137 +1276,7 @@ void CScheduler::CheckSchedules()
 			}
 			if (bOkToFire)
 			{
-				char ltimeBuf[30];
-				strftime(ltimeBuf, sizeof(ltimeBuf), "%Y-%m-%d %H:%M:%S", &ltime);
-
-				if (item.bIsScene == true)
-					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, SceneID: %" PRIu64 ", Time: %s",
-						item.DeviceName.c_str(), Timer_Type_Desc(item.timerType), item.RowID, ltimeBuf);
-				else if (item.bIsThermostat == true)
-					_log.Log(LOG_STATUS,
-						"Schedule item started! Name: %s, Type: %s, ThermostatID: %" PRIu64 ", Time: %s",
-						item.DeviceName.c_str(), Timer_Type_Desc(item.timerType), item.RowID, ltimeBuf);
-				else
-					_log.Log(LOG_STATUS, "Schedule item started! Name: %s, Type: %s, DevID: %" PRIu64 ", Time: %s",
-						item.DeviceName.c_str(), Timer_Type_Desc(item.timerType), item.RowID, ltimeBuf);
-				std::string switchcmd;
-				if (item.timerCmd == TCMD_ON)
-					switchcmd = "On";
-				else if (item.timerCmd == TCMD_OFF)
-					switchcmd = "Off";
-				if (switchcmd.empty())
-				{
-					_log.Log(LOG_ERROR, "Unknown switch command in timer!!....");
-				}
-				else
-				{
-					if (item.bIsScene == true)
-					{
-						if (!m_mainworker.SwitchScene(item.RowID, switchcmd, "timer"))
-						{
-							_log.Log(LOG_ERROR, "Error switching Scene command, SceneID: %" PRIu64 ", Time: %s",
-								item.RowID, ltimeBuf);
-						}
-					}
-					else if (item.bIsThermostat == true)
-					{
-						std::stringstream sstr;
-						sstr << item.RowID;
-						if (!m_mainworker.SetSetPoint(sstr.str(), item.Temperature, "timer"))
-						{
-							_log.Log(LOG_ERROR,
-								"Error setting thermostat setpoint, ThermostatID: %" PRIu64 ", Time: %s",
-								item.RowID, ltimeBuf);
-						}
-					}
-					else
-					{
-						//Get SwitchType
-						std::vector<std::vector<std::string> > result;
-						result = m_sql.safe_query(
-							"SELECT Type,SubType,SwitchType FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
-							item.RowID);
-						if (!result.empty())
-						{
-							std::vector<std::string> sd = result[0];
-
-							unsigned char dType = atoi(sd[0].c_str());
-							unsigned char dSubType = atoi(sd[1].c_str());
-							_eSwitchType switchtype = (_eSwitchType)atoi(sd[2].c_str());
-							std::string lstatus;
-							int llevel = 0;
-							bool bHaveDimmer = false;
-							bool bHaveGroupCmd = false;
-							int maxDimLevel = 0;
-
-							GetLightStatus(dType, dSubType, switchtype, 0, "", lstatus, llevel, bHaveDimmer, maxDimLevel, bHaveGroupCmd);
-							int ilevel = maxDimLevel;
-							if (
-								(switchtype == STYPE_Blinds)
-								|| (switchtype == STYPE_BlindsWithStop)
-								)
-							{
-								if (item.timerCmd == TCMD_ON)
-									switchcmd = "Open";
-								else if (item.timerCmd == TCMD_OFF)
-									switchcmd = "Close";
-							}
-							else if (
-								(switchtype == STYPE_BlindsPercentage)
-								|| (switchtype == STYPE_BlindsPercentageWithStop)
-								)
-							{
-								if ((item.Level > 0) && (item.Level < 100))
-								{
-									// set position to value between 1 and 99 %
-									switchcmd = "Set Level";
-									float fLevel = (maxDimLevel / 100.0F) * item.Level;
-									ilevel = ground(fLevel);
-									if (ilevel > maxDimLevel)
-										ilevel = maxDimLevel;
-								}
-								else if (item.timerCmd == TCMD_ON) // no percentage set (0 or 100)
-								{
-									switchcmd = "Open";
-									ilevel = 100;
-								}
-								else if (item.timerCmd == TCMD_OFF) // no percentage set (0 or 100)
-								{
-									switchcmd = "Close";
-									ilevel = 0;
-								}
-							}
-							else if ((switchtype == STYPE_Dimmer) && (maxDimLevel != 0))
-							{
-								if (item.timerCmd == TCMD_ON)
-								{
-									switchcmd = "Set Level";
-									float fLevel = (maxDimLevel / 100.0F) * item.Level;
-									ilevel = ground(fLevel);
-									if (ilevel > maxDimLevel)
-										ilevel = maxDimLevel;
-								}
-							}
-							else if (switchtype == STYPE_Selector) {
-								if (item.timerCmd == TCMD_ON)
-								{
-									switchcmd = "Set Level";
-									ilevel = item.Level;
-								}
-								else if (item.timerCmd == TCMD_OFF)
-								{
-									ilevel = 0; // force level to a valid value for Selector
-								}
-							}
-							if (m_mainworker.SwitchLight(item.RowID, switchcmd, ilevel, item.Color, false, 0, "timer") == MainWorker::SL_ERROR)
-							{
-								_log.Log(LOG_ERROR,
-									"Error sending switch command, DevID: %" PRIu64 ", Time: %s",
-									item.RowID, ltimeBuf);
-							}
-						}
-					}
-				}
+				ExecuteTimerItem(item);
 			}
 			if (!AdjustScheduleItem(&item, true))
 			{
@@ -1413,6 +1600,7 @@ namespace http {
 				m_sql.UpdatePreferencesVar("ActiveTimerPlan", rnvalue);
 				m_sql.m_ActiveTimerPlan = rnvalue;
 				m_mainworker.m_scheduler.ReloadSchedules();
+				m_mainworker.m_scheduler.HandleTimerPlanSwitch();
 				root["status"] = "OK";
 			}
 		}

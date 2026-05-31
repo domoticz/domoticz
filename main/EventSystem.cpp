@@ -3703,6 +3703,57 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 			m_sql.AddTaskItem(_tTaskItem::EmailCameraSnapshot(parseResult.fAfterSec, deviceName, subject));
 		return true;
 	}
+	else if (deviceName.find("SwitchTimerPlan:") == 0)
+	{
+		int planId = 0;
+		try { planId = std::stoi(deviceName.substr(16)); }
+		catch (const std::exception&)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: SwitchTimerPlan invalid ID: %s", deviceName.c_str());
+			return true;
+		}
+		if (planId >= 0)
+		{
+			result = m_sql.safe_query("SELECT Name FROM TimerPlans WHERE (ID == %d)", planId);
+			if (result.empty())
+			{
+				_log.Debug(DEBUG_HARDWARE, "Scheduler Timerplan not found! (%d)", planId);
+				return true;
+			}
+			_log.Log(LOG_STATUS, "Scheduler Timerplan changed (%d - %s) via dzVents", planId, result[0][0].c_str());
+			m_sql.UpdatePreferencesVar("ActiveTimerPlan", planId);
+			m_sql.m_ActiveTimerPlan = planId;
+			m_mainworker.m_scheduler.ReloadSchedules();
+			m_mainworker.m_scheduler.HandleTimerPlanSwitch();
+		}
+		return true;
+	}
+	else if (deviceName.find("ResumeTimerPlan:") == 0)
+	{
+		uint64_t devId = 0;
+		try { devId = std::stoull(deviceName.substr(16)); }
+		catch (const std::exception&)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: ResumeTimerPlan invalid ID: %s", deviceName.c_str());
+			return true;
+		}
+		if (devId > 0)
+			m_mainworker.m_scheduler.ReplayLastTimerForDevice(devId, false);
+		return true;
+	}
+	else if (deviceName.find("ResumeTimerPlanScene:") == 0)
+	{
+		uint64_t sceneId = 0;
+		try { sceneId = std::stoull(deviceName.substr(21)); }
+		catch (const std::exception&)
+		{
+			_log.Log(LOG_ERROR, "EventSystem: ResumeTimerPlanScene invalid ID: %s", deviceName.c_str());
+			return true;
+		}
+		if (sceneId > 0)
+			m_mainworker.m_scheduler.ReplayLastTimerForDevice(sceneId, true);
+		return true;
+	}
 
 	if (isScene) {
 		result = m_sql.safe_query("SELECT ID FROM Scenes WHERE (Name == '%q')",

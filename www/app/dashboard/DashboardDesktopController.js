@@ -33,6 +33,7 @@ define([
 		'$routeParams',
 		'$window',
 		'$timeout',
+		'$http',
 		'permissions',
 		'livesocket',
 		'dashboardService',
@@ -45,6 +46,7 @@ define([
 			$routeParams,
 			$window,
 			$timeout,
+			$http,
 			permissions,
 			livesocket,
 			dashboardService,
@@ -68,15 +70,27 @@ define([
 			$scope.rowItems = 3;
 
 			// Search/filter
-			$scope.searchFilter = '';
+			$scope.searchFilter = (window.myglobals && window.myglobals.LastSearchFilter) || '';
 
 			// Room plan controller
 			$scope.ctrl = {
 				RoomPlans: [],
+				dynamicLayouts: [],
 				roomSelected: undefined,
 				changeRoom: function () {
-					var idx = $scope.ctrl.roomSelected;
+					var val = $scope.ctrl.roomSelected;
+					// Dynamic dashboard layout selected
+					if (typeof val === 'string' && val.indexOf('dd:') === 0) {
+						var layoutId = val.slice(3);
+						try { localStorage.setItem('dd_last_layout', layoutId); } catch(e) {}
+						$route.reload();
+						return;
+					}
+					var idx = val;
 					window.myglobals.LastPlanSelected = idx;
+					window.myglobals.LastSearchFilter = '';
+					$('.jsLiveSearch').val('').trigger('change');
+					window._forceClassicDashboard = true;
 					$route.updateParams({
 						room: idx >= 0 ? idx : undefined
 					});
@@ -136,6 +150,7 @@ define([
 							initMobileSliders();
 							$scope.ResizeDimSliders();
 							initDragAndDrop();
+							ScheduleLiveSearchRestore();
 						}, 100);
 					})
 					.catch(function (error) {
@@ -207,8 +222,9 @@ define([
 						// Update the device data in-place to preserve object reference
 						angular.extend($scope[category][index], deviceData);
 
-						// Show update effect if enabled
-						if ($scope.config.ShowUpdatedEffect === true) {
+						// Show update effect if enabled; skip while a drag is in progress
+						// ($.ui.ddmanager.current is set by jQuery UI during an active drag)
+						if ($scope.config.ShowUpdatedEffect === true && !$.ui.ddmanager.current) {
 							var itemElement = $('#light_' + deviceData.idx + ', #utility_' + deviceData.idx + ', #temp_' + deviceData.idx + ', #weather_' + deviceData.idx);
 							itemElement.find('.item-name').effect("highlight", { color: '#EEFFEE' }, 1000);
 						}
@@ -286,6 +302,12 @@ define([
 				if ($scope.config.AllowWidgetOrdering != true) return;
 				if (!permissions.hasPermission("User")) return;
 				if (window.myglobals.ismobileint == true) return;
+
+				// Destroy existing instances to prevent stale handler state on reused DOM nodes
+				$element.find('.movable').each(function () {
+					if ($(this).data('ui-draggable')) $(this).draggable('destroy');
+					if ($(this).data('ui-droppable')) $(this).droppable('destroy');
+				});
 
 				// Make non-scene widgets draggable (User permission)
 				$element.find(".movable:not([id^=scene_])").draggable({
@@ -538,9 +560,13 @@ define([
 					return;
 				}
 				if (isProtectedOrPasscode === true || isProtectedOrPasscode === 1) {
-					bootbox.prompt($.t("Please enter Password") + ":", function (result) {
-						if (result === null || result === "") return;
-						SwitchLightInt(idx, command, result);
+					bootbox.prompt({
+						title: $.t("Please enter Password") + ":",
+						inputType: 'password',
+						callback: function (result) {
+							if (result === null || result === "") return;
+							SwitchLightInt(idx, command, result);
+						}
 					});
 					return;
 				}
@@ -573,9 +599,13 @@ define([
 					return;
 				}
 				if (isProtectedOrPasscode === true || isProtectedOrPasscode === 1) {
-					bootbox.prompt($.t("Please enter Password") + ":", function (result) {
-						if (result === null || result === "") return;
-						SwitchSceneInt(idx, command, result);
+					bootbox.prompt({
+						title: $.t("Please enter Password") + ":",
+						inputType: 'password',
+						callback: function (result) {
+							if (result === null || result === "") return;
+							SwitchSceneInt(idx, command, result);
+						}
 					});
 					return;
 				}
@@ -751,6 +781,15 @@ define([
 					$scope.ctrl.roomSelected = roomPlanId;
 				}
 
+				// Load dynamic dashboard layouts when the feature is enabled (not on mobile)
+				var isMobileView = !!(window.myglobals && window.myglobals.ismobile) && $rootScope.config.MobileType !== 1;
+				if ($rootScope.config && $rootScope.config.EnableTabDashboardDynamic && !isMobileView) {
+					$http.get('json.htm', { params: { type: 'command', param: 'getdashboardlayouts' } })
+						.then(function(resp) {
+							$scope.ctrl.dynamicLayouts = (resp.data && resp.data.result) || [];
+						});
+				}
+
 				// Load favorites
 				loadFavorites();
 
@@ -789,6 +828,25 @@ define([
 
 			// Start the controller
 			init();
+
+			// Re-bind drag-and-drop when new .movable elements are added by ng-repeat
+			// (e.g. WebSocket adds a new device, or a search filter reveals a hidden element).
+			// Debounced: rapid successive updates (e.g. batch WebSocket messages) cancel and
+			// reschedule so initDragAndDrop runs only once after the burst settles.
+			var _dragInitTimer = null;
+			$scope.$watchGroup([
+				function () { return ($scope.lights      || []).length; },
+				function () { return ($scope.temperature || []).length; },
+				function () { return ($scope.weather     || []).length; },
+				function () { return ($scope.utility     || []).length; },
+				function () { return ($scope.scenes      || []).length; }
+			], function () {
+				if (_dragInitTimer) $timeout.cancel(_dragInitTimer);
+				_dragInitTimer = $timeout(function () {
+					_dragInitTimer = null;
+					initDragAndDrop();
+				}, 150);
+			});
 		}
 	]);
 });

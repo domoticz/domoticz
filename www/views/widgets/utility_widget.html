@@ -17,7 +17,7 @@
                 </td>
 
                 <!-- Device Icon -->
-                <td id="img">
+                <td id="img" ng-hide="ctrl.isText() && ctrl.hideTextIcon()">
                     <a ng-if="!ctrl.isSetpoint() && ctrl.device.Type != 'Radiator 1'"
                        ng-href="{{ctrl.getGraphLogLink()}}">
                         <img ng-src="{{ctrl.getDeviceIcon()}}" height="40" width="40" class="lcursor">
@@ -33,7 +33,10 @@
                 </td>
 
                 <!-- Last Update -->
-                <td id="lastupdate"><span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: {{ctrl.device.LastUpdate}}</td>
+                <td id="lastupdate" ng-class="{'lastupdate-spaced': ctrl.isText() && ctrl.hideTextIcon()}">
+                    <dz-bar value="ctrl.barNumVal" ranges="ctrl.barRanges"></dz-bar>
+                    <span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: {{ctrl.device.LastUpdate}}
+                </td>
 
             </tr>
         </table>

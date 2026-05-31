@@ -1,0 +1,58 @@
+<div class="dd-battery-monitor"
+     ng-class="{'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode}">
+
+    <!-- Header -->
+    <div class="dd-battery-monitor-header">
+        <span class="dd-battery-monitor-title" ng-bind="ctrl.title"></span>
+        <span ng-if="ctrl.count > 0"
+              class="dd-battery-monitor-badge"
+              style="background: none;">
+            Top {{ctrl.count}}
+        </span>
+    </div>
+
+    <!-- Loading state -->
+    <div ng-if="ctrl.loading && !ctrl.devices.length"
+         class="dd-chart-unconfigured">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+    </div>
+
+    <!-- Error state -->
+    <div ng-if="ctrl.loadError && !ctrl.loading && !ctrl.devices.length"
+         class="dd-chart-unconfigured">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <p>Could not load devices</p>
+    </div>
+
+    <!-- Empty state -->
+    <div ng-if="!ctrl.loading && !ctrl.loadError && ctrl.count === 0"
+         class="dd-chart-unconfigured">
+        <i class="fa-solid fa-plug-circle-xmark"></i>
+        <p>No recent active kWh devices found</p>
+    </div>
+
+    <!-- Device list -->
+    <div class="dd-battery-monitor-list"
+         ng-if="!ctrl.loading && !ctrl.loadError && ctrl.devices.length > 0">
+        <div class="dd-battery-monitor-row"
+             ng-repeat="device in ctrl.devices track by device.idx">
+            <span class="dd-battery-monitor-icon"
+                  style="color: var(--dz-widget-amber);">
+                <i class="fa-solid fa-bolt"></i>
+            </span>
+            <span class="dd-battery-monitor-name"
+                  title="{{device.name}}">{{device.name}}</span>
+            <span class="dd-battery-monitor-level"
+                  style="min-width:55px;color:var(--dz-text-muted);">
+                <span ng-if="device.usageWatt !== null">{{device.usageWatt | number:0}} W</span>
+                <span ng-if="device.usageWatt === null">&mdash;</span>
+            </span>
+            <a class="dd-stat-link dd-battery-monitor-level"
+               style="min-width:70px;color:var(--dz-widget-accent);"
+               ng-href="#/Devices/{{device.idx}}/Log">
+                {{device.counterToday}}
+            </a>
+        </div>
+    </div>
+
+</div>

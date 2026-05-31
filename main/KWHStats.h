@@ -27,6 +27,7 @@ public:
     static void PeriodicSaveKWHStats(const int interval_seconds);
     static bool GetJSONStats(const uint64_t device_id, Json::Value& root);
     static bool ResetJSONStats(const uint64_t device_id);
+    static bool RemoveSpikeStats(const uint64_t device_id);
 private:
     bool LoadFromDB();
     bool SaveToDB();

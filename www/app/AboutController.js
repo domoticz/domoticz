@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-	app.controller('AboutController', ['$scope', '$rootScope', '$location', '$http', '$interval', function ($scope, $rootScope, $location, $http, $interval) {
+	app.controller('AboutController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$uibModal', function ($scope, $rootScope, $location, $http, $interval, $uibModal) {
 
 		$scope.strupptime = "-";
 
@@ -33,6 +33,17 @@ define(['app'], function (app) {
 				}
 			});
 		}
+
+		$scope.openTips = function() {
+			require(['TipsController'], function() {
+				$uibModal.open({
+					templateUrl: 'views/tips.html',
+					controller: 'TipsController',
+					size: 'md',
+					windowClass: 'tips-modal'
+				}).result.catch(angular.noop);
+			});
+		};
 
 		$scope.init = function () {
 			$scope.MakeGlobalConfig();

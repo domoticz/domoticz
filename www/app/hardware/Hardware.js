@@ -6,6 +6,7 @@ define(['app'], function (app) {
 	 */
 	let extraHWTable = {
 		'Daikin Airconditioning with LAN (HTTP) interface': 'DaikinParams',
+		'Daikin Altherma (Modbus TCP via Homehub)': 'DaikinModbusParams',
 		'MQTT Client Gateway with LAN interface': ['MQTTParams', 0],
 		'OctoPrint (MQTT/Gina Haussge) with LAN interface': ['MQTTParams', 1],
 		'The Things Network (MQTT/CayenneLPP) with LAN interface': ['MQTTParams', 2],
@@ -951,16 +952,7 @@ define(['app'], function (app) {
 					ShowNotify($.t('Please enter an Address!'), 2500, true);
 					return;
 				}
-				var port = $("#hardwarecontent #divremote #tcpport").val();
-				if (port == "") {
-					ShowNotify($.t('Please enter an Port!'), 2500, true);
-					return;
-				}
-				var intRegex = /^\d+$/;
-				if (!intRegex.test(port)) {
-					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
-					return;
-				}
+				var port = 443;
 				var username = $("#hardwarecontent #hardwareparamsphilipshue #username").val();
 				if (username == "") {
 					ShowNotify($.t('Please enter a username!'), 2500, true);
@@ -1318,7 +1310,7 @@ define(['app'], function (app) {
 					"&datatimeout=" + datatimeout +
 					"&extra=" + extra +
 					"&Mode1=" + defaultinterval +
-					"&Mode2=" + activeinterval + 
+					"&Mode2=" + activeinterval +
 					"&Mode3=" + allowwakeup,
 					async: false,
 					dataType: 'json',
@@ -1354,7 +1346,7 @@ define(['app'], function (app) {
 					"&datatimeout=" + datatimeout +
 					"&extra=" + vinnr +
 					"&Mode1=" + defaultinterval +
-					"&Mode2=" + activeinterval + 
+					"&Mode2=" + activeinterval +
 					"&Mode3=" + allowwakeup,
 					async: false,
 					dataType: 'json',
@@ -1684,7 +1676,7 @@ define(['app'], function (app) {
 					}
 				});
 			}
-			else if (text.indexOf("AirconWithMe") >= 0) 
+			else if (text.indexOf("AirconWithMe") >= 0)
 			{
 				var address = $("#hardwarecontent #divremote #tcpaddress").val();
 				if (address == "") {
@@ -1700,6 +1692,32 @@ define(['app'], function (app) {
 					"&address=" + address +
 					"&username=" + encodeURIComponent(username) +
 					"&password=" + encodeURIComponent(password) +
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled +
+					"&idx=" + idx +
+					"&datatimeout=" + datatimeout,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+			}
+			else if (text.indexOf("Matter") >= 0) {
+				var address = $("#hardwarecontent #divremote #tcpaddress").val();
+				if (address == "") {
+					ShowNotify($.t('Please enter an Address!'), 2500, true);
+					return;
+				}
+				var port = $("#hardwarecontent #divremote #tcpport").val();
+				$.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&address=" + encodeURIComponent(address) +
+					"&port=" + encodeURIComponent(port) +
 					"&name=" + encodeURIComponent(name) +
 					"&enabled=" + bEnabled +
 					"&idx=" + idx +
@@ -2445,16 +2463,7 @@ define(['app'], function (app) {
 					ShowNotify($.t('Please enter an Address!'), 2500, true);
 					return;
 				}
-				var port = $("#hardwarecontent #divremote #tcpport").val();
-				if (port == "") {
-					ShowNotify($.t('Please enter an Port!'), 2500, true);
-					return;
-				}
-				var intRegex = /^\d+$/;
-				if (!intRegex.test(port)) {
-					ShowNotify($.t('Please enter an Valid Port!'), 2500, true);
-					return;
-				}
+				var port = 443;
 				var username = $("#hardwarecontent #hardwareparamsphilipshue #username").val();
 
 				if (username == "") {
@@ -2650,9 +2659,9 @@ define(['app'], function (app) {
 				var useowmforecast = $("#hardwarecontent #divopenweathermap #useowmforecast").prop("checked") ? 1 : 0;
 				var apiversion = $("#hardwarecontent #divopenweathermap #comboapiversion").val();
 				$.ajax({
-					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype + 
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
-					"&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) + 
+					"&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) +
 					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout +
 					"&Mode1=" + adddayforecast + "&Mode2=" + addhourforecast +
 					"&Mode3=" + adddescdev + "&Mode4=" + useowmforecast +
@@ -3141,7 +3150,7 @@ define(['app'], function (app) {
 			}
 			else if (text.indexOf("AirconWithMe") >= 0) {
 				var address = $("#hardwarecontent #divremote #tcpaddress").val();
-				if (address == "") 
+				if (address == "")
 				{
 					ShowNotify($.t('Please enter an Address!'), 2500, true);
 					return;
@@ -3167,6 +3176,31 @@ define(['app'], function (app) {
 					},
 					error: function () {
 						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+			}
+			else if (text.indexOf("Matter") >= 0) {
+				var address = $("#hardwarecontent #divremote #tcpaddress").val();
+				if (address == "") {
+					ShowNotify($.t('Please enter an Address!'), 2500, true);
+					return;
+				}
+				var port = $("#hardwarecontent #divremote #tcpport").val();
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&address=" + encodeURIComponent(address) +
+					"&port=" + encodeURIComponent(port) +
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled +
+					"&datatimeout=" + datatimeout,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem adding hardware!'), 2500, true);
 					}
 				});
 			}
@@ -4095,7 +4129,7 @@ define(['app'], function (app) {
 
 							var SerialName = "Unknown!?";
 							var intport = 0;
-							if ((HwTypeStr.indexOf("LAN") >= 0) || (HwTypeStr.indexOf("MySensors Gateway with MQTT") >= 0) || (HwTypeStr.indexOf("Domoticz") >= 0) || (HwTypeStr.indexOf("Harmony") >= 0) || (HwTypeStr.indexOf("Philips Hue") >= 0)) {
+							if ((HwTypeStr.indexOf("LAN") >= 0) || (HwTypeStr.indexOf("MySensors Gateway with MQTT") >= 0) || (HwTypeStr.indexOf("Domoticz") >= 0) || (HwTypeStr.indexOf("Harmony") >= 0) || (HwTypeStr.indexOf("Philips Hue") >= 0) || (HwTypeStr.indexOf("Daikin") >= 0)) {
 								SerialName = item.Port;
 							}
 							else if ((item.Type == 7) || (item.Type == 11)) {
@@ -4163,6 +4197,13 @@ define(['app'], function (app) {
 									if (item.NodesQueried != true) {
 										lblStatus = "label-important";
 									}
+									HwTypeStr += ' <a href="#/Hardware/' + item.idx + '" class="label ' + lblStatus + ' btn-link">' + $.t("Setup") + '</a>';
+								}
+							}
+							else if (item.Type === 129) { // Matter
+								if (typeof item.version !== 'undefined' && item.version !== '') {
+									HwTypeStr += '<br>Version: ' + item.version;
+									var lblStatus = item.Connected ? "label-info" : "label-important";
 									HwTypeStr += ' <a href="#/Hardware/' + item.idx + '" class="label ' + lblStatus + ' btn-link">' + $.t("Setup") + '</a>';
 								}
 							}
@@ -4763,7 +4804,7 @@ define(['app'], function (app) {
 						}
 						else if (data["Type"].indexOf("Philips Hue") >= 0) {
 							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
-							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
+							$("#hardwarecontent #divremote #tcpport").closest('tr').hide();
 							$("#hardwarecontent #hardwareparamsphilipshue #username").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamsphilipshue #pollinterval").val(data["Mode1"]);
 							$("#hardwarecontent #hardwareparamsphilipshue #addgroups").prop('checked', (data["Mode2"]&1));
@@ -4855,6 +4896,10 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamslogin #username").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamslogin #password").val(data["Password"]);
 						}
+						else if (data["Type"].indexOf("Matter") >= 0) {
+							$("#hardwarecontent #hardwareparamsremote #tcpaddress").val(data["Address"]);
+							$("#hardwarecontent #hardwareparamsremote #tcpport").val(data["Port"]);
+						}
 						if (
 							(data["Type"].indexOf("Domoticz") >= 0) ||
 							(data["Type"].indexOf("ICY") >= 0) ||
@@ -4939,7 +4984,7 @@ define(['app'], function (app) {
 
 		expandScope = function (scopeArray, separator) {
 			//Netatmo Scopes
-			var scopeGroups = { 
+			var scopeGroups = {
 				station_R :					'read_station',
 				thermostat_RW :				'read_thermostat write_thermostat',
 				camera_RWA :				'read_camera write_camera access_camera',
@@ -5418,7 +5463,7 @@ define(['app'], function (app) {
 				text.indexOf("Eco Devices") >= 0 ||
 				text.indexOf("Intergas InComfort") >= 0 ||
 				text.indexOf("MySensors Gateway with MQTT") >= 0) &&
-				text.indexOf("YouLess") == -1 && 
+				text.indexOf("YouLess") == -1 &&
 				text.indexOf("Denkovi") == -1 &&
 				text.indexOf("Relay-Net") == -1 &&
 				text.indexOf("Satel Integra") == -1 &&
@@ -5602,6 +5647,7 @@ define(['app'], function (app) {
 			}
 			else if (text.indexOf("Philips Hue") >= 0) {
 				$("#hardwarecontent #divremote").show();
+				$("#hardwarecontent #divremote #tcpport").closest('tr').hide();
 				$("#hardwarecontent #divphilipshue").show();
 			}
 			else if (text.indexOf("Yeelight") >= 0) {
@@ -5647,6 +5693,10 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divlogin #username").val("operator")
 				$("#hardwarecontent #divlogin #password").val("operator")
 				$("#hardwarecontent #divlogin").show();
+			}
+			else if (text.indexOf("Matter") >= 0) {
+				$("#hardwarecontent #divremote").show();
+				$("#hardwarecontent #hardwareparamsremote #tcpport").val(5580);
 			}
 			if (
 				(text.indexOf("ETH8020") >= 0) ||

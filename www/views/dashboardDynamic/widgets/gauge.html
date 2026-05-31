@@ -1,0 +1,50 @@
+<div class="dd-stat-card dd-stat-card-full"
+     ng-class="{'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode}">
+    <!-- Unconfigured state -->
+    <div ng-if="!ctrl.widgetDef.config.deviceIdx" class="dd-chart-unconfigured">
+        <i class="fa-solid fa-gauge-high"></i>
+        <p>Select a device in settings</p>
+    </div>
+
+    <!-- Configured state -->
+    <div ng-if="ctrl.widgetDef.config.deviceIdx" style="width:100%;display:flex;flex-direction:column;align-items:center;">
+        <div class="dd-gauge-title dd-stat-label" ng-show="ctrl.title">{{ ctrl.title }}</div>
+        <div class="dd-gauge-svg-wrap">
+            <svg viewBox="0 8 100 66" class="dd-gauge-svg">
+                <!-- Background arc (cy=56 r=42: stroke top at y=10, clear of viewBox edge) -->
+                <circle class="dd-gauge-bg"
+                        cx="50" cy="56" r="42"
+                        fill="none" stroke-width="8"
+                        ng-attr-stroke-dasharray="{{ ctrl.strokeDasharrayBg() }}"
+                        stroke-dashoffset="0"
+                        transform="rotate(160 50 56)"/>
+                <!-- Value arc -->
+                <circle class="dd-gauge-fill"
+                        cx="50" cy="56" r="42"
+                        fill="none" stroke-width="8"
+                        ng-attr-stroke="{{ ctrl.gaugeColor() }}"
+                        ng-attr-stroke-dasharray="{{ ctrl.strokeDasharray() }}"
+                        stroke-dashoffset="0"
+                        transform="rotate(160 50 56)"/>
+                <!-- Value text inside arc — clickable to device log -->
+                <text class="dd-gauge-text-value dd-gauge-text-link" x="50" y="41" text-anchor="middle" dominant-baseline="middle"
+                      ng-click="ctrl.goToLog()">{{ ctrl.valueStr() }}</text>
+                <!-- Unit text below value — clickable to device log -->
+                <text class="dd-gauge-text-unit dd-gauge-text-link" x="50" y="54" text-anchor="middle" dominant-baseline="middle"
+                      ng-click="ctrl.goToLog()" ng-bind="ctrl.unitStr()"></text>
+                <!-- Sub-values for Temp+Hum / Temp+Hum+Baro.
+                     viewBox bottom = y 74; value@41, unit@54; sub-values stacked below.
+                     With both: humidity@63, baro@70. With only one: y=64. -->
+                <text ng-if="ctrl.humidity !== null"
+                      class="dd-gauge-temp-sub-txt"
+                      x="50" ng-attr-y="{{ ctrl.baro !== null ? 63 : 64 }}"
+                      text-anchor="middle" dominant-baseline="middle"><tspan style="font-family:'Font Awesome 7 Free';font-weight:900;font-size:4.5px;">&#xf043;</tspan> {{ ctrl.humidity }}%</text>
+                <!-- Barometric pressure -->
+                <text ng-if="ctrl.baro !== null"
+                      class="dd-gauge-temp-sub-txt"
+                      x="50" ng-attr-y="{{ ctrl.humidity !== null ? 70 : 64 }}"
+                      text-anchor="middle" dominant-baseline="middle"><tspan style="font-family:'Font Awesome 7 Free';font-weight:900;font-size:4.5px;">&#xf624;</tspan> {{ ctrl.baro }} hPa</text>
+            </svg>
+        </div>
+    </div>
+</div>

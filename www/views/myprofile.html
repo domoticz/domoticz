@@ -50,7 +50,59 @@
 		<table class="display table-details" id="profiletable">
 			<tr>
 				<td colspan="2" style="text-align: left;">
-					<h3 data-i18n="Two way authentication"></h3>
+				<h3 data-i18n="Dashboard">Dashboard</h3>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label for="UseDynamicDashboard"><span data-i18n="Dynamic Dashboard"></span>:</label>
+				</td>
+				<td>
+					<input type="checkbox" id="UseDynamicDashboard" name="UseDynamicDashboard"
+						   ng-model="myprofile.useDynamicDashboard">
+					<label for="UseDynamicDashboard" data-i18n="Enabled">Enabled</label>
+				</td>
+			</tr>
+		</table>
+		<table class="display table-details">
+			<tr>
+				<td colspan="2" style="text-align: left;">
+					<h3 data-i18n="Tips &amp; Tricks">Tips &amp; Tricks</h3>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label for="ShowTipsOnStartup"><span data-i18n="Show on startup"></span>:</label>
+				</td>
+				<td>
+					<input type="checkbox" id="ShowTipsOnStartup" name="ShowTipsOnStartup"
+						   ng-model="myprofile.showTips" ng-change="toggleTips()">
+					<label for="ShowTipsOnStartup" data-i18n="Enabled">Enabled</label>
+				</td>
+			</tr>
+		</table>
+		<table class="display table-details">
+			<tr>
+				<td colspan="2" style="text-align: left;">
+					<h3 data-i18n="Fun &amp; Easter Eggs">Fun &amp; Easter Eggs</h3>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label for="ShowEasterEggs"><span data-i18n="Enable Easter Eggs"></span>:</label>
+				</td>
+				<td>
+					<input type="checkbox" id="ShowEasterEggs" name="ShowEasterEggs"
+						   ng-model="myprofile.showEasterEggs" ng-change="toggleEasterEggs()">
+					<label for="ShowEasterEggs" data-i18n="Enabled">Enabled</label>
+				</td>
+			</tr>
+		</table>
+		<br />
+		<table class="display table-details" id="profiletable">
+			<tr>
+				<td colspan="2" style="text-align: left;">
+					<h3 data-i18n="Two-Factor Authentication"></h3>
 				</td>
 			</tr>
 			<tr>

@@ -1,4 +1,13 @@
-<div id="fibaromain" class="container">
+<style>
+    #uservariablestable { table-layout: fixed; }
+    #uservariablestable th,
+    #uservariablestable td {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+<div id="fibaromain">
 	<div class="page-header-small page-header-with-button">
 		<h1 data-i18n="User variables">User variables</h1>
         <div><a class="btnstyle3" ng-click="RefreshUserVariablesTable();"><i class="fa fa-refresh" title="Back"></i> <span data-i18n="Refresh">Refresh</span></a></div>
@@ -6,13 +15,13 @@
     <table class="display" id="uservariablestable" border="0" cellpadding="0" cellspacing="0" width="100%">
         <thead>
             <tr>
-                <th width="30" align="left">Idx</th>
-                <th width="120" align="left" data-i18n="Variable name">Variable name</th>
-			    <th width="60" align="left" data-i18n="Variable type">Variable type</th>
-                <th width="120" align="left" data-i18n="Current value">Current value</th>
-				<th width="120" align="left" data-i18n="Last update">Last update</th>
+                <th align="left">Idx</th>
+                <th align="left" data-i18n="Variable name">Variable name</th>
+			    <th align="left" data-i18n="Variable type">Variable type</th>
+                <th align="left" data-i18n="Current value">Current value</th>
+				<th align="left" data-i18n="Last update">Last update</th>
             </tr>
-        </thead>		
+        </thead>
     </table>
 
     <div class="page-content-container">
@@ -33,9 +42,9 @@
                 </td>
             </tr>
             <tr id="uservariablevaluerow">
-                <td align="right" style="width:110px"><label for="uservariablevalue"><span data-i18n="Variable value"></span>:</label></td>
+                <td align="right" style="width:110px; vertical-align: top; padding-top: 4px;"><label for="uservariablevalue"><span data-i18n="Variable value"></span>:</label></td>
                 <td colspan="2">
-					<textarea id="uservariablevalue" rows="1" style="resize: vertical; width: 100%; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea>
+					<textarea id="uservariablevalue" rows="4" style="resize: vertical; width: 100%; padding: .2em;" class="text ui-widget-content ui-corner-all"></textarea>
 				</td>
             </tr>
             <tr>

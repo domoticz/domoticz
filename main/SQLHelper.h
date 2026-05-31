@@ -397,6 +397,8 @@ public:
 	int PruneUnusedSensorLogs();
 	void VacuumDatabase();
 	bool FixKwhCounterSpikes(uint64_t idx, double max_daily_kwh, bool dry_run, std::vector<std::string>& results);
+	int SanitizeCalendarData(uint64_t idx);
+	bool SpreadCounterSpike(uint64_t idx, const std::string& sdate, std::vector<std::string>& results);
 	void OptimizeDatabase(sqlite3 *dbase);
 	void DeleteHardware(const std::string &idx);
 
@@ -463,6 +465,29 @@ public:
 	bool CalcMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd, float &price);
 	bool CalcMultiMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd, float& price);
 	bool TransferDevice(const std::string& sOldIdx, const std::string&  sNewIdx);
+
+	// Dashboard 2.0 layout persistence
+	bool GetDashboardLayouts(int userid, Json::Value& result);
+	bool GetDashboardLayout(int userid, const std::string& layoutid, Json::Value& result);
+	bool SaveDashboardLayout(int userid, const std::string& layoutid, const std::string& name, bool isDefault, const std::string& layout_json);
+	bool DeleteDashboardLayout(int userid, const std::string& layoutid);
+	bool CopyDashboardLayout(int userid, const std::string& srcid, const std::string& newid, const std::string& newname);
+
+	// Access Tokens
+	struct _tAccessToken {
+		unsigned long ID = 0;
+		std::string Name;
+		int Rights = 0;        // 0=Viewer, 1=Switcher, 2=Admin
+		time_t Expiry = 0;     // epoch, 0=never
+		std::string TokenHash; // SHA-256 hex of raw JWT
+		std::string CreatedAt;
+		std::string LastUpdate;
+	};
+
+	std::vector<_tAccessToken> GetAccessTokens();
+	bool GetAccessToken(unsigned long ID, _tAccessToken& token);
+	bool CreateAccessToken(const std::string& name, int rights, time_t expiry, const std::string& tokenHash, unsigned long& outID);
+	bool DeleteAccessToken(unsigned long ID);
 public:
 	std::string m_LastSwitchID; // for learning command
 	std::string m_UniqueID;
@@ -493,7 +518,10 @@ public:
 
 private:
 	std::mutex m_executeThreadMutex;
-	std::mutex m_sqlQueryMutex;
+	// timed_mutex: query() and safe_UpdateBlobInTableWithID() use try_lock_for(5min) so the
+	// single-threaded web server io_context never hangs indefinitely. All other lock sites
+	// use a blocking lock_guard, which is intentional (shutdown, admin/bulk operations).
+	std::timed_mutex m_sqlQueryMutex;
 	sqlite3 *m_dbase;
 	std::string m_dbase_name;
 	std::string m_journal_mode;

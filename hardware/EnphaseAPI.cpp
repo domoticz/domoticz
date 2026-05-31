@@ -26,6 +26,121 @@ Example
 {"production":[{"type":"inverters","activeCount":9,"readingTime":1568991780,"wNow":712,"whLifetime":1448651},{"type":"eim","activeCount":1,"measurementType":"production","readingTime":1568991966,"wNow":624.315,"whLifetime":1455843.527,"varhLeadLifetime":0.001,"varhLagLifetime":311039.158,"vahLifetime":1619431.681,"rmsCurrent":2.803,"rmsVoltage":233.289,"reactPwr":137.092,"apprntPwr":654.245,"pwrFactor":0.95,"whToday":4295.527,"whLastSevenDays":74561.527,"vahToday":5854.681,"varhLeadToday":0.001,"varhLagToday":2350.158}],"consumption":[{"type":"eim","activeCount":1,"measurementType":"total-consumption","readingTime":1568991966,"wNow":1260.785,"whLifetime":2743860.336,"varhLeadLifetime":132372.858,"varhLagLifetime":273043.125,"vahLifetime":3033001.948,"rmsCurrent":5.995,"rmsVoltage":233.464,"reactPwr":437.269,"apprntPwr":1399.886,"pwrFactor":0.9,"whToday":11109.336,"whLastSevenDays":129007.336,"vahToday":13323.948,"varhLeadToday":895.858,"varhLagToday":3700.125},{"type":"eim","activeCount":1,"measurementType":"net-consumption","readingTime":1568991966,"wNow":636.47,"whLifetime":0.0,"varhLeadLifetime":132372.857,"varhLagLifetime":-37996.033,"vahLifetime":3033001.948,"rmsCurrent":3.191,"rmsVoltage":233.376,"reactPwr":574.361,"apprntPwr":744.807,"pwrFactor":0.85,"whToday":0,"whLastSevenDays":0,"vahToday":0,"varhLeadToday":0,"varhLagToday":0}],"storage":[{"type":"acb","activeCount":0,"readingTime":0,"wNow":0,"whNow":0,"state":"idle"}]}
 */
 
+// Number of consecutive below-threshold readings required before accepting a
+// counter reset as genuine.  At the default 30-second poll interval this is
+// 150 seconds – long enough to outlast a typical token-refresh interruption
+// (which usually recovers within 1–2 poll cycles) while still catching a real
+// Envoy reset quickly.
+static constexpr int ENPHASE_RESET_CONFIRM_COUNT = 5;
+
+// Maximum drop (kWh) that is still considered normal noise / rounding error.
+static constexpr double ENPHASE_RESET_TOLERANCE_KWH = 0.5;
+
+// Minimum upward jump (kWh) in one reading that is treated as a spurious spike.
+// Enphase Envoy firmware updates sometimes retroactively recalculate whLifetime,
+// causing sudden large upward steps that are not real production increments.
+// 1000 kWh far exceeds any legitimate single-reading increment for solar panels.
+static constexpr double ENPHASE_UPWARD_SPIKE_KWH = 1000.0;
+
+// Processes one whLifetime reading (in kWh) through the counter tracker and
+// returns the corrected cumulative total to pass to SendKwhMeter.
+// While a potential reset is being confirmed the last known-good total is
+// returned so the database is not corrupted.
+static double ProcessEnphaseCounter(EnphaseCounterTracker& tracker, const double rawKwh, const char* deviceLabel)
+{
+	if (rawKwh <= 0.0)
+		return tracker.lastGoodTotal; // zero/negative from Envoy – keep last good value
+
+	if (!tracker.initialized)
+	{
+		tracker.initialized   = true;
+		tracker.lastGoodTotal = rawKwh;
+		return rawKwh;
+	}
+
+	// First reading after a confirmed reset: validate it is genuinely post-reset
+	// and not a recovery from a communications glitch.
+	if (tracker.justConfirmed)
+	{
+		tracker.justConfirmed = false;
+		// Guard: a firmware recalibration spike can coincide with a counter reset.
+		// Check before the spurious-reset-cancel test so it cannot slip through.
+		double postResetCandidate = tracker.offset + rawKwh;
+		if (postResetCandidate > tracker.lastGoodTotal + ENPHASE_UPWARD_SPIKE_KWH)
+		{
+			_log.Log(LOG_STATUS, "EnphaseAPI %s: upward spike of +%.1f kWh detected in post-reset reading "
+				"(%.3f -> %.3f kWh), applying offset correction to maintain continuity",
+				deviceLabel, postResetCandidate - tracker.lastGoodTotal,
+				tracker.lastGoodTotal, postResetCandidate);
+			tracker.offset = tracker.lastGoodTotal - rawKwh;
+			return tracker.lastGoodTotal;
+		}
+		if (tracker.preResetTotal > 0.0 && rawKwh > tracker.preResetTotal - ENPHASE_RESET_TOLERANCE_KWH)
+		{
+			// The value recovered to within tolerance of the old lifetime total –
+			// this was a communications glitch, not a real Envoy reset.
+			// Undo the offset and resume normally.
+			_log.Log(LOG_STATUS, "EnphaseAPI %s: spurious reset cancelled (recovered to %.3f kWh, pre-reset was %.3f kWh), reverting offset",
+				deviceLabel, rawKwh, tracker.preResetTotal);
+			tracker.offset          = 0.0;
+			tracker.lowReadingCount = 0;
+			tracker.lastGoodTotal   = rawKwh;
+			return rawKwh;
+		}
+		// Genuine post-reset reading: apply the accumulated offset.
+		double newTotal = tracker.offset + rawKwh;
+		_log.Log(LOG_STATUS, "EnphaseAPI %s: counter reset accepted, new cumulative total %.3f kWh (offset %.3f + device %.3f)",
+			deviceLabel, newTotal, tracker.offset, rawKwh);
+		tracker.lastGoodTotal = newTotal;
+		return newTotal;
+	}
+
+	double candidateTotal = tracker.offset + rawKwh;
+
+	// Detect impossibly large upward jumps (e.g. Envoy firmware retroactively
+	// recalculates whLifetime history).  Apply a negative offset so the adjusted
+	// total stays continuous.  On the very next poll rawKwh will be
+	// (old_rawKwh + tiny_increment), so candidateTotal collapses back to
+	// lastGoodTotal + tiny_increment and normal tracking resumes automatically.
+	// If this was a one-poll glitch (value recovers below lastGoodTotal), the
+	// resulting drop is caught by the downward-reset path below and unwound via
+	// the spurious-reset-cancel logic in the justConfirmed branch.
+	if (candidateTotal > tracker.lastGoodTotal + ENPHASE_UPWARD_SPIKE_KWH)
+	{
+		_log.Log(LOG_STATUS, "EnphaseAPI %s: upward spike of +%.1f kWh detected "
+			"(%.3f -> %.3f kWh), applying offset correction to maintain continuity",
+			deviceLabel, candidateTotal - tracker.lastGoodTotal,
+			tracker.lastGoodTotal, candidateTotal);
+		tracker.offset = tracker.lastGoodTotal - rawKwh;
+		return tracker.lastGoodTotal;
+	}
+
+	if (candidateTotal >= tracker.lastGoodTotal - ENPHASE_RESET_TOLERANCE_KWH)
+	{
+		// Normal (non-decreasing) reading.
+		tracker.lowReadingCount = 0;
+		tracker.lastGoodTotal   = candidateTotal;
+		return candidateTotal;
+	}
+
+	// Counter dropped below expected – possible reset.
+	tracker.preResetTotal = tracker.lastGoodTotal;
+	tracker.lowReadingCount++;
+
+	if (tracker.lowReadingCount >= ENPHASE_RESET_CONFIRM_COUNT)
+	{
+		_log.Log(LOG_STATUS, "EnphaseAPI %s: counter reset detected after %d consecutive low readings "
+			"(pre-reset %.3f kWh, current device %.3f kWh) – locking in offset",
+			deviceLabel, tracker.lowReadingCount, tracker.lastGoodTotal, rawKwh);
+		tracker.offset          = tracker.lastGoodTotal;
+		tracker.lowReadingCount = 0;
+		tracker.justConfirmed   = true;
+		// Hold the last good total for one more cycle while justConfirmed is checked.
+	}
+
+	return tracker.lastGoodTotal;
+}
+
 #define ENPHASE_API_INFO "{ip}/info.xml"
 #define ENPHASE_API_INFO_OLD "http://{ip}/info.xml" //needs to be http
 #define ENPHASE_API_HOME "{ip}/home.json"
@@ -43,21 +158,7 @@ Example
 #define ENPHASE_API_ENSEMBLE_POWER "{ip}/ivp/ensemble/power"
 #define ENPHASE_API_TARIFF "{ip}/admin/lib/tariff"
 
-/*
-#define ENPAHSE_API_LIMIT_POWER "{ip}/ivp/ss/dpel"
-with data:
-{
-	"dynamic_pel_settings": {
-		"enable": true,
-		"export_limit": true,
-		"limit_value_W": 250.0,
-		"slew_rate": 50.0,
-		"enable_dynamic_limiting": false.
-	},
-	"filename": "site_settings",
-	"version": "00.00.01".
-}
-*/
+#define ENPHASE_API_DPEL "{ip}/ivp/ss/dpel"
 
 //3 August 2025, found a great website with all the API endpoints: https://github.com/Matthew1471/Enphase-API
 
@@ -363,6 +464,13 @@ bool EnphaseAPI::WriteToHardware(const char* pdata, const unsigned char length)
 	{
 		//Charge from Grid on/off
 		SetChargeFromGrid(command == light2_sOn);
+		return true;
+	}
+
+	if (Unit == 4)
+	{
+		//Power Export Limit enable/disable
+		SetPowerExportLimit(command == light2_sOn);
 		return true;
 	}
 
@@ -881,7 +989,30 @@ void EnphaseAPI::parseProduction(const Json::Value& root)
 
 	double mtotal = reading["whLifetime"].asDouble() / 1000.0;
 
-	SendKwhMeter(m_HwdID, 1, 255, musage, mtotal, "Enphase kWh Production");
+	// Initialise tracker from DB on first call so a Domoticz restart after an
+	// Envoy reset is also detected (not just resets that happen during uptime).
+	// The offset is not persisted across restarts, but it is fully recoverable:
+	// if the device's raw whLifetime is already below the stored adjusted total,
+	// a counter reset happened during downtime, so seed offset = lastGoodTotal -
+	// rawKwh immediately. This avoids the 5-poll reset-confirm + spike-correction
+	// dance (and the two log lines it produces) on every cold start.
+	if (!m_productionTracker.initialized)
+	{
+		bool bExists;
+		double dbWh = GetKwhMeter(m_HwdID, 1, bExists);
+		if (bExists && dbWh > 0.0)
+		{
+			m_productionTracker.initialized   = true;
+			m_productionTracker.lastGoodTotal = dbWh / 1000.0;
+			if (mtotal > 0.0 && mtotal + ENPHASE_RESET_TOLERANCE_KWH < m_productionTracker.lastGoodTotal)
+			{
+				m_productionTracker.offset = m_productionTracker.lastGoodTotal - mtotal;
+			}
+		}
+	}
+
+	double adjustedTotal = ProcessEnphaseCounter(m_productionTracker, mtotal, "Production");
+	SendKwhMeter(m_HwdID, 1, 255, musage, adjustedTotal, "Enphase kWh Production");
 }
 
 void EnphaseAPI::parseConsumption(const Json::Value& root)
@@ -904,10 +1035,29 @@ void EnphaseAPI::parseConsumption(const Json::Value& root)
 		int musage = itt["wNow"].asInt();
 		double mtotal = itt["whLifetime"].asDouble() / 1000.0;
 
-		// Use fixed indices for each consumption type
+		// Use fixed indices for each consumption type.
+		// Total-consumption is always non-decreasing, so guard it with the
+		// same counter-reset tracker as production.
+		// Net-consumption can legitimately decrease when the house is a net
+		// exporter, so it is passed through without reset detection.
 		if (measurementType == "total-consumption")
 		{
-			SendKwhMeter(m_HwdID, 2, 255, musage, mtotal, szName);
+			if (!m_totalConsumptionTracker.initialized)
+			{
+				bool bExists;
+				double dbWh = GetKwhMeter(m_HwdID, 2, bExists);
+				if (bExists && dbWh > 0.0)
+				{
+					m_totalConsumptionTracker.initialized   = true;
+					m_totalConsumptionTracker.lastGoodTotal = dbWh / 1000.0;
+					if (mtotal > 0.0 && mtotal + ENPHASE_RESET_TOLERANCE_KWH < m_totalConsumptionTracker.lastGoodTotal)
+					{
+						m_totalConsumptionTracker.offset = m_totalConsumptionTracker.lastGoodTotal - mtotal;
+					}
+				}
+			}
+			double adjustedTotal = ProcessEnphaseCounter(m_totalConsumptionTracker, mtotal, "Total-Consumption");
+			SendKwhMeter(m_HwdID, 2, 255, musage, adjustedTotal, szName);
 		}
 		else if (measurementType == "net-consumption")
 		{
@@ -1579,6 +1729,58 @@ bool EnphaseAPI::SetChargeFromGrid(const bool bEnable)
 
 	// Clear cached tariff so next poll re-reads from device
 	m_szLastTariffData.clear();
+	return true;
+}
+
+bool EnphaseAPI::SetPowerExportLimit(const bool bEnable, const float fLimitW)
+{
+	if (m_szTokenInstaller.empty())
+	{
+		GetInstallerToken();
+	}
+	if (m_szTokenInstaller.empty())
+	{
+		Log(LOG_ERROR, "Problem with (no) installer token! Could not execute command! (dpel)");
+		return false;
+	}
+
+	if (!CheckAuthJWT(m_szTokenInstaller, false))
+	{
+		if (!GetInstallerToken())
+			return false;
+		if (!CheckAuthJWT(m_szTokenInstaller, true))
+			return false;
+	}
+
+	if (fLimitW >= 0.0F)
+		m_fPELLimitW = fLimitW;
+
+	Json::Value jSettings;
+	jSettings["enable"] = bEnable;
+	jSettings["export_limit"] = false;
+	jSettings["limit_value_W"] = m_fPELLimitW;
+	jSettings["slew_rate"] = m_fPELSlewRate;
+	jSettings["enable_dynamic_limiting"] = false;
+
+	Json::Value jdata;
+	jdata["dynamic_pel_settings"] = jSettings;
+	jdata["filename"] = "site_settings";
+	jdata["version"] = "00.00.01";
+
+	std::string szPostdata = JSonToRawString(jdata);
+
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Accept: application/json");
+	ExtraHeaders.push_back("Authorization: Bearer " + m_szTokenInstaller);
+	ExtraHeaders.push_back("Content-Type: application/json");
+
+	std::string sResult;
+	if (!HTTPClient::POST(MakeURL(ENPHASE_API_DPEL), szPostdata, ExtraHeaders, sResult))
+	{
+		Log(LOG_ERROR, "Error setting http data! (dpel)");
+		return false;
+	}
+	m_bPELEnabled = bEnable;
 	return true;
 }
 

@@ -278,7 +278,9 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_MQTTAutoDiscovery, "MQTT Auto Discovery Client Gateway with LAN interface", "MQTT-AD" },
 	{ HTYPE_RFLINKMQTT, "RFLink Gateway MQTT", "RFLink" },
 	{ HTYPE_MitsubishiWF, "Mitsubishi WF RAC Airco with LAN (HTTP) interface", "MitsubishiWF" },
+	{ HTYPE_DaikinModbus, "Daikin Altherma (Modbus TCP via Homehub)", "DaikinHH" },
 	{ HTYPE_OpenMeteo, "Open-Meteo (Weather Lookup)", "OpenMeteo" },
+	{ HTYPE_Matter, "Matter (python-matterjs-server)", "Matter" },
 	{ 0, nullptr, nullptr },
 };
 
@@ -1738,7 +1740,7 @@ void GetLightStatus(
 			break;
 		case curtain_sClose:
 			lstatus = "Close";
-			break; 
+			break;
 		case curtain_sStop:
 			lstatus = "Stop";
 			break;
@@ -4050,6 +4052,7 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_Philips_Hue:
 	case HTYPE_AlfenEveCharger:
 	case HTYPE_MitsubishiWF:
+	case HTYPE_Matter:
 		return true;
 	default:
 		return false;

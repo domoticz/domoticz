@@ -138,10 +138,12 @@ define(['app'], function (app) {
 
     function aggregateTrendline(datapoints) {
         const trendline = CalculateTrendLine(datapoints);
-        datapoints.length = 0;
         if (trendline !== undefined) {
-            datapoints.push([trendline.x0, trendline.y0]);
-            datapoints.push([trendline.x1, trendline.y1]);
+            for (var i = 0; i < datapoints.length; i++) {
+                datapoints[i] = [datapoints[i][0], trendline.m * datapoints[i][0] + trendline.b];
+            }
+        } else {
+            datapoints.length = 0;
         }
     }
 
@@ -170,13 +172,37 @@ define(['app'], function (app) {
         const iqr = q3 - q1;
         if (iqr <= 0) return;
 
-        const threshold = q3 + 3 * iqr;
+        const upperThreshold = q3 + 3 * iqr;
+        const lowerThreshold = q1 - 3 * iqr;
         const extremeThreshold = q3 * 10;
+
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        const dayFraction = (now.getHours() * 60 + now.getMinutes()) / (24 * 60);
+        const lastIdx = datapoints.length - 1;
+
         for (let i = 0; i < datapoints.length; i++) {
             const dp = datapoints[i];
             const value = dp[1];
-            if (value !== null && value > threshold) {
-                const isExtreme = value > extremeThreshold;
+            if (value === null) continue;
+
+            // For the last datapoint, check if it's today (incomplete day)
+            if (i === lastIdx) {
+                const dpDate = new Date(dp[0]);
+                dpDate.setHours(0, 0, 0, 0);
+                if (dpDate.getTime() === todayStart) {
+                    if (dayFraction < 1 / 12) continue; // before 2am: skip anomaly check entirely
+                    // Only flag upward spikes (counter resets) using extrapolated value.
+                    // Never flag as a low anomaly — partial days are always expected to be lower.
+                    const extrapolated = value / dayFraction;
+                    if (extrapolated <= upperThreshold) continue;
+                    datapoints[i] = { x: dp[0], y: dp[1], color: '#FF4444', custom: { isSpike: true } };
+                    continue;
+                }
+            }
+
+            if (value > upperThreshold || value < lowerThreshold) {
+                const isExtreme = value > extremeThreshold || value < -extremeThreshold;
                 if (!isExtreme) {
                     const prevVal = i > 0 ? datapoints[i - 1][1] : null;
                     const nextVal = i < datapoints.length - 1 ? datapoints[i + 1][1] : null;
@@ -197,7 +223,7 @@ define(['app'], function (app) {
             + '</b>';
         if (this.custom && this.custom.isSpike) {
             s += '<br/><span style="color:#FF4444">\u26A0 '
-                + $.t('Anomalous value — shift+click to delete')
+                + $.t('Anomalous value — right-click for options')
                 + '</span>';
         }
         return s + '<br/>';

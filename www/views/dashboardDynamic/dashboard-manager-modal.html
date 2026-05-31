@@ -1,0 +1,125 @@
+<div class="modal-header">
+    <button type="button" class="close" ng-click="dismiss()">&times;</button>
+    <h4 class="modal-title">
+        <i class="fa-solid fa-gear" style="margin-right:6px"></i>
+        Dashboard Settings
+    </h4>
+</div>
+
+<div class="modal-body" style="padding:0">
+
+    <!-- Kiosk settings -->
+    <div class="dd-kiosk-settings" style="padding:14px 16px">
+        <div style="font-size:0.9em;font-weight:600;color:var(--dz-body-text);margin-bottom:10px">
+            <i class="fa fa-play-circle" style="margin-right:5px"></i> Kiosk / Auto-Swipe
+        </div>
+        <div class="dd-settings-form">
+            <!-- Enable on load -->
+            <div class="form-group" style="margin-bottom:10px">
+                <label class="dd-checkbox-label" ng-click="kiosk.enabled = !kiosk.enabled; saveKioskSettings({enabled: kiosk.enabled})">
+                    <i class="fa dd-bool-icon"
+                       ng-class="kiosk.enabled ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                    Auto-start kiosk on page load
+                </label>
+            </div>
+            <!-- Interval -->
+            <div class="form-group" style="margin-bottom:10px">
+                <label style="display:inline-block;margin-right:8px;font-size:0.9em">
+                    Interval (seconds):
+                </label>
+                <input type="number" class="form-control" min="5" max="3600"
+                       style="display:inline-block;width:90px"
+                       ng-model="kiosk.interval"
+                       ng-change="saveKioskSettings({interval: kiosk.interval})">
+            </div>
+            <!-- Loop -->
+            <div class="form-group" style="margin-bottom:10px">
+                <label class="dd-checkbox-label" ng-click="kiosk.loop = !kiosk.loop; saveKioskSettings({loop: kiosk.loop})">
+                    <i class="fa dd-bool-icon"
+                       ng-class="kiosk.loop ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                    Loop continuously
+                </label>
+            </div>
+            <!-- Layout selection -->
+            <div class="form-group" style="margin-bottom:4px">
+                <label style="font-size:0.9em;margin-bottom:6px">
+                    Layouts to include <span style="font-weight:normal;opacity:0.7">(leave all unchecked to use all)</span>:
+                </label>
+                <div ng-repeat="l in layouts" style="margin-bottom:4px">
+                    <label class="dd-checkbox-label"
+                           ng-click="toggleKioskLayout(l.id)">
+                        <i class="fa dd-bool-icon"
+                           ng-class="kiosk.layoutIds.indexOf(l.id) !== -1 ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                        <span ng-bind="l.name"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Swipe navigation settings -->
+    <div class="dd-swipe-settings" style="padding:14px 16px;border-top:1px solid rgba(255,255,255,0.1)">
+        <div style="font-size:0.9em;font-weight:600;color:var(--dz-body-text);margin-bottom:10px">
+            <i class="fa fa-arrows-h" style="margin-right:5px"></i> Swipe Navigation
+        </div>
+        <div class="dd-settings-form">
+            <div class="form-group" style="margin-bottom:4px">
+                <label class="dd-checkbox-label" ng-click="swipe.enabled = !swipe.enabled; saveSwipeSettings({enabled: swipe.enabled})">
+                    <i class="fa dd-bool-icon"
+                       ng-class="swipe.enabled ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                    Swipe left/right to switch dashboard (touch devices)
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen Standby settings -->
+    <div class="dd-standby-settings" style="padding:14px 16px;border-top:1px solid rgba(255,255,255,0.1)">
+        <div style="font-size:0.9em;font-weight:600;color:var(--dz-body-text);margin-bottom:10px">
+            <i class="fa fa-moon-o" style="margin-right:5px"></i> Screen Standby
+        </div>
+        <div class="dd-settings-form">
+            <!-- Enable standby -->
+            <div class="form-group" style="margin-bottom:10px">
+                <label class="dd-checkbox-label" ng-click="standby.enabled = !standby.enabled; saveStandbySettings({enabled: standby.enabled})">
+                    <i class="fa dd-bool-icon"
+                       ng-class="standby.enabled ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                    Enable screen standby
+                </label>
+            </div>
+            <!-- Timeout -->
+            <div class="form-group" style="margin-bottom:10px">
+                <label style="display:inline-block;margin-right:8px;font-size:0.9em">
+                    Inactivity timeout (minutes):
+                </label>
+                <input type="number" class="form-control" min="1" max="60"
+                       style="display:inline-block;width:80px"
+                       ng-model="standby.timeout"
+                       ng-change="saveStandbySettings({timeout: standby.timeout})">
+            </div>
+            <!-- Blackout -->
+            <div class="form-group" style="margin-bottom:10px">
+                <label class="dd-checkbox-label" ng-click="standby.blackout = !standby.blackout; saveStandbySettings({blackout: standby.blackout})">
+                    <i class="fa dd-bool-icon"
+                       ng-class="standby.blackout ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                    Full blackout (ignore opacity setting)
+                </label>
+            </div>
+            <!-- Opacity (only shown when not blackout) -->
+            <div class="form-group" style="margin-bottom:4px" ng-hide="standby.blackout">
+                <label style="display:inline-block;margin-right:8px;font-size:0.9em">
+                    Dimmed screen opacity (%):
+                </label>
+                <input type="number" class="form-control" min="0" max="30"
+                       style="display:inline-block;width:80px"
+                       ng-model="standby.opacity"
+                       ng-change="saveStandbySettings({opacity: standby.opacity})">
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-default btn-sm" ng-click="dismiss()">Close</button>
+</div>

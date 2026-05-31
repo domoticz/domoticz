@@ -21,8 +21,8 @@ define(['app'], function (app) {
 							if (data.linkactive) {
 								$('#mqttremote #linkactive').prop('checked', true);
 							}
-							var tls_version = 2;
-							if (tls_version == 0)
+							var tls_version = data.tlsversion;
+							if (!tls_version || tls_version === 0)
 								tls_version = 2;
 							$("#mqttremote #combotlsversion").val(tls_version);
 
@@ -48,7 +48,7 @@ define(['app'], function (app) {
 			}
 			var ipaddress = $('#mqttremote #ipaddress').val();
 			var port = $('#mqttremote #port').val();
-			if (port.Length==0)
+			if (port.length==0)
 				port="1883";
 			var username = $('#mqttremote #username').val();
 			var password = $('#mqttremote #password').val();
