@@ -10,6 +10,20 @@ define(['app'], function(app) {
 
         var baseUrl = 'json.htm?type=command&param=';
 
+        /**
+         * Return a shallow copy of the widgets array sorted in reading order:
+         * top-to-bottom (y ascending), then left-to-right (x ascending).
+         * Missing or non-numeric coordinates are treated as 0. The input array
+         * is never mutated.
+         */
+        function sortWidgetsByPosition(widgets) {
+            return (widgets || []).slice().sort(function(a, b) {
+                var ay = +a.y || 0, by = +b.y || 0;
+                if (ay !== by) { return ay - by; }
+                return (+a.x || 0) - (+b.x || 0);
+            });
+        }
+
         function apiGet(param, extraParams) {
             var url = baseUrl + param;
             if (extraParams) {
@@ -83,7 +97,12 @@ define(['app'], function(app) {
                 isDefault: layoutMeta.isDefault ? 'true' : 'false'
             };
             if (layoutData !== null && layoutData !== undefined) {
-                params.layout = JSON.stringify(layoutData);
+                // Persist widgets in reading order so DOM, tab and z-order match
+                // the visual layout on next load. Keeps other layout keys intact.
+                var serializable = angular.extend({}, layoutData, {
+                    widgets: sortWidgetsByPosition(layoutData.widgets)
+                });
+                params.layout = JSON.stringify(serializable);
             }
             return apiPost('savedashboardlayout', params);
         }
