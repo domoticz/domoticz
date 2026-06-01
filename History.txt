@@ -1,3 +1,5 @@
+Version 2026.xxxx
+
 Version 2026.2 (May 31st 2026)
 - Added: AlfenEve, 'Connected' state switch
 - Added: BuienRadar, new rain sensor based on last 24 hour value instead of rain rate
