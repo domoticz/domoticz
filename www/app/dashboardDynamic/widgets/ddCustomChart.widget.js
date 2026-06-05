@@ -330,7 +330,15 @@ define([
                         xAxis: {
                             type:      'datetime',
                             crosshair: true,
-                            labels:    { style: { fontSize: '10px', color: textColor } }
+                            labels:    { style: { fontSize: '10px', color: textColor } },
+                            min: (function() {
+                                var now = Date.now();
+                                if (cfg.range === 'day')   { return now - 24 * 3600 * 1000; }
+                                if (cfg.range === 'week')  { return now -  7 * 24 * 3600 * 1000; }
+                                if (cfg.range === 'month') { return now - 30 * 24 * 3600 * 1000; }
+                                return undefined;
+                            }()),
+                            max: Date.now()
                         },
                         yAxis:   yAxes,
                         tooltip: {
