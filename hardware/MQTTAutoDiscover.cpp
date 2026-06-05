@@ -941,6 +941,11 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		if (!root["enabled_by_default"].empty())
 			pSensor->bEnabled_by_default = root["enabled_by_default"].asBool();
 
+		if (!root["force_update"].empty())
+			pSensor->bForce_update = root["force_update"].asBool();
+		else if (!root["frc_upd"].empty())
+			pSensor->bForce_update = root["frc_upd"].asBool();
+
 		if (!root["availability_topic"].empty())
 			pSensor->availability_topic = root["availability_topic"].asString();
 		else if (!root["avty_t"].empty())
@@ -4583,7 +4588,7 @@ void MQTTAutoDiscover::handle_auto_discovery_text(_tMQTTASensor* pSensor, const 
 		std::string szIdx = result[0].at(0);
 		std::string devname = result[0].at(1);
 		std::string oldsValue = result[0].at(3);
-		if (oldsValue != pSensor->sValue)
+		if (pSensor->bForce_update || oldsValue != pSensor->sValue)
 		{
 			//Prevent log entry
 			//m_sql.safe_query(
