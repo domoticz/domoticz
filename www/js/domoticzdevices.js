@@ -152,6 +152,15 @@ function stripHTMLTags(text) {
     return text.replace(/<[^>]*>/g, '');
 }
 
+function htmlToBrLines(text) {
+    if (typeof text !== 'string') return text;
+    return text
+        .replace(/<\s*br\s*\/?>/gi, '\n')
+        .replace(/<[^>]*>/g, '')
+        .replace(/(\r\n|\n\r|\r|\n)+/g, '<br />')
+        .replace(/^(<br \/>)+|(<br \/>)+$/g, '');
+}
+
 function stripCssComments(cssText) {
     var out = '', i = 0, len = cssText.length, inStr = false, strCh = '';
     while (i < len) {
@@ -548,7 +557,7 @@ function Device(item) {
                 if (this.hasNewLine) {
                     var oText = makeSVGmultiline(
                         { transform: 'translate(' + Device.iconSize / 2 + ',' + (Device.iconSize + (Device.elementPadding * 1.5) + 1) + ')', 'text-anchor': 'middle', 'font-weight': 'bold', 'font-size': tileFontSize },
-                        $.t(this.smallStatus.replace('Watt', 'W')),
+                        htmlToBrLines(TranslateStatus(this.status)),
                         '',
                         tileMaxWidth,
                         0,
@@ -1452,10 +1461,10 @@ function Alert(item) {
         this.parent.constructor(item);
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
         this.NotifyLink = "";   
-        this.data = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+        this.data = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />');
         if (this.data.indexOf("<br />") != -1) {
             this.hasNewLine = true;
-        }       
+        }
         this.status = this.data;
         this.data = "";
         if (typeof item.Level != 'undefined') {
@@ -1991,7 +2000,7 @@ function Text(item) {
             this.data = item.Data;
             this.hasNewLine = this.data.indexOf("<br />") !== -1 || /[\r\n]/.test(this.data);
         } else {
-            this.data = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+            this.data = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />');
             this.hasNewLine = this.data.indexOf("<br />") !== -1;
         }
         this.status = this.data;
