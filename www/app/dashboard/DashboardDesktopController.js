@@ -34,6 +34,7 @@ define([
 		'$window',
 		'$timeout',
 		'$http',
+		'$sce',
 		'permissions',
 		'livesocket',
 		'dashboardService',
@@ -47,6 +48,7 @@ define([
 			$window,
 			$timeout,
 			$http,
+			$sce,
 			permissions,
 			livesocket,
 			dashboardService,
@@ -254,6 +256,22 @@ define([
 		$scope.nl2br = function (text) {
 			if (!text) return text;
 			return text.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+		};
+
+		// Render Text/Alert device data as HTML through DOMPurify (sanitizeHTML),
+		// the same strict allow-list used by the dynamic dashboard text widgets.
+		// The device value is attacker-controllable (any user >= URIGHTS_USER, MQTT
+		// publishers and reporting hardware can set it), so it must never reach
+		// ng-bind-html unsanitized.
+		$scope.sanitizeDeviceData = function (text, idx) {
+			if (!text) return text;
+			if (typeof sanitizeHTML === 'function') {
+				var scopeId = 'dz-mob-' + (parseInt(idx, 10) || 0);
+				return $sce.trustAsHtml('<div id="' + scopeId + '">' + sanitizeHTML(text, scopeId) + '</div>');
+			}
+			// Defensive fallback: a plain string is still run through Angular's
+			// $sanitize by ng-bind-html (ngSanitize is loaded app-wide).
+			return $scope.nl2br(text);
 		};
 
 			/**
