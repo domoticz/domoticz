@@ -12,6 +12,7 @@
 #include "WebServerHandleGraphInternals.h"
 
 #define __STDC_FORMAT_MACROS
+#include <ctime>
 #include <inttypes.h>
 
 #include <json/json.h>
@@ -20,6 +21,7 @@
 #include "localtime_r.h"
 #include "Logger.h"
 #include "SQLHelper.h"
+
 
 namespace http
 {
@@ -100,6 +102,21 @@ void HandleGraphCustomRange(const GraphContext& ctx, const request& req,
 			std::string sgraphBaro = request::findValue(&req, "graphBaro");
 			std::string sgraphDew = request::findValue(&req, "graphDew");
 			std::string sgraphSet = request::findValue(&req, "graphSet");
+
+			std::string szToday = "";
+			bool bAddToday = false;
+
+			// get today and check if within date range
+			const time_t now = mytime(nullptr);
+			struct tm tmNow;
+			localtime_r(&now, &tmNow);
+			char buf[16];
+			strftime(buf, sizeof(buf), "%Y-%m-%d", &tmNow);
+			szToday = buf;
+			if (szToday >= szDateStart && szToday <= szDateEnd)
+			{
+				bAddToday = true;
+			}
 
 			if (sensor == "temp")
 			{
@@ -298,77 +315,80 @@ void HandleGraphCustomRange(const GraphContext& ctx, const request& req,
 					}
 
 					// add today (have to calculate it)
-					result = sql.safe_query("SELECT MIN(Temperature), MAX(Temperature),"
-						" MIN(Chill), MAX(Chill), AVG(Humidity),"
-						" AVG(Barometer), MIN(DewPoint), AVG(Temperature),"
-						" MIN(SetPoint), MAX(SetPoint), AVG(SetPoint) "
-						"FROM Temperature WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
-						idx, szDateEnd.c_str());
-					if (!result.empty())
+					if (bAddToday)
 					{
-						std::vector<std::string> sd = result[0];
+						result = sql.safe_query("SELECT MIN(Temperature), MAX(Temperature),"
+							" MIN(Chill), MAX(Chill), AVG(Humidity),"
+							" AVG(Barometer), MIN(DewPoint), AVG(Temperature),"
+							" MIN(SetPoint), MAX(SetPoint), AVG(SetPoint) "
+							"FROM Temperature WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+							idx, szToday.c_str());
+						if (!result.empty())
+						{
+							std::vector<std::string> sd = result[0];
 
-						root["result"][ii]["d"] = szDateEnd;
-						if (sendTemp)
-						{
-							double te = ConvertTemperature(atof(sd[1].c_str()), tempsign);
-							double tm = ConvertTemperature(atof(sd[0].c_str()), tempsign);
-							double ta = ConvertTemperature(atof(sd[7].c_str()), tempsign);
-
-							root["result"][ii]["te"] = te;
-							root["result"][ii]["tm"] = tm;
-							root["result"][ii]["ta"] = ta;
-						}
-						if (sendChill)
-						{
-							double ch = ConvertTemperature(atof(sd[3].c_str()), tempsign);
-							double cm = ConvertTemperature(atof(sd[2].c_str()), tempsign);
-							root["result"][ii]["ch"] = ch;
-							root["result"][ii]["cm"] = cm;
-						}
-						if (sendHum)
-						{
-							root["result"][ii]["hu"] = sd[4];
-						}
-						if (sendBaro)
-						{
-							if (dType == pTypeTEMP_HUM_BARO)
+							root["result"][ii]["d"] = szToday;
+							if (sendTemp)
 							{
-								if (dSubType == sTypeTHBFloat)
+								double te = ConvertTemperature(atof(sd[1].c_str()), tempsign);
+								double tm = ConvertTemperature(atof(sd[0].c_str()), tempsign);
+								double ta = ConvertTemperature(atof(sd[7].c_str()), tempsign);
+
+								root["result"][ii]["te"] = te;
+								root["result"][ii]["tm"] = tm;
+								root["result"][ii]["ta"] = ta;
+							}
+							if (sendChill)
+							{
+								double ch = ConvertTemperature(atof(sd[3].c_str()), tempsign);
+								double cm = ConvertTemperature(atof(sd[2].c_str()), tempsign);
+								root["result"][ii]["ch"] = ch;
+								root["result"][ii]["cm"] = cm;
+							}
+							if (sendHum)
+							{
+								root["result"][ii]["hu"] = sd[4];
+							}
+							if (sendBaro)
+							{
+								if (dType == pTypeTEMP_HUM_BARO)
+								{
+									if (dSubType == sTypeTHBFloat)
+									{
+										snprintf(szTmp, sizeof(szTmp), "%.1f", atof(sd[5].c_str()) / 10.0F);
+										root["result"][ii]["ba"] = szTmp;
+									}
+									else
+										root["result"][ii]["ba"] = sd[5];
+								}
+								else if (dType == pTypeTEMP_BARO)
 								{
 									snprintf(szTmp, sizeof(szTmp), "%.1f", atof(sd[5].c_str()) / 10.0F);
 									root["result"][ii]["ba"] = szTmp;
 								}
-								else
-									root["result"][ii]["ba"] = sd[5];
+								else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
+								{
+									snprintf(szTmp, sizeof(szTmp), "%.1f", atof(sd[5].c_str()) / 10.0F);
+									root["result"][ii]["ba"] = szTmp;
+								}
 							}
-							else if (dType == pTypeTEMP_BARO)
+							if (sendDew)
 							{
-								snprintf(szTmp, sizeof(szTmp), "%.1f", atof(sd[5].c_str()) / 10.0F);
-								root["result"][ii]["ba"] = szTmp;
+								double dp = ConvertTemperature(atof(sd[6].c_str()), tempsign);
+								root["result"][ii]["dp"] = dp;
 							}
-							else if ((dType == pTypeGeneral) && (dSubType == sTypeBaro))
+							if (sendSet)
 							{
-								snprintf(szTmp, sizeof(szTmp), "%.1f", atof(sd[5].c_str()) / 10.0F);
-								root["result"][ii]["ba"] = szTmp;
-							}
-						}
-						if (sendDew)
-						{
-							double dp = ConvertTemperature(atof(sd[6].c_str()), tempsign);
-							root["result"][ii]["dp"] = dp;
-						}
-						if (sendSet)
-						{
-							double sm = ConvertTemperature(atof(sd[8].c_str()), tempsign);
-							double sx = ConvertTemperature(atof(sd[9].c_str()), tempsign);
-							double se = ConvertTemperature(atof(sd[10].c_str()), tempsign);
+								double sm = ConvertTemperature(atof(sd[8].c_str()), tempsign);
+								double sx = ConvertTemperature(atof(sd[9].c_str()), tempsign);
+								double se = ConvertTemperature(atof(sd[10].c_str()), tempsign);
 
-							root["result"][ii]["sm"] = sm;
-							root["result"][ii]["se"] = se;
-							root["result"][ii]["sx"] = sx;
+								root["result"][ii]["sm"] = sm;
+								root["result"][ii]["se"] = se;
+								root["result"][ii]["sx"] = sx;
+							}
+							ii++;
 						}
-						ii++;
 					}
 				}
 			}
@@ -391,14 +411,17 @@ void HandleGraphCustomRange(const GraphContext& ctx, const request& req,
 					}
 				}
 				// add today (have to calculate it)
-				result = sql.safe_query("SELECT MAX(Level) FROM UV WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')", idx, szDateEnd.c_str());
-				if (!result.empty())
+				if (bAddToday)
 				{
-					std::vector<std::string> sd = result[0];
+					result = sql.safe_query("SELECT MAX(Level) FROM UV WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')", idx, szToday.c_str());
+					if (!result.empty())
+					{
+						std::vector<std::string> sd = result[0];
 
-					root["result"][ii]["d"] = szDateEnd;
-					root["result"][ii]["uvi"] = sd[0];
-					ii++;
+						root["result"][ii]["d"] = szToday;
+						root["result"][ii]["uvi"] = sd[0];
+						ii++;
+					}
 				}
 			}
 			else if (sensor == "rain")
@@ -420,36 +443,39 @@ void HandleGraphCustomRange(const GraphContext& ctx, const request& req,
 					}
 				}
 				// add today (have to calculate it)
-				if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
+				if (bAddToday)
 				{
-					result = sql.safe_query("SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1", idx,
-						szDateEnd.c_str());
-				}
-				else
-				{
-					result = sql.safe_query("SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')", idx, szDateEnd.c_str());
-				}
-				if (!result.empty())
-				{
-					std::vector<std::string> sd = result[0];
-
-					float total_min = static_cast<float>(atof(sd[0].c_str()));
-					float total_max = static_cast<float>(atof(sd[1].c_str()));
-					// int rate = atoi(sd[2].c_str());
-
-					float total_real = 0;
 					if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
 					{
-						total_real = total_max;
+						result = sql.safe_query("SELECT Total, Total, Rate FROM Rain WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY ROWID DESC LIMIT 1", idx,
+							szToday.c_str());
 					}
 					else
 					{
-						total_real = std::max(0.0F, total_max - total_min);
+						result = sql.safe_query("SELECT MIN(Total), MAX(Total), MAX(Rate) FROM Rain WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')", idx, szToday.c_str());
 					}
-					snprintf(szTmp, sizeof(szTmp), "%.1f", total_real);
-					root["result"][ii]["d"] = szDateEnd;
-					root["result"][ii]["mm"] = szTmp;
-					ii++;
+					if (!result.empty())
+					{
+						std::vector<std::string> sd = result[0];
+
+						float total_min = static_cast<float>(atof(sd[0].c_str()));
+						float total_max = static_cast<float>(atof(sd[1].c_str()));
+						// int rate = atoi(sd[2].c_str());
+
+						float total_real = 0;
+						if (dSubType == sTypeRAINWU || dSubType == sTypeRAINByRate)
+						{
+							total_real = total_max;
+						}
+						else
+						{
+							total_real = std::max(0.0F, total_max - total_min);
+						}
+						snprintf(szTmp, sizeof(szTmp), "%.1f", total_real);
+						root["result"][ii]["d"] = szToday;
+						root["result"][ii]["mm"] = szTmp;
+						ii++;
+					}
 				}
 			}
 			else if (sensor == "counter")
@@ -537,103 +563,106 @@ void HandleGraphCustomRange(const GraphContext& ctx, const request& req,
 					}
 				}
 				// add today (have to calculate it)
-				if (dType == pTypeP1Power)
+				if (bAddToday)
 				{
-					result = sql.safe_query("SELECT MIN(Value1), MAX(Value1), MIN(Value2),"
-						" MAX(Value2),MIN(Value5), MAX(Value5),"
-						" MIN(Value6), MAX(Value6) "
-						"FROM MultiMeter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
-						idx, szDateEnd.c_str());
-					bool bHaveDeliverd = false;
-					if (!result.empty())
+					if (dType == pTypeP1Power)
 					{
-						std::vector<std::string> sd = result[0];
-
-						int64_t total_min_usage_1 = std::stoll(sd[0]);
-						int64_t total_max_usage_1 = std::stoll(sd[1]);
-						int64_t total_min_usage_2 = std::stoll(sd[4]);
-						int64_t total_max_usage_2 = std::stoll(sd[5]);
-						int64_t total_real_usage;
-
-						int64_t total_min_deliv_1 = std::stoll(sd[2]);
-						int64_t total_max_deliv_1 = std::stoll(sd[3]);
-						int64_t total_min_deliv_2 = std::stoll(sd[6]);
-						int64_t total_max_deliv_2 = std::stoll(sd[7]);
-						int64_t total_real_deliv;
-
-						total_real_usage = (total_max_usage_1 + total_max_usage_2) - (total_min_usage_1 + total_min_usage_2);
-						total_real_deliv = (total_max_deliv_1 + total_max_deliv_2) - (total_min_deliv_1 + total_min_deliv_2);
-
-						if (total_real_deliv != 0)
-							bHaveDeliverd = true;
-
-						root["result"][ii]["d"] = szDateEnd;
-
-						snprintf(szTmp, sizeof(szTmp), "%" PRId64, total_real_usage);
-						std::string szValue = szTmp;
-						snprintf(szTmp, sizeof(szTmp), "%.3f", atof(szValue.c_str()) / divider);
-						root["result"][ii]["v1"] = szTmp;
-
-						snprintf(szTmp, sizeof(szTmp), "%" PRId64, total_real_deliv);
-						szValue = szTmp;
-						snprintf(szTmp, sizeof(szTmp), "%.3f", atof(szValue.c_str()) / divider);
-						root["result"][ii]["v2"] = szTmp;
-
-						ii++;
-						if (bHaveDeliverd)
-						{
-							root["delivered"] = true;
-						}
-					}
-				}
-				else if (!bIsManagedCounter)
-				{ // get the first value of the day
-					result = sql.safe_query(
-						//"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
-						"SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date ASC LIMIT 1", idx, szDateEnd.c_str());
-					if (!result.empty())
-					{
-						std::vector<std::string> sd = result[0];
-						int64_t total_min = std::stoll(sd[0]);
-						int64_t total_max = total_min;
-						int64_t total_real;
-
-						// get the last value of the day
-						result = sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1", idx,
-							szDateEnd.c_str());
+						result = sql.safe_query("SELECT MIN(Value1), MAX(Value1), MIN(Value2),"
+							" MAX(Value2),MIN(Value5), MAX(Value5),"
+							" MIN(Value6), MAX(Value6) "
+							"FROM MultiMeter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+							idx, szToday.c_str());
+						bool bHaveDeliverd = false;
 						if (!result.empty())
 						{
 							std::vector<std::string> sd = result[0];
-							total_max = std::stoull(sd[0]);
+
+							int64_t total_min_usage_1 = std::stoll(sd[0]);
+							int64_t total_max_usage_1 = std::stoll(sd[1]);
+							int64_t total_min_usage_2 = std::stoll(sd[4]);
+							int64_t total_max_usage_2 = std::stoll(sd[5]);
+							int64_t total_real_usage;
+
+							int64_t total_min_deliv_1 = std::stoll(sd[2]);
+							int64_t total_max_deliv_1 = std::stoll(sd[3]);
+							int64_t total_min_deliv_2 = std::stoll(sd[6]);
+							int64_t total_max_deliv_2 = std::stoll(sd[7]);
+							int64_t total_real_deliv;
+
+							total_real_usage = (total_max_usage_1 + total_max_usage_2) - (total_min_usage_1 + total_min_usage_2);
+							total_real_deliv = (total_max_deliv_1 + total_max_deliv_2) - (total_min_deliv_1 + total_min_deliv_2);
+
+							if (total_real_deliv != 0)
+								bHaveDeliverd = true;
+
+							root["result"][ii]["d"] = szToday;
+
+							snprintf(szTmp, sizeof(szTmp), "%" PRId64, total_real_usage);
+							std::string szValue = szTmp;
+							snprintf(szTmp, sizeof(szTmp), "%.3f", atof(szValue.c_str()) / divider);
+							root["result"][ii]["v1"] = szTmp;
+
+							snprintf(szTmp, sizeof(szTmp), "%" PRId64, total_real_deliv);
+							szValue = szTmp;
+							snprintf(szTmp, sizeof(szTmp), "%.3f", atof(szValue.c_str()) / divider);
+							root["result"][ii]["v2"] = szTmp;
+
+							ii++;
+							if (bHaveDeliverd)
+							{
+								root["delivered"] = true;
+							}
 						}
-
-						total_real = total_max - total_min;
-						snprintf(szTmp, sizeof(szTmp), "%" PRId64, total_real);							std::string szValue = szTmp;
-
-						switch (metertype)
+					}
+					else if (!bIsManagedCounter)
+					{ // get the first value of the day
+						result = sql.safe_query(
+							//"SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+							"SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date ASC LIMIT 1", idx, szToday.c_str());
+						if (!result.empty())
 						{
-						case MTYPE_ENERGY:
-						case MTYPE_ENERGY_GENERATED:
-							snprintf(szTmp, sizeof(szTmp), "%.3f", atof(szValue.c_str()) / divider);
-							szValue = szTmp;
-							break;
-						case MTYPE_GAS:
-							snprintf(szTmp, sizeof(szTmp), "%.2f", atof(szValue.c_str()) / divider);
-							szValue = szTmp;
-							break;
-						case MTYPE_WATER:
-							snprintf(szTmp, sizeof(szTmp), "%.3f", atof(szValue.c_str()) / divider);
-							szValue = szTmp;
-							break;
-						case MTYPE_COUNTER:
-							snprintf(szTmp, sizeof(szTmp), "%.10g", atof(szValue.c_str()) / divider);
-							szValue = szTmp;
-							break;
-						}
+							std::vector<std::string> sd = result[0];
+							int64_t total_min = std::stoll(sd[0]);
+							int64_t total_max = total_min;
+							int64_t total_real;
 
-						root["result"][ii]["d"] = szDateEnd;
-						root["result"][ii]["v"] = szValue;
-						ii++;
+							// get the last value of the day
+							result = sql.safe_query("SELECT Value FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q') ORDER BY Date DESC LIMIT 1", idx, szToday.c_str());
+							if (!result.empty())
+							{
+								std::vector<std::string> sd = result[0];
+								total_max = std::stoull(sd[0]);
+							}
+
+							total_real = total_max - total_min;
+							snprintf(szTmp, sizeof(szTmp), "%" PRId64, total_real);							
+							std::string szValue = szTmp;
+
+							switch (metertype)
+							{
+							case MTYPE_ENERGY:
+							case MTYPE_ENERGY_GENERATED:
+								snprintf(szTmp, sizeof(szTmp), "%.3f", atof(szValue.c_str()) / divider);
+								szValue = szTmp;
+								break;
+							case MTYPE_GAS:
+								snprintf(szTmp, sizeof(szTmp), "%.2f", atof(szValue.c_str()) / divider);
+								szValue = szTmp;
+								break;
+							case MTYPE_WATER:
+								snprintf(szTmp, sizeof(szTmp), "%.3f", atof(szValue.c_str()) / divider);
+								szValue = szTmp;
+								break;
+							case MTYPE_COUNTER:
+								snprintf(szTmp, sizeof(szTmp), "%.10g", atof(szValue.c_str()) / divider);
+								szValue = szTmp;
+								break;
+							}
+
+							root["result"][ii]["d"] = szToday;
+							root["result"][ii]["v"] = szValue;
+							ii++;
+						}
 					}
 				}
 			}
@@ -663,22 +692,25 @@ void HandleGraphCustomRange(const GraphContext& ctx, const request& req,
 						ii++;
 					}
 				}
-				// add today (have to calculate it)
-				result = sql.safe_query("SELECT AVG(Direction), MIN(Speed), MAX(Speed), MIN(Gust), MAX(Gust) FROM Wind WHERE (DeviceRowID==%" PRIu64
-					" AND Date>='%q') ORDER BY Date ASC",
-					idx, szDateEnd.c_str());
-				if (!result.empty())
+				if (bAddToday)
 				{
-					std::vector<std::string> sd = result[0];
+					// add today (have to calculate it)
+					result = sql.safe_query("SELECT AVG(Direction), MIN(Speed), MAX(Speed), MIN(Gust), MAX(Gust) FROM Wind WHERE (DeviceRowID==%" PRIu64
+						" AND Date>='%q') ORDER BY Date ASC",
+						idx, szToday.c_str());
+					if (!result.empty())
+					{
+						std::vector<std::string> sd = result[0];
 
-					root["result"][ii]["d"] = szDateEnd;
-					root["result"][ii]["di"] = sd[0];
+						root["result"][ii]["d"] = szToday;
+						root["result"][ii]["di"] = sd[0];
 
-					int intSpeed = atoi(sd[2].c_str());
-					int intGust = atoi(sd[4].c_str());
-					root["result"][ii]["sp"] = FormatWindSpeed(intSpeed, sql.m_windunit, sql.m_windscale);
-					root["result"][ii]["gu"] = FormatWindSpeed(intGust, sql.m_windunit, sql.m_windscale);
-					ii++;
+						int intSpeed = atoi(sd[2].c_str());
+						int intGust = atoi(sd[4].c_str());
+						root["result"][ii]["sp"] = FormatWindSpeed(intSpeed, sql.m_windunit, sql.m_windscale);
+						root["result"][ii]["gu"] = FormatWindSpeed(intGust, sql.m_windunit, sql.m_windscale);
+						ii++;
+					}
 				}
 			}
 		else if (sensor == "Percentage")
@@ -702,17 +734,20 @@ void HandleGraphCustomRange(const GraphContext& ctx, const request& req,
 				}
 			}
 			// add today (have to calculate it)
-			result = sql.safe_query("SELECT MIN(Percentage), MAX(Percentage), AVG(Percentage)"
-				" FROM Percentage WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
-				idx, szDateEnd.c_str());
-			if (!result.empty() && !result[0][0].empty())
+			if (bAddToday)
 			{
-				const auto& sd = result[0];
-				root["result"][ii]["d"]     = szDateEnd;
-				root["result"][ii]["v_min"] = sd[0];
-				root["result"][ii]["v_max"] = sd[1];
-				root["result"][ii]["v_avg"] = sd[2];
-				ii++;
+				result = sql.safe_query("SELECT MIN(Percentage), MAX(Percentage), AVG(Percentage)"
+					" FROM Percentage WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
+					idx, szToday.c_str());
+				if (!result.empty() && !result[0][0].empty())
+				{
+					const auto& sd = result[0];
+					root["result"][ii]["d"] = szToday;
+					root["result"][ii]["v_min"] = sd[0];
+					root["result"][ii]["v_max"] = sd[1];
+					root["result"][ii]["v_avg"] = sd[2];
+					ii++;
+				}
 			}
 		}
 		else if (sensor == "fan")
@@ -735,16 +770,19 @@ void HandleGraphCustomRange(const GraphContext& ctx, const request& req,
 				}
 			}
 			// add today (have to calculate it)
-			result = sql.safe_query("SELECT MIN(Speed), MAX(Speed) FROM Fan"
-				" WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
-				idx, szDateEnd.c_str());
-			if (!result.empty() && !result[0][0].empty())
+			if (bAddToday)
 			{
-				const auto& sd = result[0];
-				root["result"][ii]["d"]     = szDateEnd;
-				root["result"][ii]["v_min"] = sd[0];
-				root["result"][ii]["v_max"] = sd[1];
-				ii++;
+				result = sql.safe_query("SELECT MIN(Speed), MAX(Speed) FROM Fan"
+					" WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')",
+					idx, szToday.c_str());
+				if (!result.empty() && !result[0][0].empty())
+				{
+					const auto& sd = result[0];
+					root["result"][ii]["d"] = szToday;
+					root["result"][ii]["v_min"] = sd[0];
+					root["result"][ii]["v_max"] = sd[1];
+					ii++;
+				}
 			}
 		}
 
