@@ -17,6 +17,12 @@ define([
         if (type.indexOf('Temp') >= 0 || sub.indexOf('Temp') >= 0) {
             return { sensor: 'temp', field: function(d){ return d.te !== undefined ? d.te : d.v; }, unit: '°' };
         }
+        if (type === 'General' && sub === 'Voltage') {
+            return { sensor: 'counter', field: function(d){ return d.v }, unit: 'V' };
+        }
+        if (type === 'General' && sub === 'Current') {
+            return { sensor: 'counter', field: function(d){ return d.v }, unit: 'A' };
+        }
         if (type.indexOf('Meter') >= 0 || type === 'Cube Electric' ||
             (type === 'General' && (sub === 'kWh' || sub === 'Counter Incremental' || sub === 'Managed Counter'))) {
             if (stv === 1) { return { sensor: 'counter', field: function(d){ return d.v; }, unit: 'm³' }; }
