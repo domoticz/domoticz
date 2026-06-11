@@ -14,9 +14,9 @@
 #include <locale>
 
 #define BUIENRADAR_URL "https://data.buienradar.nl/2.0/feed/json"
-#define BUIENRADAR_ACTUAL_URL "https://observations.buienradar.nl/1.0/Actual/weatherstation/" //station_id
+#define BUIENRADAR_ACTUAL_URL "https://observations.buienradar.nl/1.0/actual/weatherstation/" //station_id
 #define BUIENRADAR_GRAFIEK_URL "https://www.buienradar.nl/nederland/weerbericht/weergrafieken/" //station_id
-//#define BUIENRARA_GRAFIEK_HISTORY_URL "https://graphdata.buienradar.nl/1.0/Actualarchive/weatherstation/6370?startDate=2019-09-15"
+//#define BUIENRARA_GRAFIEK_HISTORY_URL "https://graphdata.buienradar.nl/1.0/actualarchive/weatherstation/6370?startDate=2019-09-15"
 
 #define BUIENRADAR_RAIN "https://gpsgadget.buienradar.nl/data/raintext/?lat=" // + m_szMyLatitude + "&lon=" + m_szMyLongitude;
 
