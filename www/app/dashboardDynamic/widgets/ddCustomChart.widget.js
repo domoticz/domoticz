@@ -17,6 +17,13 @@ define([
         if (type.indexOf('Temp') >= 0 || sub.indexOf('Temp') >= 0) {
             return { sensor: 'temp', field: function(d){ return d.te !== undefined ? d.te : d.v; }, unit: '°' };
         }
+        if (type === 'Percentage' || sub === 'Percentage' || type.indexOf('Percent') >= 0) {
+            return {
+                sensor: 'Percentage', 
+                field: function(d) { return d.v !== undefined ? d.v : d.v1; },
+                unit: '%'
+            };
+        }
         if (type === 'General' && sub === 'Voltage') {
             return { sensor: 'counter', field: function(d){ return d.v }, unit: 'V' };
         }
