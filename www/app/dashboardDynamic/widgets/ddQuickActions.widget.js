@@ -95,6 +95,9 @@ define([
                             ctrl.deviceOn[a.idx] = (updated.Status === 'On');
                         } else if (a.type === 'blind') {
                             ctrl.blindStatus[a.idx] = getBlindStatus(updated.Status);
+                            if (a.hasLevel && updated.LevelInt !== undefined) {
+                                ctrl.dimLevel[a.idx] = updated.LevelInt;
+                            }
                         } else if (a.type === 'security') {
                             ctrl.securityStatus[a.idx] = updated.Status;
                         } else if (a.type === 'dimmer') {
@@ -133,6 +136,23 @@ define([
                     if (status === 'Open' || (status && status.indexOf('Set ') === 0)) { return 'open'; }
                     if (status === 'Stopped') { return 'stopped'; }
                     return 'closed';
+                }
+
+                function blindHasStop(d) {
+                    return (d.SubType === 'RAEX' || d.SubType === 'Harrison') ||
+                        (d.SubType && (d.SubType.indexOf('A-OK') === 0 || d.SubType.indexOf('Hasta') >= 0 ||
+                                       d.SubType.indexOf('Media Mount') === 0 || d.SubType.indexOf('Forest') === 0 ||
+                                       d.SubType.indexOf('Chamberlain') === 0 || d.SubType.indexOf('Sunpery') === 0 ||
+                                       d.SubType.indexOf('Dolat') === 0 || d.SubType.indexOf('ASP') === 0 ||
+                                       d.SubType.indexOf('RFY') === 0 || d.SubType.indexOf('ASA') === 0 ||
+                                       d.SubType.indexOf('DC106') === 0 || d.SubType.indexOf('Confexx') === 0)) ||
+                        (d.SwitchType && (d.SwitchType.indexOf('Venetian Blinds') === 0 ||
+                                          d.SwitchType.indexOf('Stop') >= 0));
+                }
+
+                function blindHasLevel(d) {
+                    return !!(d.SwitchType && (d.SwitchType.indexOf('Percentage') >= 0 ||
+                                               d.SwitchType.indexOf('%') >= 0));
                 }
 
                 function getLevelLabel(idx, levelInt) {
@@ -204,7 +224,12 @@ define([
                                 ctrl.currentLevel[action.idx]     = item.LevelInt;
                                 ctrl.currentLevelText[action.idx] = getLevelLabel(action.idx, item.LevelInt);
                             } else if (action.type === 'blind') {
+                                action.hasStop  = blindHasStop(item);
+                                action.hasLevel = blindHasLevel(item);
                                 ctrl.blindStatus[action.idx] = getBlindStatus(item.Status);
+                                if (action.hasLevel) {
+                                    ctrl.dimLevel[action.idx] = item.LevelInt !== undefined ? item.LevelInt : 0;
+                                }
                             } else {
                                 var isLocked = item.SwitchType === 'Door Lock' || item.SwitchType === 'Door Lock Inverted';
                                 var isDimmer = item.SwitchType === 'Dimmer';
@@ -288,7 +313,11 @@ define([
                         $http.get('json.htm', { params: { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: 'Set Level', level: level, passcode: passcode } })
                             .then(function(resp) {
                                 if (resp.data && resp.data.status === 'OK') {
-                                    ctrl.deviceOn[action.idx] = level > 0;
+                                    if (action.type === 'blind') {
+                                        fetchDeviceState(action);
+                                    } else {
+                                        ctrl.deviceOn[action.idx] = level > 0;
+                                    }
                                     ctrl.success[action.idx + '_dim'] = true;
                                     $timeout(function() { ctrl.success[action.idx + '_dim'] = false; }, 1200);
                                 } else {

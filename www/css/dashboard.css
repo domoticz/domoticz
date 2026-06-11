@@ -1708,6 +1708,7 @@ body.dd-navbar-hidden .dd-toolbar {
     width: 100%;
     box-sizing: border-box;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
     min-width: 0;
     padding: 6px 10px;
@@ -1722,6 +1723,11 @@ body.dd-navbar-hidden .dd-toolbar {
 
 .dd-quick-actions--list .dd-qa-blind-btns {
     width: auto;
+}
+
+.dd-quick-actions--list .dd-qa-blind-group > .dd-qa-dim-slider-row {
+    flex: 0 0 100%;
+    padding: 4px 0 2px;
 }
 
 .dd-qa-group-group {

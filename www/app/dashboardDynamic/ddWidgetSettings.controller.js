@@ -229,6 +229,11 @@ define([
                                       d.SwitchType.indexOf('Stop') >= 0));
             }
 
+            function actionDeviceHasLevel(d) {
+                return !!(d.SwitchType && (d.SwitchType.indexOf('Percentage') >= 0 ||
+                                           d.SwitchType.indexOf('%') >= 0));
+            }
+
             function lookupActionDevice(idx) {
                 return ($scope.actionDevices || []).find(function(d) { return String(d.idx) === String(idx); });
             }
@@ -302,7 +307,7 @@ define([
 
                 } else if (d && d.SwitchType && d.SwitchType.indexOf('Blinds') >= 0) {
                     if (!label) { label = d.Name; }
-                    $scope.config[fieldKey].push({ type: 'blind', idx: String(a.idx), label: label, hasStop: actionDeviceHasStop(d) });
+                    $scope.config[fieldKey].push({ type: 'blind', idx: String(a.idx), label: label, hasStop: actionDeviceHasStop(d), hasLevel: actionDeviceHasLevel(d) });
 
                 } else if (d && d.SwitchType === 'Dimmer') {
                     if (!label) { label = d.Name; }
