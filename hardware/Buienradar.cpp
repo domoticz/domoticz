@@ -14,9 +14,9 @@
 #include <locale>
 
 #define BUIENRADAR_URL "https://data.buienradar.nl/2.0/feed/json"
-#define BUIENRADAR_ACTUAL_URL "https://observations.buienradar.nl/1.0/actual/weatherstation/" //station_id
+#define BUIENRADAR_ACTUAL_URL "https://observations.buienradar.nl/1.0/Actual/weatherstation/" //station_id
 #define BUIENRADAR_GRAFIEK_URL "https://www.buienradar.nl/nederland/weerbericht/weergrafieken/" //station_id
-//#define BUIENRARA_GRAFIEK_HISTORY_URL "https://graphdata.buienradar.nl/1.0/actualarchive/weatherstation/6370?startDate=2019-09-15"
+//#define BUIENRARA_GRAFIEK_HISTORY_URL "https://graphdata.buienradar.nl/1.0/Actualarchive/weatherstation/6370?startDate=2019-09-15"
 
 #define BUIENRADAR_RAIN "https://gpsgadget.buienradar.nl/data/raintext/?lat=" // + m_szMyLatitude + "&lon=" + m_szMyLongitude;
 
@@ -268,18 +268,18 @@ bool CBuienRadar::GetStationDetails()
 		return false;
 	}
 
-	if (root["actual"].empty() == true)
+	if (root["Actual"].empty() == true)
 	{
-		Log(LOG_ERROR, "Invalid data received (actual empty), or no data returned!");
+		Log(LOG_ERROR, "Invalid data received (Actual empty), or no data returned!");
 		return false;
 	}
-	if (root["actual"]["stationmeasurements"].empty() == true)
+	if (root["Actual"]["WeatherStationMeasurements"].empty() == true)
 	{
-		// Main feed has empty stationmeasurements (known Buienradar server-side issue).
+		// Main feed has empty WeatherStationMeasurements (known Buienradar server-side issue).
 		// If we already have a station ID, try the individual station API as fallback.
 		if (m_iStationID != 0)
 		{
-			Log(LOG_STATUS, "Main feed stationmeasurements empty, trying individual station API for station %d...", m_iStationID);
+			Log(LOG_STATUS, "Main feed WeatherStationMeasurements empty, trying individual station API for station %d...", m_iStationID);
 
 			std::string szStationUrl = std::string(BUIENRADAR_ACTUAL_URL) + std::to_string(m_iStationID);
 			std::string sStationResult;
@@ -287,14 +287,14 @@ bool CBuienRadar::GetStationDetails()
 			if (HTTPClient::GET(szStationUrl, sStationResult))
 			{
 				Json::Value stationRoot;
-				if (ParseJSon(sStationResult, stationRoot) && stationRoot.isObject() && !stationRoot["temperature"].empty())
+				if (ParseJSon(sStationResult, stationRoot) && stationRoot.isObject() && !stationRoot["Temperature"].empty())
 				{
 					if (m_sStationName.empty())
 					{
-						m_sStationName = stationRoot["stationname"].asString();
-						m_sStationRegion = stationRoot["regio"].asString();
-						m_szMyLatitude = FormatCoordinate(stationRoot["lat"].asDouble());
-						m_szMyLongitude = FormatCoordinate(stationRoot["lon"].asDouble());
+						m_sStationName = stationRoot["StationName"].asString();
+						m_sStationRegion = stationRoot["Region"].asString();
+						m_szMyLatitude = FormatCoordinate(stationRoot["Latitude"].asDouble());
+						m_szMyLongitude = FormatCoordinate(stationRoot["Longitude"].asDouble());
 						Log(LOG_STATUS, "Using Station: %s (%s), ID: %d, Lat/Lon: %g,%g",
 							m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID,
 							atof(m_szMyLatitude.c_str()), atof(m_szMyLongitude.c_str()));
@@ -309,7 +309,7 @@ bool CBuienRadar::GetStationDetails()
 		}
 		else
 		{
-			Log(LOG_ERROR, "Main feed stationmeasurements empty and no station ID known yet - cannot fall back!");
+			Log(LOG_ERROR, "Main feed WeatherStationMeasurements empty and no station ID known yet - cannot fall back!");
 			return false;
 		}
 	}
@@ -323,13 +323,13 @@ bool CBuienRadar::GetStationDetails()
 		double shortest_station_lat = 0;
 		double shortest_station_lon = 0;
 
-		for (const auto &measurement : root["actual"]["stationmeasurements"])
+		for (const auto &measurement : root["Actual"]["WeatherStationMeasurements"])
 		{
-			if (measurement["temperature"].empty())
+			if (measurement["Temperature"].empty())
 				continue;
 
-			double lat = measurement["lat"].asDouble();
-			double lon = measurement["lon"].asDouble();
+			double lat = measurement["Latitude"].asDouble();
+			double lon = measurement["Longitude"].asDouble();
 
 			double distance_km = distanceEarth(
 				MyLatitude, MyLongitude,
@@ -340,9 +340,9 @@ bool CBuienRadar::GetStationDetails()
 				shortest_distance_km = distance_km;
 				shortest_station_lat = lat;
 				shortest_station_lon = lon;
-				m_iStationID = measurement["stationid"].asInt();
-				m_sStationName = measurement["stationname"].asString();
-				m_sStationRegion = measurement["regio"].asString();
+				m_iStationID = measurement["StationId"].asInt();
+				m_sStationName = measurement["StationName"].asString();
+				m_sStationRegion = measurement["Region"].asString();
 			}
 		}
 		if (m_iStationID == 0)
@@ -354,12 +354,12 @@ bool CBuienRadar::GetStationDetails()
 	}
 
 	// StationID is known by now
-	for (const auto &measurement : root["actual"]["stationmeasurements"])
+	for (const auto &measurement : root["Actual"]["WeatherStationMeasurements"])
 	{
-		if (measurement["temperature"].empty())
+		if (measurement["Temperature"].empty())
 			continue;
 
-		int StationID = measurement["stationid"].asInt();
+		int StationID = measurement["StationId"].asInt();
 
 		if (StationID == m_iStationID)
 		{
@@ -367,11 +367,11 @@ bool CBuienRadar::GetStationDetails()
 			
 			if (m_sStationName.empty())
 			{
-				//set name and region
-				m_sStationName = measurement["stationname"].asString();
-				m_sStationRegion = measurement["regio"].asString();
-				m_szMyLatitude = FormatCoordinate(measurement["lat"].asDouble());
-				m_szMyLongitude = FormatCoordinate(measurement["lon"].asDouble());
+				//set name and Regionn
+				m_sStationName = measurement["StationName"].asString();
+				m_sStationRegion = measurement["Region"].asString();
+				m_szMyLatitude = FormatCoordinate(measurement["Latitude"].asDouble());
+				m_szMyLongitude = FormatCoordinate(measurement["Longitude"].asDouble());
 				Log(LOG_STATUS, "Using Station: %s (%s), ID: %d, Lat/Lon: %g,%g", m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID, atof(m_szMyLatitude.c_str()), atof(m_szMyLongitude.c_str()));
 			}
 			ParseMeterDetails(measurement);
@@ -387,14 +387,14 @@ bool CBuienRadar::GetStationDetails()
 		if (HTTPClient::GET(szStationUrl, sStationResult))
 		{
 			Json::Value stationRoot;
-			if (ParseJSon(sStationResult, stationRoot) && stationRoot.isObject() && !stationRoot["temperature"].empty())
+			if (ParseJSon(sStationResult, stationRoot) && stationRoot.isObject() && !stationRoot["Temperature"].empty())
 			{
 				if (m_sStationName.empty())
 				{
-					m_sStationName = stationRoot["stationname"].asString();
-					m_sStationRegion = stationRoot["regio"].asString();
-					m_szMyLatitude = FormatCoordinate(stationRoot["lat"].asDouble());
-					m_szMyLongitude = FormatCoordinate(stationRoot["lon"].asDouble());
+					m_sStationName = stationRoot["StationName"].asString();
+					m_sStationRegion = stationRoot["Region"].asString();
+					m_szMyLatitude = FormatCoordinate(stationRoot["Latitude"].asDouble());
+					m_szMyLongitude = FormatCoordinate(stationRoot["Longitude"].asDouble());
 					Log(LOG_STATUS, "Using Station: %s (%s), ID: %d, Lat/Lon: %g,%g",
 						m_sStationName.c_str(), m_sStationRegion.c_str(), m_iStationID,
 						atof(m_szMyLatitude.c_str()), atof(m_szMyLongitude.c_str()));
@@ -427,12 +427,12 @@ bool CBuienRadar::GetStationDetails()
 
 void CBuienRadar::ParseMeterDetails(const Json::Value& root)
 {
-	if (root["timestamp"].empty() == true || (root["stationid"].empty() == true && root["stationId"].empty() == true))
+	if (root["Timestamp"].empty() == true || (root["StationId"].empty() == true && root["StationId"].empty() == true))
 	{
 		Log(LOG_ERROR, "Invalid data received (timestamp or staionid missing) or no data returned!");
 		return;
 	}
-	if (root["temperature"].empty() == true)
+	if (root["Temperature"].empty() == true)
 	{
 		Log(LOG_ERROR, "Invalid data received (temperature missing) or no data returned!");
 		return;
@@ -446,17 +446,17 @@ void CBuienRadar::ParseMeterDetails(const Json::Value& root)
 	float barometric = 0;
 	uint8_t barometric_forecast = wsbaroforecast_unknown;
 
-	if (!root["temperature"].empty())
+	if (!root["Temperature"].empty())
 	{
-		temp = root["temperature"].asFloat();
+		temp = root["Temperature"].asFloat();
 	}
-	if (!root["humidity"].empty())
+	if (!root["Humidity"].empty())
 	{
-		humidity = root["humidity"].asInt();
+		humidity = root["Humidity"].asInt();
 	}
-	if (!root["airpressure"].empty())
+	if (!root["AirPressure"].empty())
 	{
-		barometric = root["airpressure"].asFloat();
+		barometric = root["AirPressure"].asFloat();
 		if (barometric < 1000)
 		{
 			barometric_forecast = wsbaroforecast_rain;
@@ -486,28 +486,28 @@ void CBuienRadar::ParseMeterDetails(const Json::Value& root)
 		SendTempSensor(1, 255, temp, "Temp");
 	}
 
-	if (!root["groundtemperature"].empty())
+	if (!root["GroundTemperature"].empty())
 	{
-		float tempGround = root["groundtemperature"].asFloat();
+		float tempGround = root["GroundTemperature"].asFloat();
 		SendTempSensor(2, 255, tempGround, "Ground Temperature (10 cm)");
 	}
-	if (!root["feeltemperature"].empty())
+	if (!root["FeelTemperature"].empty())
 	{
-		float tempFeel = root["feeltemperature"].asFloat();
+		float tempFeel = root["FeelTemperature"].asFloat();
 		SendTempSensor(3, 255, tempFeel, "Feel Temperature");
 	}
 
-	if (!root["weatherdescription"].empty())
+	if (!root["WeatherDescription"].empty())
 	{
-		std::string weatherdescription = root["weatherdescription"].asString();
+		std::string weatherdescription = root["WeatherDescription"].asString();
 		SendTextSensor(1, 1, 255, weatherdescription, "Weather Description");
 	}
 
-	if (!root["winddirectiondegrees"].empty())
+	if (!root["WindDirection"].empty())
 	{
-		int wind_direction = root["winddirectiondegrees"].asInt();
-		float wind_gusts = root["windgusts"].asFloat();
-		float wind_speed = root["windspeed"].asFloat();
+		int wind_direction = root["WindDirection"].asInt();
+		float wind_gusts = root["WindGusts"].asFloat();
+		float wind_speed = root["Windspeed"].asFloat();
 
 		float wind_chill;
 		if ((temp < 10.0) && (wind_speed >= 1.4))
@@ -518,31 +518,31 @@ void CBuienRadar::ParseMeterDetails(const Json::Value& root)
 		SendWind(1, 255, wind_direction, wind_speed, wind_gusts, temp, wind_chill, temp != -999.9F, true, "Wind");
 	}
 
-	if (!root["visibility"].empty())
+	if (!root["Visibility"].empty())
 	{
-		float visibility = root["visibility"].asFloat() / 1000.0F;
+		float visibility = root["Visibility"].asFloat() / 1000.0F;
 		SendVisibilitySensor(1, 1, 255, visibility, "Visibility");
 	}
 
-	if (!root["sunpower"].empty())
+	if (!root["Sunpower"].empty())
 	{
-		float sunpower = root["sunpower"].asFloat();
+		float sunpower = root["Sunpower"].asFloat();
 		SendCustomSensor(2, 1, 255, sunpower, "Sun Power", "watt/m2");
 	}
 
-	if (!root["precipitation"].empty())
+	if (!root["Precipitation"].empty())
 	{
-		float precipitation = root["precipitation"].asFloat();
+		float precipitation = root["Precipitation"].asFloat();
 
 		double total_rain = -1;
 		float rain_rate = precipitation;
-		if (!root["rainFallLastHour"].empty())
+		if (!root["RainfallLastHour"].empty())
 		{
-			rain_rate = root["rainFallLastHour"].asFloat();
+			rain_rate = root["RainfallLastHour"].asFloat();
 		}
-		if (!root["rainFallLast24Hour"].empty())
+		if (!root["RainfallLast24Hour"].empty())
 		{
-			total_rain = root["rainFallLast24Hour"].asDouble();
+			total_rain = root["RainfallLast24Hour"].asDouble();
 		}
 
 		SendRainRateSensor(1, 255, precipitation, "Rain");
