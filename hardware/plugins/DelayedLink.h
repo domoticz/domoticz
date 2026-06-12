@@ -19,7 +19,7 @@
 #ifdef _DEBUG
 #    undef _DEBUG   // Not compatible with Py_LIMITED_API
 #endif
-#define Py_LIMITED_API 0x03040000 
+#define Py_LIMITED_API 0x03040000
 #include <Python.h>
 #include <structmember.h>
 #include "../../main/Logger.h"
@@ -53,7 +53,7 @@ namespace Plugins {
 		void* shared_lib_;
 #endif
 		PyObject* Py_None;
-			
+
 		// Shared library interface begin.
 		DECLARE_PYTHON_SYMBOL(const char*, Py_GetVersion, );
 		DECLARE_PYTHON_SYMBOL(int, Py_IsInitialized, );
@@ -180,8 +180,6 @@ namespace Plugins {
 			std::string extension;
 #ifdef WIN32
 			extension = ".dll"; // Windows uses .dll
-#elif defined(__FreeBSD__)
-			extension = "m";    // FreeBSD uses 'm' suffix
 #endif
 			// Loop through the set (it is already sorted in descending order)
             for (const auto& version : python_versions) {
