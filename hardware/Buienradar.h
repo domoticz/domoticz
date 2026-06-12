@@ -17,6 +17,7 @@ private:
 	bool StopHardware() override;
 	void Do_Work();
 	bool GetStationDetails();
+	bool GetStationObservation(int stationID, Json::Value &stationRoot);
 	void ParseMeterDetails(const Json::Value &root);
 	void GetRainPrediction();
 	bool GetLatLongFromSystem();
