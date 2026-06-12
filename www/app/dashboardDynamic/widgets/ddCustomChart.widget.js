@@ -17,10 +17,11 @@ define([
         if (type.indexOf('Temp') >= 0 || sub.indexOf('Temp') >= 0) {
             return { sensor: 'temp', field: function(d){ return d.te !== undefined ? d.te : d.v; }, unit: '°' };
         }
-        if (type === 'Percentage' || sub === 'Percentage' || type.indexOf('Percent') >= 0) {
+        if (sub === 'Percentage') {
+            // Day range returns `v`; month/year aggregates return v_min/v_max/v_avg.
             return {
-                sensor: 'Percentage', 
-                field: function(d) { return d.v !== undefined ? d.v : d.v1; },
+                sensor: 'Percentage',
+                field: function(d) { return d.v !== undefined ? d.v : d.v_avg; },
                 unit: '%'
             };
         }
