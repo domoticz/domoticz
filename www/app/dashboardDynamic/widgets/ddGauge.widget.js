@@ -112,6 +112,7 @@ define([
                             }
                         }
                         if (matched) {
+                            if (matched.color) { return matched.color; }
                             if (matched.status === 'critical') { return 'var(--dz-accent-red)'; }
                             if (matched.status === 'warning')  { return 'var(--dz-widget-amber)'; }
                             return 'var(--dz-widget-energy-export)';
