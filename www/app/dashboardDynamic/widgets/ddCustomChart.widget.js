@@ -17,6 +17,14 @@ define([
         if (type.indexOf('Temp') >= 0 || sub.indexOf('Temp') >= 0) {
             return { sensor: 'temp', field: function(d){ return d.te !== undefined ? d.te : d.v; }, unit: '°' };
         }
+        if (sub === 'Percentage') {
+            // Day range returns `v`; month/year aggregates return v_min/v_max/v_avg.
+            return {
+                sensor: 'Percentage',
+                field: function(d) { return d.v !== undefined ? d.v : d.v_avg; },
+                unit: '%'
+            };
+        }
         if (type === 'General' && sub === 'Voltage') {
             return { sensor: 'counter', field: function(d){ return d.v }, unit: 'V' };
         }
