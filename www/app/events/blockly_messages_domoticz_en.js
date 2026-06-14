@@ -50,6 +50,7 @@ define(['blockly'], function() {
     Blockly.LANG_LOGIC_BOOLEAN_TOOLTIP = 'Returns either true or false.';
     Blockly.DOMOTICZSWITCHES_TOOLTIP = 'A list of switchable devices. Can be used in an IF statement to check current state, or in a "Set" block in a DO statement to change the state.';
     Blockly.DOMOTICZUSERVARIABLES_TOOLTIP = 'A list of user defined variables. Can be used in an IF statement to check current value, or in a "Set" block in a DO statement to change the value.';
+    Blockly.DOMOTICZVARIABLES_LASTUPDATE_TOOLTIP = 'Returns the age of a device last update as a number. Use with a Time or All trigger for stale-device checks.';
     Blockly.DOMOTICZVARIABLES_TEMPERATURE_TOOLTIP = 'This is a temperature measurement device. Use it in an IF statement to check valid temperature values,\ni.e. "if Bathroom temperature > 20". Cannot be used in Set blocks.';
     Blockly.DOMOTICZVARIABLES_HUMIDITY_TOOLTIP = 'This is a humidity measurement device. Use it in an IF statement to check valid humidity values, i.e. "if Bathroom humidity > 50". The percentage sign is omitted. Cannot be used in Set blocks.';
     Blockly.DOMOTICZVARIABLES_DEWPOINT_TOOLTIP = 'This is a dewpoint measurement device. Use it in an IF statement to check valid temperature values,\ni.e. "if Bathroom temperature > 20". Cannot be used in Set blocks.';
@@ -96,6 +97,8 @@ define(['blockly'], function() {
     Blockly.DOMOTICZCONTROLS_MSG_AFTER = 'After ';
     Blockly.DOMOTICZCONTROLS_MSG_SECONDS = 'seconds';
     Blockly.DOMOTICZCONTROLS_MSG_MINUTES = 'minutes';
+    Blockly.DOMOTICZCONTROLS_MSG_HOURS = 'hours';
+    Blockly.DOMOTICZCONTROLS_MSG_SINCE_LASTUPDATE = 'since last update of';
     Blockly.DOMOTICZCONTROLS_MSG_RANDOM = 'Random within';
     Blockly.DOMOTICZCONTROLS_MSG_SETLEVEL = 'Level (%)';
     Blockly.DOMOTICZCONTROLS_MSG_TIME = 'Time';
@@ -109,4 +112,3 @@ define(['blockly'], function() {
     Blockly.DOMOTICZCONTROLS_MSG_DEGREES = 'Degrees';
     Blockly.DOMOTICZCONTROLS_MSG_ZWAVEALARMS = 'Value';
 });
-

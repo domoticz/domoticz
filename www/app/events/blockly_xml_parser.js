@@ -59,6 +59,19 @@ define(function () {
                 var fieldA = $(value).find('field')[0];
                 return 'variable[' + $(fieldA).text() + ']';
             }
+            else if (variableType.indexOf('lastupdateddevice') >= 0) {
+                var fieldA = $(value).find('field[name=\'Device\']')[0];
+                var fieldUnit = $(value).find('field[name=\'Unit\']')[0];
+                var expression = '(lastupdateddevice[' + $(fieldA).text() + '] or 0)';
+                var unit = $(fieldUnit).text();
+                if (unit == 'minutes') {
+                    return '(' + expression + '/60)';
+                }
+                else if (unit == 'hours') {
+                    return '(' + expression + '/3600)';
+                }
+                return expression;
+            }
             else if (variableType == 'temperaturevariables') {
                 var fieldA = $(value).find('field')[0];
                 return 'temperaturedevice[' + $(fieldA).text() + ']';

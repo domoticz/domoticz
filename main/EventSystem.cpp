@@ -36,6 +36,12 @@ struct ScriptNameReport {
 	std::string name;
 };
 
+struct LastUpdateTableEntry
+{
+	uint64_t id = 0;
+	std::string lastUpdate;
+};
+
 static int l_reportScriptName(lua_State *L)
 {
 	auto *report = static_cast<ScriptNameReport *>(lua_touserdata(L, lua_upvalueindex(1)));
@@ -43,6 +49,42 @@ static int l_reportScriptName(lua_State *L)
 	std::lock_guard<std::mutex> lock(report->mtx);
 	report->name = name;
 	return 0;
+}
+
+static int l_returnZero(lua_State *L)
+{
+	lua_pushinteger(L, 0);
+	return 1;
+}
+
+static void SetTableDefaultZero(lua_State *lua_state, const char *tableName)
+{
+	lua_getglobal(lua_state, tableName);
+	if (!lua_istable(lua_state, -1))
+	{
+		lua_pop(lua_state, 1);
+		return;
+	}
+
+	lua_newtable(lua_state);
+	lua_pushliteral(lua_state, "__index");
+	lua_pushcfunction(lua_state, l_returnZero);
+	lua_settable(lua_state, -3);
+	lua_setmetatable(lua_state, -2);
+	lua_pop(lua_state, 1);
+}
+
+static int64_t SecondsSinceLastUpdate(const std::string &lastUpdate, const time_t now, const int isdst)
+{
+	if (lastUpdate.empty())
+		return 0;
+
+	time_t lastUpdateTime = 0;
+	struct tm lastUpdateTm = {};
+	if (!ParseSQLdatetime(lastUpdateTime, lastUpdateTm, lastUpdate, isdst) || (now < lastUpdateTime))
+		return 0;
+
+	return static_cast<int64_t>(now - lastUpdateTime);
 }
 
 bool g_bUseEventTrigger = true;
@@ -1822,16 +1864,30 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	lua_setglobal(lua_state, "print");
 
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
-	
+
 	CLuaTable luaTable(lua_state, "device", (int)m_devicestates.size(), 0);
+	std::vector<LastUpdateTableEntry> deviceLastUpdates;
+	deviceLastUpdates.reserve(m_devicestates.size());
 
 	for (const auto &state : m_devicestates)
 	{
-		_tDeviceStatus sitem = state.second;
-		luaTable.AddString(sitem.ID, sitem. nValueWording);
+		const _tDeviceStatus &sitem = state.second;
+		luaTable.AddString(sitem.ID, sitem.nValueWording);
+		deviceLastUpdates.push_back({ sitem.ID, sitem.lastUpdate });
 	}
 	luaTable.Publish();
 	devicestatesMutexLock.unlock();
+
+	time_t atime = mytime(nullptr);
+	struct tm tm1 = {};
+	const int isdst = (localtime_r(&atime, &tm1) != nullptr) ? tm1.tm_isdst : -1;
+	luaTable.InitTable(lua_state, "lastupdateddevice", (int)deviceLastUpdates.size(), 0);
+	for (const auto &deviceLastUpdate : deviceLastUpdates)
+	{
+		luaTable.AddInteger(deviceLastUpdate.id, SecondsSinceLastUpdate(deviceLastUpdate.lastUpdate, atime, isdst));
+	}
+	luaTable.Publish();
+	SetTableDefaultZero(lua_state, "lastupdateddevice");
 
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 	
@@ -2047,6 +2103,8 @@ void CEventSystem::EvaluateDatabaseEvents(const _tEventQueue &item)
 						found = event.Conditions.find("timeofday");
 						if (found == std::string::npos)
 							found = event.Conditions.find("weekday");
+						if (found == std::string::npos)
+							found = event.Conditions.find("lastupdateddevice");
 					}
 					else if ((item.reason == REASON_USERVARIABLE) && (item.id > 0))
 					{

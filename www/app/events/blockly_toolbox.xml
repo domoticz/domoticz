@@ -21,6 +21,10 @@
         <block type="logic_weekday"></block>
         <block type="logic_timevalue"></block>
         <block type="logic_sunrisesunset"></block>
+        <block type="lastupdateddeviceAF"></block>
+        <block type="lastupdateddeviceGL"></block>
+        <block type="lastupdateddeviceMR"></block>
+        <block type="lastupdateddeviceSZ"></block>
     </category>
     <category name="Messages">
         <block type="send_notification"></block>

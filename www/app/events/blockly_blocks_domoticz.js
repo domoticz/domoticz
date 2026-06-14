@@ -4,6 +4,11 @@ define(['blockly', 'blockly-blocks', 'blockly-msg-en', 'app/events/blockly_messa
     var switchesMR = [];
     var switchesSZ = [];
 
+    var lastUpdateDevicesAF = [];
+    var lastUpdateDevicesGL = [];
+    var lastUpdateDevicesMR = [];
+    var lastUpdateDevicesSZ = [];
+
     var utilities = [];
     var utilitiesAF = [];
     var utilitiesGL = [];
@@ -57,6 +62,36 @@ define(['blockly', 'blockly-blocks', 'blockly-msg-en', 'app/events/blockly_messa
     if (switchesGL.length === 0) { switchesGL.push(["No devices found", '0']); }
     if (switchesMR.length === 0) { switchesMR.push(["No devices found", '0']); }
     if (switchesSZ.length === 0) { switchesSZ.push(["No devices found", '0']); }
+
+    $.ajax({
+        url: "json.htm?type=command&param=getdevices&filter=all&used=true&order=Name&displayhidden=1",
+        async: false,
+        dataType: 'json',
+        success: function (data) {
+            if (typeof data.result != 'undefined') {
+                $.each(data.result, function (i, item) {
+                    if ("ghijkl".indexOf(item.Name.charAt(0).toLowerCase()) > -1) {
+                        lastUpdateDevicesGL.push([item.Name, item.idx])
+                    }
+                    else if ("mnopqr".indexOf(item.Name.charAt(0).toLowerCase()) > -1) {
+                        lastUpdateDevicesMR.push([item.Name, item.idx])
+                    }
+                    else if ("stuvwxyz".indexOf(item.Name.charAt(0).toLowerCase()) > -1) {
+                        lastUpdateDevicesSZ.push([item.Name, item.idx])
+                    }
+                    // numbers etc with the a list
+                    else {
+                        lastUpdateDevicesAF.push([item.Name, item.idx])
+                    }
+                })
+            }
+        }
+    });
+
+    if (lastUpdateDevicesAF.length === 0) { lastUpdateDevicesAF.push(["No devices found", '0']); }
+    if (lastUpdateDevicesGL.length === 0) { lastUpdateDevicesGL.push(["No devices found", '0']); }
+    if (lastUpdateDevicesMR.length === 0) { lastUpdateDevicesMR.push(["No devices found", '0']); }
+    if (lastUpdateDevicesSZ.length === 0) { lastUpdateDevicesSZ.push(["No devices found", '0']); }
 
     $.ajax({
         url: "json.htm?type=command&param=getdevices&filter=temp&used=true&order=Name&displayhidden=1",
@@ -230,6 +265,11 @@ define(['blockly', 'blockly-blocks', 'blockly-msg-en', 'app/events/blockly_messa
     switchesMR.sort();
     switchesSZ.sort();
 
+    lastUpdateDevicesAF.sort();
+    lastUpdateDevicesGL.sort();
+    lastUpdateDevicesMR.sort();
+    lastUpdateDevicesSZ.sort();
+
     utilities.sort();
     utilitiesAF.sort();
     utilitiesGL.sort();
@@ -306,6 +346,74 @@ define(['blockly', 'blockly-blocks', 'blockly-msg-en', 'app/events/blockly_messa
             this.setTooltip(Blockly.DOMOTICZSWITCHES_TOOLTIP);
         }
     };
+
+    Blockly.Blocks['lastupdateddeviceAF'] = {
+        // Device last update age getter.
+        category: null,
+        init: function () {
+            this.setColour(Blockly.Msg["MATH_HUE"]);
+            this.appendDummyInput()
+                .appendField(new Blockly.FieldDropdown(this.UNITS), 'Unit')
+                .appendField(Blockly.DOMOTICZCONTROLS_MSG_SINCE_LASTUPDATE)
+                .appendField('A-F ')
+                .appendField(new Blockly.FieldDropdown(lastUpdateDevicesAF), 'Device');
+            this.setOutput(true, 'Number');
+            this.setTooltip(Blockly.DOMOTICZVARIABLES_LASTUPDATE_TOOLTIP);
+        }
+    };
+
+    Blockly.Blocks['lastupdateddeviceGL'] = {
+        // Device last update age getter.
+        category: null,
+        init: function () {
+            this.setColour(Blockly.Msg["MATH_HUE"]);
+            this.appendDummyInput()
+                .appendField(new Blockly.FieldDropdown(this.UNITS), 'Unit')
+                .appendField(Blockly.DOMOTICZCONTROLS_MSG_SINCE_LASTUPDATE)
+                .appendField('G-L ')
+                .appendField(new Blockly.FieldDropdown(lastUpdateDevicesGL), 'Device');
+            this.setOutput(true, 'Number');
+            this.setTooltip(Blockly.DOMOTICZVARIABLES_LASTUPDATE_TOOLTIP);
+        }
+    };
+
+    Blockly.Blocks['lastupdateddeviceMR'] = {
+        // Device last update age getter.
+        category: null,
+        init: function () {
+            this.setColour(Blockly.Msg["MATH_HUE"]);
+            this.appendDummyInput()
+                .appendField(new Blockly.FieldDropdown(this.UNITS), 'Unit')
+                .appendField(Blockly.DOMOTICZCONTROLS_MSG_SINCE_LASTUPDATE)
+                .appendField('M-R ')
+                .appendField(new Blockly.FieldDropdown(lastUpdateDevicesMR), 'Device');
+            this.setOutput(true, 'Number');
+            this.setTooltip(Blockly.DOMOTICZVARIABLES_LASTUPDATE_TOOLTIP);
+        }
+    };
+
+    Blockly.Blocks['lastupdateddeviceSZ'] = {
+        // Device last update age getter.
+        category: null,
+        init: function () {
+            this.setColour(Blockly.Msg["MATH_HUE"]);
+            this.appendDummyInput()
+                .appendField(new Blockly.FieldDropdown(this.UNITS), 'Unit')
+                .appendField(Blockly.DOMOTICZCONTROLS_MSG_SINCE_LASTUPDATE)
+                .appendField('S-Z ')
+                .appendField(new Blockly.FieldDropdown(lastUpdateDevicesSZ), 'Device');
+            this.setOutput(true, 'Number');
+            this.setTooltip(Blockly.DOMOTICZVARIABLES_LASTUPDATE_TOOLTIP);
+        }
+    };
+
+    Blockly.Blocks['lastupdateddeviceAF'].UNITS =
+    Blockly.Blocks['lastupdateddeviceGL'].UNITS =
+    Blockly.Blocks['lastupdateddeviceMR'].UNITS =
+    Blockly.Blocks['lastupdateddeviceSZ'].UNITS =
+        [[Blockly.DOMOTICZCONTROLS_MSG_SECONDS, 'seconds'],
+            [Blockly.DOMOTICZCONTROLS_MSG_MINUTES, 'minutes'],
+            [Blockly.DOMOTICZCONTROLS_MSG_HOURS, 'hours']];
 
     Blockly.Blocks['utilityvariables'] = {
         // Variable getter.
@@ -1240,6 +1348,5 @@ define(['blockly', 'blockly-blocks', 'blockly-msg-en', 'app/events/blockly_messa
             ['>', 'GT'],
             ['\u2265', 'GTE']];
 });
-
 
 
