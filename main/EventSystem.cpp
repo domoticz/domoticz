@@ -36,12 +36,6 @@ struct ScriptNameReport {
 	std::string name;
 };
 
-struct LastUpdateTableEntry
-{
-	uint64_t id = 0;
-	std::string lastUpdate;
-};
-
 static int l_reportScriptName(lua_State *L)
 {
 	auto *report = static_cast<ScriptNameReport *>(lua_touserdata(L, lua_upvalueindex(1)));
@@ -57,9 +51,9 @@ static int l_returnZero(lua_State *L)
 	return 1;
 }
 
-static void SetTableDefaultZero(lua_State *lua_state, const char *tableName)
+static void SetLuaTableDefaultToZero(lua_State *lua_state, const char *szTableName)
 {
-	lua_getglobal(lua_state, tableName);
+	lua_getglobal(lua_state, szTableName);
 	if (!lua_istable(lua_state, -1))
 	{
 		lua_pop(lua_state, 1);
@@ -74,17 +68,17 @@ static void SetTableDefaultZero(lua_State *lua_state, const char *tableName)
 	lua_pop(lua_state, 1);
 }
 
-static int64_t SecondsSinceLastUpdate(const std::string &lastUpdate, const time_t now, const int isdst)
+static int64_t GetSecondsSinceLastUpdate(const std::string &sLastUpdate, const time_t atime, const int iIsDST)
 {
-	if (lastUpdate.empty())
+	if (sLastUpdate.empty())
 		return 0;
 
-	time_t lastUpdateTime = 0;
-	struct tm lastUpdateTm = {};
-	if (!ParseSQLdatetime(lastUpdateTime, lastUpdateTm, lastUpdate, isdst) || (now < lastUpdateTime))
+	time_t tLastUpdate = 0;
+	struct tm tmLastUpdate = {};
+	if (!ParseSQLdatetime(tLastUpdate, tmLastUpdate, sLastUpdate, iIsDST) || (atime < tLastUpdate))
 		return 0;
 
-	return static_cast<int64_t>(now - lastUpdateTime);
+	return static_cast<int64_t>(atime - tLastUpdate);
 }
 
 bool g_bUseEventTrigger = true;
@@ -1864,30 +1858,29 @@ lua_State *CEventSystem::CreateBlocklyLuaState()
 	lua_setglobal(lua_state, "print");
 
 	boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
-
 	CLuaTable luaTable(lua_state, "device", (int)m_devicestates.size(), 0);
-	std::vector<LastUpdateTableEntry> deviceLastUpdates;
-	deviceLastUpdates.reserve(m_devicestates.size());
+	std::vector<std::pair<uint64_t, std::string>> vDeviceLastUpdates;
+	vDeviceLastUpdates.reserve(m_devicestates.size());
 
 	for (const auto &state : m_devicestates)
 	{
 		const _tDeviceStatus &sitem = state.second;
 		luaTable.AddString(sitem.ID, sitem.nValueWording);
-		deviceLastUpdates.push_back({ sitem.ID, sitem.lastUpdate });
+		vDeviceLastUpdates.emplace_back(sitem.ID, sitem.lastUpdate);
 	}
 	luaTable.Publish();
 	devicestatesMutexLock.unlock();
 
 	time_t atime = mytime(nullptr);
 	struct tm tm1 = {};
-	const int isdst = (localtime_r(&atime, &tm1) != nullptr) ? tm1.tm_isdst : -1;
-	luaTable.InitTable(lua_state, "lastupdateddevice", (int)deviceLastUpdates.size(), 0);
-	for (const auto &deviceLastUpdate : deviceLastUpdates)
+	const int iIsDST = (localtime_r(&atime, &tm1) != nullptr) ? tm1.tm_isdst : -1;
+	luaTable.InitTable(lua_state, "device_lastupdate", (int)vDeviceLastUpdates.size(), 0);
+	for (const auto &[ulDeviceID, sLastUpdate] : vDeviceLastUpdates)
 	{
-		luaTable.AddInteger(deviceLastUpdate.id, SecondsSinceLastUpdate(deviceLastUpdate.lastUpdate, atime, isdst));
+		luaTable.AddInteger(ulDeviceID, GetSecondsSinceLastUpdate(sLastUpdate, atime, iIsDST));
 	}
 	luaTable.Publish();
-	SetTableDefaultZero(lua_state, "lastupdateddevice");
+	SetLuaTableDefaultToZero(lua_state, "device_lastupdate");
 
 	boost::shared_lock<boost::shared_mutex> uservariablesMutexLock(m_uservariablesMutex);
 	
@@ -2104,7 +2097,7 @@ void CEventSystem::EvaluateDatabaseEvents(const _tEventQueue &item)
 						if (found == std::string::npos)
 							found = event.Conditions.find("weekday");
 						if (found == std::string::npos)
-							found = event.Conditions.find("lastupdateddevice");
+							found = event.Conditions.find("device_lastupdate");
 					}
 					else if ((item.reason == REASON_USERVARIABLE) && (item.id > 0))
 					{
@@ -2279,6 +2272,31 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 			sstr << itt->second;
 			return sstr.str();
 		}
+	}
+	else if (Argument.find("device_lastupdate") != std::string::npos)
+	{
+		std::string sLastUpdate;
+		{
+			boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+			auto itt = m_devicestates.find(dindex);
+			if (itt == m_devicestates.end())
+				return ret;
+			sLastUpdate = itt->second.lastUpdate;
+		}
+
+		time_t atime = mytime(nullptr);
+		struct tm tm1 = {};
+		const int iIsDST = (localtime_r(&atime, &tm1) != nullptr) ? tm1.tm_isdst : -1;
+		const int64_t iSeconds = GetSecondsSinceLastUpdate(sLastUpdate, atime, iIsDST);
+
+		std::stringstream sstr;
+		if (Argument.find("/3600") != std::string::npos)
+			sstr << (static_cast<double>(iSeconds) / 3600);
+		else if (Argument.find("/60") != std::string::npos)
+			sstr << (static_cast<double>(iSeconds) / 60);
+		else
+			sstr << iSeconds;
+		return sstr.str();
 	}
 	else if (Argument.find("variable") == 0)
 	{
