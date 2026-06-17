@@ -379,7 +379,7 @@ define(['app', 'widgets/dzBar'], function (app) {
                     ctrl.barRanges = ctrl.getBarRanges();
                     if (!ctrl.barRanges.length) { ctrl.barNumVal = undefined; return; }
                     var dataStr;
-                    if (device.Type === 'P1 Smart Meter') {
+                    if (device.Type === 'P1 Smart Meter' && device.SubType !== 'Gas') {
                         var usageVal  = parseFloat((device.Usage      || '').replace(',', '.'));
                         var delivVal  = parseFloat((device.UsageDeliv || '').replace(',', '.'));
                         if (!isNaN(usageVal) && !isNaN(delivVal)) {
