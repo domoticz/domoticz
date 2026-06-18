@@ -164,14 +164,16 @@ define([
                                    (isNaN(maxNum) || maxNum === 100) &&
                                    (!Array.isArray(cfg.ranges) || cfg.ranges.length === 0);
                     if (!pristine) { return; }
+                    // Hex values (not CSS vars) so the range editor's
+                    // <input type="color"> can render them.
                     cfg.min    = 0;
                     cfg.max    = 4;
                     cfg.ranges = [
-                        { from: 0, to: 0, color: 'var(--dz-widget-stat-muted)' },    // undefined
-                        { from: 1, to: 1, color: 'var(--dz-widget-energy-export)' }, // normal
-                        { from: 2, to: 2, color: 'var(--dz-widget-amber)' },         // warning
-                        { from: 3, to: 3, color: 'var(--dz-accent-orange)' },        // alert
-                        { from: 4, to: 4, color: 'var(--dz-accent-red)' }            // alarm
+                        { from: 0, to: 0, color: '#9e9e9e' }, // undefined - grey
+                        { from: 1, to: 1, color: '#66bb6a' }, // normal    - green
+                        { from: 2, to: 2, color: '#ffb300' }, // warning   - amber
+                        { from: 3, to: 3, color: '#fb8c00' }, // alert     - orange
+                        { from: 4, to: 4, color: '#df2d3a' }  // alarm     - red
                     ];
                 }
 
