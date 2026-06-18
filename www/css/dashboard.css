@@ -3309,6 +3309,22 @@ body.dd-standby::after {
 .dd-gauge-text-link:hover { fill: var(--dz-accent-color); opacity: 1; }
 .dd-gauge-title { margin-bottom: 4px; }
 .dd-gauge-temp-sub-txt { font-size: 6px; fill: var(--dz-body-text); opacity: 0.70; }
+.dd-gauge-alert-text {
+    position: absolute;
+    left: 50%;
+    top: 62%;
+    transform: translate(-50%, -50%);
+    width: 66%;
+    max-height: 60%;
+    overflow: hidden;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.2;
+    color: var(--dz-body-text);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    pointer-events: none;
+}
 
 /* ── Dial widget ──────────────────────────────────────────── */
 

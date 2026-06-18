@@ -26,11 +26,11 @@
                         ng-attr-stroke-dasharray="{{ ctrl.strokeDasharray() }}"
                         stroke-dashoffset="0"
                         transform="rotate(160 50 56)"/>
-                <!-- Value text inside arc — clickable to device log -->
-                <text class="dd-gauge-text-value dd-gauge-text-link" x="50" y="41" text-anchor="middle" dominant-baseline="middle"
+                <!-- Value text inside arc — clickable to device log (hidden for alert sensors) -->
+                <text ng-if="!ctrl.isAlert" class="dd-gauge-text-value dd-gauge-text-link" x="50" y="41" text-anchor="middle" dominant-baseline="middle"
                       ng-click="ctrl.goToLog()">{{ ctrl.valueStr() }}</text>
                 <!-- Unit text below value — clickable to device log -->
-                <text class="dd-gauge-text-unit dd-gauge-text-link" x="50" y="54" text-anchor="middle" dominant-baseline="middle"
+                <text ng-if="!ctrl.isAlert" class="dd-gauge-text-unit dd-gauge-text-link" x="50" y="54" text-anchor="middle" dominant-baseline="middle"
                       ng-click="ctrl.goToLog()" ng-bind="ctrl.unitStr()"></text>
                 <!-- Sub-values for Temp+Hum / Temp+Hum+Baro.
                      viewBox bottom = y 74; value@41, unit@54; sub-values stacked below.
@@ -45,6 +45,8 @@
                       x="50" ng-attr-y="{{ ctrl.humidity !== null ? 70 : 64 }}"
                       text-anchor="middle" dominant-baseline="middle"><tspan style="font-family:'Font Awesome 7 Free';font-weight:900;font-size:4.5px;">&#xf624;</tspan> {{ ctrl.baro }} hPa</text>
             </svg>
+            <!-- Alert sensor descriptive text (sanitized HTML), wrapped inside the gauge -->
+            <div ng-if="ctrl.alertHtml" class="dd-gauge-alert-text" ng-bind-html="ctrl.alertHtml"></div>
         </div>
     </div>
 </div>

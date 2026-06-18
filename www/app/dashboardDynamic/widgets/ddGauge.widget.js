@@ -73,13 +73,15 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$q', '$location', function($scope, $http, $q, $location) {
+            controller: ['$scope', '$http', '$q', '$location', '$sce', function($scope, $http, $q, $location, $sce) {
                 var ctrl      = this;
                 ctrl.title    = '';
                 ctrl.value    = null;
                 ctrl.humidity = null;
                 ctrl.baro     = null;
                 ctrl.autoUnit = '';
+                ctrl.alertHtml = null;
+                ctrl.isAlert  = false;
                 var cancelToken = null;
 
                 ctrl.unitStr = function() {
@@ -180,6 +182,8 @@ define([
                 function applyDevice(d) {
                     var cfg   = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
                     ctrl.title = cfg.title || d.Name || '';
+                    ctrl.alertHtml = null;
+                    ctrl.isAlert   = false;
 
                     // Temp / Temp+Hum / Temp+Hum+Baro
                     if (d.Temp !== undefined) {
@@ -213,6 +217,15 @@ define([
                         var lvl = parseInt(d.Level, 10);
                         ctrl.value    = isNaN(lvl) ? null : lvl;
                         ctrl.autoUnit = '';
+                        ctrl.isAlert  = true;
+                        // Alert text (d.Data) may contain HTML — sanitize via the shared
+                        // DOMPurify helper (allow-list + scoped <style>), like ddTextSensor.
+                        var aScope = 'dz-ddg-' + String(parseInt(d.idx || cfg.deviceIdx, 10) || 0);
+                        var aRaw   = String(d.Data || '').trim();
+                        if (aRaw) {
+                            var aClean = (typeof sanitizeHTML === 'function') ? sanitizeHTML(aRaw, aScope) : aRaw;
+                            ctrl.alertHtml = $sce.trustAsHtml('<div id="' + aScope + '">' + aClean + '</div>');
+                        }
                         return;
                     }
 
