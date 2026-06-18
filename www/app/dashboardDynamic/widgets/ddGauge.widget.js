@@ -154,6 +154,27 @@ define([
                     return fill + ' ' + CIRCUMFERENCE;
                 };
 
+                // When an Alert sensor is first wired up and the gauge is still at
+                // the generic schema defaults (0-100, no ranges), switch it to the
+                // 0-4 alert scale with the standard Domoticz alert-level palette.
+                function seedAlertDefaults(cfg) {
+                    var minNum = parseFloat(cfg.min);
+                    var maxNum = parseFloat(cfg.max);
+                    var pristine = (isNaN(minNum) || minNum === 0) &&
+                                   (isNaN(maxNum) || maxNum === 100) &&
+                                   (!Array.isArray(cfg.ranges) || cfg.ranges.length === 0);
+                    if (!pristine) { return; }
+                    cfg.min    = 0;
+                    cfg.max    = 4;
+                    cfg.ranges = [
+                        { from: 0, to: 0, color: 'var(--dz-widget-stat-muted)' },    // undefined
+                        { from: 1, to: 1, color: 'var(--dz-widget-energy-export)' }, // normal
+                        { from: 2, to: 2, color: 'var(--dz-widget-amber)' },         // warning
+                        { from: 3, to: 3, color: 'var(--dz-accent-orange)' },        // alert
+                        { from: 4, to: 4, color: 'var(--dz-accent-red)' }            // alarm
+                    ];
+                }
+
                 function applyDevice(d) {
                     var cfg   = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
                     ctrl.title = cfg.title || d.Name || '';
@@ -180,6 +201,16 @@ define([
                         var hv = parseInt(d.Humidity, 10);
                         ctrl.value    = isNaN(hv) ? null : hv;
                         ctrl.autoUnit = '%';
+                        return;
+                    }
+
+                    // Alert sensor — value is the numeric alert Level (0-4), not the
+                    // descriptive text in d.Data (which may start with a word, not a number)
+                    if (d.Level !== undefined && (d.SubType === 'Alert' || d.TypeImg === 'Alert')) {
+                        seedAlertDefaults(cfg);
+                        var lvl = parseInt(d.Level, 10);
+                        ctrl.value    = isNaN(lvl) ? null : lvl;
+                        ctrl.autoUnit = '';
                         return;
                     }
 
