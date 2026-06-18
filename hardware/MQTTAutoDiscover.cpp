@@ -398,7 +398,12 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 				}
 			}
 			if (suffix.empty())
-				return root.asString();
+			{
+				if (root.isObject() || root.isArray())
+					return ""; //we don't support arrays as return value, probably a configuration issue
+				else
+					return root.asString();
+			}
 			else
 			{
 				if (root[suffix].empty())
