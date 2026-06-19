@@ -1,5 +1,15 @@
 Version 2026.xxxx
+- Added: Dashboard Dynamic, Custom Chart widget supports Voltage, Current and Percentage (average) sensor types
+- Added: Dashboard Dynamic, dial setpoint widget, click the centre value to open a popup for precise numeric entry; dragging the ring still sets the value
+- Added: Dashboard Dynamic, gauge widget supports Alert sensors, using the alert level for the value and colour zones and showing the alert text inside the dial
 - Added: Dashboard Dynamic, Quick Actions blind buttons now include a Stop button for blinds that support it and a position slider for percentage-capable blinds
+- Added: Dashboard Dynamic, Wind chart widget week chart type
+- Fixed: API/JSON, counter devices now respect a custom date range (#6845)
+- Fixed: Buienradar, support new PascalCase API keys and restore station coordinate lookup
+- Fixed: Dashboard Dynamic, P1 Smart Meter gas widget now shows the usage bar
+- Fixed: Dashboard Mobile, sanitize Text/Alert device data on the classic mobile view
+- Fixed: Floorplan, preserve line breaks in Text/Alert sensor display (#6844)
+- Fixed: FreeBSD, removed Python 'm' suffix so Python plugin support builds correctly (#6852)
 - Fixed: MQTT Auto Discovery, honor the force_update flag so text sensors update on repeated identical values (e.g. Kerui panic button)
 
 Version 2026.2 (May 31st 2026)
