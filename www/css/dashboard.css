@@ -945,7 +945,7 @@ body.dd-navbar-hidden .dd-toolbar {
 .dd-weather-temp {
     font-size: 2.2em;
     font-weight: 700;
-    color: var(--dz-body-text);
+    color: var(--dz-widget-accent);
     text-shadow: 0 1px 3px rgba(0,0,0,0.6);
     line-height: 1;
 }
