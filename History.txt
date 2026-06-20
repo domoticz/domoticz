@@ -1,5 +1,12 @@
 Version 2026.xxxx
+- Added: Dashboard Dynamic, Custom Chart widget now supports Voltage, Current and Percentage sensor types
 - Added: Dashboard Dynamic, Quick Actions blind buttons now include a Stop button for blinds that support it and a position slider for percentage-capable blinds
+- Fixed: BuienRadar, adapt to the new PascalCase API keys and restore station coordinate lookup so weather and rain forecast data work again
+- Fixed: Counter, API/JSON graph requests with a custom date range now return correct counter data (#6845)
+- Fixed: Dashboard, Text/Alert device values on the classic mobile view are now HTML-sanitized (scripts and event handlers stripped) while legitimate formatting is preserved
+- Fixed: Dashboard Dynamic, gauge widget now uses the per-range colors configured in the range list instead of always showing the default colour
+- Fixed: Events, Automation Wizard no longer shows empty device dropdowns when a device and a scene/group share the same idx; device options now list 'Name (Type/SubType)'
+- Fixed: Floorplan, Text/Alert sensors with multiple lines now preserve line breaks instead of flattening onto one comma-separated line
 - Fixed: MQTT Auto Discovery, honor the force_update flag so text sensors update on repeated identical values (e.g. Kerui panic button)
 
 Version 2026.2 (May 31st 2026)
