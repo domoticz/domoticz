@@ -940,6 +940,7 @@ body.dd-navbar-hidden .dd-toolbar {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    z-index: 1;
 }
 
 .dd-weather-temp {
@@ -979,8 +980,27 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 .dd-baro-title { position: absolute; top: 8px; left: 8px; z-index: 1; }
-.dd-baro-log-icon { position: absolute; bottom: 8px; right: 8px; opacity: 0.6; }
+.dd-baro-value-link { display: inline-block; text-decoration: none; cursor: pointer; }
+.dd-baro-value-link:hover { text-decoration: none; opacity: 0.85; }
+.dd-baro-log-icon { position: absolute; bottom: 8px; right: 8px; opacity: 0.6; z-index: 1; }
 .dd-baro-log-icon:hover { opacity: 1; }
+
+/* Stat Counter: anchor the sparkline to the card and keep content above it */
+.dd-widget--stat-counter .dd-stat-card { position: relative; }
+.dd-stat-counter-content { position: relative; z-index: 1; }
+
+/* Generic always-on sparkline strip along the bottom of a widget.
+   Reusable by any widget that wants a background trend line; the widget
+   renders a borderless Highcharts areaspline into the container. */
+.dd-widget-spark {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 38%;
+    pointer-events: none;
+    z-index: 0;
+}
 
 /* ── Weather Widget — forecast card style ─────────────────── */
 .dd-weather-forecast-card {

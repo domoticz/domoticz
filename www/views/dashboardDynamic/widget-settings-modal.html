@@ -82,14 +82,21 @@
                        name="field_{{ field.key }}">
             </dz-picker>
 
-            <!-- device-picker -->
-            <dz-picker ng-if="field.type === 'device-picker'"
-                       ng-model="config[field.key]"
-                       dz-options="pickerOptions[field.key]"
-                       placeholder="{{'-- Select Device --' | translate}}"
-                       dz-required="field.required"
-                       name="field_{{ field.key }}">
-            </dz-picker>
+            <!-- device-picker (+ optional per-device metric selector) -->
+            <div ng-if="field.type === 'device-picker'">
+                <dz-picker ng-model="config[field.key]"
+                           dz-options="pickerOptions[field.key]"
+                           placeholder="{{'-- Select Device --' | translate}}"
+                           dz-required="field.required"
+                           name="field_{{ field.key }}">
+                </dz-picker>
+                <select ng-if="field.metricKey && metricOptionsFor(field).length > 1"
+                        class="combobox ui-corner-all"
+                        style="margin-top:4px"
+                        ng-model="config[field.metricKey]"
+                        ng-options="o.value as (o.label | translate) for o in metricOptionsFor(field)">
+                </select>
+            </div>
 
             <!-- scene-picker -->
             <dz-picker ng-if="field.type === 'scene-picker'"

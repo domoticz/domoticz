@@ -1,12 +1,17 @@
 Version 2026.xxxx
+- Added: Dashboard Dynamic, Barometer widget can show an optional 24-hour pressure trend graph, and clicking the pressure value opens the barometer log
+- Added: Dashboard Dynamic, Custom Chart and Stat Counter widgets let you choose which value of a multi-sensor device to use (Temperature, Humidity, Barometer or Setpoint, or Auto)
 - Added: Dashboard Dynamic, Custom Chart widget supports Voltage, Current and Percentage (average) sensor types
 - Added: Dashboard Dynamic, dial setpoint widget, click the centre value to open a popup for precise numeric entry; dragging the ring still sets the value
 - Added: Dashboard Dynamic, gauge widget supports Alert sensors, using the alert level for the value and colour zones and showing the alert text inside the dial
 - Added: Dashboard Dynamic, Quick Actions blind buttons now include a Stop button for blinds that support it and a position slider for percentage-capable blinds
+- Added: Dashboard Dynamic, Stat Counter widget can show an optional 24-hour trend graph
 - Added: Dashboard Dynamic, Wind chart widget week chart type
 - Fixed: API/JSON, counter devices now respect a custom date range (#6845)
 - Fixed: Buienradar, support new PascalCase API keys and restore station coordinate lookup
+- Fixed: Dashboard Dynamic, Custom Chart temperature axis now shows the configured unit (°C/°F) instead of only a degree symbol
 - Fixed: Dashboard Dynamic, P1 Smart Meter gas widget now shows the usage bar
+- Fixed: Dashboard Dynamic, Rain chart 'Last 24h' view now renders the rain rate and cumulative series again
 - Fixed: Dashboard Mobile, sanitize Text/Alert device data on the classic mobile view
 - Fixed: Floorplan, preserve line breaks in Text/Alert sensor display (#6844)
 - Fixed: FreeBSD, removed Python 'm' suffix so Python plugin support builds correctly (#6852)
