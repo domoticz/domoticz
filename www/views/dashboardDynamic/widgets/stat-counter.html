@@ -19,8 +19,9 @@
         <div ng-if="ctrl.counterDelivTotal !== null" class="dd-stat-sub">
             {{'Total Delivery' | translate}}: {{ctrl.counterDelivTotal}}
         </div>
-        <dd-stat-bar num-val="ctrl.numVal" ranges="ctrl.widgetDef.config.ranges"></dd-stat-bar>
     </div>
+
+    <dd-stat-bar ng-if="ctrl.widgetDef.config.deviceIdx" num-val="ctrl.numVal" ranges="ctrl.widgetDef.config.ranges"></dd-stat-bar>
 
     <div class="dd-widget-spark" id="{{ ctrl.sparkId }}" ng-show="ctrl.showGraph"></div>
 
