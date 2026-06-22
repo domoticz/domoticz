@@ -73,13 +73,15 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$q', '$location', function($scope, $http, $q, $location) {
+            controller: ['$scope', '$http', '$q', '$location', '$sce', function($scope, $http, $q, $location, $sce) {
                 var ctrl      = this;
                 ctrl.title    = '';
                 ctrl.value    = null;
                 ctrl.humidity = null;
                 ctrl.baro     = null;
                 ctrl.autoUnit = '';
+                ctrl.alertHtml = null;
+                ctrl.isAlert  = false;
                 var cancelToken = null;
 
                 ctrl.unitStr = function() {
@@ -154,9 +156,34 @@ define([
                     return fill + ' ' + CIRCUMFERENCE;
                 };
 
+                // When an Alert sensor is first wired up and the gauge is still at
+                // the generic schema defaults (0-100, no ranges), switch it to the
+                // 0-4 alert scale with the standard Domoticz alert-level palette.
+                function seedAlertDefaults(cfg) {
+                    var minNum = parseFloat(cfg.min);
+                    var maxNum = parseFloat(cfg.max);
+                    var pristine = (isNaN(minNum) || minNum === 0) &&
+                                   (isNaN(maxNum) || maxNum === 100) &&
+                                   (!Array.isArray(cfg.ranges) || cfg.ranges.length === 0);
+                    if (!pristine) { return; }
+                    // Hex values (not CSS vars) so the range editor's
+                    // <input type="color"> can render them.
+                    cfg.min    = 0;
+                    cfg.max    = 4;
+                    cfg.ranges = [
+                        { from: 0, to: 0, color: '#9e9e9e' }, // undefined - grey
+                        { from: 1, to: 1, color: '#66bb6a' }, // normal    - green
+                        { from: 2, to: 2, color: '#ffb300' }, // warning   - amber
+                        { from: 3, to: 3, color: '#fb8c00' }, // alert     - orange
+                        { from: 4, to: 4, color: '#df2d3a' }  // alarm     - red
+                    ];
+                }
+
                 function applyDevice(d) {
                     var cfg   = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
                     ctrl.title = cfg.title || d.Name || '';
+                    ctrl.alertHtml = null;
+                    ctrl.isAlert   = false;
 
                     // Temp / Temp+Hum / Temp+Hum+Baro
                     if (d.Temp !== undefined) {
@@ -180,6 +207,25 @@ define([
                         var hv = parseInt(d.Humidity, 10);
                         ctrl.value    = isNaN(hv) ? null : hv;
                         ctrl.autoUnit = '%';
+                        return;
+                    }
+
+                    // Alert sensor — value is the numeric alert Level (0-4), not the
+                    // descriptive text in d.Data (which may start with a word, not a number)
+                    if (d.Level !== undefined && (d.SubType === 'Alert' || d.TypeImg === 'Alert')) {
+                        seedAlertDefaults(cfg);
+                        var lvl = parseInt(d.Level, 10);
+                        ctrl.value    = isNaN(lvl) ? null : lvl;
+                        ctrl.autoUnit = '';
+                        ctrl.isAlert  = true;
+                        // Alert text (d.Data) may contain HTML — sanitize via the shared
+                        // DOMPurify helper (allow-list + scoped <style>), like ddTextSensor.
+                        var aScope = 'dz-ddg-' + String(parseInt(d.idx || cfg.deviceIdx, 10) || 0);
+                        var aRaw   = String(d.Data || '').trim();
+                        if (aRaw) {
+                            var aClean = (typeof sanitizeHTML === 'function') ? sanitizeHTML(aRaw, aScope) : aRaw;
+                            ctrl.alertHtml = $sce.trustAsHtml('<div id="' + aScope + '">' + aClean + '</div>');
+                        }
                         return;
                     }
 

@@ -15,6 +15,8 @@
     <div ng-if="ctrl.widgetDef.config.deviceIdx" class="dd-dial-svg-wrap">
         <svg viewBox="-6 -6 112 112" class="dd-dial-svg"
              ng-class="{'dd-dial-interactive': (ctrl.deviceType === 'setpoint' || ctrl.deviceType === 'selector') && !ctrl.editMode,
+                         'dd-dial-setpoint':    ctrl.deviceType === 'setpoint' && !ctrl.editMode,
+                         'dd-dial-selector':    ctrl.deviceType === 'selector' && !ctrl.editMode,
                          'dd-dial-clickable':   ctrl.deviceType === 'switch' && !ctrl.editMode,
                          'dd-dial-dragging': ctrl.dragging}"
              ng-mousedown="ctrl.dragStart($event)"

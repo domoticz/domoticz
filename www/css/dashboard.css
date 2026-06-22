@@ -945,7 +945,7 @@ body.dd-navbar-hidden .dd-toolbar {
 .dd-weather-temp {
     font-size: 2.2em;
     font-weight: 700;
-    color: var(--dz-body-text);
+    color: var(--dz-widget-accent);
     text-shadow: 0 1px 3px rgba(0,0,0,0.6);
     line-height: 1;
 }
@@ -3309,6 +3309,22 @@ body.dd-standby::after {
 .dd-gauge-text-link:hover { fill: var(--dz-accent-color); opacity: 1; }
 .dd-gauge-title { margin-bottom: 4px; }
 .dd-gauge-temp-sub-txt { font-size: 6px; fill: var(--dz-body-text); opacity: 0.70; }
+.dd-gauge-alert-text {
+    position: absolute;
+    left: 50%;
+    top: 62%;
+    transform: translate(-50%, -50%);
+    width: 66%;
+    max-height: 60%;
+    overflow: hidden;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.2;
+    color: var(--dz-body-text);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    pointer-events: none;
+}
 
 /* ── Dial widget ──────────────────────────────────────────── */
 
@@ -3378,9 +3394,27 @@ body.dd-standby::after {
 .dd-dial-sel-active-box { transition: fill 0.2s, stroke 0.2s; }
 .dd-dial-sel-item   { fill: var(--dz-body-text); font-family: inherit; transition: opacity 0.15s; }
 .dd-dial-sel-active { fill: var(--dz-widget-amber) !important; font-weight: 700; }
-/* Cursor hints for drag-to-set */
-.dd-dial-interactive { cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; }
-.dd-dial-dragging    { cursor: grabbing; }
+/* Cursor hints for drag-to-set.
+   The dial's SVG layers are concentric, so element-scoped cursors track the
+   click radius exactly: default outside the bezel, grab on the ring band,
+   pointer on the inner hub (setpoint opens the value-entry popup there). */
+.dd-dial-interactive { cursor: default; user-select: none; -webkit-user-select: none; touch-action: none; }
+.dd-dial-interactive .dd-dial-bezel,
+.dd-dial-interactive .dd-dial-face,
+.dd-dial-interactive .dd-dial-ring,
+.dd-dial-interactive .dd-dial-needle,
+.dd-dial-interactive .dd-dial-tick,
+.dd-dial-interactive .dd-dial-tick-minor,
+.dd-dial-interactive .dd-dial-scale-lbl,
+.dd-dial-interactive .dd-dial-arc-track,
+.dd-dial-interactive .dd-dial-arc-fill { cursor: grab; }
+.dd-dial-setpoint .dd-dial-hub,
+.dd-dial-setpoint .dd-dial-value-txt,
+.dd-dial-setpoint .dd-dial-unit-txt { cursor: pointer; }
+.dd-dial-selector .dd-dial-hub,
+.dd-dial-selector .dd-dial-sel-item,
+.dd-dial-selector .dd-dial-sel-active-box { cursor: grab; }
+.dd-dial-dragging, .dd-dial-dragging * { cursor: grabbing !important; }
 .dd-dial-clickable   { cursor: pointer; user-select: none; -webkit-user-select: none; }
 .dd-dial-clickable:hover { opacity: 0.8; }
 
