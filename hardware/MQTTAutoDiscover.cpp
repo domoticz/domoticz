@@ -337,7 +337,7 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 					}
 				}
 			}
-			if (root.isObject())
+			if (root.isObject() || root.isArray())
 				return "";
 			std::string retVal;
 			if (root.isDouble())
@@ -408,6 +408,8 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 			{
 				if (root[suffix].empty())
 					return ""; //not found
+				if (root[suffix].isObject() || root[suffix].isArray())
+					return ""; //we don't support arrays as return value, probably a configuration issue
 				return root[suffix].asString();
 			}
 			return "";
@@ -425,7 +427,11 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 		}
 		stdstring_trim(szKey);
 		if (!root[szKey].empty())
+		{
+			if (root[szKey].isObject() || root[szKey].isArray())
+				return ""; //we don't support arrays as return value, probably a configuration issue
 			return root[szKey].asString();
+		}
 	}
 	catch (const std::exception& e)
 	{
