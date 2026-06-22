@@ -171,6 +171,7 @@ define([
                 var infoTokens         = [];
                 var graphTokens        = [];
                 var resizeObserver     = null;
+                var refreshDebounce    = null;
 
                 // ----------------------------------------------------------------
                 // Helpers
@@ -441,8 +442,25 @@ define([
 
                 $scope.$on('$destroy', function() {
                     if (resizeObserver) { resizeObserver.disconnect(); resizeObserver = null; }
+                    if (refreshDebounce) { $timeout.cancel(refreshDebounce); refreshDebounce = null; }
                     cancelAll();
                     destroyChart();
+                });
+
+                $scope.$on('device_update', function(e, updated) {
+                    var cfg = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
+                    var updatedIdx = updated && updated.idx;
+                    if (!updatedIdx) { return; }
+
+                    var matches = DEVICE_KEYS.some(function(k) {
+                        return cfg[k] && String(cfg[k]) === String(updatedIdx);
+                    });
+                    if (!matches || refreshDebounce) { return; }
+
+                    refreshDebounce = $timeout(function() {
+                        refreshDebounce = null;
+                        load();
+                    }, 60000);
                 });
 
                 $scope.$on('dd:widget:refresh', load);
