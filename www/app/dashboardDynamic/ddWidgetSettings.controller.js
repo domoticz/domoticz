@@ -146,9 +146,16 @@ define([
                             var lb = filter ? b.Name : deviceLabel(b);
                             return la.localeCompare(lb);
                         });
-                        $scope.pickerOptions[field.key] = $scope.deviceListByField[field.key].map(function(d) {
-                            return { value: String(d.idx), label: field.deviceFilter ? d.Name : deviceLabel(d) };
-                        });
+                        $scope.pickerOptions[field.key] =
+                        [{ value: '', label: '-- None --' }]
+                        .concat(
+                            $scope.deviceListByField[field.key].map(function(d) {
+                                return {
+                                    value: String(d.idx),
+                                    label: field.deviceFilter ? d.Name : deviceLabel(d)
+                                };
+                            })
+                        );
                     });
 
                     // Helper so the template can compute the label
