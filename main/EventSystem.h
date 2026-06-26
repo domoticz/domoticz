@@ -201,7 +201,7 @@ private:
 	void ProcessMinute();
 	void GetCurrentMeasurementStates();
 	std::string UpdateSingleState(uint64_t ulDevID, const std::string &devname, int nValue, const std::string &sValue, unsigned char devType, unsigned char subType, _eSwitchType switchType,
-				      const std::string &lastUpdate, unsigned char lastLevel, unsigned char batteryLevel, const std::map<std::string, std::string> &options);
+				      const std::string &lastUpdate, unsigned char lastLevel, unsigned char batteryLevel, unsigned char signalLevel, const std::map<std::string, std::string> &options);
 	void EvaluateEvent(const std::vector<_tEventQueue> &items);
 	void EvaluateDatabaseEvents(const _tEventQueue &item);
 	lua_State *ParseBlocklyLua(lua_State *lua_state, const _tEventItem &item);
