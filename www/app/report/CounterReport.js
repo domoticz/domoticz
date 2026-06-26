@@ -357,14 +357,14 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             var decimals = vm.decimals;
 
             var counterRendererDecimals = function (data) {
-                return data.toFixed(3);
+                return (data || 0).toFixed(3);
             };
             var counterRenderer = function (data) {
-                return data.toFixed(vm.device.Divider.numDecimalsDiv1());
+                return (data || 0).toFixed(vm.device.Divider.numDecimalsDiv1());
             };
 
             var costRenderer = function (data) {
-                return data.toFixed(2) + ' ' + $.myglobals.currencysign;
+                return (data || 0).toFixed(2) + ' ' + $.myglobals.currencysign;
             };
 
             if (vm.isMonthView) {

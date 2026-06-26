@@ -482,11 +482,11 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             var columns = [];
 
             var counterRenderer = function (data) {
-                return data.toFixed(3);
+                return (data || 0).toFixed(3);
             };
 
             var costRenderer = function (data) {
-                return data.toFixed(2) + " " + $.myglobals.currencysign;
+                return (data || 0).toFixed(2) + " " + $.myglobals.currencysign;
             };
 
             if (vm.isMonthView) {
@@ -581,26 +581,26 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 					render: function (val, type, row) {
 						if (row.forecast) {
 							return row.meterReplaced
-								? '~' + val.toFixed(3) + ' <span class="report-forecast-warning" title="' + $.t('Meter replaced') + '">\u26a0</span>'
-								: '~' + val.toFixed(3);
+								? '~' + counterRenderer(val) + ' <span class="report-forecast-warning" title="' + $.t('Meter replaced') + '">\u26a0</span>'
+								: '~' + counterRenderer(val);
 						}
-						return val.toFixed(3);
+						return counterRenderer(val);
 					}
 				});
 				columns.push({
 					title: $.t('Return'),
 					data: 'totalReturn',
 					render: function (val, type, row) {
-						if (row.forecast) { return '~' + val.toFixed(3); }
-						return val.toFixed(3);
+						if (row.forecast) { return '~' + counterRenderer(val); }
+						return counterRenderer(val);
 					}
 				});
 				columns.push({
 					title: $.t('Total'),
 					data: 'usage',
 					render: function (val, type, row) {
-						if (row.forecast) { return '~' + val.toFixed(3); }
-						return val.toFixed(3);
+						if (row.forecast) { return '~' + counterRenderer(val); }
+						return counterRenderer(val);
 					}
 				});
 			}
