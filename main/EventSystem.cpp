@@ -1443,8 +1443,9 @@ std::string CEventSystem::UpdateSingleState(
 	const unsigned char devType, const unsigned char subType, 
 	const _eSwitchType switchType, 
 	const std::string &lastUpdate, 
-	const unsigned char lastLevel, 
+	const unsigned char lastLevel,
 	const unsigned char batteryLevel,
+	const unsigned char signalLevel,
 	const std::map<std::string, std::string> & options
 )
 {
@@ -1463,7 +1464,8 @@ std::string CEventSystem::UpdateSingleState(
 	{
 		_tDeviceStatus replaceitem = itt->second;
 		replaceitem.deviceName = l_deviceName;
-		//replaceitem.batteryLevel = batteryLevel;
+		replaceitem.batteryLevel = batteryLevel;
+		replaceitem.signalLevel = signalLevel;
 		if (nValue != -1)
 			replaceitem.nValue = nValue;
 		if (!sValue.empty())
@@ -1494,7 +1496,8 @@ std::string CEventSystem::UpdateSingleState(
 		newitem.nValueWording = l_nValueWording;
 		newitem.lastUpdate = l_lastUpdate;
 		newitem.lastLevel = lastLevel;
-		//newitem.batteryLevel = batteryLevel;
+		newitem.batteryLevel = batteryLevel;
+		newitem.signalLevel = signalLevel;
 
 		if (!m_sql.m_bDisableDzVentsSystem)
 		{
@@ -1640,7 +1643,7 @@ void CEventSystem::ProcessDevice(
 		item.nValue = nValue;
 		item.sValue = osValue;
 
-		item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, osValue, devType, subType, switchType, "", 255, batterylevel, options);
+		item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, osValue, devType, subType, switchType, "", 255, batterylevel, signallevel, options);
 		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 		auto itt = m_devicestates.find(ulDevID);
 		if (itt != m_devicestates.end())
@@ -1662,7 +1665,7 @@ void CEventSystem::ProcessDevice(
 		m_eventqueue.push(item);
 	}
 	else
-		UpdateSingleState(ulDevID, devname, nValue, osValue, devType, subType, switchType, lastUpdate, lastLevel, batterylevel, options);
+		UpdateSingleState(ulDevID, devname, nValue, osValue, devType, subType, switchType, lastUpdate, lastLevel, batterylevel, signallevel, options);
 }
 
 void CEventSystem::ProcessMinute()
