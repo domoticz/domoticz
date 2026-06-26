@@ -2632,19 +2632,66 @@ void MQTTAutoDiscover::handle_auto_discovery_battery(_tMQTTASensor* pSensor, con
 	if (is_number(pSensor->last_value))
 	{
 		iLevel = atoi(pSensor->last_value.c_str());
-	} else {
-		//could be a boolean isLow indicator
+	}
+	else
+	{
+		//could be a boolean isLow indicator (dead path for zwave-js-ui, which sends isLow as a binary_sensor)
 		if (pSensor->last_value == "true")
 			iLevel = 0;
 	}
 
+	//Update the in-memory battery level for every sensor of this node, and collect the distinct
+	//DeviceID forms its device rows use (standalone = unique_id, combined temp/hum/baro =
+	//device_identifiers) so all of the node's rows can be updated in a single statement.
+	std::set<std::string> deviceIDs;
 	for (auto& itt : m_discovered_sensors)
 	{
 		_tMQTTASensor* pDevSensor = &itt.second;
 		if (pDevSensor->device_identifiers == pSensor->device_identifiers)
 		{
 			pDevSensor->BatteryLevel = iLevel;
+			deviceIDs.insert(pDevSensor->unique_id);
 		}
+	}
+	deviceIDs.insert(pSensor->device_identifiers);
+
+	//Build a quoted, comma-separated IN() list. DeviceIDs come from the broker, so escape each as
+	//a SQL string literal (double any single quote) before embedding.
+	std::string inList;
+	for (const auto& id : deviceIDs)
+	{
+		if (!inList.empty())
+			inList += ",";
+		inList += "'";
+		for (const char c : id)
+		{
+			if (c == '\'')
+				inList += '\'';
+			inList += c;
+		}
+		inList += "'";
+	}
+
+	//Persist the new battery level to every already-created device row of this node, so all of the
+	//node's devices show the current battery immediately instead of lazily updating only when each
+	//device next emits state. First select just the rows that will actually change (none in steady
+	//state, so this is a cheap indexed no-op), then update them in one statement and refresh the
+	//event system for exactly those rows. We touch BatteryLevel only (never nValue/sValue), so this
+	//does not trigger scenes/scripts.
+	std::vector<std::vector<std::string> > results = m_sql.safe_query(
+		"SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (BatteryLevel<>%d) AND (DeviceID IN (%s))",
+		m_HwdID, iLevel, inList.c_str());
+	if (results.empty())
+		return;
+
+	m_sql.safe_query(
+		"UPDATE DeviceStatus SET BatteryLevel=%d WHERE (HardwareID==%d) AND (BatteryLevel<>%d) AND (DeviceID IN (%s))",
+		iLevel, m_HwdID, iLevel, inList.c_str());
+
+	for (const auto& sd : results)
+	{
+		uint64_t rowID = std::stoull(sd[0]);
+		m_mainworker.m_eventsystem.UpdateBatteryLevel(rowID, (unsigned char)iLevel);
 	}
 }
 
