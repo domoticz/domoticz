@@ -2746,6 +2746,11 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 		(pSensor->object_id == "battery")
 		|| (pSensor->object_id == "battery_low")
 		|| (pSensor->object_id == "battery_level")
+		//Also detect a battery percentage by the standard discovery marker, so it is not tied to a
+		//specific object_id naming. Restricted to numeric values; the main dispatch routes only
+		//component_type "sensor" here, so the isLow binary_sensor (which also carries device_class
+		//"battery") is not routed to this percentage path.
+		|| ((pSensor->device_class == "battery") && is_number(pSensor->last_value))
 		)
 	{
 		handle_auto_discovery_battery(pSensor, message);
