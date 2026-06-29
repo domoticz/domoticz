@@ -31,9 +31,21 @@ void CDomoticzHardwareBase::GetManualSwitchParameters(const std::multimap<std::s
 
 bool CDomoticzHardwareBase::Start()
 {
+	// Guard against a duplicate/concurrent Start() on an already-started instance.
+	// StartHardware() reassigns the worker thread; doing so while the previous
+	// std::thread is still joinable destroys it and calls std::terminate().
+	// The atomic exchange makes the check-and-set race-safe between the web API
+	// (Cmd_AddHardware) and the MainWorker (StartDomoticzHardware) threads.
+	if (m_bIsStarted.exchange(true))
+		return true;
+
 	m_iHBCounter = 0;
-	m_bIsStarted = StartHardware();
-	return m_bIsStarted;
+	if (!StartHardware())
+	{
+		m_bIsStarted = false;
+		return false;
+	}
+	return true;
 }
 
 bool CDomoticzHardwareBase::Stop()

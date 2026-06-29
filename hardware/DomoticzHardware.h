@@ -1,6 +1,7 @@
 #pragma once
 
 #define BOOST_ALLOW_DEPRECATED_HEADERS
+#include <atomic>
 #include <boost/signals2.hpp>
 
 #include "../main/RFXNames.h"
@@ -136,7 +137,7 @@ class CDomoticzHardwareBase : public StoppableTask
 	void SendZWaveAlarmSensor(int NodeID, uint8_t InstanceID, int BatteryLevel, uint8_t aType, int aValue, const std::string& alarmLabel, const std::string& defaultname);
 #endif
 	int m_iHBCounter = { 0 };
-	bool m_bIsStarted = { false };
+	std::atomic_bool m_bIsStarted = { false };
 
       private:
 	void StartHeartbeatThread(const std::string& szThreadName);

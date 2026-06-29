@@ -88,6 +88,17 @@ bool MQTT::StartHardware()
 	if (m_szIPAddress.empty())
 		return false;
 
+	// Defensive: never overwrite a still-joinable worker thread, whose destructor
+	// would call std::terminate(). The base-class Start() guard normally prevents
+	// re-entry; this mirrors StopHardware() and also covers a direct StartHardware().
+	if (m_thread)
+	{
+		on_going_down(); // RequestStop() so Do_Work() exits
+		StopHeartbeatThread();
+		m_thread->join();
+		m_thread.reset();
+	}
+
 	ReloadSharedDevices();
 
 	RequestStart();
