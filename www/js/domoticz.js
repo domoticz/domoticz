@@ -2746,7 +2746,7 @@ function WatchLiveSearch(){
 				div.css('display','block');
 				div.addClass('row');
 				div.find('.clearfix').show(); /* only for Weather and Temperatures pages */
-				items.show().removeClass('liveSearchShown');	
+				items.show().removeClass('liveSearchShown').trigger('dz:livesearch:show');
 			}
 		}
 		else{
@@ -2767,7 +2767,7 @@ function WatchLiveSearch(){
 				var to_hide=$(this);
 
 				if (searchText.match(searchRegEx) !== null) {
-					to_hide.show();
+					to_hide.show().trigger('dz:livesearch:show');
 					to_hide.addClass(cl_shown);
 				}
 				else{

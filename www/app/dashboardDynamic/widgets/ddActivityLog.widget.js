@@ -17,8 +17,10 @@ define([
         minH:        3,
         maxW:        8,
         maxH:        12,
+        transparentBackground: true,
         configSchema: [
-            { key: 'maxItems', type: 'number', label: 'Max items', default: 15, min: 5, max: 50 }
+            { key: 'maxItems', type: 'number', label: 'Max items', default: 15, min: 5, max: 50 },
+            { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
 

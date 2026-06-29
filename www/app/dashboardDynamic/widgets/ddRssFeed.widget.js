@@ -17,7 +17,14 @@ define([
         minH:        2,
         maxW:        12,
         maxH:        10,
+        transparentBackground: true,
         configSchema: [
+            {
+                key:     'showBackground',
+                type:    'boolean',
+                label:   'Show panel background',
+                default: true
+            },
             {
                 key:      'feedUrl',
                 type:     'text',
@@ -123,7 +130,8 @@ define([
                 function parseXml(xmlStr, cfg, maxItems) {
                     try {
                         var doc = new DOMParser().parseFromString(xmlStr, 'text/xml');
-                        var isAtom = !!doc.querySelector('feed');
+                        var rootName = doc.documentElement && doc.documentElement.localName;
+                        var isAtom = (rootName === 'feed');
                         var items = [];
                         var feedTitle = '';
 
@@ -190,25 +198,32 @@ define([
                     } else {
                         url = proxies[idx] + encodeURIComponent(cfg.feedUrl);
                     }
-                    return $http.get(url, {
-                        timeout:           cancelToken ? cancelToken.promise : undefined,
-                        transformResponse: useServerProxy ? undefined : function(data) { return data; }
-                    }).then(function(resp) {
+                    var httpOpts = { timeout: cancelToken ? cancelToken.promise : undefined };
+                    if (!useServerProxy) {
+                        httpOpts.transformResponse = function(data) { return data; };
+                    }
+                    return $http.get(url, httpOpts).then(function(resp) {
                         ctrl.loading = false;
                         var xml;
                         if (useServerProxy) {
-                            if (!resp.data || resp.data.status !== 'OK') {
+                            // Domoticz fetchurl returns JSON; if the proxy upgrade hasn't been
+                            // deployed yet, resp.data may still be a string — parse it manually.
+                            var d = resp.data;
+                            if (typeof d === 'string') {
+                                try { d = JSON.parse(d); } catch(e) { d = null; }
+                            }
+                            if (!d || d.status !== 'OK') {
                                 fetchViaProxy(cfg, maxItems, idx + 1);
                                 return;
                             }
-                            xml = resp.data.data;
+                            xml = d.data;
                         } else {
                             xml = (typeof resp.data === 'string') ? resp.data : (resp.data && resp.data.contents);
                         }
                         if (!xml) { fetchViaProxy(cfg, maxItems, idx + 1); return; }
                         parseXml(xml, cfg, maxItems);
                     }).catch(function(err) {
-                        if (err && err.status === -1 && idx > 0) { return; }
+                        if (err && err.status === -1) { return; } // cancelled — do not fall through
                         fetchViaProxy(cfg, maxItems, idx + 1);
                     });
                 }
@@ -228,29 +243,9 @@ define([
                     if (cancelToken) { cancelToken.resolve(); }
                     cancelToken = $q.defer();
 
-                    $http.get('https://api.rss2json.com/v1/api.json', {
-                        params:  { rss_url: cfg.feedUrl, count: maxItems },
-                        timeout: cancelToken.promise
-                    }).then(function(resp) {
-                        var data = resp.data;
-                        if (data && data.status === 'ok') {
-                            ctrl.loading = false;
-                            applyItems((data.items || []).map(function(item) {
-                                return {
-                                    title:       item.title || '',
-                                    link:        item.link  || '#',
-                                    description: stripHtml(item.description || ''),
-                                    pubDate:     item.pubDate || '',
-                                    thumbnail:   item.thumbnail || (item.enclosure && item.enclosure.link) || ''
-                                };
-                            }), data.feed && data.feed.title, cfg, maxItems);
-                        } else {
-                            fetchViaProxy(cfg, maxItems);
-                        }
-                    }).catch(function(err) {
-                        if (err && err.status === -1) { return; }
-                        fetchViaProxy(cfg, maxItems);
-                    });
+                    // Prefer Domoticz's own server-side fetchurl (same origin, no third party).
+                    // CORS proxies (corsproxy.io, codetabs, rss2json) are kept as fallbacks only.
+                    fetchViaProxy(cfg, maxItems);
                 };
 
                 function stopTimer() {

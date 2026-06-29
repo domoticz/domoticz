@@ -5,6 +5,7 @@
 #include "../main/Logger.h"
 
 extern boost::signals2::signal<void(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification)> sOnNotificationReceived;
+extern boost::signals2::signal<void(const std::string &pluginKey, int hwId, const std::string &jsonPayload)> sOnPluginWebSocketMessage;
 
 CWebSocketPush::CWebSocketPush(http::server::CDomoticzWebsocketHandler *sock)
 {
@@ -27,6 +28,7 @@ void CWebSocketPush::Start()
 	m_sDeviceUpdate = m_mainworker.sOnDeviceUpdate.connect([this](auto id, auto idx) { OnDeviceUpdate(id, idx); });
 	m_sNotification = sOnNotificationReceived.connect([this](auto &&s, auto &&t, auto &&e, auto p, auto &&sound, auto n) { OnNotificationReceived(s, t, e, p, sound, n); });
 	m_sSceneChanged = m_mainworker.sOnSwitchScene.connect([this](auto idx, auto &&name) { OnSceneChange(idx, name); });
+	m_sPluginWS = sOnPluginWebSocketMessage.connect([this](auto &&key, auto hwId, auto &&payload) { OnPluginWebSocketMessage(key, hwId, payload); });
 
 	_log.sOnLogMessage.connect(this, &CWebSocketPush::OnLogMessage, &m_sLogMessage);
 
@@ -53,6 +55,9 @@ void CWebSocketPush::Stop()
 
 	if (m_sSceneChanged.connected())
 		m_sSceneChanged.disconnect();
+
+	if (m_sPluginWS.connected())
+		m_sPluginWS.disconnect();
 
 	m_sLogMessage.disconnect();
 }
@@ -95,4 +100,12 @@ void CWebSocketPush::OnLogMessage(const _eLogLevel level, const std::string& sLo
 	if (!isStarted)
 		return;
 	m_sock->SendLogMessage(static_cast<int>(level), sLogline);
+}
+
+void CWebSocketPush::OnPluginWebSocketMessage(const std::string& pluginKey, int hwId, const std::string& jsonPayload)
+{
+	std::unique_lock<std::recursive_mutex> lock(handlerMutex);
+	if (!isStarted)
+		return;
+	m_sock->SendPluginMessage(pluginKey, hwId, jsonPayload);
 }

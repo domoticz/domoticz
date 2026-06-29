@@ -7,6 +7,7 @@ define([
     // API parameters for each chartType
     var CHART_TYPE_API = {
         shortlog:  { sensor: 'wind',    range: 'day' },
+        week:      { sensor: 'wind',    range: 'day' },
         direction: { sensor: 'winddir', range: 'day' },
         frequency: { sensor: 'wind',    range: 'day' },
         month:     { sensor: 'wind',    range: 'month' },
@@ -15,6 +16,7 @@ define([
 
     var CHART_TYPE_LABELS = {
         shortlog:  'Last 24h',
+        week:      'Last 7 days',
         direction: 'Wind Direction',
         frequency: 'Speed Frequency',
         month:     'Last Month',
@@ -80,6 +82,7 @@ define([
                 label:   'Chart type',
                 options: [
                     { value: 'shortlog',  label: 'Last 24h' },
+                    { value: 'week',      label: 'Last 7 days' },
                     { value: 'direction', label: 'Wind Direction' },
                     { value: 'frequency', label: 'Speed Frequency' },
                     { value: 'month',     label: 'Last Month' },
@@ -190,6 +193,7 @@ define([
                     var h = container.offsetHeight || 200;
                     return {
                         time: {
+                            useUTC:   false,
                             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
                         },
                         chart: {
@@ -267,7 +271,9 @@ define([
                     opts.legend       = { enabled: true, itemStyle: { fontSize: '10px', color: textColor } };
                     opts.xAxis = {
                         type:   'datetime',
-                        labels: { style: { fontSize: '10px' } }
+                        labels: { style: { fontSize: '10px' } },
+                        min:    cfg.chartType === 'week' ? Date.now() - 7 * 24 * 3600 * 1000 : Date.now() - 24 * 3600 * 1000,
+                        max:    Date.now()
                     };
                     opts.yAxis = {
                         title:  { text: 'm/s', style: { fontSize: '10px' } },
@@ -278,7 +284,8 @@ define([
                         shared:      true,
                         xDateFormat: '%a %d %b %H:%M',
                         formatter: function() {
-                            var s = '<b>' + window.Highcharts.dateFormat('%a %d %b %H:%M', this.x) + '</b>';
+                            var chartTime = this.points[0].series.chart.time;
+                            var s = '<b>' + chartTime.dateFormat('%a %d %b %H:%M', this.x) + '</b>';
                             this.points.forEach(function(pt) {
                                 var bf = beaufortFromMs(pt.y);
                                 s += '<br><span style="color:' + pt.color + '">\u25CF</span> ' +

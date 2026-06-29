@@ -179,7 +179,7 @@ if [ -x "$(command -v apt-get)" ]; then
 		msg_error "Debian Bookworm (12) or later is required!"
 		exit 1
 	fi
-	domoticz_DEPS=( ${domoticz_DEPS[@]} libcurl4 libusb-0.1)
+	domoticz_DEPS=( ${domoticz_DEPS[@]} libcurl4-gnutls-dev libusb-0.1)
 elif [ -x "$(command -v rpm)" ]; then
 	# Fedora Family
 	if [ -x "$(command -v dnf)" ]; then
@@ -193,7 +193,7 @@ elif [ -x "$(command -v rpm)" ]; then
 	PKG_INSTALL="${PKG_MANAGER} install -y"
 	PKG_COUNT="${PKG_MANAGER} check-update | egrep '(.i686|.x86|.noarch|.arm|.src)' | wc -l"
 	INSTALLER_DEPS=( procps-ng newt git )
-	domoticz_DEPS=( curl libcurl unzip wget findutils cronie sudo mosquitto)
+	domoticz_DEPS=( curl libcurl4 unzip wget findutils cronie sudo mosquitto)
 	if grep -q 'Fedora' /etc/redhat-release; then
 		remove_deps=(epel-release);
 		domoticz_DEPS=( ${domoticz_DEPS[@]/$remove_deps} );

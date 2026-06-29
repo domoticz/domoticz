@@ -62,7 +62,7 @@
                                 {{:: 'Loading…' | translate }}
                             </div>
                             <div class="aw-device-row"
-                                 ng-repeat="dev in $ctrl.devices | filter:{Name: $ctrl.deviceSearch} | limitTo:60 track by dev.idx"
+                                 ng-repeat="dev in $ctrl.devices | filter:{Name: $ctrl.deviceSearch} | limitTo:100 track by (dev.Type + dev.idx)"
                                  ng-class="{'aw-device-row-selected': $ctrl.isDeviceSelected(dev)}"
                                  ng-click="$ctrl.selectDevice(dev)">
                                 <span class="aw-device-name">{{dev.Name}}</span>
@@ -71,7 +71,7 @@
                         </div>
                         <div class="aw-selected-value" ng-if="$ctrl.triggerConfig.devices && $ctrl.triggerConfig.devices.length">
                             <i class="icon-ok"></i>
-                            <span ng-if="$ctrl.triggerConfig.devices.length === 1">{{$ctrl.triggerConfig.devices[0]}}</span>
+                            <span ng-if="$ctrl.triggerConfig.devices.length === 1">{{$ctrl.deviceNameByIdx($ctrl.triggerConfig.devices[0])}}</span>
                             <span ng-if="$ctrl.triggerConfig.devices.length > 1">{{$ctrl.triggerConfig.devices.length}} devices selected</span>
                         </div>
                     </div>
@@ -270,12 +270,12 @@
                     <div ng-if="$ctrl.wizardCondition.type === 'device'">
                         <div class="aw-field">
                             <label>Device</label>
-                            <select class="form-control" ng-model="$ctrl.wizardCondition.device" ng-change="$ctrl.onConditionDeviceChange()">
+                            <select class="form-control" ng-model="$ctrl.wizardCondition.deviceIdx" ng-change="$ctrl.onConditionDeviceChange()">
                                 <option value="">— Select device —</option>
-                                <option ng-repeat="dev in $ctrl.devices | limitTo:200 track by dev.idx" value="{{dev.Name}}">{{dev.Name}}</option>
+                                <option ng-repeat="dev in $ctrl.devices track by (dev.Type + dev.idx)" value="{{dev.idx}}">{{$ctrl.deviceLabel(dev)}}</option>
                             </select>
                         </div>
-                        <div class="aw-row" ng-if="$ctrl.wizardCondition.device">
+                        <div class="aw-row" ng-if="$ctrl.wizardCondition.deviceIdx">
                             <div class="aw-field">
                                 <label>State</label>
                                 <select class="form-control" ng-model="$ctrl.wizardCondition.state"
@@ -376,14 +376,14 @@
                             <!-- Device action -->
                             <div ng-if="action.type === 'switch'" class="aw-form">
                                 <div class="aw-row">
-                                    <div class="aw-field" style="flex:2">
+                                    <div class="aw-field" style="flex:3">
                                         <label>{{:: 'Device' | translate }}</label>
                                         <select class="form-control"
-                                                ng-model="action.config.device"
+                                                ng-model="action.config.deviceIdx"
                                                 ng-change="$ctrl.onActionDeviceChange(action)">
                                             <option value="">{{:: '— Select —' | translate }}</option>
-                                            <option ng-repeat="dev in $ctrl.devices | limitTo:200 track by dev.idx"
-                                                    value="{{dev.Name}}">{{dev.Name}}</option>
+                                            <option ng-repeat="dev in $ctrl.devices track by (dev.Type + dev.idx)"
+                                                    value="{{dev.idx}}">{{$ctrl.deviceLabel(dev)}}</option>
                                         </select>
                                     </div>
                                     <div class="aw-field">

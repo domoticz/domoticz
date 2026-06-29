@@ -2,8 +2,8 @@
 
 > **Note:** This page is maintained in the [Domoticz GitHub repository](https://github.com/domoticz/domoticz/tree/development/docs). Please do not edit it directly on the Wiki.
 
-**Revision:** 2026-04-28\
-**Minimum build:** 17826
+**Revision:** 2026-05-11\
+**Minimum build:** 17950
 
 ---
 
@@ -64,7 +64,7 @@ Press the pencil button or **Ctrl+E** to enter Edit Mode. The full toolbar appea
 |------|--------|
 | *(dashboard name)* | Switch to that dashboard (prompts to discard unsaved changes if needed) |
 | **New Dashboard** | Creates a new dashboard with an auto-generated name; rename it via the title field |
-| **Dashboard Settings…** | Open kiosk and standby settings |
+| **Dashboard Settings…** | Open kiosk, standby and swipe settings |
 
 **Edit dropdown:**
 
@@ -117,8 +117,23 @@ Dashboard management is done directly from the Edit Mode toolbar:
 | **Set as Default** | Edit → Set as Default |
 | **Duplicate** | Edit → Duplicate |
 | **Delete** | Edit → Delete |
+| **Copy deep-link** | Edit Mode → click the chain icon (`🔗`) next to the dashboard title |
 
-**Dashboard Settings** (Edit → Dashboard Settings… or Dashboards → Dashboard Settings…) contains only the Kiosk and Screen Standby configuration — no layout management.
+**Dashboard Settings** (Edit → Dashboard Settings… or Dashboards → Dashboard Settings…) contains only the Kiosk, Screen Standby and Swipe Navigation configuration — no layout management.
+
+### Deep-linking to a specific dashboard
+
+You can open any dashboard directly via the URL, bypassing the normal "last viewed / default" lookup:
+
+| URL | Opens |
+|-----|-------|
+| `#/Dashboard` | Last viewed (localStorage) → default → first dashboard (existing behaviour) |
+| `#/Dashboard?id=<uuid>` | The dashboard with the matching UUID |
+| `#/Dashboard?name=<name>` | The dashboard whose name matches (case-insensitive) — e.g. `#/Dashboard?name=Smart%20Meter%20(P1)` |
+
+**Getting the UUID:** in Edit Mode, click the chain icon (`🔗`) immediately to the right of the dashboard title in the toolbar. The full deep-link URL is copied to the clipboard with a toast confirmation. Paste it into a browser bookmark, a wall-tablet shortcut, a chat message, etc.
+
+Switching dashboards through the dropdown does **not** update the URL — the deep-link only takes effect on page load.
 
 ### Kiosk / Auto-Swipe Mode
 
@@ -155,6 +170,20 @@ Dims or blanks the screen after a period of inactivity — prevents burn-in on w
 | Opacity when dimmed | 5% | Screen brightness when dimmed (0–30%) |
 
 Settings are saved in browser `localStorage` (`dd_standby`).
+
+### Swipe Navigation
+
+When enabled, swiping left or right on a touch device (tablet/phone) moves to the next or previous dashboard, using the dashboard order. The gesture is ignored while editing or when a dialog is open, and does not interfere with vertical scrolling.
+
+**Note:** Swipe navigation has no effect while in Edit Mode, when a dialog (such as Dashboard Settings) is open, or when only one dashboard exists.
+
+**Settings** (in Dashboard Settings → Swipe Navigation section):
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| Swipe left/right to switch dashboard | off | Enable horizontal swipe navigation on touch devices |
+
+Settings are saved in browser `localStorage` (`dd_swipe`).
 
 ### Per-Device Dashboard Selection
 
@@ -350,6 +379,7 @@ Column or area chart for counter and energy devices (kWh, Gas, Water, P1, generi
 | Device | Counter / kWh / Gas / Water / P1 Meter device |
 | Chart type | See table below |
 | Custom title | Optional override |
+| Bar color | Color for single-series counter charts (gas, water, non-P1 kWh). Defaults to cyan `#03befc`, matching the P1 "Usage" series. Ignored for P1 dual-series charts (which use fixed usage/return colors) |
 | Show panel background | Show the widget panel background (default: on) |
 
 **Chart types:**
@@ -357,7 +387,7 @@ Column or area chart for counter and energy devices (kWh, Gas, Water, P1, generi
 | Type | Description |
 |------|-------------|
 | Short Log | High-resolution bars covering the last 2–3 days. For P1 meters: area chart in Watts. For all other types (water, gas, kWh): column bars in the device's native unit. Chart title shows the actual day span (e.g. "Last 3 Days") |
-| Today | Hourly bars |
+| Today (hourly) | Hourly bars over the rolling last 24 hours, matching the Domoticz log page's "Today" view |
 | Last week | Daily bars |
 | Last month | Daily bars |
 | Last year | Monthly bars |
@@ -954,19 +984,22 @@ Live: updates instantly from WebSocket `device_update` events for all configured
 ### Text Note
 **Category:** Custom Content
 
-Displays custom text with configurable appearance. Useful for section headers, labels, or status messages.
+Displays custom text with configurable appearance. Useful for section headers, labels, or status messages. The content is rendered as sanitized HTML (DOMPurify with a strict allow-list), so a safe subset of inline markup — `<b>`, `<i>`, `<span>`, `<div>`, `<a>`, basic tables, headings, lists, and scoped `<style>` blocks — works for icons, color highlights, and small layouts. Scripts, iframes, and event handlers are stripped. An optional divider line can be shown alongside the text, making it easy to create visual section separators.
 
 **Configuration:**
 
 | Field | Default | Description |
 |-------|---------|-------------|
-| Content | — | The text to display |
+| Content | — | The text or sanitized HTML to display |
 | Font | Default (theme) | Default (theme), Arial, Verdana, Tahoma, Trebuchet MS, Helvetica Neue, Georgia, Times New Roman, Palatino, Courier New, Lucida Console, Impact, System UI |
 | Size | 14 px | Font size in pixels (8–72) |
-| Alignment | Center | Left / Center / Right |
+| Horizontal align | Center | Left / Center / Right |
+| Vertical align | Middle | Top / Middle / Bottom — independent of horizontal alignment; the divider follows the chosen side |
 | Style | Normal | Normal / Bold / Italic / Bold + Italic / Underline |
 | Text color | rgba(255,255,255,1) | Color + opacity picker |
 | Background color | rgba(0,0,0,0) | Color + opacity picker (default: transparent) |
+| Show divider line | off | Show a horizontal line alongside the text |
+| Divider color | Accent color | Color + opacity picker; leave empty to use the theme accent color |
 
 ---
 

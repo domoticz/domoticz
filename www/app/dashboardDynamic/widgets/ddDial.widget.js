@@ -18,6 +18,7 @@ define([
     // the visible needle runs from INNER_R to ARC_R only.
     var NEEDLE_BASE_R = 29; // triangle base depth (inside hub)
     var INNER_R       = 30; // inner hub circle radius
+    var BEZEL_R       = 49; // outer bezel ring radius (edge of the dial)
 
     // Arc-fill geometry (for temp / kWh / numeric / P1 modes).
     // ARC_R_FILL sits between hub (INNER_R=30) and ring (ARC_R=37); stroke-width=4
@@ -444,6 +445,9 @@ define([
                             }
                         }
                         if (matched) {
+                            // Prefer explicit color (consistent with kwh-summary, gauge, etc.)
+                            if (matched.color) { return matched.color; }
+                            // Legacy status-based mapping (backwards compat)
                             if (matched.status === 'critical') { return 'var(--dz-accent-red)'; }
                             if (matched.status === 'warning')  { return 'var(--dz-widget-amber)'; }
                             return 'var(--dz-widget-energy-export)';
@@ -581,6 +585,7 @@ define([
                     ctrl.deviceName = d.Name || '';
                     ctrl.title      = c.title || ctrl.deviceName;
                     ctrl.timedOut   = !!d.HaveTimeout;
+                    ctrl.lastUpdate = d.LastUpdate || '';
 
                     // ── Wind ──────────────────────────────────────────────
                     if (d.Type === 'Wind') {
@@ -733,6 +738,21 @@ define([
                         return;
                     }
 
+                    // ── Humidity-only sensor (no Temp) ─────────────────────
+                    // pTypeHUM devices carry the value in d.Humidity, not d.Data
+                    // ("Humidity 50 %"), so the generic numeric branch below would
+                    // fail to parse it. Temp+Hum devices are handled earlier.
+                    if (d.Humidity !== undefined) {
+                        ctrl.deviceType = 'numeric';
+                        var hum = parseInt(d.Humidity, 10);
+                        ctrl.value    = isNaN(hum) ? null : hum;
+                        ctrl.unitStr  = '%';
+                        ctrl.valueStr = ctrl.value !== null ? formatNum(ctrl.value) : '--';
+                        applyConfigRange(0, 100);
+                        rebuildScale();
+                        return;
+                    }
+
                     // ── Generic numeric ───────────────────────────────────
                     ctrl.deviceType = 'numeric';
                     var dataRaw = d.Data || '';
@@ -805,6 +825,15 @@ define([
                         ctrl.valueStr = String(newVal);
                         ctrl.sending  = false;
                     }).catch(function() { ctrl.sending = false; });
+                }
+
+                // Precise numeric entry — the shared setpoint popup (handles its
+                // own passcode protection and fires dz:setpoint:saved on success).
+                function openSetpointPopup(evt) {
+                    if (typeof ShowSetpointPopup === 'function') {
+                        ShowSetpointPopup(evt, cfg().deviceIdx, ctrl.deviceProtected, ctrl.value, false,
+                            ctrl.deviceStep, ctrl.effectiveMin, ctrl.effectiveMax);
+                    }
                 }
 
                 // ── Switch toggle ─────────────────────────────────────────
@@ -973,6 +1002,24 @@ define([
                     var e       = event.originalEvent || event;
                     var clientX = e.touches ? e.touches[0].clientX : e.clientX;
                     var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                    // Setpoint: split the dial by radius — the inner hub (where the
+                    // value is shown) opens the precise-entry popup, the ring band
+                    // drags to set, and clicks outside the dial are ignored.
+                    if (ctrl.deviceType === 'setpoint') {
+                        var pt = getSvgPoint(clientX, clientY);
+                        if (pt) {
+                            var dx = pt.x - CX, dy = pt.y - CY;
+                            var r  = Math.sqrt(dx * dx + dy * dy);
+                            if (r > BEZEL_R) { return; }
+                            if (r < INNER_R) {
+                                e.preventDefault();
+                                openSetpointPopup({ clientX: clientX, clientY: clientY, target: e.target });
+                                return;
+                            }
+                        }
+                    }
+
                     e.preventDefault();
 
                     var idx = cfg().deviceIdx;
@@ -1018,6 +1065,18 @@ define([
 
                 $scope.$on('dd:widget:refresh', load);
 
+                // Reflect saves made through the setpoint popup immediately
+                function onSetpointSaved(e, data) {
+                    var c = cfg();
+                    if (c && String(data.idx) === String(c.deviceIdx)) {
+                        $scope.$applyAsync(function() {
+                            ctrl.value    = data.value;
+                            ctrl.valueStr = String(data.value);
+                        });
+                    }
+                }
+                $document.on('dz:setpoint:saved', onSetpointSaved);
+
                 $scope.$watch(
                     function() {
                         var c = ctrl.widgetDef && ctrl.widgetDef.config;
@@ -1040,6 +1099,7 @@ define([
                 $scope.$on('$destroy', function() {
                     $document.off('mousemove touchmove', onDragMove);
                     $document.off('mouseup touchend',   onDragEnd);
+                    $document.off('dz:setpoint:saved', onSetpointSaved);
                     if (cancelToken) { cancelToken.resolve(); cancelToken = null; }
                 });
 

@@ -1,4 +1,5 @@
-<div class="dd-activity-log">
+<div class="dd-activity-log dd-stat-card-full"
+     ng-class="{'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode}">
     <ul class="dd-activity-list">
         <li class="dd-activity-item"
             ng-repeat="item in ctrl.items">

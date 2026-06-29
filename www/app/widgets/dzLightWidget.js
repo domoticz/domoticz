@@ -972,8 +972,15 @@ define(['app'], function (app) {
                 };
                 $(window).on('resize', resizeHandler);
 
+                var itemBlock = element.closest('.itemBlock');
+                var liveSearchShowHandler = function() {
+                    resizeSliders();
+                };
+                itemBlock.on('dz:livesearch:show', liveSearchShowHandler);
+
                 scope.$on('$destroy', function() {
                     $(window).off('resize', resizeHandler);
+                    itemBlock.off('dz:livesearch:show', liveSearchShowHandler);
                 });
 
             }

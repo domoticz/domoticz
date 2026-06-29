@@ -3,6 +3,9 @@
 #include <boost/signals2.hpp>
 
 boost::signals2::signal<void(const std::string &Subject, const std::string &Text, const std::string &ExtraData, const int Priority, const std::string & Sound, const bool bFromNotification)> sOnNotificationReceived;
+// Emitted from the plugin worker thread; all connected slots are protected by
+// each CDomoticzWebsocketHandler's handlerMutex and isStarted guard.
+boost::signals2::signal<void(const std::string &pluginKey, int hwId, const std::string &jsonPayload)> sOnPluginWebSocketMessage;
 
 CNotificationBrowser::CNotificationBrowser() : CNotificationBase(std::string("browser"), 0)
 {

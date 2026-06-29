@@ -11,10 +11,10 @@ public:
 	void Start();
 	void Stop();
 	void UpdateActive();
+	void DoGooglePubSubPush(const uint64_t DeviceRowIdx);
 
 private:
   void OnDeviceReceived(int HwdID, uint64_t DeviceRowIdx, const std::string &DeviceName, const unsigned char *pRXCommand);
-  void DoGooglePubSubPush(const uint64_t DeviceRowIdx);
 };
 extern CGooglePubSubPush m_googlepubsubpush;
 

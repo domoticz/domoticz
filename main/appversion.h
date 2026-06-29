@@ -1,10 +1,12 @@
 #pragma once
 #include "../appversion.h"
 
+// Define BUILD_MASTER for stable (master) channel builds.
+// Normally set by the build system (CMake: -DBUILD_MASTER=ON); uncomment to force locally.
 //#define BUILD_MASTER
 
 #define VERSION_MAJOR               2026
-#define VERSION_MINOR               1
+#define VERSION_MINOR               2
 #define VERSION_REVISION            0
 #define VERSION_BUILD               APPVERSION
 

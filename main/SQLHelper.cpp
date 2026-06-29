@@ -9240,7 +9240,7 @@ int CSQLHelper::SanitizeCalendarData(uint64_t idx)
 			{
 				const float value = static_cast<float>(atof(row[1].c_str()));
 				const float price = static_cast<float>(atof(row[2].c_str()));
-				if (price != 0.0f && value > 0)
+				if (price > 0.0f && value > 0)
 					rates.push_back(price / (value / divider));
 			}
 
@@ -9257,13 +9257,15 @@ int CSQLHelper::SanitizeCalendarData(uint64_t idx)
 				bool bad;
 				if (value <= 0)
 					bad = true;
+				else if (price < 0.0f)
+					bad = false;  // negative prices (earned money at negative tariffs) are always valid
 				else if (use_iqr)
 				{
 					const float rate = price / (value / divider);
 					bad = (rate < fence_lo || rate > fence_hi);
 				}
 				else
-					bad = (std::abs(price) > (value / divider) * fallback_max_unit_rate);
+					bad = (price > (value / divider) * fallback_max_unit_rate);
 
 				if (!bad) continue;
 
@@ -9294,10 +9296,12 @@ int CSQLHelper::SanitizeCalendarData(uint64_t idx)
 
 						const float spread_rate = price / (total_value / divider);
 						bool spread_ok;
-						if (use_iqr)
+						if (price < 0.0f)
+							spread_ok = false;  // don't spread earned credits across dead days
+						else if (use_iqr)
 							spread_ok = (spread_rate >= fence_lo && spread_rate <= fence_hi);
 						else
-							spread_ok = (std::abs(price) <= (total_value / divider) * fallback_max_unit_rate);
+							spread_ok = (price <= (total_value / divider) * fallback_max_unit_rate);
 
 						if (spread_ok)
 						{

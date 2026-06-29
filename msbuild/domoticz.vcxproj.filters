@@ -2167,6 +2167,12 @@
     <ClInclude Include="..\hardware\plugins\PluginTransports.h">
       <Filter>Plugin Framework</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PluginWebSocketRegistry.h">
+      <Filter>Plugin Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\plugins\PluginWebSocketBridge.h">
+      <Filter>Plugin Framework</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\plugins\Plugins.h">
       <Filter>Plugin Framework</Filter>
     </ClInclude>
@@ -2962,6 +2968,12 @@
       <Filter>Plugin Framework</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\plugins\PluginTransports.cpp">
+      <Filter>Plugin Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\PluginWebSocketRegistry.cpp">
+      <Filter>Plugin Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\plugins\PluginWebSocketBridge.cpp">
       <Filter>Plugin Framework</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\plugins\Plugins.cpp">

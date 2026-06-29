@@ -2,11 +2,15 @@
 #include "DomoticzWebsocketHandler.h"
 
 #include <utility>
+#include <algorithm>
 #include "mainworker.h"
 #include "Helper.h"
 #include "json_helper.h"
 #include <libwebem/cWebem.h>
+#include <libwebem/session.h>
 #include "Logger.h"
+#include "../hardware/plugins/PluginWebSocketRegistry.h"
+#include "../hardware/plugins/PluginWebSocketBridge.h"
 
 
 namespace http {
@@ -124,6 +128,11 @@ namespace http {
 					if (HandleUnsubscribeDevices(value, outbound))
 						return true;
 				}
+				else if (szEvent == "plugin_command")
+				{
+					if (HandlePluginCommand(value, outbound))
+						return true;
+				}
 			}
 			catch (std::exception& e)
 			{
@@ -203,6 +212,22 @@ namespace http {
 			std::string szTopic = value["topic"].asString();
 			if (szTopic.empty())
 				return false;
+
+			// Plugin topics require the same rights as the inbound plugin_command path.
+			if (szTopic.compare(0, 7, "plugin:") == 0)
+			{
+				if (m_session.rights < URIGHTS_SWITCHER || m_session.rights > URIGHTS_ADMIN)
+				{
+					_log.Log(LOG_ERROR, "WebSocket subscribe: rejected plugin topic '%s', insufficient rights (user '%s')", szTopic.c_str(), m_session.username.c_str());
+					Json::Value resp;
+					resp["request"] = szEvent;
+					resp["event"] = "subscribed";
+					resp["requestid"] = value["requestid"];
+					resp["error"] = "Forbidden";
+					MyWrite(JSonToFormatString(resp));
+					return true;
+				}
+			}
 
 			subscribeTo(szTopic);
 			Json::Value jsonValue;
@@ -377,6 +402,135 @@ namespace http {
 			json["message"] = szMessage;
 			std::string response = json.toStyledString();
 			MyWrite(response);
+		}
+
+		// Maximum byte length accepted for a plugin_command payload (64 KiB).
+		// DoS protection: caps the per-message allocation on the plugin's queue so
+		// that a misbehaving or compromised frontend cannot exhaust process memory
+		// by flooding large payloads before the plugin worker thread drains them.
+		static constexpr size_t kPluginCommandMaxPayloadBytes = 65536;
+
+		bool CDomoticzWebsocketHandler::HandlePluginCommand(const Json::Value& value, const bool outbound)
+		{
+			// Security: only URIGHTS_SWITCHER or above may send commands.
+			// This mirrors the rights level enforced for device-command operations
+			// (Cmd_UpdateDevice and sSwitcherCommands in WebServerCommands.cpp).
+			// The upper-bound guard rejects URIGHTS_NONE (254) and URIGHTS_CLIENTID (255)
+			// which are numerically above URIGHTS_ADMIN (2) and must not be allowed.
+			if (m_session.rights < URIGHTS_SWITCHER || m_session.rights > URIGHTS_ADMIN)
+			{
+				_log.Log(LOG_ERROR, "WebSocket plugin_command: rejected, insufficient rights (user '%s')", m_session.username.c_str());
+				Json::Value resp;
+				resp["event"] = "plugin_command_ack";
+				resp["error"] = "Forbidden";
+				MyWrite(JSonToFormatString(resp));
+				return true;
+			}
+
+			// Validate required fields.
+			if (!value.isMember("plugin") || !value["plugin"].isString())
+			{
+				_log.Log(LOG_ERROR, "WebSocket plugin_command: missing or non-string 'plugin' field");
+				return false;
+			}
+			const std::string pluginKey = value["plugin"].asString();
+			if (pluginKey.empty())
+			{
+				_log.Log(LOG_ERROR, "WebSocket plugin_command: empty 'plugin' field");
+				return false;
+			}
+			if (!value.isMember("data"))
+			{
+				_log.Log(LOG_ERROR, "WebSocket plugin_command: missing 'data' field");
+				return false;
+			}
+
+			// Serialise the data payload for the plugin queue.
+			std::string dataStr;
+			const Json::Value& dataVal = value["data"];
+			if (dataVal.isString())
+				dataStr = dataVal.asString();
+			else
+				dataStr = JSonToFormatString(dataVal);
+
+			// Reject oversized payloads before touching any plugin state.
+			if (dataStr.size() > kPluginCommandMaxPayloadBytes)
+			{
+				_log.Log(LOG_ERROR, "WebSocket plugin_command: payload too large (%zu bytes, max %zu)", dataStr.size(), kPluginCommandMaxPayloadBytes);
+				Json::Value resp;
+				resp["event"] = "plugin_command_ack";
+				resp["plugin"] = pluginKey;
+				resp["error"] = "Payload too large";
+				resp["delivered"] = 0;
+				MyWrite(JSonToFormatString(resp));
+				return true;
+			}
+
+			// Determine target instance(s).
+			std::vector<int> hwIds = CPluginWebSocketRegistry::Get().GetInstances(pluginKey);
+			if (hwIds.empty())
+			{
+				_log.Debug(DEBUG_WEBSERVER, "WebSocket plugin_command: no running instances for plugin '%s'", pluginKey.c_str());
+				_log.Log(LOG_STATUS, "WebSocket plugin_command: plugin '%s' is not subscribed or not running (check plugin key)", pluginKey.c_str());
+				Json::Value resp;
+				resp["event"] = "plugin_command_ack";
+				resp["plugin"] = pluginKey;
+				resp["delivered"] = 0;
+				MyWrite(JSonToFormatString(resp));
+				return true;
+			}
+
+			// Optional single-instance targeting.
+			if (value.isMember("hwid") && value["hwid"].isInt())
+			{
+				int targetHwId = value["hwid"].asInt();
+				hwIds.erase(
+					std::remove_if(hwIds.begin(), hwIds.end(), [targetHwId](int id) { return id != targetHwId; }),
+					hwIds.end());
+			}
+
+			// Fan out — each call is non-blocking (enqueues onto the plugin's own queue).
+			int delivered = 0;
+			for (int hwId : hwIds)
+			{
+				if (Plugins::EnqueueWebSocketMessage(hwId, dataStr))
+					++delivered;
+			}
+
+			_log.Debug(DEBUG_WEBSERVER, "WebSocket plugin_command: plugin '%s', delivered to %d instance(s)", pluginKey.c_str(), delivered);
+
+			Json::Value resp;
+			resp["event"] = "plugin_command_ack";
+			resp["plugin"] = pluginKey;
+			resp["delivered"] = delivered;
+			MyWrite(JSonToFormatString(resp));
+			return true;
+		}
+
+		void CDomoticzWebsocketHandler::SendPluginMessage(const std::string& pluginKey, int hwId, const std::string& jsonPayload)
+		{
+			if (m_session.rights < URIGHTS_SWITCHER || m_session.rights > URIGHTS_ADMIN)
+				return;
+			if (!isSubscribed("plugin:" + pluginKey))
+				return;
+			try
+			{
+				Json::Value json;
+				json["event"] = "plugin";
+				json["plugin"] = pluginKey;
+				json["hwid"] = hwId;
+				Json::Value data;
+				if (ParseJSon(jsonPayload, data))
+					json["data"] = data;
+				else
+					json["data"] = jsonPayload;
+				std::string response = json.toStyledString();
+				MyWrite(response);
+			}
+			catch (std::exception& e)
+			{
+				_log.Log(LOG_ERROR, "WebsocketHandler::%s Exception: %s", __func__, e.what());
+			}
 		}
 	} // namespace server
 } // namespace http

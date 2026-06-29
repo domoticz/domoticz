@@ -54,6 +54,21 @@ private:
 		bool   switch_on  = false; bool hasSwitch  = false;
 		int    systemMode    = 0; bool hasSystemMode    = false;
 		int    ctrlSeqOp     = 0; bool hasCtrlSeqOp     = false;
+		// rechargeable batteries
+		int    rechargeable_battery_pct = 200;  int rechargeable_battery_charge_state = 0; bool hasRechargeableBattery = false;
+		// rvc cluster
+		int	   rvc_CurrentRunMode = 0; bool hasRvc_RunMode = false;
+		int    rvc_IdleRunMode = -1; int rvc_CleanRunMode = -1;
+		struct rvc_RunModeEntry { std::string label; int mode; std::vector<int> RunModeTags; };
+		std::vector<rvc_RunModeEntry> rvc_RunModeEntries;
+		int	   rvc_CurrentCleanMode	= 0; bool hasRvc_CleanMode = false;
+		struct rvc_CleanModeEntry { std::string label; int mode; };
+		std::vector<rvc_CleanModeEntry> rvc_CleanModeEntries;
+		int	   rvc_OperationalState = 0; int rvc_OperationalError=0; bool hasRvc_OperationalState = false;
+		// service areas
+		int	   currentArea = 0; bool hasAreas = false;
+		struct areaEntry { uint32_t areaId=0; uint32_t mapId=0; std::string locationName; uint16_t floorNumber=0; int areaType=0; };
+		std::vector<areaEntry> areaEntries;
 		// Thermostat absolute setpoint limits (°C)
 		float  minHeatSetpoint_C = 5.0f;
 		float  maxHeatSetpoint_C = 30.0f;
@@ -140,6 +155,7 @@ private:
 	void HandleResult(const Json::Value& msg);
 	void HandleEvent(const Json::Value& msg);
 	void HandleNode(const Json::Value& nodeData);
+	void HandleNodeEvent(const Json::Value& node_event);
 	void HandleAttributeUpdate(const Json::Value& data);
 	void _DetectAndSend(int nodeId, int endpointId);
 	void _DetectAndSendNode(int nodeId);
@@ -149,6 +165,8 @@ private:
 	void ApplyAttributeToState(int cluster_id, int attr_id, const Json::Value& v, EndpointState& state);
 	void ApplyNodeMetadata(int cluster_id, int attr_id, const Json::Value& v, NodeState& node);
 	std::string ExtractLabel(const Json::Value& endpointAttrs, int nodeId, int endpointId) const;
+	std::string Getrvc_OperationalStateLabel(int OperationalState);
+	std::string Getrvc_OperationalErrorLabel(int OperationalError);
 	void Do_Work();
 
 	std::string  m_serverAddress;

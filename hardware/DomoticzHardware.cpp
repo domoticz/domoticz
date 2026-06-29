@@ -1151,7 +1151,7 @@ void CDomoticzHardwareBase::SendSelectorSwitch(const int NodeID, const uint8_t C
 		//Check Level (sValue in SQL Query)
 		if (xcmd.level == std::stoi(result[0][1]))
 			return; // no need to uodate
-		result = m_sql.safe_query("UPDATE DeviceStatus SET sValue=%i WHERE (HardwareID==%d) AND (DeviceID=='%08X')", xcmd.level, m_HwdID, NodeID);
+		result = m_sql.safe_query("UPDATE DeviceStatus SET sValue=%i WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit == '%d')", xcmd.level, m_HwdID, NodeID, xcmd.unitcode);
 	}
 }
                             

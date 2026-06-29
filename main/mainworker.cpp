@@ -323,10 +323,10 @@ void MainWorker::StopDomoticzHardware()
 
 	for (auto& device : OrgHardwaredevices)
 	{
+		device->Stop(); // joins the plugin worker thread before deregistering
 #ifdef ENABLE_PYTHON
 		m_pluginsystem.DeregisterPlugin(device->m_HwdID);
 #endif
-		device->Stop();
 		delete device;
 	}
 }
@@ -398,10 +398,10 @@ void MainWorker::RemoveDomoticzHardware(int HwdId)
 	int dpos = FindDomoticzHardware(HwdId);
 	if (dpos == -1)
 		return;
+	RemoveDomoticzHardware(m_hardwaredevices[dpos]); // calls Stop() which joins the worker thread
 #ifdef ENABLE_PYTHON
-	m_pluginsystem.DeregisterPlugin(HwdId);
+	m_pluginsystem.DeregisterPlugin(HwdId); // safe: worker is joined before this point
 #endif
-	RemoveDomoticzHardware(m_hardwaredevices[dpos]);
 }
 
 int MainWorker::FindDomoticzHardware(int HwdId)
@@ -9750,10 +9750,10 @@ void MainWorker::decode_RFXMeter(const CDomoticzHardwareBase* pHardware, const t
 		uint8_t SignalLevel = pResponse->RFXMETER.rssi;
 		uint8_t BatteryLevel = 255;
 
-		unsigned long counter = (pResponse->RFXMETER.count1 << 24) + (pResponse->RFXMETER.count2 << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4;
+		uint32_t counter = (static_cast<uint32_t>(pResponse->RFXMETER.count1) << 24) + (static_cast<uint32_t>(pResponse->RFXMETER.count2) << 16) + (static_cast<uint32_t>(pResponse->RFXMETER.count3) << 8) + static_cast<uint32_t>(pResponse->RFXMETER.count4);
 		//float RFXPwr = float(counter) / 1000.0f;
 
-		sprintf(szTmp, "%lu", counter);
+		sprintf(szTmp, "%u", counter);
 		DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
 		if (DevRowIdx == (uint64_t)-1)
 			return;
@@ -9762,7 +9762,7 @@ void MainWorker::decode_RFXMeter(const CDomoticzHardwareBase* pHardware, const t
 	if (_log.IsDebugLevelEnabled(DEBUG_RECEIVED))
 	{
 		WriteMessageStart();
-		unsigned long counter;
+		uint32_t counter;
 
 		switch (pResponse->RFXMETER.subtype)
 		{
@@ -9772,8 +9772,8 @@ void MainWorker::decode_RFXMeter(const CDomoticzHardwareBase* pHardware, const t
 			WriteMessage(szTmp);
 			sprintf(szTmp, "ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
-			counter = (pResponse->RFXMETER.count1 << 24) + (pResponse->RFXMETER.count2 << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4;
-			sprintf(szTmp, "Counter       = %lu", counter);
+			counter = (static_cast<uint32_t>(pResponse->RFXMETER.count1) << 24) + (static_cast<uint32_t>(pResponse->RFXMETER.count2) << 16) + (static_cast<uint32_t>(pResponse->RFXMETER.count3) << 8) + static_cast<uint32_t>(pResponse->RFXMETER.count4);
+			sprintf(szTmp, "Counter       = %u", counter);
 			WriteMessage(szTmp);
 			sprintf(szTmp, "if RFXPwr     = %.3f kWh", float(counter) / 1000.0F);
 			WriteMessage(szTmp);
@@ -9878,8 +9878,8 @@ void MainWorker::decode_RFXMeter(const CDomoticzHardwareBase* pHardware, const t
 			WriteMessage(szTmp);
 			sprintf(szTmp, "ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
-			counter = (pResponse->RFXMETER.count1 << 24) + (pResponse->RFXMETER.count2 << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4;
-			sprintf(szTmp, "Counter       = %lu", counter);
+			counter = (static_cast<uint32_t>(pResponse->RFXMETER.count1) << 24) + (static_cast<uint32_t>(pResponse->RFXMETER.count2) << 16) + (static_cast<uint32_t>(pResponse->RFXMETER.count3) << 8) + static_cast<uint32_t>(pResponse->RFXMETER.count4);
+			sprintf(szTmp, "Counter       = %u", counter);
 			WriteMessage(szTmp);
 			break;
 		case sTypeRFXMeterSetInterval:

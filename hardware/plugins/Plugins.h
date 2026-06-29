@@ -46,6 +46,13 @@ namespace Plugins {
 
 		PyThreadState*	m_PyInterpreter;
 		PyObject*		m_PyModule;			// plugin module itself
+		// Snapshot (never dereferenced) of this interpreter's sys.modules dict
+		// pointer. Used as the key for the s_PluginByModulesDict map below so
+		// FindPlugin() can route correctly on Python versions where multi-phase
+		// init does not isolate module_state between sub-interpreters
+		// (CPython 3.11 reuses the cached module on second import, sharing
+		// md_state with the first interpreter; fixed in 3.12).
+		void*			m_pInterpModulesDict;
 
 		std::string		m_Version;
 		std::string		m_Author;
@@ -71,6 +78,11 @@ namespace Plugins {
 
 	  static module_state *FindModule();
 	  static CPlugin*	FindPlugin();
+	  // Look up the Domoticz / DomoticzEx module object in the current
+	  // (sub-)interpreter via sys.modules. Replaces PyState_FindModule(&def),
+	  // which does not work for multi-phase init modules.
+	  // Returns a borrowed reference or nullptr.
+	  static PyObject*	FindPyModule(const char *name);
 
 	  bool StartHardware() override;
 	  bool StopHardware() override;
@@ -111,6 +123,7 @@ namespace Plugins {
 	  void onDeviceAdded(const std::string DeviceID, int Unit);
 	  void onDeviceModified(const std::string DeviceID, int Unit);
 	  void onDeviceRemoved(const std::string DeviceID, int Unit);
+	  void onWebSocketMessage(const std::string &Data);
 	  void MessagePlugin(CPluginMessageBase *pMessage);
 	  void DeviceAdded(const std::string DeviceID, int Unit);
 	  void DeviceModified(const std::string DeviceID, int Unit);

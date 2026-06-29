@@ -4411,6 +4411,11 @@ namespace http
 			std::string sLastUpdate = request::findValue(&req, "lastupdate");
 
 			std::string rid = request::findValue(&req, "rid");
+			if (!rid.empty() && rid.find_first_not_of("0123456789") != std::string::npos)
+				rid.clear();
+			std::string planid = request::findValue(&req, "plan");
+			if (!planid.empty() && planid.find_first_not_of("0123456789") != std::string::npos)
+				planid.clear();
 
 			time_t LastUpdate = 0;
 			if (!sLastUpdate.empty())
@@ -4429,11 +4434,19 @@ namespace http
 			root["ActTime"] = static_cast<int>(now);
 
 			std::vector<std::vector<std::string>> result, result2;
-			std::string szQuery = "SELECT ID, Name, Activators, Favorite, nValue, SceneType, LastUpdate, Protected, OnAction, OffAction, Description FROM Scenes";
+			bool bFilterByPlan = (!planid.empty() && planid != "0");
 			if (!rid.empty())
-				szQuery += " WHERE (ID == " + rid + ")";
-			szQuery += " ORDER BY [Order]";
-			result = m_sql.safe_query(szQuery.c_str());
+			{
+				result = m_sql.safe_query("SELECT ID, Name, Activators, Favorite, nValue, SceneType, LastUpdate, Protected, OnAction, OffAction, Description FROM Scenes WHERE (ID == %q) ORDER BY [Order]", rid.c_str());
+			}
+			else if (bFilterByPlan)
+			{
+				result = m_sql.safe_query("SELECT ID, Name, Activators, Favorite, nValue, SceneType, LastUpdate, Protected, OnAction, OffAction, Description FROM Scenes WHERE ID IN (SELECT DeviceRowID FROM DeviceToPlansMap WHERE DevSceneType=1 AND PlanID=%q) ORDER BY [Order]", planid.c_str());
+			}
+			else
+			{
+				result = m_sql.safe_query("SELECT ID, Name, Activators, Favorite, nValue, SceneType, LastUpdate, Protected, OnAction, OffAction, Description FROM Scenes ORDER BY [Order]");
+			}
 			if (!result.empty())
 			{
 				int ii = 0;
@@ -6142,6 +6155,7 @@ namespace http
 			std::string sOptions = HTMLSanitizer::Sanitize(base64_decode(request::findValue(&req, "options")));
 			std::string devoptions = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "devoptions")));
 			std::string EnergyMeterMode = CURLEncode::URLDecode(request::findValue(&req, "EnergyMeterMode"));
+			std::string sShowIcon = request::findValue(&req, "ShowIcon");
 
 			char szTmp[200];
 
@@ -6327,10 +6341,15 @@ namespace http
 					faddjmulti2 = 1;
 				m_sql.safe_query("UPDATE DeviceStatus SET AddjMulti2=%f WHERE (ID == '%q')", faddjmulti2, idx.c_str());
 			}
-			if (!EnergyMeterMode.empty())
+			bool bNeedShowIcon = (!sShowIcon.empty() && (sShowIcon == "0" || sShowIcon == "1") &&
+				atoi(result[0][0].c_str()) == pTypeGeneral && atoi(result[0][1].c_str()) == sTypeTextStatus);
+			if (!EnergyMeterMode.empty() || bNeedShowIcon)
 			{
 				auto options = m_sql.GetDeviceOptions(idx);
-				options["EnergyMeterMode"] = EnergyMeterMode;
+				if (!EnergyMeterMode.empty())
+					options["EnergyMeterMode"] = EnergyMeterMode;
+				if (bNeedShowIcon)
+					options["ShowIcon"] = sShowIcon;
 				uint64_t ullidx = std::stoull(idx);
 				m_sql.SetDeviceOptions(ullidx, options);
 			}

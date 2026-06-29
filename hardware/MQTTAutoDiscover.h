@@ -14,6 +14,7 @@ class MQTTAutoDiscover : public MQTT
 		std::string config;
 
 		bool bEnabled_by_default = true;
+		bool bForce_update = false;
 
 		std::string component_type;
 		std::string object_id;

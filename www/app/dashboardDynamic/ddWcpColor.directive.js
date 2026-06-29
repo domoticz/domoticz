@@ -25,7 +25,8 @@ define(['app'], function(app) {
                     if (val) {
                         input.wheelColorPicker('setValue', val);
                     }
-                    btn.css('background', val || '');
+                    btn.css('background', val || 'var(--dz-accent-color)');
+                    btn.toggleClass('dd-wcp-swatch--auto', !val);
                 }
 
                 function open() {

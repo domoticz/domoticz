@@ -26,11 +26,13 @@ private:
 	void OnNotificationReceived(const std::string &Subject, const std::string &Text, const std::string &ExtraData, int Priority, const std::string &Sound, bool bFromNotification);
 	void OnSceneChange(uint64_t SceneRowIdx, const std::string &SceneName);
 	void OnLogMessage(const _eLogLevel level, const std::string& sLogline);
+	void OnPluginWebSocketMessage(const std::string& pluginKey, int hwId, const std::string& jsonPayload);
 
 	std::recursive_mutex handlerMutex;
 	http::server::CDomoticzWebsocketHandler *m_sock;
 	bool isStarted;
 
+	boost::signals2::connection m_sPluginWS;
 	lsignal::slot m_sLogMessage;
 
 };

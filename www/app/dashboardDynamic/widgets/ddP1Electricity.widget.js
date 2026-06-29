@@ -43,8 +43,11 @@ define([
                 label:        'Bar ranges',
                 help:         'Add value ranges to show a gradient bar on current power (W). Bar auto-scales to the combined min/max of all ranges.',
                 seedDefaults: [
-                    { from: 0,    to: 500,  color: '#66bb6a' },
-                    { from: 500,  to: 3000, color: '#DF2D3A' }
+                    { from: -5000, to: -2500, color: '#DF2D3A' },
+                    { from: -2500, to: -500,  color: '#ffa726' },
+                    { from: -500,  to: 500,   color: '#42a5f5' },
+                    { from: 500,   to: 2500,  color: '#ffa726' },
+                    { from: 2500,  to: 5000,  color: '#DF2D3A' }
                 ]
             },
             { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
@@ -91,7 +94,7 @@ define([
                     var raw = parseFloat(d.price);
                     ctrl.price = (!isNaN(raw) && raw !== 1000 && raw !== 0) ? raw : null;
                     ctrl.isExporting       = ctrl.exportWatt > 0;
-                    ctrl.numVal            = ctrl.isExporting ? ctrl.exportWatt : ctrl.importWatt;
+                    ctrl.numVal            = ctrl.isExporting ? -ctrl.exportWatt : ctrl.importWatt;
                     ctrl.loadError         = false;
                 }
 

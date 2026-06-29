@@ -49,6 +49,11 @@ ENDIF()
 option(USE_PRECOMPILED_HEADER "Use precompiled header feature to speed up build time " YES)
 option(GIT_SUBMODULE "Check submodules during build" ON)
 option(ENABLE_ASAN "Build with address sanitizer" NO)
+option(BUILD_MASTER "Build the stable (master) channel: version string without build number" NO)
+
+IF(BUILD_MASTER)
+  add_definitions(-DBUILD_MASTER)
+ENDIF()
 
 ### COMPILER SETTINGS
 #
@@ -394,6 +399,8 @@ hardware/plugins/Plugins.cpp
 hardware/plugins/PluginManager.cpp
 hardware/plugins/PluginProtocols.cpp
 hardware/plugins/PluginTransports.cpp
+hardware/plugins/PluginWebSocketRegistry.cpp
+hardware/plugins/PluginWebSocketBridge.cpp
 hardware/plugins/PythonObjects.cpp
 hardware/plugins/PythonObjectEx.cpp
 notifications/NotificationBase.cpp
@@ -562,7 +569,7 @@ MESSAGE(STATUS "Compiling Revision #${ProjectRevision}")
 MESSAGE(STATUS "###########################")
 
 # The version number.
-set (domoticz_VERSION_MAJOR 2025)
+set (domoticz_VERSION_MAJOR 2026)
 set (domoticz_VERSION_MINOR 2)
 set (domoticz_VERSION_PATCH ${ProjectRevision})
 

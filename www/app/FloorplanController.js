@@ -1,5 +1,5 @@
 define(['app', 'livesocket'], function (app) {
-	app.controller('FloorplanController', function ($scope, $rootScope, $location, $window, $http, $interval, $timeout, $compile, permissions, livesocket) {
+	app.controller('FloorplanController', function ($scope, $rootScope, $location, $window, $http, $interval, $compile, permissions, livesocket) {
 
 		$scope.floorPlans;
 		$scope.FloorplanCount;
@@ -7,10 +7,11 @@ define(['app', 'livesocket'], function (app) {
 		$scope.browser = "unknown";
 		$scope.lastUpdateTime = 0;
 		$scope.isScrolling = false;		// used on tablets & phones
-		$scope.pendingScroll = false;	// used on tablets & phones
 		$scope.lastTouch = 0;			// used on tablets & phones
 		$scope.lastTouchX = 0;			// used on tablets & phones
 		$scope.lastTouchY = 0;			// used on tablets & phones
+		$scope.touchStartX = 0;			// used on tablets & phones
+		$scope.touchStartY = 0;			// used on tablets & phones
 		var refreshDebounceTimer = null;
 
 		$scope.makeHTMLnode = function (tag, attrs) {
@@ -19,53 +20,52 @@ define(['app', 'livesocket'], function (app) {
 			return el;
 		}
 
-		function FPtouchstart(e) { $scope.isScrolling = false; };
+		function FPtouchstart(e) {
+			$scope.isScrolling = false;
+			var touch = e.changedTouches ? e.changedTouches[0] : null;
+			$scope.touchStartX = touch ? touch.pageX : 0;
+			$scope.touchStartY = touch ? touch.pageY : 0;
+		};
 		function FPtouchmove(e) { $scope.isScrolling = true; };
 		function FPtouchend(e) {
-			//  Handle events on navigation elements
 			if (e.target.getAttribute('related') != null) {
 				$("#BulletImages").children().css({ 'display': 'none' });
 				e.preventDefault();
 				ScrollFloorplans(e.target.getAttribute('related'));
+				return;
 			}
-			else
-			// otherwise do scrolling stuff
-			{
-				if ($scope.isScrolling == true) {
-					$scope.isScrolling = false;
-					$scope.pendingScroll = true;
-					$timeout(function () {
-						if (($scope.isScrolling == false) && ($scope.pendingScroll == true)) {
-							$scope.pendingScroll = false;
-							var nearestFP = $('.imageparent:first');
-							$('.imageparent').each(function () {
-								var offset = Math.abs(window.pageXOffset - $(this).offset().left);
-								if (offset < Math.abs(window.pageXOffset - nearestFP.offset().left)) {
-									nearestFP = $(this);
-								}
-							});
-							ScrollFloorplans(nearestFP.attr('id'), true);
-						}
-					}, 50);
+
+			var touch = e.changedTouches ? e.changedTouches[0] : null;
+			if (!touch) return;
+
+			var endX   = touch.pageX;
+			var endY   = touch.pageY;
+			var deltaX = endX - $scope.touchStartX;
+			var deltaY = endY - $scope.touchStartY;
+
+			var SWIPE_THRESHOLD = 50;
+
+			if ($scope.isScrolling && Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY)) {
+				if (deltaX < 0 && $scope.actFloorplan < $scope.FloorplanCount - 1) {
+					$scope.actFloorplan++;
+					ScrollFloorplans($scope.floorPlans[$scope.actFloorplan].tagName);
+				} else if (deltaX > 0 && $scope.actFloorplan > 0) {
+					$scope.actFloorplan--;
+					ScrollFloorplans($scope.floorPlans[$scope.actFloorplan].tagName);
 				}
-				else  // if not scrolling look for double tap
-				{
-					var touch = e.changedTouches ? e.changedTouches[0] : null;
-					var touchX = touch ? touch.pageX : 0;
-					var touchY = touch ? touch.pageY : 0;
-					var delta = (new Date()).getTime() - $scope.lastTouch;
-					var delay = 500;
-					var dx = touchX - $scope.lastTouchX;
-					var dy = touchY - $scope.lastTouchY;
-					var distance = Math.sqrt(dx * dx + dy * dy);
-					if (delta < delay && delta > 0 && distance < 50) {
-						$scope.doubleClick();
-					}
-					$scope.lastTouch = (new Date()).getTime();
-					$scope.lastTouchX = touchX;
-					$scope.lastTouchY = touchY;
+			} else if (!$scope.isScrolling) {
+				var timeDelta = (new Date()).getTime() - $scope.lastTouch;
+				var dx = endX - $scope.lastTouchX;
+				var dy = endY - $scope.lastTouchY;
+				var distance = Math.sqrt(dx * dx + dy * dy);
+				if (timeDelta < 500 && timeDelta > 0 && distance < 50) {
+					$scope.doubleClick();
 				}
+				$scope.lastTouch  = (new Date()).getTime();
+				$scope.lastTouchX = endX;
+				$scope.lastTouchY = endY;
 			}
+			$scope.isScrolling = false;
 		};
 
 		ScrollFloorplans = function (tagName, animate) {

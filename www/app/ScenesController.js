@@ -1,5 +1,5 @@
 define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
-	app.controller('ScenesController', function ($scope, $rootScope, $location, $http, $interval, $timeout, permissions, livesocket) {
+	app.controller('ScenesController', function ($scope, $rootScope, $location, $route, $routeParams, $http, $interval, $timeout, permissions, livesocket) {
 		var $element = $('#main-view #scenecontent').last();
 
 		var SceneIdx = 0;
@@ -787,7 +787,8 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 
 		//We only call this once. After this the widgets are being updated automatically by used of the websocket broadcast event.
 		RefreshScenes = function () {
-			livesocket.getJson("json.htm?type=command&param=getscenes&lastupdate=" + $.LastUpdateTime, function (data) {
+			var roomPlanId = window.myglobals.LastPlanSelected || 0;
+			livesocket.getJson("json.htm?type=command&param=getscenes&lastupdate=" + $.LastUpdateTime + "&plan=" + roomPlanId, function (data) {
 				if (typeof data.ServerTime != 'undefined') {
 					$rootScope.SetTimeAndSun(data.Sunrise, data.Sunset, data.ServerTime);
 				}
@@ -813,8 +814,9 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 			$scope.showSceneList = true;
 			$('#sceneeditcontent').empty();
 
+			var roomPlanId = window.myglobals.LastPlanSelected || 0;
 			$.ajax({
-				url: "json.htm?type=command&param=getscenes",
+				url: "json.htm?type=command&param=getscenes&plan=" + roomPlanId,
 				dataType: 'json',
 				success: function (data) {
 					if (typeof data.result != 'undefined') {
@@ -881,6 +883,23 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 		function init() {
 			SceneIdx = 0;
 			$scope.MakeGlobalConfig();
+
+			var ctrl = {};
+			ctrl.RoomPlans = $rootScope.GetRoomPlans();
+			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
+			if (typeof roomPlanId !== 'undefined') {
+				ctrl.roomSelected = roomPlanId;
+				window.myglobals.LastPlanSelected = roomPlanId;
+			}
+			ctrl.changeRoom = function () {
+				var idx = ctrl.roomSelected;
+				window.myglobals.LastPlanSelected = idx;
+				window.myglobals.LastSearchFilter = '';
+				$('.jsLiveSearch').val('').trigger('change');
+				$route.updateParams({ room: idx >= 0 ? idx : undefined });
+				$location.replace();
+			};
+			$scope.ctrl = ctrl;
 
 			$scope.$on('scene_update', function (event, sceneData) {
 				RefreshItem(sceneData);

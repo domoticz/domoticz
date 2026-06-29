@@ -85,6 +85,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(char*, PyByteArray_AsString, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyLong_FromLong, long);
 		DECLARE_PYTHON_SYMBOL(PY_LONG_LONG, PyLong_AsLongLong, PyObject*);
+		DECLARE_PYTHON_SYMBOL(unsigned PY_LONG_LONG, PyLong_AsUnsignedLongLong, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyModule_GetDict, PyObject*);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyDict_New, );
 		DECLARE_PYTHON_SYMBOL(void, PyDict_Clear, PyObject *);
@@ -134,6 +135,7 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(int, PyObject_IsSubclass, PyObject *COMMA PyObject *);
 		DECLARE_PYTHON_SYMBOL(PyObject *, PyObject_Dir, PyObject *);
 		DECLARE_PYTHON_SYMBOL(PyObject*, PyModule_Create2, struct PyModuleDef* COMMA int);
+		DECLARE_PYTHON_SYMBOL(PyObject*, PyModuleDef_Init, struct PyModuleDef*);
 		DECLARE_PYTHON_SYMBOL(int, PyModule_AddObject, PyObject* COMMA const char* COMMA PyObject*);
 		DECLARE_PYTHON_SYMBOL(int, PyArg_ParseTuple, PyObject* COMMA const char* COMMA ...);
 		DECLARE_PYTHON_SYMBOL(int, PyArg_ParseTupleAndKeywords, PyObject* COMMA PyObject* COMMA const char* COMMA char*[] COMMA ...);
@@ -178,8 +180,6 @@ namespace Plugins {
 			std::string extension;
 #ifdef WIN32
 			extension = ".dll"; // Windows uses .dll
-#elif defined(__FreeBSD__)
-			extension = "m";    // FreeBSD uses 'm' suffix
 #endif
 			// Loop through the set (it is already sorted in descending order)
             for (const auto& version : python_versions) {
@@ -224,6 +224,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyByteArray_AsString);
 					RESOLVE_PYTHON_SYMBOL(PyLong_FromLong);
 					RESOLVE_PYTHON_SYMBOL(PyLong_AsLongLong);
+					RESOLVE_PYTHON_SYMBOL(PyLong_AsUnsignedLongLong);
 					RESOLVE_PYTHON_SYMBOL(PyModule_GetDict);
 					RESOLVE_PYTHON_SYMBOL(PyDict_New);
 					RESOLVE_PYTHON_SYMBOL(PyDict_Contains);
@@ -273,6 +274,7 @@ namespace Plugins {
 					RESOLVE_PYTHON_SYMBOL(PyObject_IsSubclass);
 					RESOLVE_PYTHON_SYMBOL(PyObject_Dir);
 					RESOLVE_PYTHON_SYMBOL(PyModule_Create2);
+					RESOLVE_PYTHON_SYMBOL(PyModuleDef_Init);
 					RESOLVE_PYTHON_SYMBOL(PyModule_AddObject);
 					RESOLVE_PYTHON_SYMBOL(PyArg_ParseTuple);
 					RESOLVE_PYTHON_SYMBOL(PyArg_ParseTupleAndKeywords);
@@ -456,6 +458,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define PyByteArray_AsString	pythonLib->PyByteArray_AsString
 #define PyLong_FromLong			pythonLib->PyLong_FromLong
 #define PyLong_AsLongLong		pythonLib->PyLong_AsLongLong
+#define PyLong_AsUnsignedLongLong	pythonLib->PyLong_AsUnsignedLongLong
 #define PyModule_GetDict		pythonLib->PyModule_GetDict
 #define PyDict_New				pythonLib->PyDict_New
 #define PyDict_Contains			pythonLib->PyDict_Contains
@@ -508,6 +511,7 @@ extern	SharedLibraryProxy* pythonLib;
 #define Py_BuildValue			pythonLib->Py_BuildValue
 #define PyMem_Free				pythonLib->PyMem_Free
 #define PyModule_Create2		pythonLib->PyModule_Create2
+#define PyModuleDef_Init		pythonLib->PyModuleDef_Init
 #define PyModule_AddObject		pythonLib->PyModule_AddObject
 #define PyArg_ParseTupleAndKeywords pythonLib->PyArg_ParseTupleAndKeywords
 #define PyArg_VaParseTupleAndKeywords pythonLib->PyArg_VaParseTupleAndKeywords

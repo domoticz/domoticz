@@ -59,6 +59,26 @@ To revoke a token at any time, return to '''Setup → More Options → Access To
 
 Claude Desktop currently only supports STDIO transport for standard users. Use [https://github.com/sparfenyuk/mcp-proxy mcp-proxy] as an intermediary to bridge STDIO ↔ Streamable HTTP.
 
+==== Installing mcp-proxy on Windows ====
+
+# Download and install '''Claude Desktop''' from [https://claude.ai/download claude.ai/download].
+# Install the '''uv''' Python package manager. In PowerShell:
+#: <pre>powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"</pre>
+# Install '''mcp-proxy''' with uv:
+#: <pre>uv tool install mcp-proxy</pre>
+# Find the full path of <code>mcp-proxy.exe</code> — you will need it in the configuration below:
+#: <pre>where.exe mcp-proxy</pre>
+# Open the Claude Desktop configuration folder:
+#: <pre>%APPDATA%\Claude</pre>
+#: If the folder or <code>claude_desktop_config.json</code> file does not exist yet, start Claude Desktop once and enable '''Developer Mode''' from the menu, or create the file manually.
+# Edit <code>claude_desktop_config.json</code> as shown below, replacing the <code>command</code> value with the path returned by <code>where.exe mcp-proxy</code>.
+
+==== Installing mcp-proxy on Linux / macOS ====
+
+Install uv (<code>curl -LsSf https://astral.sh/uv/install.sh | sh</code>), then run <code>uv tool install mcp-proxy</code> and use <code>which mcp-proxy</code> to find the binary path. The Claude Desktop configuration file lives at <code>~/Library/Application Support/Claude/claude_desktop_config.json</code> on macOS.
+
+==== Configuration ====
+
 Add the following to your Claude Desktop configuration file (<code>claude_desktop_config.json</code>).
 
 '''Without Access Token''' (client is within the private network range):

@@ -1,6 +1,6 @@
 <blockquote>'''Note:''' This page is maintained in the [https://github.com/domoticz/domoticz/tree/development/docs Domoticz GitHub repository]. Please do not edit it directly on the Wiki.</blockquote>
 
-'''Revision:''' 2026-04-12<br>
+'''Revision:''' 2026-05-14<br>
 
 ==Overview==
 This page is aimed at developers wishing to improve Domoticz functionality via Python Plugins. If you simply want to use a plugin that a developer has already created for you, please see [[Using Python plugins]]. To see the Plugins already developed (for a reference) got to page [[Plugins]].
@@ -233,6 +233,100 @@ true
 |}
 |-
 |}
+
+==Extended Parameter Settings==
+In addition to the basic <code><param></code> attributes documented above, the parameter definition supports a richer set of input types, validation hints, conditional visibility, and grouping. These extended settings let the Hardware page render plugin configuration as proper number inputs, checkboxes, sliders, password fields, and collapsible groups instead of plain text boxes.
+
+A complete working example is shipped with Domoticz at <code>plugins/examples/TestExtendedSettings/plugin.py</code>.
+
+===New <param> attributes===
+{| class="wikitable"
+|-
+!Attribute
+!Purpose
+|-
+|type
+|Optional. Selects the input control rendered on the Hardware page. Valid values:
+* <code>number</code> &mdash; numeric spinner. Honours <code>min</code>, <code>max</code>, <code>step</code>.
+* <code>boolean</code> &mdash; checkbox. <code>default</code> accepts <code>"true"</code> or <code>"false"</code>.
+* <code>slider</code> &mdash; range slider. Honours <code>min</code>, <code>max</code>, <code>step</code>.
+If <code>type</code> is omitted (or set to a value the UI does not recognise) the field falls back to a plain text input, matching legacy behaviour.
+|-
+|min
+|Optional. Minimum value for <code>number</code> and <code>slider</code> types.
+|-
+|max
+|Optional. Maximum value for <code>number</code> and <code>slider</code> types.
+|-
+|step
+|Optional. Increment used by <code>number</code> and <code>slider</code> types.
+|-
+|password
+|Optional. <code>password="true"</code> masks the value during entry and on subsequent views of the Hardware page. Works on any text field, not just the <code>Password</code> column.
+|-
+|visible_when
+|Optional. Conditional visibility expression of the form <code>OtherField=value</code>. The field is shown only when the referenced parameter currently equals the given value. Useful for revealing fields that only make sense for a particular protocol or mode (e.g. show a certificate path only when <code>Protocol=https</code>).
+|-
+|default
+|Optional. Default value used when the plugin is first added. For <code>boolean</code> use <code>"true"</code>/<code>"false"</code>; for <code>number</code>/<code>slider</code> use a numeric string.
+|}
+
+===<group>===
+Parameters can be wrapped in a <code><group label="..."></code> block to render them as a collapsible section on the Hardware page. Groups can be used to hide advanced or rarely-changed options behind a single click. Groups contain one or more <code><param></code> elements and may be mixed with ungrouped parameters in the same <code><params></code> block.
+
+{| class="wikitable"
+|-
+!Attribute
+!Purpose
+|-
+|label
+|Required. Heading shown for the group. Translated if a translation exists.
+|}
+
+===Worked example===
+The following plugin definition (from <code>plugins/examples/TestExtendedSettings/plugin.py</code>) demonstrates every extended setting:
+
+<pre>
+"""
+<plugin key="TestExtSettings" name="Test Extended Settings Plugin" author="test" version="1.0.0">
+    <description>
+        <h2>Test Extended Settings</h2><br/>
+        This plugin is for testing the extended plugin settings feature.
+    </description>
+    <params>
+        <param field="Address" label="IP Address" width="200px" required="true" default="127.0.0.1"/>
+        <param field="Port" label="Port" width="100px" required="true" default="8080"/>
+        <param field="Interval" type="number" label="Poll Interval (s)" min="5" max="3600" step="5" default="30" width="100px"/>
+        <param field="EnableDebug" type="boolean" label="Debug Mode" default="false"/>
+        <param field="Brightness" type="slider" label="Default Brightness" min="0" max="100" default="50" width="200px"/>
+        <param field="Protocol" label="Protocol" width="150px">
+            <options>
+                <option label="HTTP" value="http" default="true"/>
+                <option label="HTTPS" value="https"/>
+            </options>
+        </param>
+        <param field="Certificate" label="Certificate Path" width="200px" visible_when="Protocol=https" default=""/>
+        <param field="ApiKey" label="API Key" password="true" width="200px" default=""/>
+        <group label="Advanced Settings">
+            <param field="RetryCount" type="number" label="Retry Count" min="0" max="10" default="3" width="100px"/>
+            <param field="Timeout" type="number" label="Timeout (s)" min="1" max="60" default="10" width="100px"/>
+            <param field="EnableNotifications" type="boolean" label="Enable Notifications" default="true"/>
+        </group>
+        <param field="Mode6" label="Legacy Debug" width="150px">
+            <options>
+                <option label="None" value="0" default="true"/>
+                <option label="All" value="-1"/>
+            </options>
+        </param>
+    </params>
+</plugin>
+"""
+</pre>
+
+Notes:
+* All values still arrive in the plugin via the <code>Parameters</code> dictionary as strings &mdash; convert with <code>int()</code>, <code>float()</code>, or compare against <code>"true"</code>/<code>"false"</code> as appropriate.
+* <code>visible_when</code> only controls UI visibility; the underlying value is still stored and exposed in <code>Parameters</code>.
+* Extended attributes are ignored by older Domoticz versions, so a plugin that uses them remains parseable; the fields will simply render as plain text inputs.
 
 ==Runtime Structure==
 Domoticz exposes settings and device details through four Python dictionaries.
@@ -1940,6 +2034,46 @@ Called just before a device owned by the plugin is being removed, for example by
 
 *Parameters: DeviceID, Unit, Level, Description
 *Can be overidden or Device or Unit objects, see documentation elsewhere in this page
+|-
+|onWebSocketMessage
+|Parameters: Data (String).
+
+Called when a frontend page sends a <code>plugin_command</code> WebSocket message addressed to this plugin.
+<code>Data</code> is always a plain Python <code>str</code>.  When the frontend sent a JavaScript object
+(e.g. <code>livesocket.sendPluginCommand('MyPlugin', {cmd:'toggle'})</code>), it arrives as a JSON string;
+call <code>json.loads(Data)</code> to obtain the dict.
+
+This callback is optional.  If the plugin does not define it, inbound commands are silently dropped.
+An exception raised inside the callback is caught and logged by the framework; it does not crash Domoticz
+or block the WebSocket.
+
+Example:<syntaxhighlight lang="python3">
+import json
+
+class BasePlugin:
+    def onWebSocketMessage(self, Data):
+        try:
+            msg = json.loads(Data)
+        except ValueError:
+            msg = {"raw": Data}
+        Domoticz.Log("Received from frontend: " + str(msg))
+        # Respond to a ping command with a pong; echo everything else back
+        if isinstance(msg, dict) and msg.get("cmd") == "ping":
+            Domoticz.WebSocketSend({
+                "type": "pong",
+                "hwid": Parameters["HardwareID"],
+                "ts": msg.get("ts"),
+            })
+        else:
+            Domoticz.WebSocketSend({"echo": msg})
+</syntaxhighlight>
+
+When the frontend sends <code>{"cmd":"ping","ts":&lt;ms&gt;}</code> the plugin replies with
+<code>{"type":"pong","hwid":&lt;int&gt;,"ts":&lt;ms&gt;}</code> — the <code>ts</code> value is echoed
+back so the caller can measure round-trip latency.  Any other payload produces a generic
+<code>{"echo": ...}</code> response, which remains useful for ad-hoc debugging.
+
+See also: [[#Plugin WebSocket Channel|Plugin WebSocket Channel]] (UI section).
 |}
 
 ==C++ Callable API==
@@ -2209,6 +2343,49 @@ class myDevice(Domoticz.Device):
 
 Domoticz.Register(Device=myDevice, Unit=myUnit)
 </syntaxhighlight>
+|-
+|WebSocketSend
+|Parameters: Payload (String or Dictionary, required).
+
+Push a message to every frontend WebSocket client that is currently subscribed to <code>plugin:&lt;key&gt;</code>,
+where <code>&lt;key&gt;</code> is this plugin's <code>key</code> attribute from its XML definition.
+
+*If Payload is a '''Dictionary''' it is automatically serialised to a JSON string before delivery.
+  Integer values support the full 64-bit range (including JavaScript millisecond timestamps
+  such as <code>Date.now()</code> ≈ 1.7×10<sup>12</sup>) on all platforms; there is no 32-bit truncation.
+*If Payload is a '''String''' it is delivered as a string value in the frame's <code>data</code> field.
+
+The call is non-blocking and returns immediately regardless of the number of connected clients.
+The message is delivered only to clients that have previously called <code>livesocket.subscribePlugin('&lt;key&gt;')</code>.
+
+Each delivered WebSocket frame has the structure:
+<syntaxhighlight lang="json">
+{
+  "event":  "plugin",
+  "plugin": "<key>",
+  "hwid":   <HardwareID>,
+  "data":   <payload>
+}
+</syntaxhighlight>
+
+where <code>hwid</code> identifies the originating hardware instance so the page can distinguish between
+multiple simultaneous instances of the same plugin type.
+
+Usage:<syntaxhighlight lang="python3">
+import Domoticz
+
+class BasePlugin:
+    def onHeartbeat(self):
+        # Send a dict — automatically JSON-encoded
+        Domoticz.WebSocketSend({"counter": self._counter, "status": "ok"})
+        self._counter += 1
+
+    def onWebSocketMessage(self, Data):
+        # React to a command from the page
+        Domoticz.WebSocketSend({"ack": True})
+</syntaxhighlight>
+
+Available in both the legacy <code>Domoticz</code> and extended <code>DomoticzEx</code> plugin frameworks.
 |-
 |Dump
 |Parameters: Object (Optional).
@@ -2508,6 +2685,235 @@ Example of custom page with access to AngularJS and domoticzApi service:<syntaxh
 </script>
 </syntaxhighlight>
 
+===Plugin WebSocket Channel===
+
+Plugins can open a real-time bidirectional channel between the C++ plugin process and any
+browser page that subscribes to it.  No HTTP polling is needed; messages are pushed over the
+same persistent WebSocket connection that Domoticz already uses for device updates.
+
+====Channel key and multi-instance behaviour====
+
+The channel is identified by the '''plugin key''': the <code>key</code> attribute in the plugin's XML
+<code>&lt;plugin&gt;</code> tag.  This is the same value used in <code>Parameters["Key"]</code> inside the plugin.
+
+<blockquote>'''Important — key must match exactly.'''
+The string passed to <code>livesocket.subscribePlugin()</code>, <code>livesocket.sendPluginCommand()</code>,
+and the topic suffix in <code>{"event":"subscribe","topic":"plugin:&lt;key&gt;"}</code> must be the
+''exact'' value of the XML <code>key</code> attribute (also visible as <code>CPlugin::m_PluginKey</code>
+in C++ and in the <code>"plugin"</code> field of every <code>plugin_command_ack</code> frame).
+A mismatch results in silently receiving nothing — the server logs a status line when a
+<code>plugin_command</code> targets a key with no running instances.</blockquote>
+
+Example — plugin XML and the matching frontend call:
+<syntaxhighlight lang="python3">
+# plugin.py  —  the key is "MyPlugin"
+"""
+<plugin key="MyPlugin" name="My Plugin" author="me" version="1.0.0">
+    ...
+</plugin>
+"""
+</syntaxhighlight>
+<syntaxhighlight lang="javascript">
+// custom page — must use the identical string "MyPlugin"
+livesocket.subscribePlugin('MyPlugin');
+livesocket.sendPluginCommand('MyPlugin', { cmd: 'toggle' });
+</syntaxhighlight>
+
+When more than one hardware entry uses the same plugin (i.e. the same <code>key</code>), all
+running instances share the channel:
+
+*'''Outbound (plugin → page):''' A message sent by any instance is delivered to every subscribed
+ page, tagged with the originating <code>hwid</code> (HardwareID integer) so the page can tell
+ instances apart.
+*'''Inbound (page → plugin):''' A <code>plugin_command</code> frame fans out to every running
+ instance unless the page supplies a specific <code>hwid</code> to target one instance only.
+
+====Plugin-side API====
+
+;Push a message from Python to subscribed pages
+:<code>Domoticz.WebSocketSend(payload)</code> — payload may be a <code>dict</code> (auto-JSON) or <code>str</code>.
+
+;Receive a message from a page
+: Implement <code>onWebSocketMessage(self, Data)</code>.  <code>Data</code> is always a <code>str</code>;
+  call <code>json.loads(Data)</code> if the page sent a JSON object.
+
+See [[#C++ Callable API|C++ Callable API]] (WebSocketSend) and [[#Callbacks|Callbacks]] (onWebSocketMessage)
+for full parameter documentation.
+
+====Frontend custom-page snippet====
+
+Place this in your plugin's custom HTML template (shipped in the plugin folder, copied to
+<code>www/templates/</code> by <code>onStart</code>).  The snippet follows the same AngularJS
+controller idiom used by Domoticz's own templates (e.g. <code>www/templates/Forecast.html</code>):
+
+*The root <code>&lt;div&gt;</code> carries <code>ng-app="domoticz" ng-controller="myCtrl"</code>.
+*A temporary module is declared with <code>angular.module(['myApp'], [])</code>.
+*The controller receives <code>livesocket</code> via the standard DI array.
+*All view-bound data lives on <code>$scope.*</code>; the template uses <code>ng-repeat</code> / <code>ng-click</code> — no direct <code>getElementById</code> / <code>textContent</code> writes.
+*Cleanup is done in <code>$scope.$on('$destroy', ...)</code>.
+
+<syntaxhighlight lang="html">
+<style>
+.myplugin-page { padding: 8px 4px; color: var(--dz-text, #ddd); }
+.myplugin-table-wrap {
+  max-height: 320px; overflow-y: auto;
+  border-radius: var(--dz-border-radius, 8px);
+  background: var(--dz-panel-bg, #1e1e1e); margin-top: 8px;
+}
+.myplugin-table { width: 100%; border-collapse: collapse; font-size: 0.88em; font-family: monospace; }
+.myplugin-table th {
+  position: sticky; top: 0; background: var(--dz-panel-bg, #1e1e1e);
+  color: var(--dz-text-muted, #9ab); font-weight: normal;
+  text-align: left; padding: 6px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.myplugin-table td { padding: 4px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); word-break: break-all; }
+.myplugin-time  { white-space: nowrap; color: var(--dz-text-muted, #9ab); }
+.myplugin-empty { text-align: center; padding: 24px; color: var(--dz-text-muted, #9ab); opacity: 0.6; }
+.myplugin-status { color: var(--dz-text-muted, #9ab); font-size: 0.85em; margin-left: 8px; }
+</style>
+
+<div ng-app="domoticz" ng-controller="myCtrl" class="myplugin-page">
+  <a class="btnstylerev" back-button>{{ ::'Back' | translate }}</a>
+  <h2 class="page-header">My Plugin Live Data</h2>
+
+  <div style="margin:8px 0;display:flex;align-items:center;gap:8px;">
+    <button class="btnstyle3" ng-click="sendCommand()">{{ ::'Send command' | translate }}</button>
+    <span class="myplugin-status" ng-if="lastSentAt">{{ ::'Sent' | translate }}: {{lastSentAt}}</span>
+  </div>
+
+  <div class="myplugin-table-wrap" id="myplugin-scroll">
+    <table class="myplugin-table">
+      <thead>
+        <tr>
+          <th class="myplugin-time">{{ ::'Time' | translate }}</th>
+          <th>{{ ::'HW' | translate }}</th>
+          <th>{{ ::'Data' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-if="!messages.length">
+          <td colspan="3" class="myplugin-empty">{{ ::'Waiting for messages…' | translate }}</td>
+        </tr>
+        <tr ng-repeat="m in messages track by m.seq">
+          <td class="myplugin-time">{{m.time}}</td>
+          <td>{{m.hwid}}</td>
+          <td>{{m.display}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+var app = angular.module(['myApp'], []);
+app.controller('myCtrl', function ($scope, $timeout, livesocket) {
+
+  var PLUGIN = 'MyPlugin';  /* must equal the XML <plugin key="..."> value */
+  var seq    = 0;
+
+  $scope.messages   = [];   /* [{seq, time, hwid, display}] — bound to ng-repeat */
+  $scope.lastSentAt = '';
+
+  function formatData(data) {
+    /* Render both JSON objects and plain strings readably */
+    if (data === null || data === undefined) { return String(data); }
+    if (typeof data === 'string')            { return data; }
+    try { return JSON.stringify(data); } catch (e) { return String(data); }
+  }
+
+  /* Subscribe — auto-restored on WebSocket reconnect */
+  livesocket.subscribePlugin(PLUGIN);
+
+  /* Receive pushed messages from any running instance */
+  var offMessage = livesocket.onPluginMessage(PLUGIN, function (msg) {
+    /* msg = { plugin: 'MyPlugin', hwid: <int>, data: <any> } */
+    seq++;
+    var now = new Date(), pad = function (n) { return n < 10 ? '0' + n : n; };
+    $scope.messages.push({
+      seq:     seq,
+      time:    pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds()),
+      hwid:    msg.hwid,
+      display: formatData(msg.data)
+    });
+    /* Scroll the table to the latest row after ng-repeat renders it */
+    $timeout(function () {
+      var el = document.getElementById('myplugin-scroll');
+      if (el) { el.scrollTop = el.scrollHeight; }
+    }, 0);
+  });
+
+  /* Send a command to all running instances */
+  $scope.sendCommand = function () {
+    livesocket.sendPluginCommand(PLUGIN, { cmd: 'toggle' });
+    $scope.lastSentAt = new Date().toLocaleTimeString();
+  };
+
+  /* Tear down on page leave */
+  $scope.$on('$destroy', function () {
+    if (offMessage) { offMessage(); offMessage = null; }
+    livesocket.unsubscribePlugin(PLUGIN);
+  });
+
+});
+</script>
+</syntaxhighlight>
+
+====Security====
+
+Only WebSocket sessions with at least <code>URIGHTS_SWITCHER</code> rights (the standard switch-permission
+level) may send inbound <code>plugin_command</code> frames.  Unauthenticated or viewer-only sessions
+receive a <code>Forbidden</code> error in the ack frame.  Payloads larger than 64 KiB are rejected
+before they reach the plugin queue.
+
+====Crash and lifecycle safety====
+
+The channel registration is handled automatically by the plugin framework:
+*The instance is registered when the plugin starts and unregistered when it stops or is deleted,
+ even if the plugin has crashed (the framework's own cleanup path removes the entry).
+*A stale registration from a previous run is silently replaced on the next start.
+*All inbound delivery is non-blocking: the WebSocket thread enqueues the message on the plugin's
+ own work queue and returns immediately, so a slow or stuck plugin never stalls the web server.
+
+====Example====
+
+A runnable demonstration is shipped under <code>plugins/examples/WebSocketChannelTest/</code>
+in the Domoticz source tree.  Domoticz scans <code>plugins/&lt;Name&gt;/plugin.py</code>
+directly and does '''not''' scan <code>plugins/examples/</code>, so to use it you must copy
+the folder to <code>plugins/WebSocketChannelTest/</code> (or any <code>plugins/&lt;Name&gt;/</code>)
+and restart Domoticz.  The plugin depth matches <code>plugins/Domoticz-MeshCore-Plugin</code>,
+so <code>domoticz_root</code> is computed with exactly 2×&nbsp;<code>..</code> as MeshCore does.
+It shows a counter pushed from the plugin on every heartbeat, a handler for inbound commands, and
+the matching HTML custom page.  The custom page (<code>wschanneltest.html</code>) follows the same
+AngularJS controller idiom as <code>www/templates/Forecast.html</code>: <code>ng-app</code>/<code>ng-controller</code>
+on the root element, <code>$scope</code>-bound data, <code>ng-repeat</code> for the message list, and
+<code>$scope.$on('$destroy', ...)</code> for teardown — making it a reference example for
+template authors.
+
+====Testing====
+
+An automated end-to-end test script is provided at <code>test/python/test_plugin_websocket.py</code>.
+It connects to a running Domoticz instance over its native WebSocket endpoint, drives the full
+outbound/inbound/fan-out/hwid-targeting/topic-filtering flow and reports PASS/FAIL per check.
+The round-trip checks (B and C) send <code>{"cmd":"ping","ts":&lt;ms&gt;}</code> and verify that the
+plugin replies with <code>{"type":"pong","tag":...,"hwid":...,"ts":&lt;ms&gt;}</code> — asserting both
+correct delivery count and that the <code>ts</code> value is echoed back unchanged.
+
+Prerequisites: the example is tracked at <code>plugins/examples/WebSocketChannelTest/</code>;
+copy that folder to <code>plugins/WebSocketChannelTest/</code> (Domoticz does not scan
+<code>plugins/examples/</code> directly).  Add it twice as hardware (Tag A and Tag B)
+and have Domoticz running, then:
+<syntaxhighlight lang="bash">
+pip install websocket-client
+python test/python/test_plugin_websocket.py [http://host:port]
+</syntaxhighlight>
+
+Environment variables <code>DOMOTICZ_URL</code>, <code>DOMOTICZ_USER</code>, <code>DOMOTICZ_PASS</code>
+override the defaults (<code>http://127.0.0.1:8080</code>, <code>admin</code>, <code>domoticz</code>).
+
+For a manual checklist see the step-by-step procedure in
+<code>Plans/plugin-websocket-channel/F7-test-harness.md</code>.
+
 ==Examples==
 There are a number of examples that are available that show potential usages and patterns that may be useful that can be found [https://github.com/domoticz/domoticz/tree/development/plugins/examples on Github]:
 {| class="wikitable"
@@ -2560,6 +2966,16 @@ There are a number of examples that are available that show potential usages and
 |-
 |Web Socket Client
 |Establishes a Web Socket connection and shows how to send and receive messages
+|-
+|WebSocketChannelTest
+|Demonstrates the bidirectional Plugin WebSocket Channel.
+
+*Pushes a heartbeat counter to subscribed frontend pages using <code>Domoticz.WebSocketSend</code>.
+*Handles inbound commands via <code>onWebSocketMessage</code>: a <code>{"cmd":"ping","ts":&lt;ms&gt;}</code>
+ payload receives a <code>{"type":"pong","tag":...,"hwid":...,"ts":&lt;ms&gt;}</code> reply; any other
+ payload is echoed back as <code>{"type":"echo",...}</code>.
+*Includes a matching custom HTML page showing live data, sent/received message log, and a send-command button.
+*Tracked under <code>plugins/examples/WebSocketChannelTest/</code>; copy to <code>plugins/WebSocketChannelTest/</code> to run (Domoticz does not scan <code>plugins/examples/</code>).
 |-
 |}
 

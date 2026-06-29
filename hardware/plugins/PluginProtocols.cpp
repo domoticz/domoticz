@@ -212,9 +212,8 @@ namespace Plugins {
     					if (!pObj) {
         					_log.Log(LOG_ERROR, "(%s) failed to build Python string object.", __func__);
     					} else {
-        					if (PyList_SetItem(pRetVal, Index++, pObj) == -1) {  // steals reference only on success
+        					if (PyList_SetItem(pRetVal, Index++, pObj) == -1) {  // always steals reference, even on failure
             						_log.Log(LOG_ERROR, "(%s) failed to add item '%zd' to list for string.", __func__, Index - 1);
-            						Py_DECREF(pObj);  // clean up because PyList_SetItem failed
         					}
     					}
 				}
@@ -310,7 +309,42 @@ namespace Plugins {
 		}
 		else if (pObj.IsLong())
 		{
-			sJson += std::to_string(PyLong_AsLong(pObj));
+			// Use PyLong_AsLongLong to avoid OverflowError on Windows where
+			// C `long` is 32-bit (LLP64) but Python ints can be arbitrarily large
+			// (e.g. JS Date.now() ms timestamps ~1.7e12 > INT32_MAX).
+			long long llv = PyLong_AsLongLong(pObj);
+			if (!PyErr_Occurred())
+			{
+				sJson += std::to_string(llv);
+			}
+			else
+			{
+				// Signed 64-bit overflow — try unsigned 64-bit (values up to 2^64-1)
+				PyErr_Clear();
+				unsigned long long ullv = PyLong_AsUnsignedLongLong(pObj);
+				if (!PyErr_Occurred())
+				{
+					sJson += std::to_string(ullv);
+				}
+				else
+				{
+					// Value exceeds uint64 range; fall back to decimal string
+					// representation so the send never raises/aborts.
+					PyErr_Clear();
+					PyObject* pStr = PyObject_Str(pObj);
+					if (pStr)
+					{
+						const char* sz = PyUnicode_AsUTF8(pStr);
+						sJson += (sz ? sz : "0");
+						Py_DECREF(pStr);
+					}
+					else
+					{
+						PyErr_Clear();
+						sJson += "0";
+					}
+				}
+			}
 		}
 		else if (pObj.IsFloat())
 		{
@@ -318,11 +352,20 @@ namespace Plugins {
 		}
 		else if (pObj.IsBytes())
 		{
-			sJson += '"' + std::string(PyBytes_AsString(pObj)) + '"';
+			const char* buf = PyBytes_AsString(pObj);
+			Py_ssize_t len = PyBytes_Size(pObj);
+			if (buf && len >= 0)
+				sJson += Json::valueToQuotedString(buf, (size_t)len);
+			else
+				sJson += "\"\"";
 		}
 		else if (pObj.IsByteArray())
 		{
-			sJson += '"' + std::string(PyByteArray_AsString(pObj)) + '"';
+			const char* buf = PyByteArray_AsString(pObj);
+			if (buf)
+				sJson += Json::valueToQuotedString(buf, (size_t)PyByteArray_Size(pObj));
+			else
+				sJson += "\"\"";
 		}
 		else
 		{
@@ -330,7 +373,11 @@ namespace Plugins {
 			PyNewRef	pStr = PyObject_Str(pObject);
 			if (pStr)
 			{
-				sJson += '"' + std::string(PyUnicode_AsUTF8(pStr)) + '"';
+				const char* pUtf8 = PyUnicode_AsUTF8(pStr);
+				if (pUtf8)
+					sJson += Json::valueToQuotedString(pUtf8);
+				else
+					_log.Log(LOG_ERROR, "(%s) Unable to convert string to UTF-8, ignored.", __func__);
 			}
 			else
 				_log.Log(LOG_ERROR, "(%s) Unable to convert data type (%s) to string representation, ignored.", __func__, pObj.Type().c_str());
@@ -846,7 +893,20 @@ namespace Plugins {
 				}
 			}
 
-			// Add Server header if it is not supplied
+			// Add Host header if not supplied (required by HTTP/1.1)
+			if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "Host");
+			if (!pHead)
+			{
+				std::string sAddress = PyBorrowedRef(WriteMessage->m_pConnection->Address);
+				std::string sPort = PyBorrowedRef(WriteMessage->m_pConnection->Port);
+				bool bSecure = WriteMessage->m_pConnection->pProtocol->Secure();
+				if ((!bSecure && sPort != "80") || (bSecure && sPort != "443"))
+					sHttp += "Host: " + sAddress + ":" + sPort + "\r\n";
+				else
+					sHttp += "Host: " + sAddress + "\r\n";
+			}
+
+			// Add User-Agent header if not supplied
 			if (pHeaders) pHead = PyDict_GetItemString(pHeaders, "User-Agent");
 			if (!pHead)
 			{

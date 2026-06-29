@@ -4,6 +4,7 @@ define([
     'dashboardDynamic/dashboardDynamicService',
     'dashboardDynamic/widgetRegistry.service',
     'dashboardDynamic/ddToast.service',
+    'dashboardDynamic/ddSparkline.service',
     'dashboardDynamic/ddVisibility.service',
     'dashboardDynamic/ddWidgetContent.directive',
     'dashboardDynamic/ddWidgetWrapper',
@@ -125,6 +126,20 @@ define([
         }
         $scope.standbyActive = false;
         var _standbyTimer    = null;
+
+        // ── Swipe navigation state ─────────────────────────────
+        // Lets the user swipe left/right (e.g. on a tablet) to move to the
+        // next/previous dashboard, mirroring the floorplan swipe gesture.
+        var LS_SWIPE = 'dd_swipe';
+        var _swipeDefaults = { enabled: false };
+        try {
+            $scope.swipe = angular.extend({}, _swipeDefaults, JSON.parse(localStorage.getItem(LS_SWIPE) || '{}'));
+        } catch(e) {
+            $scope.swipe = angular.copy(_swipeDefaults);
+        }
+        var _swipeStartX = 0;
+        var _swipeStartY = 0;
+        var _swipeMoved  = false;
 
         // Cycle gridReady false→true so ng-if fully destroys and recreates the grid,
         // ensuring compiled widget cells always reference the current activeData.
@@ -249,12 +264,22 @@ define([
                 if (layouts.length === 0) {
                     return createStarterLayout();
                 }
-                // Prefer the layout the user was last viewing (stored in localStorage)
-                var lastId = null;
+                // Selection priority:
+                //   1. ?id=<uuid> in the URL (deep-link from "Copy link")
+                //   2. ?name=<name> in the URL (case-insensitive match on layout name)
+                //   3. layout the user was last viewing (localStorage)
+                //   4. layout marked isDefault
+                //   5. first layout
+                var urlId   = $location.search().id;
+                var urlName = $location.search().name;
+                var lastId  = null;
                 try { lastId = localStorage.getItem(LS_KEY); } catch(e) {}
-                var startLayout = (lastId && layouts.find(function(l) { return l.id === lastId; })) ||
-                                  layouts.find(function(l) { return l.isDefault; }) ||
-                                  layouts[0];
+                var startLayout =
+                      (urlId   && layouts.find(function(l) { return l.id === urlId; })) ||
+                      (urlName && layouts.find(function(l) { return l.name && l.name.toLowerCase() === String(urlName).toLowerCase(); })) ||
+                      (lastId  && layouts.find(function(l) { return l.id === lastId; })) ||
+                      layouts.find(function(l) { return l.isDefault; }) ||
+                      layouts[0];
                 return loadLayout(startLayout.id).then(function() {
                     // Restore full-page state
                     var fp = null;
@@ -289,6 +314,35 @@ define([
                 loadLayout(id);
                 resetStandbyTimer();
             }).catch(angular.noop);
+        };
+
+        // Build a deep-link URL for a specific dashboard and copy it to the clipboard.
+        // The link uses `?id=<uuid>` so the destination machine doesn't depend on
+        // dashboard ordering or the visitor's localStorage.
+        $scope.copyLayoutLink = function(layout, $event) {
+            if ($event) { $event.preventDefault(); $event.stopPropagation(); }
+            if (!layout || !layout.id) { return; }
+            var base = window.location.origin + window.location.pathname;
+            var url  = base + '#/Dashboard?id=' + encodeURIComponent(layout.id);
+            var done = function(ok) {
+                if (ok) { ddToast.success('Link copied: ' + layout.name); }
+                else    { ddToast.error('Failed to copy link'); }
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(function() { done(true); }, function() { done(false); });
+            } else {
+                // Fallback for non-secure contexts (HTTP without TLS)
+                try {
+                    var ta = document.createElement('textarea');
+                    ta.value = url;
+                    ta.style.position = 'fixed'; ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    done(true);
+                } catch(e) { done(false); }
+            }
         };
 
         $scope.openRoomPlan = function(planIdx) {
@@ -388,6 +442,14 @@ define([
         // Using a live getter would return a new object every digest → infinite loop.
         $scope.widgetCatalogGrouped = widgetRegistry.getGrouped();
 
+        $scope.libraryItemFilter = function(item) {
+            var q = ($scope.librarySearch || '').trim().toLowerCase();
+            if (!q) { return true; }
+            return (item.label       || '').toLowerCase().indexOf(q) !== -1 ||
+                   (item.description || '').toLowerCase().indexOf(q) !== -1 ||
+                   (item.category    || '').toLowerCase().indexOf(q) !== -1;
+        };
+
         $scope.saveCurrentLayout = function() {
             if (!$scope.activeLayout || !$scope.activeData) { return $q.when(); }
             return dashboardDynamicService.saveLayout($scope.activeLayout, $scope.activeData)
@@ -419,6 +481,8 @@ define([
             var name = ($scope.titleEditValue || '').trim();
             if (name && $scope.activeLayout) {
                 $scope.activeLayout.name = name;
+                var entry = $scope.layouts.find(function(l) { return l.id === $scope.activeLayout.id; });
+                if (entry) { entry.name = name; }
                 dashboardDynamicService.saveLayout($scope.activeLayout, null)
                     .catch(function() { ddToast.error('Rename failed'); });
             }
@@ -443,6 +507,10 @@ define([
                     standbySettings: function() { return $scope.standby; },
                     onStandbyChange: function() {
                         return function(settings) { $scope.saveStandbySettings(settings); };
+                    },
+                    swipeSettings:   function() { return $scope.swipe; },
+                    onSwipeChange:   function() {
+                        return function(settings) { $scope.saveSwipeSettings(settings); };
                     }
                 }
             }).result.catch(angular.noop);
@@ -540,6 +608,56 @@ define([
         _standbyActivityEvents.forEach(function(ev) {
             document.addEventListener(ev, resetStandbyTimer, { passive: true });
         });
+
+        // ── Swipe navigation ──────────────────────────────────
+        // Navigate to the previous/next dashboard relative to the one
+        // currently shown, using the order of $scope.layouts. Does not wrap.
+        function swipeToLayout(direction) {
+            if (!$scope.layouts || $scope.layouts.length < 2 || !$scope.activeLayout) { return; }
+            var idx = $scope.layouts.findIndex(function(l) {
+                return l.id === $scope.activeLayout.id;
+            });
+            if (idx === -1) { return; }
+            var nextIdx = idx + direction;
+            if (nextIdx < 0 || nextIdx >= $scope.layouts.length) { return; }
+            // Fired from a passive DOM touch handler (outside the digest);
+            // $timeout safely enters a digest even if one is in progress.
+            $timeout(function() {
+                $scope.switchLayout($scope.layouts[nextIdx].id);
+            });
+        }
+
+        function onSwipeStart(e) {
+            _swipeMoved = false;
+            var touch = e.changedTouches ? e.changedTouches[0] : null;
+            _swipeStartX = touch ? touch.pageX : 0;
+            _swipeStartY = touch ? touch.pageY : 0;
+        }
+        function onSwipeMove() { _swipeMoved = true; }
+        function onSwipeEnd(e) {
+            if (!$scope.swipe.enabled || !_swipeMoved) { return; }
+            // Don't hijack gestures while editing or when a modal is open.
+            if ($scope.editMode || $('.modal.in').length) { return; }
+            var touch = e.changedTouches ? e.changedTouches[0] : null;
+            if (!touch) { return; }
+            var deltaX = touch.pageX - _swipeStartX;
+            var deltaY = touch.pageY - _swipeStartY;
+            // Higher than the floorplan's 50px: the dashboard scrolls
+            // vertically and has interactive widgets, so require a firmer
+            // horizontal gesture to avoid accidental dashboard switches.
+            var SWIPE_THRESHOLD = 70;
+            if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(deltaX) > Math.abs(deltaY) * 2) {
+                swipeToLayout(deltaX < 0 ? 1 : -1);
+            }
+        }
+        document.addEventListener('touchstart', onSwipeStart, { passive: true });
+        document.addEventListener('touchmove', onSwipeMove, { passive: true });
+        document.addEventListener('touchend', onSwipeEnd, { passive: true });
+
+        $scope.saveSwipeSettings = function(patch) {
+            angular.extend($scope.swipe, patch);
+            try { localStorage.setItem(LS_SWIPE, JSON.stringify($scope.swipe)); } catch(e) {}
+        };
 
         // ── Clear all widgets ──────────────────────────────────
         $scope.clearAllWidgets = function() {
@@ -812,6 +930,9 @@ define([
         // ── Cleanup ────────────────────────────────────────────
         $scope.$on('$destroy', function() {
             document.removeEventListener('keydown', onKeyDown);
+            document.removeEventListener('touchstart', onSwipeStart);
+            document.removeEventListener('touchmove', onSwipeMove);
+            document.removeEventListener('touchend', onSwipeEnd);
             _standbyActivityEvents.forEach(function(ev) {
                 document.removeEventListener(ev, resetStandbyTimer);
             });

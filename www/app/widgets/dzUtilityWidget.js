@@ -14,10 +14,33 @@ define(['app', 'widgets/dzBar'], function (app) {
             $(dialogId + ' #deviceunit').text(device.Unit);
             $(dialogId + ' #devicename').val(device.Name);
             $(dialogId + ' #devicedescription').val(device.Description);
+            var $iconRow = $(dialogId + ' #combosensoricon').closest('tr');
             if (isText) {
                 $(dialogId + ' #devicetext').val(device.Data);
+                showIcon = (device.ShowIcon !== '0');
+                $(dialogId + ' #deviceshowicon').prop('checked', showIcon);
+                $(dialogId + ' #deviceshowicon').off('change').on('change', function () {
+                    if ($(this).is(':checked')) {
+                        $iconRow.show();
+                        if (!$(dialogId + ' #combosensoricon').data('ddslick')) {
+                            $(dialogId + ' #combosensoricon').ddslick({
+                                data: $.ddData,
+                                width: 260,
+                                height: 490,
+                                selectText: "Sensor Icon",
+                                imagePosition: "left"
+                            });
+                            $.each($.ddData, function (i, item) {
+                                if (item.value == device.CustomImage) {
+                                    $(dialogId + ' #combosensoricon').ddslick('select', { index: i });
+                                }
+                            });
+                        }
+                    } else {
+                        $iconRow.hide();
+                    }
+                });
             }
-            var $iconRow = $(dialogId + ' #combosensoricon').closest('tr');
             if (showIcon) {
                 $iconRow.show();
                 $(dialogId + ' #combosensoricon').ddslick({
@@ -243,7 +266,7 @@ define(['app', 'widgets/dzBar'], function (app) {
         }
 
         function openDialog(device) {
-            if (typeof device.Counter !== 'undefined') {
+            if (typeof device.Counter !== 'undefined' || device.SubType === 'kWh' || device.Type === 'Energy') {
                 if (device.Type === 'P1 Smart Meter') {
                     openUtilityDialog(device);
                 } else {
@@ -356,7 +379,7 @@ define(['app', 'widgets/dzBar'], function (app) {
                     ctrl.barRanges = ctrl.getBarRanges();
                     if (!ctrl.barRanges.length) { ctrl.barNumVal = undefined; return; }
                     var dataStr;
-                    if (device.Type === 'P1 Smart Meter') {
+                    if (device.Type === 'P1 Smart Meter' && device.SubType !== 'Gas') {
                         var usageVal  = parseFloat((device.Usage      || '').replace(',', '.'));
                         var delivVal  = parseFloat((device.UsageDeliv || '').replace(',', '.'));
                         if (!isNaN(usageVal) && !isNaN(delivVal)) {
@@ -434,6 +457,10 @@ define(['app', 'widgets/dzBar'], function (app) {
 
                 ctrl.isText = function () {
                     return device.SubType === 'Text';
+                };
+
+                ctrl.hideTextIcon = function () {
+                    return device.ShowIcon === '0';
                 };
 
                 ctrl.isAlert = function () {

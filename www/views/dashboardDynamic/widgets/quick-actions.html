@@ -155,6 +155,17 @@
                        ng-style="ctrl.blindStatus[action.idx] === 'closed' ? {'color': 'var(--dz-accent-color)'} : {}"></i>
                 </button>
             </div>
+            <div class="dd-qa-dim-slider-row"
+                 ng-if="action.hasLevel"
+                 ng-click="$event.stopPropagation()">
+                <input type="range"
+                       class="dd-qa-dim-range-h"
+                       min="0" max="100" step="5"
+                       ng-model="ctrl.dimLevel[action.idx]"
+                       ng-mouseup="ctrl.applyDimLevel(action)"
+                       ng-touchend="ctrl.applyDimLevel(action)">
+                <span class="dd-qa-dim-value-text">{{ ctrl.dimLevel[action.idx] }}%</span>
+            </div>
         </div>
 
         <!-- Security Panel: navigates to secpanel/ — matches switch-button style -->

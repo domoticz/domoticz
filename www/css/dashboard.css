@@ -781,6 +781,18 @@ body.dd-navbar-hidden .dd-toolbar {
     background: var(--dz-panel-bg);
     overflow: hidden;
 }
+.dd-widget--custom-chart > .dd-widget-body {
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+    background: transparent;
+}
+.dd-widget--custom-chart .dd-chart-container {
+    inset: 4px;
+    border-radius: var(--dz-border-radius, 8px);
+    background: var(--dz-panel-bg);
+    overflow: hidden;
+}
 
 .dd-chart-container {
     position: absolute;
@@ -928,12 +940,13 @@ body.dd-navbar-hidden .dd-toolbar {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    z-index: 1;
 }
 
 .dd-weather-temp {
     font-size: 2.2em;
     font-weight: 700;
-    color: var(--dz-body-text);
+    color: var(--dz-widget-accent);
     text-shadow: 0 1px 3px rgba(0,0,0,0.6);
     line-height: 1;
 }
@@ -967,8 +980,27 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 .dd-baro-title { position: absolute; top: 8px; left: 8px; z-index: 1; }
-.dd-baro-log-icon { position: absolute; bottom: 8px; right: 8px; opacity: 0.6; }
+.dd-baro-value-link { display: inline-block; text-decoration: none; cursor: pointer; }
+.dd-baro-value-link:hover { text-decoration: none; opacity: 0.85; }
+.dd-baro-log-icon { position: absolute; bottom: 8px; right: 8px; opacity: 0.6; z-index: 1; }
 .dd-baro-log-icon:hover { opacity: 1; }
+
+/* Stat Counter: anchor the sparkline to the card and keep content above it */
+.dd-widget--stat-counter .dd-stat-card { position: relative; }
+.dd-stat-counter-content { position: relative; z-index: 1; }
+
+/* Generic always-on sparkline strip along the bottom of a widget.
+   Reusable by any widget that wants a background trend line; the widget
+   renders a borderless Highcharts areaspline into the container. */
+.dd-widget-spark {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 38%;
+    pointer-events: none;
+    z-index: 0;
+}
 
 /* ── Weather Widget — forecast card style ─────────────────── */
 .dd-weather-forecast-card {
@@ -1206,33 +1238,61 @@ body.dd-navbar-hidden .dd-toolbar {
     font-size: 0.85em;
 }
 
-/* ── Favorites / Room tab strip ───────────────────────────── */
-.dd-favorites-tabs {
+/* ── Favorites / Room category tab strip ──────────────────── */
+.dd-cat-tabs {
     flex-shrink: 0;
-    margin-bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 6px 6px 6px;
     border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
-.dd-favorites-tabs > li > a {
-    color: var(--dz-body-text);
-    padding: 6px 10px;
-    font-size: 0.82em;
-    display: flex;
+.dd-cat-tab {
+    display: inline-flex;
     align-items: center;
-    gap: 4px;
-}
-
-.dd-favorites-tabs > li.active > a,
-.dd-favorites-tabs > li.active > a:hover,
-.dd-favorites-tabs > li.active > a:focus {
-    background: var(--dz-panel-bg);
-    border-color: rgba(255,255,255,0.08);
-    border-bottom-color: var(--dz-panel-bg);
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: transparent;
     color: var(--dz-body-text);
+    font-size: 0.82em;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, border-color 0.15s;
+    line-height: 1.4;
+    font-family: inherit;
 }
 
-.dd-favorites-tabs > li > a:hover {
+.dd-cat-tab:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.2);
+}
+
+.dd-cat-tab--active {
+    background: rgba(67,164,211,0.18);
+    border-color: var(--dz-widget-accent);
+}
+
+.dd-cat-tab--active:hover {
+    background: rgba(67,164,211,0.28);
+}
+
+.dd-cat-badge {
+    display: inline-block;
     background: rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 0 6px;
+    font-size: 0.85em;
+    line-height: 1.6;
+    min-width: 18px;
+    text-align: center;
+}
+
+.dd-cat-tab--active .dd-cat-badge {
+    background: var(--dz-widget-accent);
+    color: #fff;
 }
 
 /* ── Device tile grid ─────────────────────────────────────── */
@@ -1241,16 +1301,14 @@ body.dd-navbar-hidden .dd-toolbar {
     min-height: 0;
     overflow-y: auto;
     padding: 4px;
-    display: flex;
-    flex-wrap: wrap;
-    align-content: flex-start;
-    align-items: flex-start;
-    gap: 4px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-auto-rows: min-content;
+    align-content: start;
+    gap: 8px 16px;
 }
 
 .dd-dz-fav-item {
-    flex: 0 0 100%;
-    width: 100%;
     min-width: 0;
 }
 
@@ -1326,10 +1384,10 @@ body.dd-navbar-hidden .dd-toolbar {
     overflow: hidden;
     padding: 8px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
-    box-sizing: border-box;
     box-sizing: border-box;
     white-space: pre-wrap;
     word-break: break-word;
@@ -1337,17 +1395,31 @@ body.dd-navbar-hidden .dd-toolbar {
     color: var(--dz-body-text);
 }
 
+.dd-text-note-html {
+    display: block;
+    width: 100%;
+    white-space: normal;
+}
 .dd-text-note-hint {
     display: block;
     color: var(--dz-text-muted, #999);
     font-size: 0.8em;
     padding: 4px 0;
 }
+.dd-text-note-divider {
+    height: 2px;
+    width: 100%;
+    margin-top: 6px;
+    border-radius: 1px;
+    background-color: var(--dz-accent-color);
+}
 
 /* ── Activity Log widget ──────────────────────────────────── */
 .dd-activity-log {
     height: 100%;
     overflow-y: auto;
+    border-radius: var(--dz-border-radius, 8px);
+    background: var(--dz-panel-bg);
 }
 
 .dd-activity-list {
@@ -1656,6 +1728,7 @@ body.dd-navbar-hidden .dd-toolbar {
     width: 100%;
     box-sizing: border-box;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
     min-width: 0;
     padding: 6px 10px;
@@ -1670,6 +1743,11 @@ body.dd-navbar-hidden .dd-toolbar {
 
 .dd-quick-actions--list .dd-qa-blind-btns {
     width: auto;
+}
+
+.dd-quick-actions--list .dd-qa-blind-group > .dd-qa-dim-slider-row {
+    flex: 0 0 100%;
+    padding: 4px 0 2px;
 }
 
 .dd-qa-group-group {
@@ -2376,6 +2454,11 @@ dd-wcp-color {
     font-size: 0 !important;
 }
 
+.dd-wcp-swatch--auto {
+    border-style: dashed !important;
+    opacity: 0.75;
+}
+
 .dd-wcp-drop {
     position: absolute;
     top: calc(100% + 4px);
@@ -2387,6 +2470,18 @@ dd-wcp-color {
     padding: 8px;
     box-shadow: 1px 1px 6px rgba(0,0,0,.4);
 }
+
+/* Copy-deep-link button next to the editable dashboard title (edit mode only) */
+.dd-title-link-btn {
+    background: transparent;
+    border: 0;
+    padding: 2px 8px;
+    margin-left: 6px;
+    color: var(--dz-text-muted, #888);
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+.dd-title-link-btn:hover { color: var(--dz-accent-color, #43A4D3); }
 
 /* Range / slider row */
 .dd-settings-form .form-group > div[style*="flex"] {
@@ -3052,7 +3147,7 @@ dd-wcp-color {
 }
 
 /* ── RSS Feed Widget ──────────────────────────────────────── */
-.dd-rss { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
+.dd-rss { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; border-radius: var(--dz-border-radius, 8px); background: var(--dz-panel-bg); }
 .dd-rss-header,
 .dd-log-header,
 .dd-calendar-header,
@@ -3087,7 +3182,8 @@ dd-wcp-color {
 .dd-forecast-error { font-size: 0.8em; color: var(--dz-accent-red); margin-top: 8px; }
 
 /* ── Domoticz Log Widget ──────────────────────────────────── */
-.dd-widget--domoticz-log > .dd-widget-body { padding: 0; overflow: hidden; position: relative; }
+.dd-widget--domoticz-log > .dd-widget-body { padding: 0; overflow: hidden; position: relative; background: transparent; }
+.dd-widget--domoticz-log .dd-log { border-radius: var(--dz-border-radius, 8px); background: var(--dz-panel-bg); }
 .dd-log { position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden; }
 .dd-log-header { padding: 4px 8px; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
 .dd-log-title { font-size: 0.9em; font-weight: 600; }
@@ -3183,7 +3279,7 @@ dd-wcp-color {
     border-radius: var(--dz-border-radius, 8px);
     background: var(--dz-panel-bg);
 }
-.dd-battery-monitor { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; }
+.dd-battery-monitor { height: 100%; display: flex; flex-direction: column; overflow: hidden; padding: 8px; border-radius: var(--dz-border-radius, 8px); background: var(--dz-panel-bg); }
 .dd-battery-monitor-header { margin-bottom: 8px; flex-shrink: 0; }
 .dd-battery-monitor-title { font-size: 0.9em; font-weight: 600; }
 .dd-battery-monitor-badge { font-size: 0.75em; padding: 2px 7px; border-radius: 10px; background: var(--dz-accent-red); color: var(--dz-body-text); }
@@ -3233,6 +3329,22 @@ body.dd-standby::after {
 .dd-gauge-text-link:hover { fill: var(--dz-accent-color); opacity: 1; }
 .dd-gauge-title { margin-bottom: 4px; }
 .dd-gauge-temp-sub-txt { font-size: 6px; fill: var(--dz-body-text); opacity: 0.70; }
+.dd-gauge-alert-text {
+    position: absolute;
+    left: 50%;
+    top: 62%;
+    transform: translate(-50%, -50%);
+    width: 66%;
+    max-height: 60%;
+    overflow: hidden;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.2;
+    color: var(--dz-body-text);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    pointer-events: none;
+}
 
 /* ── Dial widget ──────────────────────────────────────────── */
 
@@ -3277,6 +3389,7 @@ body.dd-standby::after {
 .dd-dial-highlight { fill: rgba(255,255,255,0.06); pointer-events: none; }
 .dd-dial-face      { fill: var(--dd-face-fill); }
 .dd-dial-ring      { transition: stroke 0.4s ease; }
+.dd-dial-timeout   { opacity: 0.85; }
 .dd-dial-tick      { stroke: rgba(255,255,255,0.28); stroke-width: 0.8; stroke-linecap: round; }
 .dd-dial-tick-minor{ stroke: rgba(255,255,255,0.14); stroke-width: 0.5; stroke-linecap: round; }
 .dd-dial-scale-lbl { font-size: 5px; fill: var(--dz-widget-stat-muted); font-family: inherit; }
@@ -3301,9 +3414,27 @@ body.dd-standby::after {
 .dd-dial-sel-active-box { transition: fill 0.2s, stroke 0.2s; }
 .dd-dial-sel-item   { fill: var(--dz-body-text); font-family: inherit; transition: opacity 0.15s; }
 .dd-dial-sel-active { fill: var(--dz-widget-amber) !important; font-weight: 700; }
-/* Cursor hints for drag-to-set */
-.dd-dial-interactive { cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; }
-.dd-dial-dragging    { cursor: grabbing; }
+/* Cursor hints for drag-to-set.
+   The dial's SVG layers are concentric, so element-scoped cursors track the
+   click radius exactly: default outside the bezel, grab on the ring band,
+   pointer on the inner hub (setpoint opens the value-entry popup there). */
+.dd-dial-interactive { cursor: default; user-select: none; -webkit-user-select: none; touch-action: none; }
+.dd-dial-interactive .dd-dial-bezel,
+.dd-dial-interactive .dd-dial-face,
+.dd-dial-interactive .dd-dial-ring,
+.dd-dial-interactive .dd-dial-needle,
+.dd-dial-interactive .dd-dial-tick,
+.dd-dial-interactive .dd-dial-tick-minor,
+.dd-dial-interactive .dd-dial-scale-lbl,
+.dd-dial-interactive .dd-dial-arc-track,
+.dd-dial-interactive .dd-dial-arc-fill { cursor: grab; }
+.dd-dial-setpoint .dd-dial-hub,
+.dd-dial-setpoint .dd-dial-value-txt,
+.dd-dial-setpoint .dd-dial-unit-txt { cursor: pointer; }
+.dd-dial-selector .dd-dial-hub,
+.dd-dial-selector .dd-dial-sel-item,
+.dd-dial-selector .dd-dial-sel-active-box { cursor: grab; }
+.dd-dial-dragging, .dd-dial-dragging * { cursor: grabbing !important; }
 .dd-dial-clickable   { cursor: pointer; user-select: none; -webkit-user-select: none; }
 .dd-dial-clickable:hover { opacity: 0.8; }
 

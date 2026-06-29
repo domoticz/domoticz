@@ -436,6 +436,8 @@ namespace http {
 				);
 			}
 			m_googlepubsubpush.ReloadPushLinks(CBasePush::PushType::PUSHTYPE_GOOGLE_PUB_SUB);
+			if (atoi(linkactive.c_str()) == 1)
+				m_googlepubsubpush.DoGooglePubSubPush(deviceidi);
 			root["status"] = "OK";
 			root["title"] = "SaveGooglePubSubLink";
 		}
