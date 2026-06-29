@@ -213,6 +213,22 @@ namespace http {
 			if (szTopic.empty())
 				return false;
 
+			// Plugin topics require the same rights as the inbound plugin_command path.
+			if (szTopic.compare(0, 7, "plugin:") == 0)
+			{
+				if (m_session.rights < URIGHTS_SWITCHER || m_session.rights > URIGHTS_ADMIN)
+				{
+					_log.Log(LOG_ERROR, "WebSocket subscribe: rejected plugin topic '%s', insufficient rights (user '%s')", szTopic.c_str(), m_session.username.c_str());
+					Json::Value resp;
+					resp["request"] = szEvent;
+					resp["event"] = "subscribed";
+					resp["requestid"] = value["requestid"];
+					resp["error"] = "Forbidden";
+					MyWrite(JSonToFormatString(resp));
+					return true;
+				}
+			}
+
 			subscribeTo(szTopic);
 			Json::Value jsonValue;
 			jsonValue["request"] = szEvent;
@@ -493,6 +509,8 @@ namespace http {
 
 		void CDomoticzWebsocketHandler::SendPluginMessage(const std::string& pluginKey, int hwId, const std::string& jsonPayload)
 		{
+			if (m_session.rights < URIGHTS_SWITCHER || m_session.rights > URIGHTS_ADMIN)
+				return;
 			if (!isSubscribed("plugin:" + pluginKey))
 				return;
 			try
