@@ -4998,7 +4998,17 @@ define(['app'], function (app) {
 				smarther_RW :				'read_smarther write_smarther',
 				mx_RW :						'read_mx write_mx',
 				mhs1_RW :					'read_mhs1 write_mhs1',
-				camerapro_RWA :				'read_camerapro write_camerapro access_camerapro'
+				camerapro_RWA :				'read_camerapro write_camerapro access_camerapro',
+				doorlock_RW :				'read_doorlock write_doorlock',
+				hybrid_RW :					'read_hybrid write_hybrid',
+				phnx_RWA :					'read_phnx write_phnx access_phnx',
+				bfi_RWA :					'read_bfi write_bfi access_bfi',
+				bdiy_RWA :					'read_bdiy write_bdiy access_bdiy',
+				boreal_RW :					'read_boreal write_boreal',
+				cep_RWA :					'read_cep write_cep access_cep',
+				clim_RW :					'read_clim write_clim',
+				c100x_RWA :					'read_c100x write_c100x access_c100x',
+				c300x_RWA :					'read_c300x write_c300x access_c300x'
 			};
 
 			var result = "";
