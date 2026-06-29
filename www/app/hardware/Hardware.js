@@ -5008,7 +5008,8 @@ define(['app'], function (app) {
 				cep_RWA :					'read_cep write_cep access_cep',
 				clim_RW :					'read_clim write_clim',
 				c100x_RWA :					'read_c100x write_c100x access_c100x',
-				c300x_RWA :					'read_c300x write_c300x access_c300x'
+				c300x_RWA :					'read_c300x write_c300x access_c300x',
+				ntg_RW :					'read_ntg write_ntg'
 			};
 
 			var result = "";
