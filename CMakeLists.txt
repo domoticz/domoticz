@@ -481,9 +481,12 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 # LUA
 #
 IF(USE_LUA_STATIC)
-  find_library(LUA_LIBRARIES NAMES liblua5.3.a)
+  # Debian/Ubuntu: liblua5.3.a ; Alpine: liblua-5.3.a
+  find_library(LUA_LIBRARIES NAMES liblua5.3.a liblua-5.3.a)
 ELSE(USE_LUA_STATIC)
-  find_library(LUA_LIBRARIES NAMES liblua5.3.so)
+  # Debian/Ubuntu provide the unversioned "liblua5.3.so" symlink via the -dev
+  # package, while Alpine ships the versioned "liblua-5.3.so.0" soname.
+  find_library(LUA_LIBRARIES NAMES liblua5.3.so liblua-5.3.so.0 liblua5.3.so.0 liblua-5.3.so)
 ENDIF(USE_LUA_STATIC)
 find_path(LUA_INCLUDE_DIRS NAMES lua5.3/lua.h)
 IF(LUA_LIBRARIES AND LUA_INCLUDE_DIRS)
@@ -872,6 +875,15 @@ IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 install(TARGETS domoticz DESTINATION ${CMAKE_INSTALL_PREFIX})
+# When libwebem is built as a shared library (BUILD_SHARED_LIBS=ON, the case on
+# some distros such as Alpine) the domoticz binary links against it dynamically,
+# so the versioned .so (and its symlinks) must be installed alongside the
+# executable. For a static webem (the default) it is baked into the binary and
+# there is nothing to install.
+get_target_property(_webem_type webem TYPE)
+IF(_webem_type STREQUAL "SHARED_LIBRARY")
+  install(TARGETS webem LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX})
+ENDIF()
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/License.txt DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/History.txt DESTINATION ${CMAKE_INSTALL_PREFIX})
