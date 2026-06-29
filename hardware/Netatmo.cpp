@@ -102,9 +102,9 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 
 	// Weatherdevice is available in HomesData + HomeStatus
 	//m_bPollWeatherData = (m_scopes.find("station_R") != std::string::npos);      //read_station
-	m_bPollHomecoachData = (m_scopes.find("homecoach_R") != std::string::npos);  //read_homecoach
+	m_bPollHomecoachData = (m_scopes.find("homecoach_RW") != std::string::npos);  //read_homecoach write_homecoach
 
-	m_bPollHomeStatus = find_scopes(); //"thermostat_RW","camera_RWA","presence_RWA","carbonmonoxidedetector_R","smokedetector_R","magellan_RW","bubendorff_RW","smarther_RW","mx_RW","mhs1_RW","station_R","doorbell_RA","camerapro_RWA"
+	m_bPollHomeStatus = find_scopes();
 	m_netatmo_api_uri = std::string(NETATMO_API_URI);
 
 	m_bPollThermostat = true;
@@ -586,9 +586,9 @@ bool CNetatmo::find_scopes()
 		return true;
 	if (m_scopes.find("mhs1_RW") != std::string::npos)                  //
 		return true;
-	if (m_scopes.find("station_R") != std::string::npos)                //
+	if (m_scopes.find("station_RW") != std::string::npos)                //
 		return true;
-	if (m_scopes.find("doorbell_RA") != std::string::npos)              //
+	if (m_scopes.find("doorbell_RWA") != std::string::npos)              //
 		return true;
 	if (m_scopes.find("camerapro_RWA") != std::string::npos)            //
 		return true;
@@ -612,7 +612,7 @@ bool CNetatmo::find_scopes()
 		return true;
 	if (m_scopes.find("c300x_RWA") != std::string::npos)                //
 		return true;
-	//"thermostat_RW","camera_RWA","presence_RWA","carbonmonoxidedetector_R","smokedetector_R","magellan_RW","bubendorff_RW","smarther_RW","mx_RW","mhs1_RW","station_R","homecoach_R","doorbell_RA","camerapro_RWA"
+	//"thermostat_RW","camera_RWA","presence_RWA","carbonmonoxidedetector_RW","smokedetector_RW","magellan_RW","bubendorff_RW","smarther_RW","mx_RW","mhs1_RW","station_RW","homecoach_RW","doorbell_RWA","camerapro_RWA"
 	//"doorlock_RW","hybrid_RW","phnx_RWA","bfi_RWA","bdiy_RWA","boreal_RW","cep_RWA","clim_RW","c100x_RWA","c300x_RWA"
 	return false;
 }
