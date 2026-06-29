@@ -207,7 +207,7 @@
                          ng-repeat="entry in config[field.key] track by $index">
                         <i class="fa-solid fa-grip-vertical dd-al-drag-handle"></i>
                         <span class="dd-al-type-badge dd-al-badge-switch">{{'Device' | translate}}</span>
-                        <span class="dd-al-label" ng-bind="entry.label || entry.idx"></span>
+                        <span class="dd-al-label" ng-bind="deviceListEntryName(entry)"></span>
                         <i class="fa-solid fa-pencil dd-al-action-icon dd-al-rename-icon"
                            ng-click="deviceListRenameItem(field.key, $index)" title="{{'Rename' | translate}}"></i>
                         <i class="fa-solid fa-trash dd-al-action-icon dd-al-delete-icon"
