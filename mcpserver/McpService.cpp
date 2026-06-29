@@ -5084,7 +5084,7 @@ namespace mcp		// Model Context Protocol
 	bool getScenes(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
 		auto result = m_sql.safe_query(
-			"SELECT ID, Name, SceneType, LastUpdate, Status FROM Scenes ORDER BY Name");
+			"SELECT ID, Name, SceneType, nValue, LastUpdate FROM Scenes ORDER BY Name");
 
 		std::string sResult;
 		if (result.empty())
@@ -5099,12 +5099,10 @@ namespace mcp		// Model Context Protocol
 				std::string sIdx = row[0];
 				std::string sName = row[1];
 				int iSceneType = atoi(row[2].c_str());
-				std::string sLastUpdate = row[3];
-				std::string sStatus = row[4];
+				std::string sStatus = (atoi(row[3].c_str()) == 1) ? "On" : "Off";
+				std::string sLastUpdate = row[4];
 				std::string sType = (iSceneType == 1) ? "Group" : "Scene";
-				sResult += "- \"" + sName + "\" [" + sType + ", idx=" + sIdx;
-				if (!sStatus.empty())
-					sResult += ", Status=" + sStatus;
+				sResult += "- \"" + sName + "\" [" + sType + ", idx=" + sIdx + ", Status=" + sStatus;
 				if (!sLastUpdate.empty())
 					sResult += ", Last: " + sLastUpdate;
 				sResult += "]\n";
