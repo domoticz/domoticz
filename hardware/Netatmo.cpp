@@ -612,8 +612,10 @@ bool CNetatmo::find_scopes()
 		return true;
 	if (m_scopes.find("c300x_RWA") != std::string::npos)                //
 		return true;
+	if (m_scopes.find("ntg_RW") != std::string::npos)                   //
+		return true;
 	//"thermostat_RW","camera_RWA","presence_RWA","carbonmonoxidedetector_RW","smokedetector_RW","magellan_RW","bubendorff_RW","smarther_RW","mx_RW","mhs1_RW","station_RW","homecoach_RW","doorbell_RWA","camerapro_RWA"
-	//"doorlock_RW","hybrid_RW","phnx_RWA","bfi_RWA","bdiy_RWA","boreal_RW","cep_RWA","clim_RW","c100x_RWA","c300x_RWA"
+	//"doorlock_RW","hybrid_RW","phnx_RWA","bfi_RWA","bdiy_RWA","boreal_RW","cep_RWA","clim_RW","c100x_RWA","c300x_RWA","ntg_RW"
 	return false;
 }
 
