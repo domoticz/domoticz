@@ -229,7 +229,6 @@
 										ng-click="switchLight(item.idx, 'On', item.Protected)"
 										data-i18n="On">On</button>
 								<button class="btn btn-mini"
-										ng-class="{'btn-info': !(item.Status == 'On' || item.Status == 'Chime' || item.Status == 'Group On' || (item.Status || '').indexOf('Set ') === 0)}"
 										type="button"
 										ng-click="switchLight(item.idx, 'Off', item.Protected)"
 										data-i18n="Off">Off</button>
@@ -244,7 +243,6 @@
 										ng-click="switchLight(item.idx, 'On', item.Protected)"
 										data-i18n="On">On</button>
 								<button class="btn btn-mini"
-										ng-class="{'btn-info': item.Status != 'On'}"
 										ng-disabled="item.Unit < 64 || item.Unit > 95"
 										type="button"
 										ng-click="switchLight(item.idx, 'Off', item.Protected)"
@@ -399,7 +397,6 @@
 										ng-click="switchLight(item.idx, 'On', item.Protected)"
 										data-i18n="On">On</button>
 								<button class="btn btn-mini"
-										ng-class="{'btn-info': !(item.Status == 'On' || item.Status == 'Chime' || item.Status == 'Group On' || (item.Status || '').indexOf('Down') != -1 || (item.Status || '').indexOf('Up') != -1 || (item.Status || '').indexOf('Set ') === 0)}"
 										type="button"
 										ng-click="switchLight(item.idx, 'Off', item.Protected)"
 										data-i18n="Off">Off</button>
