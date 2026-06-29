@@ -240,6 +240,15 @@ define([
             );
         }
 
+        // Clear a (non-required) device-picker, removing the device from the
+        // widget. Mirrors the trash-icon pattern used by the list-type fields;
+        // also drops any per-device metric override tied to the slot.
+        $scope.clearDevicePicker = function(field) {
+            if (!field) { return; }
+            $scope.config[field.key] = '';
+            if (field.metricKey) { $scope.config[field.metricKey] = undefined; }
+        };
+
         // Lazy-load scene list only if a scene-picker field is present
         var needsScenes = (descriptor.configSchema || []).some(function(f) {
             return f.type === 'scene-picker';
