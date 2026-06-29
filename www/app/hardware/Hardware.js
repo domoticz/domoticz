@@ -4985,14 +4985,14 @@ define(['app'], function (app) {
 		expandScope = function (scopeArray, separator) {
 			//Netatmo Scopes
 			var scopeGroups = {
-				station_R :					'read_station',
+				station_RW :				'read_station write_station',
 				thermostat_RW :				'read_thermostat write_thermostat',
 				camera_RWA :				'read_camera write_camera access_camera',
-				doorbell_RA :				'read_doorbell access_doorbell',
+				doorbell_RWA :				'read_doorbell write_doorbell access_doorbell',
 				presence_RWA :				'read_presence write_presence access_presence',
-				carbonmonoxidedetector_R :	'read_carbonmonoxidedetector',
-				smokedetector_R :			'read_smokedetector',
-				homecoach_R :				'read_homecoach',
+				carbonmonoxidedetector_RW :	'read_carbonmonoxidedetector write_carbonmonoxidedetector',
+				smokedetector_RW :			'read_smokedetector write_smokedetector',
+				homecoach_RW :				'read_homecoach write_homecoach',
 				magellan_RW :				'read_magellan write_magellan',
 				bubendorff_RW :				'read_bubendorff write_bubendorff',
 				smarther_RW :				'read_smarther write_smarther',
