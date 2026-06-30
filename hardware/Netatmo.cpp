@@ -1878,8 +1878,8 @@ void CNetatmo::GetHomesDataDetails()
 								module_id = device.asString();
 							}
 							roomNetatmoID = m_RoomIDs[macID];
-							std::string appliance_type = module["appliance_type"]
-							std::string setup_date = module["setup_date"]
+							std::string appliance_type = module["appliance_type"].asString();
+							std::string setup_date = module["setup_date"].asString();
 
 							std::string roomName = m_RoomNames[roomNetatmoID];
 							std::string roomType = m_Types[roomNetatmoID];
