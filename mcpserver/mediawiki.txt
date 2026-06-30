@@ -266,6 +266,8 @@ Tools are actions an AI agent can invoke. All tools accept and return plain text
 | <code>get_room_devices</code> || <code>roomname</code> or <code>room_id</code> (one required) || List all devices assigned to a specific room.
 |-
 | <code>get_scene_devices</code> || <code>scenename</code> or <code>scene_id</code> (one required) || List the devices and commands that make up a specific scene.
+|-
+| <code>get_scene_history</code> || <code>scenename</code> or <code>scene_id</code> (one required), <code>days</code> (optional, 1–366, default 7), <code>start_date</code> / <code>end_date</code> (optional, YYYY-MM-DD), <code>count</code> (optional, 1–500) || Retrieve the On/Off activation log for a scene or group from <code>SceneLog</code>, including the user/actor that triggered each change. Use <code>count</code> for the last N events, or <code>days</code>/<code>start_date</code>+<code>end_date</code> for a date-filtered log.
 |}
 
 === Device management ===
@@ -291,9 +293,9 @@ Tools are actions an AI agent can invoke. All tools accept and return plain text
 |-
 ! Tool !! Parameters !! Description
 |-
-| <code>get_sensor_history</code> || <code>name</code> or <code>idx</code> (one required), <code>days</code> (optional, default 7), <code>start_date</code> / <code>end_date</code> (optional, YYYY-MM-DD), <code>count</code> (optional, 1–500) || Retrieve history for any device or scene. For '''sensors''' (temperature, humidity, barometer, rain, wind, UV, percentage, fan, P1 smart meter, energy/kWh, gas, water, counters): returns daily aggregated min/avg/max calendar data. Specify <code>days</code> for a trailing window or <code>start_date</code>+<code>end_date</code> for a custom range. For '''switches and scenes''': returns on/off/dim event log entries from <code>LightingLog</code>. Use <code>count</code> for the last N events regardless of date, or <code>days</code>/<code>start_date</code>+<code>end_date</code> for a date-filtered log.
+| <code>get_sensor_history</code> || <code>name</code> or <code>idx</code> (one required), <code>days</code> (optional, default 7), <code>start_date</code> / <code>end_date</code> (optional, YYYY-MM-DD), <code>count</code> (optional, 1–500) || Retrieve history for any device. For '''sensors''' (temperature, humidity, barometer, rain, wind, UV, percentage, fan, P1 smart meter, energy/kWh, gas, water, counters): returns daily aggregated min/avg/max calendar data. Specify <code>days</code> for a trailing window or <code>start_date</code>+<code>end_date</code> for a custom range. For '''switches and text/alert devices''': returns on/off/dim/text event log entries from <code>LightingLog</code>, including the triggering user. For scene/group activation history use <code>get_scene_history</code> instead. Use <code>count</code> for the last N events regardless of date, or <code>days</code>/<code>start_date</code>+<code>end_date</code> for a date-filtered log.
 |-
-| <code>get_sensor_short_log</code> || <code>name</code> or <code>idx</code> (one required), <code>hours</code> (optional, 1–168, default 24), <code>count</code> (optional, 1–1000) || Retrieve recent high-resolution measurements at ~5-minute intervals. Use this for today's data, the last 24 hours, or the last N readings. Short-log data is kept for a configurable number of days (default: 1 day). Not applicable to switches or scenes — use <code>get_sensor_history</code> for multi-day or long-term data.
+| <code>get_sensor_short_log</code> || <code>name</code> or <code>idx</code> (one required), <code>hours</code> (optional, 1–168, default 24), <code>count</code> (optional, 1–1000) || Retrieve recent high-resolution measurements at ~5-minute intervals. Use this for today's data, the last 24 hours, or the last N readings. Short-log data is kept for a configurable number of days (default: 1 day). Not applicable to switches, text devices, or scenes — use <code>get_sensor_history</code> for multi-day or long-term data.
 |}
 
 === User variables ===

@@ -1052,21 +1052,22 @@ namespace mcp		// Model Context Protocol
 		},
 		{
 			"get_sensor_history",
-			"Get daily-aggregated history for a sensor or event log for a switch",
+			"Get daily-aggregated history for a sensor or the event log for a switch/text device",
 			"Retrieve DAILY-AGGREGATED (calendar) data for sensors going back weeks or months, "
-			"or the on/off/dim event log for switches and scenes. "
+			"or the on/off/dim/text event log for switches and text/alert devices. "
 			"Use this for multi-day trends or long-term history. "
 			"For intraday data (today, last few hours, last 24 h) use get_sensor_short_log instead. "
 			"For sensors: specify 'days' or 'start_date'+'end_date'. "
-			"For switches/scenes: specify 'days'/'start_date'/'end_date' for date range, "
-			"or 'count' for last N events.",
+			"For switches/text devices: specify 'days'/'start_date'/'end_date' for a date range, "
+			"or 'count' for last N events. "
+			"For scene/group activation history use get_scene_history instead.",
 			{
-				{ "name", "string", "Name of the device or scene", false, {} },
+				{ "name", "string", "Name of the device", false, {} },
 				{ "idx", "integer", "Device IDX (use either this or name)", false, {} },
 				{ "days", "integer", "Number of days of history to retrieve (1-366, default 7 for sensors). Ignored if start_date/end_date provided.", false, {} },
 				{ "start_date", "string", "Start date in YYYY-MM-DD format (use with end_date for custom range)", false, {} },
 				{ "end_date", "string", "End date in YYYY-MM-DD format (use with start_date for custom range)", false, {} },
-				{ "count", "integer", "For switches/scenes: return last N log entries (1-500, default 50). When specified, date params are ignored.", false, {} },
+				{ "count", "integer", "For switches/text devices: return last N log entries (1-500). When specified, date params are ignored.", false, {} },
 			}
 		},
 		{
@@ -1076,7 +1077,7 @@ namespace mcp		// Model Context Protocol
 			"Use this for: today's data, last 24 hours, last N readings, live/recent sensor values. "
 			"Kept for a configurable number of days (default 1 day). "
 			"For multi-day or long-term history use get_sensor_history instead. "
-			"Not applicable to switches/scenes.",
+			"Not applicable to switches/text devices or scenes.",
 			{
 				{ "name",  "string",  "Name of the device", false, {} },
 				{ "idx",   "integer", "Device IDX (use either this or name)", false, {} },
@@ -1270,6 +1271,21 @@ namespace mcp		// Model Context Protocol
 			}
 		},
 		{
+			"get_scene_history",
+			"Get a scene or group's On/Off activation log",
+			"Retrieve the On/Off activation log for a scene or group, including the user/actor "
+			"that triggered each change (read from SceneLog). "
+			"Specify 'days'/'start_date'/'end_date' for a date range, or 'count' for the last N events.",
+			{
+				{ "scenename", "string", "Name of the scene or group", false, {} },
+				{ "scene_id", "integer", "Scene IDX (use either this or scenename)", false, {} },
+				{ "days", "integer", "Number of days of history (1-366, default 7). Ignored if start_date/end_date provided.", false, {} },
+				{ "start_date", "string", "Start date in YYYY-MM-DD format (use with end_date)", false, {} },
+				{ "end_date", "string", "End date in YYYY-MM-DD format (use with start_date)", false, {} },
+				{ "count", "integer", "Return last N log entries (1-500). When specified, date params are ignored.", false, {} },
+			}
+		},
+		{
 			"get_hardware",
 			"List all hardware",
 			"Return a list of all configured hardware adapters in Domoticz.",
@@ -1442,6 +1458,7 @@ namespace mcp		// Model Context Protocol
 			{ "get_rooms",              getRooms },
 			{ "get_room_devices",       getRoomDevices },
 			{ "get_scene_devices",      getSceneDevices },
+			{ "get_scene_history",      getSceneHistory },
 			{ "get_user_variables",     getUserVariables },
 			{ "add_user_variable",      addUserVariable },
 			{ "update_user_variable",   updateUserVariable },
@@ -3659,6 +3676,86 @@ namespace mcp		// Model Context Protocol
 		return true;
 	}
 
+	// Reads an on/off/dim/text activation log from either LightingLog (devices) or
+	// SceneLog (scenes/groups) and renders it as human-readable text. Both tables share
+	// (nValue, User, Date); LightingLog adds sValue. Pass sValueExpr="sValue" for
+	// LightingLog or "''" for SceneLog (which has no sValue column).
+	// table, idColumn and sValueExpr are internal constants, never user input.
+	std::string buildEventHistory(const std::string &table, const std::string &idColumn,
+		const std::string &sValueExpr, uint64_t id, const std::string &sName,
+		const std::string &sLabel, const Json::Value &args)
+	{
+		auto formatState = [](const std::string &sNValue, const std::string &sValue) -> std::string {
+			int nValue = atoi(sNValue.c_str());
+			std::string sState;
+			if (nValue == 0)       sState = "Off";
+			else if (nValue == 1)  sState = "On";
+			else if (nValue == 2)  sState = "Toggle";
+			else if (nValue == 9)  sState = "Dim to level";
+			else                   sState = std::to_string(nValue);
+			if (!sValue.empty())   sState += ": " + sValue;
+			return sState;
+		};
+
+		std::string sResult;
+		if (args.isMember("count") && !args["count"].isNull())
+		{
+			int iCount = std::max(1, std::min(500, args["count"].asInt()));
+			std::string sQ = "SELECT Date, nValue, " + sValueExpr + ", User FROM " + table +
+				" WHERE " + idColumn + "=%" PRIu64 " ORDER BY Date DESC LIMIT %d";
+			auto result = m_sql.safe_query(sQ.c_str(), id, iCount);
+			if (result.empty())
+				return "No log entries found for \"" + sName + "\"";
+			sResult = "Last " + std::to_string((int)result.size()) +
+				" log entries for " + sLabel + " \"" + sName + "\":\n";
+			for (const auto &row : result)
+			{
+				std::string sLine = row[0] + "  " + formatState(row[1], row[2]);
+				if (!row[3].empty()) sLine += "  (user: " + row[3] + ")";
+				sResult += sLine + "\n";
+			}
+			return sResult;
+		}
+
+		std::string szDateStart, szDateEnd;
+		if (args.isMember("start_date") && args.isMember("end_date") &&
+		    !args["start_date"].asString().empty() && !args["end_date"].asString().empty())
+		{
+			szDateStart = args["start_date"].asString();
+			szDateEnd   = args["end_date"].asString();
+		}
+		else
+		{
+			int iDays = 7;
+			if (args.isMember("days"))
+				iDays = std::max(1, std::min(366, args["days"].asInt()));
+			time_t now = mytime(nullptr);
+			struct tm tmNow, tmStart;
+			localtime_r(&now, &tmNow);
+			time_t tStart = now - (time_t)(iDays - 1) * 86400LL;
+			localtime_r(&tStart, &tmStart);
+			char buf[16];
+			strftime(buf, sizeof(buf), "%Y-%m-%d", &tmNow);
+			szDateEnd = buf;
+			strftime(buf, sizeof(buf), "%Y-%m-%d", &tmStart);
+			szDateStart = buf;
+		}
+		std::string sQ = "SELECT Date, nValue, " + sValueExpr + ", User FROM " + table +
+			" WHERE " + idColumn + "=%" PRIu64 " AND Date>='%q' AND Date<='%q 23:59:59' ORDER BY Date DESC";
+		auto result = m_sql.safe_query(sQ.c_str(), id, szDateStart.c_str(), szDateEnd.c_str());
+		if (result.empty())
+			return "No log entries found for \"" + sName + "\" in the specified period.";
+		sResult = std::to_string((int)result.size()) +
+			" log entries for " + sLabel + " \"" + sName + "\" (" + szDateStart + " to " + szDateEnd + "):\n";
+		for (const auto &row : result)
+		{
+			std::string sLine = row[0] + "  " + formatState(row[1], row[2]);
+			if (!row[3].empty()) sLine += "  (user: " + row[3] + ")";
+			sResult += sLine + "\n";
+		}
+		return sResult;
+	}
+
 	bool getSensorHistory(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
 		const Json::Value &args = jsonRequest["params"]["arguments"];
@@ -3690,19 +3787,26 @@ namespace mcp		// Model Context Protocol
 		}
 		const uint64_t nIdx = (uint64_t)atoll(device["idx"].asString().c_str());
 
-		// Scenes/groups are not in DeviceStatus — detect them first via the device JSON Type field.
-		bool bIsSwitch = false;
+		// Scenes/groups share the device list but live in a separate idx namespace and log to
+		// SceneLog (not DeviceStatus/LightingLog). Redirect to the dedicated tool rather than
+		// querying DeviceStatus with the scene's idx, which would collide with a device of the same id.
 		if (device.isMember("Type"))
 		{
 			const std::string sDevType = device["Type"].asString();
 			if (sDevType == "Scene" || sDevType == "Group")
-				bIsSwitch = true;
+			{
+				mcp::setToolResult(jsonRPCRep,
+					"\"" + sName + "\" is a " + (sDevType == "Group" ? "group" : "scene") +
+					". Use get_scene_history to retrieve its activation log.", true);
+				return true;
+			}
 		}
 
-		// For non-scene devices fetch dType/dSubType, then use IsLightOrSwitch().
+		bool bIsEventDevice = false;
+
+		// Fetch dType/dSubType, then route switch/text/alert event devices to the LightingLog event log.
 		unsigned char dType    = 0;
 		unsigned char dSubType = 0;
-		if (!bIsSwitch)
 		{
 			auto devResult = m_sql.safe_query(
 				"SELECT Type, SubType FROM DeviceStatus WHERE ID=%" PRIu64, nIdx);
@@ -3713,102 +3817,13 @@ namespace mcp		// Model Context Protocol
 			}
 			dType    = (unsigned char)atoi(devResult[0][0].c_str());
 			dSubType = (unsigned char)atoi(devResult[0][1].c_str());
-			bIsSwitch = IsLightOrSwitch(dType, dSubType);
+			bIsEventDevice = IsEventSwitchLike(dType, dSubType);
 		}
 
-		if (bIsSwitch)
+		if (bIsEventDevice)
 		{
-			// --- LightingLog branch: switches and scenes ---
-			std::string sResult;
-
-			if (args.isMember("count") && !args["count"].isNull())
-			{
-				// Last N entries regardless of date
-				int iCount = std::max(1, std::min(500, args["count"].asInt()));
-				auto result = m_sql.safe_query(
-					"SELECT Date, nValue, sValue, User FROM LightingLog "
-					"WHERE DeviceRowID=%" PRIu64 " ORDER BY Date DESC LIMIT %d",
-					nIdx, iCount);
-				if (result.empty())
-				{
-					sResult = "No log entries found for \"" + sName + "\"";
-				}
-				else
-				{
-					sResult = "Last " + std::to_string((int)result.size()) +
-					          " log entries for switch \"" + sName + "\":\n";
-					for (const auto &row : result)
-					{
-						int nValue = atoi(row[1].c_str());
-						std::string sState;
-						if (nValue == 0)       sState = "Off";
-						else if (nValue == 1)  sState = "On";
-						else if (nValue == 2)  sState = "Toggle";
-						else if (nValue == 9)  sState = "Dim to level";
-						else                   sState = std::to_string(nValue);
-						if (!row[2].empty())   sState += ": " + row[2];
-						std::string sLine = row[0] + "  " + sState;
-						if (!row[3].empty())   sLine += "  (user: " + row[3] + ")";
-						sResult += sLine + "\n";
-					}
-				}
-			}
-			else
-			{
-				// Date range filter
-				std::string szDateStart, szDateEnd;
-				if (args.isMember("start_date") && args.isMember("end_date") &&
-				    !args["start_date"].asString().empty() && !args["end_date"].asString().empty())
-				{
-					szDateStart = args["start_date"].asString();
-					szDateEnd   = args["end_date"].asString();
-				}
-				else
-				{
-					int iDays = 7;
-					if (args.isMember("days"))
-						iDays = std::max(1, std::min(366, args["days"].asInt()));
-					time_t now = mytime(nullptr);
-					struct tm tmNow, tmStart;
-					localtime_r(&now, &tmNow);
-					time_t tStart = now - (time_t)(iDays - 1) * 86400LL;
-					localtime_r(&tStart, &tmStart);
-					char buf[16];
-					strftime(buf, sizeof(buf), "%Y-%m-%d", &tmNow);
-					szDateEnd = buf;
-					strftime(buf, sizeof(buf), "%Y-%m-%d", &tmStart);
-					szDateStart = buf;
-				}
-				auto result = m_sql.safe_query(
-					"SELECT Date, nValue, sValue, User FROM LightingLog "
-					"WHERE DeviceRowID=%" PRIu64 " AND Date>='%q' AND Date<='%q 23:59:59' "
-					"ORDER BY Date DESC",
-					nIdx, szDateStart.c_str(), szDateEnd.c_str());
-				if (result.empty())
-				{
-					sResult = "No log entries found for \"" + sName + "\" in the specified period.";
-				}
-				else
-				{
-					sResult = std::to_string((int)result.size()) +
-					          " log entries for switch \"" + sName + "\" (" +
-					          szDateStart + " to " + szDateEnd + "):\n";
-					for (const auto &row : result)
-					{
-						int nValue = atoi(row[1].c_str());
-						std::string sState;
-						if (nValue == 0)       sState = "Off";
-						else if (nValue == 1)  sState = "On";
-						else if (nValue == 2)  sState = "Toggle";
-						else if (nValue == 9)  sState = "Dim to level";
-						else                   sState = std::to_string(nValue);
-						if (!row[2].empty())   sState += ": " + row[2];
-						std::string sLine = row[0] + "  " + sState;
-						if (!row[3].empty())   sLine += "  (user: " + row[3] + ")";
-						sResult += sLine + "\n";
-					}
-				}
-			}
+			std::string sResult = buildEventHistory("LightingLog", "DeviceRowID", "sValue",
+				nIdx, sName, "switch", args);
 			mcp::setToolResult(jsonRPCRep, sResult, false);
 			return true;
 		}
@@ -5321,6 +5336,48 @@ namespace mcp		// Model Context Protocol
 			}
 		}
 		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
+		return true;
+	}
+
+	bool getSceneHistory(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasId = args.isMember("scene_id");
+		bool bHasName = args.isMember("scenename") && !args["scenename"].asString().empty();
+		if (!bHasId && !bHasName)
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: getSceneHistory: Missing required parameter 'scenename' or 'scene_id'");
+			return false;
+		}
+
+		std::vector<std::vector<std::string>> scResult;
+		std::string sIdentifier;
+		if (bHasId)
+		{
+			int nSceneId = args["scene_id"].asInt();
+			sIdentifier = "idx=" + std::to_string(nSceneId);
+			scResult = m_sql.safe_query("SELECT ID, Name, SceneType FROM Scenes WHERE ID=%d", nSceneId);
+		}
+		else
+		{
+			std::string sName = args["scenename"].asString();
+			sIdentifier = "\"" + sName + "\"";
+			scResult = m_sql.safe_query("SELECT ID, Name, SceneType FROM Scenes WHERE Name='%q'", sName.c_str());
+		}
+
+		if (scResult.empty())
+		{
+			mcp::setToolResult(jsonRPCRep, "No scene or group exists with the name " + sIdentifier + ".", true);
+			return true;
+		}
+
+		const uint64_t nSceneIdx = (uint64_t)atoll(scResult[0][0].c_str());
+		std::string sSceneName = scResult[0][1];
+		std::string sLabel = (atoi(scResult[0][2].c_str()) == 1) ? "group" : "scene";
+
+		std::string sResult = buildEventHistory("SceneLog", "SceneRowID", "''",
+			nSceneIdx, sSceneName, sLabel, args);
+		mcp::setToolResult(jsonRPCRep, sResult, false);
 		return true;
 	}
 
