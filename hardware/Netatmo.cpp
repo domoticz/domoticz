@@ -669,8 +669,8 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 	//the user has selected in domoticz (actionning a switch....)
 	//Here a LIGHTING2 is used as we have selector switch for
 	//our thermostat / valve devices
-	// To Debug the Hardware on "normal" setup, uncomment lines "Log(LOG_STATUS" (on line 759 - 771 - 1738 - 2076 - 2805)
-	// and additional on lines 857 - 1239 - 1712 - 3106 - 4094.
+	// To Debug the Hardware on "normal" setup, uncomment lines "Log(LOG_STATUS" (on line 792 - 804 - 1771 - 2110 - 2849)
+	// and additional on lines 890 - 1272 - 1745 - 3150 - 4138.
 	const tRBUF* pCmd = reinterpret_cast<const tRBUF*>(pdata);
 	unsigned char packettype = pCmd->ICMND.packettype;
 	Debug(DEBUG_HARDWARE, "Netatmo Write to Hardware " );
