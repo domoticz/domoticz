@@ -3575,3 +3575,13 @@ body.dd-standby::after {
 .dd-list-font--larger { font-size: 1.1em; }
 .dd-list-font--large  { font-size: 1.25em; }
 .dd-list-font--xl     { font-size: 1.5em; }
+
+/* Mobile favorites: active-state highlight for the "Off"/closed button.
+   Deliberately neutral (not the blue btn-info used for "On"), so blue keeps
+   signalling "on" while the off state is still visibly indicated. */
+.mobileitem .btn.btn-off-active {
+    background: var(--dz-btn-hover-bg);
+    color: var(--dz-btn-text);
+    border-color: var(--dz-btn-border);
+    font-weight: bold;
+}
