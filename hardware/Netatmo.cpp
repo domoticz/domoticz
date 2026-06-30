@@ -1786,7 +1786,7 @@ void CNetatmo::GetHomesDataDetails()
 				//Debug(DEBUG_HARDWARE, "Get Home ID %s", homeID.c_str());
 
 				//*****************************************************************************//
-				SaveJson2Disk(home, std::string("./Debug/HomesData_" + m_Name + "-" + homeID + ".txt"));
+				SaveJson2Disk(home, std::string("./jsoncreated/HomesData_" + m_Name + "-" + homeID + ".txt"));
 				//*****************************************************************************//
 
 				std::stringstream stream_homeid;
@@ -2237,7 +2237,7 @@ void CNetatmo::Get_RoomMeasure(std::string& home_id, std::string& room_id, std::
 		//if (!root["body"]["home"].empty())
 		//{
 			//*****************************************************************************//
-			SaveJson2Disk(root, std::string("./Debug/roommeasure " + roomName + "_:_" + home_id + ".txt"));
+			SaveJson2Disk(root, std::string("./jsoncreated/roommeasure " + roomName + "_:_" + home_id + ".txt"));
 			//*****************************************************************************//
 	}
 }
@@ -2314,7 +2314,7 @@ void CNetatmo::Get_Scenarios(std::string& home_id, Json::Value& scenarios)
 		if (!root["body"]["home"].empty())
 		{
 			//*****************************************************************************//
-			SaveJson2Disk(root, std::string("./Debug/scenario-s " + m_Name + "_:_" + home_id + ".txt"));
+			SaveJson2Disk(root, std::string("./jsoncreated/scenario-s " + m_Name + "_:_" + home_id + ".txt"));
 			//*****************************************************************************//
 			scenarios = root["body"]["home"];
 
@@ -2418,7 +2418,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 				name = "UNKNOWN NAME";
 
 			//*****************************************************************************//
-			SaveJson2Disk(device, std::string("./Debug/" + name + ".txt"));
+			SaveJson2Disk(device, std::string("./jsoncreated/" + name + ".txt"));
 			//*****************************************************************************//
 
 			//get Home ID from Weatherstation
@@ -2486,7 +2486,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 			// Homecoach
 			if (!device["dashboard_data"].empty())
 			{
-				SaveJson2Disk(device["dashboard_data"], std::string("./Debug/" + name + ".txt"));
+				SaveJson2Disk(device["dashboard_data"], std::string("./jsoncreated/" + name + ".txt"));
 				ParseDashboard(device["dashboard_data"], iDevIndex, crcId, name, type, mbattery_percent, RF_status, id, home_id);
 			}
 			//Weather modules (Temp sensor, Wind Sensor, Rain Sensor)
@@ -2515,7 +2515,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 							else
 								mname = "unknown-" + mid;
 
-							SaveJson2Disk(module, std::string("./Debug/" + mname + ".txt"));
+							SaveJson2Disk(module, std::string("./jsoncreated/" + mname + ".txt"));
 
 							int crcId = Crc32(0, (const unsigned char*)mid.c_str(), mid.length());
 							uint64_t moduleID = convert_mac(mid);
@@ -2539,7 +2539,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 
 							if (!module["dashboard_data"].empty())
 							{
-								SaveJson2Disk(module["dashboard_data"], std::string("./Debug/" + mname + ".txt"));
+								SaveJson2Disk(module["dashboard_data"], std::string("./jsoncreated/" + mname + ".txt"));
 
 								ParseDashboard(module["dashboard_data"], iModulIndex, crcId, mname, mtype, mbattery_percent, mrf_status, mid, home_id);
 								nDevice.SignalLevel = mrf_status;
@@ -2880,7 +2880,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 		Json::Value mRoot = root["body"]["home"]["rooms"];
 
 		//*****************************************************************************//
-		SaveJson2Disk(root, std::string("./Debug/HomeStatus_" + m_Name + "_:_" + home_id + ".txt")); //Save HOMESTATUS
+		SaveJson2Disk(root, std::string("./jsoncreated/HomeStatus_" + m_Name + "_:_" + home_id + ".txt")); //Save HOMESTATUS
 		//*****************************************************************************//
 
 		for (auto room : mRoot)
@@ -2906,7 +2906,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				std::string roomType = m_Types[roomNetatmoID];
 
 				//*****************************************************************************//
-				SaveJson2Disk(room, std::string("./Debug/room_") + roomName.c_str() + ".txt");
+				SaveJson2Disk(room, std::string("./jsoncreated/room_") + roomName.c_str() + ".txt");
 				//*****************************************************************************//
 
 				if (!room["reachable"].empty())
@@ -3066,7 +3066,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				std::string type = module["type"].asString();
 				m_Device_types[module_id] = type;
 				//*****************************************************************************//
-				SaveJson2Disk(module, std::string("./Debug/") + moduleName.c_str() + ".txt");
+				SaveJson2Disk(module, std::string("./jsoncreated/") + moduleName.c_str() + ".txt");
 				//*****************************************************************************//
 
 				nDevice.ID = crcId;
@@ -3923,7 +3923,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				PersonName = m_PersonsNames[PersonNetatmoID];
 
 				//*****************************************************************************//
-				SaveJson2Disk(person, std::string("./Debug/person_") + PersonName.c_str() + ".txt");
+				SaveJson2Disk(person, std::string("./jsoncreated/person_") + PersonName.c_str() + ".txt");
 				//*****************************************************************************//
 
 				std::string PersonLastSeen = person["last_seen"].asString();
@@ -3974,7 +3974,7 @@ bool CNetatmo::ParseEvents(const std::string& sResult, Json::Value& root )
 			{
 				events_ID = events["id"].asString();
 				//*****************************************************************************//
-				SaveJson2Disk(events, std::string("./Debug/events_") + events_ID.c_str() + ".txt");
+				SaveJson2Disk(events, std::string("./jsoncreated/events_") + events_ID.c_str() + ".txt");
 				//*****************************************************************************//
 			}
 			// Using Textstatus / Alert for now
