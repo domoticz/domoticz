@@ -3100,8 +3100,9 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				//battery_state
 				if (!module["battery_state"].empty())
 				{
+					batName = " " + moduleName + " Bat. Lvl";
 					std::string battery_state = module["battery_state"].asString();
-					SendTextSensor(crcId, 3, 255, battery_state.c_str(), bat_Name);
+					SendTextSensor(crcId, 3, 255, battery_state.c_str(), batName);
 				}
 				//Device to get battery level / network strength
 				if (!module["battery_level"].empty())
