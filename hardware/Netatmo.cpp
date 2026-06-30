@@ -44,6 +44,10 @@
 // Some testfunctions for debugging
 void SaveJson2Disk(Json::Value str, std::string filename)
 {
+	std::filesystem::path p(filename);
+    std::error_code ec;
+    std::filesystem::create_directories(p.parent_path(), ec); // creates missing directory's
+
 	FILE* fOut = fopen(filename.c_str(), "wb+");
 	if (fOut)
 	{
