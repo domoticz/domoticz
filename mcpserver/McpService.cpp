@@ -1054,19 +1054,20 @@ namespace mcp		// Model Context Protocol
 			"get_sensor_history",
 			"Get daily-aggregated history for a sensor or event log for a switch",
 			"Retrieve DAILY-AGGREGATED (calendar) data for sensors going back weeks or months, "
-			"or the on/off/dim event log for switches and scenes. "
+			"or the on/off/dim event log for switches. "
 			"Use this for multi-day trends or long-term history. "
 			"For intraday data (today, last few hours, last 24 h) use get_sensor_short_log instead. "
+			"For scene or group activation history use get_scene_history instead. "
 			"For sensors: specify 'days' or 'start_date'+'end_date'. "
-			"For switches/scenes: specify 'days'/'start_date'/'end_date' for date range, "
+			"For switches: specify 'days'/'start_date'/'end_date' for date range, "
 			"or 'count' for last N events.",
 			{
-				{ "name", "string", "Name of the device or scene", false, {} },
+				{ "name", "string", "Name of the device", false, {} },
 				{ "idx", "integer", "Device IDX (use either this or name)", false, {} },
 				{ "days", "integer", "Number of days of history to retrieve (1-366, default 7 for sensors). Ignored if start_date/end_date provided.", false, {} },
 				{ "start_date", "string", "Start date in YYYY-MM-DD format (use with end_date for custom range)", false, {} },
 				{ "end_date", "string", "End date in YYYY-MM-DD format (use with start_date for custom range)", false, {} },
-				{ "count", "integer", "For switches/scenes: return last N log entries (1-500, default 50). When specified, date params are ignored.", false, {} },
+				{ "count", "integer", "For switches: return last N log entries (1-500, default 50). When specified, date params are ignored.", false, {} },
 			}
 		},
 		{
@@ -3705,35 +3706,22 @@ namespace mcp		// Model Context Protocol
 		}
 		const uint64_t nIdx = (uint64_t)atoll(device["idx"].asString().c_str());
 
-		// Scenes/groups are not in DeviceStatus — detect them first via the device JSON Type field.
-		bool bIsSwitch = false;
-		if (device.isMember("Type"))
+		// Classify the device: switch/light -> LightingLog event log, otherwise sensor calendar tables.
+		// (Scenes are not handled here; they have their own get_scene_history tool reading SceneLog.)
+		auto devResult = m_sql.safe_query(
+			"SELECT Type, SubType FROM DeviceStatus WHERE ID=%" PRIu64, nIdx);
+		if (devResult.empty())
 		{
-			const std::string sDevType = device["Type"].asString();
-			if (sDevType == "Scene" || sDevType == "Group")
-				bIsSwitch = true;
+			mcp::setToolResult(jsonRPCRep, "Device \"" + sName + "\" not found in database.", true);
+			return true;
 		}
-
-		// For non-scene devices fetch dType/dSubType, then use IsLightOrSwitch().
-		unsigned char dType    = 0;
-		unsigned char dSubType = 0;
-		if (!bIsSwitch)
-		{
-			auto devResult = m_sql.safe_query(
-				"SELECT Type, SubType FROM DeviceStatus WHERE ID=%" PRIu64, nIdx);
-			if (devResult.empty())
-			{
-				mcp::setToolResult(jsonRPCRep, "Device \"" + sName + "\" not found in database.", true);
-				return true;
-			}
-			dType    = (unsigned char)atoi(devResult[0][0].c_str());
-			dSubType = (unsigned char)atoi(devResult[0][1].c_str());
-			bIsSwitch = IsLightOrSwitch(dType, dSubType);
-		}
+		unsigned char dType    = (unsigned char)atoi(devResult[0][0].c_str());
+		unsigned char dSubType = (unsigned char)atoi(devResult[0][1].c_str());
+		bool bIsSwitch = IsLightOrSwitch(dType, dSubType);
 
 		if (bIsSwitch)
 		{
-			// --- LightingLog branch: switches and scenes ---
+			// --- LightingLog branch: switches ---
 			std::string sResult;
 
 			if (args.isMember("count") && !args["count"].isNull())
