@@ -373,6 +373,8 @@ Tools are actions an AI agent can invoke. All tools accept and return plain text
 | <code>get_room_devices</code> || <code>roomname</code> or <code>room_id</code> (one required) || List all devices assigned to a specific room.
 |-
 | <code>get_scene_devices</code> || <code>scenename</code> or <code>scene_id</code> (one required) || List the devices and commands that make up a specific scene.
+|-
+| <code>get_scene_history</code> || <code>scenename</code> or <code>scene_id</code> (one required), <code>days</code> (optional, default 7), <code>start_date</code> / <code>end_date</code> (optional, YYYY-MM-DD), <code>count</code> (optional, 1–500) || Retrieve the On/Off activation log for a scene or group from <code>SceneLog</code>, including the user/actor that triggered each change. Use <code>count</code> for the last N entries regardless of date, or <code>days</code>/<code>start_date</code>+<code>end_date</code> for a date-filtered log.
 |}
 
 === Device management ===

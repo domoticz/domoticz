@@ -1270,6 +1270,20 @@ namespace mcp		// Model Context Protocol
 			}
 		},
 		{
+			"get_scene_history",
+			"Get activation history for a scene or group",
+			"Retrieve the On/Off activation log for a Domoticz scene or group, including the user/actor that triggered each change, from the SceneLog table. "
+			"Specify 'days'/'start_date'/'end_date' for a date range, or 'count' for the last N entries.",
+			{
+				{ "scenename", "string", "Name of the scene or group", false, {} },
+				{ "scene_id", "integer", "Scene IDX (use either this or scenename)", false, {} },
+				{ "days", "integer", "Number of days of history to retrieve (1-366, default 7). Ignored if start_date/end_date or count provided.", false, {} },
+				{ "start_date", "string", "Start date in YYYY-MM-DD format (use with end_date for custom range)", false, {} },
+				{ "end_date", "string", "End date in YYYY-MM-DD format (use with start_date for custom range)", false, {} },
+				{ "count", "integer", "Return last N log entries (1-500). When specified, date params are ignored.", false, {} },
+			}
+		},
+		{
 			"get_hardware",
 			"List all hardware",
 			"Return a list of all configured hardware adapters in Domoticz.",
@@ -1442,6 +1456,7 @@ namespace mcp		// Model Context Protocol
 			{ "get_rooms",              getRooms },
 			{ "get_room_devices",       getRoomDevices },
 			{ "get_scene_devices",      getSceneDevices },
+			{ "get_scene_history",      getSceneHistory },
 			{ "get_user_variables",     getUserVariables },
 			{ "add_user_variable",      addUserVariable },
 			{ "update_user_variable",   updateUserVariable },
@@ -5321,6 +5336,121 @@ namespace mcp		// Model Context Protocol
 			}
 		}
 		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
+		return true;
+	}
+
+	bool getSceneHistory(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bHasId = args.isMember("scene_id");
+		bool bHasName = args.isMember("scenename") && !args["scenename"].asString().empty();
+		if (!bHasId && !bHasName)
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: getSceneHistory: Missing required parameter 'scenename' or 'scene_id'");
+			return false;
+		}
+
+		std::vector<std::vector<std::string>> scResult;
+		std::string sIdentifier;
+		if (bHasId)
+		{
+			int nSceneId = args["scene_id"].asInt();
+			sIdentifier = "idx=" + std::to_string(nSceneId);
+			scResult = m_sql.safe_query("SELECT ID, SceneType, Name FROM Scenes WHERE ID=%d", nSceneId);
+		}
+		else
+		{
+			std::string sName = args["scenename"].asString();
+			sIdentifier = sName;
+			scResult = m_sql.safe_query("SELECT ID, SceneType, Name FROM Scenes WHERE Name='%q'", sName.c_str());
+		}
+
+		if (scResult.empty())
+		{
+			mcp::setToolResult(jsonRPCRep, "No scene or group exists with the name \"" + sIdentifier + "\".", true);
+			return true;
+		}
+
+		uint64_t uSceneIdx = std::stoull(scResult[0][0]);
+		std::string sSceneType = (atoi(scResult[0][1].c_str()) == 1) ? "group" : "scene";
+		std::string sSceneName = scResult[0][2];
+
+		std::string sResult;
+		if (args.isMember("count") && !args["count"].isNull())
+		{
+			// Last N entries regardless of date
+			int iCount = std::max(1, std::min(500, args["count"].asInt()));
+			auto result = m_sql.safe_query(
+				"SELECT Date, nValue, User FROM SceneLog "
+				"WHERE SceneRowID=%" PRIu64 " ORDER BY Date DESC LIMIT %d",
+				uSceneIdx, iCount);
+			if (result.empty())
+			{
+				sResult = "No history found for " + sSceneType + " \"" + sSceneName + "\".";
+			}
+			else
+			{
+				sResult = "Last " + std::to_string((int)result.size()) +
+				          " history entries for " + sSceneType + " \"" + sSceneName + "\":\n";
+				for (const auto &row : result)
+				{
+					std::string sState = (atoi(row[1].c_str()) == 1) ? "On" : "Off";
+					std::string sLine = row[0] + "  " + sState;
+					if (!row[2].empty())   sLine += "  (user: " + row[2] + ")";
+					sResult += sLine + "\n";
+				}
+			}
+		}
+		else
+		{
+			// Date range filter
+			std::string szDateStart, szDateEnd;
+			if (args.isMember("start_date") && args.isMember("end_date") &&
+			    !args["start_date"].asString().empty() && !args["end_date"].asString().empty())
+			{
+				szDateStart = args["start_date"].asString();
+				szDateEnd   = args["end_date"].asString();
+			}
+			else
+			{
+				int iDays = 7;
+				if (args.isMember("days"))
+					iDays = std::max(1, std::min(366, args["days"].asInt()));
+				time_t now = mytime(nullptr);
+				struct tm tmNow, tmStart;
+				localtime_r(&now, &tmNow);
+				time_t tStart = now - (time_t)(iDays - 1) * 86400LL;
+				localtime_r(&tStart, &tmStart);
+				char buf[16];
+				strftime(buf, sizeof(buf), "%Y-%m-%d", &tmNow);
+				szDateEnd = buf;
+				strftime(buf, sizeof(buf), "%Y-%m-%d", &tmStart);
+				szDateStart = buf;
+			}
+			auto result = m_sql.safe_query(
+				"SELECT Date, nValue, User FROM SceneLog "
+				"WHERE SceneRowID=%" PRIu64 " AND Date>='%q' AND Date<='%q 23:59:59' "
+				"ORDER BY Date DESC",
+				uSceneIdx, szDateStart.c_str(), szDateEnd.c_str());
+			if (result.empty())
+			{
+				sResult = "No history found for " + sSceneType + " \"" + sSceneName + "\" in the specified period.";
+			}
+			else
+			{
+				sResult = std::to_string((int)result.size()) +
+				          " history entries for " + sSceneType + " \"" + sSceneName + "\" (" +
+				          szDateStart + " to " + szDateEnd + "):\n";
+				for (const auto &row : result)
+				{
+					std::string sState = (atoi(row[1].c_str()) == 1) ? "On" : "Off";
+					std::string sLine = row[0] + "  " + sState;
+					if (!row[2].empty())   sLine += "  (user: " + row[2] + ")";
+					sResult += sLine + "\n";
+				}
+			}
+		}
+		mcp::setToolResult(jsonRPCRep, sResult, false);
 		return true;
 	}
 
