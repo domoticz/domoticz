@@ -7,6 +7,7 @@
 #include "../httpclient/HTTPClient.h"
 #include "../main/json_helper.h"
 #include "../notifications/NotificationHelper.h"
+#include <filesystem>
 #include <cinttypes>                    //PRIu64
 
 #define NETATMO_API_URI "https://api.netatmo.com/"
