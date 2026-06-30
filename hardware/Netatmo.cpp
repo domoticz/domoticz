@@ -225,7 +225,7 @@ void CNetatmo::Do_Work()
 		sec_counter++;
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(nullptr);
-		}		
+		}
 		if (mytime(nullptr) > m_nextRefreshTs)
 		{
 			//Time is bigger than 2/3 off duration access token
