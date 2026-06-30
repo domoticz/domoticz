@@ -3101,6 +3101,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				if (!module["battery_state"].empty())
 				{
 					std::string battery_state = module["battery_state"].asString();
+					SendTextSensor(crcId, 3, 255, battery_state.c_str(), bat_Name);
 				}
 				//Device to get battery level / network strength
 				if (!module["battery_level"].empty())
@@ -3217,7 +3218,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						m_wifi_status[module_id] = (int)wifi_status;
 						mrf_status = static_cast<int>(wifi_status); // Device has Wifi- or RF-strength not both
 					}
-
 
 					if (!module["battery_level"].empty())
 					{
