@@ -3577,11 +3577,11 @@ body.dd-standby::after {
 .dd-list-font--xl     { font-size: 1.5em; }
 
 /* Mobile favorites: active-state highlight for the "Off"/closed button.
-   Deliberately neutral (not the blue btn-info used for "On"), so blue keeps
-   signalling "on" while the off state is still visibly indicated. */
+   Uses the same blue as the "On" button so the highlight always marks the
+   current state (on or off) — the long-standing, familiar Domoticz look. */
 .mobileitem .btn.btn-off-active {
-    background: var(--dz-btn-hover-bg);
-    color: var(--dz-btn-text);
-    border-color: var(--dz-btn-border);
+    background: var(--dz-btn-info-bg);
+    color: #fff;
+    border-color: var(--dz-btn-info-bg);
     font-weight: bold;
 }
