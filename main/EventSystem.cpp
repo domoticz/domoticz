@@ -966,7 +966,13 @@ void CEventSystem::GetCurrentMeasurementStates()
 			break;
 		case pTypeGeneral:
 		{
-			if (!splitresults.empty())
+			if (sitem.subType == sTypeAlert)
+			{
+				//nValue holds the alert level, sValue the alert text
+				utilityval = float(sitem.nValue);
+				isUtility = true;
+			}
+			else if (!splitresults.empty())
 			{
 				if ((sitem.subType == sTypeVisibility) || (sitem.subType == sTypeSolarRadiation))
 				{
@@ -980,8 +986,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 					barometer = static_cast<float>(atof(splitresults[0].c_str()));
 					isBaro = true;
 				}
-				else if ((sitem.subType == sTypeAlert)
-					|| (sitem.subType == sTypeDistance)
+				else if ((sitem.subType == sTypeDistance)
 					|| (sitem.subType == sTypePercentage)
 					|| (sitem.subType == sTypeWaterflow)
 					|| (sitem.subType == sTypeCustom)
@@ -2147,6 +2152,19 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("utilitydevice") == 0)
 	{
+		{
+			//Text and Alert sensors carry their value as text in sValue
+			boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+			auto ittState = m_devicestates.find(dindex);
+			if (
+				(ittState != m_devicestates.end())
+				&& (ittState->second.devType == pTypeGeneral)
+				&& ((ittState->second.subType == sTypeTextStatus) || (ittState->second.subType == sTypeAlert))
+				)
+			{
+				return ittState->second.sValue;
+			}
+		}
 		auto itt = m_utilityValuesByID.find(dindex);
 		if (itt != m_utilityValuesByID.end())
 		{
