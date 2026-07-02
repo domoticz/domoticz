@@ -24,7 +24,7 @@ define(['app'], function (app) {
 			});
 		}
 
-		GetUserSettings = function () {
+		GetUserSettings = function (isNewUser) {
 			var csettings = {};
 
 			csettings.bEnabled = $('#usercontent #userparamstable #enabled').is(":checked");
@@ -38,7 +38,25 @@ define(['app'], function (app) {
 				ShowNotify($.t('Please enter a Password!'), 2500, true);
 				return;
 			}
-			if (csettings.password.length != 32) {
+			var confirmpassword = $("#usercontent #userparamstable #userpasswordconfirm").val();
+			if (csettings.password != confirmpassword) {
+				ShowNotify($.t('Passwords do not match!'), 2500, true);
+				return;
+			}
+			// Only hash a newly entered password. If the field still holds the
+			// stored hash that was loaded when the user was selected (i.e. it was
+			// not changed), keep it as-is. Comparing against the loaded hash -
+			// rather than guessing from a 32-character length - ensures a freshly
+			// typed 32-character password gets hashed instead of stored verbatim.
+			var originalhash = $("#usercontent #userparamstable #userpassword").data('originalhash');
+			// When adding a new user the password field may still hold the hash of
+			// a previously selected user. Refuse to silently clone it - require a
+			// freshly entered password instead.
+			if (isNewUser && csettings.password === originalhash) {
+				ShowNotify($.t('Please enter a Password!'), 2500, true);
+				return;
+			}
+			if (csettings.password !== originalhash) {
 				csettings.password = md5.createHash(csettings.password);
 			}
 			csettings.rights = $("#usercontent #userparamstable #comborights").val();
@@ -220,7 +238,7 @@ define(['app'], function (app) {
 		}
 
 		AddUser = function () {
-			var csettings = GetUserSettings();
+			var csettings = GetUserSettings(true);
 			if (typeof csettings == 'undefined') {
 				return;
 			}
@@ -334,6 +352,8 @@ define(['app'], function (app) {
 						$('#usercontent #userparamstable #enabled').prop('checked', (data["Enabled"] == "true"));
 						$("#usercontent #userparamstable #username").val(data["Username"]);
 						$("#usercontent #userparamstable #userpassword").val(data["Password"]);
+						$("#usercontent #userparamstable #userpassword").data('originalhash', data["Password"]);
+						$("#usercontent #userparamstable #userpasswordconfirm").val(data["Password"]);
 						$("#usercontent #userparamstable #comborights").val(data["Rights"]);
 						$('#usercontent #userparamstable #enablesharing').prop('checked', (data["Sharing"] == "1"));
 
