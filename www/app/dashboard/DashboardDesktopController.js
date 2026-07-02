@@ -473,9 +473,7 @@ define([
 								$(this).data('sliding', false);
 								clearInterval($.setDimValue);
 								var idx = $(this).data('idx');
-								var dtype = $(this).slider("option", "type");
-								if (dtype == "relay")
-									SetDimValue(idx, ui.value);
+								SetDimValue(idx, ui.value);
 							}
 						});
 					}
