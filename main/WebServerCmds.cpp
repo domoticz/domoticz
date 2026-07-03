@@ -4757,6 +4757,11 @@ namespace http
 								if (!pwdSet.empty())
 									root["result"][ii]["SettingsPwdSet"] = pwdSet;
 							}
+#else
+							// Without Python support the plugin manifest is unavailable, so password
+							// fields cannot be identified and stripped; do not send stored plugin
+							// settings of lingering plugin rows at all.
+							settingsJson = Json::objectValue;
 #endif
 							root["result"][ii]["Settings"] = settingsJson;
 						}
