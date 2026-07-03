@@ -1,6 +1,6 @@
 <blockquote>'''Note:''' This page is maintained in the [https://github.com/domoticz/domoticz/tree/development/docs Domoticz GitHub repository]. Please do not edit it directly on the Wiki.</blockquote>
 
-'''Revision:''' 2026-05-14<br>
+'''Revision:''' 2026-07-03<br>
 
 ==Overview==
 This page is aimed at developers wishing to improve Domoticz functionality via Python Plugins. If you simply want to use a plugin that a developer has already created for you, please see [[Using Python plugins]]. To see the Plugins already developed (for a reference) got to page [[Plugins]].
