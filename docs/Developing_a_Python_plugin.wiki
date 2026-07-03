@@ -199,7 +199,7 @@ Marks the field as mandatory and the device will not be added unless a value is 
 |-
 |default
 |Optional.
-Default value for the field. Ignored when <options> are specified.
+Default value for the field. For dropdowns (params with <options>) the option whose value matches this default is preselected, unless an <option> carries default="true" (which takes precedence).
 |-
 |password
 |Optional.
@@ -229,6 +229,8 @@ Associated value to store in database
 |default
 |Optional. Valid value:
 true
+
+Takes precedence over a default attribute on the <param> itself.
 |-
 |}
 |-
@@ -268,7 +270,7 @@ If <code>type</code> is omitted (or set to a value the UI does not recognise) th
 |Optional. Conditional visibility expression of the form <code>OtherField=value</code>. The field is shown only when the referenced parameter currently equals the given value. Useful for revealing fields that only make sense for a particular protocol or mode (e.g. show a certificate path only when <code>Protocol=https</code>).
 |-
 |default
-|Optional. Default value used when the plugin is first added. For <code>boolean</code> use <code>"true"</code>/<code>"false"</code>; for <code>number</code>/<code>slider</code> use a numeric string.
+|Optional. Default value used when the plugin is first added. For <code>boolean</code> use <code>"true"</code>/<code>"false"</code>; for <code>number</code>/<code>slider</code> use a numeric string. For dropdowns the option whose value matches the default is preselected, unless a per-option <code>default="true"</code> is set (which takes precedence).
 |}
 
 ===<group>===

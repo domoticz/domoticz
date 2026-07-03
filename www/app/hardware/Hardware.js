@@ -5893,7 +5893,7 @@ define(['app'], function (app) {
 										// Select dropdown
 										PluginParams += '<td><select id="' + param.field + '" style="width:' + paramWidth + '" class="combobox ui-corner-all">';
 										// A per-option default="true" wins; if none is set, fall back to selecting the
-										// option whose value matches the param-level default (see dropdown default spec).
+										// option whose value matches the param-level default.
 										var hasOptionDefault = false;
 										$.each(param.options, function (i, option) {
 											if ((typeof (option.default) != "undefined") && (option.default == "true")) hasOptionDefault = true;
