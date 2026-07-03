@@ -5892,9 +5892,23 @@ define(['app'], function (app) {
 									if (typeof (param.options) != "undefined") {
 										// Select dropdown
 										PluginParams += '<td><select id="' + param.field + '" style="width:' + paramWidth + '" class="combobox ui-corner-all">';
+										// A per-option default="true" wins; if none is set, fall back to selecting the
+										// option whose value matches the param-level default (see dropdown default spec).
+										var hasOptionDefault = false;
+										$.each(param.options, function (i, option) {
+											if ((typeof (option.default) != "undefined") && (option.default == "true")) hasOptionDefault = true;
+										});
+										var fallbackValue = hasOptionDefault ? undefined : param.default;
+										var selectedApplied = false;
 										$.each(param.options, function (i, option) {
 											PluginParams += '<option data-i18n="' + option.label + '" value="' + option.value + '"';
-											if ((typeof (option.default) != "undefined") && (option.default == "true")) PluginParams += ' selected';
+											var isDefault = hasOptionDefault
+												? ((typeof (option.default) != "undefined") && (option.default == "true"))
+												: ((typeof (fallbackValue) != "undefined") && (String(option.value) === String(fallbackValue)));
+											if (isDefault && !selectedApplied) {
+												PluginParams += ' selected';
+												selectedApplied = true;
+											}
 											PluginParams += '>' + option.label + '</option>';
 										});
 										PluginParams += '</select></td>';
