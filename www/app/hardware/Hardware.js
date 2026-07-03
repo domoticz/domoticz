@@ -258,7 +258,7 @@ define(['app'], function (app) {
 				var bIsOK = true;
 				// Make sure that all required fields have values
 				$(selector + " .text").each(function () {
-					if ((typeof (this.attributes.required) != "undefined") && (this.value == "")) {
+					if ((typeof (this.attributes.required) != "undefined") && (this.value == "") && (typeof (this.attributes["data-haspwd"]) == "undefined")) {
 						$(selector + " #" + this.id).focus();
 						ShowNotify($.t('Please enter value for required field'), 2500, true);
 						bIsOK = false;
@@ -1771,6 +1771,8 @@ define(['app'], function (app) {
 				var bIsOK = true;
 				// Make sure that all required fields have values
 				$(selector + " .text").each(function () {
+					// Add always creates a new device, so a required field must be filled; there is no
+					// stored value to "keep" (the data-haspwd exemption applies only on Update/edit).
 					if ((typeof (this.attributes.required) != "undefined") && (this.value == "")) {
 						$(selector + " #" + this.id).focus();
 						ShowNotify($.t('Please enter value for required field'), 2500, true);
@@ -4468,6 +4470,19 @@ define(['app'], function (app) {
 											$field.val(value);
 										}
 									});
+									// Mark stored password fields so the user sees they are set and can leave
+									// them blank to keep, and so required-validation does not force re-entry.
+									if (hwEntry.SettingsPwdSet && typeof hwEntry.SettingsPwdSet === "object") {
+										$.each(hwEntry.SettingsPwdSet, function (key, isSet) {
+											if (!isSet) return;
+											var $pf = $visibleTable.find("#" + key);
+											if ($pf.length === 0) return;
+											// Fixed-length dots (not the real length): language-neutral "a secret is
+											// stored" affordance. Placeholder only, never a value, so it is never submitted.
+											$pf.attr("placeholder", "••••••••");
+											$pf.attr("data-haspwd", "true");
+										});
+									}
 									// Trigger change events to re-evaluate conditional visibility
 									$visibleTable.find("select, input").trigger("change");
 								}
@@ -5390,6 +5405,9 @@ define(['app'], function (app) {
 						InitPluginWidgets($(this));
 					}
 				});
+				// Clear stored-password markers so they never leak across add/edit sessions on the
+				// reused plugin fields; edit-restore re-applies them for the current device via SettingsPwdSet.
+				$("#hardwarecontent #divpythonplugin input[type=password]").removeAttr("data-haspwd").removeAttr("placeholder");
 				$("#hardwarecontent #divpythonplugin").show();
 				return;
 			}
@@ -5943,7 +5961,7 @@ define(['app'], function (app) {
 											if (typeof (param.default) != "undefined") PluginParams += param.default;
 											PluginParams += '</textarea>';
 										} else {
-											if ((typeof (param.password) != "undefined") && (param.password == "true"))
+											if ((typeof (param.password) != "undefined") && (String(param.password).toLowerCase() == "true" || String(param.password) == "1"))
 												PluginParams += '<input type="password" ';
 											else
 												PluginParams += '<input type="text" ';
