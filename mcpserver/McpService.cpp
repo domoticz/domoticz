@@ -3924,9 +3924,8 @@ namespace mcp		// Model Context Protocol
 
 		if (!root.isMember("result") || root["result"].empty())
 		{
-			std::string sMsg = "There is no graph history available for the \"" + sName + "\" sensor ";
-			sMsg += "between " + szDateStart + " and " + szDateEnd + ".\n";
-			sMsg += "This may mean graph logging is disabled for this device or no data has been recorded.\n";
+			std::string sMsg = "No daily history for \"" + sName + "\" between " + szDateStart + " and " + szDateEnd + ".\n";
+			sMsg += "The data may be outside this date range, or daily history may not be recorded for this device yet.\n";
 			sMsg += "Tip: try a wider date range or increase 'days'.";
 			mcp::setToolResult(jsonRPCRep, sMsg, true);
 			return true;
