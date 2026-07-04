@@ -3930,9 +3930,8 @@ namespace mcp		// Model Context Protocol
 
 		if (!root.isMember("result") || root["result"].empty())
 		{
-			std::string sMsg = "There is no graph history available for the \"" + sName + "\" sensor ";
-			sMsg += "between " + szDateStart + " and " + szDateEnd + ".\n";
-			sMsg += "This may mean graph logging is disabled for this device or no data has been recorded.\n";
+			std::string sMsg = "No daily history for \"" + sName + "\" between " + szDateStart + " and " + szDateEnd + ".\n";
+			sMsg += "The data may be outside this date range, or daily history may not be recorded for this device yet.\n";
 			sMsg += "Tip: try a wider date range or increase 'days'.";
 			mcp::setToolResult(jsonRPCRep, sMsg, true);
 			return true;
@@ -3955,6 +3954,10 @@ namespace mcp		// Model Context Protocol
 				sSetpointUnit = std::string("\xc2\xb0") + sTempUnit;
 		}
 
+		// Single per-response unit for the counter families (empty for temp/rain/etc).
+		const std::string sUnit = root.isMember("ValueUnits") ? root["ValueUnits"].asString() : "";
+		const std::string sUSuffix = sUnit.empty() ? "" : (" " + sUnit);
+
 		// Format the JSON result as human-readable text
 		if (sSensor == "temp")
 		{
@@ -3974,7 +3977,12 @@ namespace mcp		// Model Context Protocol
 		else if (sSensor == "fan")
 			sResult = "Daily fan speed history for \"" + sName + "\" (rpm min/max):\n";
 		else
-			sResult = "Daily history for \"" + sName + "\":\n";
+		{
+			sResult = "Daily history for \"" + sName + "\"";
+			if (!sUnit.empty())
+				sResult += " (" + sUnit + ")";
+			sResult += ":\n";
+		}
 
 		sResult += "Date        | Data\n";
 		sResult += "------------|--------------------------------------\n";
@@ -4032,12 +4040,50 @@ namespace mcp		// Model Context Protocol
 				if (row.isMember("v_max")) sLine += " max=" + row["v_max"].asString();
 				sResult += sLine + "\n";
 			}
-			else // counter (includes P1, energy, gas, water, generic counters)
+			else // counter families, dispatched by the key shape the core emits.
+			     // Contract with HandleGraphCustomRange: co2_*/lux_*/u_* => min/avg/max
+			     // aggregate; v1..v6 (v3 present) => multi-channel current L1/L2/L3;
+			     // v1(/v2) alone => P1 usage/delivery; v_min/v_max(/v_avg) => single-series
+			     // aggregate; v => plain value. The core emits each family's key set
+			     // atomically (all of min/avg/max, or all of v1..v6), so sibling keys are
+			     // read without a per-key guard. sUnit/sUSuffix are hoisted above (Step 1).
 			{
 				std::string sLine = sDate + " |";
-				if (row.isMember("v1")) sLine += " usage=" + row["v1"].asString();
-				if (row.isMember("v2")) sLine += " delivery=" + row["v2"].asString();
-				if (!row.isMember("v1") && row.isMember("v")) sLine += " value=" + row["v"].asString();
+
+				if (row.isMember("co2_min"))
+					sLine += " min " + row["co2_min"].asString() + " avg " + row["co2_avg"].asString() +
+						 " max " + row["co2_max"].asString() + sUSuffix;
+				else if (row.isMember("lux_min"))
+					sLine += " min " + row["lux_min"].asString() + " avg " + row["lux_avg"].asString() +
+						 " max " + row["lux_max"].asString() + sUSuffix;
+				else if (row.isMember("u_min"))
+					sLine += " min " + row["u_min"].asString() + " avg " + row["u_avg"].asString() +
+						 " max " + row["u_max"].asString() + sUSuffix;
+				else if (row.isMember("v3")) // multi-channel Current (CM113 / CM180i): v1/v2=L1, v3/v4=L2, v5/v6=L3
+				{
+					if (root.isMember("haveL1"))
+						sLine += " L1: " + row["v1"].asString() + "-" + row["v2"].asString() + sUSuffix;
+					if (root.isMember("haveL2"))
+						sLine += " L2: " + row["v3"].asString() + "-" + row["v4"].asString() + sUSuffix;
+					if (root.isMember("haveL3"))
+						sLine += " L3: " + row["v5"].asString() + "-" + row["v6"].asString() + sUSuffix;
+				}
+				else if (row.isMember("v1")) // P1 power: usage / delivery
+				{
+					sLine += " usage " + row["v1"].asString();
+					if (row.isMember("v2"))
+						sLine += " delivery " + row["v2"].asString();
+				}
+				else if (row.isMember("v_min"))
+				{
+					sLine += " min " + row["v_min"].asString();
+					if (row.isMember("v_avg"))
+						sLine += " avg " + row["v_avg"].asString();
+					sLine += " max " + row["v_max"].asString() + sUSuffix;
+				}
+				else if (row.isMember("v"))
+					sLine += " " + row["v"].asString() + sUSuffix;
+
 				sResult += sLine + "\n";
 			}
 		}
