@@ -87,6 +87,12 @@ void HandleGraphCustomRange(const GraphContext& ctx, const request& req,
 	const std::string& srange      = ctx.srange;
 	const std::map<std::string, std::string>& options = ctx.options;
 
+	// The range string must be "YYYY-MM-DDTYYYY-MM-DD" (length 21, 'T' at index 10).
+	// Guard against a short or malformed value, which would otherwise throw
+	// std::out_of_range on the substr() calls below (e.g. a caller passing "1970").
+	if (srange.length() < 21 || srange[10] != 'T')
+		return;
+
 	std::string dbasetable = CalcDbasetableCustom(ctx);
 	unsigned char tempsign = sql.m_tempsign[0];
 

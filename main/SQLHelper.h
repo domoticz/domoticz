@@ -333,6 +333,10 @@ public:
 	bool RestoreDatabase(const std::string &dbase);
 	bool RestoreDatabaseFromFile(const std::string &sourceFilePath);
 
+	// Validates that a string is a real YYYY-MM-DD calendar date. Public so callers
+	// outside CSQLHelper (e.g. the MCP server) can validate date arguments.
+	bool CheckDateSQL(const std::string &sDate);
+
 	// Returns DeviceRowID
 	uint64_t UpdateValue(int HardwareID, int OrgHardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
 			     std::string &devname, const bool bUseOnOffAction, const char *User = nullptr);
@@ -584,7 +588,6 @@ private:
 	void AddCalendarUpdatePercentage();
 	void AddCalendarUpdateFan();
 	bool CheckDate(const std::string &sDate, int &d, int &m, int &y);
-	bool CheckDateSQL(const std::string &sDate);
 	bool CheckDateTimeSQL(const std::string &sDateTime);
 	bool CheckTime(const std::string &sTime);
 	void SendUpdateInt(const std::string& Idx);
