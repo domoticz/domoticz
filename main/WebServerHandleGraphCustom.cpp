@@ -486,6 +486,52 @@ void HandleGraphCustomRange(const GraphContext& ctx, const request& req,
 				root["ValueUnits"] = (options.count("ValueUnits") ? options.at("ValueUnits") : std::string{});
 				root["Divider"] = divider;
 
+				// Built-in counter families carry no ValueUnits option, but their unit is
+				// fixed by device type. Populate it once here (the single place that owns
+				// the custom-range series) so consumers such as the MCP server can label
+				// values without re-deriving units. Gap-fill only: never overrides an
+				// option-provided unit, and does not touch the emitted values. This is a
+				// single per-response unit, correct because every family here uses one unit
+				// for all of its series. Current/CM113 is set in its own branch below (which
+				// already reads the A-vs-Watt display preference, so we do not re-read it
+				// here); LeafWetness intentionally has no unit.
+				// metertype: 0 = metric, 1 = imperial (matches the value conversion below).
+				if (root["ValueUnits"].asString().empty())
+				{
+					std::string vu;
+					if (dType == pTypeAirQuality)
+						vu = "ppm";
+					else if (dType == pTypeLux)
+						vu = "Lux";
+					else if (dType == pTypeUsage)
+						vu = "Watt";
+					else if (dType == pTypeWEIGHT)
+						vu = sql.m_weightsign; // verified "kg" or "lb" (SQLHelper.cpp:10542/10547)
+					else if (dType == pTypeRFXSensor && (dSubType == sTypeRFXSensorAD || dSubType == sTypeRFXSensorVolt))
+						vu = "mV";
+					else if (dType == pTypeGeneral)
+					{
+						if (dSubType == sTypeVoltage)
+							vu = "V";
+						else if (dSubType == sTypeCurrent)
+							vu = "A";
+						else if (dSubType == sTypePressure)
+							vu = "Bar";
+						else if (dSubType == sTypeSoundLevel)
+							vu = "dB";
+						else if (dSubType == sTypeSolarRadiation)
+							vu = "Watt/m2";
+						else if (dSubType == sTypeSoilMoisture)
+							vu = "cb";
+						else if (dSubType == sTypeVisibility)
+							vu = (metertype == 0) ? "km" : "mi";
+						else if (dSubType == sTypeDistance)
+							vu = (metertype == 0) ? "cm" : "in";
+					}
+					if (!vu.empty())
+						root["ValueUnits"] = vu;
+				}
+
 				int ii = 0;
 				if (dType == pTypeP1Power)
 				{
@@ -602,6 +648,8 @@ void HandleGraphCustomRange(const GraphContext& ctx, const request& req,
 						sql.GetPreferencesVar("CM113DisplayType", displaytype);
 						sql.GetPreferencesVar("ElectricVoltage", voltage);
 						root["displaytype"] = displaytype;
+						if (root["ValueUnits"].asString().empty())
+							root["ValueUnits"] = (displaytype == 1) ? "Watt" : "A";
 						bool bHaveL1 = false;
 						bool bHaveL2 = false;
 						bool bHaveL3 = false;
