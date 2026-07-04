@@ -10,6 +10,7 @@ Version 2026.xxxx
 - Fixed: API/JSON, counter devices now respect a custom date range (#6845)
 - Fixed: Blockly, Text and Alert sensor values are now substituted correctly in actions such as notifications; Alert sensor conditions now compare the alert level (#6882)
 - Fixed: Buienradar, support new PascalCase API keys and restore station coordinate lookup
+- Fixed: Charts, deleting a datapoint no longer shifts all graphs to UTC time or makes a second deletion remove the wrong datapoint
 - Fixed: Dashboard Dynamic, Custom Chart temperature axis now shows the configured unit (°C/°F) instead of only a degree symbol
 - Fixed: Dashboard Dynamic, P1 Smart Meter gas widget now shows the usage bar
 - Fixed: Dashboard Dynamic, Rain chart 'Last 24h' view now renders the rain rate and cumulative series again
