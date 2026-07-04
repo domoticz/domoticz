@@ -176,7 +176,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
                     if (data.highestDay) {
                         vm.highestDay = {
-                            date: dateFormat(data.highestDay.date, 'd') + ' ' + $.t(dateFormat(data.highestDay.date, 'mmmm')),
+                            date: dateFormat(data.highestDay.date, 'UTC:d') + ' ' + $.t(dateFormat(data.highestDay.date, 'UTC:mmmm')),
                             value: data.highestDay.value.toFixed(1)
                         };
                     }
@@ -206,7 +206,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     title: $.t('Day'),
                     data: 'date',
                     render: function (data) {
-                        return $.t(dateFormat(data, 'd'));
+                        return $.t(dateFormat(data, 'UTC:d'));
                     }
                 });
 
@@ -214,7 +214,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     title: '',
                     data: 'date',
                     render: function (data) {
-                        return $.t(dateFormat(data, 'dddd'));
+                        return $.t(dateFormat(data, 'UTC:dddd'));
                     }
                 });
 

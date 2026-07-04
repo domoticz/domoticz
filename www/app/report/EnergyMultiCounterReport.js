@@ -58,7 +58,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     var data = getGroupedData(stats.result, costs, includeReturn);
                     source = month
                         ? data.years[year].months.find(function (item) {
-                            return (new Date(item.date)).getMonth() + 1 === month;
+                            return (new Date(item.date)).getUTCMonth() + 1 === month;
                           })
                         : data.years[year];
                 }
@@ -494,7 +494,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     title: $.t('Day'),
                     data: 'date',
                     render: function (data) {
-                        return $.t(dateFormat(data, 'd'));
+                        return $.t(dateFormat(data, 'UTC:d'));
                     }
                 });
 
@@ -502,7 +502,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     title: '',
                     data: 'date',
                     render: function (data) {
-                        return $.t(dateFormat(data, 'dddd'));
+                        return $.t(dateFormat(data, 'UTC:dddd'));
                     }
                 });
             } else {
@@ -516,8 +516,8 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                             return row.label || '';
                         }
                         var date = new Date(data);
-                        var link = '<a href="#/Devices/' + vm.device.idx + '/Report/' + vm.selectedYear + '/' + (date.getMonth() + 1) + '"><img src="images/next.png" /></a>';
-                        return dateFormat(data, 'mm. mmmm') + ' ' + link;
+                        var link = '<a href="#/Devices/' + vm.device.idx + '/Report/' + vm.selectedYear + '/' + (date.getUTCMonth() + 1) + '"><img src="images/next.png" /></a>';
+                        return dateFormat(data, 'UTC:mm. mmmm') + ' ' + link;
                     }
                 });
             }
