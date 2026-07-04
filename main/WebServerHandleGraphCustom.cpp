@@ -512,7 +512,7 @@ void HandleGraphCustomRange(const GraphContext& ctx, const request& req,
 					else if (dType == pTypeUsage)
 						vu = "Watt";
 					else if (dType == pTypeWEIGHT)
-						vu = sql.m_weightsign; // verified "kg" or "lb" (SQLHelper.cpp:10542/10547)
+						vu = sql.m_weightsign;
 					else if (dType == pTypeRFXSensor && (dSubType == sTypeRFXSensorAD || dSubType == sTypeRFXSensorVolt))
 						vu = "mV";
 					else if (dType == pTypeGeneral)
@@ -530,9 +530,9 @@ void HandleGraphCustomRange(const GraphContext& ctx, const request& req,
 						else if (dSubType == sTypeSoilMoisture)
 							vu = "cb";
 						else if (dSubType == sTypeVisibility)
-							vu = (metertype == 0) ? "km" : "mi";
+							vu = (metertype == 1) ? "mi" : "km";
 						else if (dSubType == sTypeDistance)
-							vu = (metertype == 0) ? "cm" : "in";
+							vu = (metertype == 1) ? "in" : "cm";
 					}
 					if (!vu.empty())
 						root["ValueUnits"] = vu;

@@ -4046,7 +4046,7 @@ namespace mcp		// Model Context Protocol
 			     // v1(/v2) alone => P1 usage/delivery; v_min/v_max(/v_avg) => single-series
 			     // aggregate; v => plain value. The core emits each family's key set
 			     // atomically (all of min/avg/max, or all of v1..v6), so sibling keys are
-			     // read without a per-key guard. sUnit/sUSuffix are hoisted above (Step 1).
+			     // read without a per-key guard.
 			{
 				std::string sLine = sDate + " |";
 
