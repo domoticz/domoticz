@@ -3855,6 +3855,12 @@ namespace mcp		// Model Context Protocol
 		{
 			szDateStart = args["start_date"].asString();
 			szDateEnd   = args["end_date"].asString();
+			if (!m_sql.CheckDateSQL(szDateStart) || !m_sql.CheckDateSQL(szDateEnd))
+			{
+				mcp::setToolResult(jsonRPCRep,
+					"Invalid date. Use the format YYYY-MM-DD for start_date and end_date.", true);
+				return true;
+			}
 		}
 		else
 		{
