@@ -104,6 +104,15 @@ namespace
 		{ 53, 53, "Weather Dependent Mode", "Fixed|Weather Dependent|Fixed+Scheduled|Weather Dependent+Scheduled" },
 		{ 56, 56, "Smart Grid", "Free|Forced off|Recommended on|Forced on" }
 	};
+
+	bool IsValidDaikinRegisterValue(const int16_t value)
+	{
+		// Daikin EKRHH sentinel values:
+		// 32767 = register unsupported
+		// 32766 = register unavailable
+		// 32765 = Wait for value
+		return value < 32765;
+	}
 }
 
 CDaikinModbus::CDaikinModbus(int ID, const std::string& IPAddress, unsigned short usIPPort, int iPollInterval, bool bIsAirToAir, int iUnitID)
@@ -420,7 +429,7 @@ void CDaikinModbus::ProcessInputRegisters(const uint8_t* pData, size_t length)
 	// Combined Alert for Unit Error (Reg 21 and 23)
 	int16_t err = getReg(21);
 	int16_t suberr = getReg(23);
-	if (err != 0x7FFF)
+	if (IsValidDaikinRegisterValue(err))
 	{
 		int alertLevel = (err == 0) ? 1 : 4; // 1=Green (OK), 4=Red (Error)
 		std::string msg = (err == 0) ? "Unit Status: OK" : "Unit Error: " + std::to_string(err) + " (Sub: " + std::to_string(suberr) + ")";
@@ -429,19 +438,19 @@ void CDaikinModbus::ProcessInputRegisters(const uint8_t* pData, size_t length)
 
 	for (const auto& sw : c_InputSwitches)
 	{
-		if ((val = getReg(sw.reg)) != 0x7FFF && val != 32766)
+		if (IsValidDaikinRegisterValue(val = getReg(sw.reg)))
 			SendSwitch(m_iUnitID, sw.childId, 255, val != 0, 0, sw.name, m_Name);
 	}
 
 	for (const auto& ts : c_TempSensors)
 	{
-		if ((val = getReg(ts.reg)) != 0x7FFF && val != 32766)
+		if (IsValidDaikinRegisterValue(val = getReg(ts.reg)))
 			SendTempSensor((m_iUnitID << 8) | ts.childId, 255, val / 100.0f, ts.name);
 	}
 
 	// Sensors (49, 51)
-	if ((val = getReg(49)) != 0x7FFF && val != 32766) SendWaterflowSensor(m_iUnitID, 149, 255, val / 100.0f, "Flow Rate");
-	if ((val = getReg(51)) != 0x7FFF && val != 32766)
+	if (IsValidDaikinRegisterValue(val = getReg(49))) SendWaterflowSensor(m_iUnitID, 149, 255, val / 100.0f, "Flow Rate");
+	if (IsValidDaikinRegisterValue(val = getReg(51)))
 	{
 		double dPowerWatt = (val / 100.0) * 1000.0;
 		auto tNow = std::chrono::steady_clock::now();
@@ -483,8 +492,8 @@ void CDaikinModbus::ProcessHoldingRegisters(const uint8_t* pData, size_t length)
 		};
 
 		int16_t val;
-		if ((val = getReg(1000)) != 0x7FFF && val != 32766) SendSelectorSwitch(m_iUnitID, 100, std::to_string(val * 10), "Smart Grid Mode", 0, false, "Free|Forced off|Recommended on|Forced on", "", false, m_Name);
-		if ((val = getReg(1001)) != 0x7FFF && val != 32766) SendWattMeter(m_iUnitID, 101, 255, (val / 100.0f) * 1000.0f, "Power Limit");
+		if (IsValidDaikinRegisterValue(val = getReg(1000))) SendSelectorSwitch(m_iUnitID, 100, std::to_string(val * 10), "Smart Grid Mode", 0, false, "Free|Forced off|Recommended on|Forced on", "", false, m_Name);
+		if (IsValidDaikinRegisterValue(val = getReg(1001))) SendWattMeter(m_iUnitID, 101, 255, (val / 100.0f) * 1000.0f, "Power Limit");
 		return;
 	}
 
@@ -498,21 +507,21 @@ void CDaikinModbus::ProcessHoldingRegisters(const uint8_t* pData, size_t length)
 
 	for (const auto& sp : c_SetPoints)
 	{
-		if ((val = getReg(sp.reg)) != 0x7FFF && val != 32766)
+		if (IsValidDaikinRegisterValue(val = getReg(sp.reg)))
 			SendSetPointSensor(m_iUnitID, 0, 0, sp.childId, 1, 255, (float)val, sp.name);
 	}
 
 	for (const auto& sw : c_HoldingSwitches)
 	{
-		if ((val = getReg(sw.reg)) != 0x7FFF && val != 32766)
+		if (IsValidDaikinRegisterValue(val = getReg(sw.reg)))
 			SendSwitch(m_iUnitID, sw.childId, 255, val != 0, 0, sw.name, m_Name);
 	}
 
 	for (const auto& sel : c_Selectors)
 	{
-		if ((val = getReg(sel.reg)) != 0x7FFF && val != 32766)
+		if (IsValidDaikinRegisterValue(val = getReg(sel.reg)))
 			SendSelectorSwitch(m_iUnitID, sel.childId, std::to_string(val * 10), sel.name, 0, false, sel.levels, "", false, m_Name);
 	}
 
-	if ((val = getReg(58)) != 0x7FFF && val != 32766) SendWattMeter(m_iUnitID, 58, 255, (val / 100.0f) * 1000.0f, "General Power Limit");
+	if (IsValidDaikinRegisterValue(val = getReg(58))) SendWattMeter(m_iUnitID, 58, 255, (val / 100.0f) * 1000.0f, "General Power Limit");
 }
