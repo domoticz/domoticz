@@ -466,6 +466,7 @@ function Device(item) {
         this.type = item.Type;
         this.devSceneType = ((item.Type == 'Scene') || (item.Type == 'Group')) ? 1 : 0;
         this.subtype = item.SubType;
+        this.showIcon = (typeof item.ShowIcon != 'undefined') ? item.ShowIcon : '1';
         this.status = (typeof item.Status == 'undefined') ? '' : item.Status;
         this.lastupdate = item.LastUpdate;
         this.protected = item.Protected;
@@ -594,37 +595,44 @@ function Device(item) {
             }
         }
 
-        if (Device.useSVGtags == true) {
-            el = makeSVGnode('image', {
-                id: this.uniquename + "_Icon",
-                'class': 'DeviceIcon',
-                'xlink:href': this.image,
-                width: Device.iconSize, height: Device.iconSize,
-                onmouseover: (this.moveable == true) ? '' : "Device.popup('" + this.uniquename + "');",
-                onmouseout: (this.moveable == true) ? '' : "Device.popupCancelDelay();",
-                onclick: ((this.moveable == true)||(this.onClick=='')) ? '' : "Device.popupCancelDelay(); " + (this.controlable ? '' : '$("body").trigger("pageexit"); ') + this.onClick,
-                ontouchstart: (this.moveable == true) ? '' : "Device.ignoreClick=true; Device.popup('" + this.uniquename + "');",
-                ontouchend: (this.moveable == true) ? '' : "Device.popupCancelDelay();",
-                style: (this.moveable == true) ? 'cursor:move;' : 'cursor:hand; -webkit-user-select: none;'
-            }, '');
-            el.appendChild(makeSVGnode('title', null, this.name));
+        if (this.subtype == 'Text' && this.showIcon == '0') {
+            var existing = document.getElementById(this.uniquename + "_Icon");
+            if (existing != undefined) {
+                existing.parentNode.removeChild(existing);
+            }
         } else {
-            el = makeSVGnode('img', {
-                id: this.uniquename + "_Icon",
-                'src': this.image,
-                alt: this.name,
-                width: Device.iconSize, height: Device.iconSize,
-                onmouseover: (this.moveable == true) ? '' : "Device.popup('" + this.uniquename + "');",
-                onclick: (this.moveable == true) ? '' : "Device.popup('" + this.uniquename + "');",
-                style: (this.moveable == true) ? 'cursor:move;' : 'cursor:hand;'
-            }, '');
-        }
+            if (Device.useSVGtags == true) {
+                el = makeSVGnode('image', {
+                    id: this.uniquename + "_Icon",
+                    'class': 'DeviceIcon',
+                    'xlink:href': this.image,
+                    width: Device.iconSize, height: Device.iconSize,
+                    onmouseover: (this.moveable == true) ? '' : "Device.popup('" + this.uniquename + "');",
+                    onmouseout: (this.moveable == true) ? '' : "Device.popupCancelDelay();",
+                    onclick: ((this.moveable == true)||(this.onClick=='')) ? '' : "Device.popupCancelDelay(); " + (this.controlable ? '' : '$("body").trigger("pageexit"); ') + this.onClick,
+                    ontouchstart: (this.moveable == true) ? '' : "Device.ignoreClick=true; Device.popup('" + this.uniquename + "');",
+                    ontouchend: (this.moveable == true) ? '' : "Device.popupCancelDelay();",
+                    style: (this.moveable == true) ? 'cursor:move;' : 'cursor:hand; -webkit-user-select: none;'
+                }, '');
+                el.appendChild(makeSVGnode('title', null, this.name));
+            } else {
+                el = makeSVGnode('img', {
+                    id: this.uniquename + "_Icon",
+                    'src': this.image,
+                    alt: this.name,
+                    width: Device.iconSize, height: Device.iconSize,
+                    onmouseover: (this.moveable == true) ? '' : "Device.popup('" + this.uniquename + "');",
+                    onclick: (this.moveable == true) ? '' : "Device.popup('" + this.uniquename + "');",
+                    style: (this.moveable == true) ? 'cursor:move;' : 'cursor:hand;'
+                }, '');
+            }
 
-        var existing = document.getElementById(this.uniquename + "_Icon");
-        if (existing != undefined) {
-            existing.parentNode.replaceChild(el, existing);
-        } else {
-            parent.appendChild(el);
+            var existing = document.getElementById(this.uniquename + "_Icon");
+            if (existing != undefined) {
+                existing.parentNode.replaceChild(el, existing);
+            } else {
+                parent.appendChild(el);
+            }
         }
 
         return el;
