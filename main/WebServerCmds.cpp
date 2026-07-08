@@ -3446,6 +3446,12 @@ namespace http
 
 		void CWebServer::Cmd_UpdateDevices(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			if (session.rights == URIGHTS_VIEWER || session.rights == URIGHTS_NONE)
+			{
+				session.reply_status = reply::forbidden;
+				return; // only user or higher allowed
+			}
+
 			std::string script = request::findValue(&req, "script");
 			if (script.empty())
 			{
