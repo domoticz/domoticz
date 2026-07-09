@@ -887,12 +887,13 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 			var ctrl = {};
 			ctrl.RoomPlans = $rootScope.GetRoomPlans();
 			var roomPlanId = $routeParams.room || window.myglobals.LastPlanSelected;
-			if (typeof roomPlanId !== 'undefined') {
+			if (roomPlanId != null) {
 				ctrl.roomSelected = roomPlanId;
 				window.myglobals.LastPlanSelected = roomPlanId;
 			}
 			ctrl.changeRoom = function () {
 				var idx = ctrl.roomSelected;
+				if (idx == null) { return; }
 				window.myglobals.LastPlanSelected = idx;
 				window.myglobals.LastSearchFilter = '';
 				$('.jsLiveSearch').val('').trigger('change');
