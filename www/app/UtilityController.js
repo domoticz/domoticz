@@ -210,13 +210,13 @@
 		function init() {
 			$.LastUpdateTime = parseInt(0);
 
-			$.myglobals = {
+			$.extend($.myglobals, {
 				TimerTypesStr: [],
 				OccurenceStr: [],
 				MonthStr: [],
 				WeekdayStr: [],
 				SelectedTimerIdx: 0
-			};
+			});
 
 			$scope.MakeGlobalConfig();
 

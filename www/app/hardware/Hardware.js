@@ -5829,11 +5829,11 @@ define(['app'], function (app) {
 		function init() {
 			//global var
 			$.devIdx = 0;
-			$.myglobals = {
+			$.extend($.myglobals, {
 				HardwareTypesStr: [],
 				HardwareI2CStr: [],
 				SelectedHardwareIdx: 0
-			};
+			});
 			$scope.SerialPortStr = [];
 			$scope.MakeGlobalConfig();
 

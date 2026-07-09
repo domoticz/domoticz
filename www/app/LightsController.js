@@ -1290,14 +1290,14 @@
 			$.devIdx = 0;
 			$.LastUpdateTime = parseInt(0);
 
-			$.myglobals = {
+			$.extend($.myglobals, {
 				TimerTypesStr: [],
 				CommandStr: [],
 				OccurenceStr: [],
 				MonthStr: [],
 				WeekdayStr: [],
 				SelectedTimerIdx: 0
-			};
+			});
 			$.LightsAndSwitches = [];
 			$scope.MakeGlobalConfig();
 
