@@ -302,7 +302,7 @@ Live: updates on WebSocket `device_update` for the configured device.
 ### Weather
 **Category:** Weather
 
-Displays current weather conditions with an animated weather scene background (sun, clouds, rain, snow, moon/stars at night).
+Displays current weather conditions with an animated weather scene background (sun, clouds, rain, snow, thunderstorm with lightning bolt, moon/stars at night).
 
 **Configuration:**
 
@@ -316,7 +316,7 @@ Displays current weather conditions with an animated weather scene background (s
 
 **Style 1:** Data-dense view with the animated weather scene as a background. Shows temperature, wind speed/direction, barometer, humidity, and forecast string as individual rows.
 
-**Style 2:** Full-height immersive scene card. The animated scene fills the widget (sun rays / moon + stars / clouds / rain / snow), with large temperature and forecast string centered over it. Includes dew point, humidity, and barometer. Night mode activates automatically between sunset and sunrise.
+**Style 2:** Full-height immersive scene card. The animated scene fills the widget (sun rays / moon + stars / clouds / rain / snow / thunderstorm with lightning bolt), with large temperature and forecast string centered over it. Includes dew point, humidity, and barometer. Night mode activates automatically between sunset and sunrise.
 
 Live: updates instantly from WebSocket device updates.
 

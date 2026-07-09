@@ -110,7 +110,8 @@ define([
                 ctrl.getWeatherScene = function(forecastStr) {
                     if (!forecastStr) { return 'fcw-cloudy'; }
                     var s = forecastStr.toLowerCase();
-                    if (s.indexOf('heavy rain') >= 0 || s.indexOf('thunderstorm') >= 0) { return 'fcw-heavyrain'; }
+                    if (s.indexOf('thunderstorm') >= 0) { return 'fcw-thunderstorm'; }
+                    if (s.indexOf('heavy rain') >= 0) { return 'fcw-heavyrain'; }
                     if (s.indexOf('rain') >= 0 || s.indexOf('shower') >= 0) { return 'fcw-rain'; }
                     if (s.indexOf('heavy snow') >= 0 || s.indexOf('blizzard') >= 0) { return 'fcw-heavysnow'; }
                     if (s.indexOf('snow') >= 0 || s.indexOf('sleet') >= 0) { return 'fcw-snow'; }
