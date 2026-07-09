@@ -71,6 +71,7 @@ if [ "$BUILD_ONLY" = false ]; then
     git fetch --all --recurse-submodules=no
 
     git reset --hard ${BRANCH}
+    git submodule sync --recursive
     git submodule update --init --remote --force
 
     if [ "$FORCE" != "force" ]; then
