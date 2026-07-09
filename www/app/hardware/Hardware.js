@@ -5000,20 +5000,31 @@ define(['app'], function (app) {
 		expandScope = function (scopeArray, separator) {
 			//Netatmo Scopes
 			var scopeGroups = {
-				station_R :					'read_station',
+				station_RW :				'read_station write_station',
 				thermostat_RW :				'read_thermostat write_thermostat',
 				camera_RWA :				'read_camera write_camera access_camera',
-				doorbell_RA :				'read_doorbell access_doorbell',
+				doorbell_RWA :				'read_doorbell write_doorbell access_doorbell',
 				presence_RWA :				'read_presence write_presence access_presence',
-				carbonmonoxidedetector_R :	'read_carbonmonoxidedetector',
-				smokedetector_R :			'read_smokedetector',
-				homecoach_R :				'read_homecoach',
+				carbonmonoxidedetector_RW :	'read_carbonmonoxidedetector write_carbonmonoxidedetector',
+				smokedetector_RW :			'read_smokedetector write_smokedetector',
+				homecoach_RW :				'read_homecoach write_homecoach',
 				magellan_RW :				'read_magellan write_magellan',
 				bubendorff_RW :				'read_bubendorff write_bubendorff',
 				smarther_RW :				'read_smarther write_smarther',
 				mx_RW :						'read_mx write_mx',
 				mhs1_RW :					'read_mhs1 write_mhs1',
-				camerapro_RWA :				'read_camerapro write_camerapro access_camerapro'
+				camerapro_RWA :				'read_camerapro write_camerapro access_camerapro',
+				doorlock_RW :				'read_doorlock write_doorlock',
+				hybrid_RW :					'read_hybrid write_hybrid',
+				phnx_RWA :					'read_phnx write_phnx access_phnx',
+				bfi_RWA :					'read_bfi write_bfi access_bfi',
+				bdiy_RWA :					'read_bdiy write_bdiy access_bdiy',
+				boreal_RW :					'read_boreal write_boreal',
+				cep_RWA :					'read_cep write_cep access_cep',
+				clim_RW :					'read_clim write_clim',
+				c100x_RWA :					'read_c100x write_c100x access_c100x',
+				c300x_RWA :					'read_c300x write_c300x access_c300x',
+				ntg_RW :					'read_ntg write_ntg'
 			};
 
 			var result = "";
