@@ -135,7 +135,7 @@ body.dd-navbar-hidden .dd-topbar {
 
 .dd-topbar .dropdown-menu {
     background: var(--dz-nav-bg, #283750);
-    border-color: rgba(255,255,255,0.15);
+    border-color: var(--dz-border-color, rgba(255,255,255,0.15));
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     max-height: calc(100vh - 100px);
     overflow-y: auto;
@@ -148,8 +148,8 @@ body.dd-navbar-hidden .dd-topbar {
 
 .dd-topbar .dropdown-menu > li > a:hover,
 .dd-topbar .dropdown-menu > li > a:focus {
-    background: rgba(255,255,255,0.1);
-    color: #fff;
+    background: rgba(128,128,128,0.15);
+    color: var(--dz-body-text, #fff);
 }
 
 .dd-topbar .dropdown-menu > li.active > a,
@@ -159,7 +159,7 @@ body.dd-navbar-hidden .dd-topbar {
 }
 
 .dd-topbar .dropdown-menu .divider {
-    background-color: rgba(255,255,255,0.15);
+    background-color: var(--dz-border-color, rgba(255,255,255,0.15));
 }
 
 .dd-topbar .dropdown-menu .dropdown-header {
@@ -177,7 +177,7 @@ body.dd-navbar-hidden .dd-topbar {
     gap: 6px;
     padding: 6px 10px;
     background: var(--dz-nav-bg);
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid var(--dz-border-color, rgba(255,255,255,0.1));
     border-radius: 6px;
     flex-wrap: wrap;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
@@ -243,7 +243,7 @@ body.dd-navbar-hidden .dd-toolbar {
 /* Toolbar dropdown menu: match the navbar dark theme */
 .dd-toolbar .dropdown-menu {
     background: var(--dz-nav-bg, #283750);
-    border-color: rgba(255,255,255,0.15);
+    border-color: var(--dz-border-color, rgba(255,255,255,0.15));
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     max-height: calc(100vh - 100px);
     overflow-y: auto;
@@ -255,8 +255,8 @@ body.dd-navbar-hidden .dd-toolbar {
 
 .dd-toolbar .dropdown-menu > li > a:hover,
 .dd-toolbar .dropdown-menu > li > a:focus {
-    background: rgba(255,255,255,0.1);
-    color: #fff;
+    background: rgba(128,128,128,0.15);
+    color: var(--dz-body-text, #fff);
 }
 
 .dd-toolbar .dropdown-menu > li.active > a,
@@ -266,7 +266,7 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 .dd-toolbar .dropdown-menu .divider {
-    background-color: rgba(255,255,255,0.15);
+    background-color: var(--dz-border-color, rgba(255,255,255,0.15));
 }
 
 .dd-toolbar .dropdown-menu .dropdown-header {
@@ -340,8 +340,8 @@ body.dd-navbar-hidden .dd-toolbar {
     width: 320px;
     background: var(--dz-nav-bg);
     color: var(--dz-body-text);
-    border-left: 1px solid rgba(255,255,255,0.08);
-    box-shadow: -4px 0 16px var(--dz-widget-shadow);
+    border-left: 1px solid var(--dz-border-color, rgba(255,255,255,0.08));
+    box-shadow: -4px 0 16px var(--dz-widget-shadow, none);
     z-index: 1050;
     display: flex;
     flex-direction: column;
@@ -356,7 +356,7 @@ body.dd-navbar-hidden .dd-toolbar {
 
 .dd-library-panel-header {
     padding: 12px 16px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 1px solid var(--dz-border-color, rgba(255,255,255,0.08));
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -579,9 +579,9 @@ body.dd-navbar-hidden .dd-toolbar {
     flex-direction: column;
     height: 100%;
     background: var(--dz-panel-bg);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--dz-widget-border-radius);
-    box-shadow: var(--dz-widget-shadow);
+    border: 1px solid var(--dz-border-color, rgba(255, 255, 255, 0.08));
+    border-radius: var(--dz-widget-border-radius, 5px);
+    box-shadow: var(--dz-widget-shadow, none);
     overflow: hidden;
     transition: box-shadow 0.2s;
 }
@@ -599,7 +599,7 @@ body.dd-navbar-hidden .dd-toolbar {
     align-items: center;
     gap: 6px;
     padding: 4px 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--dz-border-color, rgba(255, 255, 255, 0.1));
     background: var(--dz-nav-bg);
     color: var(--dz-body-text);
     flex-shrink: 0;
@@ -631,18 +631,18 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 .dd-widget-btn.btn {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.3);
-    color: #fff;
+    background: rgba(128, 128, 128, 0.15);
+    border-color: currentColor;
+    color: inherit;
     padding: 2px 6px;
     line-height: 1.4;
 }
 
 .dd-widget-btn.btn:hover,
 .dd-widget-btn.btn:focus {
-    background: rgba(255, 255, 255, 0.28);
-    border-color: rgba(255, 255, 255, 0.55);
-    color: #fff;
+    background: rgba(128, 128, 128, 0.3);
+    border-color: currentColor;
+    color: inherit;
     outline: none;
 }
 
@@ -663,7 +663,7 @@ body.dd-navbar-hidden .dd-toolbar {
 
 .dd-widget-error {
     padding: 12px 16px;
-    color: var(--dz-status-timeout);
+    color: var(--dz-status-timeout, #DF2D3A);
     display: flex;
     align-items: center;
     gap: 6px;
@@ -1245,7 +1245,7 @@ body.dd-navbar-hidden .dd-toolbar {
     flex-wrap: wrap;
     gap: 4px;
     padding: 6px 6px 6px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 1px solid var(--dz-border-color, rgba(255,255,255,0.08));
 }
 
 .dd-cat-tab {
@@ -1254,7 +1254,7 @@ body.dd-navbar-hidden .dd-toolbar {
     gap: 5px;
     padding: 4px 10px;
     border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid var(--dz-border-color, rgba(255,255,255,0.1));
     background: transparent;
     color: var(--dz-body-text);
     font-size: 0.82em;
@@ -1433,7 +1433,7 @@ body.dd-navbar-hidden .dd-toolbar {
     align-items: center;
     gap: 8px;
     padding: 5px 8px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 1px solid var(--dz-border-color, rgba(255,255,255,0.08));
 }
 
 .dd-activity-item:last-child {
@@ -1537,7 +1537,7 @@ body.dd-navbar-hidden .dd-toolbar {
 .dd-qa-dimmer-group {
     padding: 8px 6px;
     border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid var(--dz-border-color, rgba(255,255,255,0.08));
     background: var(--dz-panel-bg);
     font-size: 0.8em;
     color: var(--dz-body-text);
@@ -1733,7 +1733,7 @@ body.dd-navbar-hidden .dd-toolbar {
     min-width: 0;
     padding: 6px 10px;
     background: var(--dz-panel-bg);
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid var(--dz-border-color, rgba(255,255,255,0.08));
     border-radius: 6px;
 }
 
@@ -1783,7 +1783,7 @@ body.dd-navbar-hidden .dd-toolbar {
     min-width: 0;
     padding: 6px 10px;
     background: var(--dz-panel-bg);
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid var(--dz-border-color, rgba(255,255,255,0.08));
     border-radius: 6px;
 }
 
@@ -1833,7 +1833,7 @@ body.dd-navbar-hidden .dd-toolbar {
     min-width: 0;
     padding: 6px 10px;
     background: var(--dz-panel-bg);
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid var(--dz-border-color, rgba(255,255,255,0.08));
     border-radius: 6px;
 }
 
@@ -1943,7 +1943,7 @@ body.dd-navbar-hidden .dd-toolbar {
     gap: 0 8px;
     padding: 6px 10px;
     background: var(--dz-panel-bg);
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid var(--dz-border-color, rgba(255,255,255,0.08));
     border-radius: 6px;
 }
 
@@ -2009,7 +2009,7 @@ body.dd-navbar-hidden .dd-toolbar {
     text-align: left;
     padding: 6px 10px;
     border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid var(--dz-border-color, rgba(255,255,255,0.08));
     background: var(--dz-panel-bg);
     box-sizing: border-box;
     gap: 8px;
@@ -2222,7 +2222,7 @@ body.dd-navbar-hidden .dd-toolbar {
 
 /* ── Edit Mode Indicator ─────────────────────────────────────────── */
 .dd-page.edit-mode .dd-toolbar {
-    border-bottom: 2px solid rgba(255,255,255,0.15);
+    border-bottom: 2px solid var(--dz-border-color, rgba(255,255,255,0.15));
 }
 
 .dd-page.edit-mode .dd-widget-chrome {
@@ -2793,7 +2793,7 @@ dd-wcp-color {
     resize: vertical;
     background: var(--dz-modal-bg, #013) !important;
     color: var(--dz-modal-text, #ddd) !important;
-    border-color: rgba(255,255,255,0.15) !important;
+    border-color: var(--dz-border-color, rgba(255,255,255,0.15)) !important;
 }
 
 .dd-eim-textarea:focus {
@@ -2817,7 +2817,7 @@ dd-wcp-color {
 .dd-eim-dropzone {
     margin-top: 8px;
     padding: 10px 16px;
-    border: 2px dashed rgba(255,255,255,0.2);
+    border: 2px dashed var(--dz-border-color, rgba(255,255,255,0.2));
     border-radius: 4px;
     display: flex;
     align-items: center;
@@ -3168,7 +3168,7 @@ dd-wcp-color {
 .dd-battery-monitor-header { display: flex; justify-content: space-between; align-items: center; }
 .dd-rss-header { font-size: 0.9em; font-weight: 600; color: var(--dz-widget-accent); margin-bottom: 8px; }
 .dd-rss-list { flex: 1; overflow-y: auto; }
-.dd-rss-item { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08); align-items: flex-start; }
+.dd-rss-item { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--dz-border-color, rgba(255,255,255,0.08)); align-items: flex-start; }
 .dd-rss-item:last-child { border-bottom: none; }
 .dd-rss-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
 .dd-rss-item-body { flex: 1; min-width: 0; }
@@ -3199,7 +3199,7 @@ dd-wcp-color {
 .dd-widget--domoticz-log > .dd-widget-body { padding: 0; overflow: hidden; position: relative; background: transparent; }
 .dd-widget--domoticz-log .dd-log { border-radius: var(--dz-border-radius, 8px); background: var(--dz-panel-bg); }
 .dd-log { position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden; }
-.dd-log-header { padding: 4px 8px; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.dd-log-header { padding: 4px 8px; flex-shrink: 0; border-bottom: 1px solid var(--dz-border-color, rgba(255,255,255,0.1)); }
 .dd-log-title { font-size: 0.9em; font-weight: 600; }
 .dd-log-filters { display: flex; gap: 4px; align-items: center; }
 .dd-log-filter-btn { padding: 2px 6px; border-radius: 4px; border: 1px solid currentColor; background: transparent; cursor: pointer; font-size: 0.75em; opacity: 0.5; }
@@ -3275,7 +3275,7 @@ dd-wcp-color {
 .dd-calendar-header { font-size: 0.9em; font-weight: 600; margin-bottom: 8px; flex-shrink: 0; }
 .dd-calendar-body { flex: 1; overflow-y: auto; min-height: 0; }
 .dd-calendar-group { margin-bottom: 10px; }
-.dd-calendar-day-label { font-size: 0.75em; font-weight: 700; text-transform: uppercase; color: var(--dz-widget-accent); margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 2px; }
+.dd-calendar-day-label { font-size: 0.75em; font-weight: 700; text-transform: uppercase; color: var(--dz-widget-accent); margin-bottom: 4px; border-bottom: 1px solid var(--dz-border-color, rgba(255,255,255,0.1)); padding-bottom: 2px; }
 .dd-calendar-event { display: flex; gap: 8px; padding: 3px 0; font-size: 0.85em; align-items: baseline; }
 .dd-calendar-time { flex-shrink: 0; min-width: 45px; color: var(--dz-widget-stat-muted); font-size: 0.9em; }
 .dd-calendar-allday { font-style: italic; }
@@ -3299,7 +3299,7 @@ dd-wcp-color {
 .dd-battery-monitor-badge { font-size: 0.75em; padding: 2px 7px; border-radius: 10px; background: var(--dz-accent-red); color: var(--dz-body-text); }
 .dd-battery-monitor-badge.ok { background: var(--dz-widget-energy-export); }
 .dd-battery-monitor-list { flex: 1; min-height: 0; overflow-y: auto; }
-.dd-battery-monitor-row { display: flex; align-items: center; gap: 8px; padding: 4px 2px; font-size: 0.85em; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.dd-battery-monitor-row { display: flex; align-items: center; gap: 8px; padding: 4px 2px; font-size: 0.85em; border-bottom: 1px solid var(--dz-border-color, rgba(255,255,255,0.06)); }
 .dd-battery-monitor-row:last-child { border-bottom: none; }
 .dd-battery-monitor-icon { width: 20px; text-align: center; font-size: 1em; flex-shrink: 0; }
 .dd-battery-monitor-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -3377,7 +3377,7 @@ body.dd-standby::after {
 /* Scoped tokens so dark face/bezel colours are defined once */
 .dd-dial-outer {
     --dd-bezel-fill: var(--dz-panel-bg);
-    --dd-face-fill:  var(--dz-panel-bg-dark);
+    --dd-face-fill:  var(--dz-panel-bg-dark, rgba(0, 0, 0, 0.75));
 
     flex: 1; min-height: 0; min-width: 0; width: 100%; overflow: hidden;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -3481,7 +3481,7 @@ body.dd-standby::after {
     gap: 2px;
     padding: 6px 8px;
     background: var(--dz-panel-bg);
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid var(--dz-border-color, rgba(255,255,255,0.08));
     border-radius: 6px;
     text-align: center;
     cursor: default;
