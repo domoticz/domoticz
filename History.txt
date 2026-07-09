@@ -7,6 +7,7 @@ Version 2026.xxxx
 - Added: Dashboard Dynamic, Quick Actions blind buttons now include a Stop button for blinds that support it and a position slider for percentage-capable blinds
 - Added: Dashboard Dynamic, Stat Counter widget can show an optional 24-hour trend graph
 - Added: Dashboard Dynamic, Wind chart widget week chart type
+- Added: Netatmo, support for additional device scopes (Doorlock, BTicino Classe 100/300, Hybrid, and others); existing users must re-select their scopes and re-authorize (#6879)
 - Fixed: API/JSON, counter devices now respect a custom date range (#6845)
 - Fixed: Blockly, Text and Alert sensor values are now substituted correctly in actions such as notifications; Alert sensor conditions now compare the alert level (#6882)
 - Fixed: Buienradar, support new PascalCase API keys and restore station coordinate lookup
