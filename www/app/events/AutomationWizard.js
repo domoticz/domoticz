@@ -179,6 +179,10 @@ define(['app'], function (app) {
         }
     }
 
+    function defaultLevelValue(levelOptions, fallbackDef) {
+        return (levelOptions && levelOptions.length) ? levelOptions[0].level : (fallbackDef !== undefined ? fallbackDef : 0);
+    }
+
     function getDeviceCategory(dev) {
         if (!dev) return 'switch';
         var type = (dev.Type       || '').toLowerCase();
@@ -481,8 +485,7 @@ define(['app'], function (app) {
                 vm.conditionNeedsValue = !!cond.hasValue;
                 vm.conditionUnit       = cond.unit || '';
                 if (cond.hasValue && vm.triggerConfig.conditionValue == null) {
-                    var levelOptions = vm.triggerConfig.conditionLevelOptions;
-                    vm.triggerConfig.conditionValue = (levelOptions && levelOptions.length) ? levelOptions[0].level : cond.def;
+                    vm.triggerConfig.conditionValue = defaultLevelValue(vm.triggerConfig.conditionLevelOptions, cond.def);
                 }
                 if (!cond.hasValue) {
                     vm.triggerConfig.conditionValue = undefined;
@@ -506,8 +509,7 @@ define(['app'], function (app) {
                 vm.wizardCondition.needsValue = !!sel.hasValue;
                 vm.wizardCondition.unit = sel.unit || '';
                 if (sel.hasValue && vm.wizardCondition.value == null) {
-                    var levelOptions = vm.wizardCondition.levelOptions;
-                    vm.wizardCondition.value = (levelOptions && levelOptions.length) ? levelOptions[0].level : (sel.def !== undefined ? sel.def : 0);
+                    vm.wizardCondition.value = defaultLevelValue(vm.wizardCondition.levelOptions, sel.def);
                 }
             };
 
@@ -516,8 +518,7 @@ define(['app'], function (app) {
                 vm.wizardCondition.needsValue = !!sel.hasValue;
                 vm.wizardCondition.unit = sel.unit || '';
                 if (sel.hasValue && vm.wizardCondition.value == null) {
-                    var levelOptions = vm.wizardCondition.levelOptions;
-                    vm.wizardCondition.value = (levelOptions && levelOptions.length) ? levelOptions[0].level : (sel.def !== undefined ? sel.def : 0);
+                    vm.wizardCondition.value = defaultLevelValue(vm.wizardCondition.levelOptions, sel.def);
                 }
                 if (!sel.hasValue) vm.wizardCondition.value = null;
             };
