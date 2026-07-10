@@ -279,9 +279,9 @@
 }
 
 .events-editor-file__header--script {
-    --events-script-header-min-height: 30px;
+    /* Matches the historic single-row toolbar height when controls fit on one line. */
     height: auto;
-    min-height: var(--events-script-header-min-height);
+    min-height: 30px;
 }
 
 .events-editor-file__header--script form {

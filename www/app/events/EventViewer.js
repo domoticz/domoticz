@@ -16,6 +16,7 @@ define(['app', 'events/factories'], function (app) {
             var headerResizeObserver;
             var scriptHeaderEl;
             var scriptContentEl;
+            var syncContentOffsetFrame;
 
             var ACE_SETTINGS_KEY = 'domoticz_ace_settings';
             var DEFAULT_SETTINGS = {
@@ -160,7 +161,13 @@ define(['app', 'events/factories'], function (app) {
                         headerResizeObserver.disconnect();
                         headerResizeObserver = null;
                     }
-                    angular.element(window).off('resize', syncContentOffsetWithHeader);
+                    if (syncContentOffsetFrame) {
+                        window.cancelAnimationFrame(syncContentOffsetFrame);
+                        syncContentOffsetFrame = null;
+                    }
+                    scriptHeaderEl = null;
+                    scriptContentEl = null;
+                    angular.element(window).off('resize', requestContentOffsetSync);
                     $element.off('keydown');
                 });
             }
@@ -174,15 +181,26 @@ define(['app', 'events/factories'], function (app) {
                 }
 
                 if (window.ResizeObserver) {
-                    headerResizeObserver = new ResizeObserver(syncContentOffsetWithHeader);
+                    headerResizeObserver = new ResizeObserver(requestContentOffsetSync);
                     headerResizeObserver.observe(scriptHeaderEl);
                 } else {
-                    angular.element(window).on('resize', syncContentOffsetWithHeader);
+                    angular.element(window).on('resize', requestContentOffsetSync);
                 }
             }
 
+            function requestContentOffsetSync() {
+                if (syncContentOffsetFrame) {
+                    return;
+                }
+
+                syncContentOffsetFrame = window.requestAnimationFrame(function () {
+                    syncContentOffsetFrame = null;
+                    syncContentOffsetWithHeader();
+                });
+            }
+
             function syncContentOffsetWithHeader() {
-                if (!scriptHeaderEl || !scriptContentEl) {
+                if (!scriptHeaderEl || !scriptContentEl || !document.body.contains(scriptHeaderEl) || !document.body.contains(scriptContentEl)) {
                     return;
                 }
 
