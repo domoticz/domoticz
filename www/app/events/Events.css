@@ -279,8 +279,9 @@
 }
 
 .events-editor-file__header--script {
+    --events-script-header-min-height: 30px;
     height: auto;
-    min-height: 30px;
+    min-height: var(--events-script-header-min-height);
 }
 
 .events-editor-file__header--script form {

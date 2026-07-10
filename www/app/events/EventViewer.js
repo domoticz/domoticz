@@ -14,6 +14,8 @@ define(['app', 'events/factories'], function (app) {
             var debounceTimer;
             var statusBarEl;
             var headerResizeObserver;
+            var scriptHeaderEl;
+            var scriptContentEl;
 
             var ACE_SETTINGS_KEY = 'domoticz_ace_settings';
             var DEFAULT_SETTINGS = {
@@ -123,7 +125,7 @@ define(['app', 'events/factories'], function (app) {
                         }
 
                         bindScriptHeaderResize();
-                        $timeout(syncContentOffsetWithHeader, 0);
+                        syncContentOffsetWithHeader();
 
                         $element.on('keydown', function(event) {
                             if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
@@ -164,27 +166,27 @@ define(['app', 'events/factories'], function (app) {
             }
 
             function bindScriptHeaderResize() {
-                if (window.ResizeObserver) {
-                    var header = $element[0].querySelector('.events-editor-file__header--script');
+                scriptHeaderEl = $element[0].querySelector('.events-editor-file__header--script');
+                scriptContentEl = $element[0].querySelector('.events-editor-file__content--script');
 
-                    if (header) {
-                        headerResizeObserver = new ResizeObserver(syncContentOffsetWithHeader);
-                        headerResizeObserver.observe(header);
-                    }
+                if (!scriptHeaderEl || !scriptContentEl) {
+                    return;
+                }
+
+                if (window.ResizeObserver) {
+                    headerResizeObserver = new ResizeObserver(syncContentOffsetWithHeader);
+                    headerResizeObserver.observe(scriptHeaderEl);
                 } else {
                     angular.element(window).on('resize', syncContentOffsetWithHeader);
                 }
             }
 
             function syncContentOffsetWithHeader() {
-                var header = $element[0].querySelector('.events-editor-file__header--script');
-                var content = $element[0].querySelector('.events-editor-file__content--script');
-
-                if (!header || !content) {
+                if (!scriptHeaderEl || !scriptContentEl) {
                     return;
                 }
 
-                content.style.top = header.offsetHeight + 'px';
+                scriptContentEl.style.top = scriptHeaderEl.offsetHeight + 'px';
             }
 
             function isTriggerAvailable() {
