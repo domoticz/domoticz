@@ -97,7 +97,8 @@ define(['app'], function (app) {
                       { id: 'level_above', label: 'Level above', hasValue: true, unit: '%', def: 50 },
                       { id: 'level_below', label: 'Level below', hasValue: true, unit: '%', def: 50 }],
         blinds:      [{ id: 'any', label: 'Any change' }, { id: 'open', label: 'Opens' }, { id: 'closed', label: 'Closes' }],
-        selector:    [{ id: 'any', label: 'Any change' }],
+        selector:    [{ id: 'any', label: 'Any change' },
+                      { id: 'level_is', label: 'Level is', hasValue: true, unit: '', def: 0 }],
         setpoint:    [{ id: 'any', label: 'Any change' }],
         motion:      [{ id: 'any', label: 'Any change' }, { id: 'on', label: 'Motion detected' }, { id: 'off', label: 'No motion' }],
         door:        [{ id: 'any', label: 'Any change' }, { id: 'open', label: 'Opens' }, { id: 'closed', label: 'Closes' }],
@@ -143,6 +144,7 @@ define(['app'], function (app) {
         closed:      "device.state == 'Closed'",
         level_above: 'device.level > {v}',
         level_below: 'device.level < {v}',
+        level_is:    'device.level == {v}',
         above: {
             temperature: 'device.temperature > {v}', temphum: 'device.temperature > {v}',
             humidity: 'device.humidity > {v}', percentage: 'device.percentage > {v}',
@@ -162,6 +164,19 @@ define(['app'], function (app) {
         hum_above:  'device.humidity > {v}',
         hum_below:  'device.humidity < {v}',
     };
+
+    function getSelectorLevels(dev) {
+        if (!dev || !dev.LevelNames) return [];
+        try {
+            var names = atob(dev.LevelNames).split('|');
+            var hiddenOff = dev.LevelOffHidden === true || dev.LevelOffHidden === 'true';
+            return names
+                .map(function (name, i) { return { level: i * 10, name: name }; })
+                .filter(function (opt) { return !(hiddenOff && opt.level === 0); });
+        } catch (e) {
+            return [];
+        }
+    }
 
     function getDeviceCategory(dev) {
         if (!dev) return 'switch';
@@ -377,6 +392,7 @@ define(['app'], function (app) {
                 } else {
                     arr.push(dev.idx);
                     vm.triggerConfig.deviceCategory = getDeviceCategory(dev);
+                    vm.triggerConfig.conditionLevelOptions = getSelectorLevels(dev);
                     vm.deviceConditions             = DEVICE_CONDITIONS[vm.triggerConfig.deviceCategory] || DEVICE_CONDITIONS['switch'];
                     var valid = vm.deviceConditions.some(function (c) { return c.id === vm.triggerConfig.condition; });
                     if (!valid) { vm.triggerConfig.condition = 'any'; }
@@ -464,7 +480,8 @@ define(['app'], function (app) {
                 vm.conditionNeedsValue = !!cond.hasValue;
                 vm.conditionUnit       = cond.unit || '';
                 if (cond.hasValue && vm.triggerConfig.conditionValue == null) {
-                    vm.triggerConfig.conditionValue = cond.def;
+                    var lvlOpts = vm.triggerConfig.conditionLevelOptions;
+                    vm.triggerConfig.conditionValue = (lvlOpts && lvlOpts.length) ? lvlOpts[0].level : cond.def;
                 }
                 if (!cond.hasValue) {
                     vm.triggerConfig.conditionValue = undefined;
@@ -480,20 +497,27 @@ define(['app'], function (app) {
             vm.onConditionDeviceChange = function () {
                 var dev = findDeviceByIdx(vm.wizardCondition.deviceIdx);
                 vm.wizardCondition.category = getDeviceCategory(dev);
+                vm.wizardCondition.levelOptions = getSelectorLevels(dev);
                 vm.wizardCondition.conditionStates = DEVICE_CONDITIONS[vm.wizardCondition.category] || DEVICE_CONDITIONS['switch'];
                 var valid = vm.wizardCondition.conditionStates.some(function (c) { return c.id === vm.wizardCondition.state; });
                 if (!valid) vm.wizardCondition.state = 'any';
                 var sel = vm.wizardCondition.conditionStates.find(function (c) { return c.id === vm.wizardCondition.state; }) || {};
                 vm.wizardCondition.needsValue = !!sel.hasValue;
                 vm.wizardCondition.unit = sel.unit || '';
-                if (sel.hasValue && vm.wizardCondition.value == null) vm.wizardCondition.value = sel.def;
+                if (sel.hasValue && vm.wizardCondition.value == null) {
+                    var lvlOpts = vm.wizardCondition.levelOptions;
+                    vm.wizardCondition.value = (lvlOpts && lvlOpts.length) ? lvlOpts[0].level : (sel.def !== undefined ? sel.def : 0);
+                }
             };
 
             vm.onConditionStateChange = function () {
                 var sel = vm.wizardCondition.conditionStates.find(function (c) { return c.id === vm.wizardCondition.state; }) || {};
                 vm.wizardCondition.needsValue = !!sel.hasValue;
                 vm.wizardCondition.unit = sel.unit || '';
-                if (sel.hasValue && vm.wizardCondition.value == null) vm.wizardCondition.value = sel.def;
+                if (sel.hasValue && vm.wizardCondition.value == null) {
+                    var lvlOpts = vm.wizardCondition.levelOptions;
+                    vm.wizardCondition.value = (lvlOpts && lvlOpts.length) ? lvlOpts[0].level : (sel.def !== undefined ? sel.def : 0);
+                }
                 if (!sel.hasValue) vm.wizardCondition.value = null;
             };
 
@@ -541,18 +565,10 @@ define(['app'], function (app) {
                 action.config.deviceCategory = getDeviceCategory(dev);
                 action.config.levelOptions = null;
 
-                if (action.config.deviceCategory === 'selector' && dev && dev.LevelNames) {
-                    try {
-                        var names  = atob(dev.LevelNames).split('|');
-                        var hidden = dev.LevelOffHidden === true || dev.LevelOffHidden === 'true';
-                        action.config.levelOptions = names
-                            .map(function (name, i) { return { level: i * 10, name: name }; })
-                            .filter(function (opt) { return !(hidden && opt.level === 0); });
-                        if (action.config.levelOptions.length) {
-                            action.config.actionValue = action.config.levelOptions[0].level;
-                        }
-                    } catch (e) {
-                        action.config.levelOptions = null;
+                if (action.config.deviceCategory === 'selector') {
+                    action.config.levelOptions = getSelectorLevels(dev);
+                    if (action.config.levelOptions.length) {
+                        action.config.actionValue = action.config.levelOptions[0].level;
                     }
                 }
 
