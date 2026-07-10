@@ -930,6 +930,20 @@ body.dd-navbar-hidden .dd-toolbar {
     transform-origin: top right;
 }
 
+/* The full-size sun (100px + rotating rays) overflows the small cards —
+   use the mini-sun geometry so its footprint matches the cloud scenes */
+.dd-weather-scene-bg .fcw-rays-main,
+.dd-weather-scene-bg .fcw-rays-main:after,
+.dd-weather-scene-bg .fcw-sun-main {
+    width: 75px;
+    height: 75px;
+}
+.dd-weather-scene-bg .fcw-rays-main,
+.dd-weather-scene-bg .fcw-sun-main {
+    top: 25px;
+    left: 75px;
+}
+
 /* Text content centered vertically */
 .dd-weather-content {
     position: absolute;
