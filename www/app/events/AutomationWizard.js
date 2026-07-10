@@ -174,6 +174,7 @@ define(['app'], function (app) {
                 .map(function (name, i) { return { level: i * 10, name: name }; })
                 .filter(function (opt) { return !(hiddenOff && opt.level === 0); });
         } catch (e) {
+            console.error('Failed to parse selector levels:', e);
             return [];
         }
     }
@@ -480,8 +481,8 @@ define(['app'], function (app) {
                 vm.conditionNeedsValue = !!cond.hasValue;
                 vm.conditionUnit       = cond.unit || '';
                 if (cond.hasValue && vm.triggerConfig.conditionValue == null) {
-                    var lvlOpts = vm.triggerConfig.conditionLevelOptions;
-                    vm.triggerConfig.conditionValue = (lvlOpts && lvlOpts.length) ? lvlOpts[0].level : cond.def;
+                    var levelOptions = vm.triggerConfig.conditionLevelOptions;
+                    vm.triggerConfig.conditionValue = (levelOptions && levelOptions.length) ? levelOptions[0].level : cond.def;
                 }
                 if (!cond.hasValue) {
                     vm.triggerConfig.conditionValue = undefined;
@@ -505,8 +506,8 @@ define(['app'], function (app) {
                 vm.wizardCondition.needsValue = !!sel.hasValue;
                 vm.wizardCondition.unit = sel.unit || '';
                 if (sel.hasValue && vm.wizardCondition.value == null) {
-                    var lvlOpts = vm.wizardCondition.levelOptions;
-                    vm.wizardCondition.value = (lvlOpts && lvlOpts.length) ? lvlOpts[0].level : (sel.def !== undefined ? sel.def : 0);
+                    var levelOptions = vm.wizardCondition.levelOptions;
+                    vm.wizardCondition.value = (levelOptions && levelOptions.length) ? levelOptions[0].level : (sel.def !== undefined ? sel.def : 0);
                 }
             };
 
@@ -515,8 +516,8 @@ define(['app'], function (app) {
                 vm.wizardCondition.needsValue = !!sel.hasValue;
                 vm.wizardCondition.unit = sel.unit || '';
                 if (sel.hasValue && vm.wizardCondition.value == null) {
-                    var lvlOpts = vm.wizardCondition.levelOptions;
-                    vm.wizardCondition.value = (lvlOpts && lvlOpts.length) ? lvlOpts[0].level : (sel.def !== undefined ? sel.def : 0);
+                    var levelOptions = vm.wizardCondition.levelOptions;
+                    vm.wizardCondition.value = (levelOptions && levelOptions.length) ? levelOptions[0].level : (sel.def !== undefined ? sel.def : 0);
                 }
                 if (!sel.hasValue) vm.wizardCondition.value = null;
             };
@@ -582,6 +583,16 @@ define(['app'], function (app) {
 
             vm.actionHasOptions = function (action) {
                 return !!(action.config && action.config.levelOptions && action.config.levelOptions.length);
+            };
+
+            vm.triggerConditionHasLevelOptions = function () {
+                var opts = vm.triggerConfig.conditionLevelOptions;
+                return vm.triggerConfig.deviceCategory === 'selector' && !!(opts && opts.length);
+            };
+
+            vm.wizardConditionHasLevelOptions = function () {
+                var opts = vm.wizardCondition.levelOptions;
+                return !!(opts && opts.length);
             };
 
             vm.getDeviceActionOptions = function (action) {
