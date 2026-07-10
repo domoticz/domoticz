@@ -579,6 +579,7 @@ private:
 	void UpdateMultiMeter();
 	void UpdatePercentageLog();
 	void UpdateFanLog();
+	bool CalendarEntryExists(const char *szTable, uint64_t DeviceRowID, const char *szDate);
 	void AddCalendarTemperature();
 	void AddCalendarUpdateRain();
 	void AddCalendarUpdateWind();

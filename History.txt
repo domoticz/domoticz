@@ -20,6 +20,7 @@ Version 2026.xxxx
 - Fixed: Floorplan, preserve line breaks in Text/Alert sensor display (#6844)
 - Fixed: FreeBSD, removed Python 'm' suffix so Python plugin support builds correctly (#6852)
 - Fixed: MQTT Auto Discovery, honor the force_update flag so text sensors update on repeated identical values (e.g. Kerui panic button)
+- Fixed: Nightly rollup no longer inserts duplicate calendar rows (Meter/MultiMeter/Temperature/Rain/Wind/UV/Percentage/Fan) when it runs twice for the same day, e.g. after a restart around midnight (#6900)
 
 Version 2026.2 (May 31st 2026)
 - Added: AlfenEve, 'Connected' state switch

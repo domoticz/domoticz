@@ -7698,6 +7698,12 @@ void CSQLHelper::UpdateFanLog()
 	}
 }
 
+bool CSQLHelper::CalendarEntryExists(const char *szTable, const uint64_t DeviceRowID, const char *szDate)
+{
+	std::vector<std::vector<std::string>> result = safe_query("SELECT 1 FROM %s WHERE (DeviceRowID==%" PRIu64 ") AND (Date=='%q') LIMIT 1", szTable, DeviceRowID, szDate);
+	return !result.empty();
+}
+
 void CSQLHelper::AddCalendarTemperature()
 {
 	std::string usedFilter = m_bLogUnusedSensors ? "" : " AND DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=1)";
@@ -7725,6 +7731,9 @@ void CSQLHelper::AddCalendarTemperature()
 	for (const auto &sddev : resultdevices)
 	{
 		uint64_t ID = std::stoull(sddev[0]);
+
+		if (CalendarEntryExists("Temperature_Calendar", ID, szDateStart))
+			continue; //already have an entry for this day (e.g. the daily schedule ran twice around midnight)
 
 		result = safe_query("SELECT MIN(Temperature), MAX(Temperature), AVG(Temperature), MIN(Chill), MAX(Chill), AVG(Humidity), AVG(Barometer), MIN(DewPoint), MIN(SetPoint), MAX(SetPoint), AVG(SetPoint) FROM Temperature WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
 			ID,
@@ -7794,6 +7803,9 @@ void CSQLHelper::AddCalendarUpdateRain()
 	for (const auto &sddev : resultdevices)
 	{
 		uint64_t ID = std::stoull(sddev[0]);
+
+		if (CalendarEntryExists("Rain_Calendar", ID, szDateStart))
+			continue; //already have an entry for this day (e.g. the daily schedule ran twice around midnight)
 
 		//Get Device Information
 		result = safe_query("SELECT SubType FROM DeviceStatus WHERE (ID='%" PRIu64 "')", ID);
@@ -7902,6 +7914,9 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		float price = 0.0F;
 
 		uint64_t ID = std::stoull(sddev[0]);
+
+		if (CalendarEntryExists("Meter_Calendar", ID, szDateStart) || CalendarEntryExists("MultiMeter_Calendar", ID, szDateStart))
+			continue; //already have an entry for this day (e.g. the daily schedule ran twice around midnight)
 
 		//Get Device Information
 		result = safe_query("SELECT Name, HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Options, AddjValue2 FROM DeviceStatus WHERE (ID='%" PRIu64 "')", ID);
@@ -8155,6 +8170,9 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 	{
 		uint64_t ID = std::stoull(sddev[0]);
 
+		if (CalendarEntryExists("MultiMeter_Calendar", ID, szDateStart))
+			continue; //already have an entry for this day (e.g. the daily schedule ran twice around midnight)
+
 		//Get Device Information
 		result = safe_query("SELECT Name, HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Options FROM DeviceStatus WHERE (ID='%" PRIu64 "')", ID);
 		if (result.empty())
@@ -8290,6 +8308,9 @@ void CSQLHelper::AddCalendarUpdateWind()
 	{
 		uint64_t ID = std::stoull(sddev[0]);
 
+		if (CalendarEntryExists("Wind_Calendar", ID, szDateStart))
+			continue; //already have an entry for this day (e.g. the daily schedule ran twice around midnight)
+
 		result = safe_query("SELECT AVG(Direction), MIN(Speed), MAX(Speed), MIN(Gust), MAX(Gust) FROM Wind WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
 			ID,
 			szDateStart,
@@ -8348,6 +8369,9 @@ void CSQLHelper::AddCalendarUpdateUV()
 	{
 		uint64_t ID = std::stoull(sddev[0]);
 
+		if (CalendarEntryExists("UV_Calendar", ID, szDateStart))
+			continue; //already have an entry for this day (e.g. the daily schedule ran twice around midnight)
+
 		result = safe_query("SELECT MAX(Level) FROM UV WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
 			ID,
 			szDateStart,
@@ -8397,6 +8421,9 @@ void CSQLHelper::AddCalendarUpdatePercentage()
 	for (const auto &sddev : resultdevices)
 	{
 		uint64_t ID = std::stoull(sddev[0]);
+
+		if (CalendarEntryExists("Percentage_Calendar", ID, szDateStart))
+			continue; //already have an entry for this day (e.g. the daily schedule ran twice around midnight)
 
 		result = safe_query("SELECT MIN(Percentage), MAX(Percentage), AVG(Percentage) FROM Percentage WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
 			ID,
@@ -8450,6 +8477,9 @@ void CSQLHelper::AddCalendarUpdateFan()
 	for (const auto &sddev : resultdevices)
 	{
 		uint64_t ID = std::stoull(sddev[0]);
+
+		if (CalendarEntryExists("Fan_Calendar", ID, szDateStart))
+			continue; //already have an entry for this day (e.g. the daily schedule ran twice around midnight)
 
 		result = safe_query("SELECT MIN(Speed), MAX(Speed), AVG(Speed) FROM Fan WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
 			ID,
