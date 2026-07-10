@@ -13,6 +13,7 @@ define(['app', 'events/factories'], function (app) {
             var blocklyWorkspace;
             var debounceTimer;
             var statusBarEl;
+            var headerResizeObserver;
 
             var ACE_SETTINGS_KEY = 'domoticz_ace_settings';
             var DEFAULT_SETTINGS = {
@@ -121,6 +122,9 @@ define(['app', 'events/factories'], function (app) {
                             initAce(eventData)
                         }
 
+                        bindScriptHeaderResize();
+                        $timeout(updateScriptContentOffset, 0);
+
                         $element.on('keydown', function(event) {
                             if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
 
@@ -150,8 +154,37 @@ define(['app', 'events/factories'], function (app) {
                         statusBarEl.parentNode.removeChild(statusBarEl);
                         statusBarEl = null;
                     }
+                    if (headerResizeObserver) {
+                        headerResizeObserver.disconnect();
+                        headerResizeObserver = null;
+                    }
+                    angular.element(window).off('resize', updateScriptContentOffset);
                     $element.off('keydown');
                 });
+            }
+
+            function bindScriptHeaderResize() {
+                if (window.ResizeObserver) {
+                    var header = $element[0].querySelector('.events-editor-file__header--script');
+
+                    if (header) {
+                        headerResizeObserver = new ResizeObserver(updateScriptContentOffset);
+                        headerResizeObserver.observe(header);
+                    }
+                } else {
+                    angular.element(window).on('resize', updateScriptContentOffset);
+                }
+            }
+
+            function updateScriptContentOffset() {
+                var header = $element[0].querySelector('.events-editor-file__header--script');
+                var content = $element[0].querySelector('.events-editor-file__content--script');
+
+                if (!header || !content) {
+                    return;
+                }
+
+                content.style.top = header.offsetHeight + 'px';
             }
 
             function isTriggerAvailable() {
