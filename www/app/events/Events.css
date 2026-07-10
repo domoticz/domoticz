@@ -330,6 +330,9 @@
         left: 4px;
         right: 4px;
         bottom: 8px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
     }
 
     .events-editor__tree {
