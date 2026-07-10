@@ -169,7 +169,7 @@ define(['app'], function (app) {
         if (!dev || !dev.LevelNames) return [];
         try {
             var names = atob(dev.LevelNames).split('|');
-            var hiddenOff = dev.LevelOffHidden === true || dev.LevelOffHidden === 'true';
+            var hiddenOff = dev.LevelOffHidden === true || dev.LevelOffHidden === 'true'; // API may return boolean or string
             return names
                 .map(function (name, i) { return { level: i * 10, name: name }; })
                 .filter(function (opt) { return !(hiddenOff && opt.level === 0); });
@@ -180,7 +180,10 @@ define(['app'], function (app) {
     }
 
     function defaultLevelValue(levelOptions, fallbackDef) {
-        return (levelOptions && levelOptions.length) ? levelOptions[0].level : (fallbackDef !== undefined ? fallbackDef : 0);
+        if (levelOptions && levelOptions.length) {
+            return levelOptions[0].level;
+        }
+        return fallbackDef !== undefined ? fallbackDef : 0;
     }
 
     function getDeviceCategory(dev) {
