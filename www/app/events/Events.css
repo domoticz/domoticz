@@ -369,11 +369,11 @@
     }
 
     .events-editor__editor {
-        min-height: 55vh;
+        min-height: 65vh;
     }
 
     .events-editor__file-content {
-        min-height: 50vh;
+        min-height: 60vh;
     }
 
     .events-editor-file__header--script {
