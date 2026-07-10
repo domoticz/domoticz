@@ -326,13 +326,15 @@
 
 @media (max-width: 767px) {
     .events-editor {
+        position: relative;
         flex-direction: column;
-        left: 4px;
-        right: 4px;
-        bottom: 8px;
-        overflow-y: auto;
-        overflow-x: hidden;
-        -webkit-overflow-scrolling: touch;
+        top: auto;
+        left: auto;
+        right: auto;
+        bottom: auto;
+        margin: 0 4px 8px;
+        min-height: calc(100vh - 80px);
+        overflow: visible;
     }
 
     .events-editor__tree {
@@ -364,6 +366,14 @@
     .events-editor__file-wizard {
         padding-left: 8px;
         padding-right: 8px;
+    }
+
+    .events-editor__editor {
+        min-height: 55vh;
+    }
+
+    .events-editor__file-content {
+        min-height: 50vh;
     }
 
     .events-editor-file__header--script {
