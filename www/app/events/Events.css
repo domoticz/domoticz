@@ -45,6 +45,7 @@
 
 .events-editor__editor {
     flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     background-color: rgba(0, 0, 0, 0.2);
@@ -320,6 +321,67 @@
         gap: 6px;
     }
 
+}
+
+@media (max-width: 767px) {
+    .events-editor {
+        flex-direction: column;
+        left: 4px;
+        right: 4px;
+        bottom: 8px;
+    }
+
+    .events-editor__tree {
+        width: auto;
+        max-height: 36vh;
+        margin-right: 0;
+        margin-bottom: 8px;
+        min-height: 180px;
+    }
+
+    .events-editor__splitter {
+        width: auto;
+        height: 16px;
+        margin: 0 0 8px 0;
+    }
+
+    .events-editor__file-list {
+        flex-wrap: nowrap;
+        gap: 4px;
+        padding: 8px 8px 0 8px;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+
+    .events-editor__file {
+        flex: 0 0 auto;
+    }
+
+    .events-editor__file-wizard {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    .events-editor-file__header--script {
+        padding: 8px;
+    }
+
+    .events-editor-file__header--script .btn-group,
+    .events-editor-file__header--script .btn,
+    .events-editor-file__header--script .events-editor-file__type,
+    .events-editor-file__header--script .ace-settings {
+        max-width: 100%;
+    }
+
+    .events-editor-file__header--script .btn-group {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .events-editor-file__header--script .btn-group .btn,
+    .events-editor-file__header--script .events-editor-file__type select {
+        flex: 1 1 auto;
+    }
 }
 
 /* ///////////////////// */
