@@ -184,7 +184,7 @@ define(['app', 'events/factories'], function (app) {
                     return;
                 }
 
-                if (window.ResizeObserver) {
+                if (typeof window.ResizeObserver !== 'undefined') {
                     headerResizeObserver = new ResizeObserver(requestContentOffsetSync);
                     headerResizeObserver.observe(scriptHeaderEl);
                 } else {
@@ -195,7 +195,7 @@ define(['app', 'events/factories'], function (app) {
 
             function requestContentOffsetSync() {
                 if (syncContentOffsetFrame) {
-                    return;
+                    window.cancelAnimationFrame(syncContentOffsetFrame);
                 }
 
                 syncContentOffsetFrame = window.requestAnimationFrame(function () {
