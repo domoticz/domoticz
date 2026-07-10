@@ -88,8 +88,19 @@ define(['app'], function (app) {
         ],
         'energy':      [
             { id: 'updateEnergy',      label: 'Set power (W)',    hasValue: true, unit: 'W',  def: 0, min: 0 }
+        ],
+        'alert':       [
+            { id: 'updateAlertSensor', label: 'Set alert level',  hasValue: true, unit: '', def: 'domoticz.ALERTLEVEL_GREY' }
         ]
     };
+
+    var ALERT_LEVELS = [
+        { level: 'domoticz.ALERTLEVEL_GREY',   name: 'Grey (No alert)'  },
+        { level: 'domoticz.ALERTLEVEL_GREEN',  name: 'Green (Info)'     },
+        { level: 'domoticz.ALERTLEVEL_YELLOW', name: 'Yellow (Warning)' },
+        { level: 'domoticz.ALERTLEVEL_ORANGE', name: 'Orange (Alert)'   },
+        { level: 'domoticz.ALERTLEVEL_RED',    name: 'Red (Emergency)'  }
+    ];
 
     var DEVICE_CONDITIONS = {
         switch:      [{ id: 'any', label: 'Any change' }, { id: 'on', label: 'Turns On' }, { id: 'off', label: 'Turns Off' }],
@@ -135,6 +146,8 @@ define(['app'], function (app) {
         custom:      [{ id: 'any', label: 'Any change' },
                       { id: 'above', label: 'Value above', hasValue: true, unit: '', def: 0 },
                       { id: 'below', label: 'Value below', hasValue: true, unit: '', def: 0 }],
+        alert:       [{ id: 'any', label: 'Any change' },
+                      { id: 'alert_level_is', label: 'Level is', hasValue: true, unit: '', def: 'domoticz.ALERTLEVEL_GREY' }],
     };
 
     var COND_EXPR = {
@@ -145,6 +158,7 @@ define(['app'], function (app) {
         level_above: 'device.level > {v}',
         level_below: 'device.level < {v}',
         level_is:    'device.level == {v}',
+        alert_level_is: 'device.color == {v}',
         above: {
             temperature: 'device.temperature > {v}', temphum: 'device.temperature > {v}',
             humidity: 'device.humidity > {v}', percentage: 'device.percentage > {v}',
@@ -186,6 +200,12 @@ define(['app'], function (app) {
         return fallbackDef !== undefined ? fallbackDef : 0;
     }
 
+    function getDeviceLevelOptions(category, dev) {
+        if (category === 'alert') return ALERT_LEVELS;
+        if (category === 'selector') return getSelectorLevels(dev);
+        return [];
+    }
+
     function getDeviceCategory(dev) {
         if (!dev) return 'switch';
         var type = (dev.Type       || '').toLowerCase();
@@ -217,6 +237,7 @@ define(['app'], function (app) {
         if (sub === 'kwh')             return 'power';
         if (sub === 'voltage')         return 'voltage';
         if (sub === 'lux')             return 'lux';
+        if (sub === 'alert')           return 'alert';
         return 'switch';
     }
 
@@ -400,7 +421,7 @@ define(['app'], function (app) {
                 } else {
                     arr.push(dev.idx);
                     vm.triggerConfig.deviceCategory = getDeviceCategory(dev);
-                    vm.triggerConfig.conditionLevelOptions = getSelectorLevels(dev);
+                    vm.triggerConfig.conditionLevelOptions = getDeviceLevelOptions(vm.triggerConfig.deviceCategory, dev);
                     vm.deviceConditions             = DEVICE_CONDITIONS[vm.triggerConfig.deviceCategory] || DEVICE_CONDITIONS['switch'];
                     var valid = vm.deviceConditions.some(function (c) { return c.id === vm.triggerConfig.condition; });
                     if (!valid) { vm.triggerConfig.condition = 'any'; }
@@ -504,7 +525,7 @@ define(['app'], function (app) {
             vm.onConditionDeviceChange = function () {
                 var dev = findDeviceByIdx(vm.wizardCondition.deviceIdx);
                 vm.wizardCondition.category = getDeviceCategory(dev);
-                vm.wizardCondition.levelOptions = getSelectorLevels(dev);
+                vm.wizardCondition.levelOptions = getDeviceLevelOptions(vm.wizardCondition.category, dev);
                 vm.wizardCondition.conditionStates = DEVICE_CONDITIONS[vm.wizardCondition.category] || DEVICE_CONDITIONS['switch'];
                 var valid = vm.wizardCondition.conditionStates.some(function (c) { return c.id === vm.wizardCondition.state; });
                 if (!valid) vm.wizardCondition.state = 'any';
@@ -570,8 +591,8 @@ define(['app'], function (app) {
                 action.config.deviceCategory = getDeviceCategory(dev);
                 action.config.levelOptions = null;
 
-                if (action.config.deviceCategory === 'selector') {
-                    action.config.levelOptions = getSelectorLevels(dev);
+                if (action.config.deviceCategory === 'selector' || action.config.deviceCategory === 'alert') {
+                    action.config.levelOptions = getDeviceLevelOptions(action.config.deviceCategory, dev);
                     if (action.config.levelOptions.length) {
                         action.config.actionValue = action.config.levelOptions[0].level;
                     }
@@ -591,7 +612,8 @@ define(['app'], function (app) {
 
             vm.triggerConditionHasLevelOptions = function () {
                 var opts = vm.triggerConfig.conditionLevelOptions;
-                return vm.triggerConfig.deviceCategory === 'selector' && !!(opts && opts.length);
+                var cat = vm.triggerConfig.deviceCategory;
+                return (cat === 'selector' || cat === 'alert') && !!(opts && opts.length);
             };
 
             vm.wizardConditionHasLevelOptions = function () {
@@ -973,6 +995,8 @@ define(['app'], function (app) {
                                 L.push(bi + dev + ".updateUV(" + numVal(c.actionValue, 0) + ")");
                             } else if (act === 'updateEnergy') {
                                 L.push(bi + dev + ".updateEnergy(" + numVal(c.actionValue, 0) + ")");
+                            } else if (act === 'updateAlertSensor') {
+                                L.push(bi + dev + ".updateAlertSensor(" + (c.actionValue || 'domoticz.ALERTLEVEL_GREY') + ", '')");
                             } else {
                                 L.push(bi + dev + "." + act + "()");
                             }
