@@ -17,6 +17,7 @@ define(['app', 'events/factories'], function (app) {
             var scriptHeaderEl;
             var scriptContentEl;
             var syncContentOffsetFrame;
+            var usesWindowResizeFallback;
 
             var ACE_SETTINGS_KEY = 'domoticz_ace_settings';
             var DEFAULT_SETTINGS = {
@@ -167,7 +168,10 @@ define(['app', 'events/factories'], function (app) {
                     }
                     scriptHeaderEl = null;
                     scriptContentEl = null;
-                    angular.element(window).off('resize', requestContentOffsetSync);
+                    if (usesWindowResizeFallback) {
+                        angular.element(window).off('resize', requestContentOffsetSync);
+                        usesWindowResizeFallback = false;
+                    }
                     $element.off('keydown');
                 });
             }
@@ -184,6 +188,7 @@ define(['app', 'events/factories'], function (app) {
                     headerResizeObserver = new ResizeObserver(requestContentOffsetSync);
                     headerResizeObserver.observe(scriptHeaderEl);
                 } else {
+                    usesWindowResizeFallback = true;
                     angular.element(window).on('resize', requestContentOffsetSync);
                 }
             }
@@ -200,7 +205,7 @@ define(['app', 'events/factories'], function (app) {
             }
 
             function syncContentOffsetWithHeader() {
-                if (!scriptHeaderEl || !scriptContentEl || !document.body.contains(scriptHeaderEl) || !document.body.contains(scriptContentEl)) {
+                if (!scriptHeaderEl || !scriptContentEl) {
                     return;
                 }
 
