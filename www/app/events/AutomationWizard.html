@@ -270,6 +270,7 @@
                             <option value="time">Only between certain hours</option>
                             <option value="days">Only on certain days</option>
                             <option value="daytime">Only during daytime or nighttime</option>
+                            <option value="variable">Only if a user variable has a specific value</option>
                         </select>
                     </div>
                     <!-- Device condition -->
@@ -353,6 +354,26 @@
                                     <select class="form-control aw-time-select" ng-model="$ctrl.wizardCondition.toMin"
                                             ng-options="item.value as item.label for item in $ctrl.minuteOptions"></select>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Variable condition -->
+                    <div ng-if="$ctrl.wizardCondition.type === 'variable'">
+                        <div class="aw-row">
+                            <div class="aw-field">
+                                <label>{{:: 'Variable' | translate }}</label>
+                                <select class="form-control" ng-model="$ctrl.wizardCondition.varName">
+                                    <option value="">{{:: '— Select variable —' | translate }}</option>
+                                    <option ng-repeat="v in $ctrl.variables track by v.idx" value="{{v.Name}}">{{v.Name}}</option>
+                                </select>
+                                <div ng-if="!$ctrl.variablesLoaded" class="aw-device-loading">
+                                    {{:: 'Loading…' | translate }}
+                                </div>
+                            </div>
+                            <div class="aw-field">
+                                <label>{{:: 'Value' | translate }}</label>
+                                <input type="text" class="form-control" ng-model="$ctrl.wizardCondition.varValue" placeholder="42">
                             </div>
                         </div>
                     </div>
