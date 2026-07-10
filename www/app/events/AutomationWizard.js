@@ -158,7 +158,7 @@ define(['app'], function (app) {
         level_above: 'device.level > {v}',
         level_below: 'device.level < {v}',
         level_is:    'device.level == {v}',
-        alert_level_is: 'device.color == {v}',
+        alert_level_is: 'device.color == {v}', // alert stores numeric level (0-4) in color; {v} is replaced with the domoticz.ALERTLEVEL_* constant name
         above: {
             temperature: 'device.temperature > {v}', temphum: 'device.temperature > {v}',
             humidity: 'device.humidity > {v}', percentage: 'device.percentage > {v}',
@@ -618,7 +618,8 @@ define(['app'], function (app) {
 
             vm.wizardConditionHasLevelOptions = function () {
                 var opts = vm.wizardCondition.levelOptions;
-                return !!(opts && opts.length);
+                var cat = vm.wizardCondition.category;
+                return (cat === 'selector' || cat === 'alert') && !!(opts && opts.length);
             };
 
             vm.getDeviceActionOptions = function (action) {
@@ -996,6 +997,7 @@ define(['app'], function (app) {
                             } else if (act === 'updateEnergy') {
                                 L.push(bi + dev + ".updateEnergy(" + numVal(c.actionValue, 0) + ")");
                             } else if (act === 'updateAlertSensor') {
+                                // second arg is the alert text; leave empty as the wizard does not expose a text field
                                 L.push(bi + dev + ".updateAlertSensor(" + (c.actionValue || 'domoticz.ALERTLEVEL_GREY') + ", '')");
                             } else {
                                 L.push(bi + dev + "." + act + "()");
