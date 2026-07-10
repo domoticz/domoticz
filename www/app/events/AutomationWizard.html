@@ -85,7 +85,13 @@
                     </div>
                     <div class="aw-field" ng-if="$ctrl.conditionNeedsValue">
                         <label>{{:: 'Value' | translate }} <span ng-if="$ctrl.conditionUnit">({{$ctrl.conditionUnit}})</span></label>
-                        <input type="number" class="form-control" step="0.1"
+                        <select ng-if="$ctrl.triggerConditionHasLevelOptions()"
+                                class="form-control"
+                                ng-model="$ctrl.triggerConfig.conditionValue"
+                                ng-options="opt.level as opt.name for opt in $ctrl.triggerConfig.conditionLevelOptions">
+                        </select>
+                        <input ng-if="!$ctrl.triggerConditionHasLevelOptions()"
+                               type="number" class="form-control" step="0.1"
                                ng-model="$ctrl.triggerConfig.conditionValue">
                     </div>
                 </div>
@@ -285,7 +291,13 @@
                             </div>
                             <div class="aw-field" ng-if="$ctrl.wizardCondition.needsValue">
                                 <label>Value <span ng-if="$ctrl.wizardCondition.unit">({{$ctrl.wizardCondition.unit}})</span></label>
-                                <input type="number" class="form-control" step="0.1" ng-model="$ctrl.wizardCondition.value">
+                                <select ng-if="$ctrl.wizardConditionHasLevelOptions()"
+                                        class="form-control"
+                                        ng-model="$ctrl.wizardCondition.value"
+                                        ng-options="opt.level as opt.name for opt in $ctrl.wizardCondition.levelOptions">
+                                </select>
+                                <input ng-if="!$ctrl.wizardConditionHasLevelOptions()"
+                                       type="number" class="form-control" step="0.1" ng-model="$ctrl.wizardCondition.value">
                             </div>
                         </div>
                     </div>
