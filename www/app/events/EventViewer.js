@@ -123,7 +123,7 @@ define(['app', 'events/factories'], function (app) {
                         }
 
                         bindScriptHeaderResize();
-                        $timeout(updateScriptContentOffset, 0);
+                        $timeout(syncContentOffsetWithHeader, 0);
 
                         $element.on('keydown', function(event) {
                             if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
@@ -158,7 +158,7 @@ define(['app', 'events/factories'], function (app) {
                         headerResizeObserver.disconnect();
                         headerResizeObserver = null;
                     }
-                    angular.element(window).off('resize', updateScriptContentOffset);
+                    angular.element(window).off('resize', syncContentOffsetWithHeader);
                     $element.off('keydown');
                 });
             }
@@ -168,15 +168,15 @@ define(['app', 'events/factories'], function (app) {
                     var header = $element[0].querySelector('.events-editor-file__header--script');
 
                     if (header) {
-                        headerResizeObserver = new ResizeObserver(updateScriptContentOffset);
+                        headerResizeObserver = new ResizeObserver(syncContentOffsetWithHeader);
                         headerResizeObserver.observe(header);
                     }
                 } else {
-                    angular.element(window).on('resize', updateScriptContentOffset);
+                    angular.element(window).on('resize', syncContentOffsetWithHeader);
                 }
             }
 
-            function updateScriptContentOffset() {
+            function syncContentOffsetWithHeader() {
                 var header = $element[0].querySelector('.events-editor-file__header--script');
                 var content = $element[0].querySelector('.events-editor-file__content--script');
 
