@@ -520,6 +520,9 @@ define(['app'], function (app) {
                 if (vm.wizardCondition.type === 'device' && vm.wizardCondition.deviceIdx) {
                     vm.onConditionDeviceChange();
                 }
+                if (vm.wizardCondition.type === 'variable') {
+                    loadVariables();
+                }
             };
 
             vm.onConditionDeviceChange = function () {
@@ -699,6 +702,8 @@ define(['app'], function (app) {
                     conditionStates: [],
                     state: 'any',
                     value: null,
+                    varName: '',
+                    varValue: '',
                     fromHour: 8,
                     fromMin: 0,
                     toHour: 22,
@@ -934,6 +939,15 @@ define(['app'], function (app) {
                     }
                 } else if (wc && wc.type === 'daytime') {
                     condExprs.push(wc.dayPart === 'nighttime' ? 'domoticz.time.isNightTime' : 'domoticz.time.isDayTime');
+                } else if (wc && wc.type === 'variable' && wc.varName) {
+                    var vv = (wc.varValue !== undefined && wc.varValue !== null) ? String(wc.varValue) : '';
+                    if (vv !== '') {
+                        if (!isNaN(Number(vv))) {
+                            condExprs.push("tonumber(domoticz.variables('" + luaEsc(wc.varName) + "').value) == " + Number(vv));
+                        } else {
+                            condExprs.push("domoticz.variables('" + luaEsc(wc.varName) + "').value == '" + luaEsc(vv) + "'");
+                        }
+                    }
                 }
 
                 var i16 = i12 + i4;
