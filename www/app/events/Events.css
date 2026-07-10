@@ -277,6 +277,15 @@
     border: 1px solid #ccc;
 }
 
+.events-editor-file__header--script {
+    height: auto;
+    min-height: 30px;
+}
+
+.events-editor-file__header--script form {
+    margin: 0;
+}
+
 .events-editor-file__content {
     position: absolute !important;
     top: 46px;
@@ -288,6 +297,32 @@
 .events-editor-file__content-table {
     background-color: #e8e8e8;
     width: 100%;
+}
+
+@media (max-width: 991px) {
+    .events-editor-file__header--script form {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .events-editor-file__header--script .events-editor-file__name {
+        margin-left: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .events-editor-file__header--script .pull-right {
+        float: none;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .events-editor-file__content--script {
+        top: 110px;
+    }
 }
 
 /* ///////////////////// */
