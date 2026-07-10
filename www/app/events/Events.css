@@ -943,6 +943,21 @@
     gap: 8px;
 }
 
+@media (max-width: 767px) {
+    .aw-overlay {
+        align-items: flex-start;
+        overflow-y: auto;
+        padding: 8px 0;
+    }
+
+    .aw-modal {
+        width: calc(100vw - 8px);
+        max-width: none;
+        max-height: none;
+        margin: 0 auto;
+    }
+}
+
 /* Day-of-week checkboxes */
 .aw-day-presets {
     display: flex;
