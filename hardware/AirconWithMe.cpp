@@ -12,6 +12,7 @@
 #include "../main/Logger.h"
 
 #define AIRCONWITHME_POLL_INTERVAL 30
+#define AIRCONWITHME_HTTP_TIMEOUT 10 //seconds; a wedged wifi module accepts the connection but never answers, don't block the worker for the global 90s default
 
 CAirconWithMe::CAirconWithMe(const int id, const std::string& ipaddress, const unsigned short ipport, const std::string& users, const std::string& password)
 	: mIpAddress(ipaddress)
@@ -107,18 +108,20 @@ bool CAirconWithMe::DoWebRequest(const std::string& postdata, Json::Value& root,
 
 	std::string sURL = "http://" + mIpAddress + "/api.cgi";
 	std::vector<std::string> ExtraHeaders;
-	std::string sResult;
+	std::vector<unsigned char> vResponse;
 
 	ExtraHeaders.push_back("Content-type: application/json");
 	ExtraHeaders.push_back("Accept: application/json");
 
 	std::string postDataWithSessionId = std::regex_replace(postdata, std::regex("%SESSION_ID%"), mSessionId);
 
-	if (!HTTPClient::POST(sURL, postDataWithSessionId, ExtraHeaders, sResult))
+	if (!HTTPClient::POSTBinary(sURL, postDataWithSessionId, ExtraHeaders, vResponse, true, AIRCONWITHME_HTTP_TIMEOUT)
+		|| vResponse.empty())
 	{
 		errorMessage = "Error getting data from url \"" + sURL + "\"";
 		return false;
 	}
+	std::string sResult(vResponse.begin(), vResponse.end());
 
 	bool ret = ParseJSon(sResult, root);
 	if (!ret || root.empty())
