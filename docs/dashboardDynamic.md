@@ -857,6 +857,8 @@ https://www.googleapis.com/calendar/v3/calendars/{calendarId}/events
 
 The widget auto-detects `.ics` vs JSON API URLs.
 
+**Recurring events:** ICS recurring events (RRULE) are expanded into their upcoming occurrences (60-day lookahead). Supported: daily / weekly / monthly / yearly frequencies with `INTERVAL`, `COUNT`, `UNTIL`, `BYDAY` (weekly) and `BYMONTHDAY`; excluded dates (`EXDATE`) and single occurrences that were moved or cancelled (`RECURRENCE-ID`) are honored.
+
 **CORS handling:** The widget fetches calendar data using a fallback chain:
 
 1. Direct request (works for CORS-friendly URLs)
