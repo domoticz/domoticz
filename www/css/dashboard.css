@@ -2911,6 +2911,9 @@ dd-wcp-color {
     overflow: hidden;
     position: relative;
 }
+.dd-stat-card--timeout {
+    background: color-mix(in srgb, var(--dz-status-timeout) 25%, transparent);
+}
 .dd-stat-label {
     font-size: 0.85em;
     color: var(--dz-body-text);
