@@ -3520,6 +3520,10 @@ body.dd-standby::after {
     color: var(--dz-accent-color);
     opacity: 1;
 }
+.dd-qs--timeout {
+    background: color-mix(in srgb, var(--dz-status-timeout) 25%, transparent);
+    border-color: var(--dz-status-timeout);
+}
 .dd-log-icon {
     cursor: pointer;
     flex-shrink: 0;
