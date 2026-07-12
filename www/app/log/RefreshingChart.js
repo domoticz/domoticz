@@ -1,4 +1,4 @@
-define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'], function (_, Base, DomoticzBase, DataLoader, ChartLoader, ChartZoomer) {
+define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer', 'log/LuxLogScale'], function (_, Base, DomoticzBase, DataLoader, ChartLoader, ChartZoomer, LuxLogScale) {
 
     function RefreshingChart(
             baseParams, angularParams, domoticzParams, params,
@@ -31,6 +31,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
         self.chart = containerEl.highcharts(chartDefinition).highcharts();
         // Disable the Highcharts Reset Zoom button
         self.chart.showResetZoom = function () {};
+        configureLuxScaleToggle();
         self.autoRefreshIsEnabled = params.autoRefreshIsEnabled;
         self.refreshTimestamp = 0;
 
@@ -74,6 +75,25 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     self.refreshTimestamp = 0;
                 }
             });
+        }
+
+        function configureLuxScaleToggle() {
+            self.$scope.luxScaleAvailable = self.device.SubType === 'Lux';
+            self.$scope.luxScaleLogarithmic = false;
+            self.$scope.setLuxScale = function (logarithmic) {
+                if (!self.$scope.luxScaleAvailable) {
+                    return;
+                }
+
+                self.$scope.luxScaleLogarithmic = logarithmic;
+                self.chart.yAxis.forEach(function (axis) {
+                    LuxLogScale.setAxisScale(axis, logarithmic);
+                });
+                self.chart.redraw();
+            };
+            self.$scope.toggleLuxScale = function () {
+                self.$scope.setLuxScale(!self.$scope.luxScaleLogarithmic);
+            };
         }
 
         function refreshChartDataEveryDeviceUpdate() {
@@ -539,6 +559,10 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     self.consoledebug('yAxis => index:' + x.userOptions.index + ', title:' + x.userOptions.title.text + ', opposite:' + x.userOptions.opposite + ', left:' + x.left + ', right:' + x.right + ', offset:' + x.offset + ', labelOffset:' + x.labelOffset + ', dataMin:' + x.dataMin + ', dataMax:' + x.dataMax + ', dzZoom:' + x.dzZoom);
                 });
                 if (plotX < 0 || self.chart.plotWidth < plotX && self.chart.yAxis.some(function (axis) { return axis.userOptions.opposite; })) {
+                    if (self.$scope.luxScaleAvailable) {
+                        self.$scope.toggleLuxScale();
+                        return;
+                    }
                     const axes = axesOrdered(self.chart.yAxis, plotX, self.chart.plotWidth);
                     const nextZoomValue = nextZoom(axes[0].dzZoom, e);
                     axes.splice(0, e.altKey ? axes.length : 1).forEach(function (axis) {
@@ -586,9 +610,6 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     } else if (['Visibility'].includes(s)) {
                         axisMin = 0;
                         axisMax = 10;
-                    } else if (['Lux'].includes(s)) {
-                        axisMin = 0;
-                        axisMax = 10000;
                     } else if (['Usage', 'Temp + Humidity + Baro'].includes(t)) {
                         axisMin = 0;
                         axisMax = yAxis.dataMax;

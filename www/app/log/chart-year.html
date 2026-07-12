@@ -11,6 +11,8 @@
             <button class="zoom-button" ng-class="{'zoom-button-active': activeZoom === '1M'}" ng-click="zoomMonths(1)" ng-bind="zoomLabel('1M')"></button>
             <button class="zoom-button" ng-class="{'zoom-button-active': activeZoom === '3M'}" ng-click="zoomMonths(3)" ng-bind="zoomLabel('3M')"></button>
             <button class="zoom-reset" ng-click="zoomreset()" ng-bind="zoomLabel('Reset')" ng-show="zoomed"></button>
+            <button class="zoom-button" ng-if="luxScaleAvailable" ng-class="{'zoom-button-active': !luxScaleLogarithmic}" ng-click="setLuxScale(false)" ng-bind="'Linear' | translate"></button>
+            <button class="zoom-button" ng-if="luxScaleAvailable" ng-class="{'zoom-button-active': luxScaleLogarithmic}" ng-click="setLuxScale(true)" ng-bind="'Logarithmic' | translate"></button>
         </div>
         <div class="chartcontainer"></div>
     </div>

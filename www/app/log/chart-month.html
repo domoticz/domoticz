@@ -8,6 +8,8 @@
         <div class="zoom-buttons-container">
             <button class="zoom-button" ng-class="{'zoom-button-active': activeZoom === '1w'}" ng-click="zoomDays(1*7)" ng-bind="zoomLabel('1w')"></button>
             <button class="zoom-reset" ng-click="zoomreset()" ng-bind="zoomLabel('Reset')" ng-show="zoomed"></button>
+            <button class="zoom-button" ng-if="luxScaleAvailable" ng-class="{'zoom-button-active': !luxScaleLogarithmic}" ng-click="setLuxScale(false)" ng-bind="'Linear' | translate"></button>
+            <button class="zoom-button" ng-if="luxScaleAvailable" ng-class="{'zoom-button-active': luxScaleLogarithmic}" ng-click="setLuxScale(true)" ng-bind="'Logarithmic' | translate"></button>
         </div>
         <div class="chartcontainer"></div>
     </div>
