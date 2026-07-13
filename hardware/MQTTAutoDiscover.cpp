@@ -5705,8 +5705,12 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 
 			bool bCouldUseBrightness = false;
 
+			// ColorModeWhite is meaningful for lights with a white channel (subtypes with a 'W');
+			// the color picker only offers White mode for those, so xy/hs conversions below
+			// see it in pathological cases only (a script sending mode 1 to an xy/hs light)
 			if (color.mode == ColorModeRGB ||
-				color.mode == ColorModeCustom)
+				color.mode == ColorModeCustom ||
+				color.mode == ColorModeWhite)
 			{
 				if (pSensor->supported_color_modes.find("xy") != pSensor->supported_color_modes.end())
 				{
@@ -5756,20 +5760,28 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					root["color"]["g"] = color.g;
 					root["color"]["b"] = color.b;
 				}
+				uint8_t iColdWhite = color.cw;
+				uint8_t iWarmWhite = color.ww;
+				if (color.mode == ColorModeWhite)
+				{
+					// ColorModeWhite has no valid color fields: white fully on, the dim level carries the brightness
+					iColdWhite = 255;
+					iWarmWhite = 255;
+				}
 				if (
 					(pSensor->subType == sTypeColor_RGB_W_Z)
 					|| (pSensor->subType == sTypeColor_RGB_CW_WW_Z)
 					|| (pSensor->subType == sTypeColor_RGB_CW_WW)
 					)
 				{
-					root["color"]["c"] = color.cw;
+					root["color"]["c"] = iColdWhite;
 				}
 				if (
 					(pSensor->subType == sTypeColor_RGB_CW_WW_Z)
 					|| (pSensor->subType == sTypeColor_RGB_CW_WW)
 					)
 				{
-					root["color"]["w"] = color.ww;
+					root["color"]["w"] = iWarmWhite;
 				}
 
 				// Check if the rgb_command_template suggests to use "red", "green"... instead of the default "r", "g"... (e.g. Fibaro FGRGBW)
