@@ -5768,6 +5768,11 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					iColdWhite = 255;
 					iWarmWhite = 255;
 				}
+				else if (pSensor->subType == sTypeColor_RGB_W_Z)
+				{
+					// single white channel: state updates store it in ww, the web UI sets both cw and ww
+					iColdWhite = std::max(color.cw, color.ww);
+				}
 				if (
 					(pSensor->subType == sTypeColor_RGB_W_Z)
 					|| (pSensor->subType == sTypeColor_RGB_CW_WW_Z)
@@ -5806,17 +5811,10 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					}
 					else if (pSensor->subType == sTypeColor_RGB_W_Z)
 					{
-						// only a single 'white'. check if this is warm or coldwhite. 
-						// If not coldwhite it is warmwhite
-						// Single white is stored as coldwhite within Domoticz
-						//if (pSensor->color_temp_command_template.find("coldWhite") != std::string::npos)
-						{
-							colorDef["coldWhite"] = root["color"]["c"];
-						}
-						//if (pSensor->color_temp_command_template.find("warmWhite") != std::string::npos)
-						{
-							colorDef["warmWhite"] = root["color"]["c"];
-						}
+						// single white channel, sent as both warm and cold white;
+						// the gateway (e.g. Z-Wave JS) strips the component the device does not support
+						colorDef["coldWhite"] = root["color"]["c"];
+						colorDef["warmWhite"] = root["color"]["c"];
 					}
 
 					root["value"] = colorDef;
