@@ -1839,19 +1839,19 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 		}
 	}
 
-	$(selector + ' .pickermodergb').off().click(function(){
+	$(selector + ' .pickermodergb').attr('title', $.t('Color')).off().click(function(){
 		UpdateColorPicker(DimmerType!="rel"?"color":"color_no_master");
 	});
-	$(selector + ' .pickermodewhite').off().click(function(){
+	$(selector + ' .pickermodewhite').attr('title', $.t('White')).off().click(function(){
 		UpdateColorPicker(DimmerType!="rel"?"white":"white_no_master");
 	});
-	$(selector + ' .pickermodetemp').off().click(function(){
+	$(selector + ' .pickermodetemp').attr('title', $.t('Color temperature')).off().click(function(){
 		UpdateColorPicker(DimmerType!="rel"?"temperature":"temperature_no_master");
 	});
-	$(selector + ' .pickermodecustomw').off().click(function(){
+	$(selector + ' .pickermodecustomw').attr('title', $.t('Color and white mix')).off().click(function(){
 		UpdateColorPicker("customw");
 	});
-	$(selector + ' .pickermodecustomww').off().click(function(){
+	$(selector + ' .pickermodecustomww').attr('title', $.t('Color and white mix')).off().click(function(){
 		UpdateColorPicker("customww");
 	});
 
