@@ -88,8 +88,19 @@ define(['app'], function (app) {
         ],
         'energy':      [
             { id: 'updateEnergy',      label: 'Set power (W)',    hasValue: true, unit: 'W',  def: 0, min: 0 }
+        ],
+        'alert':       [
+            { id: 'updateAlertSensor', label: 'Set alert level',  hasValue: true, unit: '', def: 'domoticz.ALERTLEVEL_GREY' }
         ]
     };
+
+    var ALERT_LEVELS = [
+        { level: 'domoticz.ALERTLEVEL_GREY',   name: 'Grey (No alert)'  },
+        { level: 'domoticz.ALERTLEVEL_GREEN',  name: 'Green (Info)'     },
+        { level: 'domoticz.ALERTLEVEL_YELLOW', name: 'Yellow (Warning)' },
+        { level: 'domoticz.ALERTLEVEL_ORANGE', name: 'Orange (Alert)'   },
+        { level: 'domoticz.ALERTLEVEL_RED',    name: 'Red (Emergency)'  }
+    ];
 
     var DEVICE_CONDITIONS = {
         switch:      [{ id: 'any', label: 'Any change' }, { id: 'on', label: 'Turns On' }, { id: 'off', label: 'Turns Off' }],
@@ -97,7 +108,8 @@ define(['app'], function (app) {
                       { id: 'level_above', label: 'Level above', hasValue: true, unit: '%', def: 50 },
                       { id: 'level_below', label: 'Level below', hasValue: true, unit: '%', def: 50 }],
         blinds:      [{ id: 'any', label: 'Any change' }, { id: 'open', label: 'Opens' }, { id: 'closed', label: 'Closes' }],
-        selector:    [{ id: 'any', label: 'Any change' }],
+        selector:    [{ id: 'any', label: 'Any change' },
+                      { id: 'level_is', label: 'Level is', hasValue: true, unit: '', def: 0 }],
         setpoint:    [{ id: 'any', label: 'Any change' }],
         motion:      [{ id: 'any', label: 'Any change' }, { id: 'on', label: 'Motion detected' }, { id: 'off', label: 'No motion' }],
         door:        [{ id: 'any', label: 'Any change' }, { id: 'open', label: 'Opens' }, { id: 'closed', label: 'Closes' }],
@@ -134,6 +146,8 @@ define(['app'], function (app) {
         custom:      [{ id: 'any', label: 'Any change' },
                       { id: 'above', label: 'Value above', hasValue: true, unit: '', def: 0 },
                       { id: 'below', label: 'Value below', hasValue: true, unit: '', def: 0 }],
+        alert:       [{ id: 'any', label: 'Any change' },
+                      { id: 'alert_level_is', label: 'Level is', hasValue: true, unit: '', def: 'domoticz.ALERTLEVEL_GREY' }],
     };
 
     var COND_EXPR = {
@@ -143,6 +157,8 @@ define(['app'], function (app) {
         closed:      "device.state == 'Closed'",
         level_above: 'device.level > {v}',
         level_below: 'device.level < {v}',
+        level_is:    'device.level == {v}',
+        alert_level_is: 'device.color == {v}', // alert stores numeric level (0-4) in color; {v} is replaced with the domoticz.ALERTLEVEL_* constant name
         above: {
             temperature: 'device.temperature > {v}', temphum: 'device.temperature > {v}',
             humidity: 'device.humidity > {v}', percentage: 'device.percentage > {v}',
@@ -162,6 +178,33 @@ define(['app'], function (app) {
         hum_above:  'device.humidity > {v}',
         hum_below:  'device.humidity < {v}',
     };
+
+    function getSelectorLevels(dev) {
+        if (!dev || !dev.LevelNames) return [];
+        try {
+            var names = atob(dev.LevelNames).split('|');
+            var hiddenOff = dev.LevelOffHidden === true || dev.LevelOffHidden === 'true'; // API may return boolean or string
+            return names
+                .map(function (name, i) { return { level: i * 10, name: name }; })
+                .filter(function (opt) { return !(hiddenOff && opt.level === 0); });
+        } catch (e) {
+            console.error('Failed to parse selector levels:', e);
+            return [];
+        }
+    }
+
+    function defaultLevelValue(levelOptions, fallbackDef) {
+        if (levelOptions && levelOptions.length) {
+            return levelOptions[0].level;
+        }
+        return fallbackDef !== undefined ? fallbackDef : 0;
+    }
+
+    function getDeviceLevelOptions(category, dev) {
+        if (category === 'alert') return ALERT_LEVELS;
+        if (category === 'selector') return getSelectorLevels(dev);
+        return [];
+    }
 
     function getDeviceCategory(dev) {
         if (!dev) return 'switch';
@@ -194,6 +237,7 @@ define(['app'], function (app) {
         if (sub === 'kwh')             return 'power';
         if (sub === 'voltage')         return 'voltage';
         if (sub === 'lux')             return 'lux';
+        if (sub === 'alert')           return 'alert';
         return 'switch';
     }
 
@@ -377,6 +421,7 @@ define(['app'], function (app) {
                 } else {
                     arr.push(dev.idx);
                     vm.triggerConfig.deviceCategory = getDeviceCategory(dev);
+                    vm.triggerConfig.conditionLevelOptions = getDeviceLevelOptions(vm.triggerConfig.deviceCategory, dev);
                     vm.deviceConditions             = DEVICE_CONDITIONS[vm.triggerConfig.deviceCategory] || DEVICE_CONDITIONS['switch'];
                     var valid = vm.deviceConditions.some(function (c) { return c.id === vm.triggerConfig.condition; });
                     if (!valid) { vm.triggerConfig.condition = 'any'; }
@@ -464,7 +509,7 @@ define(['app'], function (app) {
                 vm.conditionNeedsValue = !!cond.hasValue;
                 vm.conditionUnit       = cond.unit || '';
                 if (cond.hasValue && vm.triggerConfig.conditionValue == null) {
-                    vm.triggerConfig.conditionValue = cond.def;
+                    vm.triggerConfig.conditionValue = defaultLevelValue(vm.triggerConfig.conditionLevelOptions, cond.def);
                 }
                 if (!cond.hasValue) {
                     vm.triggerConfig.conditionValue = undefined;
@@ -475,25 +520,33 @@ define(['app'], function (app) {
                 if (vm.wizardCondition.type === 'device' && vm.wizardCondition.deviceIdx) {
                     vm.onConditionDeviceChange();
                 }
+                if (vm.wizardCondition.type === 'variable') {
+                    loadVariables();
+                }
             };
 
             vm.onConditionDeviceChange = function () {
                 var dev = findDeviceByIdx(vm.wizardCondition.deviceIdx);
                 vm.wizardCondition.category = getDeviceCategory(dev);
+                vm.wizardCondition.levelOptions = getDeviceLevelOptions(vm.wizardCondition.category, dev);
                 vm.wizardCondition.conditionStates = DEVICE_CONDITIONS[vm.wizardCondition.category] || DEVICE_CONDITIONS['switch'];
                 var valid = vm.wizardCondition.conditionStates.some(function (c) { return c.id === vm.wizardCondition.state; });
                 if (!valid) vm.wizardCondition.state = 'any';
                 var sel = vm.wizardCondition.conditionStates.find(function (c) { return c.id === vm.wizardCondition.state; }) || {};
                 vm.wizardCondition.needsValue = !!sel.hasValue;
                 vm.wizardCondition.unit = sel.unit || '';
-                if (sel.hasValue && vm.wizardCondition.value == null) vm.wizardCondition.value = sel.def;
+                if (sel.hasValue && vm.wizardCondition.value == null) {
+                    vm.wizardCondition.value = defaultLevelValue(vm.wizardCondition.levelOptions, sel.def);
+                }
             };
 
             vm.onConditionStateChange = function () {
                 var sel = vm.wizardCondition.conditionStates.find(function (c) { return c.id === vm.wizardCondition.state; }) || {};
                 vm.wizardCondition.needsValue = !!sel.hasValue;
                 vm.wizardCondition.unit = sel.unit || '';
-                if (sel.hasValue && vm.wizardCondition.value == null) vm.wizardCondition.value = sel.def;
+                if (sel.hasValue && vm.wizardCondition.value == null) {
+                    vm.wizardCondition.value = defaultLevelValue(vm.wizardCondition.levelOptions, sel.def);
+                }
                 if (!sel.hasValue) vm.wizardCondition.value = null;
             };
 
@@ -541,18 +594,10 @@ define(['app'], function (app) {
                 action.config.deviceCategory = getDeviceCategory(dev);
                 action.config.levelOptions = null;
 
-                if (action.config.deviceCategory === 'selector' && dev && dev.LevelNames) {
-                    try {
-                        var names  = atob(dev.LevelNames).split('|');
-                        var hidden = dev.LevelOffHidden === true || dev.LevelOffHidden === 'true';
-                        action.config.levelOptions = names
-                            .map(function (name, i) { return { level: i * 10, name: name }; })
-                            .filter(function (opt) { return !(hidden && opt.level === 0); });
-                        if (action.config.levelOptions.length) {
-                            action.config.actionValue = action.config.levelOptions[0].level;
-                        }
-                    } catch (e) {
-                        action.config.levelOptions = null;
+                if (action.config.deviceCategory === 'selector' || action.config.deviceCategory === 'alert') {
+                    action.config.levelOptions = getDeviceLevelOptions(action.config.deviceCategory, dev);
+                    if (action.config.levelOptions.length) {
+                        action.config.actionValue = action.config.levelOptions[0].level;
                     }
                 }
 
@@ -566,6 +611,18 @@ define(['app'], function (app) {
 
             vm.actionHasOptions = function (action) {
                 return !!(action.config && action.config.levelOptions && action.config.levelOptions.length);
+            };
+
+            vm.triggerConditionHasLevelOptions = function () {
+                var opts = vm.triggerConfig.conditionLevelOptions;
+                var cat = vm.triggerConfig.deviceCategory;
+                return (cat === 'selector' || cat === 'alert') && !!(opts && opts.length);
+            };
+
+            vm.wizardConditionHasLevelOptions = function () {
+                var opts = vm.wizardCondition.levelOptions;
+                var cat = vm.wizardCondition.category;
+                return (cat === 'selector' || cat === 'alert') && !!(opts && opts.length);
             };
 
             vm.getDeviceActionOptions = function (action) {
@@ -645,6 +702,8 @@ define(['app'], function (app) {
                     conditionStates: [],
                     state: 'any',
                     value: null,
+                    varName: '',
+                    varValue: '',
                     fromHour: 8,
                     fromMin: 0,
                     toHour: 22,
@@ -880,6 +939,15 @@ define(['app'], function (app) {
                     }
                 } else if (wc && wc.type === 'daytime') {
                     condExprs.push(wc.dayPart === 'nighttime' ? 'domoticz.time.isNightTime' : 'domoticz.time.isDayTime');
+                } else if (wc && wc.type === 'variable' && wc.varName) {
+                    var vv = (wc.varValue !== undefined && wc.varValue !== null) ? String(wc.varValue) : '';
+                    if (vv !== '') {
+                        if (!isNaN(Number(vv))) {
+                            condExprs.push("tonumber(domoticz.variables('" + luaEsc(wc.varName) + "').value) == " + Number(vv));
+                        } else {
+                            condExprs.push("domoticz.variables('" + luaEsc(wc.varName) + "').value == '" + luaEsc(vv) + "'");
+                        }
+                    }
                 }
 
                 var i16 = i12 + i4;
@@ -942,6 +1010,9 @@ define(['app'], function (app) {
                                 L.push(bi + dev + ".updateUV(" + numVal(c.actionValue, 0) + ")");
                             } else if (act === 'updateEnergy') {
                                 L.push(bi + dev + ".updateEnergy(" + numVal(c.actionValue, 0) + ")");
+                            } else if (act === 'updateAlertSensor') {
+                                // second arg is the alert text; leave empty as the wizard does not expose a text field
+                                L.push(bi + dev + ".updateAlertSensor(" + (c.actionValue || 'domoticz.ALERTLEVEL_GREY') + ", '')");
                             } else {
                                 L.push(bi + dev + "." + act + "()");
                             }
