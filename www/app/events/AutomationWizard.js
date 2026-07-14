@@ -200,6 +200,12 @@ define(['app'], function (app) {
         return fallbackDef !== undefined ? fallbackDef : 0;
     }
 
+    function isValidLevelValue(levelOptions, value) {
+        // empty levelOptions means a free numeric input, where any value is valid
+        if (!levelOptions || !levelOptions.length) return true;
+        return levelOptions.some(function (opt) { return opt.level === value; });
+    }
+
     function getDeviceLevelOptions(category, dev) {
         if (category === 'alert') return ALERT_LEVELS;
         if (category === 'selector') return getSelectorLevels(dev);
@@ -508,7 +514,8 @@ define(['app'], function (app) {
                 var cond = vm.deviceConditions.find(function (c) { return c.id === vm.triggerConfig.condition; }) || {};
                 vm.conditionNeedsValue = !!cond.hasValue;
                 vm.conditionUnit       = cond.unit || '';
-                if (cond.hasValue && vm.triggerConfig.conditionValue == null) {
+                if (cond.hasValue && (vm.triggerConfig.conditionValue == null
+                        || !isValidLevelValue(vm.triggerConfig.conditionLevelOptions, vm.triggerConfig.conditionValue))) {
                     vm.triggerConfig.conditionValue = defaultLevelValue(vm.triggerConfig.conditionLevelOptions, cond.def);
                 }
                 if (!cond.hasValue) {
@@ -535,8 +542,13 @@ define(['app'], function (app) {
                 var sel = vm.wizardCondition.conditionStates.find(function (c) { return c.id === vm.wizardCondition.state; }) || {};
                 vm.wizardCondition.needsValue = !!sel.hasValue;
                 vm.wizardCondition.unit = sel.unit || '';
-                if (sel.hasValue && vm.wizardCondition.value == null) {
-                    vm.wizardCondition.value = defaultLevelValue(vm.wizardCondition.levelOptions, sel.def);
+                if (sel.hasValue) {
+                    if (vm.wizardCondition.value == null
+                            || !isValidLevelValue(vm.wizardCondition.levelOptions, vm.wizardCondition.value)) {
+                        vm.wizardCondition.value = defaultLevelValue(vm.wizardCondition.levelOptions, sel.def);
+                    }
+                } else {
+                    vm.wizardCondition.value = null;
                 }
             };
 
@@ -544,10 +556,14 @@ define(['app'], function (app) {
                 var sel = vm.wizardCondition.conditionStates.find(function (c) { return c.id === vm.wizardCondition.state; }) || {};
                 vm.wizardCondition.needsValue = !!sel.hasValue;
                 vm.wizardCondition.unit = sel.unit || '';
-                if (sel.hasValue && vm.wizardCondition.value == null) {
-                    vm.wizardCondition.value = defaultLevelValue(vm.wizardCondition.levelOptions, sel.def);
+                if (sel.hasValue) {
+                    if (vm.wizardCondition.value == null
+                            || !isValidLevelValue(vm.wizardCondition.levelOptions, vm.wizardCondition.value)) {
+                        vm.wizardCondition.value = defaultLevelValue(vm.wizardCondition.levelOptions, sel.def);
+                    }
+                } else {
+                    vm.wizardCondition.value = null;
                 }
-                if (!sel.hasValue) vm.wizardCondition.value = null;
             };
 
             vm.openActionPicker = function () { vm.showActionPicker = true; };
@@ -940,7 +956,7 @@ define(['app'], function (app) {
                 } else if (wc && wc.type === 'daytime') {
                     condExprs.push(wc.dayPart === 'nighttime' ? 'domoticz.time.isNightTime' : 'domoticz.time.isDayTime');
                 } else if (wc && wc.type === 'variable' && wc.varName) {
-                    var vv = (wc.varValue !== undefined && wc.varValue !== null) ? String(wc.varValue) : '';
+                    var vv = (wc.varValue !== undefined && wc.varValue !== null) ? String(wc.varValue).trim() : '';
                     if (vv !== '') {
                         if (!isNaN(Number(vv))) {
                             condExprs.push("tonumber(domoticz.variables('" + luaEsc(wc.varName) + "').value) == " + Number(vv));
