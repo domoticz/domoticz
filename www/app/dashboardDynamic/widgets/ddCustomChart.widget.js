@@ -53,6 +53,9 @@ define([
         if (sub === 'SetPoint' || type === 'Thermostat') {
             return { sensor: 'temp', field: function(d){ return d.se !== undefined ? d.se : d.te; }, unit: tempUnit() };
         }
+	if (type === 'Air Quality') {
+            return { sensor: 'counter', field: function(d){ return d.co2 }, unit: 'ppm' };
+        }
         return { sensor: 'temp', field: function(d){ return d.te !== undefined ? d.te : d.v; }, unit: '?' };
     }
 
@@ -258,6 +261,13 @@ define([
 
                         var unitToAxis = buildYAxisIndex(sensorInfos);
 
+                        var RANGE_TO_API = {
+                            day:   'day',
+                            week:  'day',
+                            month: 'month',
+                            year:  'year'
+                        };
+
                         // Fetch graph data for each device in parallel.
                         var graphRequests = idxList.map(function(idx, i) {
                             var token = $q.defer();
@@ -265,7 +275,7 @@ define([
                             var sensor = sensorInfos[i].sensor;
                             var url = 'json.htm?type=command&param=graph&sensor=' + encodeURIComponent(sensor) +
                                       '&idx=' + encodeURIComponent(idx) +
-                                      '&range=' + encodeURIComponent(range);
+                                      '&range=' + encodeURIComponent(RANGE_TO_API[range]);
                             return $http.get(url, { timeout: token.promise })
                                 .then(function(resp) {
                                     return {
