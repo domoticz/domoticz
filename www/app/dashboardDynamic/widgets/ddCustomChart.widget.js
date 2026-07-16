@@ -53,7 +53,7 @@ define([
         if (sub === 'SetPoint' || type === 'Thermostat') {
             return { sensor: 'temp', field: function(d){ return d.se !== undefined ? d.se : d.te; }, unit: tempUnit() };
         }
-	if (type === 'Air Quality') {
+	    if (type === 'Air Quality') {
             return { sensor: 'counter', field: function(d){ return d.co2 }, unit: 'ppm' };
         }
         return { sensor: 'temp', field: function(d){ return d.te !== undefined ? d.te : d.v; }, unit: '?' };
