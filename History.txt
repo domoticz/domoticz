@@ -1,26 +1,58 @@
 Version 2026.xxxx
+- Added: API/JSON, graph 'week' range is now supported for all sensor types (temperature/humidity, percentage, fan, UV, wind, air quality, lux, usage, voltage, current, sound level, weight, and more), returning daily aggregates with the same fields as the month/year ranges
 - Added: Dashboard Dynamic, Barometer widget can show an optional 24-hour pressure trend graph, and clicking the pressure value opens the barometer log
 - Added: Dashboard Dynamic, Custom Chart and Stat Counter widgets let you choose which value of a multi-sensor device to use (Temperature, Humidity, Barometer or Setpoint, or Auto)
-- Added: Dashboard Dynamic, Custom Chart widget supports Voltage, Current and Percentage (average) sensor types
+- Added: Dashboard Dynamic, Custom Chart widget supports Air Quality (CO2), Lux, Voltage, Current and Percentage (average) sensor types (#6916)
 - Added: Dashboard Dynamic, dial setpoint widget, click the centre value to open a popup for precise numeric entry; dragging the ring still sets the value
 - Added: Dashboard Dynamic, gauge widget supports Alert sensors, using the alert level for the value and colour zones and showing the alert text inside the dial
 - Added: Dashboard Dynamic, Quick Actions blind buttons now include a Stop button for blinds that support it and a position slider for percentage-capable blinds
 - Added: Dashboard Dynamic, Stat Counter widget can show an optional 24-hour trend graph
+- Added: Dashboard Dynamic, weather scene widget gained an animated thunderstorm scene
+- Added: Dashboard Dynamic, widget settings show a remove button to clear optional device-picker slots
 - Added: Dashboard Dynamic, Wind chart widget week chart type
+- Added: Events, Automation Wizard selector level, alert device and user variable conditions (#6904)
+- Added: MCP, get_scene_history tool returning the activity log of a scene or group
+- Added: Netatmo, battery state and level reporting
 - Added: Netatmo, support for additional device scopes (Doorlock, BTicino Classe 100/300, Hybrid, and others); existing users must re-select their scopes and re-authorize (#6879)
+- Added: Users, password confirmation field in the user editor
+- Changed: MCP, get_sensor_history now renders history for all counter device families and validates its date arguments
+- Fixed: AirconWithMe, an unresponsive module can no longer stall Domoticz; requests now time out after 10 seconds
 - Fixed: API/JSON, counter devices now respect a custom date range (#6845)
+- Fixed: Automation Wizard, condition value dropdowns no longer keep stale values when switching the condition device or type
 - Fixed: Blockly, Text and Alert sensor values are now substituted correctly in actions such as notifications; Alert sensor conditions now compare the alert level (#6882)
 - Fixed: Buienradar, support new PascalCase API keys and restore station coordinate lookup
+- Fixed: Cameras, dialog buttons are now translated (#6905)
 - Fixed: Charts, deleting a datapoint no longer shifts all graphs to UTC time or makes a second deletion remove the wrong datapoint
+- Fixed: Counter log, custom counter units are now shown in the month/year usage graphs
+- Fixed: DaikinModbus, sentinel register values are now ignored
 - Fixed: Dashboard Dynamic, an unresponsive camera no longer makes the whole web interface slow or unresponsive (#6804)
+- Fixed: Dashboard Dynamic, Calendar widget now expands recurring ICS events
+- Fixed: Dashboard Dynamic, Custom Chart 'Last 7 days' now shows a full week of data for every sensor type instead of an empty chart (#6916)
+- Fixed: Dashboard Dynamic, Custom Chart Lux devices now chart data, and Voltage, Current and Usage devices now render the month and year ranges
 - Fixed: Dashboard Dynamic, Custom Chart temperature axis now shows the configured unit (°C/°F) instead of only a degree symbol
+- Fixed: Dashboard Dynamic, live stream dialog follows the camera aspect ratio setting (#6913)
 - Fixed: Dashboard Dynamic, P1 Smart Meter gas widget now shows the usage bar
+- Fixed: Dashboard Dynamic, Quick Stat widget labels now follow device renames
 - Fixed: Dashboard Dynamic, Rain chart 'Last 24h' view now renders the rain rate and cumulative series again
+- Fixed: Dashboard Dynamic, widget chrome follows the theme on light navigation themes (#6893)
+- Fixed: Dashboard Mobile, correct switch on/off colours, live dimmer slider feedback, and the final dimmer level is sent when the slider drag ends
 - Fixed: Dashboard Mobile, sanitize Text/Alert device data on the classic mobile view
+- Fixed: dzVents, device batteryLevel and signalLevel attributes now stay in sync with the database (#6864)
+- Fixed: Floorplan, per-device Show Icon toggle is now honored for Text sensors
 - Fixed: Floorplan, preserve line breaks in Text/Alert sensor display (#6844)
 - Fixed: FreeBSD, removed Python 'm' suffix so Python plugin support builds correctly (#6852)
+- Fixed: Hardware, crash when a hardware driver was started twice in quick succession
+- Fixed: MCP, get_scenes tool returned an error due to a non-existent database column
+- Fixed: MQTT Auto Discovery, battery sensors are now also detected by device_class, and a Z-Wave node's battery level is applied to all its devices immediately
 - Fixed: MQTT Auto Discovery, honor the force_update flag so text sensors update on repeated identical values (e.g. Kerui panic button)
 - Fixed: Nightly rollup no longer inserts duplicate calendar rows (Meter/MultiMeter/Temperature/Rain/Wind/UV/Percentage/Fan) when it runs twice for the same day, e.g. after a restart around midnight (#6900)
+- Fixed: P1, returned energy is now priced at the R1/R2 return tariffs when using internal meter price mode
+- Fixed: Python plugins, MainWorker no longer deadlocks when starting a plugin
+- Fixed: Python plugins, password settings are kept when left blank on save, and dropdown settings honor their declared default value
+- Fixed: Reports, report dates no longer shift one day in browsers with a timezone west of UTC
+- Security: udevices endpoint now requires authorization and rejects path traversal attempts
+- Security: web server hardening in libwebem: authentication, request parsing and PHP execution
+- Security: WebSocket connections are now authenticated when website protection is enabled
 
 Version 2026.2 (May 31st 2026)
 - Added: AlfenEve, 'Connected' state switch
