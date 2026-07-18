@@ -289,8 +289,18 @@ std::string CalcDbasetableHour(const GraphContext& ctx)
 
 std::string CalcDbasetableWeek(const GraphContext& ctx)
 {
+    if ((ctx.sensor == "temp") || (ctx.sensor == "hum"))
+        return "Temperature_Calendar";
     if (ctx.sensor == "rain")
         return "Rain_Calendar";
+    if (ctx.sensor == "Percentage")
+        return "Percentage_Calendar";
+    if (ctx.sensor == "fan")
+        return "Fan_Calendar";
+    if ((ctx.sensor == "wind") || (ctx.sensor == "winddir"))
+        return "Wind_Calendar";
+    if (ctx.sensor == "uv")
+        return "UV_Calendar";
     if (ctx.sensor == "counter")
     {
         if (ctx.dType == pTypeP1Power

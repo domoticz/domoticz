@@ -112,6 +112,9 @@ std::string CalcDbasetableHour(const GraphContext& ctx);
 /**
  * Determine the database table name for srange == "week".
  *
+ * Mirrors CalcDbasetableMonthYear() for the sensor types that HandleGraphWeek()
+ * supports: temp/hum, Percentage, fan, wind/winddir, uv, rain and counter.
+ *
  * Returns an empty string if the sensor type is not handled by this range.
  */
 std::string CalcDbasetableWeek(const GraphContext& ctx);
