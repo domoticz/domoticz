@@ -30,6 +30,7 @@ Version 2026.xxxx
 - Fixed: Dashboard Dynamic, Custom Chart 'Last 7 days' now shows a full week of data for every sensor type instead of an empty chart (#6916)
 - Fixed: Dashboard Dynamic, Custom Chart Lux devices now chart data, and Voltage, Current and Usage devices now render the month and year ranges
 - Fixed: Dashboard Dynamic, Custom Chart temperature axis now shows the configured unit (°C/°F) instead of only a degree symbol
+- Fixed: Dashboard Dynamic, Custom Chart widget now auto-refreshes when a configured device updates, keeping time-based ranges current (#6860)
 - Fixed: Dashboard Dynamic, live stream dialog follows the camera aspect ratio setting (#6913)
 - Fixed: Dashboard Dynamic, P1 Smart Meter gas widget now shows the usage bar
 - Fixed: Dashboard Dynamic, Quick Stat widget labels now follow device renames
