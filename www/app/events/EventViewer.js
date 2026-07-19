@@ -18,6 +18,7 @@ define(['app', 'events/factories'], function (app) {
             var scriptContentEl;
             var syncContentOffsetFrame;
             var usesWindowResizeFallback;
+            var isDestroyed;
 
             var ACE_SETTINGS_KEY = 'domoticz_ace_settings';
             var DEFAULT_SETTINGS = {
@@ -143,6 +144,7 @@ define(['app', 'events/factories'], function (app) {
                     });
 
                 $scope.$on('$destroy', function () {
+                    isDestroyed = true;
                     if (debounceTimer) {
                         $timeout.cancel(debounceTimer);
                     }
@@ -177,6 +179,12 @@ define(['app', 'events/factories'], function (app) {
             }
 
             function bindScriptHeaderResize() {
+                // The component can be destroyed while loadEvent() is still in flight,
+                // in which case $destroy has already run and there is nothing to clean up after us.
+                if (isDestroyed) {
+                    return;
+                }
+
                 scriptHeaderEl = $element[0].querySelector('.events-editor-file__header--script');
                 scriptContentEl = $element[0].querySelector('.events-editor-file__content--script');
 
@@ -209,7 +217,21 @@ define(['app', 'events/factories'], function (app) {
                     return;
                 }
 
-                scriptContentEl.style.top = scriptHeaderEl.offsetHeight + 'px';
+                var headerHeight = scriptHeaderEl.offsetHeight;
+
+                // Hidden tabs (ng-show) measure as 0, which would collapse the offset and
+                // let the header overlap the editor once the tab is shown again.
+                if (headerHeight === 0) {
+                    return;
+                }
+
+                scriptContentEl.style.top = headerHeight + 'px';
+
+                // Ace 1.2.2 only recalculates its size on window resize, so a container
+                // height change has to be pushed to it explicitly.
+                if (aceEditor) {
+                    aceEditor.resize();
+                }
             }
 
             function isTriggerAvailable() {
