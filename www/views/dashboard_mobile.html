@@ -205,7 +205,7 @@
 								<span ng-repeat="level in getSelectorLevels(item)">
 									<button type="button"
 											class="btn btn-mini"
-											ng-class="{'btn-selected': level.isActive, 'btn-default': !level.isActive}"
+											ng-class="{'btn-info': level.isActive}"
 											ng-click="switchSelectorLevel(item.idx, level.value, level.name, item.Protected)">
 										{{level.name}}
 									</button>
