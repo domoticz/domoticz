@@ -22,6 +22,7 @@ class MQTTAutoDiscover : public MQTT
 		std::string device_identifiers;
 		std::string name;
 		std::string device_class;
+		std::string entity_category;
 
 		std::string availability_topic;
 
@@ -95,6 +96,7 @@ class MQTTAutoDiscover : public MQTT
 
 		//Select
 		std::vector<std::string> select_options;
+		std::vector<std::tuple<std::string, std::string>> select_value_map;
 
 		//Climate
 		std::string mode_command_topic;
