@@ -278,13 +278,13 @@
     border: 1px solid #ccc;
 }
 
-.events-editor-file__header--script {
+.events-editor-file__header--editor {
     /* Matches the historic single-row toolbar height when controls fit on one line. */
     height: auto;
     min-height: 30px;
 }
 
-.events-editor-file__header--script form {
+.events-editor-file__header--editor form {
     margin: 0;
 }
 
@@ -302,19 +302,19 @@
 }
 
 @media (max-width: 991px) {
-    .events-editor-file__header--script form {
+    .events-editor-file__header--editor form {
         display: flex;
         flex-direction: column;
         gap: 8px;
     }
 
-    .events-editor-file__header--script .events-editor-file__name {
+    .events-editor-file__header--editor .events-editor-file__name {
         margin-left: 0;
         width: 100%;
         box-sizing: border-box;
     }
 
-    .events-editor-file__header--script .pull-right {
+    .events-editor-file__header--editor .pull-right {
         float: none;
         display: flex;
         flex-wrap: wrap;
@@ -376,24 +376,24 @@
         min-height: 60vh;
     }
 
-    .events-editor-file__header--script {
+    .events-editor-file__header--editor {
         padding: 8px;
     }
 
-    .events-editor-file__header--script .btn-group,
-    .events-editor-file__header--script .btn,
-    .events-editor-file__header--script .events-editor-file__type,
-    .events-editor-file__header--script .ace-settings {
+    .events-editor-file__header--editor .btn-group,
+    .events-editor-file__header--editor .btn,
+    .events-editor-file__header--editor .events-editor-file__type,
+    .events-editor-file__header--editor .ace-settings {
         max-width: 100%;
     }
 
-    .events-editor-file__header--script .btn-group {
+    .events-editor-file__header--editor .btn-group {
         display: flex;
         flex-wrap: wrap;
     }
 
-    .events-editor-file__header--script .btn-group .btn,
-    .events-editor-file__header--script .events-editor-file__type select {
+    .events-editor-file__header--editor .btn-group .btn,
+    .events-editor-file__header--editor .events-editor-file__type select {
         flex: 1 1 auto;
     }
 }

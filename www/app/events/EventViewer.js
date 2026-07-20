@@ -185,8 +185,8 @@ define(['app', 'events/factories'], function (app) {
                     return;
                 }
 
-                scriptHeaderEl = $element[0].querySelector('.events-editor-file__header--script');
-                scriptContentEl = $element[0].querySelector('.events-editor-file__content--script');
+                scriptHeaderEl = $element[0].querySelector('.events-editor-file__header--editor');
+                scriptContentEl = $element[0].querySelector('.events-editor-file__content--editor');
 
                 if (!scriptHeaderEl || !scriptContentEl) {
                     return;
