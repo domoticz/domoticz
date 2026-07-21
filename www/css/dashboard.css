@@ -2912,7 +2912,7 @@ dd-wcp-color {
     position: relative;
 }
 .dd-stat-card--timeout {
-    background: color-mix(in srgb, var(--dz-status-timeout) 25%, transparent);
+    background: color-mix(in srgb, var(--dz-status-timeout) 25%, var(--dz-panel-bg));
 }
 .dd-stat-label {
     font-size: 0.85em;
@@ -3523,8 +3523,8 @@ body.dd-standby::after {
     color: var(--dz-accent-color);
     opacity: 1;
 }
-.dd-qs--timeout {
-    background: color-mix(in srgb, var(--dz-status-timeout) 25%, transparent);
+.dd-qs-item--timeout {
+    background: color-mix(in srgb, var(--dz-status-timeout) 25%, var(--dz-panel-bg));
     border-color: var(--dz-status-timeout);
 }
 .dd-log-icon {
