@@ -37,6 +37,9 @@ define([
         if (type === 'General' && sub === 'Current') {
             return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v_avg; }, unit: 'A', weekApi: true };
         }
+        if (type === 'General' && sub === 'Custom Sensor') {
+            return { sensor: 'Percentage', field: function(d){ return d.v !== undefined ? d.v : d.v_avg; }, unit: device.SensorUnit || '?', weekApi: true };
+        }
         if (type === 'Air Quality') {
             return { sensor: 'counter', field: function(d){ return d.co2 !== undefined ? d.co2 : d.co2_avg; }, unit: 'ppm', weekApi: true };
         }
