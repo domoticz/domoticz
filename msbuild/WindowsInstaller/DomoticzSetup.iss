@@ -93,6 +93,8 @@ Name: "S:\Domoticz\msbuild\WindowsInstaller\makedist.bat"; Flags: cmdprompt redi
 [InstallDelete]
 Type: filesandordirs; Name: "{app}\scripts\dzVents\documentation"
 Type: filesandordirs; Name: "{app}\scripts\dzVents\runtime"
+; Left behind by installations up to 2026.2, which used a separate service wrapper
+Type: files; Name: "{app}\WinSI.exe"
 
 
 [Code]
@@ -204,6 +206,8 @@ begin
   if(CurStep = ssInstall) then begin
     Exec('sc',ExpandConstant('stop "{#MyAppName}"'),'', SW_HIDE, ewWaitUntilTerminated, ResultCode);
     Exec('sc',ExpandConstant('delete "{#MyAppName}"'),'', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    if ResultCode = 0 then
+      sleep(4000); //there was a service, give it time to exit before its files are replaced
   end;
 end;
 
