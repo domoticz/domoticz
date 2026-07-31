@@ -36,6 +36,7 @@
 
 #if defined WIN32
 	#include "../msbuild/WindowsHelper.h"
+	#include "WindowsService.h"
 	#include <Shlobj.h>
 #else
 	#include <sys/stat.h>
@@ -671,20 +672,92 @@ void DisplayAppVersion()
 }
 
 #if defined WIN32
-int WINAPI WinMain(_In_ HINSTANCE hInstance,_In_opt_ HINSTANCE hPrevInstance,_In_ LPSTR lpCmdLine,_In_ int nShowCmd)
+// The body below used to be WinMain itself. It is a plain function now so that
+// it can also be called from ServiceMain, which is what lets Domoticz run as a
+// Windows service without a wrapper such as NSSM. These keep their original
+// names so the body needs no changes.
+static HINSTANCE hInstance = nullptr;
+static HINSTANCE hPrevInstance = nullptr;
+static int nShowCmd = 0;
+
+static int DomoticzMain();
+
+int WINAPI WinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE hPrevInst, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
+{
+	hInstance = hInst;
+	hPrevInstance = hPrevInst;
+	nShowCmd = nCmdShow;
+
+	// Handled before anything else starts up, because these do not run the
+	// application at all. The raw arguments are read rather than CCmdLine,
+	// because everything after -installservice is meant to be passed on
+	// verbatim and most of it (-www, -sslwww, -log) would otherwise be taken
+	// for switches of our own.
+	auto HasRawSwitch = [](const char *szSwitch) -> int {
+		for (int i = 1; i < __argc; i++)
+			if (_stricmp(__argv[i], szSwitch) == 0)
+				return i;
+		return 0;
+	};
+
+	if (HasRawSwitch("-uninstallservice"))
+		return WindowsService::Uninstall();
+
+	int iInstallAt = HasRawSwitch("-installservice");
+	if (iInstallAt)
+	{
+		// Everything after the switch becomes the command line the service is
+		// started with, so the installer can pass on the user's choices.
+		std::string szArguments;
+		for (int i = iInstallAt + 1; i < __argc; i++)
+		{
+			std::string szArgument = __argv[i];
+			if (szArgument.empty())
+				continue;
+			if (!szArguments.empty())
+				szArguments += " ";
+			// Quote anything with a space, or the service would receive it as
+			// two separate arguments.
+			if (szArgument.find(' ') != std::string::npos)
+				szArguments += "\"" + szArgument + "\"";
+			else
+				szArguments += szArgument;
+		}
+		return WindowsService::Install(szArguments);
+	}
+
+	if (HasRawSwitch("-service"))
+	{
+		// Hands control to the Service Control Manager, which calls back into
+		// DomoticzMain. Returns false when this was started by hand after all,
+		// in which case we simply carry on as a normal application.
+		if (WindowsService::RunAsService(&DomoticzMain))
+			return 0;
+	}
+
+	return DomoticzMain();
+}
+
+static int DomoticzMain()
 #else
 int main(int argc, char**argv)
 #endif
 {
 #if defined WIN32
 #ifndef _DEBUG
-	CreateMutexA(0, FALSE, "Local\\Domoticz"); 
-	if(GetLastError() == ERROR_ALREADY_EXISTS) { 
-		MessageBox(HWND_DESKTOP,"Another instance of Domoticz is already running!","Domoticz",MB_OK);
-		return 1; 
+	CreateMutexA(0, FALSE, "Local\\Domoticz");
+	if(GetLastError() == ERROR_ALREADY_EXISTS) {
+		// A service has no desktop, so a message box there would sit invisible
+		// and unanswered.
+		if (WindowsService::IsRunningAsService())
+			_log.Log(LOG_ERROR, "Another instance of Domoticz is already running!");
+		else
+			MessageBox(HWND_DESKTOP,"Another instance of Domoticz is already running!","Domoticz",MB_OK);
+		return 1;
 	}
 #endif //_DEBUG
-	RedirectIOToConsole();
+	if (!WindowsService::IsRunningAsService())
+		RedirectIOToConsole();
 #endif //WIN32
 
 	CCmdLine cmdLine;
@@ -1270,26 +1343,40 @@ int main(int argc, char**argv)
 
 	/* now, lets get into an infinite loop of doing nothing. */
 #if defined WIN32
-#ifndef _DEBUG
-	RedirectIOToConsole();	//hide console
-#endif
-	InitWindowsHelper(hInstance, hPrevInstance, nShowCmd, m_mainworker.GetWebserverAddress(), atoi(m_mainworker.GetWebserverPort().c_str()), bStartWebBrowser);
-	MSG Msg;
-	while (!g_bStopApplication)
+	if (WindowsService::IsRunningAsService())
 	{
-		if (PeekMessage(&Msg, NULL, 0, 0, PM_NOREMOVE))
+		// Running in session 0: there is no desktop, so no tray icon and no
+		// message loop. The Service Control Manager sets g_bStopApplication
+		// when it wants us to stop.
+		while (!g_bStopApplication)
 		{
-			if (GetMessage(&Msg, NULL, 0, 0) > 0)
-			{
-				TranslateMessage(&Msg);
-				DispatchMessage(&Msg);
-			}
-		}
-		else
 			sleep_milliseconds(100);
-		m_LastHeartbeat = mytime(NULL);
+			m_LastHeartbeat = mytime(NULL);
+		}
 	}
-	TrayMessage(NIM_DELETE, NULL);
+	else
+	{
+#ifndef _DEBUG
+		RedirectIOToConsole();	//hide console
+#endif
+		InitWindowsHelper(hInstance, hPrevInstance, nShowCmd, m_mainworker.GetWebserverAddress(), atoi(m_mainworker.GetWebserverPort().c_str()), bStartWebBrowser);
+		MSG Msg;
+		while (!g_bStopApplication)
+		{
+			if (PeekMessage(&Msg, NULL, 0, 0, PM_NOREMOVE))
+			{
+				if (GetMessage(&Msg, NULL, 0, 0) > 0)
+				{
+					TranslateMessage(&Msg);
+					DispatchMessage(&Msg);
+				}
+			}
+			else
+				sleep_milliseconds(100);
+			m_LastHeartbeat = mytime(NULL);
+		}
+		TrayMessage(NIM_DELETE, NULL);
+	}
 #else
 	while ( !g_bStopApplication )
 	{
@@ -1313,6 +1400,11 @@ int main(int argc, char**argv)
 	thread_watchdog.join();
 
 	_log.Log(LOG_STATUS, "Stopping worker...");
+#if defined WIN32
+	// Windows kills a service that goes quiet while stopping, and shutting the
+	// workers down can take longer than its patience.
+	WindowsService::ReportStopProgress();
+#endif
 	try
 	{
 		m_mainworker.Stop();

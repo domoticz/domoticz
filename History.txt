@@ -15,7 +15,9 @@ Version 2026.xxxx
 - Added: Netatmo, battery state and level reporting
 - Added: Netatmo, support for additional device scopes (Doorlock, BTicino Classe 100/300, Hybrid, and others); existing users must re-select their scopes and re-authorize (#6879)
 - Added: Users, password confirmation field in the user editor
+- Added: Windows, Domoticz can register itself as a Windows service with -installservice, and remove it again with -uninstallservice
 - Changed: MCP, get_sensor_history now renders history for all counter device families and validates its date arguments
+- Changed: Windows, the installer no longer ships the WinSI.exe service wrapper; Domoticz implements the Windows service interface itself
 - Fixed: AirconWithMe, an unresponsive module can no longer stall Domoticz; requests now time out after 10 seconds
 - Fixed: API/JSON, counter devices now respect a custom date range (#6845)
 - Fixed: Automation Wizard, condition value dropdowns no longer keep stale values when switching the condition device or type

@@ -6,7 +6,6 @@
 #define MyAppPublisher "Domoticz.com"
 #define MyAppURL "http://www.domoticz.com/"
 #define MyAppExeName "domoticz.exe"
-#define NSSM "WinSI.exe"
 #define SetupBaseName   "DomoticzSetup_"
 #define SetupName   "DomoticzSetup"
 #dim Version[4]
@@ -63,7 +62,6 @@ Source: "..\..\dzVents\*"; DestDir: "{app}\dzVents"; Flags: recursesubdirs creat
 Source: "..\..\plugins\*"; DestDir: "{app}\plugins"; Flags: recursesubdirs createallsubdirs ignoreversion
 Source: "..\Windows Libraries\openzwave\OpenZWave.dll"; DestDir: {app}; Flags: ignoreversion;
 Source: "..\..\History.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\WinSI.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\server_cert.pem"; DestDir: "{app}"; Flags: onlyifdoesntexist uninsneveruninstall
 
 Source: "..\Windows Libraries\Redist\*"; DestDir: {app}; Flags: ignoreversion
@@ -81,9 +79,7 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Domoticz"; Filenam
 
 [Run]
 ;Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, "&", "&&")}}"; Flags: nowait postinstall skipifsilent runascurrentuser; Tasks: RunAsApp
-Filename: "{app}\{#NSSM}"; Parameters: "install {#MyAppName} ""{app}\{#MyAppExeName}"" ""{code:GetParams}"""; Flags: runhidden; Tasks: RunAsService
-Filename: "{app}\{#NSSM}"; Parameters: "set {#MyAppName} DependOnService RpcSS LanmanWorkstation"; Flags: runhidden; Tasks: RunAsService
-Filename: "{sys}\net.exe"; Parameters: "start {#MyAppName}"; Flags: runhidden; Tasks: RunAsService
+Filename: "{app}\{#MyAppExeName}"; Parameters: "-installservice {code:GetParams}"; Flags: runhidden; Tasks: RunAsService
 
 [Dirs]
 Name: "{app}\backups\hourly"

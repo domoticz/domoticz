@@ -768,6 +768,7 @@
     <ClInclude Include="..\hardware\P1MeterSerial.h" />
     <ClInclude Include="..\hardware\P1MeterTCP.h" />
     <ClInclude Include="..\main\Logger.h" />
+    <ClInclude Include="..\main\WindowsService.h" />
     <ClInclude Include="..\main\lsignal.h" />
     <ClInclude Include="..\main\LuaCommon.h" />
     <ClInclude Include="..\main\LuaHandler.h" />
@@ -1082,6 +1083,7 @@
     <ClCompile Include="..\main\mainworker.cpp" />
     <ClCompile Include="..\hardware\RFXComSerial.cpp" />
     <ClCompile Include="..\main\domoticz.cpp" />
+    <ClCompile Include="..\main\WindowsService.cpp" />
     <ClCompile Include="..\hardware\RFXComTCP.cpp" />
     <ClCompile Include="..\main\RFXNames.cpp" />
     <ClCompile Include="..\main\stdafx.cpp">
