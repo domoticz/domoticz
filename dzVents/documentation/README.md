@@ -1571,6 +1571,23 @@ User variables created in Domoticz have these attributes and methods:
  - **type**: *String*. Can be domoticz.INTEGER, domoticz.FLOAT, domoticz.STRING, domoticz.DATE, domoticz.TIME.
  - **value**: *String|Number|Date|Time*. Value of the variable.
 
+```Lua
+return
+{
+	on =
+	{
+		timer = {'Every 10 minutes on mon,tue,wed,thu,fri'}
+	},
+
+	execute = function(domoticz)
+		-- check time of the day
+		if (domoticz.time.isDayTime and domoticz.variables('myVar').value == 10) then
+			domoticz.variables('anotherVar').set(15)
+		end
+	end
+}
+```
+
 ## Time object
 Many attributes represent a moment in time, like `myDevice.lastUpdate` or `domoticz.time`. In dzVents, a time-like attribute is an object with properties and methods which make your life easier.
 
