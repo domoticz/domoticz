@@ -145,7 +145,7 @@ void CdzVents::ProcessNotificationItem(CLuaTable& luaTable, int& index, const CE
 			}
 			catch (const std::exception& e)
 			{
-				_log.Log(LOG_ERROR, "dzVents: Error in ProcessNotificationItem data: %s", e.what());
+				_log.Log(LOG_ERROR, "dzVents: Error in ProcessNotificationItem data (%s): %s", item.sValue.c_str(), e.what());
 			}
 			luaTable.CloseSubTableEntry();
 		}
@@ -164,8 +164,6 @@ void CdzVents::ProcessNotificationItem(CLuaTable& luaTable, int& index, const CE
 void CdzVents::ProcessNotification(lua_State* lua_state, const std::vector<CEventSystem::_tEventQueue>& items)
 {
 	int index = 1;
-	bool bHardware = false;
-	bool bCustomEvent = false;
 	CLuaTable luaTable(lua_state, "notification");
 
 	luaTable.OpenSubTableEntry("domoticz", 0, 0);
@@ -183,22 +181,17 @@ void CdzVents::ProcessNotification(lua_State* lua_state, const std::vector<CEven
 			case Notification::DZ_ALLEVENTRESET:
 				ProcessNotificationItem(luaTable, index, item);
 				break;
-			case Notification::DZ_CUSTOM:
-				bCustomEvent = true;
-				break;
 			default:
-				bHardware = true;
 				break;
 			}
 		}
 	}
-
 	luaTable.CloseSubTableEntry();
 
 	luaTable.OpenSubTableEntry("hardware", 0, 0);
-	if (bHardware)
+	for (const auto& item : items)
 	{
-		for (const auto& item : items)
+		if (item.reason == m_mainworker.m_eventsystem.REASON_NOTIFICATION)
 		{
 			switch (item.nValue)
 			{
@@ -215,13 +208,12 @@ void CdzVents::ProcessNotification(lua_State* lua_state, const std::vector<CEven
 			}
 		}
 	}
-
 	luaTable.CloseSubTableEntry();
 
 	luaTable.OpenSubTableEntry("customevent", 0, 0);
-	if (bCustomEvent)
+	for (const auto& item : items)
 	{
-		for (const auto& item : items)
+		if (item.reason == m_mainworker.m_eventsystem.REASON_NOTIFICATION)
 		{
 			switch (item.nValue)
 			{
@@ -233,8 +225,8 @@ void CdzVents::ProcessNotification(lua_State* lua_state, const std::vector<CEven
 			}
 		}
 	}
-
 	luaTable.CloseSubTableEntry();
+
 	luaTable.Publish();
 }
 

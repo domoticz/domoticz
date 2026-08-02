@@ -183,25 +183,25 @@
 		$("#dialog-add-edit-camera #cameraparamstable #cameraprotocol").change(function () {
 			OnCameraProtocolChange();
 		});
+		var dialog_addcamera_buttons = {};
+		dialog_addcamera_buttons[$.t("Cancel")] = function () {
+			$(this).dialog("close");
+		};
+		dialog_addcamera_buttons[$.t("Add")] = function () {
+			var csettings = GetCameraSettings();
+			if (typeof csettings == 'undefined') {
+				return;
+			}
+			$(this).dialog("close");
+			Addcamera();
+		};
 		$("#dialog-add-edit-camera").dialog({
 			resizable: false,
 			width: 720,
 			height: 520,
 			modal: true,
 			title: $.t('Add New Camera'),
-			buttons: {
-				"Cancel": function () {
-					$(this).dialog("close");
-				},
-				"Add": function () {
-					var csettings = GetCameraSettings();
-					if (typeof csettings == 'undefined') {
-						return;
-					}
-					$(this).dialog("close");
-					Addcamera();
-				}
-			},
+			buttons: dialog_addcamera_buttons,
 			close: function () {
 				$('#dialog-add-edit-camera #camfeed').attr("src", "images/camera_default.png");
 				$.testcamfeed = "";
@@ -218,25 +218,25 @@
 		$("#dialog-add-edit-camera #cameraparamstable #cameraprotocol").change(function () {
 			OnCameraProtocolChange();
 		});
+		var dialog_editcamera_buttons = {};
+		dialog_editcamera_buttons[$.t("Cancel")] = function () {
+			$(this).dialog("close");
+		};
+		dialog_editcamera_buttons[$.t("Update")] = function () {
+			var csettings = GetCameraSettings();
+			if (typeof csettings == 'undefined') {
+				return;
+			}
+			$(this).dialog("close");
+			Updatecamera(idx);
+		};
 		$("#dialog-add-edit-camera").dialog({
 			resizable: false,
 			width: 720,
 			height: 520,
 			modal: true,
-			title: 'Edit Camera',
-			buttons: {
-				"Cancel": function () {
-					$(this).dialog("close");
-				},
-				"Update": function () {
-					var csettings = GetCameraSettings();
-					if (typeof csettings == 'undefined') {
-						return;
-					}
-					$(this).dialog("close");
-					Updatecamera(idx);
-				}
-			},
+			title: $.t('Edit Camera'),
+			buttons: dialog_editcamera_buttons,
 			close: function () {
 				$.testcamfeed = "";
 				$('#dialog-add-edit-camera #camfeed').attr("src", "images/camera_default.png");

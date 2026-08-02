@@ -41,6 +41,7 @@ require.config({
 		'dashboardDynamic/ddWidgetSettings.controller': 'dashboardDynamic/ddWidgetSettings.controller',
 		'dashboardDynamic/ddDashboardManager.controller': 'dashboardDynamic/ddDashboardManager.controller',
 		'dashboardDynamic/ddToast.service':               'dashboardDynamic/ddToast.service',
+		'dashboardDynamic/ddSparkline.service':           'dashboardDynamic/ddSparkline.service',
 		'widgets/dzLightWidget':                      'widgets/dzLightWidget',
 		'widgets/dzUtilityWidget':                    'widgets/dzUtilityWidget',
 		'widgets/dzSceneWidget':                      'widgets/dzSceneWidget',

@@ -49,6 +49,11 @@ ENDIF()
 option(USE_PRECOMPILED_HEADER "Use precompiled header feature to speed up build time " YES)
 option(GIT_SUBMODULE "Check submodules during build" ON)
 option(ENABLE_ASAN "Build with address sanitizer" NO)
+option(BUILD_MASTER "Build the stable (master) channel: version string without build number" NO)
+
+IF(BUILD_MASTER)
+  add_definitions(-DBUILD_MASTER)
+ENDIF()
 
 ### COMPILER SETTINGS
 #
@@ -476,9 +481,12 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 # LUA
 #
 IF(USE_LUA_STATIC)
-  find_library(LUA_LIBRARIES NAMES liblua5.3.a)
+  # Debian/Ubuntu: liblua5.3.a ; Alpine: liblua-5.3.a
+  find_library(LUA_LIBRARIES NAMES liblua5.3.a liblua-5.3.a)
 ELSE(USE_LUA_STATIC)
-  find_library(LUA_LIBRARIES NAMES liblua5.3.so)
+  # Debian/Ubuntu provide the unversioned "liblua5.3.so" symlink via the -dev
+  # package, while Alpine ships the versioned "liblua-5.3.so.0" soname.
+  find_library(LUA_LIBRARIES NAMES liblua5.3.so liblua-5.3.so.0 liblua5.3.so.0 liblua-5.3.so)
 ENDIF(USE_LUA_STATIC)
 find_path(LUA_INCLUDE_DIRS NAMES lua5.3/lua.h)
 IF(LUA_LIBRARIES AND LUA_INCLUDE_DIRS)
@@ -564,7 +572,7 @@ MESSAGE(STATUS "Compiling Revision #${ProjectRevision}")
 MESSAGE(STATUS "###########################")
 
 # The version number.
-set (domoticz_VERSION_MAJOR 2025)
+set (domoticz_VERSION_MAJOR 2026)
 set (domoticz_VERSION_MINOR 2)
 set (domoticz_VERSION_PATCH ${ProjectRevision})
 
@@ -609,8 +617,11 @@ ENDIF(MQTT_LIBRARIES AND MQTT_INCLUDE_DIRS)
 # sqlite3
 IF(USE_BUILTIN_SQLITE)
   MESSAGE(STATUS "Using builtin SQLite library")
+  # the bundled sqlite-cmake defaults the SQL math functions to OFF; keep them
+  # enabled as before
+  set(SQLITE_ENABLE_MATH_FUNCTIONS ON CACHE BOOL "Enable the built-in SQL math functions.")
   add_subdirectory (extern/sqlite-amalgamation EXCLUDE_FROM_ALL)
-  target_link_libraries(domoticz SQLite::SQLite3)
+  target_link_libraries(domoticz sqlite::sqlite)
 ELSE(USE_BUILTIN_SQLITE)
   find_package(SQLite3)
   IF(SQLite3_FOUND)
@@ -867,6 +878,15 @@ IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 install(TARGETS domoticz DESTINATION ${CMAKE_INSTALL_PREFIX})
+# When libwebem is built as a shared library (BUILD_SHARED_LIBS=ON, the case on
+# some distros such as Alpine) the domoticz binary links against it dynamically,
+# so the versioned .so (and its symlinks) must be installed alongside the
+# executable. For a static webem (the default) it is baked into the binary and
+# there is nothing to install.
+get_target_property(_webem_type webem TYPE)
+IF(_webem_type STREQUAL "SHARED_LIBRARY")
+  install(TARGETS webem LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX})
+ENDIF()
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/License.txt DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/History.txt DESTINATION ${CMAKE_INSTALL_PREFIX})

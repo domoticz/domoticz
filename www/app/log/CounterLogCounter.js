@@ -247,9 +247,6 @@ define(['app', 'lodash', 'log/Chart', 'log/CounterLogParams', 'log/CounterLogCou
                     .concat(counterLogCounterSeriesSuppliers.counterTrendlineSeriesSuppliers(deviceTypeIndex, chart.valueMultipliers.m1, undefined, decimalPlacesDiv1(divider)))
                     .concat(counterLogCounterSeriesSuppliers.counterPreviousSeriesSupplier(deviceTypeIndex, chart.valueMultipliers.m1, undefined, decimalPlacesDiv1(divider)));
             },
-            preprocessMonthYearData: function (data) {
-                counterLogSeriesSupplier.fillMissingDays(data);
-            },
             extendDataRequestCompare: function (dataRequest) {
                 return dataRequest;
             },

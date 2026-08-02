@@ -154,6 +154,7 @@ int CCameraHandler::GetCameraAspectRatio(const std::string& CamIdx)
 
 int CCameraHandler::GetCameraAspectRatio(const uint64_t &CamID)
 {
+	std::lock_guard<std::mutex> l(m_mutex);
 	for (const auto& m : m_cameradevices)
 	{
 		if (m.ID == CamID)
@@ -164,10 +165,12 @@ int CCameraHandler::GetCameraAspectRatio(const uint64_t &CamID)
 
 bool CCameraHandler::TakeSnapshot(const std::string &CamID, std::vector<unsigned char> &camimage)
 {
-	if (is_number(CamID))
-		return TakeSnapshot(std::stoull(CamID), camimage);
-	else
-		return TakeSnapshot(CamID, camimage);
+	if (!is_number(CamID))
+	{
+		_log.Log(LOG_ERROR, "Camera: invalid camera id '%s'", CamID.c_str());
+		return false;
+	}
+	return TakeSnapshot(std::stoull(CamID), camimage);
 }
 
 bool CCameraHandler::TakeRaspberrySnapshotRaspiStill(std::vector<unsigned char>& camimage)
@@ -310,21 +313,34 @@ bool CCameraHandler::TakeUVCSnapshot(const std::string &device, std::vector<unsi
 
 bool CCameraHandler::TakeSnapshot(const uint64_t CamID, std::vector<unsigned char> &camimage)
 {
-	std::lock_guard<std::mutex> l(m_mutex);
+	// Copy the camera connection details under the lock, then release it before doing any
+	// (potentially slow or hanging) network/system I/O. Holding m_mutex across the snapshot
+	// fetch serializes all snapshots and - because IsDevSceneInCamera() shares this mutex and
+	// is called for every device/scene/light in the getdevices/getscenes/getlightswitches JSON
+	// endpoints - freezes the whole web UI whenever a camera becomes unresponsive (issue #6804).
+	std::string szURL;
+	std::string szUsername;
+	std::string szPassword;
+	std::string szImageURL;
+	{
+		std::lock_guard<std::mutex> l(m_mutex);
+		cameraDevice *pCamera = GetCamera(CamID);
+		if (pCamera == nullptr)
+			return false;
+		szURL = GetCameraURL(pCamera);
+		szUsername = pCamera->Username;
+		szPassword = pCamera->Password;
+		szImageURL = pCamera->ImageURL;
+	}
 
-	cameraDevice *pCamera = GetCamera(CamID);
-	if (pCamera == nullptr)
-		return false;
+	szURL += "/" + szImageURL;
+	stdreplace(szURL, "#USERNAME", szUsername);
+	stdreplace(szURL, "#PASSWORD", szPassword);
 
-	std::string szURL = GetCameraURL(pCamera);
-	szURL += "/" + pCamera->ImageURL;
-	stdreplace(szURL, "#USERNAME", pCamera->Username);
-	stdreplace(szURL, "#PASSWORD", pCamera->Password);
-
-	if (pCamera->ImageURL == "raspberry.cgi")
+	if (szImageURL == "raspberry.cgi")
 		return TakeRaspberrySnapshot(camimage);
-	if (pCamera->ImageURL == "uvccapture.cgi")
-		return TakeUVCSnapshot(pCamera->Username, camimage);
+	if (szImageURL == "uvccapture.cgi")
+		return TakeUVCSnapshot(szUsername, camimage);
 
 	std::vector<std::string> ExtraHeaders;
 	return HTTPClient::GETBinary(szURL, ExtraHeaders, camimage, 5);

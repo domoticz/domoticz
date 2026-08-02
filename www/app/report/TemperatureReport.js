@@ -231,12 +231,12 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
                     if (!data.isOnlyHumidity) {
                         vm.min = {
-                            date: dateFormat(data.minDate, 'd') + ' ' + $.t(dateFormat(data.minDate, 'mmmm')),
+                            date: dateFormat(data.minDate, 'UTC:d') + ' ' + $.t(dateFormat(data.minDate, 'UTC:mmmm')),
                             value: data.min
                         };
 
                         vm.max = {
-                            date: dateFormat(data.maxDate, 'd') + ' ' + $.t(dateFormat(data.maxDate, 'mmmm')),
+                            date: dateFormat(data.maxDate, 'UTC:d') + ' ' + $.t(dateFormat(data.maxDate, 'UTC:mmmm')),
                             value: data.max
                         };
 
@@ -273,7 +273,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     title: $.t('Day'),
                     data: 'date',
                     render: function (data) {
-                        return $.t(dateFormat(data, "d"));
+                        return $.t(dateFormat(data, "UTC:d"));
                     }
                 });
 
@@ -281,7 +281,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     title: '',
                     data: 'date',
                     render: function (data) {
-                        return $.t(dateFormat(data, "dddd"));
+                        return $.t(dateFormat(data, "UTC:dddd"));
                     }
                 });
             } else {

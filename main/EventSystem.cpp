@@ -966,7 +966,13 @@ void CEventSystem::GetCurrentMeasurementStates()
 			break;
 		case pTypeGeneral:
 		{
-			if (!splitresults.empty())
+			if (sitem.subType == sTypeAlert)
+			{
+				//nValue holds the alert level, sValue the alert text
+				utilityval = float(sitem.nValue);
+				isUtility = true;
+			}
+			else if (!splitresults.empty())
 			{
 				if ((sitem.subType == sTypeVisibility) || (sitem.subType == sTypeSolarRadiation))
 				{
@@ -980,8 +986,7 @@ void CEventSystem::GetCurrentMeasurementStates()
 					barometer = static_cast<float>(atof(splitresults[0].c_str()));
 					isBaro = true;
 				}
-				else if ((sitem.subType == sTypeAlert)
-					|| (sitem.subType == sTypeDistance)
+				else if ((sitem.subType == sTypeDistance)
 					|| (sitem.subType == sTypePercentage)
 					|| (sitem.subType == sTypeWaterflow)
 					|| (sitem.subType == sTypeCustom)
@@ -1443,8 +1448,9 @@ std::string CEventSystem::UpdateSingleState(
 	const unsigned char devType, const unsigned char subType, 
 	const _eSwitchType switchType, 
 	const std::string &lastUpdate, 
-	const unsigned char lastLevel, 
+	const unsigned char lastLevel,
 	const unsigned char batteryLevel,
+	const unsigned char signalLevel,
 	const std::map<std::string, std::string> & options
 )
 {
@@ -1463,7 +1469,8 @@ std::string CEventSystem::UpdateSingleState(
 	{
 		_tDeviceStatus replaceitem = itt->second;
 		replaceitem.deviceName = l_deviceName;
-		//replaceitem.batteryLevel = batteryLevel;
+		replaceitem.batteryLevel = batteryLevel;
+		replaceitem.signalLevel = signalLevel;
 		if (nValue != -1)
 			replaceitem.nValue = nValue;
 		if (!sValue.empty())
@@ -1494,7 +1501,8 @@ std::string CEventSystem::UpdateSingleState(
 		newitem.nValueWording = l_nValueWording;
 		newitem.lastUpdate = l_lastUpdate;
 		newitem.lastLevel = lastLevel;
-		//newitem.batteryLevel = batteryLevel;
+		newitem.batteryLevel = batteryLevel;
+		newitem.signalLevel = signalLevel;
 
 		if (!m_sql.m_bDisableDzVentsSystem)
 		{
@@ -1640,7 +1648,7 @@ void CEventSystem::ProcessDevice(
 		item.nValue = nValue;
 		item.sValue = osValue;
 
-		item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, osValue, devType, subType, switchType, "", 255, batterylevel, options);
+		item.nValueWording = UpdateSingleState(ulDevID, devname, nValue, osValue, devType, subType, switchType, "", 255, batterylevel, signallevel, options);
 		boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
 		auto itt = m_devicestates.find(ulDevID);
 		if (itt != m_devicestates.end())
@@ -1662,7 +1670,7 @@ void CEventSystem::ProcessDevice(
 		m_eventqueue.push(item);
 	}
 	else
-		UpdateSingleState(ulDevID, devname, nValue, osValue, devType, subType, switchType, lastUpdate, lastLevel, batterylevel, options);
+		UpdateSingleState(ulDevID, devname, nValue, osValue, devType, subType, switchType, lastUpdate, lastLevel, batterylevel, signallevel, options);
 }
 
 void CEventSystem::ProcessMinute()
@@ -2144,6 +2152,19 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	}
 	else if (Argument.find("utilitydevice") == 0)
 	{
+		{
+			//Text and Alert sensors carry their value as text in sValue
+			boost::shared_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+			auto ittState = m_devicestates.find(dindex);
+			if (
+				(ittState != m_devicestates.end())
+				&& (ittState->second.devType == pTypeGeneral)
+				&& ((ittState->second.subType == sTypeTextStatus) || (ittState->second.subType == sTypeAlert))
+				)
+			{
+				return ittState->second.sValue;
+			}
+		}
 		auto itt = m_utilityValuesByID.find(dindex);
 		if (itt != m_utilityValuesByID.end())
 		{

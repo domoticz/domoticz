@@ -99,8 +99,6 @@ namespace http
 {
 	namespace server
 	{
-		extern std::map<std::string, http::server::connection::_tRemoteClients> m_remote_web_clients;
-
 		struct _tGuiLanguage
 		{
 			const char* szShort;
@@ -1594,6 +1592,124 @@ namespace http
 			return true;
 		}
 
+#ifdef ENABLE_PYTHON
+		// Parse a plugin manifest XML once: extract the <plugin key="..."> attribute and the set of
+		// field names declared as password fields. The password attribute is matched case-insensitively
+		// ("true"/"TRUE"/"1") so a manifest typo does not silently expose a secret. Pure: operates on
+		// the manifest XML string, no I/O. keyOut is empty when the manifest has no key attribute.
+		static void ParsePluginManifest(const std::string &manifestXml, std::string &keyOut, std::set<std::string> &passwordFieldsOut)
+		{
+			keyOut.clear();
+			passwordFieldsOut.clear();
+			TiXmlDocument xmlDoc;
+			xmlDoc.Parse(manifestXml.c_str());
+			if (xmlDoc.Error())
+				return;
+			TiXmlNode *pPluginNode = xmlDoc.FirstChild("plugin");
+			if (!pPluginNode)
+				return;
+			TiXmlElement *pPluginEle = pPluginNode->ToElement();
+			if (!pPluginEle)
+				return;
+			const char *pKey = pPluginEle->Attribute("key");
+			if (pKey)
+				keyOut = pKey;
+			TiXmlNode *pParamsNode = pPluginNode->FirstChild("params");
+			if (!pParamsNode)
+				return;
+			auto isPasswordAttr = [](const char *pPassword) -> bool {
+				if (!pPassword)
+					return false;
+				std::string v(pPassword);
+				for (auto &c : v)
+					c = (char)tolower((unsigned char)c);
+				return (v == "true" || v == "1");
+			};
+			auto checkParam = [&](TiXmlElement *pEle) {
+				const char *pField = pEle->Attribute("field");
+				if (pField && isPasswordAttr(pEle->Attribute("password")))
+					passwordFieldsOut.insert(pField);
+			};
+			for (TiXmlNode *pChild = pParamsNode->FirstChild(); pChild; pChild = pChild->NextSibling())
+			{
+				TiXmlElement *pEle = pChild->ToElement();
+				if (!pEle)
+					continue;
+				std::string tagName = pEle->Value();
+				if (tagName == "param")
+					checkParam(pEle);
+				else if (tagName == "group")
+				{
+					for (TiXmlNode *pGroupChild = pEle->FirstChild("param"); pGroupChild; pGroupChild = pGroupChild->NextSibling("param"))
+					{
+						TiXmlElement *pGroupEle = pGroupChild->ToElement();
+						if (pGroupEle)
+							checkParam(pGroupEle);
+					}
+				}
+			}
+		}
+
+		// Build a map from each plugin's manifest "key" attribute (which matches the Hardware.Extra
+		// column) to its set of password field names. GetManifest() is keyed by plugin DIRECTORY, not by
+		// the key attribute, so it must be walked and re-keyed. Only plugins that declare at least one
+		// password field appear.
+		static std::map<std::string, std::set<std::string>> BuildPluginPasswordFieldsByKey()
+		{
+			std::map<std::string, std::set<std::string>> byKey;
+			Plugins::CPluginSystem pluginSystem;
+			for (const auto &manifest : *pluginSystem.GetManifest())
+			{
+				std::string key;
+				std::set<std::string> fields;
+				ParsePluginManifest(manifest.second, key, fields);
+				if (!key.empty() && !fields.empty())
+					byKey[key] = fields;
+			}
+			return byKey;
+		}
+
+		// Pure merge for the plugin Settings write path. Given the incoming Settings JSON (from the edit
+		// form, where password fields were stripped to empty on the read side), the currently stored
+		// Settings JSON, and the plugin's password field names, return the JSON to persist. A password
+		// field that arrives empty or missing keeps its stored value ("leave blank to keep"). Fails
+		// graceful: never wipes a readable stored secret, never throws.
+		static std::string MergePluginSettingsPreservePasswords(const std::string &incomingSettings, const std::string &storedSettings, const std::set<std::string> &passwordFields)
+		{
+			if (passwordFields.empty())
+				return incomingSettings;
+
+			Json::Value incoming;
+			bool incomingOk = !incomingSettings.empty() && ParseJSon(incomingSettings, incoming) && incoming.isObject();
+			Json::Value stored;
+			bool storedOk = !storedSettings.empty() && ParseJSon(storedSettings, stored) && stored.isObject();
+
+			// Incoming unusable (blank/invalid): preserve everything rather than wipe stored secrets.
+			if (!incomingOk)
+			{
+				if (!incomingSettings.empty())
+					_log.Log(LOG_ERROR, "WebServer: incoming plugin Settings not parseable on save; preserving stored values");
+				return storedOk ? storedSettings : incomingSettings;
+			}
+			// Stored unreadable: nothing recoverable to preserve; keep the incoming values as-is. A
+			// corrupt stored blob is already lost; warn so it is not silent.
+			if (!storedOk)
+			{
+				if (!storedSettings.empty())
+					_log.Log(LOG_ERROR, "WebServer: stored plugin Settings not parseable on save; cannot preserve existing secrets");
+				return incomingSettings;
+			}
+
+			for (const auto &field : passwordFields)
+			{
+				bool blank = !incoming.isMember(field) || incoming[field].asString().empty();
+				if (blank && stored.isMember(field))
+					incoming[field] = stored[field];
+			}
+			return JSonToRawString(incoming);
+		}
+#endif
+
 		void CWebServer::Cmd_AddHardware(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != URIGHTS_ADMIN)
@@ -1863,6 +1979,20 @@ namespace http
 				else if (htype == HTYPE_PythonPlugin)
 				{
 					sport = request::findValue(&req, "serialport");
+#ifdef ENABLE_PYTHON
+					{
+						// Preserve custom password fields left blank on save ("leave blank to keep").
+						// Extra holds the plugin key; a password field submitted empty keeps its stored value.
+						std::map<std::string, std::set<std::string>> pluginPasswordFields = BuildPluginPasswordFieldsByKey();
+						auto itPwd = pluginPasswordFields.find(extra);
+						if (itPwd != pluginPasswordFields.end() && !itPwd->second.empty())
+						{
+							std::vector<std::vector<std::string>> storedRes = m_sql.safe_query("SELECT Settings FROM Hardware WHERE ID=%q", idx.c_str());
+							std::string storedSettings = storedRes.empty() ? "" : storedRes[0][0];
+							settings = MergePluginSettingsPreservePasswords(settings, storedSettings, itPwd->second);
+						}
+					}
+#endif
 					m_sql.safe_query("UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, LogLevel=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', "
 						"Extra='%q', Mode1='%q', Mode2='%q', Mode3='%q', Mode4='%q', Mode5='%q', Mode6='%q', DataTimeout=%d, Settings='%q' WHERE (ID == '%q')",
 						name.c_str(), (senabled == "true") ? 1 : 0, htype, iLogLevelEnabled, address.c_str(), port, sport.c_str(), username.c_str(), password.c_str(),
@@ -3314,6 +3444,12 @@ namespace http
 
 		void CWebServer::Cmd_UpdateDevices(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			if (session.rights == URIGHTS_VIEWER || session.rights == URIGHTS_NONE)
+			{
+				session.reply_status = reply::forbidden;
+				return; // only user or higher allowed
+			}
+
 			std::string script = request::findValue(&req, "script");
 			if (script.empty())
 			{
@@ -4546,55 +4682,15 @@ namespace http
 			if (!result.empty())
 			{
 #ifdef ENABLE_PYTHON
-				// Pre-build password field sets per plugin key to avoid per-entry XML parsing
+				// Map plugin key -> password field names, built once, but only when the result actually
+				// contains a plugin row (avoids parsing manifests for non-plugin queries).
 				std::map<std::string, std::set<std::string>> pluginPasswordFields;
 				{
-					Plugins::CPluginSystem PluginMgr;
-					std::map<std::string, std::string> *mPluginXml = PluginMgr.GetManifest();
-					for (const auto &type : *mPluginXml)
-					{
-						TiXmlDocument xmlDoc;
-						xmlDoc.Parse(type.second.c_str());
-						if (xmlDoc.Error())
-							continue;
-						TiXmlNode *pPluginNode = xmlDoc.FirstChild("plugin");
-						if (!pPluginNode)
-							continue;
-						TiXmlElement *pPluginEle = pPluginNode->ToElement();
-						if (!pPluginEle)
-							continue;
-						const char *pKey = pPluginEle->Attribute("key");
-						if (!pKey)
-							continue;
-						std::string pluginKey = pKey;
-						TiXmlNode *pParamsNode = pPluginNode->FirstChild("params");
-						if (!pParamsNode)
-							continue;
-						auto checkParam = [&](TiXmlElement *pEle) {
-							const char *pField = pEle->Attribute("field");
-							const char *pPassword = pEle->Attribute("password");
-							if (pField && pPassword && std::string(pPassword) == "true")
-								pluginPasswordFields[pluginKey].insert(pField);
-						};
-						for (TiXmlNode *pChild = pParamsNode->FirstChild(); pChild; pChild = pChild->NextSibling())
-						{
-							TiXmlElement *pEle = pChild->ToElement();
-							if (!pEle)
-								continue;
-							std::string tagName = pEle->Value();
-							if (tagName == "param")
-								checkParam(pEle);
-							else if (tagName == "group")
-							{
-								for (TiXmlNode *pGroupChild = pEle->FirstChild("param"); pGroupChild; pGroupChild = pGroupChild->NextSibling("param"))
-								{
-									TiXmlElement *pGroupEle = pGroupChild->ToElement();
-									if (pGroupEle)
-										checkParam(pGroupEle);
-								}
-							}
-						}
-					}
+					bool hasPlugin = false;
+					for (const auto &sd : result)
+						if ((_eHardwareTypes)atoi(sd[3].c_str()) == HTYPE_PythonPlugin) { hasPlugin = true; break; }
+					if (hasPlugin)
+						pluginPasswordFields = BuildPluginPasswordFieldsByKey();
 				}
 #endif
 				int ii = 0;
@@ -4646,17 +4742,30 @@ namespace http
 						if (ParseJSon(sd[18], settingsJson) && settingsJson.isObject())
 						{
 #ifdef ENABLE_PYTHON
-							// Strip password-type field values using pre-built cache
-							std::string pluginKey = sd[9]; // Extra holds plugin key
+							// Strip password-type field values so secrets never reach the browser, and
+							// report which ones are set so the UI can show "leave blank to keep".
+							std::string pluginKey = sd[9]; // Extra holds the plugin key
 							auto itPwdFields = pluginPasswordFields.find(pluginKey);
 							if (itPwdFields != pluginPasswordFields.end())
 							{
+								Json::Value pwdSet(Json::objectValue);
 								for (const auto &field : itPwdFields->second)
 								{
 									if (settingsJson.isMember(field))
+									{
+										if (!settingsJson[field].asString().empty())
+											pwdSet[field] = true;
 										settingsJson[field] = "";
+									}
 								}
+								if (!pwdSet.empty())
+									root["result"][ii]["SettingsPwdSet"] = pwdSet;
 							}
+#else
+							// Without Python support the plugin manifest is unavailable, so password
+							// fields cannot be identified and stripped; do not send stored plugin
+							// settings of lingering plugin rows at all.
+							settingsJson = Json::objectValue;
 #endif
 							root["result"][ii]["Settings"] = settingsJson;
 						}
@@ -7000,19 +7109,22 @@ namespace http
 
 			int ii = 0;
 			root["title"] = "rclientslog";
-			for (const auto& itt_rc : m_remote_web_clients)
+			// m_webservers aggregates across every running server (plain and
+			// secure), since the tracked-clients map is now per-cWebem-instance
+			// rather than one process-wide map shared by all of them.
+			for (const auto& rc : m_webservers.GetRemoteClients())
 			{
 				char timestring[128];
 				timestring[0] = 0;
 				struct tm timeinfo;
-				localtime_r(&itt_rc.second.last_seen, &timeinfo);
+				localtime_r(&rc.last_seen, &timeinfo);
 
 				strftime(timestring, sizeof(timestring), "%a, %d %b %Y %H:%M:%S %z", &timeinfo);
 
 				root["result"][ii]["date"] = timestring;
-				root["result"][ii]["address"] = itt_rc.second.host_remote_endpoint_address_;
-				root["result"][ii]["port"] = itt_rc.second.host_local_endpoint_port_;
-				root["result"][ii]["req"] = itt_rc.second.host_last_request_uri_;
+				root["result"][ii]["address"] = rc.host_remote_endpoint_address_;
+				root["result"][ii]["port"] = rc.host_local_endpoint_port_;
+				root["result"][ii]["req"] = rc.host_last_request_uri_;
 				ii++;
 			}
 			root["status"] = "OK";

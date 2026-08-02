@@ -337,7 +337,7 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 					}
 				}
 			}
-			if (root.isObject())
+			if (root.isObject() || root.isArray())
 				return "";
 			std::string retVal;
 			if (root.isDouble())
@@ -398,11 +398,18 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 				}
 			}
 			if (suffix.empty())
-				return root.asString();
+			{
+				if (root.isObject() || root.isArray())
+					return ""; //we don't support arrays as return value, probably a configuration issue
+				else
+					return root.asString();
+			}
 			else
 			{
 				if (root[suffix].empty())
 					return ""; //not found
+				if (root[suffix].isObject() || root[suffix].isArray())
+					return ""; //we don't support arrays as return value, probably a configuration issue
 				return root[suffix].asString();
 			}
 			return "";
@@ -420,7 +427,11 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 		}
 		stdstring_trim(szKey);
 		if (!root[szKey].empty())
+		{
+			if (root[szKey].isObject() || root[szKey].isArray())
+				return ""; //we don't support arrays as return value, probably a configuration issue
 			return root[szKey].asString();
+		}
 	}
 	catch (const std::exception& e)
 	{
@@ -525,15 +536,18 @@ void MQTTAutoDiscover::FixCommandTopic(std::string& command_topic, std::string& 
 // Function to parse and process the template string
 bool MQTTAutoDiscover::parseMapTemplate(const std::string& templateStr, std::vector<std::tuple<std::string, std::string>>& valuesMap, std::string& szKey)
 {
-	// Define a regex pattern to match the dictionary in the template string
-	std::regex dictPattern(R"(\{\% set values.*?=.*?\{(.*?)\} %\})");
+	// Define a regex pattern to match a "{% set <name> = {...} %}" dictionary assignment, name is not fixed
+	std::regex dictPattern(R"(\{\%\s*set\s+([A-Za-z_]\w*)\s*=\s*\{(.*?)\}\s*%\})");
 	std::smatch matches;
 
 	valuesMap.clear();
 
 	std::string dictString;
-	if (std::regex_search(templateStr, matches, dictPattern)) {
-		dictString = matches[1].str();
+	std::string dictName;
+	bool bHaveNamedDict = std::regex_search(templateStr, matches, dictPattern);
+	if (bHaveNamedDict) {
+		dictName = matches[1].str();
+		dictString = matches[2].str();
 	}
 	else {
 		std::vector<std::string> strarray;
@@ -591,14 +605,45 @@ bool MQTTAutoDiscover::parseMapTemplate(const std::string& templateStr, std::vec
 
 	if (!szKey.empty())
 		return true;
-	// Extract the placeholder in the template string
-	std::regex placeholderPattern(R"(\{\{.*?values\[(.*?)\].*?\}\})");
-	if (std::regex_search(templateStr, matches, placeholderPattern)) {
-		szKey = matches[1].str();
-		szKey.erase(0, szKey.find_first_not_of(" \t\r\n'\""));
-		szKey.erase(szKey.find_last_not_of(" \t\r\n'\"") + 1);
+
+	// Extract the placeholder in the template string, using the captured dictionary name (default to "values" for backward compatibility)
+	std::string szDictName = bHaveNamedDict ? dictName : "values";
+	std::regex placeholderPattern("\\{\\{.*?" + szDictName + "\\[(.*?)\\].*?\\}\\}");
+	if (!std::regex_search(templateStr, matches, placeholderPattern)) {
+		szKey.clear();
+		return false;
+	}
+
+	std::string szIndex = matches[1].str();
+	szIndex.erase(0, szIndex.find_first_not_of(" \t\r\n'\""));
+	szIndex.erase(szIndex.find_last_not_of(" \t\r\n'\"") + 1);
+
+	if (szIndex.find("value_json.") != std::string::npos)
+	{
+		szKey = szIndex;
 		return true;
 	}
+
+	// The placeholder index is not a direct value_json reference, it could be an alias
+	// defined earlier in the template, for example: {% set stringifiedValue = value_json.mode | string %}
+	std::regex identifierPattern(R"(^[A-Za-z_]\w*$)");
+	if (std::regex_match(szIndex, identifierPattern))
+	{
+		std::regex aliasPattern("\\{\\%\\s*set\\s+" + szIndex + "\\s*=\\s*(.*?)\\s*%\\}");
+		std::smatch aliasMatches;
+		if (std::regex_search(templateStr, aliasMatches, aliasPattern))
+		{
+			std::string szExpr = aliasMatches[1].str();
+			szExpr = szExpr.substr(0, szExpr.find('|'));
+			stdstring_trim(szExpr);
+			if (szExpr.find("value_json.") != std::string::npos)
+			{
+				szKey = szExpr;
+				return true;
+			}
+		}
+	}
+
 	szKey.clear();
 	return false;
 }
@@ -941,6 +986,11 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		if (!root["enabled_by_default"].empty())
 			pSensor->bEnabled_by_default = root["enabled_by_default"].asBool();
 
+		if (!root["force_update"].empty())
+			pSensor->bForce_update = root["force_update"].asBool();
+		else if (!root["frc_upd"].empty())
+			pSensor->bForce_update = root["frc_upd"].asBool();
+
 		if (!root["availability_topic"].empty())
 			pSensor->availability_topic = root["availability_topic"].asString();
 		else if (!root["avty_t"].empty())
@@ -1059,6 +1109,15 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->value_template = root["value_template"].asString();
 		else if (!root["val_tpl"].empty())
 			pSensor->value_template = root["val_tpl"].asString();
+		//Special case for Select value_template that maps a raw wire value to a human readable option
+		if ((pSensor->component_type == "select") && (!pSensor->value_template.empty()))
+		{
+			std::string szMappedKey;
+			if (parseMapTemplate(pSensor->value_template, pSensor->select_value_map, szMappedKey))
+				pSensor->value_template = szMappedKey;
+			else
+				pSensor->select_value_map.clear();
+		}
 		CleanValueTemplate(pSensor->value_template);
 
 		if (!root["state_value_template"].empty())
@@ -1081,6 +1140,11 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->device_class = root["device_class"].asString();
 		else if (!root["dev_cla"].empty())
 			pSensor->device_class = root["dev_cla"].asString();
+
+		if (!root["entity_category"].empty())
+			pSensor->entity_category = root["entity_category"].asString();
+		else if (!root["ent_cat"].empty())
+			pSensor->entity_category = root["ent_cat"].asString();
 
 		if (!root["payload_on"].empty())
 			pSensor->payload_on = root["payload_on"].asString();
@@ -2616,19 +2680,66 @@ void MQTTAutoDiscover::handle_auto_discovery_battery(_tMQTTASensor* pSensor, con
 	if (is_number(pSensor->last_value))
 	{
 		iLevel = atoi(pSensor->last_value.c_str());
-	} else {
-		//could be a boolean isLow indicator
+	}
+	else
+	{
+		//could be a boolean isLow indicator (dead path for zwave-js-ui, which sends isLow as a binary_sensor)
 		if (pSensor->last_value == "true")
 			iLevel = 0;
 	}
 
+	//Update the in-memory battery level for every sensor of this node, and collect the distinct
+	//DeviceID forms its device rows use (standalone = unique_id, combined temp/hum/baro =
+	//device_identifiers) so all of the node's rows can be updated in a single statement.
+	std::set<std::string> deviceIDs;
 	for (auto& itt : m_discovered_sensors)
 	{
 		_tMQTTASensor* pDevSensor = &itt.second;
 		if (pDevSensor->device_identifiers == pSensor->device_identifiers)
 		{
 			pDevSensor->BatteryLevel = iLevel;
+			deviceIDs.insert(pDevSensor->unique_id);
 		}
+	}
+	deviceIDs.insert(pSensor->device_identifiers);
+
+	//Build a quoted, comma-separated IN() list. DeviceIDs come from the broker, so escape each as
+	//a SQL string literal (double any single quote) before embedding.
+	std::string inList;
+	for (const auto& id : deviceIDs)
+	{
+		if (!inList.empty())
+			inList += ",";
+		inList += "'";
+		for (const char c : id)
+		{
+			if (c == '\'')
+				inList += '\'';
+			inList += c;
+		}
+		inList += "'";
+	}
+
+	//Persist the new battery level to every already-created device row of this node, so all of the
+	//node's devices show the current battery immediately instead of lazily updating only when each
+	//device next emits state. First select just the rows that will actually change (none in steady
+	//state, so this is a cheap indexed no-op), then update them in one statement and refresh the
+	//event system for exactly those rows. We touch BatteryLevel only (never nValue/sValue), so this
+	//does not trigger scenes/scripts.
+	std::vector<std::vector<std::string> > results = m_sql.safe_query(
+		"SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (BatteryLevel<>%d) AND (DeviceID IN (%s))",
+		m_HwdID, iLevel, inList.c_str());
+	if (results.empty())
+		return;
+
+	m_sql.safe_query(
+		"UPDATE DeviceStatus SET BatteryLevel=%d WHERE (HardwareID==%d) AND (BatteryLevel<>%d) AND (DeviceID IN (%s))",
+		iLevel, m_HwdID, iLevel, inList.c_str());
+
+	for (const auto& sd : results)
+	{
+		uint64_t rowID = std::stoull(sd[0]);
+		m_mainworker.m_eventsystem.UpdateBatteryLevel(rowID, (unsigned char)iLevel);
 	}
 }
 
@@ -2732,8 +2843,27 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 		|| (pSensor->object_id == "battery_level")
 		)
 	{
+		//A battery diagnostic entity of the node: absorb it into the node's battery level
+		//indicator instead of creating a standalone device
 		handle_auto_discovery_battery(pSensor, message);
 		return;
+	}
+	if (
+		(pSensor->device_class == "battery")
+		&& (pSensor->entity_category == "diagnostic")
+		&& is_number(pSensor->last_value)
+		)
+	{
+		//Also detect a battery percentage by the standard discovery markers, so it is not tied to a
+		//specific object_id naming. Restricted to numeric values; the main dispatch routes only
+		//component_type "sensor" here, so the isLow binary_sensor (which also carries device_class
+		//"battery") is not routed to this percentage path.
+		//entity_category "diagnostic" is what bridges set on the battery entity of a battery powered
+		//node. Without it the sensor is the node's primary state instead: home energy storage systems
+		//(inverters, Zendure, EcoFlow, ...) report their state of charge with device_class "battery"
+		//while running on mains, and that charge level is not a battery level of the node.
+		//Keep the sensor as a standalone device as well, so the node's own charge level stays visible.
+		handle_auto_discovery_battery(pSensor, message);
 	}
 
 	if (
@@ -3236,6 +3366,18 @@ void MQTTAutoDiscover::handle_auto_discovery_select(_tMQTTASensor* pSensor, cons
 		{
 			bool isNull = false;
 			current_mode = GetValueFromTemplate(root, pSensor->value_template, isNull);
+			if (!pSensor->select_value_map.empty())
+			{
+				//The raw value received on the wire needs to be translated to the human readable option
+				for (const auto& itt : pSensor->select_value_map)
+				{
+					if (std::get<0>(itt) == current_mode)
+					{
+						current_mode = std::get<1>(itt);
+						break;
+					}
+				}
+			}
 			if ((pSensor->state_topic == topic) && current_mode.empty())
 			{
 				Log(LOG_ERROR, "Select device no idea how to interpret state values (%s)", pSensor->unique_id.c_str());
@@ -4583,7 +4725,7 @@ void MQTTAutoDiscover::handle_auto_discovery_text(_tMQTTASensor* pSensor, const 
 		std::string szIdx = result[0].at(0);
 		std::string devname = result[0].at(1);
 		std::string oldsValue = result[0].at(3);
-		if (oldsValue != pSensor->sValue)
+		if (pSensor->bForce_update || oldsValue != pSensor->sValue)
 		{
 			//Prevent log entry
 			//m_sql.safe_query(
@@ -5864,6 +6006,45 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 		{
 			newState = pSensor->select_options.at(iLevel);
 			szCommandTopic = pSensor->command_topic;
+
+			//Some selects need the human readable option translated back to the raw value expected on the wire
+			std::string szRawValue;
+			if (!pSensor->command_template.empty())
+			{
+				std::vector<std::tuple<std::string, std::string>> commandValueMap;
+				std::string szCommandKey;
+				try
+				{
+					parseMapTemplate(pSensor->command_template, commandValueMap, szCommandKey);
+				}
+				catch (const std::exception& e)
+				{
+					Log(LOG_ERROR, "Error parsing command_template for Select device %s! (%s)", pSensor->unique_id.c_str(), e.what());
+					commandValueMap.clear();
+				}
+				for (const auto& itt : commandValueMap)
+				{
+					if (std::get<0>(itt) == newState)
+					{
+						szRawValue = std::get<1>(itt);
+						break;
+					}
+				}
+			}
+			if (szRawValue.empty() && !pSensor->select_value_map.empty())
+			{
+				//No usable command_template mapping, invert the value_template mapping instead
+				for (const auto& itt : pSensor->select_value_map)
+				{
+					if (std::get<1>(itt) == newState)
+					{
+						szRawValue = std::get<0>(itt);
+						break;
+					}
+				}
+			}
+			if (!szRawValue.empty())
+				newState = szRawValue;
 		}
 		if (newState.empty())
 		{

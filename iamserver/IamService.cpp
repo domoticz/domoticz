@@ -47,6 +47,14 @@ namespace http
 		{
 			bool bAuthenticated = false;
 			bool bAuthorized = false;
+			// Whether client_id named a client we actually know. RFC 6749
+			// section-4.1.2.1 requires that when the client identifier is missing or
+			// invalid the user-agent is NOT redirected to the supplied redirect_uri:
+			// nothing has established that the URI belongs to anyone, so honouring it
+			// turns this endpoint into an open redirect for any unauthenticated
+			// caller. Declared before the first `goto exitfunc` below so the jump
+			// does not skip its initialisation.
+			bool bKnownClient = false;
 
 			std::string code;
 			std::string error = "unknown_error";
@@ -76,6 +84,7 @@ namespace http
 							iClient = FindClient(client_id.c_str());
 							if (iClient != -1)
 							{
+								bKnownClient = true;
 								std::string Username;
 
 								if(req.method != "POST")
@@ -203,6 +212,23 @@ namespace http
 				_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Wrong/Missing redirect_uri (%s)!", redirect_uri.c_str());
 			}
 		exitfunc:
+			// Only bounce the user-agent to redirect_uri once the client behind it is
+			// known. Without this an unauthenticated caller supplying no client_id at
+			// all still received "302 Location: <whatever they asked for>", which is a
+			// plain open redirect usable for phishing -- the error carried in the
+			// query string does not stop the browser following it. RFC 6749
+			// section-4.1.2.1 requires the error be shown to the user instead.
+			if (!bKnownClient || redirect_uri.empty() || !ValidRedirectUri(redirect_uri))
+			{
+				_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Refusing to redirect to an unverified redirect_uri (%s); client known: %s",
+					   redirect_uri.c_str(), bKnownClient ? "yes" : "no");
+				rep.status = reply::bad_request;
+				rep.content = "{\n\t\"error\" : \"" + error + "\"\n}\n";
+				reply::add_header_content_type(&rep, "application/json;charset=UTF-8");
+				reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
+				return;
+			}
+
 			// Redirect the User back to origin using the redirect_uri
 			std::stringstream result;
 			if(redirect_uri.find("?") != std::string::npos)
@@ -215,8 +241,12 @@ namespace http
 			else
 				result << "error=" << CURLEncode::URLEncode(error);
 
+			// state is echoed back verbatim from the request, so it must be encoded
+			// like code/error above. Unencoded, a state of "x&code=ATTACKER" injected
+			// extra parameters into the client's callback -- including `code`, the one
+			// parameter the callback is there to read.
 			if (!state.empty())
-				result << "&state=" << state;
+				result << "&state=" << CURLEncode::URLEncode(state);
 
 			reply::add_header(&rep, "Location", result.str());
 			rep.status = reply::moved_temporarily;

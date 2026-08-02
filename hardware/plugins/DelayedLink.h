@@ -180,8 +180,6 @@ namespace Plugins {
 			std::string extension;
 #ifdef WIN32
 			extension = ".dll"; // Windows uses .dll
-#elif defined(__FreeBSD__)
-			extension = "m";    // FreeBSD uses 'm' suffix
 #endif
 			// Loop through the set (it is already sorted in descending order)
             for (const auto& version : python_versions) {

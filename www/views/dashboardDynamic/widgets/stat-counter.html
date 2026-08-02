@@ -6,7 +6,7 @@
         <p>Select a device in settings</p>
     </div>
 
-    <div ng-if="ctrl.widgetDef.config.deviceIdx" style="width:100%">
+    <div ng-if="ctrl.widgetDef.config.deviceIdx" class="dd-stat-counter-content" style="width:100%">
         <div class="dd-stat-label" ng-bind="ctrl.label"></div>
         <a class="dd-stat-link" ng-href="#/Devices/{{ctrl.widgetDef.config.deviceIdx}}/Log">
             <div class="dd-stat-value-row">
@@ -19,7 +19,10 @@
         <div ng-if="ctrl.counterDelivTotal !== null" class="dd-stat-sub">
             {{'Total Delivery' | translate}}: {{ctrl.counterDelivTotal}}
         </div>
-        <dd-stat-bar num-val="ctrl.numVal" ranges="ctrl.widgetDef.config.ranges"></dd-stat-bar>
     </div>
+
+    <dd-stat-bar ng-if="ctrl.widgetDef.config.deviceIdx" num-val="ctrl.numVal" ranges="ctrl.widgetDef.config.ranges"></dd-stat-bar>
+
+    <div class="dd-widget-spark" id="{{ ctrl.sparkId }}" ng-show="ctrl.showGraph"></div>
 
 </div>

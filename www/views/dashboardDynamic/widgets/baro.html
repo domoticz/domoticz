@@ -55,6 +55,18 @@
                     <div class="fcw-raindrop fcw-rd7"></div>
                     <div class="fcw-raindrop fcw-rd8"></div>
                 </div>
+                <div ng-if="ctrl.weatherScene === 'fcw-thunderstorm'">
+                    <div class="fcw-cloud fcw-cloud-thunder"></div>
+                    <div class="fcw-raindrop fcw-rd1"></div>
+                    <div class="fcw-raindrop fcw-rd2"></div>
+                    <div class="fcw-raindrop fcw-rd3"></div>
+                    <div class="fcw-raindrop fcw-rd4"></div>
+                    <div class="fcw-raindrop fcw-rd5"></div>
+                    <div class="fcw-raindrop fcw-rd6"></div>
+                    <div class="fcw-raindrop fcw-rd7"></div>
+                    <div class="fcw-raindrop fcw-rd8"></div>
+                    <div class="fcw-bolt"></div>
+                </div>
                 <div ng-if="ctrl.weatherScene === 'fcw-snow'">
                     <div class="fcw-cloud fcw-cloud-snow"></div>
                     <div class="fcw-snowdot fcw-sd1"></div>
@@ -85,15 +97,18 @@
         <span class="dd-stat-label dd-baro-title" ng-show="ctrl.title" ng-bind="ctrl.title"></span>
 
         <div class="dd-weather-content">
-            <div class="dd-weather-temp">
+            <a ng-href="{{ ctrl.logLink }}" class="dd-weather-temp dd-baro-value-link"
+               title="{{ 'View barometer log' | translate }}">
                 {{ ctrl.pressure !== null ? ctrl.pressure : '\u2014' }}<span class="dd-weather-unit">hPa</span>
-            </div>
+            </a>
             <div class="dd-weather-forecast" ng-show="ctrl.forecastStr" ng-bind="ctrl.forecastStr"></div>
         </div>
 
         <a ng-href="{{ ctrl.logLink }}" class="dd-baro-log-icon" title="View barometer log">
             <img src="images/gauge48.png" width="32" height="32">
         </a>
+
+        <div class="dd-widget-spark" id="{{ ctrl.sparkId }}" ng-show="ctrl.showGraph"></div>
 
     </div>
 </div>

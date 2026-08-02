@@ -152,6 +152,15 @@ function stripHTMLTags(text) {
     return text.replace(/<[^>]*>/g, '');
 }
 
+function htmlToBrLines(text) {
+    if (typeof text !== 'string') return text;
+    return text
+        .replace(/<\s*br\s*\/?>/gi, '\n')
+        .replace(/<[^>]*>/g, '')
+        .replace(/(\r\n|\n\r|\r|\n)+/g, '<br />')
+        .replace(/^(<br \/>)+|(<br \/>)+$/g, '');
+}
+
 function stripCssComments(cssText) {
     var out = '', i = 0, len = cssText.length, inStr = false, strCh = '';
     while (i < len) {
@@ -457,6 +466,7 @@ function Device(item) {
         this.type = item.Type;
         this.devSceneType = ((item.Type == 'Scene') || (item.Type == 'Group')) ? 1 : 0;
         this.subtype = item.SubType;
+        this.showIcon = (typeof item.ShowIcon != 'undefined') ? item.ShowIcon : '1';
         this.status = (typeof item.Status == 'undefined') ? '' : item.Status;
         this.lastupdate = item.LastUpdate;
         this.protected = item.Protected;
@@ -548,7 +558,7 @@ function Device(item) {
                 if (this.hasNewLine) {
                     var oText = makeSVGmultiline(
                         { transform: 'translate(' + Device.iconSize / 2 + ',' + (Device.iconSize + (Device.elementPadding * 1.5) + 1) + ')', 'text-anchor': 'middle', 'font-weight': 'bold', 'font-size': tileFontSize },
-                        $.t(this.smallStatus.replace('Watt', 'W')),
+                        htmlToBrLines(TranslateStatus(this.status)),
                         '',
                         tileMaxWidth,
                         0,
@@ -585,37 +595,44 @@ function Device(item) {
             }
         }
 
-        if (Device.useSVGtags == true) {
-            el = makeSVGnode('image', {
-                id: this.uniquename + "_Icon",
-                'class': 'DeviceIcon',
-                'xlink:href': this.image,
-                width: Device.iconSize, height: Device.iconSize,
-                onmouseover: (this.moveable == true) ? '' : "Device.popup('" + this.uniquename + "');",
-                onmouseout: (this.moveable == true) ? '' : "Device.popupCancelDelay();",
-                onclick: ((this.moveable == true)||(this.onClick=='')) ? '' : "Device.popupCancelDelay(); " + (this.controlable ? '' : '$("body").trigger("pageexit"); ') + this.onClick,
-                ontouchstart: (this.moveable == true) ? '' : "Device.ignoreClick=true; Device.popup('" + this.uniquename + "');",
-                ontouchend: (this.moveable == true) ? '' : "Device.popupCancelDelay();",
-                style: (this.moveable == true) ? 'cursor:move;' : 'cursor:hand; -webkit-user-select: none;'
-            }, '');
-            el.appendChild(makeSVGnode('title', null, this.name));
+        if (this.subtype == 'Text' && this.showIcon == '0') {
+            var existing = document.getElementById(this.uniquename + "_Icon");
+            if (existing != undefined) {
+                existing.parentNode.removeChild(existing);
+            }
         } else {
-            el = makeSVGnode('img', {
-                id: this.uniquename + "_Icon",
-                'src': this.image,
-                alt: this.name,
-                width: Device.iconSize, height: Device.iconSize,
-                onmouseover: (this.moveable == true) ? '' : "Device.popup('" + this.uniquename + "');",
-                onclick: (this.moveable == true) ? '' : "Device.popup('" + this.uniquename + "');",
-                style: (this.moveable == true) ? 'cursor:move;' : 'cursor:hand;'
-            }, '');
-        }
+            if (Device.useSVGtags == true) {
+                el = makeSVGnode('image', {
+                    id: this.uniquename + "_Icon",
+                    'class': 'DeviceIcon',
+                    'xlink:href': this.image,
+                    width: Device.iconSize, height: Device.iconSize,
+                    onmouseover: (this.moveable == true) ? '' : "Device.popup('" + this.uniquename + "');",
+                    onmouseout: (this.moveable == true) ? '' : "Device.popupCancelDelay();",
+                    onclick: ((this.moveable == true)||(this.onClick=='')) ? '' : "Device.popupCancelDelay(); " + (this.controlable ? '' : '$("body").trigger("pageexit"); ') + this.onClick,
+                    ontouchstart: (this.moveable == true) ? '' : "Device.ignoreClick=true; Device.popup('" + this.uniquename + "');",
+                    ontouchend: (this.moveable == true) ? '' : "Device.popupCancelDelay();",
+                    style: (this.moveable == true) ? 'cursor:move;' : 'cursor:hand; -webkit-user-select: none;'
+                }, '');
+                el.appendChild(makeSVGnode('title', null, this.name));
+            } else {
+                el = makeSVGnode('img', {
+                    id: this.uniquename + "_Icon",
+                    'src': this.image,
+                    alt: this.name,
+                    width: Device.iconSize, height: Device.iconSize,
+                    onmouseover: (this.moveable == true) ? '' : "Device.popup('" + this.uniquename + "');",
+                    onclick: (this.moveable == true) ? '' : "Device.popup('" + this.uniquename + "');",
+                    style: (this.moveable == true) ? 'cursor:move;' : 'cursor:hand;'
+                }, '');
+            }
 
-        var existing = document.getElementById(this.uniquename + "_Icon");
-        if (existing != undefined) {
-            existing.parentNode.replaceChild(el, existing);
-        } else {
-            parent.appendChild(el);
+            var existing = document.getElementById(this.uniquename + "_Icon");
+            if (existing != undefined) {
+                existing.parentNode.replaceChild(el, existing);
+            } else {
+                parent.appendChild(el);
+            }
         }
 
         return el;
@@ -1452,10 +1469,10 @@ function Alert(item) {
         this.parent.constructor(item);
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
         this.NotifyLink = "";   
-        this.data = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+        this.data = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />');
         if (this.data.indexOf("<br />") != -1) {
             this.hasNewLine = true;
-        }       
+        }
         this.status = this.data;
         this.data = "";
         if (typeof item.Level != 'undefined') {
@@ -1991,7 +2008,7 @@ function Text(item) {
             this.data = item.Data;
             this.hasNewLine = this.data.indexOf("<br />") !== -1 || /[\r\n]/.test(this.data);
         } else {
-            this.data = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+            this.data = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />');
             this.hasNewLine = this.data.indexOf("<br />") !== -1;
         }
         this.status = this.data;

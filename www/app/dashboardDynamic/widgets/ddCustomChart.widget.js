@@ -4,37 +4,92 @@ define([
 ], function(app, widgetRegistry) {
     'use strict';
 
+    // Temperature unit incl. the user's C/F preference (e.g. "°C").
+    function tempUnit() {
+        return '°' + (($.myglobals && $.myglobals.tempsign) || 'C');
+    }
+
     function detectSensor(device) {
         var type = device.Type || '';
         var sub  = device.SubType || '';
         var stv  = device.SwitchTypeVal;
 
-        if (type === 'Wind')  { return { sensor: 'wind',    field: function(d){ return d.sp; },  unit: device.WindSign || 'm/s' }; }
-        if (type === 'Rain')  { return { sensor: 'rain',    field: function(d){ return d.mm; },  unit: 'mm' }; }
-        if (type === 'UV')    { return { sensor: 'uv',      field: function(d){ return d.uvi; }, unit: 'UVI' }; }
-        if (type === 'Lux' || sub === 'Lux') { return { sensor: 'lux', field: function(d){ return d.lux; }, unit: 'lux' }; }
-        if (type === 'Humidity') { return { sensor: 'temp', field: function(d){ return d.hu; },  unit: '%' }; }
+        if (type === 'Wind')  { return { sensor: 'wind',    field: function(d){ return d.sp; },  unit: device.WindSign || 'm/s', weekApi: true }; }
+        if (type === 'Rain')  { return { sensor: 'rain',    field: function(d){ return d.mm; },  unit: 'mm', weekApi: true }; }
+        if (type === 'UV')    { return { sensor: 'uv',      field: function(d){ return d.uvi; }, unit: 'UVI', weekApi: true }; }
+        if (type === 'Lux' || sub === 'Lux') { return { sensor: 'counter', field: function(d){ return d.lux !== undefined ? d.lux : d.lux_avg; }, unit: 'lux', weekApi: true }; }
+        if (type === 'Humidity') { return { sensor: 'temp', field: function(d){ return d.hu; },  unit: '%', weekApi: true }; }
         if (type.indexOf('Temp') >= 0 || sub.indexOf('Temp') >= 0) {
-            return { sensor: 'temp', field: function(d){ return d.te !== undefined ? d.te : d.v; }, unit: '°' };
+            return { sensor: 'temp', field: function(d){ return d.te !== undefined ? d.te : d.v; }, unit: tempUnit(), weekApi: true };
+        }
+        if (sub === 'Percentage') {
+            // Day range returns `v`; week/month/year aggregates return v_min/v_max/v_avg.
+            return {
+                sensor: 'Percentage',
+                field: function(d) { return d.v !== undefined ? d.v : d.v_avg; },
+                unit: '%',
+                weekApi: true
+            };
+        }
+        if (type === 'General' && sub === 'Voltage') {
+            return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v_avg; }, unit: 'V', weekApi: true };
+        }
+        if (type === 'General' && sub === 'Current') {
+            return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v_avg; }, unit: 'A', weekApi: true };
+        }
+        if (type === 'General' && sub === 'Custom Sensor') {
+            return { sensor: 'Percentage', field: function(d){ return d.v !== undefined ? d.v : d.v_avg; }, unit: device.SensorUnit || '?', weekApi: true };
+        }
+        if (type === 'Air Quality') {
+            return { sensor: 'counter', field: function(d){ return d.co2 !== undefined ? d.co2 : d.co2_avg; }, unit: 'ppm', weekApi: true };
         }
         if (type.indexOf('Meter') >= 0 || type === 'Cube Electric' ||
             (type === 'General' && (sub === 'kWh' || sub === 'Counter Incremental' || sub === 'Managed Counter'))) {
-            if (stv === 1) { return { sensor: 'counter', field: function(d){ return d.v; }, unit: 'm³' }; }
-            if (stv === 2) { return { sensor: 'counter', field: function(d){ return d.v; }, unit: 'L' }; }
-            return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v1; }, unit: 'kWh' };
+            if (stv === 1) { return { sensor: 'counter', field: function(d){ return d.v; }, unit: 'm³', weekApi: true }; }
+            if (stv === 2) { return { sensor: 'counter', field: function(d){ return d.v; }, unit: 'L', weekApi: true }; }
+            return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v1; }, unit: 'kWh', weekApi: true };
         }
         if (type === 'P1 Smart Meter') {
-            return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v1; }, unit: 'kWh' };
+            return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v1; }, unit: 'kWh', weekApi: true };
         }
         // Usage devices (instantaneous Watts — P1 phase power, smart plugs, etc.)
         // The graph endpoint returns the wattage in field `u` for these devices.
         if (type === 'Usage') {
-            return { sensor: 'counter', field: function(d){ return d.u !== undefined ? d.u : d.v; }, unit: 'W' };
+            return { sensor: 'counter', field: function(d){ return d.u !== undefined ? d.u : (d.u_avg !== undefined ? d.u_avg : (d.u_max !== undefined ? d.u_max : d.v)); }, unit: 'W', weekApi: true };
         }
         if (sub === 'SetPoint' || type === 'Thermostat') {
-            return { sensor: 'temp', field: function(d){ return d.se !== undefined ? d.se : d.te; }, unit: '°' };
+            return { sensor: 'temp', field: function(d){ return d.se !== undefined ? d.se : d.te; }, unit: tempUnit(), weekApi: true };
         }
-        return { sensor: 'temp', field: function(d){ return d.te !== undefined ? d.te : d.v; }, unit: '?' };
+        return { sensor: 'temp', field: function(d){ return d.te !== undefined ? d.te : d.v; }, unit: '?', weekApi: true };
+    }
+
+    // Sub-metrics available on multi-value temp-family sensors (Temp+Hum+Baro,
+    // Thermostat 6, ...). The key is the graph response field; all are served by
+    // the 'temp' graph sensor. The settings UI offers these as a per-device
+    // dropdown; resolveSensor() applies the chosen one.
+    // unit may be a function (resolved per-render, e.g. temperature C/F) or a string.
+    var TEMP_METRICS = {
+        te: { label: 'Temperature', unit: tempUnit, field: function(d){ return d.te !== undefined ? d.te : d.v; } },
+        hu: { label: 'Humidity',    unit: '%',      field: function(d){ return d.hu; } },
+        ba: { label: 'Barometer',   unit: 'hPa',    field: function(d){ return d.ba; } },
+        se: { label: 'Setpoint',    unit: tempUnit, field: function(d){ return d.se !== undefined ? d.se : d.te; } }
+    };
+
+    // Auto-detect the sensor, then apply an optional metric override. The override
+    // only takes effect on temp-routed sensors (where te/hu/ba/se share one graph).
+    function resolveSensor(device, metric) {
+        var base = detectSensor(device);
+        if (metric && base.sensor === 'temp' && TEMP_METRICS[metric]) {
+            var m = TEMP_METRICS[metric];
+            return {
+                sensor:      'temp',
+                field:       m.field,
+                unit:        (typeof m.unit === 'function' ? m.unit() : m.unit),
+                metricLabel: m.label,
+                weekApi:     base.weekApi
+            };
+        }
+        return base;
     }
 
     function buildYAxisIndex(sensorInfos) {
@@ -89,16 +144,16 @@ define([
                 label:   'Show legend',
                 default: true
             },
-            { key: 'device1',  type: 'device-picker', label: 'Device 1',  required: false },
-            { key: 'device2',  type: 'device-picker', label: 'Device 2',  required: false },
-            { key: 'device3',  type: 'device-picker', label: 'Device 3',  required: false },
-            { key: 'device4',  type: 'device-picker', label: 'Device 4',  required: false },
-            { key: 'device5',  type: 'device-picker', label: 'Device 5',  required: false },
-            { key: 'device6',  type: 'device-picker', label: 'Device 6',  required: false },
-            { key: 'device7',  type: 'device-picker', label: 'Device 7',  required: false },
-            { key: 'device8',  type: 'device-picker', label: 'Device 8',  required: false },
-            { key: 'device9',  type: 'device-picker', label: 'Device 9',  required: false },
-            { key: 'device10', type: 'device-picker', label: 'Device 10', required: false }
+            { key: 'device1',  type: 'device-picker', label: 'Device 1',  required: false, metricKey: 'metric1'  },
+            { key: 'device2',  type: 'device-picker', label: 'Device 2',  required: false, metricKey: 'metric2'  },
+            { key: 'device3',  type: 'device-picker', label: 'Device 3',  required: false, metricKey: 'metric3'  },
+            { key: 'device4',  type: 'device-picker', label: 'Device 4',  required: false, metricKey: 'metric4'  },
+            { key: 'device5',  type: 'device-picker', label: 'Device 5',  required: false, metricKey: 'metric5'  },
+            { key: 'device6',  type: 'device-picker', label: 'Device 6',  required: false, metricKey: 'metric6'  },
+            { key: 'device7',  type: 'device-picker', label: 'Device 7',  required: false, metricKey: 'metric7'  },
+            { key: 'device8',  type: 'device-picker', label: 'Device 8',  required: false, metricKey: 'metric8'  },
+            { key: 'device9',  type: 'device-picker', label: 'Device 9',  required: false, metricKey: 'metric9'  },
+            { key: 'device10', type: 'device-picker', label: 'Device 10', required: false, metricKey: 'metric10' }
         ]
     });
 
@@ -124,6 +179,7 @@ define([
                 var infoTokens         = [];
                 var graphTokens        = [];
                 var resizeObserver     = null;
+                var refreshDebounce    = null;
 
                 // ----------------------------------------------------------------
                 // Helpers
@@ -168,9 +224,10 @@ define([
                     ctrl.isEmpty = false;
                     ctrl.error   = null;
 
-                    var idxList = DEVICE_KEYS
-                        .map(function(k) { return cfg[k]; })
-                        .filter(function(v) { return !!v; });
+                    var selected = DEVICE_KEYS
+                        .map(function(k, i) { return { idx: cfg[k], metric: cfg['metric' + (i + 1)] }; })
+                        .filter(function(s) { return !!s.idx; });
+                    var idxList = selected.map(function(s) { return s.idx; });
 
                     if (idxList.length === 0) {
                         ctrl.isEmpty = true;
@@ -202,8 +259,9 @@ define([
                         // undefined means cancelled — abort entirely.
                         if (devices.some(function(d) { return d === undefined; })) { return; }
 
-                        var sensorInfos = devices.map(function(device) {
-                            return device ? detectSensor(device) : { sensor: 'temp', field: function(d){ return d.te; }, unit: '?' };
+                        var sensorInfos = devices.map(function(device, i) {
+                            return device ? resolveSensor(device, selected[i].metric)
+                                          : { sensor: 'temp', field: function(d){ return d.te; }, unit: '?' };
                         });
 
                         var unitToAxis = buildYAxisIndex(sensorInfos);
@@ -213,9 +271,14 @@ define([
                             var token = $q.defer();
                             graphTokens.push(token);
                             var sensor = sensorInfos[i].sensor;
+                            // The backend supports range=week for all sensor types this widget
+                            // maps (daily calendar aggregates mirroring month/year field names).
+                            // The day fallback remains only as a safety net for device types
+                            // not covered by detectSensor() (weekApi not set).
+                            var apiRange = (range === 'week' && !sensorInfos[i].weekApi) ? 'day' : range;
                             var url = 'json.htm?type=command&param=graph&sensor=' + encodeURIComponent(sensor) +
                                       '&idx=' + encodeURIComponent(idx) +
-                                      '&range=' + encodeURIComponent(range);
+                                      '&range=' + encodeURIComponent(apiRange);
                             return $http.get(url, { timeout: token.promise })
                                 .then(function(resp) {
                                     return {
@@ -274,6 +337,7 @@ define([
                         var fieldFn   = info.field;
                         var axisIndex = unitToAxis[info.unit];
                         var name      = (result.device && result.device.Name) ? result.device.Name : ('Series ' + (i + 1));
+                        if (info.metricLabel) { name += ' · ' + info.metricLabel; }
 
                         var data = result.data
                             .map(function(d) {
@@ -330,7 +394,15 @@ define([
                         xAxis: {
                             type:      'datetime',
                             crosshair: true,
-                            labels:    { style: { fontSize: '10px', color: textColor } }
+                            labels:    { style: { fontSize: '10px', color: textColor } },
+                            min: (function() {
+                                var now = Date.now();
+                                if (cfg.range === 'day')   { return now - 24 * 3600 * 1000; }
+                                if (cfg.range === 'week')  { return now -  7 * 24 * 3600 * 1000; }
+                                if (cfg.range === 'month') { return now - 30 * 24 * 3600 * 1000; }
+                                return undefined;
+                            }()),
+                            max: Date.now()
                         },
                         yAxis:   yAxes,
                         tooltip: {
@@ -383,8 +455,25 @@ define([
 
                 $scope.$on('$destroy', function() {
                     if (resizeObserver) { resizeObserver.disconnect(); resizeObserver = null; }
+                    if (refreshDebounce) { $timeout.cancel(refreshDebounce); refreshDebounce = null; }
                     cancelAll();
                     destroyChart();
+                });
+
+                $scope.$on('device_update', function(e, updated) {
+                    var cfg = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
+                    var updatedIdx = updated && updated.idx;
+                    if (!updatedIdx) { return; }
+
+                    var matches = DEVICE_KEYS.some(function(k) {
+                        return cfg[k] && String(cfg[k]) === String(updatedIdx);
+                    });
+                    if (!matches || refreshDebounce) { return; }
+
+                    refreshDebounce = $timeout(function() {
+                        refreshDebounce = null;
+                        load();
+                    }, 60000);
                 });
 
                 $scope.$on('dd:widget:refresh', load);
@@ -393,7 +482,11 @@ define([
                     function() {
                         var cfg = ctrl.widgetDef && ctrl.widgetDef.config;
                         if (!cfg) { return ''; }
-                        var devicePart = DEVICE_KEYS.map(function(k) { return cfg[k] || ''; }).join(',');
+                        // Include the per-device metric so a metric-only change
+                        // (same device) still forces a data reload, not just a redraw.
+                        var devicePart = DEVICE_KEYS.map(function(k, i) {
+                            return (cfg[k] || '') + ':' + (cfg['metric' + (i + 1)] || '');
+                        }).join(',');
                         return devicePart + '|' +
                                (cfg.range || 'day') + '|' +
                                (cfg.title || '') + '|' +

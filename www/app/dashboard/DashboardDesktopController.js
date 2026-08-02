@@ -34,6 +34,7 @@ define([
 		'$window',
 		'$timeout',
 		'$http',
+		'$sce',
 		'permissions',
 		'livesocket',
 		'dashboardService',
@@ -47,6 +48,7 @@ define([
 			$window,
 			$timeout,
 			$http,
+			$sce,
 			permissions,
 			livesocket,
 			dashboardService,
@@ -222,6 +224,16 @@ define([
 						// Update the device data in-place to preserve object reference
 						angular.extend($scope[category][index], deviceData);
 
+						// Re-sync jQuery UI slider position for light devices,
+						// but never while the user is actively dragging it (the
+						// slide handler echoes the level back via WebSocket).
+						if (category === 'lights' && typeof deviceData.LevelInt !== 'undefined') {
+							var $sl = $('#light_' + deviceData.idx + '_slider');
+							if ($sl.length && $sl.hasClass('ui-slider') && !$sl.data('sliding')) {
+								$sl.slider('value', deviceData.LevelInt);
+							}
+						}
+
 						// Show update effect if enabled; skip while a drag is in progress
 						// ($.ui.ddmanager.current is set by jQuery UI during an active drag)
 						if ($scope.config.ShowUpdatedEffect === true && !$.ui.ddmanager.current) {
@@ -254,6 +266,22 @@ define([
 		$scope.nl2br = function (text) {
 			if (!text) return text;
 			return text.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />$2');
+		};
+
+		// Render Text/Alert device data as HTML through DOMPurify (sanitizeHTML),
+		// the same strict allow-list used by the dynamic dashboard text widgets.
+		// The device value is attacker-controllable (any user >= URIGHTS_USER, MQTT
+		// publishers and reporting hardware can set it), so it must never reach
+		// ng-bind-html unsanitized.
+		$scope.sanitizeDeviceData = function (text, idx) {
+			if (!text) return text;
+			if (typeof sanitizeHTML === 'function') {
+				var scopeId = 'dz-mob-' + (parseInt(idx, 10) || 0);
+				return $sce.trustAsHtml('<div id="' + scopeId + '">' + sanitizeHTML(text, scopeId) + '</div>');
+			}
+			// Defensive fallback: a plain string is still run through Angular's
+			// $sanitize by ng-bind-html (ngSanitize is loaded app-wide).
+			return $scope.nl2br(text);
 		};
 
 			/**
@@ -431,6 +459,9 @@ define([
 								if ($(this).data('disabled'))
 									$(this).slider("option", "disabled", true);
 							},
+							start: function (event, ui) {
+								$(this).data('sliding', true);
+							},
 							slide: function (event, ui) {
 								clearInterval($.setDimValue);
 								var dtype = $(this).slider("option", "type");
@@ -439,10 +470,10 @@ define([
 									$.setDimValue = setInterval(function () { SetDimValue(idx, ui.value); }, 500);
 							},
 							stop: function (event, ui) {
+								$(this).data('sliding', false);
+								clearInterval($.setDimValue);
 								var idx = $(this).data('idx');
-								var dtype = $(this).slider("option", "type");
-								if (dtype == "relay")
-									SetDimValue(idx, ui.value);
+								SetDimValue(idx, ui.value);
 							}
 						});
 					}

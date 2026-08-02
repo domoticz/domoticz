@@ -43,7 +43,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 177
+#define DB_VERSION 178
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -3378,6 +3378,51 @@ bool CSQLHelper::OpenDatabase()
 			if (!DoesColumnExistsInTable("Settings", "Hardware"))
 			{
 				query("ALTER TABLE Hardware ADD COLUMN [Settings] TEXT DEFAULT ''");
+			}
+		}
+		if (dbversion < 178)
+		{
+			// Recalculate historic P1 day prices in MultiMeter_Calendar (GitHub #6915).
+			// Returned energy used to be priced at the usage tariff (T1/T2) instead of the
+			// configured return tariffs (R1/R2). Only applies when prices come from the internal
+			// meter tariffs; with a dynamic price device the stored prices are correct.
+			// Each day counter accrues only while its own tariff channel is active, so the
+			// corrected price follows directly from the calendar row itself.
+			int iHP_E_Idx = 0;
+			GetPreferencesVar("HourIdxElectricityDevice", iHP_E_Idx);
+			if (iHP_E_Idx == 0x98765)
+			{
+				int nValue = 0;
+				GetPreferencesVar("CostEnergy", nValue);
+				float priceT1 = static_cast<float>(nValue) / 10000.0F;
+				nValue = 0;
+				GetPreferencesVar("CostEnergyT2", nValue);
+				float priceT2 = static_cast<float>(nValue) / 10000.0F;
+				//The 800 (=0.08) fallback matches the default seeding that normally runs at
+				//every startup (which also resets a stored 0 back to 800)
+				nValue = 0;
+				if ((!GetPreferencesVar("CostEnergyR1", nValue)) || (nValue == 0))
+					nValue = 800;
+				float priceR1 = static_cast<float>(nValue) / 10000.0F;
+				nValue = 0;
+				if ((!GetPreferencesVar("CostEnergyR2", nValue)) || (nValue == 0))
+					nValue = 800;
+				float priceR2 = static_cast<float>(nValue) / 10000.0F;
+
+				float EnergyDivider = 1000.0F;
+				if (GetPreferencesVar("MeterDividerEnergy", nValue) && (nValue != 0))
+					EnergyDivider = static_cast<float>(nValue);
+
+				// Value1 = T1 usage, Value2 = R1 return, Value5 = T2 usage, Value6 = R2 return (all in Wh).
+				// Same spike protection as the day rollover: skip rows where the implied
+				// tariff would exceed a plausible rate (e.g. counter glitches); the energy
+				// divider cancels on both sides of that comparison
+				safe_query(
+					"UPDATE MultiMeter_Calendar SET Price = ((Value1*%f + Value5*%f) - (Value2*%f + Value6*%f)) / %f "
+					"WHERE (DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE (Type=%d))) "
+					"AND (ABS((Value1*%f + Value5*%f) - (Value2*%f + Value6*%f)) <= ((Value1 + Value2 + Value5 + Value6) * 3.0))",
+					priceT1, priceT2, priceR1, priceR2, EnergyDivider, pTypeP1Power,
+					priceT1, priceT2, priceR1, priceR2);
 			}
 		}
 	}
@@ -7698,6 +7743,12 @@ void CSQLHelper::UpdateFanLog()
 	}
 }
 
+bool CSQLHelper::CalendarEntryExists(const char *szTable, const uint64_t DeviceRowID, const char *szDate)
+{
+	std::vector<std::vector<std::string>> result = safe_query("SELECT 1 FROM %s WHERE (DeviceRowID==%" PRIu64 ") AND (Date=='%q') LIMIT 1", szTable, DeviceRowID, szDate);
+	return !result.empty();
+}
+
 void CSQLHelper::AddCalendarTemperature()
 {
 	std::string usedFilter = m_bLogUnusedSensors ? "" : " AND DeviceRowID IN (SELECT ID FROM DeviceStatus WHERE Used=1)";
@@ -7725,6 +7776,9 @@ void CSQLHelper::AddCalendarTemperature()
 	for (const auto &sddev : resultdevices)
 	{
 		uint64_t ID = std::stoull(sddev[0]);
+
+		if (CalendarEntryExists("Temperature_Calendar", ID, szDateStart))
+			continue; //already have an entry for this day (e.g. the daily schedule ran twice around midnight)
 
 		result = safe_query("SELECT MIN(Temperature), MAX(Temperature), AVG(Temperature), MIN(Chill), MAX(Chill), AVG(Humidity), AVG(Barometer), MIN(DewPoint), MIN(SetPoint), MAX(SetPoint), AVG(SetPoint) FROM Temperature WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
 			ID,
@@ -7794,6 +7848,9 @@ void CSQLHelper::AddCalendarUpdateRain()
 	for (const auto &sddev : resultdevices)
 	{
 		uint64_t ID = std::stoull(sddev[0]);
+
+		if (CalendarEntryExists("Rain_Calendar", ID, szDateStart))
+			continue; //already have an entry for this day (e.g. the daily schedule ran twice around midnight)
 
 		//Get Device Information
 		result = safe_query("SELECT SubType FROM DeviceStatus WHERE (ID='%" PRIu64 "')", ID);
@@ -7902,6 +7959,9 @@ void CSQLHelper::AddCalendarUpdateMeter()
 		float price = 0.0F;
 
 		uint64_t ID = std::stoull(sddev[0]);
+
+		if (CalendarEntryExists("Meter_Calendar", ID, szDateStart) || CalendarEntryExists("MultiMeter_Calendar", ID, szDateStart))
+			continue; //already have an entry for this day (e.g. the daily schedule ran twice around midnight)
 
 		//Get Device Information
 		result = safe_query("SELECT Name, HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Options, AddjValue2 FROM DeviceStatus WHERE (ID='%" PRIu64 "')", ID);
@@ -8155,6 +8215,9 @@ void CSQLHelper::AddCalendarUpdateMultiMeter()
 	{
 		uint64_t ID = std::stoull(sddev[0]);
 
+		if (CalendarEntryExists("MultiMeter_Calendar", ID, szDateStart))
+			continue; //already have an entry for this day (e.g. the daily schedule ran twice around midnight)
+
 		//Get Device Information
 		result = safe_query("SELECT Name, HardwareID, DeviceID, Unit, Type, SubType, SwitchType, Options FROM DeviceStatus WHERE (ID='%" PRIu64 "')", ID);
 		if (result.empty())
@@ -8290,6 +8353,9 @@ void CSQLHelper::AddCalendarUpdateWind()
 	{
 		uint64_t ID = std::stoull(sddev[0]);
 
+		if (CalendarEntryExists("Wind_Calendar", ID, szDateStart))
+			continue; //already have an entry for this day (e.g. the daily schedule ran twice around midnight)
+
 		result = safe_query("SELECT AVG(Direction), MIN(Speed), MAX(Speed), MIN(Gust), MAX(Gust) FROM Wind WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
 			ID,
 			szDateStart,
@@ -8348,6 +8414,9 @@ void CSQLHelper::AddCalendarUpdateUV()
 	{
 		uint64_t ID = std::stoull(sddev[0]);
 
+		if (CalendarEntryExists("UV_Calendar", ID, szDateStart))
+			continue; //already have an entry for this day (e.g. the daily schedule ran twice around midnight)
+
 		result = safe_query("SELECT MAX(Level) FROM UV WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
 			ID,
 			szDateStart,
@@ -8397,6 +8466,9 @@ void CSQLHelper::AddCalendarUpdatePercentage()
 	for (const auto &sddev : resultdevices)
 	{
 		uint64_t ID = std::stoull(sddev[0]);
+
+		if (CalendarEntryExists("Percentage_Calendar", ID, szDateStart))
+			continue; //already have an entry for this day (e.g. the daily schedule ran twice around midnight)
 
 		result = safe_query("SELECT MIN(Percentage), MAX(Percentage), AVG(Percentage) FROM Percentage WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
 			ID,
@@ -8450,6 +8522,9 @@ void CSQLHelper::AddCalendarUpdateFan()
 	for (const auto &sddev : resultdevices)
 	{
 		uint64_t ID = std::stoull(sddev[0]);
+
+		if (CalendarEntryExists("Fan_Calendar", ID, szDateStart))
+			continue; //already have an entry for this day (e.g. the daily schedule ran twice around midnight)
 
 		result = safe_query("SELECT MIN(Speed), MAX(Speed), AVG(Speed) FROM Fan WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00')",
 			ID,
@@ -11769,6 +11844,25 @@ bool CSQLHelper::CalcMultiMeterPrice(const uint64_t idx, const float divider, co
 	if (divider == 0)
 		return false;
 
+	//When prices come from the internal meter tariffs, the logged Price column holds the usage
+	//tariff (T1/T2) active at log time, so returned energy (Value2/Value6) must be priced at the
+	//configured return tariffs (R1/R2). With a dynamic price device the logged market price
+	//applies to usage and return alike.
+	int iHP_E_Idx = 0;
+	GetPreferencesVar("HourIdxElectricityDevice", iHP_E_Idx);
+	const bool bUseReturnTariffs = (iHP_E_Idx == 0x98765);
+	float priceR1 = 0;
+	float priceR2 = 0;
+	if (bUseReturnTariffs)
+	{
+		int nValue = 0;
+		GetPreferencesVar("CostEnergyR1", nValue);
+		priceR1 = static_cast<float>(nValue) / 10000.0F;
+		nValue = 0;
+		GetPreferencesVar("CostEnergyR2", nValue);
+		priceR2 = static_cast<float>(nValue) / 10000.0F;
+	}
+
 	auto result = safe_query("SELECT Value1, Value2, Value3, Value4, Value5, Value6, Price FROM MultiMeter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00') ORDER BY Date ASC",
 		idx, szDateStart, szDateEnd);
 	if (result.empty())
@@ -11789,7 +11883,15 @@ bool CSQLHelper::CalcMultiMeterPrice(const uint64_t idx, const float divider, co
 			if (last_cntrs[ii] != (int64_t)-1)
 			{
 				int64_t total = cntrs[ii] - last_cntrs[ii];
-				total_price[ii] += ((static_cast<float>(total) / divider) * rec_price);
+				float rate = rec_price;
+				if (bUseReturnTariffs)
+				{
+					if (ii == 1) //Value2 = R1 return
+						rate = priceR1;
+					else if (ii == 5) //Value6 = R2 return
+						rate = priceR2;
+				}
+				total_price[ii] += ((static_cast<float>(total) / divider) * rate);
 				bResult = true;
 			}
 			last_cntrs[ii] = cntrs[ii];

@@ -1,0 +1,50 @@
+name: Source Release Tarball
+
+# Builds a self-contained source tarball (with all git submodules bundled) and
+# attaches it to the GitHub Release. GitHub's own "Source code" archives omit
+# submodules and therefore cannot be built; this provides a buildable one.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Tag/ref to package (defaults to the checked-out commit)'
+        required: false
+        default: ''
+
+jobs:
+  source-tarball:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history is needed so the version (commit count + 2107) is correct.
+          fetch-depth: 0
+          # The packaging script initialises the pinned submodules itself.
+          submodules: false
+
+      - name: Build source tarball
+        run: |
+          REF="${{ github.event.inputs.ref }}"
+          [ -z "$REF" ] && REF="$GITHUB_SHA"
+          chmod +x tools/make_source_archive.sh
+          ./tools/make_source_archive.sh "$REF" "$PWD/dist"
+          ls -l dist/
+
+      - name: Attach to GitHub Release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" dist/*.tar.gz dist/*.sha256sum --clobber
+
+      - name: Upload as workflow artifact
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: domoticz-source-tarball
+          path: dist/
+          if-no-files-found: error

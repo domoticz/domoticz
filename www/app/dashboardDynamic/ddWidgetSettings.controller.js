@@ -29,6 +29,8 @@ define([
         $scope.scenes            = [];
         $scope.cameras           = [];
         $scope.pickerOptions     = {};
+        var _metricCache         = {};   // per-device metric options cache (Custom Chart)
+        var deviceListLoaded     = false; // true once getdevices has returned
 
         // Pre-populate schema defaults for keys not yet set in config
         (descriptor.configSchema || []).forEach(function(field) {
@@ -57,6 +59,9 @@ define([
                 .then(function(resp) {
                     var all = (resp.data && resp.data.result) || [];
                     $scope.deviceList = all;
+                    deviceListLoaded = true;
+                    _metricCache = {};   // device data arrived — drop any empty cached results
+                    reconcileMetrics();  // now that devices are known, seed/validate metric choices
 
                     function deviceLabel(d) {
                         var typeStr = (d.SubType && d.SubType !== d.Type)
@@ -151,6 +156,99 @@ define([
                 });
         }
 
+        // ── Per-device metric selector (e.g. Custom Chart) ───────────────────
+        // Fields carrying a `metricKey` get an extra dropdown to pick which value
+        // of a multi-value sensor to plot (Temperature/Humidity/Barometer/Setpoint).
+        var EMPTY_METRICS = [];
+        var TEMP_METRIC_DEFS = [
+            { value: 'te', label: 'Temperature', needs: 'Temp' },
+            { value: 'hu', label: 'Humidity',    needs: 'Humidity' },
+            { value: 'ba', label: 'Barometer',   needs: 'Barometer' },
+            { value: 'se', label: 'Setpoint',    needs: 'SetPoint' }
+        ];
+        var metricFields = (descriptor.configSchema || []).filter(function(f) {
+            return f.type === 'device-picker' && f.metricKey;
+        });
+
+        function deviceByIdx(idx) {
+            var list = $scope.deviceList || [];
+            for (var i = 0; i < list.length; i++) {
+                if (String(list[i].idx) === String(idx)) { return list[i]; }
+            }
+            return null;
+        }
+
+        function computeMetricOptions(idx) {
+            var d = deviceByIdx(idx);
+            if (!d) { return EMPTY_METRICS; }
+            // Wind sensors may carry Temp/Chill but are charted via the wind sensor,
+            // so they are not temp-routed and offer no metric choice here.
+            if ((d.Type || '') === 'Wind') { return EMPTY_METRICS; }
+            var opts = [];
+            TEMP_METRIC_DEFS.forEach(function(m) {
+                if (d[m.needs] !== undefined) { opts.push({ value: m.value, label: m.label }); }
+            });
+            if (opts.length <= 1) { return EMPTY_METRICS; }
+            // 'Auto' (empty value) = the device's default combined view (no override).
+            return [{ value: '', label: 'Auto' }].concat(opts);
+        }
+
+        // Cached + stable-reference per (field, device) so ng-options/ng-if don't
+        // churn the digest by receiving a fresh array every cycle.
+        $scope.metricOptionsFor = function(field) {
+            if (!field || !field.metricKey) { return EMPTY_METRICS; }
+            var key = field.key + '|' + ($scope.config[field.key] || '');
+            if (!_metricCache[key]) { _metricCache[key] = computeMetricOptions($scope.config[field.key]); }
+            return _metricCache[key];
+        };
+
+        // Keep each stored metric valid for its currently-selected device.
+        // A metric value of '' (Auto) or undefined both mean "device default / no
+        // override" — the widgets treat any falsy metric as Auto.
+        //   - multi-value sensor: default to 'Auto' (''), preserve a still-valid choice
+        //   - single-value device: clear to undefined (no dropdown shown)
+        //   - device missing: leave untouched until the list has loaded (avoids wiping
+        //     a saved metric mid-load); once loaded, a truly-gone device is cleared.
+        function reconcileMetrics() {
+            metricFields.forEach(function(f) {
+                var idx = $scope.config[f.key];
+                var dev = idx ? deviceByIdx(idx) : null;
+                if (!dev) {
+                    if (deviceListLoaded && $scope.config[f.metricKey] !== undefined) {
+                        $scope.config[f.metricKey] = undefined;
+                    }
+                    return;
+                }
+                var opts = $scope.metricOptionsFor(f);
+                if (opts.length > 1) {
+                    var cur = $scope.config[f.metricKey];
+                    var valid = opts.some(function(o) { return o.value === cur; });
+                    if (!valid) { $scope.config[f.metricKey] = ''; }
+                } else if ($scope.config[f.metricKey] !== undefined) {
+                    $scope.config[f.metricKey] = undefined;
+                }
+            });
+        }
+
+        if (metricFields.length) {
+            // Re-validate when the user changes a device selection.
+            $scope.$watch(
+                function() {
+                    return metricFields.map(function(f) { return $scope.config[f.key]; }).join(',');
+                },
+                reconcileMetrics
+            );
+        }
+
+        // Clear a (non-required) device-picker, removing the device from the
+        // widget. Mirrors the trash-icon pattern used by the list-type fields;
+        // also drops any per-device metric override tied to the slot.
+        $scope.clearDevicePicker = function(field) {
+            if (!field) { return; }
+            $scope.config[field.key] = '';
+            if (field.metricKey) { $scope.config[field.metricKey] = undefined; }
+        };
+
         // Lazy-load scene list only if a scene-picker field is present
         var needsScenes = (descriptor.configSchema || []).some(function(f) {
             return f.type === 'scene-picker';
@@ -229,6 +327,11 @@ define([
                                       d.SwitchType.indexOf('Stop') >= 0));
             }
 
+            function actionDeviceHasLevel(d) {
+                return !!(d.SwitchType && (d.SwitchType.indexOf('Percentage') >= 0 ||
+                                           d.SwitchType.indexOf('%') >= 0));
+            }
+
             function lookupActionDevice(idx) {
                 return ($scope.actionDevices || []).find(function(d) { return String(d.idx) === String(idx); });
             }
@@ -302,7 +405,7 @@ define([
 
                 } else if (d && d.SwitchType && d.SwitchType.indexOf('Blinds') >= 0) {
                     if (!label) { label = d.Name; }
-                    $scope.config[fieldKey].push({ type: 'blind', idx: String(a.idx), label: label, hasStop: actionDeviceHasStop(d) });
+                    $scope.config[fieldKey].push({ type: 'blind', idx: String(a.idx), label: label, hasStop: actionDeviceHasStop(d), hasLevel: actionDeviceHasLevel(d) });
 
                 } else if (d && d.SwitchType === 'Dimmer') {
                     if (!label) { label = d.Name; }
@@ -371,11 +474,22 @@ define([
             $scope.deviceListAddItem = function(fieldKey) {
                 var e = $scope.newDeviceEntry;
                 if (!e.idx) { return; }
-                var d     = ($scope.allDevicesForList || []).find(function(x) { return String(x.idx) === String(e.idx); });
-                var label = (e.label || '').trim() || (d ? d.Name : String(e.idx));
+                // Only store an explicit custom label. When left empty the widget
+                // falls back to the live device name so later renames are reflected.
+                var label = (e.label || '').trim();
                 var icon  = (e.icon  || '').trim();
                 $scope.config[fieldKey].push({ idx: String(e.idx), label: label, icon: icon });
                 $scope.newDeviceEntry = { idx: '', label: '', icon: '' };
+            };
+
+            // Display name for an entry in the editor list: prefer the custom label,
+            // otherwise resolve the current device name (not a stored snapshot).
+            $scope.deviceListEntryName = function(entry) {
+                if (entry && (entry.label || '').trim()) { return entry.label; }
+                var d = ($scope.allDevicesForList || []).find(function(x) {
+                    return String(x.idx) === String(entry && entry.idx);
+                });
+                return (d && d.Name) || (entry && entry.idx) || '';
             };
 
             $scope.deviceListRenameItem = function(fieldKey, index) {

@@ -52,10 +52,17 @@ struct GraphContext
 /**
  * Populate @p ctx from @p req and the device row in @p sql.
  *
+ * @param reason optional; on failure receives a short human-readable
+ *        explanation suitable for returning to the caller as a JSON "message".
+ *        Without it a failed graph request produces a bare {"status":"ERR"}
+ *        and an opaque 400 in the browser console, with nothing to say whether
+ *        a parameter was missing or the device simply no longer exists.
+ *
  * @return false if the device cannot be found or required parameters are
  *         missing (caller should return early without emitting JSON).
  */
-bool BuildGraphContext(const request& req, CSQLHelper& sql, GraphContext& ctx);
+bool BuildGraphContext(const request& req, CSQLHelper& sql, GraphContext& ctx,
+                       std::string* reason = nullptr);
 
 // ---------------------------------------------------------------------------
 
@@ -111,6 +118,9 @@ std::string CalcDbasetableHour(const GraphContext& ctx);
 
 /**
  * Determine the database table name for srange == "week".
+ *
+ * Mirrors CalcDbasetableMonthYear() for the sensor types that HandleGraphWeek()
+ * supports: temp/hum, Percentage, fan, wind/winddir, uv, rain and counter.
  *
  * Returns an empty string if the sensor type is not handled by this range.
  */

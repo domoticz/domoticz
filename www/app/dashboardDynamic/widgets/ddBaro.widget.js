@@ -1,6 +1,7 @@
 define([
     'app',
-    'dashboardDynamic/widgetRegistry.service'
+    'dashboardDynamic/widgetRegistry.service',
+    'dashboardDynamic/ddSparkline.service'
 ], function(app, widgetRegistry) {
     'use strict';
 
@@ -31,6 +32,7 @@ define([
                 label:    'Custom Title',
                 required: false
             },
+            { key: 'showGraph', type: 'boolean', label: 'Show trend graph (last 24h)', default: false },
             { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });
@@ -45,8 +47,8 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$rootScope', '$q',
-                function($scope, $http, $rootScope, $q) {
+            controller: ['$scope', '$http', '$rootScope', '$q', '$timeout', 'ddSparkline',
+                function($scope, $http, $rootScope, $q, $timeout, ddSparkline) {
                 var ctrl = this;
                 ctrl.title        = '';
                 ctrl.pressure     = null;
@@ -57,8 +59,12 @@ define([
                 ctrl.loadError    = false;
                 ctrl.sunrise      = '';
                 ctrl.sunset       = '';
+                ctrl.showGraph    = false;
+                ctrl.sparkId      = 'dd-baro-spark-' + $scope.$id;
 
-                var cancelTokens = [];
+                var cancelTokens  = [];
+                var sparkChart    = null;
+                var renderTimeout = null;
 
                 function computeIsNight(sunriseStr, sunsetStr) {
                     var toMinutes = function(s) {
@@ -86,7 +92,8 @@ define([
                 ctrl.getWeatherScene = function(forecastStr) {
                     if (!forecastStr) { return 'fcw-cloudy'; }
                     var s = forecastStr.toLowerCase();
-                    if (s.indexOf('heavy rain') >= 0 || s.indexOf('thunderstorm') >= 0) { return 'fcw-heavyrain'; }
+                    if (s.indexOf('thunderstorm') >= 0) { return 'fcw-thunderstorm'; }
+                    if (s.indexOf('heavy rain') >= 0) { return 'fcw-heavyrain'; }
                     if (s.indexOf('rain') >= 0 || s.indexOf('shower') >= 0) { return 'fcw-rain'; }
                     if (s.indexOf('heavy snow') >= 0 || s.indexOf('blizzard') >= 0) { return 'fcw-heavysnow'; }
                     if (s.indexOf('snow') >= 0 || s.indexOf('sleet') >= 0) { return 'fcw-snow'; }
@@ -111,6 +118,44 @@ define([
                 function cancelAll() {
                     cancelTokens.forEach(function(t) { t.resolve(); });
                     cancelTokens = [];
+                }
+
+                function destroySpark() {
+                    if (sparkChart && sparkChart.destroy) { sparkChart.destroy(); }
+                    sparkChart = null;
+                }
+
+                function loadSparkline() {
+                    ctrl.showGraph = cfg().showGraph === true;
+                    if (!ctrl.showGraph) { destroySpark(); return; }
+                    var deviceIdx = cfg().deviceIdx;
+                    if (!deviceIdx || !window.Highcharts) { return; }
+
+                    var token = $q.defer();
+                    cancelTokens.push(token);
+                    $http.get('json.htm', {
+                        params:  { type: 'command', param: 'graph', sensor: 'temp', idx: deviceIdx, range: 'day' },
+                        timeout: token.promise
+                    }).then(function(resp) {
+                        var rows = (resp.data && resp.data.result) || [];
+                        var data = [];
+                        rows.forEach(function(r) {
+                            var ba = parseFloat(r.ba);
+                            if (isNaN(ba)) { return; }
+                            data.push([ddSparkline.parseLocal(r.d), ba]);
+                        });
+                        if (renderTimeout) { $timeout.cancel(renderTimeout); }
+                        renderTimeout = $timeout(function() {
+                            renderTimeout = null;
+                            destroySpark();
+                            // Re-check: the option may have been toggled off while fetching
+                            if (cfg().showGraph === true) {
+                                sparkChart = ddSparkline.render(ctrl.sparkId, data);
+                            }
+                        }, 0);
+                    }).catch(function(err) {
+                        if (err.status === -1) { return; }
+                    });
                 }
 
                 function load() {
@@ -139,7 +184,9 @@ define([
                         ctrl.loadError = true;
                     });
 
-                    ctrl.logLink = '#/Devices/' + deviceIdx + '/Log';
+                    // ?sensor=baro selects the Barometer log tab for combo Temp/Hum/Baro devices
+                    ctrl.logLink = '#/Devices/' + deviceIdx + '/Log?sensor=baro';
+                    loadSparkline();
                 }
 
                 $scope.$on('device_update', function(e, updated) {
@@ -157,14 +204,18 @@ define([
                     }
                 });
 
-                $scope.$on('$destroy', cancelAll);
+                $scope.$on('$destroy', function() {
+                    cancelAll();
+                    if (renderTimeout) { $timeout.cancel(renderTimeout); renderTimeout = null; }
+                    destroySpark();
+                });
 
                 $scope.$on('dd:widget:refresh', load);
 
                 $scope.$watch(
                     function() {
                         var c = ctrl.widgetDef && ctrl.widgetDef.config;
-                        return c ? (c.deviceIdx + '|' + (c.title || '')) : '';
+                        return c ? (c.deviceIdx + '|' + (c.title || '') + '|' + (c.showGraph === true)) : '';
                     },
                     function(val, old) {
                         if (val !== old) { load(); }

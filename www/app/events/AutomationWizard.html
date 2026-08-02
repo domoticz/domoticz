@@ -62,7 +62,7 @@
                                 {{:: 'Loading…' | translate }}
                             </div>
                             <div class="aw-device-row"
-                                 ng-repeat="dev in $ctrl.devices | filter:{Name: $ctrl.deviceSearch} | limitTo:100 track by dev.idx"
+                                 ng-repeat="dev in $ctrl.devices | filter:{Name: $ctrl.deviceSearch} | limitTo:100 track by (dev.Type + dev.idx)"
                                  ng-class="{'aw-device-row-selected': $ctrl.isDeviceSelected(dev)}"
                                  ng-click="$ctrl.selectDevice(dev)">
                                 <span class="aw-device-name">{{dev.Name}}</span>
@@ -71,7 +71,7 @@
                         </div>
                         <div class="aw-selected-value" ng-if="$ctrl.triggerConfig.devices && $ctrl.triggerConfig.devices.length">
                             <i class="icon-ok"></i>
-                            <span ng-if="$ctrl.triggerConfig.devices.length === 1">{{$ctrl.triggerConfig.devices[0]}}</span>
+                            <span ng-if="$ctrl.triggerConfig.devices.length === 1">{{$ctrl.deviceNameByIdx($ctrl.triggerConfig.devices[0])}}</span>
                             <span ng-if="$ctrl.triggerConfig.devices.length > 1">{{$ctrl.triggerConfig.devices.length}} devices selected</span>
                         </div>
                     </div>
@@ -85,7 +85,13 @@
                     </div>
                     <div class="aw-field" ng-if="$ctrl.conditionNeedsValue">
                         <label>{{:: 'Value' | translate }} <span ng-if="$ctrl.conditionUnit">({{$ctrl.conditionUnit}})</span></label>
-                        <input type="number" class="form-control" step="0.1"
+                        <select ng-if="$ctrl.triggerConditionHasLevelOptions()"
+                                class="form-control"
+                                ng-model="$ctrl.triggerConfig.conditionValue"
+                                ng-options="opt.level as opt.name for opt in $ctrl.triggerConfig.conditionLevelOptions">
+                        </select>
+                        <input ng-if="!$ctrl.triggerConditionHasLevelOptions()"
+                               type="number" class="form-control" step="0.1"
                                ng-model="$ctrl.triggerConfig.conditionValue">
                     </div>
                 </div>
@@ -264,18 +270,19 @@
                             <option value="time">Only between certain hours</option>
                             <option value="days">Only on certain days</option>
                             <option value="daytime">Only during daytime or nighttime</option>
+                            <option value="variable">Only if a user variable has a specific value</option>
                         </select>
                     </div>
                     <!-- Device condition -->
                     <div ng-if="$ctrl.wizardCondition.type === 'device'">
                         <div class="aw-field">
                             <label>Device</label>
-                            <select class="form-control" ng-model="$ctrl.wizardCondition.device" ng-change="$ctrl.onConditionDeviceChange()">
+                            <select class="form-control" ng-model="$ctrl.wizardCondition.deviceIdx" ng-change="$ctrl.onConditionDeviceChange()">
                                 <option value="">— Select device —</option>
-                                <option ng-repeat="dev in $ctrl.devices track by dev.idx" value="{{dev.Name}}">{{dev.Name}}</option>
+                                <option ng-repeat="dev in $ctrl.devices track by (dev.Type + dev.idx)" value="{{dev.idx}}">{{$ctrl.deviceLabel(dev)}}</option>
                             </select>
                         </div>
-                        <div class="aw-row" ng-if="$ctrl.wizardCondition.device">
+                        <div class="aw-row" ng-if="$ctrl.wizardCondition.deviceIdx">
                             <div class="aw-field">
                                 <label>State</label>
                                 <select class="form-control" ng-model="$ctrl.wizardCondition.state"
@@ -285,7 +292,13 @@
                             </div>
                             <div class="aw-field" ng-if="$ctrl.wizardCondition.needsValue">
                                 <label>Value <span ng-if="$ctrl.wizardCondition.unit">({{$ctrl.wizardCondition.unit}})</span></label>
-                                <input type="number" class="form-control" step="0.1" ng-model="$ctrl.wizardCondition.value">
+                                <select ng-if="$ctrl.wizardConditionHasLevelOptions()"
+                                        class="form-control"
+                                        ng-model="$ctrl.wizardCondition.value"
+                                        ng-options="opt.level as opt.name for opt in $ctrl.wizardCondition.levelOptions">
+                                </select>
+                                <input ng-if="!$ctrl.wizardConditionHasLevelOptions()"
+                                       type="number" class="form-control" step="0.1" ng-model="$ctrl.wizardCondition.value">
                             </div>
                         </div>
                     </div>
@@ -344,6 +357,26 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Variable condition -->
+                    <div ng-if="$ctrl.wizardCondition.type === 'variable'">
+                        <div class="aw-row">
+                            <div class="aw-field">
+                                <label>{{:: 'Variable' | translate }}</label>
+                                <select class="form-control" ng-model="$ctrl.wizardCondition.varName">
+                                    <option value="">{{:: '— Select variable —' | translate }}</option>
+                                    <option ng-repeat="v in $ctrl.variables track by v.idx" value="{{v.Name}}">{{v.Name}}</option>
+                                </select>
+                                <div ng-if="!$ctrl.variablesLoaded" class="aw-device-loading">
+                                    {{:: 'Loading…' | translate }}
+                                </div>
+                            </div>
+                            <div class="aw-field">
+                                <label>{{:: 'Value' | translate }}</label>
+                                <input type="text" class="form-control" ng-model="$ctrl.wizardCondition.varValue" placeholder="42">
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -376,14 +409,14 @@
                             <!-- Device action -->
                             <div ng-if="action.type === 'switch'" class="aw-form">
                                 <div class="aw-row">
-                                    <div class="aw-field" style="flex:2">
+                                    <div class="aw-field" style="flex:3">
                                         <label>{{:: 'Device' | translate }}</label>
                                         <select class="form-control"
-                                                ng-model="action.config.device"
+                                                ng-model="action.config.deviceIdx"
                                                 ng-change="$ctrl.onActionDeviceChange(action)">
                                             <option value="">{{:: '— Select —' | translate }}</option>
-                                            <option ng-repeat="dev in $ctrl.devices track by dev.idx"
-                                                    value="{{dev.Name}}">{{dev.Name}}</option>
+                                            <option ng-repeat="dev in $ctrl.devices track by (dev.Type + dev.idx)"
+                                                    value="{{dev.idx}}">{{$ctrl.deviceLabel(dev)}}</option>
                                         </select>
                                     </div>
                                     <div class="aw-field">

@@ -211,16 +211,19 @@ define([
                 function renderDayChart(container, data, cfg) {
                     var rateSeries       = [];
                     var cumulativeSeries = [];
-                    var cumulative       = 0;
+                    var cumulativeTenths = 0;
 
+                    // The day API returns one point per hour with field 'mm' = rainfall
+                    // total for that hour. Each bucket is 1 hour wide, so mm equals the
+                    // mm/h rate, and the cumulative series is the running sum of mm.
+                    // Accumulate in tenths (integers) to avoid float drift over the day.
                     data.forEach(function(d) {
                         var ts = new Date(d.d).getTime();
-                        var r  = parseFloat(d.r);
-                        var v  = parseFloat(d.v);
-                        if (!isNaN(r)) { rateSeries.push([ts, r]); }
-                        if (!isNaN(v)) {
-                            cumulative += v;
-                            cumulativeSeries.push([ts, Math.round(cumulative * 10) / 10]);
+                        var mm = parseFloat(d.mm !== undefined ? d.mm : d.v);
+                        if (!isNaN(mm)) {
+                            rateSeries.push([ts, mm]);
+                            cumulativeTenths += Math.round(mm * 10);
+                            cumulativeSeries.push([ts, cumulativeTenths / 10]);
                         }
                     });
 

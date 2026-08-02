@@ -88,8 +88,19 @@ define(['app'], function (app) {
         ],
         'energy':      [
             { id: 'updateEnergy',      label: 'Set power (W)',    hasValue: true, unit: 'W',  def: 0, min: 0 }
+        ],
+        'alert':       [
+            { id: 'updateAlertSensor', label: 'Set alert level',  hasValue: true, unit: '', def: 'domoticz.ALERTLEVEL_GREY' }
         ]
     };
+
+    var ALERT_LEVELS = [
+        { level: 'domoticz.ALERTLEVEL_GREY',   name: 'Grey (No alert)'  },
+        { level: 'domoticz.ALERTLEVEL_GREEN',  name: 'Green (Info)'     },
+        { level: 'domoticz.ALERTLEVEL_YELLOW', name: 'Yellow (Warning)' },
+        { level: 'domoticz.ALERTLEVEL_ORANGE', name: 'Orange (Alert)'   },
+        { level: 'domoticz.ALERTLEVEL_RED',    name: 'Red (Emergency)'  }
+    ];
 
     var DEVICE_CONDITIONS = {
         switch:      [{ id: 'any', label: 'Any change' }, { id: 'on', label: 'Turns On' }, { id: 'off', label: 'Turns Off' }],
@@ -97,7 +108,8 @@ define(['app'], function (app) {
                       { id: 'level_above', label: 'Level above', hasValue: true, unit: '%', def: 50 },
                       { id: 'level_below', label: 'Level below', hasValue: true, unit: '%', def: 50 }],
         blinds:      [{ id: 'any', label: 'Any change' }, { id: 'open', label: 'Opens' }, { id: 'closed', label: 'Closes' }],
-        selector:    [{ id: 'any', label: 'Any change' }],
+        selector:    [{ id: 'any', label: 'Any change' },
+                      { id: 'level_is', label: 'Level is', hasValue: true, unit: '', def: 0 }],
         setpoint:    [{ id: 'any', label: 'Any change' }],
         motion:      [{ id: 'any', label: 'Any change' }, { id: 'on', label: 'Motion detected' }, { id: 'off', label: 'No motion' }],
         door:        [{ id: 'any', label: 'Any change' }, { id: 'open', label: 'Opens' }, { id: 'closed', label: 'Closes' }],
@@ -134,6 +146,8 @@ define(['app'], function (app) {
         custom:      [{ id: 'any', label: 'Any change' },
                       { id: 'above', label: 'Value above', hasValue: true, unit: '', def: 0 },
                       { id: 'below', label: 'Value below', hasValue: true, unit: '', def: 0 }],
+        alert:       [{ id: 'any', label: 'Any change' },
+                      { id: 'alert_level_is', label: 'Level is', hasValue: true, unit: '', def: 'domoticz.ALERTLEVEL_GREY' }],
     };
 
     var COND_EXPR = {
@@ -143,6 +157,8 @@ define(['app'], function (app) {
         closed:      "device.state == 'Closed'",
         level_above: 'device.level > {v}',
         level_below: 'device.level < {v}',
+        level_is:    'device.level == {v}',
+        alert_level_is: 'device.color == {v}', // alert stores numeric level (0-4) in color; {v} is replaced with the domoticz.ALERTLEVEL_* constant name
         above: {
             temperature: 'device.temperature > {v}', temphum: 'device.temperature > {v}',
             humidity: 'device.humidity > {v}', percentage: 'device.percentage > {v}',
@@ -162,6 +178,39 @@ define(['app'], function (app) {
         hum_above:  'device.humidity > {v}',
         hum_below:  'device.humidity < {v}',
     };
+
+    function getSelectorLevels(dev) {
+        if (!dev || !dev.LevelNames) return [];
+        try {
+            var names = atob(dev.LevelNames).split('|');
+            var hiddenOff = dev.LevelOffHidden === true || dev.LevelOffHidden === 'true'; // API may return boolean or string
+            return names
+                .map(function (name, i) { return { level: i * 10, name: name }; })
+                .filter(function (opt) { return !(hiddenOff && opt.level === 0); });
+        } catch (e) {
+            console.error('Failed to parse selector levels:', e);
+            return [];
+        }
+    }
+
+    function defaultLevelValue(levelOptions, fallbackDef) {
+        if (levelOptions && levelOptions.length) {
+            return levelOptions[0].level;
+        }
+        return fallbackDef !== undefined ? fallbackDef : 0;
+    }
+
+    function isValidLevelValue(levelOptions, value) {
+        // empty levelOptions means a free numeric input, where any value is valid
+        if (!levelOptions || !levelOptions.length) return true;
+        return levelOptions.some(function (opt) { return opt.level === value; });
+    }
+
+    function getDeviceLevelOptions(category, dev) {
+        if (category === 'alert') return ALERT_LEVELS;
+        if (category === 'selector') return getSelectorLevels(dev);
+        return [];
+    }
 
     function getDeviceCategory(dev) {
         if (!dev) return 'switch';
@@ -194,6 +243,7 @@ define(['app'], function (app) {
         if (sub === 'kwh')             return 'power';
         if (sub === 'voltage')         return 'voltage';
         if (sub === 'lux')             return 'lux';
+        if (sub === 'alert')           return 'alert';
         return 'switch';
     }
 
@@ -305,7 +355,7 @@ define(['app'], function (app) {
                 if (a.type === 'delay')    return c.seconds !== undefined && c.seconds !== '' && Number(c.seconds) > 0;
                 if (a.type === 'custom')   return !!(c.code && c.code.trim());
                 if (a.type === 'variable') return !!(c.varName && c.varName.trim()) && c.value !== undefined && c.value !== '';
-                if (a.type === 'switch')   return !!(c.device && c.action);
+                if (a.type === 'switch')   return !!(c.deviceIdx && c.action);
                 if (a.type === 'scene')    return !!(c.scene && c.action);
                 if (a.type === 'group')    return !!(c.group && c.action);
                 if (a.type === 'email')    return !!(c.subject && c.subject.trim()) || !!(c.message && c.message.trim());
@@ -371,12 +421,13 @@ define(['app'], function (app) {
 
             vm.selectDevice = function (dev) {
                 var arr = vm.triggerConfig.devices;
-                var idx = arr.indexOf(dev.Name);
+                var idx = arr.indexOf(dev.idx);
                 if (idx >= 0) {
                     arr.splice(idx, 1);
                 } else {
-                    arr.push(dev.Name);
+                    arr.push(dev.idx);
                     vm.triggerConfig.deviceCategory = getDeviceCategory(dev);
+                    vm.triggerConfig.conditionLevelOptions = getDeviceLevelOptions(vm.triggerConfig.deviceCategory, dev);
                     vm.deviceConditions             = DEVICE_CONDITIONS[vm.triggerConfig.deviceCategory] || DEVICE_CONDITIONS['switch'];
                     var valid = vm.deviceConditions.some(function (c) { return c.id === vm.triggerConfig.condition; });
                     if (!valid) { vm.triggerConfig.condition = 'any'; }
@@ -385,7 +436,41 @@ define(['app'], function (app) {
             };
 
             vm.isDeviceSelected = function (dev) {
-                return vm.triggerConfig.devices && vm.triggerConfig.devices.indexOf(dev.Name) >= 0;
+                return vm.triggerConfig.devices && vm.triggerConfig.devices.indexOf(dev.idx) >= 0;
+            };
+
+            vm.deviceLabel = function (dev) {
+                if (!dev) return '';
+                var meta = dev.Type || '';
+                if (dev.SubType) meta += (meta ? '/' : '') + dev.SubType;
+                return meta ? (dev.Name + ' (' + meta + ')') : dev.Name;
+            };
+
+            function findDeviceByIdx(idx) {
+                return vm.devices.find(function (d) { return d.idx === idx; });
+            }
+
+            function deviceNameDuplicated(name) {
+                return vm.devices.filter(function (d) { return d.Name === name; }).length > 1;
+            }
+
+            vm.deviceRef = function (idx) {
+                var dev = findDeviceByIdx(idx);
+                if (!dev) return "domoticz.devices('Device')";
+                return deviceNameDuplicated(dev.Name) ? ('domoticz.devices(' + dev.idx + ')')
+                                                      : ("domoticz.devices('" + luaEsc(dev.Name) + "')");
+            };
+
+            vm.deviceNameByIdx = function (idx) {
+                var dev = findDeviceByIdx(idx);
+                return dev ? dev.Name : (idx || '');
+            };
+
+            vm.deviceOnToken = function (idx) {
+                var dev = findDeviceByIdx(idx);
+                if (!dev) return "''";
+                return deviceNameDuplicated(dev.Name) ? String(dev.idx)
+                                                      : ("'" + luaEsc(dev.Name) + "'");
             };
 
             vm.toggleTriggerScene = function (sc) {
@@ -429,8 +514,9 @@ define(['app'], function (app) {
                 var cond = vm.deviceConditions.find(function (c) { return c.id === vm.triggerConfig.condition; }) || {};
                 vm.conditionNeedsValue = !!cond.hasValue;
                 vm.conditionUnit       = cond.unit || '';
-                if (cond.hasValue && vm.triggerConfig.conditionValue == null) {
-                    vm.triggerConfig.conditionValue = cond.def;
+                if (cond.hasValue && (vm.triggerConfig.conditionValue == null
+                        || !isValidLevelValue(vm.triggerConfig.conditionLevelOptions, vm.triggerConfig.conditionValue))) {
+                    vm.triggerConfig.conditionValue = defaultLevelValue(vm.triggerConfig.conditionLevelOptions, cond.def);
                 }
                 if (!cond.hasValue) {
                     vm.triggerConfig.conditionValue = undefined;
@@ -438,29 +524,46 @@ define(['app'], function (app) {
             };
 
             vm.onConditionTypeChange = function () {
-                if (vm.wizardCondition.type === 'device' && vm.wizardCondition.device) {
+                if (vm.wizardCondition.type === 'device' && vm.wizardCondition.deviceIdx) {
                     vm.onConditionDeviceChange();
+                }
+                if (vm.wizardCondition.type === 'variable') {
+                    loadVariables();
                 }
             };
 
             vm.onConditionDeviceChange = function () {
-                var dev = vm.devices.find(function (d) { return d.Name === vm.wizardCondition.device; });
+                var dev = findDeviceByIdx(vm.wizardCondition.deviceIdx);
                 vm.wizardCondition.category = getDeviceCategory(dev);
+                vm.wizardCondition.levelOptions = getDeviceLevelOptions(vm.wizardCondition.category, dev);
                 vm.wizardCondition.conditionStates = DEVICE_CONDITIONS[vm.wizardCondition.category] || DEVICE_CONDITIONS['switch'];
                 var valid = vm.wizardCondition.conditionStates.some(function (c) { return c.id === vm.wizardCondition.state; });
                 if (!valid) vm.wizardCondition.state = 'any';
                 var sel = vm.wizardCondition.conditionStates.find(function (c) { return c.id === vm.wizardCondition.state; }) || {};
                 vm.wizardCondition.needsValue = !!sel.hasValue;
                 vm.wizardCondition.unit = sel.unit || '';
-                if (sel.hasValue && vm.wizardCondition.value == null) vm.wizardCondition.value = sel.def;
+                if (sel.hasValue) {
+                    if (vm.wizardCondition.value == null
+                            || !isValidLevelValue(vm.wizardCondition.levelOptions, vm.wizardCondition.value)) {
+                        vm.wizardCondition.value = defaultLevelValue(vm.wizardCondition.levelOptions, sel.def);
+                    }
+                } else {
+                    vm.wizardCondition.value = null;
+                }
             };
 
             vm.onConditionStateChange = function () {
                 var sel = vm.wizardCondition.conditionStates.find(function (c) { return c.id === vm.wizardCondition.state; }) || {};
                 vm.wizardCondition.needsValue = !!sel.hasValue;
                 vm.wizardCondition.unit = sel.unit || '';
-                if (sel.hasValue && vm.wizardCondition.value == null) vm.wizardCondition.value = sel.def;
-                if (!sel.hasValue) vm.wizardCondition.value = null;
+                if (sel.hasValue) {
+                    if (vm.wizardCondition.value == null
+                            || !isValidLevelValue(vm.wizardCondition.levelOptions, vm.wizardCondition.value)) {
+                        vm.wizardCondition.value = defaultLevelValue(vm.wizardCondition.levelOptions, sel.def);
+                    }
+                } else {
+                    vm.wizardCondition.value = null;
+                }
             };
 
             vm.openActionPicker = function () { vm.showActionPicker = true; };
@@ -470,6 +573,7 @@ define(['app'], function (app) {
                 var config = {};
                 if (actionDef.id === 'switch') {
                     config.action = 'switchOn';
+                    config.deviceIdx = '';
                     config.deviceCategory = 'switch';
                 }
                 if (actionDef.id === 'notify') {
@@ -502,22 +606,14 @@ define(['app'], function (app) {
             };
 
             vm.onActionDeviceChange = function (action) {
-                var dev = vm.devices.find(function (d) { return d.Name === action.config.device; });
+                var dev = findDeviceByIdx(action.config.deviceIdx);
                 action.config.deviceCategory = getDeviceCategory(dev);
                 action.config.levelOptions = null;
 
-                if (action.config.deviceCategory === 'selector' && dev && dev.LevelNames) {
-                    try {
-                        var names  = atob(dev.LevelNames).split('|');
-                        var hidden = dev.LevelOffHidden === true || dev.LevelOffHidden === 'true';
-                        action.config.levelOptions = names
-                            .map(function (name, i) { return { level: i * 10, name: name }; })
-                            .filter(function (opt) { return !(hidden && opt.level === 0); });
-                        if (action.config.levelOptions.length) {
-                            action.config.actionValue = action.config.levelOptions[0].level;
-                        }
-                    } catch (e) {
-                        action.config.levelOptions = null;
+                if (action.config.deviceCategory === 'selector' || action.config.deviceCategory === 'alert') {
+                    action.config.levelOptions = getDeviceLevelOptions(action.config.deviceCategory, dev);
+                    if (action.config.levelOptions.length) {
+                        action.config.actionValue = action.config.levelOptions[0].level;
                     }
                 }
 
@@ -531,6 +627,18 @@ define(['app'], function (app) {
 
             vm.actionHasOptions = function (action) {
                 return !!(action.config && action.config.levelOptions && action.config.levelOptions.length);
+            };
+
+            vm.triggerConditionHasLevelOptions = function () {
+                var opts = vm.triggerConfig.conditionLevelOptions;
+                var cat = vm.triggerConfig.deviceCategory;
+                return (cat === 'selector' || cat === 'alert') && !!(opts && opts.length);
+            };
+
+            vm.wizardConditionHasLevelOptions = function () {
+                var opts = vm.wizardCondition.levelOptions;
+                var cat = vm.wizardCondition.category;
+                return (cat === 'selector' || cat === 'alert') && !!(opts && opts.length);
             };
 
             vm.getDeviceActionOptions = function (action) {
@@ -605,11 +713,13 @@ define(['app'], function (app) {
             function initWizardCondition() {
                 vm.wizardCondition = {
                     type: 'none',
-                    device: '',
+                    deviceIdx: '',
                     category: 'switch',
                     conditionStates: [],
                     state: 'any',
                     value: null,
+                    varName: '',
+                    varValue: '',
                     fromHour: 8,
                     fromMin: 0,
                     toHour: 22,
@@ -665,7 +775,7 @@ define(['app'], function (app) {
                 var t = TRIGGERS.find(function (x) { return x.id === vm.triggerType; });
                 var label = t ? t.label : 'Automation';
                 if (vm.triggerType === 'device' && vm.triggerConfig.devices && vm.triggerConfig.devices.length)
-                    return vm.triggerConfig.devices[0] + ' automation';
+                    return vm.deviceNameByIdx(vm.triggerConfig.devices[0]) + ' automation';
                 if (vm.triggerType === 'scene' && vm.triggerConfig.scenes && vm.triggerConfig.scenes.length)
                     return vm.triggerConfig.scenes[0] + ' automation';
                 if (vm.triggerType === 'group' && vm.triggerConfig.groups && vm.triggerConfig.groups.length)
@@ -735,8 +845,16 @@ define(['app'], function (app) {
                     L.push(i8 + '},');
                 }
 
+                function pushLuaTokens(key, tokens) {
+                    L.push(i8 + key + ' = {');
+                    tokens.forEach(function(tok, idx) {
+                        L.push(i12 + tok + (idx < tokens.length - 1 ? ',' : ''));
+                    });
+                    L.push(i8 + '},');
+                }
+
                 if (t === 'device') {
-                    pushLuaArray('devices', tc.devices || []);
+                    pushLuaTokens('devices', (tc.devices || []).map(function (idx) { return vm.deviceOnToken(idx); }));
                 } else if (t === 'scene') {
                     pushLuaArray('scenes', tc.scenes || []);
                 } else if (t === 'group') {
@@ -815,10 +933,13 @@ define(['app'], function (app) {
                     if (expr1) condExprs.push(expr1.replace('{v}', tc.conditionValue != null ? tc.conditionValue : 0));
                 }
                 var wc = vm.wizardCondition;
-                if (wc && wc.type === 'device' && wc.device && wc.state && wc.state !== 'any') {
+                if (wc && wc.type === 'device' && wc.deviceIdx && wc.state && wc.state !== 'any') {
                     var wcExpr = COND_EXPR[wc.state];
                     if (typeof wcExpr === 'object') wcExpr = wcExpr[wc.category || 'switch'];
-                    if (wcExpr) condExprs.push(wcExpr.replace('{v}', wc.value != null ? wc.value : 0));
+                    if (wcExpr) {
+                        wcExpr = wcExpr.replace(/\bdevice\./g, vm.deviceRef(wc.deviceIdx) + '.');
+                        condExprs.push(wcExpr.replace('{v}', wc.value != null ? wc.value : 0));
+                    }
                 } else if (wc && wc.type === 'time') {
                     var from = ('0'+(wc.fromHour != null ? wc.fromHour : 8)).slice(-2)+':'+('0'+(wc.fromMin != null ? wc.fromMin : 0)).slice(-2);
                     var to   = ('0'+(wc.toHour   != null ? wc.toHour   : 22)).slice(-2)+':'+('0'+(wc.toMin   != null ? wc.toMin   : 0)).slice(-2);
@@ -834,6 +955,15 @@ define(['app'], function (app) {
                     }
                 } else if (wc && wc.type === 'daytime') {
                     condExprs.push(wc.dayPart === 'nighttime' ? 'domoticz.time.isNightTime' : 'domoticz.time.isDayTime');
+                } else if (wc && wc.type === 'variable' && wc.varName) {
+                    var vv = (wc.varValue !== undefined && wc.varValue !== null) ? String(wc.varValue).trim() : '';
+                    if (vv !== '') {
+                        if (!isNaN(Number(vv))) {
+                            condExprs.push("tonumber(domoticz.variables('" + luaEsc(wc.varName) + "').value) == " + Number(vv));
+                        } else {
+                            condExprs.push("domoticz.variables('" + luaEsc(wc.varName) + "').value == '" + luaEsc(vv) + "'");
+                        }
+                    }
                 }
 
                 var i16 = i12 + i4;
@@ -865,7 +995,7 @@ define(['app'], function (app) {
                         var c = a.config || {};
                         if (a.type === 'switch') {
                             var act = c.action || 'switchOn';
-                            var dev = "domoticz.devices('" + luaEsc(c.device || 'Device') + "')";
+                            var dev = vm.deviceRef(c.deviceIdx);
                             if (act === 'dimTo') {
                                 L.push(bi + dev + ".dimTo(" + numVal(c.actionValue, 50) + ")");
                             } else if (act === 'updateSetPoint') {
@@ -896,6 +1026,9 @@ define(['app'], function (app) {
                                 L.push(bi + dev + ".updateUV(" + numVal(c.actionValue, 0) + ")");
                             } else if (act === 'updateEnergy') {
                                 L.push(bi + dev + ".updateEnergy(" + numVal(c.actionValue, 0) + ")");
+                            } else if (act === 'updateAlertSensor') {
+                                // second arg is the alert text; leave empty as the wizard does not expose a text field
+                                L.push(bi + dev + ".updateAlertSensor(" + (c.actionValue || 'domoticz.ALERTLEVEL_GREY') + ", '')");
                             } else {
                                 L.push(bi + dev + "." + act + "()");
                             }

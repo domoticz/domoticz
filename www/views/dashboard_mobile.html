@@ -54,7 +54,7 @@
 									ng-click="switchScene(item.idx, 'On', item.Protected)"
 									data-i18n="On">On</button>
 							<button class="btn btn-mini"
-									ng-class="{'btn-info': item.Status == 'Off' || item.Status == 'Group Off'}"
+									ng-class="{'btn-off-active': item.Status == 'Off' || item.Status == 'Group Off'}"
 									type="button"
 									ng-click="switchScene(item.idx, 'Off', item.Protected)"
 									data-i18n="Off">Off</button>
@@ -205,7 +205,7 @@
 								<span ng-repeat="level in getSelectorLevels(item)">
 									<button type="button"
 											class="btn btn-mini"
-											ng-class="{'btn-selected': level.isActive, 'btn-default': !level.isActive}"
+											ng-class="{'btn-info': level.isActive}"
 											ng-click="switchSelectorLevel(item.idx, level.value, level.name, item.Protected)">
 										{{level.name}}
 									</button>
@@ -229,7 +229,7 @@
 										ng-click="switchLight(item.idx, 'On', item.Protected)"
 										data-i18n="On">On</button>
 								<button class="btn btn-mini"
-										ng-class="{'btn-info': !(item.Status == 'On' || item.Status == 'Chime' || item.Status == 'Group On' || (item.Status || '').indexOf('Set ') === 0)}"
+										ng-class="{'btn-off-active': !(item.Status == 'On' || item.Status == 'Chime' || item.Status == 'Group On' || (item.Status || '').indexOf('Set ') === 0)}"
 										type="button"
 										ng-click="switchLight(item.idx, 'Off', item.Protected)"
 										data-i18n="Off">Off</button>
@@ -244,7 +244,7 @@
 										ng-click="switchLight(item.idx, 'On', item.Protected)"
 										data-i18n="On">On</button>
 								<button class="btn btn-mini"
-										ng-class="{'btn-info': item.Status != 'On'}"
+										ng-class="{'btn-off-active': item.Status != 'On'}"
 										ng-disabled="item.Unit < 64 || item.Unit > 95"
 										type="button"
 										ng-click="switchLight(item.idx, 'Off', item.Protected)"
@@ -399,7 +399,7 @@
 										ng-click="switchLight(item.idx, 'On', item.Protected)"
 										data-i18n="On">On</button>
 								<button class="btn btn-mini"
-										ng-class="{'btn-info': !(item.Status == 'On' || item.Status == 'Chime' || item.Status == 'Group On' || (item.Status || '').indexOf('Down') != -1 || (item.Status || '').indexOf('Up') != -1 || (item.Status || '').indexOf('Set ') === 0)}"
+										ng-class="{'btn-off-active': !(item.Status == 'On' || item.Status == 'Chime' || item.Status == 'Group On' || (item.Status || '').indexOf('Down') != -1 || (item.Status || '').indexOf('Up') != -1 || (item.Status || '').indexOf('Set ') === 0)}"
 										type="button"
 										ng-click="switchLight(item.idx, 'Off', item.Protected)"
 										data-i18n="Off">Off</button>
@@ -562,8 +562,8 @@
 							<span ng-if="(item.Type != 'Setpoint' || item.SubType != 'SetPoint') && item.SubType == 'Managed Counter'">
 								{{item.Counter}}
 							</span>
-							<!-- Text / Alert (render HTML content) -->
-							<span ng-if="(item.SubType == 'Text' || item.SubType == 'Alert') && item.CounterToday === undefined" ng-bind-html="nl2br(item.Data)"></span>
+							<!-- Text / Alert (render sanitized HTML content) -->
+							<span ng-if="(item.SubType == 'Text' || item.SubType == 'Alert') && item.CounterToday === undefined" ng-bind-html="sanitizeDeviceData(item.Data, item.idx)"></span>
 							<!-- Everything else -->
 							<span ng-if="(item.Type != 'Setpoint' || item.SubType != 'SetPoint') && item.CounterToday === undefined && item.SubType != 'Managed Counter' && item.SubType != 'Text' && item.SubType != 'Alert'">
 								{{item.Data}}

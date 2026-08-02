@@ -25,3 +25,32 @@ If the pi is not connected to a network, the device time will not be updated, re
 All ports below 1024 on linux systems can only be started by root.
 If you run Domoticz on port 80, make sure to run it as root, e.g. : sudo ./domoticz
 
+## Building from the source tarball
+
+Domoticz uses git submodules for several bundled dependencies (jsoncpp, minizip,
+jwt-cpp, ...). GitHub's automatically generated **"Source code (zip/tar.gz)"**
+archives on the Releases page do **not** contain submodule contents, so they
+cannot be built directly.
+
+Use one of the following instead:
+
+* The `domoticz_src_<version>.tar.gz` archive attached to each release — it
+  bundles all submodules at their pinned commits and builds out of the box:
+  ```bash
+  tar xzf domoticz_src_2026.2.tar.gz
+  cd domoticz
+  mkdir build && cd build
+  cmake ..
+  make -j$(nproc)
+  ```
+
+* Or clone the repository with its submodules:
+  ```bash
+  git clone --recurse-submodules https://github.com/domoticz/domoticz.git
+  # for an existing clone:
+  git submodule update --init
+  ```
+
+Maintainers can regenerate the bundled source archive with
+`tools/make_source_archive.sh [ref] [output-dir]`.
+

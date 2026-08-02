@@ -55,7 +55,7 @@ define([
                 var ctrl = this;
                 ctrl.imageUrl    = null;
                 ctrl.cameraName  = '';
-                ctrl.cameraAspect = 0;
+                ctrl.cameraAspect = 1;
                 ctrl.error       = null;
                 var timer              = null;
                 var currentBlobUrl     = null;
@@ -155,8 +155,9 @@ define([
 
                 function loadCameraName() {
                     var cfg = (ctrl.widgetDef && ctrl.widgetDef.config) || {};
-                    if (!cfg.cameraIdx || cfg.showName === false) {
+                    if (!cfg.cameraIdx) {
                         ctrl.cameraName = '';
+                        ctrl.cameraAspect = 1;
                         return;
                     }
                     $http.get('json.htm', { params: { type: 'command', param: 'getcameras', order: 'Name' } })
@@ -165,10 +166,10 @@ define([
                             var cam = cameras.find(function(c) {
                                 return String(c.idx) === String(cfg.cameraIdx);
                             });
-                            ctrl.cameraName   = cam ? cam.Name : '';
-                            ctrl.cameraAspect = cam ? (cam.CameraAspect || 0) : 0;
+                            ctrl.cameraName   = (cam && cfg.showName !== false) ? cam.Name : '';
+                            ctrl.cameraAspect = (cam && cam.AspectRatio != null) ? cam.AspectRatio : 1;
                         })
-                        .catch(function() { ctrl.cameraName = ''; ctrl.cameraAspect = 0; });
+                        .catch(function() { ctrl.cameraName = ''; ctrl.cameraAspect = 1; });
                 }
 
                 ctrl.openLiveStream = function() {

@@ -7,6 +7,7 @@
 #include "../httpclient/HTTPClient.h"
 #include "../main/json_helper.h"
 #include "../notifications/NotificationHelper.h"
+#include <filesystem>
 #include <cinttypes>                    //PRIu64
 
 #define NETATMO_API_URI "https://api.netatmo.com/"
@@ -44,6 +45,10 @@
 // Some testfunctions for debugging
 void SaveJson2Disk(Json::Value str, std::string filename)
 {
+	std::filesystem::path p(filename);
+    std::error_code ec;
+    std::filesystem::create_directories(p.parent_path(), ec); // creates missing directory's
+
 	FILE* fOut = fopen(filename.c_str(), "wb+");
 	if (fOut)
 	{
@@ -102,9 +107,9 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 
 	// Weatherdevice is available in HomesData + HomeStatus
 	//m_bPollWeatherData = (m_scopes.find("station_R") != std::string::npos);      //read_station
-	m_bPollHomecoachData = (m_scopes.find("homecoach_R") != std::string::npos);  //read_homecoach
+	m_bPollHomecoachData = (m_scopes.find("homecoach_RW") != std::string::npos);  //read_homecoach write_homecoach
 
-	m_bPollHomeStatus = find_scopes(); //"thermostat_RW","camera_RWA","presence_RWA","carbonmonoxidedetector_R","smokedetector_R","magellan_RW","bubendorff_RW","smarther_RW","mx_RW","mhs1_RW","station_R","doorbell_RA","camerapro_RWA"
+	m_bPollHomeStatus = find_scopes();
 	m_netatmo_api_uri = std::string(NETATMO_API_URI);
 
 	m_bPollThermostat = true;
@@ -224,10 +229,17 @@ void CNetatmo::Do_Work()
 		if (mytime(nullptr) > m_nextRefreshTs)
 		{
 			//Time is bigger than 2/3 off duration access token
-			if (RefreshToken(true))
-				Log(LOG_STATUS,"Refresh token %d",  m_isLogged);
+			if (!m_ErrorFlag)
+			{
+				if (RefreshToken(true))
+					Log(LOG_STATUS,"Refresh token %d",  m_isLogged);
+			}
 			else
-				Log(LOG_ERROR, "Refresh token false %d",  m_isLogged);
+			{
+				Debug(DEBUG_HARDWARE, "RefreshToken Time %s", ctime(& m_nextRefreshTs));
+				m_ErrorFlag = true;
+				Log(LOG_ERROR, "Refresh token false %d  %d",  m_isLogged, sec_counter);
+			}
 		}
 		if (sec_counter % NETAMO_ERROR_INTERVALL == 0)
 		{
@@ -565,9 +577,9 @@ bool CNetatmo::find_scopes()
 		return true;
 	if (m_scopes.find("presence_RWA") != std::string::npos)             //
 		return true;
-	if (m_scopes.find("carbonmonoxidedetector_R") != std::string::npos) //
+	if (m_scopes.find("carbonmonoxidedetector_RW") != std::string::npos)//
 		return true;
-	if (m_scopes.find("smokedetector_R") != std::string::npos)          //
+	if (m_scopes.find("smokedetector_RW") != std::string::npos)         //
 		return true;
 	if (m_scopes.find("magellan_RW") != std::string::npos)              //
 		return true;
@@ -579,13 +591,36 @@ bool CNetatmo::find_scopes()
 		return true;
 	if (m_scopes.find("mhs1_RW") != std::string::npos)                  //
 		return true;
-	if (m_scopes.find("station_R") != std::string::npos)                //
+	if (m_scopes.find("station_RW") != std::string::npos)                //
 		return true;
-	if (m_scopes.find("doorbell_RA") != std::string::npos)                //
+	if (m_scopes.find("doorbell_RWA") != std::string::npos)              //
 		return true;
-	if (m_scopes.find("camerapro_RWA") != std::string::npos)                //
+	if (m_scopes.find("camerapro_RWA") != std::string::npos)            //
 		return true;
-	//"thermostat_RW","camera_RWA","presence_RWA","carbonmonoxidedetector_R","smokedetector_R","magellan_RW","bubendorff_RW","smarther_RW","mx_RW","mhs1_RW","station_R","homecoach_R","doorbell_RA","camerapro_RWA"
+	if (m_scopes.find("doorlock_RW") != std::string::npos)              //
+		return true;
+	if (m_scopes.find("hybrid_RW") != std::string::npos)                //
+		return true;
+	if (m_scopes.find("phnx_RWA") != std::string::npos)                 //
+		return true;
+	if (m_scopes.find("bfi_RWA") != std::string::npos)                  //
+		return true;
+	if (m_scopes.find("bdiy_RWA") != std::string::npos)                 //
+		return true;
+	if (m_scopes.find("boreal_RW") != std::string::npos)                //
+		return true;
+	if (m_scopes.find("cep_RWA") != std::string::npos)                  //
+		return true;
+	if (m_scopes.find("clim_RW") != std::string::npos)                  //
+		return true;
+	if (m_scopes.find("c100x_RWA") != std::string::npos)                //
+		return true;
+	if (m_scopes.find("c300x_RWA") != std::string::npos)                //
+		return true;
+	if (m_scopes.find("ntg_RW") != std::string::npos)                   //
+		return true;
+	//"thermostat_RW","camera_RWA","presence_RWA","carbonmonoxidedetector_RW","smokedetector_RW","magellan_RW","bubendorff_RW","smarther_RW","mx_RW","mhs1_RW","station_RW","homecoach_RW","doorbell_RWA","camerapro_RWA"
+	//"doorlock_RW","hybrid_RW","phnx_RWA","bfi_RWA","bdiy_RWA","boreal_RW","cep_RWA","clim_RW","c100x_RWA","c300x_RWA","ntg_RW"
 	return false;
 }
 
@@ -639,8 +674,8 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 	//the user has selected in domoticz (actionning a switch....)
 	//Here a LIGHTING2 is used as we have selector switch for
 	//our thermostat / valve devices
-	// To Debug the Hardware on "normal" setup, uncomment lines "Log(LOG_STATUS" (on line 759 - 771 - 1738 - 2076 - 2805)
-	// and additional on lines 857 - 1239 - 1712 - 3106 - 4094.
+	// To Debug the Hardware on "normal" setup, uncomment lines "Log(LOG_STATUS" (on line 792 - 804 - 1771 - 2110 - 2849)
+	// and additional on lines 890 - 1272 - 1745 - 3150 - 4138.
 	const tRBUF* pCmd = reinterpret_cast<const tRBUF*>(pdata);
 	unsigned char packettype = pCmd->ICMND.packettype;
 	Debug(DEBUG_HARDWARE, "Netatmo Write to Hardware " );
@@ -1752,7 +1787,7 @@ void CNetatmo::GetHomesDataDetails()
 				//Debug(DEBUG_HARDWARE, "Get Home ID %s", homeID.c_str());
 
 				//*****************************************************************************//
-				//SaveJson2Disk(home, std::string("./HomesData_" + m_Name + "-" + homeID + ".txt"));
+				//SaveJson2Disk(home, std::string("./jsoncreated/HomesData_" + m_Name + "-" + homeID + ".txt"));
 				//*****************************************************************************//
 
 				std::stringstream stream_homeid;
@@ -1844,6 +1879,8 @@ void CNetatmo::GetHomesDataDetails()
 								module_id = device.asString();
 							}
 							roomNetatmoID = m_RoomIDs[macID];
+							std::string appliance_type = module["appliance_type"].asString();
+							std::string setup_date = module["setup_date"].asString();
 
 							std::string roomName = m_RoomNames[roomNetatmoID];
 							std::string roomType = m_Types[roomNetatmoID];
@@ -2201,7 +2238,7 @@ void CNetatmo::Get_RoomMeasure(std::string& home_id, std::string& room_id, std::
 		//if (!root["body"]["home"].empty())
 		//{
 			//*****************************************************************************//
-				SaveJson2Disk(root, std::string("./roommeasure " + roomName + "_:_" + home_id + ".txt"));
+			//SaveJson2Disk(root, std::string("./jsoncreated/roommeasure " + roomName + "_:_" + home_id + ".txt"));
 			//*****************************************************************************//
 	}
 }
@@ -2278,7 +2315,7 @@ void CNetatmo::Get_Scenarios(std::string& home_id, Json::Value& scenarios)
 		if (!root["body"]["home"].empty())
 		{
 			//*****************************************************************************//
-			//SaveJson2Disk(root, std::string("./scenario-s " + m_Name + "_:_" + home_id + ".txt"));
+			//SaveJson2Disk(root, std::string("./jsoncreated/scenario-s " + m_Name + "_:_" + home_id + ".txt"));
 			//*****************************************************************************//
 			scenarios = root["body"]["home"];
 
@@ -2382,7 +2419,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 				name = "UNKNOWN NAME";
 
 			//*****************************************************************************//
-			//SaveJson2Disk(device, std::string("./" + name + ".txt"));
+			//SaveJson2Disk(device, std::string("./jsoncreated/" + name + ".txt"));
 			//*****************************************************************************//
 
 			//get Home ID from Weatherstation
@@ -2450,7 +2487,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 			// Homecoach
 			if (!device["dashboard_data"].empty())
 			{
-				//SaveJson2Disk(device["dashboard_data"], std::string("./" + name + ".txt"));
+				//SaveJson2Disk(device["dashboard_data"], std::string("./jsoncreated/" + name + ".txt"));
 				ParseDashboard(device["dashboard_data"], iDevIndex, crcId, name, type, mbattery_percent, RF_status, id, home_id);
 			}
 			//Weather modules (Temp sensor, Wind Sensor, Rain Sensor)
@@ -2479,7 +2516,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 							else
 								mname = "unknown-" + mid;
 
-							//SaveJson2Disk(module, std::string("./" + mname + ".txt"));
+							//SaveJson2Disk(module, std::string("./jsoncreated/" + mname + ".txt"));
 
 							int crcId = Crc32(0, (const unsigned char*)mid.c_str(), mid.length());
 							uint64_t moduleID = convert_mac(mid);
@@ -2503,7 +2540,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 
 							if (!module["dashboard_data"].empty())
 							{
-								//SaveJson2Disk(module["dashboard_data"], std::string("./" + mname + ".txt"));
+								//SaveJson2Disk(module["dashboard_data"], std::string("./jsoncreated/" + mname + ".txt"));
 
 								ParseDashboard(module["dashboard_data"], iModulIndex, crcId, mname, mtype, mbattery_percent, mrf_status, mid, home_id);
 								nDevice.SignalLevel = mrf_status;
@@ -2844,7 +2881,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 		Json::Value mRoot = root["body"]["home"]["rooms"];
 
 		//*****************************************************************************//
-		//SaveJson2Disk(root, std::string("./HomeStatus_" + m_Name + "_:_" + home_id + ".txt")); //Save HOMESTATUS
+		//SaveJson2Disk(root, std::string("./jsoncreated/HomeStatus_" + m_Name + "_:_" + home_id + ".txt")); //Save HOMESTATUS
 		//*****************************************************************************//
 
 		for (auto room : mRoot)
@@ -2870,7 +2907,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				std::string roomType = m_Types[roomNetatmoID];
 
 				//*****************************************************************************//
-				//SaveJson2Disk(room, std::string("./room_") + roomName.c_str() + ".txt");
+				//SaveJson2Disk(room, std::string("./jsoncreated/room_") + roomName.c_str() + ".txt");
 				//*****************************************************************************//
 
 				if (!room["reachable"].empty())
@@ -3030,7 +3067,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				std::string type = module["type"].asString();
 				m_Device_types[module_id] = type;
 				//*****************************************************************************//
-				//SaveJson2Disk(module, std::string("./") + moduleName.c_str() + ".txt");
+				//SaveJson2Disk(module, std::string("./jsoncreated/") + moduleName.c_str() + ".txt");
 				//*****************************************************************************//
 
 				nDevice.ID = crcId;
@@ -3063,7 +3100,9 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				//battery_state
 				if (!module["battery_state"].empty())
 				{
+					batName = " " + moduleName + " Bat. Lvl";
 					std::string battery_state = module["battery_state"].asString();
+					SendTextSensor(crcId, 3, 255, battery_state.c_str(), batName);
 				}
 				//Device to get battery level / network strength
 				if (!module["battery_level"].empty())
@@ -3180,7 +3219,6 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						m_wifi_status[module_id] = (int)wifi_status;
 						mrf_status = static_cast<int>(wifi_status); // Device has Wifi- or RF-strength not both
 					}
-
 
 					if (!module["battery_level"].empty())
 					{
@@ -3887,7 +3925,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				PersonName = m_PersonsNames[PersonNetatmoID];
 
 				//*****************************************************************************//
-				//SaveJson2Disk(person, std::string("./person_") + PersonName.c_str() + ".txt");
+				//SaveJson2Disk(person, std::string("./jsoncreated/person_") + PersonName.c_str() + ".txt");
 				//*****************************************************************************//
 
 				std::string PersonLastSeen = person["last_seen"].asString();
@@ -3938,7 +3976,7 @@ bool CNetatmo::ParseEvents(const std::string& sResult, Json::Value& root )
 			{
 				events_ID = events["id"].asString();
 				//*****************************************************************************//
-				//SaveJson2Disk(events, std::string("./events_") + events_ID.c_str() + ".txt");
+				//SaveJson2Disk(events, std::string("./jsoncreated/events_") + events_ID.c_str() + ".txt");
 				//*****************************************************************************//
 			}
 			// Using Textstatus / Alert for now

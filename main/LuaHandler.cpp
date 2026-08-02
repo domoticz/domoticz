@@ -127,6 +127,12 @@ bool CLuaHandler::executeLuaScript(const std::string &script, const std::string 
 
 bool CLuaHandler::executeLuaScript(const std::string &script, const std::string &content, std::vector<std::string>& allParameters)
 {
+	if (script.find("..") != std::string::npos)
+	{
+		_log.Log(LOG_ERROR, "CLuaHandler: Invalid script name '%s'", script.c_str());
+		return false;
+	}
+
 	std::stringstream lua_DirT;
 #ifdef WIN32
 	lua_DirT << szUserDataFolder << "scripts\\lua_parsers\\";

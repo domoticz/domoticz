@@ -110,12 +110,15 @@ define([
                 ctrl.getWeatherScene = function(forecastStr) {
                     if (!forecastStr) { return 'fcw-cloudy'; }
                     var s = forecastStr.toLowerCase();
-                    if (s.indexOf('heavy rain') >= 0 || s.indexOf('thunderstorm') >= 0) { return 'fcw-heavyrain'; }
+                    if (s.indexOf('thunderstorm') >= 0) { return 'fcw-thunderstorm'; }
+                    if (s.indexOf('heavy rain') >= 0) { return 'fcw-heavyrain'; }
                     if (s.indexOf('rain') >= 0 || s.indexOf('shower') >= 0) { return 'fcw-rain'; }
                     if (s.indexOf('heavy snow') >= 0 || s.indexOf('blizzard') >= 0) { return 'fcw-heavysnow'; }
                     if (s.indexOf('snow') >= 0 || s.indexOf('sleet') >= 0) { return 'fcw-snow'; }
+                    if (s.indexOf('unstable') >= 0) { return 'fcw-cloudy'; }
+                    if (s.indexOf('stable') >= 0) { return 'fcw-sunny'; }
                     if (s.indexOf('sunny') >= 0 || (s.indexOf('clear') >= 0 && s.indexOf('night') < 0)) { return 'fcw-sunny'; }
-                    if (s.indexOf('partly') >= 0 || s.indexOf('scattered') >= 0) { return 'fcw-partlycloudy'; }
+                    if (s.indexOf('partly') >= 0 || s.indexOf('scattered') >= 0 || s.indexOf('some clouds') >= 0) { return 'fcw-partlycloudy'; }
                     if (s.indexOf('night') >= 0) { return 'fcw-night'; }
                     if (s.indexOf('cloud') >= 0 || s.indexOf('overcast') >= 0) { return 'fcw-cloudy'; }
                     return 'fcw-cloudy';

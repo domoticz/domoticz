@@ -43,6 +43,16 @@ class CEvohomeRadio : public CEvohomeBase
 	};
 	typedef std::map<uint8_t, _tRelayCheck> tmap_relay_check;
 
+	// A ventilation unit only accepts a mode change from a remote it has been bound to, so we
+	// learn the remote address and the vendor's mode numbering by watching 22F1 traffic.
+	struct _tHvacRemote
+	{
+		unsigned int m_nRemoteID{ 0 };
+		uint8_t m_nScheme{ 0 };	 // hvacScheme
+		uint8_t m_nModeMax{ 0 }; // 0 when the remote omits the trailing byte
+	};
+	typedef std::map<unsigned int, _tHvacRemote> tmap_hvac_remote;
+
       public:
 	CEvohomeRadio(int ID, const std::string &UserContID);
 	~CEvohomeRadio() override;
@@ -107,7 +117,17 @@ class CEvohomeRadio : public CEvohomeBase
 	bool DecodeDeviceInfo(CEvohomeMsg &msg);
 	bool DecodeBatteryInfo(CEvohomeMsg &msg);
 	bool DecodeSync(CEvohomeMsg &msg);
+	bool DecodeFanMode(CEvohomeMsg &msg);
+	bool DecodeFanState(CEvohomeMsg &msg);
+	bool DecodeVentState(CEvohomeMsg &msg);
 	bool DumpMessage(CEvohomeMsg &msg);
+
+	std::string GetHvacName(unsigned int nDevID, const char *szLabel);
+	void UpdateHvacTemp(unsigned int nDevID, uint8_t nChild, uint16_t nRaw, const char *szLabel);
+	void UpdateHvacFanSpeed(unsigned int nDevID, uint8_t nChild, uint8_t nRaw, const char *szLabel);
+	void UpdateHvacFlow(unsigned int nDevID, uint8_t nChild, uint16_t nRaw, const char *szLabel);
+	void UpdateFanModeSwitch(unsigned int nDevID, uint8_t nFanInfo);
+	bool SetFanMode(unsigned int nDevID, uint8_t nChild, uint8_t nLevel);
 
 	void AddSendQueue(const CEvohomeMsg &msg);
 	void PopSendQueue(const CEvohomeMsg &msg);
@@ -128,6 +148,9 @@ class CEvohomeRadio : public CEvohomeBase
 	bool AllSensors;
 	std::mutex m_mtxRelayCheck;
 	tmap_relay_check m_RelayCheck;
+
+	std::mutex m_mtxHvacRemote;
+	tmap_hvac_remote m_HvacRemote;
 
 	bool startup;
 	boost::system_time stLastRelayCheck;

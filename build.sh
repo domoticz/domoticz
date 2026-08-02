@@ -25,6 +25,7 @@ case "$1" in
         ;;
 esac
 
+CMAKE_CHANNEL_OPT=""
 case "$BUILD_TYPE" in
     beta)
         BRANCH="origin/development"
@@ -33,6 +34,7 @@ case "$BUILD_TYPE" in
     release)
         BRANCH="origin/master"
         UPLOAD_PATH="release/"
+        CMAKE_CHANNEL_OPT="-DBUILD_MASTER=ON"
         ;;
     *)
         echo "Unknown build type: $BUILD_TYPE (use beta or release)"
@@ -69,6 +71,7 @@ if [ "$BUILD_ONLY" = false ]; then
     git fetch --all --recurse-submodules=no
 
     git reset --hard ${BRANCH}
+    git submodule sync --recursive
     git submodule update --init --remote --force
 
     if [ "$FORCE" != "force" ]; then
@@ -81,7 +84,7 @@ if [ "$BUILD_ONLY" = false ]; then
     fi
 fi
 
-cmake -DCMAKE_BUILD_TYPE=Release .
+cmake -DCMAKE_BUILD_TYPE=Release ${CMAKE_CHANNEL_OPT} .
 if [ $? -ne 0 ]
 then
 	echo "CMake failed!";

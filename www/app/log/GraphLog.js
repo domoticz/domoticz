@@ -44,46 +44,71 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader'],
                     function rebuildCards() {
                         self.cards.length = 0;
 
+                        // Parse the device's current value so Min/Max use the same precision and unit
+                        var dataStr = String(device.Data);
+                        var dataMatch = dataStr.match(/(-?\d+(?:\.(\d+))?)\s*(.*)/);
+                        var decimals = (dataMatch && dataMatch[2]) ? dataMatch[2].length : 0;
+                        var unit = (dataMatch && dataMatch[3]) ? dataMatch[3] : deviceUnit;
+
                         // Current value from device.Data
                         if (device.Data !== undefined && device.Data !== null && device.Data !== '') {
                             self.cards.push({
                                 label: $.t('Current'),
-                                value: String(device.Data),
+                                value: dataStr,
                                 delta: '',
                                 deltaColor: ''
                             });
                         }
 
-                        // Min/Max from chart data
-                        var result = self.logCtrl.dayGraphData;
-                        if (result && result.length > 0) {
-                            var min = Infinity, max = -Infinity;
-                            result.forEach(function (item) {
+                        var min = Infinity, max = -Infinity;
+
+                        // Prefer the historical range from the long-log (month) data, which carries
+                        // per-period min/max. This reflects the full visible history rather than just
+                        // today's short-log, which for infrequently updated sensors holds a single value.
+                        var longData = self.logCtrl.longGraphData;
+                        if (longData && longData.length > 0) {
+                            longData.forEach(function (item) {
+                                var vMin = parseFloat(item[valueKey + '_min']);
+                                var vMax = parseFloat(item[valueKey + '_max']);
+                                if (!isNaN(vMin) && vMin < min) min = vMin;
+                                if (!isNaN(vMax) && vMax > max) max = vMax;
+                            });
+                        }
+
+                        // Also fold in today's short-log raw values
+                        var dayData = self.logCtrl.dayGraphData;
+                        if (dayData && dayData.length > 0) {
+                            dayData.forEach(function (item) {
                                 var v = parseFloat(item[valueKey]);
                                 if (!isNaN(v)) {
                                     if (v < min) min = v;
                                     if (v > max) max = v;
                                 }
                             });
+                        }
 
-                            if (min !== Infinity) {
-                                var dataStr = String(device.Data);
-                                var dataMatch = dataStr.match(/[\d.\-]+\s*(.*)/);
-                                var unit = (dataMatch && dataMatch[1]) ? dataMatch[1] : deviceUnit;
-                                var decimals = (min % 1 === 0 && max % 1 === 0) ? 0 : 1;
-                                self.cards.push({
-                                    label: $.t('Minimum'),
-                                    value: min.toFixed(decimals) + ' ' + unit,
-                                    delta: '',
-                                    deltaColor: ''
-                                });
-                                self.cards.push({
-                                    label: $.t('Maximum'),
-                                    value: max.toFixed(decimals) + ' ' + unit,
-                                    delta: '',
-                                    deltaColor: ''
-                                });
+                        // And the live current value
+                        if (dataMatch) {
+                            var cur = parseFloat(dataMatch[1]);
+                            if (!isNaN(cur)) {
+                                if (cur < min) min = cur;
+                                if (cur > max) max = cur;
                             }
+                        }
+
+                        if (min !== Infinity) {
+                            self.cards.push({
+                                label: $.t('Minimum'),
+                                value: min.toFixed(decimals) + ' ' + unit,
+                                delta: '',
+                                deltaColor: ''
+                            });
+                            self.cards.push({
+                                label: $.t('Maximum'),
+                                value: max.toFixed(decimals) + ' ' + unit,
+                                delta: '',
+                                deltaColor: ''
+                            });
                         }
 
                         if (self.cards.length === 0) {
@@ -91,13 +116,12 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader'],
                         }
                     }
 
-                    // Rebuild when chart data refreshes (every 5 min)
-                    $scope.$watch(function () {
-                        return self.logCtrl.dayGraphData;
-                    }, function (result) {
-                        if (result && result.length > 0) {
-                            rebuildCards();
-                        }
+                    // Rebuild when either the short-log (day) or long-log (month) data refreshes
+                    $scope.$watchGroup([
+                        function () { return self.logCtrl.dayGraphData; },
+                        function () { return self.logCtrl.longGraphData; }
+                    ], function () {
+                        rebuildCards();
                     });
 
                     // Rebuild on live device update
@@ -173,44 +197,52 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader'],
                 const self = this;
 
                 self.$onInit = function () {
+                    var params = chartParams(
+                        domoticzGlobals,
+                        self,
+                        false,
+                        function (dataItem, yearOffset = 0) {
+                            return GetLocalDateFromString(dataItem.d, yearOffset);
+                        },
+                        [
+                            {
+                                id: 'min',
+                                valueKeySuffix: '_min',
+                                colorIndex: 3,
+                                template: {
+                                    name: $.t('Minimum')
+                                }
+                            },
+                            {
+                                id: 'max',
+                                valueKeySuffix: '_max',
+                                colorIndex: 2,
+                                template: {
+                                    name: $.t('Maximum')
+                                }
+                            },
+                            {
+                                id: 'avg',
+                                valueKeySuffix: '_avg',
+                                colorIndex: 0,
+                                template: {
+                                    name: $.t('Average')
+                                }
+                            }
+                        ]
+                    );
+                    // Share month history with the current-conditions cards so Min/Max reflect
+                    // the full visible range, not just today's short-log
+                    if (self.range === 'month') {
+                        params.dataSupplier.preprocessData = function (data) {
+                            self.logCtrl.longGraphData = data.result;
+                        };
+                    }
                     new RefreshingChart(
                         baseParams($),
                         angularParams($location, $route, $scope, $timeout, $element),
                         domoticzParams(domoticzGlobals, domoticzApi, domoticzDataPointApi),
-                        chartParams(
-                            domoticzGlobals,
-                            self,
-                            false,
-                            function (dataItem, yearOffset = 0) {
-                                return GetLocalDateFromString(dataItem.d, yearOffset);
-                            },
-                            [
-                                {
-                                    id: 'min',
-                                    valueKeySuffix: '_min',
-                                    colorIndex: 3,
-                                    template: {
-                                        name: $.t('Minimum')
-                                    }
-                                },
-                                {
-                                    id: 'max',
-                                    valueKeySuffix: '_max',
-                                    colorIndex: 2,
-                                    template: {
-                                        name: $.t('Maximum')
-                                    }
-                                },
-                                {
-                                    id: 'avg',
-                                    valueKeySuffix: '_avg',
-                                    colorIndex: 0,
-                                    template: {
-                                        name: $.t('Average')
-                                    }
-                                }
-                            ]
-                        )
+                        params
                     );
                 }
             }
