@@ -27,13 +27,38 @@ namespace server
 
 // ===========================================================================
 
-bool BuildGraphContext(const request& req, CSQLHelper& sql, GraphContext& ctx)
+// Records why the request failed, so every exit below can say what went wrong
+// without repeating the null check.
+static bool GraphFail(std::string* reason, std::string text)
 {
+    if (reason)
+        *reason = std::move(text);
+    return false;
+}
+
+bool BuildGraphContext(const request& req, CSQLHelper& sql, GraphContext& ctx,
+                       std::string* reason /*= nullptr*/)
+{
+    if (reason)
+        reason->clear();
+
     // --- idx ----------------------------------------------------------------
     ctx.idx = 0;
     const std::string sIdx = request::findValue(&req, "idx");
     if (!sIdx.empty())
-        ctx.idx = std::stoull(sIdx);
+    {
+        // idx comes straight off the query string and std::stoull throws on
+        // anything non-numeric, so "?idx=abc" would leave here as an exception
+        // rather than a clean error for the caller to report.
+        try
+        {
+            ctx.idx = std::stoull(sIdx);
+        }
+        catch (const std::exception&)
+        {
+            return GraphFail(reason, "Invalid device id '" + sIdx + "'");
+        }
+    }
 
     // --- sensor / srange / sgroupby -----------------------------------------
     ctx.sensor   = request::findValue(&req, "sensor");
@@ -42,9 +67,9 @@ bool BuildGraphContext(const request& req, CSQLHelper& sql, GraphContext& ctx)
 
     // sensor is mandatory; srange or sgroupby must be present
     if (ctx.sensor.empty())
-        return false;
+        return GraphFail(reason, "Missing required parameter 'sensor'");
     if (ctx.srange.empty() && ctx.sgroupby.empty())
-        return false;
+        return GraphFail(reason, "Missing required parameter 'range' (or 'groupby')");
 
     // --- current local time -------------------------------------------------
     time_t now = mytime(nullptr);
@@ -57,7 +82,7 @@ bool BuildGraphContext(const request& req, CSQLHelper& sql, GraphContext& ctx)
             " FROM DeviceStatus WHERE (ID == %" PRIu64 ")",
             ctx.idx);
     if (result.empty())
-        return false;
+        return GraphFail(reason, "Unknown device " + std::to_string(ctx.idx));
 
     ctx.dType    = static_cast<unsigned char>(atoi(result[0][0].c_str()));
     ctx.dSubType = static_cast<unsigned char>(atoi(result[0][1].c_str()));
