@@ -64,6 +64,7 @@ This release contains important security fixes in the web server and API, upgrad
 - Fixed: Python plugins, password settings are kept when left blank on save, and dropdown settings honor their declared default value
 - Fixed: Reports, energy report tables no longer render empty for meters without return values (#6863)
 - Fixed: Reports, report dates no longer shift one day in browsers with a timezone west of UTC
+- Fixed: Web server, restore trusted-network client detection behind reverse proxies using X-Forwarded-For
 - Fixed: WebUI, device pages could stay empty after navigating between pages until the browser was reloaded (#6895)
 - Fixed: WebUI, settings such as the date format and dashboard type were sometimes not applied after loading (#6894)
 - Security: OAuth2 authorize endpoint hardened: HTTP response splitting via crafted state/redirect_uri parameters is blocked, redirects are refused when the client is unknown (open redirect), and the state parameter is URL-encoded on redirects

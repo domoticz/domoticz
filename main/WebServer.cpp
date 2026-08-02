@@ -138,6 +138,8 @@ namespace http
 			if (!settings.is_enabled())
 				return true;
 
+			settings.trusted_proxy_header_family = ProxyHeaderFamily::XForwardedFor;
+
 			m_server_alias = (settings.is_secure() == true) ? "SSL" : "HTTP";
 
 			std::string sRealm = (settings.is_secure() == true) ? "https://" : "http://";
