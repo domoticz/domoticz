@@ -8,6 +8,7 @@
 #include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
 #include "ColorSwitch.h"
+#include "../notifications/NotificationHelper.h"
 #include <json/json.h>
 #include <algorithm>
 #include <cmath>
@@ -55,11 +56,18 @@ static constexpr int CLUSTER_FLOW_MEASUREMENT          = 1028;  // 0x0404
 static constexpr int CLUSTER_RELATIVE_HUMIDITY         = 1029;  // 0x0405
 static constexpr int CLUSTER_OCCUPANCY_SENSING         = 1030;  // 0x0406
 static constexpr int CLUSTER_BOOLEAN_STATE             = 69;    // 0x0045
+static constexpr int CLUSTER_AIR_QUALITY               = 91;    // 0x005B
+static constexpr int CLUSTER_SMOKE_CO_ALARM            = 92;    // 0x005C
 static constexpr int CLUSTER_CO_CONCENTRATION          = 1036;  // 0x040C
 static constexpr int CLUSTER_CO2_CONCENTRATION         = 1037;  // 0x040D
 static constexpr int CLUSTER_NO2_CONCENTRATION         = 1043;  // 0x0413
+static constexpr int CLUSTER_OZONE_CONCENTRATION       = 1045;  // 0x0415
 static constexpr int CLUSTER_PM25_CONCENTRATION        = 1066;  // 0x042A
+static constexpr int CLUSTER_FORMALDEHYDE_CONCENTRATION = 1067; // 0x042B
+static constexpr int CLUSTER_PM1_CONCENTRATION         = 1068;  // 0x042C
 static constexpr int CLUSTER_PM10_CONCENTRATION        = 1069;  // 0x042D
+static constexpr int CLUSTER_TVOC_CONCENTRATION        = 1070;  // 0x042E
+static constexpr int CLUSTER_RADON_CONCENTRATION       = 1071;  // 0x042F
 static constexpr int CLUSTER_OPERATIONAL_CREDENTIALS      = 62;    // 0x003E OperationalCredentials
 static constexpr int CLUSTER_GENERIC_SWITCH              = 59;    // 0x003B GenericSwitch (button/latch)
 static constexpr int CLUSTER_COLOR_CONTROL               = 768;   // 0x0300 ColorControl
@@ -69,6 +77,12 @@ static constexpr int CLUSTER_RVC_RUN_MODE 				= 84;	//0x0054 rvc run mode
 static constexpr int CLUSTER_RVC_CLEAN_MODE				= 85;	//0x0055 rvc clean mode
 static constexpr int CLUSTER_RVC_OPERATIONAL_STATE		= 97;	//0x0061 rvc operational state
 static constexpr int CLUSTER_SERVICE_AREA				= 336;	//0x0150 service area
+
+// Matter device type IDs (Descriptor cluster DeviceTypeList), used to distinguish BooleanState device roles.
+static constexpr int DEVICE_TYPE_CONTACT_SENSOR         = 0x0015; // 21
+static constexpr int DEVICE_TYPE_WATER_FREEZE_DETECTOR  = 0x0041; // 65
+static constexpr int DEVICE_TYPE_WATER_LEAK_DETECTOR    = 0x0043; // 67
+static constexpr int DEVICE_TYPE_RAIN_SENSOR            = 0x0044; // 68
 
 // Matter attribute IDs used per cluster
 static constexpr int ATTR_ON_OFF                       = 0;
@@ -123,6 +137,10 @@ static constexpr int ATTR_RVC_CLEAN_MODE_SUPPORTED_MODE = 0; 	// 0x0000 Supporte
 static constexpr int ATTR_RVC_CLEAN_MODE_CURRENT_MODE = 1; 		// 0x0001 Current Mode
 static constexpr int ATTR_RVC_OPERATIONAL_STATE  = 4; 			// 0x0004 Operational State
 static constexpr int ATTR_RVC_OPERATIONAL_ERROR  = 5; 			// 0x0005 Operational Error
+static constexpr int ATTR_SMOKE_STATE            = 1;    // 0x0001 SmokeCoAlarm SmokeState (AlarmStateEnum)
+static constexpr int ATTR_CO_ALARM_STATE         = 2;    // 0x0002 SmokeCoAlarm COState (AlarmStateEnum)
+static constexpr int ATTR_AIR_QUALITY            = 0;    // 0x0000 AirQuality AirQualityEnum
+static constexpr int ATTR_DEVICE_TYPE_LIST       = 0;    // 0x0000 Descriptor DeviceTypeList (list of DeviceTypeStruct)
 
 // ChildID slot offsets — unique sensor type identifiers within a domoticzID.
 // domoticzID already encodes the endpoint (nodeId * 256 + endpointId), so no
@@ -143,6 +161,14 @@ static constexpr int CHILD_PRESET       = 13;
 static constexpr int CHILD_CTRL_SEQ     = 14;
 static constexpr int CHILD_SWITCH       = 15;
 static constexpr int CHILD_FREQ         = 16;
+static constexpr int CHILD_SMOKE        = 17;
+static constexpr int CHILD_CO_ALARM     = 18;
+static constexpr int CHILD_TVOC         = 19;
+static constexpr int CHILD_OZONE        = 20;
+static constexpr int CHILD_FORMALDEHYDE = 21;
+static constexpr int CHILD_PM1          = 22;
+static constexpr int CHILD_RADON        = 23;
+static constexpr int CHILD_AIR_QUALITY  = 24;
 // rechargeable batteries
 static constexpr int CHILD_BAT_PERCENT_REMAINING  = 1;
 static constexpr int CHILD_BAT_CHARGE_STATE  = 2;
@@ -638,6 +664,23 @@ void CMatter::ApplyAttributeToState(int cluster_id, int attr_id, const Json::Val
 	switch (cluster_id)
 	{
 		case CLUSTER_DESCRIPTION:
+			if (attr_id == ATTR_DEVICE_TYPE_LIST && v.isArray())
+			{
+				for (const auto& dt : v)
+				{
+					if (!dt.isObject() || !dt.isMember("0") || !dt["0"].isIntegral())
+						continue;
+					int devType = dt["0"].asInt();
+					if (devType == DEVICE_TYPE_CONTACT_SENSOR || devType == DEVICE_TYPE_WATER_FREEZE_DETECTOR ||
+					    devType == DEVICE_TYPE_WATER_LEAK_DETECTOR || devType == DEVICE_TYPE_RAIN_SENSOR)
+					{
+						state.deviceType    = devType;
+						state.hasDeviceType = true;
+						break;
+					}
+				}
+			}
+			break;
 		case 31: //0x001F AccessControl
 		case CLUSTER_BASIC_INFORMATION:
 		case 42: //0x002A OtaSoftwareUpdateRequestor
@@ -729,6 +772,25 @@ void CMatter::ApplyAttributeToState(int cluster_id, int attr_id, const Json::Val
 			{
 				state.contact    = v.asBool();
 				state.hasContact = true;
+			}
+			break;
+		case CLUSTER_AIR_QUALITY:
+			if (attr_id == ATTR_AIR_QUALITY)
+			{
+				state.airQuality    = v.asInt();
+				state.hasAirQuality = true;
+			}
+			break;
+		case CLUSTER_SMOKE_CO_ALARM:
+			if (attr_id == ATTR_SMOKE_STATE) // AlarmStateEnum: 0=Normal, 1=Warning, 2=Critical
+			{
+				state.smokeAlarm = v.asInt() >= 1;
+				state.hasSmoke   = true;
+			}
+			else if (attr_id == ATTR_CO_ALARM_STATE) // AlarmStateEnum: 0=Normal, 1=Warning, 2=Critical
+			{
+				state.coAlarm    = v.asInt() >= 1;
+				state.hasCOAlarm = true;
 			}
 			break;
 		case CLUSTER_THERMOSTAT:
@@ -837,6 +899,41 @@ void CMatter::ApplyAttributeToState(int cluster_id, int attr_id, const Json::Val
 			{
 				state.pm10_ugm3 = v.asFloat();
 				state.hasPM10   = true;
+			}
+			break;
+		case CLUSTER_OZONE_CONCENTRATION:
+			if (attr_id == ATTR_MEASURED_VALUE)
+			{
+				state.ozone_ppb = v.asFloat();
+				state.hasOzone  = true;
+			}
+			break;
+		case CLUSTER_FORMALDEHYDE_CONCENTRATION:
+			if (attr_id == ATTR_MEASURED_VALUE)
+			{
+				state.formaldehyde_ppb = v.asFloat();
+				state.hasFormaldehyde  = true;
+			}
+			break;
+		case CLUSTER_PM1_CONCENTRATION:
+			if (attr_id == ATTR_MEASURED_VALUE)
+			{
+				state.pm1_ugm3 = v.asFloat();
+				state.hasPM1   = true;
+			}
+			break;
+		case CLUSTER_TVOC_CONCENTRATION:
+			if (attr_id == ATTR_MEASURED_VALUE)
+			{
+				state.tvoc_ppb = v.asFloat();
+				state.hasTVOC  = true;
+			}
+			break;
+		case CLUSTER_RADON_CONCENTRATION:
+			if (attr_id == ATTR_MEASURED_VALUE)
+			{
+				state.radon_Bqm3 = v.asFloat();
+				state.hasRadon   = true;
 			}
 			break;
 		case CLUSTER_ELECTRICAL_POWER_MEAS:
@@ -1308,6 +1405,30 @@ void CMatter::SendGeneralSwitchInt(int domoticzID, int unit, int battery, int va
 	_ApplySwitchTypeOnCreate(domoticzID, unit, isNew, switchType);
 }
 
+// SendAlertSensor cannot be used here: its underlying _tGeneralDevice.id is a uint8_t, and
+// decode_General always keys sTypeAlert devices off that byte (never off intval1 like sTypeCustom
+// does), so any domoticzID (nodeId * 256 + endpointId) passed through it collapses to its low
+// byte and endpoints on different nodes can collide. Store the Alert device directly instead,
+// using the same full hex DeviceID format as SendGeneralSwitchInt/_ApplySwitchTypeOnCreate.
+void CMatter::_SendAlertSensorFullId(int domoticzID, int unit, int battery, int alertLevel, const std::string& text, const std::string& label)
+{
+	char szDevID[16];
+	snprintf(szDevID, sizeof(szDevID), "%08X", (unsigned int)domoticzID);
+	std::string ID = szDevID;
+
+	char szValue[128];
+	if (!text.empty())
+		snprintf(szValue, sizeof(szValue), "(%d) %.100s", alertLevel, text.c_str());
+	else
+		snprintf(szValue, sizeof(szValue), "%d", alertLevel);
+
+	std::string devName = label;
+	uint64_t DevRowIdx = m_sql.UpdateValue(m_HwdID, 0, ID.c_str(), (unsigned char)unit, pTypeGeneral, sTypeAlert,
+	                                        12, (unsigned char)battery, alertLevel, szValue, devName, true);
+	if (DevRowIdx != (uint64_t)-1)
+		m_notifications.CheckAndHandleNotification(DevRowIdx, m_HwdID, ID, devName, (unsigned char)unit, pTypeGeneral, sTypeAlert, alertLevel, szValue);
+}
+
 // Must be called with m_stateMutex already held.
 // Sends only non-environmental (non-temp/hum/baro) sensors for one endpoint.
 // Environmental sensors are aggregated and sent at the node level by _DetectAndSendNode.
@@ -1443,7 +1564,53 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 	}
 
 	if (state.hasContact)
-		SendGeneralSwitchInt(domoticzID, CHILD_CONTACT, battery, state.contact ? 1 : 0, 0, state.label, STYPE_DoorContact);
+	{
+		_eSwitchType contactSwitchType = STYPE_DoorContact;
+		std::string contactLabel = state.label;
+		if (state.hasDeviceType)
+		{
+			if (state.deviceType == DEVICE_TYPE_WATER_LEAK_DETECTOR)
+			{
+				contactSwitchType = STYPE_Contact;
+				contactLabel += " Leak";
+			}
+			else if (state.deviceType == DEVICE_TYPE_RAIN_SENSOR)
+			{
+				contactSwitchType = STYPE_Contact;
+				contactLabel += " Rain";
+			}
+			else if (state.deviceType == DEVICE_TYPE_WATER_FREEZE_DETECTOR)
+			{
+				contactSwitchType = STYPE_Contact;
+				contactLabel += " Freeze";
+			}
+		}
+		SendGeneralSwitchInt(domoticzID, CHILD_CONTACT, battery, state.contact ? 1 : 0, 0, contactLabel, contactSwitchType);
+	}
+
+	if (state.hasSmoke)
+		SendGeneralSwitchInt(domoticzID, CHILD_SMOKE, battery, state.smokeAlarm ? 1 : 0, 0, state.label + " Smoke", STYPE_SMOKEDETECTOR);
+
+	if (state.hasCOAlarm)
+		SendGeneralSwitchInt(domoticzID, CHILD_CO_ALARM, battery, state.coAlarm ? 1 : 0, 0, state.label + " CO Alarm", STYPE_SMOKEDETECTOR);
+
+	if (state.hasAirQuality)
+	{
+		static const char* AirQualityNames[] = { "Unknown", "Good", "Fair", "Moderate", "Poor", "Very Poor", "Extremely Poor" };
+		int alertLevel;
+		switch (state.airQuality)
+		{
+			case 1: alertLevel = 1; break; // Good
+			case 2:
+			case 3: alertLevel = 2; break; // Fair, Moderate
+			case 4: alertLevel = 3; break; // Poor
+			case 5:
+			case 6: alertLevel = 4; break; // VeryPoor, ExtremelyPoor
+			default: alertLevel = 0; break; // Unknown
+		}
+		int nameIdx = (state.airQuality >= 0 && state.airQuality <= 6) ? state.airQuality : 0;
+		_SendAlertSensorFullId(domoticzID, CHILD_AIR_QUALITY, battery, alertLevel, AirQualityNames[nameIdx], state.label + " Air Quality");
+	}
 
 	if (state.hasCO2)
 		SendAirQualitySensor((uint8_t)nodeId, (uint8_t)endpointId, battery, state.co2_ppm, state.label);
@@ -1459,6 +1626,21 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 
 	if (state.hasPM10)
 		SendCustomSensor(domoticzID, CHILD_PM10, battery, state.pm10_ugm3, state.label + " PM10", "µg/m³");
+
+	if (state.hasPM1)
+		SendCustomSensor(domoticzID, CHILD_PM1, battery, state.pm1_ugm3, state.label + " PM1", "µg/m³");
+
+	if (state.hasTVOC)
+		SendCustomSensor(domoticzID, CHILD_TVOC, battery, state.tvoc_ppb, state.label + " TVOC", "ppb");
+
+	if (state.hasOzone)
+		SendCustomSensor(domoticzID, CHILD_OZONE, battery, state.ozone_ppb, state.label + " Ozone", "ppb");
+
+	if (state.hasFormaldehyde)
+		SendCustomSensor(domoticzID, CHILD_FORMALDEHYDE, battery, state.formaldehyde_ppb, state.label + " Formaldehyde", "ppb");
+
+	if (state.hasRadon)
+		SendCustomSensor(domoticzID, CHILD_RADON, battery, state.radon_Bqm3, state.label + " Radon", "Bq/m³");
 
 	if (state.hasFlow)
 		SendWaterflowSensor(domoticzID, CHILD_FLOW, battery, state.flow_lpm, state.label);
