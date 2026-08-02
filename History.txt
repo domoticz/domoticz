@@ -2,6 +2,7 @@ Version 2026.xxxx
 - Added: Matter, support for the SmokeCoAlarm cluster; smoke and CO alarm states are now created as smoke detector devices (#6935)
 - Added: Matter, support for the AirQuality, TVOC, Ozone, Formaldehyde, PM1 and Radon concentration clusters
 - Added: Matter, water leak, rain and freeze detectors reported via BooleanState are now identified via the Descriptor DeviceTypeList and created as distinct devices instead of door contacts
+- Fixed: P1 Meter, the calculated per-phase kWh counters now integrate over the actual elapsed time instead of a fixed 10 seconds, which under-counted with an irregular telegram cadence (capped at 40 seconds so data gaps are not extrapolated)
 - Fixed: Web server, restore trusted-network client detection behind reverse proxies using X-Forwarded-For (#6937)
 
 Version 2026.3 (August 2nd 2026)
