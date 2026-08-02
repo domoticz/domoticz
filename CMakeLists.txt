@@ -617,8 +617,11 @@ ENDIF(MQTT_LIBRARIES AND MQTT_INCLUDE_DIRS)
 # sqlite3
 IF(USE_BUILTIN_SQLITE)
   MESSAGE(STATUS "Using builtin SQLite library")
+  # the bundled sqlite-cmake defaults the SQL math functions to OFF; keep them
+  # enabled as before
+  set(SQLITE_ENABLE_MATH_FUNCTIONS ON CACHE BOOL "Enable the built-in SQL math functions.")
   add_subdirectory (extern/sqlite-amalgamation EXCLUDE_FROM_ALL)
-  target_link_libraries(domoticz SQLite3::SQLite3)
+  target_link_libraries(domoticz sqlite::sqlite)
 ELSE(USE_BUILTIN_SQLITE)
   find_package(SQLite3)
   IF(SQLite3_FOUND)
