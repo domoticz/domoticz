@@ -99,8 +99,6 @@ namespace http
 {
 	namespace server
 	{
-		extern std::map<std::string, http::server::connection::_tRemoteClients> m_remote_web_clients;
-
 		struct _tGuiLanguage
 		{
 			const char* szShort;
@@ -7111,19 +7109,22 @@ namespace http
 
 			int ii = 0;
 			root["title"] = "rclientslog";
-			for (const auto& itt_rc : m_remote_web_clients)
+			// m_webservers aggregates across every running server (plain and
+			// secure), since the tracked-clients map is now per-cWebem-instance
+			// rather than one process-wide map shared by all of them.
+			for (const auto& rc : m_webservers.GetRemoteClients())
 			{
 				char timestring[128];
 				timestring[0] = 0;
 				struct tm timeinfo;
-				localtime_r(&itt_rc.second.last_seen, &timeinfo);
+				localtime_r(&rc.last_seen, &timeinfo);
 
 				strftime(timestring, sizeof(timestring), "%a, %d %b %Y %H:%M:%S %z", &timeinfo);
 
 				root["result"][ii]["date"] = timestring;
-				root["result"][ii]["address"] = itt_rc.second.host_remote_endpoint_address_;
-				root["result"][ii]["port"] = itt_rc.second.host_local_endpoint_port_;
-				root["result"][ii]["req"] = itt_rc.second.host_last_request_uri_;
+				root["result"][ii]["address"] = rc.host_remote_endpoint_address_;
+				root["result"][ii]["port"] = rc.host_local_endpoint_port_;
+				root["result"][ii]["req"] = rc.host_last_request_uri_;
 				ii++;
 			}
 			root["status"] = "OK";

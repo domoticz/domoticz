@@ -131,6 +131,19 @@ namespace http {
 			}
 		}
 
+		std::vector<connection::_tRemoteClients> CWebServerHelper::GetRemoteClients() const
+		{
+			std::vector<connection::_tRemoteClients> ret;
+			for (const auto &it : serverCollection)
+			{
+				if (it->m_pWebEm == nullptr)
+					continue;
+				auto perServer = it->m_pWebEm->GetRemoteClients();
+				ret.insert(ret.end(), std::make_move_iterator(perServer.begin()), std::make_move_iterator(perServer.end()));
+			}
+			return ret;
+		}
+
 		//JSon
 		void CWebServerHelper::	GetJSonDevices(
 			Json::Value &root,
