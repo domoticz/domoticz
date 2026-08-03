@@ -3998,6 +3998,24 @@ namespace http
 				m_webservers.ReloadTrustedNetworks();
 				cntSettings++;
 
+				std::string sProxyHeaderFamily = request::findValue(&req, "WebProxyHeaderFamily");
+				if (!sProxyHeaderFamily.empty())
+				{
+					int iProxyHeaderFamily = atoi(sProxyHeaderFamily.c_str());
+					if ((iProxyHeaderFamily >= static_cast<int>(ProxyHeaderFamily::None)) && (iProxyHeaderFamily <= static_cast<int>(ProxyHeaderFamily::XRealIP)))
+					{
+						int iCurrentFamily = static_cast<int>(ProxyHeaderFamily::XForwardedFor);
+						m_sql.GetPreferencesVar("WebProxyHeaderFamily", iCurrentFamily);
+						m_sql.UpdatePreferencesVar("WebProxyHeaderFamily", iProxyHeaderFamily);
+						// Applied when the server is constructed; the running servers read
+						// this from their own settings copy on the io threads, so it is not
+						// safe to mutate it underneath them here.
+						if (iCurrentFamily != iProxyHeaderFamily)
+							_log.Log(LOG_STATUS, "Proxy forwarded-header setting changed, restart Domoticz to apply it");
+						cntSettings++;
+					}
+				}
+
 				if (session.username.empty())
 				{
 					// Local network could be changed so lets force a check here
@@ -6610,6 +6628,10 @@ namespace http
 				else if (Key == "WebLocalNetworks")
 				{
 					root["WebLocalNetworks"] = sValue;
+				}
+				else if (Key == "WebProxyHeaderFamily")
+				{
+					root["WebProxyHeaderFamily"] = nValue;
 				}
 				else if (Key == "RandomTimerFrame")
 				{

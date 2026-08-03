@@ -643,6 +643,9 @@ define(['app'], function (app) {
 					if (typeof data.WebLocalNetworks != 'undefined') {
 						$("#weblocaltable #WebLocalNetworks").val(data.WebLocalNetworks);
 					}
+					if (typeof data.WebProxyHeaderFamily != 'undefined') {
+						$("#weblocaltable #WebProxyHeaderFamily").val(data.WebProxyHeaderFamily);
+					}
 					if (typeof data.EnergyDivider != 'undefined') {
 						$("#rfxmetertable #EnergyDivider").val(data.EnergyDivider);
 					}

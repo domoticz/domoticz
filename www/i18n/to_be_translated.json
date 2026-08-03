@@ -1,5 +1,8 @@
 {
     "Bar ranges must all go in the same direction. Use all ascending (e.g. -100 to 0) or all descending (e.g. 0 to -100).": "Bar ranges must all go in the same direction. Use all ascending (e.g. -100 to 0) or all descending (e.g. 0 to -100).",
     "Edit Camera": "Edit Camera",
-    "Show Icon": "Show Icon"
+    "None (no reverse proxy)": "None (no reverse proxy)",
+    "Reverse proxy header": "Reverse proxy header",
+    "Show Icon": "Show Icon",
+    "Which header your reverse proxy writes the client address into. Only this header is trusted; the others are ignored. Requires a restart": "Which header your reverse proxy writes the client address into. Only this header is trusted; the others are ignored. Requires a restart"
 }

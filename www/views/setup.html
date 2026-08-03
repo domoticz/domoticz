@@ -1448,6 +1448,18 @@
 											<span data-i18n="(Separate by a semicolon, For Example"></span>: 127.0.0.*;192.168.0.*)
 										</td>
 									</tr>
+									<tr>
+										<td align="right"><label><span data-i18n="Reverse proxy header"></span>: </label></td>
+										<td>
+											<select id="WebProxyHeaderFamily" name="WebProxyHeaderFamily" class="combobox ui-corner-all">
+												<option value="0" data-i18n="None (no reverse proxy)"></option>
+												<option value="2">X-Forwarded-For</option>
+												<option value="3">X-Real-IP</option>
+												<option value="1">Forwarded (RFC 7239)</option>
+											</select><br>
+											<span data-i18n="Which header your reverse proxy writes the client address into. Only this header is trusted; the others are ignored. Requires a restart"></span>
+										</td>
+									</tr>
 									</table>
 								</div>
 							</div>

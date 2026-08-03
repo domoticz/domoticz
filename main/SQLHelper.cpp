@@ -43,7 +43,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 178
+#define DB_VERSION 179
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -3425,6 +3425,13 @@ bool CSQLHelper::OpenDatabase()
 					priceT1, priceT2, priceR1, priceR2);
 			}
 		}
+		if (dbversion < 179)
+		{
+			// Seed the proxy-forwarding header family with the value that was hardcoded
+			// before it became configurable, so upgrading changes nothing for existing
+			// reverse-proxy setups.
+			UpdatePreferencesVar("WebProxyHeaderFamily", static_cast<int>(http::server::ProxyHeaderFamily::XForwardedFor));
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -3435,6 +3442,9 @@ bool CSQLHelper::OpenDatabase()
 		// Admin user is no longer created here - created via setup wizard or Docker env vars
 		safe_query("INSERT INTO Applications (Active, Public, Applicationname) VALUES (1, 1, 'domoticzUI')");
 		safe_query("INSERT INTO Applications (Active, Public, Applicationname) VALUES (0, 0, 'domoticzMobileApp')");
+		// Same default as the upgrade path (DB_VERSION 179), so the Settings page
+		// shows the family that is actually in use rather than an empty selection.
+		UpdatePreferencesVar("WebProxyHeaderFamily", static_cast<int>(http::server::ProxyHeaderFamily::XForwardedFor));
 	}
 	UpdatePreferencesVar("DB_Version", DB_VERSION);
 

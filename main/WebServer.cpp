@@ -138,7 +138,20 @@ namespace http
 			if (!settings.is_enabled())
 				return true;
 
-			settings.trusted_proxy_header_family = ProxyHeaderFamily::XForwardedFor;
+			// Which forwarded-client-address header (if any) we are allowed to trust.
+			// Only the configured family is ever read, so naming the wrong one silently
+			// loses the real client address; naming none means the peer address is used
+			// as-is, which is what a deployment without a reverse proxy wants.
+			// Defaults to X-Forwarded-For, the value this was hardcoded to before it
+			// became configurable.
+			int iProxyHeaderFamily = static_cast<int>(ProxyHeaderFamily::XForwardedFor);
+			m_sql.GetPreferencesVar("WebProxyHeaderFamily", iProxyHeaderFamily);
+			if ((iProxyHeaderFamily < static_cast<int>(ProxyHeaderFamily::None)) || (iProxyHeaderFamily > static_cast<int>(ProxyHeaderFamily::XRealIP)))
+			{
+				_log.Log(LOG_ERROR, "WebServer: Invalid proxy header family setting (%d), falling back to X-Forwarded-For", iProxyHeaderFamily);
+				iProxyHeaderFamily = static_cast<int>(ProxyHeaderFamily::XForwardedFor);
+			}
+			settings.trusted_proxy_header_family = static_cast<ProxyHeaderFamily>(iProxyHeaderFamily);
 
 			m_server_alias = (settings.is_secure() == true) ? "SSL" : "HTTP";
 
