@@ -6,7 +6,7 @@
     <div class="dd-fc-conditions">
 
         <!-- Weather card -->
-        <div class="dd-stat-card" ng-if="ctrl.widgetDef.config.showWeather !== false">
+        <div class="dd-stat-card" ng-if="ctrl.widgetDef.config.showWeather !== false" ng-class="{'dd-stat-card--timeout': ctrl.weather && ctrl.weather.timeout}">
             <div class="fc-weather-icon" ng-if="ctrl.weather" ng-switch="ctrl.weather.scene">
                 <div class="fcw-scene" ng-switch-when="fcw-sunny">
                     <div ng-if="!ctrl.isNight">
@@ -104,7 +104,7 @@
         </div>
 
         <!-- Grid card (always shown) -->
-        <div class="dd-stat-card">
+        <div class="dd-stat-card" ng-class="{'dd-stat-card--timeout': ctrl.grid && ctrl.grid.timeout}">
             <div class="dd-stat-label">{{'Grid' | translate}}</div>
             <a ng-if="ctrl.grid" class="dd-stat-link" ng-href="#/Devices/{{ctrl.ids.p1}}/Log">
                 <div class="dd-stat-line dd-energy-export" ng-if="ctrl.grid.usageDelivWatt > 0"><i class="fa fa-arrow-up"></i> {{ctrl.grid.usageDelivWatt}} W</div>
@@ -120,7 +120,7 @@
         </div>
 
         <!-- Solar card -->
-        <div class="dd-stat-card" ng-if="ctrl.widgetDef.config.showSolar !== false">
+        <div class="dd-stat-card" ng-if="ctrl.widgetDef.config.showSolar !== false" ng-class="{'dd-stat-card--timeout': ctrl.solar && ctrl.solar.timeout}">
             <div class="dd-stat-label">{{'Solar' | translate}}</div>
             <a ng-if="ctrl.solar" class="dd-stat-link" ng-href="#/Devices/{{ctrl.ids.solar}}/Log">
                 <div class="dd-stat-value dd-energy-solar"><i class="fa-solid fa-sun"></i> {{ctrl.solar.usageWatt}} W</div>
@@ -130,7 +130,7 @@
         </div>
 
         <!-- Gas card -->
-        <div class="dd-stat-card" ng-if="ctrl.widgetDef.config.showGas !== false">
+        <div class="dd-stat-card" ng-if="ctrl.widgetDef.config.showGas !== false" ng-class="{'dd-stat-card--timeout': ctrl.gas && ctrl.gas.timeout}">
             <div class="dd-stat-label">{{'Gas' | translate}}</div>
             <a ng-if="ctrl.gas" class="dd-stat-link" ng-href="#/Devices/{{ctrl.ids.gas}}/Log">
                 <div class="dd-stat-value dd-energy-gas"><i class="fa fa-fire"></i> {{ctrl.gas.counterToday}}</div>
@@ -144,7 +144,7 @@
         </div>
 
         <!-- Water card -->
-        <div class="dd-stat-card" ng-if="ctrl.widgetDef.config.showWater !== false">
+        <div class="dd-stat-card" ng-if="ctrl.widgetDef.config.showWater !== false" ng-class="{'dd-stat-card--timeout': ctrl.water && ctrl.water.timeout}">
             <div class="dd-stat-label">{{'Water' | translate}}</div>
             <a ng-if="ctrl.water" class="dd-stat-link" ng-href="#/Devices/{{ctrl.ids.water}}/Log">
                 <div class="dd-stat-value dd-energy-water"><i class="fa-solid fa-droplet"></i> {{ctrl.water.counterToday}}</div>
@@ -158,7 +158,7 @@
         </div>
 
         <!-- Battery card -->
-        <div class="dd-stat-card dd-stat-card--wide" ng-if="ctrl.widgetDef.config.showBattery !== false">
+        <div class="dd-stat-card dd-stat-card--wide" ng-if="ctrl.widgetDef.config.showBattery !== false" ng-class="{'dd-stat-card--timeout': ctrl.battery && ctrl.battery.timeout}">
             <div class="dd-stat-label">{{'Battery' | translate}}</div>
             <div style="display:flex;gap:16px;justify-content:center;align-items:flex-start;">
                 <div ng-if="ctrl.battery">

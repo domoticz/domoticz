@@ -161,6 +161,7 @@ define([
                             usageDelivWatt:    parseWatt(gr.UsageDeliv),
                             counterToday:      gr.CounterToday || '',
                             counterDelivToday: gr.CounterDelivToday || '',
+                            timeout:           gr.HaveTimeout === true,
                             price:             gr.hasOwnProperty('price') ? (parseFloat(gr.price) || 0) : null
                         };
                     } else {
@@ -172,7 +173,8 @@ define([
                     if (sl) {
                         ctrl.solar = {
                             usageWatt:    Math.round(parseWatt(sl.Usage)),
-                            counterToday: sl.CounterToday || ''
+                            counterToday: sl.CounterToday || '',
+                            timeout:      sl.HaveTimeout === true
                         };
                     } else {
                         ctrl.solar = null;
@@ -185,6 +187,7 @@ define([
                             temp:        parseFloat(wt.Temp) || 0,
                             humidity:    parseFloat(wt.Humidity) || 0,
                             barometer:   parseInt(wt.Barometer, 10) || 0,
+                            timeout:     wt.HaveTimeout === true,
                             forecastStr: wt.ForecastStr || '',
                             scene:       getWeatherScene(wt.ForecastStr || ''),
                             dewPoint:    parseFloat(wt.DewPoint) || 0
@@ -200,7 +203,8 @@ define([
                         ctrl.gas = {
                             counterToday: gs.CounterToday || '',
                             counter:      gs.Counter || '',
-                            price: (!isNaN(rawGasPrice) && rawGasPrice !== 1000 && rawGasPrice !== 0) ? rawGasPrice : null
+                            price: (!isNaN(rawGasPrice) && rawGasPrice !== 1000 && rawGasPrice !== 0) ? rawGasPrice : null,
+                            timeout:      gs.HaveTimeout === true
                         };
                     } else {
                         ctrl.gas = null;
@@ -213,21 +217,22 @@ define([
                         ctrl.water = {
                             counterToday: wm.CounterToday || '',
                             counter:      wm.Counter || '',
-                            price: (!isNaN(rawWaterPrice) && rawWaterPrice !== 1000 && rawWaterPrice !== 0) ? rawWaterPrice : null
+                            price: (!isNaN(rawWaterPrice) && rawWaterPrice !== 1000 && rawWaterPrice !== 0) ? rawWaterPrice : null,
+                            timeout:      wm.HaveTimeout === true
                         };
                     } else {
                         ctrl.water = null;
                     }
 
                     // Battery energy meters
-                    var batImportedKwh = 0, batExportedKwh = 0;
+                    var batImportedKwh = 0, batExportedKwh = 0, timeout = false;
                     var bi = get(ids.battEnergyIn);
-                    if (bi) { batImportedKwh = parseKwh(bi.CounterToday); }
+                    if (bi) { batImportedKwh = parseKwh(bi.CounterToday); timeout = bi.HaveTimeout === true; }
                     var bo = get(ids.battEnergyOut);
-                    if (bo) { batExportedKwh = parseKwh(bo.CounterToday); }
+                    if (bo) { batExportedKwh = parseKwh(bo.CounterToday); timeout = timeout || bo.HaveTimeout === true; }
 
                     if (bi || bo) {
-                        ctrl.battery = { importedKwh: batImportedKwh, exportedKwh: batExportedKwh };
+                        ctrl.battery = { importedKwh: batImportedKwh, exportedKwh: batExportedKwh, timeout: timeout };
                     } else {
                         ctrl.battery = null;
                     }
