@@ -4,6 +4,7 @@ Version 2026.xxxx
 - Added: Matter, support for the AirQuality, TVOC, Ozone, Formaldehyde, PM1 and Radon concentration clusters
 - Added: Matter, water leak, rain and freeze detectors reported via BooleanState are now identified via the Descriptor DeviceTypeList and created as distinct devices instead of door contacts
 - Added: Settings, the reverse proxy header that Domoticz reads the client address from is now selectable (None, X-Forwarded-For, X-Real-IP or Forwarded) instead of being fixed to X-Forwarded-For, under Settings - Security
+- Fixed: EvoHome, HVAC fan mode selector switch commands were silently ignored on x86/x64 builds; they only worked on ARM
 - Fixed: P1 Meter, the calculated per-phase kWh counters now integrate over the actual elapsed time instead of a fixed 10 seconds, which under-counted with an irregular telegram cadence (capped at 40 seconds so data gaps are not extrapolated)
 - Fixed: Web server, every request through a reverse proxy that writes more than one forwarded-client header returned 403; nginx Proxy Manager sends X-Forwarded-For and X-Real-IP together, which made the whole site inaccessible (#6939)
 - Fixed: Web server, restore trusted-network client detection behind reverse proxies using X-Forwarded-For (#6937)

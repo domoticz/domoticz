@@ -224,7 +224,7 @@ bool CEvohomeRadio::WriteToHardware(const char* pdata, const unsigned char lengt
 {
 	if (!pdata)
 		return false;
-	switch (pdata[1])
+	switch (static_cast<uint8_t>(pdata[1]))
 	{
 	case pTypeEvohome:
 	{
