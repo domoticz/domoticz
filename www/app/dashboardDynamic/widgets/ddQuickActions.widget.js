@@ -66,7 +66,6 @@ define([
                 ctrl.currentLevelText = {};
                 ctrl.showLevelPicker  = {};
                 ctrl.dimLevel         = {};
-                ctrl.showDimSlider    = {};
                 ctrl.blindStatus      = {};
                 ctrl.securityStatus   = {};
 
@@ -111,16 +110,6 @@ define([
                         }
                     });
                 });
-
-                function onDocClick() {
-                    var any = false;
-                    Object.keys(ctrl.showDimSlider).forEach(function(k) {
-                        if (ctrl.showDimSlider[k]) { ctrl.showDimSlider[k] = false; any = true; }
-                    });
-                    if (any && !$scope.$$phase) { $scope.$apply(); }
-                }
-                document.addEventListener('click', onDocClick);
-                $scope.$on('$destroy', function() { document.removeEventListener('click', onDocClick); });
 
                 function decodeLevelNames(d) {
                     var raw;
@@ -194,9 +183,10 @@ define([
                             .then(function(resp) {
                                 var item = resp.data && resp.data.result && resp.data.result[0];
                                 if (!item) { return; }
-                                action.isProtected = item.Protected || false;
+                                action.isProtected  = item.Protected || false;
+                                action.maxDimLevel  = parseInt(item.MaxDimLevel, 10) || 100;
                                 ctrl.deviceOn[action.idx] = (item.Status !== '' && item.Status !== 'Off');
-                                ctrl.dimLevel[action.idx] = item.LevelInt !== undefined ? item.LevelInt : 100;
+                                ctrl.dimLevel[action.idx] = item.LevelInt !== undefined ? item.LevelInt : action.maxDimLevel;
                             });
                         return;
                     }
@@ -228,6 +218,7 @@ define([
                                 action.hasLevel = blindHasLevel(item);
                                 ctrl.blindStatus[action.idx] = getBlindStatus(item.Status);
                                 if (action.hasLevel) {
+                                    action.maxDimLevel = parseInt(item.MaxDimLevel, 10) || 100;
                                     ctrl.dimLevel[action.idx] = item.LevelInt !== undefined ? item.LevelInt : 0;
                                 }
                             } else {
@@ -238,8 +229,9 @@ define([
                                     : (item.Status === 'On');
                                 if (isLocked) { action.switchType = item.SwitchType; }
                                 if (isDimmer) {
-                                    action.type = 'dimmer';
-                                    ctrl.dimLevel[action.idx] = item.LevelInt !== undefined ? item.LevelInt : 100;
+                                    action.type        = 'dimmer';
+                                    action.maxDimLevel = parseInt(item.MaxDimLevel, 10) || 100;
+                                    ctrl.dimLevel[action.idx] = item.LevelInt !== undefined ? item.LevelInt : action.maxDimLevel;
                                 }
                             }
                         });
@@ -247,6 +239,12 @@ define([
 
                 ctrl.activeKey = function(action) {
                     return action.idx;
+                };
+
+                ctrl.dimPercent = function(action) {
+                    var max = action.maxDimLevel || 100;
+                    var v   = parseInt(ctrl.dimLevel[action.idx], 10) || 0;
+                    return Math.round((100 / max) * v);
                 };
 
                 function loadDeviceStates() {
@@ -299,11 +297,6 @@ define([
                             })
                             .finally(function() { ctrl.busy[busyKey] = false; });
                     });
-                };
-
-                ctrl.toggleDimSlider = function(idx, $event) {
-                    if ($event) { $event.stopPropagation(); }
-                    ctrl.showDimSlider[idx] = !ctrl.showDimSlider[idx];
                 };
 
                 ctrl.applyDimLevel = function(action) {
