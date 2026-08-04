@@ -1953,18 +1953,18 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 			args["node_id"]      = nodeId;
 			args["endpoint_id"]  = endpointId;
 			args["cluster_id"]   = CLUSTER_LEVEL_CONTROL;
-			args["command_name"] = "move_to_level_with_on_off";
+			args["command_name"] = "MoveToLevelWithOnOff";
 			Json::Value payload;
 			payload["level"]           = matter_level;
 			payload["optionsMask"]     = 1;
 			payload["optionsOverride"] = 1;
-			payload["transition_time"] = 0;
+			payload["transitionTime"]  = 0;
 			args["payload"] = payload;
 			SendCommand("device_command", args);
 		};
 
-		if (pColor->command == Color_LedOff)   { sendOnOff("off"); return true; }
-		if (pColor->command == Color_LedOn)    { sendOnOff("on");  return true; }
+		if (pColor->command == Color_LedOff)   { sendOnOff("Off"); return true; }
+		if (pColor->command == Color_LedOn)    { sendOnOff("On");  return true; }
 
 		if (pColor->command == Color_SetBrightnessLevel)
 		{
@@ -1985,7 +1985,7 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 				args["node_id"]      = nodeId;
 				args["endpoint_id"]  = endpointId;
 				args["cluster_id"]   = CLUSTER_COLOR_CONTROL;
-				args["command_name"] = "move_to_color_temperature";
+				args["command_name"] = "MoveToColorTemperature";
 				Json::Value payload;
 				payload["colorTemperatureMireds"] = mireds;
 				payload["transitionTime"]         = 0;
@@ -1998,7 +1998,7 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 			{
 				if (supportsHS)
 				{
-					// Prefer move_to_hue_and_saturation on devices that support it (HS bit in ColorCapabilities)
+					// Prefer MoveToHueAndSaturation on devices that support it (HS bit in ColorCapabilities)
 					float hsbvals[3] = {0, 0, 0};
 					rgb2hsb(pColor->color.r, pColor->color.g, pColor->color.b, hsbvals);
 					// hsbvals[0]=hue 0-1, hsbvals[1]=saturation 0-1; Matter range is 0-254
@@ -2008,7 +2008,7 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 					args["node_id"]      = nodeId;
 					args["endpoint_id"]  = endpointId;
 					args["cluster_id"]   = CLUSTER_COLOR_CONTROL;
-					args["command_name"] = "move_to_hue_and_saturation";
+					args["command_name"] = "MoveToHueAndSaturation";
 					Json::Value payload;
 					payload["hue"]             = hue;
 					payload["saturation"]      = sat;
@@ -2034,7 +2034,7 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 					args["node_id"]      = nodeId;
 					args["endpoint_id"]  = endpointId;
 					args["cluster_id"]   = CLUSTER_COLOR_CONTROL;
-					args["command_name"] = "move_to_color";
+					args["command_name"] = "MoveToColor";
 					Json::Value payload;
 					payload["colorX"]          = cx;
 					payload["colorY"]          = cy;
@@ -2158,7 +2158,7 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 			args["node_id"]      = nodeId;
 			args["endpoint_id"]  = endpointId;
 			args["cluster_id"]   = CLUSTER_SERVICE_AREA;
-			args["command_name"] = "Select_Areas";
+			args["command_name"] = "SelectAreas";
 			if (selectedArea>0)
 			{
 				// select the area
@@ -2212,7 +2212,7 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 			args["node_id"]      = nodeId;
 			args["endpoint_id"]  = endpointId;
 			args["cluster_id"]   = CLUSTER_RVC_CLEAN_MODE;
-			args["command_name"] = "change_to_mode";
+			args["command_name"] = "ChangeToMode";
 			Json::Value payload;
 			payload["newMode"] = selectedCleanMode;
 			args["payload"] = payload;
@@ -2255,7 +2255,7 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 					case rvcStartOrResume : // Start Cleaning 
 					{
 						args["cluster_id"]   = CLUSTER_RVC_RUN_MODE;
-						args["command_name"] = "change_to_mode";
+						args["command_name"] = "ChangeToMode";
 						Json::Value payload;
 						payload["newMode"] = rvc_CleanRunMode; 
 						args["payload"] = payload;
@@ -2272,21 +2272,21 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 					case rvcStartOrResume :	// Resume
 					{
 						args["cluster_id"]   = CLUSTER_RVC_OPERATIONAL_STATE;
-						args["command_name"] = "resume"; 
+						args["command_name"] = "Resume";
 						SendCommand("device_command", args);
 						break;
 					}	
 					case rvcPause :	// Pause 
 					{
 						args["cluster_id"]   = CLUSTER_RVC_OPERATIONAL_STATE;
-						args["command_name"] = "pause"; 
+						args["command_name"] = "Pause";
 						SendCommand("device_command", args);
 						break;
 					}	
 					case rvcStop : 	// stop
 					{
 						args["cluster_id"]   = CLUSTER_RVC_RUN_MODE;
-						args["command_name"] = "change_to_mode";
+						args["command_name"] = "ChangeToMode";
 						Json::Value payload;
 						payload["newMode"] = rvc_IdleRunMode; 
 						args["payload"] = payload;
@@ -2340,12 +2340,12 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 		args["node_id"]      = nodeId;
 		args["endpoint_id"]  = endpointId;
 		args["cluster_id"]   = 8;
-		args["command_name"] = "move_to_level_with_on_off";
+		args["command_name"] = "MoveToLevelWithOnOff";
 		Json::Value payload;
 		payload["level"]           = matter_level;
 		payload["optionsMask"]     = 1;
 		payload["optionsOverride"] = 1;
-		payload["transition_time"] = 0;
+		payload["transitionTime"]  = 0;
 		args["payload"] = payload;
 		SendCommand("device_command", args);
 	}
@@ -2353,20 +2353,20 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 	{
 		std::string cmd;
 		if (cmnd == gswitch_sOn)
-			cmd = "on";
+			cmd = "On";
 		else if (cmnd == gswitch_sOff)
-			cmd = "off";
+			cmd = "Off";
 		else
-			cmd = "toggle";
+			cmd = "Toggle";
 
 		Json::Value args;
 		args["node_id"]      = nodeId;
 		args["endpoint_id"]  = endpointId;
-		if ( hasRvc_OperationalState && pSwitch->unitcode == CHILD_RVC_GO_HOME && cmd == "on")
+		if ( hasRvc_OperationalState && pSwitch->unitcode == CHILD_RVC_GO_HOME && cmd == "On")
 		{
 			// Go Home push on button in the RVC implementation
 			args["cluster_id"]   = CLUSTER_RVC_OPERATIONAL_STATE;
-			args["command_name"] = "go_home";
+			args["command_name"] = "GoHome";
 		}
 		else
 		{	
