@@ -131,6 +131,22 @@ namespace http {
 			}
 		}
 
+		void CWebServerHelper::ReloadCorsPolicy()
+		{
+			std::string sAllowedCorsOrigins;
+			int nCorsAllowTrusted = 0;
+			m_sql.GetPreferencesVar("WebAllowedCORSOrigins", sAllowedCorsOrigins);
+			m_sql.GetPreferencesVar("WebCORSAllowTrustedNetworks", nCorsAllowTrusted);
+			const std::vector<std::string> origins = CWebServer::ParseCorsOrigins(sAllowedCorsOrigins);
+
+			for (auto &it : serverCollection)
+			{
+				if (it->m_pWebEm == nullptr)
+					continue;
+				it->m_pWebEm->SetCorsPolicy(origins, nCorsAllowTrusted != 0);
+			}
+		}
+
 		std::vector<connection::_tRemoteClients> CWebServerHelper::GetRemoteClients() const
 		{
 			std::vector<connection::_tRemoteClients> ret;

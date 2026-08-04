@@ -23,6 +23,7 @@ namespace http {
 			void LoadUsers();
 			void ClearUserPasswords();
 			void ReloadTrustedNetworks();
+			void ReloadCorsPolicy();
 			// Aggregate the recently-seen-clients snapshot across every server in
 			// serverCollection (plain and, if enabled, secure). Each cWebem
 			// instance now tracks its own clients rather than sharing one global

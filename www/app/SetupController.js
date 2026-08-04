@@ -646,6 +646,12 @@ define(['app'], function (app) {
 					if (typeof data.WebProxyHeaderFamily != 'undefined') {
 						$("#weblocaltable #WebProxyHeaderFamily").val(data.WebProxyHeaderFamily);
 					}
+					if (typeof data.WebAllowedCORSOrigins != 'undefined') {
+						$("#webcorstable #WebAllowedCORSOrigins").val(data.WebAllowedCORSOrigins);
+					}
+					if (typeof data.WebCORSAllowTrustedNetworks != 'undefined') {
+						$("#webcorstable #WebCORSAllowTrustedNetworks").prop('checked', data.WebCORSAllowTrustedNetworks == 1);
+					}
 					if (typeof data.EnergyDivider != 'undefined') {
 						$("#rfxmetertable #EnergyDivider").val(data.EnergyDivider);
 					}
@@ -992,23 +998,36 @@ define(['app'], function (app) {
 				$("#settings #ThemeSettings").val(JSON.stringify($scope.ThemeSettings));
 			}
 
-			$http.post('json.htm?type=command&param=storesettings', new FormData(document.querySelector("#settings")), {
-				transformRequest: angular.identity,
-				headers: { 'Content-Type': undefined }
-			}).then(function successCallback(response) {
-			    var data = response.data;
-			    if (data.status != "OK") {
-			        HideNotify();
+			var postSettings = function () {
+				$http.post('json.htm?type=command&param=storesettings', new FormData(document.querySelector("#settings")), {
+					transformRequest: angular.identity,
+					headers: { 'Content-Type': undefined }
+				}).then(function successCallback(response) {
+				    var data = response.data;
+				    if (data.status != "OK") {
+				        HideNotify();
+						ShowNotify($.t("Problem saving settings!"), 2000, true);
+						return;
+				    }
+					$window.location = '/#Dashboard';
+					$window.location.reload();
+				}, function errorCallback(response) {
+				    HideNotify();
 					ShowNotify($.t("Problem saving settings!"), 2000, true);
 					return;
-			    }
-				$window.location = '/#Dashboard';
-				$window.location.reload();
-			}, function errorCallback(response) {
-			    HideNotify();
-				ShowNotify($.t("Problem saving settings!"), 2000, true);
+				});
+			};
+
+			var corsOrigins = $("#webcorstable #WebAllowedCORSOrigins").val() || "";
+			if (corsOrigins.indexOf('*') != -1) {
+				bootbox.confirm($.t("Using '*' as allowed CORS origin lets every website read and control the API from a browser on your local networks. Are you sure?"), function (result) {
+					if (result == true) {
+						postSettings();
+					}
+				});
 				return;
-			});
+			}
+			postSettings();
 		}
 
 		$scope.MakeScrollLink = function (nameclick, namescroll) {

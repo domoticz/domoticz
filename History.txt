@@ -1,4 +1,5 @@
 Version 2026.xxxx
+- Added: Web server, 'Allowed CORS Origins' security settings so external dashboards (e.g. Dashticz) can call the API cross-origin again: list exact origins, use '*' to allow any origin, or tick 'Also allow origins from local networks' to admit origins served from a trusted network IP (#6941)
 - Added: Matter, support for the SmokeCoAlarm cluster; smoke and CO alarm states are now created as smoke detector devices (#6935)
 - Added: Matter, support for the AirQuality, TVOC, Ozone, Formaldehyde, PM1 and Radon concentration clusters
 - Added: Matter, water leak, rain and freeze detectors reported via BooleanState are now identified via the Descriptor DeviceTypeList and created as distinct devices instead of door contacts

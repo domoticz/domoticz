@@ -133,6 +133,22 @@ namespace http
 			_log.Log(LOG_STATUS, "WebServer(%s) stopped", m_server_alias.c_str());
 		}
 
+		std::vector<std::string> CWebServer::ParseCorsOrigins(const std::string& sOrigins)
+		{
+			std::vector<std::string> result;
+			std::vector<std::string> strarray;
+			StringSplit(sOrigins, ";", strarray);
+			for (auto& str : strarray)
+			{
+				stdstring_trim(str);
+				while (!str.empty() && str.back() == '/')
+					str.pop_back();
+				if (!str.empty())
+					result.push_back(str);
+			}
+			return result;
+		}
+
 		bool CWebServer::StartServer(server_settings& settings, const std::string& serverpath, const bool bIgnoreUsernamePassword)
 		{
 			if (!settings.is_enabled())
@@ -271,6 +287,14 @@ namespace http
 				for (const auto& str : strarray)
 					m_pWebEm->AddTrustedNetworks(str);
 			}
+
+			std::string sAllowedCorsOrigins;
+			int nCorsAllowTrusted = 0;
+			m_sql.GetPreferencesVar("WebAllowedCORSOrigins", sAllowedCorsOrigins);
+			m_sql.GetPreferencesVar("WebCORSAllowTrustedNetworks", nCorsAllowTrusted);
+			m_pWebEm->SetCorsPolicy(ParseCorsOrigins(sAllowedCorsOrigins), nCorsAllowTrusted != 0);
+			if (sAllowedCorsOrigins.find('*') != std::string::npos)
+				_log.Log(LOG_STATUS, "SECURITY RISK! CORS origin '*' is configured: every website can call the API from a browser on a trusted network! Restrict 'Allowed CORS origins' in Settings/Security to specific origins.");
 			if (bIgnoreUsernamePassword)
 			{
 				m_pWebEm->AddTrustedNetworks("0.0.0.0/0");	// IPv4

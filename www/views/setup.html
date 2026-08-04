@@ -1463,6 +1463,26 @@
 									</table>
 								</div>
 							</div>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="Allowed CORS Origins"></span>:</h2>
+									<table class="display" id="webcorstable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Origins"></span>: </label></td>
+										<td>
+											<input type="text" id="WebAllowedCORSOrigins" name="WebAllowedCORSOrigins" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all"><br>
+											<span data-i18n="(Separate by a semicolon, For Example"></span>: http://192.168.0.5:8082;https://dashboard.example.com)
+										</td>
+									</tr>
+									<tr>
+										<td colspan="2"><input type="checkbox" id="WebCORSAllowTrustedNetworks" name="WebCORSAllowTrustedNetworks"> <label for="WebCORSAllowTrustedNetworks" data-i18n="Also allow origins from local networks (no username/password)"></label></td>
+									</tr>
+									<tr>
+										<td colspan="2"><span data-i18n="Warning: allowed origins can read and control the API from a browser on your local networks!"></span></td>
+									</tr>
+									</table>
+								</div>
+							</div>
 							<div>
 								<div class="span12">
 									<a class="norm-link" href="https://wiki.domoticz.com/Security" target="_blank"><span class="norm-link" data-i18n="SecurityInfo"></span></a>

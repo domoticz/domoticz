@@ -74,6 +74,11 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 
 	cWebem *m_pWebEm;
 
+	/// Split the semicolon-separated "WebAllowedCORSOrigins" preference into the
+	/// origin list libwebem expects: entries trimmed, trailing '/' stripped
+	/// (browsers never send one in the Origin header), empties dropped.
+	static std::vector<std::string> ParseCorsOrigins(const std::string &sOrigins);
+
 	void ReloadCustomSwitchIcons();
 
 	void LoadUsers();

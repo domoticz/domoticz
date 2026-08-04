@@ -4016,6 +4016,16 @@ namespace http
 					}
 				}
 
+				std::string WebAllowedCORSOrigins = CURLEncode::URLDecode(request::findValue(&req, "WebAllowedCORSOrigins"));
+				m_sql.UpdatePreferencesVar("WebAllowedCORSOrigins", WebAllowedCORSOrigins);
+				cntSettings++;
+				int WebCORSAllowTrustedNetworks = (request::findValue(&req, "WebCORSAllowTrustedNetworks") == "on" ? 1 : 0);
+				m_sql.UpdatePreferencesVar("WebCORSAllowTrustedNetworks", WebCORSAllowTrustedNetworks);
+				cntSettings++;
+				m_webservers.ReloadCorsPolicy();
+				if (WebAllowedCORSOrigins.find('*') != std::string::npos)
+					_log.Log(LOG_STATUS, "SECURITY RISK! CORS origin '*' is configured: every website can call the API from a browser on a trusted network! Restrict 'Allowed CORS origins' in Settings/Security to specific origins.");
+
 				if (session.username.empty())
 				{
 					// Local network could be changed so lets force a check here
@@ -6632,6 +6642,14 @@ namespace http
 				else if (Key == "WebProxyHeaderFamily")
 				{
 					root["WebProxyHeaderFamily"] = nValue;
+				}
+				else if (Key == "WebAllowedCORSOrigins")
+				{
+					root["WebAllowedCORSOrigins"] = sValue;
+				}
+				else if (Key == "WebCORSAllowTrustedNetworks")
+				{
+					root["WebCORSAllowTrustedNetworks"] = nValue;
 				}
 				else if (Key == "RandomTimerFrame")
 				{
