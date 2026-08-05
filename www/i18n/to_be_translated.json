@@ -9,5 +9,8 @@
     "Origins": "Origins",
     "Also allow origins from local networks (no username/password)": "Also allow origins from local networks (no username/password)",
     "Warning: allowed origins can read and control the API from a browser on your local networks!": "Warning: allowed origins can read and control the API from a browser on your local networks!",
-    "Using '*' as allowed CORS origin lets every website read and control the API from a browser on your local networks. Are you sure?": "Using '*' as allowed CORS origin lets every website read and control the API from a browser on your local networks. Are you sure?"
+    "Using '*' as allowed CORS origin lets every website read and control the API from a browser on your local networks. Are you sure?": "Using '*' as allowed CORS origin lets every website read and control the API from a browser on your local networks. Are you sure?",
+    "White": "White",
+    "Color temperature": "Color temperature",
+    "Color and white mix": "Color and white mix"
 }
