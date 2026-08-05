@@ -1404,6 +1404,38 @@ a:link {
 	text-align: right;
 }
 
+/* Report summary strip (Counter / EnergyMultiCounter report headers) */
+.report-summary-strip {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 18px;
+	align-items: flex-start;
+	margin-bottom: 12px;
+	user-select: text;
+}
+.report-stat-item {
+	display: flex;
+	flex-direction: column;
+	min-width: 80px;
+}
+.report-stat-label {
+	font-size: 0.68em;
+	opacity: 0.55;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	line-height: 1.2;
+	margin-bottom: 1px;
+}
+.report-stat-value {
+	font-weight: bold;
+	font-size: 0.9em;
+	line-height: 1.4;
+}
+.report-stat-sub {
+	font-size: 0.78em;
+	opacity: 0.7;
+	line-height: 1.2;
+}
 
 /* Reset */
 

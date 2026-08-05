@@ -153,6 +153,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 periods.push(p);
             }
 
+            rawData.sort(function(a, b) { return a.d < b.d ? -1 : (a.d > b.d ? 1 : 0); });
             rawData.forEach(function(item) {
                 var d = new Date(item.d.substring(0, 10) + 'T00:00:00');
                 for (var i = 0; i < periods.length; i++) {
@@ -163,7 +164,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                             if (dayRecord[k]) {
                                 periods[i][k].usage  += dayRecord[k].usage;
                                 periods[i][k].cost   += dayRecord[k].cost;
-                                periods[i][k].counter = Math.max(periods[i][k].counter, dayRecord[k].counter);
+                                periods[i][k].counter = dayRecord[k].counter;
                             }
                         });
                         periods[i].totalUsage  += dayRecord.totalUsage || 0;
@@ -292,7 +293,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     subKeys.forEach(function(k) {
                         agg[k].usage  += p[k].usage;
                         agg[k].cost   += p[k].cost;
-                        agg[k].counter = Math.max(agg[k].counter, p[k].counter);
+                        agg[k].counter = p[k].counter;
                     });
                     agg.totalUsage  = (agg.totalUsage  || 0) + p.totalUsage;
                     agg.totalReturn = (agg.totalReturn || 0) + p.totalReturn;
@@ -392,7 +393,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
                     acc[key].usage = (acc[key].usage || 0) + item[key].usage;
                     acc[key].cost = (acc[key].cost || 0) + item[key].cost;
-                    acc[key].counter = Math.max(acc[key].counter || 0, item[key].counter)
+                    acc[key].counter = item[key].counter;
                 });
 
                 acc.totalUsage = (acc.totalUsage || 0) + item.totalUsage;
@@ -676,9 +677,8 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                         return;
                     }
                     if (vm.isMonthView) {
-                        var maxCounter = items.reduce(function (m, r) {
-                            return Math.max(m, (r[item[0]] && r[item[0]].counter) || 0);
-                        }, 0);
+                        var lastRow = items[items.length - 1];
+                        var maxCounter = (lastRow && lastRow[item[0]] && !isNaN(lastRow[item[0]].counter)) ? lastRow[item[0]].counter : 0;
                         cells.push('<td style="font-weight:bold">' + counterRenderer(maxCounter) + '</td>');
                     }
                     cells.push('<td style="font-weight:bold">' + counterRenderer(sumKey(items, item[0] + '.usage')) + '</td>');

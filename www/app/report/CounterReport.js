@@ -45,6 +45,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 });
             }
 
+            rawData.sort(function(a, b) { return a.d < b.d ? -1 : (a.d > b.d ? 1 : 0); });
             rawData.forEach(function(item) {
                 var d = new Date(item.d.substring(0, 10) + 'T00:00:00');
                 for (var i = 0; i < periods.length; i++) {
@@ -55,7 +56,8 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                         periods[i].days.push({ date: item.d, usage: dayUsage, counter: parseFloat(item.c) || 0, cost: dayCost });
                         periods[i].usage   += dayUsage;
                         periods[i].cost    += dayCost;
-                        periods[i].counter  = Math.max(periods[i].counter, parseFloat(item.c) || 0);
+                        var dc = parseFloat(item.c);
+                        if (!isNaN(dc)) { periods[i].counter = dc; }
                         break;
                     }
                 }
@@ -118,7 +120,9 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 months:          periods,
                 usage:           actualPeriods.reduce(function(s, p) { return s + p.usage; }, 0),
                 cost:            actualPeriods.reduce(function(s, p) { return s + p.cost; }, 0),
-                counter:         Math.max.apply(null, actualPeriods.map(function(p) { return p.counter || 0; }).concat([0])),
+                counter:         actualPeriods.length
+                    ? (isNaN(actualPeriods[actualPeriods.length - 1].counter) ? 0 : actualPeriods[actualPeriods.length - 1].counter)
+                    : 0,
                 forecastFullYear: forecastFullYear,
                 meterReplaced:   meterReplaced,
                 noHistory:       noHistory && hasFuturePeriods
@@ -281,7 +285,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                         : null
                 });
 
-                acc.counter = Math.max(acc.counter || 0, item.counter);
+                if (!isNaN(item.counter)) { acc.counter = item.counter; }
                 return acc;
             }, {});
         }
@@ -460,7 +464,8 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
             var totalUsage = items.reduce(function (s, r) { return s + (r.usage || 0); }, 0);
             var totalCost  = items.reduce(function (s, r) { return s + (r.cost  || 0); }, 0);
-            var maxCounter = items.reduce(function (m, r) { return Math.max(m, r.counter || 0); }, 0);
+            var lastItem = items[items.length - 1];
+            var maxCounter = (lastItem && !isNaN(lastItem.counter)) ? lastItem.counter : 0;
 
             var cells = [];
             if (vm.isMonthView) {

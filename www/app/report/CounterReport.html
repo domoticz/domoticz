@@ -5,28 +5,44 @@
 }
 </style>
 
-<div ng-if="::!$ctrl.isMonthView" style="margin-bottom: 12px; user-select: text;">
-    <div>{{:: $ctrl.device.SwitchTypeVal == 4 ? 'Total Generated' : 'Total Usage' | translate }}: {{:: $ctrl.data.usage.toFixed($ctrl.data.decimals) }} {{:: $ctrl.unit}}</div>
-    <div ng-if="::!$ctrl.isOnlyUsage">{{:: 'Counter' | translate }}: {{:: $ctrl.data.counter.toFixed($ctrl.data.decimals) }} {{:: $ctrl.unit}}</div>
-    <div ng-hide="!$ctrl.data.cost">{{:: $ctrl.device.SwitchTypeVal == 4 ? 'Year Earnings' : 'Year Cost' | translate }}: {{:: $ctrl.data.cost.toFixed(2) }} {{:: $ctrl.currencySign}}</div>
+<div ng-if="::!$ctrl.isMonthView" class="report-summary-strip">
+    <div class="report-stat-item">
+        <span class="report-stat-label">{{:: $ctrl.device.SwitchTypeVal == 4 ? 'Total Generated' : 'Total Usage' | translate}}</span>
+        <span class="report-stat-value">{{:: $ctrl.data.usage.toFixed($ctrl.data.decimals) }} {{:: $ctrl.unit}}</span>
+    </div>
+    <div class="report-stat-item" ng-if="::!$ctrl.isOnlyUsage">
+        <span class="report-stat-label">{{:: 'Counter' | translate}}</span>
+        <span class="report-stat-value">{{:: $ctrl.data.counter.toFixed($ctrl.data.decimals) }} {{:: $ctrl.unit}}</span>
+    </div>
+    <div class="report-stat-item" ng-hide="!$ctrl.data.cost">
+        <span class="report-stat-label">{{:: $ctrl.device.SwitchTypeVal == 4 ? 'Year Earnings' : 'Year Cost' | translate}}</span>
+        <span class="report-stat-value">{{:: $ctrl.data.cost.toFixed(2) }} {{:: $ctrl.currencySign}}</span>
+    </div>
 
-    <!-- Forecast summary block (custom contract year only) -->
-    <div ng-if="$ctrl.data.customStartDate && $ctrl.forecastFullYear">
-        {{'Forecast full year' | translate }}:
-        <b>~ {{$ctrl.forecastFullYear.total.toFixed($ctrl.data.decimals)}}</b> {{:: $ctrl.unit}}
+    <!-- Forecast (contract year only) -->
+    <div class="report-stat-item" ng-if="$ctrl.data.customStartDate && $ctrl.forecastFullYear">
+        <span class="report-stat-label">{{:: 'Forecast full year' | translate}}</span>
+        <span class="report-stat-value">~ {{$ctrl.forecastFullYear.total.toFixed($ctrl.data.decimals)}} {{:: $ctrl.unit}}</span>
     </div>
-    <div ng-if="$ctrl.data.customStartDate && $ctrl.forecastFullYear">
-        {{'Forecast year cost' | translate }}:
-        <b>~ {{$ctrl.forecastFullYear.forecastCost.toFixed(2)}}</b> {{:: $ctrl.currencySign}}
+    <div class="report-stat-item" ng-if="$ctrl.data.customStartDate && $ctrl.forecastFullYear">
+        <span class="report-stat-label">{{:: 'Forecast year cost' | translate}}</span>
+        <span class="report-stat-value">~ {{$ctrl.forecastFullYear.forecastCost.toFixed(2)}} {{:: $ctrl.currencySign}}</span>
     </div>
-    <div ng-if="$ctrl.data.customStartDate && $ctrl.noForecastHistory" style="color:#888; font-style:italic">
-        {{'Forecast full year' | translate }}: &mdash; ({{'No previous year data available' | translate}})
+    <div class="report-stat-item" ng-if="$ctrl.data.customStartDate && $ctrl.noForecastHistory">
+        <span class="report-stat-label">{{:: 'Forecast full year' | translate}}</span>
+        <span class="report-stat-value report-stat-sub">{{:: 'No previous year data available' | translate}}</span>
     </div>
 </div>
 
-<div ng-if="::$ctrl.isMonthView" style="margin-bottom: 12px; user-select: text;">
-    <div>{{:: $ctrl.device.SwitchTypeVal == 4 ? 'Total Generated' : 'Total Usage' | translate }}: {{:: $ctrl.data.usage.toFixed($ctrl.data.decimals) }} {{:: $ctrl.unit}}</div>
-    <div ng-if="::($ctrl.device.SwitchTypeVal != 3)">{{:: $ctrl.device.SwitchTypeVal == 4 ? 'Monthly Earnings' : 'Monthly Cost' | translate }}: {{:: $ctrl.data.cost.toFixed(2) }}</div>
+<div ng-if="::$ctrl.isMonthView" class="report-summary-strip">
+    <div class="report-stat-item">
+        <span class="report-stat-label">{{:: $ctrl.device.SwitchTypeVal == 4 ? 'Total Generated' : 'Total Usage' | translate}}</span>
+        <span class="report-stat-value">{{:: $ctrl.data.usage.toFixed($ctrl.data.decimals) }} {{:: $ctrl.unit}}</span>
+    </div>
+    <div class="report-stat-item" ng-if="::($ctrl.device.SwitchTypeVal != 3)">
+        <span class="report-stat-label">{{:: $ctrl.device.SwitchTypeVal == 4 ? 'Monthly Earnings' : 'Monthly Cost' | translate}}</span>
+        <span class="report-stat-value">{{:: $ctrl.data.cost.toFixed(2) }}</span>
+    </div>
 </div>
 
 <div ng-if="::$ctrl.noDataAvailable" class="no-data">
