@@ -14,8 +14,10 @@ Version 2026.xxxx
 - Fixed: Matter, device commands now use the PascalCase CHIP SDK command names so devices can be controlled via python-matter-server as well as matterjs-server
 - Fixed: MQTT Auto Discovery, sensors whose paired humidity entity only ever reports null (e.g. Zigbee2MQTT temperature-only TS0201 variants) now create a standalone Temperature device instead of no device at all (#6924)
 - Fixed: P1 Meter, the calculated per-phase kWh counters now integrate over the actual elapsed time instead of a fixed 10 seconds, which under-counted with an irregular telegram cadence (capped at 40 seconds so data gaps are not extrapolated)
+- Fixed: Reports, the counter totals in the yearly and monthly energy, gas and water reports kept showing the highest value ever recorded, which was wrong after a meter replacement; they now show the last actual meter reading, and the summary figures above the report are presented as a compact labeled overview (#6926)
 - Fixed: Web server, every request through a reverse proxy that writes more than one forwarded-client header returned 403; nginx Proxy Manager sends X-Forwarded-For and X-Real-IP together, which made the whole site inaccessible (#6939)
 - Fixed: Web server, restore trusted-network client detection behind reverse proxies using X-Forwarded-For (#6937)
+- Fixed: WebUI, at intermediate window widths the top menu wrapped to a second row and overlapped the page content; the menu now switches to compact icon-only buttons when the labels do not fit, pages starting with a small header no longer show extra blank space below the navigation bar, and the floorplan is again positioned and vertically centered below the bar
 - Removed: Counters, the deprecated 'Time' counter type can no longer be selected in the device edit dialog; it has been unsupported since it was migrated to Custom counters, use a Custom counter with units 'Min' instead
 
 Version 2026.3 (August 2nd 2026)
