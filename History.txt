@@ -6,6 +6,7 @@ Version 2026.xxxx
 - Added: Settings, the reverse proxy header that Domoticz reads the client address from is now selectable (None, X-Forwarded-For, X-Real-IP or Forwarded) instead of being fixed to X-Forwarded-For, under Settings - Security
 - Fixed: Counters, virtual counter devices set to type Energy, Gas or Energy Generated now show their unit (kWh, m3) in the log and reports instead of a question mark (#6928)
 - Fixed: EvoHome, HVAC fan mode selector switch commands were silently ignored on x86/x64 builds; they only worked on ARM
+- Fixed: Floorplans, removed a leftover empty svg element that pushed the floorplan content down by the height of one line box, which could misalign the plan in themes with a constrained floorplan area (#6933)
 - Fixed: P1 Meter, the calculated per-phase kWh counters now integrate over the actual elapsed time instead of a fixed 10 seconds, which under-counted with an irregular telegram cadence (capped at 40 seconds so data gaps are not extrapolated)
 - Fixed: Web server, every request through a reverse proxy that writes more than one forwarded-client header returned 403; nginx Proxy Manager sends X-Forwarded-For and X-Real-IP together, which made the whole site inaccessible (#6939)
 - Fixed: Web server, restore trusted-network client detection behind reverse proxies using X-Forwarded-For (#6937)
