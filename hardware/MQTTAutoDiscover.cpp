@@ -5778,8 +5778,12 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 
 			bool bCouldUseBrightness = false;
 
+			// ColorModeWhite is meaningful for lights with a white channel (subtypes with a 'W');
+			// the color picker only offers White mode for those, so xy/hs conversions below
+			// see it in pathological cases only (a script sending mode 1 to an xy/hs light)
 			if (color.mode == ColorModeRGB ||
-				color.mode == ColorModeCustom)
+				color.mode == ColorModeCustom ||
+				color.mode == ColorModeWhite)
 			{
 				if (pSensor->supported_color_modes.find("xy") != pSensor->supported_color_modes.end())
 				{
@@ -5829,20 +5833,33 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					root["color"]["g"] = color.g;
 					root["color"]["b"] = color.b;
 				}
+				uint8_t iColdWhite = color.cw;
+				uint8_t iWarmWhite = color.ww;
+				if (color.mode == ColorModeWhite)
+				{
+					// ColorModeWhite has no valid color fields: white fully on, the dim level carries the brightness
+					iColdWhite = 255;
+					iWarmWhite = 255;
+				}
+				else if (pSensor->subType == sTypeColor_RGB_W_Z)
+				{
+					// single white channel: state updates store it in ww, the web UI sets both cw and ww
+					iColdWhite = std::max(color.cw, color.ww);
+				}
 				if (
 					(pSensor->subType == sTypeColor_RGB_W_Z)
 					|| (pSensor->subType == sTypeColor_RGB_CW_WW_Z)
 					|| (pSensor->subType == sTypeColor_RGB_CW_WW)
 					)
 				{
-					root["color"]["c"] = color.cw;
+					root["color"]["c"] = iColdWhite;
 				}
 				if (
 					(pSensor->subType == sTypeColor_RGB_CW_WW_Z)
 					|| (pSensor->subType == sTypeColor_RGB_CW_WW)
 					)
 				{
-					root["color"]["w"] = color.ww;
+					root["color"]["w"] = iWarmWhite;
 				}
 
 				// Check if the rgb_command_template suggests to use "red", "green"... instead of the default "r", "g"... (e.g. Fibaro FGRGBW)
@@ -5867,17 +5884,10 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					}
 					else if (pSensor->subType == sTypeColor_RGB_W_Z)
 					{
-						// only a single 'white'. check if this is warm or coldwhite. 
-						// If not coldwhite it is warmwhite
-						// Single white is stored as coldwhite within Domoticz
-						//if (pSensor->color_temp_command_template.find("coldWhite") != std::string::npos)
-						{
-							colorDef["coldWhite"] = root["color"]["c"];
-						}
-						//if (pSensor->color_temp_command_template.find("warmWhite") != std::string::npos)
-						{
-							colorDef["warmWhite"] = root["color"]["c"];
-						}
+						// single white channel, sent as both warm and cold white;
+						// the gateway (e.g. Z-Wave JS) strips the component the device does not support
+						colorDef["coldWhite"] = root["color"]["c"];
+						colorDef["warmWhite"] = root["color"]["c"];
 					}
 
 					root["value"] = colorDef;
