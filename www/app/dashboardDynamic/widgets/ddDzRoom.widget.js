@@ -253,6 +253,10 @@ define([
                 ctrl.applyDimLevel = function(item) {
                     var level = parseInt(ctrl.dimLevel[item.idx], 10);
                     if (isNaN(level)) { return; }
+                    // A tap fires touchend plus a synthesized mouseup; send the command only once
+                    var busyKey = item.idx + '_dim';
+                    if (ctrl.busy[busyKey]) { return; }
+                    ctrl.busy[busyKey] = true;
                     $http.get('json.htm', { params: { type: 'command', param: 'switchlight', idx: item.idx, switchcmd: 'Set Level', level: level } })
                         .then(function(resp) {
                             if (resp.data && resp.data.status === 'OK') {
@@ -263,7 +267,8 @@ define([
                         })
                         .catch(function(err) {
                             ddToast.error((item.label || item.idx) + ': ' + ((err && err.statusText) || 'Request failed'));
-                        });
+                        })
+                        .finally(function() { ctrl.busy[busyKey] = false; });
                 };
 
                 ctrl.toggleLevelPicker = function(idx, $event) {

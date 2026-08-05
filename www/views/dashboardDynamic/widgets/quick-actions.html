@@ -75,7 +75,7 @@
                        min="0" ng-attr-max="{{ action.maxDimLevel || 100 }}" step="1"
                        ng-model="ctrl.dimLevel[action.idx]"
                        ng-mouseup="ctrl.applyDimLevel(action)"
-                       ng-touchend="ctrl.applyDimLevel(action)">
+                       ng-on-touchend="ctrl.applyDimLevel(action)">
                 <span class="dd-qa-dim-value-text">{{ ctrl.dimPercent(action) }}%</span>
             </div>
         </div>
@@ -156,7 +156,7 @@
                        min="0" ng-attr-max="{{ action.maxDimLevel || 100 }}" step="1"
                        ng-model="ctrl.dimLevel[action.idx]"
                        ng-mouseup="ctrl.applyDimLevel(action)"
-                       ng-touchend="ctrl.applyDimLevel(action)">
+                       ng-on-touchend="ctrl.applyDimLevel(action)">
                 <span class="dd-qa-dim-value-text">{{ ctrl.dimPercent(action) }}%</span>
             </div>
         </div>

@@ -273,9 +273,9 @@ define([
                     ctrl.showLevelPicker[action.idx] = false;
                     var busyKey = action.idx + '_sel';
                     if (ctrl.busy[busyKey]) { return; }
-                    ctrl.busy[busyKey]  = true;
-                    ctrl.error[busyKey] = false;
                     runProtected(action, function(passcode) {
+                        ctrl.busy[busyKey]  = true;
+                        ctrl.error[busyKey] = false;
                         $http.get('json.htm', { params: { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: 'Set Level', level: level, passcode: passcode } })
                             .then(function(resp) {
                                 var data = resp.data || {};
@@ -302,7 +302,11 @@ define([
                 ctrl.applyDimLevel = function(action) {
                     var level = parseInt(ctrl.dimLevel[action.idx], 10);
                     if (isNaN(level)) { return; }
+                    // A tap fires touchend plus a synthesized mouseup; send the command only once
+                    var busyKey = action.idx + '_dim';
+                    if (ctrl.busy[busyKey]) { return; }
                     runProtected(action, function(passcode) {
+                        ctrl.busy[busyKey] = true;
                         $http.get('json.htm', { params: { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: 'Set Level', level: level, passcode: passcode } })
                             .then(function(resp) {
                                 if (resp.data && resp.data.status === 'OK') {
@@ -319,7 +323,8 @@ define([
                             })
                             .catch(function(err) {
                                 ddToast.error((action.label || action.idx) + ': ' + ((err && err.statusText) || 'Request failed'));
-                            });
+                            })
+                            .finally(function() { ctrl.busy[busyKey] = false; });
                     });
                 };
 
@@ -332,10 +337,10 @@ define([
                         ? action.idx + '_' + cmd
                         : action.idx;
                     if (ctrl.busy[busyKey]) { return; }
-                    ctrl.busy[busyKey]  = true;
-                    ctrl.error[busyKey] = false;
 
                     if (action.type === 'scene') {
+                        ctrl.busy[busyKey]  = true;
+                        ctrl.error[busyKey] = false;
                         var params = { type: 'command', param: 'switchscene', idx: action.idx, switchcmd: 'On' };
                         $http.get('json.htm', { params: params })
                             .then(function(resp) {
@@ -362,6 +367,8 @@ define([
                     }
 
                     if (action.type === 'group') {
+                        ctrl.busy[busyKey]  = true;
+                        ctrl.error[busyKey] = false;
                         var params = { type: 'command', param: 'switchscene', idx: action.idx, switchcmd: cmd };
                         $http.get('json.htm', { params: params })
                             .then(function(resp) {
@@ -388,6 +395,8 @@ define([
                     }
 
                     runProtected(action, function(passcode) {
+                        ctrl.busy[busyKey]  = true;
+                        ctrl.error[busyKey] = false;
                         var params;
                         if (action.type === 'blind') {
                             params = { type: 'command', param: 'switchlight', idx: action.idx, switchcmd: cmd, passcode: passcode };

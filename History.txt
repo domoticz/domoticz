@@ -6,6 +6,8 @@ Version 2026.xxxx
 - Added: Matter, water leak, rain and freeze detectors reported via BooleanState are now identified via the Descriptor DeviceTypeList and created as distinct devices instead of door contacts
 - Added: Settings, the reverse proxy header that Domoticz reads the client address from is now selectable (None, X-Forwarded-For, X-Real-IP or Forwarded) instead of being fixed to X-Forwarded-For, under Settings - Security
 - Fixed: Counters, virtual counter devices set to type Energy, Gas or Energy Generated now show their unit (kWh, m3) in the log and reports instead of a question mark (#6928)
+- Fixed: Dashboard Dynamic, dimmer and blind position sliders in the Quick Actions and Room widgets now send the level when released on a touch device; the slider moved but the command was only sent when using a mouse (#6938)
+- Fixed: Dashboard Dynamic, Quick Actions buttons for protected devices no longer become unresponsive after the passcode prompt is cancelled or a wrong password is entered
 - Fixed: Dashboard Dynamic, Quick Actions dimmer slider is now always visible instead of hidden behind a reveal toggle, and uses the device's actual dim range so the shown percentage matches the device level (#6938)
 - Fixed: EvoHome, HVAC fan mode selector switch commands were silently ignored on x86/x64 builds; they only worked on ARM
 - Fixed: Lights, the RGBW color picker mode buttons (Color, White, Color temperature, Color and white mix) now show a tooltip describing their function (#6911)
