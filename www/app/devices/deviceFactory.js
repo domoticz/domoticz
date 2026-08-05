@@ -137,10 +137,15 @@ define(function () {
                     return 'kWh';
                 } else if (this.Type === 'YouLess Meter') {
                     return 'kWh';
-                } else if (this.Type === 'RFXMeter' && this.SwitchTypeVal === 2) {
-                    return 'm3';
-                } else if (this.Type === 'RFXMeter' && this.SwitchTypeVal === 3) {
-                    return this.ValueUnits; //counter
+                } else if (this.Type === 'RFXMeter') {
+                    if (this.SwitchTypeVal === 0 || this.SwitchTypeVal === 4) {
+                        return 'kWh'; //energy, energy generated
+                    } else if (this.SwitchTypeVal === 1 || this.SwitchTypeVal === 2) {
+                        return 'm3'; //gas, water
+                    } else if (this.SwitchTypeVal === 3) {
+                        return this.ValueUnits; //custom units
+                    }
+                    return '?';
                 } else if (this.Type === 'Usage' && this.SubType === 'Electric') {
                     return 'W';
                 } else if (this.SubType === 'Gas' || this.SubType === 'Water') {

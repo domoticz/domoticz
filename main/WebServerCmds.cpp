@@ -168,6 +168,9 @@ namespace http
 
 			for (int ii = 0; ii < MTYPE_END; ii++)
 			{
+				// Time counters are deprecated and migrated to Custom counters since DB version 99, hide from selection
+				if (ii == MTYPE_TIME)
+					continue;
 				std::string sTypeName = Meter_Type_Desc((_eMeterType)ii);
 				root["result"][ii] = sTypeName;
 			}
