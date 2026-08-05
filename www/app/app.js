@@ -924,6 +924,69 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			return "unk";
 		};
 
+		// Fit-based compact toggle and content-offset calibration.
+		//
+		// At viewport widths > 979px (where Bootstrap's hidden-tablet no longer
+		// applies), we detect whether the full-text nav buttons would wrap to a
+		// second row and toggle the 'nav-compact' class on the navbar to hide
+		// labels before that happens.  CSS for .nav-compact lives in style.css.
+		//
+		// --navbar-h is set to: 43 + max(0, currentHeight - singleRowHeight)
+		// so a single-row bar always produces exactly the original 43px offset
+		// and only a genuinely wrapped bar increases the offset.
+		(function() {
+			var _nav = document.querySelector('.navbar.navbar-fixed-top');
+			if (!_nav) return;
+			var _brand   = _nav.querySelector('.brand');
+			var _navList = _nav.querySelector('.nav');
+			var _singleRowH = 0;
+
+			function _isWrapped() {
+				if (window.innerWidth <= 979) return false;
+				if (!_brand || !_navList) return false;
+				// getBoundingClientRect forces a synchronous reflow so we always
+				// read the layout that matches the current DOM state.
+				return _navList.getBoundingClientRect().top >
+				       _brand.getBoundingClientRect().top + 4;
+			}
+
+			function _syncAll() {
+				// Remove compact so labels are present for the wrap measurement.
+				_nav.classList.remove('nav-compact');
+
+				if (_isWrapped()) {
+					_nav.classList.add('nav-compact');
+				}
+
+				// offsetHeight forces a reflow and reflects the final compact state.
+				var h = _nav.offsetHeight;
+				if (h > 0) {
+					// Track the smallest height seen as the single-row height
+					// (brand height drives it, same whether labels are visible
+					// or hidden) so a wrapped measurement is never mistaken
+					// for the single-row baseline.
+					if (_singleRowH === 0 || h < _singleRowH) _singleRowH = h;
+					var offset = 43 + Math.max(0, h - _singleRowH);
+					document.documentElement.style.setProperty('--navbar-h', offset + 'px');
+				}
+			}
+
+			_syncAll();
+			window.addEventListener('resize', _syncAll);
+			if (window.ResizeObserver) {
+				// Coalesce observer callbacks to one sync per animation frame.
+				var _rafPending = false;
+				new ResizeObserver(function () {
+					if (_rafPending) return;
+					_rafPending = true;
+					window.requestAnimationFrame(function () {
+						_rafPending = false;
+						_syncAll();
+					});
+				}).observe(_nav);
+			}
+		})();
+
 	});
 
 	// Bootstrap Angular when DOM is ready

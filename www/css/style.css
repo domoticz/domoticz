@@ -893,7 +893,7 @@ table.mobileitem {
 }
 
 #holder > .container-fluid {
-	padding-top: 43px;
+	padding-top: var(--navbar-h, 43px);
 	padding-bottom: 20px;
 }
 
@@ -907,6 +907,10 @@ table.mobileitem {
 	.bannercontent {
 		padding-top: 0px;
 	}
+}
+
+.navbar.nav-compact .nav li > a .hidden-tablet {
+	display: none !important;
 }
 
 .brand {
@@ -1057,6 +1061,10 @@ table.mobileitem {
 	background: linear-gradient(135deg, rgba(15, 65, 150, 0.95), rgba(40, 100, 210, 0.9)) !important;
 	border-color: rgba(100, 200, 255, 1.0) !important;
 	box-shadow: 0 0 20px rgba(100, 200, 255, 0.6), inset 0 0 12px rgba(0, 0, 0, 0.35) !important;
+}
+
+.navbar.navbar-inverse {
+	background: #28314c;
 }
 
 .navbar-inverse .navbar-inner {
@@ -1341,6 +1349,9 @@ mark.log-highlight {
 	margin: 20px 0 6px;
 	border-bottom: 1px solid var(--dz-accent-color);
 	font-size: 9pt;
+}
+.page-header-small:first-child {
+	margin-top: 0;
 }
 
 .page-header-with-button {

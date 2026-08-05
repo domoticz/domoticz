@@ -14,6 +14,21 @@ define(['app', 'livesocket'], function (app) {
 		$scope.touchStartY = 0;			// used on tablets & phones
 		var refreshDebounceTimer = null;
 
+		// Returns the actual bottom of the visible navbar content in viewport pixels.
+		// The brand logo image overflows below the navbar's own layout box, so we
+		// check all img elements inside .brand and use the deepest one found.
+		function getNavbarBottom() {
+			var nav = document.querySelector('.navbar.navbar-fixed-top');
+			if (!nav) { return 0; }
+			var bottom = nav.getBoundingClientRect().bottom;
+			var imgs = nav.querySelectorAll('.brand img');
+			for (var i = 0; i < imgs.length; i++) {
+				var b = imgs[i].getBoundingClientRect().bottom;
+				if (b > bottom) { bottom = b; }
+			}
+			return Math.ceil(bottom);
+		}
+
 		$scope.makeHTMLnode = function (tag, attrs) {
 			var el = document.createElement(tag);
 			for (var k in attrs) el.setAttribute(k, attrs[k]);
@@ -170,8 +185,10 @@ define(['app', 'livesocket'], function (app) {
 				var wrpHeight = $window.innerHeight;
 				// when the small menu bar is displayed main-view jumps to the top so force it down
 				if ($(".navbar").css('display') != 'none') {
-					$("#floorplancontent").offset({ top: $(".navbar").height() });
-					wrpHeight = $window.innerHeight - $("#floorplancontent").offset().top - (($("#copyright").css('display') == 'none') ? 0 : $("#copyright").height()) - 52;
+					var navBottom = getNavbarBottom();
+					$("#floorplancontent").offset({ top: navBottom });
+					var copyrightH = ($("#copyright").css('display') == 'none') ? 0 : ($("#copyright").outerHeight() || 0);
+					wrpHeight = $window.innerHeight - navBottom - copyrightH;
 				}
 				else {
 					$("#floorplancontent").offset({ top: 0 });
@@ -601,7 +618,7 @@ define(['app', 'livesocket'], function (app) {
 
 					//Move nav bar with Back and Report button down
 					if ($(".navbar").css('display') != 'none') {
-						$("#floorplancontent").offset({ top: $(".navbar").height() });
+						$("#floorplancontent").offset({ top: getNavbarBottom() });
 					}
 					else {
 						$("#floorplancontent").offset({ top: 0 });
