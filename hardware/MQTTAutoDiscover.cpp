@@ -392,8 +392,15 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 				}
 				else
 				{
-					if (root[szKey].empty())
+					if (!root.isMember(szKey))
+					{
 						return ""; //key not found!
+					}
+					if (root[szKey].isNull())
+					{
+						isNull = true;
+						return ""; //key not found!
+					}
 					root = root[szKey];
 				}
 			}
