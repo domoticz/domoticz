@@ -8,6 +8,7 @@ Version 2026.xxxx
 - Fixed: Counters, virtual counter devices set to type Energy, Gas or Energy Generated now show their unit (kWh, m3) in the log and reports instead of a question mark (#6928)
 - Fixed: Dashboard Dynamic, Quick Actions dimmer slider is now always visible instead of hidden behind a reveal toggle, and uses the device's actual dim range so the shown percentage matches the device level (#6938)
 - Fixed: EvoHome, HVAC fan mode selector switch commands were silently ignored on x86/x64 builds; they only worked on ARM
+- Fixed: Lights, the RGBW color picker mode buttons (Color, White, Color temperature, Color and white mix) now show a tooltip describing their function (#6911)
 - Fixed: Floorplans, removed a leftover empty svg element that pushed the floorplan content down by the height of one line box, which could misalign the plan in themes with a constrained floorplan area (#6933)
 - Fixed: Matter, device commands now use the PascalCase CHIP SDK command names so devices can be controlled via python-matter-server as well as matterjs-server
 - Fixed: MQTT Auto Discovery, sensors whose paired humidity entity only ever reports null (e.g. Zigbee2MQTT temperature-only TS0201 variants) now create a standalone Temperature device instead of no device at all (#6924)
