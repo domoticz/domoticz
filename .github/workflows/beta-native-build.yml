@@ -1,0 +1,31 @@
+name: Beta native builds
+
+# Runs the native build chain on the self-hosted build infrastructure:
+# raspb5 builds armv7l and aarch64 in schroots, then triggers the x86_64
+# build and the docker image on the intel machine via domake.sh.
+
+on:
+  push:
+    branches:
+      - development
+    paths-ignore:
+      - 'msbuild/**'
+      - '.github/**'
+      - 'tools/**'
+      - '**.md'
+      - '**.txt'
+
+  # Allows this workflow to be started manually from the Actions tab
+  workflow_dispatch:
+
+concurrency:
+  group: beta-native
+  cancel-in-progress: false
+
+jobs:
+  build-all:
+    runs-on: [self-hosted, raspb5]
+    timeout-minutes: 360
+    steps:
+      - name: Build all architectures and docker image
+        run: ~/domake.sh beta force
