@@ -43,7 +43,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 180
+#define DB_VERSION 181
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -660,6 +660,16 @@ constexpr auto sqlCreateDashboardLayouts =
 "[updated] DATETIME NOT NULL DEFAULT (datetime('now','localtime'))"
 ");";
 
+constexpr auto sqlCreateThemeSettings =
+"CREATE TABLE IF NOT EXISTS [ThemeSettings]("
+"[Scope] INTEGER NOT NULL,"
+"[UserID] INTEGER NOT NULL DEFAULT 0,"
+"[ThemeName] TEXT NOT NULL,"
+"[Value] TEXT NOT NULL DEFAULT '{}',"
+"[LastUpdate] TEXT NOT NULL DEFAULT '',"
+"PRIMARY KEY([Scope],[UserID],[ThemeName])"
+");";
+
 extern std::string szUserDataFolder;
 
 CSQLHelper::CSQLHelper()
@@ -793,6 +803,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateApplications);
 	query(sqlCreateAccessTokens);
 	query(sqlCreateDashboardLayouts);
+	query(sqlCreateThemeSettings);
 	//Add indexes to log tables
 	query("create index if not exists ds_hduts_idx	on DeviceStatus(HardwareID, DeviceID, Unit, Type, SubType);");
 	query("create index if not exists f_id_idx		on Fan(DeviceRowID);");
@@ -3440,6 +3451,32 @@ bool CSQLHelper::OpenDatabase()
 			// any layouts whose userid no longer matches an existing user.
 			query("DELETE FROM DashboardLayouts WHERE userid NOT IN (SELECT ID FROM Users)");
 		}
+		if (dbversion < 181)
+		{
+			// Explode the legacy single-blob Preferences.ThemeSettings into per-theme
+			// Scope=0 rows of the ThemeSettings table. The legacy Preferences row stays
+			// on disk (and is refreshed on every instance-default write) so a downgrade
+			// still finds usable data. Nothing reads it anymore.
+			std::string sThemeSettings;
+			if (GetPreferencesVar("ThemeSettings", sThemeSettings) && !sThemeSettings.empty())
+			{
+				Json::Value jRoot;
+				if (ParseJSon(sThemeSettings, jRoot) && jRoot.isObject())
+				{
+					for (const auto &themeName : jRoot.getMemberNames())
+					{
+						if (!jRoot[themeName].isObject())
+							continue;
+						std::string szTheme = JSonToRawString(jRoot[themeName]);
+						safe_query(
+							"INSERT INTO ThemeSettings (Scope, UserID, ThemeName, Value, LastUpdate) "
+							"VALUES (0, 0, '%q', '%q', strftime('%%Y-%%m-%%d %%H:%%M:%%f','now','localtime')) "
+							"ON CONFLICT(Scope, UserID, ThemeName) DO NOTHING",
+							themeName.c_str(), szTheme.c_str());
+					}
+				}
+			}
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -4698,6 +4735,37 @@ void CSQLHelper::safe_exec_no_return(const char* fmt, ...)
 		return;
 	sqlite3_exec(m_dbase, zQuery, nullptr, nullptr, nullptr);
 	sqlite3_free(zQuery);
+}
+
+int CSQLHelper::safe_exec_changes(const char* fmt, ...)
+{
+	if (!m_dbase)
+		return -1;
+
+	va_list args;
+	va_start(args, fmt);
+	char* zQuery = sqlite3_vmprintf(fmt, args);
+	va_end(args);
+	if (!zQuery)
+		return -1;
+	std::string szQuery = zQuery;
+	sqlite3_free(zQuery);
+
+	std::unique_lock<std::timed_mutex> l(m_sqlQueryMutex, std::defer_lock);
+	if (!l.try_lock_for(std::chrono::minutes(5)))
+	{
+		_log.Log(LOG_ERROR, "SQL exec mutex timeout (>5min, possible query backlog). Query: %.200s", szQuery.c_str());
+		return -1;
+	}
+	char* errMsg = nullptr;
+	_log.Debug(DEBUG_SQL, "Exec:%s", szQuery.c_str());
+	if (sqlite3_exec(m_dbase, szQuery.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK)
+	{
+		_log.Log(LOG_ERROR, "SQL exec failed: %s (%.200s)", errMsg ? errMsg : "unknown error", szQuery.c_str());
+		sqlite3_free(errMsg);
+		return -1;
+	}
+	return sqlite3_changes(m_dbase);
 }
 
 bool CSQLHelper::safe_UpdateBlobInTableWithID(const std::string& Table, const std::string& Column, const std::string& sID, const std::string& BlobData)

@@ -433,6 +433,7 @@ public:
 	std::vector<std::vector<std::string>> unsafe_query(const std::string& szQuery);
 
 	void safe_exec_no_return(const char *fmt, ...);
+	int safe_exec_changes(const char *fmt, ...);
 	bool safe_UpdateBlobInTableWithID(const std::string &Table, const std::string &Column, const std::string &sID, const std::string &BlobData);
 	bool DoesColumnExistsInTable(const std::string &columnname, const std::string &tablename);
 
