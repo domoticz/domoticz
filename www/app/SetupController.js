@@ -994,9 +994,6 @@ define(['app'], function (app) {
 			if ($("#debugleveltable #DebugSQL").prop("checked")) debugLevel |= 0x80;
 			if ($("#debugleveltable #DebugAuth").prop("checked")) debugLevel |= 0x100;
 			$("#settings #DebugLevel").val(debugLevel);
-			if ($scope.ThemeSettings && Object.keys($scope.ThemeSettings).length > 0) {
-				$("#settings #ThemeSettings").val(JSON.stringify($scope.ThemeSettings));
-			}
 
 			var postSettings = function () {
 				$http.post('json.htm?type=command&param=storesettings', new FormData(document.querySelector("#settings")), {

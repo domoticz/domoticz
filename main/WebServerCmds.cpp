@@ -4238,17 +4238,6 @@ namespace http
 				std::string szESettings = JSonToRawString(ESettings);
 				m_sql.UpdatePreferencesVar("ESettings", szESettings);
 
-				std::string szThemeSettings = request::findValue(&req, "ThemeSettings");
-				if (!szThemeSettings.empty())
-				{
-					Json::Value jvalidate;
-					if (ParseJSon(szThemeSettings, jvalidate))
-					{
-						m_sql.UpdatePreferencesVar("ThemeSettings", szThemeSettings);
-					}
-					cntSettings++;
-				}
-
 				m_sql.SetUnitsAndScale();
 
 				/* To wrap up everything */
@@ -6956,16 +6945,16 @@ namespace http
 				{
 					root["PriceResolution"] = nValue;
 				}
-				else if (Key == "ThemeSettings")
-				{
-					Json::Value jthemesettings;
-					bool ret = ParseJSon(sValue, jthemesettings);
-					if (ret)
-					{
-						root["ThemeSettings"] = jthemesettings;
-					}
-				}
 			}
+			// ThemeSettings is served from the ThemeSettings table as the merge of the
+			// instance defaults with the calling user's overlay (user rows win per
+			// theme), so existing themes reading data.ThemeSettings keep working and
+			// get per-user values for free. The legacy Preferences row is not read.
+			Json::Value jThemeSettings;
+			const int iUser = session.username.empty() ? -1 : FindUser(session.username.c_str());
+			const unsigned long userID = (iUser != -1) ? m_users[iUser].ID : 0;
+			if (m_sql.GetMergedThemeSettings(iUser != -1, userID, jThemeSettings))
+				root["ThemeSettings"] = jThemeSettings;
 			root["DebugLevel"] = static_cast<int>(_log.GetDebugFlags());
 		}
 
