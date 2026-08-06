@@ -2092,21 +2092,19 @@ namespace http
 			root["status"] = "OK";
 		}
 
-		void CWebServer::Cmd_AddUserVariable(WebEmSession& session, const request& req, Json::Value& root)
+		static bool ValidateUserVariableParams(const std::string& variablename, std::string& variabletype, const std::string& variablevalue, std::string& errorMessage)
 		{
-			root["title"] = "AddUserVariable";
-			root["status"] = "ERR";
-			if (session.rights != URIGHTS_ADMIN)
+			if (variablename.empty())
 			{
-				session.reply_status = reply::forbidden;
-				_log.Log(LOG_ERROR, "User: %s tried to add a uservariable!", session.username.c_str());
-				return; // Only admin user allowed
+				errorMessage = "Missing variable name (vname)";
+				return false;
 			}
-			std::string variablename = HTMLSanitizer::Sanitize(request::findValue(&req, "vname"));
-			std::string variablevalue = HTMLSanitizer::Sanitize(request::findValue(&req, "vvalue"));
-			std::string variabletype = request::findValue(&req, "vtype");
-
-			if (!std::isdigit(variabletype[0]))
+			if (variabletype.empty())
+			{
+				errorMessage = "Missing variable type (vtype)";
+				return false;
+			}
+			if (!std::isdigit((unsigned char)variabletype[0]))
 			{
 				stdlower(variabletype);
 				if (variabletype == "integer")
@@ -2121,22 +2119,45 @@ namespace http
 					variabletype = "4";
 				else
 				{
-					root["message"] = "Invalid variabletype " + variabletype;
-					session.reply_status = reply::bad_request;
-					return;
+					errorMessage = "Invalid variabletype " + variabletype;
+					return false;
 				}
 			}
-
-			if ((variablename.empty()) || (variabletype.empty()) ||
-				((variabletype != "0") && (variabletype != "1") && (variabletype != "2") && (variabletype != "3") && (variabletype != "4")) ||
-				((variablevalue.empty()) && (variabletype != "2")))
+			if ((variabletype != "0") && (variabletype != "1") && (variabletype != "2") && (variabletype != "3") && (variabletype != "4"))
 			{
-				root["message"] = "Invalid variabletype " + variabletype;
+				errorMessage = "Invalid variabletype " + variabletype;
+				return false;
+			}
+			if ((variablevalue.empty()) && (variabletype != "2"))
+			{
+				errorMessage = "Missing variable value (vvalue) for variabletype " + variabletype;
+				return false;
+			}
+			return true;
+		}
+
+		void CWebServer::Cmd_AddUserVariable(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "AddUserVariable";
+			root["status"] = "ERR";
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				_log.Log(LOG_ERROR, "User: %s tried to add a uservariable!", session.username.c_str());
+				return; // Only admin user allowed
+			}
+			std::string variablename = HTMLSanitizer::Sanitize(request::findValue(&req, "vname"));
+			std::string variablevalue = HTMLSanitizer::Sanitize(request::findValue(&req, "vvalue"));
+			std::string variabletype = request::findValue(&req, "vtype");
+
+			std::string errorMessage;
+			if (!ValidateUserVariableParams(variablename, variabletype, variablevalue, errorMessage))
+			{
+				root["message"] = errorMessage;
 				session.reply_status = reply::bad_request;
 				return;
 			}
 
-			std::string errorMessage;
 			if (!m_sql.AddUserVariable(variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue, errorMessage))
 			{
 				root["message"] = errorMessage;
@@ -2183,32 +2204,10 @@ namespace http
 			std::string variablevalue = HTMLSanitizer::Sanitize(request::findValue(&req, "vvalue"));
 			std::string variabletype = request::findValue(&req, "vtype");
 
-			if (!std::isdigit(variabletype[0]))
+			std::string errorMessage;
+			if (!ValidateUserVariableParams(variablename, variabletype, variablevalue, errorMessage))
 			{
-				stdlower(variabletype);
-				if (variabletype == "integer")
-					variabletype = "0";
-				else if (variabletype == "float")
-					variabletype = "1";
-				else if (variabletype == "string")
-					variabletype = "2";
-				else if (variabletype == "date")
-					variabletype = "3";
-				else if (variabletype == "time")
-					variabletype = "4";
-				else
-				{
-					root["message"] = "Invalid variabletype " + variabletype;
-					session.reply_status = reply::bad_request;
-					return;
-				}
-			}
-
-			if ((variablename.empty()) || (variabletype.empty()) ||
-				((variabletype != "0") && (variabletype != "1") && (variabletype != "2") && (variabletype != "3") && (variabletype != "4")) ||
-				((variablevalue.empty()) && (variabletype != "2")))
-			{
-				root["message"] = "Invalid variabletype " + variabletype;
+				root["message"] = errorMessage;
 				session.reply_status = reply::bad_request;
 				return;
 			}
@@ -2240,7 +2239,6 @@ namespace http
 			else if (variabletype != result[0][1])
 				bTypeNameChanged = true; // new type
 
-			std::string errorMessage;
 			if (!m_sql.UpdateUserVariable(idx, variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue, !bTypeNameChanged, errorMessage))
 			{
 				root["message"] = errorMessage;
