@@ -43,7 +43,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 179
+#define DB_VERSION 180
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -3431,6 +3431,14 @@ bool CSQLHelper::OpenDatabase()
 			// before it became configurable, so upgrading changes nothing for existing
 			// reverse-proxy setups.
 			UpdatePreferencesVar("WebProxyHeaderFamily", static_cast<int>(http::server::ProxyHeaderFamily::XForwardedFor));
+		}
+		if (dbversion < 180)
+		{
+			// Deleting a user used to leave its DashboardLayouts rows behind. Since Users.ID
+			// is an INTEGER PRIMARY KEY (a rowid alias), SQLite can reuse that id for a new
+			// user, who would then silently inherit the old user's dashboard layouts. Purge
+			// any layouts whose userid no longer matches an existing user.
+			query("DELETE FROM DashboardLayouts WHERE userid NOT IN (SELECT ID FROM Users)");
 		}
 	}
 	else if (bNewInstall)
@@ -12199,6 +12207,17 @@ bool CSQLHelper::CopyDashboardLayout(int userid, const std::string &srcid, const
 		"INSERT INTO DashboardLayouts (id, userid, name, isdefault, layout, created, updated) "
 		"VALUES ('%q', %d, '%q', 0, '%q', datetime('now','localtime'), datetime('now','localtime'))",
 		newid.c_str(), userid, newname.c_str(), layout_json.c_str());
+	return true;
+}
+
+bool CSQLHelper::DeleteUser(const std::string &idx)
+{
+	// Users.ID is an INTEGER PRIMARY KEY (a rowid alias), so SQLite can hand the same id
+	// out again to a later user. Remove every row keyed by this user's id before removing
+	// the user itself, so a newly created user does not silently inherit them.
+	safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
+	safe_query("DELETE FROM DashboardLayouts WHERE (userid == '%q')", idx.c_str());
+	safe_query("DELETE FROM Users WHERE (ID == '%q')", idx.c_str());
 	return true;
 }
 

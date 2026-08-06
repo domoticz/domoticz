@@ -477,6 +477,10 @@ public:
 	bool DeleteDashboardLayout(int userid, const std::string& layoutid);
 	bool CopyDashboardLayout(int userid, const std::string& srcid, const std::string& newid, const std::string& newname);
 
+	// Deletes a user and all rows in tables keyed by that user's ID (SharedDevices, DashboardLayouts),
+	// so a future user cannot inherit them if the rowid gets reused.
+	bool DeleteUser(const std::string& idx);
+
 	// Access Tokens
 	struct _tAccessToken {
 		unsigned long ID = 0;

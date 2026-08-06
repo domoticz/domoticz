@@ -3177,9 +3177,7 @@ namespace http
 							}
 							RemoveUsersSessions(result[0][0], session);
 
-							m_sql.safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
-
-							m_sql.safe_query("DELETE FROM Users WHERE (ID == '%q')", idx.c_str());
+							m_sql.DeleteUser(idx);
 						}
 					}
 					LoadUsers();
