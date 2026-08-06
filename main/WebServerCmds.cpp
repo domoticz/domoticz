@@ -7105,7 +7105,7 @@ namespace http
 			if (themeCount >= THEMESETTINGS_MAX_THEMES_PER_SCOPE)
 			{
 				root["error"] = "too_many_themes";
-				root["message"] = "Theme settings limit reached for this user";
+				root["message"] = "Theme settings limit reached; reset settings for themes you no longer use";
 				return;
 			}
 

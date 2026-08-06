@@ -382,6 +382,8 @@ Error reporting: failed writes return a machine-readable <code>error</code> fiel
 
 A stored value is limited to 16 KB per theme per layer, measured on the reserialized JSON. Each layer also has a row-count cap: a user's overlay can hold settings for at most 32 themes, and the instance defaults are capped at 32 themes as well; writing a new theme name past that limit returns <code>error: "too_many_themes"</code> (updating a theme you already have settings for is unaffected). The value must be a JSON object at the root. Do not store binary data or per-device state here.
 
+Freeing quota: hitting the cap never blocks themes you already store settings for, only new theme names. To free slots, reset the rows of themes you no longer use: the top-level keys of <code>ThemeSettings</code> in <code>getsettings</code> list every theme that has a row for you, <code>themesettings_get</code> tells you per theme whether the <code>user</code> layer is yours (<code>present: true</code>), and a POST of <code>themesettings_set</code> with <code>reset=true</code> for that theme deletes the row. Admins free instance-layer slots the same way through <code>themesettings_setdefault</code>.
+
 === Known limitations ===
 
 On installations using trusted networks (<code>WebLocalNetworks</code>) or <code>-nowwwpwd</code>, every request without an explicit login resolves to the same admin identity, so all devices on the LAN share one "per-user" overlay. <code>themesettings_get</code> returns <code>PerUser: false</code> for such sessions; hide per-user options when it is false. Sessions from an explicit login return <code>PerUser: true</code> even on trusted networks.
