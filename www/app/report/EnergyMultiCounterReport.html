@@ -37,7 +37,7 @@
 
     <!-- Total usage -->
     <div class="report-stat-item">
-        <span class="report-stat-label">{{:: 'Total Usage' | translate}}</span>
+        <span class="report-stat-label" style="color: var(--dz-widget-accent); opacity: 1;">{{:: 'Total Usage' | translate}}</span>
         <span class="report-stat-value">{{:: $ctrl.data.totalUsage.toFixed(3) }} {{:: $ctrl.unit}}</span>
     </div>
 
@@ -61,7 +61,7 @@
         <span class="report-stat-value">{{:: $ctrl.data.return2.counter.toFixed(3)}}</span>
     </div>
     <div class="report-stat-item" ng-if="::$ctrl.hasReturn">
-        <span class="report-stat-label">{{:: 'Total Return' | translate}}</span>
+        <span class="report-stat-label" style="color: var(--dz-widget-accent); opacity: 1;">{{:: 'Total Return' | translate}}</span>
         <span class="report-stat-value">{{:: $ctrl.data.totalReturn.toFixed(3) }} {{:: $ctrl.unit}}</span>
     </div>
 
@@ -71,7 +71,7 @@
         <span class="report-stat-value">{{$ctrl.data.usage.toFixed(3)}} {{:: $ctrl.unit}}</span>
     </div>
     <div class="report-stat-item">
-        <span class="report-stat-label">{{ ($ctrl.data.customStartDate ? 'Period Cost' : 'Year Cost') | translate }}</span>
+        <span class="report-stat-label" style="color: var(--dz-widget-accent); opacity: 1;">{{ ($ctrl.data.customStartDate ? 'Period Cost' : 'Year Cost') | translate }}</span>
         <span class="report-stat-value">{{$ctrl.data.cost.toFixed(2)}} {{:: $ctrl.currencySign}}</span>
     </div>
 
@@ -103,7 +103,7 @@
         <span class="report-stat-value">{{:: $ctrl.data.usage2.usage.toFixed(3) }} {{:: $ctrl.unit}}</span>
     </div>
     <div class="report-stat-item">
-        <span class="report-stat-label">{{:: 'Total Usage' | translate}}</span>
+        <span class="report-stat-label" style="color: var(--dz-widget-accent); opacity: 1;">{{:: 'Total Usage' | translate}}</span>
         <span class="report-stat-value">{{:: ($ctrl.data.usage1.usage + $ctrl.data.usage2.usage).toFixed(3) }} {{:: $ctrl.unit}}</span>
     </div>
     <div class="report-stat-item" ng-if="::$ctrl.hasReturn">
@@ -115,7 +115,7 @@
         <span class="report-stat-value">{{:: $ctrl.data.return2.usage.toFixed(3) }} {{:: $ctrl.unit}}</span>
     </div>
     <div class="report-stat-item" ng-if="::$ctrl.hasReturn">
-        <span class="report-stat-label">{{:: 'Total Return' | translate}}</span>
+        <span class="report-stat-label" style="color: var(--dz-widget-accent); opacity: 1;">{{:: 'Total Return' | translate}}</span>
         <span class="report-stat-value">{{:: ($ctrl.data.return1.usage + $ctrl.data.return2.usage).toFixed(3) }} {{:: $ctrl.unit}}</span>
     </div>
     <div class="report-stat-item" ng-if="::$ctrl.hasReturn">
@@ -123,7 +123,7 @@
         <span class="report-stat-value">{{$ctrl.data.usage.toFixed(3)}} {{:: $ctrl.unit}}</span>
     </div>
     <div class="report-stat-item">
-        <span class="report-stat-label">{{:: 'Monthly Cost' | translate}}</span>
+        <span class="report-stat-label" style="color: var(--dz-widget-accent); opacity: 1;">{{:: 'Monthly Cost' | translate}}</span>
         <span class="report-stat-value">{{:: $ctrl.data.cost.toFixed(2) }} {{:: $ctrl.currencySign}}</span>
     </div>
 </div>
