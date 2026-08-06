@@ -482,6 +482,19 @@ public:
 	// so a future user cannot inherit them if the rowid gets reused.
 	bool DeleteUser(const std::string& idx);
 
+	// Theme settings (per-user overrides of instance defaults)
+	enum class eThemeSettingsWrite
+	{
+		Ok,
+		Conflict,
+		Error
+	};
+	bool GetThemeSettingsRow(int scope, unsigned long userID, const std::string &themeName, std::string &value, std::string &lastUpdate);
+	eThemeSettingsWrite SetThemeSettingsRow(int scope, unsigned long userID, const std::string &themeName, const std::string &jsonValue, const std::string &expectedLastUpdate);
+	bool DeleteThemeSettingsRow(int scope, unsigned long userID, const std::string &themeName);
+	bool GetMergedThemeSettings(bool haveUser, unsigned long userID, Json::Value &merged);
+	void MirrorThemeSettingsDefaults();
+
 	// Access Tokens
 	struct _tAccessToken {
 		unsigned long ID = 0;

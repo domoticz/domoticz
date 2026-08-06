@@ -12289,6 +12289,85 @@ bool CSQLHelper::DeleteUser(const std::string &idx)
 	return true;
 }
 
+bool CSQLHelper::GetThemeSettingsRow(const int scope, const unsigned long userID, const std::string &themeName, std::string &value, std::string &lastUpdate)
+{
+	auto result = safe_query("SELECT Value, LastUpdate FROM ThemeSettings WHERE (Scope==%d) AND (UserID==%llu) AND (ThemeName=='%q')",
+		scope, (unsigned long long)userID, themeName.c_str());
+	if (result.empty())
+		return false;
+	value = result[0][0];
+	lastUpdate = result[0][1];
+	return true;
+}
+
+CSQLHelper::eThemeSettingsWrite CSQLHelper::SetThemeSettingsRow(const int scope, const unsigned long userID, const std::string &themeName, const std::string &jsonValue,
+	const std::string &expectedLastUpdate)
+{
+	// Single atomic upsert. If the row exists and the caller's concurrency token does
+	// not match its LastUpdate, the DO UPDATE WHERE clause fails and changes()==0,
+	// which reports as a conflict. A fresh INSERT always succeeds (changes()==1).
+	const int changes = safe_exec_changes(
+		"INSERT INTO ThemeSettings (Scope, UserID, ThemeName, Value, LastUpdate) "
+		"VALUES (%d, %llu, '%q', '%q', strftime('%%Y-%%m-%%d %%H:%%M:%%f','now','localtime')) "
+		"ON CONFLICT(Scope, UserID, ThemeName) DO UPDATE "
+		"SET Value = excluded.Value, LastUpdate = excluded.LastUpdate "
+		"WHERE ThemeSettings.LastUpdate == '%q'",
+		scope, (unsigned long long)userID, themeName.c_str(), jsonValue.c_str(), expectedLastUpdate.c_str());
+	if (changes < 0)
+		return eThemeSettingsWrite::Error;
+	if (changes == 0)
+		return eThemeSettingsWrite::Conflict;
+	return eThemeSettingsWrite::Ok;
+}
+
+bool CSQLHelper::DeleteThemeSettingsRow(const int scope, const unsigned long userID, const std::string &themeName)
+{
+	return safe_exec_changes("DELETE FROM ThemeSettings WHERE (Scope==%d) AND (UserID==%llu) AND (ThemeName=='%q')",
+		scope, (unsigned long long)userID, themeName.c_str()) >= 0;
+}
+
+bool CSQLHelper::GetMergedThemeSettings(const bool haveUser, const unsigned long userID, Json::Value &merged)
+{
+	// Instance defaults (Scope 0) overlaid by the user's rows (Scope 1). Per theme
+	// name, a user row replaces the whole instance sub-object (shallow, one level:
+	// themes treat their sub-object as atomic).
+	merged = Json::Value(Json::objectValue);
+	auto result = safe_query("SELECT ThemeName, Value FROM ThemeSettings WHERE (Scope==0)");
+	for (const auto &sd : result)
+	{
+		Json::Value jValue;
+		if (ParseJSon(sd[1], jValue) && jValue.isObject())
+			merged[sd[0]] = jValue;
+	}
+	if (haveUser)
+	{
+		result = safe_query("SELECT ThemeName, Value FROM ThemeSettings WHERE (Scope==1) AND (UserID==%llu)", (unsigned long long)userID);
+		for (const auto &sd : result)
+		{
+			Json::Value jValue;
+			if (ParseJSon(sd[1], jValue) && jValue.isObject())
+				merged[sd[0]] = jValue;
+		}
+	}
+	return !merged.empty();
+}
+
+void CSQLHelper::MirrorThemeSettingsDefaults()
+{
+	// Keep the legacy Preferences.ThemeSettings blob equal to the current Scope=0
+	// rows so a downgrade to a pre-180 database finds the current instance defaults
+	// instead of a snapshot from migration day. Nothing in the new code reads it.
+	Json::Value jRoot(Json::objectValue);
+	auto result = safe_query("SELECT ThemeName, Value FROM ThemeSettings WHERE (Scope==0)");
+	for (const auto &sd : result)
+	{
+		Json::Value jValue;
+		if (ParseJSon(sd[1], jValue) && jValue.isObject())
+			jRoot[sd[0]] = jValue;
+	}
+	UpdatePreferencesVar("ThemeSettings", JSonToRawString(jRoot));
+}
+
 std::vector<CSQLHelper::_tAccessToken> CSQLHelper::GetAccessTokens()
 {
 	std::vector<_tAccessToken> result;
