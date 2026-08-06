@@ -12285,6 +12285,7 @@ bool CSQLHelper::DeleteUser(const std::string &idx)
 	// the user itself, so a newly created user does not silently inherit them.
 	safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
 	safe_query("DELETE FROM DashboardLayouts WHERE (userid == '%q')", idx.c_str());
+	safe_query("DELETE FROM ThemeSettings WHERE (Scope==1) AND (UserID == '%q')", idx.c_str());
 	safe_query("DELETE FROM Users WHERE (ID == '%q')", idx.c_str());
 	return true;
 }
