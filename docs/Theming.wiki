@@ -323,103 +323,104 @@ The <code>--dz-btn-*</code> variables control Bootstrap <code>.btn*</code> style
 
 == Theme settings storage ==
 
-Themes can persist their own configuration in the Domoticz database without using user variables. The settings are stored in the <code>Preferences</code> table under the key <code>ThemeSettings</code> as a single JSON object, and are included in the standard <code>getsettings</code> / <code>storesettings</code> API used by the Settings page.
+Themes can persist their own configuration in the Domoticz database without using user variables. Settings are stored per theme, in two layers:
 
-=== How it works ===
+* '''Instance defaults''': one set per installation, writable by admins. These act as the defaults every user starts from.
+* '''Per-user overlay''': one set per user account, writable by any authenticated user (including Viewer rights) for their own account only. When a user has an overlay for a theme, it replaces the instance defaults for that theme entirely (the merge is per theme name, not per key inside the theme's object).
 
-When the Settings page loads, <code>getsettings</code> returns a <code>ThemeSettings</code> object in the JSON response. This object is exposed on the AngularJS scope as <code>$scope.ThemeSettings</code>. The currently active theme name is available on the same scope as <code>$scope.WebTheme</code>.
+Requires build 18198 or newer. Detect support via <code>getversion</code>: the response contains <code>ThemeSettingsAPI: 1</code> when the commands below are available. On older builds an unknown command returns HTTP 400.
 
-By convention, the top-level keys of <code>ThemeSettings</code> are theme names. This means multiple themes can store their settings in the same object without overwriting each other — switching between themes leaves every theme's settings intact.
+=== Reading settings ===
 
-When the user saves the Settings page, the current value of <code>$scope.ThemeSettings</code> is serialised and submitted as part of the normal <code>storesettings</code> POST. No extra API calls are required.
-
-=== Reading settings in custom.js ===
-
-<code>custom.js</code> is loaded on every page. To read settings, get the AngularJS scope from any page that has one (the main content area), then look up your theme by name:
+<code>getsettings</code> returns a <code>ThemeSettings</code> object whose top-level keys are theme names, resolved for the calling user: the instance defaults overlaid with the caller's own per-user values. Themes that already read <code>data.ThemeSettings[THEME_NAME]</code> keep working unchanged and get per-user values for free.
 
 <source lang="javascript">
 var THEME_NAME = 'YourTheme';   // must match the folder name under www/styles/
 
-function getThemeSettings() {
-    var el = document.getElementById('maindiv') || document.body;
-    var scope = angular.element(el).scope();
-    if (!scope) return {};
-    return (scope.ThemeSettings && scope.ThemeSettings[THEME_NAME]) || {};
-}
+$.getJSON('json.htm?type=command&param=getsettings', function (data) {
+    var settings = (data.ThemeSettings && data.ThemeSettings[THEME_NAME]) || {};
+    // apply settings...
+});
 </source>
 
-On pages that use a different root element the scope lookup may return nothing — always guard with a null check.
+On the Settings page the same merged object is exposed as <code>$scope.ThemeSettings</code>.
 
-=== Writing settings back ===
+To inspect the two layers separately (for example to label options as "default" vs "yours"), use <code>themesettings_get</code>:
 
-Update <code>$scope.ThemeSettings[THEME_NAME]</code> and the value will be included the next time the user saves Settings. If your theme provides its own Save button, you can also trigger the settings save directly:
+<source lang="text">
+json.htm?type=command&param=themesettings_get&theme=YourTheme
+</source>
+
+The response contains an <code>instance</code> and a <code>user</code> object, each with <code>present</code> (boolean), and when present <code>value</code> (the stored object) and <code>lastupdate</code> (a token needed for writing, see below). It also contains <code>PerUser</code> (see Known limitations).
+
+=== Writing settings ===
+
+Two POST commands write settings. Both take the theme name as an explicit <code>theme</code> parameter and the settings as a <code>value</code> parameter holding a JSON object.
+
+* <code>themesettings_set</code>: writes the calling user's own overlay. Available to every authenticated user, Viewer included. There is no way to address another user's settings.
+* <code>themesettings_setdefault</code>: writes the instance defaults. Admin only.
 
 <source lang="javascript">
 var THEME_NAME = 'YourTheme';
 
-function saveThemeSettings(newSettings) {
-    var el = document.getElementById('maindiv') || document.body;
-    var scope = angular.element(el).scope();
-    if (!scope) return;
-
-    scope.$apply(function () {
-        scope.ThemeSettings = scope.ThemeSettings || {};
-        scope.ThemeSettings[THEME_NAME] = newSettings;
+function saveThemeSettings(newSettings, lastupdate) {
+    return $.post('json.htm?type=command&param=themesettings_set', {
+        theme: THEME_NAME,
+        value: JSON.stringify(newSettings),
+        lastupdate: lastupdate || ''
     });
 }
 </source>
 
-To persist without requiring the user to click the Settings save button, call <code>scope.StoreSettings()</code> after updating — but only do this from within the Settings page (<code>#Setup</code> route), not from general page scripts.
+Concurrency: every stored row carries a <code>lastupdate</code> token, returned by <code>themesettings_get</code> and by every successful write. Pass the token you last read back with the write. If the row changed in the meantime the write is rejected with <code>error: "conflict"</code>; re-read, merge, and retry. Omit the token only when no row exists yet.
 
-=== Getting the active theme name ===
+To remove a layer, POST with <code>reset=true</code> instead of a value. Resetting the user overlay returns that user to the instance defaults. Store only deliberate overrides in the overlay, and offer users a reset control, otherwise their first save detaches them from instance defaults permanently.
 
-<code>$scope.WebTheme</code> holds the name of the currently active theme (the folder name under <code>www/styles/</code>, e.g. <code>Nightglass</code>). Your theme's <code>custom.js</code> already knows its own name, so hardcoding it is fine. <code>$scope.WebTheme</code> is useful if you write shared utility code that needs to be theme-agnostic.
-
-=== Example: dark/light mode toggle ===
-
-<source lang="javascript">
-var THEME_NAME = 'YourTheme';
-var DEFAULTS = { style: 'dark', aceTheme: 'ace/theme/tomorrow_night' };
-
-function getSettings() {
-    var el = document.getElementById('maindiv') || document.body;
-    var scope = angular.element(el).scope();
-    if (!scope || !scope.ThemeSettings) return Object.assign({}, DEFAULTS);
-    return Object.assign({}, DEFAULTS, scope.ThemeSettings[THEME_NAME]);
-}
-
-function setStyle(style) {
-    var el = document.getElementById('maindiv') || document.body;
-    var scope = angular.element(el).scope();
-    if (!scope) return;
-    scope.$apply(function () {
-        scope.ThemeSettings = scope.ThemeSettings || {};
-        scope.ThemeSettings[THEME_NAME] = Object.assign(getSettings(), { style: style });
-    });
-    applyStyle(style);
-}
-</source>
+Error reporting: failed writes return a machine-readable <code>error</code> field (<code>invalid_theme</code>, <code>missing_value</code>, <code>invalid_json</code>, <code>too_large</code>, <code>too_many_themes</code>, <code>conflict</code>, <code>post_required</code>, <code>no_identity</code>, <code>db_error</code>) plus a human-readable <code>message</code>.
 
 === Storage limits ===
 
-The <code>ThemeSettings</code> value is stored as a text field in SQLite. There is no hard size limit enforced at the application level, but keep the JSON compact — a few kilobytes is plenty for theme configuration. Do not store binary data or per-device state here.
+A stored value is limited to 16 KB per theme per layer, measured on the reserialized JSON. Each layer also has a row-count cap: a user's overlay can hold settings for at most 32 themes, and the instance defaults are capped at 32 themes as well; writing a new theme name past that limit returns <code>error: "too_many_themes"</code> (updating a theme you already have settings for is unaffected). The value must be a JSON object at the root. Do not store binary data or per-device state here.
 
-=== Accessing settings outside the Settings page ===
+=== Known limitations ===
 
-On pages other than Settings, <code>$scope.ThemeSettings</code> is not automatically populated. For applying settings on every page load (e.g. re-applying a dark/light mode), read the settings via a direct API call on page load:
+On installations using trusted networks (<code>WebLocalNetworks</code>) or <code>-nowwwpwd</code>, every request without an explicit login resolves to the same admin identity, so all devices on the LAN share one "per-user" overlay. <code>themesettings_get</code> returns <code>PerUser: false</code> for such sessions; hide per-user options when it is false. Sessions from an explicit login return <code>PerUser: true</code> even on trusted networks.
+
+Sessions that do not map to a user account (OAuth application tokens, access tokens) cannot store an overlay; <code>themesettings_set</code> refuses them with <code>error: "no_identity"</code>.
+
+=== Getting the active theme name ===
+
+<code>$scope.WebTheme</code> holds the name of the currently active theme (the folder name under <code>www/styles/</code>). Your theme's <code>custom.js</code> already knows its own name, so hardcoding it is fine.
+
+=== Example: per-user dark/light mode toggle ===
 
 <source lang="javascript">
-(function () {
-    $.getJSON('json.htm?type=command&param=getsettings', function (data) {
-        var settings = (data.ThemeSettings && data.ThemeSettings[THEME_NAME]) || DEFAULTS;
-        applyStyle(settings.style);
+var THEME_NAME = 'YourTheme';
+var DEFAULTS = { style: 'dark' };
+var lastToken = '';
+
+function loadSettings(apply) {
+    $.getJSON('json.htm?type=command&param=themesettings_get&theme=' + THEME_NAME, function (data) {
+        var layer = (data.user && data.user.present) ? data.user : data.instance;
+        lastToken = (data.user && data.user.present) ? data.user.lastupdate : '';
+        apply(Object.assign({}, DEFAULTS, (layer && layer.value) || {}));
     });
-})();
+}
+
+function setStyle(style) {
+    var settings = Object.assign({}, DEFAULTS, { style: style });
+    $.post('json.htm?type=command&param=themesettings_set', {
+        theme: THEME_NAME,
+        value: JSON.stringify(settings),
+        lastupdate: lastToken
+    }, function (data) {
+        if (data.status === 'OK') lastToken = data.lastupdate;
+        else if (data.error === 'conflict') loadSettings(function () {});
+    });
+}
 </source>
 
-This call is unauthenticated-safe for read-only access on the local network.
-
-== Known limitations ==
+== Known styling limitations ==
 
 These items are '''not''' controlled by <code>--dz-*</code> variables:
 
