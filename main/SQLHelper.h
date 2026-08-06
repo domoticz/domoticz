@@ -490,10 +490,11 @@ public:
 		Error
 	};
 	bool GetThemeSettingsRow(int scope, unsigned long userID, const std::string &themeName, std::string &value, std::string &lastUpdate);
-	eThemeSettingsWrite SetThemeSettingsRow(int scope, unsigned long userID, const std::string &themeName, const std::string &jsonValue, const std::string &expectedLastUpdate);
+	eThemeSettingsWrite SetThemeSettingsRow(int scope, unsigned long userID, const std::string &themeName, const std::string &jsonValue, const std::string &expectedLastUpdate, std::string &newLastUpdate);
 	bool DeleteThemeSettingsRow(int scope, unsigned long userID, const std::string &themeName);
 	bool GetMergedThemeSettings(bool haveUser, unsigned long userID, Json::Value &merged);
 	void MirrorThemeSettingsDefaults();
+	int CountThemeSettingsRows(int scope, unsigned long userID, const std::string &excludeThemeName);
 
 	// Access Tokens
 	struct _tAccessToken {

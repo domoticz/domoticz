@@ -6971,6 +6971,7 @@ namespace http
 
 		constexpr size_t THEMESETTINGS_MAX_REQUEST_SIZE = 64 * 1024;
 		constexpr size_t THEMESETTINGS_MAX_STORED_SIZE = 16 * 1024;
+		constexpr int THEMESETTINGS_MAX_THEMES_PER_SCOPE = 32;
 
 		static bool IsValidThemeName(const std::string &themeName)
 		{
@@ -7076,7 +7077,16 @@ namespace http
 				return;
 			}
 			Json::Value jValue;
-			if (!ParseJSonStrict(szValue, jValue) || !jValue.isObject())
+			bool bParsed = false;
+			try
+			{
+				bParsed = ParseJSonStrict(szValue, jValue);
+			}
+			catch (const std::exception &)
+			{
+				bParsed = false;
+			}
+			if (!bParsed || !jValue.isObject())
 			{
 				root["error"] = "invalid_json";
 				root["message"] = "value must be a JSON object";
@@ -7091,8 +7101,28 @@ namespace http
 				return;
 			}
 
+			// Soft per-user cap: count existing rows for this scope, excluding the theme
+			// being written so an update to an existing row is never blocked by the cap.
+			// The count-then-insert is not atomic with SetThemeSettingsRow below, so two
+			// concurrent requests for two new theme names can both pass; acceptable for a
+			// soft quota, not a security boundary.
+			const int themeCount = m_sql.CountThemeSettingsRows(scope, userID, themeName);
+			if (themeCount < 0)
+			{
+				root["error"] = "db_error";
+				root["message"] = "Failed to check theme settings limit";
+				return;
+			}
+			if (themeCount >= THEMESETTINGS_MAX_THEMES_PER_SCOPE)
+			{
+				root["error"] = "too_many_themes";
+				root["message"] = "Theme settings limit reached for this user";
+				return;
+			}
+
 			const std::string expectedLastUpdate = request::findValue(&req, "lastupdate");
-			const auto res = m_sql.SetThemeSettingsRow(scope, userID, themeName, szStored, expectedLastUpdate);
+			std::string newLastUpdate;
+			const auto res = m_sql.SetThemeSettingsRow(scope, userID, themeName, szStored, expectedLastUpdate, newLastUpdate);
 			if (res == CSQLHelper::eThemeSettingsWrite::Conflict)
 			{
 				root["error"] = "conflict";
@@ -7105,10 +7135,7 @@ namespace http
 				root["message"] = "Failed to store theme settings";
 				return;
 			}
-			std::string value;
-			std::string lastUpdate;
-			if (m_sql.GetThemeSettingsRow(scope, userID, themeName, value, lastUpdate))
-				root["lastupdate"] = lastUpdate;
+			root["lastupdate"] = newLastUpdate;
 			root["status"] = "OK";
 		}
 

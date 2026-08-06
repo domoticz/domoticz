@@ -12301,22 +12301,28 @@ bool CSQLHelper::GetThemeSettingsRow(const int scope, const unsigned long userID
 }
 
 CSQLHelper::eThemeSettingsWrite CSQLHelper::SetThemeSettingsRow(const int scope, const unsigned long userID, const std::string &themeName, const std::string &jsonValue,
-	const std::string &expectedLastUpdate)
+	const std::string &expectedLastUpdate, std::string &newLastUpdate)
 {
+	// The concurrency token is generated here in C++ (rather than by SQL's strftime())
+	// so the exact value written can be handed back to the caller without a second,
+	// non-atomic read-back that could race with another session's interleaving write.
+	const std::string szNewLastUpdate = TimeToString(nullptr, TF_DateTimeMs);
+
 	// Single atomic upsert. If the row exists and the caller's concurrency token does
 	// not match its LastUpdate, the DO UPDATE WHERE clause fails and changes()==0,
 	// which reports as a conflict. A fresh INSERT always succeeds (changes()==1).
 	const int changes = safe_exec_changes(
 		"INSERT INTO ThemeSettings (Scope, UserID, ThemeName, Value, LastUpdate) "
-		"VALUES (%d, %llu, '%q', '%q', strftime('%%Y-%%m-%%d %%H:%%M:%%f','now','localtime')) "
+		"VALUES (%d, %llu, '%q', '%q', '%q') "
 		"ON CONFLICT(Scope, UserID, ThemeName) DO UPDATE "
 		"SET Value = excluded.Value, LastUpdate = excluded.LastUpdate "
 		"WHERE ThemeSettings.LastUpdate == '%q'",
-		scope, (unsigned long long)userID, themeName.c_str(), jsonValue.c_str(), expectedLastUpdate.c_str());
+		scope, (unsigned long long)userID, themeName.c_str(), jsonValue.c_str(), szNewLastUpdate.c_str(), expectedLastUpdate.c_str());
 	if (changes < 0)
 		return eThemeSettingsWrite::Error;
 	if (changes == 0)
 		return eThemeSettingsWrite::Conflict;
+	newLastUpdate = szNewLastUpdate;
 	return eThemeSettingsWrite::Ok;
 }
 
@@ -12324,6 +12330,18 @@ bool CSQLHelper::DeleteThemeSettingsRow(const int scope, const unsigned long use
 {
 	return safe_exec_changes("DELETE FROM ThemeSettings WHERE (Scope==%d) AND (UserID==%llu) AND (ThemeName=='%q')",
 		scope, (unsigned long long)userID, themeName.c_str()) >= 0;
+}
+
+int CSQLHelper::CountThemeSettingsRows(const int scope, const unsigned long userID, const std::string &excludeThemeName)
+{
+	// Soft cap: this count-then-insert is not atomic with the later SetThemeSettingsRow
+	// call, so two concurrent requests for two new theme names can both pass the check
+	// and land one row over the cap. Acceptable for a per-user quota, not a security boundary.
+	auto result = safe_query("SELECT COUNT(*) FROM ThemeSettings WHERE (Scope==%d) AND (UserID==%llu) AND (ThemeName<>'%q')",
+		scope, (unsigned long long)userID, excludeThemeName.c_str());
+	if (result.empty())
+		return -1;
+	return atoi(result[0][0].c_str());
 }
 
 bool CSQLHelper::GetMergedThemeSettings(const bool haveUser, const unsigned long userID, Json::Value &merged)
