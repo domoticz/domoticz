@@ -923,6 +923,7 @@ define(['app'], function (app) {
 							$("#EUseCustomIcons").prop('checked', data.ESettings.UseCustomIcons == 1);
 						}
 					}
+					// Read surface for themes (see Theming.wiki, Theme settings storage); the write path is the themesettings_set API.
 					$scope.ThemeSettings = (typeof data.ThemeSettings != 'undefined') ? data.ThemeSettings : {};
 				}
 			});

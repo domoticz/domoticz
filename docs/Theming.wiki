@@ -328,7 +328,7 @@ Themes can persist their own configuration in the Domoticz database without usin
 * '''Instance defaults''': one set per installation, writable by admins. These act as the defaults every user starts from.
 * '''Per-user overlay''': one set per user account, writable by any authenticated user (including Viewer rights) for their own account only. When a user has an overlay for a theme, it replaces the instance defaults for that theme entirely (the merge is per theme name, not per key inside the theme's object).
 
-Requires build 18198 or newer. Detect support via <code>getversion</code>: the response contains <code>ThemeSettingsAPI: 1</code> when the commands below are available. On older builds an unknown command returns HTTP 400.
+Requires a core whose <code>getversion</code> response contains <code>ThemeSettingsAPI: 1</code> (see below); older cores return HTTP 400 for the new commands.
 
 === Reading settings ===
 
@@ -374,7 +374,7 @@ function saveThemeSettings(newSettings, lastupdate) {
 
 Concurrency: every stored row carries a <code>lastupdate</code> token, returned by <code>themesettings_get</code> and by every successful write. Pass the token you last read back with the write. If the row changed in the meantime the write is rejected with <code>error: "conflict"</code>; re-read, merge, and retry. Omit the token only when no row exists yet.
 
-To remove a layer, POST with <code>reset=true</code> instead of a value. Resetting the user overlay returns that user to the instance defaults. Store only deliberate overrides in the overlay, and offer users a reset control, otherwise their first save detaches them from instance defaults permanently.
+To remove a layer, POST with <code>reset=true</code> instead of a value. Resetting the user overlay returns that user to the instance defaults. The reset is unconditional and idempotent: it does not take a <code>lastupdate</code> token, and resetting a layer that already has no stored row succeeds without error. Store only deliberate overrides in the overlay, and offer users a reset control, otherwise their first save detaches them from instance defaults permanently.
 
 Error reporting: failed writes return a machine-readable <code>error</code> field (<code>invalid_theme</code>, <code>missing_value</code>, <code>invalid_json</code>, <code>too_large</code>, <code>too_many_themes</code>, <code>conflict</code>, <code>post_required</code>, <code>no_identity</code>, <code>db_error</code>) plus a human-readable <code>message</code>.
 
