@@ -614,6 +614,9 @@ namespace http
 			// Migrated RTypes to regular commands
 			RegisterCommandCode("getusers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUsers(session, req, root); });
 			RegisterCommandCode("getsettings", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSettings(session, req, root); });
+			RegisterCommandCode("themesettings_get", [this](auto&& session, auto&& req, auto&& root) { Cmd_ThemeSettingsGet(session, req, root); });
+			RegisterCommandCode("themesettings_set", [this](auto&& session, auto&& req, auto&& root) { Cmd_ThemeSettingsSet(session, req, root); });
+			RegisterCommandCode("themesettings_setdefault", [this](auto&& session, auto&& req, auto&& root) { Cmd_ThemeSettingsSetDefault(session, req, root); });
 			RegisterCommandCode("getdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDevices(session, req, root); });
 			RegisterCommandCode("gethardware", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetHardware(session, req, root); });
 			RegisterCommandCode("events", [this](auto&& session, auto&& req, auto&& root) { Cmd_Events(session, req, root); });

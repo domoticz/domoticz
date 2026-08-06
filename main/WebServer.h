@@ -127,6 +127,7 @@ private:
 	bool HandleCommandParam(const std::string &cparam, WebEmSession & session, const request& req, Json::Value &root);
 
 	bool IsIdxForUser(const WebEmSession *pSession, int Idx);
+	void ThemeSettingsWrite(int scope, unsigned long userID, const request &req, Json::Value &root);
 
 	//OAuth2/OIDC support functions
 	std::string GenerateOAuth2RefreshToken(const std::string &username, const int refreshexptime);
@@ -393,6 +394,9 @@ private:
 	//Migrated RTypes
 	void Cmd_GetUsers(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetSettings(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ThemeSettingsGet(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ThemeSettingsSet(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ThemeSettingsSetDefault(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetSceneLog(WebEmSession & session, const request& req, Json::Value &root);

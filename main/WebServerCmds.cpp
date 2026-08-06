@@ -2756,6 +2756,7 @@ namespace http
 				root["python_version"] = szPyVersion;
 				root["UseUpdate"] = false;
 				root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(false);
+				root["ThemeSettingsAPI"] = 1;
 
 				if (session.rights == URIGHTS_ADMIN)
 				{
@@ -6966,6 +6967,199 @@ namespace http
 				}
 			}
 			root["DebugLevel"] = static_cast<int>(_log.GetDebugFlags());
+		}
+
+		constexpr size_t THEMESETTINGS_MAX_REQUEST_SIZE = 64 * 1024;
+		constexpr size_t THEMESETTINGS_MAX_STORED_SIZE = 16 * 1024;
+
+		static bool IsValidThemeName(const std::string &themeName)
+		{
+			if (themeName.empty() || themeName.size() > 64)
+				return false;
+			return std::all_of(themeName.begin(), themeName.end(), [](const char c) {
+				const auto uc = static_cast<unsigned char>(c);
+				return (uc >= 0x20) && (uc != 0x7F);
+			});
+		}
+
+		void CWebServer::Cmd_ThemeSettingsGet(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "ThemeSettingsGet";
+
+			if ((session.rights != URIGHTS_VIEWER) && (session.rights != URIGHTS_SWITCHER) && (session.rights != URIGHTS_ADMIN))
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			const std::string themeName = request::findValue(&req, "theme");
+			if (!IsValidThemeName(themeName))
+			{
+				root["error"] = "invalid_theme";
+				root["message"] = "Missing or invalid theme parameter";
+				return;
+			}
+
+			// Per-user rows cannot work when the session identity is shared, which is the
+			// case for trusted-network / -nowwwpwd requests without an explicit login:
+			// CheckAuthentication assigns the first admin to every anonymous client.
+			root["PerUser"] = !session.istrustednetwork || !session.id.empty();
+			root["theme"] = themeName;
+
+			std::string value;
+			std::string lastUpdate;
+			root["instance"]["present"] = false;
+			if (m_sql.GetThemeSettingsRow(0, 0, themeName, value, lastUpdate))
+			{
+				Json::Value jValue;
+				if (ParseJSon(value, jValue))
+				{
+					root["instance"]["present"] = true;
+					root["instance"]["value"] = jValue;
+					root["instance"]["lastupdate"] = lastUpdate;
+				}
+			}
+
+			root["user"]["present"] = false;
+			const int iUser = session.username.empty() ? -1 : FindUser(session.username.c_str());
+			if (iUser != -1)
+			{
+				if (m_sql.GetThemeSettingsRow(1, m_users[iUser].ID, themeName, value, lastUpdate))
+				{
+					Json::Value jValue;
+					if (ParseJSon(value, jValue))
+					{
+						root["user"]["present"] = true;
+						root["user"]["value"] = jValue;
+						root["user"]["lastupdate"] = lastUpdate;
+					}
+				}
+			}
+			root["status"] = "OK";
+		}
+
+		void CWebServer::ThemeSettingsWrite(const int scope, const unsigned long userID, const request& req, Json::Value& root)
+		{
+			const std::string themeName = request::findValue(&req, "theme");
+			if (!IsValidThemeName(themeName))
+			{
+				root["error"] = "invalid_theme";
+				root["message"] = "Missing or invalid theme parameter";
+				return;
+			}
+
+			if (request::findValue(&req, "reset") == "true")
+			{
+				if (!m_sql.DeleteThemeSettingsRow(scope, userID, themeName))
+				{
+					root["error"] = "db_error";
+					root["message"] = "Failed to delete theme settings";
+					return;
+				}
+				root["status"] = "OK";
+				return;
+			}
+
+			const std::string szValue = request::findValue(&req, "value");
+			if (szValue.empty())
+			{
+				root["error"] = "missing_value";
+				root["message"] = "Missing value parameter";
+				return;
+			}
+			// Reject on length before parsing
+			if (szValue.size() > THEMESETTINGS_MAX_REQUEST_SIZE)
+			{
+				root["error"] = "too_large";
+				root["message"] = "Theme settings exceed the size limit";
+				return;
+			}
+			Json::Value jValue;
+			if (!ParseJSonStrict(szValue, jValue) || !jValue.isObject())
+			{
+				root["error"] = "invalid_json";
+				root["message"] = "value must be a JSON object";
+				return;
+			}
+			// The cap applies to the reserialized form, which is also what gets stored
+			const std::string szStored = JSonToRawString(jValue);
+			if (szStored.size() > THEMESETTINGS_MAX_STORED_SIZE)
+			{
+				root["error"] = "too_large";
+				root["message"] = "Theme settings exceed the 16 KB limit";
+				return;
+			}
+
+			const std::string expectedLastUpdate = request::findValue(&req, "lastupdate");
+			const auto res = m_sql.SetThemeSettingsRow(scope, userID, themeName, szStored, expectedLastUpdate);
+			if (res == CSQLHelper::eThemeSettingsWrite::Conflict)
+			{
+				root["error"] = "conflict";
+				root["message"] = "Theme settings were changed by another session; reload and retry";
+				return;
+			}
+			if (res != CSQLHelper::eThemeSettingsWrite::Ok)
+			{
+				root["error"] = "db_error";
+				root["message"] = "Failed to store theme settings";
+				return;
+			}
+			std::string value;
+			std::string lastUpdate;
+			if (m_sql.GetThemeSettingsRow(scope, userID, themeName, value, lastUpdate))
+				root["lastupdate"] = lastUpdate;
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_ThemeSettingsSet(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "ThemeSettingsSet";
+
+			if (req.method != "POST")
+			{
+				root["error"] = "post_required";
+				root["message"] = "Only POST is allowed";
+				return;
+			}
+			if ((session.rights != URIGHTS_VIEWER) && (session.rights != URIGHTS_SWITCHER) && (session.rights != URIGHTS_ADMIN))
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+			const int iUser = session.username.empty() ? -1 : FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				// OAuth clients, access tokens and synthetic sessions have no Users row to
+				// attach an overlay to; refuse explicitly instead of guessing an owner.
+				root["error"] = "no_identity";
+				root["message"] = "Session does not resolve to a user account";
+				session.reply_status = reply::forbidden;
+				return;
+			}
+			ThemeSettingsWrite(1, m_users[iUser].ID, req, root);
+		}
+
+		void CWebServer::Cmd_ThemeSettingsSetDefault(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "ThemeSettingsSetDefault";
+
+			if (req.method != "POST")
+			{
+				root["error"] = "post_required";
+				root["message"] = "Only POST is allowed";
+				return;
+			}
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+			ThemeSettingsWrite(0, 0, req, root);
+			if (root["status"] == "OK")
+				m_sql.MirrorThemeSettingsDefaults();
 		}
 
 		void CWebServer::Cmd_GetLightLog(WebEmSession& session, const request& req, Json::Value& root)
