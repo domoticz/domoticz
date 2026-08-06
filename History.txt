@@ -9,6 +9,7 @@ Version 2026.xxxx
 - Fixed: Dashboard Dynamic, dimmer and blind position sliders in the Quick Actions and Room widgets now send the level when released on a touch device; the slider moved but the command was only sent when using a mouse (#6938)
 - Fixed: Dashboard Dynamic, Quick Actions buttons for protected devices no longer become unresponsive after the passcode prompt is cancelled or a wrong password is entered
 - Fixed: Dashboard Dynamic, Quick Actions dimmer slider is now always visible instead of hidden behind a reveal toggle, and uses the device's actual dim range so the shown percentage matches the device level (#6938)
+- Fixed: Events, the event editor and settings menu are now usable on mobile; the script editor resizes with its container and the Automation Wizard popup can scroll on small screens (#6902)
 - Fixed: EvoHome, HVAC fan mode selector switch commands were silently ignored on x86/x64 builds; they only worked on ARM
 - Fixed: Lights, the RGBW color picker mode buttons (Color, White, Color temperature, Color and white mix) now show a tooltip describing their function (#6911)
 - Fixed: Lights, restored touch dragging on the RGBW color picker wheel and sliders; on touch devices dragging did nothing and only taps registered (#6917)
