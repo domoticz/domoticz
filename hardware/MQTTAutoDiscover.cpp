@@ -1851,6 +1851,8 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			SubscribeTopic(pSensor->percentage_state_topic, pSensor->qos);
 			SubscribeTopic(pSensor->action_topic, pSensor->qos);
 			SubscribeTopic(pSensor->preset_mode_state_topic, pSensor->qos);
+			SubscribeTopic(pSensor->fan_state_topic, pSensor->qos);
+			SubscribeTopic(pSensor->swing_state_topic, pSensor->qos);
 
 		}
 	}
@@ -1915,6 +1917,8 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 			|| (pSensor->percentage_state_topic == topic)
 			|| (pSensor->preset_mode_state_topic == topic)
 			|| (pSensor->action_topic == topic)
+			|| (pSensor->fan_state_topic == topic)
+			|| (pSensor->swing_state_topic == topic)
 			)
 		{
 			matching_keys.emplace_back(itt.first, MatchType::State);
