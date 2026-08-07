@@ -1567,6 +1567,7 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 	{
 		_eSwitchType contactSwitchType = STYPE_DoorContact;
 		std::string contactLabel = state.label;
+		bool bContactState = state.contact;
 		if (state.hasDeviceType)
 		{
 			if (state.deviceType == DEVICE_TYPE_WATER_LEAK_DETECTOR)
@@ -1585,7 +1586,13 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 				contactLabel += " Freeze";
 			}
 		}
-		SendGeneralSwitchInt(domoticzID, CHILD_CONTACT, battery, state.contact ? 1 : 0, 0, contactLabel, contactSwitchType);
+		if (contactSwitchType == STYPE_DoorContact)
+		{
+			//The Matter BooleanState cluster reports true when the contact is closed (magnet present),
+			//while Domoticz shows a Door Contact with value 1 as Open, so invert it here
+			bContactState = !bContactState;
+		}
+		SendGeneralSwitchInt(domoticzID, CHILD_CONTACT, battery, bContactState ? 1 : 0, 0, contactLabel, contactSwitchType);
 	}
 
 	if (state.hasSmoke)
