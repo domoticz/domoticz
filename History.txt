@@ -1,4 +1,6 @@
 Version 2026.xxxx
+- Added: Applications, OAuth2 redirect URIs can now be registered per application under Setup - Applications; leaving the list empty keeps the current behaviour of accepting any valid redirect URI, so existing account linking is unaffected until the list is filled in
+- Fixed: Security, the OAuth2 authorize endpoint no longer redirects to the supplied redirect_uri when authentication of the user fails, which put the open redirect back within reach of a caller that never authenticated
 - Added: Dashboard Dynamic, Quick Stat and Energy Dashboard widgets now show a timeout indicator when a device has not reported within the sensor timeout period (#6906)
 - Added: Web server, 'Allowed CORS Origins' security settings so external dashboards (e.g. Dashticz) can call the API cross-origin again: list exact origins, use '*' to allow any origin, or tick 'Also allow origins from local networks' to admit origins served from a trusted network IP (#6941)
 - Added: Matter, support for the SmokeCoAlarm cluster; smoke and CO alarm states are now created as smoke detector devices (#6935)

@@ -24,6 +24,7 @@ normalises or rejects the split bytes and would hide the very thing under test.
 Usage:
     python test_oauth2_response_splitting.py <path-to-domoticz[.exe]>
 """
+import json
 import os
 import socket
 import sys
@@ -236,6 +237,82 @@ def main():
             first = head.split(b"\r\n", 1)[0]
             check(not first.startswith(b"HTTP/1.1 400"),
                   "a state containing a space is not rejected outright (got %r)" % first)
+
+            print("\n=== a failed login is not answered with a redirect ===")
+            # The endpoint used to bounce the user-agent to redirect_uri after
+            # three failed POSTs, which put the open redirect back within reach
+            # of a caller who never authenticated but knows a client_id.
+            for attempt in range(4):
+                form = urllib.parse.urlencode({
+                    "uname": "nosuchuser", "psw": "wrongpassword",
+                }).encode()
+                _, body = raw_request(
+                    p, (b"POST /oauth2/v1/authorize?response_type=code"
+                        b"&client_id=" + client_id.encode() +
+                        b"&redirect_uri=https%3A%2F%2Fattacker.tld%2Fsteal "
+                        b"HTTP/1.1\r\nHost: 127.0.0.1\r\n"
+                        b"Content-Type: application/x-www-form-urlencoded\r\n"
+                        b"Content-Length: " + str(len(form)).encode() + b"\r\n"
+                        b"Connection: close\r\n\r\n" + form))
+                check(b"attacker.tld" not in body,
+                      "failed login attempt %d does not leak the redirect target"
+                      % (attempt + 1))
+
+            print("\n=== a registered Redirect URI list is enforced ===")
+            _, appsbody = raw_request(
+                p, (b"GET /json.htm?type=command&param=getapplications "
+                    b"HTTP/1.1\r\nHost: 127.0.0.1\r\n"
+                    + cookie.encode() + b"Connection: close\r\n\r\n"))
+            app_idx = ""
+            try:
+                apps = json.loads(appsbody.split(b"\r\n\r\n", 1)[1].decode())
+                for a in apps.get("result", []):
+                    if a.get("Applicationname") == client_id:
+                        app_idx = str(a.get("idx"))
+            except (ValueError, IndexError):
+                pass
+            if check(app_idx != "",
+                     "the test application can be looked up by name before updating it"):
+                form = urllib.parse.urlencode({
+                    "enabled": "true", "public": "false",
+                    "applicationname": client_id, "secret": "test-secret",
+                    "idx": app_idx,
+                    "redirecturis": "https://example.com/cb\nhttp://127.0.0.1:8123/auth",
+                }).encode()
+                _, updbody = raw_request(
+                    p, (b"POST /json.htm?type=command&param=updateapplication "
+                        b"HTTP/1.1\r\nHost: 127.0.0.1\r\n"
+                        b"Content-Type: application/x-www-form-urlencoded\r\n"
+                        b"Content-Length: " + str(len(form)).encode() + b"\r\n"
+                        + cookie.encode() + b"Connection: close\r\n\r\n" + form))
+                check(b'"status" : "OK"' in updbody,
+                      "Redirect URIs stored on the test application -- got %r"
+                      % updbody[-160:])
+
+                raw = raw_get(p, "/oauth2/v1/authorize?response_type=code"
+                                 "&client_id=" + client_id +
+                                 "&redirect_uri=https%3A%2F%2Fattacker.tld%2Fsteal")
+                head = header_block(raw)
+                first = head.split(b"\r\n", 1)[0]
+                check(b"attacker.tld" not in head,
+                      "a redirect_uri outside the registered list is not echoed back")
+                # Without the allow-list this same request is answered with a
+                # login dialog, so asserting only the absence of a Location
+                # header would pass against an unpatched build too.
+                check(first.startswith(b"HTTP/1.1 400"),
+                      "a redirect_uri outside the registered list is refused outright"
+                      " (got %r)" % first)
+
+                # RFC 8252 section-7.3 loopback redirects arrive on whatever
+                # ephemeral port the native app got this launch, so the port
+                # cannot take part in the match.
+                raw = raw_get(p, "/oauth2/v1/authorize?response_type=code"
+                                 "&client_id=" + client_id +
+                                 "&redirect_uri=http%3A%2F%2F127.0.0.1%3A54321%2Fauth")
+                first = header_block(raw).split(b"\r\n", 1)[0]
+                check(not first.startswith(b"HTTP/1.1 400"),
+                      "a registered loopback URI matches on a different port (got %r)"
+                      % first)
 
     print("\n%d checks, %d failure(s)" % (CHECKS, FAILURES))
     for f in FAILED:

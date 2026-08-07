@@ -894,7 +894,8 @@ namespace http
 			}
 			// Add 'Applications' as User with special privilege URIGHTS_CLIENTID
 			result.clear();
-			result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile, RefreshExpire, SigningSecret, AcceptLegacyTokensUntil FROM Applications");
+			m_client_redirect_uris.clear();
+			result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile, RefreshExpire, SigningSecret, AcceptLegacyTokensUntil, RedirectUris FROM Applications");
 			if (!result.empty())
 			{
 				for (const auto& sd : result)
@@ -913,6 +914,18 @@ namespace http
 						// Use asymmetric signing only when a PEM key file is actually configured
 						int useAsymmetric = (bPublic && !pemfile.empty()) ? 1 : 0;
 						AddUser(ID, applicationname, secret, "", "", URIGHTS_CLIENTID, useAsymmetric, pemfile, refreshexpire, signingsecret, accept_legacy_until);
+
+						std::vector<std::string> rawuris;
+						StringSplit(sd[9], "\n", rawuris);
+						std::vector<std::string> redirecturis;
+						for (auto& uri : rawuris)
+						{
+							stdreplace(uri, "\r", "");
+							stdstring_trim(uri);
+							if (!uri.empty())
+								redirecturis.push_back(uri);
+						}
+						m_client_redirect_uris[applicationname] = redirecturis;
 					}
 				}
 			}

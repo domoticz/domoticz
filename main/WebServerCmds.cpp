@@ -4946,7 +4946,7 @@ namespace http
 			else
 			{
 				std::vector<std::vector<std::string>> result;
-				result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile, RefreshExpire, SigningSecret, LastSeen FROM Applications ORDER BY ID ASC");
+				result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile, RefreshExpire, SigningSecret, LastSeen, RedirectUris FROM Applications ORDER BY ID ASC");
 				if (!result.empty())
 				{
 					int ii = 0;
@@ -4961,6 +4961,7 @@ namespace http
 						root["result"][ii]["RefreshExpire"] = atoi(sd[6].c_str());
 						root["result"][ii]["SigningSecret"] = sd[7];
 						root["result"][ii]["LastSeen"] = sd[8];
+						root["result"][ii]["RedirectUris"] = sd[9];
 						ii++;
 					}
 				}
@@ -4985,6 +4986,7 @@ namespace http
 				std::string srefreshexpire = request::findValue(&req, "refreshexpire");
 				uint32_t refreshexpire = (srefreshexpire.empty()) ? 0 : static_cast<uint32_t>(atol(srefreshexpire.c_str()));
 				std::string signingsecret = request::findValue(&req, "signingsecret");
+				std::string redirecturis = request::findValue(&req, "redirecturis");
 				// Auto-generate signing secret if not provided
 				if (signingsecret.empty())
 					signingsecret = GenerateUUID();
@@ -5013,8 +5015,8 @@ namespace http
 				}
 
 				// Insert the new application
-				m_sql.safe_query("INSERT INTO Applications (Active, Public, Applicationname, Secret, Pemfile, RefreshExpire, SigningSecret) VALUES (%d,%d,'%q','%q','%q',%u,'%q')",
-					(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str(), refreshexpire, signingsecret.c_str());
+				m_sql.safe_query("INSERT INTO Applications (Active, Public, Applicationname, Secret, Pemfile, RefreshExpire, SigningSecret, RedirectUris) VALUES (%d,%d,'%q','%q','%q',%u,'%q','%q')",
+					(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str(), refreshexpire, signingsecret.c_str(), redirecturis.c_str());
 
 				// Reload the applications (and users)
 				LoadUsers();
@@ -5041,6 +5043,7 @@ namespace http
 				std::string srefreshexpire = request::findValue(&req, "refreshexpire");
 				uint32_t refreshexpire = (srefreshexpire.empty()) ? 0 : static_cast<uint32_t>(atol(srefreshexpire.c_str()));
 				std::string signingsecret = request::findValue(&req, "signingsecret");
+				std::string redirecturis = request::findValue(&req, "redirecturis");
 				// Auto-generate signing secret if not provided
 				if (signingsecret.empty())
 					signingsecret = GenerateUUID();
@@ -5076,8 +5079,8 @@ namespace http
 				}
 
 				// Update the application
-				m_sql.safe_query("UPDATE Applications SET Active=%d, Public=%d, Applicationname='%q', Secret='%q', Pemfile='%q', RefreshExpire=%u, SigningSecret='%q' WHERE (ID == '%q')",
-					(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str(), refreshexpire, signingsecret.c_str(), idx.c_str());
+				m_sql.safe_query("UPDATE Applications SET Active=%d, Public=%d, Applicationname='%q', Secret='%q', Pemfile='%q', RefreshExpire=%u, SigningSecret='%q', RedirectUris='%q' WHERE (ID == '%q')",
+					(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str(), refreshexpire, signingsecret.c_str(), redirecturis.c_str(), idx.c_str());
 
 				// Reload the applications (and users)
 				LoadUsers();

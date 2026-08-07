@@ -43,7 +43,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 180
+#define DB_VERSION 181
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -634,6 +634,7 @@ constexpr auto sqlCreateApplications =
 "[SigningSecret] VARCHAR(100) DEFAULT '',"
 "[RefreshExpire] INTEGER DEFAULT 0,"
 "[AcceptLegacyTokensUntil] INTEGER DEFAULT 0,"
+"[RedirectUris] TEXT DEFAULT '',"
 "[LastSeen] DATETIME DEFAULT NULL,"
 "[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime'))"
 ");";
@@ -3439,6 +3440,14 @@ bool CSQLHelper::OpenDatabase()
 			// user, who would then silently inherit the old user's dashboard layouts. Purge
 			// any layouts whose userid no longer matches an existing user.
 			query("DELETE FROM DashboardLayouts WHERE userid NOT IN (SELECT ID FROM Users)");
+		}
+		if (dbversion < 181)
+		{
+			// Applications can now pin the OAuth2 redirect URIs they accept. Existing
+			// applications start with none registered, which keeps the previous
+			// behaviour of accepting any shape-valid URI until an administrator fills
+			// the list in, so upgrading breaks no existing account linking.
+			query("ALTER TABLE Applications ADD COLUMN [RedirectUris] TEXT DEFAULT ''");
 		}
 	}
 	else if (bNewInstall)
