@@ -478,23 +478,9 @@ public:
 	bool DeleteDashboardLayout(int userid, const std::string& layoutid);
 	bool CopyDashboardLayout(int userid, const std::string& srcid, const std::string& newid, const std::string& newname);
 
-	// Deletes a user and all rows in tables keyed by that user's ID (SharedDevices, DashboardLayouts),
-	// so a future user cannot inherit them if the rowid gets reused.
+	// Deletes a user and all rows in tables keyed by that user's ID (SharedDevices, DashboardLayouts,
+	// ThemeSettings), so a future user cannot inherit them if the rowid gets reused.
 	bool DeleteUser(const std::string& idx);
-
-	// Theme settings (per-user overrides of instance defaults)
-	enum class eThemeSettingsWrite
-	{
-		Ok,
-		Conflict,
-		Error
-	};
-	bool GetThemeSettingsRow(int scope, unsigned long userID, const std::string &themeName, std::string &value, std::string &lastUpdate);
-	eThemeSettingsWrite SetThemeSettingsRow(int scope, unsigned long userID, const std::string &themeName, const std::string &jsonValue, const std::string &expectedLastUpdate, std::string &newLastUpdate);
-	bool DeleteThemeSettingsRow(int scope, unsigned long userID, const std::string &themeName);
-	bool GetMergedThemeSettings(bool haveUser, unsigned long userID, Json::Value &merged);
-	void MirrorThemeSettingsDefaults();
-	int CountThemeSettingsRows(int scope, unsigned long userID, const std::string &excludeThemeName);
 
 	// Access Tokens
 	struct _tAccessToken {

@@ -127,7 +127,6 @@ private:
 	bool HandleCommandParam(const std::string &cparam, WebEmSession & session, const request& req, Json::Value &root);
 
 	bool IsIdxForUser(const WebEmSession *pSession, int Idx);
-	void ThemeSettingsWrite(int scope, unsigned long userID, const request &req, Json::Value &root);
 
 	//OAuth2/OIDC support functions
 	std::string GenerateOAuth2RefreshToken(const std::string &username, const int refreshexptime);

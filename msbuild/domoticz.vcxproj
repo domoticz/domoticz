@@ -827,6 +827,7 @@
     <ClInclude Include="..\tinyxpath\xpath_processor.h" />
     <ClInclude Include="..\main\stdafx.h" />
     <ClInclude Include="..\main\SunRiseSet.h" />
+    <ClInclude Include="..\main\ThemeSettings.h" />
     <ClInclude Include="..\tcpserver\TCPClient.h" />
     <ClInclude Include="..\tcpserver\TCPServer.h" />
     <ClInclude Include="..\httpclient\UrlEncode.h" />
@@ -1078,6 +1079,7 @@
     <ClCompile Include="..\main\SignalHandler.cpp" />
     <ClCompile Include="..\main\SQLHelper.cpp" />
     <ClCompile Include="..\main\StoppableTask.cpp" />
+    <ClCompile Include="..\main\ThemeSettings.cpp" />
     <ClCompile Include="..\main\Helper.cpp" />
     <ClCompile Include="..\main\mainworker.cpp" />
     <ClCompile Include="..\hardware\RFXComSerial.cpp" />

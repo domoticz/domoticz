@@ -2245,6 +2245,9 @@
     <ClInclude Include="..\main\KWHStats.h">
       <Filter>Helpers</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\ThemeSettings.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
     <ClInclude Include="..\iamserver\iam_settings.hpp">
       <Filter>Webserver\IamService</Filter>
     </ClInclude>
@@ -3040,6 +3043,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\main\KWHStats.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\ThemeSettings.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
     <ClCompile Include="..\iamserver\IamService.cpp">

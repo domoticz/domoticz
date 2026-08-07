@@ -28,6 +28,7 @@
 #include "../notifications/NotificationHelper.h"
 #include "IFTTT.h"
 #include "KWHStats.h"
+#include "ThemeSettings.h"
 #ifdef ENABLE_PYTHON
 #include "../hardware/plugins/Plugins.h"
 #endif
@@ -660,16 +661,6 @@ constexpr auto sqlCreateDashboardLayouts =
 "[updated] DATETIME NOT NULL DEFAULT (datetime('now','localtime'))"
 ");";
 
-constexpr auto sqlCreateThemeSettings =
-"CREATE TABLE IF NOT EXISTS [ThemeSettings]("
-"[Scope] INTEGER NOT NULL,"
-"[UserID] INTEGER NOT NULL DEFAULT 0,"
-"[ThemeName] TEXT NOT NULL,"
-"[Value] TEXT NOT NULL DEFAULT '{}',"
-"[LastUpdate] TEXT NOT NULL DEFAULT '',"
-"PRIMARY KEY([Scope],[UserID],[ThemeName])"
-");";
-
 extern std::string szUserDataFolder;
 
 CSQLHelper::CSQLHelper()
@@ -803,7 +794,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateApplications);
 	query(sqlCreateAccessTokens);
 	query(sqlCreateDashboardLayouts);
-	query(sqlCreateThemeSettings);
+	CThemeSettings::CreateTable();
 	//Add indexes to log tables
 	query("create index if not exists ds_hduts_idx	on DeviceStatus(HardwareID, DeviceID, Unit, Type, SubType);");
 	query("create index if not exists f_id_idx		on Fan(DeviceRowID);");
@@ -3453,29 +3444,7 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 181)
 		{
-			// Explode the legacy single-blob Preferences.ThemeSettings into per-theme
-			// Scope=0 rows of the ThemeSettings table. The legacy Preferences row stays
-			// on disk (and is refreshed on every instance-default write) so a downgrade
-			// still finds usable data. Nothing reads it anymore.
-			std::string sThemeSettings;
-			if (GetPreferencesVar("ThemeSettings", sThemeSettings) && !sThemeSettings.empty())
-			{
-				Json::Value jRoot;
-				if (ParseJSon(sThemeSettings, jRoot) && jRoot.isObject())
-				{
-					for (const auto &themeName : jRoot.getMemberNames())
-					{
-						if (!jRoot[themeName].isObject())
-							continue;
-						std::string szTheme = JSonToRawString(jRoot[themeName]);
-						safe_query(
-							"INSERT INTO ThemeSettings (Scope, UserID, ThemeName, Value, LastUpdate) "
-							"VALUES (0, 0, '%q', '%q', strftime('%%Y-%%m-%%d %%H:%%M:%%f','now','localtime')) "
-							"ON CONFLICT(Scope, UserID, ThemeName) DO NOTHING",
-							themeName.c_str(), szTheme.c_str());
-					}
-				}
-			}
+			CThemeSettings::MigrateFromPreferences();
 		}
 	}
 	else if (bNewInstall)
@@ -12285,106 +12254,9 @@ bool CSQLHelper::DeleteUser(const std::string &idx)
 	// the user itself, so a newly created user does not silently inherit them.
 	safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
 	safe_query("DELETE FROM DashboardLayouts WHERE (userid == '%q')", idx.c_str());
-	safe_query("DELETE FROM ThemeSettings WHERE (Scope==1) AND (UserID == '%q')", idx.c_str());
+	CThemeSettings::DeleteForUser(static_cast<unsigned long>(std::strtoul(idx.c_str(), nullptr, 10)));
 	safe_query("DELETE FROM Users WHERE (ID == '%q')", idx.c_str());
 	return true;
-}
-
-bool CSQLHelper::GetThemeSettingsRow(const int scope, const unsigned long userID, const std::string &themeName, std::string &value, std::string &lastUpdate)
-{
-	auto result = safe_query("SELECT Value, LastUpdate FROM ThemeSettings WHERE (Scope==%d) AND (UserID==%llu) AND (ThemeName=='%q')",
-		scope, (unsigned long long)userID, themeName.c_str());
-	if (result.empty())
-		return false;
-	value = result[0][0];
-	lastUpdate = result[0][1];
-	return true;
-}
-
-CSQLHelper::eThemeSettingsWrite CSQLHelper::SetThemeSettingsRow(const int scope, const unsigned long userID, const std::string &themeName, const std::string &jsonValue,
-	const std::string &expectedLastUpdate, std::string &newLastUpdate)
-{
-	// The concurrency token is generated here in C++ (rather than by SQL's strftime())
-	// so the exact value written can be handed back to the caller without a second,
-	// non-atomic read-back that could race with another session's interleaving write.
-	const std::string szNewLastUpdate = TimeToString(nullptr, TF_DateTimeMs);
-
-	// Single atomic upsert. If the row exists and the caller's concurrency token does
-	// not match its LastUpdate, the DO UPDATE WHERE clause fails and changes()==0,
-	// which reports as a conflict. A fresh INSERT always succeeds (changes()==1).
-	const int changes = safe_exec_changes(
-		"INSERT INTO ThemeSettings (Scope, UserID, ThemeName, Value, LastUpdate) "
-		"VALUES (%d, %llu, '%q', '%q', '%q') "
-		"ON CONFLICT(Scope, UserID, ThemeName) DO UPDATE "
-		"SET Value = excluded.Value, LastUpdate = excluded.LastUpdate "
-		"WHERE ThemeSettings.LastUpdate == '%q'",
-		scope, (unsigned long long)userID, themeName.c_str(), jsonValue.c_str(), szNewLastUpdate.c_str(), expectedLastUpdate.c_str());
-	if (changes < 0)
-		return eThemeSettingsWrite::Error;
-	if (changes == 0)
-		return eThemeSettingsWrite::Conflict;
-	newLastUpdate = szNewLastUpdate;
-	return eThemeSettingsWrite::Ok;
-}
-
-bool CSQLHelper::DeleteThemeSettingsRow(const int scope, const unsigned long userID, const std::string &themeName)
-{
-	return safe_exec_changes("DELETE FROM ThemeSettings WHERE (Scope==%d) AND (UserID==%llu) AND (ThemeName=='%q')",
-		scope, (unsigned long long)userID, themeName.c_str()) >= 0;
-}
-
-int CSQLHelper::CountThemeSettingsRows(const int scope, const unsigned long userID, const std::string &excludeThemeName)
-{
-	// Soft cap: this count-then-insert is not atomic with the later SetThemeSettingsRow
-	// call, so two concurrent requests for two new theme names can both pass the check
-	// and land one row over the cap. Acceptable for a per-user quota, not a security boundary.
-	auto result = safe_query("SELECT COUNT(*) FROM ThemeSettings WHERE (Scope==%d) AND (UserID==%llu) AND (ThemeName<>'%q')",
-		scope, (unsigned long long)userID, excludeThemeName.c_str());
-	if (result.empty())
-		return -1;
-	return atoi(result[0][0].c_str());
-}
-
-bool CSQLHelper::GetMergedThemeSettings(const bool haveUser, const unsigned long userID, Json::Value &merged)
-{
-	// Instance defaults (Scope 0) overlaid by the user's rows (Scope 1). Per theme
-	// name, a user row replaces the whole instance sub-object (shallow, one level:
-	// themes treat their sub-object as atomic).
-	merged = Json::Value(Json::objectValue);
-	auto result = safe_query("SELECT ThemeName, Value FROM ThemeSettings WHERE (Scope==0)");
-	for (const auto &sd : result)
-	{
-		Json::Value jValue;
-		if (ParseJSon(sd[1], jValue) && jValue.isObject())
-			merged[sd[0]] = jValue;
-	}
-	if (haveUser)
-	{
-		result = safe_query("SELECT ThemeName, Value FROM ThemeSettings WHERE (Scope==1) AND (UserID==%llu)", (unsigned long long)userID);
-		for (const auto &sd : result)
-		{
-			Json::Value jValue;
-			if (ParseJSon(sd[1], jValue) && jValue.isObject())
-				merged[sd[0]] = jValue;
-		}
-	}
-	return !merged.empty();
-}
-
-void CSQLHelper::MirrorThemeSettingsDefaults()
-{
-	// Keep the legacy Preferences.ThemeSettings blob equal to the current Scope=0
-	// rows so a downgrade to a pre-180 database finds the current instance defaults
-	// instead of a snapshot from migration day. Nothing in the new code reads it.
-	Json::Value jRoot(Json::objectValue);
-	auto result = safe_query("SELECT ThemeName, Value FROM ThemeSettings WHERE (Scope==0)");
-	for (const auto &sd : result)
-	{
-		Json::Value jValue;
-		if (ParseJSon(sd[1], jValue) && jValue.isObject())
-			jRoot[sd[0]] = jValue;
-	}
-	UpdatePreferencesVar("ThemeSettings", JSonToRawString(jRoot));
 }
 
 std::vector<CSQLHelper::_tAccessToken> CSQLHelper::GetAccessTokens()
