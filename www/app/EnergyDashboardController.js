@@ -355,7 +355,7 @@ define(['app'], function (app) {
 			}
 			let ficon = "";
 			if (item.CustomImage != 0) {
-				if ((item.TypeImg == "lightbulb") || (item.TypeImg == "dimmer")) {
+				if ((item.TypeImg == "lightbulb") || (item.TypeImg == "Dimmer")) {
 					ficon = "images/" + item.Image + "48_";
 					if ((item.Data == "On") || (item.Data.search("%") != -1)) {
 						ficon += "On";
@@ -416,7 +416,7 @@ define(['app'], function (app) {
 						ficon = "wind";
 					}
 				}
-				else if ((item.TypeImg == "lightbulb")||(item.TypeImg == "dimmer")) {
+				else if ((item.TypeImg == "lightbulb")||(item.TypeImg == "Dimmer")) {
 					if (item.Data == "On") {
 						ficon = "Light48_On";
 					} else if (item.Data == "Off") {

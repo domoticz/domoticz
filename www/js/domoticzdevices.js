@@ -1476,7 +1476,7 @@ function Alert(item) {
         this.status = this.data;
         this.data = "";
         if (typeof item.Level != 'undefined') {
-            this.image = "images/Alert48_" + item.Level + ".png";
+            this.image = "images/Alert48_" + Math.min(item.Level, 4) + ".png";
         }
     }
 }

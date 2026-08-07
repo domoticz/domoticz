@@ -2279,7 +2279,7 @@ namespace http
 						}
 						else if (switchtype == STYPE_Dimmer)
 						{
-							root["result"][ii]["TypeImg"] = "dimmer";
+							root["result"][ii]["TypeImg"] = "Dimmer";
 						}
 						else if (switchtype == STYPE_Motion)
 						{
