@@ -245,16 +245,20 @@
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-editutilitydevice #devicename"), 2, 100);
 				if (bValid) {
-					var cval = $('#dialog-editutilitydevice #combosensoricon').data('ddslick').selectedIndex;
-					var CustomImage = $.ddData[cval].value;
+					var url = "json.htm?type=command&param=setused&idx=" + $.devIdx +
+						'&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) +
+						'&description=' + encodeURIComponent($("#dialog-editutilitydevice #devicedescription").val());
+					var ddData = $('#dialog-editutilitydevice #combosensoricon').data('ddslick');
+					if ($('#dialog-editutilitydevice').data('dzShowIcon') === true && ddData) {
+						url += '&customimage=' + $.ddData[ddData.selectedIndex].value;
+					}
+					if ($('#dialog-editutilitydevice').data('dzShowBar') === true) {
+						url += '&color=' + encodeURIComponent(dzBarService.getColorJson());
+					}
+					url += '&used=true';
 					$(this).dialog("close");
 					$.ajax({
-						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
-						'&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) +
-						'&customimage=' + CustomImage +
-						'&description=' + encodeURIComponent($("#dialog-editutilitydevice #devicedescription").val()) +
-						'&color=' + encodeURIComponent(dzBarService.getColorJson()) +
-						'&used=true',
+						url: url,
 						async: false,
 						dataType: 'json',
 						success: function (data) {

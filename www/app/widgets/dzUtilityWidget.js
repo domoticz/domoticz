@@ -60,6 +60,7 @@ define(['app', 'widgets/dzBar'], function (app) {
                 $iconRow.hide();
             }
             if (!isText) {
+                $(dialogId).data('dzShowIcon', showIcon).data('dzShowBar', showBar);
                 var $utilForm = $(dialogId + ' form');
                 $utilForm.find('.dz-bar-btn').remove();
                 if (showBar) {
@@ -67,6 +68,8 @@ define(['app', 'widgets/dzBar'], function (app) {
                     // weather/temperature which use a keyed object via loadForKey/getFullColorJson).
                     dzBarService.setColorJson(device.Color || '');
                     dzBarService.attachBarButton($utilForm, device.idx, device.Name);
+                } else {
+                    dzBarService.setColorJson('');
                 }
             }
             $(dialogId).i18n().dialog('open');
