@@ -4931,8 +4931,9 @@ namespace http
 					root["result"][ii]["TabsEnabled"] = atoi(sd[6].c_str());
 					ii++;
 				}
-				root["status"] = "OK";
 			}
+			// having no users defined is a normal situation, not an error
+			root["status"] = "OK";
 		}
 
 		void CWebServer::Cmd_GetApplications(WebEmSession & session, const request& req, Json::Value &root)
@@ -6550,11 +6551,11 @@ namespace http
 				m_mainworker.m_pluginsystem.DeviceModified(atoi(idx.c_str()));
 #endif
 			}
-			if (!result.empty())
-			{
-				root["status"] = "OK";
-				root["title"] = "SetUsed";
-			}
+			// the device was already validated above, 'result' can have been reused by the
+			// sub device lookup in between, so it says nothing about the outcome here
+			root["status"] = "OK";
+			root["title"] = "SetUsed";
+
 			if (m_sql.m_bEnableEventSystem)
 				m_mainworker.m_eventsystem.GetCurrentStates();
 		}

@@ -212,8 +212,9 @@ namespace http
 							root["result"][ii]["Name"] = sd[1];
 							ii++;
 						}
-						root["status"] = "OK";
 					}
+					// having no sub devices is a normal situation, not an error
+					root["status"] = "OK";
 					break;
 				}
 				case "getscenedevices"_sh:
@@ -286,8 +287,9 @@ namespace http
 							root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(devType, subType);
 							ii++;
 						}
-						root["status"] = "OK";
 					}
+					// an empty scene/group is a normal situation, not an error
+					root["status"] = "OK";
 					break;
 				}
 				case "getmanualhardware"_sh:	// used by Add Manual Light/Switch dialog
