@@ -52,10 +52,14 @@ def _delete_user(admin, name):
         admin.get(BASE + "/json.htm", params={"type": "command", "param": "deleteuser", "idx": idx})
 
 
-def _set(session, param, theme, value=None, token=None, reset=False):
-    data = {"theme": theme}
-    if reset:
-        data["reset"] = "true"
+def _set(session, param, theme=None, value=None, token=None, reset=None):
+    # reset takes the literal parameter value: "true" for one theme, "all" for
+    # every overlay of the calling user (themesettings_set only, no theme needed).
+    data = {}
+    if theme is not None:
+        data["theme"] = theme
+    if reset is not None:
+        data["reset"] = reset
     if value is not None:
         data["value"] = value
     if token is not None:
@@ -72,7 +76,7 @@ def ctx():
     # into a later re-run of the suite against the same database.
     if "cap_theme_names" in c and "viewer" in c:
         for name in c["cap_theme_names"]:
-            _set(c["viewer"], "themesettings_set", name, reset=True)
+            _set(c["viewer"], "themesettings_set", name, reset="true")
 
 
 @given("Domoticz is running with themesettings support")
@@ -84,15 +88,18 @@ def dz_running(ctx):
 @given("an authenticated admin session")
 def admin_session(ctx):
     ctx["admin"] = _login(ADMIN_USER, ADMIN_PASS)
-    # clean slate for the test theme
-    _set(ctx["admin"], "themesettings_setdefault", "bddtheme", reset=True)
+    # Clean slate for the test themes, in both layers the admin can write: the
+    # reset=all scenario leaves an admin overlay behind, and scenarios must not
+    # depend on the order they run in.
+    _set(ctx["admin"], "themesettings_setdefault", "bddtheme", reset="true")
+    _set(ctx["admin"], "themesettings_set", "bddtheme", reset="true")
 
 
 @given(parsers.parse('a viewer user "{name}" with an authenticated session'))
 def viewer_session(ctx, name):
     _add_user(ctx["admin"], name, VIEWER_PASS_MD5)
     ctx["viewer"] = _login(_b64(name), VIEWER_PASS_MD5)
-    _set(ctx["viewer"], "themesettings_set", "bddtheme", reset=True)
+    _set(ctx["viewer"], "themesettings_set", reset="all")
 
 
 @when(parsers.parse("the admin stores the instance default '{value}' for theme \"{theme}\""))
@@ -107,6 +114,11 @@ def viewer_set(ctx, value, theme):
     ctx["last"] = _set(ctx["viewer"], "themesettings_set", theme, value=value)
 
 
+@given(parsers.parse("the admin stored the overlay '{value}' for theme \"{theme}\""))
+def admin_set(ctx, value, theme):
+    ctx["last"] = _set(ctx["admin"], "themesettings_set", theme, value=value)
+
+
 @when(parsers.parse("the viewer stores the overlay '{value}' for theme \"{theme}\" with token \"{token}\""))
 def viewer_set_token(ctx, value, theme, token):
     ctx["last"] = _set(ctx["viewer"], "themesettings_set", theme, value=value, token=token)
@@ -119,7 +131,13 @@ def viewer_setdefault(ctx, theme):
 
 @when(parsers.parse('the viewer resets theme "{theme}"'))
 def viewer_reset(ctx, theme):
-    ctx["last"] = _set(ctx["viewer"], "themesettings_set", theme, reset=True)
+    ctx["last"] = _set(ctx["viewer"], "themesettings_set", theme, reset="true")
+
+
+@when("the viewer clears all their theme settings")
+def viewer_reset_all(ctx):
+    ctx["last"] = _set(ctx["viewer"], "themesettings_set", reset="all")
+    assert ctx["last"].status_code == 200 and ctx["last"].json().get("status") == "OK"
 
 
 @when(parsers.parse('the viewer sends the overlay for theme "{theme}" as a GET request'))

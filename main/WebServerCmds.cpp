@@ -7044,7 +7044,14 @@ namespace http
 			std::string newLastUpdate;
 			CThemeSettings::eResult res;
 
-			if (szReset == "true")
+			if (szReset == "all")
+			{
+				// Drops every overlay this user holds, the only way to free rows of a
+				// theme that was renamed or uninstalled and whose name a client can no
+				// longer produce. Deliberately has no instance-scope counterpart.
+				res = CThemeSettings::DeleteForUser(userID);
+			}
+			else if (szReset == "true")
 			{
 				res = CThemeSettings::Reset(CThemeSettings::eScope::User, userID, request::findValue(&req, "theme"));
 			}
@@ -7085,6 +7092,7 @@ namespace http
 			std::string newLastUpdate;
 			CThemeSettings::eResult res;
 
+			// Instance defaults are reset one theme at a time; there is no reset=all here
 			if (request::findValue(&req, "reset") == "true")
 			{
 				res = CThemeSettings::Reset(CThemeSettings::eScope::Instance, 0, request::findValue(&req, "theme"));

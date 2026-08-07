@@ -35,6 +35,17 @@ Feature: Per-user theme settings
         When the viewer resets theme "bddtheme"
         Then getsettings as viewer returns ThemeSettings "bddtheme" equal to '{"size": 1, "style": "dark"}'
 
+    Scenario: reset=all clears every overlay the calling user holds
+        Given the admin stored the instance default '{"style": "dark", "size": 1}' for theme "bddtheme"
+        And the viewer stored the overlay '{"style": "light"}' for theme "bddtheme"
+        And the viewer stored the overlay '{"style": "blue"}' for theme "bddtheme2"
+        And the admin stored the overlay '{"style": "admins own"}' for theme "bddtheme"
+        When the viewer clears all their theme settings
+        Then themesettings_get for "bddtheme" as viewer shows the user layer absent
+        And themesettings_get for "bddtheme2" as viewer shows the user layer absent
+        And getsettings as viewer returns ThemeSettings "bddtheme" equal to '{"size": 1, "style": "dark"}'
+        And getsettings as admin returns ThemeSettings "bddtheme" equal to '{"style": "admins own"}'
+
     Scenario: A non-object value is rejected
         When the viewer stores the overlay '[1, 2, 3]' for theme "bddtheme"
         Then the write is rejected with error "invalid_json"
