@@ -18,6 +18,7 @@ Version 2026.xxxx
 - Fixed: Lights, the RGBW color picker mode buttons (Color, White, Color temperature, Color and white mix) now show a tooltip describing their function (#6911)
 - Fixed: Lights, restored touch dragging on the RGBW color picker wheel and sliders; on touch devices dragging did nothing and only taps registered (#6917)
 - Fixed: Floorplans, removed a leftover empty svg element that pushed the floorplan content down by the height of one line box, which could misalign the plan in themes with a constrained floorplan area (#6933)
+- Fixed: Matter, blinds always reported a position of 100% because the window covering position was read from the OperationalStatus attribute (0x000A) instead of CurrentPositionLiftPercent100ths (0x000E)
 - Fixed: Matter, contact sensors showed Open when the door was closed and Closed when it was open; the BooleanState cluster reports true for a closed contact, which is the opposite of how Domoticz presents a door contact. Water leak, rain and freeze detectors are unaffected (#6953)
 - Fixed: Matter, device commands now use the PascalCase CHIP SDK command names so devices can be controlled via python-matter-server as well as matterjs-server
 - Fixed: MQTT Auto Discovery, climate devices now follow the fan mode and swing mode reported by the device; the fan_mode_state_topic and swing_mode_state_topic were never subscribed to, so the fan speed and swing position shown in Domoticz stayed at their initial value (#6948)
