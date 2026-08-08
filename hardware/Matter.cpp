@@ -104,7 +104,7 @@ static constexpr int ATTR_CTRL_SEQ_OF_OPERATION        = 27;    // 0x001B Thermo
 static constexpr int ATTR_SYSTEM_MODE                  = 28;    // 0x001C Thermostat SystemModeEnum (writable)
 static constexpr int ATTR_ACTIVE_PRESET_HANDLE         = 78;    // 0x004E Thermostat (bytes, writable)
 static constexpr int ATTR_PRESETS                      = 80;    // 0x0050 Thermostat list of PresetStruct
-static constexpr int ATTR_CURRENT_POSITION_LIFT        = 10;    // 0x000A WindowCovering (0–10000, 0=open)
+static constexpr int ATTR_CURRENT_POSITION_LIFT        = 14;    // 0x000E WindowCovering CurrentPositionLiftPercent100ths (0-10000, 0=open)
 static constexpr int ATTR_FABRICS                       = 1;     // 0x0001 OperationalCredentials FabricDescriptor list
 static constexpr int ATTR_THREAD_CHANNEL               = 0;     // 0x0000 ThreadNetworkDiagnostics
 static constexpr int ATTR_THREAD_ROUTING_ROLE          = 1;     // 0x0001 ThreadNetworkDiagnostics (RoutingRoleEnum)
@@ -859,10 +859,11 @@ void CMatter::ApplyAttributeToState(int cluster_id, int attr_id, const Json::Val
 			}
 			break;
 		case CLUSTER_WINDOW_COVERING:
-			if (attr_id == ATTR_CURRENT_POSITION_LIFT)
+			if (attr_id == ATTR_CURRENT_POSITION_LIFT && v.isIntegral())
 			{
 				// 0=fully open, 10000=fully closed → invert to open percentage
-				state.blind_pct = (10000.0 - v.asFloat()) / 100.0;
+				double raw = std::max(0.0, std::min(10000.0, v.asDouble()));
+				state.blind_pct = (10000.0 - raw) / 100.0;
 				state.hasBlind  = true;
 			}
 			break;
