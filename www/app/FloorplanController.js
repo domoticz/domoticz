@@ -180,6 +180,28 @@ define(['app', 'livesocket'], function (app) {
 			return -1;
 		}
 
+		function positionBulletGroup() {
+			var bullets = $("#BulletGroup:first");
+			if (bullets.length == 0 || $scope.FloorplanCount <= 1) return;
+			var bottomMargin = ($("#copyright").css('display') == 'none') ? 10 : $("#copyright").height() + 10;
+			var vv = $window.visualViewport;
+			if (typeof vv != 'undefined' && vv != null) {
+				// BulletGroup is position:fixed, so it is anchored to the layout viewport.
+				// While the page is pinch zoomed the visual viewport is smaller and offset,
+				// which moves the dots out of sight, so map the position onto it instead.
+				bullets.css("left", vv.offsetLeft + (vv.width - bullets.outerWidth()) / 2)
+					.css("top", vv.offsetTop + vv.height - bullets.outerHeight() - bottomMargin)
+					.css("bottom", "auto")
+					.css("display", "inline");
+			}
+			else {
+				bullets.css("left", ($window.innerWidth - bullets.width()) / 2)
+					.css("top", "auto")
+					.css("bottom", bottomMargin)
+					.css("display", "inline");
+			}
+		}
+
 		$scope.FloorplanResize = function () {
 			if (typeof $("#floorplancontent") != 'undefined') {
 				var wrpHeight = $window.innerHeight;
@@ -195,11 +217,7 @@ define(['app', 'livesocket'], function (app) {
 				}
 				$("#floorplancontent").width($("#main-view").width()).height(wrpHeight);
 				$(".imageparent").each(function (i) { $("#" + $(this).attr('id') + '_svg').width($("#floorplancontent").width()).height(wrpHeight); });
-				if ($scope.FloorplanCount > 1) {
-					$("#BulletGroup:first").css("left", ($window.innerWidth - $("#BulletGroup:first").width()) / 2)
-						.css("bottom", ($("#copyright").css('display') == 'none') ? 10 : $("#copyright").height() + 10)
-						.css("display", "inline");
-				}
+				positionBulletGroup();
 				if (typeof $scope.actFloorplan != 'undefined') ScrollFloorplans($scope.floorPlans[$scope.actFloorplan].tagName, false);
 			}
 		}
@@ -598,6 +616,10 @@ define(['app', 'livesocket'], function (app) {
 			});
 
 			$(window).resize(function () { $scope.FloorplanResize(); });
+			if (typeof $window.visualViewport != 'undefined' && $window.visualViewport != null) {
+				$window.visualViewport.addEventListener('resize', positionBulletGroup);
+				$window.visualViewport.addEventListener('scroll', positionBulletGroup);
+			}
 
 			document.addEventListener('touchstart', FPtouchstart, { passive: true });
 			document.addEventListener('touchmove', FPtouchmove, { passive: true });
@@ -610,6 +632,10 @@ define(['app', 'livesocket'], function (app) {
 					document.removeEventListener('keydown', FPkeydown);
 					$(".fp-nav-arrow").hide();
 					$(window).off('resize');
+					if (typeof $window.visualViewport != 'undefined' && $window.visualViewport != null) {
+						$window.visualViewport.removeEventListener('resize', positionBulletGroup);
+						$window.visualViewport.removeEventListener('scroll', positionBulletGroup);
+					}
 					$("body").off('pageexit').css('overflow', '');
 
 					//Make vertical scrollbar disappear
