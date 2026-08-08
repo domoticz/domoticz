@@ -397,6 +397,9 @@ private:
 	//Migrated RTypes
 	void Cmd_GetUsers(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetSettings(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ThemeSettingsGet(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ThemeSettingsSet(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ThemeSettingsSetDefault(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetSceneLog(WebEmSession & session, const request& req, Json::Value &root);

@@ -33,6 +33,7 @@
 #include "Logger.h"
 #include "SQLHelper.h"
 #include "KWHStats.h"
+#include "ThemeSettings.h"
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
 #include <libwebem/Base64.h>
@@ -2756,6 +2757,7 @@ namespace http
 				root["python_version"] = szPyVersion;
 				root["UseUpdate"] = false;
 				root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(false);
+				root["ThemeSettingsAPI"] = CThemeSettings::API_VERSION;
 
 				if (session.rights == URIGHTS_ADMIN)
 				{
@@ -4236,17 +4238,6 @@ namespace http
 
 				std::string szESettings = JSonToRawString(ESettings);
 				m_sql.UpdatePreferencesVar("ESettings", szESettings);
-
-				std::string szThemeSettings = request::findValue(&req, "ThemeSettings");
-				if (!szThemeSettings.empty())
-				{
-					Json::Value jvalidate;
-					if (ParseJSon(szThemeSettings, jvalidate))
-					{
-						m_sql.UpdatePreferencesVar("ThemeSettings", szThemeSettings);
-					}
-					cntSettings++;
-				}
 
 				m_sql.SetUnitsAndScale();
 
@@ -6959,17 +6950,173 @@ namespace http
 				{
 					root["PriceResolution"] = nValue;
 				}
-				else if (Key == "ThemeSettings")
+			}
+			// ThemeSettings is served from the ThemeSettings table as the merge of the
+			// instance defaults with the calling user's overlay (user rows win per
+			// theme), so existing themes reading data.ThemeSettings keep working and
+			// get per-user values for free. The legacy Preferences row is not read.
+			Json::Value jThemeSettings;
+			const int iUser = session.username.empty() ? -1 : FindUser(session.username.c_str());
+			const unsigned long userID = (iUser != -1) ? m_users[iUser].ID : 0;
+			if (CThemeSettings::GetMerged(iUser != -1, userID, jThemeSettings))
+				root["ThemeSettings"] = jThemeSettings;
+			root["DebugLevel"] = static_cast<int>(_log.GetDebugFlags());
+		}
+
+		void CWebServer::Cmd_ThemeSettingsGet(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "ThemeSettingsGet";
+
+			if ((session.rights != URIGHTS_VIEWER) && (session.rights != URIGHTS_SWITCHER) && (session.rights != URIGHTS_ADMIN))
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			const std::string themeName = request::findValue(&req, "theme");
+			if (!CThemeSettings::IsValidThemeName(themeName))
+			{
+				root["error"] = CThemeSettings::ErrorCode(CThemeSettings::eResult::InvalidTheme);
+				root["message"] = CThemeSettings::ErrorMessage(CThemeSettings::eResult::InvalidTheme);
+				return;
+			}
+
+			// Per-user rows cannot work when the session identity is shared, which is the
+			// case for trusted-network / -nowwwpwd requests without an explicit login:
+			// CheckAuthentication assigns the first admin to every anonymous client.
+			root["PerUser"] = !session.istrustednetwork || !session.id.empty();
+			root["theme"] = themeName;
+
+			root["instance"]["present"] = false;
+			{
+				Json::Value jValue;
+				std::string lastUpdate;
+				if (CThemeSettings::Get(CThemeSettings::eScope::Instance, 0, themeName, jValue, lastUpdate))
 				{
-					Json::Value jthemesettings;
-					bool ret = ParseJSon(sValue, jthemesettings);
-					if (ret)
-					{
-						root["ThemeSettings"] = jthemesettings;
-					}
+					root["instance"]["present"] = true;
+					root["instance"]["value"] = jValue;
+					root["instance"]["lastupdate"] = lastUpdate;
 				}
 			}
-			root["DebugLevel"] = static_cast<int>(_log.GetDebugFlags());
+
+			root["user"]["present"] = false;
+			const int iUser = session.username.empty() ? -1 : FindUser(session.username.c_str());
+			if (iUser != -1)
+			{
+				Json::Value jValue;
+				std::string lastUpdate;
+				if (CThemeSettings::Get(CThemeSettings::eScope::User, m_users[iUser].ID, themeName, jValue, lastUpdate))
+				{
+					root["user"]["present"] = true;
+					root["user"]["value"] = jValue;
+					root["user"]["lastupdate"] = lastUpdate;
+				}
+			}
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_ThemeSettingsSet(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "ThemeSettingsSet";
+
+			if (req.method != "POST")
+			{
+				root["error"] = "post_required";
+				root["message"] = "Only POST is allowed";
+				return;
+			}
+			if ((session.rights != URIGHTS_VIEWER) && (session.rights != URIGHTS_SWITCHER) && (session.rights != URIGHTS_ADMIN))
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+			const int iUser = session.username.empty() ? -1 : FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				// OAuth clients, access tokens and synthetic sessions have no Users row to
+				// attach an overlay to; refuse explicitly instead of guessing an owner.
+				root["error"] = "no_identity";
+				root["message"] = "Session does not resolve to a user account";
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			const unsigned long userID = m_users[iUser].ID;
+			const std::string szReset = request::findValue(&req, "reset");
+			std::string newLastUpdate;
+			CThemeSettings::eResult res;
+
+			if (szReset == "all")
+			{
+				// Drops every overlay this user holds, the only way to free rows of a
+				// theme that was renamed or uninstalled and whose name a client can no
+				// longer produce. Deliberately has no instance-scope counterpart.
+				res = CThemeSettings::DeleteForUser(userID);
+			}
+			else if (szReset == "true")
+			{
+				res = CThemeSettings::Reset(CThemeSettings::eScope::User, userID, request::findValue(&req, "theme"));
+			}
+			else
+			{
+				res = CThemeSettings::Set(CThemeSettings::eScope::User, userID, request::findValue(&req, "theme"), request::findValue(&req, "value"),
+							  request::findValue(&req, "lastupdate"), newLastUpdate);
+			}
+			if (res != CThemeSettings::eResult::Ok)
+			{
+				root["error"] = CThemeSettings::ErrorCode(res);
+				root["message"] = CThemeSettings::ErrorMessage(res);
+				return;
+			}
+			// Only a stored value has a token to hand back; a reset leaves no row
+			if (!newLastUpdate.empty())
+				root["lastupdate"] = newLastUpdate;
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_ThemeSettingsSetDefault(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "ThemeSettingsSetDefault";
+
+			if (req.method != "POST")
+			{
+				root["error"] = "post_required";
+				root["message"] = "Only POST is allowed";
+				return;
+			}
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			std::string newLastUpdate;
+			CThemeSettings::eResult res;
+
+			// Instance defaults are reset one theme at a time; there is no reset=all here
+			if (request::findValue(&req, "reset") == "true")
+			{
+				res = CThemeSettings::Reset(CThemeSettings::eScope::Instance, 0, request::findValue(&req, "theme"));
+			}
+			else
+			{
+				res = CThemeSettings::Set(CThemeSettings::eScope::Instance, 0, request::findValue(&req, "theme"), request::findValue(&req, "value"),
+							  request::findValue(&req, "lastupdate"), newLastUpdate);
+			}
+			if (res != CThemeSettings::eResult::Ok)
+			{
+				root["error"] = CThemeSettings::ErrorCode(res);
+				root["message"] = CThemeSettings::ErrorMessage(res);
+				return;
+			}
+			// Keep the legacy Preferences blob in step with the instance rows
+			CThemeSettings::MirrorDefaults();
+			if (!newLastUpdate.empty())
+				root["lastupdate"] = newLastUpdate;
+			root["status"] = "OK";
 		}
 
 		void CWebServer::Cmd_GetLightLog(WebEmSession& session, const request& req, Json::Value& root)

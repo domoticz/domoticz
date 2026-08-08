@@ -28,6 +28,7 @@
 #include "../notifications/NotificationHelper.h"
 #include "IFTTT.h"
 #include "KWHStats.h"
+#include "ThemeSettings.h"
 #ifdef ENABLE_PYTHON
 #include "../hardware/plugins/Plugins.h"
 #endif
@@ -43,7 +44,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 181
+#define DB_VERSION 182
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -794,6 +795,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateApplications);
 	query(sqlCreateAccessTokens);
 	query(sqlCreateDashboardLayouts);
+	CThemeSettings::CreateTable();
 	//Add indexes to log tables
 	query("create index if not exists ds_hduts_idx	on DeviceStatus(HardwareID, DeviceID, Unit, Type, SubType);");
 	query("create index if not exists f_id_idx		on Fan(DeviceRowID);");
@@ -3449,6 +3451,10 @@ bool CSQLHelper::OpenDatabase()
 			// the list in, so upgrading breaks no existing account linking.
 			query("ALTER TABLE Applications ADD COLUMN [RedirectUris] TEXT DEFAULT ''");
 		}
+		if (dbversion < 182)
+		{
+			CThemeSettings::MigrateFromPreferences();
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -4707,6 +4713,37 @@ void CSQLHelper::safe_exec_no_return(const char* fmt, ...)
 		return;
 	sqlite3_exec(m_dbase, zQuery, nullptr, nullptr, nullptr);
 	sqlite3_free(zQuery);
+}
+
+int CSQLHelper::safe_exec_changes(const char* fmt, ...)
+{
+	if (!m_dbase)
+		return -1;
+
+	va_list args;
+	va_start(args, fmt);
+	char* zQuery = sqlite3_vmprintf(fmt, args);
+	va_end(args);
+	if (!zQuery)
+		return -1;
+	std::string szQuery = zQuery;
+	sqlite3_free(zQuery);
+
+	std::unique_lock<std::timed_mutex> l(m_sqlQueryMutex, std::defer_lock);
+	if (!l.try_lock_for(std::chrono::minutes(5)))
+	{
+		_log.Log(LOG_ERROR, "SQL exec mutex timeout (>5min, possible query backlog). Query: %.200s", szQuery.c_str());
+		return -1;
+	}
+	char* errMsg = nullptr;
+	_log.Debug(DEBUG_SQL, "Exec:%s", szQuery.c_str());
+	if (sqlite3_exec(m_dbase, szQuery.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK)
+	{
+		_log.Log(LOG_ERROR, "SQL exec failed: %s (%.200s)", errMsg ? errMsg : "unknown error", szQuery.c_str());
+		sqlite3_free(errMsg);
+		return -1;
+	}
+	return sqlite3_changes(m_dbase);
 }
 
 bool CSQLHelper::safe_UpdateBlobInTableWithID(const std::string& Table, const std::string& Column, const std::string& sID, const std::string& BlobData)
@@ -12226,6 +12263,7 @@ bool CSQLHelper::DeleteUser(const std::string &idx)
 	// the user itself, so a newly created user does not silently inherit them.
 	safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
 	safe_query("DELETE FROM DashboardLayouts WHERE (userid == '%q')", idx.c_str());
+	CThemeSettings::DeleteForUser(static_cast<unsigned long>(std::strtoul(idx.c_str(), nullptr, 10)));
 	safe_query("DELETE FROM Users WHERE (ID == '%q')", idx.c_str());
 	return true;
 }

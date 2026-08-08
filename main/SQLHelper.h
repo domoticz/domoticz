@@ -433,6 +433,7 @@ public:
 	std::vector<std::vector<std::string>> unsafe_query(const std::string& szQuery);
 
 	void safe_exec_no_return(const char *fmt, ...);
+	int safe_exec_changes(const char *fmt, ...);
 	bool safe_UpdateBlobInTableWithID(const std::string &Table, const std::string &Column, const std::string &sID, const std::string &BlobData);
 	bool DoesColumnExistsInTable(const std::string &columnname, const std::string &tablename);
 
@@ -477,8 +478,8 @@ public:
 	bool DeleteDashboardLayout(int userid, const std::string& layoutid);
 	bool CopyDashboardLayout(int userid, const std::string& srcid, const std::string& newid, const std::string& newname);
 
-	// Deletes a user and all rows in tables keyed by that user's ID (SharedDevices, DashboardLayouts),
-	// so a future user cannot inherit them if the rowid gets reused.
+	// Deletes a user and all rows in tables keyed by that user's ID (SharedDevices, DashboardLayouts,
+	// ThemeSettings), so a future user cannot inherit them if the rowid gets reused.
 	bool DeleteUser(const std::string& idx);
 
 	// Access Tokens

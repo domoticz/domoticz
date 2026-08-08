@@ -195,6 +195,7 @@ main/SignalHandler.cpp
 main/SQLHelper.cpp
 main/StoppableTask.cpp
 main/SunRiseSet.cpp
+main/ThemeSettings.cpp
 main/TrendCalculator.cpp
 main/DomoticzWebsocketHandler.cpp
 main/WebServer.cpp
