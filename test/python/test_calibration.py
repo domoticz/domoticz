@@ -40,9 +40,16 @@ barometer via AddjValue2, in both of the two sValue formatting branches),
 a bare barometer (pTypeGeneral/sTypeBaro, AddjValue2), and UV
 (pTypeUV, AddjMulti2, since decode_UV is one of the refactored call sites).
 
-A third path, MQTT Auto Discovery, is optional: if no MQTT broker is
-reachable on 127.0.0.1:1883 (or no MQTT client library is installed) it is
-skipped cleanly with a clear SKIP message rather than failing.
+A third path, MQTT Auto Discovery (hardware/MQTTAutoDiscover.cpp), runs
+against a small in-process MQTT broker (mini_mqtt_broker.py, since there is
+no broker installed on this machine and none bundled in the repository) and
+a real paho-mqtt publisher, replaying the Home Assistant discovery handshake
+for a temperature sensor (AddjValue) and a bare atmospheric-pressure sensor
+in hPa (AddjValue2 -- the case that used to be missing calibration entirely,
+since MQTTAutoDiscover.cpp only ever hand-applied it for temperature). If
+the 'paho-mqtt' package is not installed, or Domoticz never connects to the
+mini broker, or the discovered devices never appear, this path is skipped
+cleanly with a clear SKIP message rather than failing.
 
 Usage
 -----
@@ -71,6 +78,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+from mini_mqtt_broker import MiniMQTTBroker
+
 # ---------------------------------------------------------------------------
 # Device type/subtype numeric codes (main/RFXtrx.h, hardware/hardwaretypes.h)
 # ---------------------------------------------------------------------------
@@ -88,6 +97,15 @@ SUB_UV1 = 1                # sTypeUV1
 
 HTYPE_DUMMY = 15
 HTYPE_PYTHON_PLUGIN = 94
+HTYPE_MQTT_AUTODISCOVER = 125    # main/RFXNames.h HTYPE_MQTTAutoDiscovery
+
+# MQTT Auto Discovery hardware Extra field: "<CAfilename>;<TopicIn>;<TopicOut>;<discovery prefix>"
+# (hardware/MQTTAutoDiscover.cpp constructor). Only the discovery prefix is used here.
+MQTT_DISCOVERY_PREFIX = "calibtest"
+MQTT_TEMP_RAW = "20.0"
+MQTT_TEMP_RAW2 = "22.5"
+MQTT_PRESSURE_RAW = "1013.25"
+MQTT_PRESSURE_RAW2 = "1005.40"
 
 # Plugin device units -- fixed contract with plugins/examples/CalibrationTest/plugin.py
 UNIT_TRIGGER = 1
@@ -661,37 +679,214 @@ def run_plugin_cases(domo):
 
 
 # ---------------------------------------------------------------------------
-# Path C: MQTT Auto Discovery (optional)
+# Path C: MQTT Auto Discovery
 # ---------------------------------------------------------------------------
-def mqtt_broker_available(host="127.0.0.1", port=1883, timeout=1.5):
-    try:
-        s = socket.create_connection((host, port), timeout=timeout)
-        s.close()
-        return True
-    except Exception:
-        return False
+MQTT_CASE_LABELS = ["TEMP", "Pressure (hPa)"]
 
 
-def run_mqtt_case():
-    print("\n=== MQTT Auto Discovery path (optional) ===")
-    if not mqtt_broker_available():
-        record("mqtt-autodiscover", "TEMP", "-", "-", "-", "-", "SKIP",
-              "no MQTT broker reachable on 127.0.0.1:1883")
-        return
+def skip_all_mqtt_cases(note):
+    for label in MQTT_CASE_LABELS:
+        record("mqtt-autodiscover", label, "-", "-", "-", "-", "SKIP", note)
+
+
+def add_mqtt_autodiscover_hardware(domo, name, broker_port, discovery_prefix):
+    extra = ";;;%s" % discovery_prefix
+    path = ("/json.htm?type=command&param=addhardware&htype=%d&name=%s"
+            "&enabled=true&address=%s&port=%d&username=&password=&extra=%s"
+            "&datatimeout=0&Mode1=0&Mode2=0"
+            % (HTYPE_MQTT_AUTODISCOVER, urllib.parse.quote(name),
+               urllib.parse.quote("127.0.0.1"), broker_port, urllib.parse.quote(extra)))
+    code, data = cmd(domo, path)
+    if data.get("status") != "OK" or "idx" not in data:
+        raise RuntimeError("addhardware (MQTT Auto Discovery) failed: %r" % data)
+    return int(data["idx"])
+
+
+def find_device_idx_by_name(domo, hw_idx, name, timeout=30):
+    """Poll getdevices for hw_idx until a device with this exact Name shows up.
+
+    A device with an empty sValue is not returned by getdevices at all (learned on
+    the plugin path above), so this only succeeds once the device has received its
+    first value -- which for MQTT Auto Discovery means the state-topic message has
+    actually been received and turned into an insert.
+    """
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        code, data = cmd(domo, "/json.htm?type=command&param=getdevices&filter=all"
+                              "&used=all&hwidx=%d" % hw_idx)
+        result = data.get("result") or []
+        for d in result:
+            if d.get("Name") == name and d.get("idx"):
+                return int(d["idx"])
+        time.sleep(0.5)
+    return None
+
+
+def wait_for_field_close(domo, idx, field, expected, tol=0.05, timeout=20):
+    """Poll get_device(idx) until `field` is within tol of `expected`, or timeout.
+
+    Returns the last device snapshot seen either way, so the caller's check_field()
+    always has something to report against (a timeout becomes a FAIL with whatever
+    value was last observed, not a hang).
+    """
+    deadline = time.time() + timeout
+    dev = None
+    while time.time() < deadline:
+        dev = get_device(domo, idx)
+        if dev is not None and field in dev:
+            try:
+                if close(float(dev[field]), expected, tol):
+                    return dev
+            except (TypeError, ValueError):
+                pass
+        time.sleep(0.5)
+    return dev
+
+
+def make_mqtt_client(mqtt, client_id):
+    """paho-mqtt 2.x requires a callback_api_version; 1.x doesn't know the
+    argument at all. Ask for the old (v1) callback signatures either way,
+    since that's what on_connect/on_message below are written against."""
     try:
-        import paho.mqtt.client  # noqa: F401
+        return mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, client_id=client_id)
+    except AttributeError:
+        return mqtt.Client(client_id=client_id)
+
+
+def run_mqtt_case(domo):
+    print("\n=== MQTT Auto Discovery path (hardware/MQTTAutoDiscover.cpp) ===")
+
+    try:
+        import paho.mqtt.client as mqtt
     except ImportError:
-        record("mqtt-autodiscover", "TEMP", "-", "-", "-", "-", "SKIP",
-              "a broker is reachable but the 'paho-mqtt' package is not installed")
+        skip_all_mqtt_cases("the 'paho-mqtt' package is not installed")
         return
-    # A broker and a client library are both available, but replaying Domoticz's
-    # MQTT Auto Discovery handshake (discovery config topic, state topic, exact
-    # payload schema in hardware/MQTTAutoDiscover.cpp) is a substantial separate
-    # integration effort; it is intentionally out of scope for this pass rather
-    # than guessed at. See the report for what a follow-up would need to add.
-    record("mqtt-autodiscover", "TEMP", "-", "-", "-", "-", "SKIP",
-          "broker reachable, but the MQTT Auto Discovery handshake is not implemented "
-          "in this script (see module docstring / test report)")
+
+    broker = None
+    observer = None
+    publisher = None
+    try:
+        try:
+            broker = MiniMQTTBroker("127.0.0.1", 0)
+            broker.start()
+        except Exception as e:
+            skip_all_mqtt_cases("could not start the mini MQTT broker: %s" % e)
+            return
+
+        status_topic = "%s/status" % MQTT_DISCOVERY_PREFIX
+        status_messages = []
+
+        def on_status_message(client, userdata, msg):
+            status_messages.append(msg.payload.decode("utf-8", "replace"))
+
+        try:
+            observer = make_mqtt_client(mqtt, "calibration-test-observer")
+            observer.on_message = on_status_message
+            observer.connect("127.0.0.1", broker.port, keepalive=30)
+            observer.loop_start()
+            observer.subscribe(status_topic, qos=1)
+            time.sleep(0.5)  # let the SUBSCRIBE land before Domoticz can publish "online"
+
+            publisher = make_mqtt_client(mqtt, "calibration-test-publisher")
+            publisher.connect("127.0.0.1", broker.port, keepalive=30)
+            publisher.loop_start()
+        except Exception as e:
+            skip_all_mqtt_cases("could not connect a paho-mqtt client to the mini broker: %s" % e)
+            return
+
+        try:
+            hw_idx = add_mqtt_autodiscover_hardware(
+                domo, "CalibrationTestMQTT", broker.port, MQTT_DISCOVERY_PREFIX)
+        except Exception as e:
+            skip_all_mqtt_cases("could not add MQTT Auto Discovery hardware: %s" % e)
+            return
+
+        deadline = time.time() + 30
+        while time.time() < deadline and "online" not in status_messages:
+            time.sleep(0.5)
+        if "online" not in status_messages:
+            skip_all_mqtt_cases(
+                "Domoticz did not connect to the mini MQTT broker within 30s "
+                "(never saw 'online' on %s) -- check the instance log" % status_topic)
+            return
+
+        # Two independent HA-style devices, one sensor each, so neither the
+        # temp+hum+baro nor temp+hum combining logic in GuessSensorTypeValue/
+        # handle_auto_discovery_sensor ever kicks in -- each publishes and
+        # calibrates completely standalone, same as the bare-barometer case
+        # on the udevice/plugin paths above.
+        temp_state_topic = "%s/sensor/tempnode/temperature/state" % MQTT_DISCOVERY_PREFIX
+        temp_config = {
+            "name": "MQTT Calibration Temp",
+            "unique_id": "calibtest_temp_01",
+            "state_topic": temp_state_topic,
+            "device_class": "temperature",
+            "unit_of_measurement": "C",
+            "device": {
+                "identifiers": ["calibtest_temp_device"],
+                "model": "MiniBrokerTemp",
+                "manufacturer": "DomoticzTest",
+            },
+        }
+        pressure_state_topic = "%s/sensor/baronode/pressure/state" % MQTT_DISCOVERY_PREFIX
+        pressure_config = {
+            "name": "MQTT Calibration Pressure",
+            "unique_id": "calibtest_baro_01",
+            "state_topic": pressure_state_topic,
+            "device_class": "pressure",
+            "unit_of_measurement": "hPa",
+            "device": {
+                "identifiers": ["calibtest_baro_device"],
+                "model": "MiniBrokerBaro",
+                "manufacturer": "DomoticzTest",
+            },
+        }
+
+        publisher.publish("%s/sensor/tempnode/temperature/config" % MQTT_DISCOVERY_PREFIX,
+                          json.dumps(temp_config), qos=1, retain=True)
+        publisher.publish("%s/sensor/baronode/pressure/config" % MQTT_DISCOVERY_PREFIX,
+                          json.dumps(pressure_config), qos=1, retain=True)
+        time.sleep(1)
+
+        publisher.publish(temp_state_topic, MQTT_TEMP_RAW, qos=1, retain=False)
+        publisher.publish(pressure_state_topic, MQTT_PRESSURE_RAW, qos=1, retain=False)
+
+        temp_idx = find_device_idx_by_name(domo, hw_idx, "MQTT Calibration Temp", timeout=30)
+        pressure_idx = find_device_idx_by_name(domo, hw_idx, "MQTT Calibration Pressure", timeout=30)
+        if temp_idx is None or pressure_idx is None:
+            missing = []
+            if temp_idx is None:
+                missing.append("temperature")
+            if pressure_idx is None:
+                missing.append("pressure")
+            skip_all_mqtt_cases(
+                "MQTT Auto Discovery did not create the %s device(s) in time -- check "
+                "the instance log for discovery/parsing errors" % " and ".join(missing))
+            return
+
+        set_calibration(domo, temp_idx, addjvalue=1.5, addjmulti=1.0)
+        set_calibration(domo, pressure_idx, addjvalue2=5.5, addjmulti2=1.0)
+
+        publisher.publish(temp_state_topic, MQTT_TEMP_RAW2, qos=1, retain=False)
+        publisher.publish(pressure_state_topic, MQTT_PRESSURE_RAW2, qos=1, retain=False)
+
+        dev = wait_for_field_close(domo, temp_idx, "Temp", 24.0, tol=0.05, timeout=20)
+        check_field("mqtt-autodiscover", "TEMP", MQTT_TEMP_RAW2, "AddjValue=+1.5",
+                    dev, "Temp", 24.0)
+
+        dev = wait_for_field_close(domo, pressure_idx, "Barometer", 1010.90, tol=0.05, timeout=20)
+        check_field("mqtt-autodiscover", "Pressure (hPa)", MQTT_PRESSURE_RAW2, "AddjValue2=+5.5",
+                    dev, "Barometer", 1010.90)
+    finally:
+        for client in (observer, publisher):
+            if client is not None:
+                try:
+                    client.loop_stop()
+                    client.disconnect()
+                except Exception:
+                    pass
+        if broker is not None:
+            broker.stop()
 
 
 # ---------------------------------------------------------------------------
@@ -740,7 +935,7 @@ def main():
         else:
             skip_all_plugin_cases("plugins/examples/CalibrationTest/ not found in checkout")
 
-        run_mqtt_case()
+        run_mqtt_case(domo)
 
     print("\n%d checks, %d failure(s), %d skipped" % (CHECKS, FAILURES, SKIPPED))
 

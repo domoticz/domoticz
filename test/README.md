@@ -57,10 +57,10 @@ throwaway database and userdata folder, so it never touches an existing
 installation, and it is subject to the same single-instance-mutex caveat
 described above.
 
-It exercises two ingest paths against pTypeTEMP, pTypeTEMP_HUM,
-pTypeTEMP_HUM_BARO (both the integer- and float-barometer sValue formats,
-covering temperature via AddjValue *and* barometer via AddjValue2), a bare
-barometer, and UV:
+It exercises the udevice and plugin ingest paths against pTypeTEMP,
+pTypeTEMP_HUM, pTypeTEMP_HUM_BARO (both the integer- and float-barometer
+sValue formats, covering temperature via AddjValue *and* barometer via
+AddjValue2), a bare barometer, and UV:
 
 * The JSON `udevice` API, which already calibrates temperature and the
   paired barometer correctly today. This is the regression guard.
@@ -72,9 +72,39 @@ barometer, and UV:
   deterministically trigger the plugin to push known raw values, rather
   than waiting on a heartbeat.
 
-A third path, MQTT Auto Discovery, is optional: if no MQTT broker is
-reachable on `127.0.0.1:1883` it is skipped with a clear `SKIP` line rather
-than failing.
+* MQTT Auto Discovery (`hardware/MQTTAutoDiscover.cpp`), against a small
+  in-process MQTT 3.1.1 broker, `python/mini_mqtt_broker.py`, since there is
+  no broker installed on this machine and none bundled in this repository.
+  The test starts the broker on a free loopback port, adds an "MQTT Auto
+  Discovery Client Gateway" hardware instance pointed at it, waits for
+  Domoticz to actually connect (it watches for the `<prefix>/status` =
+  `online` message Domoticz publishes once connected and subscribed, rather
+  than assuming), then uses a real `paho-mqtt` client to replay the Home
+  Assistant discovery handshake for two standalone sensors: a temperature
+  sensor (retained config on `<prefix>/sensor/tempnode/temperature/config`,
+  `AddjValue`) and a bare atmospheric-pressure sensor in hPa (retained config
+  on `<prefix>/sensor/baronode/pressure/config`, `AddjValue2` -- this is the
+  case `MQTTAutoDiscover.cpp` never calibrated even before the refactor,
+  since it only ever hand-applied calibration for temperature). Each sensor
+  gets an initial uncalibrated push so it becomes visible via `getdevices`
+  (same empty-`sValue` caveat as the plugin path, see below), calibration is
+  set, then a second value is published and read back. If `paho-mqtt` is not
+  installed, or Domoticz never connects to the mini broker, or the
+  discovered devices never appear, this path is skipped with a clear `SKIP`
+  line rather than failing.
+
+  `mini_mqtt_broker.py` is also runnable standalone for debugging
+  (`python test/python/mini_mqtt_broker.py [port]`), printing every publish
+  it sees. It supports CONNECT/CONNACK, SUBSCRIBE/SUBACK,
+  UNSUBSCRIBE/UNSUBACK, PUBLISH both directions, PUBACK, PINGREQ/PINGRESP,
+  DISCONNECT, QoS 0 and 1 (QoS 1 is acknowledged with PUBACK but always
+  forwarded to subscribers at QoS 0 -- "at most once" on the broker side,
+  which is enough for one publisher and one subscriber on loopback), and
+  retained messages (stored and replayed to subscribers that subscribe
+  later, which the discovery flow depends on). It does not implement
+  sessions, Will messages, QoS 2, or TLS, and a malformed or unexpected
+  packet is logged and the connection dropped rather than taking the whole
+  broker thread down.
 
 Pass `--record baseline.json` to additionally dump every case's raw value,
 calibration, expected value, observed value, and PASS/FAIL/SKIP status to a
