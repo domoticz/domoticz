@@ -1779,6 +1779,11 @@ body.dd-navbar-hidden .dd-toolbar {
     flex-shrink: 0;
 }
 
+/* Grid mode: center the On/Off pair below the label, same as the blind group */
+.dd-quick-actions .dd-qa-group-group {
+    align-items: center;
+}
+
 .dd-qa-btn--group {
     flex: none;
     min-width: 0;
@@ -1957,13 +1962,11 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 .dd-quick-actions--list .dd-qa-dimmer-group > .dd-qa-btn--dim-toggle {
-    order: 0;
     flex: none;
     padding: 0;
 }
 
 .dd-quick-actions--list .dd-qa-dimmer-group > .dd-qa-label {
-    order: 1;
     flex: 1;
     text-align: left;
     min-width: 0;
