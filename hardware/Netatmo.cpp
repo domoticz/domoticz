@@ -106,7 +106,7 @@ CNetatmo::CNetatmo(const int ID, const std::string& username, const std::string&
 	Debug(DEBUG_HARDWARE, "Netatmo Actif Scopes %s", m_scopes.c_str());
 
 	// Weatherdevice is available in HomesData + HomeStatus
-	//m_bPollWeatherData = (m_scopes.find("station_R") != std::string::npos);      //read_station
+	m_bPollWeatherData = (m_scopes.find("station_RW") != std::string::npos);      //read_station
 	m_bPollHomecoachData = (m_scopes.find("homecoach_RW") != std::string::npos);  //read_homecoach write_homecoach
 
 	m_bPollHomeStatus = find_scopes();
