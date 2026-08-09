@@ -366,6 +366,12 @@ public:
 	void GetAddjustment(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, float &AddjValue, float &AddjMulti);
 	void GetAddjustment2(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, float &AddjValue, float &AddjMulti);
 
+	// Looks up the device's Calibration tab values and returns sValue with them applied (see
+	// ApplyDeviceCalibration). For ingest paths that need the calibrated value for something besides the
+	// database write (e.g. a notification check) while the database write itself goes through
+	// UpdateValueInt with the raw value, so calibration is not applied twice.
+	std::string GetCalibratedValue(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, const std::string &sValue);
+
 	void GetMeterType(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, int &meterType);
 
 	void DeleteDateRange(const char *ID, const std::string &fromDate, const std::string &toDate);
@@ -566,6 +572,12 @@ private:
 
 	uint64_t UpdateManagedValueInt(int HardwareID, int OrgHardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
 		const char* sValue, std::string& devname, bool bUseOnOffAction, const char* User = nullptr);
+
+	// Applies the device Calibration tab (AddjValue/AddjMulti/AddjValue2/AddjMulti2) to sValue for the
+	// devType/subType combinations that support it, so every ingest path (RFXCom, MQTT, Python plugins,
+	// dzVents, the JSON API, ...) gets the same calibration instead of only the paths that historically
+	// applied it by hand. Devices/fields not covered here are returned unchanged.
+	std::string ApplyDeviceCalibration(unsigned char devType, unsigned char subType, float AddjValue, float AddjMulti, float AddjValue2, float AddjMulti2, const std::string &sValue) const;
 
 	bool UpdateCalendarMeter(int HardwareID, const char *DeviceID, unsigned char unit, unsigned char devType, unsigned char subType, bool shortLog, bool multiMeter, const char *date,
 				 int64_t value1 = 0, int64_t value2 = 0, int64_t value3 = 0, int64_t value4 = 0, int64_t value5 = 0, int64_t value6 = 0, int64_t counter1 = 0,

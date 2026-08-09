@@ -5648,6 +5648,198 @@ uint64_t CSQLHelper::UpdateManagedValueInt(
 	return ulID;
 }
 
+namespace
+{
+	//Returns the number of digits after the decimal point in a numeric token, or 0 if it has none.
+	int CountDecimals(const std::string &token)
+	{
+		size_t dot = token.find('.');
+		if (dot == std::string::npos)
+			return 0;
+		int count = 0;
+		for (size_t i = dot + 1; i < token.size() && (token[i] >= '0') && (token[i] <= '9'); i++)
+			count++;
+		return count;
+	}
+
+	//Formats value with as many decimals as originalToken had (never fewer than minDecimals), so a
+	//calibrated field keeps the precision convention of whichever ingest path produced the raw value
+	//(e.g. 1 decimal from RFXCom hardware, 2 decimals from the JSON API), instead of a single hardcoded
+	//precision that would silently change what already-working paths store.
+	std::string FormatWithMatchingPrecision(const float value, const std::string &originalToken, const int minDecimals)
+	{
+		int decimals = CountDecimals(originalToken);
+		if (decimals < minDecimals)
+			decimals = minDecimals;
+		return std_format("%.*f", decimals, value);
+	}
+}
+
+std::string CSQLHelper::ApplyDeviceCalibration(const unsigned char devType, const unsigned char subType, const float AddjValue, const float AddjMulti, const float AddjValue2, const float AddjMulti2, const std::string &sValue) const
+{
+	//Nothing configured on the Calibration tab for this device, leave the value untouched (including its
+	//formatting) so uncalibrated devices are never affected by this function.
+	if ((AddjValue == 0.0F) && (AddjMulti == 1.0F) && (AddjValue2 == 0.0F) && (AddjMulti2 == 1.0F))
+		return sValue;
+
+	std::vector<std::string> parts;
+	StringSplit(sValue, ";", parts);
+
+	auto joinParts = [&parts]() -> std::string {
+		std::string sResult;
+		for (size_t i = 0; i < parts.size(); i++)
+		{
+			if (i != 0)
+				sResult += ";";
+			sResult += parts[i];
+		}
+		return sResult;
+	};
+
+	switch (devType)
+	{
+	case pTypeTEMP:
+	{
+		//Single temperature value
+		if (AddjValue == 0.0F)
+			return sValue;
+		float temp = static_cast<float>(atof(sValue.c_str())) + AddjValue;
+		return FormatWithMatchingPrecision(temp, sValue, 1);
+	}
+	case pTypeTEMP_HUM:
+	{
+		//temp;humidity;humidity_status
+		//sTypeTH_LC_TC (LaCrosse combined temp+hum) is built up manually in MainWorker from two
+		//already calibrated sources and deliberately not touched here again, see decode_Temp/decode_Hum
+		if (subType == sTypeTH_LC_TC)
+			return sValue;
+		if ((AddjValue == 0.0F) || (parts.size() < 3))
+			return sValue;
+		std::string origTemp = parts[0];
+		float temp = static_cast<float>(atof(origTemp.c_str())) + AddjValue;
+		parts[0] = FormatWithMatchingPrecision(temp, origTemp, 1);
+		return joinParts();
+	}
+	case pTypeTEMP_HUM_BARO:
+	{
+		//temp;humidity;humidity_status;barometer;forecast
+		if (parts.size() < 5)
+			return sValue;
+		bool bChanged = false;
+		if (AddjValue != 0.0F)
+		{
+			std::string origTemp = parts[0];
+			float temp = static_cast<float>(atof(origTemp.c_str())) + AddjValue;
+			parts[0] = FormatWithMatchingPrecision(temp, origTemp, 1);
+			bChanged = true;
+		}
+		if (AddjValue2 != 0.0F)
+		{
+			std::string origBaro = parts[3];
+			float baro = static_cast<float>(atof(origBaro.c_str())) + AddjValue2;
+			//Matches decode_TempHumBaro/MainWorker::UpdateDevice: float barometer for THBFloat, rounded int
+			//otherwise. Kept explicit (rather than only relying on derived precision) so a non-float
+			//barometer is always stored as a whole number even if a caller ever hands in a fractional token.
+			if (subType == sTypeTHBFloat)
+				parts[3] = FormatWithMatchingPrecision(baro, origBaro, 1);
+			else
+				parts[3] = std_format("%d", static_cast<int>(rint(baro)));
+			bChanged = true;
+		}
+		if (!bChanged)
+			return sValue;
+		return joinParts();
+	}
+	case pTypeTEMP_BARO:
+	{
+		//temp;barometer;forecast;altitude
+		if (parts.size() < 2)
+			return sValue;
+		bool bChanged = false;
+		if (AddjValue != 0.0F)
+		{
+			std::string origTemp = parts[0];
+			float temp = static_cast<float>(atof(origTemp.c_str())) + AddjValue;
+			parts[0] = FormatWithMatchingPrecision(temp, origTemp, 1);
+			bChanged = true;
+		}
+		if (AddjValue2 != 0.0F)
+		{
+			std::string origBaro = parts[1];
+			float baro = static_cast<float>(atof(origBaro.c_str())) + AddjValue2;
+			parts[1] = FormatWithMatchingPrecision(baro, origBaro, 1);
+			bChanged = true;
+		}
+		if (!bChanged)
+			return sValue;
+		return joinParts();
+	}
+	case pTypeUV:
+	{
+		//UV Level;temp (temp is only meaningful for sTypeUV3, but is always present)
+		if (parts.size() < 2)
+			return sValue;
+		bool bChanged = false;
+		if (AddjMulti2 != 1.0F)
+		{
+			std::string origLevel = parts[0];
+			float level = static_cast<float>(atof(origLevel.c_str())) * AddjMulti2;
+			parts[0] = FormatWithMatchingPrecision(level, origLevel, 1);
+			bChanged = true;
+		}
+		if ((subType == sTypeUV3) && (AddjValue != 0.0F))
+		{
+			std::string origTemp = parts[1];
+			float temp = static_cast<float>(atof(origTemp.c_str())) + AddjValue;
+			parts[1] = FormatWithMatchingPrecision(temp, origTemp, 1);
+			bChanged = true;
+		}
+		if (!bChanged)
+			return sValue;
+		return joinParts();
+	}
+	case pTypeWEIGHT:
+	{
+		if (AddjValue == 0.0F)
+			return sValue;
+		float weight = static_cast<float>(atof(sValue.c_str())) + AddjValue;
+		return FormatWithMatchingPrecision(weight, sValue, 1);
+	}
+	case pTypeRFXSensor:
+	{
+		//Only the temperature subtype was ever calibrated
+		if ((subType != sTypeRFXSensorTemp) || (AddjValue == 0.0F))
+			return sValue;
+		float temp = static_cast<float>(atof(sValue.c_str())) + AddjValue;
+		return FormatWithMatchingPrecision(temp, sValue, 1);
+	}
+	case pTypeGeneral:
+	{
+		//pressure;forecast (used by MQTT Auto Discovery standalone pressure sensors). MQTT builds this
+		//field with "%.02f", so floor the precision at 2 decimals to match.
+		if ((subType != sTypeBaro) || (AddjValue2 == 0.0F) || (parts.size() < 2))
+			return sValue;
+		std::string origPressure = parts[0];
+		float pressure = static_cast<float>(atof(origPressure.c_str())) + AddjValue2;
+		parts[0] = FormatWithMatchingPrecision(pressure, origPressure, 2);
+		return joinParts();
+	}
+	default:
+		return sValue;
+	}
+}
+
+std::string CSQLHelper::GetCalibratedValue(const int HardwareID, const char *ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const std::string &sValue)
+{
+	float AddjValue = 0.0F;
+	float AddjMulti = 1.0F;
+	float AddjValue2 = 0.0F;
+	float AddjMulti2 = 1.0F;
+	GetAddjustment(HardwareID, ID, unit, devType, subType, AddjValue, AddjMulti);
+	GetAddjustment2(HardwareID, ID, unit, devType, subType, AddjValue2, AddjMulti2);
+	return ApplyDeviceCalibration(devType, subType, AddjValue, AddjMulti, AddjValue2, AddjMulti2, sValue);
+}
+
 uint64_t CSQLHelper::UpdateValueInt(
         const int HardwareID, const int OrgHardwareID, const char *ID, const unsigned char unit, const unsigned char devType, const unsigned char subType,
         const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char *sValue, std::string &devname,
@@ -5670,7 +5862,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 	bool bIsManagedCounter = (devType == pTypeGeneral && subType == sTypeManagedCounter);
 
 	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT ID, Name, Used, SwitchType, nValue, sValue, LastUpdate, Options FROM DeviceStatus WHERE (HardwareID=%d AND OrgHardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, OrgHardwareID, ID, unit, devType, subType);
+	result = safe_query("SELECT ID, Name, Used, SwitchType, nValue, sValue, LastUpdate, Options, AddjValue, AddjMulti, AddjValue2, AddjMulti2 FROM DeviceStatus WHERE (HardwareID=%d AND OrgHardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, OrgHardwareID, ID, unit, devType, subType);
 
 	if (!result.empty())
 	{
@@ -5722,6 +5914,17 @@ uint64_t CSQLHelper::UpdateValueInt(
 		stype = (_eSwitchType)atoi(result[0][3].c_str());
 		nValueBeforeUpdate = atoi(result[0][4].c_str());
 		sValueBeforeUpdate = result[0][5];
+
+		//Apply the device Calibration tab (if any) to the incoming value before it is compared, stored or
+		//used for notifications, so every ingest path (hardware, MQTT, Python plugins, dzVents, JSON API, ...)
+		//is calibrated the same way, instead of only the paths that historically did this by hand.
+		//New devices (the Insert branch above) cannot have user set calibration yet, so this only applies here.
+		float calAddjValue = static_cast<float>(atof(result[0][8].c_str()));
+		float calAddjMulti = static_cast<float>(atof(result[0][9].c_str()));
+		float calAddjValue2 = static_cast<float>(atof(result[0][10].c_str()));
+		float calAddjMulti2 = static_cast<float>(atof(result[0][11].c_str()));
+		sValueUpdate = ApplyDeviceCalibration(devType, subType, calAddjValue, calAddjMulti, calAddjValue2, calAddjMulti2, sValue);
+		sValue = sValueUpdate.c_str();
 
 		std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 

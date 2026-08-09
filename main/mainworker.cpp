@@ -3401,15 +3401,20 @@ void MainWorker::decode_Temp(const CDomoticzHardwareBase* pHardware, const tRBUF
 		return;
 	}
 
+	//Calibration (Calibration tab AddjValue) is now applied centrally by CSQLHelper::UpdateValueInt, so the
+	//database always receives the raw value here. AddjValue is still fetched locally because the calibrated
+	//temperature is also needed for the trend calculator, the LaCrosse temp+humidity combine below and notifications.
 	float AddjValue = 0.0F;
 	float AddjMulti = 1.0F;
 	m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
-	temp += AddjValue;
 
-	sprintf(szTmp, "%.1f", temp);
-	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
+	char szTmpRaw[100];
+	sprintf(szTmpRaw, "%.1f", temp);
+	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmpRaw, procResult.DeviceName, true, procResult.Username.c_str());
 	if (DevRowIdx == (uint64_t)-1)
 		return;
+
+	temp += AddjValue;
 
 	uint64_t tID = ((uint64_t)(pHardware->m_HwdID & 0x7FFFFFFF) << 32) | (DevRowIdx & 0x7FFFFFFF);
 	m_trend_calculator[tID].AddValueAndReturnTendency(static_cast<double>(temp), _tTrendCalculator::TAVERAGE_TEMP);
@@ -3698,10 +3703,12 @@ void MainWorker::decode_TempHum(const CDomoticzHardwareBase* pHardware, const tR
 		return;
 	}
 
+	//Calibration is now applied centrally by CSQLHelper::UpdateValueInt (the database gets the raw temp).
+	//AddjValue is still fetched here because the calibrated temperature is also needed for the trend
+	//calculator and notifications below.
 	float AddjValue = 0.0F;
 	float AddjMulti = 1.0F;
 	m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
-	temp += AddjValue;
 
 	int Humidity = (int)pResponse->TEMP_HUM.humidity;
 	uint8_t HumidityStatus = pResponse->TEMP_HUM.humidity_status;
@@ -3721,10 +3728,14 @@ void MainWorker::decode_TempHum(const CDomoticzHardwareBase* pHardware, const tR
 	if (Humidity<0)
 	Humidity=0;
 	*/
-	sprintf(szTmp, "%.1f;%d;%d", temp, Humidity, HumidityStatus);
-	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
+	char szTmpRaw[100];
+	sprintf(szTmpRaw, "%.1f;%d;%d", temp, Humidity, HumidityStatus);
+	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmpRaw, procResult.DeviceName, true, procResult.Username.c_str());
 	if (DevRowIdx == (uint64_t)-1)
 		return;
+
+	temp += AddjValue;
+	sprintf(szTmp, "%.1f;%d;%d", temp, Humidity, HumidityStatus);
 
 	uint64_t tID = ((uint64_t)(pHardware->m_HwdID & 0x7FFFFFFF) << 32) | (DevRowIdx & 0x7FFFFFFF);
 	m_trend_calculator[tID].AddValueAndReturnTendency(static_cast<double>(temp), _tTrendCalculator::TAVERAGE_TEMP);
@@ -3891,9 +3902,13 @@ void MainWorker::decode_TempHumBaro(const CDomoticzHardwareBase* pHardware, cons
 		return;
 	}
 
+	//Calibration is now applied centrally by CSQLHelper::UpdateValueInt (the database gets the raw
+	//temp/barometer). AddjValue/AddjValue2 are still fetched here because the calibrated values are also
+	//needed for the sanity checks below, notifications and the trend calculator.
 	float AddjValue = 0.0F;
 	float AddjMulti = 1.0F;
 	m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+	float tempRaw = temp;
 	temp += AddjValue;
 
 	uint8_t Humidity = pResponse->TEMP_HUM_BARO.humidity;
@@ -3906,13 +3921,16 @@ void MainWorker::decode_TempHumBaro(const CDomoticzHardwareBase* pHardware, cons
 	}
 
 	int barometer = (pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol;
+	int barometerRaw = barometer;
 
 	int forcast = pResponse->TEMP_HUM_BARO.forecast;
 	float fbarometer = (float)barometer;
+	float fbarometerRaw = fbarometer;
 
 	m_sql.GetAddjustment2(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
 	barometer += int(AddjValue);
 
+	char szTmpRaw[100];
 	if (pResponse->TEMP_HUM_BARO.subtype == sTypeTHBFloat)
 	{
 		if ((barometer < 8000) || (barometer > 12000))
@@ -3920,9 +3938,10 @@ void MainWorker::decode_TempHumBaro(const CDomoticzHardwareBase* pHardware, cons
 			WriteMessage(" Invalid Barometer");
 			return;
 		}
-		fbarometer = float((pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol) / 10.0F;
-		fbarometer += AddjValue;
+		fbarometerRaw = float((pResponse->TEMP_HUM_BARO.baroh * 256) + pResponse->TEMP_HUM_BARO.barol) / 10.0F;
+		fbarometer = fbarometerRaw + AddjValue;
 		sprintf(szTmp, "%.1f;%d;%d;%.1f;%d", temp, Humidity, HumidityStatus, fbarometer, forcast);
+		sprintf(szTmpRaw, "%.1f;%d;%d;%.1f;%d", tempRaw, Humidity, HumidityStatus, fbarometerRaw, forcast);
 	}
 	else
 	{
@@ -3932,8 +3951,9 @@ void MainWorker::decode_TempHumBaro(const CDomoticzHardwareBase* pHardware, cons
 			return;
 		}
 		sprintf(szTmp, "%.1f;%d;%d;%d;%d", temp, Humidity, HumidityStatus, barometer, forcast);
+		sprintf(szTmpRaw, "%.1f;%d;%d;%d;%d", tempRaw, Humidity, HumidityStatus, barometerRaw, forcast);
 	}
-	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
+	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmpRaw, procResult.DeviceName, true, procResult.Username.c_str());
 	if (DevRowIdx == (uint64_t)-1)
 		return;
 
@@ -4058,18 +4078,24 @@ void MainWorker::decode_TempBaro(const CDomoticzHardwareBase* pHardware, const t
 		return;
 	}
 
+	//Calibration is now applied centrally by CSQLHelper::UpdateValueInt (the database gets the raw
+	//temp/barometer). AddjValue/AddjValue2 are still fetched here because the calibrated values are also
+	//needed for notifications and the trend calculator.
 	float AddjValue = 0.0F;
 	float AddjMulti = 1.0F;
 	m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+	float tempRaw = temp;
 	temp += AddjValue;
 
-	float fbarometer = pTempBaro->baro;
+	float fbarometerRaw = pTempBaro->baro;
 	int forcast = pTempBaro->forecast;
 	m_sql.GetAddjustment2(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
-	fbarometer += AddjValue;
+	float fbarometer = fbarometerRaw + AddjValue;
 
+	char szTmpRaw[100];
+	sprintf(szTmpRaw, "%.1f;%.1f;%d;%.2f", tempRaw, fbarometerRaw, forcast, pTempBaro->altitude);
 	sprintf(szTmp, "%.1f;%.1f;%d;%.2f", temp, fbarometer, forcast, pTempBaro->altitude);
-	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
+	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmpRaw, procResult.DeviceName, true, procResult.Username.c_str());
 	if (DevRowIdx == (uint64_t)-1)
 		return;
 
@@ -4160,9 +4186,13 @@ void MainWorker::decode_TempRain(const CDomoticzHardwareBase* pHardware, const t
 		temp = -(float(((pResponse->TEMP_RAIN.temperatureh & 0x7F) * 256) + pResponse->TEMP_RAIN.temperaturel) / 10.0F);
 	}
 
+	//This combined pTypeTEMP_RAIN reading intentionally reuses the calibration of the split-off
+	//pTypeTEMP/sTypeTEMP3 device below, so both rows show the same calibrated temperature; that coupling
+	//can't be expressed by CSQLHelper::UpdateValueInt's generic per-row calibration, so it stays manual here.
 	float AddjValue = 0.0F;
 	float AddjMulti = 1.0F;
 	m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, pTypeTEMP, sTypeTEMP3, AddjValue, AddjMulti);
+	float tempRaw = temp;
 	temp += AddjValue;
 
 	if ((temp < -200) || (temp > 380))
@@ -4180,7 +4210,9 @@ void MainWorker::decode_TempRain(const CDomoticzHardwareBase* pHardware, const t
 	uint64_t tID = ((uint64_t)(pHardware->m_HwdID & 0x7FFFFFFF) << 32) | (DevRowIdx & 0x7FFFFFFF);
 	m_trend_calculator[tID].AddValueAndReturnTendency(static_cast<double>(temp), _tTrendCalculator::TAVERAGE_TEMP);
 
-	sprintf(szTmp, "%.1f", temp);
+	//The split pTypeTEMP/sTypeTEMP3 device gets the raw temperature here; CSQLHelper::UpdateValueInt applies
+	//its own (identical) AddjValue automatically, so this is not double calibration.
+	sprintf(szTmp, "%.1f", tempRaw);
 	uint64_t DevRowIdxTemp = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, pTypeTEMP, sTypeTEMP3, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
 	m_notifications.CheckAndHandleNotification(DevRowIdxTemp, pHardware->m_HwdID, ID, procResult.DeviceName, Unit, pTypeTEMP, sTypeTEMP3, temp);
 
@@ -4237,6 +4269,10 @@ void MainWorker::decode_UV(const CDomoticzHardwareBase* pHardware, const tRBUF* 
 	else
 		BatteryLevel = 100;
 	float Level = float(pResponse->UV.uv) / 10.0F;
+	float LevelRaw = Level;
+	//Calibration is now applied centrally by CSQLHelper::UpdateValueInt (the database gets the raw values).
+	//AddjMulti2/AddjValue are still fetched here because the calibrated values are also needed for the
+	//sanity checks below and notifications.
 	float AddjValue2 = 0.0F;
 	float AddjMulti2 = 1.0F;
 	m_sql.GetAddjustment2(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue2, AddjMulti2);
@@ -4247,6 +4283,7 @@ void MainWorker::decode_UV(const CDomoticzHardwareBase* pHardware, const tRBUF* 
 		return;
 	}
 	float temp = 0;
+	float tempRaw = 0;
 	if (pResponse->UV.subtype == sTypeUV3)
 	{
 		if (!pResponse->UV.tempsign)
@@ -4266,11 +4303,14 @@ void MainWorker::decode_UV(const CDomoticzHardwareBase* pHardware, const tRBUF* 
 		float AddjValue = 0.0F;
 		float AddjMulti = 1.0F;
 		m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
+		tempRaw = temp;
 		temp += AddjValue;
 	}
 
+	char szTmpRaw[100];
+	sprintf(szTmpRaw, "%.1f;%.1f", LevelRaw, tempRaw);
 	sprintf(szTmp, "%.1f;%.1f", Level, temp);
-	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
+	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmpRaw, procResult.DeviceName, true, procResult.Username.c_str());
 	if (DevRowIdx == (uint64_t)-1)
 		return;
 
@@ -9531,14 +9571,18 @@ void MainWorker::decode_Weight(const CDomoticzHardwareBase* pHardware, const tRB
 	uint8_t SignalLevel = pResponse->WEIGHT.rssi;
 	uint8_t BatteryLevel = 255;
 	float weight = (float(pResponse->WEIGHT.weighthigh) * 25.6F) + (float(pResponse->WEIGHT.weightlow) / 10.0F);
+	float weightRaw = weight;
 
+	//Calibration is now applied centrally by CSQLHelper::UpdateValueInt (the database gets the raw weight).
+	//AddjValue is still fetched here because the calibrated weight is also needed for notifications.
 	float AddjValue = 0.0F;
 	float AddjMulti = 1.0F;
 	m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
 	weight += AddjValue;
 
-	sprintf(szTmp, "%.1f", weight);
-	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
+	char szTmpRaw[100];
+	sprintf(szTmpRaw, "%.1f", weightRaw);
+	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmpRaw, procResult.DeviceName, true, procResult.Username.c_str());
 	if (DevRowIdx == (uint64_t)-1)
 		return;
 
@@ -9608,11 +9652,13 @@ void MainWorker::decode_RFXSensor(const CDomoticzHardwareBase* pHardware, const 
 			temp = float((pResponse->RFXSENSOR.msg1 * 256) + pResponse->RFXSENSOR.msg2) / 100.0F;
 		else
 			temp = -(float(((pResponse->RFXSENSOR.msg1 & 0x7F) * 256) + pResponse->RFXSENSOR.msg2) / 100.0F);
+		//Calibration is now applied centrally by CSQLHelper::UpdateValueInt (the database gets the raw temp).
+		//AddjValue is still fetched here because the calibrated temperature is also needed for notifications.
+		sprintf(szTmp, "%.1f", temp);
 		float AddjValue = 0.0F;
 		float AddjMulti = 1.0F;
 		m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
 		temp += AddjValue;
-		sprintf(szTmp, "%.1f", temp);
 	}
 	break;
 	case sTypeRFXSensorAD:
@@ -11425,11 +11471,8 @@ void MainWorker::decode_LevelSensor(const CDomoticzHardwareBase* pHardware, cons
 		return;
 	}
 
-	float AddjValue = 0.0F;
-	float AddjMulti = 1.0F;
-	m_sql.GetAddjustment(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, AddjValue, AddjMulti);
-	temp += AddjValue;
-
+	//Calibration is applied centrally by CSQLHelper::UpdateValueInt, keyed on the actual row being written
+	//(pTypeTEMP/sTypeTEMP1), so no manual GetAddjustment lookup is needed here.
 	sprintf(szTmp, "%.1f", temp);
 	uint64_t DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, pTypeTEMP, sTypeTEMP1, SignalLevel, BatteryLevel, 0, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
 	if (DevRowIdx == (uint64_t)-1)
@@ -14448,6 +14491,13 @@ bool MainWorker::UpdateDevice(const int HardwareID, const int OrgHardwareID, con
 		s_strid << std::hex << DeviceID;
 		s_strid >> ID;
 
+		//Calibration for the temp/hum/baro family below is now also applied centrally by
+		//CSQLHelper::UpdateValueInt, so sValueRaw (defaulted here, normalized further down for the devTypes
+		//that need it) is what actually gets stored; the calibration computed further down is only used to
+		//keep the temperature trend calculator and the notification check (further down still) accurate,
+		//exactly as before, without calibrating the stored value twice.
+		std::string sValueRaw = sValue;
+
 		CDomoticzHardwareBase* pHardware = GetHardware(HardwareID);
 		if (pHardware)
 		{
@@ -14497,13 +14547,19 @@ bool MainWorker::UpdateDevice(const int HardwareID, const int OrgHardwareID, con
 				m_sql.GetAddjustment(HardwareID, DeviceID.c_str(), unit, devType, subType, AddjValue, AddjMulti);
 
 				char szTmp[100];
+				char szTmpRaw[100];
 				std::vector<std::string> strarray;
 
+				//Each branch below normalizes the raw value with the exact same sprintf the old code used
+				//to store (into szTmpRaw/sValueRaw), so an uncalibrated update is byte-identical to before;
+				//AddjValue/AddjValue2 are then applied on top only for the local temp/trend/notification use.
 				if (devType == pTypeTEMP)
 				{
 					temp = static_cast<float>(atof(sValue.c_str()));
+					sprintf(szTmpRaw, "%.2f", temp);
 					temp += AddjValue;
 					sprintf(szTmp, "%.2f", temp);
+					sValueRaw = szTmpRaw;
 					sValue = szTmp;
 				}
 				else if (devType == pTypeTEMP_HUM)
@@ -14512,8 +14568,10 @@ bool MainWorker::UpdateDevice(const int HardwareID, const int OrgHardwareID, con
 					if (strarray.size() == 3)
 					{
 						temp = static_cast<float>(atof(strarray[0].c_str()));
+						sprintf(szTmpRaw, "%.2f;%s;%s", temp, strarray[1].c_str(), strarray[2].c_str());
 						temp += AddjValue;
 						sprintf(szTmp, "%.2f;%s;%s", temp, strarray[1].c_str(), strarray[2].c_str());
+						sValueRaw = szTmpRaw;
 						sValue = szTmp;
 					}
 				}
@@ -14523,22 +14581,26 @@ bool MainWorker::UpdateDevice(const int HardwareID, const int OrgHardwareID, con
 					if (strarray.size() == 5)
 					{
 						temp = static_cast<float>(atof(strarray[0].c_str()));
-						float fbarometer = static_cast<float>(atof(strarray[3].c_str()));
+						float fbarometerRaw = static_cast<float>(atof(strarray[3].c_str()));
+						float tempRaw = temp;
 						temp += AddjValue;
 
 						AddjValue = 0.0F;
 						AddjMulti = 1.0F;
 						m_sql.GetAddjustment2(HardwareID, DeviceID.c_str(), unit, devType, subType, AddjValue, AddjMulti);
-						fbarometer += AddjValue;
+						float fbarometer = fbarometerRaw + AddjValue;
 
 						if (subType == sTypeTHBFloat)
 						{
 							sprintf(szTmp, "%.2f;%s;%s;%.1f;%s", temp, strarray[1].c_str(), strarray[2].c_str(), fbarometer, strarray[4].c_str());
+							sprintf(szTmpRaw, "%.2f;%s;%s;%.1f;%s", tempRaw, strarray[1].c_str(), strarray[2].c_str(), fbarometerRaw, strarray[4].c_str());
 						}
 						else
 						{
 							sprintf(szTmp, "%.2f;%s;%s;%d;%s", temp, strarray[1].c_str(), strarray[2].c_str(), (int)rint(fbarometer), strarray[4].c_str());
+							sprintf(szTmpRaw, "%.2f;%s;%s;%d;%s", tempRaw, strarray[1].c_str(), strarray[2].c_str(), (int)rint(fbarometerRaw), strarray[4].c_str());
 						}
+						sValueRaw = szTmpRaw;
 						sValue = szTmp;
 					}
 				}
@@ -14670,10 +14732,15 @@ bool MainWorker::UpdateDevice(const int HardwareID, const int OrgHardwareID, con
 			}
 		}
 
+		//For pTypeTEMP/pTypeTEMP_HUM/pTypeTEMP_HUM_BARO, CSQLHelper::UpdateValueInt applies the device's
+		//calibration itself, so it must receive the raw (uncalibrated) value captured above; every other
+		//devType (including pTypeThermostat6, which computes its own calibrated sValue above) keeps using
+		//sValue as before.
+		bool bCentrallyCalibrated = (devType == pTypeTEMP) || (devType == pTypeTEMP_HUM) || (devType == pTypeTEMP_HUM_BARO);
 		devidx = m_sql.UpdateValue(HardwareID, OrgHardwareID, DeviceID.c_str(), (const uint8_t)unit, (const uint8_t)devType, (const uint8_t)subType,
 			signallevel,	 // signal level,
 			batterylevel, // battery level
-			nValue, sValue.c_str(), devname,
+			nValue, (bCentrallyCalibrated ? sValueRaw : sValue).c_str(), devname,
 			false,
 			userName.c_str());
 		if (devidx == (uint64_t)-1)

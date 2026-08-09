@@ -2071,7 +2071,10 @@ uint64_t MQTTAutoDiscover::UpdateValueInt(int HardwareID, const char* ID, unsign
 		Log(LOG_NORM, szLogString);
 	}
 	m_mainworker.sOnDeviceReceived(m_HwdID, DeviceRowIdx, devname, nullptr);
-	m_notifications.CheckAndHandleNotification(DeviceRowIdx, m_HwdID, ID, devname, unit, devType, subType, nValue, sValue);
+	//UpdateValue above stores/applies calibration on the raw sValue; the notification check needs the same
+	//calibrated value the device now shows, so look it up the same way CSQLHelper::UpdateValueInt did.
+	std::string sValueCalibrated = m_sql.GetCalibratedValue(HardwareID, ID, unit, devType, subType, sValue);
+	m_notifications.CheckAndHandleNotification(DeviceRowIdx, m_HwdID, ID, devname, unit, devType, subType, nValue, sValueCalibrated);
 	m_mainworker.CheckSceneCode(DeviceRowIdx, devType, subType, nValue, sValue, "MQTT Auto");
 	return DeviceRowIdx;
 }
@@ -2115,9 +2118,6 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 			szUnit = "text";
 		}
 	}
-
-	float AddjValue = 0.0F;
-	float AddjMulti = 1.0F;
 
 	if (
 		(szUnit == "hpa")
@@ -2453,8 +2453,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 			temp = ConvertToCelsius(temp);
 		}
 
-		m_sql.GetAddjustment(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, devType, subType, AddjValue, AddjMulti);
-		temp += AddjValue;
+		//Calibration (Calibration tab AddjValue) is now applied centrally by CSQLHelper::UpdateValueInt.
 		sValue = std_format("%.2f", temp);
 	}
 	else if (szUnit == "%")
@@ -4665,11 +4664,8 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 
 			pSensor->nValue = 0;
 
-			float AddjValue = 0.0F;
-			float AddjMulti = 1.0F;
-
-			m_sql.GetAddjustment(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType, AddjValue, AddjMulti);
-			temp_current += AddjValue;
+			//Calibration (Calibration tab AddjValue) is now applied centrally by CSQLHelper::UpdateValueInt,
+			//keyed on the actual row being written below (pTypeTEMP/sTypeSetpoint at CLIMATE_TEMP_SETPOINT_UNIT).
 			pSensor->sValue = std_format("%.1f", temp_current);
 
 			pSensor->subType = sTypeSetpoint;
