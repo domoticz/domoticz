@@ -1556,6 +1556,8 @@ If your device is not recognized by dzVents, you can still operate it using the 
 Also, if you call `myDevice.dump()` you will see all attributes and methods and the attribute `_adapters` shows you a list of applied adapters for that device.
 Finally, register your adapter in `Adapters.lua`. Please share your adapter when it is ready and working.
 
+**Note**: dzVents only runs when there is at least one active dzVents script, either created in the internal web editor or placed as a `.lua` file in `/path/to/domoticz/scripts/dzVents/scripts`. Without such a script, Domoticz never starts the dzVents Lua engine, so the device adapters are not loaded, `domoticzData.lua` is not written and any logging you add to your adapter stays silent whatever the log level is. When you develop an adapter before you have a script that uses it, add a minimal placeholder script to activate the engine.
+
 ## Variable object API (user variables)
 User variables created in Domoticz have these attributes and methods:
 
@@ -2574,6 +2576,9 @@ Check the settings (see above) and make sure the checkbox **dzVents disabled** i
 
 ### Is your script enabled?
 Make sure the active section in your script is set to `true`: `active = true`. And, on top of that, if you are using the internal web editor to write your script, make sure that your script is active there and you have clicked Save! "Event active" is a separate checkbox that must be ticked for every active script. When not active, the script name will be red in the list on the right.
+
+### Do you have at least one active script?
+dzVents only starts its Lua engine when there is at least one active dzVents script, either created in the internal web editor or placed as a `.lua` file in `/path/to/domoticz/scripts/dzVents/scripts`. With no active script at all, Domoticz skips dzVents completely: nothing is logged whatever the log level is, `domoticzData.lua` and `module.log` are not created, and the code in the device adapters never runs. Adding a minimal script is enough to activate the engine.
 
 ### Turn on debug logging
 Activate debug logging in the settings (see above). This will produce a lot of extra messages in the Domoticz log (don't forget to turn it off when you are done troubleshooting!). It is best to monitor the log through the command line, as the log in the browser sometimes tends to not always show all log messages. See the Domoticz manual for how to do that.
