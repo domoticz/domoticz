@@ -1930,11 +1930,15 @@ body.dd-navbar-hidden .dd-toolbar {
     align-items: center;
     gap: 8px;
     width: 100%;
+    box-sizing: border-box;
     padding: 4px 2px 2px;
 }
 
+/* min-width: 0 lets the range shrink past the browser's default input width;
+   without it a narrow card pushes the percentage text outside the widget */
 .dd-qa-dim-range-h {
     flex: 1;
+    min-width: 0;
     cursor: pointer;
     accent-color: var(--dz-accent-color);
 }
