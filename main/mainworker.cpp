@@ -1208,6 +1208,7 @@ bool MainWorker::Start()
 	//Start Scheduler
 	m_scheduler.StartScheduler();
 	m_cameras.ReloadCameras();
+	m_cameras.Start();
 
 	int rnvalue = 0;
 	m_sql.GetPreferencesVar("RemoteSharedPort", rnvalue);
@@ -1300,6 +1301,7 @@ bool MainWorker::Stop()
 	m_webservers.StopServers();
 	m_sharedserver.StopServer();
 	m_scheduler.StopScheduler();
+	m_cameras.Stop();
 #ifdef ENABLE_PYTHON
 	// Stop the plugin system before the event system so that Plugin_ASIO
 	// and other plugin threads release the GIL before PythonEventsStop()
