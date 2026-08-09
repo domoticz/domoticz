@@ -34,6 +34,7 @@ define([
             {
                 key:     'maxEvents',
                 type:    'number',
+                step:    1,
                 label:   'Max events to show',
                 default: 7,
                 min:     1,
@@ -48,6 +49,7 @@ define([
             {
                 key:     'refreshInterval',
                 type:    'number',
+                step:    1,
                 label:   'Refresh interval (seconds)',
                 default: 900,
                 min:     60

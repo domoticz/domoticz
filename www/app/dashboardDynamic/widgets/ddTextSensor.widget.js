@@ -34,12 +34,14 @@ define([
             {
                 key:     'fontSize',
                 type:    'number',
+                step:    1,
                 label:   'Font size (px)',
                 default: 14
             },
             {
                 key:     'refreshInterval',
                 type:    'number',
+                step:    1,
                 label:   'Refresh interval (seconds)',
                 default: 60
             },

@@ -34,7 +34,7 @@ define([
                 ],
                 default: ''
             },
-            { key: 'planIdx',   type: 'number',  label: 'Limit to room/plan (ID)', required: false },
+            { key: 'planIdx',   type: 'number',  step: 1, label: 'Limit to room/plan (ID)', required: false },
             { key: 'showTabs',  type: 'boolean', label: 'Show category tabs',      default: true },
             { key: 'title',     type: 'text',    label: 'Custom Title',            required: false }
         ]
