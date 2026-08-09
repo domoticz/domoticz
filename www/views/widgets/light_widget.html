@@ -72,7 +72,7 @@
                 <!-- Status -->
                 <td id="status">
                     <!-- Selector buttons (SelectorStyle 0) -->
-                    <div ng-if="ctrl.isSelector() && ctrl.device.SelectorStyle === 0" class="btn-group" style="display: block; margin-top: 4px;">
+                    <div ng-if="ctrl.isSelector() && ctrl.device.SelectorStyle === 0" class="btn-group selectorlevelbuttons" style="display: block; margin-top: 4px;">
                         <button ng-repeat="level in ctrl.selectorLevels track by level.value" type="button"
                                 class="btn btn-small"
                                 ng-class="{'btn-selected': level.isActive, 'btn-default': !level.isActive}"

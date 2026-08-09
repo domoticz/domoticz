@@ -20,6 +20,7 @@ Version 2026.xxxx
 - Fixed: EvoHome, HVAC fan mode selector switch commands were silently ignored on x86/x64 builds; they only worked on ARM
 - Fixed: Lights, the RGBW color picker mode buttons (Color, White, Color temperature, Color and white mix) now show a tooltip describing their function (#6911)
 - Fixed: Lights, restored touch dragging on the RGBW color picker wheel and sliders; on touch devices dragging did nothing and only taps registered (#6917)
+- Fixed: Lights, the Switches page could be dragged sideways on a phone while other pages stayed put; a long device name and the button row of a selector switch with many levels both ran past the right edge of the screen, which also let a fast vertical swipe slip the page horizontally (#6817)
 - Fixed: Floorplans, removed a leftover empty svg element that pushed the floorplan content down by the height of one line box, which could misalign the plan in themes with a constrained floorplan area (#6933)
 - Fixed: Floorplans, the pagination dots are now positioned against the visual viewport, so they stay on screen while the page is pinch zoomed instead of drifting out of view (#6954)
 - Fixed: Floorplans, the pagination dots now carry a dark contrast ring so they stay visible on light floorplan backgrounds, where the white-only dots were all but invisible (#6954)

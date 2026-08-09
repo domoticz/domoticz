@@ -2287,6 +2287,14 @@ SECTION.dashCategory .liveSearchShown{
 .itemBlock .ui-selectmenu-button{
 	width: 60%;
 }
+/* Selector switch level buttons. Bootstrap's .btn-group is white-space: nowrap,
+   so a selector with many levels kept its buttons on one line and pushed them
+   past the right edge of the viewport, which made the whole page scroll
+   sideways on a phone. Inside a widget card the row wraps instead. */
+.selectorlevelbuttons{
+	max-width: 100%;
+	white-space: normal;
+}
 
 
 
