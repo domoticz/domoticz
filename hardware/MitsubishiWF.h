@@ -3,6 +3,7 @@
 #include "DomoticzHardware.h"
 #include "hardwaretypes.h"
 #include "CounterHelper.h"
+#include <mutex>
 
 namespace Json
 {
@@ -90,6 +91,8 @@ private:
 
 	std::string m_szIPAddress;
 	uint16_t m_usIPPort;
+
+	std::mutex m_commandMutex; //the WF-RAC module cannot handle concurrent requests (poll thread vs. user commands)
 
 	_tAircoStatus m_AircoStatus;
 
