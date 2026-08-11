@@ -33,6 +33,7 @@
 #include "Logger.h"
 #include "SQLHelper.h"
 #include "KWHStats.h"
+#include "ThemeSettings.h"
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
 #include <libwebem/Base64.h>
@@ -99,8 +100,6 @@ namespace http
 {
 	namespace server
 	{
-		extern std::map<std::string, http::server::connection::_tRemoteClients> m_remote_web_clients;
-
 		struct _tGuiLanguage
 		{
 			const char* szShort;
@@ -170,6 +169,9 @@ namespace http
 
 			for (int ii = 0; ii < MTYPE_END; ii++)
 			{
+				// Time counters are deprecated and migrated to Custom counters since DB version 99, hide from selection
+				if (ii == MTYPE_TIME)
+					continue;
 				std::string sTypeName = Meter_Type_Desc((_eMeterType)ii);
 				root["result"][ii] = sTypeName;
 			}
@@ -1594,6 +1596,124 @@ namespace http
 			return true;
 		}
 
+#ifdef ENABLE_PYTHON
+		// Parse a plugin manifest XML once: extract the <plugin key="..."> attribute and the set of
+		// field names declared as password fields. The password attribute is matched case-insensitively
+		// ("true"/"TRUE"/"1") so a manifest typo does not silently expose a secret. Pure: operates on
+		// the manifest XML string, no I/O. keyOut is empty when the manifest has no key attribute.
+		static void ParsePluginManifest(const std::string &manifestXml, std::string &keyOut, std::set<std::string> &passwordFieldsOut)
+		{
+			keyOut.clear();
+			passwordFieldsOut.clear();
+			TiXmlDocument xmlDoc;
+			xmlDoc.Parse(manifestXml.c_str());
+			if (xmlDoc.Error())
+				return;
+			TiXmlNode *pPluginNode = xmlDoc.FirstChild("plugin");
+			if (!pPluginNode)
+				return;
+			TiXmlElement *pPluginEle = pPluginNode->ToElement();
+			if (!pPluginEle)
+				return;
+			const char *pKey = pPluginEle->Attribute("key");
+			if (pKey)
+				keyOut = pKey;
+			TiXmlNode *pParamsNode = pPluginNode->FirstChild("params");
+			if (!pParamsNode)
+				return;
+			auto isPasswordAttr = [](const char *pPassword) -> bool {
+				if (!pPassword)
+					return false;
+				std::string v(pPassword);
+				for (auto &c : v)
+					c = (char)tolower((unsigned char)c);
+				return (v == "true" || v == "1");
+			};
+			auto checkParam = [&](TiXmlElement *pEle) {
+				const char *pField = pEle->Attribute("field");
+				if (pField && isPasswordAttr(pEle->Attribute("password")))
+					passwordFieldsOut.insert(pField);
+			};
+			for (TiXmlNode *pChild = pParamsNode->FirstChild(); pChild; pChild = pChild->NextSibling())
+			{
+				TiXmlElement *pEle = pChild->ToElement();
+				if (!pEle)
+					continue;
+				std::string tagName = pEle->Value();
+				if (tagName == "param")
+					checkParam(pEle);
+				else if (tagName == "group")
+				{
+					for (TiXmlNode *pGroupChild = pEle->FirstChild("param"); pGroupChild; pGroupChild = pGroupChild->NextSibling("param"))
+					{
+						TiXmlElement *pGroupEle = pGroupChild->ToElement();
+						if (pGroupEle)
+							checkParam(pGroupEle);
+					}
+				}
+			}
+		}
+
+		// Build a map from each plugin's manifest "key" attribute (which matches the Hardware.Extra
+		// column) to its set of password field names. GetManifest() is keyed by plugin DIRECTORY, not by
+		// the key attribute, so it must be walked and re-keyed. Only plugins that declare at least one
+		// password field appear.
+		static std::map<std::string, std::set<std::string>> BuildPluginPasswordFieldsByKey()
+		{
+			std::map<std::string, std::set<std::string>> byKey;
+			Plugins::CPluginSystem pluginSystem;
+			for (const auto &manifest : *pluginSystem.GetManifest())
+			{
+				std::string key;
+				std::set<std::string> fields;
+				ParsePluginManifest(manifest.second, key, fields);
+				if (!key.empty() && !fields.empty())
+					byKey[key] = fields;
+			}
+			return byKey;
+		}
+
+		// Pure merge for the plugin Settings write path. Given the incoming Settings JSON (from the edit
+		// form, where password fields were stripped to empty on the read side), the currently stored
+		// Settings JSON, and the plugin's password field names, return the JSON to persist. A password
+		// field that arrives empty or missing keeps its stored value ("leave blank to keep"). Fails
+		// graceful: never wipes a readable stored secret, never throws.
+		static std::string MergePluginSettingsPreservePasswords(const std::string &incomingSettings, const std::string &storedSettings, const std::set<std::string> &passwordFields)
+		{
+			if (passwordFields.empty())
+				return incomingSettings;
+
+			Json::Value incoming;
+			bool incomingOk = !incomingSettings.empty() && ParseJSon(incomingSettings, incoming) && incoming.isObject();
+			Json::Value stored;
+			bool storedOk = !storedSettings.empty() && ParseJSon(storedSettings, stored) && stored.isObject();
+
+			// Incoming unusable (blank/invalid): preserve everything rather than wipe stored secrets.
+			if (!incomingOk)
+			{
+				if (!incomingSettings.empty())
+					_log.Log(LOG_ERROR, "WebServer: incoming plugin Settings not parseable on save; preserving stored values");
+				return storedOk ? storedSettings : incomingSettings;
+			}
+			// Stored unreadable: nothing recoverable to preserve; keep the incoming values as-is. A
+			// corrupt stored blob is already lost; warn so it is not silent.
+			if (!storedOk)
+			{
+				if (!storedSettings.empty())
+					_log.Log(LOG_ERROR, "WebServer: stored plugin Settings not parseable on save; cannot preserve existing secrets");
+				return incomingSettings;
+			}
+
+			for (const auto &field : passwordFields)
+			{
+				bool blank = !incoming.isMember(field) || incoming[field].asString().empty();
+				if (blank && stored.isMember(field))
+					incoming[field] = stored[field];
+			}
+			return JSonToRawString(incoming);
+		}
+#endif
+
 		void CWebServer::Cmd_AddHardware(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != URIGHTS_ADMIN)
@@ -1863,6 +1983,20 @@ namespace http
 				else if (htype == HTYPE_PythonPlugin)
 				{
 					sport = request::findValue(&req, "serialport");
+#ifdef ENABLE_PYTHON
+					{
+						// Preserve custom password fields left blank on save ("leave blank to keep").
+						// Extra holds the plugin key; a password field submitted empty keeps its stored value.
+						std::map<std::string, std::set<std::string>> pluginPasswordFields = BuildPluginPasswordFieldsByKey();
+						auto itPwd = pluginPasswordFields.find(extra);
+						if (itPwd != pluginPasswordFields.end() && !itPwd->second.empty())
+						{
+							std::vector<std::vector<std::string>> storedRes = m_sql.safe_query("SELECT Settings FROM Hardware WHERE ID=%q", idx.c_str());
+							std::string storedSettings = storedRes.empty() ? "" : storedRes[0][0];
+							settings = MergePluginSettingsPreservePasswords(settings, storedSettings, itPwd->second);
+						}
+					}
+#endif
 					m_sql.safe_query("UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, LogLevel=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', "
 						"Extra='%q', Mode1='%q', Mode2='%q', Mode3='%q', Mode4='%q', Mode5='%q', Mode6='%q', DataTimeout=%d, Settings='%q' WHERE (ID == '%q')",
 						name.c_str(), (senabled == "true") ? 1 : 0, htype, iLogLevelEnabled, address.c_str(), port, sport.c_str(), username.c_str(), password.c_str(),
@@ -1959,21 +2093,19 @@ namespace http
 			root["status"] = "OK";
 		}
 
-		void CWebServer::Cmd_AddUserVariable(WebEmSession& session, const request& req, Json::Value& root)
+		static bool ValidateUserVariableParams(const std::string& variablename, std::string& variabletype, const std::string& variablevalue, std::string& errorMessage)
 		{
-			root["title"] = "AddUserVariable";
-			root["status"] = "ERR";
-			if (session.rights != URIGHTS_ADMIN)
+			if (variablename.empty())
 			{
-				session.reply_status = reply::forbidden;
-				_log.Log(LOG_ERROR, "User: %s tried to add a uservariable!", session.username.c_str());
-				return; // Only admin user allowed
+				errorMessage = "Missing variable name (vname)";
+				return false;
 			}
-			std::string variablename = HTMLSanitizer::Sanitize(request::findValue(&req, "vname"));
-			std::string variablevalue = HTMLSanitizer::Sanitize(request::findValue(&req, "vvalue"));
-			std::string variabletype = request::findValue(&req, "vtype");
-
-			if (!std::isdigit(variabletype[0]))
+			if (variabletype.empty())
+			{
+				errorMessage = "Missing variable type (vtype)";
+				return false;
+			}
+			if (!std::isdigit((unsigned char)variabletype[0]))
 			{
 				stdlower(variabletype);
 				if (variabletype == "integer")
@@ -1988,22 +2120,45 @@ namespace http
 					variabletype = "4";
 				else
 				{
-					root["message"] = "Invalid variabletype " + variabletype;
-					session.reply_status = reply::bad_request;
-					return;
+					errorMessage = "Invalid variabletype " + variabletype;
+					return false;
 				}
 			}
-
-			if ((variablename.empty()) || (variabletype.empty()) ||
-				((variabletype != "0") && (variabletype != "1") && (variabletype != "2") && (variabletype != "3") && (variabletype != "4")) ||
-				((variablevalue.empty()) && (variabletype != "2")))
+			if ((variabletype != "0") && (variabletype != "1") && (variabletype != "2") && (variabletype != "3") && (variabletype != "4"))
 			{
-				root["message"] = "Invalid variabletype " + variabletype;
+				errorMessage = "Invalid variabletype " + variabletype;
+				return false;
+			}
+			if ((variablevalue.empty()) && (variabletype != "2"))
+			{
+				errorMessage = "Missing variable value (vvalue) for variabletype " + variabletype;
+				return false;
+			}
+			return true;
+		}
+
+		void CWebServer::Cmd_AddUserVariable(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "AddUserVariable";
+			root["status"] = "ERR";
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				_log.Log(LOG_ERROR, "User: %s tried to add a uservariable!", session.username.c_str());
+				return; // Only admin user allowed
+			}
+			std::string variablename = HTMLSanitizer::Sanitize(request::findValue(&req, "vname"));
+			std::string variablevalue = HTMLSanitizer::Sanitize(request::findValue(&req, "vvalue"));
+			std::string variabletype = request::findValue(&req, "vtype");
+
+			std::string errorMessage;
+			if (!ValidateUserVariableParams(variablename, variabletype, variablevalue, errorMessage))
+			{
+				root["message"] = errorMessage;
 				session.reply_status = reply::bad_request;
 				return;
 			}
 
-			std::string errorMessage;
 			if (!m_sql.AddUserVariable(variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue, errorMessage))
 			{
 				root["message"] = errorMessage;
@@ -2050,32 +2205,10 @@ namespace http
 			std::string variablevalue = HTMLSanitizer::Sanitize(request::findValue(&req, "vvalue"));
 			std::string variabletype = request::findValue(&req, "vtype");
 
-			if (!std::isdigit(variabletype[0]))
+			std::string errorMessage;
+			if (!ValidateUserVariableParams(variablename, variabletype, variablevalue, errorMessage))
 			{
-				stdlower(variabletype);
-				if (variabletype == "integer")
-					variabletype = "0";
-				else if (variabletype == "float")
-					variabletype = "1";
-				else if (variabletype == "string")
-					variabletype = "2";
-				else if (variabletype == "date")
-					variabletype = "3";
-				else if (variabletype == "time")
-					variabletype = "4";
-				else
-				{
-					root["message"] = "Invalid variabletype " + variabletype;
-					session.reply_status = reply::bad_request;
-					return;
-				}
-			}
-
-			if ((variablename.empty()) || (variabletype.empty()) ||
-				((variabletype != "0") && (variabletype != "1") && (variabletype != "2") && (variabletype != "3") && (variabletype != "4")) ||
-				((variablevalue.empty()) && (variabletype != "2")))
-			{
-				root["message"] = "Invalid variabletype " + variabletype;
+				root["message"] = errorMessage;
 				session.reply_status = reply::bad_request;
 				return;
 			}
@@ -2107,7 +2240,6 @@ namespace http
 			else if (variabletype != result[0][1])
 				bTypeNameChanged = true; // new type
 
-			std::string errorMessage;
 			if (!m_sql.UpdateUserVariable(idx, variablename, (const _eUsrVariableType)atoi(variabletype.c_str()), variablevalue, !bTypeNameChanged, errorMessage))
 			{
 				root["message"] = errorMessage;
@@ -2625,6 +2757,7 @@ namespace http
 				root["python_version"] = szPyVersion;
 				root["UseUpdate"] = false;
 				root["HaveUpdate"] = m_mainworker.IsUpdateAvailable(false);
+				root["ThemeSettingsAPI"] = CThemeSettings::API_VERSION;
 
 				if (session.rights == URIGHTS_ADMIN)
 				{
@@ -3314,6 +3447,12 @@ namespace http
 
 		void CWebServer::Cmd_UpdateDevices(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			if (session.rights == URIGHTS_VIEWER || session.rights == URIGHTS_NONE)
+			{
+				session.reply_status = reply::forbidden;
+				return; // only user or higher allowed
+			}
+
 			std::string script = request::findValue(&req, "script");
 			if (script.empty())
 			{
@@ -3862,6 +4001,34 @@ namespace http
 				m_webservers.ReloadTrustedNetworks();
 				cntSettings++;
 
+				std::string sProxyHeaderFamily = request::findValue(&req, "WebProxyHeaderFamily");
+				if (!sProxyHeaderFamily.empty())
+				{
+					int iProxyHeaderFamily = atoi(sProxyHeaderFamily.c_str());
+					if ((iProxyHeaderFamily >= static_cast<int>(ProxyHeaderFamily::None)) && (iProxyHeaderFamily <= static_cast<int>(ProxyHeaderFamily::XRealIP)))
+					{
+						int iCurrentFamily = static_cast<int>(ProxyHeaderFamily::XForwardedFor);
+						m_sql.GetPreferencesVar("WebProxyHeaderFamily", iCurrentFamily);
+						m_sql.UpdatePreferencesVar("WebProxyHeaderFamily", iProxyHeaderFamily);
+						// Applied when the server is constructed; the running servers read
+						// this from their own settings copy on the io threads, so it is not
+						// safe to mutate it underneath them here.
+						if (iCurrentFamily != iProxyHeaderFamily)
+							_log.Log(LOG_STATUS, "Proxy forwarded-header setting changed, restart Domoticz to apply it");
+						cntSettings++;
+					}
+				}
+
+				std::string WebAllowedCORSOrigins = CURLEncode::URLDecode(request::findValue(&req, "WebAllowedCORSOrigins"));
+				m_sql.UpdatePreferencesVar("WebAllowedCORSOrigins", WebAllowedCORSOrigins);
+				cntSettings++;
+				int WebCORSAllowTrustedNetworks = (request::findValue(&req, "WebCORSAllowTrustedNetworks") == "on" ? 1 : 0);
+				m_sql.UpdatePreferencesVar("WebCORSAllowTrustedNetworks", WebCORSAllowTrustedNetworks);
+				cntSettings++;
+				m_webservers.ReloadCorsPolicy();
+				if (WebAllowedCORSOrigins.find('*') != std::string::npos)
+					_log.Log(LOG_STATUS, "SECURITY RISK! CORS origin '*' is configured: every website can call the API from a browser on a trusted network! Restrict 'Allowed CORS origins' in Settings/Security to specific origins.");
+
 				if (session.username.empty())
 				{
 					// Local network could be changed so lets force a check here
@@ -4071,17 +4238,6 @@ namespace http
 
 				std::string szESettings = JSonToRawString(ESettings);
 				m_sql.UpdatePreferencesVar("ESettings", szESettings);
-
-				std::string szThemeSettings = request::findValue(&req, "ThemeSettings");
-				if (!szThemeSettings.empty())
-				{
-					Json::Value jvalidate;
-					if (ParseJSon(szThemeSettings, jvalidate))
-					{
-						m_sql.UpdatePreferencesVar("ThemeSettings", szThemeSettings);
-					}
-					cntSettings++;
-				}
 
 				m_sql.SetUnitsAndScale();
 
@@ -4546,55 +4702,15 @@ namespace http
 			if (!result.empty())
 			{
 #ifdef ENABLE_PYTHON
-				// Pre-build password field sets per plugin key to avoid per-entry XML parsing
+				// Map plugin key -> password field names, built once, but only when the result actually
+				// contains a plugin row (avoids parsing manifests for non-plugin queries).
 				std::map<std::string, std::set<std::string>> pluginPasswordFields;
 				{
-					Plugins::CPluginSystem PluginMgr;
-					std::map<std::string, std::string> *mPluginXml = PluginMgr.GetManifest();
-					for (const auto &type : *mPluginXml)
-					{
-						TiXmlDocument xmlDoc;
-						xmlDoc.Parse(type.second.c_str());
-						if (xmlDoc.Error())
-							continue;
-						TiXmlNode *pPluginNode = xmlDoc.FirstChild("plugin");
-						if (!pPluginNode)
-							continue;
-						TiXmlElement *pPluginEle = pPluginNode->ToElement();
-						if (!pPluginEle)
-							continue;
-						const char *pKey = pPluginEle->Attribute("key");
-						if (!pKey)
-							continue;
-						std::string pluginKey = pKey;
-						TiXmlNode *pParamsNode = pPluginNode->FirstChild("params");
-						if (!pParamsNode)
-							continue;
-						auto checkParam = [&](TiXmlElement *pEle) {
-							const char *pField = pEle->Attribute("field");
-							const char *pPassword = pEle->Attribute("password");
-							if (pField && pPassword && std::string(pPassword) == "true")
-								pluginPasswordFields[pluginKey].insert(pField);
-						};
-						for (TiXmlNode *pChild = pParamsNode->FirstChild(); pChild; pChild = pChild->NextSibling())
-						{
-							TiXmlElement *pEle = pChild->ToElement();
-							if (!pEle)
-								continue;
-							std::string tagName = pEle->Value();
-							if (tagName == "param")
-								checkParam(pEle);
-							else if (tagName == "group")
-							{
-								for (TiXmlNode *pGroupChild = pEle->FirstChild("param"); pGroupChild; pGroupChild = pGroupChild->NextSibling("param"))
-								{
-									TiXmlElement *pGroupEle = pGroupChild->ToElement();
-									if (pGroupEle)
-										checkParam(pGroupEle);
-								}
-							}
-						}
-					}
+					bool hasPlugin = false;
+					for (const auto &sd : result)
+						if ((_eHardwareTypes)atoi(sd[3].c_str()) == HTYPE_PythonPlugin) { hasPlugin = true; break; }
+					if (hasPlugin)
+						pluginPasswordFields = BuildPluginPasswordFieldsByKey();
 				}
 #endif
 				int ii = 0;
@@ -4646,17 +4762,30 @@ namespace http
 						if (ParseJSon(sd[18], settingsJson) && settingsJson.isObject())
 						{
 #ifdef ENABLE_PYTHON
-							// Strip password-type field values using pre-built cache
-							std::string pluginKey = sd[9]; // Extra holds plugin key
+							// Strip password-type field values so secrets never reach the browser, and
+							// report which ones are set so the UI can show "leave blank to keep".
+							std::string pluginKey = sd[9]; // Extra holds the plugin key
 							auto itPwdFields = pluginPasswordFields.find(pluginKey);
 							if (itPwdFields != pluginPasswordFields.end())
 							{
+								Json::Value pwdSet(Json::objectValue);
 								for (const auto &field : itPwdFields->second)
 								{
 									if (settingsJson.isMember(field))
+									{
+										if (!settingsJson[field].asString().empty())
+											pwdSet[field] = true;
 										settingsJson[field] = "";
+									}
 								}
+								if (!pwdSet.empty())
+									root["result"][ii]["SettingsPwdSet"] = pwdSet;
 							}
+#else
+							// Without Python support the plugin manifest is unavailable, so password
+							// fields cannot be identified and stripped; do not send stored plugin
+							// settings of lingering plugin rows at all.
+							settingsJson = Json::objectValue;
 #endif
 							root["result"][ii]["Settings"] = settingsJson;
 						}
@@ -4793,8 +4922,9 @@ namespace http
 					root["result"][ii]["TabsEnabled"] = atoi(sd[6].c_str());
 					ii++;
 				}
-				root["status"] = "OK";
 			}
+			// having no users defined is a normal situation, not an error
+			root["status"] = "OK";
 		}
 
 		void CWebServer::Cmd_GetApplications(WebEmSession & session, const request& req, Json::Value &root)
@@ -4807,7 +4937,7 @@ namespace http
 			else
 			{
 				std::vector<std::vector<std::string>> result;
-				result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile, RefreshExpire, SigningSecret, LastSeen FROM Applications ORDER BY ID ASC");
+				result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile, RefreshExpire, SigningSecret, LastSeen, RedirectUris FROM Applications ORDER BY ID ASC");
 				if (!result.empty())
 				{
 					int ii = 0;
@@ -4822,6 +4952,7 @@ namespace http
 						root["result"][ii]["RefreshExpire"] = atoi(sd[6].c_str());
 						root["result"][ii]["SigningSecret"] = sd[7];
 						root["result"][ii]["LastSeen"] = sd[8];
+						root["result"][ii]["RedirectUris"] = sd[9];
 						ii++;
 					}
 				}
@@ -4846,6 +4977,7 @@ namespace http
 				std::string srefreshexpire = request::findValue(&req, "refreshexpire");
 				uint32_t refreshexpire = (srefreshexpire.empty()) ? 0 : static_cast<uint32_t>(atol(srefreshexpire.c_str()));
 				std::string signingsecret = request::findValue(&req, "signingsecret");
+				std::string redirecturis = request::findValue(&req, "redirecturis");
 				// Auto-generate signing secret if not provided
 				if (signingsecret.empty())
 					signingsecret = GenerateUUID();
@@ -4874,8 +5006,8 @@ namespace http
 				}
 
 				// Insert the new application
-				m_sql.safe_query("INSERT INTO Applications (Active, Public, Applicationname, Secret, Pemfile, RefreshExpire, SigningSecret) VALUES (%d,%d,'%q','%q','%q',%u,'%q')",
-					(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str(), refreshexpire, signingsecret.c_str());
+				m_sql.safe_query("INSERT INTO Applications (Active, Public, Applicationname, Secret, Pemfile, RefreshExpire, SigningSecret, RedirectUris) VALUES (%d,%d,'%q','%q','%q',%u,'%q','%q')",
+					(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str(), refreshexpire, signingsecret.c_str(), redirecturis.c_str());
 
 				// Reload the applications (and users)
 				LoadUsers();
@@ -4902,6 +5034,7 @@ namespace http
 				std::string srefreshexpire = request::findValue(&req, "refreshexpire");
 				uint32_t refreshexpire = (srefreshexpire.empty()) ? 0 : static_cast<uint32_t>(atol(srefreshexpire.c_str()));
 				std::string signingsecret = request::findValue(&req, "signingsecret");
+				std::string redirecturis = request::findValue(&req, "redirecturis");
 				// Auto-generate signing secret if not provided
 				if (signingsecret.empty())
 					signingsecret = GenerateUUID();
@@ -4937,8 +5070,8 @@ namespace http
 				}
 
 				// Update the application
-				m_sql.safe_query("UPDATE Applications SET Active=%d, Public=%d, Applicationname='%q', Secret='%q', Pemfile='%q', RefreshExpire=%u, SigningSecret='%q' WHERE (ID == '%q')",
-					(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str(), refreshexpire, signingsecret.c_str(), idx.c_str());
+				m_sql.safe_query("UPDATE Applications SET Active=%d, Public=%d, Applicationname='%q', Secret='%q', Pemfile='%q', RefreshExpire=%u, SigningSecret='%q', RedirectUris='%q' WHERE (ID == '%q')",
+					(senabled == "true") ? 1 : 0, (spublic == "true") ? 1 : 0, applicationname.c_str(), secret.c_str(), pemfile.c_str(), refreshexpire, signingsecret.c_str(), redirecturis.c_str(), idx.c_str());
 
 				// Reload the applications (and users)
 				LoadUsers();
@@ -6412,11 +6545,11 @@ namespace http
 				m_mainworker.m_pluginsystem.DeviceModified(atoi(idx.c_str()));
 #endif
 			}
-			if (!result.empty())
-			{
-				root["status"] = "OK";
-				root["title"] = "SetUsed";
-			}
+			// the device was already validated above, 'result' can have been reused by the
+			// sub device lookup in between, so it says nothing about the outcome here
+			root["status"] = "OK";
+			root["title"] = "SetUsed";
+
 			if (m_sql.m_bEnableEventSystem)
 				m_mainworker.m_eventsystem.GetCurrentStates();
 		}
@@ -6501,6 +6634,18 @@ namespace http
 				else if (Key == "WebLocalNetworks")
 				{
 					root["WebLocalNetworks"] = sValue;
+				}
+				else if (Key == "WebProxyHeaderFamily")
+				{
+					root["WebProxyHeaderFamily"] = nValue;
+				}
+				else if (Key == "WebAllowedCORSOrigins")
+				{
+					root["WebAllowedCORSOrigins"] = sValue;
+				}
+				else if (Key == "WebCORSAllowTrustedNetworks")
+				{
+					root["WebCORSAllowTrustedNetworks"] = nValue;
 				}
 				else if (Key == "RandomTimerFrame")
 				{
@@ -6805,17 +6950,173 @@ namespace http
 				{
 					root["PriceResolution"] = nValue;
 				}
-				else if (Key == "ThemeSettings")
+			}
+			// ThemeSettings is served from the ThemeSettings table as the merge of the
+			// instance defaults with the calling user's overlay (user rows win per
+			// theme), so existing themes reading data.ThemeSettings keep working and
+			// get per-user values for free. The legacy Preferences row is not read.
+			Json::Value jThemeSettings;
+			const int iUser = session.username.empty() ? -1 : FindUser(session.username.c_str());
+			const unsigned long userID = (iUser != -1) ? m_users[iUser].ID : 0;
+			if (CThemeSettings::GetMerged(iUser != -1, userID, jThemeSettings))
+				root["ThemeSettings"] = jThemeSettings;
+			root["DebugLevel"] = static_cast<int>(_log.GetDebugFlags());
+		}
+
+		void CWebServer::Cmd_ThemeSettingsGet(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "ThemeSettingsGet";
+
+			if ((session.rights != URIGHTS_VIEWER) && (session.rights != URIGHTS_SWITCHER) && (session.rights != URIGHTS_ADMIN))
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			const std::string themeName = request::findValue(&req, "theme");
+			if (!CThemeSettings::IsValidThemeName(themeName))
+			{
+				root["error"] = CThemeSettings::ErrorCode(CThemeSettings::eResult::InvalidTheme);
+				root["message"] = CThemeSettings::ErrorMessage(CThemeSettings::eResult::InvalidTheme);
+				return;
+			}
+
+			// Per-user rows cannot work when the session identity is shared, which is the
+			// case for trusted-network / -nowwwpwd requests without an explicit login:
+			// CheckAuthentication assigns the first admin to every anonymous client.
+			root["PerUser"] = !session.istrustednetwork || !session.id.empty();
+			root["theme"] = themeName;
+
+			root["instance"]["present"] = false;
+			{
+				Json::Value jValue;
+				std::string lastUpdate;
+				if (CThemeSettings::Get(CThemeSettings::eScope::Instance, 0, themeName, jValue, lastUpdate))
 				{
-					Json::Value jthemesettings;
-					bool ret = ParseJSon(sValue, jthemesettings);
-					if (ret)
-					{
-						root["ThemeSettings"] = jthemesettings;
-					}
+					root["instance"]["present"] = true;
+					root["instance"]["value"] = jValue;
+					root["instance"]["lastupdate"] = lastUpdate;
 				}
 			}
-			root["DebugLevel"] = static_cast<int>(_log.GetDebugFlags());
+
+			root["user"]["present"] = false;
+			const int iUser = session.username.empty() ? -1 : FindUser(session.username.c_str());
+			if (iUser != -1)
+			{
+				Json::Value jValue;
+				std::string lastUpdate;
+				if (CThemeSettings::Get(CThemeSettings::eScope::User, m_users[iUser].ID, themeName, jValue, lastUpdate))
+				{
+					root["user"]["present"] = true;
+					root["user"]["value"] = jValue;
+					root["user"]["lastupdate"] = lastUpdate;
+				}
+			}
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_ThemeSettingsSet(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "ThemeSettingsSet";
+
+			if (req.method != "POST")
+			{
+				root["error"] = "post_required";
+				root["message"] = "Only POST is allowed";
+				return;
+			}
+			if ((session.rights != URIGHTS_VIEWER) && (session.rights != URIGHTS_SWITCHER) && (session.rights != URIGHTS_ADMIN))
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+			const int iUser = session.username.empty() ? -1 : FindUser(session.username.c_str());
+			if (iUser == -1)
+			{
+				// OAuth clients, access tokens and synthetic sessions have no Users row to
+				// attach an overlay to; refuse explicitly instead of guessing an owner.
+				root["error"] = "no_identity";
+				root["message"] = "Session does not resolve to a user account";
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			const unsigned long userID = m_users[iUser].ID;
+			const std::string szReset = request::findValue(&req, "reset");
+			std::string newLastUpdate;
+			CThemeSettings::eResult res;
+
+			if (szReset == "all")
+			{
+				// Drops every overlay this user holds, the only way to free rows of a
+				// theme that was renamed or uninstalled and whose name a client can no
+				// longer produce. Deliberately has no instance-scope counterpart.
+				res = CThemeSettings::DeleteForUser(userID);
+			}
+			else if (szReset == "true")
+			{
+				res = CThemeSettings::Reset(CThemeSettings::eScope::User, userID, request::findValue(&req, "theme"));
+			}
+			else
+			{
+				res = CThemeSettings::Set(CThemeSettings::eScope::User, userID, request::findValue(&req, "theme"), request::findValue(&req, "value"),
+							  request::findValue(&req, "lastupdate"), newLastUpdate);
+			}
+			if (res != CThemeSettings::eResult::Ok)
+			{
+				root["error"] = CThemeSettings::ErrorCode(res);
+				root["message"] = CThemeSettings::ErrorMessage(res);
+				return;
+			}
+			// Only a stored value has a token to hand back; a reset leaves no row
+			if (!newLastUpdate.empty())
+				root["lastupdate"] = newLastUpdate;
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_ThemeSettingsSetDefault(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["status"] = "ERR";
+			root["title"] = "ThemeSettingsSetDefault";
+
+			if (req.method != "POST")
+			{
+				root["error"] = "post_required";
+				root["message"] = "Only POST is allowed";
+				return;
+			}
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			std::string newLastUpdate;
+			CThemeSettings::eResult res;
+
+			// Instance defaults are reset one theme at a time; there is no reset=all here
+			if (request::findValue(&req, "reset") == "true")
+			{
+				res = CThemeSettings::Reset(CThemeSettings::eScope::Instance, 0, request::findValue(&req, "theme"));
+			}
+			else
+			{
+				res = CThemeSettings::Set(CThemeSettings::eScope::Instance, 0, request::findValue(&req, "theme"), request::findValue(&req, "value"),
+							  request::findValue(&req, "lastupdate"), newLastUpdate);
+			}
+			if (res != CThemeSettings::eResult::Ok)
+			{
+				root["error"] = CThemeSettings::ErrorCode(res);
+				root["message"] = CThemeSettings::ErrorMessage(res);
+				return;
+			}
+			// Keep the legacy Preferences blob in step with the instance rows
+			CThemeSettings::MirrorDefaults();
+			if (!newLastUpdate.empty())
+				root["lastupdate"] = newLastUpdate;
+			root["status"] = "OK";
 		}
 
 		void CWebServer::Cmd_GetLightLog(WebEmSession& session, const request& req, Json::Value& root)
@@ -7000,19 +7301,22 @@ namespace http
 
 			int ii = 0;
 			root["title"] = "rclientslog";
-			for (const auto& itt_rc : m_remote_web_clients)
+			// m_webservers aggregates across every running server (plain and
+			// secure), since the tracked-clients map is now per-cWebem-instance
+			// rather than one process-wide map shared by all of them.
+			for (const auto& rc : m_webservers.GetRemoteClients())
 			{
 				char timestring[128];
 				timestring[0] = 0;
 				struct tm timeinfo;
-				localtime_r(&itt_rc.second.last_seen, &timeinfo);
+				localtime_r(&rc.last_seen, &timeinfo);
 
 				strftime(timestring, sizeof(timestring), "%a, %d %b %Y %H:%M:%S %z", &timeinfo);
 
 				root["result"][ii]["date"] = timestring;
-				root["result"][ii]["address"] = itt_rc.second.host_remote_endpoint_address_;
-				root["result"][ii]["port"] = itt_rc.second.host_local_endpoint_port_;
-				root["result"][ii]["req"] = itt_rc.second.host_last_request_uri_;
+				root["result"][ii]["address"] = rc.host_remote_endpoint_address_;
+				root["result"][ii]["port"] = rc.host_local_endpoint_port_;
+				root["result"][ii]["req"] = rc.host_last_request_uri_;
 				ii++;
 			}
 			root["status"] = "OK";

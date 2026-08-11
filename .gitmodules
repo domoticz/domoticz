@@ -15,7 +15,7 @@
 	ignore = dirty
 [submodule "extern/sqlite-amalgamation"]
 	path = extern/sqlite-amalgamation
-	url = https://github.com/algoritnl/sqlite-amalgamation.git
+	url = https://github.com/algoritnl/sqlite-cmake.git
 	branch = main
 	ignore = dirty
 [submodule "extern/libwebem"]

@@ -57,6 +57,7 @@ define([
             {
                 key:     'refreshInterval',
                 type:    'number',
+                step:    1,
                 label:   'Refresh interval (seconds)',
                 default: 60
             }
@@ -129,6 +130,22 @@ define([
                     return nowMin < toMinutes(sunriseStr) || nowMin >= toMinutes(sunsetStr);
                 }
 
+                function getWeatherScene(forecastStr) {
+                    if (!forecastStr) { return 'fcw-cloudy'; }
+                    var s = forecastStr.toLowerCase();
+                    if (s.indexOf('thunderstorm') >= 0) { return 'fcw-thunderstorm'; }
+                    if (s.indexOf('heavy rain') >= 0) { return 'fcw-heavyrain'; }
+                    if (s.indexOf('rain') >= 0 || s.indexOf('shower') >= 0) { return 'fcw-rain'; }
+                    if (s.indexOf('heavy snow') >= 0 || s.indexOf('blizzard') >= 0) { return 'fcw-heavysnow'; }
+                    if (s.indexOf('snow') >= 0 || s.indexOf('sleet') >= 0) { return 'fcw-snow'; }
+                    if (s.indexOf('unstable') >= 0) { return 'fcw-cloudy'; }
+                    if (s.indexOf('stable') >= 0) { return 'fcw-sunny'; }
+                    if (s.indexOf('sunny') >= 0 || (s.indexOf('clear') >= 0 && s.indexOf('night') < 0)) { return 'fcw-sunny'; }
+                    if (s.indexOf('partly') >= 0 || s.indexOf('scattered') >= 0 || s.indexOf('some clouds') >= 0) { return 'fcw-partlycloudy'; }
+                    if (s.indexOf('night') >= 0) { return 'fcw-night'; }
+                    return 'fcw-cloudy';
+                }
+
                 function applyDevices(result) {
                     if (!result || !result.length) { return; }
 
@@ -145,6 +162,7 @@ define([
                             usageDelivWatt:    parseWatt(gr.UsageDeliv),
                             counterToday:      gr.CounterToday || '',
                             counterDelivToday: gr.CounterDelivToday || '',
+                            timeout:           gr.HaveTimeout === true,
                             price:             gr.hasOwnProperty('price') ? (parseFloat(gr.price) || 0) : null
                         };
                     } else {
@@ -156,7 +174,8 @@ define([
                     if (sl) {
                         ctrl.solar = {
                             usageWatt:    Math.round(parseWatt(sl.Usage)),
-                            counterToday: sl.CounterToday || ''
+                            counterToday: sl.CounterToday || '',
+                            timeout:      sl.HaveTimeout === true
                         };
                     } else {
                         ctrl.solar = null;
@@ -169,7 +188,9 @@ define([
                             temp:        parseFloat(wt.Temp) || 0,
                             humidity:    parseFloat(wt.Humidity) || 0,
                             barometer:   parseInt(wt.Barometer, 10) || 0,
+                            timeout:     wt.HaveTimeout === true,
                             forecastStr: wt.ForecastStr || '',
+                            scene:       getWeatherScene(wt.ForecastStr || ''),
                             dewPoint:    parseFloat(wt.DewPoint) || 0
                         };
                     } else {
@@ -183,7 +204,8 @@ define([
                         ctrl.gas = {
                             counterToday: gs.CounterToday || '',
                             counter:      gs.Counter || '',
-                            price: (!isNaN(rawGasPrice) && rawGasPrice !== 1000 && rawGasPrice !== 0) ? rawGasPrice : null
+                            price: (!isNaN(rawGasPrice) && rawGasPrice !== 1000 && rawGasPrice !== 0) ? rawGasPrice : null,
+                            timeout:      gs.HaveTimeout === true
                         };
                     } else {
                         ctrl.gas = null;
@@ -196,21 +218,22 @@ define([
                         ctrl.water = {
                             counterToday: wm.CounterToday || '',
                             counter:      wm.Counter || '',
-                            price: (!isNaN(rawWaterPrice) && rawWaterPrice !== 1000 && rawWaterPrice !== 0) ? rawWaterPrice : null
+                            price: (!isNaN(rawWaterPrice) && rawWaterPrice !== 1000 && rawWaterPrice !== 0) ? rawWaterPrice : null,
+                            timeout:      wm.HaveTimeout === true
                         };
                     } else {
                         ctrl.water = null;
                     }
 
                     // Battery energy meters
-                    var batImportedKwh = 0, batExportedKwh = 0;
+                    var batImportedKwh = 0, batExportedKwh = 0, timeout = false;
                     var bi = get(ids.battEnergyIn);
-                    if (bi) { batImportedKwh = parseKwh(bi.CounterToday); }
+                    if (bi) { batImportedKwh = parseKwh(bi.CounterToday); timeout = bi.HaveTimeout === true; }
                     var bo = get(ids.battEnergyOut);
-                    if (bo) { batExportedKwh = parseKwh(bo.CounterToday); }
+                    if (bo) { batExportedKwh = parseKwh(bo.CounterToday); timeout = timeout || bo.HaveTimeout === true; }
 
                     if (bi || bo) {
-                        ctrl.battery = { importedKwh: batImportedKwh, exportedKwh: batExportedKwh };
+                        ctrl.battery = { importedKwh: batImportedKwh, exportedKwh: batExportedKwh, timeout: timeout };
                     } else {
                         ctrl.battery = null;
                     }

@@ -40,6 +40,7 @@ define([
             {
                 key:      'maxItems',
                 type:     'number',
+                step:     1,
                 label:    'Max items (1–20)',
                 default:  5,
                 min:      1,
@@ -48,6 +49,7 @@ define([
             {
                 key:      'refreshInterval',
                 type:     'number',
+                step:     1,
                 label:    'Refresh interval (seconds)',
                 default:  300,
                 min:      30

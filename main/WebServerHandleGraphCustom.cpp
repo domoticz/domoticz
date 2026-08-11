@@ -87,6 +87,12 @@ void HandleGraphCustomRange(const GraphContext& ctx, const request& req,
 	const std::string& srange      = ctx.srange;
 	const std::map<std::string, std::string>& options = ctx.options;
 
+	// The range string must be "YYYY-MM-DDTYYYY-MM-DD" (length 21, 'T' at index 10).
+	// Guard against a short or malformed value, which would otherwise throw
+	// std::out_of_range on the substr() calls below (e.g. a caller passing "1970").
+	if (srange.length() < 21 || srange[10] != 'T')
+		return;
+
 	std::string dbasetable = CalcDbasetableCustom(ctx);
 	unsigned char tempsign = sql.m_tempsign[0];
 
@@ -486,6 +492,52 @@ void HandleGraphCustomRange(const GraphContext& ctx, const request& req,
 				root["ValueUnits"] = (options.count("ValueUnits") ? options.at("ValueUnits") : std::string{});
 				root["Divider"] = divider;
 
+				// Built-in counter families carry no ValueUnits option, but their unit is
+				// fixed by device type. Populate it once here (the single place that owns
+				// the custom-range series) so consumers such as the MCP server can label
+				// values without re-deriving units. Gap-fill only: never overrides an
+				// option-provided unit, and does not touch the emitted values. This is a
+				// single per-response unit, correct because every family here uses one unit
+				// for all of its series. Current/CM113 is set in its own branch below (which
+				// already reads the A-vs-Watt display preference, so we do not re-read it
+				// here); LeafWetness intentionally has no unit.
+				// metertype: 0 = metric, 1 = imperial (matches the value conversion below).
+				if (root["ValueUnits"].asString().empty())
+				{
+					std::string vu;
+					if (dType == pTypeAirQuality)
+						vu = "ppm";
+					else if (dType == pTypeLux)
+						vu = "Lux";
+					else if (dType == pTypeUsage)
+						vu = "Watt";
+					else if (dType == pTypeWEIGHT)
+						vu = sql.m_weightsign;
+					else if (dType == pTypeRFXSensor && (dSubType == sTypeRFXSensorAD || dSubType == sTypeRFXSensorVolt))
+						vu = "mV";
+					else if (dType == pTypeGeneral)
+					{
+						if (dSubType == sTypeVoltage)
+							vu = "V";
+						else if (dSubType == sTypeCurrent)
+							vu = "A";
+						else if (dSubType == sTypePressure)
+							vu = "Bar";
+						else if (dSubType == sTypeSoundLevel)
+							vu = "dB";
+						else if (dSubType == sTypeSolarRadiation)
+							vu = "Watt/m2";
+						else if (dSubType == sTypeSoilMoisture)
+							vu = "cb";
+						else if (dSubType == sTypeVisibility)
+							vu = (metertype == 1) ? "mi" : "km";
+						else if (dSubType == sTypeDistance)
+							vu = (metertype == 1) ? "in" : "cm";
+					}
+					if (!vu.empty())
+						root["ValueUnits"] = vu;
+				}
+
 				int ii = 0;
 				if (dType == pTypeP1Power)
 				{
@@ -523,6 +575,221 @@ void HandleGraphCustomRange(const GraphContext& ctx, const request& req,
 						if (bHaveDeliverd)
 						{
 							root["delivered"] = true;
+						}
+					}
+				}
+				else if (dType == pTypeAirQuality)
+				{
+					result = sql.safe_query("SELECT Value1,Value2,Value3,Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+						dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
+					if (!result.empty())
+					{
+						for (const auto& sd : result)
+						{
+							root["result"][ii]["d"] = sd[3].substr(0, 16);
+							root["result"][ii]["co2_min"] = sd[0];
+							root["result"][ii]["co2_max"] = sd[1];
+							root["result"][ii]["co2_avg"] = sd[2];
+							ii++;
+						}
+					}
+				}
+				else if (dType == pTypeLux)
+				{
+					result = sql.safe_query("SELECT Value1,Value2,Value3,Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+						dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
+					if (!result.empty())
+					{
+						for (const auto& sd : result)
+						{
+							root["result"][ii]["d"] = sd[3].substr(0, 16);
+							root["result"][ii]["lux_min"] = sd[0];
+							root["result"][ii]["lux_max"] = sd[1];
+							root["result"][ii]["lux_avg"] = sd[2];
+							ii++;
+						}
+					}
+				}
+				else if (dType == pTypeWEIGHT)
+				{
+					result = sql.safe_query("SELECT Value1,Value2,Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+						dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
+					if (!result.empty())
+					{
+						for (const auto& sd : result)
+						{
+							root["result"][ii]["d"] = sd[2].substr(0, 16);
+							snprintf(szTmp, sizeof(szTmp), "%.1f", sql.m_weightscale * atof(sd[0].c_str()) / 10.0F);
+							root["result"][ii]["v_min"] = szTmp;
+							snprintf(szTmp, sizeof(szTmp), "%.1f", sql.m_weightscale * atof(sd[1].c_str()) / 10.0F);
+							root["result"][ii]["v_max"] = szTmp;
+							ii++;
+						}
+					}
+				}
+				else if (dType == pTypeUsage)
+				{
+					result = sql.safe_query("SELECT Value1,Value2,Value3,Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+						dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
+					if (!result.empty())
+					{
+						for (const auto& sd : result)
+						{
+							root["result"][ii]["d"] = sd[3].substr(0, 16);
+							root["result"][ii]["u_min"] = atof(sd[0].c_str()) / 10.0F;
+							root["result"][ii]["u_max"] = atof(sd[1].c_str()) / 10.0F;
+							root["result"][ii]["u_avg"] = static_cast<int>((atof(sd[2].c_str()) / 10.0F) + 0.5F);
+							ii++;
+						}
+					}
+				}
+				else if (dType == pTypeCURRENT || dType == pTypeCURRENTENERGY)
+				{
+					result = sql.safe_query("SELECT Value1,Value2,Value3,Value4,Value5,Value6,Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+						dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
+					if (!result.empty())
+					{
+						int displaytype = 0;
+						int voltage = 230;
+						sql.GetPreferencesVar("CM113DisplayType", displaytype);
+						sql.GetPreferencesVar("ElectricVoltage", voltage);
+						root["displaytype"] = displaytype;
+						if (root["ValueUnits"].asString().empty())
+							root["ValueUnits"] = (displaytype == 1) ? "Watt" : "A";
+						bool bHaveL1 = false;
+						bool bHaveL2 = false;
+						bool bHaveL3 = false;
+						for (const auto& sd : result)
+						{
+							root["result"][ii]["d"] = sd[6].substr(0, 16);
+							float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0F);
+							float fval2 = static_cast<float>(atof(sd[1].c_str()) / 10.0F);
+							float fval3 = static_cast<float>(atof(sd[2].c_str()) / 10.0F);
+							float fval4 = static_cast<float>(atof(sd[3].c_str()) / 10.0F);
+							float fval5 = static_cast<float>(atof(sd[4].c_str()) / 10.0F);
+							float fval6 = static_cast<float>(atof(sd[5].c_str()) / 10.0F);
+							if ((fval1 != 0) || (fval2 != 0))
+								bHaveL1 = true;
+							if ((fval3 != 0) || (fval4 != 0))
+								bHaveL2 = true;
+							if ((fval5 != 0) || (fval6 != 0))
+								bHaveL3 = true;
+							if (displaytype == 0)
+							{
+								snprintf(szTmp, sizeof(szTmp), "%.1f", fval1);
+								root["result"][ii]["v1"] = szTmp;
+								snprintf(szTmp, sizeof(szTmp), "%.1f", fval2);
+								root["result"][ii]["v2"] = szTmp;
+								snprintf(szTmp, sizeof(szTmp), "%.1f", fval3);
+								root["result"][ii]["v3"] = szTmp;
+								snprintf(szTmp, sizeof(szTmp), "%.1f", fval4);
+								root["result"][ii]["v4"] = szTmp;
+								snprintf(szTmp, sizeof(szTmp), "%.1f", fval5);
+								root["result"][ii]["v5"] = szTmp;
+								snprintf(szTmp, sizeof(szTmp), "%.1f", fval6);
+								root["result"][ii]["v6"] = szTmp;
+							}
+							else
+							{
+								snprintf(szTmp, sizeof(szTmp), "%d", int(fval1 * voltage));
+								root["result"][ii]["v1"] = szTmp;
+								snprintf(szTmp, sizeof(szTmp), "%d", int(fval2 * voltage));
+								root["result"][ii]["v2"] = szTmp;
+								snprintf(szTmp, sizeof(szTmp), "%d", int(fval3 * voltage));
+								root["result"][ii]["v3"] = szTmp;
+								snprintf(szTmp, sizeof(szTmp), "%d", int(fval4 * voltage));
+								root["result"][ii]["v4"] = szTmp;
+								snprintf(szTmp, sizeof(szTmp), "%d", int(fval5 * voltage));
+								root["result"][ii]["v5"] = szTmp;
+								snprintf(szTmp, sizeof(szTmp), "%d", int(fval6 * voltage));
+								root["result"][ii]["v6"] = szTmp;
+							}
+							ii++;
+						}
+						if ((!bHaveL1) && (!bHaveL2) && (!bHaveL3))
+							root["haveL1"] = true;
+						else
+						{
+							if (bHaveL1)
+								root["haveL1"] = true;
+							if (bHaveL2)
+								root["haveL2"] = true;
+							if (bHaveL3)
+								root["haveL3"] = true;
+						}
+					}
+				}
+				else if (((dType == pTypeGeneral) && ((dSubType == sTypeSoilMoisture) || (dSubType == sTypeLeafWetness))) ||
+					((dType == pTypeRFXSensor) && ((dSubType == sTypeRFXSensorAD) || (dSubType == sTypeRFXSensorVolt))))
+				{
+					result = sql.safe_query("SELECT Value1,Value2,Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+						dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
+					if (!result.empty())
+					{
+						for (const auto& sd : result)
+						{
+							root["result"][ii]["d"] = sd[2].substr(0, 16);
+							root["result"][ii]["v_min"] = sd[0];
+							root["result"][ii]["v_max"] = sd[1];
+							ii++;
+						}
+					}
+				}
+				else if ((dType == pTypeGeneral) && ((dSubType == sTypeVisibility) || (dSubType == sTypeDistance) ||
+					(dSubType == sTypeSolarRadiation) || (dSubType == sTypeVoltage) ||
+					(dSubType == sTypeCurrent) || (dSubType == sTypePressure) || (dSubType == sTypeSoundLevel)))
+				{
+					float vdiv = 10.0F;
+					if ((dSubType == sTypeVoltage) || (dSubType == sTypeCurrent))
+						vdiv = 1000.0F;
+					result = sql.safe_query("SELECT Value1,Value2,Value3,Date FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
+						dbasetable.c_str(), idx, szDateStart.c_str(), szDateEnd.c_str());
+					if (!result.empty())
+					{
+						for (const auto& sd : result)
+						{
+							float fValue1 = float(atof(sd[0].c_str())) / vdiv;
+							float fValue2 = float(atof(sd[1].c_str())) / vdiv;
+							float fValue3 = float(atof(sd[2].c_str())) / vdiv;
+							root["result"][ii]["d"] = sd[3].substr(0, 16);
+							if (metertype == 1)
+							{
+								if (dSubType == sTypeDistance)
+								{
+									fValue1 *= 0.3937007874015748F;
+									fValue2 *= 0.3937007874015748F;
+								}
+								else
+								{
+									fValue1 *= 0.6214F;
+									fValue2 *= 0.6214F;
+								}
+							}
+							if ((dSubType == sTypeVoltage) || (dSubType == sTypeCurrent))
+							{
+								snprintf(szTmp, sizeof(szTmp), "%.3f", fValue1);
+								root["result"][ii]["v_min"] = szTmp;
+								snprintf(szTmp, sizeof(szTmp), "%.3f", fValue2);
+								root["result"][ii]["v_max"] = szTmp;
+								if (fValue3 != 0)
+								{
+									snprintf(szTmp, sizeof(szTmp), "%.3f", fValue3);
+									root["result"][ii]["v_avg"] = szTmp;
+								}
+							}
+							else
+							{
+								snprintf(szTmp, sizeof(szTmp), "%.1f", fValue1);
+								root["result"][ii]["v_min"] = szTmp;
+								snprintf(szTmp, sizeof(szTmp), "%.1f", fValue2);
+								root["result"][ii]["v_max"] = szTmp;
+								if (fValue3 != 0)
+								{
+									snprintf(szTmp, sizeof(szTmp), "%.1f", fValue3);
+									root["result"][ii]["v_avg"] = szTmp;
+								}
+							}
+							ii++;
 						}
 					}
 				}
@@ -612,6 +879,120 @@ void HandleGraphCustomRange(const GraphContext& ctx, const request& req,
 							{
 								root["delivered"] = true;
 							}
+						}
+					}
+					else if (dType == pTypeAirQuality)
+					{
+						result = sql.safe_query("SELECT MIN(Value), MAX(Value), AVG(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+							idx, szToday.c_str());
+						if (!result.empty() && !result[0][0].empty())
+						{
+							root["result"][ii]["d"] = szToday;
+							root["result"][ii]["co2_min"] = result[0][0];
+							root["result"][ii]["co2_max"] = result[0][1];
+							root["result"][ii]["co2_avg"] = result[0][2];
+							ii++;
+						}
+					}
+					else if (dType == pTypeLux)
+					{
+						result = sql.safe_query("SELECT MIN(Value), MAX(Value), AVG(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+							idx, szToday.c_str());
+						if (!result.empty() && !result[0][0].empty())
+						{
+							root["result"][ii]["d"] = szToday;
+							root["result"][ii]["lux_min"] = result[0][0];
+							root["result"][ii]["lux_max"] = result[0][1];
+							root["result"][ii]["lux_avg"] = result[0][2];
+							ii++;
+						}
+					}
+					else if (dType == pTypeWEIGHT)
+					{
+						result = sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+							idx, szToday.c_str());
+						if (!result.empty() && !result[0][0].empty())
+						{
+							root["result"][ii]["d"] = szToday;
+							snprintf(szTmp, sizeof(szTmp), "%.1f", sql.m_weightscale * atof(result[0][0].c_str()) / 10.0F);
+							root["result"][ii]["v_min"] = szTmp;
+							snprintf(szTmp, sizeof(szTmp), "%.1f", sql.m_weightscale * atof(result[0][1].c_str()) / 10.0F);
+							root["result"][ii]["v_max"] = szTmp;
+							ii++;
+						}
+					}
+					else if (dType == pTypeUsage)
+					{
+						result = sql.safe_query("SELECT MIN(Value), MAX(Value), AVG(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+							idx, szToday.c_str());
+						if (!result.empty() && !result[0][0].empty())
+						{
+							root["result"][ii]["d"] = szToday;
+							root["result"][ii]["u_min"] = atof(result[0][0].c_str()) / 10.0F;
+							root["result"][ii]["u_max"] = atof(result[0][1].c_str()) / 10.0F;
+							root["result"][ii]["u_avg"] = static_cast<int>((atof(result[0][2].c_str()) / 10.0F) + 0.5F);
+							ii++;
+						}
+					}
+					else if (dType == pTypeCURRENT || dType == pTypeCURRENTENERGY)
+					{
+						// today data for multi-channel current meters resides in MultiMeter, not Meter; skip
+					}
+					else if (((dType == pTypeGeneral) && ((dSubType == sTypeSoilMoisture) || (dSubType == sTypeLeafWetness))) ||
+						((dType == pTypeRFXSensor) && ((dSubType == sTypeRFXSensorAD) || (dSubType == sTypeRFXSensorVolt))))
+					{
+						result = sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+							idx, szToday.c_str());
+						if (!result.empty() && !result[0][0].empty())
+						{
+							root["result"][ii]["d"] = szToday;
+							root["result"][ii]["v_min"] = result[0][0];
+							root["result"][ii]["v_max"] = result[0][1];
+							ii++;
+						}
+					}
+					else if ((dType == pTypeGeneral) && ((dSubType == sTypeVisibility) || (dSubType == sTypeDistance) ||
+						(dSubType == sTypeSolarRadiation) || (dSubType == sTypeVoltage) ||
+						(dSubType == sTypeCurrent) || (dSubType == sTypePressure) || (dSubType == sTypeSoundLevel)))
+					{
+						float vdiv = 10.0F;
+						if ((dSubType == sTypeVoltage) || (dSubType == sTypeCurrent))
+							vdiv = 1000.0F;
+						result = sql.safe_query("SELECT MIN(Value), MAX(Value) FROM Meter WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q')",
+							idx, szToday.c_str());
+						if (!result.empty() && !result[0][0].empty())
+						{
+							root["result"][ii]["d"] = szToday;
+							float fValue1 = float(atof(result[0][0].c_str())) / vdiv;
+							float fValue2 = float(atof(result[0][1].c_str())) / vdiv;
+							if (metertype == 1)
+							{
+								if (dSubType == sTypeDistance)
+								{
+									fValue1 *= 0.3937007874015748F;
+									fValue2 *= 0.3937007874015748F;
+								}
+								else
+								{
+									fValue1 *= 0.6214F;
+									fValue2 *= 0.6214F;
+								}
+							}
+							if ((dSubType == sTypeVoltage) || (dSubType == sTypeCurrent))
+							{
+								snprintf(szTmp, sizeof(szTmp), "%.3f", fValue1);
+								root["result"][ii]["v_min"] = szTmp;
+								snprintf(szTmp, sizeof(szTmp), "%.3f", fValue2);
+								root["result"][ii]["v_max"] = szTmp;
+							}
+							else
+							{
+								snprintf(szTmp, sizeof(szTmp), "%.1f", fValue1);
+								root["result"][ii]["v_min"] = szTmp;
+								snprintf(szTmp, sizeof(szTmp), "%.1f", fValue2);
+								root["result"][ii]["v_max"] = szTmp;
+							}
+							ii++;
 						}
 					}
 					else if (!bIsManagedCounter)

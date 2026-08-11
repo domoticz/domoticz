@@ -39,6 +39,26 @@ define([
             if (!el || !window.Highcharts || !data || !data.length) { return null; }
 
             var color = opts.color || themeColor('--dz-widget-accent', '#43a4d3');
+
+            // Scale the Y axis to the data's own range so small fluctuations on a
+            // high baseline stay visible - e.g. barometric pressure hovering around
+            // 1018 hPa. Without this, the areaspline's default threshold (0) drags
+            // the axis down to zero and a real trend renders as a flat line.
+            var yMin, yMax;
+            for (var i = 0; i < data.length; i++) {
+                var v = data[i][1];
+                if (typeof v !== 'number' || isNaN(v)) { continue; }
+                if (yMin === undefined || v < yMin) { yMin = v; }
+                if (yMax === undefined || v > yMax) { yMax = v; }
+            }
+            var yExtremes = {};
+            if (yMin !== undefined) {
+                var pad = (yMax - yMin) * 0.1;
+                if (!(pad > 0)) { pad = (Math.abs(yMax) * 0.01) || 1; } // flat data: keep the line centered
+                yExtremes.min = yMin - pad;
+                yExtremes.max = yMax + pad;
+            }
+
             return window.Highcharts.chart(el, {
                 credits:   { enabled: false },
                 exporting: { enabled: false },
@@ -54,10 +74,11 @@ define([
                 },
                 time:  { useUTC: false },
                 xAxis: { type: 'datetime', visible: false },
-                yAxis: { visible: false, endOnTick: false, startOnTick: false },
+                yAxis: { visible: false, endOnTick: false, startOnTick: false, min: yExtremes.min, max: yExtremes.max },
                 plotOptions: {
                     areaspline: {
                         lineWidth: 1.5,
+                        threshold: null,   // don't anchor the fill/axis baseline to zero
                         marker:    { enabled: false },
                         states:    { hover: { enabled: false } },
                         color:     color,

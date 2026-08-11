@@ -258,7 +258,7 @@ define(['app'], function (app) {
 				var bIsOK = true;
 				// Make sure that all required fields have values
 				$(selector + " .text").each(function () {
-					if ((typeof (this.attributes.required) != "undefined") && (this.value == "")) {
+					if ((typeof (this.attributes.required) != "undefined") && (this.value == "") && (typeof (this.attributes["data-haspwd"]) == "undefined")) {
 						$(selector + " #" + this.id).focus();
 						ShowNotify($.t('Please enter value for required field'), 2500, true);
 						bIsOK = false;
@@ -1771,6 +1771,8 @@ define(['app'], function (app) {
 				var bIsOK = true;
 				// Make sure that all required fields have values
 				$(selector + " .text").each(function () {
+					// Add always creates a new device, so a required field must be filled; there is no
+					// stored value to "keep" (the data-haspwd exemption applies only on Update/edit).
 					if ((typeof (this.attributes.required) != "undefined") && (this.value == "")) {
 						$(selector + " #" + this.id).focus();
 						ShowNotify($.t('Please enter value for required field'), 2500, true);
@@ -4468,6 +4470,19 @@ define(['app'], function (app) {
 											$field.val(value);
 										}
 									});
+									// Mark stored password fields so the user sees they are set and can leave
+									// them blank to keep, and so required-validation does not force re-entry.
+									if (hwEntry.SettingsPwdSet && typeof hwEntry.SettingsPwdSet === "object") {
+										$.each(hwEntry.SettingsPwdSet, function (key, isSet) {
+											if (!isSet) return;
+											var $pf = $visibleTable.find("#" + key);
+											if ($pf.length === 0) return;
+											// Fixed-length dots (not the real length): language-neutral "a secret is
+											// stored" affordance. Placeholder only, never a value, so it is never submitted.
+											$pf.attr("placeholder", "••••••••");
+											$pf.attr("data-haspwd", "true");
+										});
+									}
 									// Trigger change events to re-evaluate conditional visibility
 									$visibleTable.find("select, input").trigger("change");
 								}
@@ -5401,6 +5416,9 @@ define(['app'], function (app) {
 						InitPluginWidgets($(this));
 					}
 				});
+				// Clear stored-password markers so they never leak across add/edit sessions on the
+				// reused plugin fields; edit-restore re-applies them for the current device via SettingsPwdSet.
+				$("#hardwarecontent #divpythonplugin input[type=password]").removeAttr("data-haspwd").removeAttr("placeholder");
 				$("#hardwarecontent #divpythonplugin").show();
 				return;
 			}
@@ -5822,11 +5840,11 @@ define(['app'], function (app) {
 		function init() {
 			//global var
 			$.devIdx = 0;
-			$.myglobals = {
+			$.extend($.myglobals, {
 				HardwareTypesStr: [],
 				HardwareI2CStr: [],
 				SelectedHardwareIdx: 0
-			};
+			});
 			$scope.SerialPortStr = [];
 			$scope.MakeGlobalConfig();
 
@@ -5875,16 +5893,22 @@ define(['app'], function (app) {
 								option.attr('value', item.idx).text(item.name);
 							}
 							else {  // For Python Plugins build the input fields
+								// Escape manifest-derived strings before HTML interpolation. The plugin and
+								// param <description> elements are deliberately NOT escaped: they are documented
+								// to contain intentional HTML markup (e.g. <h2>, <br/>).
+								var escapeHtml = function (s) {
+									return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+								};
 								option.attr('value', item.key).text(item.name);
 								option.attr('id', item.key).text(item.name);
-								var PluginParams = '<table class="display plugin" id="' + item.key + '" border="0" cellpadding="0" cellspacing="20"><tr><td> </td></tr>';
+								var PluginParams = '<table class="display plugin" id="' + escapeHtml(item.key) + '" border="0" cellpadding="0" cellspacing="20"><tr><td> </td></tr>';
 								if (item.wikiURL.length > 0) {
 									PluginParams += '<tr><td align="right" style="width:110px"><span data-i18n="Wiki URL">Wiki URL</span>:</td>' +
-										'<td><a href="' + item.wikiURL + '" target="_blank">' + item.wikiURL + '</a></td></tr>';
+										'<td><a href="' + escapeHtml(item.wikiURL) + '" target="_blank">' + escapeHtml(item.wikiURL) + '</a></td></tr>';
 								}
 								if (item.externalURL.length > 0) {
 									PluginParams += '<tr><td align="right" style="width:110px"><span data-i18n="Product URL">Product URL</span>:</td>' +
-										'<td><a href="' + item.externalURL + '" target="_blank">' + item.externalURL + '</a></td></tr>';
+										'<td><a href="' + escapeHtml(item.externalURL) + '" target="_blank">' + escapeHtml(item.externalURL) + '</a></td></tr>';
 								}
 								if (item.description.length > 0) {
 									PluginParams += '<tr><td></td><td>' + item.description + '</td></tr>';
@@ -5896,31 +5920,45 @@ define(['app'], function (app) {
 									}
 									var visibleWhen = (typeof (param.visible_when) != "undefined") ? param.visible_when : "";
 									var trStyle = visibleWhen ? ' style="display:none"' : '';
-									var trAttr = visibleWhen ? ' data-visible-when="' + param.visible_when + '"' : '';
-									PluginParams += '<tr' + trStyle + trAttr + '><td align="right" style="width:110px"><label id="lbl' + param.field + '"><span data-i18n="' + param.label + '">' + param.label + '</span>:</label></td>';
+									var trAttr = visibleWhen ? ' data-visible-when="' + escapeHtml(param.visible_when) + '"' : '';
+									PluginParams += '<tr' + trStyle + trAttr + '><td align="right" style="width:110px"><label id="lbl' + escapeHtml(param.field) + '"><span data-i18n="' + escapeHtml(param.label) + '">' + escapeHtml(param.label) + '</span>:</label></td>';
 									var paramType = (typeof (param.type) != "undefined") ? param.type : "";
 									var paramWidth = (typeof (param.width) != "undefined") ? param.width : "200px";
 									if (typeof (param.options) != "undefined") {
 										// Select dropdown
-										PluginParams += '<td><select id="' + param.field + '" style="width:' + paramWidth + '" class="combobox ui-corner-all">';
+										PluginParams += '<td><select id="' + escapeHtml(param.field) + '" style="width:' + escapeHtml(paramWidth) + '" class="combobox ui-corner-all">';
+										// A per-option default="true" wins; if none is set, fall back to selecting the
+										// option whose value matches the param-level default.
+										var hasOptionDefault = false;
 										$.each(param.options, function (i, option) {
-											PluginParams += '<option data-i18n="' + option.label + '" value="' + option.value + '"';
-											if ((typeof (option.default) != "undefined") && (option.default == "true")) PluginParams += ' selected';
-											PluginParams += '>' + option.label + '</option>';
+											if ((typeof (option.default) != "undefined") && (option.default == "true")) hasOptionDefault = true;
+										});
+										var fallbackValue = hasOptionDefault ? undefined : param.default;
+										var selectedApplied = false;
+										$.each(param.options, function (i, option) {
+											PluginParams += '<option data-i18n="' + escapeHtml(option.label) + '" value="' + escapeHtml(option.value) + '"';
+											var isDefault = hasOptionDefault
+												? ((typeof (option.default) != "undefined") && (option.default == "true"))
+												: ((typeof (fallbackValue) != "undefined") && (String(option.value) === String(fallbackValue)));
+											if (isDefault && !selectedApplied) {
+												PluginParams += ' selected';
+												selectedApplied = true;
+											}
+											PluginParams += '>' + escapeHtml(option.label) + '</option>';
 										});
 										PluginParams += '</select></td>';
 									}
 									else if (paramType === "boolean") {
 										var checked = (typeof (param.default) != "undefined" && param.default === "true") ? ' checked' : '';
-										PluginParams += '<td><input type="checkbox" id="' + param.field + '"' + checked + ' /><label for="' + param.field + '"></label></td>';
+										PluginParams += '<td><input type="checkbox" id="' + escapeHtml(param.field) + '"' + checked + ' /><label for="' + escapeHtml(param.field) + '"></label></td>';
 									}
 									else if (paramType === "number") {
-										var minAttr = (typeof (param.min) != "undefined") ? ' min="' + param.min + '"' : '';
-										var maxAttr = (typeof (param.max) != "undefined") ? ' max="' + param.max + '"' : '';
-										var stepAttr = (typeof (param.step) != "undefined") ? ' step="' + param.step + '"' : '';
+										var minAttr = (typeof (param.min) != "undefined") ? ' min="' + escapeHtml(param.min) + '"' : '';
+										var maxAttr = (typeof (param.max) != "undefined") ? ' max="' + escapeHtml(param.max) + '"' : '';
+										var stepAttr = (typeof (param.step) != "undefined") ? ' step="' + escapeHtml(param.step) + '"' : '';
 										var defaultVal = (typeof (param.default) != "undefined") ? param.default : '';
-										PluginParams += '<td><input type="number" id="' + param.field + '" autocomplete="off" style="width:' + paramWidth + '; padding: .2em;" class="text ui-widget-content ui-corner-all"' +
-											minAttr + maxAttr + stepAttr + ' value="' + defaultVal + '"';
+										PluginParams += '<td><input type="number" id="' + escapeHtml(param.field) + '" autocomplete="off" style="width:' + escapeHtml(paramWidth) + '; padding: .2em;" class="text ui-widget-content ui-corner-all"' +
+											minAttr + maxAttr + stepAttr + ' value="' + escapeHtml(defaultVal) + '"';
 										if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += ' required';
 										PluginParams += ' /></td>';
 									}
@@ -5929,15 +5967,15 @@ define(['app'], function (app) {
 										var sliderMax = (typeof (param.max) != "undefined") ? parseInt(param.max) : 100;
 										var sliderDefault = (typeof (param.default) != "undefined") ? parseInt(param.default) : sliderMin;
 										PluginParams += '<td>' +
-											'<div style="display:inline-block; width:' + paramWidth + '; position:relative; height:16px; vertical-align:middle; margin-right:10px;">' +
-											'<div class="dimslider" id="slider_' + param.field + '" data-min="' + sliderMin + '" data-max="' + sliderMax + '" data-field="' + param.field + '"></div>' +
+											'<div style="display:inline-block; width:' + escapeHtml(paramWidth) + '; position:relative; height:16px; vertical-align:middle; margin-right:10px;">' +
+											'<div class="dimslider" id="slider_' + escapeHtml(param.field) + '" data-min="' + sliderMin + '" data-max="' + sliderMax + '" data-field="' + escapeHtml(param.field) + '"></div>' +
 											'</div>' +
-											'<input type="hidden" id="' + param.field + '" class="slider-value" value="' + sliderDefault + '" />' +
-											'<span id="sliderval_' + param.field + '" style="display:inline-block; min-width:30px; text-align:center; vertical-align:middle;">' + sliderDefault + '</span>' +
+											'<input type="hidden" id="' + escapeHtml(param.field) + '" class="slider-value" value="' + sliderDefault + '" />' +
+											'<span id="sliderval_' + escapeHtml(param.field) + '" style="display:inline-block; min-width:30px; text-align:center; vertical-align:middle;">' + sliderDefault + '</span>' +
 											'</td>';
 									}
 									else if (param.field == "SerialPort") {
-										PluginParams += '<td><select id="' + param.field + '" style="width:' + paramWidth + '" class="combobox ui-corner-all">';
+										PluginParams += '<td><select id="' + escapeHtml(param.field) + '" style="width:' + escapeHtml(paramWidth) + '" class="combobox ui-corner-all">';
 										$.each($("#hardwareparamsserial #comboserialport > option"), function (i, option) {
 											PluginParams += '<option data-i18n="' + option.innerText + '" value="' + option.innerText + '"';
 											PluginParams += '>' + option.innerText + '</option>';
@@ -5948,18 +5986,18 @@ define(['app'], function (app) {
 										PluginParams += '<td>';
 										var nbRows = parseInt(param.rows);
 										if (nbRows >= 0) {
-											PluginParams += '<textarea id="' + param.field + '" autocomplete="off" style="width:' + paramWidth + '; padding: .2em;" class="text ui-widget-content ui-corner-all" rows="' + nbRows + '" ';
+											PluginParams += '<textarea id="' + escapeHtml(param.field) + '" autocomplete="off" style="width:' + escapeHtml(paramWidth) + '; padding: .2em;" class="text ui-widget-content ui-corner-all" rows="' + nbRows + '" ';
 											if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += 'required';
 											PluginParams += '>';
-											if (typeof (param.default) != "undefined") PluginParams += param.default;
+											if (typeof (param.default) != "undefined") PluginParams += escapeHtml(param.default);
 											PluginParams += '</textarea>';
 										} else {
-											if ((typeof (param.password) != "undefined") && (param.password == "true"))
+											if ((typeof (param.password) != "undefined") && (String(param.password).toLowerCase() == "true" || String(param.password) == "1"))
 												PluginParams += '<input type="password" ';
 											else
 												PluginParams += '<input type="text" ';
-											PluginParams += 'id="' + param.field + '" autocomplete="off" style="width:' + paramWidth + '; padding: .2em;" class="text ui-widget-content ui-corner-all" ';
-											if (typeof (param.default) != "undefined") PluginParams += 'value="' + param.default + '"';
+											PluginParams += 'id="' + escapeHtml(param.field) + '" autocomplete="off" style="width:' + escapeHtml(paramWidth) + '; padding: .2em;" class="text ui-widget-content ui-corner-all" ';
+											if (typeof (param.default) != "undefined") PluginParams += 'value="' + escapeHtml(param.default) + '"';
 											if ((typeof (param.required) != "undefined") && (param.required == "true")) PluginParams += ' required';
 											PluginParams += ' />';
 										}
@@ -5979,7 +6017,7 @@ define(['app'], function (app) {
 											// Open new collapsible group
 											PluginParams += '<tr><td colspan="2">' +
 												'<div class="plugin-group" style="margin:5px 0; cursor:pointer;" onclick="var t=$(this).next(); t.toggle(); $(this).find(\'.fa\').toggleClass(\'fa-chevron-right fa-chevron-down\');">' +
-												'<i class="fa fa-chevron-right" style="margin-right:5px;"></i><b>' + paramGroup + '</b></div>' +
+												'<i class="fa fa-chevron-right" style="margin-right:5px;"></i><b>' + escapeHtml(paramGroup) + '</b></div>' +
 												'<div style="display:none;"><table class="display" border="0" cellpadding="0" cellspacing="5">';
 										}
 										currentGroup = paramGroup;

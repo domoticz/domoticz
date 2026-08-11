@@ -45,6 +45,7 @@
 
 .events-editor__editor {
     flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     background-color: rgba(0, 0, 0, 0.2);
@@ -277,6 +278,16 @@
     border: 1px solid #ccc;
 }
 
+.events-editor-file__header--editor {
+    /* Matches the historic single-row toolbar height when controls fit on one line. */
+    height: auto;
+    min-height: 30px;
+}
+
+.events-editor-file__header--editor form {
+    margin: 0;
+}
+
 .events-editor-file__content {
     position: absolute !important;
     top: 46px;
@@ -288,6 +299,103 @@
 .events-editor-file__content-table {
     background-color: #e8e8e8;
     width: 100%;
+}
+
+@media (max-width: 991px) {
+    .events-editor-file__header--editor form {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .events-editor-file__header--editor .events-editor-file__name {
+        margin-left: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .events-editor-file__header--editor .pull-right {
+        float: none;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+    }
+
+}
+
+@media (max-width: 767px) {
+    .events-editor {
+        position: relative;
+        flex-direction: column;
+        top: auto;
+        left: auto;
+        right: auto;
+        bottom: auto;
+        margin: 0 4px 8px;
+        min-height: calc(100vh - 80px);
+        overflow: visible;
+    }
+
+    .events-editor__tree {
+        width: auto;
+        max-height: 36vh;
+        margin-right: 0;
+        margin-bottom: 8px;
+        min-height: 180px;
+    }
+
+    .events-editor__splitter {
+        width: auto;
+        height: 16px;
+        margin: 0 0 8px 0;
+    }
+
+    .events-editor__file-list {
+        flex-wrap: nowrap;
+        gap: 4px;
+        padding: 8px 8px 0 8px;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+
+    .events-editor__file {
+        flex: 0 0 auto;
+    }
+
+    .events-editor__file-wizard {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    .events-editor__editor {
+        min-height: 65vh;
+    }
+
+    .events-editor__file-content {
+        min-height: 60vh;
+    }
+
+    .events-editor-file__header--editor {
+        padding: 8px;
+    }
+
+    .events-editor-file__header--editor .btn-group,
+    .events-editor-file__header--editor .btn,
+    .events-editor-file__header--editor .events-editor-file__type,
+    .events-editor-file__header--editor .ace-settings {
+        max-width: 100%;
+    }
+
+    .events-editor-file__header--editor .btn-group {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .events-editor-file__header--editor .btn-group .btn,
+    .events-editor-file__header--editor .events-editor-file__type select {
+        flex: 1 1 auto;
+    }
 }
 
 /* ///////////////////// */
@@ -846,6 +954,21 @@
 .aw-footer-right {
     display: flex;
     gap: 8px;
+}
+
+@media (max-width: 767px) {
+    .aw-overlay {
+        align-items: flex-start;
+        overflow-y: auto;
+        padding: 8px 0;
+    }
+
+    .aw-modal {
+        width: calc(100vw - 8px);
+        max-width: none;
+        max-height: none;
+        margin: 0 auto;
+    }
 }
 
 /* Day-of-week checkboxes */

@@ -43,8 +43,17 @@ namespace http
 			}
 
 			GraphContext ctx;
-			if (!BuildGraphContext(req, m_sql, ctx))
+			std::string reason;
+			if (!BuildGraphContext(req, m_sql, ctx, &reason))
+			{
+				// Without this the reply is a bare {"status":"ERR"}, which reaches
+				// the browser as an opaque 400 with nothing to say whether a
+				// parameter was wrong or the device no longer exists -- the usual
+				// cause being a dashboard widget still pointing at a deleted device.
+				if (!reason.empty())
+					root["message"] = reason;
 				return;
+			}
 
 			_log.Debug(DEBUG_WEBSERVER, "CWebServer::Cmd_HandleGraph() : dType:%02X  dSubType:%02X  metertype:%d",
 				ctx.dType, ctx.dSubType, int(ctx.metertype));

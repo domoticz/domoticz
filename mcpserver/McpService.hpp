@@ -55,6 +55,7 @@ namespace mcp
 	bool getRooms(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool getRoomDevices(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool getSceneDevices(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool getSceneHistory(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 
 	bool getHardware(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool getSystemSettings(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);

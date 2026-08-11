@@ -23,6 +23,13 @@ namespace http {
 			void LoadUsers();
 			void ClearUserPasswords();
 			void ReloadTrustedNetworks();
+			void ReloadCorsPolicy();
+			// Aggregate the recently-seen-clients snapshot across every server in
+			// serverCollection (plain and, if enabled, secure). Each cWebem
+			// instance now tracks its own clients rather than sharing one global
+			// map, so a caller that wants the full picture across HTTP and HTTPS
+			// has to combine them here.
+			std::vector<connection::_tRemoteClients> GetRemoteClients() const;
 			// called from OTGWBase()
 			void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID,
 					    const std::string &floorID, bool bDisplayHidden, bool bDisplayDisabled, bool bFetchFavorites, time_t LastUpdate, const std::string &username,

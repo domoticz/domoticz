@@ -55,6 +55,7 @@ define([
             {
                 key:      'days',
                 type:     'number',
+                step:     1,
                 label:    'Days to show (1–14)',
                 default:  7,
                 min:      1,

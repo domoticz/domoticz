@@ -224,6 +224,16 @@ define([
 						// Update the device data in-place to preserve object reference
 						angular.extend($scope[category][index], deviceData);
 
+						// Re-sync jQuery UI slider position for light devices,
+						// but never while the user is actively dragging it (the
+						// slide handler echoes the level back via WebSocket).
+						if (category === 'lights' && typeof deviceData.LevelInt !== 'undefined') {
+							var $sl = $('#light_' + deviceData.idx + '_slider');
+							if ($sl.length && $sl.hasClass('ui-slider') && !$sl.data('sliding')) {
+								$sl.slider('value', deviceData.LevelInt);
+							}
+						}
+
 						// Show update effect if enabled; skip while a drag is in progress
 						// ($.ui.ddmanager.current is set by jQuery UI during an active drag)
 						if ($scope.config.ShowUpdatedEffect === true && !$.ui.ddmanager.current) {
@@ -449,6 +459,9 @@ define([
 								if ($(this).data('disabled'))
 									$(this).slider("option", "disabled", true);
 							},
+							start: function (event, ui) {
+								$(this).data('sliding', true);
+							},
 							slide: function (event, ui) {
 								clearInterval($.setDimValue);
 								var dtype = $(this).slider("option", "type");
@@ -457,10 +470,10 @@ define([
 									$.setDimValue = setInterval(function () { SetDimValue(idx, ui.value); }, 500);
 							},
 							stop: function (event, ui) {
+								$(this).data('sliding', false);
+								clearInterval($.setDimValue);
 								var idx = $(this).data('idx');
-								var dtype = $(this).slider("option", "type");
-								if (dtype == "relay")
-									SetDimValue(idx, ui.value);
+								SetDimValue(idx, ui.value);
 							}
 						});
 					}

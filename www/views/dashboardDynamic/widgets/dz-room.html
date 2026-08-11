@@ -131,7 +131,7 @@
                            min="0" max="100" step="5"
                            ng-model="ctrl.dimLevel[item.idx]"
                            ng-mouseup="ctrl.applyDimLevel(item)"
-                           ng-touchend="ctrl.applyDimLevel(item)">
+                           ng-on-touchend="ctrl.applyDimLevel(item)">
                     <span class="dd-qa-dim-value-text">{{ ctrl.dimLevel[item.idx] }}%</span>
                 </div>
             </div>

@@ -30,6 +30,7 @@ case "$BUILD_TYPE" in
     beta)
         BRANCH="origin/development"
         UPLOAD_PATH="beta/"
+        CMAKE_CHANNEL_OPT="-DBUILD_MASTER=OFF"
         ;;
     release)
         BRANCH="origin/master"
@@ -71,6 +72,7 @@ if [ "$BUILD_ONLY" = false ]; then
     git fetch --all --recurse-submodules=no
 
     git reset --hard ${BRANCH}
+    git submodule sync --recursive
     git submodule update --init --remote --force
 
     if [ "$FORCE" != "force" ]; then

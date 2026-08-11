@@ -49,6 +49,9 @@ enum evoCommands
 	cmdDeviceInfo = 0x0418,
 	cmdBatteryInfo = 0x1060,
 	cmdSync = 0x1F09,
+	cmdFanMode = 0x22F1,//Fan mode sent by a remote bound to a ventilation unit (HVAC)
+	cmdFanState = 0x31D9,//Ventilation unit fan state (HVAC)
+	cmdVentState = 0x31DA,//Ventilation unit extended state (HVAC)
 	//0x10a0 //DHW settings sent between controller and DHW sensor can also be requested by the gateway <1:DevNo><2(uint16_t):SetPoint><1:Overrun?><2:Differential>
 	//0x0005
 	//0x0006
@@ -107,6 +110,9 @@ CEvohomeRadio::CEvohomeRadio(const int ID, const std::string& UserContID)
 	RegisterDecoder(cmdDeviceInfo, [this](auto &&msg) { return DecodeDeviceInfo(msg); });
 	RegisterDecoder(cmdBatteryInfo, [this](auto &&msg) { return DecodeBatteryInfo(msg); });
 	RegisterDecoder(cmdSync, [this](auto &&msg) { return DecodeSync(msg); });
+	RegisterDecoder(cmdFanMode, [this](auto &&msg) { return DecodeFanMode(msg); });
+	RegisterDecoder(cmdFanState, [this](auto &&msg) { return DecodeFanState(msg); });
+	RegisterDecoder(cmdVentState, [this](auto &&msg) { return DecodeVentState(msg); });
 }
 
 CEvohomeRadio::~CEvohomeRadio()
@@ -199,7 +205,10 @@ std::string CEvohomeMsg::Encode()
 {
 	std::string szRet;
 	char szTmp[1024];
-	sprintf(szTmp, "%s - 18:730 %s %s %04X %03d ", szPacketType[type], GetStrID(1).c_str(), GetStrID(2).c_str(), command, payloadsize);
+	// The gateway substitutes its own address for 18:730. HVAC units only accept commands from a
+	// remote they have been bound to, so id[0] can be set to transmit as that remote instead.
+	std::string szSrc = (id[0].GetID() != 0) ? GetStrID(0) : std::string("18:730");
+	sprintf(szTmp, "%s - %s %s %s %04X %03d ", szPacketType[type], szSrc.c_str(), GetStrID(1).c_str(), GetStrID(2).c_str(), command, payloadsize);
 	szRet = szTmp;
 	for (int i = 0; i < payloadsize; i++)
 	{
@@ -215,7 +224,7 @@ bool CEvohomeRadio::WriteToHardware(const char* pdata, const unsigned char lengt
 {
 	if (!pdata)
 		return false;
-	switch (pdata[1])
+	switch (static_cast<uint8_t>(pdata[1]))
 	{
 	case pTypeEvohome:
 	{
@@ -302,6 +311,14 @@ bool CEvohomeRadio::WriteToHardware(const char* pdata, const unsigned char lengt
 			return false;
 		_tEVOHOME3* tsen = (_tEVOHOME3*)pdata;
 		SetRelayHeatDemand(tsen->devno, tsen->demand);
+	}
+	break;
+	case pTypeGeneralSwitch:
+	{
+		if (length < sizeof(_tGeneralSwitch))
+			return false;
+		const _tGeneralSwitch* tsen = (const _tGeneralSwitch*)pdata;
+		return SetFanMode(static_cast<unsigned int>(tsen->id), static_cast<uint8_t>(tsen->unitcode), tsen->level);
 	}
 	break;
 	}
@@ -2015,6 +2032,418 @@ bool CEvohomeRadio::DecodeSync(CEvohomeMsg& msg) //0x1F09
 
 	return true;
 }
+
+namespace
+{
+	// RAMSES-II HVAC sentinels. A field reading its sentinel means "no sensor fitted", which is
+	// not an error, so the corresponding Domoticz device is simply not created/updated.
+	constexpr uint8_t hvacNoSensor8 = 0xEF;
+	constexpr uint8_t hvacNoFanSpeed = 0xFF;   // fan speeds signal absence with FF, not EF
+	constexpr uint16_t hvacNoSensor16 = 0x7FFF;
+	constexpr uint16_t hvacNoTemp16 = 0x31FF;  // seen in the wild alongside 7FFF
+	constexpr uint16_t hvacNoRemainingMins = 0x3FFF;
+
+	// A high nibble of 0xF marks a faulty sensor (as opposed to an absent one)
+	bool IsHvacFault8(uint8_t nVal)
+	{
+		return (nVal & 0xF0) == 0xF0;
+	}
+
+	// Child unit numbers, kept stable so scripts can rely on them
+	enum hvacChild
+	{
+		hvcAirQuality = 1,
+		hvcCo2 = 2,
+		hvcIndoorHumidity = 3,
+		hvcOutdoorHumidity = 4,
+		hvcExhaustTemp = 5,
+		hvcSupplyTemp = 6,
+		hvcIndoorTemp = 7,
+		hvcOutdoorTemp = 8,
+		hvcBypassPosition = 9,
+		hvcFanInfo = 10,
+		hvcExhaustFanSpeed = 11,
+		hvcSupplyFanSpeed = 12,
+		hvcRemainingTime = 13,
+		hvcPostHeater = 14,
+		hvcPreHeater = 15,
+		hvcSupplyFlow = 16,
+		hvcExhaustFlow = 17,
+		hvcFilterAlert = 18,
+		hvcFaultAlert = 19,
+	};
+
+	// Several of the generic sensor helpers take a single 16 bit node id with no child argument, so
+	// the unit address and the child are packed into one value. That leaves 11 bits of address:
+	// two units whose ids differ only above bit 10 would share a device.
+	uint16_t GetHvacNodeID(unsigned int nDevID, uint8_t nChild)
+	{
+		return static_cast<uint16_t>(((nDevID & 0x07FF) << 5) | (nChild & 0x1F));
+	}
+
+	// Vendors number their fan modes differently in 22F1. The scheme is inferred from the mode_max
+	// byte a bound remote sends, defaulting to Orcon when the remote omits it.
+	enum hvacScheme
+	{
+		hvsOrcon = 0,
+		hvsItho,
+		hvsNuaire,
+		hvsVasco,
+	};
+
+	// Translation between the 31DA fan_info code shown in the selector switch and the 22F1 mode
+	// byte each vendor expects. -1 means the vendor has no equivalent for that mode.
+	struct _tFanModeMap
+	{
+		uint8_t m_nFanInfo;
+		int8_t m_nMode[4]; // indexed by hvacScheme
+	};
+
+	// fan_info          orcon itho nuaire vasco
+	const _tFanModeMap FanModeMap[] = {
+		{ 0x00, { 0x07, 0x00, -1, 0x00 } },   // off
+		{ 0x01, { 0x01, 0x02, -1, 0x02 } },   // speed 1, low
+		{ 0x02, { 0x02, 0x03, 0x02, 0x03 } }, // speed 2, medium
+		{ 0x03, { 0x03, 0x04, -1, 0x04 } },   // speed 3, high
+		{ 0x15, { 0x00, -1, -1, 0x01 } },     // away
+		{ 0x16, { -1, 0x01, -1, -1 } },	      // absolute minimum (Itho trickle)
+		{ 0x17, { 0x06, -1, 0x03, -1 } },     // boost
+		{ 0x18, { 0x04, -1, -1, 0x05 } },     // auto
+	};
+
+	// Level names for the fan_info selector switch. The selector level is the raw fan_info code
+	// multiplied by 10, so the mapping stays stable regardless of which subset a unit reports.
+	const char *szFanInfoLevels =
+		"Off|Speed 1 (low)|Speed 2 (medium)|Speed 3 (high)|Speed 4|Speed 5|Speed 6|Speed 7|Speed 8|Speed 9|Speed 10|"
+		"Speed 1 timer|Speed 2 timer|Speed 3 timer|Speed 4 timer|Speed 5 timer|Speed 6 timer|Speed 7 timer|"
+		"Speed 8 timer|Speed 9 timer|Speed 10 timer|Away|Absolute minimum|Boost|Auto|Auto night";
+
+	constexpr uint8_t nFanInfoLevelCount = 26;
+
+	// Returns the 22F1 mode byte for a fan_info code, or -1 if the vendor has no equivalent
+	int GetFanModeForScheme(uint8_t nFanInfo, uint8_t nScheme)
+	{
+		if (nScheme > hvsVasco)
+			return -1;
+		for (const auto &m : FanModeMap)
+			if (m.m_nFanInfo == nFanInfo)
+				return m.m_nMode[nScheme];
+		return -1;
+	}
+
+	// Reverse of GetFanModeForScheme, so a mode set from a physical remote updates the switch
+	int GetFanInfoForScheme(uint8_t nMode, uint8_t nScheme)
+	{
+		if (nScheme > hvsVasco)
+			return -1;
+		for (const auto &m : FanModeMap)
+			if (m.m_nMode[nScheme] == static_cast<int8_t>(nMode))
+				return m.m_nFanInfo;
+		return -1;
+	}
+
+	uint8_t GetSchemeFromModeMax(uint8_t nModeMax)
+	{
+		switch (nModeMax)
+		{
+		case 0x04:
+			return hvsItho;
+		case 0x06:
+			return hvsVasco;
+		case 0x0A:
+			return hvsNuaire;
+		default: // 07, 0B and an absent byte all indicate Orcon
+			return hvsOrcon;
+		}
+	}
+} // namespace
+
+
+std::string CEvohomeRadio::GetHvacName(unsigned int nDevID, const char *szLabel)
+{
+	return std_format("Fan %s %s", CEvohomeID(nDevID).GetStrID().c_str(), szLabel);
+}
+
+
+void CEvohomeRadio::UpdateHvacTemp(unsigned int nDevID, uint8_t nChild, uint16_t nRaw, const char *szLabel)
+{
+	if (nRaw == hvacNoSensor16 || nRaw == hvacNoTemp16)
+		return;
+	if ((nRaw & 0xF000) == 0x8000) // faulty sensor
+		return;
+
+	float fTemp = static_cast<float>(static_cast<int16_t>(nRaw)) / 100.0F;
+	if (fTemp <= -273.0F)
+		return;
+
+	SendTempSensor(GetHvacNodeID(nDevID, nChild), 255, fTemp, GetHvacName(nDevID, szLabel));
+}
+
+
+void CEvohomeRadio::UpdateHvacFanSpeed(unsigned int nDevID, uint8_t nChild, uint8_t nRaw, const char *szLabel)
+{
+	if (nRaw == hvacNoFanSpeed)
+		return;
+	if (nRaw > 200) // out of range, treat as a faulty reading
+		return;
+
+	SendPercentageSensor(nDevID, nChild, 255, nRaw / 2.0F, GetHvacName(nDevID, szLabel));
+}
+
+
+void CEvohomeRadio::UpdateHvacFlow(unsigned int nDevID, uint8_t nChild, uint16_t nRaw, const char *szLabel)
+{
+	if (nRaw == hvacNoSensor16)
+		return;
+	if (nRaw & 0x8000) // faulty sensor
+		return;
+
+	SendCustomSensor(nDevID, nChild, 255, nRaw / 100.0F, GetHvacName(nDevID, szLabel), "m3/h");
+}
+
+
+void CEvohomeRadio::UpdateFanModeSwitch(unsigned int nDevID, uint8_t nFanInfo)
+{
+	if (nFanInfo >= nFanInfoLevelCount)
+		return;
+
+	SendSelectorSwitch(nDevID, hvcFanInfo, std::to_string(nFanInfo * 10), GetHvacName(nDevID, "Fan mode"), 0, true, szFanInfoLevels, "", false, m_Name);
+}
+
+
+bool CEvohomeRadio::DecodeFanMode(CEvohomeMsg& msg) //0x22F1
+{
+	char tag[] = "FAN_MODE";
+
+	if (msg.payloadsize < 2)
+	{
+		Log(LOG_ERROR, "%s: Error decoding command, packet size too small: %d", tag, msg.payloadsize);
+		return false;
+	}
+
+	unsigned int nRemoteID = msg.GetID(0);
+	uint8_t nMode = msg.payload[1];
+	uint8_t nModeMax = (msg.payloadsize >= 3) ? msg.payload[2] : 0;
+	uint8_t nScheme = GetSchemeFromModeMax(nModeMax);
+
+	// A remote either addresses its unit directly or broadcasts with itself in the third slot
+	unsigned int nDevID = 0;
+	if (msg.GetID(1) != 0 && msg.GetID(1) != nRemoteID)
+		nDevID = msg.GetID(1);
+	else if (msg.GetID(2) != 0 && msg.GetID(2) != nRemoteID)
+		nDevID = msg.GetID(2);
+
+	Debug(DEBUG_HARDWARE, "%s: remote 0x%x: mode=0x%02x mode_max=0x%02x scheme=%d fan=0x%x", tag, nRemoteID, nMode, nModeMax, nScheme, nDevID);
+
+	if (nDevID == 0) // broadcast, we cannot tell which unit it belongs to
+		return true;
+
+	{
+		std::lock_guard<std::mutex> l(m_mtxHvacRemote);
+		_tHvacRemote &remote = m_HvacRemote[nDevID];
+		if (remote.m_nRemoteID != nRemoteID || remote.m_nScheme != nScheme)
+			Log(LOG_STATUS, "%s: Bound remote %s controls fan %s (%s)", tag, CEvohomeID(nRemoteID).GetStrID().c_str(),
+			    CEvohomeID(nDevID).GetStrID().c_str(), (nScheme == hvsItho) ? "Itho" : (nScheme == hvsNuaire) ? "Nuaire" : (nScheme == hvsVasco) ? "Vasco" : "Orcon");
+		remote.m_nRemoteID = nRemoteID;
+		remote.m_nScheme = nScheme;
+		remote.m_nModeMax = nModeMax;
+	}
+
+	// Reflect a change made on the physical remote straight away rather than waiting for the next 31DA
+	int nFanInfo = GetFanInfoForScheme(nMode, nScheme);
+	if (nFanInfo >= 0)
+		UpdateFanModeSwitch(nDevID, static_cast<uint8_t>(nFanInfo));
+
+	return true;
+}
+
+
+bool CEvohomeRadio::SetFanMode(unsigned int nDevID, uint8_t nChild, uint8_t nLevel)
+{
+	char tag[] = "FAN_MODE";
+
+	if (nChild != hvcFanInfo)
+	{
+		Log(LOG_ERROR, "%s: Device %s unit %d is read only", tag, CEvohomeID(nDevID).GetStrID().c_str(), nChild);
+		return false;
+	}
+
+	uint8_t nFanInfo = nLevel / 10;
+	if (nFanInfo >= nFanInfoLevelCount)
+	{
+		Log(LOG_ERROR, "%s: Selector level out of range: %d", tag, nLevel);
+		return false;
+	}
+
+	_tHvacRemote remote;
+	{
+		std::lock_guard<std::mutex> l(m_mtxHvacRemote);
+		auto it = m_HvacRemote.find(nDevID);
+		if (it == m_HvacRemote.end())
+		{
+			Log(LOG_ERROR, "%s: No bound remote seen yet for fan %s, cannot set the mode. Operate the physical remote once so the binding can be learned.",
+			    tag, CEvohomeID(nDevID).GetStrID().c_str());
+			return false;
+		}
+		remote = it->second;
+	}
+
+	int nMode = GetFanModeForScheme(nFanInfo, remote.m_nScheme);
+	if (nMode < 0)
+	{
+		Log(LOG_ERROR, "%s: Mode %d is not supported by fan %s", tag, nFanInfo, CEvohomeID(nDevID).GetStrID().c_str());
+		return false;
+	}
+
+	// Transmit as the bound remote, otherwise the unit ignores us
+	CEvohomeMsg msg(CEvohomeMsg::pktinf, nDevID, cmdFanMode);
+	msg.SetID(0, remote.m_nRemoteID);
+	msg.Add((uint8_t)0x00).Add((uint8_t)nMode).Add_if(remote.m_nModeMax, remote.m_nModeMax != 0);
+	AddSendQueue(msg);
+
+	Debug(DEBUG_HARDWARE, "%s: Setting fan %s to mode 0x%02x as remote %s", tag, CEvohomeID(nDevID).GetStrID().c_str(), nMode,
+	      CEvohomeID(remote.m_nRemoteID).GetStrID().c_str());
+
+	return true;
+}
+
+
+bool CEvohomeRadio::DecodeFanState(CEvohomeMsg& msg) //0x31D9
+{
+	char tag[] = "FAN_STATE";
+
+	if (msg.payloadsize == 1)
+	{
+		Debug(DEBUG_HARDWARE, "%s: Request for fan state %d", tag, msg.payload[0]);
+		return true;
+	}
+	if (msg.payloadsize < 3)
+	{
+		Log(LOG_ERROR, "%s: Error decoding command, packet size too small: %d", tag, msg.payloadsize);
+		return false;
+	}
+
+	unsigned int nDevID = msg.GetID(0);
+	uint8_t nFlags = msg.payload[1];
+	uint8_t nMode = msg.payload[2];
+
+	Debug(DEBUG_HARDWARE, "%s: 0x%x: flags=0x%02x mode/speed=0x%02x len=%d", tag, nDevID, nFlags, nMode, msg.payloadsize);
+
+	// SendAlertSensor truncates the node id to 8 bits, so use switches which keep the full address
+	SendSwitch(nDevID, hvcFilterAlert, 255, (nFlags & 0x20) != 0, 0, GetHvacName(nDevID, "Filter dirty"), m_Name);
+	SendSwitch(nDevID, hvcFaultAlert, 255, (nFlags & 0x80) != 0, 0, GetHvacName(nDevID, "Fault"), m_Name);
+
+	// Byte 2 only carries a real fan speed for Itho/Nuaire style payloads. Orcon and Brofer send a
+	// mode enum instead, identified by a long payload of 0x20 filler ending in 0x04 or 0x08. Those
+	// units report their actual speed in 31DA, so leave it to DecodeVentState.
+	bool bHasFanSpeed = true;
+	if (msg.payloadsize >= 17 && msg.payload[16] != 0x00)
+	{
+		bHasFanSpeed = false;
+		for (int i = 4; i < 16; i++)
+		{
+			if (msg.payload[i] != 0x20)
+			{
+				bHasFanSpeed = true;
+				break;
+			}
+		}
+	}
+
+	if (bHasFanSpeed)
+		UpdateHvacFanSpeed(nDevID, hvcExhaustFanSpeed, nMode, "Exhaust fan speed");
+
+	return true;
+}
+
+
+bool CEvohomeRadio::DecodeVentState(CEvohomeMsg& msg) //0x31DA
+{
+	char tag[] = "VENT_STATE";
+
+	if (msg.payloadsize == 1)
+	{
+		Debug(DEBUG_HARDWARE, "%s: Request for ventilation state %d", tag, msg.payload[0]);
+		return true;
+	}
+	if (msg.payloadsize < 29)
+	{
+		Log(LOG_ERROR, "%s: Error decoding command, packet size too small: %d", tag, msg.payloadsize);
+		return false;
+	}
+
+	unsigned int nDevID = msg.GetID(0);
+
+	uint8_t nAirQuality = msg.payload[1];
+	uint8_t nAirQualityBasis = msg.payload[2];
+	uint16_t nCo2 = msg.payload[3] << 8 | msg.payload[4];
+	uint8_t nIndoorHum = msg.payload[5];
+	uint8_t nOutdoorHum = msg.payload[6];
+	uint16_t nExhaustTemp = msg.payload[7] << 8 | msg.payload[8];
+	uint16_t nSupplyTemp = msg.payload[9] << 8 | msg.payload[10];
+	uint16_t nIndoorTemp = msg.payload[11] << 8 | msg.payload[12];
+	uint16_t nOutdoorTemp = msg.payload[13] << 8 | msg.payload[14];
+	uint8_t nBypassPos = msg.payload[17];
+	uint8_t nFanInfo = msg.payload[18];
+	uint8_t nExhaustFanSpeed = msg.payload[19];
+	uint8_t nSupplyFanSpeed = msg.payload[20];
+	uint16_t nRemainingMins = msg.payload[21] << 8 | msg.payload[22];
+	uint8_t nPostHeat = msg.payload[23];
+	uint8_t nPreHeat = msg.payload[24];
+	uint16_t nSupplyFlow = msg.payload[25] << 8 | msg.payload[26];
+	uint16_t nExhaustFlow = msg.payload[27] << 8 | msg.payload[28];
+
+	Debug(DEBUG_HARDWARE, "%s: 0x%x: fan_info=0x%02x co2=%d exhaust=%d%% supply=%d%%", tag, nDevID, nFanInfo, nCo2, nExhaustFanSpeed / 2,
+	      nSupplyFanSpeed / 2);
+
+	// Air quality is a 0-200 percentage, its basis says which sensor drives it
+	if (!(nAirQuality == hvacNoSensor8 && nAirQualityBasis == 0x00) && !IsHvacFault8(nAirQuality) && nAirQuality <= 200)
+		SendPercentageSensor(nDevID, hvcAirQuality, 255, nAirQuality / 2.0F, GetHvacName(nDevID, "Air quality"));
+
+	if (nCo2 != hvacNoSensor16 && !(nCo2 & 0x8000))
+	{
+		// This helper splits its two arguments into the device id, so feed it the same packed
+		// value the other sensors use rather than truncating the unit address to 8 bits
+		uint16_t nCo2ID = GetHvacNodeID(nDevID, hvcCo2);
+		SendAirQualitySensor(static_cast<uint8_t>(nCo2ID >> 8), static_cast<uint8_t>(nCo2ID & 0xFF), 255, nCo2, GetHvacName(nDevID, "CO2"));
+	}
+
+	if (nIndoorHum != hvacNoSensor8 && !IsHvacFault8(nIndoorHum) && nIndoorHum <= 100)
+		SendHumiditySensor(GetHvacNodeID(nDevID, hvcIndoorHumidity), 255, nIndoorHum, GetHvacName(nDevID, "Indoor humidity"));
+
+	if (nOutdoorHum != hvacNoSensor8 && !IsHvacFault8(nOutdoorHum) && nOutdoorHum <= 100)
+		SendHumiditySensor(GetHvacNodeID(nDevID, hvcOutdoorHumidity), 255, nOutdoorHum, GetHvacName(nDevID, "Outdoor humidity"));
+
+	UpdateHvacTemp(nDevID, hvcExhaustTemp, nExhaustTemp, "Exhaust temperature");
+	UpdateHvacTemp(nDevID, hvcSupplyTemp, nSupplyTemp, "Supply temperature");
+	UpdateHvacTemp(nDevID, hvcIndoorTemp, nIndoorTemp, "Indoor temperature");
+	UpdateHvacTemp(nDevID, hvcOutdoorTemp, nOutdoorTemp, "Outdoor temperature");
+
+	if (nBypassPos != hvacNoSensor8 && !IsHvacFault8(nBypassPos) && nBypassPos <= 200)
+		SendPercentageSensor(nDevID, hvcBypassPosition, 255, nBypassPos / 2.0F, GetHvacName(nDevID, "Bypass position"));
+
+	// fan_info holds the current mode in the low 5 bits, the top 3 bits are still unidentified
+	if (nFanInfo != hvacNoSensor8 && nFanInfo != 0xFF)
+		UpdateFanModeSwitch(nDevID, nFanInfo & 0x1F);
+
+	UpdateHvacFanSpeed(nDevID, hvcExhaustFanSpeed, nExhaustFanSpeed, "Exhaust fan speed");
+	UpdateHvacFanSpeed(nDevID, hvcSupplyFanSpeed, nSupplyFanSpeed, "Supply fan speed");
+
+	if (nRemainingMins != hvacNoRemainingMins)
+		SendCustomSensor(nDevID, hvcRemainingTime, 255, static_cast<float>(nRemainingMins), GetHvacName(nDevID, "Remaining time"), "min");
+
+	if (nPostHeat != hvacNoSensor8 && !IsHvacFault8(nPostHeat) && nPostHeat <= 200)
+		SendPercentageSensor(nDevID, hvcPostHeater, 255, nPostHeat / 2.0F, GetHvacName(nDevID, "Post heater"));
+
+	if (nPreHeat != hvacNoSensor8 && !IsHvacFault8(nPreHeat) && nPreHeat <= 200)
+		SendPercentageSensor(nDevID, hvcPreHeater, 255, nPreHeat / 2.0F, GetHvacName(nDevID, "Pre heater"));
+
+	UpdateHvacFlow(nDevID, hvcSupplyFlow, nSupplyFlow, "Supply flow");
+	UpdateHvacFlow(nDevID, hvcExhaustFlow, nExhaustFlow, "Exhaust flow");
+
+	return true;
+}
+
 
 void CEvohomeRadio::AddSendQueue(const CEvohomeMsg& msg)
 {

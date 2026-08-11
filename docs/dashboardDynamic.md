@@ -302,7 +302,7 @@ Live: updates on WebSocket `device_update` for the configured device.
 ### Weather
 **Category:** Weather
 
-Displays current weather conditions with an animated weather scene background (sun, clouds, rain, snow, moon/stars at night).
+Displays current weather conditions with an animated weather scene background (sun, clouds, rain, snow, thunderstorm with lightning bolt, moon/stars at night).
 
 **Configuration:**
 
@@ -316,7 +316,7 @@ Displays current weather conditions with an animated weather scene background (s
 
 **Style 1:** Data-dense view with the animated weather scene as a background. Shows temperature, wind speed/direction, barometer, humidity, and forecast string as individual rows.
 
-**Style 2:** Full-height immersive scene card. The animated scene fills the widget (sun rays / moon + stars / clouds / rain / snow), with large temperature and forecast string centered over it. Includes dew point, humidity, and barometer. Night mode activates automatically between sunset and sunrise.
+**Style 2:** Full-height immersive scene card. The animated scene fills the widget (sun rays / moon + stars / clouds / rain / snow / thunderstorm with lightning bolt), with large temperature and forecast string centered over it. Includes dew point, humidity, and barometer. Night mode activates automatically between sunset and sunrise.
 
 Live: updates instantly from WebSocket device updates.
 
@@ -856,6 +856,8 @@ https://www.googleapis.com/calendar/v3/calendars/{calendarId}/events
 ```
 
 The widget auto-detects `.ics` vs JSON API URLs.
+
+**Recurring events:** ICS recurring events (RRULE) are expanded into their upcoming occurrences (60-day lookahead). Supported: daily / weekly / monthly / yearly frequencies with `INTERVAL`, `COUNT`, `UNTIL`, `BYDAY` (weekly) and `BYMONTHDAY`; excluded dates (`EXDATE`) and single occurrences that were moved or cancelled (`RECURRENCE-ID`) are honored.
 
 **CORS handling:** The widget fetches calendar data using a fallback chain:
 

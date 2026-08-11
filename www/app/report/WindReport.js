@@ -193,14 +193,14 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
 
                     if (data.highestGustDay) {
                         vm.highestGustDay = {
-                            date: dateFormat(data.highestGustDay.date, 'd') + ' ' + $.t(dateFormat(data.highestGustDay.date, 'mmmm')),
+                            date: dateFormat(data.highestGustDay.date, 'UTC:d') + ' ' + $.t(dateFormat(data.highestGustDay.date, 'UTC:mmmm')),
                             value: data.highestGustDay.gust.toFixed(1)
                         };
                     }
 
                     if (data.windiestDay) {
                         vm.windiestDay = {
-                            date: dateFormat(data.windiestDay.date, 'd') + ' ' + $.t(dateFormat(data.windiestDay.date, 'mmmm')),
+                            date: dateFormat(data.windiestDay.date, 'UTC:d') + ' ' + $.t(dateFormat(data.windiestDay.date, 'UTC:mmmm')),
                             value: data.windiestDay.speed.toFixed(1)
                         };
                     }
@@ -233,7 +233,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     title: $.t('Day'),
                     data: 'date',
                     render: function (data) {
-                        return $.t(dateFormat(data, 'd'));
+                        return $.t(dateFormat(data, 'UTC:d'));
                     }
                 });
 
@@ -241,7 +241,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     title: '',
                     data: 'date',
                     render: function (data) {
-                        return $.t(dateFormat(data, 'dddd'));
+                        return $.t(dateFormat(data, 'UTC:dddd'));
                     }
                 });
 

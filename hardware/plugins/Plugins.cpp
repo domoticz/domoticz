@@ -1201,9 +1201,12 @@ namespace Plugins
 
 	bool CPlugin::StartHardware()
 	{
-		if (m_bIsStarted)
-			StopHardware();
-
+		// Note: do NOT stop here based on m_bIsStarted. CDomoticzHardwareBase::Start()
+		// already sets m_bIsStarted to true (via an atomic exchange) before calling us,
+		// and it only proceeds when the previous state was 'not started'. Restart paths
+		// (Restart/RestartWithDelay) call StopHardware() explicitly beforehand. Calling
+		// StopHardware() here would deadlock MainWorker waiting on a worker thread that
+		// has not been created yet.
 		RequestStart();
 
 		// Flush the message queue (should already be empty)
@@ -1250,11 +1253,16 @@ namespace Plugins
 		{
 			Log(LOG_STATUS, "Stop directive received.");
 
-			// loop on plugin to finish startup
-			while (m_bIsStarting)
+			// loop on plugin to finish startup (bounded at 300 * 100ms = 30s, well under the
+			// MainWorker watchdog timeout, so a stuck startup can never hang the caller)
+			int iWaitCounter = 0;
+			while (m_bIsStarting && iWaitCounter < 300)
 			{
 				sleep_milliseconds(100);
+				iWaitCounter++;
 			}
+			if (m_bIsStarting)
+				Log(LOG_ERROR, "Timed out waiting for startup to complete (waited %d/300), forcing stop.", iWaitCounter);
 
 			RequestStop();
 
@@ -1280,11 +1288,16 @@ namespace Plugins
 					MessagePlugin(new onStopCallback());
 				}
 
-				// loop on stop to be processed
-				while (m_bIsStarted)
+				// loop on stop to be processed (bounded at 300 * 100ms = 30s, well under the
+				// MainWorker watchdog timeout, so an unprocessed stop can never hang the caller)
+				int iStopWaitCounter = 0;
+				while (m_bIsStarted && iStopWaitCounter < 300)
 				{
 					sleep_milliseconds(100);
+					iStopWaitCounter++;
 				}
+				if (m_bIsStarted)
+					Log(LOG_ERROR, "Timed out waiting for stop to be processed (waited %d/300), forcing stop.", iStopWaitCounter);
 			}
 
 			Log(LOG_STATUS, "Stopping threads.");

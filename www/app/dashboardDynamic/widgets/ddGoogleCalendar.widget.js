@@ -34,6 +34,7 @@ define([
             {
                 key:     'maxEvents',
                 type:    'number',
+                step:    1,
                 label:   'Max events to show',
                 default: 7,
                 min:     1,
@@ -48,6 +49,7 @@ define([
             {
                 key:     'refreshInterval',
                 type:    'number',
+                step:    1,
                 label:   'Refresh interval (seconds)',
                 default: 900,
                 min:     60
@@ -109,11 +111,189 @@ define([
                     return null;
                 }
 
+                // ── ICS field helpers ─────────────────────────────────────
+                var WEEKDAY_NUM = { SU: 0, MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6 };
+
+                function unescapeICSText(val) {
+                    return val.replace(/\\n/gi, ' ').replace(/\\,/g, ',').replace(/\\;/g, ';').replace(/\\\\/g, '\\');
+                }
+
+                function addDays(date, n) {
+                    var d = new Date(date.getTime());
+                    d.setDate(d.getDate() + n);
+                    return d;
+                }
+
+                // Local-time key used to match EXDATE / RECURRENCE-ID values
+                // against generated occurrence starts
+                function occKey(date, dateOnly) {
+                    var k = String(date.getFullYear()) +
+                            String(date.getMonth() + 1).padStart(2, '0') +
+                            String(date.getDate()).padStart(2, '0');
+                    if (dateOnly) { return k; }
+                    return k + 'T' +
+                           String(date.getHours()).padStart(2, '0') +
+                           String(date.getMinutes()).padStart(2, '0') +
+                           String(date.getSeconds()).padStart(2, '0');
+                }
+
+                function icsValueToKey(raw) {
+                    if (!raw) { return null; }
+                    var val = raw.replace(/^[^:]+:/, '').replace(/\r/g, '').trim();
+                    var d = parseICSDate(val);
+                    if (!d) { return null; }
+                    return occKey(d, /^\d{8}$/.test(val));
+                }
+
+                function parseRRule(str) {
+                    var rule = {};
+                    str.split(';').forEach(function(part) {
+                        var idx = part.indexOf('=');
+                        if (idx > 0) { rule[part.substring(0, idx).toUpperCase()] = part.substring(idx + 1); }
+                    });
+                    return rule;
+                }
+
+                // ── Recurrence expansion ──────────────────────────────────
+                // Expands an RRULE series into concrete occurrences inside
+                // [windowStart, windowEnd]. Supports the RRULE features that
+                // calendar exports actually emit: FREQ=DAILY/WEEKLY/MONTHLY/
+                // YEARLY, INTERVAL, COUNT, UNTIL, BYDAY (weekly), BYMONTHDAY.
+                // EXDATE and RECURRENCE-ID overrides suppress their occurrence.
+                function expandSeries(ev, rule, overrides, windowStart, windowEnd, out) {
+                    var freq = (rule.FREQ || '').toUpperCase();
+                    if (freq !== 'DAILY' && freq !== 'WEEKLY' && freq !== 'MONTHLY' && freq !== 'YEARLY') {
+                        out.push({ title: ev.title, start: ev.start, end: ev.end, allDay: ev.allDay, location: ev.location });
+                        return;
+                    }
+                    var interval = parseInt(rule.INTERVAL, 10) || 1;
+                    if (interval < 1) { interval = 1; }
+                    var count   = rule.COUNT ? parseInt(rule.COUNT, 10) : 0;
+                    var until   = rule.UNTIL ? parseICSDate(rule.UNTIL) : null;
+                    var durMs   = (ev.end && ev.start) ? (ev.end.getTime() - ev.start.getTime()) : 0;
+                    var maxIter = 5000;
+                    var counted = 0;
+                    var iter    = 0;
+
+                    // Occurrences are generated in chronological order;
+                    // returns false when the series is exhausted
+                    function emitOccurrence(occStart) {
+                        if (until && occStart > until) { return false; }
+                        if (count) {
+                            counted++;
+                            if (counted > count) { return false; }
+                        }
+                        if (occStart > windowEnd) { return false; }
+                        if (occStart >= windowStart) {
+                            var key = occKey(occStart, ev.allDay);
+                            if (!ev.exKeys[key] && !overrides[ev.uid + '|' + key]) {
+                                out.push({
+                                    title:    ev.title,
+                                    start:    occStart,
+                                    end:      durMs ? new Date(occStart.getTime() + durMs) : occStart,
+                                    allDay:   ev.allDay,
+                                    location: ev.location
+                                });
+                            }
+                        }
+                        return true;
+                    }
+
+                    if (freq === 'DAILY') {
+                        var cur = new Date(ev.start.getTime());
+                        // Without COUNT the pre-window occurrences don't matter — jump ahead
+                        if (!count && windowStart > cur) {
+                            var behind = Math.floor((windowStart.getTime() - cur.getTime()) / (86400000 * interval)) - 1;
+                            if (behind > 0) { cur = addDays(cur, behind * interval); }
+                        }
+                        while (iter++ < maxIter) {
+                            if (!emitOccurrence(cur)) { break; }
+                            cur = addDays(cur, interval);
+                        }
+                        return;
+                    }
+
+                    if (freq === 'WEEKLY') {
+                        var dayNums = [];
+                        if (rule.BYDAY) {
+                            rule.BYDAY.split(',').forEach(function(tok) {
+                                tok = tok.trim().toUpperCase().replace(/^[+-]?\d+/, '');
+                                if (WEEKDAY_NUM.hasOwnProperty(tok)) { dayNums.push(WEEKDAY_NUM[tok]); }
+                            });
+                        }
+                        if (!dayNums.length) { dayNums = [ev.start.getDay()]; }
+                        // Day offsets inside a Monday-based week, chronological
+                        var offsets = dayNums.map(function(d) { return (d + 6) % 7; }).sort(function(a, b) { return a - b; });
+                        var weekStart = addDays(ev.start, -((ev.start.getDay() + 6) % 7));
+                        if (!count && windowStart > weekStart) {
+                            var weeksBehind = Math.floor((windowStart.getTime() - weekStart.getTime()) / (86400000 * 7 * interval)) - 1;
+                            if (weeksBehind > 0) { weekStart = addDays(weekStart, weeksBehind * interval * 7); }
+                        }
+                        var stop = false;
+                        while (!stop && iter < maxIter) {
+                            for (var i = 0; i < offsets.length; i++) {
+                                iter++;
+                                var occ = addDays(weekStart, offsets[i]);
+                                if (occ < ev.start) { continue; }
+                                if (!emitOccurrence(occ)) { stop = true; break; }
+                            }
+                            weekStart = addDays(weekStart, interval * 7);
+                        }
+                        return;
+                    }
+
+                    if (freq === 'MONTHLY') {
+                        var monthDays = [];
+                        if (rule.BYMONTHDAY) {
+                            rule.BYMONTHDAY.split(',').forEach(function(v) {
+                                var n = parseInt(v, 10);
+                                if (!isNaN(n) && n !== 0) { monthDays.push(n); }
+                            });
+                        }
+                        if (!monthDays.length) { monthDays = [ev.start.getDate()]; }
+                        var mIdx  = 0;
+                        var stopM = false;
+                        while (!stopM && iter < maxIter) {
+                            var monthBase = new Date(ev.start.getFullYear(), ev.start.getMonth() + mIdx * interval, 1);
+                            var lastDay   = new Date(monthBase.getFullYear(), monthBase.getMonth() + 1, 0).getDate();
+                            var days = [];
+                            monthDays.forEach(function(n) {
+                                var dnum = n > 0 ? n : lastDay + n + 1;   // negative = counted from month end
+                                if (dnum >= 1 && dnum <= lastDay) { days.push(dnum); }
+                            });
+                            days.sort(function(a, b) { return a - b; });
+                            for (var k = 0; k < days.length; k++) {
+                                if (k > 0 && days[k] === days[k - 1]) { continue; }   // e.g. BYMONTHDAY=31,-1 in a 31-day month
+                                iter++;
+                                var mOcc = new Date(monthBase.getFullYear(), monthBase.getMonth(), days[k],
+                                                    ev.start.getHours(), ev.start.getMinutes(), ev.start.getSeconds());
+                                if (mOcc < ev.start) { continue; }
+                                if (!emitOccurrence(mOcc)) { stopM = true; break; }
+                            }
+                            mIdx++;
+                        }
+                        return;
+                    }
+
+                    // YEARLY
+                    var yIdx = 0;
+                    while (iter++ < maxIter) {
+                        var yOcc = new Date(ev.start.getFullYear() + yIdx * interval, ev.start.getMonth(), ev.start.getDate(),
+                                            ev.start.getHours(), ev.start.getMinutes(), ev.start.getSeconds());
+                        yIdx++;
+                        if (yOcc.getMonth() !== ev.start.getMonth()) { continue; }   // Feb 29 in a non-leap year
+                        if (!emitOccurrence(yOcc)) { break; }
+                    }
+                }
+
                 function parseICS(text) {
-                    var events = [];
                     // Unfold continuation lines (lines starting with space/tab continue previous)
                     var unfolded = text.replace(/\r\n[ \t]/g, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
                     var blocks = unfolded.split('BEGIN:VEVENT');
+                    var singles   = [];
+                    var recurring = [];
+                    var overrides = {};   // uid|occurrence-key of occurrences replaced by their own VEVENT
+
                     blocks.slice(1).forEach(function(block) {
                         var getField = function(name) {
                             // Match property name optionally followed by params then colon
@@ -121,17 +301,26 @@ define([
                             var m  = block.match(re);
                             return m ? m[1].trim() : null;
                         };
+                        var getFieldAll = function(name) {
+                            var re = new RegExp('(?:^|\n)' + name + '[^:\n]*:([^\n]+)', 'ig');
+                            var vals = [];
+                            var m;
+                            while ((m = re.exec(block)) !== null) { vals.push(m[1].trim()); }
+                            return vals;
+                        };
 
                         var dtStartRaw = getField('DTSTART');
                         var dtEndRaw   = getField('DTEND');
                         var summary    = getField('SUMMARY') || '(No title)';
                         var location   = getField('LOCATION');
+                        var uid        = getField('UID') || '';
+                        var rruleRaw   = getField('RRULE');
+                        var recurIdRaw = getField('RECURRENCE-ID');
+                        var status     = getField('STATUS');
 
                         // Unescape ICS text
-                        summary = summary.replace(/\\n/g, ' ').replace(/\\,/g, ',').replace(/\\\\/g, '\\');
-                        if (location) {
-                            location = location.replace(/\\n/g, ' ').replace(/\\,/g, ',').replace(/\\\\/g, '\\');
-                        }
+                        summary = unescapeICSText(summary);
+                        if (location) { location = unescapeICSText(location); }
 
                         // Determine if all-day: DTSTART may have VALUE=DATE param or be bare YYYYMMDD
                         var isAllDay = dtStartRaw && dtStartRaw.indexOf('VALUE=DATE') !== -1;
@@ -142,17 +331,52 @@ define([
 
                         var startDate = parseICSDate(dtStartRaw);
                         var endDate   = dtEndRaw ? parseICSDate(dtEndRaw) : startDate;
+                        if (!startDate) { return; }
 
-                        if (startDate) {
-                            events.push({
-                                title:    summary,
-                                start:    startDate,
-                                end:      endDate,
-                                allDay:   isAllDay,
-                                location: location
+                        // A VEVENT with RECURRENCE-ID replaces one occurrence of its
+                        // series: suppress the generated occurrence, show this instead
+                        if (recurIdRaw && uid) {
+                            overrides[uid + '|' + icsValueToKey(recurIdRaw)] = true;
+                        }
+                        if (status && status.toUpperCase().indexOf('CANCELLED') !== -1) { return; }
+
+                        var exKeys = {};
+                        getFieldAll('EXDATE').forEach(function(line) {
+                            line.split(',').forEach(function(v) {
+                                var exKey = icsValueToKey(v);
+                                if (exKey) { exKeys[exKey] = true; }
                             });
+                        });
+
+                        var ev = {
+                            uid:      uid,
+                            title:    summary,
+                            start:    startDate,
+                            end:      endDate,
+                            allDay:   isAllDay,
+                            location: location,
+                            exKeys:   exKeys
+                        };
+                        if (rruleRaw && !recurIdRaw) {
+                            ev.rrule = parseRRule(rruleRaw);
+                            recurring.push(ev);
+                        } else {
+                            singles.push(ev);
                         }
                     });
+
+                    var events = [];
+                    singles.forEach(function(ev) {
+                        events.push({ title: ev.title, start: ev.start, end: ev.end, allDay: ev.allDay, location: ev.location });
+                    });
+                    if (recurring.length) {
+                        var now         = new Date();
+                        var windowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+                        var windowEnd   = addDays(windowStart, 61);   // 60-day lookahead from today
+                        recurring.forEach(function(ev) {
+                            expandSeries(ev, ev.rrule, overrides, windowStart, windowEnd, events);
+                        });
+                    }
                     return events;
                 }
 

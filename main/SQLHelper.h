@@ -333,6 +333,10 @@ public:
 	bool RestoreDatabase(const std::string &dbase);
 	bool RestoreDatabaseFromFile(const std::string &sourceFilePath);
 
+	// Validates that a string is a real YYYY-MM-DD calendar date. Public so callers
+	// outside CSQLHelper (e.g. the MCP server) can validate date arguments.
+	bool CheckDateSQL(const std::string &sDate);
+
 	// Returns DeviceRowID
 	uint64_t UpdateValue(int HardwareID, int OrgHardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
 			     std::string &devname, const bool bUseOnOffAction, const char *User = nullptr);
@@ -361,6 +365,12 @@ public:
 
 	void GetAddjustment(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, float &AddjValue, float &AddjMulti);
 	void GetAddjustment2(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, float &AddjValue, float &AddjMulti);
+
+	// Looks up the device's Calibration tab values and returns sValue with them applied (see
+	// ApplyDeviceCalibration). For ingest paths that need the calibrated value for something besides the
+	// database write (e.g. a notification check) while the database write itself goes through
+	// UpdateValueInt with the raw value, so calibration is not applied twice.
+	std::string GetCalibratedValue(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, const std::string &sValue);
 
 	void GetMeterType(int HardwareID, const char *ID, unsigned char unit, unsigned char devType, unsigned char subType, int &meterType);
 
@@ -429,6 +439,7 @@ public:
 	std::vector<std::vector<std::string>> unsafe_query(const std::string& szQuery);
 
 	void safe_exec_no_return(const char *fmt, ...);
+	int safe_exec_changes(const char *fmt, ...);
 	bool safe_UpdateBlobInTableWithID(const std::string &Table, const std::string &Column, const std::string &sID, const std::string &BlobData);
 	bool DoesColumnExistsInTable(const std::string &columnname, const std::string &tablename);
 
@@ -472,6 +483,10 @@ public:
 	bool SaveDashboardLayout(int userid, const std::string& layoutid, const std::string& name, bool isDefault, const std::string& layout_json);
 	bool DeleteDashboardLayout(int userid, const std::string& layoutid);
 	bool CopyDashboardLayout(int userid, const std::string& srcid, const std::string& newid, const std::string& newname);
+
+	// Deletes a user and all rows in tables keyed by that user's ID (SharedDevices, DashboardLayouts,
+	// ThemeSettings), so a future user cannot inherit them if the rowid gets reused.
+	bool DeleteUser(const std::string& idx);
 
 	// Access Tokens
 	struct _tAccessToken {
@@ -558,6 +573,12 @@ private:
 	uint64_t UpdateManagedValueInt(int HardwareID, int OrgHardwareID, const char* ID, unsigned char unit, unsigned char devType, unsigned char subType, unsigned char signallevel, unsigned char batterylevel, int nValue,
 		const char* sValue, std::string& devname, bool bUseOnOffAction, const char* User = nullptr);
 
+	// Applies the device Calibration tab (AddjValue/AddjMulti/AddjValue2/AddjMulti2) to sValue for the
+	// devType/subType combinations that support it, so every ingest path (RFXCom, MQTT, Python plugins,
+	// dzVents, the JSON API, ...) gets the same calibration instead of only the paths that historically
+	// applied it by hand. Devices/fields not covered here are returned unchanged.
+	std::string ApplyDeviceCalibration(unsigned char devType, unsigned char subType, float AddjValue, float AddjMulti, float AddjValue2, float AddjMulti2, const std::string &sValue) const;
+
 	bool UpdateCalendarMeter(int HardwareID, const char *DeviceID, unsigned char unit, unsigned char devType, unsigned char subType, bool shortLog, bool multiMeter, const char *date,
 				 int64_t value1 = 0, int64_t value2 = 0, int64_t value3 = 0, int64_t value4 = 0, int64_t value5 = 0, int64_t value6 = 0, int64_t counter1 = 0,
 				 int64_t counter2 = 0, int64_t counter3 = 0, int64_t counter4 = 0);
@@ -575,6 +596,7 @@ private:
 	void UpdateMultiMeter();
 	void UpdatePercentageLog();
 	void UpdateFanLog();
+	bool CalendarEntryExists(const char *szTable, uint64_t DeviceRowID, const char *szDate);
 	void AddCalendarTemperature();
 	void AddCalendarUpdateRain();
 	void AddCalendarUpdateWind();
@@ -584,7 +606,6 @@ private:
 	void AddCalendarUpdatePercentage();
 	void AddCalendarUpdateFan();
 	bool CheckDate(const std::string &sDate, int &d, int &m, int &y);
-	bool CheckDateSQL(const std::string &sDate);
 	bool CheckDateTimeSQL(const std::string &sDateTime);
 	bool CheckTime(const std::string &sTime);
 	void SendUpdateInt(const std::string& Idx);

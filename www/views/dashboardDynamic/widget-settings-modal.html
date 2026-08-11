@@ -53,7 +53,7 @@
                    ng-required="field.required"
                    min="{{ field.min }}"
                    max="{{ field.max }}"
-                   step="{{ field.step || 1 }}">
+                   step="{{ field.step || 'any' }}">
 
             <!-- boolean -->
             <div ng-if="field.type === 'boolean'" class="dd-checkbox-label"
@@ -84,12 +84,22 @@
 
             <!-- device-picker (+ optional per-device metric selector) -->
             <div ng-if="field.type === 'device-picker'">
-                <dz-picker ng-model="config[field.key]"
-                           dz-options="pickerOptions[field.key]"
-                           placeholder="{{'-- Select Device --' | translate}}"
-                           dz-required="field.required"
-                           name="field_{{ field.key }}">
-                </dz-picker>
+                <div style="display:flex;align-items:center;gap:6px">
+                    <dz-picker ng-model="config[field.key]"
+                               dz-options="pickerOptions[field.key]"
+                               placeholder="{{'-- Select Device --' | translate}}"
+                               dz-required="field.required"
+                               name="field_{{ field.key }}"
+                               style="flex:1;min-width:0">
+                    </dz-picker>
+                    <button type="button" class="dd-device-clear"
+                            ng-if="!field.required && config[field.key]"
+                            ng-click="clearDevicePicker(field)"
+                            aria-label="{{'Remove device' | translate}}"
+                            title="{{'Remove device' | translate}}">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
                 <select ng-if="field.metricKey && metricOptionsFor(field).length > 1"
                         class="combobox ui-corner-all"
                         style="margin-top:4px"
@@ -197,7 +207,7 @@
                          ng-repeat="entry in config[field.key] track by $index">
                         <i class="fa-solid fa-grip-vertical dd-al-drag-handle"></i>
                         <span class="dd-al-type-badge dd-al-badge-switch">{{'Device' | translate}}</span>
-                        <span class="dd-al-label" ng-bind="entry.label || entry.idx"></span>
+                        <span class="dd-al-label" ng-bind="deviceListEntryName(entry)"></span>
                         <i class="fa-solid fa-pencil dd-al-action-icon dd-al-rename-icon"
                            ng-click="deviceListRenameItem(field.key, $index)" title="{{'Rename' | translate}}"></i>
                         <i class="fa-solid fa-trash dd-al-action-icon dd-al-delete-icon"
@@ -241,10 +251,14 @@
                 <div class="dd-al-items">
                     <div class="dd-al-item dd-range-row" ng-repeat="range in config[field.key] track by $index">
                         <input type="number" class="text ui-widget-content ui-corner-all dd-range-input"
-                               ng-model="range.from" placeholder="{{'From' | translate}}">
+                               ng-model="range.from" step="any"
+                               ng-change="rangeNormalize(field.key, $index)"
+                               placeholder="{{'From' | translate}}">
                         <span class="dd-range-dash">&mdash;</span>
                         <input type="number" class="text ui-widget-content ui-corner-all dd-range-input"
-                               ng-model="range.to" placeholder="{{'To' | translate}}">
+                               ng-model="range.to" step="any"
+                               ng-change="rangeNormalize(field.key, $index)"
+                               placeholder="{{'To' | translate}}">
                         <input type="color" class="dd-range-color-picker" ng-model="range.color"
                                title="{{'Color' | translate}}">
                         <i class="fa-solid fa-trash dd-al-action-icon dd-al-delete-icon"
@@ -272,10 +286,10 @@
                 <div class="dd-al-add">
                     <div class="dd-al-add-row">
                         <input type="number" class="text ui-widget-content ui-corner-all"
-                               ng-model="newRange.from"
+                               ng-model="newRange.from" step="any"
                                placeholder="{{'From' | translate}}" style="flex:1;min-width:0">
                         <input type="number" class="text ui-widget-content ui-corner-all"
-                               ng-model="newRange.to"
+                               ng-model="newRange.to" step="any"
                                placeholder="{{'To' | translate}}" style="flex:1;min-width:0">
                         <input type="color" class="dd-range-color-picker" ng-model="newRange.color"
                                title="{{'Color' | translate}}">
@@ -323,7 +337,7 @@
                            ng-required="subField.required"
                            min="{{ subField.min }}"
                            max="{{ subField.max }}"
-                           step="{{ subField.step || 1 }}"
+                           step="{{ subField.step || 'any' }}"
                            style="width:100%">
 
                     <select ng-if="subField.type === 'select'"

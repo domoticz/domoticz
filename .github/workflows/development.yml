@@ -4,10 +4,13 @@ concurrency:
   group: linux-dev-${{ github.ref }}
   cancel-in-progress: true
 
+# Also runs on master: the result gates the native release builds, the same
+# way the development run gates the native beta builds.
 on:
   push:
-    branches: 
+    branches:
       - development
+      - master
     paths-ignore:
       - 'msbuild/**'
       - '.github/**'

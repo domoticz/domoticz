@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <iostream>
+#include <algorithm>
 #include "Camera.h"
 #include "HTMLSanitizer.h"
 #include "Logger.h"
@@ -15,11 +16,231 @@
 
 #define CAMERA_POLL_INTERVAL 30
 
+namespace
+{
+	// A camera is only refreshed in the background while the web interface keeps asking for
+	// it. Nothing is polled when nobody is looking at a camera, so a system with many
+	// configured cameras generates no traffic at all while its dashboards are closed.
+	constexpr auto kDemandWindow = std::chrono::seconds(60);
+
+	// Bounds on how often a camera is re-fetched. The actual interval follows the rate at
+	// which the web interface asks for that camera, so the background refresh never runs
+	// faster than the UI polls it.
+	constexpr auto kMinRefreshInterval = std::chrono::seconds(1);
+	constexpr auto kMaxRefreshInterval = std::chrono::seconds(30);
+
+	// How long a request waits for the very first frame of a camera that has nothing cached
+	// yet, so the first page load still shows a picture. A camera that has already failed
+	// carries a backoff deadline and returns immediately instead of waiting again.
+	constexpr auto kFirstFrameWait = std::chrono::seconds(3);
+
+	// How many cameras are fetched at the same time, so one slow camera does not hold up
+	// the refresh of the others.
+	constexpr size_t kMaxParallelFetches = 4;
+
+	// Backoff after a failed fetch: 5s, 10s, 20s, 40s, capped at 60s.
+	std::chrono::seconds SnapshotBackoff(int failcount)
+	{
+		int secs = 5;
+		for (int i = 1; i < failcount && secs < 60; i++)
+			secs *= 2;
+		return std::chrono::seconds(std::min(secs, 60));
+	}
+} // namespace
+
 extern std::string szUserDataFolder;
 
 CCameraHandler::CCameraHandler()
 {
 	m_seconds_counter = 0;
+}
+
+void CCameraHandler::Start()
+{
+	m_stoprequested = false;
+	m_snapshot_thread = std::make_shared<std::thread>([this] { Do_Work(); });
+	SetThreadName(m_snapshot_thread->native_handle(), "CameraSnapshot");
+}
+
+void CCameraHandler::Stop()
+{
+	if (!m_snapshot_thread)
+		return;
+	{
+		std::lock_guard<std::mutex> l(m_snapshot_mutex);
+		m_stoprequested = true;
+	}
+	m_snapshot_cond.notify_all();
+	m_snapshot_thread->join();
+	m_snapshot_thread.reset();
+}
+
+bool CCameraHandler::IsSnapshotDue(const snapshotCache &cache, clock_t::time_point now) const
+{
+	if (cache.Fetching)
+		return false;
+	if (now < cache.RetryAfter)
+		return false;
+	if (now - cache.LastRequest > kDemandWindow)
+		return false;
+	if (!cache.HaveImage)
+		return true;
+	return (now - cache.ImageTime) >= cache.RequestInterval;
+}
+
+void CCameraHandler::FetchSnapshot(const uint64_t CamID)
+{
+	std::vector<unsigned char> camimage;
+	bool bOk = TakeSnapshot(CamID, camimage) && !camimage.empty();
+
+	std::lock_guard<std::mutex> l(m_snapshot_mutex);
+	auto itt = m_snapshots.find(CamID);
+	if (itt == m_snapshots.end())
+		return; // camera was removed while we were fetching
+
+	snapshotCache &cache = itt->second;
+	cache.Fetching = false;
+	cache.Tried = true;
+
+	auto now = clock_t::now();
+	if (bOk)
+	{
+		cache.Image = std::move(camimage);
+		cache.HaveImage = true;
+		cache.ImageTime = now;
+		cache.FailCount = 0;
+		cache.RetryAfter = now;
+	}
+	else
+	{
+		if (cache.FailCount < 10)
+			cache.FailCount++;
+		cache.RetryAfter = now + SnapshotBackoff(cache.FailCount);
+	}
+	m_snapshot_cond.notify_all();
+}
+
+void CCameraHandler::Do_Work()
+{
+	while (!m_stoprequested)
+	{
+		std::vector<uint64_t> due;
+		{
+			std::unique_lock<std::mutex> l(m_snapshot_mutex);
+			m_snapshot_cond.wait_for(l, std::chrono::milliseconds(500),
+						 [this] { return m_stoprequested.load() || m_wake_worker; });
+			m_wake_worker = false;
+			if (m_stoprequested)
+				break;
+
+			auto now = clock_t::now();
+			for (auto &snapshot : m_snapshots)
+			{
+				if (IsSnapshotDue(snapshot.second, now))
+				{
+					snapshot.second.Fetching = true;
+					due.push_back(snapshot.first);
+				}
+			}
+		}
+
+		for (size_t ii = 0; ii < due.size(); ii += kMaxParallelFetches)
+		{
+			std::vector<std::thread> batch;
+			for (size_t jj = ii; jj < due.size() && jj < ii + kMaxParallelFetches; jj++)
+				batch.emplace_back([this, CamID = due[jj]] { FetchSnapshot(CamID); });
+			for (auto &worker : batch)
+				worker.join();
+		}
+	}
+}
+
+bool CCameraHandler::GetSnapshot(const std::string &CamID, std::vector<unsigned char> &camimage)
+{
+	if (!is_number(CamID))
+	{
+		_log.Log(LOG_ERROR, "Camera: invalid camera id '%s'", CamID.c_str());
+		return false;
+	}
+	return GetSnapshot(std::stoull(CamID), camimage);
+}
+
+bool CCameraHandler::GetSnapshot(const uint64_t CamID, std::vector<unsigned char> &camimage)
+{
+	// Check the camera exists before creating a cache slot for it, so an unknown idx cannot
+	// grow the cache. This must happen before m_snapshot_mutex is taken: ReloadCameras()
+	// locks m_mutex and then m_snapshot_mutex, so taking them the other way round here
+	// would be a lock order inversion.
+	{
+		std::lock_guard<std::mutex> l(m_mutex);
+		if (GetCamera(CamID) == nullptr)
+			return false;
+	}
+
+	auto now = clock_t::now();
+	std::unique_lock<std::mutex> l(m_snapshot_mutex);
+
+	// Scoped deliberately: the wait below releases the lock, and ReloadCameras() may erase
+	// this entry while it is released, so no reference into the map may outlive this block.
+	bool bWaitForFirstFrame = false;
+	{
+		snapshotCache &cache = m_snapshots[CamID];
+
+		// Follow the rate at which this camera is actually being asked for, so the background
+		// refresh matches the UI's poll interval instead of running at a fixed rate.
+		if (cache.LastRequest.time_since_epoch().count() != 0)
+		{
+			auto gap = now - cache.LastRequest;
+			if (gap < kMinRefreshInterval)
+				gap = kMinRefreshInterval;
+			else if (gap > kMaxRefreshInterval)
+				gap = kMaxRefreshInterval;
+			cache.RequestInterval = gap;
+		}
+		cache.LastRequest = now;
+
+		if (cache.HaveImage)
+		{
+			// Always answer from the cache, even when the frame is stale. The worker replaces
+			// it as soon as the camera responds again; blocking here is what froze the UI.
+			camimage = cache.Image;
+			return true;
+		}
+
+		m_wake_worker = true;
+		m_snapshot_cond.notify_all();
+
+		// Nothing cached yet. Wait briefly for the first frame, but only for a camera that
+		// has never been fetched, so the first page load still shows a picture. Once a
+		// camera has been tried we know whether it answers, and a failing one must never
+		// make a request wait again: that is what blocked the web server thread. Only one
+		// request waits, so a camera that is slow to answer its first frame cannot collect
+		// a queue of them either.
+		if (!cache.Tried && !cache.WaitingFirst)
+		{
+			cache.WaitingFirst = true;
+			bWaitForFirstFrame = true;
+		}
+	}
+
+	if (bWaitForFirstFrame)
+	{
+		m_snapshot_cond.wait_for(l, kFirstFrameWait, [this, CamID] {
+			if (m_stoprequested)
+				return true;
+			auto itt = m_snapshots.find(CamID);
+			return (itt != m_snapshots.end()) && (itt->second.HaveImage || itt->second.Tried);
+		});
+		auto itw = m_snapshots.find(CamID);
+		if (itw != m_snapshots.end())
+			itw->second.WaitingFirst = false;
+	}
+
+	auto itt = m_snapshots.find(CamID);
+	if (itt == m_snapshots.end() || !itt->second.HaveImage)
+		return false;
+	camimage = itt->second.Image;
+	return true;
 }
 
 void CCameraHandler::ReloadCameras()
@@ -54,6 +275,15 @@ void CCameraHandler::ReloadCameras()
 	{
 		//Get Active Devices/Scenes
 		ReloadCameraActiveDevices(camera);
+	}
+
+	//Drop cached snapshots of cameras that no longer exist or were disabled
+	std::lock_guard<std::mutex> ls(m_snapshot_mutex);
+	for (auto itt = m_snapshots.begin(); itt != m_snapshots.end();)
+	{
+		bool bFound = std::any_of(m_cameradevices.begin(), m_cameradevices.end(),
+					  [&itt](const cameraDevice &cam) { return cam.ID == itt->first; });
+		itt = bFound ? std::next(itt) : m_snapshots.erase(itt);
 	}
 }
 
@@ -154,6 +384,7 @@ int CCameraHandler::GetCameraAspectRatio(const std::string& CamIdx)
 
 int CCameraHandler::GetCameraAspectRatio(const uint64_t &CamID)
 {
+	std::lock_guard<std::mutex> l(m_mutex);
 	for (const auto& m : m_cameradevices)
 	{
 		if (m.ID == CamID)
@@ -164,10 +395,12 @@ int CCameraHandler::GetCameraAspectRatio(const uint64_t &CamID)
 
 bool CCameraHandler::TakeSnapshot(const std::string &CamID, std::vector<unsigned char> &camimage)
 {
-	if (is_number(CamID))
-		return TakeSnapshot(std::stoull(CamID), camimage);
-	else
-		return TakeSnapshot(CamID, camimage);
+	if (!is_number(CamID))
+	{
+		_log.Log(LOG_ERROR, "Camera: invalid camera id '%s'", CamID.c_str());
+		return false;
+	}
+	return TakeSnapshot(std::stoull(CamID), camimage);
 }
 
 bool CCameraHandler::TakeRaspberrySnapshotRaspiStill(std::vector<unsigned char>& camimage)
@@ -310,21 +543,34 @@ bool CCameraHandler::TakeUVCSnapshot(const std::string &device, std::vector<unsi
 
 bool CCameraHandler::TakeSnapshot(const uint64_t CamID, std::vector<unsigned char> &camimage)
 {
-	std::lock_guard<std::mutex> l(m_mutex);
+	// Copy the camera connection details under the lock, then release it before doing any
+	// (potentially slow or hanging) network/system I/O. Holding m_mutex across the snapshot
+	// fetch serializes all snapshots and - because IsDevSceneInCamera() shares this mutex and
+	// is called for every device/scene/light in the getdevices/getscenes/getlightswitches JSON
+	// endpoints - freezes the whole web UI whenever a camera becomes unresponsive (issue #6804).
+	std::string szURL;
+	std::string szUsername;
+	std::string szPassword;
+	std::string szImageURL;
+	{
+		std::lock_guard<std::mutex> l(m_mutex);
+		cameraDevice *pCamera = GetCamera(CamID);
+		if (pCamera == nullptr)
+			return false;
+		szURL = GetCameraURL(pCamera);
+		szUsername = pCamera->Username;
+		szPassword = pCamera->Password;
+		szImageURL = pCamera->ImageURL;
+	}
 
-	cameraDevice *pCamera = GetCamera(CamID);
-	if (pCamera == nullptr)
-		return false;
+	szURL += "/" + szImageURL;
+	stdreplace(szURL, "#USERNAME", szUsername);
+	stdreplace(szURL, "#PASSWORD", szPassword);
 
-	std::string szURL = GetCameraURL(pCamera);
-	szURL += "/" + pCamera->ImageURL;
-	stdreplace(szURL, "#USERNAME", pCamera->Username);
-	stdreplace(szURL, "#PASSWORD", pCamera->Password);
-
-	if (pCamera->ImageURL == "raspberry.cgi")
+	if (szImageURL == "raspberry.cgi")
 		return TakeRaspberrySnapshot(camimage);
-	if (pCamera->ImageURL == "uvccapture.cgi")
-		return TakeUVCSnapshot(pCamera->Username, camimage);
+	if (szImageURL == "uvccapture.cgi")
+		return TakeUVCSnapshot(szUsername, camimage);
 
 	std::vector<std::string> ExtraHeaders;
 	return HTTPClient::GETBinary(szURL, ExtraHeaders, camimage, 5);
@@ -523,7 +769,9 @@ namespace http {
 			{
 				return;
 			}
-			if (!m_mainworker.m_cameras.TakeSnapshot(idx, camimage)) {
+			// Cached: this runs on the single web server thread, which must never block on
+			// a camera that does not answer (issue #6804).
+			if (!m_mainworker.m_cameras.GetSnapshot(idx, camimage)) {
 				return;
 			}
 			reply::set_content(&rep, camimage.begin(), camimage.end());

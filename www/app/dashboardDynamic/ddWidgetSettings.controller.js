@@ -240,6 +240,15 @@ define([
             );
         }
 
+        // Clear a (non-required) device-picker, removing the device from the
+        // widget. Mirrors the trash-icon pattern used by the list-type fields;
+        // also drops any per-device metric override tied to the slot.
+        $scope.clearDevicePicker = function(field) {
+            if (!field) { return; }
+            $scope.config[field.key] = '';
+            if (field.metricKey) { $scope.config[field.metricKey] = undefined; }
+        };
+
         // Lazy-load scene list only if a scene-picker field is present
         var needsScenes = (descriptor.configSchema || []).some(function(f) {
             return f.type === 'scene-picker';
@@ -465,11 +474,22 @@ define([
             $scope.deviceListAddItem = function(fieldKey) {
                 var e = $scope.newDeviceEntry;
                 if (!e.idx) { return; }
-                var d     = ($scope.allDevicesForList || []).find(function(x) { return String(x.idx) === String(e.idx); });
-                var label = (e.label || '').trim() || (d ? d.Name : String(e.idx));
+                // Only store an explicit custom label. When left empty the widget
+                // falls back to the live device name so later renames are reflected.
+                var label = (e.label || '').trim();
                 var icon  = (e.icon  || '').trim();
                 $scope.config[fieldKey].push({ idx: String(e.idx), label: label, icon: icon });
                 $scope.newDeviceEntry = { idx: '', label: '', icon: '' };
+            };
+
+            // Display name for an entry in the editor list: prefer the custom label,
+            // otherwise resolve the current device name (not a stored snapshot).
+            $scope.deviceListEntryName = function(entry) {
+                if (entry && (entry.label || '').trim()) { return entry.label; }
+                var d = ($scope.allDevicesForList || []).find(function(x) {
+                    return String(x.idx) === String(entry && entry.idx);
+                });
+                return (d && d.Name) || (entry && entry.idx) || '';
             };
 
             $scope.deviceListRenameItem = function(fieldKey, index) {
@@ -500,6 +520,20 @@ define([
         var rangeListFields = (descriptor.configSchema || []).filter(function(f) {
             return f.type === 'range-list';
         });
+
+        // Accept both '3.8' and '3,8' (and coerce strings coming from a stored config).
+        function parseDecimal(v) {
+            return parseFloat(String(v).replace(',', '.'));
+        }
+
+        function normalizeRange(r) {
+            if (!r) { return; }
+            var from = parseDecimal(r.from);
+            var to   = parseDecimal(r.to);
+            if (!isNaN(from)) { r.from = from; }
+            if (!isNaN(to))   { r.to   = to; }
+        }
+
         if (rangeListFields.length) {
             rangeListFields.forEach(function(field) {
                 var val = $scope.config[field.key];
@@ -514,9 +548,9 @@ define([
             $scope.newRange = { from: '', to: '', color: '#66bb6a' };
             $scope.rangeDirectionError = {};
 
-            function parseDecimal(v) {
-                return parseFloat(String(v).replace(',', '.'));
-            }
+            $scope.rangeNormalize = function(fieldKey, index) {
+                normalizeRange(($scope.config[fieldKey] || [])[index]);
+            };
 
             $scope.rangeAddItem = function(fieldKey) {
                 var r    = $scope.newRange;
@@ -554,6 +588,7 @@ define([
                 var ranges = $scope.config[field.key] || [];
                 var hasAsc = false, hasDesc = false;
                 ranges.forEach(function(r) {
+                    normalizeRange(r);
                     if (r.from < r.to) { hasAsc  = true; }
                     if (r.from > r.to) { hasDesc = true; }
                 });

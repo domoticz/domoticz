@@ -924,6 +924,120 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			return "unk";
 		};
 
+		// Fit-based compact toggle and content-offset calibration.
+		//
+		// At viewport widths > 979px (where Bootstrap's hidden-tablet no longer
+		// applies), we detect whether the full-text nav buttons would wrap to a
+		// second row and toggle the 'nav-compact' class on the navbar to hide
+		// labels before that happens.  CSS for .nav-compact lives in style.css.
+		//
+		// --navbar-h is set to: 43 + max(0, currentHeight - singleRowHeight)
+		// so a single-row bar always produces exactly the original 43px offset
+		// and only a genuinely wrapped bar increases the offset.
+		//
+		// The single-row height is only meaningful for the layout the theme
+		// produces at one viewport width, so it is discarded as soon as the
+		// width changes. Keeping it across a breakpoint would latch the
+		// smallest navbar any layout ever had and inflate the offset for every
+		// wider layout afterwards.
+		(function() {
+			var _nav = document.querySelector('.navbar.navbar-fixed-top');
+			if (!_nav) return;
+			var _navList = _nav.querySelector('.nav');
+			var _singleRowH = 0;
+			var _singleRowW = -1;
+
+			// Count the number of rows the nav items occupy by bucketing their
+			// top positions. Items with zero width and height are skipped
+			// (hidden by ng-show). Tops within 3px of a seen row are treated
+			// as the same row to absorb subpixel rounding.
+			function _countRows() {
+				var rows = [];
+				var items = _navList.children;
+				for (var i = 0; i < items.length; i++) {
+					var r = items[i].getBoundingClientRect();
+					if (r.width === 0 && r.height === 0) continue;
+					var matched = false;
+					for (var j = 0; j < rows.length; j++) {
+						if (Math.abs(r.top - rows[j]) <= 3) { matched = true; break; }
+					}
+					if (!matched) rows.push(r.top);
+				}
+				return rows.length;
+			}
+
+			function _needsCompact() {
+				if (window.innerWidth <= 979) return false;
+				if (!_navList) return false;
+				// Capture the nav top and row count in the expanded state then in
+				// the compact state. The top check catches float-drop (the whole
+				// floated ul.nav moving below the brand), which is the common
+				// overflow mode and does not change the ul height. The row-count
+				// check catches genuine internal li wrapping. Raw height is not
+				// used because themes that hide the menu icons would let label
+				// removal shrink the row height without eliminating any row,
+				// re-triggering the original bug.
+				// getBoundingClientRect forces a synchronous reflow so we always
+				// read the layout that matches the current DOM state.
+				_nav.classList.remove('nav-compact');
+				var expandedTop  = _navList.getBoundingClientRect().top;
+				var expandedRows = _countRows();
+				_nav.classList.add('nav-compact');
+				var compactTop  = _navList.getBoundingClientRect().top;
+				var compactRows = _countRows();
+				_nav.classList.remove('nav-compact');
+				return compactTop < expandedTop - 1 ||
+				       compactRows < expandedRows;
+			}
+
+			function _syncAll() {
+				// Drop the baseline when the viewport width changes. Media
+				// queries can give the navbar a completely different layout
+				// (a stacked bar, or a full height sidebar rail) whose height
+				// says nothing about the single-row height of the layout we
+				// are about to measure.
+				if (window.innerWidth !== _singleRowW) {
+					_singleRowW = window.innerWidth;
+					_singleRowH = 0;
+				}
+
+				// Always clear first so a wide-to-narrow resize does not leave a
+				// stale class; _needsCompact also removes it internally but the
+				// early return for narrow viewports skips that path.
+				_nav.classList.remove('nav-compact');
+				if (_needsCompact()) {
+					_nav.classList.add('nav-compact');
+				}
+
+				// offsetHeight forces a reflow and reflects the final compact state.
+				var h = _nav.offsetHeight;
+				if (h > 0) {
+					// Track the smallest height seen at this viewport width as
+					// the single-row height (brand height drives it, same
+					// whether labels are visible or hidden) so a wrapped
+					// measurement is never mistaken for the single-row baseline.
+					if (_singleRowH === 0 || h < _singleRowH) _singleRowH = h;
+					var offset = 43 + Math.max(0, h - _singleRowH);
+					document.documentElement.style.setProperty('--navbar-h', offset + 'px');
+				}
+			}
+
+			_syncAll();
+			window.addEventListener('resize', _syncAll);
+			if (window.ResizeObserver) {
+				// Coalesce observer callbacks to one sync per animation frame.
+				var _rafPending = false;
+				new ResizeObserver(function () {
+					if (_rafPending) return;
+					_rafPending = true;
+					window.requestAnimationFrame(function () {
+						_rafPending = false;
+						_syncAll();
+					});
+				}).observe(_nav);
+			}
+		})();
+
 	});
 
 	// Bootstrap Angular when DOM is ready

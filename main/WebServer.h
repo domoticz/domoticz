@@ -74,6 +74,11 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 
 	cWebem *m_pWebEm;
 
+	/// Split the semicolon-separated "WebAllowedCORSOrigins" preference into the
+	/// origin list libwebem expects: entries trimmed, trailing '/' stripped
+	/// (browsers never send one in the Origin header), empties dropped.
+	static std::vector<std::string> ParseCorsOrigins(const std::string &sOrigins);
+
 	void ReloadCustomSwitchIcons();
 
 	void LoadUsers();
@@ -101,6 +106,9 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	bool SaveUserPasskeys(unsigned long userID, const std::string& passkeysJson);
 
 	std::vector<_tWebUserPassword> m_users;
+	// Registered OAuth2 redirect URIs per application name, filled from the Applications
+	// table by LoadUsers(). Applications carrying none are absent or map to an empty list.
+	std::map<std::string, std::vector<std::string>> m_client_redirect_uris;
 	//JSon
 	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID,
 			    const std::string &floorID, bool bDisplayHidden, bool bDisplayDisabled, bool bFetchFavorites, time_t LastUpdate, const std::string &username,
@@ -130,6 +138,7 @@ private:
 	void PresentOauth2LoginDialog(reply &rep, const std::string &sApp, const std::string &sError);
 	bool VerifySHA1TOTP(const std::string &code, const std::string &key);
 	bool ValidRedirectUri(const std::string &redirect_uri);
+	bool RedirectUriAllowedForClient(const std::string &client_id, const std::string &redirect_uri);
 
 	//Commands
 	// Passkey/WebAuthn commands
@@ -388,6 +397,9 @@ private:
 	//Migrated RTypes
 	void Cmd_GetUsers(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetSettings(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ThemeSettingsGet(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ThemeSettingsSet(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ThemeSettingsSetDefault(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetDevices(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetSceneLog(WebEmSession & session, const request& req, Json::Value &root);

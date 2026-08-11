@@ -893,7 +893,7 @@ table.mobileitem {
 }
 
 #holder > .container-fluid {
-	padding-top: 43px;
+	padding-top: var(--navbar-h, 43px);
 	padding-bottom: 20px;
 }
 
@@ -907,6 +907,10 @@ table.mobileitem {
 	.bannercontent {
 		padding-top: 0px;
 	}
+}
+
+.navbar.nav-compact .nav li > a .hidden-tablet {
+	display: none !important;
 }
 
 .brand {
@@ -1057,6 +1061,10 @@ table.mobileitem {
 	background: linear-gradient(135deg, rgba(15, 65, 150, 0.95), rgba(40, 100, 210, 0.9)) !important;
 	border-color: rgba(100, 200, 255, 1.0) !important;
 	box-shadow: 0 0 20px rgba(100, 200, 255, 0.6), inset 0 0 12px rgba(0, 0, 0, 0.35) !important;
+}
+
+.navbar.navbar-inverse {
+	background: #28314c;
 }
 
 .navbar-inverse .navbar-inner {
@@ -1342,6 +1350,9 @@ mark.log-highlight {
 	border-bottom: 1px solid var(--dz-accent-color);
 	font-size: 9pt;
 }
+.page-header-small:first-child {
+	margin-top: 0;
+}
 
 .page-header-with-button {
 	display: flex;
@@ -1404,6 +1415,38 @@ a:link {
 	text-align: right;
 }
 
+/* Report summary strip (Counter / EnergyMultiCounter report headers) */
+.report-summary-strip {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 18px;
+	align-items: flex-start;
+	margin-bottom: 12px;
+	user-select: text;
+}
+.report-stat-item {
+	display: flex;
+	flex-direction: column;
+	min-width: 80px;
+}
+.report-stat-label {
+	font-size: 0.68em;
+	opacity: 0.55;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	line-height: 1.2;
+	margin-bottom: 1px;
+}
+.report-stat-value {
+	font-weight: bold;
+	font-size: 0.9em;
+	line-height: 1.4;
+}
+.report-stat-sub {
+	font-size: 0.78em;
+	opacity: 0.7;
+	line-height: 1.2;
+}
 
 /* Reset */
 
@@ -2243,6 +2286,14 @@ SECTION.dashCategory .liveSearchShown{
 }
 .itemBlock .ui-selectmenu-button{
 	width: 60%;
+}
+/* Selector switch level buttons. Bootstrap's .btn-group is white-space: nowrap,
+   so a selector with many levels kept its buttons on one line and pushed them
+   past the right edge of the viewport, which made the whole page scroll
+   sideways on a phone. Inside a widget card the row wraps instead. */
+.selectorlevelbuttons{
+	max-width: 100%;
+	white-space: normal;
 }
 
 

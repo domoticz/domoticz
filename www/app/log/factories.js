@@ -65,24 +65,10 @@ define(['app'], function (app) {
                     ShowNotify($.t('You do not have permission to do that!'), 2500, true);
                     return;
                 }
-                if (timezone !== undefined) {
-                    Highcharts.setOptions({
-                        time: {
-                            timezone: timezone
-                        }
-                    });
-                }
-                var dateString = isShort
-                    ? Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', point.x)
-                    : Highcharts.dateFormat('%Y-%m-%d', point.x);
-                if (timezone !== undefined) {
-                    Highcharts.setOptions({
-                        time: {
-                            timezone: undefined,
-                            useUTC: true
-                        }
-                    });
-                }
+                var dateFormat = isShort ? '%Y-%m-%d %H:%M:%S' : '%Y-%m-%d';
+                var dateString = timezone !== undefined
+                    ? new Highcharts.Time({ timezone: timezone }).dateFormat(dateFormat, point.x)
+                    : Highcharts.dateFormat(dateFormat, point.x);
 
                 var message = $.t("Are you sure to remove this value at") + " ?:\n\n" + $.t("Date") + ": " + dateString + " \n" + $.t("Value") + ": " + point.y;
 
@@ -112,13 +98,9 @@ define(['app'], function (app) {
                     ShowNotify($.t('You do not have permission to do that!'), 2500, true);
                     return;
                 }
-                if (timezone !== undefined) {
-                    Highcharts.setOptions({ time: { timezone: timezone } });
-                }
-                var dateString = Highcharts.dateFormat('%Y-%m-%d', point.x);
-                if (timezone !== undefined) {
-                    Highcharts.setOptions({ time: { timezone: undefined, useUTC: true } });
-                }
+                var dateString = timezone !== undefined
+                    ? new Highcharts.Time({ timezone: timezone }).dateFormat('%Y-%m-%d', point.x)
+                    : Highcharts.dateFormat('%Y-%m-%d', point.x);
                 domoticzApi
                     .sendCommand('spreadcounterspike', {
                         idx: deviceIdx,

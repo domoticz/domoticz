@@ -1779,6 +1779,17 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 
 	var color_m = (color.m==null)?3:color.m; // Default to 3: ColorModeRGB
 
+	// MQTT Auto Discovery and some hardware store the device state as Custom (mode 4) even when
+	// only one channel group is in use, which would always open the custom sliders. Open the
+	// picker in the matching simple mode instead: pure white in the White (or Temperature) view,
+	// pure color (and all channels off) in the RGB view. Mixed colors keep the custom view.
+	if (color_m == 4) {
+		var bHasColorValue = (color.r > 0 || color.g > 0 || color.b > 0);
+		var bHasWhiteValue = (color.cw > 0 || color.ww > 0);
+		if (!bHasColorValue && bHasWhiteValue) color_m = LEDType.bHasTemperature ? 2 : 1;
+		else if (!bHasWhiteValue) color_m = 3;
+	}
+
 	if (color_m != 1 && color_m != 2 && color_m != 3 && color_m != 4) color_m = 3; // Default to RGB if not valid
 	if (color_m == 4 && !LEDType.bHasCustom) color_m = 3; // Default to RGB if light does not support custom color
 	if (color_m == 1 && !LEDType.bHasWhite) color_m = 3; // Default to RGB if light does not support white
@@ -1839,19 +1850,19 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 		}
 	}
 
-	$(selector + ' .pickermodergb').off().click(function(){
+	$(selector + ' .pickermodergb').attr('title', $.t('Color')).off().click(function(){
 		UpdateColorPicker(DimmerType!="rel"?"color":"color_no_master");
 	});
-	$(selector + ' .pickermodewhite').off().click(function(){
+	$(selector + ' .pickermodewhite').attr('title', $.t('White')).off().click(function(){
 		UpdateColorPicker(DimmerType!="rel"?"white":"white_no_master");
 	});
-	$(selector + ' .pickermodetemp').off().click(function(){
+	$(selector + ' .pickermodetemp').attr('title', $.t('Color temperature')).off().click(function(){
 		UpdateColorPicker(DimmerType!="rel"?"temperature":"temperature_no_master");
 	});
-	$(selector + ' .pickermodecustomw').off().click(function(){
+	$(selector + ' .pickermodecustomw').attr('title', $.t('Color and white mix')).off().click(function(){
 		UpdateColorPicker("customw");
 	});
-	$(selector + ' .pickermodecustomww').off().click(function(){
+	$(selector + ' .pickermodecustomww').attr('title', $.t('Color and white mix')).off().click(function(){
 		UpdateColorPicker("customww");
 	});
 

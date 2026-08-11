@@ -1,6 +1,6 @@
 <blockquote>'''Note:''' This page is maintained in the [https://github.com/domoticz/domoticz/tree/development/docs Domoticz GitHub repository]. Please do not edit it directly on the Wiki.</blockquote>
 
-'''Revision:''' 2026-05-14<br>
+'''Revision:''' 2026-07-03<br>
 
 ==Overview==
 This page is aimed at developers wishing to improve Domoticz functionality via Python Plugins. If you simply want to use a plugin that a developer has already created for you, please see [[Using Python plugins]]. To see the Plugins already developed (for a reference) got to page [[Plugins]].
@@ -199,11 +199,11 @@ Marks the field as mandatory and the device will not be added unless a value is 
 |-
 |default
 |Optional.
-Default value for the field. Ignored when <options> are specified.
+Default value for the field. For dropdowns (params with <options>) the option whose value matches this default is preselected, unless an <option> carries default="true" (which takes precedence).
 |-
 |password
-|Optional.
-Makes the text unreadable during entry and when hardware page is viewed subsequently. Ignored when <options> are specified.
+|Optional. Valid values: <code>true</code> or <code>1</code> (case-insensitive).
+Makes the text unreadable during entry. The stored value is never sent to the browser: on the hardware edit page the field shows a dot placeholder when a secret is stored, and leaving it blank keeps the stored value. To change the secret, enter a new value; it cannot be cleared to empty from the UI. Ignored when <options> are specified.
 |-
 |}
 |-
@@ -229,6 +229,8 @@ Associated value to store in database
 |default
 |Optional. Valid value:
 true
+
+Takes precedence over a default attribute on the <param> itself.
 |-
 |}
 |-
@@ -262,13 +264,13 @@ If <code>type</code> is omitted (or set to a value the UI does not recognise) th
 |Optional. Increment used by <code>number</code> and <code>slider</code> types.
 |-
 |password
-|Optional. <code>password="true"</code> masks the value during entry and on subsequent views of the Hardware page. Works on any text field, not just the <code>Password</code> column.
+|Optional. <code>password="true"</code> (or <code>"1"</code>, case-insensitive) masks the value during entry. Works on any text field, not just the <code>Password</code> column. The stored secret is never sent to the browser; on edit the field shows a dot placeholder and can be left blank to keep the stored value — entering a new value replaces it.
 |-
 |visible_when
 |Optional. Conditional visibility expression of the form <code>OtherField=value</code>. The field is shown only when the referenced parameter currently equals the given value. Useful for revealing fields that only make sense for a particular protocol or mode (e.g. show a certificate path only when <code>Protocol=https</code>).
 |-
 |default
-|Optional. Default value used when the plugin is first added. For <code>boolean</code> use <code>"true"</code>/<code>"false"</code>; for <code>number</code>/<code>slider</code> use a numeric string.
+|Optional. Default value used when the plugin is first added. For <code>boolean</code> use <code>"true"</code>/<code>"false"</code>; for <code>number</code>/<code>slider</code> use a numeric string. For dropdowns the option whose value matches the default is preselected, unless a per-option <code>default="true"</code> is set (which takes precedence).
 |}
 
 ===<group>===

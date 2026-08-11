@@ -47,6 +47,20 @@ namespace http
 		{
 			bool bAuthenticated = false;
 			bool bAuthorized = false;
+			// Whether client_id named a client we actually know. RFC 6749
+			// section-4.1.2.1 requires that when the client identifier is missing or
+			// invalid the user-agent is NOT redirected to the supplied redirect_uri:
+			// nothing has established that the URI belongs to anyone, so honouring it
+			// turns this endpoint into an open redirect for any unauthenticated
+			// caller. Declared before the first `goto exitfunc` below so the jump
+			// does not skip its initialisation.
+			bool bKnownClient = false;
+			// Whether we got as far as the resource owner and their authentication
+			// failed or was never completed. Such a request must not be answered with
+			// a redirect either: redirect_uri is still only shape-validated, so an
+			// unauthenticated caller who knows a client_id could otherwise walk into
+			// the failure path on purpose and have us bounce them anywhere.
+			bool bAuthFailed = false;
 
 			std::string code;
 			std::string error = "unknown_error";
@@ -76,6 +90,16 @@ namespace http
 							iClient = FindClient(client_id.c_str());
 							if (iClient != -1)
 							{
+								bKnownClient = true;
+
+								// Refuse an unregistered redirect target before the resource
+								// owner is asked for credentials, rather than after.
+								if (!RedirectUriAllowedForClient(client_id, redirect_uri))
+								{
+									error = "unauthorized_client";
+									goto exitfunc;
+								}
+
 								std::string Username;
 
 								if(req.method != "POST")
@@ -108,6 +132,7 @@ namespace http
 											return;
 										}
 										error = "User credentials do not match!";
+										bAuthFailed = true;
 										goto exitfunc;
 									}
 									else
@@ -119,6 +144,7 @@ namespace http
 											if (sTOTP.empty())
 											{
 												error = "Enter the One-Time Passcode!";
+												bAuthFailed = true;
 												goto exitfunc;
 											}
 											std::string sTotpKey = "";
@@ -139,12 +165,14 @@ namespace http
 														return;
 													}
 													error = "TOTP Verification for a user has failed!";
+													bAuthFailed = true;
 													goto exitfunc;
 												}
 											}
 											else
 											{
 												error = "TOTP key is not valid base32 encoded!";
+												bAuthFailed = true;
 												goto exitfunc;
 											}
 										}
@@ -176,6 +204,7 @@ namespace http
 								else
 								{
 									error = "Authentication for a user has failed!";
+									bAuthFailed = true;
 								}
 							}
 						}
@@ -203,6 +232,24 @@ namespace http
 				_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Wrong/Missing redirect_uri (%s)!", redirect_uri.c_str());
 			}
 		exitfunc:
+			// Only bounce the user-agent to redirect_uri once the client behind it is
+			// known. Without this an unauthenticated caller supplying no client_id at
+			// all still received "302 Location: <whatever they asked for>", which is a
+			// plain open redirect usable for phishing -- the error carried in the
+			// query string does not stop the browser following it. RFC 6749
+			// section-4.1.2.1 requires the error be shown to the user instead.
+			if (!bKnownClient || bAuthFailed || redirect_uri.empty() || !ValidRedirectUri(redirect_uri)
+			    || !RedirectUriAllowedForClient(client_id, redirect_uri))
+			{
+				_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Refusing to redirect to an unverified redirect_uri (%s); client known: %s, authentication failed: %s",
+					   redirect_uri.c_str(), bKnownClient ? "yes" : "no", bAuthFailed ? "yes" : "no");
+				rep.status = reply::bad_request;
+				rep.content = "{\n\t\"error\" : \"" + error + "\"\n}\n";
+				reply::add_header_content_type(&rep, "application/json;charset=UTF-8");
+				reply::add_header(&rep, "Content-Length", std::to_string(rep.content.size()));
+				return;
+			}
+
 			// Redirect the User back to origin using the redirect_uri
 			std::stringstream result;
 			if(redirect_uri.find("?") != std::string::npos)
@@ -215,8 +262,12 @@ namespace http
 			else
 				result << "error=" << CURLEncode::URLEncode(error);
 
+			// state is echoed back verbatim from the request, so it must be encoded
+			// like code/error above. Unencoded, a state of "x&code=ATTACKER" injected
+			// extra parameters into the client's callback -- including `code`, the one
+			// parameter the callback is there to read.
 			if (!state.empty())
-				result << "&state=" << state;
+				result << "&state=" << CURLEncode::URLEncode(state);
 
 			reply::add_header(&rep, "Location", result.str());
 			rep.status = reply::moved_temporarily;
@@ -738,6 +789,52 @@ namespace http
 			_log.Debug(DEBUG_AUTH, "VerifySHA1TOTP: Code given .%s. -> calculated .%s. (%s)", code.c_str(), sCalcCode.c_str(), sha256hex(key).c_str());
 
 			return (sCalcCode.compare(code) == 0);
+		}
+
+		// Loopback redirects (RFC 8252 section-7.3) are issued on an ephemeral port that
+		// changes every time the native app starts, so the port cannot take part in the
+		// comparison. Everything else must match verbatim.
+		static std::string StripLoopbackPort(const std::string &redirect_uri)
+		{
+			size_t hoststart = std::string::npos;
+			if (redirect_uri.compare(0, 17, "http://127.0.0.1:") == 0)
+				hoststart = 16;
+			else if (redirect_uri.compare(0, 13, "http://[::1]:") == 0)
+				hoststart = 12;
+			if (hoststart == std::string::npos)
+				return redirect_uri;
+
+			size_t portend = redirect_uri.find('/', hoststart + 1);
+			if (portend == std::string::npos)
+				return redirect_uri.substr(0, hoststart);
+			return redirect_uri.substr(0, hoststart) + redirect_uri.substr(portend);
+		}
+
+		// An application may pin the redirect URIs it is willing to be sent back to. The
+		// list is empty for every application that existed before it could be configured,
+		// and an empty list keeps the previous behaviour of accepting any shape-valid URI,
+		// so upgrading breaks no existing integration. Filling it in turns the endpoint
+		// from a shape check into a real allow-list, which is what RFC 6749
+		// section-3.1.2.2 asks for.
+		bool CWebServer::RedirectUriAllowedForClient(const std::string &client_id, const std::string &redirect_uri)
+		{
+			auto itt = m_client_redirect_uris.find(client_id);
+			if (itt == m_client_redirect_uris.end() || itt->second.empty())
+			{
+				_log.Debug(DEBUG_AUTH, "OAuth2 Auth Code: Application '%s' has no registered Redirect URIs, accepting '%s' on shape alone. Register it to enforce an allow-list.",
+					   client_id.c_str(), redirect_uri.c_str());
+				return true;
+			}
+
+			std::string candidate = StripLoopbackPort(redirect_uri);
+			for (const auto &registered : itt->second)
+			{
+				if (StripLoopbackPort(registered) == candidate)
+					return true;
+			}
+
+			_log.Log(LOG_ERROR, "OAuth2 Auth Code: Redirect URI '%s' is not registered for application '%s'!", redirect_uri.c_str(), client_id.c_str());
+			return false;
 		}
 
 		bool CWebServer::ValidRedirectUri(const std::string &redirect_uri)

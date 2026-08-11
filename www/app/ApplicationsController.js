@@ -35,6 +35,7 @@ define(['app'], function (app) {
 			csettings.pemfile = $("#applicationcontent #applicationparamstable #applicationpemfile").val();
 			csettings.refreshexpire = parseInt($("#applicationcontent #applicationparamstable #refreshexpire").val()) || 0;
 			csettings.signingsecret = $("#applicationcontent #applicationparamstable #signingsecret").val();
+			csettings.redirecturis = $("#applicationcontent #applicationparamstable #redirecturis").val();
 			if ((csettings.bPublic == false) && (csettings.secret == "")) {
 				ShowNotify($.t('Please enter a Secret!'), 2500, true);
 				return;
@@ -64,7 +65,8 @@ define(['app'], function (app) {
 				"&pemfile=" + csettings.pemfile +
 				"&public=" + csettings.bPublic +
 				"&refreshexpire=" + csettings.refreshexpire +
-				"&signingsecret=" + csettings.signingsecret,
+				"&signingsecret=" + csettings.signingsecret +
+				"&redirecturis=" + encodeURIComponent(csettings.redirecturis),
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -93,7 +95,8 @@ define(['app'], function (app) {
 				"&pemfile=" + csettings.pemfile +
 				"&public=" + csettings.bPublic +
 				"&refreshexpire=" + csettings.refreshexpire +
-				"&signingsecret=" + csettings.signingsecret,
+				"&signingsecret=" + csettings.signingsecret +
+				"&redirecturis=" + encodeURIComponent(csettings.redirecturis),
 				async: false,
 				dataType: 'json',
 				success: function (data) {
@@ -143,6 +146,7 @@ define(['app'], function (app) {
 								"Applicationpemfile": item.Pemfile,
 								"RefreshExpire": item.RefreshExpire || 0,
 								"SigningSecret": item.SigningSecret || "",
+								"RedirectUris": item.RedirectUris || "",
 								"Public": item.Public,
 								"Last seen": item.LastSeen,
 								"0": enabledstr,
@@ -184,6 +188,7 @@ define(['app'], function (app) {
 						$("#applicationcontent #applicationparamstable #applicationpemfile").val(data["Applicationpemfile"]);
 						$("#applicationcontent #applicationparamstable #refreshexpire").val(data["RefreshExpire"] || 0);
 						$("#applicationcontent #applicationparamstable #signingsecret").val(data["SigningSecret"] || "");
+						$("#applicationcontent #applicationparamstable #redirecturis").val(data["RedirectUris"] || "");
 						$('#applicationcontent #applicationparamstable #applicationpublic').prop('checked', (data["Public"] == "true"));
 						togglePublic();
 					}

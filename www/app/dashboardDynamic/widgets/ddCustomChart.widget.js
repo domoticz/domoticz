@@ -14,46 +14,53 @@ define([
         var sub  = device.SubType || '';
         var stv  = device.SwitchTypeVal;
 
-        if (type === 'Wind')  { return { sensor: 'wind',    field: function(d){ return d.sp; },  unit: device.WindSign || 'm/s' }; }
-        if (type === 'Rain')  { return { sensor: 'rain',    field: function(d){ return d.mm; },  unit: 'mm' }; }
-        if (type === 'UV')    { return { sensor: 'uv',      field: function(d){ return d.uvi; }, unit: 'UVI' }; }
-        if (type === 'Lux' || sub === 'Lux') { return { sensor: 'lux', field: function(d){ return d.lux; }, unit: 'lux' }; }
-        if (type === 'Humidity') { return { sensor: 'temp', field: function(d){ return d.hu; },  unit: '%' }; }
+        if (type === 'Wind')  { return { sensor: 'wind',    field: function(d){ return d.sp; },  unit: device.WindSign || 'm/s', weekApi: true }; }
+        if (type === 'Rain')  { return { sensor: 'rain',    field: function(d){ return d.mm; },  unit: 'mm', weekApi: true }; }
+        if (type === 'UV')    { return { sensor: 'uv',      field: function(d){ return d.uvi; }, unit: 'UVI', weekApi: true }; }
+        if (type === 'Lux' || sub === 'Lux') { return { sensor: 'counter', field: function(d){ return d.lux !== undefined ? d.lux : d.lux_avg; }, unit: 'lux', weekApi: true }; }
+        if (type === 'Humidity') { return { sensor: 'temp', field: function(d){ return d.hu; },  unit: '%', weekApi: true }; }
         if (type.indexOf('Temp') >= 0 || sub.indexOf('Temp') >= 0) {
-            return { sensor: 'temp', field: function(d){ return d.te !== undefined ? d.te : d.v; }, unit: tempUnit() };
+            return { sensor: 'temp', field: function(d){ return d.te !== undefined ? d.te : d.v; }, unit: tempUnit(), weekApi: true };
         }
         if (sub === 'Percentage') {
-            // Day range returns `v`; month/year aggregates return v_min/v_max/v_avg.
+            // Day range returns `v`; week/month/year aggregates return v_min/v_max/v_avg.
             return {
                 sensor: 'Percentage',
                 field: function(d) { return d.v !== undefined ? d.v : d.v_avg; },
-                unit: '%'
+                unit: '%',
+                weekApi: true
             };
         }
         if (type === 'General' && sub === 'Voltage') {
-            return { sensor: 'counter', field: function(d){ return d.v }, unit: 'V' };
+            return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v_avg; }, unit: 'V', weekApi: true };
         }
         if (type === 'General' && sub === 'Current') {
-            return { sensor: 'counter', field: function(d){ return d.v }, unit: 'A' };
+            return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v_avg; }, unit: 'A', weekApi: true };
+        }
+        if (type === 'General' && sub === 'Custom Sensor') {
+            return { sensor: 'Percentage', field: function(d){ return d.v !== undefined ? d.v : d.v_avg; }, unit: device.SensorUnit || '?', weekApi: true };
+        }
+        if (type === 'Air Quality') {
+            return { sensor: 'counter', field: function(d){ return d.co2 !== undefined ? d.co2 : d.co2_avg; }, unit: 'ppm', weekApi: true };
         }
         if (type.indexOf('Meter') >= 0 || type === 'Cube Electric' ||
             (type === 'General' && (sub === 'kWh' || sub === 'Counter Incremental' || sub === 'Managed Counter'))) {
-            if (stv === 1) { return { sensor: 'counter', field: function(d){ return d.v; }, unit: 'm³' }; }
-            if (stv === 2) { return { sensor: 'counter', field: function(d){ return d.v; }, unit: 'L' }; }
-            return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v1; }, unit: 'kWh' };
+            if (stv === 1) { return { sensor: 'counter', field: function(d){ return d.v; }, unit: 'm³', weekApi: true }; }
+            if (stv === 2) { return { sensor: 'counter', field: function(d){ return d.v; }, unit: 'L', weekApi: true }; }
+            return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v1; }, unit: 'kWh', weekApi: true };
         }
         if (type === 'P1 Smart Meter') {
-            return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v1; }, unit: 'kWh' };
+            return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v1; }, unit: 'kWh', weekApi: true };
         }
         // Usage devices (instantaneous Watts — P1 phase power, smart plugs, etc.)
         // The graph endpoint returns the wattage in field `u` for these devices.
         if (type === 'Usage') {
-            return { sensor: 'counter', field: function(d){ return d.u !== undefined ? d.u : d.v; }, unit: 'W' };
+            return { sensor: 'counter', field: function(d){ return d.u !== undefined ? d.u : (d.u_avg !== undefined ? d.u_avg : (d.u_max !== undefined ? d.u_max : d.v)); }, unit: 'W', weekApi: true };
         }
         if (sub === 'SetPoint' || type === 'Thermostat') {
-            return { sensor: 'temp', field: function(d){ return d.se !== undefined ? d.se : d.te; }, unit: tempUnit() };
+            return { sensor: 'temp', field: function(d){ return d.se !== undefined ? d.se : d.te; }, unit: tempUnit(), weekApi: true };
         }
-        return { sensor: 'temp', field: function(d){ return d.te !== undefined ? d.te : d.v; }, unit: '?' };
+        return { sensor: 'temp', field: function(d){ return d.te !== undefined ? d.te : d.v; }, unit: '?', weekApi: true };
     }
 
     // Sub-metrics available on multi-value temp-family sensors (Temp+Hum+Baro,
@@ -78,7 +85,8 @@ define([
                 sensor:      'temp',
                 field:       m.field,
                 unit:        (typeof m.unit === 'function' ? m.unit() : m.unit),
-                metricLabel: m.label
+                metricLabel: m.label,
+                weekApi:     base.weekApi
             };
         }
         return base;
@@ -263,9 +271,14 @@ define([
                             var token = $q.defer();
                             graphTokens.push(token);
                             var sensor = sensorInfos[i].sensor;
+                            // The backend supports range=week for all sensor types this widget
+                            // maps (daily calendar aggregates mirroring month/year field names).
+                            // The day fallback remains only as a safety net for device types
+                            // not covered by detectSensor() (weekApi not set).
+                            var apiRange = (range === 'week' && !sensorInfos[i].weekApi) ? 'day' : range;
                             var url = 'json.htm?type=command&param=graph&sensor=' + encodeURIComponent(sensor) +
                                       '&idx=' + encodeURIComponent(idx) +
-                                      '&range=' + encodeURIComponent(range);
+                                      '&range=' + encodeURIComponent(apiRange);
                             return $http.get(url, { timeout: token.promise })
                                 .then(function(resp) {
                                     return {

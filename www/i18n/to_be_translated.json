@@ -1,4 +1,16 @@
 {
     "Bar ranges must all go in the same direction. Use all ascending (e.g. -100 to 0) or all descending (e.g. 0 to -100).": "Bar ranges must all go in the same direction. Use all ascending (e.g. -100 to 0) or all descending (e.g. 0 to -100).",
-    "Show Icon": "Show Icon"
+    "Edit Camera": "Edit Camera",
+    "None (no reverse proxy)": "None (no reverse proxy)",
+    "Reverse proxy header": "Reverse proxy header",
+    "Show Icon": "Show Icon",
+    "Which header your reverse proxy writes the client address into. Only this header is trusted; the others are ignored. Requires a restart": "Which header your reverse proxy writes the client address into. Only this header is trusted; the others are ignored. Requires a restart",
+    "Allowed CORS Origins": "Allowed CORS Origins",
+    "Origins": "Origins",
+    "Also allow origins from local networks (no username/password)": "Also allow origins from local networks (no username/password)",
+    "Warning: allowed origins can read and control the API from a browser on your local networks!": "Warning: allowed origins can read and control the API from a browser on your local networks!",
+    "Using '*' as allowed CORS origin lets every website read and control the API from a browser on your local networks. Are you sure?": "Using '*' as allowed CORS origin lets every website read and control the API from a browser on your local networks. Are you sure?",
+    "White": "White",
+    "Color temperature": "Color temperature",
+    "Color and white mix": "Color and white mix"
 }
