@@ -270,12 +270,6 @@ void CNetatmo::Do_Work()
 			{
 				bFirstTime = false;
 
-				if (m_bPollWeatherData)
-				{
-					// ParseStationData
-					GetWeatherDetails();
-					Log(LOG_STATUS,"Weather %d",  m_isLogged);
-				}
 				if (m_bPollHomecoachData)
 				{
 					// ParseStationData
@@ -2023,32 +2017,6 @@ void CNetatmo::GetHomesDataDetails()
 				}
 			}
 		}
-	}
-}
-
-
-/// <summary>
-/// Get details for weather station
-/// </summary>
-void CNetatmo::GetWeatherDetails()
-{
-	//Check if connected to the API
-	if (!m_isLogged)
-		return;
-
-	std::string sResult; // text returned by API
-	Json::Value root;    // root JSON object
-	bool bRet;           //Parsing status
-	std::string home_data = "&get_favorites=true&";
-	Debug(DEBUG_HARDWARE, "Poll Get Weather (%d)", m_bFirstTimeWeatherData);
-
-	if (m_bFirstTimeWeatherData)
-	{
-		//
-		Get_Response_API(NETYPE_WEATHER_STATION, sResult, home_data, bRet, root, "");
-
-		//Parse API response
-		bRet = ParseStationData(sResult, false);
 	}
 }
 
