@@ -934,11 +934,18 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		// --navbar-h is set to: 43 + max(0, currentHeight - singleRowHeight)
 		// so a single-row bar always produces exactly the original 43px offset
 		// and only a genuinely wrapped bar increases the offset.
+		//
+		// The single-row height is only meaningful for the layout the theme
+		// produces at one viewport width, so it is discarded as soon as the
+		// width changes. Keeping it across a breakpoint would latch the
+		// smallest navbar any layout ever had and inflate the offset for every
+		// wider layout afterwards.
 		(function() {
 			var _nav = document.querySelector('.navbar.navbar-fixed-top');
 			if (!_nav) return;
 			var _navList = _nav.querySelector('.nav');
 			var _singleRowH = 0;
+			var _singleRowW = -1;
 
 			// Count the number of rows the nav items occupy by bucketing their
 			// top positions. Items with zero width and height are skipped
@@ -984,6 +991,16 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			}
 
 			function _syncAll() {
+				// Drop the baseline when the viewport width changes. Media
+				// queries can give the navbar a completely different layout
+				// (a stacked bar, or a full height sidebar rail) whose height
+				// says nothing about the single-row height of the layout we
+				// are about to measure.
+				if (window.innerWidth !== _singleRowW) {
+					_singleRowW = window.innerWidth;
+					_singleRowH = 0;
+				}
+
 				// Always clear first so a wide-to-narrow resize does not leave a
 				// stale class; _needsCompact also removes it internally but the
 				// early return for narrow viewports skips that path.
@@ -995,10 +1012,10 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 				// offsetHeight forces a reflow and reflects the final compact state.
 				var h = _nav.offsetHeight;
 				if (h > 0) {
-					// Track the smallest height seen as the single-row height
-					// (brand height drives it, same whether labels are visible
-					// or hidden) so a wrapped measurement is never mistaken
-					// for the single-row baseline.
+					// Track the smallest height seen at this viewport width as
+					// the single-row height (brand height drives it, same
+					// whether labels are visible or hidden) so a wrapped
+					// measurement is never mistaken for the single-row baseline.
 					if (_singleRowH === 0 || h < _singleRowH) _singleRowH = h;
 					var offset = 43 + Math.max(0, h - _singleRowH);
 					document.documentElement.style.setProperty('--navbar-h', offset + 'px');
