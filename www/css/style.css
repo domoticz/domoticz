@@ -117,6 +117,18 @@ hr {
 	padding-top: 6px;
 }
 
+/* Device supplied HTML (Text and Alert device values, custom dashboard text) is
+   free form and can be a single unbreakable token, for example a JSON payload.
+   Without this it paints straight out of its card and widens the whole document,
+   which makes a mobile browser zoom the page out to fit. */
+[id^="dz-txt-"],
+[id^="dz-uw-"],
+[id^="dz-um-"],
+[id^="dz-ua-"],
+[id^="dz-dd-"] {
+	overflow-wrap: break-word;
+}
+
 #status pre,
 [id^="dz-txt-"] pre,
 [id^="dz-uw-"] pre,

@@ -38,6 +38,7 @@ Version 2026.xxxx
 - Fixed: Web server, every request through a reverse proxy that writes more than one forwarded-client header returned 403; nginx Proxy Manager sends X-Forwarded-For and X-Real-IP together, which made the whole site inaccessible (#6939)
 - Fixed: Web server, restore trusted-network client detection behind reverse proxies using X-Forwarded-For (#6937)
 - Fixed: WebUI, at intermediate window widths the top menu wrapped to a second row and overlapped the page content; the menu now switches to compact icon-only buttons when the labels do not fit, pages starting with a small header no longer show extra blank space below the navigation bar, and the floorplan is again positioned and vertically centered below the bar
+- Fixed: WebUI, a Text or Alert device whose value is one long unbreakable string, for example a JSON payload, painted out of its widget and made the whole page wider than the screen, which on a tablet or phone left the Utilities tab zoomed far out; such values now wrap inside their widget
 - Removed: Counters, the deprecated 'Time' counter type can no longer be selected in the device edit dialog; it has been unsupported since it was migrated to Custom counters, use a Custom counter with units 'Min' instead
 
 Version 2026.3 (August 2nd 2026)
