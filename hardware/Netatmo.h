@@ -104,7 +104,6 @@ class CNetatmo : public CDomoticzHardwareBase
 	std::string ExtractHtmlStatusCode(const std::vector<std::string>& headers, const std::string& separator);
 	std::string MakeRequestURL(m_eNetatmoType NetatmoType, std::string data);
 
-	void GetWeatherDetails();
 	void GetHomecoachDetails();
 	void GetHomesDataDetails();
 	void GetHomeStatusDetails();
