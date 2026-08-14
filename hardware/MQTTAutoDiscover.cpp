@@ -169,15 +169,26 @@ void MQTTAutoDiscover::CleanValueTemplate(std::string& szValueTemplate)
 	if (
 		(szValueTemplate.find("% if value_json.") == 0)
 		|| (szValueTemplate.find("%if value_json.") == 0)
+		|| (szValueTemplate.find("% if value_json[") == 0)
+		|| (szValueTemplate.find("%if value_json[") == 0)
 		)
 	{
-		szValueTemplate = szValueTemplate.substr(szValueTemplate.find("value_json."));
+		szValueTemplate = szValueTemplate.substr(szValueTemplate.find("value_json"));
 		szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find(" "));
+	}
+	else if (
+		(szValueTemplate.find(" in [") != std::string::npos)
+		&& (szValueTemplate.find(" else ") != std::string::npos)
+		)
+	{
+		//Inline membership conditional, like: value_json[fan_mode] if value_json[fan_mode] in [auto] else None
+		//Keep it intact, GetValueFromTemplate knows how to evaluate this
 	}
 	else
 	{
 		//still needed?
 		szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find("if value_json."));
+		szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find("if value_json["));
 	}
 
 	stdstring_trim(szValueTemplate);
@@ -251,6 +262,57 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 	try
 	{
 		size_t pos;
+
+		//Inline membership conditional, like: value_json[fan_mode] if value_json[fan_mode] in [auto] else None
+		pos = szValueTemplate.find(" if ");
+		if (pos != std::string::npos)
+		{
+			std::string szCondition = szValueTemplate.substr(pos + 4);
+			std::string szElse;
+
+			size_t elsePos = szCondition.find(" else ");
+			if (elsePos != std::string::npos)
+			{
+				szElse = szCondition.substr(elsePos + 6);
+				szCondition = szCondition.substr(0, elsePos);
+				stdstring_trim(szElse);
+			}
+			size_t inPos = szCondition.find(" in [");
+			if (inPos != std::string::npos)
+			{
+				std::string szAllowed = szCondition.substr(inPos + 5);
+				szAllowed = szAllowed.substr(0, szAllowed.find(']'));
+				szCondition = szCondition.substr(0, inPos);
+				stdstring_trim(szCondition);
+
+				std::string szActual = GetValueFromTemplate(root, szCondition, isNull);
+
+				bool bIsAllowed = false;
+				std::vector<std::string> allowed;
+				StringSplit(szAllowed, ",", allowed);
+				for (auto itt : allowed)
+				{
+					stdstring_trim(itt);
+					if (itt == szActual)
+					{
+						bIsAllowed = true;
+						break;
+					}
+				}
+				if (!bIsAllowed)
+				{
+					if (szElse.empty() || szElse == "None")
+					{
+						isNull = true; //there is no value, this is not an error
+						return "";
+					}
+					return szElse;
+				}
+				szValueTemplate = szValueTemplate.substr(0, pos);
+				stdstring_trim(szValueTemplate);
+			}
+		}
+
 		std::map<std::string, std::string> value_options_;
 		pos = szValueTemplate.find("[value_json");
 		if (pos != std::string::npos)
@@ -282,6 +344,8 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 
 				if (szKey.find('[') == std::string::npos)
 				{
+					if (!root.isObject())
+						return ""; //we can only look up keys in an object
 					if (!root.isMember(szKey))
 					{
 						return ""; //key not found!
@@ -306,6 +370,8 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 
 					szKey = szKey.substr(0, szKey.find('['));
 					int iIndex = std::stoi(szIndex);
+					if (!(root.isObject() || root.isArray()))
+						return ""; //we can only look up keys in an object/array
 					if (root[szKey].empty())
 						return ""; //key not found!
 
@@ -324,6 +390,8 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 					{
 						//Not an array, we need a field value
 						root = root[szKey];
+						if (!root.isObject())
+							return ""; //we can only look up keys in an object
 						if (!root.isMember(szIndex))
 						{
 							return ""; //key not found!
@@ -392,6 +460,8 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 				}
 				else
 				{
+					if (!root.isObject())
+						return ""; //we can only look up keys in an object
 					if (!root.isMember(szKey))
 					{
 						return ""; //key not found!
@@ -413,6 +483,8 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 			}
 			else
 			{
+				if (!root.isObject())
+					return ""; //we can only look up keys in an object
 				if (root[suffix].empty())
 					return ""; //not found
 				if (root[suffix].isObject() || root[suffix].isArray())
@@ -433,6 +505,8 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 				szKey = szValueTemplate;
 		}
 		stdstring_trim(szKey);
+		if (!root.isObject())
+			return ""; //we can only look up keys in an object
 		if (!root[szKey].empty())
 		{
 			if (root[szKey].isObject() || root[szKey].isArray())
@@ -3261,7 +3335,7 @@ void MQTTAutoDiscover::handle_auto_discovery_fan(_tMQTTASensor* pSensor, const s
 		{
 			bool isNull = false;
 			current_mode = GetValueFromTemplate(root, pSensor->preset_mode_value_template, isNull);
-			if ((pSensor->preset_mode_state_topic == topic) && current_mode.empty())
+			if ((pSensor->preset_mode_state_topic == topic) && current_mode.empty() && !isNull)
 			{
 				Log(LOG_ERROR, "Climate device no idea how to interpret preset_mode_state value (%s)", pSensor->unique_id.c_str());
 				bValid = false;
