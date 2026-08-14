@@ -522,11 +522,30 @@ namespace Plugins {
 		*pData = pData->substr(pData->find_first_of('\n') + 1);
 		while (pData->length() && ((*pData)[0] != '\r'))
 		{
-			std::string		sHeaderLine = pData->substr(0, pData->find_first_of('\r'));
-			std::string		sHeaderName = pData->substr(0, sHeaderLine.find_first_of(':'));
+			// The header line is not complete yet, wait for the rest of it to arrive
+			size_t			uLineEnd = pData->find("\r\n");
+			if (uLineEnd == std::string::npos)
+			{
+				pData->clear();
+				return;
+			}
+
+			std::string		sHeaderLine = pData->substr(0, uLineEnd);
+			size_t			uNameEnd = sHeaderLine.find_first_of(':');
+			if (uNameEnd == std::string::npos)
+			{
+				// Not a 'Name: Value' pair, skip it rather than failing the whole response
+				_log.Log(LOG_ERROR, "(%s) Ignoring malformed header line '%s'.", __func__, sHeaderLine.c_str());
+				*pData = pData->substr(uLineEnd + 2);
+				continue;
+			}
+
+			std::string		sHeaderName = sHeaderLine.substr(0, uNameEnd);
 			std::string		uHeaderName = sHeaderName;
 			stdupper(uHeaderName);
-			std::string		sHeaderText = sHeaderLine.substr(sHeaderName.length() + 2);
+			// The value is optional and the space after the colon is not guaranteed
+			size_t			uValueStart = sHeaderLine.find_first_not_of(' ', uNameEnd + 1);
+			std::string		sHeaderText = (uValueStart == std::string::npos ? "" : sHeaderLine.substr(uValueStart));
 			if (uHeaderName == "CONTENT-LENGTH")
 			{
 				m_ContentLength = atoi(sHeaderText.c_str());
@@ -566,7 +585,13 @@ namespace Plugins {
 			else if (PyDict_SetItemString((PyObject*)m_Headers, sHeaderName.c_str(), pObj) == -1) {
 				_log.Log(LOG_ERROR, "(%s) failed to add key '%s', value '%s' to headers.", __func__, sHeaderName.c_str(), sHeaderText.c_str());
 			}
-			*pData = pData->substr(pData->find_first_of('\n') + 1);
+			*pData = pData->substr(uLineEnd + 2);
+		}
+
+		// The blank line that terminates the headers has to be complete as well
+		if (*pData == "\r")
+		{
+			pData->clear();
 		}
 	}
 
@@ -581,6 +606,20 @@ namespace Plugins {
 	}
 
 	void CPluginProtocolHTTP::ProcessInbound(const ReadEvent* Message)
+	{
+		try
+		{
+			ProcessInboundData(Message);
+		}
+		catch (const std::exception& exc)
+		{
+			// Drop the data, retaining it would mean reprocessing (and failing on) it for every future read
+			_log.Log(LOG_ERROR, "(%s) Unexpected exception thrown '%s', discarding %d bytes of unparsable data.", __func__, exc.what(), (int)m_sRetainedData.size());
+			m_sRetainedData.clear();
+		}
+	}
+
+	void CPluginProtocolHTTP::ProcessInboundData(const ReadEvent* Message)
 	{
 		// There won't be a buffer if the connection closed
 		if (!Message->m_Buffer.empty())
