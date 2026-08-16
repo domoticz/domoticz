@@ -4403,9 +4403,14 @@ define(['app'], function (app) {
 							);
 						}
 						else {
+							// For plugins, UpdateHardware() reads every Mode value from the form
+							// fields, so the Mode1..Mode6 arguments are unused here. Interpolating
+							// them into the onclick handler broke it whenever a value contained a
+							// single quote or backslash (e.g. a Tuya local key), making the button
+							// silently dead. Pass only idx.
 							EnableUpdateAndDeleteButtons(
 								true,
-								"javascript:UpdateHardware(" + idx + ",'" + data["Mode1"] + "','" + data["Mode2"] + "','" + data["Mode3"] + "','" + data["Mode4"] + "','" + data["Mode5"] + "','" + data["Mode6"] + "')",
+								"javascript:UpdateHardware(" + idx + ")",
 								"javascript:DeleteHardware(" + idx + ")"
 							);
 						}
