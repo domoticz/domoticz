@@ -815,7 +815,7 @@ namespace Plugins {
 					Py_XDECREF(self->Description);
 					self->Description = PyUnicode_FromString(sd[15].c_str());
 					Py_XDECREF(self->Color);
-					self->Color = PyUnicode_FromString(_tColor(std::string(sd[16])).toJSONString().c_str()); //Parse the color to detect incorrectly formatted color data
+					self->Color = PyUnicode_FromString(NormalizeDeviceColor(sd[16]).c_str());
 					self->Used = atoi(sd[17].c_str());
 				}
 			}
@@ -852,7 +852,7 @@ namespace Plugins {
 					if (result.empty())
 					{
 						std::string	sValue = PyUnicode_AsUTF8(self->sValue);
-						std::string	sColor = _tColor(std::string(PyUnicode_AsUTF8(self->Color))).toJSONString(); //Parse the color to detect incorrectly formatted color data
+						std::string	sColor = NormalizeDeviceColor(std::string(PyUnicode_AsUTF8(self->Color)));
 						std::string	sLongName = self->pPlugin->m_Name + " - " + sName;
 						std::string	sDescription = PyUnicode_AsUTF8(self->Description);
 						if ((self->SubType == sTypeCustom) && (PyDict_Size(self->Options) > 0))
@@ -1130,7 +1130,7 @@ namespace Plugins {
                         // Color change
                         if (Color)
                         {
-                                std::string     sColor = _tColor(std::string(Color)).toJSONString(); //Parse the color to detect incorrectly formatted color data
+                                std::string     sColor = NormalizeDeviceColor(std::string(Color));
                                 Py_BEGIN_ALLOW_THREADS
                                 m_sql.UpdateDeviceValue("Color", sColor, sID);
                                 Py_END_ALLOW_THREADS
