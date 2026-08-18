@@ -4077,18 +4077,35 @@ define(['app'], function (app) {
 			});
 		}
 
-		EnableUpdateAndDeleteButtons = function (enableFlag,hrefUpdate = "", hrefDelete = "") {
+		// Set while a hardware row is selected. Callers used to test this by looking
+		// for the Update button's href attribute, which no longer exists.
+		var bHardwareRowSelected = false;
+
+		// The action buttons in this view are anchors without an href, which the browser
+		// does not activate from the keyboard on its own. tabindex="0" in Hardware.html puts
+		// them in the tab order and this maps Enter and Space onto their click handler.
+		ActivateButtonOnKey = function (e) {
+			if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+				e.preventDefault();
+				$(e.currentTarget).trigger("click");
+			}
+		}
+
+		EnableUpdateAndDeleteButtons = function (enableFlag, onUpdate, onDelete) {
+			var $update = $("#updelclr #hardwareupdate");
+			var $delete = $("#updelclr #hardwaredelete");
+			$update.off(".updelclr");
+			$delete.off(".updelclr");
+			bHardwareRowSelected = !!enableFlag;
 			if (enableFlag){
-				$("#updelclr #hardwareupdate").attr("href", hrefUpdate);
-				$("#updelclr #hardwaredelete").attr("href", hrefDelete);
-				$('#updelclr #hardwareupdate').show();
-				$('#updelclr #hardwaredelete').show();
+				$update.on("click.updelclr", onUpdate);
+				$delete.on("click.updelclr", onDelete);
+				$update.show();
+				$delete.show();
 			}
 			else {
-				$("#updelclr #hardwareupdate").removeAttr("href");
-				$("#updelclr #hardwaredelete").removeAttr("href");
-				$('#updelclr #hardwareupdate').hide();
-				$('#updelclr #hardwaredelete').hide();
+				$update.hide();
+				$delete.hide();
 			}
 		}
 
@@ -4395,23 +4412,26 @@ define(['app'], function (app) {
 					if (anSelected.length !== 0) {
 						var data = oTable.fnGetData(anSelected[0]);
 						var idx = data["DT_RowId"];
-						if (data["Type"] != "PLUGIN") { // Plugins can have non-numeric Mode data
+						if (data["Type"] != "PLUGIN") {
+							// gethardware sends these through atoi() for every non-plugin type
+							// (main/WebServerCmds.cpp), so they are already numbers here, which
+							// UpdateHardware() relies on (Netatmo tests Mode1 for truthiness).
 							EnableUpdateAndDeleteButtons(
 								true,
-								"javascript:UpdateHardware(" + idx + "," + data["Mode1"] + "," + data["Mode2"] + "," + data["Mode3"] + "," + data["Mode4"] + "," + data["Mode5"] + "," + data["Mode6"] + ")",
-								"javascript:DeleteHardware(" + idx + ")"
+								function () {
+									UpdateHardware(idx, data["Mode1"], data["Mode2"], data["Mode3"],
+										data["Mode4"], data["Mode5"], data["Mode6"]);
+								},
+								function () { DeleteHardware(idx); }
 							);
 						}
 						else {
 							// For plugins, UpdateHardware() reads every Mode value from the form
-							// fields, so the Mode1..Mode6 arguments are unused here. Interpolating
-							// them into the onclick handler broke it whenever a value contained a
-							// single quote or backslash (e.g. a Tuya local key), making the button
-							// silently dead. Pass only idx.
+							// fields, so the Mode1..Mode6 arguments are unused here. Pass only idx.
 							EnableUpdateAndDeleteButtons(
 								true,
-								"javascript:UpdateHardware(" + idx + ")",
-								"javascript:DeleteHardware(" + idx + ")"
+								function () { UpdateHardware(idx); },
+								function () { DeleteHardware(idx); }
 							);
 						}
 						$("#hardwarecontent #hardwareparamstable #hardwarename").val(data["Name"]);
@@ -5082,8 +5102,7 @@ define(['app'], function (app) {
 				return;
 			}
 
-			var href = $("#updelclr #hardwareupdate").attr("href");
-			if (typeof href == 'undefined') {
+			if (!bHardwareRowSelected) {
 				if (!confirm('No device selected, this data will be added as a new device; Do you want to Continue?'))
 					return;
 			}
@@ -5145,8 +5164,7 @@ define(['app'], function (app) {
 								console.log(`Error: Access denied: Failed to receive a valid reponse from server:  ${xhr.status}`);
 								$scope.loginRequired = true;             //Still need to login
 							}
-							var href = $("#updelclr #hardwareupdate").attr("href");
-							if (typeof href == 'undefined') {
+							if (!bHardwareRowSelected) {
 								AddHardware ();	                         //Is not a selected device. so must be new
 							}
 							else
@@ -5842,7 +5860,17 @@ define(['app'], function (app) {
 			return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
 		}
 
+		$scope.$on('$destroy', function () {
+			$(document).off("keydown.hwbtnkeys");
+		});
+
 		function init() {
+			// Anchors styled as buttons are not keyboard operable by themselves. Delegated so
+			// it also covers the ones living in the hidden sub-tab templates outside
+			// #hardwarecontent, and re-bound defensively so re-entering the view cannot stack it.
+			$(document).off("keydown.hwbtnkeys")
+				.on("keydown.hwbtnkeys", "a.btn[role='button']", ActivateButtonOnKey);
+
 			//global var
 			$.devIdx = 0;
 			$.extend($.myglobals, {
