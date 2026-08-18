@@ -53,6 +53,26 @@ enum SwitchCommands {
 #define CLIMATE_HIGH_TEMP_SETPOINT_UNIT 2
 #define CLIMATE_LOW_TEMP_SETPOINT_UNIT 3
 
+// Some devices send booleans as quoted strings ("true"/"false"/"1"/"0").
+// jsoncpp's asBool() throws on those, so handle both forms here.
+static bool JSonGetBool(const Json::Value& value, const bool bDefaultValue)
+{
+	if (value.isBool())
+		return value.asBool();
+	if (value.isNumeric())
+		return (value.asDouble() != 0);
+	if (value.isString())
+	{
+		std::string szValue = value.asString();
+		stdlower(szValue);
+		if ((szValue == "true") || (szValue == "1") || (szValue == "on") || (szValue == "yes"))
+			return true;
+		if ((szValue == "false") || (szValue == "0") || (szValue == "off") || (szValue == "no"))
+			return false;
+	}
+	return bDefaultValue;
+}
+
 
 MQTTAutoDiscover::MQTTAutoDiscover(const int ID, const std::string& Name, const std::string& IPAddress, const unsigned short usIPPort, const std::string& Username, const std::string& Password,
 	const std::string& CAfilenameExtra, const int TLS_Version)
@@ -1065,12 +1085,12 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		pSensor->name = sensor_name;
 
 		if (!root["enabled_by_default"].empty())
-			pSensor->bEnabled_by_default = root["enabled_by_default"].asBool();
+			pSensor->bEnabled_by_default = JSonGetBool(root["enabled_by_default"], true);
 
 		if (!root["force_update"].empty())
-			pSensor->bForce_update = root["force_update"].asBool();
+			pSensor->bForce_update = JSonGetBool(root["force_update"], false);
 		else if (!root["frc_upd"].empty())
-			pSensor->bForce_update = root["frc_upd"].asBool();
+			pSensor->bForce_update = JSonGetBool(root["frc_upd"], false);
 
 		if (!root["availability_topic"].empty())
 			pSensor->availability_topic = root["availability_topic"].asString();
@@ -1292,7 +1312,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->position_closed = root["pos_clsd"].asInt();
 
 		else if (!root["optimistic"].empty())
-			pSensor->bIsOptimistic = root["optimistic"].asBool();
+			pSensor->bIsOptimistic = JSonGetBool(root["optimistic"], false);
 
 		if (!root["on_command_type"].empty())
 			pSensor->on_command_type = root["on_command_type"].asString();
