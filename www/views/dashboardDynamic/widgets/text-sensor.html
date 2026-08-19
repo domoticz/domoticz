@@ -7,11 +7,11 @@
     </div>
 
     <!-- Loaded state -->
-    <div ng-if="ctrl.widgetDef.config.deviceIdx" class="dd-text-sensor-inner">
+    <div ng-if="ctrl.widgetDef.config.deviceIdx" class="dd-text-sensor-inner" ng-style="{'font-size': ctrl.fontSize + 'px'}">
         <div class="dd-text-sensor-header" ng-show="ctrl.showTitle || ctrl.lastUpdate">
             <span class="dd-text-sensor-title" ng-show="ctrl.showTitle" ng-bind="ctrl.deviceName"></span>
             <span class="dd-text-sensor-updated" ng-bind="ctrl.lastUpdate"></span>
         </div>
-        <div class="dd-text-sensor-content" ng-style="{'font-size': ctrl.fontSize + 'px'}" ng-bind-html="ctrl.text"></div>
+        <div class="dd-text-sensor-content" ng-bind-html="ctrl.text"></div>
     </div>
 </div>

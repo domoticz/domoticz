@@ -15,7 +15,7 @@ define([
         minW:        2,
         minH:        1,
         maxW:        12,
-        maxH:        6,
+        maxH:        11,
         transparentBackground: true,
         configSchema: [
             {

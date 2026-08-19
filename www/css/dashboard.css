@@ -3128,9 +3128,10 @@ dd-wcp-color {
 /* ── Text Sensor Widget ───────────────────────────────────── */
 .dd-widget--text-sensor > .dd-widget-body { padding: 4px; background: transparent; }
 .dd-text-sensor {
+    display: flex;
+    flex-direction: column;
     padding: 8px;
     height: 100%;
-    overflow-y: auto;
     box-sizing: border-box;
     border-radius: var(--dz-border-radius, 8px);
     background: var(--dz-panel-bg);
@@ -3138,6 +3139,8 @@ dd-wcp-color {
 .dd-text-sensor-inner {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    min-height: 0;
 }
 .dd-text-sensor-header {
     display: flex;
@@ -3167,7 +3170,9 @@ dd-wcp-color {
     margin-left: 8px;
 }
 .dd-text-sensor-content {
-    flex-shrink: 0;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
     word-break: break-word;
     line-height: 1.5;
     text-align: left;
