@@ -31,6 +31,18 @@
             <param field="Timeout" type="number" label="Timeout (s)" min="1" max="60" default="10" width="100px"/>
             <param field="EnableNotifications" type="boolean" label="Enable Notifications" default="true"/>
         </group>
+        <param field="AllowControl" type="boolean" label="Allow Control" default="false">
+            <description>
+                Turn on to reveal the control settings below.
+            </description>
+        </param>
+        <group label="Control">
+            <param field="AllowReboot" type="boolean" label="Allow Reboot" default="false" visible_when="AllowControl=true">
+                <description>
+                    Permit the plugin to reboot the target device.
+                </description>
+            </param>
+        </group>
         <param field="Mode6" label="Legacy Debug" width="150px">
             <options>
                 <option label="None" value="0" default="true"/>
