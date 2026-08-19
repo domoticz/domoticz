@@ -5948,12 +5948,16 @@ define(['app'], function (app) {
 								}
 								var currentGroup = "";
 								var renderParam = function (param) {
-									if (typeof (param.description) != "undefined") {
-										PluginParams += '<tr><td></td><td>' + param.description + '</td></tr>';
-									}
+									// Build the visibility markers before the description row is emitted. A
+									// param's description belongs to its input, so one visible_when has to
+									// govern both rows, otherwise the help text is left behind on its own
+									// with no field under it.
 									var visibleWhen = (typeof (param.visible_when) != "undefined") ? param.visible_when : "";
 									var trStyle = visibleWhen ? ' style="display:none"' : '';
 									var trAttr = visibleWhen ? ' data-visible-when="' + escapeHtml(param.visible_when) + '"' : '';
+									if (typeof (param.description) != "undefined") {
+										PluginParams += '<tr' + trStyle + trAttr + '><td></td><td>' + param.description + '</td></tr>';
+									}
 									PluginParams += '<tr' + trStyle + trAttr + '><td align="right" style="width:110px"><label id="lbl' + escapeHtml(param.field) + '"><span data-i18n="' + escapeHtml(param.label) + '">' + escapeHtml(param.label) + '</span>:</label></td>';
 									var paramType = (typeof (param.type) != "undefined") ? param.type : "";
 									var paramWidth = (typeof (param.width) != "undefined") ? param.width : "200px";

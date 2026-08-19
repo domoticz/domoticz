@@ -20,7 +20,11 @@
                 <option label="HTTPS" value="https"/>
             </options>
         </param>
-        <param field="Certificate" label="Certificate Path" width="200px" visible_when="Protocol=https" default=""/>
+        <param field="Certificate" label="Certificate Path" width="200px" visible_when="Protocol=https" default="">
+            <description>
+                Path to the client certificate. Only used when the protocol is HTTPS.
+            </description>
+        </param>
         <param field="ApiKey" label="API Key" password="true" width="200px" default=""/>
         <group label="Advanced Settings">
             <param field="RetryCount" type="number" label="Retry Count" min="0" max="10" default="3" width="100px"/>
