@@ -607,7 +607,7 @@ E.g: <code>Domoticz.Log(Devices["123456"].Units[2].Name)</code>
 |-
 |Color
 |Read/Write
-|Current color, see documentation of [[Developing a Python plugin#Callbacks|onCommand callback]] for details on the format.
+|Color state for color switches, or bar ranges for the Utility, Temperature and Weather cards. See [[Developing a Python plugin#The Color field|The Color field]] for both formats.
 |-
 |Adjustment
 |Read
@@ -919,7 +919,7 @@ E.g: <code>Domoticz.Log(Devices[2].Name)</code>
 |Description of the device, visible in "Edit" dialog in Domoticz Web UI.
 |-
 |Color
-|Current color, see documentation of [[Developing a Python plugin#Callbacks|onCommand callback]] for details on the format.
+|Color state for color switches, or bar ranges for the Utility, Temperature and Weather cards. See [[Developing a Python plugin#The Color field|The Color field]] for both formats.
 |-
 |Adjustment
 |Float value representing the adjustment value set for the Device
@@ -1074,7 +1074,7 @@ Values<br>
 |-
 |Color
 |Optional<br>
-Current color, see documentation of [[Developing a Python plugin#Callbacks|onCommand callback]] for details on the format.
+Color state for color switches, or bar ranges for the Utility, Temperature and Weather cards. See [[Developing a Python plugin#The Color field|The Color field]] for both formats.
 |-
 |SuppressTriggers
 |Optional<br>
@@ -1578,7 +1578,40 @@ as previously, plus absolute counter values
 
 for counters with custom units: Use RFXCom customer counter, e.g.
 Domoticz.Unit(Name=name, Unit=unit, Type=113, Switchtype=3, Options={"ValueQuantity": "Custom", "ValueUnits": "customunit"}).Create()
- 
+
+<br />
+
+===The Color field===
+
+The <code>Color</code> field holds two unrelated kinds of value. Domoticz tells them apart by the shape of the JSON you write, so a plugin can use either without extra configuration:
+
+* '''Color state''' for color switches, in the [[Developing a Python plugin#Callbacks|Domoticz color format]]: a JSON ''object'' carrying a color mode member <code>m</code>. This is normalized on the way in, so an object that is not a valid color is discarded.
+* '''Bar ranges''' for the Utility, Temperature and Weather cards: the colored band drawn under the reading on the device card in the web UI. These are stored exactly as written.
+
+A value that is not valid JSON is rejected and the field is left empty.
+
+Bar ranges normally come from the "Bar ranges" editor in the device's Edit dialog. A plugin can fill them in instead, which is useful when the hardware already reports its own thresholds and you would rather not make the user retype them.
+
+The shape depends on which card renders the device. Utility devices (Custom Sensor, Percentage, Counter and so on) take a bare array:
+
+<syntaxhighlight lang="python3">
+RANGES = '[{"from":0,"to":80,"color":"#66bb6a"},{"from":80,"to":100,"color":"#ef5350"}]'
+Devices[1].Update(nValue=0, sValue="42", Color=RANGES)
+</syntaxhighlight>
+
+Temperature and Weather devices take an object keyed by the reading the band applies to, because those cards can show more than one value:
+
+<syntaxhighlight lang="python3">
+RANGES = '{"temp":[{"from":-10,"to":18,"color":"#42a5f5"},{"from":18,"to":40,"color":"#ef5350"}]}'
+Devices[2].Update(nValue=0, sValue="21.5", Color=RANGES)
+</syntaxhighlight>
+
+The keys are <code>temp</code> or <code>hum</code> for Temperature devices, and <code>speed</code>, <code>rain</code>, <code>baro</code>, <code>uvi</code> or <code>data</code> for Weather devices.
+
+Each band takes <code>from</code>, <code>to</code> and a CSS <code>color</code> (any value CSS accepts; <code>#66bb6a</code> is used if it is missing). Bands do not have to be listed in order, and a band may run downwards (<code>from</code> greater than <code>to</code>) to draw the axis right to left, but a band whose <code>from</code> and <code>to</code> are equal is ignored.
+
+'''Note:''' bar ranges set from a plugin are a recent addition. Older versions of Domoticz accepted the assignment without complaint but stored an empty field, so the bands only appeared once a user entered them by hand.
+
 <br />
 
 ===Connections===

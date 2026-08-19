@@ -11666,7 +11666,8 @@ void CSQLHelper::SendUpdateInt(const std::string& Idx)
 
 void CSQLHelper::UpdateDeviceValue(const char* FieldName, const std::string& Value, const std::string& Idx)
 {
-	safe_query("UPDATE DeviceStatus SET %s='%s' , LastUpdate='%q' WHERE (ID == %s )", FieldName, Value.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
+	// Value is caller supplied and may legitimately contain quotes, so it has to be escaped (%q, not %s)
+	safe_query("UPDATE DeviceStatus SET %s='%q' , LastUpdate='%q' WHERE (ID == %s )", FieldName, Value.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
 	SendUpdateInt(Idx);
 }
 void CSQLHelper::UpdateDeviceValue(const char* FieldName, const int Value, const std::string& Idx)
