@@ -2921,17 +2921,17 @@ namespace http
 							std::vector<std::string> sd2 = result2[0];
 							if (sd2[0].empty())
 							{
-								_log.Log(LOG_ERROR, "Empty Value in Meter table for device idx: '%q'", sd[0].c_str());
+								_log.Log(LOG_ERROR, "Empty Value in Meter table for device idx: '%s'", sd[0].c_str());
 								continue;
 							}
 							if (!is_number(sValue))
 							{
-								_log.Log(LOG_ERROR, "Invalid Number sValue: '%q' for device idx: '%q'", sValue.c_str(), sd[0].c_str());
+								_log.Log(LOG_ERROR, "Invalid Number sValue: '%s' for device idx: '%s'", sValue.c_str(), sd[0].c_str());
 								continue;
 							}
 							if (!is_number(sd2[0]))
 							{
-								_log.Log(LOG_ERROR, "Invalid Number value: '%q' for device idx: '%q'", sd2[0].c_str(), sd[0].c_str());
+								_log.Log(LOG_ERROR, "Invalid Number value: '%s' for device idx: '%s'", sd2[0].c_str(), sd[0].c_str());
 								continue;
 							}
 							int64_t total_first = std::stoll(sd2[0]);
@@ -3923,17 +3923,17 @@ namespace http
 
 								if (sd2[0].empty())
 								{
-									_log.Log(LOG_ERROR, "Empty Value in Meter table for device idx: '%q'", sd[0].c_str());
+									_log.Log(LOG_ERROR, "Empty Value in Meter table for device idx: '%s'", sd[0].c_str());
 									continue;
 								}
 								if (!is_number(sValue))
 								{
-									_log.Log(LOG_ERROR, "Invalid Number sValue: '%q' for device idx: '%q'", sValue.c_str(), sd[0].c_str());
+									_log.Log(LOG_ERROR, "Invalid Number sValue: '%s' for device idx: '%s'", sValue.c_str(), sd[0].c_str());
 									continue;
 								}
 								if (!is_number(sd2[0]))
 								{
-									_log.Log(LOG_ERROR, "Invalid Number value: '%q' for device idx: '%q'", sd2[0].c_str(), sd[0].c_str());
+									_log.Log(LOG_ERROR, "Invalid Number value: '%s' for device idx: '%s'", sd2[0].c_str(), sd[0].c_str());
 									continue;
 								}
 

@@ -739,7 +739,7 @@ std::string CBasePush::ProcessSendValue(
 		}
 		return sendValue;
 	}
-	_log.Log(LOG_ERROR, "BasePush: Could not determine data push value (devIdx: %" PRIu64 "", DeviceRowIdx);
+	_log.Log(LOG_ERROR, "BasePush: Could not determine data push value (devIdx: %" PRIu64 ")", DeviceRowIdx);
 	return "";
 }
 
