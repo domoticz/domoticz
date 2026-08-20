@@ -124,48 +124,6 @@ uncalibrated push purely to make every device visible, then set calibration
 and push a second time. Skipping that first push makes the barometer, the
 device this test cares most about, permanently invisible.
 
-### Plugin bar ranges (DeviceStatus.Color)
-
-`python/test_plugin_color_ranges.py` proves that a Python plugin can store bar
-range definitions in a device's `Color` field, and that doing so cannot reach
-any other device's row.
-
-```
-python test/python/test_plugin_color_ranges.py msbuild/x64/Debug/domoticz.exe
-```
-
-`Color` holds two unrelated things: RGB/WW color state for color switches,
-and the bar ranges the utility, temperature and weather cards render
-(`www/app/widgets/dzBar.js`). The plugin framework used to push every write
-through `_tColor`, which blanks anything without a color mode, so a range
-payload never survived. Relaxing that had a catch worth guarding: it made
-plugin-supplied strings the first arbitrary text to reach the `UPDATE` built
-in `CSQLHelper::UpdateDeviceValue`, whose value was interpolated with `%s`.
-
-Like the tests above it starts its own Domoticz on a free port with a
-throwaway database and userdata folder, uses an example plugin
-(`plugins/examples/ColorRangeTest/`) copied into that folder for the run, and
-is subject to the same single-instance-mutex caveat. An "Apply Color Payloads"
-switch triggers the plugin to assign one fixed payload per device.
-
-The five payloads cover both halves:
-
-* A bare range array (utility card shape) and a keyed range object
-  (temperature and weather card shape) must reach the database byte for byte.
-* A range payload whose color string contains a single quote and SQL
-  fragments must be stored verbatim **and** leave every other device alone.
-  The test creates a witness device on separate dummy hardware and checks
-  its `Name` and `Color` afterwards. Note that JSON validity is no defence
-  here: a single quote is legal inside a JSON string, so this case fails
-  against a build that passes ranges through without fixing the escaping.
-* Genuine RGB color state must still be normalized through `_tColor`, and a
-  payload that is not JSON at all must still be rejected. These two are the
-  regression guards for color switches.
-
-Against an unfixed binary the first three fail and the last two pass; against
-a binary that passes ranges through but does not escape the SQL value, the
-witness checks fail too.
-
 ## Unit testing
 
 For _dzVents_ quite some unit-tests are available (_code-coverage above 80%_) testing many aspects of 'dzVents' ensuring that functionality does not change or break when changes are made.
