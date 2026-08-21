@@ -1162,10 +1162,22 @@ body.dd-navbar-hidden .dd-toolbar {
     margin-left: 0 !important;
 }
 
-/* Energy dashboard: transparent body only (has its own inline padding/layout) */
+/* Energy dashboard: transparent body, tight padding, content centred vertically.
+   The grid snaps to whole rows, so the card row rarely fills the box exactly;
+   centring splits the leftover instead of stacking it all at the bottom. */
 .dd-widget--energy-dashboard > .dd-widget-body {
     background: transparent;
     overflow: hidden;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /* safe: when the cards are taller than the box, fall back to top-aligned
+       so the first row is never clipped off the top by the centring. */
+    justify-content: safe center;
+}
+.dd-widget--energy-dashboard > .dd-widget-body > div {
+    min-height: 0;
 }
 
 .dd-dz-device {
@@ -2992,7 +3004,10 @@ dd-wcp-color {
     gap: 6px;
     justify-content: center;
     align-items: stretch;
-    padding: 2px 0 4px;
+    /* No padding of its own: the widget body supplies it. The bottom padding used to be
+       the only gap to the balance bar, so that moved onto the bar, where it costs height
+       only when the bar is actually there. */
+    padding: 0;
 }
 .dd-fc-conditions .dd-stat-card {
     min-width: 120px;
@@ -3045,6 +3060,12 @@ dd-wcp-color {
     gap: 6px 20px;
     height: 100%;
     box-sizing: border-box;
+}
+/* Only where the bar follows the card row, i.e. inside the Energy Dashboard widget: the
+   row gave up the bottom padding that used to separate the two. The self-sufficiency
+   widget uses .dd-balance as its own root and must not gain a top margin. */
+.dd-fc-conditions + .dd-balance {
+    margin-top: 4px;
 }
 .dd-balance-stats {
     display: flex;

@@ -14,7 +14,7 @@ define([
         defaultW:    6,
         defaultH:    4,
         minW:        2,
-        minH:        3,
+        minH:        2,
         maxW:        12,
         maxH:        8,
         configSchema: [
