@@ -523,6 +523,19 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						const decimalPoint = formattedNumber[5] === '.' || formattedNumber[5] === ',' ? formattedNumber[5] : '.';
 						const thousandsSep = formattedNumber[1] === ',' || formattedNumber[1] === '.' || formattedNumber[1] === '\u00A0' ? formattedNumber[1] : ',';
 						Highcharts.Templating.helpers.abs3 = value => Math.abs(value).toFixed(3);
+						//Highcharts 12 renders the default axis/tooltip date labels through Intl.
+						//Without an explicit locale it uses the browser locale and ignores the
+						//translated month/weekday arrays below, so map our language to a BCP-47 tag.
+						var chartLocale = 'en';
+						if (typeof $rootScope.config.language === 'string' && $rootScope.config.language !== '') {
+							var wantedLocale = $rootScope.config.language.replace('_', '-');
+							try {
+								Intl.DateTimeFormat.supportedLocalesOf(wantedLocale);
+								chartLocale = wantedLocale;
+							} catch (e) {
+								chartLocale = 'en';
+							}
+						}
 						Highcharts.setOptions({
 							noData: {
 								style: {
@@ -544,7 +557,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 								}
 							},
 							lang: {
-								//locale: $rootScope.config.language,
+								locale: chartLocale,
 								noData: $.t('No data to display'),
 								decimalPoint: decimalPoint,
 								thousandsSep: thousandsSep,
@@ -584,6 +597,15 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 									$.t('Thursday'),
 									$.t('Friday'),
 									$.t('Saturday')
+								],
+								shortWeekdays: [
+									$.t('Sun'),
+									$.t('Mon'),
+									$.t('Tue'),
+									$.t('Wed'),
+									$.t('Thu'),
+									$.t('Fri'),
+									$.t('Sat')
 								]
 							}/* to be used when all graphs are timezone aware,
 							global: {
