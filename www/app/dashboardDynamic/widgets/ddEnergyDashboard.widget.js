@@ -13,7 +13,7 @@ define([
         icon:        'fa-solid fa-gauge',
         defaultW:    6,
         defaultH:    4,
-        minW:        4,
+        minW:        2,
         minH:        3,
         maxW:        12,
         maxH:        8,
@@ -108,6 +108,25 @@ define([
                     battVolt:    -1
                 };
                 ctrl.ids = ids; // exposed to template for ng-href log links
+
+                // A card is only rendered when its device is actually configured in
+                // Setup > Settings > Energy Dashboard. Until those settings are known
+                // (or when they could not be fetched) every card stays visible.
+                ctrl.settingsLoaded = false;
+
+                ctrl.hasDevice = function(name) {
+                    if (!ctrl.settingsLoaded) { return true; }
+                    if (name === 'battery') {
+                        return ids.battEnergyIn !== -1 || ids.battEnergyOut !== -1 ||
+                               ids.battSoc !== -1 || ids.battWatt !== -1 || ids.battVolt !== -1;
+                    }
+                    return ids[name] !== -1;
+                };
+
+                ctrl.hasAnyDevice = function() {
+                    return ctrl.hasDevice('p1') || ctrl.hasDevice('solar') || ctrl.hasDevice('weather') ||
+                           ctrl.hasDevice('gas') || ctrl.hasDevice('water') || ctrl.hasDevice('battery');
+                };
 
                 function parseWatt(str) {
                     if (!str) { return 0; }
@@ -377,6 +396,7 @@ define([
                             ids.battSoc       = s.idBatterySoc       || -1;
                             ids.battWatt      = s.idBatteryWatt      || -1;
                             ids.battVolt      = s.idBatteryVolt      || -1;
+                            ctrl.settingsLoaded = true;
                         }
                         fetchDevices();
                     }).catch(function() {
