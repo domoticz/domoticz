@@ -5302,6 +5302,28 @@ define(['app'], function (app) {
 				$label.text(initVal);
 			});
 
+			// A group header with every param inside it hidden by visible_when is an
+			// empty section, so hide the whole group row. The group <tr> holds both the
+			// header and the nested param table, so one row covers both.
+			// This tests each row's INLINE display: groups render collapsed, so every
+			// row inside has a display:none ancestor and :visible would report them all
+			// hidden regardless of their own visible_when state.
+			var updateGroupVisibility = function () {
+				$table.find("tr.plugin-group-row").each(function () {
+					var $groupRow = $(this);
+					var $groupParams = $groupRow.find("table tr");
+					if ($groupParams.length === 0)
+						return;
+					var bAnyVisible = $groupParams.filter(function () {
+						return this.style.display !== "none";
+					}).length > 0;
+					if (bAnyVisible)
+						$groupRow.show();
+					else
+						$groupRow.hide();
+				});
+			};
+
 			// Set up conditional visibility within this plugin table
 			$table.find("tr[data-visible-when]").each(function () {
 				var $row = $(this);
@@ -5329,6 +5351,9 @@ define(['app'], function (app) {
 				$depInput.on("change", updateVisibility);
 				updateVisibility();
 			});
+
+			$table.off("change.plugingroup").on("change.plugingroup", "input, select, textarea", updateGroupVisibility);
+			updateGroupVisibility();
 		}
 
 		CollectPluginSettings = function (selector) {
@@ -5948,12 +5973,16 @@ define(['app'], function (app) {
 								}
 								var currentGroup = "";
 								var renderParam = function (param) {
-									if (typeof (param.description) != "undefined") {
-										PluginParams += '<tr><td></td><td>' + param.description + '</td></tr>';
-									}
+									// Build the visibility markers before the description row is emitted. A
+									// param's description belongs to its input, so one visible_when has to
+									// govern both rows, otherwise the help text is left behind on its own
+									// with no field under it.
 									var visibleWhen = (typeof (param.visible_when) != "undefined") ? param.visible_when : "";
 									var trStyle = visibleWhen ? ' style="display:none"' : '';
 									var trAttr = visibleWhen ? ' data-visible-when="' + escapeHtml(param.visible_when) + '"' : '';
+									if (typeof (param.description) != "undefined") {
+										PluginParams += '<tr' + trStyle + trAttr + '><td></td><td>' + param.description + '</td></tr>';
+									}
 									PluginParams += '<tr' + trStyle + trAttr + '><td align="right" style="width:110px"><label id="lbl' + escapeHtml(param.field) + '"><span data-i18n="' + escapeHtml(param.label) + '">' + escapeHtml(param.label) + '</span>:</label></td>';
 									var paramType = (typeof (param.type) != "undefined") ? param.type : "";
 									var paramWidth = (typeof (param.width) != "undefined") ? param.width : "200px";
@@ -6048,7 +6077,7 @@ define(['app'], function (app) {
 										}
 										if (paramGroup !== "") {
 											// Open new collapsible group
-											PluginParams += '<tr><td colspan="2">' +
+											PluginParams += '<tr class="plugin-group-row"><td colspan="2">' +
 												'<div class="plugin-group" style="margin:5px 0; cursor:pointer;" onclick="var t=$(this).next(); t.toggle(); $(this).find(\'.fa\').toggleClass(\'fa-chevron-right fa-chevron-down\');">' +
 												'<i class="fa fa-chevron-right" style="margin-right:5px;"></i><b>' + escapeHtml(paramGroup) + '</b></div>' +
 												'<div style="display:none;"><table class="display" border="0" cellpadding="0" cellspacing="5">';
