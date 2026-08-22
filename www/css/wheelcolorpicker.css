@@ -145,6 +145,40 @@
 
 /*********************/
 
+/* Slider value input box */
+
+.jQWCP-svalue {
+	display: none;
+	position: absolute;
+	bottom: 0;
+	left: 50%;
+	transform: translateX(-50%);
+	width: calc(100% + 6px);
+	height: 24px;
+	box-sizing: border-box;
+	background: var(--dz-input-bg, #fff);
+	color: var(--dz-input-text, #333);
+	border: 1px solid var(--dz-input-border, #aaa);
+	border-radius: 3px;
+	font-size: 11px;
+	text-align: center;
+	padding: 1px 2px;
+	cursor: text;
+	z-index: 1;
+}
+
+.jQWCP-svalue:focus {
+	outline: none;
+	border-color: var(--dz-accent-color, #337ab7);
+}
+
+/* Widen slider columns enough to display the value box without clipping */
+.jQWCP-wWidget.jQWCP-hasvalues .jQWCP-slider-wrapper {
+	width: 30px;
+}
+
+/*********************/
+
 /* Mobile layout */
 
 .jQWCP-mobile.jQWCP-wWidget {

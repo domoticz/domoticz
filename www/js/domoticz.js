@@ -1673,31 +1673,37 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 	function UpdateColorPicker(mode)
 	{
 		colorPickerMode = mode;
+		var sliderFmt = {
+			m: {min:1, max:100, decimals:0, unit:'%'},
+			v: {min:0, max:100, decimals:0, unit:'%'},
+			l: {min:0, max:100, decimals:0, unit:'%'},
+			k: {min:0, max:100, decimals:0, unit:'%'}
+		};
 		if (mode == "color") {
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'wm', preserveWheel:true});
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'wm', preserveWheel:true, sliderValue:true, sliderFormat:sliderFmt});
 		}
 		else if (mode == "color_no_master") {
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'w', preserveWheel:true});
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'w', preserveWheel:true, sliderValue:true, sliderFormat:sliderFmt});
 		}
 		else if (mode == "white") {
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'m', preserveWheel:true});
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'m', preserveWheel:true, sliderValue:true, sliderFormat:sliderFmt});
 		}
 		else if (mode == "white_no_master") {
 			// TODO: Silly, nothing to show!
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'', preserveWheel:true});
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'', preserveWheel:true, sliderValue:true, sliderFormat:sliderFmt});
 		}
 		else if (mode == "temperature") {
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'xm'});
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'xm', sliderValue:true, sliderFormat:sliderFmt});
 		}
 		else if (mode == "temperature_no_master") {
 			// TODO: Silly, nothing to show!
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:''});
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'', sliderValue:true, sliderFormat:sliderFmt});
 		}
 		else if (mode == "customw") {
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'wvlm', preserveWheel:false});
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'wvlm', preserveWheel:false, sliderValue:true, sliderFormat:sliderFmt});
 		}
 		else if (mode == "customww") {
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'wvklm', preserveWheel:false});
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'wvklm', preserveWheel:false, sliderValue:true, sliderFormat:sliderFmt});
 		}
 
 		$(selector + ' .pickermodergb').hide();
