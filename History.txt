@@ -1,6 +1,7 @@
 Version 2026.xxxx
 - Added: Applications, OAuth2 redirect URIs can now be registered per application under Setup - Applications; leaving the list empty keeps the current behaviour of accepting any valid redirect URI, so existing account linking is unaffected until the list is filled in
 - Added: Dashboard Dynamic, Quick Stat and Energy Dashboard widgets now show a timeout indicator when a device has not reported within the sensor timeout period (#6906)
+- Added: Lights, the RGBW color picker sliders now have an editable value box below them showing the value as a percentage; typing a number moves the slider and dragging the slider updates the number, so several lamps can be given exactly the same brightness. Covers brightness, white level and color temperature, in Scenes, Timers, the device light edit page and the light popup on the dashboard (#6976)
 - Added: Matter, support for the AirQuality, TVOC, Ozone, Formaldehyde, PM1 and Radon concentration clusters
 - Added: Matter, support for the SmokeCoAlarm cluster; smoke and CO alarm states are now created as smoke detector devices (#6935)
 - Added: Matter, water leak, rain and freeze detectors reported via BooleanState are now identified via the Descriptor DeviceTypeList and created as distinct devices instead of door contacts
