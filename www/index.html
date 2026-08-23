@@ -614,46 +614,46 @@ $(document).ready(function() {
 		<svg id="MediaRemote" class="MediaRemote" viewBox="50 -150 900 1875" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1">
 			<defs>
 				<radialGradient id="grad1" cx="50%" cy="20%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" />
-					<stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:var(--dz-remote-face-start);" />
+					<stop offset="100%" style="stop-color:var(--dz-remote-face-end);" />
 				</radialGradient>
 				<radialGradient id="grad2" cx="50%" cy="80%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" />
-					<stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:var(--dz-remote-face-start);" />
+					<stop offset="100%" style="stop-color:var(--dz-remote-face-end);" />
 				</radialGradient>
 				<radialGradient id="grad3" cx="20%" cy="50%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" />
-					<stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:var(--dz-remote-face-start);" />
+					<stop offset="100%" style="stop-color:var(--dz-remote-face-end);" />
 				</radialGradient>
 				<radialGradient id="grad4" cx="80%" cy="50%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" />
-					<stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:var(--dz-remote-face-start);" />
+					<stop offset="100%" style="stop-color:var(--dz-remote-face-end);" />
 				</radialGradient>
 				<path id="btnTriangle" d="M100 -140 l370 0 S  110,-100 60 250 L60 -100 S 60,-140 100 -140z" />
 				<path id="btnArrow" d="M190 45 l108 108 s -110,140 0,295 l-108 108 s -205,-235 0,-510z" />
 				<path id="symTriangle" d="m 30,580 -60,60 -60,-60 z" />
 				<path id="symHouse" d="M0 0 l0 -30 l-10 0 l30 -30 l30 30 l-10 0 l0 30 l-10 0 l0 -20 l-10,0 l0 20 m-15 -35 l0 -22 l5 0 l0 20z" />
-				<g id="symFullscreen" stroke="#393a39" stroke-width="10" stroke-linecap="round">
+				<g id="symFullscreen" class="remotesymbolstroke" stroke-width="10" stroke-linecap="round">
 					<line x1="0" y1="0" x2="80" y2="0" stroke-width="5" />
 					<line x1="80" y1="0" x2="80" y2="80" stroke-width="5" />
 					<line x1="25" y1="50" x2="62" y2="18" />
 					<line x1="65" y1="35" x2="65" y2="15" />
 					<line x1="45" y1="15" x2="65" y2="15" />
 				</g>
-				<g id="symMenu" stroke="#393a39" stroke-width="10" stroke-linecap="round">
+				<g id="symMenu" class="remotesymbolstroke" stroke-width="10" stroke-linecap="round">
 					<rect x="0" y="0" width="80" height="80" rx="20" ry="20" stroke-width="5" style="fill:none;" />
 					<line x1="15" y1="20" x2="65" y2="20" />
 					<line x1="15" y1="40" x2="65" y2="40" />
 					<line x1="15" y1="60" x2="65" y2="60" />
 				</g>
-				<path id="symBack" d="M30 0 l-40 40 l40 40 l0 -20 l 40 0 l 0 -40 l -40 0z" stroke="#393a39" stroke-width="8" />
-				<g id="symI" stroke="#393a39" stroke-width="8" stroke-linecap="round">
+				<path id="symBack" d="M30 0 l-40 40 l40 40 l0 -20 l 40 0 l 0 -40 l -40 0z" class="remotesymbolstroke" stroke-width="8" />
+				<g id="symI" class="remotesymbolstroke" stroke-width="8" stroke-linecap="round">
 					<circle cx="38" cy="5" r="12" class="remoteshadow" stroke-width="5" style="fill:none;" />
-					<rect x="30" y="30" width="20" height="50" stroke-width="5" style="fill:#393a39;" />
+					<rect x="30" y="30" width="20" height="50" stroke-width="5" style="fill:var(--dz-remote-symbol);" />
 					<line x1="15" y1="30" x2="48" y2="30" />
 					<line x1="15" y1="80" x2="65" y2="80" />
 				</g>
-				<g id="symSubtitle" stroke="#393a39" stroke-width="10" stroke-linecap="round">
+				<g id="symSubtitle" class="remotesymbolstroke" stroke-width="10" stroke-linecap="round">
 					<rect x="0" y="0" width="120" height="80" rx="20" ry="20" stroke-width="5" style="fill:none;" />
 					<line x1="35" y1="65" x2="85" y2="65" />
 				</g>
@@ -840,35 +840,35 @@ $(document).ready(function() {
 		<svg id="LMSPlayerRemote" class="MediaRemote" viewBox="50 -150 900 1875" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1">
 			<defs>
 				<radialGradient id="gradient1" cx="50%" cy="20%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" />
-					<stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:var(--dz-remote-face-start);" />
+					<stop offset="100%" style="stop-color:var(--dz-remote-face-end);" />
 				</radialGradient>
 				<radialGradient id="gradient2" cx="50%" cy="80%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" />
-					<stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:var(--dz-remote-face-start);" />
+					<stop offset="100%" style="stop-color:var(--dz-remote-face-end);" />
 				</radialGradient>
 				<radialGradient id="gradient3" cx="20%" cy="50%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" />
-					<stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:var(--dz-remote-face-start);" />
+					<stop offset="100%" style="stop-color:var(--dz-remote-face-end);" />
 				</radialGradient>
 				<radialGradient id="gradient4" cx="80%" cy="50%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" />
-					<stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:var(--dz-remote-face-start);" />
+					<stop offset="100%" style="stop-color:var(--dz-remote-face-end);" />
 				</radialGradient>
 				<path id="btnArrow" d="M190 45 l108 108 s -110,140 0,295 l-108 108 s -205,-235 0,-510z" />
 				<path id="symTriangle" d="m 30,580 -60,60 -60,-60 z" />
 				<path id="symFavorites" d="m78.719,27.14565c0,-13.91432 -9.27593,-25.19366 -20.7181,-25.19366c-7.47142,0 -13.99653,4.8253 -17.64171,12.03655c-3.64471,-7.21125 -10.17255,-12.03655 -17.64396,-12.03655c-11.44209,0 -20.71526,11.27936 -20.71526,25.19366c0,7.57557 2.76051,14.35305 7.11123,18.96834l29.35747,35.70179c0.50146,0.60963 1.18136,0.95222 1.89052,0.95222c0.70933,0 1.38924,-0.3426 1.89052,-0.95222l29.35752,-35.70179c4.35098,-4.61546 7.11176,-11.39276 7.11176,-18.96834l0,0z" />
 				<path id="symNowPlaying" d="m33.30051,35.74044l0,42.67448l0,0c0.04173,3.90186 -2.78493,8.30183 -8.64684,11.07083c-8.13374,3.83624 -16.69111,1.96458 -19.8218,-2.4681c-3.13087,-4.43826 -0.84096,-11.43206 7.2991,-15.27369c5.46821,-2.58305 11.13328,-2.57757 15.20631,-0.95218l0,-33.95688l0,-21.8899l59.63288,-10.94499l0,5.47249l0,16.4175l0,47.06338l0,0c0.03584,3.90186 -2.79081,8.29624 -8.64685,11.05997c-8.13385,3.83614 -16.69115,1.96458 -19.82185,-2.4682c-3.13081,-4.43816 -0.8409,-11.43205 7.29905,-15.27368c5.46832,-2.58305 11.13338,-2.57747 15.20631,-0.95218l0,-38.33483l-47.70631,8.75598l0,0zm0,0" />
-				<g id="symRepeat" fill="#393a39">
+				<g id="symRepeat" class="remotesymbolfill">
 					<path d="m88.37501,62.33332c0,4.59166 -2.83431,8.33334 -6.31252,8.33334h-56.83774v-16.66666l-25.22475,25l25.22475,25v-16.66668h56.83774c10.44404,0 18.93752,-11.22916 18.93752,-25h-12.625l0,0z" />
 					<path d="m18.9375,37.33338h56.81249v16.66662l25.25,-25l-25.25,-25v16.66662h-56.81249c-10.44403,0 -18.9375,11.2 -18.9375,25h12.625c0,-4.59163 2.83431,-8.33325 6.3125,-8.33325l0,0z" />
 				</g>
-				<g id="symShuffle" fill="#393a39">
+				<g id="symShuffle" class="remotesymbolfill">
 					<polygon points="98.3429408578821,32.200117042093666 98.3429408578821,50.5339301317116 117.85200781683292,25.864964463319097 98.3429408578821,1.196000099182129 98.3429408578821,19.541192818332433 77.74903262176244,19.541192818332433 77.74903262176244,19.62657460259686 77.69951336897415,19.552575056375872 23.96629133943142,87.49184707361553 2.1525008833052937,87.49184707361553 2.1525008833052937,100.15075303779929 28.07156711271577,100.15075303779929 28.07156711271577,100.09954274852032 28.107582073480756,100.15075303779929 81.84980784321473,32.200117042093666" />
 					<polygon points="46.12218635231315,54.518305578927425 53.19839318808758,45.570538744651344 28.107582073480756,13.849229943282808 28.067066560883717,13.894768025245298 28.067066560883717,13.849229943282808 2.1480000019073486,13.849229943282808 2.1480000019073486,26.508155471299574 23.96179078759937,26.508155471299574" />
 					<polygon points="98.3429408578821,81.79987767728824 81.84980784321473,81.79987767728824 64.8120052323105,60.255803927428474 57.73579839653607,69.20926253285404 77.69951336897415,94.44742096726156 77.75353581012163,94.37342272529611 77.75353581012163,94.45880450956054 98.3429408578821,94.45880450956054 98.3429408578821,112.80400374998851 117.85200781683292,88.13503286457387 98.3429408578821,63.466061979159235" />
 				</g>
-				<g id="symBrowse" stroke-miterlimit="10" stroke-linecap="round" stroke-width="12" stroke="#393a39" fill="none">
+				<g id="symBrowse" stroke-miterlimit="10" stroke-linecap="round" stroke-width="12" class="remotesymbolstroke" fill="none">
 					<line y2="76.67169" x2="22.98174" y1="9.19837" x1="9.056" />
 					<line y2="77.51706" x2="25.04448" y1="8.353" x1="25.1764" />
 					<line y2="78.60848" x2="26.91019" y1="17.34518" x1="54.42007" />
@@ -1016,34 +1016,34 @@ $(document).ready(function() {
 		<svg id="HEOSPlayerRemote" class="MediaRemote" viewBox="50 -150 900 1100" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1">
 			<defs>
 				<radialGradient id="gradient1" cx="50%" cy="20%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" />
-					<stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:var(--dz-remote-face-start);" />
+					<stop offset="100%" style="stop-color:var(--dz-remote-face-end);" />
 				</radialGradient>
 				<radialGradient id="gradient2" cx="50%" cy="80%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" />
-					<stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:var(--dz-remote-face-start);" />
+					<stop offset="100%" style="stop-color:var(--dz-remote-face-end);" />
 				</radialGradient>
 				<radialGradient id="gradient3" cx="20%" cy="50%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" />
-					<stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:var(--dz-remote-face-start);" />
+					<stop offset="100%" style="stop-color:var(--dz-remote-face-end);" />
 				</radialGradient>
 				<radialGradient id="gradient4" cx="80%" cy="50%" r="50%" fx="50%" fy="50%">
-					<stop offset="0%" style="stop-color:#cbcccb;" />
-					<stop offset="100%" style="stop-color:#989898;" />
+					<stop offset="0%" style="stop-color:var(--dz-remote-face-start);" />
+					<stop offset="100%" style="stop-color:var(--dz-remote-face-end);" />
 				</radialGradient>
 				<path id="symTriangle" d="m 30,580 -60,60 -60,-60 z" />
 				<path id="symFavorites" d="m78.719,27.14565c0,-13.91432 -9.27593,-25.19366 -20.7181,-25.19366c-7.47142,0 -13.99653,4.8253 -17.64171,12.03655c-3.64471,-7.21125 -10.17255,-12.03655 -17.64396,-12.03655c-11.44209,0 -20.71526,11.27936 -20.71526,25.19366c0,7.57557 2.76051,14.35305 7.11123,18.96834l29.35747,35.70179c0.50146,0.60963 1.18136,0.95222 1.89052,0.95222c0.70933,0 1.38924,-0.3426 1.89052,-0.95222l29.35752,-35.70179c4.35098,-4.61546 7.11176,-11.39276 7.11176,-18.96834l0,0z" />
 				<path id="symNowPlaying" d="m33.30051,35.74044l0,42.67448l0,0c0.04173,3.90186 -2.78493,8.30183 -8.64684,11.07083c-8.13374,3.83624 -16.69111,1.96458 -19.8218,-2.4681c-3.13087,-4.43826 -0.84096,-11.43206 7.2991,-15.27369c5.46821,-2.58305 11.13328,-2.57757 15.20631,-0.95218l0,-33.95688l0,-21.8899l59.63288,-10.94499l0,5.47249l0,16.4175l0,47.06338l0,0c0.03584,3.90186 -2.79081,8.29624 -8.64685,11.05997c-8.13385,3.83614 -16.69115,1.96458 -19.82185,-2.4682c-3.13081,-4.43816 -0.8409,-11.43205 7.29905,-15.27368c5.46832,-2.58305 11.13338,-2.57747 15.20631,-0.95218l0,-38.33483l-47.70631,8.75598l0,0zm0,0" />
-				<g id="symRepeat" fill="#393a39">
+				<g id="symRepeat" class="remotesymbolfill">
 					<path d="m88.37501,62.33332c0,4.59166 -2.83431,8.33334 -6.31252,8.33334h-56.83774v-16.66666l-25.22475,25l25.22475,25v-16.66668h56.83774c10.44404,0 18.93752,-11.22916 18.93752,-25h-12.625l0,0z" />
 					<path d="m18.9375,37.33338h56.81249v16.66662l25.25,-25l-25.25,-25v16.66662h-56.81249c-10.44403,0 -18.9375,11.2 -18.9375,25h12.625c0,-4.59163 2.83431,-8.33325 6.3125,-8.33325l0,0z" />
 				</g>
-				<g id="symShuffle" fill="#393a39">
+				<g id="symShuffle" class="remotesymbolfill">
 					<polygon points="98.3429408578821,32.200117042093666 98.3429408578821,50.5339301317116 117.85200781683292,25.864964463319097 98.3429408578821,1.196000099182129 98.3429408578821,19.541192818332433 77.74903262176244,19.541192818332433 77.74903262176244,19.62657460259686 77.69951336897415,19.552575056375872 23.96629133943142,87.49184707361553 2.1525008833052937,87.49184707361553 2.1525008833052937,100.15075303779929 28.07156711271577,100.15075303779929 28.07156711271577,100.09954274852032 28.107582073480756,100.15075303779929 81.84980784321473,32.200117042093666" />
 					<polygon points="46.12218635231315,54.518305578927425 53.19839318808758,45.570538744651344 28.107582073480756,13.849229943282808 28.067066560883717,13.894768025245298 28.067066560883717,13.849229943282808 2.1480000019073486,13.849229943282808 2.1480000019073486,26.508155471299574 23.96179078759937,26.508155471299574" />
 					<polygon points="98.3429408578821,81.79987767728824 81.84980784321473,81.79987767728824 64.8120052323105,60.255803927428474 57.73579839653607,69.20926253285404 77.69951336897415,94.44742096726156 77.75353581012163,94.37342272529611 77.75353581012163,94.45880450956054 98.3429408578821,94.45880450956054 98.3429408578821,112.80400374998851 117.85200781683292,88.13503286457387 98.3429408578821,63.466061979159235" />
 				</g>
-				<g id="symBrowse" stroke-miterlimit="10" stroke-linecap="round" stroke-width="12" stroke="#393a39" fill="none">
+				<g id="symBrowse" stroke-miterlimit="10" stroke-linecap="round" stroke-width="12" class="remotesymbolstroke" fill="none">
 					<line y2="76.67169" x2="22.98174" y1="9.19837" x1="9.056" />
 					<line y2="77.51706" x2="25.04448" y1="8.353" x1="25.1764" />
 					<line y2="78.60848" x2="26.91019" y1="17.34518" x1="54.42007" />

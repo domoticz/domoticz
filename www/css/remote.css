@@ -3,21 +3,21 @@
 }
 .remotehoverable:hover {
 	cursor: pointer;
-	fill: #289fe3;
+	fill: var(--dz-remote-hover);
 }
 .remotedisabled {
 	pointer-events: none;
-	fill: #2e2e2e;
+	fill: var(--dz-remote-disabled);
 }
 .remoteshadow {
-	fill: #393a39;
+	fill: var(--dz-remote-edge);
 	pointer-events: none;
 }
 .remotetext {
 	cursor: pointer;
 	text-anchor: middle;
 	dominant-baseline: middle;
-	fill: #393a39;
+	fill: var(--dz-remote-symbol);
 	font-size: 180px;
 	font-family: sans-serif;
 	font-stretch: ultra-condensed ;
@@ -29,4 +29,14 @@
 	bottom:0;
 	left:0;
 	right:0;
+}
+
+/* Symbol groups inside the remote <defs>. These carried their colour as SVG
+   presentation attributes (stroke="#393a39" / fill="#393a39"), which cannot
+   take a var(), so the paint moves here. */
+.remotesymbolstroke {
+	stroke: var(--dz-remote-symbol);
+}
+.remotesymbolfill {
+	fill: var(--dz-remote-symbol);
 }
