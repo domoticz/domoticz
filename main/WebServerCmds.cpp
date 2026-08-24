@@ -15,6 +15,9 @@
 #include <stdarg.h>
 #include <json/json.h>
 #include <algorithm>
+#ifdef WIN32
+#include <windows.h>
+#endif
 #include <openssl/sha.h>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
@@ -5808,7 +5811,12 @@ namespace http
 				}
 			}
 
-			if (std::rename(szTmpFile.c_str(), szFile.c_str()) != 0)
+			#ifdef WIN32
+			bool bRenameOk = (MoveFileExA(szTmpFile.c_str(), szFile.c_str(), MOVEFILE_REPLACE_EXISTING) != 0);
+#else
+			bool bRenameOk = (std::rename(szTmpFile.c_str(), szFile.c_str()) == 0);
+#endif
+			if (!bRenameOk)
 			{
 				_log.Log(LOG_ERROR, "UploadWebAsset: could not replace %s", szFile.c_str());
 				std::remove(szTmpFile.c_str());
