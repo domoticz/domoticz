@@ -5782,7 +5782,7 @@ namespace http
 			}
 
 			const std::string szFile = szFolder + "/" + szName;
-			const std::string szTmpFile = szFile + ".tmp";
+			const std::string szTmpFile = szFile + "." + GenerateUUID() + ".tmp";
 			{
 				std::ofstream outfile(szTmpFile.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
 				if (!outfile.is_open())
