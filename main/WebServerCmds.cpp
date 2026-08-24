@@ -5673,6 +5673,189 @@ namespace http
 			ReloadCustomSwitchIcons();
 		}
 
+		static const size_t WEB_ASSET_MAX_SIZE = 8 * 1024 * 1024; // 8 MiB per file
+
+		static bool IsSafeWebAssetName(const std::string& szName)
+		{
+			if (szName.empty() || (szName.size() > 128))
+				return false;
+			if (szName.front() == '.')
+				return false;
+			if (szName.find("..") != std::string::npos)
+				return false;
+
+			for (const char c : szName)
+			{
+				if ((c >= '0') && (c <= '9'))
+					continue;
+				if ((c >= 'a') && (c <= 'z'))
+					continue;
+				if ((c >= 'A') && (c <= 'Z'))
+					continue;
+				if ((c == '.') || (c == '-') || (c == '_'))
+					continue;
+				return false;
+			}
+			return true;
+		}
+
+		static bool IsAllowedWebAssetType(const std::string& szName)
+		{
+			std::string szLower = szName;
+			stdlower(szLower);
+			const std::vector<std::string> allowed = { ".css", ".woff2", ".woff", ".ttf", ".otf", ".eot" };
+			for (const auto& ext : allowed)
+			{
+				if ((szLower.size() > ext.size()) &&
+					(szLower.compare(szLower.size() - ext.size(), ext.size(), ext) == 0))
+					return true;
+			}
+			return false;
+		}
+
+		static bool WebAssetDirExists(const std::string& szPath)
+		{
+			DIR* pDir = opendir(szPath.c_str());
+			if (pDir == nullptr)
+				return false;
+			closedir(pDir);
+			return true;
+		}
+
+		static std::string WebAssetFolder()
+		{
+			return szWWWFolder + "/assets";
+		}
+
+		void CWebServer::Cmd_UploadWebAsset(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "UploadWebAsset";
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			std::string szName = request::findValue(&req, "name");
+			std::string szData = request::findValue(&req, "data"); // base64 encoded
+
+			if (szName.empty() || szData.empty())
+			{
+				root["error"] = "Missing name or data";
+				return;
+			}
+			if (!IsSafeWebAssetName(szName))
+			{
+				root["error"] = "Invalid asset name";
+				return;
+			}
+			if (!IsAllowedWebAssetType(szName))
+			{
+				root["error"] = "Unsupported asset type";
+				return;
+			}
+
+			std::string szContent = base64_decode(szData);
+			if (szContent.empty())
+			{
+				root["error"] = "Could not decode asset data";
+				return;
+			}
+			if (szContent.size() > WEB_ASSET_MAX_SIZE)
+			{
+				root["error"] = "Asset too large";
+				return;
+			}
+
+			const std::string szFolder = WebAssetFolder();
+			if (!WebAssetDirExists(szFolder))
+			{
+				mkdir_deep(szFolder.c_str(), 0755);
+				if (!WebAssetDirExists(szFolder))
+				{
+					root["error"] = "Could not create assets folder";
+					return;
+				}
+			}
+
+			const std::string szFile = szFolder + "/" + szName;
+			{
+				std::ofstream outfile(szFile.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
+				if (!outfile.is_open())
+				{
+					_log.Log(LOG_ERROR, "UploadWebAsset: could not write %s", szFile.c_str());
+					root["error"] = "Could not write asset";
+					return;
+				}
+				outfile.write(szContent.data(), static_cast<std::streamsize>(szContent.size()));
+			}
+
+			root["status"] = "OK";
+			root["path"] = "assets/" + szName;
+			root["size"] = static_cast<int>(szContent.size());   // capped well below INT_MAX
+		}
+
+		void CWebServer::Cmd_GetWebAssets(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "GetWebAssets";
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			root["status"] = "OK";
+
+			DIR* lDir = opendir(WebAssetFolder().c_str());
+			if (lDir == nullptr)
+				return; // no assets stored yet — an empty result is not an error
+
+			int ii = 0;
+			struct dirent* ent;
+			while ((ent = readdir(lDir)) != nullptr)
+			{
+				const std::string szFileName = ent->d_name;
+				if ((szFileName == ".") || (szFileName == ".."))
+					continue;
+				if (!IsAllowedWebAssetType(szFileName))
+					continue;
+				root["result"][ii]["name"] = szFileName;
+				root["result"][ii]["path"] = "assets/" + szFileName;
+				ii++;
+			}
+			closedir(lDir);
+		}
+
+		void CWebServer::Cmd_DeleteWebAsset(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "DeleteWebAsset";
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			std::string szName = request::findValue(&req, "name");
+			if (szName.empty() || !IsSafeWebAssetName(szName) || !IsAllowedWebAssetType(szName))
+			{
+				root["error"] = "Invalid asset name";
+				return;
+			}
+
+			const std::string szFile = WebAssetFolder() + "/" + szName;
+			if (!file_exist(szFile.c_str()))
+			{
+				root["error"] = "Asset not found";
+				return;
+			}
+			if (std::remove(szFile.c_str()) != 0)
+			{
+				root["error"] = "Could not remove asset";
+				return;
+			}
+			root["status"] = "OK";
+		}
+
 		void CWebServer::Cmd_RenameDevice(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != URIGHTS_ADMIN)
