@@ -5788,6 +5788,23 @@ namespace http
 					return;
 				}
 				outfile.write(szContent.data(), static_cast<std::streamsize>(szContent.size()));
+				outfile.flush();
+				if (!outfile.good())
+				{
+					outfile.close();
+					_log.Log(LOG_ERROR, "UploadWebAsset: write failed for %s", szFile.c_str());
+					std::remove(szFile.c_str());
+					root["error"] = "Could not write asset";
+					return;
+				}
+				outfile.close();
+				if (!outfile.good())
+				{
+					_log.Log(LOG_ERROR, "UploadWebAsset: close failed for %s", szFile.c_str());
+					std::remove(szFile.c_str());
+					root["error"] = "Could not write asset";
+					return;
+				}
 			}
 
 			root["status"] = "OK";
