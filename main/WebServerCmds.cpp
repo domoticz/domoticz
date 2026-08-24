@@ -5779,11 +5779,12 @@ namespace http
 			}
 
 			const std::string szFile = szFolder + "/" + szName;
+			const std::string szTmpFile = szFile + ".tmp";
 			{
-				std::ofstream outfile(szFile.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
+				std::ofstream outfile(szTmpFile.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
 				if (!outfile.is_open())
 				{
-					_log.Log(LOG_ERROR, "UploadWebAsset: could not write %s", szFile.c_str());
+					_log.Log(LOG_ERROR, "UploadWebAsset: could not write %s", szTmpFile.c_str());
 					root["error"] = "Could not write asset";
 					return;
 				}
@@ -5792,19 +5793,27 @@ namespace http
 				if (!outfile.good())
 				{
 					outfile.close();
-					_log.Log(LOG_ERROR, "UploadWebAsset: write failed for %s", szFile.c_str());
-					std::remove(szFile.c_str());
+					_log.Log(LOG_ERROR, "UploadWebAsset: write failed for %s", szTmpFile.c_str());
+					std::remove(szTmpFile.c_str());
 					root["error"] = "Could not write asset";
 					return;
 				}
 				outfile.close();
 				if (!outfile.good())
 				{
-					_log.Log(LOG_ERROR, "UploadWebAsset: close failed for %s", szFile.c_str());
-					std::remove(szFile.c_str());
+					_log.Log(LOG_ERROR, "UploadWebAsset: close failed for %s", szTmpFile.c_str());
+					std::remove(szTmpFile.c_str());
 					root["error"] = "Could not write asset";
 					return;
 				}
+			}
+
+			if (std::rename(szTmpFile.c_str(), szFile.c_str()) != 0)
+			{
+				_log.Log(LOG_ERROR, "UploadWebAsset: could not replace %s", szFile.c_str());
+				std::remove(szTmpFile.c_str());
+				root["error"] = "Could not write asset";
+				return;
 			}
 
 			root["status"] = "OK";
