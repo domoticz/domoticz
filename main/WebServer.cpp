@@ -590,6 +590,10 @@ namespace http
 			RegisterCommandCode("deletecustomicon", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteCustomIcon(session, req, root); });
 			RegisterCommandCode("updatecustomicon", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateCustomIcon(session, req, root); });
 
+			RegisterCommandCode("uploadwebasset", [this](auto&& session, auto&& req, auto&& root) { Cmd_UploadWebAsset(session, req, root); });
+			RegisterCommandCode("getwebassets", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetWebAssets(session, req, root); });
+			RegisterCommandCode("deletewebasset", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteWebAsset(session, req, root); });
+
 			RegisterCommandCode("renamedevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_RenameDevice(session, req, root); });
 			RegisterCommandCode("setdevused", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetDeviceUsed(session, req, root); });
 
