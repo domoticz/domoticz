@@ -4432,6 +4432,10 @@ namespace http
 				root["result"][ii]["imageSrc"] = icon.RootFile;
 				root["result"][ii]["text"] = icon.Title;
 				root["result"][ii]["description"] = icon.Description;
+				/* Font Awesome class for this built-in icon, empty for ZIP-uploaded
+				   ones. Added alongside imageSrc (never replacing it) so a client that
+				   does not know about FaClass keeps using the PNG. */
+				root["result"][ii]["FaClass"] = icon.FaClass;
 				ii++;
 			}
 			root["status"] = "OK";
@@ -5615,6 +5619,10 @@ namespace http
 					root["result"][ii]["IconFile16"] = IconFile16;
 					root["result"][ii]["IconFile48On"] = IconFile48On;
 					root["result"][ii]["IconFile48Off"] = IconFile48Off;
+					/* Always empty here: this command only lists ZIP-uploaded icons
+					   (idx >= 100), which have no font glyph. Emitted anyway so the
+					   field is present in every icon payload the UI consumes. */
+					root["result"][ii]["FaClass"] = icon.FaClass;
 					ii++;
 				}
 			}

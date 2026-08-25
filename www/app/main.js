@@ -85,7 +85,9 @@ require.config({
 		'dashboardDynamic/widgets/ddWeatherForecast.widget': 'dashboardDynamic/widgets/ddWeatherForecast.widget',
 		'dashboardDynamic/widgets/ddWindChart.widget':       'dashboardDynamic/widgets/ddWindChart.widget',
 		'dashboardDynamic/ddExportImport.controller':        'dashboardDynamic/ddExportImport.controller',
-		'dashboardDynamic/ddStatBar.directive':              'dashboardDynamic/ddStatBar.directive'
+		'dashboardDynamic/ddStatBar.directive':              'dashboardDynamic/ddStatBar.directive',
+		'icons/dzIconService':                               'icons/dzIconService',
+		'icons/dzDeviceIcon':                                'icons/dzDeviceIcon'
 	},
 	shim: {
 		'gridstack': { deps: ['jquery'] },
@@ -107,5 +109,7 @@ require.config({
 		'blockly-blocks': ['blockly'],
 		'blockly-msg-en': ['blockly']
 	},
-	deps: ['app', 'dzPicker.directive']
+	/* dzDeviceIcon pulls in dzIconService, and both must be registered on the
+	   module before any route template can use <dz-device-icon>. */
+	deps: ['app', 'dzPicker.directive', 'icons/dzDeviceIcon']
 });

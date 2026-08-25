@@ -4566,13 +4566,26 @@ namespace http
 					{
 						std::vector<std::string> results;
 						StringSplit(sLine, ";", results);
-						if (results.size() == 3)
+						/* Base;Name;Description with an OPTIONAL 4th field holding the
+						   Font Awesome class. Accepting >= 3 instead of == 3 keeps older
+						   switch_icons.txt files (and user edited ones) working: without
+						   the 4th field the icon simply has no font glyph and renders as
+						   the PNG, exactly as before. */
+						if (results.size() >= 3)
 						{
 							_tCustomIcon cImage;
 							cImage.idx = index++;
 							cImage.RootFile = results[0];
 							cImage.Title = results[1];
 							cImage.Description = results[2];
+							if (results.size() >= 4)
+							{
+								cImage.FaClass = results[3];
+								/* The file ships with CRLF line endings and getline() only
+								   strips the LF, so the last field on a line keeps the CR.
+								   This value ends up in a class attribute, so trim it. */
+								stdstring_trimws(cImage.FaClass);
+							}
 							m_custom_light_icons.push_back(cImage);
 							m_custom_light_icons_lookup[cImage.idx] = (int)m_custom_light_icons.size() - 1;
 						}

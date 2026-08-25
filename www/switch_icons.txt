@@ -1,38 +1,38 @@
-Light;Light/Switch;A Lamp or Switch
-WallSocket;Wall Socket;Power Wall Socket
-TV;Television;Television Screen
-Harddisk;Hard disk;Hard disk drive
-Printer;Printer;Printer
-Amplifier;Amplifier;Device that controls audio
-Computer;Computer Laptop;Personal Computer System
-Fan;Fan;Airflow Producer
-Speaker;Speaker;Audio Speaker
-Generic;Generic;Generic On/Off switch
-Fireplace;Fireplace;Fireplace
-Water;Water;Water
-Media;Media Player;Multi Media player
-Alarm;Alarm;Alarm
-ChristmasTree;Christmas Tree;Christmas Tree
-Heating;Heating;Heating device
-Cooling;Cooling;Cooling device
-ComputerPC;Computer PC;Personal Computer System
-Phone;Phone;Mobile Phone
-Sun;Sun;Sun
-Rain;Rain;Rain
-clock;Clock;Chronological device
-Irrigation;Irrigation;Irrigation Zone
-AC;Air Conditioner/HVAC;Air Conditioner/HVAC
-Coffee;Coffee Machine;Coffee Machine
-GLight;Garden Light;Garden Light
-Strip;LED Strip;LED Strip
-AirMeasure;Air Quality;Air Quality Measurement
-WashingMachine;Washer/Dryer;Washing or Drying Machine
-pool;Pool;Pool
-Charger;Charger;Charger
-Inverter;Inverter;Inverter
-Solar;Solar Panels;Solar Panels
-Soil;Soil;Soil Moisture Sensor
-Window;Window;Window
-Tap;Tap;Tap / Valve
-Radiator;Radiator;Radiator
-Pump;Pump;Pump / Ventilation
+Light;Light/Switch;A Lamp or Switch;fa-solid fa-lightbulb
+WallSocket;Wall Socket;Power Wall Socket;fa-solid fa-plug
+TV;Television;Television Screen;fa-solid fa-tv
+Harddisk;Hard disk;Hard disk drive;fa-solid fa-hard-drive
+Printer;Printer;Printer;fa-solid fa-print
+Amplifier;Amplifier;Device that controls audio;fa-solid fa-volume-high
+Computer;Computer Laptop;Personal Computer System;fa-solid fa-display
+Fan;Fan;Airflow Producer;fa-solid fa-fan
+Speaker;Speaker;Audio Speaker;fa-solid fa-volume-high
+Generic;Generic;Generic On/Off switch;fa-solid fa-toggle-on
+Fireplace;Fireplace;Fireplace;fa-solid fa-fire
+Water;Water;Water;fa-solid fa-droplet
+Media;Media Player;Multi Media player;fa-solid fa-play
+Alarm;Alarm;Alarm;fa-solid fa-bell
+ChristmasTree;Christmas Tree;Christmas Tree;fa-solid fa-tree
+Heating;Heating;Heating device;fa-solid fa-fire
+Cooling;Cooling;Cooling device;fa-solid fa-snowflake
+ComputerPC;Computer PC;Personal Computer System;fa-solid fa-computer
+Phone;Phone;Mobile Phone;fa-solid fa-phone
+Sun;Sun;Sun;fa-solid fa-sun
+Rain;Rain;Rain;fa-solid fa-cloud-showers-heavy
+clock;Clock;Chronological device;fa-solid fa-clock
+Irrigation;Irrigation;Irrigation Zone;fa-solid fa-hand-holding-droplet
+AC;Air Conditioner/HVAC;Air Conditioner/HVAC;fa-solid fa-snowflake
+Coffee;Coffee Machine;Coffee Machine;fa-solid fa-mug-hot
+GLight;Garden Light;Garden Light;fa-solid fa-lightbulb
+Strip;LED Strip;LED Strip;fa-solid fa-grip-lines
+AirMeasure;Air Quality;Air Quality Measurement;fa-solid fa-lungs
+WashingMachine;Washer/Dryer;Washing or Drying Machine;fa-solid fa-shirt
+pool;Pool;Pool;fa-solid fa-water-ladder
+Charger;Charger;Charger;fa-solid fa-charging-station
+Inverter;Inverter;Inverter;fa-solid fa-bolt
+Solar;Solar Panels;Solar Panels;fa-solid fa-solar-panel
+Soil;Soil;Soil Moisture Sensor;fa-solid fa-seedling
+Window;Window;Window;fa-solid fa-window-maximize
+Tap;Tap;Tap / Valve;fa-solid fa-faucet
+Radiator;Radiator;Radiator;fa-solid fa-fire-flame-curved
+Pump;Pump;Pump / Ventilation;fa-solid fa-pump-soap
