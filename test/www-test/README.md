@@ -2,7 +2,7 @@
 
 This folder contains the unit tests for components in www.
 
-_Be warned! This is a work in progres._
+_Be warned! This is a work in progress._
 
 ## Tooling
 
