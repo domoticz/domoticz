@@ -1,83 +1,67 @@
-define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
+define(['app', 'icons/dzIconPicker', 'components/rgbw-picker/RgbwPicker'], function (app) {
 
+    /* The switch icon selector. ng-model still carries CustomImage, so the
+       template keeps working unchanged; icon-json is optional and carries the
+       per-device Icon (a Font Awesome or icon library glyph) when the caller
+       wants that too. */
     app.component('deviceIconSelect', {
-        template: '<select id="icon-select"></select>',
+        template:
+            '<dz-icon-picker custom-image="$ctrl.customImage" icon="$ctrl.iconJson"' +
+            ' default-image="$ctrl.defaultImage" allow-glyphs="$ctrl.allowGlyphs"' +
+            ' on-change="$ctrl.onPicked(customImage, icon)"></dz-icon-picker>',
         bindings: {
-            switchType: '<'
+            switchType: '<',
+            iconJson: '=?'
         },
         require: {
             ngModelCtrl: 'ngModel'
         },
-        controller: function ($element, domoticzApi, dzDefaultSwitchIcons) {
+        controller: function ($attrs, dzDefaultSwitchIcons) {
             var vm = this;
-            var switch_icons = [];
 
-            function updateSelector(bFromUser) {
-                switch_icons[0].imageSrc = dzDefaultSwitchIcons[vm.switchType]
-                    ? 'images/' + dzDefaultSwitchIcons[vm.switchType][0]
-                    : 'images/Generic48_On.png';
-
-                $element.find('#icon-select').ddslick('destroy');
-                $element.find('#icon-select').ddslick({
-                    data: switch_icons,
-                    width: 260,
-                    height: 390,
-                    selectText: 'Select Switch Icon',
-                    imagePosition: 'left',
-                    onSelected: function (data) {
-                        vm.ngModelCtrl.$setViewValue(data.selectedData.value);
-                    }
-                });
-                if (bFromUser) {
-					$element.find('#icon-select').ddslick('select', { index: 0 });
-				}
-
-                vm.ngModelCtrl.$render();
-            }
+            vm.onPicked = onPicked;
 
             vm.$onInit = function () {
-                // TODO: Add caching mechanism for this request
-                domoticzApi.sendCommand('custom_light_icons', {
-                }).then(function (data) {
-                    switch_icons = (data.result || [])
-                        .filter(function (item) {
-                            return item.idx !== 0;
-                        })
-                        .map(function (item) {
-                            return {
-                                text: item.text,
-                                value: item.idx,
-                                selected: false,
-                                description: item.description,
-                                imageSrc: 'images/' + item.imageSrc + '48_On.png'
-                            };
-                        });
-
-                    switch_icons.unshift({
-                        text: 'Default',
-                        value: 0,
-                        selected: false,
-                        description: 'Default icon'
-                    });
-
-                    updateSelector(false);
-                });
+                /* Without icon-json there is nowhere to put a glyph, so only the
+                   icon set is offered and the component behaves as it always
+                   did. */
+                vm.allowGlyphs = $attrs.iconJson !== undefined;
+                vm.customImage = parseInt(vm.ngModelCtrl.$modelValue, 10) || 0;
+                vm.defaultImage = defaultImage();
 
                 vm.ngModelCtrl.$render = function () {
-                    var value = vm.ngModelCtrl.$modelValue;
-
-                    switch_icons.forEach(function (item, index) {
-                        if (item.value === value) {
-                            $element.find('#icon-select').ddslick('select', { index: index });
-                        }
-                    });
+                    vm.customImage = parseInt(vm.ngModelCtrl.$modelValue, 10) || 0;
                 };
             };
 
             vm.$onChanges = function (changes) {
-                if (changes.switchType && switch_icons.length > 0) {
-                    updateSelector(true);
+                if (!changes.switchType) {
+                    return;
                 }
+
+                vm.defaultImage = defaultImage();
+
+                /* The old dropdown reset itself to Default whenever the switch
+                   type changed, because the icon a type falls back to changes
+                   with it. Keep that, and clear the glyph along with it so the
+                   two cannot disagree. Going from no type to a type is the
+                   initial load, not a user edit. */
+                var previous = changes.switchType.previousValue;
+                if (!changes.switchType.isFirstChange() && previous !== undefined && previous !== null) {
+                    onPicked(0, '');
+                }
+            };
+
+            function defaultImage() {
+                return dzDefaultSwitchIcons[vm.switchType]
+                    ? 'images/' + dzDefaultSwitchIcons[vm.switchType][0]
+                    : 'images/Generic48_On.png';
+            }
+
+            function onPicked(customImage, icon) {
+                vm.customImage = customImage;
+                vm.iconJson = icon;
+                vm.ngModelCtrl.$setViewValue(customImage);
             }
         }
     });
@@ -616,6 +600,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
                 addjvalue: vm.device.AddjValue,
                 addjvalue2: vm.device.AddjValue2,
                 customimage: vm.device.CustomImage,
+                icon: vm.device.Icon || '',
                 switchtype: vm.device.SwitchTypeVal,
                 used: true
             };

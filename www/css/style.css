@@ -3271,3 +3271,104 @@ dz-temp-bar {
     border-radius: 1px;
     z-index: 1;
 }
+
+/* ── Icon picker ─────────────────────────────────────────── */
+dz-icon-picker {
+    display: block;
+}
+.dz-icon-picker {
+    max-width: 380px;
+    text-align: left;
+    font-size: 12px;
+}
+.dz-icon-picker-current {
+    display: flex;
+    align-items: center;
+}
+.dz-icon-picker-preview {
+    width: 26px;
+    min-width: 26px;
+    height: 26px;
+    line-height: 26px;
+    text-align: center;
+    font-size: 19px;
+}
+.dz-icon-picker-preview img {
+    max-width: 24px;
+    max-height: 24px;
+    vertical-align: middle;
+}
+.dz-icon-picker-name {
+    flex: 1 1 auto;
+    margin: 0 6px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.dz-icon-picker-panel {
+    margin-top: 4px;
+    padding: 4px;
+    border: 1px solid var(--dz-input-border, #ccc);
+    border-radius: 4px;
+}
+.dz-icon-picker-sources a,
+.dz-icon-picker-off a {
+    margin: 0 2px 2px 0;
+}
+.dz-icon-picker-tools {
+    display: flex;
+    align-items: center;
+    margin: 2px 0;
+}
+.dz-icon-picker-search {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 2px 4px;
+    margin: 0;
+}
+.dz-icon-picker-style {
+    width: auto;
+    margin: 0 0 0 4px;
+}
+.dz-icon-picker-grid {
+    max-height: 176px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.dz-icon-picker-tile {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+    margin: 0 2px 2px 0;
+    text-align: center;
+    font-size: 18px;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.dz-icon-picker-tile:hover {
+    background: var(--dz-btn-hover-bg, #e0e0e0);
+}
+.dz-icon-picker-tile.selected {
+    border-color: var(--dz-accent-color, #337ab7);
+    background: var(--dz-btn-hover-bg, #e0e0e0);
+}
+.dz-icon-picker-tile img {
+    max-width: 24px;
+    max-height: 24px;
+    vertical-align: middle;
+}
+.dz-icon-picker-default,
+.dz-icon-picker-note,
+.dz-icon-picker-off {
+    margin-top: 3px;
+}
+.dz-icon-picker-off-label {
+    display: inline;
+    margin-right: 4px;
+    font-weight: normal;
+}
+.dz-icon-picker-off-label input {
+    margin-right: 3px;
+}

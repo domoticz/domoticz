@@ -87,7 +87,8 @@ require.config({
 		'dashboardDynamic/ddExportImport.controller':        'dashboardDynamic/ddExportImport.controller',
 		'dashboardDynamic/ddStatBar.directive':              'dashboardDynamic/ddStatBar.directive',
 		'icons/dzIconService':                               'icons/dzIconService',
-		'icons/dzDeviceIcon':                                'icons/dzDeviceIcon'
+		'icons/dzDeviceIcon':                                'icons/dzDeviceIcon',
+		'icons/dzIconPicker':                                'icons/dzIconPicker'
 	},
 	shim: {
 		'gridstack': { deps: ['jquery'] },

@@ -1,8 +1,16 @@
-﻿define(['app', 'livesocket', 'widgets/dzUtilityWidget', 'widgets/dzBar'], function (app) {
+﻿define(['app', 'livesocket', 'widgets/dzUtilityWidget', 'widgets/dzBar', 'icons/dzIconPicker'], function (app) {
 
 
-	app.controller('UtilityController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$timeout', '$route', '$routeParams', 'deviceApi', 'domoticzApi', 'permissions', 'livesocket', 'dzBarService', function ($scope, $rootScope, $location, $http, $interval, $timeout, $route, $routeParams, deviceApi, domoticzApi, permissions, livesocket, dzBarService) {
+	app.controller('UtilityController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$timeout', '$route', '$routeParams', 'deviceApi', 'domoticzApi', 'permissions', 'livesocket', 'dzBarService', 'dzIconPickerService', function ($scope, $rootScope, $location, $http, $interval, $timeout, $route, $routeParams, deviceApi, domoticzApi, permissions, livesocket, dzBarService, dzIconPickerService) {
 		var $element = $('#main-view #utilitycontent').last();
+
+		// What the icon picker in the currently open dialog has selected:
+		// customimage for an entry of the icon set, icon for a Font Awesome or
+		// icon library glyph. Only one of the two is ever filled in.
+		function iconParams() {
+			return '&customimage=' + dzIconPickerService.getCustomImage() +
+				'&icon=' + encodeURIComponent(dzIconPickerService.getIcon());
+		}
 
 		$.strPad = function (i, l, s) {
 			var o = i.toString();
@@ -19,6 +27,9 @@
 			});
 		};
 
+		// The dialogs read their icon from the picker now, but $.ddData is a
+		// global that the Thermostat Mode dialog still feeds to ddslick, so it
+		// keeps being filled.
 		LoadCustomIcons = function () {
 			$.ddData = [];
 			$.ddData.push({
@@ -248,9 +259,8 @@
 					var url = "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editutilitydevice #devicedescription").val());
-					var ddData = $('#dialog-editutilitydevice #combosensoricon').data('ddslick');
-					if ($('#dialog-editutilitydevice').data('dzShowIcon') === true && ddData) {
-						url += '&customimage=' + $.ddData[ddData.selectedIndex].value;
+					if ($('#dialog-editutilitydevice').data('dzShowIcon') === true) {
+						url += iconParams();
 					}
 					if ($('#dialog-editutilitydevice').data('dzShowBar') === true) {
 						url += '&color=' + encodeURIComponent(dzBarService.getColorJson());
@@ -313,13 +323,11 @@
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-edittextdevice #devicename"), 2, 100);
 				if (bValid) {
-					var ddData = $('#dialog-edittextdevice #combosensoricon').data('ddslick');
-					var CustomImage = ddData ? $.ddData[ddData.selectedIndex].value : 0;
 					$(this).dialog("close");
 					$.ajax({
 						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-edittextdevice #devicename").val()) +
-						'&customimage=' + CustomImage +
+						iconParams() +
 						'&text=' + encodeURIComponent($("#dialog-edittextdevice #devicetext").val()) +
 						'&description=' + encodeURIComponent($("#dialog-edittextdevice #devicedescription").val()) +
 						'&ShowIcon=' + ($("#dialog-edittextdevice #deviceshowicon").is(':checked') ? '1' : '0') +
@@ -384,15 +392,13 @@
 				}
 				$(this).dialog("close");
 				var soptions = $.sensorType + ";" + encodeURIComponent($("#dialog-editcustomsensordevice #sensoraxis").val());
-				var cval = $('#dialog-editcustomsensordevice #combosensoricon').data('ddslick').selectedIndex;
-				var CustomImage = $.ddData[cval].value;
 
 				$.ajax({
 					url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 					'&name=' + encodeURIComponent($("#dialog-editcustomsensordevice #devicename").val()) +
 					'&description=' + encodeURIComponent($("#dialog-editcustomsensordevice #devicedescription").val()) +
 					'&switchtype=0' +
-					'&customimage=' + CustomImage +
+					iconParams() +
 					'&devoptions=' + encodeURIComponent(soptions) +
 					'&color=' + encodeURIComponent(dzBarService.getColorJson()) +
 					'&used=true',
@@ -447,16 +453,13 @@
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-editdistancedevice #devicename"), 2, 100);
 				if (bValid) {
-					var cval = $('#dialog-editdistancedevice #combosensoricon').data('ddslick').selectedIndex;
-					var CustomImage = $.ddData[cval].value;
-					
 					$(this).dialog("close");
 					$.ajax({
 						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-editdistancedevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editdistancedevice #devicedescription").val()) +
 						'&switchtype=' + $("#dialog-editdistancedevice #combometertype").val() +
-						'&customimage=' + CustomImage +
+						iconParams() +
 						'&color=' + encodeURIComponent(dzBarService.getColorJson()) +
 						'&used=true',
 						async: false,
@@ -512,8 +515,6 @@
 				if (bValid) {
 					var meteroffset = $("#dialog-editmeterdevice #meteroffset").val();
 					var meterdivider = $("#dialog-editmeterdevice #meterdivider").val();
-					var cval = $('#dialog-editmeterdevice #combosensoricon').data('ddslick').selectedIndex;
-					var CustomImage = $.ddData[cval].value;
 					if (meterType == 3) //Counter
 					{
 						devOptions.push("ValueQuantity:");
@@ -532,7 +533,7 @@
 						'&switchtype=' + meterType +
 						'&addjvalue=' + meteroffset +
 						'&addjvalue2=' + meterdivider +
-						'&customimage=' + CustomImage +
+						iconParams() +
 						'&color=' + encodeURIComponent(dzBarService.getColorJson()) +
 						'&used=true' +
 						'&options=' + b64EncodeUnicode(devOptionsParam.join('')),
@@ -589,15 +590,13 @@
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-editenergydevice #devicename"), 2, 100);
 				if (bValid) {
-					var cval = $('#dialog-editenergydevice #combosensoricon').data('ddslick').selectedIndex;
-					var CustomImage = $.ddData[cval].value;
 					$(this).dialog("close");
 					$.ajax({
 						url: "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-editenergydevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editenergydevice #devicedescription").val()) +
 						'&switchtype=' + $("#dialog-editenergydevice #combometertype").val() + '&EnergyMeterMode=' + $("#dialog-editenergydevice input:radio[name=EnergyMeterMode]:checked").val() +
-						'&customimage=' + CustomImage +
+						iconParams() +
 						'&color=' + encodeURIComponent(dzBarService.getColorJson()) +
 						'&used=true',
 						async: false,
@@ -655,8 +654,6 @@
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-editsetpointdevice #devicename"), 2, 100);
 				if (bValid) {
-					var cval = $('#dialog-editsetpointdevice #combosensoricon').data('ddslick').selectedIndex;
-					var CustomImage = $.ddData[cval].value;
 					$(this).dialog("close");
 					
 					var devOptions = [];
@@ -680,7 +677,7 @@
 						'&description=' + encodeURIComponent($("#dialog-editsetpointdevice #devicedescription").val()) +
 						'&options=' + b64EncodeUnicode(devOptions.join('')) +
 						'&protected=' + $('#dialog-editsetpointdevice #protected').is(":checked") +
-						'&customimage=' + CustomImage +
+						iconParams() +
 						'&color=' + encodeURIComponent(dzBarService.getColorJson()) +
 						'&used=true',
 						async: false,
@@ -737,8 +734,6 @@
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-editthermostatclockdevice #devicename"), 2, 100);
 				if (bValid) {
-					var cval = $('#dialog-editthermostatclockdevice #combosensoricon').data('ddslick').selectedIndex;
-					var CustomImage = $.ddData[cval].value;
 					$(this).dialog("close");
 					bootbox.alert($.t('Setting the Clock is not finished yet!'));
 					var daytimestr = $("#dialog-editthermostatclockdevice #comboclockday").val() + ";" + $("#dialog-editthermostatclockdevice #clockhour").val() + ";" + $("#dialog-editthermostatclockdevice #clockminute").val();
@@ -748,7 +743,7 @@
 						'&description=' + encodeURIComponent($("#dialog-editthermostatclockdevice #devicedescription").val()) +
 						'&clock=' + encodeURIComponent(daytimestr) +
 						'&protected=' + $('#dialog-editthermostatclockdevice #protected').is(":checked") +
-						'&customimage=' + CustomImage +
+						iconParams() +
 						'&used=true',
 						async: false,
 						dataType: 'json',
