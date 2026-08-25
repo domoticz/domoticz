@@ -24,7 +24,7 @@
                     ng-repeat="cat in ctrl.categories track by cat.key"
                     ng-class="{ 'dd-cat-tab--active': ctrl.activeCategory === cat.key }"
                     ng-click="ctrl.activeCategory = cat.key">
-                <img ng-src="{{ cat.icon }}" width="14" height="14" alt="">
+                <i class="dz-icon-glyph dz-icon-16" ng-class="cat.icon"></i>
                 {{ cat.label }}
                 <span class="dd-cat-badge">{{ cat.devices.length }}</span>
             </button>

@@ -11,7 +11,7 @@
                 <td id="bigtext">
                     <span>{{ctrl.getStatusText()}}</span>
                     <a ng-if="ctrl.device.UsedByCamera" ng-click="ctrl.showCameraStream()" class="lcursor">
-                        <img src="images/webcam.png" height="16" width="16" data-i18n="[title]Stream Video">
+                        <i class="dz-icon-glyph dz-icon-16 fa-solid fa-video" data-i18n="[title]Stream Video"></i>
                     </a>
                 </td>
 
@@ -30,18 +30,22 @@
                          height="40" width="40" data-i18n="[title]Open Blinds">
 
                     <!-- Media Player main icon -->
-                    <img ng-if="ctrl.isMediaPlayer()"
-                         ng-src="{{ctrl.getMediaPlayerIcon()}}"
-                         ng-click="ctrl.switchLight(ctrl.isMediaPlayerActive() ? 'Off' : 'On')"
-                         ng-class="{'lcursor': !ctrl.isMediaPlayerDisconnected()}"
-                         height="40" width="40">
+                    <dz-device-icon ng-if="ctrl.isMediaPlayer()"
+                                    class="dz-icon-40"
+                                    device="ctrl.device"
+                                    is-active="ctrl.isMediaPlayerActive()"
+                                    fallback-src="ctrl.getMediaPlayerIcon()"
+                                    ng-click="ctrl.switchLight(ctrl.isMediaPlayerActive() ? 'Off' : 'On')"
+                                    ng-class="{'lcursor': !ctrl.isMediaPlayerDisconnected()}"></dz-device-icon>
 
                     <!-- All other devices: single toggling icon -->
-                    <img ng-if="!ctrl.isBlinds() && !ctrl.isEvohome() && !ctrl.isMediaPlayer()"
-                         ng-src="{{ctrl.getDeviceIcon()}}"
-                         ng-click="ctrl.deviceIconClick($event)"
-                         ng-class="{'lcursor': ctrl.isClickable()}"
-                         height="40" width="40">
+                    <dz-device-icon ng-if="!ctrl.isBlinds() && !ctrl.isEvohome() && !ctrl.isMediaPlayer()"
+                                    class="dz-icon-40"
+                                    device="ctrl.device"
+                                    is-active="ctrl.iconState()"
+                                    fallback-src="ctrl.getDeviceIcon()"
+                                    ng-click="ctrl.deviceIconClick($event)"
+                                    ng-class="{'lcursor': ctrl.isClickable()}"></dz-device-icon>
                 </td>
 
                 <!-- Blinds stop button (td#img2) -->

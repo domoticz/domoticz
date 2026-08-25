@@ -1,4 +1,4 @@
-define(['app', 'widgets/dzBar', 'icons/dzIconPicker'], function (app) {
+define(['app', 'widgets/dzBar', 'icons/dzIconPicker', 'icons/dzDeviceIcon'], function (app) {
 
     app.factory('utilityEditService', ['dzBarService', 'dzIconPickerService', function (dzBarService, dzIconPickerService) {
 
@@ -268,7 +268,7 @@ define(['app', 'widgets/dzBar', 'icons/dzIconPicker'], function (app) {
         };
     }]);
 
-    app.directive('dzUtilityWidget', ['$rootScope', '$sce', 'deviceApi', 'permissions', 'utilityEditService', function ($rootScope, $sce, deviceApi, permissions, utilityEditService) {
+    app.directive('dzUtilityWidget', ['$rootScope', '$sce', 'deviceApi', 'permissions', 'utilityEditService', 'dzIconService', function ($rootScope, $sce, deviceApi, permissions, utilityEditService, dzIconService) {
         return {
             restrict: 'E',
             replace: true,
@@ -582,6 +582,27 @@ define(['app', 'widgets/dzBar', 'icons/dzIconPicker'], function (app) {
                     var status = ctrl.getStatusText();
                     if (bigtext && status) return bigtext + '<br />' + status;
                     return bigtext || status;
+                };
+
+                /* Some of these icons are not a picture of the device, they are a
+                   reading: the alert level picks one of five Alert48_n.png, the
+                   wind direction picks one of sixteen arrows, and a temperature
+                   picks a PNG per range. One glyph per device type cannot say any
+                   of that, and none of these has ever honoured CustomImage
+                   either, so they keep the image unless an icon was chosen for
+                   the device by hand. */
+                ctrl.isValueDrivenIcon = function () {
+                    return ctrl.isAlert()
+                        || typeof device.Direction !== 'undefined'
+                        || typeof device.Temp !== 'undefined'
+                        || typeof device.Chill !== 'undefined';
+                };
+
+                /* The trend arrows are UI chrome, keyed in the resolver by their
+                   PNG name, so ask for the class instead of repeating the four
+                   arrow names here. */
+                ctrl.getTrendIcon = function () {
+                    return dzIconService.chromeIconFor('images/arrow_' + ctrl.trendState(device.trend) + '.png');
                 };
 
                 ctrl.getDeviceIcon = function () {

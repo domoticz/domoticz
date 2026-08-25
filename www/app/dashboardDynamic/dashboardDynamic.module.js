@@ -1,4 +1,4 @@
-define(['app'], function(app) {
+define(['app', 'icons/dzIconService'], function(app) {
     'use strict';
 
     /**
@@ -23,7 +23,12 @@ define(['app'], function(app) {
      *   'dz-scene-widget'   — scenes and groups
      *   'dz-utility-widget' — temperature, humidity, weather, meters, counters, …
      */
-    app.factory('ddDeviceClassifier', [function() {
+    app.factory('ddDeviceClassifier', ['dzIconService', function(dzIconService) {
+
+        /* autoDeviceIcon() is synchronous, so it can only see the Font Awesome
+           classes of the built-in icon set once they have been fetched. Start
+           that now rather than one request behind the first widget refresh. */
+        dzIconService.preloadBuiltinIcons();
 
         function getDirective(device) {
             if (!device) { return null; }
@@ -80,6 +85,16 @@ define(['app'], function(app) {
         };
 
         function autoDeviceIcon(d) {
+            /* Ask dzIconService first, so Dashboard 2.0 shows the icon the user
+               picked for the device and the same type defaults the classic
+               widgets use. The heuristics below stay as the fallback: they cover
+               readings such as temperature and rain, which the resolver answers
+               with a PNG because those have no single glyph. */
+            var resolved = d ? dzIconService.resolve(d) : null;
+            if (resolved && resolved.kind === 'font') {
+                return resolved.cls;
+            }
+
             var type = (d.Type || '').toLowerCase();
             if (d.Temp !== undefined)                                           { return 'fa-solid fa-temperature-half'; }
             if (d.Humidity !== undefined)                                       { return 'fa-solid fa-droplet'; }

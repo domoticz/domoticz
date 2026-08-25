@@ -370,7 +370,14 @@ define(['app', 'livesocket'], function(app) {
             }
 
             function iconRenderer(value, type, device) {
-                var itemImage = '<img src="' + device.icon.getIcon() + '" width="16" height="16">';
+                /* The table is built as an HTML string, so the two shapes the
+                   resolver can return have to be spelled out here. The class is
+                   safe to inline: dzIconService only ever returns one it has
+                   validated against its own character whitelist. */
+                var icon = device.icon.resolve();
+                var itemImage = icon.kind === 'font'
+                    ? '<i class="dz-icon-glyph dz-icon-16 ' + icon.cls + '"></i>'
+                    : '<img src="' + icon.src + '" width="16" height="16">';
 
                 var isToggleAvailable =
                     (['Light/Switch', 'Lighting 2'].includes(device.Type) && [0, 7, 9, 10].includes(device.SwitchTypeVal))

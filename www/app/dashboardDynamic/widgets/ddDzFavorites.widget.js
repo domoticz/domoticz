@@ -50,8 +50,8 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$q', 'ddDeviceClassifier',
-                function($scope, $http, $q, ddDeviceClassifier) {
+            controller: ['$scope', '$http', '$q', 'ddDeviceClassifier', 'dzIconService',
+                function($scope, $http, $q, ddDeviceClassifier, dzIconService) {
                 var ctrl = this;
                 ctrl.categories     = [];
                 ctrl.activeCategory = null;
@@ -59,11 +59,14 @@ define([
                 ctrl.loading        = false;
                 ctrl.error          = null;
 
+                /* The tab strip icons are the same UI chrome the navbar uses, so
+                   take the class from the resolver's PNG-to-glyph table instead
+                   of writing a second copy of it here. */
                 var CATEGORY_DEFS = [
                     {
                         key:  'lights',
                         label: 'Switches',
-                        icon:  'images/lightbulb.png',
+                        icon:  dzIconService.chromeIconFor('images/lightbulb.png'),
                         test:  function(d) {
                             return ddDeviceClassifier.getDirective(d) === 'dz-light-widget';
                         }
@@ -71,7 +74,7 @@ define([
                     {
                         key:  'temp',
                         label: 'Temperature',
-                        icon:  'images/temperature.png',
+                        icon:  dzIconService.chromeIconFor('images/temperature.png'),
                         test:  function(d) {
                             return d.Temp !== undefined || d.Humidity !== undefined;
                         }
@@ -79,7 +82,7 @@ define([
                     {
                         key:  'weather',
                         label: 'Weather',
-                        icon:  'images/rain.png',
+                        icon:  dzIconService.chromeIconFor('images/rain.png'),
                         test:  function(d) {
                             return d.Rain !== undefined || d.Barometer !== undefined ||
                                    d.Direction !== undefined || d.UVI !== undefined;
@@ -88,7 +91,7 @@ define([
                     {
                         key:  'utility',
                         label: 'Utility',
-                        icon:  'images/utility.png',
+                        icon:  dzIconService.chromeIconFor('images/utility.png'),
                         test:  function(d) {
                             return ddDeviceClassifier.getDirective(d) === 'dz-utility-widget' &&
                                    d.Temp === undefined && d.Rain === undefined;
@@ -169,7 +172,7 @@ define([
                                     newCategories.push({
                                         key:     'scenes',
                                         label:   'Scenes',
-                                        icon:    'images/scenes.png',
+                                        icon:    dzIconService.chromeIconFor('images/scenes.png'),
                                         devices: favScenes
                                     });
                                 }

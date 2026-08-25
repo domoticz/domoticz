@@ -361,6 +361,83 @@ define(['app'], function (app) {
                     bootbox.alert(modalContent);
                 };
 
+                /* While a dim slider is being dragged the card previews the level
+                   it is about to land on. Held as state instead of rewriting the
+                   <img> src the way it used to be done, so the preview works the
+                   same whether the card ends up drawing a PNG or a glyph.
+                   null means "not dragging". */
+                ctrl.dragActive = null;
+
+                function iconActive(actual) {
+                    return ctrl.dragActive === null ? actual : ctrl.dragActive;
+                }
+
+                /* Whether the icon should be drawn in its on state, which is the
+                   same choice getDeviceIcon() makes between the On and the Off
+                   PNG. Several switch types do not read it off Status: a contact
+                   reports 'Open', a lock reports InternalState, and a push button
+                   is fixed to one state. Returns null for the types that have a
+                   single icon, where on and off mean nothing, so the card shows
+                   no state rather than an invented one.
+                   dz-device-icon turns this into dz-icon--on / dz-icon--off,
+                   which is what tells a glyph's two states apart. */
+                ctrl.iconState = function () {
+                    if (ctrl.dragActive !== null) {
+                        return ctrl.dragActive;
+                    }
+                    var status = device.Status || '';
+
+                    if (device.SwitchType == 'Doorbell') {
+                        return null;
+                    }
+                    if (device.SwitchType == 'Dusk Sensor') {
+                        return status == 'On';
+                    }
+                    if (device.SubType == 'Security Panel') {
+                        return null;
+                    }
+                    if (device.SwitchType == 'TPI') {
+                        return status != 'Off';
+                    }
+                    if (device.SubType && (
+                        device.SubType.indexOf('Itho') == 0 ||
+                        device.SubType.indexOf('Orcon') == 0 ||
+                        device.SubType.indexOf('Lucci') == 0 ||
+                        device.SubType.indexOf('Falmec') == 0 ||
+                        device.SubType.indexOf('Westinghouse') == 0
+                    )) {
+                        return null;
+                    }
+                    if (device.Type == 'Security') {
+                        if (device.SubType && device.SubType.indexOf('remote') > 0) {
+                            return null;
+                        }
+                        if (device.SubType == 'X10 security') {
+                            return status.indexOf('Normal') < 0;
+                        }
+                        if (device.SubType == 'X10 security motion') {
+                            return status != 'No Motion';
+                        }
+                        if (status.indexOf('Alarm') >= 0 || status.indexOf('Tamper') >= 0) {
+                            return true;
+                        }
+                        return null;
+                    }
+                    if (device.SwitchType == 'Door Lock' || device.SwitchType == 'Door Lock Inverted') {
+                        return device.InternalState == 'Unlocked';
+                    }
+                    if (device.SwitchType == 'Contact' || device.SwitchType == 'Door Contact') {
+                        return status == 'Open';
+                    }
+                    if (device.SwitchType == 'Push On Button') {
+                        return true;
+                    }
+                    if (device.SwitchType == 'Push Off Button') {
+                        return false;
+                    }
+                    return ctrl.isActive();
+                };
+
                 ctrl.getDeviceIcon = function () {
                     // Special types with non-standard icon naming
                     if (device.SwitchType == 'Doorbell') {
@@ -389,7 +466,7 @@ define(['app'], function (app) {
 
                     // TPI uses Fireplace images
                     if (device.SwitchType == 'TPI') {
-                        return device.Status != 'Off' ? 'images/Fireplace48_On.png' : 'images/Fireplace48_Off.png';
+                        return iconActive(device.Status != 'Off') ? 'images/Fireplace48_On.png' : 'images/Fireplace48_Off.png';
                     }
 
                     // Fan subtypes always show Fan48_On.png
@@ -469,7 +546,7 @@ define(['app'], function (app) {
                         return 'images/' + image + '48_Off.png';
                     }
 
-                    return 'images/' + image + '48_' + (ctrl.isActive() ? 'On' : 'Off') + '.png';
+                    return 'images/' + image + '48_' + (iconActive(ctrl.isActive()) ? 'On' : 'Off') + '.png';
                 };
 
                 ctrl.getTableId = function () {
@@ -851,25 +928,20 @@ define(['app'], function (app) {
                                     var deviceElem = element.closest('.itemBlock');
                                     if (deviceElem.length > 0) {
                                         var bigtext = fPercentage + " %";
-                                        scope.$apply(function() { scope.ctrl.dragText = bigtext; });
+                                        scope.$apply(function() {
+                                            scope.ctrl.dragText = bigtext;
 
-                                        // Update icon for non-blinds non-LED dimmers
-                                        if ((dtype != "blinds") && !isled) {
-                                            var imgElem = deviceElem.find('#img img.lcursor');
-                                            if (imgElem.length > 0) {
-                                                var imgname = imgElem.attr('src');
-                                                if (imgname) {
-                                                    imgname = imgname.substring(imgname.lastIndexOf("/") + 1, imgname.lastIndexOf("_O") + 2);
-                                                    if (dtype == "relay")
-                                                        imgname = "Fireplace48_O";
-
-                                                    var newSrc = fPercentage == 0 ?
-                                                        'images/' + imgname + 'ff.png' :
-                                                        'images/' + imgname + 'n.png';
-                                                    imgElem.attr('src', newSrc);
-                                                }
+                                            /* Preview the state the icon lands on
+                                               for non-blinds non-LED dimmers. This
+                                               used to rewrite the <img> src by
+                                               swapping _On for _Off in the file
+                                               name, which only worked for PNGs;
+                                               the flag lets the icon component
+                                               decide what to draw. */
+                                            if ((dtype != "blinds") && !isled) {
+                                                scope.ctrl.dragActive = fPercentage != 0;
                                             }
-                                        }
+                                        });
                                     }
                                     if (dtype != "relay")
                                         $.setDimValue = setTimeout(function () { scope.ctrl.setDimLevel(ui.value); }, 500);
@@ -943,6 +1015,7 @@ define(['app'], function (app) {
                 // Update slider/selectmenu value when device.LevelInt changes (e.g. WebSocket updates)
                 scope.$watch('device.LevelInt', function(newVal) {
                     scope.ctrl.dragText = null;
+                    scope.ctrl.dragActive = null;
                     if (typeof newVal !== 'undefined') {
                         element.find('.dimslider').each(function() {
                             var $slider = $(this);
