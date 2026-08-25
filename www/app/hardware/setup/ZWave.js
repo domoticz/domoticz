@@ -888,18 +888,18 @@ define(['app'], function (app) {
 					$("#ownNodeId").val(String(data.ownNodeId));
 
 					$.each(data.result, function (i, item) {
-						var status = "ok";
+						var statusIcon = "fa-solid fa-circle-check";
 						if (item.State === "Dead") {
-							status = "failed";
+							statusIcon = "fa-solid fa-circle-xmark";
 						}
 						else if ((item.State === "Sleep") || (item.State === "Sleeping")) {
-							status = "sleep";
+							statusIcon = "fa-solid fa-moon";
 						}
 						else if (item.State === "Unknown") {
-							status = "unknown";
+							statusIcon = "fa-solid fa-circle-question";
 						}
-						var statusImg = '<img src="images/' + status + '.png" />';
-						var healButton = '<img src="images/heal.png" onclick="ZWaveHealNode(' + item.NodeID + ')" class="lcursor" title="' + $.t("Heal node") + '" />';
+						var statusImg = '<i class="' + statusIcon + ' dz-chrome-icon"></i>';
+						var healButton = '<i class="fa-solid fa-heart-pulse dz-chrome-icon lcursor" onclick="ZWaveHealNode(' + item.NodeID + ')" title="' + $.t("Heal node") + '"></i>';
 						var Description = item.Product_name;
 						if (item.Product_id == "0x0000") {
 							Description = '<span class="zwave_no_info">' + item.Generic_type + '</span>';

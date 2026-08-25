@@ -1,6 +1,7 @@
 define(function() {
     return {
         addTrendData: addTrendData,
+        trendIconHtml: trendIconHtml,
         addOneYear: addOneYear,
         formatContractMonthLabel: formatContractMonthLabel,
         exportTableToExcel: exportTableToExcel,
@@ -134,5 +135,16 @@ define(function() {
                 trend: trend
             });
         });
+    }
+
+    /* The glyph for a trend cell, as the '<>' column renders it.
+       The 'g' images this replaces drew a sloping trend arrow where the plain
+       ones drew a straight one, so a generation report keeps that difference. */
+    function trendIconHtml(trend, isGeneration) {
+        var icons = isGeneration
+            ? { up: 'fa-solid fa-arrow-trend-up', down: 'fa-solid fa-arrow-trend-down', equal: 'fa-solid fa-minus' }
+            : { up: 'fa-solid fa-arrow-up', down: 'fa-solid fa-arrow-down', equal: 'fa-solid fa-minus' };
+
+        return icons[trend] ? '<i class="' + icons[trend] + ' dz-chrome-icon"></i>' : '';
     }
 });

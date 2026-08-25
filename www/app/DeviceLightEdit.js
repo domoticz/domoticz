@@ -339,13 +339,13 @@ define(['app', 'icons/dzIconPicker', 'components/rgbw-picker/RgbwPicker'], funct
                 var images = [];
 
                 if (level < (vm.ngModelCtrl.$modelValue.length - 1)) {
-                    images.push('<img src="images/down.png" class="lcursor js-order-down" width="16" height="16"></img>');
+                    images.push('<i class="fa-solid fa-arrow-down dz-chrome-icon lcursor js-order-down"></i>');
                 } else {
                     images.push('<img src="images/empty16.png" width="16" height="16"></img>');
                 }
 
                 if (level > 0) {
-                    images.push('<img src="images/up.png" class="lcursor js-order-up" width="16" height="16"></img>');
+                    images.push('<i class="fa-solid fa-arrow-up dz-chrome-icon lcursor js-order-up"></i>');
                 }
 
                 return images.join('&nbsp;');
@@ -355,8 +355,8 @@ define(['app', 'icons/dzIconPicker', 'components/rgbw-picker/RgbwPicker'], funct
                 var actions = [];
 
                 if (permissions.hasPermission('Admin')) {
-                    actions.push('<img src="images/rename.png" title="' + $.t('Rename') + '" class="lcursor js-update" width="16" height="16"></img>');
-                    actions.push('<img src="images/delete.png" title="' + $.t('Delete') + '" class="lcursor js-delete" width="16" height="16"></img>');
+                    actions.push('<i class="fa-solid fa-pen-to-square dz-chrome-icon lcursor js-update" title="' + $.t('Rename') + '"></i>');
+                    actions.push('<i class="fa-solid fa-trash-can dz-chrome-icon lcursor js-delete" title="' + $.t('Delete') + '"></i>');
                 }
 
                 return actions.join('&nbsp;');
@@ -458,8 +458,8 @@ define(['app', 'icons/dzIconPicker', 'components/rgbw-picker/RgbwPicker'], funct
                 var actions = [];
 
                 if (permissions.hasPermission('Admin')) {
-                    actions.push('<img src="images/rename.png" title="' + $.t('Edit') + '" class="lcursor js-update" width="16" height="16"></img>');
-                    actions.push('<img src="images/delete.png" title="' + $.t('Clear') + '" class="lcursor js-delete" width="16" height="16"></img>');
+                    actions.push('<i class="fa-solid fa-pen-to-square dz-chrome-icon lcursor js-update" title="' + $.t('Edit') + '"></i>');
+                    actions.push('<i class="fa-solid fa-trash-can dz-chrome-icon lcursor js-delete" title="' + $.t('Clear') + '"></i>');
                 }
 
                 return actions.join('&nbsp;');

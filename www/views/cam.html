@@ -406,11 +406,11 @@
 							previewimg = '<img src="" height="40"> ';
 						}
 
-						var captureimg = '<img src="images/capture.png" title="' + $.t('Take Snapshot') + '" height="32">';
+						var captureimg = '<i class="fa-solid fa-camera dz-chrome-icon dz-chrome-icon-32" title="' + $.t('Take Snapshot') + '"></i>';
 
 						captureurl = "<a href=\"camsnapshot.jpg?idx=" + item.idx + "\">" + captureimg + "</a>";
 
-						var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="32">';
+						var streamimg = '<i class="fa-solid fa-video dz-chrome-icon dz-chrome-icon-32" title="' + $.t('Stream Video') + '"></i>';
 						streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + item.Name + "'," + item.idx + "," + item.AspectRatio + ")\">" + streamimg + "</a>";
 
 						var protocol;

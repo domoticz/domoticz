@@ -86,7 +86,7 @@ define(['app'], function (app) {
 							: item.available && item.LastSeenTimestamp >= oneHourAgo;
 
 						var tdStatus = $('<td align="center"></td>');
-						tdStatus.append($('<img>').attr('src', statusOk ? 'images/ok.png' : 'images/failed.png'));
+						tdStatus.append($('<i>').addClass(statusOk ? 'fa-solid fa-circle-check dz-chrome-icon' : 'fa-solid fa-circle-xmark dz-chrome-icon'));
 
 						// Battery cell
 						var tdBattery = $('<td align="center"></td>');

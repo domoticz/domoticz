@@ -102,7 +102,7 @@ define(['app'], function (app) {
 								enabledstr = $.t("Yes");
 							}
 							var lUpdateItem = item.LastUpdate;
-							lUpdateItem += '&nbsp;<img src="images/add.png" title="' + $.t('Test') + '" onclick="SendMobileTestMessage(' + item.idx + ');">';
+							lUpdateItem += '&nbsp;<i class="fa-solid fa-plus dz-chrome-icon" title="' + $.t('Test') + '" onclick="SendMobileTestMessage(' + item.idx + ');"></i>';
 							var addId = oTable.fnAddData({
 								"DT_RowId": item.idx,
 								"Enabled": item.Enabled,
