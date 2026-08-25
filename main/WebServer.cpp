@@ -1686,6 +1686,19 @@ namespace http
 			if (result.empty())
 				return;
 
+			/* Per-device icon references (Font Awesome / installed icon library).
+			   Fetched as a separate lookup rather than added to the SELECTs
+			   above: those exist in several variants that index their columns
+			   positionally (sd[20] etc.), so adding a column would shift every
+			   index in each one. Only devices that actually have an icon set are
+			   returned, so this map stays small. */
+			std::map<std::string, std::string> deviceIcons;
+			{
+				auto iconResult = m_sql.safe_query("SELECT ID, Icon FROM DeviceStatus WHERE (Icon IS NOT NULL AND Icon != '')");
+				for (const auto& ir : iconResult)
+					deviceIcons[ir[0]] = ir[1];
+			}
+
 			for (const auto& sd : result)
 			{
 				std::string sDeviceName("");
@@ -1973,6 +1986,15 @@ namespace http
 					root["result"][ii]["LastUpdate"] = sLastUpdate;
 
 					root["result"][ii]["CustomImage"] = CustomImage;
+
+					/* Icon overrides CustomImage when set; emitted as-is so the
+					   web UI can render a font glyph instead of a PNG. Absent
+					   for devices still using the classic image. */
+					{
+						auto ittDevIcon = deviceIcons.find(sd[0]);
+						if (ittDevIcon != deviceIcons.end())
+							root["result"][ii]["Icon"] = ittDevIcon->second;
+					}
 
 					if (CustomImage != 0)
 					{

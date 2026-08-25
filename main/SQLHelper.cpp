@@ -44,7 +44,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 182
+#define DB_VERSION 183
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -83,7 +83,11 @@ constexpr auto sqlCreateDeviceStatus =
 "[CustomImage] INTEGER DEFAULT 0, "
 "[Description] VARCHAR(200) DEFAULT '', "
 "[Options] TEXT DEFAULT null, "
-"[Color] TEXT DEFAULT NULL);";
+"[Color] TEXT DEFAULT NULL, "
+/* Kept last on purpose: the upgrade path adds this with ALTER TABLE, which
+   appends, so declaring it last keeps a fresh install's column order identical
+   to an upgraded one. */
+"[Icon] TEXT DEFAULT '');";
 
 constexpr auto sqlCreateDeviceStatusTrigger =
 "CREATE TRIGGER IF NOT EXISTS devicestatusupdate AFTER INSERT ON DeviceStatus\n"
@@ -572,6 +576,20 @@ constexpr auto sqlCreateCustomImages =
 "	[IconOn] BLOB, "
 "	[IconOff] BLOB);";
 
+/* Icon font libraries the user installed (Material Design Icons and friends).
+   The downloaded stylesheet + its fonts live in www/assets/; this table only
+   records what is installed so the UI can list, refresh and remove them.
+   Prefix is the library's class prefix ("mdi"), used to recognise which
+   library an icon class belongs to. */
+constexpr auto sqlCreateIconLibraries =
+"CREATE TABLE IF NOT EXISTS [IconLibraries]("
+"	[ID] INTEGER PRIMARY KEY, "
+"	[Name] VARCHAR(100) NOT NULL, "
+"	[Prefix] VARCHAR(32) NOT NULL, "
+"	[CssFile] VARCHAR(200) NOT NULL, "
+"	[SourceURL] VARCHAR(500) DEFAULT '', "
+"	[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')));";
+
 constexpr auto sqlCreateMySensors =
 "CREATE TABLE IF NOT EXISTS [MySensors]("
 " [HardwareID] INTEGER NOT NULL,"
@@ -786,6 +804,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateFloorplans);
 	query(sqlCreateFloorplanOrderTrigger);
 	query(sqlCreateCustomImages);
+	query(sqlCreateIconLibraries);
 	query(sqlCreateMySensors);
 	query(sqlCreateMySensorsVariables);
 	query(sqlCreateMySensorsChilds);
@@ -3454,6 +3473,15 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 182)
 		{
 			CThemeSettings::MigrateFromPreferences();
+		}
+		if (dbversion < 183)
+		{
+			// Per-device icon reference (Font Awesome or an installed icon
+			// library), stored as a small JSON object. Empty means "use
+			// CustomImage exactly as before", so existing devices are
+			// unaffected until the user picks a new icon.
+			query("ALTER TABLE DeviceStatus ADD COLUMN [Icon] TEXT DEFAULT ''");
+			query(sqlCreateIconLibraries);
 		}
 	}
 	else if (bNewInstall)

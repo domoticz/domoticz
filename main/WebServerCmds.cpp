@@ -6454,6 +6454,74 @@ namespace http
 			LoadUsers();
 		}
 
+		/* ── Per-device icon reference ───────────────────────────────────────
+		   A device may point at a font glyph (bundled Font Awesome, or an
+		   installed icon library) instead of a PNG. It is stored on
+		   DeviceStatus.Icon as a small JSON object:
+
+		     {"t":"fa","on":"fa-solid fa-lightbulb","off":"fa-regular fa-lightbulb"}
+
+		   `t` is the provider ("fa" or a library prefix such as "mdi"), `on` is
+		   required and `off` optional (falling back to `on`). An empty column
+		   means "use CustomImage exactly as before".
+
+		   These strings end up in the browser as class attributes, so they are
+		   validated character by character on the way in and RE-SERIALISED from
+		   only the known fields — anything unexpected is rejected rather than
+		   sanitised, so bad input is visible instead of silently mangled.     */
+		static bool IsIconToken(const std::string& szToken, size_t maxLen, bool bAllowSpaces)
+		{
+			if (szToken.empty() || (szToken.size() > maxLen))
+				return false;
+			for (const char c : szToken)
+			{
+				if ((c >= '0') && (c <= '9'))
+					continue;
+				if ((c >= 'a') && (c <= 'z'))
+					continue;
+				if ((c >= 'A') && (c <= 'Z'))
+					continue;
+				if ((c == '-') || (c == '_'))
+					continue;
+				if (bAllowSpaces && (c == ' '))
+					continue;
+				return false;
+			}
+			return true;
+		}
+
+		static bool NormaliseDeviceIcon(const std::string& szIn, std::string& szOut)
+		{
+			szOut.clear();
+			if (szIn.empty())
+				return true; // clearing the icon is valid: falls back to CustomImage
+			if (szIn.size() > 512)
+				return false;
+
+			Json::Value jIn;
+			if (!ParseJSon(szIn, jIn) || !jIn.isObject())
+				return false;
+
+			const std::string szType = jIn["t"].isString() ? jIn["t"].asString() : "";
+			const std::string szOn = jIn["on"].isString() ? jIn["on"].asString() : "";
+			const std::string szOff = jIn["off"].isString() ? jIn["off"].asString() : "";
+
+			if (!IsIconToken(szType, 32, false))
+				return false;
+			if (!IsIconToken(szOn, 128, true))
+				return false;
+			if (!szOff.empty() && !IsIconToken(szOff, 128, true))
+				return false;
+
+			Json::Value jOut;
+			jOut["t"] = szType;
+			jOut["on"] = szOn;
+			if (!szOff.empty())
+				jOut["off"] = szOff;
+			szOut = JSonToRawString(jOut);
+			return true;
+		}
+
 		void CWebServer::Cmd_SetUsed(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != URIGHTS_ADMIN)
@@ -6494,6 +6562,11 @@ namespace http
 			std::string tmode = request::findValue(&req, "tmode");
 			std::string fmode = request::findValue(&req, "fmode");
 			std::string sCustomImage = request::findValue(&req, "customimage");
+			/* Optional: a font-glyph icon reference. Only touched when the
+			   caller actually sends `icon`, so existing clients that know
+			   nothing about it never clear a device's icon by omission. */
+			bool bHasIcon = request::hasValue(&req, "icon");
+			std::string sIcon = request::findValue(&req, "icon");
 
 			std::string strunit = request::findValue(&req, "unit");
 			std::string strParam1 = HTMLSanitizer::Sanitize(base64_decode(request::findValue(&req, "strparam1")));
@@ -6596,6 +6669,25 @@ namespace http
 				{
 					m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SwitchType=%d, CustomImage=%d WHERE (ID == '%q')", used, name.c_str(),
 						description.c_str(), switchtype, CustomImage, idx.c_str());
+				}
+			}
+
+			/* Icon is written separately rather than folded into the UPDATEs
+			   above: those come in several variants, and this only runs when the
+			   caller actually supplied `icon`. An empty value clears it, putting
+			   the device back on its CustomImage. */
+			if (bHasIcon)
+			{
+				std::string szIconNormalised;
+				if (NormaliseDeviceIcon(sIcon, szIconNormalised))
+				{
+					m_sql.safe_query("UPDATE DeviceStatus SET Icon='%q' WHERE (ID == '%q')", szIconNormalised.c_str(), idx.c_str());
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "SetUsed: rejected invalid icon reference for device %s", idx.c_str());
+					root["error"] = "Invalid icon";
+					return;
 				}
 			}
 
