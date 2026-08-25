@@ -287,6 +287,10 @@ private:
 	void Cmd_UploadWebAsset(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_GetWebAssets(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteWebAsset(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetIconLibraries(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_AddIconLibrary(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_RefreshIconLibrary(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DeleteIconLibrary(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_RenameDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_SetDeviceUsed(WebEmSession & session, const request& req, Json::Value &root);
 

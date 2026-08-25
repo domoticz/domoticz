@@ -37,6 +37,8 @@
 #include "SQLHelper.h"
 #include "KWHStats.h"
 #include "ThemeSettings.h"
+#include "WebAssets.h"
+#include "IconLibraries.h"
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
 #include <libwebem/Base64.h>
@@ -5684,60 +5686,6 @@ namespace http
 			ReloadCustomSwitchIcons();
 		}
 
-		static const size_t WEB_ASSET_MAX_SIZE = 8 * 1024 * 1024; // 8 MiB per file
-
-		static bool IsSafeWebAssetName(const std::string& szName)
-		{
-			if (szName.empty() || (szName.size() > 128))
-				return false;
-			if (szName.front() == '.')
-				return false;
-			if (szName.find("..") != std::string::npos)
-				return false;
-
-			for (const char c : szName)
-			{
-				if ((c >= '0') && (c <= '9'))
-					continue;
-				if ((c >= 'a') && (c <= 'z'))
-					continue;
-				if ((c >= 'A') && (c <= 'Z'))
-					continue;
-				if ((c == '.') || (c == '-') || (c == '_'))
-					continue;
-				return false;
-			}
-			return true;
-		}
-
-		static bool IsAllowedWebAssetType(const std::string& szName)
-		{
-			std::string szLower = szName;
-			stdlower(szLower);
-			const std::vector<std::string> allowed = { ".css", ".woff2", ".woff", ".ttf", ".otf", ".eot" };
-			for (const auto& ext : allowed)
-			{
-				if ((szLower.size() > ext.size()) &&
-					(szLower.compare(szLower.size() - ext.size(), ext.size(), ext) == 0))
-					return true;
-			}
-			return false;
-		}
-
-		static bool WebAssetDirExists(const std::string& szPath)
-		{
-			DIR* pDir = opendir(szPath.c_str());
-			if (pDir == nullptr)
-				return false;
-			closedir(pDir);
-			return true;
-		}
-
-		static std::string WebAssetFolder()
-		{
-			return szWWWFolder + "/assets";
-		}
-
 		void CWebServer::Cmd_UploadWebAsset(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["title"] = "UploadWebAsset";
@@ -5778,56 +5726,14 @@ namespace http
 				return;
 			}
 
-			const std::string szFolder = WebAssetFolder();
-			if (!WebAssetDirExists(szFolder))
+			if (!EnsureWebAssetFolder())
 			{
-				mkdir_deep(szFolder.c_str(), 0755);
-				if (!WebAssetDirExists(szFolder))
-				{
-					root["error"] = "Could not create assets folder";
-					return;
-				}
+				root["error"] = "Could not create assets folder";
+				return;
 			}
 
-			const std::string szFile = szFolder + "/" + szName;
-			const std::string szTmpFile = szFile + "." + GenerateUUID() + ".tmp";
+			if (!WriteWebAssetFile(szName, szContent, "UploadWebAsset"))
 			{
-				std::ofstream outfile(szTmpFile.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
-				if (!outfile.is_open())
-				{
-					_log.Log(LOG_ERROR, "UploadWebAsset: could not write %s", szTmpFile.c_str());
-					root["error"] = "Could not write asset";
-					return;
-				}
-				outfile.write(szContent.data(), static_cast<std::streamsize>(szContent.size()));
-				outfile.flush();
-				if (!outfile.good())
-				{
-					outfile.close();
-					_log.Log(LOG_ERROR, "UploadWebAsset: write failed for %s", szTmpFile.c_str());
-					std::remove(szTmpFile.c_str());
-					root["error"] = "Could not write asset";
-					return;
-				}
-				outfile.close();
-				if (!outfile.good())
-				{
-					_log.Log(LOG_ERROR, "UploadWebAsset: close failed for %s", szTmpFile.c_str());
-					std::remove(szTmpFile.c_str());
-					root["error"] = "Could not write asset";
-					return;
-				}
-			}
-
-			#ifdef WIN32
-			bool bRenameOk = (MoveFileExA(szTmpFile.c_str(), szFile.c_str(), MOVEFILE_REPLACE_EXISTING) != 0);
-#else
-			bool bRenameOk = (std::rename(szTmpFile.c_str(), szFile.c_str()) == 0);
-#endif
-			if (!bRenameOk)
-			{
-				_log.Log(LOG_ERROR, "UploadWebAsset: could not replace %s", szFile.c_str());
-				std::remove(szTmpFile.c_str());
 				root["error"] = "Could not write asset";
 				return;
 			}
@@ -5893,6 +5799,142 @@ namespace http
 			if (std::remove(szFile.c_str()) != 0)
 			{
 				root["error"] = "Could not remove asset";
+				return;
+			}
+			root["status"] = "OK";
+		}
+
+		/* -- Icon font libraries ---------------------------------------------
+		   An icon library is a stylesheet plus its webfonts that Domoticz
+		   downloaded and now serves from www/assets/. The heavy lifting lives
+		   in IconLibraries.cpp; these are the four thin endpoints around it. */
+		void CWebServer::Cmd_GetIconLibraries(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "GetIconLibraries";
+
+			/* NOT admin-only, on purpose: every logged in user's browser has to
+			   pull in the stylesheet of each installed library, otherwise every
+			   icon that comes from one renders as an empty box for them. What is
+			   returned is only what building that <link> tag needs.
+
+			   The source URL is the one exception and is added for
+			   administrators only: it can name a host on the local network that
+			   a viewer has no business learning about, and the renderer has no
+			   use for it. */
+			if (session.rights == URIGHTS_NONE)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			root["status"] = "OK";
+
+			auto result = m_sql.safe_query("SELECT ID, Name, Prefix, CssFile, SourceURL, LastUpdate FROM IconLibraries ORDER BY Name ASC");
+			int ii = 0;
+			for (const auto& sd : result)
+			{
+				root["result"][ii]["idx"] = sd[0];
+				root["result"][ii]["Name"] = sd[1];
+				root["result"][ii]["Prefix"] = sd[2];
+				root["result"][ii]["CssFile"] = sd[3];
+				root["result"][ii]["Path"] = "assets/" + sd[3];
+				root["result"][ii]["LastUpdate"] = sd[5];
+				if (session.rights == URIGHTS_ADMIN)
+					root["result"][ii]["SourceURL"] = sd[4];
+				ii++;
+			}
+		}
+
+		void CWebServer::Cmd_AddIconLibrary(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "AddIconLibrary";
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			const std::string szName = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
+			std::string szPrefix = request::findValue(&req, "prefix");
+			const std::string szURL = request::findValue(&req, "url");
+
+			if (szName.empty() || szPrefix.empty() || szURL.empty())
+			{
+				root["error"] = "Missing name, prefix or url";
+				return;
+			}
+
+			/* The prefix ends up both as a filename component in www/assets/ and
+			   as a CSS class prefix in the browser, so it is held to lowercase
+			   alphanumerics rather than sanitised into something else. */
+			stdlower(szPrefix);
+			if (!IconLibraries::IsValidPrefix(szPrefix))
+			{
+				root["error"] = "Invalid prefix, use up to 32 lowercase letters or digits";
+				return;
+			}
+
+			auto existing = m_sql.safe_query("SELECT ID FROM IconLibraries WHERE (Prefix=='%q')", szPrefix.c_str());
+			if (!existing.empty())
+			{
+				root["error"] = "A library with this prefix is already installed";
+				return;
+			}
+
+			std::string szError;
+			if (!IconLibraries::Install(szName, szPrefix, szURL, szError))
+			{
+				root["error"] = szError;
+				return;
+			}
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_RefreshIconLibrary(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "RefreshIconLibrary";
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			const std::string sidx = request::findValue(&req, "idx");
+			if (sidx.empty())
+			{
+				root["error"] = "Missing idx";
+				return;
+			}
+
+			std::string szError;
+			if (!IconLibraries::Refresh(atoi(sidx.c_str()), szError))
+			{
+				root["error"] = szError;
+				return;
+			}
+			root["status"] = "OK";
+		}
+
+		void CWebServer::Cmd_DeleteIconLibrary(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "DeleteIconLibrary";
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			const std::string sidx = request::findValue(&req, "idx");
+			if (sidx.empty())
+			{
+				root["error"] = "Missing idx";
+				return;
+			}
+
+			std::string szError;
+			if (!IconLibraries::Remove(atoi(sidx.c_str()), szError))
+			{
+				root["error"] = szError;
 				return;
 			}
 			root["status"] = "OK";

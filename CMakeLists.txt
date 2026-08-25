@@ -176,6 +176,7 @@ main/EventsPythonModule.cpp
 main/EventsPythonDevice.cpp
 main/Helper.cpp
 main/HTMLSanitizer.cpp
+main/IconLibraries.cpp
 main/IFTTT.cpp
 main/json_helper.cpp
 main/KWHStats.cpp
