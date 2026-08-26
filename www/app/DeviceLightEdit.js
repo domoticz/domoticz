@@ -345,13 +345,13 @@ define(['app', 'icons/dzIconPicker', 'components/rgbw-picker/RgbwPicker'], funct
                 var images = [];
 
                 if (level < (vm.ngModelCtrl.$modelValue.length - 1)) {
-                    images.push('<i class="fa-solid fa-arrow-down dz-chrome-icon lcursor js-order-down"></i>');
+                    images.push('<i class="fa-solid fa-arrow-down dz-chrome-icon dz-act-edit lcursor js-order-down"></i>');
                 } else {
                     images.push('<img src="images/empty16.png" width="16" height="16"></img>');
                 }
 
                 if (level > 0) {
-                    images.push('<i class="fa-solid fa-arrow-up dz-chrome-icon lcursor js-order-up"></i>');
+                    images.push('<i class="fa-solid fa-arrow-up dz-chrome-icon dz-act-edit lcursor js-order-up"></i>');
                 }
 
                 return images.join('&nbsp;');
@@ -361,8 +361,8 @@ define(['app', 'icons/dzIconPicker', 'components/rgbw-picker/RgbwPicker'], funct
                 var actions = [];
 
                 if (permissions.hasPermission('Admin')) {
-                    actions.push('<i class="fa-solid fa-pen-to-square dz-chrome-icon lcursor js-update" title="' + $.t('Rename') + '"></i>');
-                    actions.push('<i class="fa-solid fa-trash-can dz-chrome-icon lcursor js-delete" title="' + $.t('Delete') + '"></i>');
+                    actions.push('<i class="fa-solid fa-pen-to-square dz-chrome-icon dz-act-edit lcursor js-update" title="' + $.t('Rename') + '"></i>');
+                    actions.push('<i class="fa-solid fa-trash-can dz-chrome-icon dz-act-danger lcursor js-delete" title="' + $.t('Delete') + '"></i>');
                 }
 
                 return actions.join('&nbsp;');
@@ -464,8 +464,8 @@ define(['app', 'icons/dzIconPicker', 'components/rgbw-picker/RgbwPicker'], funct
                 var actions = [];
 
                 if (permissions.hasPermission('Admin')) {
-                    actions.push('<i class="fa-solid fa-pen-to-square dz-chrome-icon lcursor js-update" title="' + $.t('Edit') + '"></i>');
-                    actions.push('<i class="fa-solid fa-trash-can dz-chrome-icon lcursor js-delete" title="' + $.t('Clear') + '"></i>');
+                    actions.push('<i class="fa-solid fa-pen-to-square dz-chrome-icon dz-act-edit lcursor js-update" title="' + $.t('Edit') + '"></i>');
+                    actions.push('<i class="fa-solid fa-trash-can dz-chrome-icon dz-act-danger lcursor js-delete" title="' + $.t('Clear') + '"></i>');
                 }
 
                 return actions.join('&nbsp;');
