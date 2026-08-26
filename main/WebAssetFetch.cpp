@@ -1018,23 +1018,39 @@ namespace WebAssetFetch
 		}
 
 		bool bCommitOk = true;
+		std::vector<std::pair<std::string, std::string>> committed; // name -> backup file (empty if none existed)
 		for (const auto& sd : staged)
 		{
-			if (!CommitWebAssetFile(sd.first, sd.second, LOGTAG))
+			std::string szBackupFile;
+			if (!BackupWebAssetFile(sd.first, szBackupFile, LOGTAG))
 			{
 				szError = "Could not store " + sd.first;
 				bCommitOk = false;
 				break;
 			}
+			if (!CommitWebAssetFile(sd.first, sd.second, LOGTAG))
+			{
+				// Nothing was replaced for this name, put the original straight back.
+				RestoreWebAssetFile(sd.first, szBackupFile);
+				szError = "Could not store " + sd.first;
+				bCommitOk = false;
+				break;
+			}
+			committed.emplace_back(sd.first, szBackupFile);
 		}
 		if (!bCommitOk)
 		{
-			// Best effort: earlier renames in this batch already replaced files on disk, so
-			// only the ones still staged as temp files can be discarded here.
+			// Roll every already-committed file in this batch back to what it was before,
+			// so a failure part way through leaves the library exactly as it was rather
+			// than on a mix of old and new files.
+			for (const auto& cd : committed)
+				RestoreWebAssetFile(cd.first, cd.second);
 			for (const auto& sd : staged)
 				DiscardStagedWebAssetFile(sd.second);
 			return false;
 		}
+		for (const auto& cd : committed)
+			DiscardWebAssetBackup(cd.second);
 
 		std::string szCompanions;
 		for (const auto& asset : ctx.assets)
@@ -1064,6 +1080,12 @@ namespace WebAssetFetch
 				if (ctx.storedNames.count(szOld) != 0)
 					continue;
 				if (!IsSafeWebAssetName(szOld) || !IsAllowedWebAssetType(szOld))
+					continue;
+				// Metadata recorded before this ownership check existed may list a companion
+				// that another library has since come to own (or always shared, on a name
+				// collision); such a file must be left alone rather than deleted out from
+				// under that other library.
+				if (IsWebAssetNameOwnedByOther(szOld, szName))
 					continue;
 				RemoveWebAssetFile(szOld);
 			}
@@ -1101,6 +1123,10 @@ namespace WebAssetFetch
 		for (const auto& szCompanion : companions)
 		{
 			if (!IsSafeWebAssetName(szCompanion) || !IsAllowedWebAssetType(szCompanion))
+				continue;
+			// Metadata recorded before ownership checks existed may list a companion that
+			// another library has since come to own; that file must survive this deletion.
+			if (IsWebAssetNameOwnedByOther(szCompanion, szName))
 				continue;
 			RemoveWebAssetFile(szCompanion);
 			iRemoved++;

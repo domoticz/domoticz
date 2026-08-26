@@ -137,6 +137,55 @@ inline bool CommitWebAssetFile(const std::string& szName, const std::string& szT
 	return true;
 }
 
+// Moves any existing szName out of the way into szBackupFile before it gets overwritten,
+// so a failure further along a multi-file commit can put it back with RestoreWebAssetFile.
+// szBackupFile is left empty when there was nothing to preserve.
+inline bool BackupWebAssetFile(const std::string& szName, std::string& szBackupFile, const char* szLogTag)
+{
+	szBackupFile.clear();
+	const std::string szFile = WebAssetFolder() + "/" + szName;
+	if (!file_exist(szFile.c_str()))
+		return true;
+
+	szBackupFile = szFile + "." + GenerateUUID() + ".bak";
+#ifdef WIN32
+	bool bRenameOk = (MoveFileExA(szFile.c_str(), szBackupFile.c_str(), MOVEFILE_REPLACE_EXISTING) != 0);
+#else
+	bool bRenameOk = (std::rename(szFile.c_str(), szBackupFile.c_str()) == 0);
+#endif
+	if (!bRenameOk)
+	{
+		_log.Log(LOG_ERROR, "%s: could not back up %s before replacing it", szLogTag, szFile.c_str());
+		szBackupFile.clear();
+		return false;
+	}
+	return true;
+}
+
+// Undoes a commit: puts back the backup made by BackupWebAssetFile (or, if there was
+// none, removes whatever CommitWebAssetFile put in that name's place) so a partially
+// failed multi-file commit does not leave a library on a mix of old and new files.
+inline void RestoreWebAssetFile(const std::string& szName, const std::string& szBackupFile)
+{
+	const std::string szFile = WebAssetFolder() + "/" + szName;
+	if (szBackupFile.empty())
+	{
+		std::remove(szFile.c_str());
+		return;
+	}
+#ifdef WIN32
+	MoveFileExA(szBackupFile.c_str(), szFile.c_str(), MOVEFILE_REPLACE_EXISTING);
+#else
+	std::rename(szBackupFile.c_str(), szFile.c_str());
+#endif
+}
+
+inline void DiscardWebAssetBackup(const std::string& szBackupFile)
+{
+	if (!szBackupFile.empty())
+		std::remove(szBackupFile.c_str());
+}
+
 inline void DiscardStagedWebAssetFile(const std::string& szTmpFile)
 {
 	if (!szTmpFile.empty())
