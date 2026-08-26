@@ -3304,6 +3304,18 @@ dz-device-icon > img {
     font-size: 0.8em;
 }
 
+/* Scene and group buttons carry the size and glyph classes on one element, so
+   the child rule above cannot reach them. Here em would resolve against the
+   parent cell rather than the box, so these repeat the same 0.8 factor as
+   literals: 30px * 0.8 and 36px * 0.8. */
+.dz-icon-glyph.dz-icon-40 {
+    font-size: 24px;
+}
+
+.dz-icon-glyph.dz-icon-48 {
+    font-size: 28.8px;
+}
+
 /* Device glyphs use the theme's own link blue rather than inheriting the
    body text colour, which rendered them black. */
 dz-device-icon > .dz-icon-glyph {
