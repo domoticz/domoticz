@@ -134,27 +134,35 @@ dz-icon-picker-modal {
 	background: rgba(0, 0, 0, 0.45);
 }
 
+/* Chrome matches a jQuery UI dialog as Domoticz themes it: the --dz-modal-*
+   surface, a 1px #666 frame, the .ui-corner-all radius and no shadow, since
+   the house style is flat. Fallbacks are the default theme's resolved values
+   so the dialog still reads correctly if a theme leaves a token undefined. */
 .dz-ip-dialog {
 	display: flex;
 	flex-direction: column;
 	width: 720px;
 	max-width: 100%;
 	max-height: 100%;
-	background: #fff;
-	border: 1px solid #ccc;
-	border-radius: 4px;
-	box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
-	color: #333;
+	background-color: var(--dz-modal-bg, #11213d);
+	border: 1px solid #666;
+	border-radius: 0.3125em;
+	color: var(--dz-modal-text, #fff);
+	font-family: "Segoe UI", Arial, sans-serif;
 	font-size: 12px;
 	text-align: left;
 }
 
+/* --dz-modal-header-bg exists for exactly this and is otherwise unused; the
+   stock titlebar leans on a gloss PNG that only ships with some themes. */
 .dz-ip-head {
 	display: flex;
 	align-items: center;
 	gap: 10px;
 	padding: 10px 12px;
-	border-bottom: 1px solid #ccc;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+	background-color: var(--dz-modal-header-bg, #283750);
+	border-radius: 0.3125em 0.3125em 0 0;
 }
 
 .dz-ip-title {
@@ -162,18 +170,28 @@ dz-icon-picker-modal {
 	font-weight: bold;
 }
 
+/* Same treatment Domoticz gives dialog inputs: flat dark fill, no frame, and
+   a bottom rule that only appears on focus. */
 .dz-ip-search {
 	flex: 1 1 auto;
 	min-width: 0;
 	height: 26px;
 	margin: 0;
 	padding: 2px 6px;
-	border: 1px solid #ccc;
+	border: none;
+	border-bottom: 1px solid transparent;
 	border-radius: 3px;
+	background-color: var(--dz-input-bg, #283750);
+	color: var(--dz-input-text, #eee);
+}
+
+.dz-ip-search:focus {
+	outline: none;
+	border-bottom: 1px solid var(--dz-input-border, #ccc);
 }
 
 .dz-ip-close {
-	color: #6c6e74;
+	color: rgba(255, 255, 255, 0.55);
 	font-size: 16px;
 	cursor: pointer;
 }
@@ -195,8 +213,8 @@ dz-icon-picker-modal {
 	min-width: 172px;
 	padding: 6px 0;
 	overflow-y: auto;
-	border-right: 1px solid #ccc;
-	background: #f5f5f5;
+	border-right: 1px solid rgba(255, 255, 255, 0.12);
+	background: rgba(0, 0, 0, 0.2);
 }
 
 .dz-ip-rail-row {
@@ -204,24 +222,26 @@ dz-icon-picker-modal {
 	align-items: center;
 	gap: 6px;
 	padding: 5px 10px;
-	color: #333;
+	color: var(--dz-modal-text, #fff);
 	cursor: pointer;
 	white-space: nowrap;
 }
 
 .dz-ip-rail-row:hover {
-	background: #fff;
+	background: rgba(255, 255, 255, 0.08);
+	color: var(--dz-modal-text, #fff);
 	text-decoration: none;
 }
 
-.dz-ip-rail-sel {
-	background: #fff;
+.dz-ip-rail-sel,
+.dz-ip-rail-sel:hover {
+	background: rgba(255, 255, 255, 0.1);
 	box-shadow: inset 3px 0 0 #43A4D3;
 	font-weight: bold;
 }
 
 .dz-ip-rail-dis {
-	color: #6c6e74;
+	color: rgba(255, 255, 255, 0.55);
 	opacity: 0.45;
 	cursor: default;
 }
@@ -233,7 +253,7 @@ dz-icon-picker-modal {
 .dz-ip-rail-glyph {
 	width: 16px;
 	text-align: center;
-	color: #6c6e74;
+	color: rgba(255, 255, 255, 0.55);
 }
 
 .dz-ip-rail-sel .dz-ip-rail-glyph {
@@ -247,7 +267,7 @@ dz-icon-picker-modal {
 }
 
 .dz-ip-rail-count {
-	color: #6c6e74;
+	color: rgba(255, 255, 255, 0.55);
 	font-weight: normal;
 }
 
@@ -255,7 +275,7 @@ dz-icon-picker-modal {
 	display: block;
 	height: 1px;
 	margin: 6px 10px;
-	background: #ccc;
+	background: rgba(255, 255, 255, 0.12);
 }
 
 .dz-ip-grid-wrap {
@@ -266,29 +286,37 @@ dz-icon-picker-modal {
 	padding: 8px;
 }
 
+/* minmax(0, 1fr) rather than 1fr: a bare 1fr is minmax(auto, 1fr), so a long
+   icon name sets a min-content floor on its track and the whole grid grows
+   wider than the pane. Clamping the floor to 0 lets the names ellipsis
+   instead, which keeps the scroll vertical only. */
 .dz-ip-grid {
 	flex: 1 1 auto;
+	min-width: 0;
 	min-height: 220px;
 	max-height: 46vh;
+	overflow-x: hidden;
 	overflow-y: auto;
 	display: grid;
-	grid-template-columns: repeat(7, 1fr);
+	grid-template-columns: repeat(7, minmax(0, 1fr));
 	gap: 4px;
 	align-content: start;
 }
 
 .dz-ip-tile {
 	display: block;
+	min-width: 0;
 	padding: 6px 2px 4px;
 	border: 1px solid transparent;
 	border-radius: 3px;
-	color: #333;
+	color: var(--dz-modal-text, #fff);
 	text-align: center;
 	cursor: pointer;
 }
 
 .dz-ip-tile:hover {
-	background: #f5f5f5;
+	background: rgba(255, 255, 255, 0.08);
+	color: var(--dz-modal-text, #fff);
 	text-decoration: none;
 }
 
@@ -312,27 +340,27 @@ dz-icon-picker-modal {
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	font-size: 10px;
-	color: #6c6e74;
+	color: rgba(255, 255, 255, 0.55);
 }
 
 .dz-ip-tile-hl {
-	border-color: #6c6e74;
-	background: #f5f5f5;
+	border-color: rgba(255, 255, 255, 0.45);
+	background: rgba(255, 255, 255, 0.08);
 }
 
 .dz-ip-tile-sel {
 	border-color: #43A4D3;
-	background: #f5f5f5;
+	background: rgba(255, 255, 255, 0.08);
 }
 
 .dz-ip-note {
 	padding: 6px 2px 0;
-	color: #6c6e74;
+	color: rgba(255, 255, 255, 0.55);
 }
 
 .dz-ip-foot {
 	padding: 8px 12px 10px;
-	border-top: 1px solid #ccc;
+	border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .dz-ip-foot-top,
@@ -349,7 +377,7 @@ dz-icon-picker-modal {
 
 .dz-ip-foot-label {
 	width: 34px;
-	color: #6c6e74;
+	color: rgba(255, 255, 255, 0.55);
 }
 
 .dz-ip-slot {
@@ -397,18 +425,20 @@ dz-icon-picker-modal {
 	color: #43A4D3;
 }
 
+/* Kept at the widgets' own off-state grey so the preview stays truthful,
+   only lightened enough to read against the dialog surface. */
 .dz-ip-off .dz-ip-swatch,
 .dz-ip-swatch.dz-ip-off {
-	color: #6c6e74;
+	color: #90a7bf;
 }
 
 .dz-ip-disclose {
-	color: #6c6e74;
+	color: rgba(255, 255, 255, 0.55);
 	cursor: pointer;
 }
 
 .dz-ip-off-hint {
-	color: #6c6e74;
+	color: rgba(255, 255, 255, 0.55);
 }
 
 .dz-ip-actions {
@@ -416,7 +446,7 @@ dz-icon-picker-modal {
 	align-items: center;
 	gap: 6px;
 	padding-top: 8px;
-	border-top: 1px solid #ccc;
+	border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .dz-ip-actions-gap {
