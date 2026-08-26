@@ -3407,6 +3407,11 @@ dz-device-icon > .dz-icon-glyph.dz-icon--off {
     color: #6c6e74;
 }
 
+/* The favourite star reads as a star rather than as a themed control. */
+.dz-icon-glyph.fa-star {
+    color: #f9d023;
+}
+
 #img dz-device-icon:hover > .dz-icon-glyph {
     transform: scale(1.1);
     transition: transform 0.2s ease;
