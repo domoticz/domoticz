@@ -585,8 +585,67 @@ namespace WebAssetFetch
 			return true;
 		}
 
-		bool RewriteStylesheet(_tDownloadContext& ctx, const std::string& szCss, std::string& szOut)
+		// Nested stylesheets are never followed, so an @import can only ever point at
+		// something we would refuse to fetch. Dropping the whole at-rule also covers
+		// the bare-string form, which carries no url() for the rewrite pass to catch.
+		std::string StripImports(const std::string& szCss)
 		{
+			std::string szOut;
+			szOut.reserve(szCss.size());
+
+			size_t iPos = 0;
+			while (true)
+			{
+				const size_t iFound = FindCaseInsensitive(szCss, "@import", iPos);
+				if (iFound == std::string::npos)
+				{
+					szOut.append(szCss, iPos, std::string::npos);
+					break;
+				}
+
+				const size_t iAfter = iFound + 7;
+				const char cNext = (iAfter < szCss.size()) ? szCss[iAfter] : ' ';
+				// Do not match a longer identifier that merely starts with @import.
+				if ((isspace(static_cast<unsigned char>(cNext)) == 0) && (cNext != '"') && (cNext != '\'') && (cNext != 'u') && (cNext != 'U'))
+				{
+					szOut.append(szCss, iPos, iAfter - iPos);
+					iPos = iAfter;
+					continue;
+				}
+
+				szOut.append(szCss, iPos, iFound - iPos);
+
+				// A statement at-rule, so run to its terminating semicolon, stepping over
+				// quoted sections so a ';' inside a URL cannot end it early. A '}' also
+				// stops the scan, so malformed input cannot swallow the rest of the sheet.
+				size_t iScan = iAfter;
+				char cQuote = 0;
+				while (iScan < szCss.size())
+				{
+					const char c = szCss[iScan];
+					if (cQuote != 0)
+					{
+						if (c == cQuote)
+							cQuote = 0;
+					}
+					else if ((c == '"') || (c == '\''))
+						cQuote = c;
+					else if ((c == ';') || (c == '}'))
+						break;
+					iScan++;
+				}
+				if ((iScan < szCss.size()) && (szCss[iScan] == ';'))
+					iScan++;
+
+				_log.Log(LOG_STATUS, "%s: dropped an @import rule while storing a stylesheet", LOGTAG);
+				iPos = iScan;
+			}
+			return szOut;
+		}
+
+		bool RewriteStylesheet(_tDownloadContext& ctx, const std::string& szSourceCss, std::string& szOut)
+		{
+			const std::string szCss = StripImports(szSourceCss);
 			szOut.clear();
 			szOut.reserve(szCss.size());
 
