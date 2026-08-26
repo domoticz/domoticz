@@ -8,6 +8,7 @@
 #include <cstring>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #ifdef WIN32
@@ -857,6 +858,27 @@ namespace WebAssetFetch
 			StringSplit(result[0][0], "\n", companions);
 			return companions;
 		}
+
+		// A generated companion filename, or the main asset name, can only be written or
+		// removed on behalf of szOwnerName if no *other* library already claims it, either
+		// as its own Name or as one of its Companions. Without this, two libraries whose
+		// sanitised names collide can overwrite or delete each other's files.
+		bool IsWebAssetNameOwnedByOther(const std::string& szCandidateName, const std::string& szOwnerName)
+		{
+			auto result = m_sql.safe_query("SELECT Name, Companions FROM WebAssets WHERE (Name!='%q')", szOwnerName.c_str());
+			for (const auto& sd : result)
+			{
+				if (sd[0] == szCandidateName)
+					return true;
+				if (sd[1].empty())
+					continue;
+				std::vector<std::string> companions;
+				StringSplit(sd[1], "\n", companions);
+				if (std::find(companions.begin(), companions.end(), szCandidateName) != companions.end())
+					return true;
+			}
+			return false;
+		}
 	} // namespace
 
 	bool Install(const std::string& szName, const std::string& szURL, const std::string& szTitle, std::string& szError)
@@ -943,30 +965,74 @@ namespace WebAssetFetch
 		auto existing = m_sql.safe_query("SELECT ID FROM WebAssets WHERE (Name=='%q')", szName.c_str());
 		const bool bIsUpdate = !existing.empty();
 
-		std::vector<std::string> written;
-		bool bWriteOk = true;
+		// Every generated companion name is checked against files owned by some other
+		// library before anything is written, so a sanitised-name collision cannot let
+		// this install overwrite (or, later, delete) a file that belongs to it instead.
 		for (const auto& asset : ctx.assets)
 		{
-			if (!WriteWebAssetFile(asset.szName, asset.szContent, LOGTAG))
+			if (IsWebAssetNameOwnedByOther(asset.szName, szName))
+			{
+				szError = "Asset file name '" + asset.szName + "' is already used by another installed library";
+				return false;
+			}
+		}
+		if (IsWebAssetNameOwnedByOther(szName, szName))
+		{
+			szError = "Asset file name '" + szName + "' is already used by another installed library";
+			return false;
+		}
+
+		// Every file is staged to a temp file first and only committed (renamed into
+		// place) once all of them, companions and main asset alike, have staged
+		// successfully. This keeps a failed refresh from leaving some files replaced
+		// against updated metadata and others left with their old content.
+		std::vector<std::pair<std::string, std::string>> staged; // name -> temp file
+		bool bStageOk = true;
+		for (const auto& asset : ctx.assets)
+		{
+			std::string szTmpFile;
+			if (!StageWebAssetFile(asset.szName, asset.szContent, LOGTAG, szTmpFile))
 			{
 				szError = "Could not store " + asset.szName;
-				bWriteOk = false;
+				bStageOk = false;
 				break;
 			}
-			written.push_back(asset.szName);
+			staged.emplace_back(asset.szName, szTmpFile);
 		}
-		if (bWriteOk && !WriteWebAssetFile(szName, szContent, LOGTAG))
+		if (bStageOk)
 		{
-			szError = "Could not store " + szName;
-			bWriteOk = false;
-		}
-		if (!bWriteOk)
-		{
-			if (!bIsUpdate)
+			std::string szTmpFile;
+			if (!StageWebAssetFile(szName, szContent, LOGTAG, szTmpFile))
 			{
-				for (const auto& szDone : written)
-					RemoveWebAssetFile(szDone);
+				szError = "Could not store " + szName;
+				bStageOk = false;
 			}
+			else
+				staged.emplace_back(szName, szTmpFile);
+		}
+		if (!bStageOk)
+		{
+			for (const auto& sd : staged)
+				DiscardStagedWebAssetFile(sd.second);
+			return false;
+		}
+
+		bool bCommitOk = true;
+		for (const auto& sd : staged)
+		{
+			if (!CommitWebAssetFile(sd.first, sd.second, LOGTAG))
+			{
+				szError = "Could not store " + sd.first;
+				bCommitOk = false;
+				break;
+			}
+		}
+		if (!bCommitOk)
+		{
+			// Best effort: earlier renames in this batch already replaced files on disk, so
+			// only the ones still staged as temp files can be discarded here.
+			for (const auto& sd : staged)
+				DiscardStagedWebAssetFile(sd.second);
 			return false;
 		}
 
@@ -1021,6 +1087,11 @@ namespace WebAssetFetch
 			return;
 		}
 		m_sql.safe_query("UPDATE WebAssets SET Title='%q' WHERE (ID==%d)", szCleanTitle.c_str(), atoi(existing[0][0].c_str()));
+	}
+
+	bool IsNameOwnedByOther(const std::string& szCandidateName, const std::string& szOwnerName)
+	{
+		return IsWebAssetNameOwnedByOther(szCandidateName, szOwnerName);
 	}
 
 	void Forget(const std::string& szName)

@@ -5735,6 +5735,12 @@ namespace http
 				return;
 			}
 
+			if (WebAssetFetch::IsNameOwnedByOther(szName, szName))
+			{
+				root["error"] = "Asset file name '" + szName + "' is already used by another installed library";
+				return;
+			}
+
 			if (!EnsureWebAssetFolder())
 			{
 				root["error"] = "Could not create assets folder";
