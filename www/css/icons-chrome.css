@@ -45,22 +45,24 @@
 	transition: color 0.12s ease;
 }
 
-.js-include-device > .dz-chrome-icon {
+/* These repeat .btn.btn-icon so they outrank the neutral base rule above;
+   without it the base selector is more specific and everything stays grey. */
+.btn.btn-icon.js-include-device > .dz-chrome-icon {
 	color: #5cb85c;
 }
 
-.js-exclude-device > .dz-chrome-icon {
+.btn.btn-icon.js-exclude-device > .dz-chrome-icon {
 	color: #f0ad4e;
 }
 
-.js-rename-device > .dz-chrome-icon {
+.btn.btn-icon.js-rename-device > .dz-chrome-icon {
 	color: #43a4d3;
 }
 
 /* js-delete sits on the icon itself, the others on a wrapping button. */
-.js-remove-device > .dz-chrome-icon,
-.js-remove-scene > .dz-chrome-icon,
-.js-remove-selected > .dz-chrome-icon,
+.btn.btn-icon.js-remove-device > .dz-chrome-icon,
+.btn.btn-icon.js-remove-scene > .dz-chrome-icon,
+.btn.btn-icon.js-remove-selected > .dz-chrome-icon,
 .dz-chrome-icon.js-delete {
 	color: #d9534f;
 }
@@ -77,6 +79,355 @@
 /* Column headers are labels, not actions. */
 th .dz-chrome-icon {
 	color: #6c6e74;
+}
+
+/* --- Icon picker: compact form field --- */
+
+dz-icon-picker {
+	display: inline-block;
+}
+
+.dz-icon-field {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.dz-icon-field-preview {
+	display: inline-block;
+	width: 28px;
+	min-width: 28px;
+	height: 28px;
+	line-height: 28px;
+	text-align: center;
+	font-size: 22px;
+	color: #43A4D3;
+}
+
+.dz-icon-field-preview img {
+	max-width: 26px;
+	max-height: 26px;
+	vertical-align: middle;
+}
+
+.dz-icon-field-btn {
+	margin: 0;
+}
+
+/* --- Icon picker: modal --- */
+
+dz-icon-picker-modal {
+	display: block;
+}
+
+.dz-iconpicker-modal {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 10000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 16px;
+	background: rgba(0, 0, 0, 0.45);
+}
+
+.dz-ip-dialog {
+	display: flex;
+	flex-direction: column;
+	width: 720px;
+	max-width: 100%;
+	max-height: 100%;
+	background: #fff;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+	color: #333;
+	font-size: 12px;
+	text-align: left;
+}
+
+.dz-ip-head {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 12px;
+	border-bottom: 1px solid #ccc;
+}
+
+.dz-ip-title {
+	font-size: 14px;
+	font-weight: bold;
+}
+
+.dz-ip-search {
+	flex: 1 1 auto;
+	min-width: 0;
+	height: 26px;
+	margin: 0;
+	padding: 2px 6px;
+	border: 1px solid #ccc;
+	border-radius: 3px;
+}
+
+.dz-ip-close {
+	color: #6c6e74;
+	font-size: 16px;
+	cursor: pointer;
+}
+
+.dz-ip-close:hover {
+	color: #d9534f;
+}
+
+.dz-ip-body {
+	display: flex;
+	min-height: 0;
+	flex: 1 1 auto;
+}
+
+.dz-ip-rail {
+	display: flex;
+	flex-direction: column;
+	width: 172px;
+	min-width: 172px;
+	padding: 6px 0;
+	overflow-y: auto;
+	border-right: 1px solid #ccc;
+	background: #f5f5f5;
+}
+
+.dz-ip-rail-row {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 5px 10px;
+	color: #333;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.dz-ip-rail-row:hover {
+	background: #fff;
+	text-decoration: none;
+}
+
+.dz-ip-rail-sel {
+	background: #fff;
+	box-shadow: inset 3px 0 0 #43A4D3;
+	font-weight: bold;
+}
+
+.dz-ip-rail-dis {
+	color: #6c6e74;
+	opacity: 0.45;
+	cursor: default;
+}
+
+.dz-ip-rail-dis:hover {
+	background: transparent;
+}
+
+.dz-ip-rail-glyph {
+	width: 16px;
+	text-align: center;
+	color: #6c6e74;
+}
+
+.dz-ip-rail-sel .dz-ip-rail-glyph {
+	color: #43A4D3;
+}
+
+.dz-ip-rail-name {
+	flex: 1 1 auto;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.dz-ip-rail-count {
+	color: #6c6e74;
+	font-weight: normal;
+}
+
+.dz-ip-rail-sep {
+	display: block;
+	height: 1px;
+	margin: 6px 10px;
+	background: #ccc;
+}
+
+.dz-ip-grid-wrap {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	padding: 8px;
+}
+
+.dz-ip-grid {
+	flex: 1 1 auto;
+	min-height: 220px;
+	max-height: 46vh;
+	overflow-y: auto;
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 4px;
+	align-content: start;
+}
+
+.dz-ip-tile {
+	display: block;
+	padding: 6px 2px 4px;
+	border: 1px solid transparent;
+	border-radius: 3px;
+	color: #333;
+	text-align: center;
+	cursor: pointer;
+}
+
+.dz-ip-tile:hover {
+	background: #f5f5f5;
+	text-decoration: none;
+}
+
+.dz-ip-tile-icon {
+	display: block;
+	height: 26px;
+	line-height: 26px;
+	font-size: 22px;
+	color: #43A4D3;
+}
+
+.dz-ip-tile-icon img {
+	max-width: 24px;
+	max-height: 24px;
+	vertical-align: middle;
+}
+
+.dz-ip-tile-name {
+	display: block;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	font-size: 10px;
+	color: #6c6e74;
+}
+
+.dz-ip-tile-hl {
+	border-color: #6c6e74;
+	background: #f5f5f5;
+}
+
+.dz-ip-tile-sel {
+	border-color: #43A4D3;
+	background: #f5f5f5;
+}
+
+.dz-ip-note {
+	padding: 6px 2px 0;
+	color: #6c6e74;
+}
+
+.dz-ip-foot {
+	padding: 8px 12px 10px;
+	border-top: 1px solid #ccc;
+}
+
+.dz-ip-foot-top,
+.dz-ip-off {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-height: 56px;
+}
+
+.dz-ip-off {
+	min-height: 44px;
+}
+
+.dz-ip-foot-label {
+	width: 34px;
+	color: #6c6e74;
+}
+
+.dz-ip-slot {
+	display: inline-flex;
+	align-items: center;
+	gap: 12px;
+	padding: 3px 8px;
+	border: 1px solid transparent;
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+.dz-ip-slot-active {
+	border-color: #43A4D3;
+}
+
+.dz-ip-swatch {
+	display: inline-block;
+	text-align: center;
+	line-height: 1;
+}
+
+.dz-ip-swatch img {
+	max-width: 100%;
+	max-height: 100%;
+	vertical-align: middle;
+}
+
+/* Same box and glyph sizes the widgets use, so the preview is not flattering. */
+.dz-ip-swatch-48 {
+	width: 48px;
+	height: 48px;
+	line-height: 48px;
+	font-size: 28.8px;
+}
+
+.dz-ip-swatch-16 {
+	width: 16px;
+	height: 16px;
+	line-height: 16px;
+	font-size: 14px;
+}
+
+.dz-ip-on {
+	color: #43A4D3;
+}
+
+.dz-ip-off .dz-ip-swatch,
+.dz-ip-swatch.dz-ip-off {
+	color: #6c6e74;
+}
+
+.dz-ip-disclose {
+	color: #6c6e74;
+	cursor: pointer;
+}
+
+.dz-ip-off-hint {
+	color: #6c6e74;
+}
+
+.dz-ip-actions {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding-top: 8px;
+	border-top: 1px solid #ccc;
+}
+
+.dz-ip-actions-gap {
+	flex: 1 1 auto;
+}
+
+@media (max-width: 760px) {
+	.dz-ip-rail {
+		width: 130px;
+		min-width: 130px;
+	}
 }
 
 /* Scene and group buttons are actions, so they carry the action's colour

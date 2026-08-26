@@ -3272,106 +3272,6 @@ dz-temp-bar {
     z-index: 1;
 }
 
-dz-icon-picker {
-    display: block;
-}
-.dz-icon-picker {
-    max-width: 380px;
-    text-align: left;
-    font-size: 12px;
-}
-.dz-icon-picker-current {
-    display: flex;
-    align-items: center;
-}
-.dz-icon-picker-preview {
-    width: 26px;
-    min-width: 26px;
-    height: 26px;
-    line-height: 26px;
-    text-align: center;
-    font-size: 19px;
-}
-.dz-icon-picker-preview img {
-    max-width: 24px;
-    max-height: 24px;
-    vertical-align: middle;
-}
-.dz-icon-picker-name {
-    flex: 1 1 auto;
-    margin: 0 6px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-.dz-icon-picker-panel {
-    margin-top: 4px;
-    padding: 4px;
-    border: 1px solid var(--dz-input-border, #ccc);
-    border-radius: 4px;
-}
-.dz-icon-picker-sources a,
-.dz-icon-picker-off a {
-    margin: 0 2px 2px 0;
-}
-.dz-icon-picker-tools {
-    display: flex;
-    align-items: center;
-    margin: 2px 0;
-}
-.dz-icon-picker-search {
-    flex: 1 1 auto;
-    min-width: 0;
-    padding: 2px 4px;
-    margin: 0;
-}
-.dz-icon-picker-style {
-    width: auto;
-    margin: 0 0 0 4px;
-}
-.dz-icon-picker-grid {
-    max-height: 176px;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-.dz-icon-picker-tile {
-    display: inline-block;
-    width: 32px;
-    height: 32px;
-    line-height: 32px;
-    margin: 0 2px 2px 0;
-    text-align: center;
-    font-size: 18px;
-    border: 1px solid transparent;
-    border-radius: 3px;
-    cursor: pointer;
-}
-.dz-icon-picker-tile:hover {
-    background: var(--dz-btn-hover-bg, #e0e0e0);
-}
-.dz-icon-picker-tile.selected {
-    border-color: var(--dz-accent-color, #337ab7);
-    background: var(--dz-btn-hover-bg, #e0e0e0);
-}
-.dz-icon-picker-tile img {
-    max-width: 24px;
-    max-height: 24px;
-    vertical-align: middle;
-}
-.dz-icon-picker-default,
-.dz-icon-picker-note,
-.dz-icon-picker-off {
-    margin-top: 3px;
-}
-.dz-icon-picker-off-label {
-    display: inline;
-    margin-right: 4px;
-    font-weight: normal;
-}
-.dz-icon-picker-off-label input {
-    margin-right: 3px;
-}
-
 dz-device-icon {
     display: block;
 }
@@ -3397,6 +3297,13 @@ dz-device-icon > img {
 .dz-icon-40 { width: 40px; height: 40px; font-size: 30px; line-height: 40px; }
 .dz-icon-48 { width: 48px; height: 48px; font-size: 36px; line-height: 48px; }
 
+/* A filled glyph is denser than the PNG it replaces, so at the large sizes it
+   reads as blunt. Shrink the glyph inside the unchanged box; PNGs still fill it. */
+.dz-icon-40 > .dz-icon-glyph,
+.dz-icon-48 > .dz-icon-glyph {
+    font-size: 0.8em;
+}
+
 /* Device glyphs use the theme's own link blue rather than inheriting the
    body text colour, which rendered them black. */
 dz-device-icon > .dz-icon-glyph {
@@ -3407,8 +3314,12 @@ dz-device-icon > .dz-icon-glyph.dz-icon--off {
     color: #6c6e74;
 }
 
-/* The favourite star reads as a star rather than as a themed control. */
-.dz-icon-glyph.fa-star {
+/* The favourite star reads as a star rather than as a themed control. Both
+   class families are covered: widget lists use dz-icon-glyph, the weather and
+   temperature pages use dz-chrome-icon. */
+.dz-icon-glyph.fa-star,
+.dz-chrome-icon.fa-star,
+.btn.btn-icon > .dz-chrome-icon.fa-star {
     color: #f9d023;
 }
 
