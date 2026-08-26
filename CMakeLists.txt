@@ -176,7 +176,6 @@ main/EventsPythonModule.cpp
 main/EventsPythonDevice.cpp
 main/Helper.cpp
 main/HTMLSanitizer.cpp
-main/IconLibraries.cpp
 main/IFTTT.cpp
 main/json_helper.cpp
 main/KWHStats.cpp
@@ -199,6 +198,7 @@ main/SunRiseSet.cpp
 main/ThemeSettings.cpp
 main/TrendCalculator.cpp
 main/DomoticzWebsocketHandler.cpp
+main/WebAssetFetch.cpp
 main/WebServer.cpp
 main/WebServerCmds.cpp
 main/WebServerCommands.cpp

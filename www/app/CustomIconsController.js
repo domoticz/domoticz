@@ -6,7 +6,7 @@ define(['app', 'iconLibraries'], function (app) {
 		$scope.iconset = [];
 		$scope.selectedIcon = [];
 		$scope.iconlibraries = [];
-		$scope.newLibrary = { name: '', prefix: '', url: '' };
+		$scope.newLibrary = { prefix: '', url: '' };
 
 		/* Prefills for the libraries we know work. The version is pinned to a
 		   major so the CDN keeps serving a matching stylesheet + font pair.
@@ -108,17 +108,27 @@ define(['app', 'iconLibraries'], function (app) {
 			});
 		}
 
-		/* ---- Icon libraries -------------------------------------------------
-		   A library is an icon font that Domoticz downloaded and now serves
-		   from its own assets folder. Installing one means the server fetches a
-		   stylesheet and every font it points at, which is not instant, so the
-		   user gets told what is going on. */
+		/* An icon library is a stylesheet stored as a web asset, named after its
+		   class prefix ("mdi.css"). The server fetches it plus every font it
+		   points at, which is not instant, so say what is going on. */
 		$scope.RefreshLibraryList = function () {
 			$http({
-				url: "json.htm?type=command&param=geticonlibraries",
+				url: "json.htm?type=command&param=getwebassets",
 			}).then(function successCallback(response) {
-				var data = response.data;
-				$scope.iconlibraries = (typeof data.result != 'undefined') ? data.result : [];
+				var assets = (typeof response.data.result != 'undefined') ? response.data.result : [];
+				$scope.iconlibraries = assets.filter(function (asset) {
+					// Only the stylesheets; the fonts they brought in are assets too.
+					return asset.name && /\.css$/i.test(asset.name);
+				}).map(function (asset) {
+					return {
+						name: asset.name,
+						prefix: asset.name.split('.')[0],
+						SourceURL: asset.SourceURL || '',
+						LastUpdate: asset.LastUpdate || ''
+					};
+				}).sort(function (a, b) {
+					return a.name.localeCompare(b.name);
+				});
 			}, function errorCallback(response) {
 				$scope.iconlibraries = [];
 			});
@@ -126,21 +136,43 @@ define(['app', 'iconLibraries'], function (app) {
 
 		$scope.PrefillLibrary = function (suggestion) {
 			$scope.newLibrary = {
-				name: suggestion.name,
 				prefix: suggestion.prefix,
 				url: suggestion.url
 			};
 		}
 
+		function InstallLibrary(name, url, errorText, bClearForm) {
+			ShowNotify($.t('Downloading icon library...'));
+			$http({
+				url: "json.htm?type=command&param=uploadwebasset" +
+					'&name=' + encodeURIComponent(name) +
+					'&url=' + encodeURIComponent(url),
+			}).then(function successCallback(response) {
+				HideNotify();
+				var data = response.data;
+				if (data.status != "OK") {
+					ShowNotify($.t(errorText) + ": " + $.t(data.error), 5000, true);
+					return;
+				}
+				if (bClearForm) {
+					$scope.newLibrary = { prefix: '', url: '' };
+				}
+				$scope.RefreshLibraryList();
+				iconLibraries.load();
+			}, function errorCallback(response) {
+				HideNotify();
+				ShowNotify($.t(errorText), 5000, true);
+			});
+		}
+
 		$scope.AddLibrary = function () {
 			var library = $scope.newLibrary;
-			if (!library.name || !library.url || !library.prefix) {
-				ShowNotify($.t('Please enter a Name, URL and Prefix!'), 3500, true);
+			if (!library.url || !library.prefix) {
+				ShowNotify($.t('Please enter a URL and Prefix!'), 3500, true);
 				return;
 			}
-			// The prefix becomes both a filename and a CSS class prefix, so the
-			// server only accepts lowercase letters and digits. Say so here
-			// instead of letting the request come back with an error.
+			// The prefix becomes both the asset filename and a CSS class prefix,
+			// so keep it to lowercase letters and digits.
 			if (!/^[a-z0-9]{1,32}$/.test(library.prefix)) {
 				ShowNotify($.t('The prefix may only contain lowercase letters and digits'), 3500, true);
 				return;
@@ -150,45 +182,16 @@ define(['app', 'iconLibraries'], function (app) {
 				return;
 			}
 
-			ShowNotify($.t('Downloading icon library...'));
-			$http({
-				url: "json.htm?type=command&param=addiconlibrary" +
-					'&name=' + encodeURIComponent(library.name) +
-					'&prefix=' + encodeURIComponent(library.prefix) +
-					'&url=' + encodeURIComponent(library.url),
-			}).then(function successCallback(response) {
-				HideNotify();
-				var data = response.data;
-				if (data.status != "OK") {
-					ShowNotify($.t('Error adding Icon Library') + ": " + $.t(data.error), 5000, true);
-					return;
-				}
-				$scope.newLibrary = { name: '', prefix: '', url: '' };
-				$scope.RefreshLibraryList();
-				iconLibraries.load();
-			}, function errorCallback(response) {
-				HideNotify();
-				ShowNotify($.t('Error adding Icon Library'), 5000, true);
-			});
+			InstallLibrary(library.prefix + '.css', library.url, 'Error adding Icon Library', true);
 		}
 
+		// Refreshing is installing again from the URL the server recorded.
 		$scope.RefreshLibrary = function (library) {
-			ShowNotify($.t('Downloading icon library...'));
-			$http({
-				url: "json.htm?type=command&param=refreshiconlibrary&idx=" + library.idx,
-			}).then(function successCallback(response) {
-				HideNotify();
-				var data = response.data;
-				if (data.status != "OK") {
-					ShowNotify($.t('Error refreshing Icon Library') + ": " + $.t(data.error), 5000, true);
-					return;
-				}
-				$scope.RefreshLibraryList();
-				iconLibraries.load();
-			}, function errorCallback(response) {
-				HideNotify();
-				ShowNotify($.t('Error refreshing Icon Library'), 5000, true);
-			});
+			if (!library.SourceURL) {
+				ShowNotify($.t('This library has no source URL to refresh from'), 3500, true);
+				return;
+			}
+			InstallLibrary(library.name, library.SourceURL, 'Error refreshing Icon Library', false);
 		}
 
 		$scope.DeleteLibrary = function (library) {
@@ -197,7 +200,7 @@ define(['app', 'iconLibraries'], function (app) {
 					return;
 				}
 				$http({
-					url: "json.htm?type=command&param=deleteiconlibrary&idx=" + library.idx,
+					url: "json.htm?type=command&param=deletewebasset&name=" + encodeURIComponent(library.name),
 				}).then(function successCallback(response) {
 					$scope.RefreshLibraryList();
 					iconLibraries.load();

@@ -576,18 +576,16 @@ constexpr auto sqlCreateCustomImages =
 "	[IconOn] BLOB, "
 "	[IconOff] BLOB);";
 
-/* Icon font libraries the user installed (Material Design Icons and friends).
-   The downloaded stylesheet + its fonts live in www/assets/; this table only
-   records what is installed so the UI can list, refresh and remove them.
-   Prefix is the library's class prefix ("mdi"), used to recognise which
-   library an icon class belongs to. */
-constexpr auto sqlCreateIconLibraries =
-"CREATE TABLE IF NOT EXISTS [IconLibraries]("
+/* Metadata for the web assets in www/assets/ that Domoticz downloaded itself.
+   The files are the truth; this only records where one came from so it can be
+   fetched again, and which companion files it brought in (newline separated) so
+   they go away with it. */
+constexpr auto sqlCreateWebAssets =
+"CREATE TABLE IF NOT EXISTS [WebAssets]("
 "	[ID] INTEGER PRIMARY KEY, "
-"	[Name] VARCHAR(100) NOT NULL, "
-"	[Prefix] VARCHAR(32) NOT NULL, "
-"	[CssFile] VARCHAR(200) NOT NULL, "
+"	[Name] VARCHAR(128) NOT NULL, "
 "	[SourceURL] VARCHAR(500) DEFAULT '', "
+"	[Companions] TEXT DEFAULT '', "
 "	[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')));";
 
 constexpr auto sqlCreateMySensors =
@@ -804,7 +802,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateFloorplans);
 	query(sqlCreateFloorplanOrderTrigger);
 	query(sqlCreateCustomImages);
-	query(sqlCreateIconLibraries);
+	query(sqlCreateWebAssets);
 	query(sqlCreateMySensors);
 	query(sqlCreateMySensorsVariables);
 	query(sqlCreateMySensorsChilds);
@@ -3476,12 +3474,10 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 183)
 		{
-			// Per-device icon reference (Font Awesome or an installed icon
-			// library), stored as a small JSON object. Empty means "use
-			// CustomImage exactly as before", so existing devices are
-			// unaffected until the user picks a new icon.
+			// Per-device icon reference as a small JSON object; empty keeps the
+			// CustomImage behaviour, so existing devices are unaffected.
 			query("ALTER TABLE DeviceStatus ADD COLUMN [Icon] TEXT DEFAULT ''");
-			query(sqlCreateIconLibraries);
+			query(sqlCreateWebAssets);
 		}
 	}
 	else if (bNewInstall)

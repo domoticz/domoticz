@@ -38,7 +38,7 @@
 #include "KWHStats.h"
 #include "ThemeSettings.h"
 #include "WebAssets.h"
-#include "IconLibraries.h"
+#include "WebAssetFetch.h"
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
 #include <libwebem/Base64.h>
@@ -5697,10 +5697,11 @@ namespace http
 
 			std::string szName = request::findValue(&req, "name");
 			std::string szData = request::findValue(&req, "data"); // base64 encoded
+			std::string szURL = request::findValue(&req, "url");   // alternative to data: the server fetches it
 
-			if (szName.empty() || szData.empty())
+			if (szName.empty() || (szData.empty() && szURL.empty()))
 			{
-				root["error"] = "Missing name or data";
+				root["error"] = "Missing name, and data or url";
 				return;
 			}
 			if (!IsSafeWebAssetName(szName))
@@ -5711,6 +5712,19 @@ namespace http
 			if (!IsAllowedWebAssetType(szName))
 			{
 				root["error"] = "Unsupported asset type";
+				return;
+			}
+
+			if (szData.empty())
+			{
+				std::string szError;
+				if (!WebAssetFetch::Install(szName, szURL, szError))
+				{
+					root["error"] = szError;
+					return;
+				}
+				root["status"] = "OK";
+				root["path"] = "assets/" + szName;
 				return;
 			}
 
@@ -5746,10 +5760,14 @@ namespace http
 		void CWebServer::Cmd_GetWebAssets(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["title"] = "GetWebAssets";
-			if (session.rights != URIGHTS_ADMIN)
+
+			/* Not admin-only: every logged in user's browser has to know which
+			   stylesheets to pull in, or an icon taken from one renders as an
+			   empty box for them. */
+			if (session.rights == URIGHTS_NONE)
 			{
 				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
+				return;
 			}
 
 			root["status"] = "OK";
@@ -5757,6 +5775,11 @@ namespace http
 			DIR* lDir = opendir(WebAssetFolder().c_str());
 			if (lDir == nullptr)
 				return; // no assets stored yet — an empty result is not an error
+
+			std::map<std::string, std::pair<std::string, std::string>> metadata; // name -> (source url, last update)
+			auto result = m_sql.safe_query("SELECT Name, SourceURL, LastUpdate FROM WebAssets");
+			for (const auto& sd : result)
+				metadata[sd[0]] = std::make_pair(sd[1], sd[2]);
 
 			int ii = 0;
 			struct dirent* ent;
@@ -5767,8 +5790,21 @@ namespace http
 					continue;
 				if (!IsAllowedWebAssetType(szFileName))
 					continue;
+				std::string szSourceURL;
+				std::string szLastUpdate;
+				auto itt = metadata.find(szFileName);
+				if (itt != metadata.end())
+				{
+					szSourceURL = itt->second.first;
+					szLastUpdate = itt->second.second;
+				}
+
 				root["result"][ii]["name"] = szFileName;
 				root["result"][ii]["path"] = "assets/" + szFileName;
+				root["result"][ii]["LastUpdate"] = szLastUpdate;
+				// Withheld from viewers: a source URL can name a host on the local network.
+				if (session.rights == URIGHTS_ADMIN)
+					root["result"][ii]["SourceURL"] = szSourceURL;
 				ii++;
 			}
 			closedir(lDir);
@@ -5801,142 +5837,9 @@ namespace http
 				root["error"] = "Could not remove asset";
 				return;
 			}
-			root["status"] = "OK";
-		}
-
-		/* -- Icon font libraries ---------------------------------------------
-		   An icon library is a stylesheet plus its webfonts that Domoticz
-		   downloaded and now serves from www/assets/. The heavy lifting lives
-		   in IconLibraries.cpp; these are the four thin endpoints around it. */
-		void CWebServer::Cmd_GetIconLibraries(WebEmSession& session, const request& req, Json::Value& root)
-		{
-			root["title"] = "GetIconLibraries";
-
-			/* NOT admin-only, on purpose: every logged in user's browser has to
-			   pull in the stylesheet of each installed library, otherwise every
-			   icon that comes from one renders as an empty box for them. What is
-			   returned is only what building that <link> tag needs.
-
-			   The source URL is the one exception and is added for
-			   administrators only: it can name a host on the local network that
-			   a viewer has no business learning about, and the renderer has no
-			   use for it. */
-			if (session.rights == URIGHTS_NONE)
-			{
-				session.reply_status = reply::forbidden;
-				return;
-			}
-
-			root["status"] = "OK";
-
-			auto result = m_sql.safe_query("SELECT ID, Name, Prefix, CssFile, SourceURL, LastUpdate FROM IconLibraries ORDER BY Name ASC");
-			int ii = 0;
-			for (const auto& sd : result)
-			{
-				root["result"][ii]["idx"] = sd[0];
-				root["result"][ii]["Name"] = sd[1];
-				root["result"][ii]["Prefix"] = sd[2];
-				root["result"][ii]["CssFile"] = sd[3];
-				root["result"][ii]["Path"] = "assets/" + sd[3];
-				root["result"][ii]["LastUpdate"] = sd[5];
-				if (session.rights == URIGHTS_ADMIN)
-					root["result"][ii]["SourceURL"] = sd[4];
-				ii++;
-			}
-		}
-
-		void CWebServer::Cmd_AddIconLibrary(WebEmSession& session, const request& req, Json::Value& root)
-		{
-			root["title"] = "AddIconLibrary";
-			if (session.rights != URIGHTS_ADMIN)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
-
-			const std::string szName = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
-			std::string szPrefix = request::findValue(&req, "prefix");
-			const std::string szURL = request::findValue(&req, "url");
-
-			if (szName.empty() || szPrefix.empty() || szURL.empty())
-			{
-				root["error"] = "Missing name, prefix or url";
-				return;
-			}
-
-			/* The prefix ends up both as a filename component in www/assets/ and
-			   as a CSS class prefix in the browser, so it is held to lowercase
-			   alphanumerics rather than sanitised into something else. */
-			stdlower(szPrefix);
-			if (!IconLibraries::IsValidPrefix(szPrefix))
-			{
-				root["error"] = "Invalid prefix, use up to 32 lowercase letters or digits";
-				return;
-			}
-
-			auto existing = m_sql.safe_query("SELECT ID FROM IconLibraries WHERE (Prefix=='%q')", szPrefix.c_str());
-			if (!existing.empty())
-			{
-				root["error"] = "A library with this prefix is already installed";
-				return;
-			}
-
-			std::string szError;
-			if (!IconLibraries::Install(szName, szPrefix, szURL, szError))
-			{
-				root["error"] = szError;
-				return;
-			}
-			root["status"] = "OK";
-		}
-
-		void CWebServer::Cmd_RefreshIconLibrary(WebEmSession& session, const request& req, Json::Value& root)
-		{
-			root["title"] = "RefreshIconLibrary";
-			if (session.rights != URIGHTS_ADMIN)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
-
-			const std::string sidx = request::findValue(&req, "idx");
-			if (sidx.empty())
-			{
-				root["error"] = "Missing idx";
-				return;
-			}
-
-			std::string szError;
-			if (!IconLibraries::Refresh(atoi(sidx.c_str()), szError))
-			{
-				root["error"] = szError;
-				return;
-			}
-			root["status"] = "OK";
-		}
-
-		void CWebServer::Cmd_DeleteIconLibrary(WebEmSession& session, const request& req, Json::Value& root)
-		{
-			root["title"] = "DeleteIconLibrary";
-			if (session.rights != URIGHTS_ADMIN)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
-
-			const std::string sidx = request::findValue(&req, "idx");
-			if (sidx.empty())
-			{
-				root["error"] = "Missing idx";
-				return;
-			}
-
-			std::string szError;
-			if (!IconLibraries::Remove(atoi(sidx.c_str()), szError))
-			{
-				root["error"] = szError;
-				return;
-			}
+			// Takes the companion files the asset brought in with it, so removing a
+			// stylesheet does not leave its fonts behind.
+			WebAssetFetch::Forget(szName);
 			root["status"] = "OK";
 		}
 

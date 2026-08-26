@@ -2104,7 +2104,7 @@
     <ClInclude Include="..\main\HTMLSanitizer.h">
       <Filter>Helpers</Filter>
     </ClInclude>
-    <ClInclude Include="..\main\IconLibraries.h">
+    <ClInclude Include="..\main\WebAssetFetch.h">
       <Filter>Helpers</Filter>
     </ClInclude>
     <ClInclude Include="..\main\WebAssets.h">
@@ -2931,7 +2931,7 @@
     <ClCompile Include="..\main\HTMLSanitizer.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
-    <ClCompile Include="..\main\IconLibraries.cpp">
+    <ClCompile Include="..\main\WebAssetFetch.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\Buienradar.cpp">

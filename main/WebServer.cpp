@@ -594,11 +594,6 @@ namespace http
 			RegisterCommandCode("getwebassets", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetWebAssets(session, req, root); });
 			RegisterCommandCode("deletewebasset", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteWebAsset(session, req, root); });
 
-			RegisterCommandCode("geticonlibraries", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetIconLibraries(session, req, root); });
-			RegisterCommandCode("addiconlibrary", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddIconLibrary(session, req, root); });
-			RegisterCommandCode("refreshiconlibrary", [this](auto&& session, auto&& req, auto&& root) { Cmd_RefreshIconLibrary(session, req, root); });
-			RegisterCommandCode("deleteiconlibrary", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteIconLibrary(session, req, root); });
-
 			RegisterCommandCode("renamedevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_RenameDevice(session, req, root); });
 			RegisterCommandCode("setdevused", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetDeviceUsed(session, req, root); });
 

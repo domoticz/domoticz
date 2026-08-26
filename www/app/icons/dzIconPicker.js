@@ -105,16 +105,28 @@ define(['app'], function (app) {
             return iconSetRequest;
         }
 
-        /* Installed icon libraries. The command is optional: an older server
-           simply does not have it, and then the picker offers Font Awesome
-           only. */
+        /* Installed icon libraries: the stylesheets among the web assets, whose
+           class prefix is the filename they were installed under ("mdi.css" ->
+           "mdi"). A refused command leaves the picker with Font Awesome only. */
         function libraries() {
             if (!librariesRequest) {
-                librariesRequest = domoticzApi.sendCommand('geticonlibraries', {})
+                librariesRequest = domoticzApi.sendCommand('getwebassets', {})
                     .then(function (data) {
-                        return (data.result || []).filter(function (row) {
-                            return row && row.Prefix;
-                        });
+                        return (data.result || [])
+                            .filter(function (row) {
+                                return row && row.name && /\.css$/i.test(row.name);
+                            })
+                            .map(function (row) {
+                                var prefix = row.name.split('.')[0].toLowerCase();
+                                return {
+                                    prefix: prefix,
+                                    css: row.path || ('assets/' + row.name),
+                                    title: prefix
+                                };
+                            })
+                            .filter(function (row) {
+                                return !!row.prefix;
+                            });
                     })
                     .catch(function () {
                         return [];
@@ -550,7 +562,7 @@ define(['app'], function (app) {
                     }
 
                     rows.forEach(function (row) {
-                        var id = 'lib-' + row.Prefix;
+                        var id = 'lib-' + row.prefix;
                         var known = vm.sources.some(function (source) {
                             return source.id === id;
                         });
@@ -561,14 +573,11 @@ define(['app'], function (app) {
                         vm.sources.push({
                             id: id,
                             kind: 'lib',
-                            provider: row.Prefix,
-                            /* Icon fonts are normally used as "<base> <base>-name";
-                               the base class carries the font-family, the second
-                               one the glyph. Prefix doubles as base unless the
-                               server names one. */
-                            base: row.BaseClass || row.Prefix,
-                            css: row.CssFile || '',
-                            title: row.Name || row.Prefix
+                            provider: row.prefix,
+                            // Used as "<base> <base>-name": the base carries the font-family.
+                            base: row.prefix,
+                            css: row.css,
+                            title: row.title
                         });
                     });
                 });

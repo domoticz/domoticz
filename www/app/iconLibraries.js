@@ -1,27 +1,22 @@
 define(['app'], function (app) {
 	'use strict';
 
-	/*
-	 * Icon font libraries the user installed (Material Design Icons and
-	 * friends). The server downloaded them and serves them from www/assets/;
-	 * all the browser has to do is pull the stylesheets in.
-	 *
-	 * This happens once for the whole application rather than from the page
-	 * that needs the icons: any page can show a device whose icon comes from a
-	 * library, so the stylesheets have to be there before the first render.
-	 */
+	/* Pulls in the stylesheets among the stored web assets (icon fonts such as
+	   Material Design Icons). Done once for the whole application: any page can
+	   show a device whose icon comes from one, so they have to be there before
+	   the first render. */
 
 	var addedLinks = [];
 	var bLoaded = false;
 
-	function addStylesheet(library) {
-		if (!library || !library.Path) {
+	function addStylesheet(asset) {
+		if (!asset || !asset.name || !/\.css$/i.test(asset.name)) {
 			return;
 		}
 		var link = document.createElement('link');
 		link.rel = 'stylesheet';
-		link.href = library.Path;
-		link.setAttribute('data-icon-library', library.Prefix || '');
+		link.href = asset.path || ('assets/' + asset.name);
+		link.setAttribute('data-web-asset', asset.name);
 		document.head.appendChild(link);
 		addedLinks.push(link);
 	}
@@ -37,7 +32,7 @@ define(['app'], function (app) {
 
 	function load() {
 		return $.ajax({
-			url: 'json.htm?type=command&param=geticonlibraries',
+			url: 'json.htm?type=command&param=getwebassets',
 			dataType: 'json'
 		}).then(function (data) {
 			if (!data || data.status !== 'OK') {
@@ -47,29 +42,24 @@ define(['app'], function (app) {
 			removeStylesheets();
 			(data.result || []).forEach(addStylesheet);
 		}, function () {
-			// Refused (nobody logged in yet) or unreachable. Nothing to report
-			// to the user: without a library there is simply nothing to load.
+			// Refused (nobody logged in yet) or unreachable; nothing to report.
 		});
 	}
 
-	// Lets the Custom Icons page apply an install or a removal straight away,
-	// instead of leaving the user with a stale set of stylesheets until the
-	// next page load.
+	// Lets the Custom Icons page apply an install or a removal straight away.
 	app.factory('iconLibraries', function () {
 		return {
 			load: load
 		};
 	});
 
-	/* Fired here rather than from a run block so the request goes out as early
-	   as possible, before the first view is rendered. */
+	// Fired here rather than from a run block, so it goes out before the first render.
 	load();
 
 	app.run(['$rootScope', function ($rootScope) {
 		$rootScope.$on('$routeChangeSuccess', function () {
-			// The first attempt can land on the login screen, where the
-			// request is refused. Retry until one succeeds, so a user who logs
-			// in later in the same page load still gets the icons.
+			// The first attempt can land on the login screen and be refused, so
+			// retry until one succeeds.
 			if (!bLoaded) {
 				load();
 			}
