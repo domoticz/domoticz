@@ -134,23 +134,37 @@ namespace WebAssetFetch
 			return szOut;
 		}
 
+		// The IANA special-purpose registry rather than just the familiar private
+		// ranges: a deployment is free to route any of these internally.
 		bool IsBlockedIPv4(const uint8_t* pAddr)
 		{
-			if (pAddr[0] == 0)
+			if (pAddr[0] == 0) // 0.0.0.0/8
 				return true;
-			if (pAddr[0] == 10)
+			if (pAddr[0] == 10) // 10.0.0.0/8
 				return true;
-			if (pAddr[0] == 127)
+			if (pAddr[0] == 127) // 127.0.0.0/8
 				return true;
-			if ((pAddr[0] == 100) && ((pAddr[1] & 0xC0) == 64))
+			if ((pAddr[0] == 100) && ((pAddr[1] & 0xC0) == 64)) // 100.64.0.0/10
 				return true;
-			if ((pAddr[0] == 169) && (pAddr[1] == 254))
+			if ((pAddr[0] == 169) && (pAddr[1] == 254)) // 169.254.0.0/16
 				return true;
-			if ((pAddr[0] == 172) && ((pAddr[1] & 0xF0) == 16))
+			if ((pAddr[0] == 172) && ((pAddr[1] & 0xF0) == 16)) // 172.16.0.0/12
 				return true;
-			if ((pAddr[0] == 192) && (pAddr[1] == 168))
+			if ((pAddr[0] == 192) && (pAddr[1] == 0) && (pAddr[2] == 0)) // 192.0.0.0/24
 				return true;
-			if (pAddr[0] >= 224)
+			if ((pAddr[0] == 192) && (pAddr[1] == 0) && (pAddr[2] == 2)) // 192.0.2.0/24
+				return true;
+			if ((pAddr[0] == 192) && (pAddr[1] == 88) && (pAddr[2] == 99)) // 192.88.99.0/24
+				return true;
+			if ((pAddr[0] == 192) && (pAddr[1] == 168)) // 192.168.0.0/16
+				return true;
+			if ((pAddr[0] == 198) && ((pAddr[1] & 0xFE) == 18)) // 198.18.0.0/15
+				return true;
+			if ((pAddr[0] == 198) && (pAddr[1] == 51) && (pAddr[2] == 100)) // 198.51.100.0/24
+				return true;
+			if ((pAddr[0] == 203) && (pAddr[1] == 0) && (pAddr[2] == 113)) // 203.0.113.0/24
+				return true;
+			if (pAddr[0] >= 224) // multicast, the 240/4 reserved block and broadcast
 				return true;
 			return false;
 		}
@@ -160,6 +174,14 @@ namespace WebAssetFetch
 			static const uint8_t v4Mapped[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF };
 			if (memcmp(pAddr, v4Mapped, sizeof(v4Mapped)) == 0)
 				return IsBlockedIPv4(pAddr + 12);
+
+			// NAT64 and 6to4 carry the IPv4 destination inside the IPv6 address, so
+			// without these they would reach a blocked v4 host past the check above.
+			static const uint8_t nat64[12] = { 0, 0x64, 0xFF, 0x9B, 0, 0, 0, 0, 0, 0, 0, 0 };
+			if (memcmp(pAddr, nat64, sizeof(nat64)) == 0) // 64:ff9b::/96
+				return IsBlockedIPv4(pAddr + 12);
+			if ((pAddr[0] == 0x20) && (pAddr[1] == 0x02)) // 2002::/16
+				return IsBlockedIPv4(pAddr + 2);
 
 			bool bTopZero = true;
 			for (int ii = 0; ii < 10; ii++)
@@ -173,11 +195,24 @@ namespace WebAssetFetch
 			if (bTopZero)
 				return true;
 
-			if ((pAddr[0] & 0xFE) == 0xFC)
+			if ((pAddr[0] & 0xFE) == 0xFC) // fc00::/7 unique local
 				return true;
-			if ((pAddr[0] == 0xFE) && ((pAddr[1] & 0xC0) == 0x80))
+			if ((pAddr[0] == 0xFE) && ((pAddr[1] & 0xC0) == 0x80)) // fe80::/10 link local
 				return true;
-			if (pAddr[0] == 0xFF)
+			if (pAddr[0] == 0xFF) // ff00::/8 multicast
+				return true;
+
+			static const uint8_t zero6[6] = { 0, 0, 0, 0, 0, 0 };
+			if ((pAddr[0] == 0x01) && (pAddr[1] == 0x00) && (memcmp(pAddr + 2, zero6, sizeof(zero6)) == 0)) // 100::/64 discard
+				return true;
+			if ((pAddr[0] == 0x20) && (pAddr[1] == 0x01) && (pAddr[2] == 0x00))
+			{
+				if (pAddr[3] == 0x00) // 2001::/32 Teredo
+					return true;
+				if (((pAddr[3] & 0xF0) == 0x10) || ((pAddr[3] & 0xF0) == 0x20)) // 2001:10::/28, 2001:20::/28 ORCHID
+					return true;
+			}
+			if ((pAddr[0] == 0x20) && (pAddr[1] == 0x01) && (pAddr[2] == 0x0D) && (pAddr[3] == 0xB8)) // 2001:db8::/32
 				return true;
 			return false;
 		}
