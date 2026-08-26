@@ -31,8 +31,8 @@
                 </td>
                 <td id="type">{{ctrl.getTypeSubTypeText()}}</td>
                 <td class="options">
-                    <span ng-if="ctrl.device.Favorite == 0"><i class="dz-icon-glyph dz-icon-16 fa-regular fa-star lcursor" data-i18n="[title]Add to Dashboard" ng-click="ctrl.makeFavorite(1)"></i>&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                    <span ng-if="ctrl.device.Favorite != 0"><i class="dz-icon-glyph dz-icon-16 fa-solid fa-star lcursor" data-i18n="[title]Remove from Dashboard" ng-click="ctrl.makeFavorite(0)"></i>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span ng-if="ctrl.device.Favorite == 0"><i class="dz-icon-glyph dz-icon-16 fa-regular fa-star lcursor" title="Add to Dashboard" ng-click="ctrl.makeFavorite(1)"></i>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span ng-if="ctrl.device.Favorite != 0"><i class="dz-icon-glyph dz-icon-16 fa-solid fa-star lcursor" title="Remove from Dashboard" ng-click="ctrl.makeFavorite(0)"></i>&nbsp;&nbsp;&nbsp;&nbsp;</span>
                     <a ng-if="ctrl.hasLogLink()" class="btnsmall" ng-href="{{ctrl.getGraphLogLink()}}" data-i18n="Log">Log</a>
                     <a ng-if="ctrl.isAdmin" class="btnsmall" ng-click="ctrl.editDevice()" data-i18n="Edit">Edit</a>
                     <a ng-if="ctrl.isAdmin && ctrl.hasTimerSupport() && ctrl.hasTimers()" class="btnsmall-sel" ng-href="{{ctrl.getTimerLink()}}" data-i18n="Timers">Timers</a>

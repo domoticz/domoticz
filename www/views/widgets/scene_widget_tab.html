@@ -6,7 +6,7 @@
                 <td id="bigtext">
                     {{ctrl.getStatusText()}}
                     <a ng-if="ctrl.scene.UsedByCamera" ng-click="ctrl.showCameraStream()" class="lcursor">
-                        <i class="dz-icon-glyph dz-icon-16 fa-solid fa-video" data-i18n="[title]Stream Video"></i>
+                        <i class="dz-icon-glyph dz-icon-16 fa-solid fa-video" title="Stream Video"></i>
                     </a>
                 </td>
                 <!-- Scene: single Activate button -->
@@ -25,8 +25,8 @@
                 <td id="lastupdate" class="lastupdate"><span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: {{ctrl.scene.LastUpdate}}</td>
                 <td id="type">{{ctrl.getTypeText()}}</td>
                 <td class="options">
-                    <span ng-if="ctrl.scene.Favorite == 0"><i class="dz-icon-glyph dz-icon-16 fa-regular fa-star lcursor" data-i18n="[title]Add to Dashboard" ng-click="ctrl.makeFavorite(1)"></i>&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                    <span ng-if="ctrl.scene.Favorite != 0"><i class="dz-icon-glyph dz-icon-16 fa-solid fa-star lcursor" data-i18n="[title]Remove from Dashboard" ng-click="ctrl.makeFavorite(0)"></i>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span ng-if="ctrl.scene.Favorite == 0"><i class="dz-icon-glyph dz-icon-16 fa-regular fa-star lcursor" title="Add to Dashboard" ng-click="ctrl.makeFavorite(1)"></i>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span ng-if="ctrl.scene.Favorite != 0"><i class="dz-icon-glyph dz-icon-16 fa-solid fa-star lcursor" title="Remove from Dashboard" ng-click="ctrl.makeFavorite(0)"></i>&nbsp;&nbsp;&nbsp;&nbsp;</span>
                     <a class="btnsmall" href="#/Scenes/{{ctrl.scene.idx}}/Log" data-i18n="Log">Log</a>
                     <a ng-if="ctrl.isAdmin" class="btnsmall" ng-click="ctrl.editScene()" data-i18n="Edit">Edit</a>
                     <a ng-if="ctrl.isAdmin && ctrl.hasTimers()" class="btnsmall-sel" href="#/Scenes/{{ctrl.scene.idx}}/Timers" data-i18n="Timers">Timers</a>

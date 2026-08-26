@@ -193,6 +193,7 @@ define(['app'], function (app) {
     };
 
     var TYPE_ALIASES = {
+        'hardware':      'gauge',
         'hum':           'humidity',
         'temphum':       'temp',
         'temphumbaroew': 'temp',

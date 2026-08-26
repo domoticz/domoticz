@@ -6,9 +6,9 @@
                 <td id="bigtext">
                     <span>{{ctrl.getStatusText()}}</span>
                     <a ng-if="ctrl.device.UsedByCamera" ng-click="ctrl.showCameraStream()" class="lcursor">
-                        <i class="dz-icon-glyph dz-icon-16 fa-solid fa-video" data-i18n="[title]Stream Video"></i>
+                        <i class="dz-icon-glyph dz-icon-16 fa-solid fa-video" title="Stream Video"></i>
                     </a>
-                    <i ng-if="ctrl.isAdmin && ctrl.isRFY()" class="dz-icon-glyph dz-icon-16 fa-solid fa-sliders lcursor" data-i18n="[title]Setup" ng-click="ctrl.showRFYSetup($event)"></i>&nbsp;
+                    <i ng-if="ctrl.isAdmin && ctrl.isRFY()" class="dz-icon-glyph dz-icon-16 fa-solid fa-sliders lcursor" title="Setup" ng-click="ctrl.showRFYSetup($event)"></i>&nbsp;
                 </td>
                 <td id="img">
                     <!-- Evohome -->
@@ -83,8 +83,8 @@
                     </div></span>
                 </td>
                 <td class="options">
-                    <span ng-if="ctrl.device.Favorite == 0"><i class="dz-icon-glyph dz-icon-16 fa-regular fa-star lcursor" data-i18n="[title]Add to Dashboard" ng-click="ctrl.makeFavorite(1)"></i>&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                    <span ng-if="ctrl.device.Favorite != 0"><i class="dz-icon-glyph dz-icon-16 fa-solid fa-star lcursor" data-i18n="[title]Remove from Dashboard" ng-click="ctrl.makeFavorite(0)"></i>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span ng-if="ctrl.device.Favorite == 0"><i class="dz-icon-glyph dz-icon-16 fa-regular fa-star lcursor" title="Add to Dashboard" ng-click="ctrl.makeFavorite(1)"></i>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span ng-if="ctrl.device.Favorite != 0"><i class="dz-icon-glyph dz-icon-16 fa-solid fa-star lcursor" title="Remove from Dashboard" ng-click="ctrl.makeFavorite(0)"></i>&nbsp;&nbsp;&nbsp;&nbsp;</span>
                     <a class="btnsmall" ng-href="{{ctrl.getGraphLogLink()}}" data-i18n="Log">Log</a>
                     <a ng-if="ctrl.isAdmin" class="btnsmall" ng-click="ctrl.editDevice()" data-i18n="Edit">Edit</a>
                     <a ng-if="ctrl.isAdmin && ctrl.hasTimers()" class="btnsmall-sel" ng-href="{{ctrl.getTimerLink()}}" data-i18n="Timers">Timers</a>

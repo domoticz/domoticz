@@ -3397,8 +3397,14 @@ dz-device-icon > img {
 .dz-icon-40 { width: 40px; height: 40px; font-size: 30px; line-height: 40px; }
 .dz-icon-48 { width: 48px; height: 48px; font-size: 36px; line-height: 48px; }
 
-.dz-icon-glyph.dz-icon--off {
-    opacity: 0.45;
+/* Device glyphs use the theme's own link blue rather than inheriting the
+   body text colour, which rendered them black. */
+dz-device-icon > .dz-icon-glyph {
+    color: #43A4D3;
+}
+
+dz-device-icon > .dz-icon-glyph.dz-icon--off {
+    color: #6c6e74;
 }
 
 #img dz-device-icon:hover > .dz-icon-glyph {
