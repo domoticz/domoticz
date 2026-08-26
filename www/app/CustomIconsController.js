@@ -141,7 +141,7 @@ define(['app', 'iconLibraries'], function (app) {
 			};
 		}
 
-		function InstallLibrary(name, url, errorText, bClearForm) {
+		function InstallLibrary(name, url, szError, bClearForm) {
 			ShowNotify($.t('Downloading icon library...'));
 			$http({
 				url: "json.htm?type=command&param=uploadwebasset" +
@@ -151,7 +151,7 @@ define(['app', 'iconLibraries'], function (app) {
 				HideNotify();
 				var data = response.data;
 				if (data.status != "OK") {
-					ShowNotify($.t(errorText) + ": " + $.t(data.error), 5000, true);
+					ShowNotify(szError + ": " + $.t(data.error), 5000, true);
 					return;
 				}
 				if (bClearForm) {
@@ -161,7 +161,7 @@ define(['app', 'iconLibraries'], function (app) {
 				iconLibraries.load();
 			}, function errorCallback(response) {
 				HideNotify();
-				ShowNotify($.t(errorText), 5000, true);
+				ShowNotify(szError, 5000, true);
 			});
 		}
 
@@ -182,7 +182,7 @@ define(['app', 'iconLibraries'], function (app) {
 				return;
 			}
 
-			InstallLibrary(library.prefix + '.css', library.url, 'Error adding Icon Library', true);
+			InstallLibrary(library.prefix + '.css', library.url, $.t('Error adding Icon Library'), true);
 		}
 
 		// Refreshing is installing again from the URL the server recorded.
@@ -191,7 +191,7 @@ define(['app', 'iconLibraries'], function (app) {
 				ShowNotify($.t('This library has no source URL to refresh from'), 3500, true);
 				return;
 			}
-			InstallLibrary(library.name, library.SourceURL, 'Error refreshing Icon Library', false);
+			InstallLibrary(library.name, library.SourceURL, $.t('Error refreshing Icon Library'), false);
 		}
 
 		$scope.DeleteLibrary = function (library) {
