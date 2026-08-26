@@ -323,6 +323,11 @@ define(['app', 'icons/dzIconService'], function (app) {
                 if (isFa && !readProperty(rule, '--fa')) {
                     continue;
                 }
+                // Elsewhere the codepoint is the tell. Sizing and transform helpers such as
+                // .ri-10x or .mdi-rotate-90 carry the glyph prefix but would render blank.
+                if (!isFa && !hasGlyphContent(rule)) {
+                    continue;
+                }
 
                 rule.selectorText.split(',').forEach(function (selector) {
                     var name = glyphClassName(selector, prefix);
@@ -341,21 +346,39 @@ define(['app', 'icons/dzIconService'], function (app) {
             }
         }
 
+        function hasGlyphContent(rule) {
+            var value = (readProperty(rule, 'content') || '').trim();
+
+            if (!value || value === 'none' || value === 'normal') {
+                return false;
+            }
+
+            // content:"" declares the property without a codepoint.
+            return !!value.replace(/^(['"])([\s\S]*)\1$/, '$2').trim();
+        }
+
+        // Libraries differ in where they hang the codepoint: on a lone class (.ri-home-line:before)
+        // or on a compound with the base class (.ph.ph-acorn:before). Both have to yield the glyph.
         function glyphClassName(selector, prefix) {
-            var match = selector.trim()
-                .replace(/::?(before|after)$/, '')
-                .match(/^\.([A-Za-z0-9_-]+)$/);
+            var compound = selector.trim().replace(/::?(before|after)$/, '');
 
-            if (!match) {
+            // Class chains only. A combinator, attribute or id selector could otherwise pull in a
+            // class that merely carries the prefix without being a glyph of its own.
+            if (!/^(?:\.[A-Za-z0-9_-]+)+$/.test(compound)) {
                 return null;
             }
 
-            var name = match[1];
-            if (name.indexOf(prefix + '-') !== 0 || FA_SKIP[name]) {
-                return null;
+            var tokens = compound.split('.');
+            var name = null;
+
+            for (var i = 1; i < tokens.length; i++) {
+                // Last match wins: weight variants read .ph-fill.ph-acorn, glyph token rightmost.
+                if (tokens[i].indexOf(prefix + '-') === 0) {
+                    name = tokens[i];
+                }
             }
 
-            return name;
+            return (name && !FA_SKIP[name]) ? name : null;
         }
 
         function ensureStylesheet(href) {
