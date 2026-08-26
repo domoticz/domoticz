@@ -264,6 +264,11 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 		{
 			resolvelist = curl_slist_append(resolvelist, szResolveOverride.c_str());
 			curl_easy_setopt(curl, CURLOPT_RESOLVE, resolvelist);
+			// A proxy resolves the host itself, so it would route around the address
+			// pinned above. Callers that pin an address have already validated it and
+			// must reach it directly; only this path opts out of proxying.
+			curl_easy_setopt(curl, CURLOPT_PROXY, "");
+			curl_easy_setopt(curl, CURLOPT_NOPROXY, "*");
 		}
 
 		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, write_curl_headerdata);
