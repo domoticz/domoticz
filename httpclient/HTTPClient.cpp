@@ -229,7 +229,7 @@ void HTTPClient::SetUserAgent(const std::string &useragent)
  *									*
  ************************************************************************/
 
-bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const long TimeOut, const bool bStartNewSession)
+bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const long TimeOut, const bool bStartNewSession, const bool bFollowRedirect)
 {
 	try
 	{
@@ -243,6 +243,8 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 		SetGlobalOptions(curl);
 		if (TimeOut != -1)
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
+		if (!bFollowRedirect)
+			curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
 
 		if (bStartNewSession)
 			curl_easy_setopt(curl, CURLOPT_COOKIESESSION, 1);
@@ -586,10 +588,10 @@ bool HTTPClient::PatchBinary(const std::string& url, const std::string& putdata,
  *									*
  ************************************************************************/
 
-bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut, const bool bStartNewSession)
+bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut, const bool bStartNewSession, const bool bFollowRedirect)
 {
 	std::vector<std::string> vHeaderData;
-	return GETBinary(url, ExtraHeaders, response, vHeaderData, TimeOut, bStartNewSession);
+	return GETBinary(url, ExtraHeaders, response, vHeaderData, TimeOut, bStartNewSession, bFollowRedirect);
 }
 
 bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut)

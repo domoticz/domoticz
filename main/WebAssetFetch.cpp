@@ -3,10 +3,21 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdint>
 #include <cstdlib>
+#include <cstring>
 #include <map>
 #include <string>
 #include <vector>
+
+#ifdef WIN32
+#include <ws2tcpip.h>
+#else
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#endif
 
 #include "Helper.h"
 #include "Logger.h"
@@ -21,6 +32,7 @@ namespace WebAssetFetch
 		const int WEBASSET_MAX_COMPANIONS = 32;
 		const size_t WEBASSET_MAX_TOTAL_SIZE = 16 * 1024 * 1024;
 		const long WEBASSET_HTTP_TIMEOUT = 20;
+		const int WEBASSET_MAX_REDIRECTS = 5;
 
 		const char* LOGTAG = "WebAssetFetch";
 
@@ -41,21 +53,6 @@ namespace WebAssetFetch
 			size_t totalSize = 0;
 			std::string szError;
 		};
-
-		bool HttpGet(const std::string& szURL, std::string& szContent)
-		{
-			_log.Log(LOG_STATUS, "%s: fetching %s", LOGTAG, szURL.c_str());
-
-			std::vector<unsigned char> vResponse;
-			const std::vector<std::string> vExtraHeaders;
-			if (!HTTPClient::GETBinary(szURL, vExtraHeaders, vResponse, WEBASSET_HTTP_TIMEOUT))
-			{
-				_log.Log(LOG_ERROR, "%s: could not fetch %s", LOGTAG, szURL.c_str());
-				return false;
-			}
-			szContent.assign(vResponse.begin(), vResponse.end());
-			return true;
-		}
 
 		size_t FindCaseInsensitive(const std::string& szHaystack, const std::string& szNeedle, size_t iFrom)
 		{
@@ -135,6 +132,265 @@ namespace WebAssetFetch
 			if (szOut.empty())
 				szOut = "/";
 			return szOut;
+		}
+
+		bool IsBlockedIPv4(const uint8_t* pAddr)
+		{
+			if (pAddr[0] == 0)
+				return true;
+			if (pAddr[0] == 10)
+				return true;
+			if (pAddr[0] == 127)
+				return true;
+			if ((pAddr[0] == 100) && ((pAddr[1] & 0xC0) == 64))
+				return true;
+			if ((pAddr[0] == 169) && (pAddr[1] == 254))
+				return true;
+			if ((pAddr[0] == 172) && ((pAddr[1] & 0xF0) == 16))
+				return true;
+			if ((pAddr[0] == 192) && (pAddr[1] == 168))
+				return true;
+			if (pAddr[0] >= 224)
+				return true;
+			return false;
+		}
+
+		bool IsBlockedIPv6(const uint8_t* pAddr)
+		{
+			static const uint8_t v4Mapped[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF };
+			if (memcmp(pAddr, v4Mapped, sizeof(v4Mapped)) == 0)
+				return IsBlockedIPv4(pAddr + 12);
+
+			bool bTopZero = true;
+			for (int ii = 0; ii < 10; ii++)
+			{
+				if (pAddr[ii] != 0)
+				{
+					bTopZero = false;
+					break;
+				}
+			}
+			if (bTopZero)
+				return true;
+
+			if ((pAddr[0] & 0xFE) == 0xFC)
+				return true;
+			if ((pAddr[0] == 0xFE) && ((pAddr[1] & 0xC0) == 0x80))
+				return true;
+			if (pAddr[0] == 0xFF)
+				return true;
+			return false;
+		}
+
+		std::string HostFromAuthority(const std::string& szAuthority)
+		{
+			std::string szHost = szAuthority;
+			const size_t iAt = szHost.rfind('@');
+			if (iAt != std::string::npos)
+				szHost = szHost.substr(iAt + 1);
+			if (!szHost.empty() && (szHost.front() == '['))
+			{
+				const size_t iEnd = szHost.find(']');
+				if (iEnd == std::string::npos)
+					return "";
+				return szHost.substr(1, iEnd - 1);
+			}
+			const size_t iColon = szHost.find(':');
+			if (iColon != std::string::npos)
+				szHost = szHost.substr(0, iColon);
+			return szHost;
+		}
+
+		// Resolved here and connected by curl a moment later, so DNS rebinding stays a residual risk.
+		bool IsPublicHost(const std::string& szAuthority)
+		{
+			const std::string szHost = HostFromAuthority(szAuthority);
+			if (szHost.empty() || (szHost.size() > 255))
+				return false;
+
+			uint8_t addr4[4];
+			if (inet_pton(AF_INET, szHost.c_str(), addr4) == 1)
+				return !IsBlockedIPv4(addr4);
+			uint8_t addr6[16];
+			if (inet_pton(AF_INET6, szHost.c_str(), addr6) == 1)
+				return !IsBlockedIPv6(addr6);
+
+			struct addrinfo hints;
+			memset(&hints, 0, sizeof(hints));
+			hints.ai_family = AF_UNSPEC;
+			hints.ai_socktype = SOCK_STREAM;
+
+			struct addrinfo* pResult = nullptr;
+			if (getaddrinfo(szHost.c_str(), nullptr, &hints, &pResult) != 0)
+				return false;
+
+			bool bAllowed = (pResult != nullptr);
+			for (struct addrinfo* pInfo = pResult; pInfo != nullptr; pInfo = pInfo->ai_next)
+			{
+				if (pInfo->ai_family == AF_INET)
+				{
+					const struct sockaddr_in* pSa = reinterpret_cast<const struct sockaddr_in*>(pInfo->ai_addr);
+					bAllowed = !IsBlockedIPv4(reinterpret_cast<const uint8_t*>(&pSa->sin_addr));
+				}
+				else if (pInfo->ai_family == AF_INET6)
+				{
+					const struct sockaddr_in6* pSa6 = reinterpret_cast<const struct sockaddr_in6*>(pInfo->ai_addr);
+					bAllowed = !IsBlockedIPv6(reinterpret_cast<const uint8_t*>(&pSa6->sin6_addr));
+				}
+				else
+					bAllowed = false;
+				if (!bAllowed)
+					break;
+			}
+			freeaddrinfo(pResult);
+			return bAllowed;
+		}
+
+		bool CheckDestination(const std::string& szAuthority, std::string& szError)
+		{
+			if (IsPublicHost(szAuthority))
+				return true;
+			_log.Log(LOG_ERROR, "%s: refusing to fetch from '%s', it does not resolve to a public internet address", LOGTAG, szAuthority.c_str());
+			szError = "'" + szAuthority + "' is not a public internet address. Assets on your own network can be installed with the file upload option instead of a URL";
+			return false;
+		}
+
+		bool ResolveAgainst(const std::string& szBaseScheme, const std::string& szBaseAuthority, const std::string& szBasePath, const std::string& szRef, std::string& szOut)
+		{
+			if (!IsCleanURL(szRef))
+				return false;
+
+			std::string szScheme;
+			std::string szAuthority;
+			std::string szPath;
+
+			if (szRef.compare(0, 2, "//") == 0)
+			{
+				if (!ParseHttpURL(szBaseScheme + ":" + szRef, szScheme, szAuthority, szPath))
+					return false;
+			}
+			else
+			{
+				const size_t iColon = szRef.find(':');
+				const size_t iSlash = szRef.find('/');
+				if ((iColon != std::string::npos) && ((iSlash == std::string::npos) || (iColon < iSlash)))
+				{
+					if (!ParseHttpURL(szRef, szScheme, szAuthority, szPath))
+						return false;
+				}
+				else
+				{
+					szScheme = szBaseScheme;
+					szAuthority = szBaseAuthority;
+					if (szRef.front() == '/')
+						szPath = szRef;
+					else
+					{
+						const std::string szClean = szBasePath.substr(0, szBasePath.find_first_of("?#"));
+						szPath = szClean.substr(0, szClean.rfind('/') + 1) + szRef;
+					}
+				}
+			}
+
+			std::string szSuffix;
+			const size_t iCut = szPath.find_first_of("?#");
+			if (iCut != std::string::npos)
+			{
+				szSuffix = szPath.substr(iCut);
+				szPath = szPath.substr(0, iCut);
+			}
+			const size_t iFrag = szSuffix.find('#');
+			if (iFrag != std::string::npos)
+				szSuffix = szSuffix.substr(0, iFrag);
+			if (szSuffix == "?")
+				szSuffix.clear();
+
+			szOut = szScheme + "://" + szAuthority + NormalisePath(szPath) + szSuffix;
+			return true;
+		}
+
+		int HeaderStatusCode(const std::vector<std::string>& vHeaderData)
+		{
+			int iCode = 0;
+			for (const auto& szLine : vHeaderData)
+			{
+				if (szLine.compare(0, 5, "HTTP/") != 0)
+					continue;
+				const size_t iSpace = szLine.find(' ');
+				if (iSpace != std::string::npos)
+					iCode = atoi(szLine.substr(iSpace + 1).c_str());
+			}
+			return iCode;
+		}
+
+		std::string HeaderLocation(const std::vector<std::string>& vHeaderData)
+		{
+			const std::string szNeedle = "location:";
+			for (auto itt = vHeaderData.rbegin(); itt != vHeaderData.rend(); ++itt)
+			{
+				if (itt->size() <= szNeedle.size())
+					continue;
+				if (FindCaseInsensitive(*itt, szNeedle, 0) != 0)
+					continue;
+				std::string szValue = itt->substr(szNeedle.size());
+				stdstring_trimws(szValue);
+				return szValue;
+			}
+			return "";
+		}
+
+		bool HttpGet(const std::string& szURL, std::string& szContent, std::string& szError, std::string* pszFinalURL = nullptr)
+		{
+			std::string szCurrent = szURL;
+			for (int iHop = 0; iHop <= WEBASSET_MAX_REDIRECTS; iHop++)
+			{
+				std::string szScheme;
+				std::string szAuthority;
+				std::string szPath;
+				if (!IsCleanURL(szCurrent) || !ParseHttpURL(szCurrent, szScheme, szAuthority, szPath))
+				{
+					szError = "Only http:// and https:// URLs are supported";
+					return false;
+				}
+				if (!CheckDestination(szAuthority, szError))
+					return false;
+
+				_log.Log(LOG_STATUS, "%s: fetching %s", LOGTAG, szCurrent.c_str());
+
+				std::vector<unsigned char> vResponse;
+				std::vector<std::string> vHeaderData;
+				const std::vector<std::string> vExtraHeaders;
+				if (!HTTPClient::GETBinary(szCurrent, vExtraHeaders, vResponse, vHeaderData, WEBASSET_HTTP_TIMEOUT, false, false))
+				{
+					_log.Log(LOG_ERROR, "%s: could not fetch %s", LOGTAG, szCurrent.c_str());
+					szError = "Could not download " + szCurrent;
+					return false;
+				}
+
+				const int iStatus = HeaderStatusCode(vHeaderData);
+				const std::string szLocation = ((iStatus >= 300) && (iStatus < 400)) ? HeaderLocation(vHeaderData) : "";
+				if (szLocation.empty())
+				{
+					szContent.assign(vResponse.begin(), vResponse.end());
+					if (pszFinalURL != nullptr)
+						*pszFinalURL = szCurrent;
+					return true;
+				}
+
+				std::string szNext;
+				if (!ResolveAgainst(szScheme, szAuthority, szPath, szLocation, szNext))
+				{
+					_log.Log(LOG_ERROR, "%s: could not follow the redirect returned by %s", LOGTAG, szCurrent.c_str());
+					szError = "Could not download " + szURL;
+					return false;
+				}
+				_log.Log(LOG_STATUS, "%s: %d redirect to %s", LOGTAG, iStatus, szNext.c_str());
+				szCurrent = szNext;
+			}
+
+			_log.Log(LOG_ERROR, "%s: too many redirects while fetching %s", LOGTAG, szURL.c_str());
+			szError = "Too many redirects while downloading " + szURL;
+			return false;
 		}
 
 		bool ResolveReference(const _tDownloadContext& ctx, const std::string& szRef, std::string& szOut, std::string& szFileName)
@@ -241,7 +497,8 @@ namespace WebAssetFetch
 			}
 
 			std::string szContent;
-			if (!HttpGet(szAbsURL, szContent))
+			std::string szFetchError;
+			if (!HttpGet(szAbsURL, szContent, szFetchError))
 				return false;
 			if (szContent.empty())
 				return false;
@@ -383,11 +640,21 @@ namespace WebAssetFetch
 		ctx.szBaseDir = szBasePath.substr(0, szBasePath.rfind('/') + 1);
 
 		std::string szContent;
-		if (!HttpGet(szURL, szContent))
+		std::string szFinalURL;
+		if (!HttpGet(szURL, szContent, szError, &szFinalURL))
 		{
-			szError = "Could not download " + szURL;
+			if (szError.empty())
+				szError = "Could not download " + szURL;
 			return false;
 		}
+
+		std::string szFinalPath;
+		if (ParseHttpURL(szFinalURL, ctx.szBaseScheme, ctx.szBaseAuthority, szFinalPath))
+		{
+			szFinalPath = NormalisePath(szFinalPath.substr(0, szFinalPath.find_first_of("?#")));
+			ctx.szBaseDir = szFinalPath.substr(0, szFinalPath.rfind('/') + 1);
+		}
+
 		if (szContent.empty())
 		{
 			szError = "The downloaded asset is empty";
