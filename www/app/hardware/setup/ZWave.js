@@ -899,7 +899,7 @@ define(['app'], function (app) {
 							statusIcon = "fa-solid fa-circle-question";
 						}
 						var statusImg = '<i class="' + statusIcon + ' dz-chrome-icon"></i>';
-						var healButton = '<i class="fa-solid fa-heart-pulse dz-chrome-icon lcursor" onclick="ZWaveHealNode(' + item.NodeID + ')" title="' + $.t("Heal node") + '"></i>';
+						var healButton = '<i class="fa-solid fa-heart-pulse dz-chrome-icon dz-act-edit lcursor" onclick="ZWaveHealNode(' + item.NodeID + ')" title="' + $.t("Heal node") + '"></i>';
 						var Description = item.Product_name;
 						if (item.Product_id == "0x0000") {
 							Description = '<span class="zwave_no_info">' + item.Generic_type + '</span>';

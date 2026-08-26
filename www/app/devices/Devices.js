@@ -398,25 +398,25 @@ define(['app', 'livesocket'], function(app) {
                 if (isScene) {
                     actions.push('<img src="images/empty16.png">');
                 } else if (device.Used !== 0) {
-                    actions.push('<button class="btn btn-icon js-exclude-device" title="' + $.t('Set Unused') + '"><i class="fa-solid fa-circle-minus dz-chrome-icon"></i></button>');
+                    actions.push('<button class="btn btn-icon js-exclude-device" title="' + $.t('Set Unused') + '"><i class="fa-solid fa-circle-minus dz-chrome-icon dz-act-warn"></i></button>');
                 } else {
-                    actions.push('<button class="btn btn-icon js-include-device" title="' + $.t('Add Device') + '"><i class="fa-solid fa-plus dz-chrome-icon"></i></button>');
+                    actions.push('<button class="btn btn-icon js-include-device" title="' + $.t('Add Device') + '"><i class="fa-solid fa-plus dz-chrome-icon dz-act-add"></i></button>');
                 }
 
-                actions.push('<button class="btn btn-icon js-rename-device" title="' + $.t('Rename Device') + '"><i class="fa-solid fa-pen-to-square dz-chrome-icon"></i></button>');
+                actions.push('<button class="btn btn-icon js-rename-device" title="' + $.t('Rename Device') + '"><i class="fa-solid fa-pen-to-square dz-chrome-icon dz-act-edit"></i></button>');
 
                 if (isScene) {
-                    actions.push('<a class="btn btn-icon" href="#/Scenes/' + device.idx + '/Log" title="' + $.t('Log') + '"><i class="fa-solid fa-terminal dz-chrome-icon"></i></a>');
+                    actions.push('<a class="btn btn-icon" href="#/Scenes/' + device.idx + '/Log" title="' + $.t('Log') + '"><i class="fa-solid fa-terminal dz-chrome-icon dz-act-neutral"></i></a>');
                 } else if (logLink) {
-                    actions.push('<a class="btn btn-icon" href="' + logLink + '" title="' + $.t('Log') + '"><i class="fa-solid fa-terminal dz-chrome-icon"></i></a>');
+                    actions.push('<a class="btn btn-icon" href="' + logLink + '" title="' + $.t('Log') + '"><i class="fa-solid fa-terminal dz-chrome-icon dz-act-neutral"></i></a>');
                 } else if (isCustomLog) {
-                    actions.push('<button class="btn btn-icon js-show-log" title="' + $.t('Log') + '"><i class="fa-solid fa-terminal dz-chrome-icon"></i></button>');
+                    actions.push('<button class="btn btn-icon js-show-log" title="' + $.t('Log') + '"><i class="fa-solid fa-terminal dz-chrome-icon dz-act-neutral"></i></button>');
                 }
 
                 if (isScene) {
-                    actions.push('<button class="btn btn-icon js-remove-scene" title="' + $.t('Remove') + '"><i class="fa-solid fa-trash-can dz-chrome-icon"></i></button>');
+                    actions.push('<button class="btn btn-icon js-remove-scene" title="' + $.t('Remove') + '"><i class="fa-solid fa-trash-can dz-chrome-icon dz-act-danger"></i></button>');
                 } else {
-                    actions.push('<button class="btn btn-icon js-remove-device" title="' + $.t('Remove') + '"><i class="fa-solid fa-trash-can dz-chrome-icon"></i></button>');
+                    actions.push('<button class="btn btn-icon js-remove-device" title="' + $.t('Remove') + '"><i class="fa-solid fa-trash-can dz-chrome-icon dz-act-danger"></i></button>');
                 }
 
                 return actions.join('&nbsp;');
@@ -447,7 +447,7 @@ define(['app', 'livesocket'], function(app) {
             }
 
             function renderDeviceStateTitle() {
-                return '<button class="btn btn-icon js-remove-selected" title="' + $.t('Delete selected device(s)') + '"><i class="fa-solid fa-trash-can dz-chrome-icon"></i></button>';
+                return '<button class="btn btn-icon js-remove-selected" title="' + $.t('Delete selected device(s)') + '"><i class="fa-solid fa-trash-can dz-chrome-icon dz-act-danger"></i></button>';
             }
 
             function renderSelectorTitle() {

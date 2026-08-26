@@ -317,7 +317,7 @@ define(['app'], function (app) {
 								if (updownImg != "") {
 									updownImg += "&nbsp;";
 								}
-								updownImg += '<i class="fa-solid fa-arrow-down dz-chrome-icon lcursor" onclick="ChangeFloorplanOrder(1,' + item.idx + ');"></i>';
+								updownImg += '<i class="fa-solid fa-arrow-down dz-chrome-icon dz-act-edit lcursor" onclick="ChangeFloorplanOrder(1,' + item.idx + ');"></i>';
 							}
 							else {
 								updownImg += '<img src="images/empty16.png" width="16" height="16"></img>';
@@ -327,7 +327,7 @@ define(['app'], function (app) {
 								if (updownImg != "") {
 									updownImg += "&nbsp;";
 								}
-								updownImg += '<i class="fa-solid fa-arrow-up dz-chrome-icon lcursor" onclick="ChangeFloorplanOrder(0,' + item.idx + ');"></i>';
+								updownImg += '<i class="fa-solid fa-arrow-up dz-chrome-icon dz-act-edit lcursor" onclick="ChangeFloorplanOrder(0,' + item.idx + ');"></i>';
 							}
 
 							var imgsrc = item.Image + "&dtime=" + Math.round(+new Date() / 1000);

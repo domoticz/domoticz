@@ -38,41 +38,46 @@
 }
 
 /* Row actions in tables read faster when the colour carries the meaning:
-   green adds, amber disables, blue edits, grey views, red destroys. Values
-   are the semantic colours already used elsewhere in the stylesheets. */
-.btn.btn-icon > .dz-chrome-icon {
+   green adds, blue edits, amber disables, red destroys, grey just looks.
+   Values are the semantic colours already used elsewhere in the stylesheets.
+   :where() holds this at one class of specificity (0,1,0) while keeping the
+   grey default scoped to icon buttons, so a dz-act-* modifier on the icon
+   (0,2,0) always wins without having to repeat the button selector. Widening
+   the base to a bare .dz-chrome-icon would also grey out the trend arrows and
+   state glyphs inside device widgets, which are not actions. */
+:where(.btn.btn-icon) > .dz-chrome-icon {
 	color: #6c6e74;
 	transition: color 0.12s ease;
 }
 
-/* These repeat .btn.btn-icon so they outrank the neutral base rule above;
-   without it the base selector is more specific and everything stays grey. */
-.btn.btn-icon.js-include-device > .dz-chrome-icon {
+.dz-chrome-icon.dz-act-add {
 	color: #5cb85c;
 }
 
-.btn.btn-icon.js-exclude-device > .dz-chrome-icon {
-	color: #f0ad4e;
-}
-
-.btn.btn-icon.js-rename-device > .dz-chrome-icon {
+.dz-chrome-icon.dz-act-edit {
 	color: #43a4d3;
 }
 
-/* js-delete sits on the icon itself, the others on a wrapping button. */
-.btn.btn-icon.js-remove-device > .dz-chrome-icon,
-.btn.btn-icon.js-remove-scene > .dz-chrome-icon,
-.btn.btn-icon.js-remove-selected > .dz-chrome-icon,
-.dz-chrome-icon.js-delete {
+.dz-chrome-icon.dz-act-warn {
+	color: #f0ad4e;
+}
+
+.dz-chrome-icon.dz-act-danger {
 	color: #d9534f;
 }
 
-.dz-chrome-icon.js-delete:hover {
-	filter: brightness(0.85);
+.dz-chrome-icon.dz-act-neutral {
+	color: #6c6e74;
 }
 
-/* Hover lifts the icon rather than recolouring it, so the meaning stays put. */
-.btn.btn-icon:hover > .dz-chrome-icon {
+/* Hover lifts the icon rather than recolouring it, so the meaning stays put.
+   Repeated for bare icons, which are clickable without a wrapping button. */
+.btn.btn-icon:hover > .dz-chrome-icon,
+.dz-chrome-icon.dz-act-add:hover,
+.dz-chrome-icon.dz-act-edit:hover,
+.dz-chrome-icon.dz-act-warn:hover,
+.dz-chrome-icon.dz-act-danger:hover,
+.dz-chrome-icon.dz-act-neutral:hover {
 	filter: brightness(0.85);
 }
 

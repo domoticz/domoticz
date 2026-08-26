@@ -255,7 +255,7 @@
                                <td ng-repeat="i in ::vm.planIDsOptions" ng-if="items == i.value">{{ i.label }}</td>
                                <td ng-if="items == 0"><span data-i18n="No roomplan assigned"></span></td>
                                <td  ng-repeat="i in ::vm.planIDsOptions" ng-if="items == i.value" ng-click="vm.removeDeviceFromPlan(vm.device.idx, i.value)">
-                                  <i class="fa-solid fa-trash-can dz-chrome-icon lcursor js-delete" title="{{:: 'Delete' | translate}}"></i>
+                                  <i class="fa-solid fa-trash-can dz-chrome-icon dz-act-danger lcursor js-delete" title="{{:: 'Delete' | translate}}"></i>
                                </td>
                                <td ng-if="items == 0"></td>
                             </tr>
