@@ -580,7 +580,8 @@ constexpr auto sqlCreateWebAssets =
 "	[Name] VARCHAR(128) NOT NULL, "
 "	[SourceURL] VARCHAR(500) DEFAULT '', "
 "	[Companions] TEXT DEFAULT '', "
-"	[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')));";
+"	[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')), "
+"	[Title] VARCHAR(128) DEFAULT '');";
 
 constexpr auto sqlCreateMySensors =
 "CREATE TABLE IF NOT EXISTS [MySensors]("

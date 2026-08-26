@@ -5692,6 +5692,7 @@ namespace http
 			std::string szName = request::findValue(&req, "name");
 			std::string szData = request::findValue(&req, "data"); // base64 encoded
 			std::string szURL = request::findValue(&req, "url");
+			std::string szTitle = request::findValue(&req, "title"); // optional, display only
 
 			if (szName.empty() || (szData.empty() && szURL.empty()))
 			{
@@ -5712,7 +5713,7 @@ namespace http
 			if (szData.empty())
 			{
 				std::string szError;
-				if (!WebAssetFetch::Install(szName, szURL, szError))
+				if (!WebAssetFetch::Install(szName, szURL, szTitle, szError))
 				{
 					root["error"] = szError;
 					return;
@@ -5745,6 +5746,7 @@ namespace http
 				root["error"] = "Could not write asset";
 				return;
 			}
+			WebAssetFetch::SetTitle(szName, szTitle);
 
 			root["status"] = "OK";
 			root["path"] = "assets/" + szName;
@@ -5768,10 +5770,16 @@ namespace http
 			if (lDir == nullptr)
 				return; // no assets stored yet — an empty result is not an error
 
-			std::map<std::string, std::pair<std::string, std::string>> metadata;
-			auto result = m_sql.safe_query("SELECT Name, SourceURL, LastUpdate FROM WebAssets");
+			struct _tAssetMeta
+			{
+				std::string szSourceURL;
+				std::string szLastUpdate;
+				std::string szTitle;
+			};
+			std::map<std::string, _tAssetMeta> metadata;
+			auto result = m_sql.safe_query("SELECT Name, SourceURL, LastUpdate, Title FROM WebAssets");
 			for (const auto& sd : result)
-				metadata[sd[0]] = std::make_pair(sd[1], sd[2]);
+				metadata[sd[0]] = _tAssetMeta{ sd[1], sd[2], sd[3] };
 
 			int ii = 0;
 			struct dirent* ent;
@@ -5784,16 +5792,19 @@ namespace http
 					continue;
 				std::string szSourceURL;
 				std::string szLastUpdate;
+				std::string szTitle;
 				auto itt = metadata.find(szFileName);
 				if (itt != metadata.end())
 				{
-					szSourceURL = itt->second.first;
-					szLastUpdate = itt->second.second;
+					szSourceURL = itt->second.szSourceURL;
+					szLastUpdate = itt->second.szLastUpdate;
+					szTitle = itt->second.szTitle;
 				}
 
 				root["result"][ii]["name"] = szFileName;
 				root["result"][ii]["path"] = "assets/" + szFileName;
 				root["result"][ii]["LastUpdate"] = szLastUpdate;
+				root["result"][ii]["Title"] = szTitle;
 				// Withheld from viewers: a source URL can name a host on the local network.
 				if (session.rights == URIGHTS_ADMIN)
 					root["result"][ii]["SourceURL"] = szSourceURL;

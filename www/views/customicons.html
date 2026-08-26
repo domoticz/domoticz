@@ -64,6 +64,7 @@
         <br>
         <table id="iconlibrarytable" border="0" cellpadding="4" cellspacing="0" width="100%" style="margin: 0 10px;">
             <tr>
+                <th align="left" data-i18n="Title">Title</th>
                 <th align="left" data-i18n="Name">Name</th>
                 <th align="left" data-i18n="Prefix">Prefix</th>
                 <th align="left" data-i18n="Source">Source</th>
@@ -71,6 +72,7 @@
                 <th></th>
             </tr>
             <tr data-ng-repeat="library in iconlibraries">
+                <td>{{library.TitleDisplay}}</td>
                 <td>{{library.name}}</td>
                 <td>{{library.prefix}}</td>
                 <td style="word-break: break-all;">{{library.SourceURL}}</td>
@@ -81,7 +83,7 @@
                 </td>
             </tr>
             <tr ng-if="iconlibraries.length == 0">
-                <td colspan="5" data-i18n="No icon libraries installed">No icon libraries installed</td>
+                <td colspan="6" data-i18n="No icon libraries installed">No icon libraries installed</td>
             </tr>
         </table>
         <br>
@@ -90,7 +92,11 @@
     <div class="page-content-container">
         <table id="iconlibraryaddtable" border="0" cellpadding="0" cellspacing="10" width="100%">
             <tr>
-                <td align="right" style="width:110px"><label for="iconliburl"><span data-i18n="URL"></span>:</label></td>
+                <td align="right" style="width:110px"><label for="iconlibtitle"><span data-i18n="Title"></span>:</label></td>
+                <td><input type="text" id="iconlibtitle" ng-model="newLibrary.title" maxlength="128" style="width: 240px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+            </tr>
+            <tr>
+                <td align="right"><label for="iconliburl"><span data-i18n="URL"></span>:</label></td>
                 <td><input type="text" id="iconliburl" ng-model="newLibrary.url" maxlength="500" style="width: 440px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
             </tr>
             <tr>

@@ -665,6 +665,34 @@ namespace WebAssetFetch
 			return (iDot == std::string::npos) ? szName : szName.substr(0, iDot);
 		}
 
+		const size_t WEBASSET_MAX_TITLE = 128;
+
+		std::string SanitiseTitle(const std::string& szTitle)
+		{
+			std::string szOut;
+			szOut.reserve(szTitle.size());
+			for (const char c : szTitle)
+			{
+				const unsigned char u = static_cast<unsigned char>(c);
+				if ((u < 0x20) || (u == 0x7F))
+					continue;
+				szOut += c;
+			}
+			stdstring_trimws(szOut);
+
+			if (szOut.size() > WEBASSET_MAX_TITLE)
+			{
+				// Cutting a UTF-8 sequence in half would leave a byte string the JSON
+				// reply cannot carry, so step back to the start of that sequence.
+				size_t iCut = WEBASSET_MAX_TITLE;
+				while ((iCut > 0) && ((static_cast<unsigned char>(szOut[iCut]) & 0xC0) == 0x80))
+					iCut--;
+				szOut.erase(iCut);
+				stdstring_trimws(szOut);
+			}
+			return szOut;
+		}
+
 		std::vector<std::string> LoadCompanions(const std::string& szName)
 		{
 			std::vector<std::string> companions;
@@ -676,7 +704,7 @@ namespace WebAssetFetch
 		}
 	} // namespace
 
-	bool Install(const std::string& szName, const std::string& szURL, std::string& szError)
+	bool Install(const std::string& szName, const std::string& szURL, const std::string& szTitle, std::string& szError)
 	{
 		szError.clear();
 
@@ -795,15 +823,20 @@ namespace WebAssetFetch
 			szCompanions += asset.szName;
 		}
 
+		const std::string szCleanTitle = SanitiseTitle(szTitle);
+
 		if (!bIsUpdate)
 		{
-			m_sql.safe_query("INSERT INTO WebAssets (Name, SourceURL, Companions, LastUpdate) VALUES ('%q','%q','%q',datetime('now','localtime'))", szName.c_str(), szURL.c_str(),
-					 szCompanions.c_str());
+			m_sql.safe_query("INSERT INTO WebAssets (Name, SourceURL, Companions, LastUpdate, Title) VALUES ('%q','%q','%q',datetime('now','localtime'),'%q')", szName.c_str(),
+					 szURL.c_str(), szCompanions.c_str(), szCleanTitle.c_str());
 		}
 		else
 		{
 			m_sql.safe_query("UPDATE WebAssets SET SourceURL='%q', Companions='%q', LastUpdate=datetime('now','localtime') WHERE (ID==%d)", szURL.c_str(), szCompanions.c_str(),
 					 atoi(existing[0][0].c_str()));
+			// Refreshing from the stored source URL sends no title, that must not blank it.
+			if (!szCleanTitle.empty())
+				m_sql.safe_query("UPDATE WebAssets SET Title='%q' WHERE (ID==%d)", szCleanTitle.c_str(), atoi(existing[0][0].c_str()));
 
 			for (const auto& szOld : previous)
 			{
@@ -817,6 +850,22 @@ namespace WebAssetFetch
 
 		_log.Log(LOG_STATUS, "%s: stored '%s' with %d companion file(s), %d bytes", LOGTAG, szName.c_str(), static_cast<int>(ctx.assets.size()), static_cast<int>(ctx.totalSize));
 		return true;
+	}
+
+	void SetTitle(const std::string& szName, const std::string& szTitle)
+	{
+		const std::string szCleanTitle = SanitiseTitle(szTitle);
+		if (szCleanTitle.empty())
+			return;
+
+		auto existing = m_sql.safe_query("SELECT ID FROM WebAssets WHERE (Name=='%q')", szName.c_str());
+		if (existing.empty())
+		{
+			// Uploaded assets have no metadata row until something is stored about them.
+			m_sql.safe_query("INSERT INTO WebAssets (Name, LastUpdate, Title) VALUES ('%q',datetime('now','localtime'),'%q')", szName.c_str(), szCleanTitle.c_str());
+			return;
+		}
+		m_sql.safe_query("UPDATE WebAssets SET Title='%q' WHERE (ID==%d)", szCleanTitle.c_str(), atoi(existing[0][0].c_str()));
 	}
 
 	void Forget(const std::string& szName)

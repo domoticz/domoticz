@@ -4,7 +4,7 @@ define(['app', 'iconLibraries'], function (app) {
 		$scope.iconset = [];
 		$scope.selectedIcon = [];
 		$scope.iconlibraries = [];
-		$scope.newLibrary = { prefix: '', url: '' };
+		$scope.newLibrary = { title: '', prefix: '', url: '' };
 
 		$scope.librarySuggestions = [
 			{ name: 'Material Design Icons', prefix: 'mdi', url: 'https://cdn.jsdelivr.net/npm/@mdi/font@7/css/materialdesignicons.min.css' },
@@ -110,14 +110,18 @@ define(['app', 'iconLibraries'], function (app) {
 				$scope.iconlibraries = assets.filter(function (asset) {
 					return asset.name && /\.css$/i.test(asset.name);
 				}).map(function (asset) {
+					var prefix = asset.name.split('.')[0];
 					return {
 						name: asset.name,
-						prefix: asset.name.split('.')[0],
+						prefix: prefix,
+						Title: asset.Title || '',
+						// Libraries installed before titles existed have none stored.
+						TitleDisplay: asset.Title || prefix,
 						SourceURL: asset.SourceURL || '',
 						LastUpdate: asset.LastUpdate || ''
 					};
 				}).sort(function (a, b) {
-					return a.name.localeCompare(b.name);
+					return a.TitleDisplay.localeCompare(b.TitleDisplay);
 				});
 			}, function errorCallback(response) {
 				$scope.iconlibraries = [];
@@ -126,17 +130,19 @@ define(['app', 'iconLibraries'], function (app) {
 
 		$scope.PrefillLibrary = function (suggestion) {
 			$scope.newLibrary = {
+				title: suggestion.name,
 				prefix: suggestion.prefix,
 				url: suggestion.url
 			};
 		}
 
-		function InstallLibrary(name, url, szError, bClearForm) {
+		function InstallLibrary(name, url, title, szError, bClearForm) {
 			ShowNotify($.t('Downloading icon library...'));
 			$http({
 				url: "json.htm?type=command&param=uploadwebasset" +
 					'&name=' + encodeURIComponent(name) +
-					'&url=' + encodeURIComponent(url),
+					'&url=' + encodeURIComponent(url) +
+					'&title=' + encodeURIComponent(title || ''),
 			}).then(function successCallback(response) {
 				HideNotify();
 				var data = response.data;
@@ -145,7 +151,7 @@ define(['app', 'iconLibraries'], function (app) {
 					return;
 				}
 				if (bClearForm) {
-					$scope.newLibrary = { prefix: '', url: '' };
+					$scope.newLibrary = { title: '', prefix: '', url: '' };
 				}
 				$scope.RefreshLibraryList();
 				iconLibraries.load();
@@ -170,7 +176,8 @@ define(['app', 'iconLibraries'], function (app) {
 				return;
 			}
 
-			InstallLibrary(library.prefix + '.css', library.url, $.t('Error adding Icon Library'), true);
+			// The title never takes part in the stored name, that stays prefix based.
+			InstallLibrary(library.prefix + '.css', library.url, library.title, $.t('Error adding Icon Library'), true);
 		}
 
 		$scope.RefreshLibrary = function (library) {
@@ -178,7 +185,7 @@ define(['app', 'iconLibraries'], function (app) {
 				ShowNotify($.t('This library has no source URL to refresh from'), 3500, true);
 				return;
 			}
-			InstallLibrary(library.name, library.SourceURL, $.t('Error refreshing Icon Library'), false);
+			InstallLibrary(library.name, library.SourceURL, library.Title, $.t('Error refreshing Icon Library'), false);
 		}
 
 		$scope.DeleteLibrary = function (library) {

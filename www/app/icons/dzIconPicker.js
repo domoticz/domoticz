@@ -175,7 +175,8 @@ define(['app', 'icons/dzIconService'], function (app) {
                                 return {
                                     prefix: prefix,
                                     css: row.path || ('assets/' + row.name),
-                                    title: prefix
+                                    // Libraries installed before titles existed have none stored.
+                                    title: row.Title || prefix
                                 };
                             })
                             .filter(function (row) {
