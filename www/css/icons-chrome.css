@@ -36,3 +36,60 @@
 	font-size: 16px;
 	vertical-align: text-bottom;
 }
+
+/* Row actions in tables read faster when the colour carries the meaning:
+   green adds, amber disables, blue edits, grey views, red destroys. Values
+   are the semantic colours already used elsewhere in the stylesheets. */
+.btn.btn-icon > .dz-chrome-icon {
+	color: #6c6e74;
+	transition: color 0.12s ease;
+}
+
+.js-include-device > .dz-chrome-icon {
+	color: #5cb85c;
+}
+
+.js-exclude-device > .dz-chrome-icon {
+	color: #f0ad4e;
+}
+
+.js-rename-device > .dz-chrome-icon {
+	color: #43a4d3;
+}
+
+/* js-delete sits on the icon itself, the others on a wrapping button. */
+.js-remove-device > .dz-chrome-icon,
+.js-remove-scene > .dz-chrome-icon,
+.js-remove-selected > .dz-chrome-icon,
+.dz-chrome-icon.js-delete {
+	color: #d9534f;
+}
+
+.dz-chrome-icon.js-delete:hover {
+	filter: brightness(0.85);
+}
+
+/* Hover lifts the icon rather than recolouring it, so the meaning stays put. */
+.btn.btn-icon:hover > .dz-chrome-icon {
+	filter: brightness(0.85);
+}
+
+/* Column headers are labels, not actions. */
+th .dz-chrome-icon {
+	color: #6c6e74;
+}
+
+/* Scene and group buttons are actions, so they carry the action's colour
+   rather than the device glyph colour. transimg still dims whichever one
+   represents the state the group is already in. */
+.dz-scene-run {
+	color: #43a4d3;
+}
+
+.dz-scene-on {
+	color: #5cb85c;
+}
+
+.dz-scene-off {
+	color: #6c6e74;
+}
