@@ -201,9 +201,37 @@ namespace WebAssetFetch
 			return szHost;
 		}
 
-		// Resolved here and connected by curl a moment later, so DNS rebinding stays a residual risk.
-		bool IsPublicHost(const std::string& szAuthority)
+		std::string PortFromAuthority(const std::string& szAuthority, const std::string& szScheme)
 		{
+			std::string szHostPort = szAuthority;
+			const size_t iAt = szHostPort.rfind('@');
+			if (iAt != std::string::npos)
+				szHostPort = szHostPort.substr(iAt + 1);
+
+			size_t iColon = std::string::npos;
+			if (!szHostPort.empty() && (szHostPort.front() == '['))
+			{
+				const size_t iEnd = szHostPort.find(']');
+				if (iEnd != std::string::npos)
+					iColon = szHostPort.find(':', iEnd);
+			}
+			else
+				iColon = szHostPort.find(':');
+
+			if (iColon != std::string::npos)
+			{
+				const std::string szPort = szHostPort.substr(iColon + 1);
+				if (!szPort.empty() && (szPort.size() <= 5) && (szPort.find_first_not_of("0123456789") == std::string::npos))
+					return szPort;
+			}
+			return (szScheme == "https") ? "443" : "80";
+		}
+
+		// szPinAddress stays empty for literal IPs, they carry no name that could be rebound.
+		bool IsPublicHost(const std::string& szAuthority, std::string& szPinAddress)
+		{
+			szPinAddress.clear();
+
 			const std::string szHost = HostFromAuthority(szAuthority);
 			if (szHost.empty() || (szHost.size() > 255))
 				return false;
@@ -224,18 +252,26 @@ namespace WebAssetFetch
 			if (getaddrinfo(szHost.c_str(), nullptr, &hints, &pResult) != 0)
 				return false;
 
+			std::string szFirstAllowed;
 			bool bAllowed = (pResult != nullptr);
 			for (struct addrinfo* pInfo = pResult; pInfo != nullptr; pInfo = pInfo->ai_next)
 			{
+				char szText[INET6_ADDRSTRLEN];
+				memset(szText, 0, sizeof(szText));
+
 				if (pInfo->ai_family == AF_INET)
 				{
 					const struct sockaddr_in* pSa = reinterpret_cast<const struct sockaddr_in*>(pInfo->ai_addr);
 					bAllowed = !IsBlockedIPv4(reinterpret_cast<const uint8_t*>(&pSa->sin_addr));
+					if (bAllowed && szFirstAllowed.empty() && (inet_ntop(AF_INET, &pSa->sin_addr, szText, sizeof(szText)) != nullptr))
+						szFirstAllowed = szText;
 				}
 				else if (pInfo->ai_family == AF_INET6)
 				{
 					const struct sockaddr_in6* pSa6 = reinterpret_cast<const struct sockaddr_in6*>(pInfo->ai_addr);
 					bAllowed = !IsBlockedIPv6(reinterpret_cast<const uint8_t*>(&pSa6->sin6_addr));
+					if (bAllowed && szFirstAllowed.empty() && (inet_ntop(AF_INET6, &pSa6->sin6_addr, szText, sizeof(szText)) != nullptr))
+						szFirstAllowed = "[" + std::string(szText) + "]";
 				}
 				else
 					bAllowed = false;
@@ -243,16 +279,28 @@ namespace WebAssetFetch
 					break;
 			}
 			freeaddrinfo(pResult);
-			return bAllowed;
+
+			if (!bAllowed || szFirstAllowed.empty())
+				return false;
+			szPinAddress = szFirstAllowed;
+			return true;
 		}
 
-		bool CheckDestination(const std::string& szAuthority, std::string& szError)
+		bool CheckDestination(const std::string& szScheme, const std::string& szAuthority, std::string& szResolve, std::string& szError)
 		{
-			if (IsPublicHost(szAuthority))
-				return true;
-			_log.Log(LOG_ERROR, "%s: refusing to fetch from '%s', it does not resolve to a public internet address", LOGTAG, szAuthority.c_str());
-			szError = "'" + szAuthority + "' is not a public internet address. Assets on your own network can be installed with the file upload option instead of a URL";
-			return false;
+			szResolve.clear();
+
+			std::string szPinAddress;
+			if (!IsPublicHost(szAuthority, szPinAddress))
+			{
+				_log.Log(LOG_ERROR, "%s: refusing to fetch from '%s', it does not resolve to a public internet address", LOGTAG, szAuthority.c_str());
+				szError = "'" + szAuthority + "' is not a public internet address. Assets on your own network can be installed with the file upload option instead of a URL";
+				return false;
+			}
+
+			if (!szPinAddress.empty())
+				szResolve = HostFromAuthority(szAuthority) + ":" + PortFromAuthority(szAuthority, szScheme) + ":" + szPinAddress;
+			return true;
 		}
 
 		bool ResolveAgainst(const std::string& szBaseScheme, const std::string& szBaseAuthority, const std::string& szBasePath, const std::string& szRef, std::string& szOut)
@@ -352,7 +400,8 @@ namespace WebAssetFetch
 					szError = "Only http:// and https:// URLs are supported";
 					return false;
 				}
-				if (!CheckDestination(szAuthority, szError))
+				std::string szResolve;
+				if (!CheckDestination(szScheme, szAuthority, szResolve, szError))
 					return false;
 
 				_log.Log(LOG_STATUS, "%s: fetching %s", LOGTAG, szCurrent.c_str());
@@ -360,7 +409,7 @@ namespace WebAssetFetch
 				std::vector<unsigned char> vResponse;
 				std::vector<std::string> vHeaderData;
 				const std::vector<std::string> vExtraHeaders;
-				if (!HTTPClient::GETBinary(szCurrent, vExtraHeaders, vResponse, vHeaderData, WEBASSET_HTTP_TIMEOUT, false, false))
+				if (!HTTPClient::GETBinary(szCurrent, vExtraHeaders, vResponse, vHeaderData, WEBASSET_HTTP_TIMEOUT, false, false, szResolve))
 				{
 					_log.Log(LOG_ERROR, "%s: could not fetch %s", LOGTAG, szCurrent.c_str());
 					szError = "Could not download " + szCurrent;

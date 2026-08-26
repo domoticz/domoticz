@@ -229,7 +229,7 @@ void HTTPClient::SetUserAgent(const std::string &useragent)
  *									*
  ************************************************************************/
 
-bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const long TimeOut, const bool bStartNewSession, const bool bFollowRedirect)
+bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const long TimeOut, const bool bStartNewSession, const bool bFollowRedirect, const std::string &szResolveOverride)
 {
 	try
 	{
@@ -257,6 +257,13 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 				headers = curl_slist_append(headers, header.c_str());
 			}
 			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+		}
+
+		struct curl_slist *resolvelist = nullptr;
+		if (!szResolveOverride.empty())
+		{
+			resolvelist = curl_slist_append(resolvelist, szResolveOverride.c_str());
+			curl_easy_setopt(curl, CURLOPT_RESOLVE, resolvelist);
 		}
 
 		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, write_curl_headerdata);
@@ -293,6 +300,11 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 		if (headers != nullptr)
 		{
 			curl_slist_free_all(headers); /* free the header list */
+		}
+
+		if (resolvelist != nullptr)
+		{
+			curl_slist_free_all(resolvelist); /* free the resolve list */
 		}
 
 		return bOK;
@@ -588,10 +600,10 @@ bool HTTPClient::PatchBinary(const std::string& url, const std::string& putdata,
  *									*
  ************************************************************************/
 
-bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut, const bool bStartNewSession, const bool bFollowRedirect)
+bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut, const bool bStartNewSession, const bool bFollowRedirect, const std::string &szResolveOverride)
 {
 	std::vector<std::string> vHeaderData;
-	return GETBinary(url, ExtraHeaders, response, vHeaderData, TimeOut, bStartNewSession, bFollowRedirect);
+	return GETBinary(url, ExtraHeaders, response, vHeaderData, TimeOut, bStartNewSession, bFollowRedirect, szResolveOverride);
 }
 
 bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut)

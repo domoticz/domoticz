@@ -88,7 +88,7 @@ class HTTPClient
 	 ************************************************************************/
 
 	static bool GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, const long TimeOut = -1, const bool bStartNewSession = false,
-			      const bool bFollowRedirect = true);
+			      const bool bFollowRedirect = true, const std::string &szResolveOverride = "");
 	static bool GETBinarySingleLine(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, long TimeOut = -1);
 	static bool POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, bool bFollowRedirect = true,
 			       long TimeOut = -1);
@@ -103,7 +103,7 @@ class HTTPClient
 	 ************************************************************************/
 
 	static bool GETBinary(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData, const long TimeOut = -1,
-			      const bool bStartNewSession = false, const bool bFollowRedirect = true);
+			      const bool bStartNewSession = false, const bool bFollowRedirect = true, const std::string &szResolveOverride = "");
 	static bool POSTBinary(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response,
 			       std::vector<std::string> &vHeaderData, bool bFollowRedirect = true, long TimeOut = -1);
 	static bool PUTBinary(const std::string &url, const std::string &putdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response,
