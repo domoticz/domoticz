@@ -26,6 +26,8 @@ define(['app', 'iconLibraries'], function (app) {
 			    if (data.status != "OK") {
 			        HideNotify();
 			        ShowNotify($.t('Error uploading Iconset') + ": " + data.error, 5000, true);
+			    } else {
+			        AssetsChanged();
 			    }
 			    $scope.RefreshIconList();
 			}, function errorCallback(response) {
@@ -82,6 +84,9 @@ define(['app', 'iconLibraries'], function (app) {
 				async: false,
 				dataType: 'json',
 				success: function (data) {
+					if (data && data.status == "OK") {
+						AssetsChanged();
+					}
 					$scope.RefreshIconList();
 				}
 			});
@@ -95,6 +100,9 @@ define(['app', 'iconLibraries'], function (app) {
 						async: false,
 						dataType: 'json',
 						success: function (data) {
+							if (data && data.status == "OK") {
+								AssetsChanged();
+							}
 							$scope.RefreshIconList();
 						}
 					});
@@ -155,6 +163,7 @@ define(['app', 'iconLibraries'], function (app) {
 				}
 				$scope.RefreshLibraryList();
 				iconLibraries.load();
+				AssetsChanged();
 			}, function errorCallback(response) {
 				HideNotify();
 				ShowNotify(szError, 5000, true);
@@ -196,12 +205,23 @@ define(['app', 'iconLibraries'], function (app) {
 				$http({
 					url: "json.htm?type=command&param=deletewebasset&name=" + encodeURIComponent(library.name),
 				}).then(function successCallback(response) {
+					var data = response.data;
+					if (!data || data.status != "OK") {
+						ShowNotify($.t('Error removing Icon Library') + (data && data.error ? ": " + $.t(data.error) : ''), 5000, true);
+						return;
+					}
 					$scope.RefreshLibraryList();
 					iconLibraries.load();
+					AssetsChanged();
 				}, function errorCallback(response) {
 					ShowNotify($.t('Error removing Icon Library'), 5000, true);
 				});
 			});
+		}
+
+		// The icon picker memoises the installed set, so it has to hear about every change here.
+		function AssetsChanged() {
+			$rootScope.$broadcast('dz-webassets-changed');
 		}
 
 		init();

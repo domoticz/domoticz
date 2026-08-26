@@ -30,6 +30,8 @@ define(['app', 'icons/dzIconService'], function (app) {
     var RECENT_LIMIT = 12;
     var RECENT_KEY = 'dz-icon-recents';
     var SEARCH_DELAY = 200;
+    var ASSETS_CHANGED = 'dz-webassets-changed';
+    var RECONCILE_DELAY = 400;
 
     // jQuery UI 1.12 modal dialogs drag focus back inside .ui-dialog, which would make the
     // body-level picker impossible to type in.
@@ -118,10 +120,14 @@ define(['app', 'icons/dzIconService'], function (app) {
         return (thousands >= 10 ? Math.round(thousands) : Math.round(thousands * 10) / 10) + 'k';
     }
 
-    app.factory('dzIconPickerData', ['$q', '$timeout', 'domoticzApi', function ($q, $timeout, domoticzApi) {
+    app.factory('dzIconPickerData', ['$q', '$rootScope', '$timeout', 'domoticzApi', function ($q, $rootScope, $timeout, domoticzApi) {
         var iconSetRequest = null;
         var librariesRequest = null;
         var glyphCache = {};
+        var injectedLinks = {};
+        var reconcileTimer = null;
+
+        $rootScope.$on(ASSETS_CHANGED, invalidate);
 
         return {
             iconSet: iconSet,
@@ -166,7 +172,7 @@ define(['app', 'icons/dzIconService'], function (app) {
             if (!librariesRequest) {
                 librariesRequest = domoticzApi.sendCommand('getwebassets', {})
                     .then(function (data) {
-                        return (data.result || [])
+                        var rows = (data.result || [])
                             .filter(function (row) {
                                 return row && row.name && /\.css$/i.test(row.name);
                             })
@@ -182,6 +188,10 @@ define(['app', 'icons/dzIconService'], function (app) {
                             .filter(function (row) {
                                 return !!row.prefix;
                             });
+
+                        // Only a fetch that actually succeeded may retire links and recents.
+                        reconcile(rows);
+                        return rows;
                     })
                     .catch(function () {
                         return [];
@@ -189,6 +199,84 @@ define(['app', 'icons/dzIconService'], function (app) {
             }
 
             return librariesRequest;
+        }
+
+        // Libraries can be installed or removed while the app stays loaded, so every memo of the
+        // installed set has to go; the next consumer refetches it.
+        function invalidate() {
+            iconSetRequest = null;
+            librariesRequest = null;
+            glyphCache = {};
+
+            if (!hasStaleArtefacts()) {
+                return;
+            }
+            if (reconcileTimer) {
+                $timeout.cancel(reconcileTimer);
+            }
+            // A burst of mutations shares one getwebassets, and any consumer asking in the
+            // meantime shares it too because librariesRequest memoises again.
+            reconcileTimer = $timeout(function () {
+                reconcileTimer = null;
+                libraries();
+            }, RECONCILE_DELAY);
+        }
+
+        // Without a fresh list there is nothing to compare against, so only pay for one when
+        // something could actually have gone stale.
+        function hasStaleArtefacts() {
+            if (Object.keys(injectedLinks).length) {
+                return true;
+            }
+
+            return recents().some(isLibraryRecent);
+        }
+
+        function isLibraryRecent(entry) {
+            return entry.kind === 'font' && (entry.provider || 'fa') !== 'fa';
+        }
+
+        function reconcile(rows) {
+            var prefixes = {};
+            var hrefs = {};
+
+            rows.forEach(function (row) {
+                prefixes[row.prefix] = true;
+                hrefs[row.css] = true;
+            });
+
+            Object.keys(injectedLinks).forEach(function (href) {
+                if (hrefs[href]) {
+                    return;
+                }
+
+                var link = injectedLinks[href];
+                delete injectedLinks[href];
+                if (link.parentNode) {
+                    link.parentNode.removeChild(link);
+                }
+            });
+
+            pruneRecents(prefixes);
+        }
+
+        // A recent glyph from a removed library can no longer render, so it would sit in the rail
+        // as an empty tile. Images and Font Awesome always survive.
+        function pruneRecents(prefixes) {
+            var list = recents();
+            var kept = list.filter(function (entry) {
+                return !isLibraryRecent(entry) || prefixes[entry.provider];
+            });
+
+            if (kept.length === list.length) {
+                return;
+            }
+
+            try {
+                window.localStorage.setItem(RECENT_KEY, JSON.stringify(kept));
+            } catch (e) {
+                return;
+            }
         }
 
         function glyphs(prefix) {
@@ -275,21 +363,32 @@ define(['app', 'icons/dzIconService'], function (app) {
                 return $q.resolve(false);
             }
 
-            var links = document.getElementsByTagName('link');
-            for (var i = 0; i < links.length; i++) {
-                if ((links[i].getAttribute('href') || '') === href) {
-                    return $q.resolve(false);
-                }
+            if (!findLink(href)) {
+                var link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = href;
+                document.getElementsByTagName('head')[0].appendChild(link);
+                // Only links added here may ever be removed again; Domoticz owns the rest.
+                injectedLinks[href] = link;
             }
 
-            var link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = href;
-            document.getElementsByTagName('head')[0].appendChild(link);
-
+            // Resolving true means "enumerate again": a link that was already there can still be
+            // parsing, which is what a library installed moments ago looks like.
             return $timeout(angular.noop, 600).then(function () {
                 return true;
             });
+        }
+
+        function findLink(href) {
+            var links = document.getElementsByTagName('link');
+
+            for (var i = 0; i < links.length; i++) {
+                if ((links[i].getAttribute('href') || '') === href) {
+                    return links[i];
+                }
+            }
+
+            return null;
         }
 
         function recentKey(entry) {
@@ -473,6 +572,9 @@ define(['app', 'icons/dzIconService'], function (app) {
                 var iconSetLoaded = false;
                 var libraries = [];
                 var searchTimer = null;
+                // Keyed by provider, not kept on the source, because a rebuild replaces those
+                // objects and a library whose css never resolves would retry forever.
+                var retried = {};
 
                 vm.$onInit = init;
                 vm.$postLink = postLink;
@@ -510,6 +612,12 @@ define(['app', 'icons/dzIconService'], function (app) {
                     buildSources();
                     selectSource(initialSource(), true);
 
+                    load();
+                    $scope.$on(ASSETS_CHANGED, reload);
+                    dzIconService.preloadBuiltinIcons().then(describe);
+                }
+
+                function load() {
                     dzIconPickerData.iconSet().then(function (items) {
                         iconSet = items;
                         iconSetLoaded = true;
@@ -520,8 +628,13 @@ define(['app', 'icons/dzIconService'], function (app) {
                         libraries = rows;
                         rebuild();
                     });
+                }
 
-                    dzIconService.preloadBuiltinIcons().then(describe);
+                // The picker can be open on a device page while libraries change elsewhere; the
+                // selection is untouched, only the sources behind it are refetched.
+                function reload() {
+                    retried = {};
+                    load();
                 }
 
                 function postLink() {
@@ -714,11 +827,11 @@ define(['app', 'icons/dzIconService'], function (app) {
                 }
 
                 function retryLibrary(source) {
-                    if (source.kind !== 'glyph' || source.provider === 'fa' || vm.matchCount || source.retried) {
+                    if (source.kind !== 'glyph' || source.provider === 'fa' || vm.matchCount || retried[source.provider]) {
                         return;
                     }
 
-                    source.retried = true;
+                    retried[source.provider] = true;
                     dzIconPickerData.ensureStylesheet(source.css).then(function (added) {
                         if (added) {
                             dzIconPickerData.forgetGlyphs(source.provider);
