@@ -518,6 +518,22 @@ namespace WebAssetFetch
 			return true;
 		}
 
+		// A reference the browser cannot turn into a network request: an inline data
+		// URI or a same-document fragment. Anything else we failed to store would
+		// still be fetched when the stylesheet loads, which is both what installing
+		// locally is meant to avoid and how a refused destination would be reached
+		// from the browser instead of from us.
+		bool IsInertReference(const std::string& szRef)
+		{
+			if (szRef.empty())
+				return false;
+			if (szRef.front() == '#')
+				return true;
+			std::string szLower = szRef;
+			stdlower(szLower);
+			return (szLower.compare(0, 5, "data:") == 0);
+		}
+
 		bool StoreReference(_tDownloadContext& ctx, const std::string& szRef, std::string& szStoredName)
 		{
 			std::string szAbsURL;
@@ -617,9 +633,17 @@ namespace WebAssetFetch
 				{
 					if (!ctx.szError.empty())
 						return false;
-					szOut += szRaw;
 					const std::string szLogged = (szRef.size() > 120) ? (szRef.substr(0, 120) + "...") : szRef;
-					_log.Log(LOG_STATUS, "%s: leaving reference '%s' as is", LOGTAG, szLogged.c_str());
+					if (IsInertReference(szRef))
+					{
+						szOut += szRaw;
+						_log.Log(LOG_STATUS, "%s: leaving reference '%s' as is", LOGTAG, szLogged.c_str());
+					}
+					else
+					{
+						szOut += "about:invalid";
+						_log.Log(LOG_STATUS, "%s: replaced reference '%s' that could not be stored", LOGTAG, szLogged.c_str());
+					}
 				}
 
 				szOut += ')';
