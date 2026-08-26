@@ -29,12 +29,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: true
 
       - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1.3
+        uses: microsoft/setup-msbuild@v3
 
       - name: Download WindowsLibraries
         shell: powershell
