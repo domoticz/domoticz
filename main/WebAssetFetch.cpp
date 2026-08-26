@@ -628,6 +628,52 @@ namespace WebAssetFetch
 			return true;
 		}
 
+		// CSS lets any character of an identifier be written as a backslash escape, so
+		// a literal search for "@import" or "url(" can be stepped around by writing
+		// @\69mport instead. Genuine icon stylesheets only use escapes inside quoted
+		// strings, for the glyph codepoint, so an escape anywhere else is treated as
+		// obfuscation and the sheet is refused rather than matched token by token.
+		bool HasEscapeOutsideString(const std::string& szCss)
+		{
+			char cQuote = 0;
+			bool bComment = false;
+			for (size_t ii = 0; ii < szCss.size(); ii++)
+			{
+				const char c = szCss[ii];
+				if (bComment)
+				{
+					if ((c == '*') && ((ii + 1) < szCss.size()) && (szCss[ii + 1] == '/'))
+					{
+						bComment = false;
+						ii++;
+					}
+					continue;
+				}
+				if (cQuote != 0)
+				{
+					if (c == '\\')
+						ii++;
+					else if (c == cQuote)
+						cQuote = 0;
+					continue;
+				}
+				if ((c == '"') || (c == '\''))
+				{
+					cQuote = c;
+					continue;
+				}
+				if ((c == '/') && ((ii + 1) < szCss.size()) && (szCss[ii + 1] == '*'))
+				{
+					bComment = true;
+					ii++;
+					continue;
+				}
+				if (c == '\\')
+					return true;
+			}
+			return false;
+		}
+
 		// Nested stylesheets are never followed, so an @import can only ever point at
 		// something we would refuse to fetch. Dropping the whole at-rule also covers
 		// the bare-string form, which carries no url() for the rewrite pass to catch.
@@ -688,6 +734,13 @@ namespace WebAssetFetch
 
 		bool RewriteStylesheet(_tDownloadContext& ctx, const std::string& szSourceCss, std::string& szOut)
 		{
+			if (HasEscapeOutsideString(szSourceCss))
+			{
+				_log.Log(LOG_ERROR, "%s: refusing a stylesheet that escapes syntax outside a string", LOGTAG);
+				ctx.szError = "Stylesheet uses escaped syntax that cannot be checked safely";
+				return false;
+			}
+
 			const std::string szCss = StripImports(szSourceCss);
 			szOut.clear();
 			szOut.reserve(szCss.size());
