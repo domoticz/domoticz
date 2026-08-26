@@ -177,9 +177,17 @@ namespace WebAssetFetch
 
 			// NAT64 and 6to4 carry the IPv4 destination inside the IPv6 address, so
 			// without these they would reach a blocked v4 host past the check above.
-			static const uint8_t nat64[12] = { 0, 0x64, 0xFF, 0x9B, 0, 0, 0, 0, 0, 0, 0, 0 };
-			if (memcmp(pAddr, nat64, sizeof(nat64)) == 0) // 64:ff9b::/96
+			static const uint8_t nat64[4] = { 0, 0x64, 0xFF, 0x9B };
+			if (memcmp(pAddr, nat64, sizeof(nat64)) == 0)
+			{
+				// Only 64:ff9b::/96 puts the address at an offset we can rely on. Anything
+				// else below 64:ff9b::/32, the local-use 64:ff9b:1::/48 included, embeds it
+				// at a length we would have to guess, so the rest of the range is refused.
+				static const uint8_t zero8[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+				if (memcmp(pAddr + 4, zero8, sizeof(zero8)) != 0)
+					return true;
 				return IsBlockedIPv4(pAddr + 12);
+			}
 			if ((pAddr[0] == 0x20) && (pAddr[1] == 0x02)) // 2002::/16
 				return IsBlockedIPv4(pAddr + 2);
 
