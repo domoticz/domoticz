@@ -396,11 +396,11 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                         if (vm.data && vm.data.customStartDate) {
                             var link = '<a href="#/Devices/' + vm.device.idx + '/Report/'
                                      + 'custom-' + vm.data.customStartDate + '/' + (row.periodIndex || '')
-                                     + '"><img src="images/next.png" /></a>';
+                                     + '"><i class="fa-solid fa-chevron-right dz-chrome-icon"></i></a>';
                             return (row.label || '') + ' ' + link;
                         }
                         var date = new Date(data);
-                        var link = '<a href="#/Devices/' + vm.device.idx + '/Report/' + vm.selectedYear + '/' + (date.getUTCMonth() + 1) + '"><img src="images/next.png" /></a>';
+                        var link = '<a href="#/Devices/' + vm.device.idx + '/Report/' + vm.selectedYear + '/' + (date.getUTCMonth() + 1) + '"><i class="fa-solid fa-chevron-right dz-chrome-icon"></i></a>';
                         return dateFormat(data, 'UTC:mm. mmmm') + ' ' + link;
                     }
                 });
@@ -437,10 +437,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 orderable: false,
                 data: 'trend',
                 render: function (data) {
-                    var ret='<img src="images/';
-                    if (vm.device.SwitchTypeVal === 4) ret+="g";
-                    ret+=data + '.png">';
-                    return ret;
+                    return reportHelpers.trendIconHtml(data, vm.device.SwitchTypeVal === 4);
                 }
             });
 

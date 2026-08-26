@@ -1,6 +1,24 @@
-define(['app', 'widgets/dzBar'], function (app) {
+define(['app', 'widgets/dzBar', 'icons/dzIconPicker', 'icons/dzDeviceIcon'], function (app) {
 
-    app.factory('utilityEditService', ['dzBarService', function (dzBarService) {
+    app.factory('utilityEditService', ['dzBarService', 'dzIconPickerService', function (dzBarService, dzIconPickerService) {
+
+        function mountIconPicker(dialogId, device) {
+            var $select = $(dialogId + ' #combosensoricon').first();
+            var $cell = $select.closest('td');
+            var $host = $cell.find('.dz-icon-picker-host');
+
+            if (!$host.length) {
+                $host = $('<div class="dz-icon-picker-host"></div>').appendTo($cell);
+            }
+            $select.hide();
+
+            dzIconPickerService.mount($host, {
+                customImage: device.CustomImage,
+                icon: device.Icon,
+                // Without the record the picker has no type to fall back on and previews nothing.
+                device: device
+            });
+        }
 
         function openUtilityDialog(device) {
             var showBar = (device.SubType !== 'Alert' && device.SubType !== 'Thermostat Operating State' && device.SubType !== 'Text');
@@ -20,45 +38,15 @@ define(['app', 'widgets/dzBar'], function (app) {
                 showIcon = (device.ShowIcon !== '0');
                 $(dialogId + ' #deviceshowicon').prop('checked', showIcon);
                 $(dialogId + ' #deviceshowicon').off('change').on('change', function () {
-                    if ($(this).is(':checked')) {
-                        $iconRow.show();
-                        if (!$(dialogId + ' #combosensoricon').data('ddslick')) {
-                            $(dialogId + ' #combosensoricon').ddslick({
-                                data: $.ddData,
-                                width: 260,
-                                height: 490,
-                                selectText: "Sensor Icon",
-                                imagePosition: "left"
-                            });
-                            $.each($.ddData, function (i, item) {
-                                if (item.value == device.CustomImage) {
-                                    $(dialogId + ' #combosensoricon').ddslick('select', { index: i });
-                                }
-                            });
-                        }
-                    } else {
-                        $iconRow.hide();
-                    }
+                    $iconRow.toggle($(this).is(':checked'));
                 });
             }
-            if (showIcon) {
-                $iconRow.show();
-                $(dialogId + ' #combosensoricon').ddslick({
-                    data: $.ddData,
-                    width: 260,
-                    height: isText ? 490 : 390,
-                    selectText: "Sensor Icon",
-                    imagePosition: "left"
-                });
-                //find our custom image index and select it
-                $.each($.ddData, function (i, item) {
-                    if (item.value == device.CustomImage) {
-                        $(dialogId + ' #combosensoricon').ddslick('select', { index: i });
-                    }
-                });
+            if (showIcon || isText) {
+                mountIconPicker(dialogId, device);
             } else {
-                $iconRow.hide();
+                dzIconPickerService.unmount();
             }
+            $iconRow.toggle(showIcon);
             if (!isText) {
                 $(dialogId).data('dzShowIcon', showIcon).data('dzShowBar', showBar);
                 var $utilForm = $(dialogId + ' form');
@@ -92,19 +80,7 @@ define(['app', 'widgets/dzBar'], function (app) {
             } else {
                 $(dialogId + ' #sensoraxis').val(device.SensorUnit);
             }
-            $(dialogId + ' #combosensoricon').ddslick({
-                data: $.ddData,
-                width: 260,
-                height: 390,
-                selectText: "Sensor Icon",
-                imagePosition: "left"
-            });
-            //find our custom image index and select it
-            $.each($.ddData, function (i, item) {
-                if (item.value == device.CustomImage) {
-                    $(dialogId + ' #combosensoricon').ddslick('select', { index: i });
-                }
-            });
+            mountIconPicker(dialogId, device);
             var $form = $(dialogId + ' form');
             $form.find('.dz-bar-btn').remove();
             dzBarService.setColorJson(device.Color || '');
@@ -148,19 +124,7 @@ define(['app', 'widgets/dzBar'], function (app) {
                     }
                 });
             }
-            $(dialogId + ' #combosensoricon').ddslick({
-                data: $.ddData,
-                width: 260,
-                height: 390,
-                selectText: "Sensor Icon",
-                imagePosition: "left"
-            });
-            //find our custom image index and select it
-            $.each($.ddData, function (i, item) {
-                if (item.value == device.CustomImage) {
-                    $(dialogId + ' #combosensoricon').ddslick('select', { index: i });
-                }
-            });
+            mountIconPicker(dialogId, device);
             var $form = $(dialogId + ' form');
             $form.find('.dz-bar-btn').remove();
             dzBarService.setColorJson(device.Color || '');
@@ -181,19 +145,7 @@ define(['app', 'widgets/dzBar'], function (app) {
                 $("#dialog-editsetpointdevice #step").val(device.step);
                 $("#dialog-editsetpointdevice #min").val(device.min);
                 $("#dialog-editsetpointdevice #max").val(device.max);
-                $('#dialog-editsetpointdevice #combosensoricon').ddslick({
-                    data: $.ddData,
-                    width: 260,
-                    height: 390,
-                    selectText: "Sensor Icon",
-                    imagePosition: "left"
-                });
-                //find our custom image index and select it
-                $.each($.ddData, function (i, item) {
-                    if (item.value == device.CustomImage) {
-                        $('#dialog-editsetpointdevice #combosensoricon').ddslick('select', { index: i });
-                    }
-                });
+                mountIconPicker('#dialog-editsetpointdevice', device);
                 var $setpointForm = $('#dialog-editsetpointdevice form');
                 $setpointForm.find('.dz-bar-btn').remove();
                 dzBarService.setColorJson(device.Color || '');
@@ -216,19 +168,7 @@ define(['app', 'widgets/dzBar'], function (app) {
                     $("#dialog-editthermostatclockdevice #comboclockday").val(parseInt(sarray[0]));
                     $("#dialog-editthermostatclockdevice #clockhour").val(sarray[1]);
                     $("#dialog-editthermostatclockdevice #clockminute").val(sarray[2]);
-                    $('#dialog-editthermostatclockdevice #combosensoricon').ddslick({
-                        data: $.ddData,
-                        width: 260,
-                        height: 390,
-                        selectText: "Sensor Icon",
-                        imagePosition: "left"
-                    });
-                    //find our custom image index and select it
-                    $.each($.ddData, function (i, item) {
-                        if (item.value == device.CustomImage) {
-                            $('#dialog-editthermostatclockdevice #combosensoricon').ddslick('select', { index: i });
-                        }
-                    });
+                    mountIconPicker('#dialog-editthermostatclockdevice', device);
                     $("#dialog-editthermostatclockdevice").i18n().dialog("open");
                 } else {
                     // Thermostat Mode or Thermostat Fan Mode — both use the same dialog
@@ -304,7 +244,7 @@ define(['app', 'widgets/dzBar'], function (app) {
         };
     }]);
 
-    app.directive('dzUtilityWidget', ['$rootScope', '$sce', 'deviceApi', 'permissions', 'utilityEditService', function ($rootScope, $sce, deviceApi, permissions, utilityEditService) {
+    app.directive('dzUtilityWidget', ['$rootScope', '$sce', 'deviceApi', 'permissions', 'utilityEditService', 'dzIconService', function ($rootScope, $sce, deviceApi, permissions, utilityEditService, dzIconService) {
         return {
             restrict: 'E',
             replace: true,
@@ -618,6 +558,17 @@ define(['app', 'widgets/dzBar'], function (app) {
                     var status = ctrl.getStatusText();
                     if (bigtext && status) return bigtext + '<br />' + status;
                     return bigtext || status;
+                };
+
+                ctrl.isValueDrivenIcon = function () {
+                    return ctrl.isAlert()
+                        || typeof device.Direction !== 'undefined'
+                        || typeof device.Temp !== 'undefined'
+                        || typeof device.Chill !== 'undefined';
+                };
+
+                ctrl.getTrendIcon = function () {
+                    return dzIconService.chromeIconFor('images/arrow_' + ctrl.trendState(device.trend) + '.png');
                 };
 
                 ctrl.getDeviceIcon = function () {

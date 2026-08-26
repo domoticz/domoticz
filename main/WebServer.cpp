@@ -1686,6 +1686,13 @@ namespace http
 			if (result.empty())
 				return;
 
+			std::map<std::string, std::string> deviceIcons;
+			{
+				auto iconResult = m_sql.safe_query("SELECT ID, Icon FROM DeviceStatus WHERE (Icon IS NOT NULL AND Icon != '')");
+				for (const auto& ir : iconResult)
+					deviceIcons[ir[0]] = ir[1];
+			}
+
 			for (const auto& sd : result)
 			{
 				std::string sDeviceName("");
@@ -1973,6 +1980,12 @@ namespace http
 					root["result"][ii]["LastUpdate"] = sLastUpdate;
 
 					root["result"][ii]["CustomImage"] = CustomImage;
+
+					{
+						auto ittDevIcon = deviceIcons.find(sd[0]);
+						if (ittDevIcon != deviceIcons.end())
+							root["result"][ii]["Icon"] = ittDevIcon->second;
+					}
 
 					if (CustomImage != 0)
 					{
@@ -4544,13 +4557,18 @@ namespace http
 					{
 						std::vector<std::string> results;
 						StringSplit(sLine, ";", results);
-						if (results.size() == 3)
+						if (results.size() >= 3)
 						{
 							_tCustomIcon cImage;
 							cImage.idx = index++;
 							cImage.RootFile = results[0];
 							cImage.Title = results[1];
 							cImage.Description = results[2];
+							if (results.size() >= 4)
+							{
+								cImage.FaClass = results[3];
+								stdstring_trimws(cImage.FaClass);
+							}
 							m_custom_light_icons.push_back(cImage);
 							m_custom_light_icons_lookup[cImage.idx] = (int)m_custom_light_icons.size() - 1;
 						}

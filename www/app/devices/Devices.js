@@ -370,7 +370,10 @@ define(['app', 'livesocket'], function(app) {
             }
 
             function iconRenderer(value, type, device) {
-                var itemImage = '<img src="' + device.icon.getIcon() + '" width="16" height="16">';
+                var icon = device.icon.resolve();
+                var itemImage = icon.kind === 'font'
+                    ? '<i class="dz-icon-glyph dz-icon-16 ' + icon.cls + '"></i>'
+                    : '<img src="' + icon.src + '" width="16" height="16">';
 
                 var isToggleAvailable =
                     (['Light/Switch', 'Lighting 2'].includes(device.Type) && [0, 7, 9, 10].includes(device.SwitchTypeVal))
@@ -395,25 +398,25 @@ define(['app', 'livesocket'], function(app) {
                 if (isScene) {
                     actions.push('<img src="images/empty16.png">');
                 } else if (device.Used !== 0) {
-                    actions.push('<button class="btn btn-icon js-exclude-device" title="' + $.t('Set Unused') + '"><img src="images/remove.png" /></button>');
+                    actions.push('<button class="btn btn-icon js-exclude-device" title="' + $.t('Set Unused') + '"><i class="fa-solid fa-circle-minus dz-chrome-icon dz-act-warn"></i></button>');
                 } else {
-                    actions.push('<button class="btn btn-icon js-include-device" title="' + $.t('Add Device') + '"><img src="images/add.png" /></button>');
+                    actions.push('<button class="btn btn-icon js-include-device" title="' + $.t('Add Device') + '"><i class="fa-solid fa-plus dz-chrome-icon dz-act-add"></i></button>');
                 }
 
-                actions.push('<button class="btn btn-icon js-rename-device" title="' + $.t('Rename Device') + '"><img src="images/rename.png" /></button>');
+                actions.push('<button class="btn btn-icon js-rename-device" title="' + $.t('Rename Device') + '"><i class="fa-solid fa-pen-to-square dz-chrome-icon dz-act-edit"></i></button>');
 
                 if (isScene) {
-                    actions.push('<a class="btn btn-icon" href="#/Scenes/' + device.idx + '/Log" title="' + $.t('Log') + '"><img src="images/log.png" /></a>');
+                    actions.push('<a class="btn btn-icon" href="#/Scenes/' + device.idx + '/Log" title="' + $.t('Log') + '"><i class="fa-solid fa-terminal dz-chrome-icon dz-act-neutral"></i></a>');
                 } else if (logLink) {
-                    actions.push('<a class="btn btn-icon" href="' + logLink + '" title="' + $.t('Log') + '"><img src="images/log.png" /></a>');
+                    actions.push('<a class="btn btn-icon" href="' + logLink + '" title="' + $.t('Log') + '"><i class="fa-solid fa-terminal dz-chrome-icon dz-act-neutral"></i></a>');
                 } else if (isCustomLog) {
-                    actions.push('<button class="btn btn-icon js-show-log" title="' + $.t('Log') + '"><img src="images/log.png" /></button>');
+                    actions.push('<button class="btn btn-icon js-show-log" title="' + $.t('Log') + '"><i class="fa-solid fa-terminal dz-chrome-icon dz-act-neutral"></i></button>');
                 }
 
                 if (isScene) {
-                    actions.push('<button class="btn btn-icon js-remove-scene" title="' + $.t('Remove') + '"><img src="images/delete.png" /></button>');
+                    actions.push('<button class="btn btn-icon js-remove-scene" title="' + $.t('Remove') + '"><i class="fa-solid fa-trash-can dz-chrome-icon dz-act-danger"></i></button>');
                 } else {
-                    actions.push('<button class="btn btn-icon js-remove-device" title="' + $.t('Remove') + '"><img src="images/delete.png" /></button>');
+                    actions.push('<button class="btn btn-icon js-remove-device" title="' + $.t('Remove') + '"><i class="fa-solid fa-trash-can dz-chrome-icon dz-act-danger"></i></button>');
                 }
 
                 return actions.join('&nbsp;');
@@ -436,15 +439,15 @@ define(['app', 'livesocket'], function(app) {
             }
 
             function renderBatteryLevelTitle() {
-                return '<img src="images/battery.png" style="transform: rotate(180deg);" title="' + $.t('Battery Level') + '">'
+                return '<i class="fa-solid fa-battery-half dz-chrome-icon" title="' + $.t('Battery Level') + '"></i>'
             }
 
             function renderSignalLevelTitle() {
-                return '<img src="images/air_signal.png" title="' + $.t('RF Signal Level') + '">'
+                return '<i class="fa-solid fa-signal dz-chrome-icon" title="' + $.t('RF Signal Level') + '"></i>'
             }
 
             function renderDeviceStateTitle() {
-                return '<button class="btn btn-icon js-remove-selected" title="' + $.t('Delete selected device(s)') + '"><img src="images/delete.png" /></button>';
+                return '<button class="btn btn-icon js-remove-selected" title="' + $.t('Delete selected device(s)') + '"><i class="fa-solid fa-trash-can dz-chrome-icon dz-act-danger"></i></button>';
             }
 
             function renderSelectorTitle() {

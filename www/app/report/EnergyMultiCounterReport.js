@@ -517,7 +517,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                             return row.label || '';
                         }
                         var date = new Date(data);
-                        var link = '<a href="#/Devices/' + vm.device.idx + '/Report/' + vm.selectedYear + '/' + (date.getUTCMonth() + 1) + '"><img src="images/next.png" /></a>';
+                        var link = '<a href="#/Devices/' + vm.device.idx + '/Report/' + vm.selectedYear + '/' + (date.getUTCMonth() + 1) + '"><i class="fa-solid fa-chevron-right dz-chrome-icon"></i></a>';
                         return dateFormat(data, 'UTC:mm. mmmm') + ' ' + link;
                     }
                 });
@@ -625,7 +625,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 orderable: false,
                 data: 'trend',
                 render: function (data) {
-                    return '<img src="images/' + data + '.png">'
+                    return reportHelpers.trendIconHtml(data, false);
                 }
             });
 

@@ -47,8 +47,8 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$timeout', '$q', '$location', 'ddDeviceClassifier', 'ddToast',
-                function($scope, $http, $timeout, $q, $location, ddDeviceClassifier, ddToast) {
+            controller: ['$scope', '$http', '$timeout', '$q', '$location', 'ddDeviceClassifier', 'ddToast', 'dzIconService',
+                function($scope, $http, $timeout, $q, $location, ddDeviceClassifier, ddToast, dzIconService) {
                 var ctrl = this;
                 ctrl.devices           = [];
                 ctrl.listItems         = [];
@@ -114,15 +114,15 @@ define([
                 }
 
                 var CATEGORY_DEFS = [
-                    { key: 'lights',  label: 'Switches',    icon: 'images/lightbulb.png',
+                    { key: 'lights',  label: 'Switches',    icon: dzIconService.chromeIconFor('images/lightbulb.png'),
                       test: function(d) { return ddDeviceClassifier.getDirective(d) === 'dz-light-widget'; } },
-                    { key: 'temp',    label: 'Temperature',  icon: 'images/temperature.png',
+                    { key: 'temp',    label: 'Temperature',  icon: dzIconService.chromeIconFor('images/temperature.png'),
                       test: function(d) { return d.Temp !== undefined || d.Humidity !== undefined; } },
-                    { key: 'weather', label: 'Weather',      icon: 'images/rain.png',
+                    { key: 'weather', label: 'Weather',      icon: dzIconService.chromeIconFor('images/rain.png'),
                       test: function(d) { return d.Rain !== undefined || d.Barometer !== undefined || d.Direction !== undefined || d.UVI !== undefined; } },
-                    { key: 'utility', label: 'Utility',      icon: 'images/utility.png',
+                    { key: 'utility', label: 'Utility',      icon: dzIconService.chromeIconFor('images/utility.png'),
                       test: function(d) { return ddDeviceClassifier.getDirective(d) === 'dz-utility-widget' && d.Temp === undefined && d.Rain === undefined; } },
-                    { key: 'scenes',  label: 'Scenes',       icon: 'images/scenes.png',
+                    { key: 'scenes',  label: 'Scenes',       icon: dzIconService.chromeIconFor('images/scenes.png'),
                       test: function(d) { return ddDeviceClassifier.getDirective(d) === 'dz-scene-widget'; } }
                 ];
 

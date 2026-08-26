@@ -146,13 +146,13 @@ define(['app'], function (app) {
 							else if (node.teachinmode === 2)
 								teachinmode = "Virtual";
 
-							var state = '<img src="images/unknown.png" />';
+							var state = '<i class="fa-solid fa-circle-question dz-chrome-icon"></i>';
 							if (node.state === "Awake")
-								state = '<img src="images/ok.png" />';
+								state = '<i class="fa-solid fa-circle-check dz-chrome-icon"></i>';
 							else if (node.state === "Dead")
-								state = '<img src="images/failed.png" />';
+								state = '<i class="fa-solid fa-circle-xmark dz-chrome-icon"></i>';
 							else if (node.state === "Sleeping")
-								state = '<img src="images/sleep.png" />';
+								state = '<i class="fa-solid fa-moon dz-chrome-icon"></i>';
 	
 							oTable.fnAddData({
 								"nodeid": node.nodeid,

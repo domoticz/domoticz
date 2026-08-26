@@ -317,7 +317,7 @@ define(['app'], function (app) {
 								if (updownImg != "") {
 									updownImg += "&nbsp;";
 								}
-								updownImg += '<img src="images/down.png" onclick="ChangeFloorplanOrder(1,' + item.idx + ');" class="lcursor" width="16" height="16"></img>';
+								updownImg += '<i class="fa-solid fa-arrow-down dz-chrome-icon dz-act-edit lcursor" onclick="ChangeFloorplanOrder(1,' + item.idx + ');"></i>';
 							}
 							else {
 								updownImg += '<img src="images/empty16.png" width="16" height="16"></img>';
@@ -327,7 +327,7 @@ define(['app'], function (app) {
 								if (updownImg != "") {
 									updownImg += "&nbsp;";
 								}
-								updownImg += '<img src="images/up.png" onclick="ChangeFloorplanOrder(0,' + item.idx + ');" class="lcursor" width="16" height="16"></img>';
+								updownImg += '<i class="fa-solid fa-arrow-up dz-chrome-icon dz-act-edit lcursor" onclick="ChangeFloorplanOrder(0,' + item.idx + ');"></i>';
 							}
 
 							var imgsrc = item.Image + "&dtime=" + Math.round(+new Date() / 1000);
@@ -538,7 +538,7 @@ define(['app'], function (app) {
 								"DT_RowId": item.idx,
 								"Area": item.Area,
 								"0": item.Name,
-								"1": ((item.Area.length == 0) ? '<img src="images/failed.png"/>' : '<img src="images/ok.png"/>'),
+								"1": ((item.Area.length == 0) ? '<i class="fa-solid fa-circle-xmark dz-chrome-icon"></i>' : '<i class="fa-solid fa-circle-check dz-chrome-icon"></i>'),
 								"2": item.Area
 							});
 							var el = makeSVGnode('polygon', { id: item.Name + "_Room", 'class': "nothoverable", points: item.Area }, '');
