@@ -3272,7 +3272,6 @@ dz-temp-bar {
     z-index: 1;
 }
 
-/* ── Icon picker ─────────────────────────────────────────── */
 dz-icon-picker {
     display: block;
 }
@@ -3373,16 +3372,6 @@ dz-icon-picker {
     margin-right: 3px;
 }
 
-/* ── Device and chrome icons: <dz-device-icon> and .dz-icon-glyph ────────────
-   dzIconService hands out either a Font Awesome class or the PNG the web UI has
-   always drawn, so a glyph has to sit in exactly the box the <img> occupied.
-   The call site names that box with one of the dz-icon-NN classes, either on
-   the <dz-device-icon> host or on a bare <i class="dz-icon-glyph dz-icon-NN">.
-
-   The rules are class based on purpose: Font Awesome's own .fa-solid sets a
-   width and a line-height, and an element-only selector would lose to it.
-   style.css is loaded after the font, so equal specificity resolves our way.
-   ────────────────────────────────────────────────────────────────────────── */
 dz-device-icon {
     display: block;
 }
@@ -3408,18 +3397,10 @@ dz-device-icon > img {
 .dz-icon-40 { width: 40px; height: 40px; font-size: 30px; line-height: 40px; }
 .dz-icon-48 { width: 48px; height: 48px; font-size: 36px; line-height: 48px; }
 
-/* One glyph per device type is all the type map can offer: the PNG set said on
-   and off with a colour difference, and colour is out of scope here, so a
-   switch would look the same whether it is on or off. Fade the off state
-   instead. Opacity only - a single property for a theme under www/styles to
-   override, and it needs no palette. .dz-icon--on is emitted without a rule of
-   its own so a theme has something to hang the on state on.
-   Images are left alone: the PNG pair already draws its own off artwork. */
 .dz-icon-glyph.dz-icon--off {
     opacity: 0.45;
 }
 
-/* Same lift as the #img img:hover rule further up, for cards drawing a glyph. */
 #img dz-device-icon:hover > .dz-icon-glyph {
     transform: scale(1.1);
     transition: transform 0.2s ease;

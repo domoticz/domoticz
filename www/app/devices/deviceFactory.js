@@ -9,19 +9,10 @@ define(function () {
                     [0, 2, 7, 9, 10, 11, 17, 18, 19, 20].includes(device.SwitchTypeVal);
             };
 
-            /* The icon rules live in dzIconService. It holds a faithful copy of
-               the PNG logic this used to build itself, and on top of that the
-               per-device Icon field and the device type defaults, so there is
-               nothing left to duplicate here.
-               Returns { kind: 'font', cls: '...' } or { kind: 'img', src: '...' }. */
             this.resolve = function() {
                 return dzIconService.resolve(device, device.isActive());
             };
 
-            /* Kept for callers that can only place an <img> src. Returns null
-               when the resolver picked a font glyph, because there is no PNG
-               that matches it - those callers have to use resolve() and render
-               an <i> element instead. */
             this.getIcon = function() {
                 var icon = this.resolve();
                 return icon.kind === 'img' ? icon.src : null;

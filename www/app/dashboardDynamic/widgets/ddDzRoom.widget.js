@@ -113,9 +113,6 @@ define([
                     return opt ? opt.label : '';
                 }
 
-                /* The tab strip icons are the same UI chrome the navbar uses, so
-                   take the class from the resolver's PNG-to-glyph table instead
-                   of writing a second copy of it here. */
                 var CATEGORY_DEFS = [
                     { key: 'lights',  label: 'Switches',    icon: dzIconService.chromeIconFor('images/lightbulb.png'),
                       test: function(d) { return ddDeviceClassifier.getDirective(d) === 'dz-light-widget'; } },

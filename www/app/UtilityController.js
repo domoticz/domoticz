@@ -4,9 +4,6 @@
 	app.controller('UtilityController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$timeout', '$route', '$routeParams', 'deviceApi', 'domoticzApi', 'permissions', 'livesocket', 'dzBarService', 'dzIconPickerService', function ($scope, $rootScope, $location, $http, $interval, $timeout, $route, $routeParams, deviceApi, domoticzApi, permissions, livesocket, dzBarService, dzIconPickerService) {
 		var $element = $('#main-view #utilitycontent').last();
 
-		// What the icon picker in the currently open dialog has selected:
-		// customimage for an entry of the icon set, icon for a Font Awesome or
-		// icon library glyph. Only one of the two is ever filled in.
 		function iconParams() {
 			return '&customimage=' + dzIconPickerService.getCustomImage() +
 				'&icon=' + encodeURIComponent(dzIconPickerService.getIcon());
@@ -27,9 +24,6 @@
 			});
 		};
 
-		// The dialogs read their icon from the picker now, but $.ddData is a
-		// global that the Thermostat Mode dialog still feeds to ddslick, so it
-		// keeps being filled.
 		LoadCustomIcons = function () {
 			$.ddData = [];
 			$.ddData.push({

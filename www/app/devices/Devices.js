@@ -370,10 +370,6 @@ define(['app', 'livesocket'], function(app) {
             }
 
             function iconRenderer(value, type, device) {
-                /* The table is built as an HTML string, so the two shapes the
-                   resolver can return have to be spelled out here. The class is
-                   safe to inline: dzIconService only ever returns one it has
-                   validated against its own character whitelist. */
                 var icon = device.icon.resolve();
                 var itemImage = icon.kind === 'font'
                     ? '<i class="dz-icon-glyph dz-icon-16 ' + icon.cls + '"></i>'
@@ -443,9 +439,6 @@ define(['app', 'livesocket'], function(app) {
             }
 
             function renderBatteryLevelTitle() {
-                /* No rotation here: battery.png was drawn with its terminal on the
-                   left and had to be turned round. The glyph already points the
-                   conventional way. */
                 return '<i class="fa-solid fa-battery-half dz-chrome-icon" title="' + $.t('Battery Level') + '"></i>'
             }
 

@@ -84,9 +84,7 @@ constexpr auto sqlCreateDeviceStatus =
 "[Description] VARCHAR(200) DEFAULT '', "
 "[Options] TEXT DEFAULT null, "
 "[Color] TEXT DEFAULT NULL, "
-/* Kept last on purpose: the upgrade path adds this with ALTER TABLE, which
-   appends, so declaring it last keeps a fresh install's column order identical
-   to an upgraded one. */
+// Declared last: the upgrade path appends it with ALTER TABLE, so both schemas match.
 "[Icon] TEXT DEFAULT '');";
 
 constexpr auto sqlCreateDeviceStatusTrigger =
@@ -576,10 +574,6 @@ constexpr auto sqlCreateCustomImages =
 "	[IconOn] BLOB, "
 "	[IconOff] BLOB);";
 
-/* Metadata for the web assets in www/assets/ that Domoticz downloaded itself.
-   The files are the truth; this only records where one came from so it can be
-   fetched again, and which companion files it brought in (newline separated) so
-   they go away with it. */
 constexpr auto sqlCreateWebAssets =
 "CREATE TABLE IF NOT EXISTS [WebAssets]("
 "	[ID] INTEGER PRIMARY KEY, "
@@ -3474,8 +3468,6 @@ bool CSQLHelper::OpenDatabase()
 		}
 		if (dbversion < 183)
 		{
-			// Per-device icon reference as a small JSON object; empty keeps the
-			// CustomImage behaviour, so existing devices are unaffected.
 			query("ALTER TABLE DeviceStatus ADD COLUMN [Icon] TEXT DEFAULT ''");
 			query(sqlCreateWebAssets);
 		}

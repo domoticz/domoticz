@@ -110,9 +110,5 @@ require.config({
 		'blockly-blocks': ['blockly'],
 		'blockly-msg-en': ['blockly']
 	},
-	/* dzDeviceIcon pulls in dzIconService, and both must be registered on the
-	   module before any route template can use <dz-device-icon>.
-	   iconLibraries injects a <link> per installed icon-font library, which has
-	   to happen before any glyph from one of them can render. */
 	deps: ['app', 'dzPicker.directive', 'icons/dzDeviceIcon', 'iconLibraries']
 });

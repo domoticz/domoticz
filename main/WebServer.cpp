@@ -1686,12 +1686,6 @@ namespace http
 			if (result.empty())
 				return;
 
-			/* Per-device icon references (Font Awesome / installed icon library).
-			   Fetched as a separate lookup rather than added to the SELECTs
-			   above: those exist in several variants that index their columns
-			   positionally (sd[20] etc.), so adding a column would shift every
-			   index in each one. Only devices that actually have an icon set are
-			   returned, so this map stays small. */
 			std::map<std::string, std::string> deviceIcons;
 			{
 				auto iconResult = m_sql.safe_query("SELECT ID, Icon FROM DeviceStatus WHERE (Icon IS NOT NULL AND Icon != '')");
@@ -1987,9 +1981,6 @@ namespace http
 
 					root["result"][ii]["CustomImage"] = CustomImage;
 
-					/* Icon overrides CustomImage when set; emitted as-is so the
-					   web UI can render a font glyph instead of a PNG. Absent
-					   for devices still using the classic image. */
 					{
 						auto ittDevIcon = deviceIcons.find(sd[0]);
 						if (ittDevIcon != deviceIcons.end())
@@ -4566,11 +4557,6 @@ namespace http
 					{
 						std::vector<std::string> results;
 						StringSplit(sLine, ";", results);
-						/* Base;Name;Description with an OPTIONAL 4th field holding the
-						   Font Awesome class. Accepting >= 3 instead of == 3 keeps older
-						   switch_icons.txt files (and user edited ones) working: without
-						   the 4th field the icon simply has no font glyph and renders as
-						   the PNG, exactly as before. */
 						if (results.size() >= 3)
 						{
 							_tCustomIcon cImage;
@@ -4581,9 +4567,6 @@ namespace http
 							if (results.size() >= 4)
 							{
 								cImage.FaClass = results[3];
-								/* The file ships with CRLF line endings and getline() only
-								   strips the LF, so the last field on a line keeps the CR.
-								   This value ends up in a class attribute, so trim it. */
 								stdstring_trimws(cImage.FaClass);
 							}
 							m_custom_light_icons.push_back(cImage);

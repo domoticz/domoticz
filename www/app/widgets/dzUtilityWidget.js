@@ -2,23 +2,7 @@ define(['app', 'widgets/dzBar', 'icons/dzIconPicker', 'icons/dzDeviceIcon'], fun
 
     app.factory('utilityEditService', ['dzBarService', 'dzIconPickerService', function (dzBarService, dzIconPickerService) {
 
-        /* Put the icon picker in the cell that used to hold the #combosensoricon
-           dropdown.
-
-           It is rendered INSIDE the dialog's own DOM on purpose. These dialogs
-           are jQuery UI modals, and jQuery UI 1.12's _allowInteraction() only
-           lets focus land inside .ui-dialog or .ui-datepicker - anything else
-           gets focus dragged back to the dialog, which would leave the picker's
-           search field impossible to type in. Rendering in place keeps it
-           inside .ui-dialog, so no widget prototype has to be patched.
-
-           The old <select> stays in the DOM, hidden: it is what the show/hide
-           of the whole row is keyed on, and it keeps any lookup of
-           #combosensoricon working. It is no longer turned into a ddslick. */
         function mountIconPicker(dialogId, device) {
-            /* first(): jQuery UI moves these dialogs out of the view they were
-               declared in, so a stale copy of one can outlive its route. The
-               rest of the dialog code addresses the first match too. */
             var $select = $(dialogId + ' #combosensoricon').first();
             var $cell = $select.closest('td');
             var $host = $cell.find('.dz-icon-picker-host');
@@ -51,9 +35,6 @@ define(['app', 'widgets/dzBar', 'icons/dzIconPicker', 'icons/dzDeviceIcon'], fun
                 $(dialogId + ' #devicetext').val(device.Data);
                 showIcon = (device.ShowIcon !== '0');
                 $(dialogId + ' #deviceshowicon').prop('checked', showIcon);
-                /* The picker is mounted either way for a Text device: the
-                   checkbox only decides whether the row is on screen, so
-                   hiding it no longer throws the chosen icon away. */
                 $(dialogId + ' #deviceshowicon').off('change').on('change', function () {
                     $iconRow.toggle($(this).is(':checked'));
                 });
@@ -61,9 +42,6 @@ define(['app', 'widgets/dzBar', 'icons/dzIconPicker', 'icons/dzDeviceIcon'], fun
             if (showIcon || isText) {
                 mountIconPicker(dialogId, device);
             } else {
-                /* Alert and Thermostat Operating State draw their icon from the
-                   level, so there is nothing to pick. Unmount, so a selection
-                   left over from another dialog cannot be read back on Update. */
                 dzIconPickerService.unmount();
             }
             $iconRow.toggle(showIcon);
@@ -209,10 +187,6 @@ define(['app', 'widgets/dzBar', 'icons/dzIconPicker', 'icons/dzDeviceIcon'], fun
                         $("#dialog-editthermostatmode #combomode").append(option);
                         ii += 2;
                     }
-                    /* Left on the old ddslick on purpose: the Thermostat Mode
-                       dialog has never posted customimage, so its combo does
-                       not change anything and switching it to the new picker
-                       would silently start writing icons. */
                     $('#dialog-editthermostatmode #combosensoricon').ddslick({
                         data: $.ddData,
                         width: 260,
@@ -584,13 +558,6 @@ define(['app', 'widgets/dzBar', 'icons/dzIconPicker', 'icons/dzDeviceIcon'], fun
                     return bigtext || status;
                 };
 
-                /* Some of these icons are not a picture of the device, they are a
-                   reading: the alert level picks one of five Alert48_n.png, the
-                   wind direction picks one of sixteen arrows, and a temperature
-                   picks a PNG per range. One glyph per device type cannot say any
-                   of that, and none of these has ever honoured CustomImage
-                   either, so they keep the image unless an icon was chosen for
-                   the device by hand. */
                 ctrl.isValueDrivenIcon = function () {
                     return ctrl.isAlert()
                         || typeof device.Direction !== 'undefined'
@@ -598,9 +565,6 @@ define(['app', 'widgets/dzBar', 'icons/dzIconPicker', 'icons/dzDeviceIcon'], fun
                         || typeof device.Chill !== 'undefined';
                 };
 
-                /* The trend arrows are UI chrome, keyed in the resolver by their
-                   PNG name, so ask for the class instead of repeating the four
-                   arrow names here. */
                 ctrl.getTrendIcon = function () {
                     return dzIconService.chromeIconFor('images/arrow_' + ctrl.trendState(device.trend) + '.png');
                 };

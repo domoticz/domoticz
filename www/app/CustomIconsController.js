@@ -1,5 +1,3 @@
-// 'iconLibraries' is listed explicitly so the service this controller injects
-// is guaranteed to be registered, whatever order the modules happen to load in.
 define(['app', 'iconLibraries'], function (app) {
 	app.controller('CustomIconsController', ['$scope', '$rootScope', '$location', '$http', '$interval', 'iconLibraries', function ($scope, $rootScope, $location, $http, $interval, iconLibraries) {
 
@@ -8,10 +6,6 @@ define(['app', 'iconLibraries'], function (app) {
 		$scope.iconlibraries = [];
 		$scope.newLibrary = { prefix: '', url: '' };
 
-		/* Prefills for the libraries we know work. The version is pinned to a
-		   major so the CDN keeps serving a matching stylesheet + font pair.
-		   Note that the Weather Icons package on npm is "weathericons"; the
-		   more obvious "weather-icons" does not exist. */
 		$scope.librarySuggestions = [
 			{ name: 'Material Design Icons', prefix: 'mdi', url: 'https://cdn.jsdelivr.net/npm/@mdi/font@7/css/materialdesignicons.min.css' },
 			{ name: 'Bootstrap Icons', prefix: 'bi', url: 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1/font/bootstrap-icons.min.css' },
@@ -108,16 +102,12 @@ define(['app', 'iconLibraries'], function (app) {
 			});
 		}
 
-		/* An icon library is a stylesheet stored as a web asset, named after its
-		   class prefix ("mdi.css"). The server fetches it plus every font it
-		   points at, which is not instant, so say what is going on. */
 		$scope.RefreshLibraryList = function () {
 			$http({
 				url: "json.htm?type=command&param=getwebassets",
 			}).then(function successCallback(response) {
 				var assets = (typeof response.data.result != 'undefined') ? response.data.result : [];
 				$scope.iconlibraries = assets.filter(function (asset) {
-					// Only the stylesheets; the fonts they brought in are assets too.
 					return asset.name && /\.css$/i.test(asset.name);
 				}).map(function (asset) {
 					return {
@@ -171,8 +161,6 @@ define(['app', 'iconLibraries'], function (app) {
 				ShowNotify($.t('Please enter a URL and Prefix!'), 3500, true);
 				return;
 			}
-			// The prefix becomes both the asset filename and a CSS class prefix,
-			// so keep it to lowercase letters and digits.
 			if (!/^[a-z0-9]{1,32}$/.test(library.prefix)) {
 				ShowNotify($.t('The prefix may only contain lowercase letters and digits'), 3500, true);
 				return;
@@ -185,7 +173,6 @@ define(['app', 'iconLibraries'], function (app) {
 			InstallLibrary(library.prefix + '.css', library.url, $.t('Error adding Icon Library'), true);
 		}
 
-		// Refreshing is installing again from the URL the server recorded.
 		$scope.RefreshLibrary = function (library) {
 			if (!library.SourceURL) {
 				ShowNotify($.t('This library has no source URL to refresh from'), 3500, true);
@@ -214,8 +201,6 @@ define(['app', 'iconLibraries'], function (app) {
 
 		function init() {
 			$('#iconsmain').i18n();
-			// The Icon Libraries section sits outside #iconsmain, so it needs
-			// its own pass.
 			$('#iconlibrariesmain').i18n();
 			$scope.RefreshIconList();
 			$scope.RefreshLibraryList();

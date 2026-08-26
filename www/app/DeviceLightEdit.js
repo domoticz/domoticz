@@ -1,9 +1,5 @@
 define(['app', 'icons/dzIconPicker', 'components/rgbw-picker/RgbwPicker'], function (app) {
 
-    /* The switch icon selector. ng-model still carries CustomImage, so the
-       template keeps working unchanged; icon-json is optional and carries the
-       per-device Icon (a Font Awesome or icon library glyph) when the caller
-       wants that too. */
     app.component('deviceIconSelect', {
         template:
             '<dz-icon-picker custom-image="$ctrl.customImage" icon="$ctrl.iconJson"' +
@@ -22,9 +18,6 @@ define(['app', 'icons/dzIconPicker', 'components/rgbw-picker/RgbwPicker'], funct
             vm.onPicked = onPicked;
 
             vm.$onInit = function () {
-                /* Without icon-json there is nowhere to put a glyph, so only the
-                   icon set is offered and the component behaves as it always
-                   did. */
                 vm.allowGlyphs = $attrs.iconJson !== undefined;
                 vm.customImage = parseInt(vm.ngModelCtrl.$modelValue, 10) || 0;
                 vm.defaultImage = defaultImage();
@@ -41,11 +34,6 @@ define(['app', 'icons/dzIconPicker', 'components/rgbw-picker/RgbwPicker'], funct
 
                 vm.defaultImage = defaultImage();
 
-                /* The old dropdown reset itself to Default whenever the switch
-                   type changed, because the icon a type falls back to changes
-                   with it. Keep that, and clear the glyph along with it so the
-                   two cannot disagree. Going from no type to a type is the
-                   initial load, not a user edit. */
                 var previous = changes.switchType.previousValue;
                 if (!changes.switchType.isFirstChange() && previous !== undefined && previous !== null) {
                     onPicked(0, '');

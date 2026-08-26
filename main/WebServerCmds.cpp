@@ -4434,9 +4434,6 @@ namespace http
 				root["result"][ii]["imageSrc"] = icon.RootFile;
 				root["result"][ii]["text"] = icon.Title;
 				root["result"][ii]["description"] = icon.Description;
-				/* Font Awesome class for this built-in icon, empty for ZIP-uploaded
-				   ones. Added alongside imageSrc (never replacing it) so a client that
-				   does not know about FaClass keeps using the PNG. */
 				root["result"][ii]["FaClass"] = icon.FaClass;
 				ii++;
 			}
@@ -5621,9 +5618,6 @@ namespace http
 					root["result"][ii]["IconFile16"] = IconFile16;
 					root["result"][ii]["IconFile48On"] = IconFile48On;
 					root["result"][ii]["IconFile48Off"] = IconFile48Off;
-					/* Always empty here: this command only lists ZIP-uploaded icons
-					   (idx >= 100), which have no font glyph. Emitted anyway so the
-					   field is present in every icon payload the UI consumes. */
 					root["result"][ii]["FaClass"] = icon.FaClass;
 					ii++;
 				}
@@ -5697,7 +5691,7 @@ namespace http
 
 			std::string szName = request::findValue(&req, "name");
 			std::string szData = request::findValue(&req, "data"); // base64 encoded
-			std::string szURL = request::findValue(&req, "url");   // alternative to data: the server fetches it
+			std::string szURL = request::findValue(&req, "url");
 
 			if (szName.empty() || (szData.empty() && szURL.empty()))
 			{
@@ -5761,9 +5755,7 @@ namespace http
 		{
 			root["title"] = "GetWebAssets";
 
-			/* Not admin-only: every logged in user's browser has to know which
-			   stylesheets to pull in, or an icon taken from one renders as an
-			   empty box for them. */
+			// Not admin-only: every user's browser has to know which stylesheets to load.
 			if (session.rights == URIGHTS_NONE)
 			{
 				session.reply_status = reply::forbidden;
@@ -5776,7 +5768,7 @@ namespace http
 			if (lDir == nullptr)
 				return; // no assets stored yet — an empty result is not an error
 
-			std::map<std::string, std::pair<std::string, std::string>> metadata; // name -> (source url, last update)
+			std::map<std::string, std::pair<std::string, std::string>> metadata;
 			auto result = m_sql.safe_query("SELECT Name, SourceURL, LastUpdate FROM WebAssets");
 			for (const auto& sd : result)
 				metadata[sd[0]] = std::make_pair(sd[1], sd[2]);
@@ -5837,8 +5829,6 @@ namespace http
 				root["error"] = "Could not remove asset";
 				return;
 			}
-			// Takes the companion files the asset brought in with it, so removing a
-			// stylesheet does not leave its fonts behind.
 			WebAssetFetch::Forget(szName);
 			root["status"] = "OK";
 		}
@@ -6407,21 +6397,6 @@ namespace http
 			LoadUsers();
 		}
 
-		/* ── Per-device icon reference ───────────────────────────────────────
-		   A device may point at a font glyph (bundled Font Awesome, or an
-		   installed icon library) instead of a PNG. It is stored on
-		   DeviceStatus.Icon as a small JSON object:
-
-		     {"t":"fa","on":"fa-solid fa-lightbulb","off":"fa-regular fa-lightbulb"}
-
-		   `t` is the provider ("fa" or a library prefix such as "mdi"), `on` is
-		   required and `off` optional (falling back to `on`). An empty column
-		   means "use CustomImage exactly as before".
-
-		   These strings end up in the browser as class attributes, so they are
-		   validated character by character on the way in and RE-SERIALISED from
-		   only the known fields — anything unexpected is rejected rather than
-		   sanitised, so bad input is visible instead of silently mangled.     */
 		static bool IsIconToken(const std::string& szToken, size_t maxLen, bool bAllowSpaces)
 		{
 			if (szToken.empty() || (szToken.size() > maxLen))
@@ -6447,7 +6422,7 @@ namespace http
 		{
 			szOut.clear();
 			if (szIn.empty())
-				return true; // clearing the icon is valid: falls back to CustomImage
+				return true;
 			if (szIn.size() > 512)
 				return false;
 
@@ -6515,9 +6490,6 @@ namespace http
 			std::string tmode = request::findValue(&req, "tmode");
 			std::string fmode = request::findValue(&req, "fmode");
 			std::string sCustomImage = request::findValue(&req, "customimage");
-			/* Optional: a font-glyph icon reference. Only touched when the
-			   caller actually sends `icon`, so existing clients that know
-			   nothing about it never clear a device's icon by omission. */
 			bool bHasIcon = request::hasValue(&req, "icon");
 			std::string sIcon = request::findValue(&req, "icon");
 
@@ -6625,10 +6597,6 @@ namespace http
 				}
 			}
 
-			/* Icon is written separately rather than folded into the UPDATEs
-			   above: those come in several variants, and this only runs when the
-			   caller actually supplied `icon`. An empty value clears it, putting
-			   the device back on its CustomImage. */
 			if (bHasIcon)
 			{
 				std::string szIconNormalised;

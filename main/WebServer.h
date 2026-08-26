@@ -29,9 +29,6 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 		std::string RootFile;
 		std::string Title;
 		std::string Description;
-		/* Font Awesome class for the built-in icon set (switch_icons.txt, idx < 100).
-		   Stays empty for ZIP-uploaded icons (idx >= 100): those are user supplied
-		   PNGs that have no font glyph equivalent, so they keep rendering as images. */
 		std::string FaClass;
 	};
 	CWebServer();

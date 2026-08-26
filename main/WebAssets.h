@@ -1,16 +1,5 @@
 #pragma once
 
-/*
- * Storage rules for user-supplied web assets (www/assets).
- *
- * Everything the user adds to the web front-end at runtime lives in that one
- * folder: stylesheets and fonts uploaded by hand, and the icon-font libraries
- * Domoticz downloads itself. The naming rules, the type allowlist and the write
- * itself are collected here so that every writer applies exactly the same
- * checks -- a second storage location or a slightly looser validator would
- * re-open the path-traversal / script-injection holes these rules close.
- */
-
 #include <cstdio>
 #include <fstream>
 #include <string>
@@ -28,10 +17,8 @@
 
 extern std::string szWWWFolder;
 
-static const size_t WEB_ASSET_MAX_SIZE = 8 * 1024 * 1024; // 8 MiB per file
+static const size_t WEB_ASSET_MAX_SIZE = 8 * 1024 * 1024;
 
-/* A web asset name must be a single ASCII path component, so that appending it
-   to the assets folder can never point anywhere else. */
 inline bool IsSafeWebAssetName(const std::string& szName)
 {
 	if (szName.empty() || (szName.size() > 128))
@@ -56,8 +43,6 @@ inline bool IsSafeWebAssetName(const std::string& szName)
 	return true;
 }
 
-/* Note the absence of ".svg": these files are served from our own origin, and
-   an SVG document can carry script. */
 inline bool IsAllowedWebAssetType(const std::string& szName)
 {
 	std::string szLower = szName;
@@ -95,14 +80,6 @@ inline bool EnsureWebAssetFolder()
 	return WebAssetDirExists(szFolder);
 }
 
-/* Writes szContent to www/assets/<szName>, replacing any previous version.
-   szName must already have passed IsSafeWebAssetName() and
-   IsAllowedWebAssetType(); this function does not re-check, it is the caller's
-   job to reject bad names before getting here.
-
-   The content goes to a temporary file that is then renamed into place, so a
-   browser fetching the asset never sees a half-written stylesheet or font.
-   szLogTag identifies the caller in the log. */
 inline bool WriteWebAssetFile(const std::string& szName, const std::string& szContent, const char* szLogTag)
 {
 	if (!EnsureWebAssetFolder())
@@ -152,8 +129,6 @@ inline bool WriteWebAssetFile(const std::string& szName, const std::string& szCo
 	return true;
 }
 
-/* Removes www/assets/<szName>. Returns false when the file could not be
-   removed; a missing file counts as removed. */
 inline bool RemoveWebAssetFile(const std::string& szName)
 {
 	const std::string szFile = WebAssetFolder() + "/" + szName;

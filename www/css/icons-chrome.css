@@ -1,15 +1,3 @@
-/*
- * UI chrome icons.
- *
- * The navbar, the setup menus, the data table action buttons, the trend
- * arrows and the favourite stars render bundled Font Awesome glyphs where
- * they used to render a PNG. An <i> has no intrinsic size, so the width
- * and height attributes those images carried live here instead.
- *
- * Glyph colour is deliberately left alone: the icons inherit the colour of
- * the text around them, which is what the old PNG palette approximated.
- */
-
 .dz-chrome-icon {
 	display: inline-block;
 	width: 1.25em;
@@ -19,8 +7,6 @@
 	vertical-align: middle;
 }
 
-/* Sizes other than the 16px default, named after the box the replaced
-   image occupied. */
 .dz-chrome-icon-12 {
 	font-size: 12px;
 }
@@ -41,17 +27,11 @@
 	font-size: 36px;
 }
 
-/* .btn.btn-icon zeroes its line height because it used to hold nothing but
-   an image; a glyph needs its own line box back. */
 .btn.btn-icon > .dz-chrome-icon {
 	line-height: 1;
 	vertical-align: middle;
 }
 
-/* The navbar and the setup menus sized their icons through `.nav li a img`,
-   which also pulled them down onto the text baseline. Those menus already
-   carried a handful of Font Awesome icons of their own, so this covers the
-   converted ones and the existing ones alike and keeps a menu even. */
 .nav li a > i {
 	font-size: 16px;
 	vertical-align: text-bottom;

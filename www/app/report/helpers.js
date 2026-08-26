@@ -137,9 +137,6 @@ define(function() {
         });
     }
 
-    /* The glyph for a trend cell, as the '<>' column renders it.
-       The 'g' images this replaces drew a sloping trend arrow where the plain
-       ones drew a straight one, so a generation report keeps that difference. */
     function trendIconHtml(trend, isGeneration) {
         var icons = isGeneration
             ? { up: 'fa-solid fa-arrow-trend-up', down: 'fa-solid fa-arrow-trend-down', equal: 'fa-solid fa-minus' }

@@ -361,26 +361,12 @@ define(['app'], function (app) {
                     bootbox.alert(modalContent);
                 };
 
-                /* While a dim slider is being dragged the card previews the level
-                   it is about to land on. Held as state instead of rewriting the
-                   <img> src the way it used to be done, so the preview works the
-                   same whether the card ends up drawing a PNG or a glyph.
-                   null means "not dragging". */
                 ctrl.dragActive = null;
 
                 function iconActive(actual) {
                     return ctrl.dragActive === null ? actual : ctrl.dragActive;
                 }
 
-                /* Whether the icon should be drawn in its on state, which is the
-                   same choice getDeviceIcon() makes between the On and the Off
-                   PNG. Several switch types do not read it off Status: a contact
-                   reports 'Open', a lock reports InternalState, and a push button
-                   is fixed to one state. Returns null for the types that have a
-                   single icon, where on and off mean nothing, so the card shows
-                   no state rather than an invented one.
-                   dz-device-icon turns this into dz-icon--on / dz-icon--off,
-                   which is what tells a glyph's two states apart. */
                 ctrl.iconState = function () {
                     if (ctrl.dragActive !== null) {
                         return ctrl.dragActive;
@@ -931,13 +917,6 @@ define(['app'], function (app) {
                                         scope.$apply(function() {
                                             scope.ctrl.dragText = bigtext;
 
-                                            /* Preview the state the icon lands on
-                                               for non-blinds non-LED dimmers. This
-                                               used to rewrite the <img> src by
-                                               swapping _On for _Off in the file
-                                               name, which only worked for PNGs;
-                                               the flag lets the icon component
-                                               decide what to draw. */
                                             if ((dtype != "blinds") && !isled) {
                                                 scope.ctrl.dragActive = fPercentage != 0;
                                             }

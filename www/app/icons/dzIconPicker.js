@@ -1,27 +1,6 @@
 define(['app'], function (app) {
     'use strict';
 
-    /* ------------------------------------------------------------------
-     * One icon picker for the whole web UI.
-     *
-     * It offers four sources, and hands the result back as the two fields
-     * the server understands:
-     *
-     *   CustomImage  the icon set entry (0 = none), as it has always been
-     *   Icon         {"t":"fa","on":"fa-solid fa-lightbulb","off":"..."}
-     *
-     * Exactly one of the two is ever set: a device with an empty Icon keeps
-     * behaving the way it did before this picker existed, and "Default"
-     * clears both.
-     * ------------------------------------------------------------------ */
-
-    /* Font Awesome 7 declares one rule per glyph, '.fa-lightbulb{--fa:"\f0eb"}',
-       and never sets --fa on a style or utility class (fa-solid, fa-2xl,
-       fa-spin, fa-fw, ...). The presence of --fa is therefore what identifies a
-       glyph selector; the list below is a second line of defence in case a
-       future release starts setting --fa on something that is not an icon.
-       Note that .fa-0 .. .fa-9 ARE glyphs (the digits) while .fa-1x .. .fa-10x
-       are sizes, so the two cannot be told apart by shape alone. */
     var FA_NON_GLYPH = [
         'fa', 'fa-brands', 'fa-classic', 'fa-duotone', 'fa-light', 'fa-regular',
         'fa-sharp', 'fa-solid', 'fa-thin', 'fab', 'far', 'fas',
@@ -38,8 +17,6 @@ define(['app'], function (app) {
         'fa-8x', 'fa-9x', 'fa-10x'
     ];
 
-    /* The style half of a Font Awesome class pair. Only the two families that
-       index.html actually loads are offered. */
     var FA_STYLES = ['fa-solid', 'fa-regular'];
 
     var FA_SKIP = {};
@@ -47,19 +24,10 @@ define(['app'], function (app) {
         FA_SKIP[name] = true;
     });
 
-    /* A class list ends up in a class attribute and is validated the same way
-       server side, so keep to what a CSS class list may contain. */
     var SAFE_CLASS_RE = /^[A-Za-z0-9 _-]+$/;
 
-    /* How many tiles are put in the DOM at once. Font Awesome alone has well
-       over a thousand glyphs; the rest is reached by searching or by More. */
     var PAGE_SIZE = 120;
 
-    /* ------------------------------------------------------------------
-     * Shared data: the icon set, the installed libraries, and the glyph
-     * names scraped out of the loaded stylesheets. All cached, because the
-     * picker is created and destroyed once per dialog.
-     * ------------------------------------------------------------------ */
     app.factory('dzIconPickerData', ['$q', '$timeout', 'domoticzApi', function ($q, $timeout, domoticzApi) {
         var iconSetRequest = null;
         var librariesRequest = null;
@@ -73,8 +41,6 @@ define(['app'], function (app) {
             ensureStylesheet: ensureStylesheet
         };
 
-        /* The built-in and the ZIP-uploaded icons, in one list, from the same
-           command the old ddslick dropdown used. */
         function iconSet() {
             if (!iconSetRequest) {
                 iconSetRequest = domoticzApi.sendCommand('custom_light_icons', {})
@@ -92,8 +58,6 @@ define(['app'], function (app) {
                                 };
                             })
                             .filter(function (item) {
-                                /* idx 0 is the "no custom image" entry; the
-                                   picker has its own Default source for it. */
                                 return item.idx !== 0;
                             });
                     })
@@ -105,9 +69,6 @@ define(['app'], function (app) {
             return iconSetRequest;
         }
 
-        /* Installed icon libraries: the stylesheets among the web assets, whose
-           class prefix is the filename they were installed under ("mdi.css" ->
-           "mdi"). A refused command leaves the picker with Font Awesome only. */
         function libraries() {
             if (!librariesRequest) {
                 librariesRequest = domoticzApi.sendCommand('getwebassets', {})
@@ -136,10 +97,6 @@ define(['app'], function (app) {
             return librariesRequest;
         }
 
-        /* Glyph class names for a provider prefix ('fa', 'mdi', ...), read out
-           of the stylesheets the page already has. All of them are same-origin,
-           so their rules are readable; the try/catch is there for the day
-           someone adds a CDN link. */
         function glyphs(prefix) {
             if (glyphCache[prefix]) {
                 return glyphCache[prefix];
@@ -165,8 +122,6 @@ define(['app'], function (app) {
             return glyphCache[prefix];
         }
 
-        /* A library stylesheet that arrives after the first scan needs a new
-           one, so the cache can be dropped per provider. */
         function forgetGlyphs(prefix) {
             delete glyphCache[prefix];
         }
@@ -175,7 +130,6 @@ define(['app'], function (app) {
             for (var i = 0; i < rules.length; i++) {
                 var rule = rules[i];
 
-                /* @media and @supports wrap their own rule list. */
                 if (rule.cssRules && rule.cssRules.length) {
                     collect(rule.cssRules, prefix, isFa, names);
                     continue;
@@ -204,8 +158,6 @@ define(['app'], function (app) {
             }
         }
 
-        /* '.mdi-account::before' -> 'mdi-account', and nothing for selectors
-           that are not a single class of this provider. */
         function glyphClassName(selector, prefix) {
             var match = selector.trim()
                 .replace(/::?(before|after)$/, '')
@@ -223,8 +175,6 @@ define(['app'], function (app) {
             return name;
         }
 
-        /* Pull in a library stylesheet the page does not have yet, so its
-           glyphs can be enumerated at all. */
         function ensureStylesheet(href) {
             if (!href) {
                 return $q.resolve(false);
@@ -242,21 +192,12 @@ define(['app'], function (app) {
             link.href = href;
             document.getElementsByTagName('head')[0].appendChild(link);
 
-            /* No load event to wait on that works across browsers for
-               stylesheets in every state, so give it a moment and rescan. */
             return $timeout(angular.noop, 600).then(function () {
                 return true;
             });
         }
     }]);
 
-    /* ------------------------------------------------------------------
-     * <dz-icon-picker custom-image="..." icon="..." default-image="..."
-     *                 allow-glyphs="..." on-change="pick(customImage, icon)">
-     *
-     * Reports both fields on every change; the host decides where to put
-     * them. Nothing is written to the server from here.
-     * ------------------------------------------------------------------ */
     app.component('dzIconPicker', {
         template:
             '<div class="dz-icon-picker">' +
@@ -335,8 +276,6 @@ define(['app'], function (app) {
         controller: ['$element', 'dzIconPickerData', function ($element, dzIconPickerData) {
             var vm = this;
 
-            /* What the last emit() reported, so a binding update caused by our
-               own change does not overwrite the in-progress selection. */
             var emitted = null;
             var iconSet = [];
 
@@ -384,8 +323,6 @@ define(['app'], function (app) {
             }
 
             function onChanges(changes) {
-                /* $onChanges also fires for the initial bindings, before
-                   $onInit has set any state up. */
                 if (!vm.sel) {
                     return;
                 }
@@ -395,8 +332,6 @@ define(['app'], function (app) {
                 if (!changes.customImage && !changes.icon) {
                     return;
                 }
-                /* A binding update caused by our own emit carries exactly what
-                   we reported, and must not restart the selection. */
                 if (signature(vm.customImage, serialize(parseIcon(vm.icon))) === emitted) {
                     return;
                 }
@@ -406,17 +341,11 @@ define(['app'], function (app) {
                 refresh();
             }
 
-            /* The surrounding markup translates through data-i18n, and the
-               picker is compiled into a jQuery dialog as well as into a route
-               template, so run the pass ourselves rather than rely on whoever
-               happens to own the container. */
             function translate() {
                 if ($element.i18n) {
                     $element.i18n();
                 }
             }
-
-            /* -------- selection state -------- */
 
             function readBindings() {
                 var parsed = parseIcon(vm.icon);
@@ -430,7 +359,6 @@ define(['app'], function (app) {
                 vm.offEnabled = !!parsed.off;
                 vm.target = 'on';
 
-                /* Reopening on a glyph should show the style it was saved with. */
                 if (parsed.provider === 'fa') {
                     FA_STYLES.forEach(function (style) {
                         if ((' ' + parsed.on + ' ').indexOf(' ' + style + ' ') !== -1) {
@@ -502,8 +430,6 @@ define(['app'], function (app) {
                 vm.onChange({ customImage: vm.sel.customImage, icon: icon });
             }
 
-            /* -------- preview -------- */
-
             function describe() {
                 if (vm.sel.on) {
                     vm.preview = { kind: 'font', cls: vm.sel.on };
@@ -532,8 +458,6 @@ define(['app'], function (app) {
                 }
                 return null;
             }
-
-            /* -------- sources -------- */
 
             function buildSources() {
                 var hasUploaded = iconSet.some(function (item) {
@@ -574,7 +498,6 @@ define(['app'], function (app) {
                             id: id,
                             kind: 'lib',
                             provider: row.prefix,
-                            // Used as "<base> <base>-name": the base carries the font-family.
                             base: row.prefix,
                             css: row.css,
                             title: row.title
@@ -583,7 +506,6 @@ define(['app'], function (app) {
                 });
             }
 
-            /* Open on the source the current selection came from. */
             function pickSourceFor(preferred) {
                 if (preferred) {
                     var current = vm.sources.filter(function (source) {
@@ -618,8 +540,6 @@ define(['app'], function (app) {
                 refresh();
             }
 
-            /* -------- results -------- */
-
             function refresh() {
                 var source = vm.activeSource;
                 if (!source || source.kind === 'default') {
@@ -637,8 +557,6 @@ define(['app'], function (app) {
                 vm.results = matches.slice(0, vm.limit);
 
                 if (!matches.length && source.kind === 'lib' && !source.retried) {
-                    /* The library stylesheet may not be on the page yet, in which
-                       case there is nothing to enumerate. Load it and rescan once. */
                     source.retried = true;
                     dzIconPickerData.ensureStylesheet(source.css).then(function (added) {
                         if (added) {
@@ -696,8 +614,6 @@ define(['app'], function (app) {
             }
 
             function onStyleChange() {
-                /* Restyle the glyph already chosen, so switching solid/regular
-                   does not need a second click in the grid. */
                 if (vm.sel.on && vm.sel.provider === 'fa') {
                     vm.sel[vm.target] = restyle(vm.sel[vm.target] || vm.sel.on);
                     emit();
@@ -713,8 +629,6 @@ define(['app'], function (app) {
                 return vm.faStyle + ' ' + words.join(' ');
             }
 
-            /* -------- picking -------- */
-
             function pick(item) {
                 if (item.kind === 'img') {
                     vm.sel = { customImage: item.idx, on: '', off: '', provider: '' };
@@ -724,8 +638,6 @@ define(['app'], function (app) {
                     return;
                 }
 
-                /* The stored payload names a single provider, so the on and the
-                   off glyph have to come from the same source. */
                 if (vm.sel.provider && vm.sel.provider !== item.provider) {
                     vm.sel.on = '';
                     vm.sel.off = '';
@@ -757,12 +669,6 @@ define(['app'], function (app) {
                 return vm.target === 'off' ? vm.sel.off === item.cls : vm.sel.on === item.cls;
             }
 
-            /* -------- optional off glyph -------- */
-
-            /* dzIconService's type map holds one glyph per device type, so a
-               switch resolved that way looks the same on and off. The on/off
-               pair in Icon is how that is expressed, and this is where it is
-               set - kept out of the way, and only once a glyph is chosen. */
             function canSetOff() {
                 return !!vm.sel.on;
             }
@@ -781,8 +687,6 @@ define(['app'], function (app) {
                 vm.target = target;
             }
 
-            /* The Utility dialogs turn Enter into a click on their Update
-               button, which would submit the dialog from the search field. */
             function onSearchKeydown(event) {
                 if (event.keyCode === 13) {
                     event.preventDefault();
@@ -802,14 +706,6 @@ define(['app'], function (app) {
         }]
     });
 
-    /* ------------------------------------------------------------------
-     * Mounting the picker from plain jQuery code.
-     *
-     * The Utility dialogs are jQuery UI widgets with no scope of their own,
-     * so they get the picker compiled into their DOM and read the result
-     * back from here when Update is pressed - the same split dzBarService
-     * uses for the bar ranges.
-     * ------------------------------------------------------------------ */
     app.factory('dzIconPickerService', ['$compile', '$rootScope', function ($compile, $rootScope) {
         var current = { customImage: 0, icon: '' };
         var mounted = null;
@@ -825,8 +721,6 @@ define(['app'], function (app) {
             }
         };
 
-        /* container: where to render, options: { customImage, icon, defaultImage }.
-           Only one dialog is ever open, so a single mount is kept and replaced. */
         function mount(container, options) {
             unmount();
 
@@ -853,8 +747,6 @@ define(['app'], function (app) {
             $(container).empty().append(element);
             mounted = { scope: scope, element: element };
 
-            /* Dialogs are opened from ng-click as well as from plain jQuery
-               handlers, so a digest is not guaranteed to be running. */
             if (!$rootScope.$$phase) {
                 scope.$digest();
             }

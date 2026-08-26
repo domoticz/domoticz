@@ -75,10 +75,6 @@
                                 <td id="bigtext">{{ device.Barometer }} hPa</td>
                                 <td id="img">
                                     <a ng-href="#/Devices/{{ device.idx }}/Log">
-                                        <!-- use-glyph="false": a barometer reports TypeImg
-                                             'temperature', so the type default would draw a
-                                             thermometer here. Keep the gauge PNG unless an
-                                             icon was picked for this device by hand. -->
                                         <dz-device-icon class="dz-icon-48 lcursor"
                                                         device="device"
                                                         fallback-src="'images/baro48.png'"
