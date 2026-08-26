@@ -14,7 +14,9 @@ define(['app', 'widgets/dzBar', 'icons/dzIconPicker', 'icons/dzDeviceIcon'], fun
 
             dzIconPickerService.mount($host, {
                 customImage: device.CustomImage,
-                icon: device.Icon
+                icon: device.Icon,
+                // Without the record the picker has no type to fall back on and previews nothing.
+                device: device
             });
         }
 

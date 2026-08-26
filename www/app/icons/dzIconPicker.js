@@ -1,4 +1,4 @@
-define(['app'], function (app) {
+define(['app', 'icons/dzIconService'], function (app) {
     'use strict';
 
     var FA_NON_GLYPH = [
@@ -345,6 +345,29 @@ define(['app'], function (app) {
         }
     }]);
 
+    // One resolution path for the compact trigger and the modal swatch, so the two can never
+    // disagree with each other or with the widget that renders the same device.
+    app.factory('dzIconPickerPreview', ['dzIconService', function (dzIconService) {
+        return {
+            of: of
+        };
+
+        function of(device, sel, item, defaultImage) {
+            if (sel.on) {
+                return { kind: 'font', cls: sel.on };
+            }
+
+            var resolved = device ? dzIconService.resolveSelection(device, sel.customImage, '') : null;
+            if (resolved && resolved.kind === 'font') {
+                return resolved;
+            }
+
+            var src = sel.customImage > 0 ? (item ? item.src : '') : defaultImage;
+
+            return src ? { kind: 'img', src: src } : { kind: 'none' };
+        }
+    }]);
+
     function swatch(expr, sizeClass, stateClass) {
         return '<span class="dz-ip-swatch ' + sizeClass + ' ' + stateClass + '">' +
             '<i ng-if="' + expr + '.kind === \'font\'" class="{{ ' + expr + '.cls }}"></i>' +
@@ -435,13 +458,14 @@ define(['app'], function (app) {
         bindings: {
             customImage: '<',
             icon: '<',
+            device: '<',
             defaultImage: '<',
             allowGlyphs: '<',
             onSelect: '&',
             onCancel: '&'
         },
-        controller: ['$element', '$scope', '$timeout', '$location', 'dzIconPickerData',
-            function ($element, $scope, $timeout, $location, dzIconPickerData) {
+        controller: ['$element', '$scope', '$timeout', '$location', 'dzIconPickerData', 'dzIconService', 'dzIconPickerPreview',
+            function ($element, $scope, $timeout, $location, dzIconPickerData, dzIconService, dzIconPickerPreview) {
                 var vm = this;
 
                 var iconSet = [];
@@ -495,6 +519,8 @@ define(['app'], function (app) {
                         libraries = rows;
                         rebuild();
                     });
+
+                    dzIconService.preloadBuiltinIcons().then(describe);
                 }
 
                 function postLink() {
@@ -867,23 +893,12 @@ define(['app'], function (app) {
                 }
 
                 function describe() {
-                    vm.candidate = slotPreview(vm.sel.on, true);
-                    vm.offCandidate = slotPreview(vm.sel.off || vm.sel.on, false);
-                }
+                    var item = vm.sel.customImage > 0 ? findIcon(vm.sel.customImage) : null;
+                    var offCls = vm.sel.off || vm.sel.on;
 
-                function slotPreview(cls, allowImage) {
-                    if (cls) {
-                        return { kind: 'font', cls: cls };
-                    }
-                    if (!allowImage) {
-                        return { kind: 'none' };
-                    }
-                    if (vm.sel.customImage > 0) {
-                        var item = findIcon(vm.sel.customImage);
-                        return item ? { kind: 'img', src: item.src } : { kind: 'none' };
-                    }
-
-                    return vm.defaultImage ? { kind: 'img', src: vm.defaultImage } : { kind: 'none' };
+                    vm.candidate = dzIconPickerPreview.of(vm.device, vm.sel, item, vm.defaultImage);
+                    // The off slot only ever holds a glyph, never an image or a type default.
+                    vm.offCandidate = offCls ? { kind: 'font', cls: offCls } : { kind: 'none' };
                 }
 
                 function confirm() {
@@ -1014,6 +1029,7 @@ define(['app'], function (app) {
             scope.state = {
                 customImage: parseInt(opts.customImage, 10) || 0,
                 icon: opts.icon || '',
+                device: opts.device || null,
                 defaultImage: opts.defaultImage || '',
                 allowGlyphs: opts.allowGlyphs !== false
             };
@@ -1028,6 +1044,7 @@ define(['app'], function (app) {
 
             var element = $compile(
                 '<dz-icon-picker-modal custom-image="state.customImage" icon="state.icon"' +
+                ' device="state.device"' +
                 ' default-image="state.defaultImage" allow-glyphs="state.allowGlyphs"' +
                 ' on-select="select(customImage, icon)" on-cancel="cancel()"></dz-icon-picker-modal>')(scope);
 
@@ -1067,12 +1084,13 @@ define(['app'], function (app) {
         bindings: {
             customImage: '<',
             icon: '<',
+            device: '<',
             defaultImage: '<',
             allowGlyphs: '<',
             onChange: '&'
         },
-        controller: ['$element', 'dzIconPickerData', 'dzIconPickerDialog',
-            function ($element, dzIconPickerData, dzIconPickerDialog) {
+        controller: ['$element', 'dzIconPickerData', 'dzIconPickerDialog', 'dzIconService', 'dzIconPickerPreview',
+            function ($element, dzIconPickerData, dzIconPickerDialog, dzIconService, dzIconPickerPreview) {
                 var vm = this;
 
                 var emitted = null;
@@ -1091,13 +1109,15 @@ define(['app'], function (app) {
                         iconSet = items;
                         describe();
                     });
+
+                    dzIconService.preloadBuiltinIcons().then(describe);
                 }
 
                 function onChanges(changes) {
                     if (!vm.sel) {
                         return;
                     }
-                    if (!changes.customImage && !changes.icon && !changes.defaultImage) {
+                    if (!changes.customImage && !changes.icon && !changes.defaultImage && !changes.device) {
                         return;
                     }
                     if (signature(vm.customImage, serializeIcon(readSelection(vm.customImage, vm.icon))) === emitted) {
@@ -1119,6 +1139,7 @@ define(['app'], function (app) {
                     dzIconPickerDialog.open({
                         customImage: vm.sel.customImage,
                         icon: serializeIcon(vm.sel),
+                        device: vm.device,
                         defaultImage: vm.defaultImage,
                         allowGlyphs: vm.allowGlyphs
                     }).then(function (result) {
@@ -1140,21 +1161,21 @@ define(['app'], function (app) {
                 }
 
                 function describe() {
+                    var item = vm.sel.customImage > 0 ? findIcon(vm.sel.customImage) : null;
+
+                    vm.preview = dzIconPickerPreview.of(vm.device, vm.sel, item, vm.defaultImage);
+                    vm.selectionLabel = label(item);
+                }
+
+                function label(item) {
                     if (vm.sel.on) {
-                        vm.preview = { kind: 'font', cls: vm.sel.on };
-                        vm.selectionLabel = vm.sel.on + (vm.sel.off ? ' / ' + vm.sel.off : '');
-                        return;
+                        return vm.sel.on + (vm.sel.off ? ' / ' + vm.sel.off : '');
                     }
-
                     if (vm.sel.customImage > 0) {
-                        var item = findIcon(vm.sel.customImage);
-                        vm.preview = item ? { kind: 'img', src: item.src } : { kind: 'none' };
-                        vm.selectionLabel = item ? (item.text || item.description) : ('#' + vm.sel.customImage);
-                        return;
+                        return item ? (item.text || item.description) : ('#' + vm.sel.customImage);
                     }
 
-                    vm.preview = vm.defaultImage ? { kind: 'img', src: vm.defaultImage } : { kind: 'none' };
-                    vm.selectionLabel = $.t('Default');
+                    return $.t('Default');
                 }
 
                 function findIcon(idx) {
@@ -1195,6 +1216,7 @@ define(['app'], function (app) {
             scope.state = {
                 customImage: current.customImage,
                 icon: current.icon,
+                device: opts.device || null,
                 defaultImage: opts.defaultImage || ''
             };
             scope.picked = function (customImage, icon) {
@@ -1204,7 +1226,7 @@ define(['app'], function (app) {
 
             var element = $compile(
                 '<dz-icon-picker custom-image="state.customImage" icon="state.icon"' +
-                ' default-image="state.defaultImage"' +
+                ' device="state.device" default-image="state.defaultImage"' +
                 ' on-change="picked(customImage, icon)"></dz-icon-picker>')(scope);
 
             $(container).empty().append(element);

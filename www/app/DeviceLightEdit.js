@@ -3,16 +3,18 @@ define(['app', 'icons/dzIconPicker', 'components/rgbw-picker/RgbwPicker'], funct
     app.component('deviceIconSelect', {
         template:
             '<dz-icon-picker custom-image="$ctrl.customImage" icon="$ctrl.iconJson"' +
-            ' default-image="$ctrl.defaultImage" allow-glyphs="$ctrl.allowGlyphs"' +
+            ' device="$ctrl.pickerDevice" default-image="$ctrl.defaultImage"' +
+            ' allow-glyphs="$ctrl.allowGlyphs"' +
             ' on-change="$ctrl.onPicked(customImage, icon)"></dz-icon-picker>',
         bindings: {
+            device: '<',
             switchType: '<',
             iconJson: '=?'
         },
         require: {
             ngModelCtrl: 'ngModel'
         },
-        controller: function ($attrs, dzDefaultSwitchIcons) {
+        controller: function ($attrs, dzDefaultSwitchIcons, dzIconService) {
             var vm = this;
 
             vm.onPicked = onPicked;
@@ -21,6 +23,7 @@ define(['app', 'icons/dzIconPicker', 'components/rgbw-picker/RgbwPicker'], funct
                 vm.allowGlyphs = $attrs.iconJson !== undefined;
                 vm.customImage = parseInt(vm.ngModelCtrl.$modelValue, 10) || 0;
                 vm.defaultImage = defaultImage();
+                vm.pickerDevice = pickerDevice();
 
                 vm.ngModelCtrl.$render = function () {
                     vm.customImage = parseInt(vm.ngModelCtrl.$modelValue, 10) || 0;
@@ -33,6 +36,7 @@ define(['app', 'icons/dzIconPicker', 'components/rgbw-picker/RgbwPicker'], funct
                 }
 
                 vm.defaultImage = defaultImage();
+                vm.pickerDevice = pickerDevice();
 
                 var previous = changes.switchType.previousValue;
                 if (!changes.switchType.isFirstChange() && previous !== undefined && previous !== null) {
@@ -44,6 +48,20 @@ define(['app', 'icons/dzIconPicker', 'components/rgbw-picker/RgbwPicker'], funct
                 return dzDefaultSwitchIcons[vm.switchType]
                     ? 'images/' + dzDefaultSwitchIcons[vm.switchType][0]
                     : 'images/Generic48_On.png';
+            }
+
+            // TypeImg still describes the saved switch type, so patch in the pending one to keep
+            // the preview honest before the form is submitted.
+            function pickerDevice() {
+                if (!vm.device) {
+                    return null;
+                }
+
+                var typeImg = dzIconService.switchTypeImgFor(vm.switchType);
+
+                return typeImg
+                    ? angular.extend({}, vm.device, { TypeImg: typeImg })
+                    : vm.device;
             }
 
             function onPicked(customImage, icon) {

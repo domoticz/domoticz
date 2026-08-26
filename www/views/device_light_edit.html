@@ -75,7 +75,7 @@
              <tr ng-if="::!vm.isSecurityDevice()" ng-show="vm.isSwitchIconAvailable()">
                 <td><label data-i18n="Switch Icon"></label>:</td>
                 <td>
-                   <device-icon-select ng-model="vm.device.CustomImage" icon-json="vm.device.Icon" switch-type="vm.device.SwitchTypeVal"></device-icon-select>
+                   <device-icon-select ng-model="vm.device.CustomImage" icon-json="vm.device.Icon" device="vm.device" switch-type="vm.device.SwitchTypeVal"></device-icon-select>
                 </td>
              </tr>
              <tr ng-if="::!vm.isSecurityDevice()" ng-show="vm.isMotionAvailable()">

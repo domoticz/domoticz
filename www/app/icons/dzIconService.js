@@ -214,6 +214,21 @@ define(['app'], function (app) {
         'override_mini': 'adjust'
     };
 
+    // What the server reports as TypeImg for each icon-configurable switch type. The edit page
+    // needs it to predict the type default for a switch type that is picked but not saved yet.
+    var SWITCH_TYPE_IMG = {
+        0:  'lightbulb',
+        2:  'contact',
+        7:  'Dimmer',
+        9:  'push',
+        10: 'pushoff',
+        11: 'door',
+        17: 'Media',
+        18: 'Light',
+        19: 'door',
+        20: 'door'
+    };
+
     var SAFE_CLASS_RE = /^[A-Za-z0-9 _-]+$/;
 
     var CHROME_ICONS_BY_NAME = {};
@@ -228,9 +243,11 @@ define(['app'], function (app) {
 
         return {
             resolve: resolve,
+            resolveSelection: resolveSelection,
             resolveIconClass: resolveIconClass,
             chromeIconFor: chromeIconFor,
             typeIconFor: typeIconFor,
+            switchTypeImgFor: switchTypeImgFor,
             preloadBuiltinIcons: loadBuiltinIcons
         };
 
@@ -262,6 +279,17 @@ define(['app'], function (app) {
             }
 
             return { kind: 'img', src: legacyImageFor(device, active) };
+        }
+
+        // The picker previews a choice that is not on the device yet, so run the same precedence
+        // over a copy carrying the pending values instead of the stored ones.
+        function resolveSelection(device, customImage, icon) {
+            var probe = angular.extend({}, device, {
+                CustomImage: parseInt(customImage, 10) || 0,
+                Icon: icon || ''
+            });
+
+            return resolve(probe, true);
         }
 
         function resolveIconClass(icon, isActive) {
@@ -310,6 +338,10 @@ define(['app'], function (app) {
 
             var key = typeImg.toLowerCase();
             return TYPE_ICONS[key] || TYPE_ICONS[TYPE_ALIASES[key]] || null;
+        }
+
+        function switchTypeImgFor(switchTypeVal) {
+            return SWITCH_TYPE_IMG[switchTypeVal] || null;
         }
 
         function loadBuiltinIcons() {
