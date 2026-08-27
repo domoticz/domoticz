@@ -85,6 +85,46 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             });
         }
 
+        // Phone widths: the rotated y-axis titles and the outer spacing took a third of a
+        // 318px chart, leaving too little plot to pinch-zoom in. Below 500px the titles go
+        // (the legend already names every series) and the spacing shrinks; both come back
+        // when the chart is wide again. Done per axis rather than through a responsive
+        // rule: a yAxis object in a responsive rule collapses a multi-axis chart to one axis.
+        function applyNarrowLayout(chart) {
+            if (chart.dzApplyingNarrow) {
+                return;
+            }
+            const narrow = chart.chartWidth < 500;
+            let changed = false;
+            // axis.update() re-initialises the axis object, so the saved titles live on the chart
+            const saved = chart.dzWideTitles || (chart.dzWideTitles = {});
+            chart.yAxis.forEach(function (axis, index) {
+                const current = (axis.options.title && axis.options.title.text) || '';
+                if (narrow && current) {
+                    saved[index] = current;
+                    axis.update({ title: { text: null } }, false);
+                    changed = true;
+                } else if (!narrow && !current && saved[index]) {
+                    axis.update({ title: { text: saved[index] } }, false);
+                    delete saved[index];
+                    changed = true;
+                }
+            });
+            const spacing = narrow ? 2 : 10;
+            if ((chart.options.chart.spacingLeft || 10) !== spacing) {
+                chart.update({ chart: { spacingLeft: spacing, spacingRight: spacing } }, false);
+                changed = true;
+            }
+            if (changed) {
+                chart.dzApplyingNarrow = true;
+                try {
+                    chart.redraw();
+                } finally {
+                    chart.dzApplyingNarrow = false;
+                }
+            }
+        }
+
         function createChartDefinition(template) {
             return _.merge({
                     chart: {
@@ -92,7 +132,12 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                         zoomType: 'x',
                         marginTop: 45,
                         panning: true,
-                        panKey: 'shift'
+                        panKey: 'shift',
+                        events: {
+                            render: function () {
+                                applyNarrowLayout(this);
+                            }
+                        }
                     },
                     xAxis: {
                         type: 'datetime',
@@ -623,7 +668,11 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     }
 
                     function axisSetTitle(axis, newTitle) {
-                        const title = axis.userOptions.title.text.replace(/^\[\u2004/, '').replace(/\u2004\]$/, '');
+                        const raw = axis.userOptions.title && axis.userOptions.title.text;
+                        if (!raw) {
+                            return; // no title to decorate (hidden on narrow screens by the responsive rule)
+                        }
+                        const title = raw.replace(/^\[\u2004/, '').replace(/\u2004\]$/, '');
                         axis.setTitle({text: newTitle(axis, title)}, true);
                     }
 
