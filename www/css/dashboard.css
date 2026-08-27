@@ -2993,6 +2993,7 @@ dd-wcp-color {
 .dd-energy-export  { color: var(--dz-widget-energy-export); }
 .dd-energy-price   { color: var(--dz-widget-energy-price);  }
 .dd-energy-solar   { color: var(--dz-widget-amber);  }
+.dd-energy-house { color: var(--dz-widget-accent); }
 .dd-energy-gas     { color: var(--dz-widget-energy-gas);    }
 .dd-energy-water   { color: var(--dz-widget-energy-water);  }
 .dd-energy-battery { color: var(--dz-widget-accent); }

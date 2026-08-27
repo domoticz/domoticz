@@ -594,7 +594,7 @@ Live: refreshes every 60 seconds.
 ### Energy Dashboard
 **Category:** Energy
 
-Full energy overview widget — combines all cards (Weather, Grid, Solar, Gas, Battery) and the self-sufficiency balance bar in one resizable widget. Lifted directly from `forecast.html`. Clicking any value on a card navigates to the corresponding device log.
+Full energy overview widget — combines all cards (Weather, Grid, Solar, House, Gas, Water, Battery) and the self-sufficiency balance bar in one resizable widget. Lifted directly from `forecast.html`. Clicking any value on a card navigates to the corresponding device log.
 
 **Configuration:**
 
@@ -602,6 +602,7 @@ Full energy overview widget — combines all cards (Weather, Grid, Solar, Gas, B
 |-------|---------|-------------|
 | Show weather card | on | Weather conditions |
 | Show solar card | on | Solar power and yield |
+| Show house card | on | What the house itself draws right now and has used today: grid import − grid export + solar − battery charge (needs the P1 device; solar and the battery watt device are used when configured) |
 | Show gas card | on | Gas usage |
 | Show battery card | on | Battery status |
 | Show balance bar | on | Self-sufficiency stats |
