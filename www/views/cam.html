@@ -129,6 +129,7 @@
 				<select id="activewhen" style="width:80px" class="combobox ui-corner-all">
 					<option value="0" data-i18n="On">On</option>
 					<option value="1" data-i18n="Off">Off</option>
+					<option value="2" data-i18n="Never">Never</option>
 				</select>
 				<label for="name"> <span data-i18n="Delay"></span>: </label>
 				<input type="text" id="delay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="0">
@@ -589,9 +590,12 @@
 			success: function (data) {
 				if (typeof data.result != 'undefined') {
 					$.each(data.result, function (i, item) {
-						var swhen = "On";
+						var swhen = $.t("On");
 						if (item.when == 1) {
-							swhen = "Off";
+							swhen = $.t("Off");
+						} else if (item.when == 2) {
+							// Linked for the camera button only; no notification is ever sent
+							swhen = $.t("Never");
 						}
 						var addId = oTable.fnAddData({
 							"DT_RowId": item.idx,
