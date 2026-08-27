@@ -198,6 +198,7 @@ main/SunRiseSet.cpp
 main/ThemeSettings.cpp
 main/TrendCalculator.cpp
 main/DomoticzWebsocketHandler.cpp
+main/WebAssetFetch.cpp
 main/WebServer.cpp
 main/WebServerCmds.cpp
 main/WebServerCommands.cpp

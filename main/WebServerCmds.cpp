@@ -37,6 +37,8 @@
 #include "SQLHelper.h"
 #include "KWHStats.h"
 #include "ThemeSettings.h"
+#include "WebAssets.h"
+#include "WebAssetFetch.h"
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
 #include <libwebem/Base64.h>
@@ -4432,6 +4434,7 @@ namespace http
 				root["result"][ii]["imageSrc"] = icon.RootFile;
 				root["result"][ii]["text"] = icon.Title;
 				root["result"][ii]["description"] = icon.Description;
+				root["result"][ii]["FaClass"] = icon.FaClass;
 				ii++;
 			}
 			root["status"] = "OK";
@@ -5615,6 +5618,7 @@ namespace http
 					root["result"][ii]["IconFile16"] = IconFile16;
 					root["result"][ii]["IconFile48On"] = IconFile48On;
 					root["result"][ii]["IconFile48Off"] = IconFile48Off;
+					root["result"][ii]["FaClass"] = icon.FaClass;
 					ii++;
 				}
 			}
@@ -5676,60 +5680,6 @@ namespace http
 			ReloadCustomSwitchIcons();
 		}
 
-		static const size_t WEB_ASSET_MAX_SIZE = 8 * 1024 * 1024; // 8 MiB per file
-
-		static bool IsSafeWebAssetName(const std::string& szName)
-		{
-			if (szName.empty() || (szName.size() > 128))
-				return false;
-			if (szName.front() == '.')
-				return false;
-			if (szName.find("..") != std::string::npos)
-				return false;
-
-			for (const char c : szName)
-			{
-				if ((c >= '0') && (c <= '9'))
-					continue;
-				if ((c >= 'a') && (c <= 'z'))
-					continue;
-				if ((c >= 'A') && (c <= 'Z'))
-					continue;
-				if ((c == '.') || (c == '-') || (c == '_'))
-					continue;
-				return false;
-			}
-			return true;
-		}
-
-		static bool IsAllowedWebAssetType(const std::string& szName)
-		{
-			std::string szLower = szName;
-			stdlower(szLower);
-			const std::vector<std::string> allowed = { ".css", ".woff2", ".woff", ".ttf", ".otf", ".eot" };
-			for (const auto& ext : allowed)
-			{
-				if ((szLower.size() > ext.size()) &&
-					(szLower.compare(szLower.size() - ext.size(), ext.size(), ext) == 0))
-					return true;
-			}
-			return false;
-		}
-
-		static bool WebAssetDirExists(const std::string& szPath)
-		{
-			DIR* pDir = opendir(szPath.c_str());
-			if (pDir == nullptr)
-				return false;
-			closedir(pDir);
-			return true;
-		}
-
-		static std::string WebAssetFolder()
-		{
-			return szWWWFolder + "/assets";
-		}
-
 		void CWebServer::Cmd_UploadWebAsset(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["title"] = "UploadWebAsset";
@@ -5741,10 +5691,12 @@ namespace http
 
 			std::string szName = request::findValue(&req, "name");
 			std::string szData = request::findValue(&req, "data"); // base64 encoded
+			std::string szURL = request::findValue(&req, "url");
+			std::string szTitle = request::findValue(&req, "title"); // optional, display only
 
-			if (szName.empty() || szData.empty())
+			if (szName.empty() || (szData.empty() && szURL.empty()))
 			{
-				root["error"] = "Missing name or data";
+				root["error"] = "Missing name, and data or url";
 				return;
 			}
 			if (!IsSafeWebAssetName(szName))
@@ -5755,6 +5707,19 @@ namespace http
 			if (!IsAllowedWebAssetType(szName))
 			{
 				root["error"] = "Unsupported asset type";
+				return;
+			}
+
+			if (szData.empty())
+			{
+				std::string szError;
+				if (!WebAssetFetch::Install(szName, szURL, szTitle, szError))
+				{
+					root["error"] = szError;
+					return;
+				}
+				root["status"] = "OK";
+				root["path"] = "assets/" + szName;
 				return;
 			}
 
@@ -5770,59 +5735,24 @@ namespace http
 				return;
 			}
 
-			const std::string szFolder = WebAssetFolder();
-			if (!WebAssetDirExists(szFolder))
+			if (WebAssetFetch::IsNameOwnedByOther(szName, szName))
 			{
-				mkdir_deep(szFolder.c_str(), 0755);
-				if (!WebAssetDirExists(szFolder))
-				{
-					root["error"] = "Could not create assets folder";
-					return;
-				}
+				root["error"] = "Asset file name '" + szName + "' is already used by another installed library";
+				return;
 			}
 
-			const std::string szFile = szFolder + "/" + szName;
-			const std::string szTmpFile = szFile + "." + GenerateUUID() + ".tmp";
+			if (!EnsureWebAssetFolder())
 			{
-				std::ofstream outfile(szTmpFile.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
-				if (!outfile.is_open())
-				{
-					_log.Log(LOG_ERROR, "UploadWebAsset: could not write %s", szTmpFile.c_str());
-					root["error"] = "Could not write asset";
-					return;
-				}
-				outfile.write(szContent.data(), static_cast<std::streamsize>(szContent.size()));
-				outfile.flush();
-				if (!outfile.good())
-				{
-					outfile.close();
-					_log.Log(LOG_ERROR, "UploadWebAsset: write failed for %s", szTmpFile.c_str());
-					std::remove(szTmpFile.c_str());
-					root["error"] = "Could not write asset";
-					return;
-				}
-				outfile.close();
-				if (!outfile.good())
-				{
-					_log.Log(LOG_ERROR, "UploadWebAsset: close failed for %s", szTmpFile.c_str());
-					std::remove(szTmpFile.c_str());
-					root["error"] = "Could not write asset";
-					return;
-				}
+				root["error"] = "Could not create assets folder";
+				return;
 			}
 
-			#ifdef WIN32
-			bool bRenameOk = (MoveFileExA(szTmpFile.c_str(), szFile.c_str(), MOVEFILE_REPLACE_EXISTING) != 0);
-#else
-			bool bRenameOk = (std::rename(szTmpFile.c_str(), szFile.c_str()) == 0);
-#endif
-			if (!bRenameOk)
+			if (!WriteWebAssetFile(szName, szContent, "UploadWebAsset"))
 			{
-				_log.Log(LOG_ERROR, "UploadWebAsset: could not replace %s", szFile.c_str());
-				std::remove(szTmpFile.c_str());
 				root["error"] = "Could not write asset";
 				return;
 			}
+			WebAssetFetch::SetTitle(szName, szTitle);
 
 			root["status"] = "OK";
 			root["path"] = "assets/" + szName;
@@ -5832,10 +5762,12 @@ namespace http
 		void CWebServer::Cmd_GetWebAssets(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			root["title"] = "GetWebAssets";
-			if (session.rights != URIGHTS_ADMIN)
+
+			// Not admin-only: every user's browser has to know which stylesheets to load.
+			if (session.rights == URIGHTS_NONE)
 			{
 				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
+				return;
 			}
 
 			root["status"] = "OK";
@@ -5843,6 +5775,17 @@ namespace http
 			DIR* lDir = opendir(WebAssetFolder().c_str());
 			if (lDir == nullptr)
 				return; // no assets stored yet — an empty result is not an error
+
+			struct _tAssetMeta
+			{
+				std::string szSourceURL;
+				std::string szLastUpdate;
+				std::string szTitle;
+			};
+			std::map<std::string, _tAssetMeta> metadata;
+			auto result = m_sql.safe_query("SELECT Name, SourceURL, LastUpdate, Title FROM WebAssets");
+			for (const auto& sd : result)
+				metadata[sd[0]] = _tAssetMeta{ sd[1], sd[2], sd[3] };
 
 			int ii = 0;
 			struct dirent* ent;
@@ -5853,8 +5796,24 @@ namespace http
 					continue;
 				if (!IsAllowedWebAssetType(szFileName))
 					continue;
+				std::string szSourceURL;
+				std::string szLastUpdate;
+				std::string szTitle;
+				auto itt = metadata.find(szFileName);
+				if (itt != metadata.end())
+				{
+					szSourceURL = itt->second.szSourceURL;
+					szLastUpdate = itt->second.szLastUpdate;
+					szTitle = itt->second.szTitle;
+				}
+
 				root["result"][ii]["name"] = szFileName;
 				root["result"][ii]["path"] = "assets/" + szFileName;
+				root["result"][ii]["LastUpdate"] = szLastUpdate;
+				root["result"][ii]["Title"] = szTitle;
+				// Withheld from viewers: a source URL can name a host on the local network.
+				if (session.rights == URIGHTS_ADMIN)
+					root["result"][ii]["SourceURL"] = szSourceURL;
 				ii++;
 			}
 			closedir(lDir);
@@ -5887,6 +5846,7 @@ namespace http
 				root["error"] = "Could not remove asset";
 				return;
 			}
+			WebAssetFetch::Forget(szName);
 			root["status"] = "OK";
 		}
 
@@ -6454,6 +6414,59 @@ namespace http
 			LoadUsers();
 		}
 
+		static bool IsIconToken(const std::string& szToken, size_t maxLen, bool bAllowSpaces)
+		{
+			if (szToken.empty() || (szToken.size() > maxLen))
+				return false;
+			for (const char c : szToken)
+			{
+				if ((c >= '0') && (c <= '9'))
+					continue;
+				if ((c >= 'a') && (c <= 'z'))
+					continue;
+				if ((c >= 'A') && (c <= 'Z'))
+					continue;
+				if ((c == '-') || (c == '_'))
+					continue;
+				if (bAllowSpaces && (c == ' '))
+					continue;
+				return false;
+			}
+			return true;
+		}
+
+		static bool NormaliseDeviceIcon(const std::string& szIn, std::string& szOut)
+		{
+			szOut.clear();
+			if (szIn.empty())
+				return true;
+			if (szIn.size() > 512)
+				return false;
+
+			Json::Value jIn;
+			if (!ParseJSon(szIn, jIn) || !jIn.isObject())
+				return false;
+
+			const std::string szType = jIn["t"].isString() ? jIn["t"].asString() : "";
+			const std::string szOn = jIn["on"].isString() ? jIn["on"].asString() : "";
+			const std::string szOff = jIn["off"].isString() ? jIn["off"].asString() : "";
+
+			if (!IsIconToken(szType, 32, false))
+				return false;
+			if (!IsIconToken(szOn, 128, true))
+				return false;
+			if (!szOff.empty() && !IsIconToken(szOff, 128, true))
+				return false;
+
+			Json::Value jOut;
+			jOut["t"] = szType;
+			jOut["on"] = szOn;
+			if (!szOff.empty())
+				jOut["off"] = szOff;
+			szOut = JSonToRawString(jOut);
+			return true;
+		}
+
 		void CWebServer::Cmd_SetUsed(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			if (session.rights != URIGHTS_ADMIN)
@@ -6494,6 +6507,8 @@ namespace http
 			std::string tmode = request::findValue(&req, "tmode");
 			std::string fmode = request::findValue(&req, "fmode");
 			std::string sCustomImage = request::findValue(&req, "customimage");
+			bool bHasIcon = request::hasValue(&req, "icon");
+			std::string sIcon = request::findValue(&req, "icon");
 
 			std::string strunit = request::findValue(&req, "unit");
 			std::string strParam1 = HTMLSanitizer::Sanitize(base64_decode(request::findValue(&req, "strparam1")));
@@ -6596,6 +6611,21 @@ namespace http
 				{
 					m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SwitchType=%d, CustomImage=%d WHERE (ID == '%q')", used, name.c_str(),
 						description.c_str(), switchtype, CustomImage, idx.c_str());
+				}
+			}
+
+			if (bHasIcon)
+			{
+				std::string szIconNormalised;
+				if (NormaliseDeviceIcon(sIcon, szIconNormalised))
+				{
+					m_sql.safe_query("UPDATE DeviceStatus SET Icon='%q' WHERE (ID == '%q')", szIconNormalised.c_str(), idx.c_str());
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "SetUsed: rejected invalid icon reference for device %s", idx.c_str());
+					root["error"] = "Invalid icon";
+					return;
 				}
 			}
 

@@ -6,9 +6,9 @@
                 <td id="bigtext">
                     <span>{{ctrl.getStatusText()}}</span>
                     <a ng-if="ctrl.device.UsedByCamera" ng-click="ctrl.showCameraStream()" class="lcursor">
-                        <img src="images/webcam.png" height="16" width="16" data-i18n="[title]Stream Video">
+                        <i class="dz-icon-glyph dz-icon-16 fa-solid fa-video" title="Stream Video"></i>
                     </a>
-                    <img ng-if="ctrl.isAdmin && ctrl.isRFY()" src="images/devices.png" data-i18n="[title]Setup" ng-click="ctrl.showRFYSetup($event)" class="lcursor" height="16" width="16">&nbsp;
+                    <i ng-if="ctrl.isAdmin && ctrl.isRFY()" class="dz-icon-glyph dz-icon-16 fa-solid fa-sliders lcursor" title="Setup" ng-click="ctrl.showRFYSetup($event)"></i>&nbsp;
                 </td>
                 <td id="img">
                     <!-- Evohome -->
@@ -20,14 +20,21 @@
                     <img ng-if="ctrl.isBlinds() && !ctrl.isEvohome()" ng-src="images/{{ctrl.device.TypeImg}}open48{{ctrl.isBlindsOpen() ? 'sel' : ''}}.png" ng-click="ctrl.switchLight('Open')" class="lcursor" height="48" width="48" data-i18n="[title]Open Blinds">
 
                     <!-- Media Player main icon -->
-                    <img ng-if="ctrl.isMediaPlayer()" ng-src="{{ctrl.getMediaPlayerIcon()}}"
-                         ng-click="ctrl.switchLight(ctrl.isMediaPlayerActive() ? 'Off' : 'On')"
-                         ng-class="{'lcursor': !ctrl.isMediaPlayerDisconnected()}"
-                         height="48" width="48">
+                    <dz-device-icon ng-if="ctrl.isMediaPlayer()" class="dz-icon-48"
+                                    device="ctrl.device"
+                                    is-active="ctrl.isMediaPlayerActive()"
+                                    fallback-src="ctrl.getMediaPlayerIcon()"
+                                    ng-click="ctrl.switchLight(ctrl.isMediaPlayerActive() ? 'Off' : 'On')"
+                                    ng-class="{'lcursor': !ctrl.isMediaPlayerDisconnected()}"></dz-device-icon>
 
                     <!-- All other devices: single toggling icon -->
                     <div ng-if="!ctrl.isBlinds() && !ctrl.isEvohome() && !ctrl.isMediaPlayer()" style="position: relative; display: inline-block;">
-                        <img ng-src="{{ctrl.getDeviceIcon()}}" ng-click="ctrl.deviceIconClick($event)" ng-class="{'lcursor': ctrl.isClickable()}" height="48" width="48">
+                        <dz-device-icon class="dz-icon-48"
+                                        device="ctrl.device"
+                                        is-active="ctrl.iconState()"
+                                        fallback-src="ctrl.getDeviceIcon()"
+                                        ng-click="ctrl.deviceIconClick($event)"
+                                        ng-class="{'lcursor': ctrl.isClickable()}"></dz-device-icon>
                     </div>
                 </td>
 
@@ -76,8 +83,8 @@
                     </div></span>
                 </td>
                 <td class="options">
-                    <span ng-if="ctrl.device.Favorite == 0"><img src="images/nofavorite.png" data-i18n="[title]Add to Dashboard" ng-click="ctrl.makeFavorite(1)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                    <span ng-if="ctrl.device.Favorite != 0"><img src="images/favorite.png" data-i18n="[title]Remove from Dashboard" ng-click="ctrl.makeFavorite(0)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span ng-if="ctrl.device.Favorite == 0"><i class="dz-icon-glyph dz-icon-16 fa-regular fa-star lcursor" title="Add to Dashboard" ng-click="ctrl.makeFavorite(1)"></i>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span ng-if="ctrl.device.Favorite != 0"><i class="dz-icon-glyph dz-icon-16 fa-solid fa-star lcursor" title="Remove from Dashboard" ng-click="ctrl.makeFavorite(0)"></i>&nbsp;&nbsp;&nbsp;&nbsp;</span>
                     <a class="btnsmall" ng-href="{{ctrl.getGraphLogLink()}}" data-i18n="Log">Log</a>
                     <a ng-if="ctrl.isAdmin" class="btnsmall" ng-click="ctrl.editDevice()" data-i18n="Edit">Edit</a>
                     <a ng-if="ctrl.isAdmin && ctrl.hasTimers()" class="btnsmall-sel" ng-href="{{ctrl.getTimerLink()}}" data-i18n="Timers">Timers</a>

@@ -1,83 +1,73 @@
-define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
+define(['app', 'icons/dzIconPicker', 'components/rgbw-picker/RgbwPicker'], function (app) {
 
     app.component('deviceIconSelect', {
-        template: '<select id="icon-select"></select>',
+        template:
+            '<dz-icon-picker custom-image="$ctrl.customImage" icon="$ctrl.iconJson"' +
+            ' device="$ctrl.pickerDevice" default-image="$ctrl.defaultImage"' +
+            ' allow-glyphs="$ctrl.allowGlyphs"' +
+            ' on-change="$ctrl.onPicked(customImage, icon)"></dz-icon-picker>',
         bindings: {
-            switchType: '<'
+            device: '<',
+            switchType: '<',
+            iconJson: '=?'
         },
         require: {
             ngModelCtrl: 'ngModel'
         },
-        controller: function ($element, domoticzApi, dzDefaultSwitchIcons) {
+        controller: function ($attrs, dzDefaultSwitchIcons, dzIconService) {
             var vm = this;
-            var switch_icons = [];
 
-            function updateSelector(bFromUser) {
-                switch_icons[0].imageSrc = dzDefaultSwitchIcons[vm.switchType]
-                    ? 'images/' + dzDefaultSwitchIcons[vm.switchType][0]
-                    : 'images/Generic48_On.png';
-
-                $element.find('#icon-select').ddslick('destroy');
-                $element.find('#icon-select').ddslick({
-                    data: switch_icons,
-                    width: 260,
-                    height: 390,
-                    selectText: 'Select Switch Icon',
-                    imagePosition: 'left',
-                    onSelected: function (data) {
-                        vm.ngModelCtrl.$setViewValue(data.selectedData.value);
-                    }
-                });
-                if (bFromUser) {
-					$element.find('#icon-select').ddslick('select', { index: 0 });
-				}
-
-                vm.ngModelCtrl.$render();
-            }
+            vm.onPicked = onPicked;
 
             vm.$onInit = function () {
-                // TODO: Add caching mechanism for this request
-                domoticzApi.sendCommand('custom_light_icons', {
-                }).then(function (data) {
-                    switch_icons = (data.result || [])
-                        .filter(function (item) {
-                            return item.idx !== 0;
-                        })
-                        .map(function (item) {
-                            return {
-                                text: item.text,
-                                value: item.idx,
-                                selected: false,
-                                description: item.description,
-                                imageSrc: 'images/' + item.imageSrc + '48_On.png'
-                            };
-                        });
-
-                    switch_icons.unshift({
-                        text: 'Default',
-                        value: 0,
-                        selected: false,
-                        description: 'Default icon'
-                    });
-
-                    updateSelector(false);
-                });
+                vm.allowGlyphs = $attrs.iconJson !== undefined;
+                vm.customImage = parseInt(vm.ngModelCtrl.$modelValue, 10) || 0;
+                vm.defaultImage = defaultImage();
+                vm.pickerDevice = pickerDevice();
 
                 vm.ngModelCtrl.$render = function () {
-                    var value = vm.ngModelCtrl.$modelValue;
-
-                    switch_icons.forEach(function (item, index) {
-                        if (item.value === value) {
-                            $element.find('#icon-select').ddslick('select', { index: index });
-                        }
-                    });
+                    vm.customImage = parseInt(vm.ngModelCtrl.$modelValue, 10) || 0;
                 };
             };
 
             vm.$onChanges = function (changes) {
-                if (changes.switchType && switch_icons.length > 0) {
-                    updateSelector(true);
+                if (!changes.switchType) {
+                    return;
                 }
+
+                vm.defaultImage = defaultImage();
+                vm.pickerDevice = pickerDevice();
+
+                var previous = changes.switchType.previousValue;
+                if (!changes.switchType.isFirstChange() && previous !== undefined && previous !== null) {
+                    onPicked(0, '');
+                }
+            };
+
+            function defaultImage() {
+                return dzDefaultSwitchIcons[vm.switchType]
+                    ? 'images/' + dzDefaultSwitchIcons[vm.switchType][0]
+                    : 'images/Generic48_On.png';
+            }
+
+            // TypeImg still describes the saved switch type, so patch in the pending one to keep
+            // the preview honest before the form is submitted.
+            function pickerDevice() {
+                if (!vm.device) {
+                    return null;
+                }
+
+                var typeImg = dzIconService.switchTypeImgFor(vm.switchType);
+
+                return typeImg
+                    ? angular.extend({}, vm.device, { TypeImg: typeImg })
+                    : vm.device;
+            }
+
+            function onPicked(customImage, icon) {
+                vm.customImage = customImage;
+                vm.iconJson = icon;
+                vm.ngModelCtrl.$setViewValue(customImage);
             }
         }
     });
@@ -355,13 +345,13 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
                 var images = [];
 
                 if (level < (vm.ngModelCtrl.$modelValue.length - 1)) {
-                    images.push('<img src="images/down.png" class="lcursor js-order-down" width="16" height="16"></img>');
+                    images.push('<i class="fa-solid fa-arrow-down dz-chrome-icon dz-act-edit lcursor js-order-down"></i>');
                 } else {
                     images.push('<img src="images/empty16.png" width="16" height="16"></img>');
                 }
 
                 if (level > 0) {
-                    images.push('<img src="images/up.png" class="lcursor js-order-up" width="16" height="16"></img>');
+                    images.push('<i class="fa-solid fa-arrow-up dz-chrome-icon dz-act-edit lcursor js-order-up"></i>');
                 }
 
                 return images.join('&nbsp;');
@@ -371,8 +361,8 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
                 var actions = [];
 
                 if (permissions.hasPermission('Admin')) {
-                    actions.push('<img src="images/rename.png" title="' + $.t('Rename') + '" class="lcursor js-update" width="16" height="16"></img>');
-                    actions.push('<img src="images/delete.png" title="' + $.t('Delete') + '" class="lcursor js-delete" width="16" height="16"></img>');
+                    actions.push('<i class="fa-solid fa-pen-to-square dz-chrome-icon dz-act-edit lcursor js-update" title="' + $.t('Rename') + '"></i>');
+                    actions.push('<i class="fa-solid fa-trash-can dz-chrome-icon dz-act-danger lcursor js-delete" title="' + $.t('Delete') + '"></i>');
                 }
 
                 return actions.join('&nbsp;');
@@ -474,8 +464,8 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
                 var actions = [];
 
                 if (permissions.hasPermission('Admin')) {
-                    actions.push('<img src="images/rename.png" title="' + $.t('Edit') + '" class="lcursor js-update" width="16" height="16"></img>');
-                    actions.push('<img src="images/delete.png" title="' + $.t('Clear') + '" class="lcursor js-delete" width="16" height="16"></img>');
+                    actions.push('<i class="fa-solid fa-pen-to-square dz-chrome-icon dz-act-edit lcursor js-update" title="' + $.t('Edit') + '"></i>');
+                    actions.push('<i class="fa-solid fa-trash-can dz-chrome-icon dz-act-danger lcursor js-delete" title="' + $.t('Clear') + '"></i>');
                 }
 
                 return actions.join('&nbsp;');
@@ -616,6 +606,7 @@ define(['app', 'components/rgbw-picker/RgbwPicker'], function (app) {
                 addjvalue: vm.device.AddjValue,
                 addjvalue2: vm.device.AddjValue2,
                 customimage: vm.device.CustomImage,
+                icon: vm.device.Icon || '',
                 switchtype: vm.device.SwitchTypeVal,
                 used: true
             };

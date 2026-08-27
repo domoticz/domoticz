@@ -365,7 +365,7 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 								if (updownImg != "") {
 									updownImg += "&nbsp;";
 								}
-								updownImg += '<img src="images/down.png" onclick="ChangeDeviceOrder(1,' + item.ID + ');" class="lcursor" width="16" height="16"></img>';
+								updownImg += '<i class="fa-solid fa-arrow-down dz-chrome-icon dz-act-edit lcursor" onclick="ChangeDeviceOrder(1,' + item.ID + ');"></i>';
 							}
 							else {
 								updownImg += '<img src="images/empty16.png" width="16" height="16"></img>';
@@ -375,7 +375,7 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 								if (updownImg != "") {
 									updownImg += "&nbsp;";
 								}
-								updownImg += '<img src="images/up.png" onclick="ChangeDeviceOrder(0,' + item.ID + ');" class="lcursor" width="16" height="16"></img>';
+								updownImg += '<i class="fa-solid fa-arrow-up dz-chrome-icon dz-act-edit lcursor" onclick="ChangeDeviceOrder(0,' + item.ID + ');"></i>';
 							}
 							var levelstr = item.Level + " %";
 

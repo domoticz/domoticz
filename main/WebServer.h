@@ -29,6 +29,7 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 		std::string RootFile;
 		std::string Title;
 		std::string Description;
+		std::string FaClass;
 	};
 	CWebServer();
 	~CWebServer() override;

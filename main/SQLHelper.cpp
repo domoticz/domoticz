@@ -44,7 +44,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 182
+#define DB_VERSION 183
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -83,7 +83,9 @@ constexpr auto sqlCreateDeviceStatus =
 "[CustomImage] INTEGER DEFAULT 0, "
 "[Description] VARCHAR(200) DEFAULT '', "
 "[Options] TEXT DEFAULT null, "
-"[Color] TEXT DEFAULT NULL);";
+"[Color] TEXT DEFAULT NULL, "
+// Declared last: the upgrade path appends it with ALTER TABLE, so both schemas match.
+"[Icon] TEXT DEFAULT '');";
 
 constexpr auto sqlCreateDeviceStatusTrigger =
 "CREATE TRIGGER IF NOT EXISTS devicestatusupdate AFTER INSERT ON DeviceStatus\n"
@@ -572,6 +574,15 @@ constexpr auto sqlCreateCustomImages =
 "	[IconOn] BLOB, "
 "	[IconOff] BLOB);";
 
+constexpr auto sqlCreateWebAssets =
+"CREATE TABLE IF NOT EXISTS [WebAssets]("
+"	[ID] INTEGER PRIMARY KEY, "
+"	[Name] VARCHAR(128) NOT NULL, "
+"	[SourceURL] VARCHAR(500) DEFAULT '', "
+"	[Companions] TEXT DEFAULT '', "
+"	[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')), "
+"	[Title] VARCHAR(128) DEFAULT '');";
+
 constexpr auto sqlCreateMySensors =
 "CREATE TABLE IF NOT EXISTS [MySensors]("
 " [HardwareID] INTEGER NOT NULL,"
@@ -786,6 +797,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateFloorplans);
 	query(sqlCreateFloorplanOrderTrigger);
 	query(sqlCreateCustomImages);
+	query(sqlCreateWebAssets);
 	query(sqlCreateMySensors);
 	query(sqlCreateMySensorsVariables);
 	query(sqlCreateMySensorsChilds);
@@ -3454,6 +3466,11 @@ bool CSQLHelper::OpenDatabase()
 		if (dbversion < 182)
 		{
 			CThemeSettings::MigrateFromPreferences();
+		}
+		if (dbversion < 183)
+		{
+			query("ALTER TABLE DeviceStatus ADD COLUMN [Icon] TEXT DEFAULT ''");
+			query(sqlCreateWebAssets);
 		}
 	}
 	else if (bNewInstall)

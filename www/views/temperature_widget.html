@@ -4,7 +4,7 @@
             <tr>
                 <td id="name" ng-bind="item.Name" class="item-name" data-idx="{{item.idx}}" data-desc="{{item.Description}}" data-search="{{item.searchText}}"></td>
                 <td id="bigtext" class="ng-cloak">
-					<img ng-show="ctrl.displayTrend({{item.trend}})" height="12" ng-src="images/arrow_{{ctrl.trendState(item.trend)}}.png">
+					<i ng-show="ctrl.displayTrend({{item.trend}})" class="fa-solid dz-chrome-icon dz-chrome-icon-12" ng-class="{'fa-arrow-trend-up': item.trend == 2, 'fa-arrow-trend-down': item.trend == 3, 'fa-right-long': item.trend == 1, 'fa-question': item.trend == 0}"></i>
                     <span ng-show="ctrl.displayTemp()">{{item.Temp}}&#176; {{tempsign}}</span>
                     <span ng-if="ctrl.displaySetPoint() && ctrl.isSetPointOn()">({{item.SetPoint}} {{ctrl.getSetpointUnit()}})</span>
                     <span ng-if="ctrl.displaySetPoint() && !ctrl.isSetPointOn()">(Off)</span>
@@ -21,8 +21,8 @@
                     <span ng-show="ctrl.displayChill() && item.Chill !== item.Temp">{{item.Chill}}&#176; {{tempsign}}</span>
                 </td>
                 <td id="img">
-                    <img ng-if="item.Type != 'Thermostat 6'" ng-src="images/{{ctrl.image()}}" height="48" width="48">
-                    <img ng-if="item.Type == 'Thermostat 6'" ng-src="images/{{ctrl.image()}}" height="48" width="48" class="lcursor" ng-click="ctrl.ShowSetpointPopup($event)">
+                    <dz-device-icon ng-if="item.Type != 'Thermostat 6'" class="dz-icon-48" device="item" fallback-src="'images/' + ctrl.image()"></dz-device-icon>
+                    <dz-device-icon ng-if="item.Type == 'Thermostat 6'" class="dz-icon-48 lcursor" device="item" fallback-src="'images/' + ctrl.image()" ng-click="ctrl.ShowSetpointPopup($event)"></dz-device-icon>
                 </td>
                 <td id="status" class="ng-cloak">
                     <!-- NB : weird comments to avoid unwanted spaces due to new line -->
@@ -48,8 +48,8 @@
 					<span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: <span ng-bind="item.LastUpdate"></span>
 				</td>
                 <td class="options">
-                    <img ng-if="item.Favorite == 0" src="images/nofavorite.png" ng-click="ctrl.MakeFavorite(1)" class="lcursor" data-i18n="[title]Add to Dashboard" title="Add to Dashboard">
-                    <img ng-if="item.Favorite != 0" src="images/favorite.png" ng-click="ctrl.MakeFavorite(0)" class="lcursor" data-i18n="[title]Remove from Dashboard" title="Remove from Dashboard">
+                    <i ng-if="item.Favorite == 0" class="fa-regular fa-star dz-chrome-icon lcursor" ng-click="ctrl.MakeFavorite(1)" title="Add to Dashboard"></i>
+                    <i ng-if="item.Favorite != 0" class="fa-solid fa-star dz-chrome-icon lcursor" ng-click="ctrl.MakeFavorite(0)" title="Remove from Dashboard"></i>
                     &nbsp;&nbsp;
                     <a class="btnsmall" data-i18n="Log" ng-href="#/Devices/{{ ::item.idx }}/Log{{ item.Direction !== undefined ? '?sensor=temp' : '' }}"></a>
 

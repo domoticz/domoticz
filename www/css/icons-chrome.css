@@ -1,0 +1,481 @@
+.dz-chrome-icon {
+	display: inline-block;
+	width: 1.25em;
+	font-size: 16px;
+	line-height: 1;
+	text-align: center;
+	vertical-align: middle;
+}
+
+.dz-chrome-icon-12 {
+	font-size: 12px;
+}
+
+.dz-chrome-icon-14 {
+	font-size: 14px;
+}
+
+.dz-chrome-icon-24 {
+	font-size: 24px;
+}
+
+.dz-chrome-icon-32 {
+	font-size: 32px;
+}
+
+.dz-chrome-icon-36 {
+	font-size: 36px;
+}
+
+.btn.btn-icon > .dz-chrome-icon {
+	line-height: 1;
+	vertical-align: middle;
+}
+
+.nav li a > i {
+	font-size: 16px;
+	vertical-align: text-bottom;
+}
+
+/* Row actions in tables read faster when the colour carries the meaning:
+   green adds, blue edits, amber disables, red destroys, grey just looks.
+   Values are the semantic colours already used elsewhere in the stylesheets.
+   :where() holds this at one class of specificity (0,1,0) while keeping the
+   grey default scoped to icon buttons, so a dz-act-* modifier on the icon
+   (0,2,0) always wins without having to repeat the button selector. Widening
+   the base to a bare .dz-chrome-icon would also grey out the trend arrows and
+   state glyphs inside device widgets, which are not actions. */
+:where(.btn.btn-icon) > .dz-chrome-icon {
+	color: #6c6e74;
+	transition: color 0.12s ease;
+}
+
+.dz-chrome-icon.dz-act-add {
+	color: #5cb85c;
+}
+
+.dz-chrome-icon.dz-act-edit {
+	color: #43a4d3;
+}
+
+.dz-chrome-icon.dz-act-warn {
+	color: #f0ad4e;
+}
+
+.dz-chrome-icon.dz-act-danger {
+	color: #d9534f;
+}
+
+.dz-chrome-icon.dz-act-neutral {
+	color: #6c6e74;
+}
+
+/* Hover lifts the icon rather than recolouring it, so the meaning stays put.
+   Repeated for bare icons, which are clickable without a wrapping button. */
+.btn.btn-icon:hover > .dz-chrome-icon,
+.dz-chrome-icon.dz-act-add:hover,
+.dz-chrome-icon.dz-act-edit:hover,
+.dz-chrome-icon.dz-act-warn:hover,
+.dz-chrome-icon.dz-act-danger:hover,
+.dz-chrome-icon.dz-act-neutral:hover {
+	filter: brightness(0.85);
+}
+
+/* Column headers are labels, not actions. */
+th .dz-chrome-icon {
+	color: #6c6e74;
+}
+
+/* --- Icon picker: compact form field --- */
+
+dz-icon-picker {
+	display: inline-block;
+}
+
+.dz-icon-field {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.dz-icon-field-preview {
+	display: inline-block;
+	width: 28px;
+	min-width: 28px;
+	height: 28px;
+	line-height: 28px;
+	text-align: center;
+	font-size: 22px;
+	color: #43A4D3;
+}
+
+.dz-icon-field-preview img {
+	max-width: 26px;
+	max-height: 26px;
+	vertical-align: middle;
+}
+
+.dz-icon-field-btn {
+	margin: 0;
+}
+
+/* --- Icon picker: modal --- */
+
+dz-icon-picker-modal {
+	display: block;
+}
+
+.dz-iconpicker-modal {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 10000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 16px;
+	background: rgba(0, 0, 0, 0.45);
+}
+
+/* Chrome matches a jQuery UI dialog as Domoticz themes it: the --dz-modal-*
+   surface, a 1px #666 frame, the .ui-corner-all radius and no shadow, since
+   the house style is flat. Fallbacks are the default theme's resolved values
+   so the dialog still reads correctly if a theme leaves a token undefined. */
+.dz-ip-dialog {
+	display: flex;
+	flex-direction: column;
+	width: 720px;
+	max-width: 100%;
+	max-height: 100%;
+	background-color: var(--dz-modal-bg, #11213d);
+	border: 1px solid #666;
+	border-radius: 0.3125em;
+	color: var(--dz-modal-text, #fff);
+	font-family: "Segoe UI", Arial, sans-serif;
+	font-size: 12px;
+	text-align: left;
+}
+
+/* --dz-modal-header-bg exists for exactly this and is otherwise unused; the
+   stock titlebar leans on a gloss PNG that only ships with some themes. */
+.dz-ip-head {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 12px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+	background-color: var(--dz-modal-header-bg, #283750);
+	border-radius: 0.3125em 0.3125em 0 0;
+}
+
+.dz-ip-title {
+	font-size: 14px;
+	font-weight: bold;
+}
+
+/* Same treatment Domoticz gives dialog inputs: flat dark fill, no frame, and
+   a bottom rule that only appears on focus. */
+.dz-ip-search {
+	flex: 1 1 auto;
+	min-width: 0;
+	height: 26px;
+	margin: 0;
+	padding: 2px 6px;
+	border: none;
+	border-bottom: 1px solid transparent;
+	border-radius: 3px;
+	background-color: var(--dz-input-bg, #283750);
+	color: var(--dz-input-text, #eee);
+}
+
+.dz-ip-search:focus {
+	outline: none;
+	border-bottom: 1px solid var(--dz-input-border, #ccc);
+}
+
+.dz-ip-close {
+	color: rgba(255, 255, 255, 0.55);
+	font-size: 16px;
+	cursor: pointer;
+}
+
+.dz-ip-close:hover {
+	color: #d9534f;
+}
+
+.dz-ip-body {
+	display: flex;
+	min-height: 0;
+	flex: 1 1 auto;
+}
+
+.dz-ip-rail {
+	display: flex;
+	flex-direction: column;
+	width: 172px;
+	min-width: 172px;
+	padding: 6px 0;
+	overflow-y: auto;
+	border-right: 1px solid rgba(255, 255, 255, 0.12);
+	background: rgba(0, 0, 0, 0.2);
+}
+
+.dz-ip-rail-row {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 5px 10px;
+	color: var(--dz-modal-text, #fff);
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.dz-ip-rail-row:hover {
+	background: rgba(255, 255, 255, 0.08);
+	color: var(--dz-modal-text, #fff);
+	text-decoration: none;
+}
+
+.dz-ip-rail-sel,
+.dz-ip-rail-sel:hover {
+	background: rgba(255, 255, 255, 0.1);
+	box-shadow: inset 3px 0 0 #43A4D3;
+	font-weight: bold;
+}
+
+.dz-ip-rail-dis {
+	color: rgba(255, 255, 255, 0.55);
+	opacity: 0.45;
+	cursor: default;
+}
+
+.dz-ip-rail-dis:hover {
+	background: transparent;
+}
+
+.dz-ip-rail-glyph {
+	width: 16px;
+	text-align: center;
+	color: rgba(255, 255, 255, 0.55);
+}
+
+.dz-ip-rail-sel .dz-ip-rail-glyph {
+	color: #43A4D3;
+}
+
+.dz-ip-rail-name {
+	flex: 1 1 auto;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.dz-ip-rail-count {
+	color: rgba(255, 255, 255, 0.55);
+	font-weight: normal;
+}
+
+.dz-ip-rail-sep {
+	display: block;
+	height: 1px;
+	margin: 6px 10px;
+	background: rgba(255, 255, 255, 0.12);
+}
+
+.dz-ip-grid-wrap {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	padding: 8px;
+}
+
+/* minmax(0, 1fr) rather than 1fr: a bare 1fr is minmax(auto, 1fr), so a long
+   icon name sets a min-content floor on its track and the whole grid grows
+   wider than the pane. Clamping the floor to 0 lets the names ellipsis
+   instead, which keeps the scroll vertical only. */
+.dz-ip-grid {
+	flex: 1 1 auto;
+	min-width: 0;
+	min-height: 220px;
+	max-height: 46vh;
+	overflow-x: hidden;
+	overflow-y: auto;
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+	gap: 4px;
+	align-content: start;
+}
+
+.dz-ip-tile {
+	display: block;
+	min-width: 0;
+	padding: 6px 2px 4px;
+	border: 1px solid transparent;
+	border-radius: 3px;
+	color: var(--dz-modal-text, #fff);
+	text-align: center;
+	cursor: pointer;
+}
+
+.dz-ip-tile:hover {
+	background: rgba(255, 255, 255, 0.08);
+	color: var(--dz-modal-text, #fff);
+	text-decoration: none;
+}
+
+.dz-ip-tile-icon {
+	display: block;
+	height: 26px;
+	line-height: 26px;
+	font-size: 22px;
+	color: #43A4D3;
+}
+
+.dz-ip-tile-icon img {
+	max-width: 24px;
+	max-height: 24px;
+	vertical-align: middle;
+}
+
+.dz-ip-tile-name {
+	display: block;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	font-size: 10px;
+	color: rgba(255, 255, 255, 0.55);
+}
+
+.dz-ip-tile-hl {
+	border-color: rgba(255, 255, 255, 0.45);
+	background: rgba(255, 255, 255, 0.08);
+}
+
+.dz-ip-tile-sel {
+	border-color: #43A4D3;
+	background: rgba(255, 255, 255, 0.08);
+}
+
+.dz-ip-note {
+	padding: 6px 2px 0;
+	color: rgba(255, 255, 255, 0.55);
+}
+
+.dz-ip-foot {
+	padding: 8px 12px 10px;
+	border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.dz-ip-foot-top,
+.dz-ip-off {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-height: 56px;
+}
+
+.dz-ip-off {
+	min-height: 44px;
+}
+
+.dz-ip-foot-label {
+	width: 34px;
+	color: rgba(255, 255, 255, 0.55);
+}
+
+.dz-ip-slot {
+	display: inline-flex;
+	align-items: center;
+	gap: 12px;
+	padding: 3px 8px;
+	border: 1px solid transparent;
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+.dz-ip-slot-active {
+	border-color: #43A4D3;
+}
+
+.dz-ip-swatch {
+	display: inline-block;
+	text-align: center;
+	line-height: 1;
+}
+
+.dz-ip-swatch img {
+	max-width: 100%;
+	max-height: 100%;
+	vertical-align: middle;
+}
+
+/* Same box and glyph sizes the widgets use, so the preview is not flattering. */
+.dz-ip-swatch-48 {
+	width: 48px;
+	height: 48px;
+	line-height: 48px;
+	font-size: 28.8px;
+}
+
+.dz-ip-swatch-16 {
+	width: 16px;
+	height: 16px;
+	line-height: 16px;
+	font-size: 14px;
+}
+
+.dz-ip-on {
+	color: #43A4D3;
+}
+
+/* Kept at the widgets' own off-state grey so the preview stays truthful,
+   only lightened enough to read against the dialog surface. */
+.dz-ip-off .dz-ip-swatch,
+.dz-ip-swatch.dz-ip-off {
+	color: #90a7bf;
+}
+
+.dz-ip-disclose {
+	color: rgba(255, 255, 255, 0.55);
+	cursor: pointer;
+}
+
+.dz-ip-off-hint {
+	color: rgba(255, 255, 255, 0.55);
+}
+
+.dz-ip-actions {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding-top: 8px;
+	border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.dz-ip-actions-gap {
+	flex: 1 1 auto;
+}
+
+@media (max-width: 760px) {
+	.dz-ip-rail {
+		width: 130px;
+		min-width: 130px;
+	}
+}
+
+/* Scene and group buttons are actions, so they carry the action's colour
+   rather than the device glyph colour. transimg still dims whichever one
+   represents the state the group is already in. */
+.dz-scene-run {
+	color: #43a4d3;
+}
+
+.dz-scene-on {
+	color: #5cb85c;
+}
+
+.dz-scene-off {
+	color: #6c6e74;
+}

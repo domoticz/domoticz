@@ -3271,3 +3271,71 @@ dz-temp-bar {
     border-radius: 1px;
     z-index: 1;
 }
+
+dz-device-icon {
+    display: block;
+}
+.dz-icon-glyph {
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+}
+dz-device-icon > .dz-icon-glyph {
+    display: block;
+    width: 100%;
+    height: 100%;
+    font-size: inherit;
+    line-height: inherit;
+}
+dz-device-icon > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+.dz-icon-12 { width: 12px; height: 12px; font-size: 12px; line-height: 12px; }
+.dz-icon-16 { width: 16px; height: 16px; font-size: 14px; line-height: 16px; }
+.dz-icon-40 { width: 40px; height: 40px; font-size: 30px; line-height: 40px; }
+.dz-icon-48 { width: 48px; height: 48px; font-size: 36px; line-height: 48px; }
+
+/* A filled glyph is denser than the PNG it replaces, so at the large sizes it
+   reads as blunt. Shrink the glyph inside the unchanged box; PNGs still fill it. */
+.dz-icon-40 > .dz-icon-glyph,
+.dz-icon-48 > .dz-icon-glyph {
+    font-size: 0.8em;
+}
+
+/* Scene and group buttons carry the size and glyph classes on one element, so
+   the child rule above cannot reach them. Here em would resolve against the
+   parent cell rather than the box, so these repeat the same 0.8 factor as
+   literals: 30px * 0.8 and 36px * 0.8. */
+.dz-icon-glyph.dz-icon-40 {
+    font-size: 24px;
+}
+
+.dz-icon-glyph.dz-icon-48 {
+    font-size: 28.8px;
+}
+
+/* Device glyphs use the theme's own link blue rather than inheriting the
+   body text colour, which rendered them black. */
+dz-device-icon > .dz-icon-glyph {
+    color: #43A4D3;
+}
+
+dz-device-icon > .dz-icon-glyph.dz-icon--off {
+    color: #6c6e74;
+}
+
+/* The favourite star reads as a star rather than as a themed control. Both
+   class families are covered: widget lists use dz-icon-glyph, the weather and
+   temperature pages use dz-chrome-icon. */
+.dz-icon-glyph.fa-star,
+.dz-chrome-icon.fa-star,
+.btn.btn-icon > .dz-chrome-icon.fa-star {
+    color: #f9d023;
+}
+
+#img dz-device-icon:hover > .dz-icon-glyph {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+}
