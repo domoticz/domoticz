@@ -303,7 +303,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                             }
                         },
                         column: {
-                            pointPlacement: 'between',
+                            pointPlacement: 0.5, // not 'between': see CounterLogParams (#6987)
                             borderWidth: 0,
                             minPointLength: 2,
                             pointPadding: 0.1,

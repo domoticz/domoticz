@@ -69,6 +69,25 @@ if (typeof (Highcharts) !== 'undefined') {
 				} catch (oException_) { /* too bad, no state */ }
 				fProceed_.apply(this, Array.prototype.slice.call(arguments, 1));
 			});
+
+			// A two-finger gesture whose fingers rest on different elements (one on a column
+			// bar, one on the plot background) makes the browser deliver one touchmove per
+			// target, both carrying the same two touches. Highcharts runs its pinch transform
+			// for each, so the second transforms an already transformed axis and the chart
+			// zooms in and straight back out while the fingers keep spreading. Handle each
+			// distinct multi-touch move once per pointer.
+			H_.wrap(H_.Pointer.prototype, 'onContainerTouchMove', function (fProceed_, oEvent_) {
+				if (oEvent_ && oEvent_.touches && oEvent_.touches.length > 1) {
+					var sKey = oEvent_.timeStamp + ':' + Array.prototype.map.call(oEvent_.touches, function (oTouch_) {
+						return oTouch_.identifier + '@' + oTouch_.clientX + ',' + oTouch_.clientY;
+					}).join('|');
+					if (this.dzLastMultiTouchMove === sKey) {
+						return;
+					}
+					this.dzLastMultiTouchMove = sKey;
+				}
+				fProceed_.apply(this, Array.prototype.slice.call(arguments, 1));
+			});
 		}(Highcharts));
 	}
 }
