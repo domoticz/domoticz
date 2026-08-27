@@ -1,6 +1,6 @@
 <blockquote>'''Note:''' This page is maintained in the [https://github.com/domoticz/domoticz/tree/development/docs Domoticz GitHub repository]. Please do not edit it directly on the Wiki.</blockquote>
 
-'''Revision:''' 2026-07-03<br>
+'''Revision:''' 2026-08-27<br>
 
 ==Overview==
 This page is aimed at developers wishing to improve Domoticz functionality via Python Plugins. If you simply want to use a plugin that a developer has already created for you, please see [[Using Python plugins]]. To see the Plugins already developed (for a reference) got to page [[Plugins]].
@@ -742,7 +742,7 @@ Devices["myDevice"].Units[1].Update(Log=True)
 |Delete
 |Parameters: None, acts on current object.
 Deleted Units are immediately removed from the Devices dictionary but local instances of the object are unchanged.
-|Deletes the device in Domoticz.E.g:
+|Deletes the device in Domoticz, the same way as deleting it from the web interface: its history, notifications, timers and scene and plan memberships are removed with it. E.g:
   Devices["myDevice"].Units[1].Delete()
 or
   myDev = Devices["myDevice"].Units[1]
@@ -1089,7 +1089,7 @@ E.g
 |-
 |Delete
 |Parameters: None, acts on current object.
-|Deletes the device in Domoticz.E.g:
+|Deletes the device in Domoticz, the same way as deleting it from the web interface: its history, notifications, timers and scene and plan memberships are removed with it. E.g:
   Devices[1].Delete()
 or
   myDev = Devices[2]
