@@ -45,6 +45,9 @@ define(['app', 'icons/dzIconService'], function (app) {
                     device.SwitchTypeVal,
                     device.Level,
                     device.Status,
+                    device.Temp,
+                    device.Chill,
+                    device.Barometer,
                     vm.isActive,
                     vm.fallbackSrc,
                     vm.useGlyph

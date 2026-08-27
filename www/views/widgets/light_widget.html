@@ -23,11 +23,15 @@
                              class="lcursor" ng-click="ctrl.showEvohomeModal()" height="40" width="40">
                     </div>
 
-                    <!-- Blinds - Open button -->
+                    <!-- Blinds - Open button (image in the classic icon style, glyph in the glyph style) -->
                     <img ng-if="ctrl.isBlinds() && !ctrl.isEvohome()"
                          ng-src="images/{{ctrl.device.TypeImg}}open48{{ctrl.isBlindsOpen() ? 'sel' : ''}}.png"
-                         ng-click="ctrl.switchLight('Open')" class="lcursor"
+                         ng-click="ctrl.switchLight('Open')" class="lcursor dz-classic-only"
                          height="40" width="40" data-i18n="[title]Open Blinds">
+                    <i ng-if="ctrl.isBlinds() && !ctrl.isEvohome()"
+                       class="fa-solid fa-chevron-up dz-icon-glyph dz-icon-40 dz-blind-glyph dz-glyph-only lcursor"
+                       ng-class="{'dz-icon--off': !ctrl.isBlindsOpen()}"
+                       ng-click="ctrl.switchLight('Open')" data-i18n="[title]Open Blinds"></i>
 
                     <!-- Media Player main icon -->
                     <dz-device-icon ng-if="ctrl.isMediaPlayer()"
@@ -51,15 +55,20 @@
                 <!-- Blinds stop button (td#img2) -->
                 <td ng-if="ctrl.isBlinds() && ctrl.hasStopButton()" id="img2">
                     <img ng-src="images/{{ctrl.device.TypeImg}}stop.png"
-                         ng-click="ctrl.switchLight('Stop')" class="lcursor"
+                         ng-click="ctrl.switchLight('Stop')" class="lcursor dz-classic-only"
                          height="40" width="24" data-i18n="[title]Stop Blinds">
+                    <i class="fa-solid fa-stop dz-icon-glyph dz-icon-40 dz-blind-glyph dz-blind-glyph-stop dz-glyph-only lcursor"
+                       ng-click="ctrl.switchLight('Stop')" data-i18n="[title]Stop Blinds"></i>
                 </td>
 
                 <!-- Blinds close button -->
                 <td ng-if="ctrl.isBlinds()" ng-attr-id="{{ctrl.hasStopButton() ? 'img3' : 'img2'}}">
                     <img ng-src="images/{{ctrl.device.TypeImg}}48{{ctrl.isBlindsOpen() ? '' : 'sel'}}.png"
-                         ng-click="ctrl.switchLight('Close')" class="lcursor"
+                         ng-click="ctrl.switchLight('Close')" class="lcursor dz-classic-only"
                          height="40" width="40" data-i18n="[title]Close Blinds">
+                    <i class="fa-solid fa-chevron-down dz-icon-glyph dz-icon-40 dz-blind-glyph dz-glyph-only lcursor"
+                       ng-class="{'dz-icon--off': ctrl.isBlindsOpen()}"
+                       ng-click="ctrl.switchLight('Close')" data-i18n="[title]Close Blinds"></i>
                 </td>
 
                 <!-- Media Player remote icon (img2) -->

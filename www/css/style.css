@@ -1037,6 +1037,28 @@ html.dz-icons-glyph .dz-nav-glyph {
 html.dz-icons-glyph .dz-nav-img {
     display: none;
 }
+/* Same switch for any other image/glyph twin (blinds buttons): the image shows in the
+   classic style, the glyph in the glyph style. */
+.dz-glyph-only {
+    display: none;
+}
+html.dz-icons-glyph .dz-glyph-only {
+    display: inline-block;
+}
+html.dz-icons-glyph .dz-classic-only {
+    display: none;
+}
+.dz-blind-glyph {
+    color: #43A4D3;
+    vertical-align: middle;
+}
+.dz-blind-glyph.dz-icon--off {
+    color: #6c6e74;
+}
+.dz-blind-glyph-stop {
+    width: 24px;
+    font-size: 22px;
+}
 
 .nav li a img {
 	vertical-align: text-bottom;

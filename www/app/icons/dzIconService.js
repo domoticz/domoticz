@@ -284,11 +284,16 @@ define(['app'], function (app) {
                 return { kind: 'font', cls: iconClass };
             }
 
-            // An icon the user picked, classic Domoticz or custom, is shown as that icon.
-            // The Font Awesome look-alikes in switch_icons.txt only stand in for devices
-            // that never had an icon chosen (CustomImage 0), through the type mapping below.
+            // An icon the user picked, classic Domoticz or custom, is shown as that icon in
+            // the classic style. In the glyph style (Settings > Icon style) a classic icon is
+            // shown as the Font Awesome look-alike switch_icons.txt lists for it, so the whole
+            // page is glyphs; custom (uploaded) icons have no look-alike and stay images.
             var customImage = parseInt(device.CustomImage, 10);
             if (customImage > 0) {
+                var builtinClass = (glyphsEnabled() && customImage < 100) ? builtinFaClassFor(customImage) : null;
+                if (builtinClass) {
+                    return { kind: 'font', cls: builtinClass };
+                }
                 return { kind: 'img', src: legacyImageFor(device, active) };
             }
 
@@ -296,6 +301,11 @@ define(['app'], function (app) {
             // the classic style (default) keeps the image icons Domoticz always had.
             var typeClass = glyphsEnabled() ? typeIconFor(device.TypeImg) : null;
             if (typeClass) {
+                // The classic temperature image encodes the reading (ice, 0-5, ... >30); give the
+                // glyph the same information, and a barometer-only device a gauge.
+                if (typeClass === TYPE_ICONS.temp) {
+                    typeClass = temperatureGlyph(device) || typeClass;
+                }
                 return { kind: 'font', cls: typeClass };
             }
 
@@ -350,6 +360,36 @@ define(['app'], function (app) {
             }
 
             return CHROME_ICONS_BY_NAME[path.substring(path.lastIndexOf('/') + 1)] || null;
+        }
+
+        function builtinFaClassFor(customImage) {
+            if (builtinFaClasses === null) {
+                loadBuiltinIcons(); // first paint falls back to the image; callers re-render on resolve
+                return null;
+            }
+            return builtinFaClasses[customImage] || null;
+        }
+
+        // Mirrors GetTemp48Item() in domoticz.js (ice / temp-0-5 / ... / temp-gt-30).
+        function temperatureGlyph(device) {
+            var raw = (device.Temp !== undefined && device.Temp !== null) ? device.Temp
+                : ((device.Chill !== undefined && device.Chill !== null) ? device.Chill : undefined);
+            var temp = parseFloat(raw);
+            if (isNaN(temp)) {
+                if (device.Barometer !== undefined && device.Barometer !== null) {
+                    return TYPE_ICONS.baro;
+                }
+                return null;
+            }
+            var celsius = (window.$ && $.myglobals && $.myglobals.tempsign === 'F') ? (temp - 32) * 5 / 9 : temp;
+            if (celsius <= 0) { return 'fa-solid fa-snowflake'; }
+            if (celsius < 5) { return 'fa-solid fa-temperature-low'; }
+            if (celsius < 10) { return 'fa-solid fa-temperature-empty'; }
+            if (celsius < 15) { return 'fa-solid fa-temperature-quarter'; }
+            if (celsius < 20) { return 'fa-solid fa-temperature-half'; }
+            if (celsius < 25) { return 'fa-solid fa-temperature-three-quarters'; }
+            if (celsius < 30) { return 'fa-solid fa-temperature-full'; }
+            return 'fa-solid fa-temperature-high';
         }
 
         function glyphsEnabled() {
