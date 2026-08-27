@@ -1,9 +1,13 @@
 #pragma once
 
+#include <algorithm>
 #include <cstdio>
+#include <filesystem>
 #include <fstream>
 #include <string>
 #include <vector>
+
+#include <zlib.h>
 
 #ifdef WIN32
 #include <windows.h>
@@ -200,8 +204,88 @@ inline bool WriteWebAssetFile(const std::string& szName, const std::string& szCo
 	return CommitWebAssetFile(szName, szTmpFile, szLogTag);
 }
 
+inline bool IsWebAssetStylesheet(const std::string& szName)
+{
+	std::string szLower = szName;
+	stdlower(szLower);
+	return ((szLower.size() > 4) && (szLower.compare(szLower.size() - 4, 4, ".css") == 0));
+}
+
+inline std::string WebAssetGzipPath(const std::string& szName)
+{
+	return WebAssetFolder() + "/" + szName + ".gz";
+}
+
+inline void RemoveWebAssetGzip(const std::string& szName)
+{
+	std::error_code ec;
+	std::filesystem::remove(WebAssetGzipPath(szName), ec);
+}
+
+// The web server serves <name>.gz in place of a stylesheet when it exists, and
+// otherwise compresses the file on every request. Icon libraries run to megabytes,
+// so without this each page load spends seconds recompressing them.
+inline bool WebAssetGzipIsCurrent(const std::string& szName)
+{
+	std::error_code ec;
+	const std::filesystem::path src = WebAssetFolder() + "/" + szName;
+	const std::filesystem::path gz = WebAssetGzipPath(szName);
+	if (!std::filesystem::exists(gz, ec))
+		return false;
+	const auto srcTime = std::filesystem::last_write_time(src, ec);
+	if (ec)
+		return false;
+	const auto gzTime = std::filesystem::last_write_time(gz, ec);
+	if (ec)
+		return false;
+	return gzTime >= srcTime;
+}
+
+inline bool WriteWebAssetGzip(const std::string& szName, const char* szLogTag)
+{
+	if (!IsWebAssetStylesheet(szName))
+		return true;
+
+	const std::string szFile = WebAssetFolder() + "/" + szName;
+	std::ifstream infile(szFile.c_str(), std::ios::in | std::ios::binary);
+	if (!infile.is_open())
+		return false;
+	std::string szContent((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
+	infile.close();
+
+	const std::string szGzFile = WebAssetGzipPath(szName);
+	const std::string szTmpFile = szGzFile + "." + GenerateUUID() + ".tmp";
+	gzFile gz = gzopen(szTmpFile.c_str(), "wb9");
+	if (gz == nullptr)
+	{
+		_log.Log(LOG_ERROR, "%s: could not create %s", szLogTag, szTmpFile.c_str());
+		return false;
+	}
+	bool bOK = true;
+	size_t iPos = 0;
+	while (bOK && (iPos < szContent.size()))
+	{
+		const unsigned int iChunk = static_cast<unsigned int>(std::min<size_t>(szContent.size() - iPos, 1024 * 1024));
+		if (gzwrite(gz, szContent.data() + iPos, iChunk) != static_cast<int>(iChunk))
+			bOK = false;
+		iPos += iChunk;
+	}
+	if (gzclose(gz) != Z_OK)
+		bOK = false;
+	if (!bOK)
+	{
+		_log.Log(LOG_ERROR, "%s: could not compress %s", szLogTag, szFile.c_str());
+		std::remove(szTmpFile.c_str());
+		return false;
+	}
+	if (!CommitWebAssetFile(szName + ".gz", szTmpFile, szLogTag))
+		return false;
+	return true;
+}
+
 inline bool RemoveWebAssetFile(const std::string& szName)
 {
+	RemoveWebAssetGzip(szName);
 	const std::string szFile = WebAssetFolder() + "/" + szName;
 	if (!file_exist(szFile.c_str()))
 		return true;

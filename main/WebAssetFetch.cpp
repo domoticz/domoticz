@@ -1097,7 +1097,10 @@ namespace WebAssetFetch
 			return false;
 		}
 		for (const auto& cd : committed)
+		{
 			DiscardWebAssetBackup(cd.second);
+			WriteWebAssetGzip(cd.first, LOGTAG);
+		}
 
 		std::string szCompanions;
 		for (const auto& asset : ctx.assets)

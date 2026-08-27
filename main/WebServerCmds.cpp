@@ -5762,6 +5762,7 @@ namespace http
 				root["error"] = "Could not write asset";
 				return;
 			}
+			WriteWebAssetGzip(szName, "UploadWebAsset");
 			WebAssetFetch::SetTitle(szName, szTitle);
 
 			root["status"] = "OK";
@@ -5839,6 +5840,10 @@ namespace http
 					continue;
 				if (!IsAllowedWebAssetType(szFileName))
 					continue;
+				// Libraries installed before pre-compression existed, or copied in by
+				// hand, get their .gz here so the first page load pays the cost once.
+				if (IsWebAssetStylesheet(szFileName) && !WebAssetGzipIsCurrent(szFileName))
+					WriteWebAssetGzip(szFileName, "GetWebAssets");
 				std::string szSourceURL;
 				std::string szLastUpdate;
 				std::string szTitle;
@@ -5894,6 +5899,7 @@ namespace http
 				root["error"] = "Could not remove asset";
 				return;
 			}
+			RemoveWebAssetGzip(szName);
 			WebAssetFetch::Forget(szName);
 			root["status"] = "OK";
 		}
