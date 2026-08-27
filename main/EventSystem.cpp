@@ -309,7 +309,25 @@ void CEventSystem::LoadEvents()
 			// Write active dzVents scripts to disk.
 			if ((eitem.Interpreter == "dzVents") && (eitem.EventStatus != 0))
 			{
-				std::string sFile = dzv_Dir + eitem.Name + ".lua";
+				// The name is used as a filename, so it must not be able to escape the
+				// generated_scripts folder: drop path separators and any parent-dir hops.
+				std::string szSafeName;
+				szSafeName.reserve(eitem.Name.size());
+				for (const char c : eitem.Name)
+				{
+					if ((c == '/') || (c == '\\') || (c == ':') || (c == 0))
+						continue;
+					szSafeName += c;
+				}
+				size_t iDotDot;
+				while ((iDotDot = szSafeName.find("..")) != std::string::npos)
+					szSafeName.erase(iDotDot, 2);
+				if (szSafeName.empty())
+				{
+					_log.Log(LOG_ERROR, "dzVents: skipping event with an unusable name '%s'", eitem.Name.c_str());
+					continue;
+				}
+				std::string sFile = dzv_Dir + szSafeName + ".lua";
 				_log.Log(LOG_STATUS, "dzVents: Write file: %s", sFile.c_str());
 				FILE* fOut = fopen(sFile.c_str(), "wb+");
 				if (fOut)
@@ -4326,6 +4344,16 @@ namespace http {
 		{
 			//root["status"]="OK";
 			root["title"] = "Events";
+
+			// Event scripts run arbitrary Lua/dzVents/Python on the server, so the whole
+			// command (create/update/delete and the reads that expose script bodies) is
+			// admin only, the same as the Events editor in the UI. Without this an
+			// unauthenticated request that reaches this handler could create and run code.
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
 
 			std::string cparam = request::findValue(&req, "evparam");
 			if (cparam.empty())
