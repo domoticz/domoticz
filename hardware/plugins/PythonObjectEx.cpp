@@ -1025,8 +1025,11 @@ namespace Plugins {
 				{
 					PyAllowThreads gil;
 					result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%d)", pModState->pPlugin->m_HwdID, self->ID);
+					// Same path as deleting the device from the web UI, so its history,
+					// notifications, timers, scene and plan rows go with it instead of
+					// lingering for whichever device is handed this idx next.
 					if (!result.empty())
-						m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%d)", pModState->pPlugin->m_HwdID, self->ID);
+						m_sql.DeleteDevices(std::to_string(self->ID));
 				}
 				if (result.empty())
 				{

@@ -1197,10 +1197,15 @@ namespace Plugins {
 				}
 
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
+				result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
 				if (!result.empty())
 				{
-					m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
+					// Same path as deleting the device from the web UI, so its history,
+					// notifications, timers, scene and plan rows go with it.
+					{
+						PyAllowThreads gil;
+						m_sql.DeleteDevices(result[0][0]);
+					}
 
 					PyNewRef	pKey = PyLong_FromLong(self->Unit);
 					if (PyDict_DelItem((PyObject*)self->pPlugin->m_DeviceDict, pKey) == -1)
