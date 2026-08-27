@@ -6456,18 +6456,27 @@ namespace http
 			std::vector<std::string> strarray;
 			StringSplit(userdevices, ";", strarray);
 
-			// First make a backup of the favorite devices before deleting the devices for this user, then add the (new) onces and restore favorites
-			m_sql.safe_query("UPDATE SharedDevices SET SharedUserID = 0 WHERE SharedUserID == '%q' and Favorite == 1", idx.c_str());
+			// The list is rebuilt from scratch, so remember each device's favourite flag and
+			// dashboard position first. Losing [Order] here is what put the user's dashboard
+			// back in alphabetical order every time a device was added; devices that are new
+			// to the list get the next free position from the insert trigger.
+			std::map<std::string, std::pair<std::string, std::string>> previous; // DeviceRowID -> (Favorite, Order)
+			auto prevResult = m_sql.safe_query("SELECT DeviceRowID, Favorite, [Order] FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
+			for (const auto& sd : prevResult)
+				previous[sd[0]] = std::make_pair(sd[1], sd[2]);
+
 			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == '%q'", idx.c_str());
 
-			int nDevices = static_cast<int>(strarray.size());
-			for (int ii = 0; ii < nDevices; ii++)
+			for (const auto& szDeviceRowID : strarray)
 			{
-				m_sql.safe_query("INSERT INTO SharedDevices (SharedUserID,DeviceRowID) VALUES ('%q','%q')", idx.c_str(), strarray[ii].c_str());
-				m_sql.safe_query("UPDATE SharedDevices SET Favorite = 1 WHERE SharedUserid == '%q' AND DeviceRowID IN (SELECT DeviceRowID FROM SharedDevices WHERE SharedUserID == 0)",
-					idx.c_str());
+				m_sql.safe_query("INSERT INTO SharedDevices (SharedUserID,DeviceRowID) VALUES ('%q','%q')", idx.c_str(), szDeviceRowID.c_str());
+				auto itt = previous.find(szDeviceRowID);
+				if (itt != previous.end())
+				{
+					m_sql.safe_query("UPDATE SharedDevices SET Favorite = %d, [Order] = %d WHERE (SharedUserID == '%q') AND (DeviceRowID == '%q')",
+						atoi(itt->second.first.c_str()), atoi(itt->second.second.c_str()), idx.c_str(), szDeviceRowID.c_str());
+				}
 			}
-			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == 0");
 			LoadUsers();
 			root["status"] = "OK";
 		}

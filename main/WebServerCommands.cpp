@@ -62,7 +62,7 @@ constexpr inline std::array<std::string_view,16> sViewerCommands = {
 	"getfloorplanimages",
 	"getfloorplanplans"
 };
-constexpr inline std::array<std::string_view,31> sAdminCommands = {
+constexpr inline std::array<std::string_view,30> sAdminCommands = {
 	"deleteallsubdevices",
 	"deletesubdevice",
 	"addsubdevice",
@@ -78,7 +78,6 @@ constexpr inline std::array<std::string_view,31> sAdminCommands = {
 	"testswitch",
 	"addswitch",
 	"getnotificationtypes",
-	"switchdeviceorder",
 	"switchsceneorder",
 	"clearnotifications",
 	"adduser",
@@ -95,7 +94,8 @@ constexpr inline std::array<std::string_view,31> sAdminCommands = {
 	"clearscenelog",
 	"learnsw"
 };
-constexpr inline std::array<std::string_view,23> sSwitcherCommands = {
+constexpr inline std::array<std::string_view,24> sSwitcherCommands = {
+	"switchdeviceorder", // a non-admin user reorders their own dashboard (SharedDevices); admins reorder DeviceStatus
 	"makefavorite",
 	"makescenefavorite",
 	"switchmodal",
