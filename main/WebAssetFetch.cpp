@@ -7,7 +7,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <map>
+#include <memory>
+#include <mutex>
 #include <string>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -22,6 +25,7 @@
 
 #include "Helper.h"
 #include "Logger.h"
+#include "localtime_r.h"
 #include "SQLHelper.h"
 #include "WebAssets.h"
 #include "../httpclient/HTTPClient.h"
@@ -36,6 +40,48 @@ namespace WebAssetFetch
 		const int WEBASSET_MAX_REDIRECTS = 5;
 
 		const char* LOGTAG = "WebAssetFetch";
+
+		// Serialises Install/Forget/SetTitle so two admin requests for the same
+		// library cannot interleave their file and metadata writes.
+		std::mutex g_installMutex;
+
+		const size_t WEBASSET_MAX_JOBS = 8;
+		const time_t WEBASSET_JOB_RETENTION = 10 * 60; // seconds a finished job stays pollable
+
+		struct _tJob
+		{
+			std::string szID;
+			std::string szName;
+			std::string szURL;
+			std::string szTitle;
+			std::string szError;
+			bool bDone = false;
+			bool bSuccess = false;
+			time_t finished = 0;
+			std::thread thread;
+		};
+
+		std::mutex g_jobsMutex;
+		std::map<std::string, std::shared_ptr<_tJob>> g_jobs;
+
+		// Must be called with g_jobsMutex held. Joins and drops jobs whose result
+		// nobody asked for within the retention window.
+		void PruneJobs()
+		{
+			const time_t now = mytime(nullptr);
+			for (auto itt = g_jobs.begin(); itt != g_jobs.end();)
+			{
+				auto& pJob = itt->second;
+				if (pJob->bDone && ((now - pJob->finished) > WEBASSET_JOB_RETENTION))
+				{
+					if (pJob->thread.joinable())
+						pJob->thread.join();
+					itt = g_jobs.erase(itt);
+				}
+				else
+					++itt;
+			}
+		}
 
 		struct _tPendingAsset
 		{
@@ -883,6 +929,7 @@ namespace WebAssetFetch
 
 	bool Install(const std::string& szName, const std::string& szURL, const std::string& szTitle, std::string& szError)
 	{
+		std::lock_guard<std::mutex> l(g_installMutex);
 		szError.clear();
 
 		if (!IsSafeWebAssetName(szName) || !IsAllowedWebAssetType(szName))
@@ -1097,6 +1144,7 @@ namespace WebAssetFetch
 
 	void SetTitle(const std::string& szName, const std::string& szTitle)
 	{
+		std::lock_guard<std::mutex> l(g_installMutex);
 		const std::string szCleanTitle = SanitiseTitle(szTitle);
 		if (szCleanTitle.empty())
 			return;
@@ -1118,6 +1166,7 @@ namespace WebAssetFetch
 
 	void Forget(const std::string& szName)
 	{
+		std::lock_guard<std::mutex> l(g_installMutex);
 		const std::vector<std::string> companions = LoadCompanions(szName);
 		int iRemoved = 0;
 		for (const auto& szCompanion : companions)
@@ -1136,5 +1185,111 @@ namespace WebAssetFetch
 
 		if (iRemoved != 0)
 			_log.Log(LOG_STATUS, "%s: removed '%s' and %d companion file(s)", LOGTAG, szName.c_str(), iRemoved);
+	}
+
+	std::string StartInstall(const std::string& szName, const std::string& szURL, const std::string& szTitle, std::string& szError)
+	{
+		szError.clear();
+
+		// Cheap checks up front, so an obviously bad request fails immediately instead
+		// of only after polling. Install repeats them on the worker thread.
+		if (!IsSafeWebAssetName(szName) || !IsAllowedWebAssetType(szName))
+		{
+			szError = "Invalid asset name";
+			return "";
+		}
+		if (szURL.size() > 500)
+		{
+			szError = "URL too long";
+			return "";
+		}
+		if (!IsCleanURL(szURL))
+		{
+			szError = "The URL contains invalid characters";
+			return "";
+		}
+
+		std::lock_guard<std::mutex> l(g_jobsMutex);
+		PruneJobs();
+
+		size_t iRunning = 0;
+		for (const auto& jd : g_jobs)
+		{
+			if (jd.second->bDone)
+				continue;
+			iRunning++;
+			if (jd.second->szName == szName)
+			{
+				szError = "This library is already being installed";
+				return "";
+			}
+		}
+		if (iRunning >= WEBASSET_MAX_JOBS)
+		{
+			szError = "Too many library installs are running, try again later";
+			return "";
+		}
+
+		auto pJob = std::make_shared<_tJob>();
+		pJob->szID = GenerateUUID();
+		pJob->szName = szName;
+		pJob->szURL = szURL;
+		pJob->szTitle = szTitle;
+		g_jobs[pJob->szID] = pJob;
+
+		pJob->thread = std::thread([pJob]() {
+			std::string szJobError;
+			const bool bOK = Install(pJob->szName, pJob->szURL, pJob->szTitle, szJobError);
+			std::lock_guard<std::mutex> lj(g_jobsMutex);
+			pJob->bSuccess = bOK;
+			pJob->szError = szJobError;
+			pJob->finished = mytime(nullptr);
+			pJob->bDone = true;
+		});
+		SetThreadName(pJob->thread.native_handle(), "WebAssetFetch");
+		return pJob->szID;
+	}
+
+	bool GetJobStatus(const std::string& szJobID, JobStatus& status)
+	{
+		std::lock_guard<std::mutex> l(g_jobsMutex);
+		auto itt = g_jobs.find(szJobID);
+		if (itt == g_jobs.end())
+			return false;
+		const auto& pJob = itt->second;
+		status.bRunning = !pJob->bDone;
+		status.bSuccess = pJob->bSuccess;
+		status.szName = pJob->szName;
+		status.szError = pJob->szError;
+		return true;
+	}
+
+	bool IsInstallRunning(const std::string& szName)
+	{
+		std::lock_guard<std::mutex> l(g_jobsMutex);
+		for (const auto& jd : g_jobs)
+		{
+			if (!jd.second->bDone && (jd.second->szName == szName))
+				return true;
+		}
+		return false;
+	}
+
+	void Shutdown()
+	{
+		// Take the threads out from under the lock so a job that is just finishing
+		// can still take g_jobsMutex to record its result.
+		std::vector<std::shared_ptr<_tJob>> jobs;
+		{
+			std::lock_guard<std::mutex> l(g_jobsMutex);
+			for (auto& jd : g_jobs)
+				jobs.push_back(jd.second);
+			g_jobs.clear();
+		}
+		for (auto& pJob : jobs)
+		{
+			if (pJob->thread.joinable())
+				pJob->thread.join();
+		}
 	}
 } // namespace WebAssetFetch

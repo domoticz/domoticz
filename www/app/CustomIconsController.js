@@ -144,6 +144,55 @@ define(['app', 'iconLibraries'], function (app) {
 			};
 		}
 
+		var JOB_POLL_INTERVAL_MS = 1500;
+		var JOB_POLL_MAX_MS = 15 * 60 * 1000;
+		var jobPoll = null;
+
+		function stopJobPoll() {
+			if (jobPoll) {
+				$interval.cancel(jobPoll);
+				jobPoll = null;
+			}
+		}
+
+		// The backend downloads the library on a background thread and hands back a
+		// job id; keep asking after it until it reports done or failed.
+		function pollInstallJob(jobId, szError, onDone) {
+			stopJobPoll();
+			var started = Date.now();
+			jobPoll = $interval(function () {
+				if (Date.now() - started > JOB_POLL_MAX_MS) {
+					stopJobPoll();
+					HideNotify();
+					ShowNotify(szError + ": " + $.t('Timeout waiting for the download to finish'), 5000, true);
+					return;
+				}
+				$http({
+					url: "json.htm?type=command&param=getwebassetjob&job=" + encodeURIComponent(jobId)
+				}).then(function successCallback(response) {
+					var data = response.data;
+					if (!data || data.status != "OK") {
+						stopJobPoll();
+						HideNotify();
+						ShowNotify(szError + ": " + $.t((data && data.error) || 'Unknown job'), 5000, true);
+						return;
+					}
+					if (data.state == "running") {
+						return;
+					}
+					stopJobPoll();
+					HideNotify();
+					if (data.state != "done") {
+						ShowNotify(szError + ": " + $.t(data.error), 5000, true);
+						return;
+					}
+					onDone();
+				}, function errorCallback(response) {
+					// A single failed poll is not the install failing; keep waiting.
+				});
+			}, JOB_POLL_INTERVAL_MS);
+		}
+
 		function InstallLibrary(name, url, title, szError, bClearForm) {
 			ShowNotify($.t('Downloading icon library...'));
 			$http({
@@ -152,18 +201,26 @@ define(['app', 'iconLibraries'], function (app) {
 					'&url=' + encodeURIComponent(url) +
 					'&title=' + encodeURIComponent(title || ''),
 			}).then(function successCallback(response) {
-				HideNotify();
 				var data = response.data;
 				if (data.status != "OK") {
+					HideNotify();
 					ShowNotify(szError + ": " + $.t(data.error), 5000, true);
 					return;
 				}
-				if (bClearForm) {
-					$scope.newLibrary = { title: '', prefix: '', url: '' };
+				var onDone = function () {
+					if (bClearForm) {
+						$scope.newLibrary = { title: '', prefix: '', url: '' };
+					}
+					$scope.RefreshLibraryList();
+					iconLibraries.load();
+					AssetsChanged();
+				};
+				if (data.job) {
+					pollInstallJob(data.job, szError, onDone);
+					return;
 				}
-				$scope.RefreshLibraryList();
-				iconLibraries.load();
-				AssetsChanged();
+				HideNotify();
+				onDone();
 			}, function errorCallback(response) {
 				HideNotify();
 				ShowNotify(szError, 5000, true);
@@ -232,6 +289,10 @@ define(['app', 'iconLibraries'], function (app) {
 			$scope.RefreshIconList();
 			$scope.RefreshLibraryList();
 		};
+
+		$scope.$on('$destroy', function () {
+			stopJobPoll();
+		});
 
 	}]);
 });

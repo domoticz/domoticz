@@ -74,6 +74,27 @@ define(['app'], function (app) {
         'images/nofavorite.png':   'fa-regular fa-star'
     };
 
+    // Base names of the legacy PNGs under images/ that a TypeImg may still fall
+    // back to. Web servers are case sensitive, and not every TypeImg the backend
+    // emits has a PNG, so anything not in here is looked up case-insensitively
+    // and otherwise shown as the generic unknown icon instead of a broken image.
+    var LEGACY_TYPE_IMAGES = [
+        'Custom', 'Dimmer', 'Fan', 'LogitechMediaServer', 'Media', 'Speaker',
+        'air', 'bbq', 'blinds', 'contact', 'counter', 'current', 'door', 'doorbell',
+        'gauge', 'hardware', 'leaf', 'lightbulb', 'lux', 'mode', 'moisture',
+        'override_mini', 'push', 'pushoff', 'radiation', 'rain', 'scale', 'security',
+        'siren', 'solar', 'temperature', 'text', 'utility', 'uv', 'visibility', 'wind'
+    ];
+    var LEGACY_TYPE_IMAGE_LOOKUP = LEGACY_TYPE_IMAGES.reduce(function (acc, name) {
+        acc[name.toLowerCase()] = name;
+        return acc;
+    }, {});
+
+    function legacyTypeImage(typeImg) {
+        var name = LEGACY_TYPE_IMAGE_LOOKUP[String(typeImg || '').toLowerCase()];
+        return (name || 'unknown') + '.png';
+    }
+
     var TYPE_ICONS = {
         'light':               'fa-solid fa-lightbulb',
         'dimmer':              'fa-solid fa-circle-half-stroke',
@@ -418,7 +439,7 @@ define(['app'], function (app) {
             } else if (device.Type === 'Scene' || device.Type === 'Group') {
                 image = isActive ? 'push.png' : 'pushoff.png';
             } else if (device.CustomImage == 0) {
-                image = typeImg + '.png';
+                image = legacyTypeImage(typeImg);
             } else {
                 image = device.Image + '48_On.png';
             }

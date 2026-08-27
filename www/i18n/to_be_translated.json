@@ -45,5 +45,11 @@
     "Are you sure to remove this Icon Library?": "Are you sure to remove this Icon Library?",
     "Error adding Icon Library": "Error adding Icon Library",
     "Error refreshing Icon Library": "Error refreshing Icon Library",
-    "Error removing Icon Library": "Error removing Icon Library"
+    "Error removing Icon Library": "Error removing Icon Library",
+    "Timeout waiting for the download to finish": "Timeout waiting for the download to finish",
+    "This library is already being installed": "This library is already being installed",
+    "This library is currently being installed": "This library is currently being installed",
+    "Too many library installs are running, try again later": "Too many library installs are running, try again later",
+    "Unknown job": "Unknown job",
+    "Could not install the library": "Could not install the library"
 }

@@ -5712,14 +5712,24 @@ namespace http
 
 			if (szData.empty())
 			{
+				// The download runs in the background; the caller polls getwebassetjob
+				// with the returned job id until it reports done.
 				std::string szError;
-				if (!WebAssetFetch::Install(szName, szURL, szTitle, szError))
+				const std::string szJobID = WebAssetFetch::StartInstall(szName, szURL, szTitle, szError);
+				if (szJobID.empty())
 				{
 					root["error"] = szError;
 					return;
 				}
 				root["status"] = "OK";
+				root["job"] = szJobID;
 				root["path"] = "assets/" + szName;
+				return;
+			}
+
+			if (WebAssetFetch::IsInstallRunning(szName))
+			{
+				root["error"] = "This library is currently being installed";
 				return;
 			}
 
@@ -5757,6 +5767,39 @@ namespace http
 			root["status"] = "OK";
 			root["path"] = "assets/" + szName;
 			root["size"] = static_cast<int>(szContent.size());   // capped well below INT_MAX
+		}
+
+		void CWebServer::Cmd_GetWebAssetJob(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "GetWebAssetJob";
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			const std::string szJobID = request::findValue(&req, "job");
+			WebAssetFetch::JobStatus status;
+			if (szJobID.empty() || (szJobID.size() > 64) || !WebAssetFetch::GetJobStatus(szJobID, status))
+			{
+				root["error"] = "Unknown job";
+				return;
+			}
+
+			root["status"] = "OK";
+			root["name"] = status.szName;
+			if (status.bRunning)
+				root["state"] = "running";
+			else if (status.bSuccess)
+			{
+				root["state"] = "done";
+				root["path"] = "assets/" + status.szName;
+			}
+			else
+			{
+				root["state"] = "failed";
+				root["error"] = status.szError.empty() ? "Could not install the library" : status.szError;
+			}
 		}
 
 		void CWebServer::Cmd_GetWebAssets(WebEmSession& session, const request& req, Json::Value& root)
@@ -5832,6 +5875,11 @@ namespace http
 			if (szName.empty() || !IsSafeWebAssetName(szName) || !IsAllowedWebAssetType(szName))
 			{
 				root["error"] = "Invalid asset name";
+				return;
+			}
+			if (WebAssetFetch::IsInstallRunning(szName))
+			{
+				root["error"] = "This library is currently being installed";
 				return;
 			}
 
