@@ -5310,7 +5310,7 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, int OrgHardwareID, const 
 			//Set the status of all slave devices from this device (except the one we just received) to off
 			//Check if this switch was a Sub/Slave device for other devices, if so adjust the state of those other devices
 			result2 = safe_query(
-				"SELECT a.DeviceRowID, b.Type, b.HardwareID FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='%q') AND (a.DeviceRowID!='%q') AND (b.ID == a.DeviceRowID) AND (a.DeviceRowID!=a.ParentID)",
+				"SELECT a.DeviceRowID, b.Type, b.HardwareID, b.Unit, b.SubType, b.SignalLevel, b.BatteryLevel FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='%q') AND (a.DeviceRowID!='%q') AND (b.ID == a.DeviceRowID) AND (a.DeviceRowID!=a.ParentID)",
 				sd[0].c_str(),
 				idx.c_str()
 			);
@@ -5393,6 +5393,9 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, int OrgHardwareID, const 
 						sd[0].c_str()
 					);
 					m_mainworker.sOnDeviceUpdate(std::stoi(sd[2]), std::stoll(sd[0]));
+					// Feed the new state to the event system as well, so scripts and the Python
+					// event module see the slave change and not only the web sockets.
+					m_mainworker.m_eventsystem.ProcessDevice(std::stoi(sd[2]), std::stoull(sd[0]), (unsigned char)atoi(sd[3].c_str()), (unsigned char)oDevType, (unsigned char)atoi(sd[4].c_str()), (unsigned char)atoi(sd[5].c_str()), (unsigned char)atoi(sd[6].c_str()), newnValue, "", sLastUpdate);
 				}
 			}
 			// TODO: Should plugin be notified?
@@ -5402,7 +5405,7 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, int OrgHardwareID, const 
 	//If this is a 'Main' device, and it has Sub/Slave devices,
 	//set the status of the Sub/Slave devices to Off, as we might be out of sync then
 	result = safe_query(
-		"SELECT a.DeviceRowID, b.Type, b.HardwareID FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='%q') AND (b.ID == a.DeviceRowID) AND (a.DeviceRowID!=a.ParentID)",
+		"SELECT a.DeviceRowID, b.Type, b.HardwareID, b.Unit, b.SubType, b.SignalLevel, b.BatteryLevel FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='%q') AND (b.ID == a.DeviceRowID) AND (a.DeviceRowID!=a.ParentID)",
 		idx.c_str()
 	);
 	if (!result.empty())
@@ -5485,6 +5488,9 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, int OrgHardwareID, const 
 				sd[0].c_str()
 			);
 			m_mainworker.sOnDeviceUpdate(std::stoi(sd[2]), std::stoll(sd[0]));
+			// Feed the new state to the event system as well, so scripts and the Python
+			// event module see the slave change and not only the web sockets.
+			m_mainworker.m_eventsystem.ProcessDevice(std::stoi(sd[2]), std::stoull(sd[0]), (unsigned char)atoi(sd[3].c_str()), (unsigned char)oDevType, (unsigned char)atoi(sd[4].c_str()), (unsigned char)atoi(sd[5].c_str()), (unsigned char)atoi(sd[6].c_str()), newnValue, "", sLastUpdate);
 		}
 		// TODO: Should plugin be notified?
 	}
