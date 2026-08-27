@@ -284,13 +284,11 @@ define(['app'], function (app) {
                 return { kind: 'font', cls: iconClass };
             }
 
+            // An icon the user picked, classic Domoticz or custom, is shown as that icon.
+            // The Font Awesome look-alikes in switch_icons.txt only stand in for devices
+            // that never had an icon chosen (CustomImage 0), through the type mapping below.
             var customImage = parseInt(device.CustomImage, 10);
             if (customImage > 0) {
-                var builtinClass = customImage < 100 ? builtinFaClassFor(customImage) : null;
-                if (builtinClass) {
-                    return { kind: 'font', cls: builtinClass };
-                }
-
                 return { kind: 'img', src: legacyImageFor(device, active) };
             }
 
@@ -389,14 +387,6 @@ define(['app'], function (app) {
             return builtinRequest;
         }
 
-        function builtinFaClassFor(customImage) {
-            if (builtinFaClasses === null) {
-                loadBuiltinIcons();
-                return null;
-            }
-
-            return builtinFaClasses[customImage] || null;
-        }
 
         function isConfigurable(device) {
             return ['Light/Switch', 'Lighting 1', 'Lighting 2', 'Lighting 5', 'Lighting 6', 'Color Switch', 'Home Confort', 'Thermostat 3'].indexOf(device.Type) !== -1 &&
