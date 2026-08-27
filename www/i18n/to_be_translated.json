@@ -56,5 +56,8 @@
     "Anomaly detection": "Anomaly detection",
     "Do not flag unusual daily values for this device": "Do not flag unusual daily values for this device",
     "House": "House",
-    "Show house card": "Show house card"
+    "Show house card": "Show house card",
+    "Icon style": "Icon style",
+    "Classic images": "Classic images",
+    "Font Awesome glyphs": "Font Awesome glyphs"
 }

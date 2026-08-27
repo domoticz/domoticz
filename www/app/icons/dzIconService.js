@@ -257,7 +257,7 @@ define(['app'], function (app) {
         CHROME_ICONS_BY_NAME[key.substring(key.lastIndexOf('/') + 1)] = CHROME_ICONS[key];
     });
 
-    app.factory('dzIconService', ['domoticzApi', 'dzDefaultSwitchIcons', function (domoticzApi, dzDefaultSwitchIcons) {
+    app.factory('dzIconService', ['$rootScope', 'domoticzApi', 'dzDefaultSwitchIcons', function ($rootScope, domoticzApi, dzDefaultSwitchIcons) {
 
         var builtinFaClasses = null;
         var builtinRequest = null;
@@ -292,7 +292,9 @@ define(['app'], function (app) {
                 return { kind: 'img', src: legacyImageFor(device, active) };
             }
 
-            var typeClass = typeIconFor(device.TypeImg);
+            // Settings > Icon style: only the glyph style stands a type image in for a glyph;
+            // the classic style (default) keeps the image icons Domoticz always had.
+            var typeClass = glyphsEnabled() ? typeIconFor(device.TypeImg) : null;
             if (typeClass) {
                 return { kind: 'font', cls: typeClass };
             }
@@ -348,6 +350,10 @@ define(['app'], function (app) {
             }
 
             return CHROME_ICONS_BY_NAME[path.substring(path.lastIndexOf('/') + 1)] || null;
+        }
+
+        function glyphsEnabled() {
+            return !!($rootScope.config && $rootScope.config.IconStyle == 1);
         }
 
         function typeIconFor(typeImg) {

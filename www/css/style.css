@@ -1025,6 +1025,19 @@ table.mobileitem {
 	transition: all 0.25s ease;
 }
 
+/* Icon style (Settings): the navigation bar carries both the classic image and the
+   Font Awesome glyph for every entry; the class app.js sets on <html> from the config
+   picks one. The image is the default, so nothing flashes before the config has loaded. */
+.dz-nav-glyph {
+    display: none;
+}
+html.dz-icons-glyph .dz-nav-glyph {
+    display: inline-block;
+}
+html.dz-icons-glyph .dz-nav-img {
+    display: none;
+}
+
 .nav li a img {
 	vertical-align: text-bottom;
 	width: 16px;

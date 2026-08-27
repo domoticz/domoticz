@@ -3114,6 +3114,10 @@ namespace http
 			m_sql.GetPreferencesVar("MobileType", nValue);
 			root["MobileType"] = nValue;
 
+			nValue = 0;
+			m_sql.GetPreferencesVar("IconStyle", nValue);
+			root["IconStyle"] = nValue; // 0 = classic image icons, 1 = Font Awesome glyphs
+
 			nValue = 1;
 			m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
 			root["FiveMinuteHistoryDays"] = nValue;
@@ -4185,6 +4189,14 @@ namespace http
 				m_sql.UpdatePreferencesVar("WebTheme", SelectedTheme);
 				m_pWebEm->SetWebTheme(SelectedTheme);
 				cntSettings++;
+
+				// Icon style: 0 = the classic image icons (default), 1 = Font Awesome glyphs
+				std::string sIconStyle = request::findValue(&req, "IconStyle");
+				if (!sIconStyle.empty())
+				{
+					m_sql.UpdatePreferencesVar("IconStyle", (sIconStyle == "1") ? 1 : 0);
+					cntSettings++;
+				}
 
 				//Update the Max kWh value
 				rnvalue = 6000;
@@ -7233,6 +7245,10 @@ namespace http
 				else if (Key == "WebTheme")
 				{
 					root["WebTheme"] = sValue;
+				}
+				else if (Key == "IconStyle")
+				{
+					root["IconStyle"] = nValue;
 				}
 				else if (Key == "MyDomoticzSubsystems")
 				{

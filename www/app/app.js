@@ -410,6 +410,12 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 
 			$.myglobals.DashboardType = $rootScope.config.DashboardType;
 			$.myglobals.enableDashboardDynamic = $rootScope.config.EnableTabDashboardDynamic;
+			// Icon style (Settings): the classic image icons by default, Font Awesome glyphs
+			// when chosen. The navigation bar carries both and CSS picks one by this class;
+			// dzIconService reads the same config value for the device icons. The class goes
+			// on <html>: several controllers reset the body's classes when their page loads.
+			$.myglobals.iconGlyphs = ($rootScope.config.IconStyle == 1);
+			document.documentElement.classList.toggle('dz-icons-glyph', $.myglobals.iconGlyphs);
 			$.myglobals.DateFormat = $rootScope.config.DateFormat;
 
 			if (typeof $rootScope.config.WindScale != 'undefined') {
@@ -451,6 +457,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			FiveMinuteHistoryDays: 1,
 			DashboardType: 1,
 			MobileType: 0,
+			IconStyle: 0,
 			TempScale: 1.0,
 			DegreeDaysBaseTemperature: 18.0,
 			PriceResolution: 60,
@@ -485,6 +492,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.FiveMinuteHistoryDays = data.FiveMinuteHistoryDays;
 						$rootScope.config.DashboardType = data.DashboardType;
 						$rootScope.config.MobileType = data.MobileType;
+						$rootScope.config.IconStyle = data.IconStyle;
 						$rootScope.config.TempScale = data.TempScale;
 						$rootScope.config.TempSign = data.TempSign;
 						$rootScope.config.WindScale = data.WindScale;
