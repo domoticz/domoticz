@@ -400,26 +400,42 @@ MySensorsBase::_tMySensorChild* MySensorsBase::FindSensorWithPresentationType(co
 }
 
 //Find any sensor with value type
-MySensorsBase::_tMySensorChild* MySensorsBase::FindChildWithValueType(const int nodeID, const _eSetType valType, const int groupID)
+MySensorsBase::_tMySensorChild* MySensorsBase::FindChildWithValueType(const int nodeID, const _eSetType valType, const int groupID, const int callerChildID, const _eSetType callerValType)
 {
 	auto ittNode = m_nodes.find(nodeID);
 	if (ittNode == m_nodes.end())
 		return nullptr;
 	_tMySensorNode* pNode = &ittNode->second;
+
+	// The caller's own child first: a combined sensor pairs with itself.
+	if (callerChildID != -1)
+	{
+		for (auto& child : pNode->m_childs)
+		{
+			if (child.childID != callerChildID)
+				continue;
+			auto ittValue = child.values.find(valType);
+			if (ittValue != child.values.end())
+				return (ittValue->second.bValidValue) ? &child : nullptr;
+		}
+	}
+
 	for (auto& child : pNode->m_childs)
 	{
-		if ((child.groupID == groupID) || (groupID == 0))
-		{
-			for (const auto& itt2 : child.values)
-			{
-				if (itt2.first == valType)
-				{
-					if (!itt2.second.bValidValue)
-						return nullptr;
-					return &child;
-				}
-			}
-		}
+		if ((child.groupID != groupID) && (groupID != 0))
+			continue;
+		if ((callerChildID != -1) && (child.childID == callerChildID))
+			continue;
+		auto ittValue = child.values.find(valType);
+		if (ittValue == child.values.end())
+			continue;
+		// This child already has its own reading of the caller's kind, so it is a
+		// combined sensor in its own right and not the other half of the caller.
+		if ((callerValType != V_UNKNOWN) && (child.values.find(callerValType) != child.values.end()))
+			continue;
+		if (!ittValue->second.bValidValue)
+			return nullptr;
+		return &child;
 	}
 	return nullptr;
 }
@@ -596,8 +612,8 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode* pNode, _tMySensorChild* 
 	{
 		float Temp = 0;
 		pChild->GetValue(V_TEMP, Temp);
-		_tMySensorChild* pChildHum = FindChildWithValueType(pChild->nodeID, V_HUM, pChild->groupID);
-		_tMySensorChild* pChildBaro = FindChildWithValueType(pChild->nodeID, V_PRESSURE, pChild->groupID);
+		_tMySensorChild* pChildHum = FindChildWithValueType(pChild->nodeID, V_HUM, pChild->groupID, pChild->childID, V_TEMP);
+		_tMySensorChild* pChildBaro = FindChildWithValueType(pChild->nodeID, V_PRESSURE, pChild->groupID, pChild->childID, V_TEMP);
 		if (pChildHum && pChildBaro)
 		{
 			int Humidity = 0;
@@ -607,7 +623,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode* pNode, _tMySensorChild* 
 			if (bHaveHumidity && bHaveBaro)
 			{
 				int forecast = bmpbaroforecast_unknown;
-				_tMySensorChild* pSensorForecast = FindChildWithValueType(pChild->nodeID, V_FORECAST, pChild->groupID);
+				_tMySensorChild* pSensorForecast = FindChildWithValueType(pChild->nodeID, V_FORECAST, pChild->groupID, pChild->childID, V_TEMP);
 				if (pSensorForecast)
 				{
 					pSensorForecast->GetValue(V_FORECAST, forecast);
@@ -668,10 +684,10 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode* pNode, _tMySensorChild* 
 	break;
 	case V_HUM:
 	{
-		_tMySensorChild* pChildTemp = FindChildWithValueType(pChild->nodeID, V_TEMP, pChild->groupID);
-		_tMySensorChild* pChildBaro = FindChildWithValueType(pChild->nodeID, V_PRESSURE, pChild->groupID);
+		_tMySensorChild* pChildTemp = FindChildWithValueType(pChild->nodeID, V_TEMP, pChild->groupID, pChild->childID, V_HUM);
+		_tMySensorChild* pChildBaro = FindChildWithValueType(pChild->nodeID, V_PRESSURE, pChild->groupID, pChild->childID, V_HUM);
 		int forecast = bmpbaroforecast_unknown;
-		_tMySensorChild* pSensorForecast = FindChildWithValueType(pChild->nodeID, V_FORECAST, pChild->groupID);
+		_tMySensorChild* pSensorForecast = FindChildWithValueType(pChild->nodeID, V_FORECAST, pChild->groupID, pChild->childID, V_HUM);
 		if (pSensorForecast)
 		{
 			pSensorForecast->GetValue(V_FORECAST, forecast);
@@ -753,10 +769,10 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode* pNode, _tMySensorChild* 
 	{
 		float Baro = 0;
 		pChild->GetValue(V_PRESSURE, Baro);
-		_tMySensorChild* pSensorTemp = FindChildWithValueType(pChild->nodeID, V_TEMP, pChild->groupID);
-		_tMySensorChild* pSensorHum = FindChildWithValueType(pChild->nodeID, V_HUM, pChild->groupID);
+		_tMySensorChild* pSensorTemp = FindChildWithValueType(pChild->nodeID, V_TEMP, pChild->groupID, pChild->childID, V_PRESSURE);
+		_tMySensorChild* pSensorHum = FindChildWithValueType(pChild->nodeID, V_HUM, pChild->groupID, pChild->childID, V_PRESSURE);
 		int forecast = bmpbaroforecast_unknown;
-		_tMySensorChild* pSensorForecast = FindChildWithValueType(pChild->nodeID, V_FORECAST, pChild->groupID);
+		_tMySensorChild* pSensorForecast = FindChildWithValueType(pChild->nodeID, V_FORECAST, pChild->groupID, pChild->childID, V_PRESSURE);
 		if (pSensorForecast)
 		{
 			pSensorForecast->GetValue(V_FORECAST, forecast);
@@ -988,7 +1004,7 @@ void MySensorsBase::SendSensor2Domoticz(_tMySensorNode* pNode, _tMySensorChild* 
 	case V_FORECAST:
 		if (pChild->GetValue(vType, intValue))
 		{
-			_tMySensorChild* pSensorBaro = FindChildWithValueType(pChild->nodeID, V_PRESSURE, pChild->groupID);
+			_tMySensorChild* pSensorBaro = FindChildWithValueType(pChild->nodeID, V_PRESSURE, pChild->groupID, pChild->childID, V_FORECAST);
 			if (pSensorBaro)
 			{
 				float Baro;
