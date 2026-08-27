@@ -59,7 +59,7 @@ define([
                 yExtremes.max = yMax + pad;
             }
 
-            return window.Highcharts.chart(el, {
+            var chart = window.Highcharts.chart(el, {
                 credits:   { enabled: false },
                 exporting: { enabled: false },
                 title:     { text: null },
@@ -93,6 +93,26 @@ define([
                 },
                 series: [{ type: 'areaspline', data: data }]
             });
+
+            // The widget is often (re)built while its tab is hidden or before the grid
+            // has laid it out, so el.offsetHeight is 0 or stale at render time and the
+            // chart keeps that wrong height afterwards: the trend overflows the widget.
+            // Follow the container instead, so the chart always fits its area.
+            if (chart && window.ResizeObserver) {
+                var ro = new ResizeObserver(function() {
+                    var w = el.offsetWidth, h = el.offsetHeight;
+                    if (w > 0 && h > 0 && (chart.chartWidth !== w || chart.chartHeight !== h)) {
+                        chart.setSize(w, h, false);
+                    }
+                });
+                ro.observe(el);
+                var origDestroy = chart.destroy;
+                chart.destroy = function() {
+                    ro.disconnect();
+                    return origDestroy.apply(chart, arguments);
+                };
+            }
+            return chart;
         }
 
         return { render: render, parseLocal: parseLocal };
