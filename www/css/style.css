@@ -1038,10 +1038,12 @@ html.dz-icons-glyph .dz-nav-img {
    classic style, the glyph in the glyph style. The html:not() form outranks the generic
    .dz-icon-glyph { display: inline-block } further down, which a bare class would lose to. */
 html:not(.dz-icons-glyph) .dz-glyph-only {
-    display: none;
+    display: none !important;
 }
+/* !important: the widget tables style their images by id (#img img ...), which outranks
+   any class selector. */
 html.dz-icons-glyph .dz-classic-only {
-    display: none;
+    display: none !important;
 }
 .dz-blind-glyph {
     color: #43A4D3;
