@@ -1606,10 +1606,17 @@ namespace http
 		// field names declared as password fields. The password attribute is matched case-insensitively
 		// ("true"/"TRUE"/"1") so a manifest typo does not silently expose a secret. Pure: operates on
 		// the manifest XML string, no I/O. keyOut is empty when the manifest has no key attribute.
-		static void ParsePluginManifest(const std::string &manifestXml, std::string &keyOut, std::set<std::string> &passwordFieldsOut)
+		struct _tPluginSettingsFields
+		{
+			std::set<std::string> passwordFields; // params declared password="true"
+			std::set<std::string> allFields;      // every param the manifest declares
+		};
+
+		static void ParsePluginManifest(const std::string &manifestXml, std::string &keyOut, _tPluginSettingsFields &fieldsOut)
 		{
 			keyOut.clear();
-			passwordFieldsOut.clear();
+			fieldsOut.passwordFields.clear();
+			fieldsOut.allFields.clear();
 			TiXmlDocument xmlDoc;
 			xmlDoc.Parse(manifestXml.c_str());
 			if (xmlDoc.Error())
@@ -1636,8 +1643,11 @@ namespace http
 			};
 			auto checkParam = [&](TiXmlElement *pEle) {
 				const char *pField = pEle->Attribute("field");
-				if (pField && isPasswordAttr(pEle->Attribute("password")))
-					passwordFieldsOut.insert(pField);
+				if (!pField)
+					return;
+				fieldsOut.allFields.insert(pField);
+				if (isPasswordAttr(pEle->Attribute("password")))
+					fieldsOut.passwordFields.insert(pField);
 			};
 			for (TiXmlNode *pChild = pParamsNode->FirstChild(); pChild; pChild = pChild->NextSibling())
 			{
@@ -1663,16 +1673,16 @@ namespace http
 		// column) to its set of password field names. GetManifest() is keyed by plugin DIRECTORY, not by
 		// the key attribute, so it must be walked and re-keyed. Only plugins that declare at least one
 		// password field appear.
-		static std::map<std::string, std::set<std::string>> BuildPluginPasswordFieldsByKey()
+		static std::map<std::string, _tPluginSettingsFields> BuildPluginSettingsFieldsByKey()
 		{
-			std::map<std::string, std::set<std::string>> byKey;
+			std::map<std::string, _tPluginSettingsFields> byKey;
 			Plugins::CPluginSystem pluginSystem;
 			for (const auto &manifest : *pluginSystem.GetManifest())
 			{
 				std::string key;
-				std::set<std::string> fields;
+				_tPluginSettingsFields fields;
 				ParsePluginManifest(manifest.second, key, fields);
-				if (!key.empty() && !fields.empty())
+				if (!key.empty() && !fields.allFields.empty())
 					byKey[key] = fields;
 			}
 			return byKey;
@@ -1992,13 +2002,13 @@ namespace http
 					{
 						// Preserve custom password fields left blank on save ("leave blank to keep").
 						// Extra holds the plugin key; a password field submitted empty keeps its stored value.
-						std::map<std::string, std::set<std::string>> pluginPasswordFields = BuildPluginPasswordFieldsByKey();
-						auto itPwd = pluginPasswordFields.find(extra);
-						if (itPwd != pluginPasswordFields.end() && !itPwd->second.empty())
+						std::map<std::string, _tPluginSettingsFields> pluginFields = BuildPluginSettingsFieldsByKey();
+						auto itPwd = pluginFields.find(extra);
+						if (itPwd != pluginFields.end() && !itPwd->second.passwordFields.empty())
 						{
 							std::vector<std::vector<std::string>> storedRes = m_sql.safe_query("SELECT Settings FROM Hardware WHERE ID=%q", idx.c_str());
 							std::string storedSettings = storedRes.empty() ? "" : storedRes[0][0];
-							settings = MergePluginSettingsPreservePasswords(settings, storedSettings, itPwd->second);
+							settings = MergePluginSettingsPreservePasswords(settings, storedSettings, itPwd->second.passwordFields);
 						}
 					}
 #endif
@@ -4710,13 +4720,13 @@ namespace http
 #ifdef ENABLE_PYTHON
 				// Map plugin key -> password field names, built once, but only when the result actually
 				// contains a plugin row (avoids parsing manifests for non-plugin queries).
-				std::map<std::string, std::set<std::string>> pluginPasswordFields;
+				std::map<std::string, _tPluginSettingsFields> pluginFields;
 				{
 					bool hasPlugin = false;
 					for (const auto &sd : result)
 						if ((_eHardwareTypes)atoi(sd[3].c_str()) == HTYPE_PythonPlugin) { hasPlugin = true; break; }
 					if (hasPlugin)
-						pluginPasswordFields = BuildPluginPasswordFieldsByKey();
+						pluginFields = BuildPluginSettingsFieldsByKey();
 				}
 #endif
 				int ii = 0;
@@ -4771,11 +4781,11 @@ namespace http
 							// Strip password-type field values so secrets never reach the browser, and
 							// report which ones are set so the UI can show "leave blank to keep".
 							std::string pluginKey = sd[9]; // Extra holds the plugin key
-							auto itPwdFields = pluginPasswordFields.find(pluginKey);
-							if (itPwdFields != pluginPasswordFields.end())
+							auto itFields = pluginFields.find(pluginKey);
+							if (itFields != pluginFields.end())
 							{
 								Json::Value pwdSet(Json::objectValue);
-								for (const auto &field : itPwdFields->second)
+								for (const auto &field : itFields->second.passwordFields)
 								{
 									if (settingsJson.isMember(field))
 									{
@@ -4786,6 +4796,16 @@ namespace http
 								}
 								if (!pwdSet.empty())
 									root["result"][ii]["SettingsPwdSet"] = pwdSet;
+
+								// A field the manifest no longer declares (renamed or removed) may
+								// still hold a secret from an older version. Nothing can display
+								// it, so it never leaves the server; the next save drops it.
+								const std::vector<std::string> storedKeys = settingsJson.getMemberNames();
+								for (const auto &key : storedKeys)
+								{
+									if (itFields->second.allFields.count(key) == 0)
+										settingsJson.removeMember(key);
+								}
 							}
 #else
 							// Without Python support the plugin manifest is unavailable, so password
