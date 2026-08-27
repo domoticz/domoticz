@@ -6603,6 +6603,7 @@ namespace http
 			std::string sOptions = HTMLSanitizer::Sanitize(base64_decode(request::findValue(&req, "options")));
 			std::string devoptions = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "devoptions")));
 			std::string EnergyMeterMode = CURLEncode::URLDecode(request::findValue(&req, "EnergyMeterMode"));
+			std::string sDisableAnomalyDetection = request::findValue(&req, "DisableAnomalyDetection");
 			std::string sShowIcon = request::findValue(&req, "ShowIcon");
 
 			char szTmp[200];
@@ -6806,11 +6807,13 @@ namespace http
 			}
 			bool bNeedShowIcon = (!sShowIcon.empty() && (sShowIcon == "0" || sShowIcon == "1") &&
 				atoi(result[0][0].c_str()) == pTypeGeneral && atoi(result[0][1].c_str()) == sTypeTextStatus);
-			if (!EnergyMeterMode.empty() || bNeedShowIcon)
+			if (!EnergyMeterMode.empty() || !sDisableAnomalyDetection.empty() || bNeedShowIcon)
 			{
 				auto options = m_sql.GetDeviceOptions(idx);
 				if (!EnergyMeterMode.empty())
 					options["EnergyMeterMode"] = EnergyMeterMode;
+				if (!sDisableAnomalyDetection.empty())
+					options["DisableAnomalyDetection"] = (sDisableAnomalyDetection == "1") ? "1" : "0";
 				if (bNeedShowIcon)
 					options["ShowIcon"] = sShowIcon;
 				uint64_t ullidx = std::stoull(idx);

@@ -590,6 +590,7 @@
 						'&name=' + encodeURIComponent($("#dialog-editenergydevice #devicename").val()) +
 						'&description=' + encodeURIComponent($("#dialog-editenergydevice #devicedescription").val()) +
 						'&switchtype=' + $("#dialog-editenergydevice #combometertype").val() + '&EnergyMeterMode=' + $("#dialog-editenergydevice input:radio[name=EnergyMeterMode]:checked").val() +
+						'&DisableAnomalyDetection=' + ($("#dialog-editenergydevice #DisableAnomalyDetection").is(':checked') ? '1' : '0') +
 						iconParams() +
 						'&color=' + encodeURIComponent(dzBarService.getColorJson()) +
 						'&used=true',

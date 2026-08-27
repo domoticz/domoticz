@@ -20,6 +20,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
         self.chartNameIsToggling = params.chartNameIsToggling;
         self.device = params.device;
         self.dataSupplier = params.dataSupplier;
+        self.dataSupplier.device = params.device;
         self.extendDataRequest = params.dataSupplier.extendDataRequest || function (dataRequest) { return dataRequest; };
         self.synchronizeYaxes = params.synchronizeYaxes;
         const chartDefinition = createChartDefinition(params.highchartTemplate);

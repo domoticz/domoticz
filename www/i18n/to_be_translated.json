@@ -51,5 +51,10 @@
     "This library is currently being installed": "This library is currently being installed",
     "Too many library installs are running, try again later": "Too many library installs are running, try again later",
     "Unknown job": "Unknown job",
-    "Could not install the library": "Could not install the library"
+    "Could not install the library": "Could not install the library",
+    "Never": "Never",
+    "Anomaly detection": "Anomaly detection",
+    "Do not flag unusual daily values for this device": "Do not flag unusual daily values for this device",
+    "House": "House",
+    "Show house card": "Show house card"
 }

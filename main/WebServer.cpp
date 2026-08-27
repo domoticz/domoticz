@@ -3512,6 +3512,7 @@ namespace http
 						root["result"][ii]["TypeImg"] = "current";
 						root["result"][ii]["SwitchTypeVal"] = switchtype;		    // MTYPE_ENERGY
 						root["result"][ii]["EnergyMeterMode"] = options["EnergyMeterMode"]; // for alternate Energy Reading
+						root["result"][ii]["DisableAnomalyDetection"] = (options["DisableAnomalyDetection"] == "1") ? 1 : 0;
 					}
 					else if (dType == pTypeAirQuality)
 					{

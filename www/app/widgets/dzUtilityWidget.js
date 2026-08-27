@@ -103,6 +103,7 @@ define(['app', 'widgets/dzBar', 'icons/dzIconPicker', 'icons/dzDeviceIcon'], fun
                 $(dialogId + ' input:radio[name=EnergyMeterMode][value="' + EnergyMeterMode + '"]').attr('checked', true);
                 $(dialogId + ' input:radio[name=EnergyMeterMode][value="' + EnergyMeterMode + '"]').prop('checked', true);
                 $(dialogId + ' input:radio[name=EnergyMeterMode][value="' + EnergyMeterMode + '"]').trigger('change');
+                $(dialogId + ' #DisableAnomalyDetection').prop('checked', String(device.DisableAnomalyDetection) === '1');
             } else {
                 $(dialogId + ' #meterdivider').val(device.AddjValue2);
                 $(dialogId + ' #meteroffset').val(device.AddjValue);
