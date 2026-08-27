@@ -1,10 +1,14 @@
 Version 2026.xxxx
 - Added: Applications, OAuth2 redirect URIs can now be registered per application under Setup - Applications; leaving the list empty keeps the current behaviour of accepting any valid redirect URI, so existing account linking is unaffected until the list is filled in
+- Added: Cameras, a camera can be linked to a device with 'When: Never', so the device shows the camera button without a notification ever being sent (#5617)
 - Added: Dashboard Dynamic, Quick Stat and Energy Dashboard widgets now show a timeout indicator when a device has not reported within the sensor timeout period (#6906)
+- Added: Dashboard Dynamic, the Energy Dashboard widget has a House card with the live house consumption and today's kWh (grid import - export + solar - battery charge) (#6992)
+- Added: Energy, per-device 'Anomaly detection' opt-out in the energy device edit dialog, for appliances that only run on some days and were flagged for it (#6988)
 - Added: Matter, support for the AirQuality, TVOC, Ozone, Formaldehyde, PM1 and Radon concentration clusters
 - Added: Matter, support for the SmokeCoAlarm cluster; smoke and CO alarm states are now created as smoke detector devices (#6935)
 - Added: Matter, water leak, rain and freeze detectors reported via BooleanState are now identified via the Descriptor DeviceTypeList and created as distinct devices instead of door contacts
 - Added: Python plugins, plugins can now set the bar ranges drawn on Utility, Temperature and Weather device cards through the Unit or Device Color field; that field accepted color switch state only and silently discarded anything else, so a plugin could create a device whose card supports bars but never fill the bands in
+- Added: Python plugins, on Windows the plugin system also finds a Python installed with the Python install manager (PyManager) or the classic per-user installer when the interpreter folder is not on PATH
 - Added: Settings, the reverse proxy header that Domoticz reads the client address from is now selectable (None, X-Forwarded-For, X-Real-IP or Forwarded) instead of being fixed to X-Forwarded-For, under Settings - Security
 - Added: Themes, per-user theme settings: themes can now store settings per login via the new themesettings_get/themesettings_set/themesettings_setdefault API commands (any authenticated user can save their own overlay, admins set instance defaults), getsettings returns the merged view for the calling user, and the hidden ThemeSettings field in storesettings has been removed (#6907)
 - Added: Web server, 'Allowed CORS Origins' security settings so external dashboards (e.g. Dashticz) can call the API cross-origin again: list exact origins, use '*' to allow any origin, or tick 'Also allow origins from local networks' to admit origins served from a trusted network IP (#6941)
@@ -15,6 +19,7 @@ Version 2026.xxxx
 - Fixed: Cameras, a camera that stops responding no longer freezes the whole web interface; snapshots are now served from a cache refreshed by a background worker, so the single web server thread never waits on the camera. The worker only refreshes cameras that are actually being viewed and backs off on the ones that fail (#6804)
 - Fixed: Charts, the month and weekday names on log and graph pages followed the browser or operating system language instead of the language selected in Domoticz, and could not be changed from Settings; the 24 hour clock notation is unaffected (#6974)
 - Fixed: Charts, the hourly usage bars of the P1 smart meter log were labelled with the end of the hour, so the usage between 13:00 and 14:00 showed on the 14:00 bar; they now carry the hour they started in, like the other energy charts (#6977)
+- Fixed: Charts, on phone widths the device log charts hide the rotated y-axis titles and shrink the outer spacing, so the plot gets about 70% of the width instead of 47% and there is room to pinch-zoom (#6986)
 - Fixed: Counters, virtual counter devices set to type Energy, Gas or Energy Generated now show their unit (kWh, m3) in the log and reports instead of a question mark (#6928)
 - Fixed: Custom Icons, the Icon Libraries table stuck out of its panel, and a PNG icon sat on the bottom edge of the icon picker preview instead of being centred like the font icons (#7000)
 - Fixed: Dashboard Dynamic, dimmer and blind position sliders in the Quick Actions and Room widgets now send the level when released on a touch device; the slider moved but the command was only sent when using a mouse (#6938)
@@ -30,11 +35,13 @@ Version 2026.xxxx
 - Fixed: Dashboard Dynamic, the Barometer widget trend line overflowed the widget after switching tabs, because the sparkline kept the height it was given while the dashboard was hidden (#6967)
 - Fixed: Dashboard Dynamic, the Energy Chart tooltip repeated the chart title (for example 'Last month') in front of a single day's value; it now names the device (#6990)
 - Fixed: Events, the event editor and settings menu are now usable on mobile; the script editor resizes with its container and the Automation Wizard popup can scroll on small screens (#6902)
+- Fixed: Events, a slave device switched off by its master now reaches the event system as well; dzVents and Python event scripts kept seeing its old state (#5803)
 - Fixed: EvoHome, HVAC fan mode selector switch commands were silently ignored on x86/x64 builds; they only worked on ARM
 - Fixed: Floorplans, removed a leftover empty svg element that pushed the floorplan content down by the height of one line box, which could misalign the plan in themes with a constrained floorplan area (#6933)
 - Fixed: Floorplans, the pagination dots are now positioned against the visual viewport, so they stay on screen while the page is pinch zoomed instead of drifting out of view (#6954)
 - Fixed: Floorplans, the pagination dots now carry a dark contrast ring so they stay visible on light floorplan backgrounds, where the white-only dots were all but invisible (#6954)
 - Fixed: Hardware, the Update and Delete buttons did nothing for a plugin whose Mode field contains a single quote or backslash, for example a Tuya SmartPlug local key, which left that field impossible to change (#6963)
+- Fixed: Icons, a classic Domoticz icon chosen in the icon picker rendered as its Font Awesome look-alike, on the device and in the picker's preview; it now shows the chosen icon
 - Fixed: Lights, restored touch dragging on the RGBW color picker wheel and sliders; on touch devices dragging did nothing and only taps registered (#6917)
 - Fixed: Lights, the RGBW color picker mode buttons (Color, White, Color temperature, Color and white mix) now show a tooltip describing their function (#6911)
 - Fixed: Lights, the Switches page could be dragged sideways on a phone while other pages stayed put; a long device name and the button row of a selector switch with many levels both ran past the right edge of the screen, which also let a fast vertical swipe slip the page horizontally (#6817)
@@ -60,6 +67,7 @@ Version 2026.xxxx
 - Fixed: Python plugins, Unit.Delete() and Device.Delete() only removed the device row, leaving its history, notifications, timers, scene and plan rows behind for the next device that received the same idx (#6982)
 - Fixed: Reports, the counter totals in the yearly and monthly energy, gas and water reports kept showing the highest value ever recorded, which was wrong after a meter replacement; they now show the last actual meter reading, and the summary figures above the report are presented as a compact labeled overview (#6926)
 - Fixed: Users, deleting a user now also removes that user's dashboard layouts; the rows were left behind and a newly created user could inherit them
+- Fixed: Users, saving a user's device list reset that user's dashboard order to alphabetical; order and favourites are now kept and new devices are appended, and non-admin users can reorder their own dashboard (#6970)
 - Fixed: Utilities, the Update button in the edit dialog of an Alert or Thermostat Operating State device did nothing and silently discarded the change; it could also store another device's icon and bar colour ranges on the device being edited (#6946)
 - Fixed: Web assets, installed icon libraries are stored with a pre-compressed copy so page loads no longer spend seconds gzipping large stylesheets on every request, and installing a library by URL runs in the background instead of blocking the web server (#7001)
 - Fixed: Web server, every request through a reverse proxy that writes more than one forwarded-client header returned 403; nginx Proxy Manager sends X-Forwarded-For and X-Real-IP together, which made the whole site inaccessible (#6939)
