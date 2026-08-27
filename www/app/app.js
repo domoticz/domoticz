@@ -370,7 +370,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
     	template: '<section class="page-spinner">{{:: "Loading..." | translate }}</section>'
 	});
 
-	app.run(function ($rootScope, $location, $window, $route, $http, dzTimeAndSun, permissions, $uibModal) {
+	app.run(function ($rootScope, $location, $window, $route, $http, dzTimeAndSun, permissions, $uibModal, $timeout) {
 		var permissionList = {
 			isloggedin: false,
 			rights: -1,
@@ -772,6 +772,25 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		});
 
 		var _tipsShown = false;
+		// Log pages build several Highcharts charts straight into their view; when the view is
+		// replaced those charts stayed registered in Highcharts.charts with their SVG, data and
+		// listeners. Once the new view is in place, destroy every chart whose container is no
+		// longer in the document. (Charts that manage their own teardown are already gone.)
+		function destroyDetachedCharts() {
+			if (!window.Highcharts || !window.Highcharts.charts) return;
+			window.Highcharts.charts.forEach(function (chart) {
+				if (chart && chart.renderTo && !document.contains(chart.renderTo)) {
+					try { chart.destroy(); } catch (e) { /* already torn down */ }
+				}
+			});
+		}
+		$rootScope.$on('$routeChangeSuccess', function () {
+			destroyDetachedCharts();
+			// a chart whose data arrives after the page was left renders into the old view;
+			// sweep once more when those requests have had time to finish
+			$timeout(destroyDetachedCharts, 5000, false);
+		});
+
 		$rootScope.$on('$routeChangeSuccess', function() {
 			if (_tipsShown) return;
 			var path = $location.path();

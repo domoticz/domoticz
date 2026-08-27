@@ -49,7 +49,19 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
         configureSpikeContextMenu();
 
         self.$scope.$on('$routeChangeStart', function($event, next, current) {
-            self.chart.tooltip.hide();
+            if (self.chart) {
+                self.chart.tooltip.hide();
+            }
+        });
+
+        // The log pages create a chart per range and never took them down: every visit left
+        // its charts (SVG, pointer listeners, data) alive in Highcharts.charts. Destroy them
+        // with the scope, and let a data refresh that was still in flight find nothing to do.
+        self.$scope.$on('$destroy', function () {
+            if (self.chart) {
+                self.chart.destroy();
+                self.chart = null;
+            }
         });
 
         if (true) {
@@ -333,6 +345,9 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             self.domoticzApi
                 .sendRequest(dataRequest)
                 .then(function (data) {
+                    if (!self.chart) {
+                        return; // page left while the request was in flight
+                    }
                     self.consoledebug(function () { return stopwatchDataRequest.log(); });
                     self.consoledebug(function () { return '[' + Base.dateToString(new Date()) + '] refreshing ' + self; });
 
