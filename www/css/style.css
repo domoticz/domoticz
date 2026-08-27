@@ -1056,6 +1056,21 @@ html.dz-icons-glyph .dz-classic-only {
     width: 24px;
     font-size: 22px;
 }
+/* The glyph buttons run a little wider than the images they replace (inline boxes next to
+   the hidden images), so the blinds level sliders start further right in the glyph style.
+   The widget templates set these margins inline for the image layout. */
+html.dz-icons-glyph .dimslider.dimslidersmalldouble {
+    margin-left: 126px !important;
+}
+html.dz-icons-glyph .dimslider.dimslidersmalltripple {
+    margin-left: 160px !important;
+}
+html.dz-icons-glyph .dimslider.dimsmall {
+    margin-left: 140px !important;
+}
+html.dz-icons-glyph .dimslider.dimsmall3 {
+    margin-left: 168px !important;
+}
 
 .nav li a img {
 	vertical-align: text-bottom;
