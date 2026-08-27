@@ -31,7 +31,7 @@
                     <i ng-if="ctrl.isBlinds() && !ctrl.isEvohome()"
                        class="fa-solid fa-chevron-up dz-icon-glyph dz-icon-40 dz-blind-glyph dz-glyph-only lcursor"
                        ng-class="{'dz-icon--off': !ctrl.isBlindsOpen()}"
-                       ng-click="ctrl.switchLight('Open')" data-i18n="[title]Open Blinds"></i>
+                       ng-click="ctrl.switchLight('Open')" title="{{:: 'Open Blinds' | translate}}"></i>
 
                     <!-- Media Player main icon -->
                     <dz-device-icon ng-if="ctrl.isMediaPlayer()"
@@ -58,7 +58,7 @@
                          ng-click="ctrl.switchLight('Stop')" class="lcursor dz-classic-only"
                          height="40" width="24" data-i18n="[title]Stop Blinds">
                     <i class="fa-solid fa-stop dz-icon-glyph dz-icon-40 dz-blind-glyph dz-blind-glyph-stop dz-glyph-only lcursor"
-                       ng-click="ctrl.switchLight('Stop')" data-i18n="[title]Stop Blinds"></i>
+                       ng-click="ctrl.switchLight('Stop')" title="{{:: 'Stop Blinds' | translate}}"></i>
                 </td>
 
                 <!-- Blinds close button -->
@@ -68,7 +68,7 @@
                          height="40" width="40" data-i18n="[title]Close Blinds">
                     <i class="fa-solid fa-chevron-down dz-icon-glyph dz-icon-40 dz-blind-glyph dz-glyph-only lcursor"
                        ng-class="{'dz-icon--off': ctrl.isBlindsOpen()}"
-                       ng-click="ctrl.switchLight('Close')" data-i18n="[title]Close Blinds"></i>
+                       ng-click="ctrl.switchLight('Close')" title="{{:: 'Close Blinds' | translate}}"></i>
                 </td>
 
                 <!-- Media Player remote icon (img2) -->
