@@ -8381,10 +8381,17 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				CalcMeterPrice(ID, divider, szDateStart, szDateEnd, price);
 				if (price != 0.0f && total_real > 0)
 				{
-					// Spike protection: discard price if implied tariff exceeds max plausible rate
-					constexpr float max_unit_price = 3.0f;  
-					if (std::abs(price) > (static_cast<float>(total_real) / divider) * max_unit_price)
-						price = 0;
+					// Spike protection: discard price if the implied tariff exceeds a plausible
+					// rate. The 3/unit cap is calibrated for energy (kWh) and is meaningless for
+					// gas, water or generic counters, whose tariff per unit is routinely higher,
+					// so it is applied to energy meters only (it was zeroing valid non-energy
+					// prices, #7005). The independent P1/MultiMeter spike check is energy-scoped too.
+					if ((metertype == MTYPE_ENERGY) || (metertype == MTYPE_ENERGY_GENERATED))
+					{
+						constexpr float max_unit_price = 3.0f;
+						if (std::abs(price) > (static_cast<float>(total_real) / divider) * max_unit_price)
+							price = 0;
+					}
 				}
 				else if (total_real <= 0)
 					price = 0;
