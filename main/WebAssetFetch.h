@@ -35,4 +35,11 @@ namespace WebAssetFetch
 
 	// Waits for any running install jobs; call before the database goes away.
 	void Shutdown();
+
+	// Fetch a text resource over http/https, but only when the host resolves to a public
+	// internet address: loopback, RFC1918, link-local, NAT64/6to4-embedded and the other
+	// special-purpose ranges are refused, the resolved address is pinned against rebinding,
+	// and every redirect hop is re-validated the same way. Used by the fetchurl command so
+	// it cannot be abused as a read-SSRF into the local network.
+	bool FetchPublicText(const std::string& szURL, std::string& szContent, std::string& szError);
 } // namespace WebAssetFetch

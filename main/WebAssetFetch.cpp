@@ -1022,6 +1022,24 @@ namespace WebAssetFetch
 		}
 	} // namespace
 
+	bool FetchPublicText(const std::string& szURL, std::string& szContent, std::string& szError)
+	{
+		szError.clear();
+		if (!IsCleanURL(szURL))
+		{
+			szError = "The URL contains invalid characters";
+			return false;
+		}
+		// HttpGet validates the scheme and, per hop, refuses any non-public destination.
+		if (HttpGet(szURL, szContent, szError))
+			return true;
+		// HttpGet's rejection carries asset-installer wording; keep only the reason.
+		const size_t iCut = szError.find(". Assets on your own network");
+		if (iCut != std::string::npos)
+			szError.erase(iCut + 1);
+		return false;
+	}
+
 	bool Install(const std::string& szName, const std::string& szURL, const std::string& szTitle, std::string& szError)
 	{
 		std::lock_guard<std::mutex> l(g_installMutex);

@@ -226,11 +226,17 @@ namespace http
 				root["message"] = "Only http/https URLs are allowed";
 				return;
 			}
+			// This handler is reachable by every authenticated role, including read-only
+			// viewers (the RSS/Calendar dashboard widgets use it), and it returns the whole
+			// response body. Fetch only public internet addresses, with the resolved address
+			// pinned and every redirect hop re-validated, so it can no longer be turned into a
+			// read-SSRF against loopback/RFC1918/link-local services or cloud metadata.
 			std::string sResult;
-			if (!HTTPClient::GET(sUrl, sResult))
+			std::string sFetchError;
+			if (!WebAssetFetch::FetchPublicText(sUrl, sResult, sFetchError))
 			{
 				session.reply_status = reply::bad_request;
-				root["message"] = "Fetch failed";
+				root["message"] = sFetchError.empty() ? "Fetch failed" : sFetchError;
 				return;
 			}
 			root["status"] = "OK";
