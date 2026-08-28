@@ -298,51 +298,25 @@ define(['app'], function (app) {
 			let idx = parseInt(item.idx);
 			let bHandledData = false;
 
-			switch (idx)
-			{
-				case $scope.idP1:
-					bHandledData = $scope.handlePower(item);
-					break;
-				case $scope.idGas:
-					bHandledData = $scope.handleGas(item);
-					break;
-				case $scope.idWater:
-					bHandledData = $scope.handleWater(item);
-					break;
-				case $scope.idSolar:
-					bHandledData = $scope.handleSolar(item);
-					break;
-				case $scope.idBattWatt:
-					bHandledData = $scope.handleBattSetpoint(item);
-					break;
-				case $scope.idBattSoc:
-					bHandledData = $scope.handleBattSoc(item);
-					break;
-				case $scope.idBattVolt:
-     				bHandledData = $scope.handleBattVolt(item);
-     				break;
-				case $scope.idBattEnergyIn:
-					bHandledData = $scope.handleBattEnergyIn(item);
-					break;
-				case $scope.idBattEnergyOut:
-					bHandledData = $scope.handleBattEnergyOut(item);
-					break;
-				case $scope.idTextObj:
-					bHandledData = $scope.handleTextObj(item);
-					break;
-				case $scope.idOutsideTemp:
-					bHandledData = $scope.handleTempObj(item);
-					break;
-				case $scope.idItemH1:
-					bHandledData = $scope.handleItemH1(item);
-					break;
-				case $scope.idItemH2:
-					bHandledData = $scope.handleItemH2(item);
-					break;
-				case $scope.idItemH3:
-					bHandledData = $scope.handleItemH3(item);
-					break;
-			}
+			// One device can fill more than one role - e.g. the same sensor is used
+			// for a built-in role (Solar, a battery value, ...) and also picked for a
+			// custom H1/H2/H3 widget. A switch stopped at the first matching arm, so the
+			// custom widget stayed blank; run every matching handler instead. Unassigned
+			// roles default to -1, which a real device idx never equals.
+			if (idx === $scope.idP1)          bHandledData = $scope.handlePower(item)        || bHandledData;
+			if (idx === $scope.idGas)         bHandledData = $scope.handleGas(item)          || bHandledData;
+			if (idx === $scope.idWater)       bHandledData = $scope.handleWater(item)        || bHandledData;
+			if (idx === $scope.idSolar)       bHandledData = $scope.handleSolar(item)        || bHandledData;
+			if (idx === $scope.idBattWatt)    bHandledData = $scope.handleBattSetpoint(item) || bHandledData;
+			if (idx === $scope.idBattSoc)     bHandledData = $scope.handleBattSoc(item)      || bHandledData;
+			if (idx === $scope.idBattVolt)    bHandledData = $scope.handleBattVolt(item)     || bHandledData;
+			if (idx === $scope.idBattEnergyIn)  bHandledData = $scope.handleBattEnergyIn(item)  || bHandledData;
+			if (idx === $scope.idBattEnergyOut) bHandledData = $scope.handleBattEnergyOut(item) || bHandledData;
+			if (idx === $scope.idTextObj)     bHandledData = $scope.handleTextObj(item)      || bHandledData;
+			if (idx === $scope.idOutsideTemp) bHandledData = $scope.handleTempObj(item)      || bHandledData;
+			if (idx === $scope.idItemH1)      bHandledData = $scope.handleItemH1(item)       || bHandledData;
+			if (idx === $scope.idItemH2)      bHandledData = $scope.handleItemH2(item)       || bHandledData;
+			if (idx === $scope.idItemH3)      bHandledData = $scope.handleItemH3(item)       || bHandledData;
 			
 			if (bHandledData == true) {
 				$scope.UpdateScreen();

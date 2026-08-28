@@ -39,6 +39,7 @@ Version 2026.xxxx
 - Fixed: Dashboard Dynamic, widget settings accepted whole numbers only, so a Gauge or Dial scale could not be given decimal bounds like 3.5 to 4.2; the scale of the dial now also labels its ticks with as many decimals as the scale needs (#6847)
 - Fixed: Dashboard Dynamic, the Barometer widget trend line overflowed the widget after switching tabs, because the sparkline kept the height it was given while the dashboard was hidden (#6967)
 - Fixed: Dashboard Dynamic, the Energy Chart tooltip repeated the chart title (for example 'Last month') in front of a single day's value; it now names the device (#6990)
+- Fixed: Energy Dashboard, a device assigned to a built-in role (Solar, a battery value, ...) and also picked for one of the custom H1/H2/H3 widgets was only shown in the built-in role, leaving the custom widget blank (#7004)
 - Fixed: Events, the event editor and settings menu are now usable on mobile; the script editor resizes with its container and the Automation Wizard popup can scroll on small screens (#6902)
 - Fixed: Events, a slave device switched off by its master now reaches the event system as well; dzVents and Python event scripts kept seeing its old state (#5803)
 - Fixed: EvoHome, HVAC fan mode selector switch commands were silently ignored on x86/x64 builds; they only worked on ARM
