@@ -3364,12 +3364,15 @@ dz-device-icon > img {
 }
 
 /* Device glyphs use the theme's own link blue rather than inheriting the
-   body text colour, which rendered them black. */
-dz-device-icon > .dz-icon-glyph {
+   body text colour, which rendered them black. Floorplan icons are drawn inside
+   an SVG foreignObject instead of a dz-device-icon, so they are listed here too. */
+dz-device-icon > .dz-icon-glyph,
+.DeviceIconGlyph {
     color: #43A4D3;
 }
 
-dz-device-icon > .dz-icon-glyph.dz-icon--off {
+dz-device-icon > .dz-icon-glyph.dz-icon--off,
+.DeviceIconGlyph.dz-icon--off {
     color: #6c6e74;
 }
 

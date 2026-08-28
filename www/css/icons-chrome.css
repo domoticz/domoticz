@@ -291,17 +291,83 @@ dz-icon-picker-modal {
 	padding: 8px;
 }
 
-/* minmax(0, 1fr) rather than 1fr: a bare 1fr is minmax(auto, 1fr), so a long
-   icon name sets a min-content floor on its track and the whole grid grows
-   wider than the pane. Clamping the floor to 0 lets the names ellipsis
-   instead, which keeps the scroll vertical only. */
-.dz-ip-grid {
+/* Chips are shortcuts into the Font Awesome list, so they read as a filter row
+   rather than as buttons: no fill until hover, the accent only once active. */
+.dz-ip-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	padding: 0 2px 8px;
+}
+
+.dz-ip-chip {
+	padding: 2px 9px;
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	border-radius: 10px;
+	background: rgba(0, 0, 0, 0.2);
+	color: rgba(255, 255, 255, 0.75);
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.dz-ip-chip:hover {
+	background: rgba(255, 255, 255, 0.08);
+	color: var(--dz-modal-text, #fff);
+	text-decoration: none;
+}
+
+.dz-ip-chip-sel,
+.dz-ip-chip-sel:hover {
+	border-color: #43A4D3;
+	background: rgba(67, 164, 211, 0.18);
+	color: var(--dz-modal-text, #fff);
+	font-weight: bold;
+}
+
+/* The scroll box holds the groups, not one grid, so a cross-source search keeps
+   its provider headings pinned above their own tiles as it scrolls. */
+.dz-ip-groups {
 	flex: 1 1 auto;
 	min-width: 0;
 	min-height: 220px;
 	max-height: 46vh;
 	overflow-x: hidden;
 	overflow-y: auto;
+}
+
+.dz-ip-group + .dz-ip-group {
+	margin-top: 10px;
+}
+
+.dz-ip-group-head {
+	display: flex;
+	align-items: baseline;
+	gap: 6px;
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	padding: 3px 2px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+	background-color: var(--dz-modal-bg, #11213d);
+}
+
+.dz-ip-group-name {
+	font-weight: bold;
+	text-transform: uppercase;
+	font-size: 10px;
+	letter-spacing: 0.06em;
+}
+
+.dz-ip-group-count {
+	color: rgba(255, 255, 255, 0.55);
+}
+
+/* minmax(0, 1fr) rather than 1fr: a bare 1fr is minmax(auto, 1fr), so a long
+   icon name sets a min-content floor on its track and the whole grid grows
+   wider than the pane. Clamping the floor to 0 lets the names ellipsis
+   instead, which keeps the scroll vertical only. */
+.dz-ip-grid {
+	min-width: 0;
 	display: grid;
 	grid-template-columns: repeat(7, minmax(0, 1fr));
 	gap: 4px;

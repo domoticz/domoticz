@@ -169,18 +169,22 @@ inline bool BackupWebAssetFile(const std::string& szName, std::string& szBackupF
 // Undoes a commit: puts back the backup made by BackupWebAssetFile (or, if there was
 // none, removes whatever CommitWebAssetFile put in that name's place) so a partially
 // failed multi-file commit does not leave a library on a mix of old and new files.
-inline void RestoreWebAssetFile(const std::string& szName, const std::string& szBackupFile)
+// Returns false when the undo itself failed, which leaves the name holding the new
+// file, nothing at all, or only the backup: the caller has to report that, because it
+// is a worse state than the failure that triggered the rollback.
+inline bool RestoreWebAssetFile(const std::string& szName, const std::string& szBackupFile)
 {
 	const std::string szFile = WebAssetFolder() + "/" + szName;
 	if (szBackupFile.empty())
 	{
-		std::remove(szFile.c_str());
-		return;
+		// There was nothing here before, so undoing the commit means removing what it
+		// wrote; the name already being gone is the state we wanted either way.
+		return ((std::remove(szFile.c_str()) == 0) || !file_exist(szFile.c_str()));
 	}
 #ifdef WIN32
-	MoveFileExA(szBackupFile.c_str(), szFile.c_str(), MOVEFILE_REPLACE_EXISTING);
+	return (MoveFileExA(szBackupFile.c_str(), szFile.c_str(), MOVEFILE_REPLACE_EXISTING) != 0);
 #else
-	std::rename(szBackupFile.c_str(), szFile.c_str());
+	return (std::rename(szBackupFile.c_str(), szFile.c_str()) == 0);
 #endif
 }
 

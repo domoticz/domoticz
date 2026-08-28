@@ -24,6 +24,22 @@ define(['app', 'icons/dzIconService'], function (app) {
 
     var SAFE_CLASS_RE = /^[A-Za-z0-9 _-]+$/;
 
+    // Home-automation oriented shortcuts into the one flat alphabetical list Font Awesome is.
+    // Stems only: which of them the installed version actually ships is resolved at runtime.
+    var FA_CATEGORIES = [
+        { id: 'home', label: 'Home', stems: ['house', 'house-chimney', 'door-open', 'door-closed', 'couch', 'bed', 'bath', 'shower', 'toilet', 'kitchen-set', 'stairs', 'warehouse', 'key', 'lock', 'bell', 'fingerprint'] },
+        { id: 'climate', label: 'Climate', stems: ['temperature-half', 'temperature-high', 'temperature-low', 'fire', 'fire-flame-curved', 'snowflake', 'fan', 'wind', 'droplet', 'sun', 'gauge', 'smog'] },
+        { id: 'weather', label: 'Weather', stems: ['cloud', 'cloud-rain', 'cloud-showers-heavy', 'cloud-sun', 'bolt', 'umbrella', 'rainbow', 'moon', 'sun', 'wind', 'snowflake', 'temperature-half'] },
+        { id: 'energy', label: 'Energy', stems: ['plug', 'bolt', 'battery-full', 'battery-half', 'solar-panel', 'charging-station', 'gauge-high', 'lightbulb', 'fire-flame-simple', 'oil-can'] },
+        { id: 'lighting', label: 'Lighting', stems: ['lightbulb', 'circle-half-stroke', 'sun', 'moon', 'star', 'wand-magic-sparkles', 'tv'] },
+        { id: 'av', label: 'Tech / AV', stems: ['tv', 'desktop', 'laptop', 'server', 'hard-drive', 'print', 'mobile-screen', 'tablet-screen-button', 'headphones', 'volume-high', 'music', 'gamepad', 'camera', 'video', 'wifi', 'network-wired', 'satellite-dish', 'robot'] },
+        { id: 'appliances', label: 'Appliances', stems: ['blender', 'mug-hot', 'utensils', 'kitchen-set', 'fire-burner', 'temperature-arrow-up', 'soap', 'jug-detergent', 'shirt', 'sink'] },
+        { id: 'security', label: 'Security', stems: ['shield-halved', 'lock', 'lock-open', 'key', 'bell', 'video', 'camera', 'fingerprint', 'user-shield', 'triangle-exclamation', 'person-through-window'] },
+        { id: 'outdoor', label: 'Outdoor', stems: ['car', 'car-battery', 'charging-station', 'tree', 'seedling', 'faucet', 'faucet-drip', 'water-ladder', 'trash-can', 'dumpster', 'trailer'] },
+        { id: 'people', label: 'People', stems: ['user', 'users', 'baby', 'person-walking', 'child', 'paw', 'dog', 'cat'] },
+        { id: 'status', label: 'Status', stems: ['circle-check', 'circle-xmark', 'triangle-exclamation', 'circle-info', 'circle-question', 'power-off', 'play', 'pause', 'stop', 'arrow-rotate-right'] }
+    ];
+
     var FA_STYLE = 'fa-solid';
     var MAX_TILES = 300;
     var GRID_COLUMNS = 7;
@@ -153,6 +169,9 @@ define(['app', 'icons/dzIconService'], function (app) {
                                     idx: parseInt(item.idx, 10) || 0,
                                     text: item.text || '',
                                     description: item.description || '',
+                                    // Kept so a tile can preview the glyph the resolver will
+                                    // actually draw for a built-in, instead of its PNG.
+                                    FaClass: item.FaClass || '',
                                     src: 'images/' + item.imageSrc + '48_On.png'
                                 };
                             })
@@ -347,6 +366,14 @@ define(['app', 'icons/dzIconService'], function (app) {
         }
 
         function hasGlyphContent(rule) {
+            // Not every icon set is a font. Sets like Iconoir ship no @font-face at all and
+            // draw each icon as an SVG mask, so they declare mask-image and never a codepoint;
+            // requiring content would enumerate nothing for them. Utility classes declare
+            // neither, which is what this test is really filtering out.
+            if (hasMaskImage(rule)) {
+                return true;
+            }
+
             var value = (readProperty(rule, 'content') || '').trim();
 
             if (!value || value === 'none' || value === 'normal') {
@@ -355,6 +382,11 @@ define(['app', 'icons/dzIconService'], function (app) {
 
             // content:"" declares the property without a codepoint.
             return !!value.replace(/^(['"])([\s\S]*)\1$/, '$2').trim();
+        }
+
+        function hasMaskImage(rule) {
+            var value = (readProperty(rule, 'mask-image') || readProperty(rule, '-webkit-mask-image') || '').trim();
+            return !!value && (value !== 'none');
         }
 
         // Libraries differ in where they hang the codepoint: on a lone class (.ri-home-line:before)
@@ -529,20 +561,40 @@ define(['app', 'icons/dzIconService'], function (app) {
                             '</a>' +
                         '</div>' +
                         '<div class="dz-ip-grid-wrap">' +
-                            '<div class="dz-ip-grid">' +
-                                '<a class="dz-ip-tile" ng-repeat="item in $ctrl.results track by item.key"' +
-                                   ' ng-class="{\'dz-ip-tile-sel\': $ctrl.isSelected(item),' +
-                                   ' \'dz-ip-tile-hl\': $index === $ctrl.highlight}"' +
-                                   ' ng-click="$ctrl.pick(item)" ng-dblclick="$ctrl.confirm()" title="{{ item.title }}">' +
-                                    '<span class="dz-ip-tile-icon">' +
-                                        '<i ng-if="item.kind === \'font\'" class="{{ item.cls }}"></i>' +
-                                        '<img ng-if="item.kind === \'img\'" ng-src="{{ item.src }}" alt="">' +
-                                    '</span>' +
-                                    '<span class="dz-ip-tile-name">{{ item.name }}</span>' +
-                                '</a>' +
+                            '<div class="dz-ip-chips" ng-show="$ctrl.chipsVisible">' +
+                                '<a class="dz-ip-chip" ng-repeat="chip in $ctrl.chips track by chip.id"' +
+                                   ' ng-class="{\'dz-ip-chip-sel\': $ctrl.category === chip.id}"' +
+                                   ' ng-click="$ctrl.setCategory(chip.id)">{{ chip.label }}</a>' +
                             '</div>' +
-                            '<div class="dz-ip-note" ng-show="!$ctrl.results.length" data-i18n="No icons found">No icons found</div>' +
-                            '<div class="dz-ip-note" ng-show="$ctrl.truncated" data-i18n="Keep typing to narrow down">Keep typing to narrow down</div>' +
+                            '<div class="dz-ip-groups">' +
+                                '<div class="dz-ip-group" ng-repeat="group in $ctrl.groups track by group.id">' +
+                                    '<div class="dz-ip-group-head" ng-if="group.label">' +
+                                        '<span class="dz-ip-group-name">{{ group.label }}</span>' +
+                                        '<span class="dz-ip-group-count">{{ group.count }}</span>' +
+                                    '</div>' +
+                                    '<div class="dz-ip-grid">' +
+                                        '<a class="dz-ip-tile" ng-repeat="item in group.items track by item.key"' +
+                                           ' ng-class="{\'dz-ip-tile-sel\': $ctrl.isSelected(item),' +
+                                           ' \'dz-ip-tile-hl\': item.flat === $ctrl.highlight}"' +
+                                           ' ng-click="$ctrl.pick(item)" ng-dblclick="$ctrl.confirm()" title="{{ item.title }}">' +
+                                            '<span class="dz-ip-tile-icon">' +
+                                                '<i ng-if="item.cls" class="{{ item.cls }}"></i>' +
+                                                '<img ng-if="!item.cls" ng-src="{{ item.src }}" alt="">' +
+                                            '</span>' +
+                                            '<span class="dz-ip-tile-name">{{ item.name }}</span>' +
+                                        '</a>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="dz-ip-note" ng-show="!$ctrl.results.length && $ctrl.emptyLibrary"' +
+                                 ' data-i18n="The stylesheet for this icon library could not be loaded">' +
+                                'The stylesheet for this icon library could not be loaded</div>' +
+                            '<div class="dz-ip-note" ng-show="!$ctrl.results.length && !$ctrl.emptyLibrary && $ctrl.categoryActive"' +
+                                 ' data-i18n="No icons in this category match your search">' +
+                                'No icons in this category match your search</div>' +
+                            '<div class="dz-ip-note" ng-show="!$ctrl.results.length && !$ctrl.emptyLibrary && !$ctrl.categoryActive"' +
+                                 ' data-i18n="No icons found">No icons found</div>' +
+                            '<div class="dz-ip-note" ng-show="$ctrl.truncated">{{ $ctrl.truncationNote }}</div>' +
                         '</div>' +
                     '</div>' +
                     '<div class="dz-ip-foot">' +
@@ -587,8 +639,8 @@ define(['app', 'icons/dzIconService'], function (app) {
             onSelect: '&',
             onCancel: '&'
         },
-        controller: ['$element', '$scope', '$timeout', '$location', 'dzIconPickerData', 'dzIconService', 'dzIconPickerPreview',
-            function ($element, $scope, $timeout, $location, dzIconPickerData, dzIconService, dzIconPickerPreview) {
+        controller: ['$element', '$scope', '$rootScope', '$timeout', '$location', 'dzIconPickerData', 'dzIconService', 'dzIconPickerPreview',
+            function ($element, $scope, $rootScope, $timeout, $location, dzIconPickerData, dzIconService, dzIconPickerPreview) {
                 var vm = this;
 
                 var iconSet = [];
@@ -598,6 +650,10 @@ define(['app', 'icons/dzIconService'], function (app) {
                 // Keyed by provider, not kept on the source, because a rebuild replaces those
                 // objects and a library whose css never resolves would retry forever.
                 var retried = {};
+                // Providers whose one retry has been and gone without producing a glyph: broken
+                // stylesheet, not an empty library.
+                var exhausted = {};
+                var awaitingLibraries = false;
 
                 vm.$onInit = init;
                 vm.$postLink = postLink;
@@ -606,6 +662,7 @@ define(['app', 'icons/dzIconService'], function (app) {
                 vm.selectSource = selectSource;
                 vm.isSourceDisabled = isSourceDisabled;
                 vm.countLabel = countLabel;
+                vm.setCategory = setCategory;
                 vm.onQueryChange = onQueryChange;
                 vm.pick = pick;
                 vm.isSelected = isSelected;
@@ -623,9 +680,14 @@ define(['app', 'icons/dzIconService'], function (app) {
                 function init() {
                     vm.labels = { close: $.t('Close') };
                     vm.query = '';
+                    vm.category = '';
+                    vm.chips = [];
+                    vm.chipsVisible = false;
                     vm.results = [];
+                    vm.groups = [];
                     vm.matchCount = 0;
                     vm.truncated = false;
+                    vm.truncationNote = '';
                     vm.highlight = -1;
                     vm.sel = readSelection(vm.customImage, vm.icon);
                     vm.offOpen = !!vm.sel.off;
@@ -633,7 +695,7 @@ define(['app', 'icons/dzIconService'], function (app) {
 
                     describe();
                     buildSources();
-                    selectSource(initialSource(), true);
+                    selectSource(initialSource());
 
                     load();
                     $scope.$on(ASSETS_CHANGED, reload);
@@ -657,6 +719,7 @@ define(['app', 'icons/dzIconService'], function (app) {
                 // selection is untouched, only the sources behind it are refetched.
                 function reload() {
                     retried = {};
+                    exhausted = {};
                     load();
                 }
 
@@ -666,6 +729,7 @@ define(['app', 'icons/dzIconService'], function (app) {
                     }
 
                     document.addEventListener('keydown', onDocumentKeydown, true);
+                    window.addEventListener('focus', onWindowFocus);
 
                     $timeout(function () {
                         $element.find('.dz-ip-search').trigger('focus');
@@ -674,6 +738,7 @@ define(['app', 'icons/dzIconService'], function (app) {
 
                 function destroy() {
                     document.removeEventListener('keydown', onDocumentKeydown, true);
+                    window.removeEventListener('focus', onWindowFocus);
                     if (searchTimer) {
                         $timeout.cancel(searchTimer);
                         searchTimer = null;
@@ -684,7 +749,7 @@ define(['app', 'icons/dzIconService'], function (app) {
                     var activeId = vm.active ? vm.active.id : null;
                     buildSources();
                     describe();
-                    selectSource(sourceById(activeId) || initialSource(), true);
+                    selectSource(sourceById(activeId) || initialSource());
                 }
 
                 function buildSources() {
@@ -745,7 +810,76 @@ define(['app', 'icons/dzIconService'], function (app) {
                         });
                     }
 
+                    var searchable = list.filter(isSearchable);
+                    if (searchable.length > 1) {
+                        // Broadest scope first, so the rail reads everything then narrows. Recent
+                        // is deliberately left out of the aggregate: it only ever repeats tiles
+                        // the provider groups below it already carry.
+                        list.unshift({
+                            id: 'all',
+                            kind: 'all',
+                            title: $.t('All icons'),
+                            glyph: 'fa-solid fa-magnifying-glass',
+                            count: searchable.reduce(function (sum, source) {
+                                return sum + (source.count || 0);
+                            }, 0)
+                        });
+                    }
+
                     vm.sources = list;
+                    buildCategories();
+                }
+
+                function isSearchable(source) {
+                    return source.kind === 'image' || source.kind === 'glyph';
+                }
+
+                // Curated stems are only worth a chip where the installed Font Awesome actually
+                // ships them; anything else would render as a blank tile.
+                function buildCategories() {
+                    if (vm.allowGlyphs === false) {
+                        vm.chips = [];
+                        vm.category = '';
+                        return;
+                    }
+
+                    var available = {};
+                    dzIconPickerData.glyphs('fa').forEach(function (name) {
+                        available[name] = true;
+                    });
+
+                    var chips = [];
+                    FA_CATEGORIES.forEach(function (category) {
+                        var names = category.stems.map(function (stem) {
+                            return 'fa-' + stem;
+                        }).filter(function (name) {
+                            return available[name];
+                        });
+
+                        if (names.length) {
+                            chips.push({ id: category.id, label: $.t(category.label), names: names });
+                        }
+                    });
+
+                    vm.chips = chips.length ? [{ id: '', label: $.t('All'), names: null }].concat(chips) : [];
+                    if (!chipById(vm.category)) {
+                        vm.category = '';
+                    }
+                }
+
+                function chipById(id) {
+                    var found = vm.chips.filter(function (chip) {
+                        return chip.id === id;
+                    });
+
+                    return found.length ? found[0] : null;
+                }
+
+                function setCategory(id) {
+                    var chip = chipById(id);
+
+                    vm.category = chip ? chip.id : '';
+                    refresh();
                 }
 
                 function sourceById(id) {
@@ -788,15 +922,14 @@ define(['app', 'icons/dzIconService'], function (app) {
                     return source.kind === 'image' || (source.kind === 'glyph' && source.provider !== vm.sel.provider);
                 }
 
-                function selectSource(source, keepQuery) {
+                // The query survives a source change: it is the one thing the user typed, and
+                // dropping it made looking for the same word in another library a retype.
+                function selectSource(source) {
                     if (!source || isSourceDisabled(source)) {
                         return;
                     }
 
                     vm.active = source;
-                    if (!keepQuery) {
-                        vm.query = '';
-                    }
                     refresh();
                 }
 
@@ -813,40 +946,151 @@ define(['app', 'icons/dzIconService'], function (app) {
                     var source = vm.active;
                     if (!source) {
                         vm.results = [];
+                        vm.groups = [];
                         vm.matchCount = 0;
                         vm.truncated = false;
+                        vm.truncationNote = '';
                         return;
                     }
 
                     var query = (vm.query || '').toLowerCase();
-                    var matched;
+                    var buckets = (source.kind === 'all'
+                        ? vm.sources.filter(isSearchable)
+                        : [source]
+                    ).map(function (member) {
+                        return bucket(member, query);
+                    }).filter(function (entry) {
+                        return entry.matched.length;
+                    });
 
-                    if (source.kind === 'recent') {
-                        matched = source.items.filter(function (item) {
-                            return matchesTile(item, query) && isPickable(item);
-                        });
-                    } else if (source.kind === 'image') {
-                        matched = imageNames(source.uploaded).filter(function (item) {
-                            return !query || item.search.indexOf(query) !== -1;
-                        }).map(imageTile);
-                    } else {
-                        matched = dzIconPickerData.glyphs(source.provider).filter(function (name) {
-                            return !query || name.toLowerCase().indexOf(query) !== -1;
-                        });
+                    // A single scope needs no heading; the rail already says which one it is.
+                    if (source.kind !== 'all' && buckets.length) {
+                        buckets[0].label = '';
                     }
 
-                    vm.matchCount = matched.length;
-                    vm.truncated = matched.length > MAX_TILES;
+                    vm.matchCount = buckets.reduce(function (sum, entry) {
+                        return sum + entry.matched.length;
+                    }, 0);
+                    vm.chipsVisible = source.kind === 'glyph' && source.provider === 'fa' && !!vm.chips.length;
+                    vm.categoryActive = vm.chipsVisible && !!vm.category;
+                    vm.emptyLibrary = source.kind === 'glyph' && !!exhausted[source.provider];
 
-                    var capped = vm.truncated ? matched.slice(0, MAX_TILES) : matched;
-                    vm.results = source.kind === 'glyph'
-                        ? capped.map(function (name) {
-                            return glyphTile(source, name);
-                        })
-                        : capped;
+                    materialise(buckets);
 
                     vm.highlight = -1;
                     retryLibrary(source);
+                }
+
+                function bucket(source, query) {
+                    return {
+                        id: source.id,
+                        label: source.title,
+                        matched: matchesOf(source, query),
+                        tile: tileMaker(source)
+                    };
+                }
+
+                function matchesOf(source, query) {
+                    if (!offersPickable(source)) {
+                        return [];
+                    }
+                    if (source.kind === 'recent') {
+                        return source.items.filter(function (item) {
+                            return matchesTile(item, query) && isPickable(item);
+                        });
+                    }
+                    if (source.kind === 'image') {
+                        return imageNames(source.uploaded).filter(function (entry) {
+                            return !query || entry.search.indexOf(query) !== -1;
+                        });
+                    }
+
+                    return glyphPool(source).filter(function (name) {
+                        return !query || name.toLowerCase().indexOf(query) !== -1;
+                    });
+                }
+
+                // A category narrows the pool the query then searches, rather than replacing it,
+                // so the chip and the search box compose the way the rail and the search box do.
+                function glyphPool(source) {
+                    var chip = source.provider === 'fa' && vm.category ? chipById(vm.category) : null;
+
+                    return (chip && chip.names) || dzIconPickerData.glyphs(source.provider);
+                }
+
+                // Pickability in the off slot is a property of the provider, so one probe per
+                // source keeps a five-thousand-name filter from running for nothing.
+                function offersPickable(source) {
+                    if (source.kind === 'recent') {
+                        return true;
+                    }
+
+                    return isPickable(source.kind === 'image'
+                        ? { kind: 'img' }
+                        : { kind: 'font', provider: source.provider });
+                }
+
+                function tileMaker(source) {
+                    if (source.kind === 'image') {
+                        return imageTile;
+                    }
+                    if (source.kind === 'recent') {
+                        return function (item) {
+                            return item;
+                        };
+                    }
+
+                    return function (name) {
+                        return glyphTile(source, name);
+                    };
+                }
+
+                // Every bucket gets an equal share of the cap, so an aggregate search cannot be
+                // filled entirely by whichever provider comes first. Shares are handed out
+                // smallest bucket first: one that wants less than its share releases the rest to
+                // the bigger ones instead of leaving the cap unspent.
+                function allot(buckets) {
+                    var remaining = MAX_TILES;
+                    var pending = buckets.length;
+
+                    buckets.slice().sort(function (a, b) {
+                        return a.matched.length - b.matched.length;
+                    }).forEach(function (entry) {
+                        entry.take = Math.min(entry.matched.length, Math.ceil(remaining / pending));
+                        remaining -= entry.take;
+                        pending -= 1;
+                    });
+                }
+
+                function materialise(buckets) {
+                    var results = [];
+
+                    allot(buckets);
+
+                    vm.groups = buckets.map(function (entry) {
+                        var items = entry.matched.slice(0, entry.take).map(function (candidate) {
+                            return entry.tile(candidate);
+                        });
+                        items.forEach(function (item) {
+                            // Keyboard navigation runs over the flat order, which the groups render in.
+                            item.flat = results.length;
+                            results.push(item);
+                        });
+
+                        return {
+                            id: entry.id,
+                            label: entry.label,
+                            count: formatCount(entry.matched.length),
+                            items: items
+                        };
+                    });
+
+                    vm.results = results;
+                    vm.truncated = vm.matchCount > results.length;
+                    vm.truncationNote = vm.truncated
+                        ? $.t('Showing __shown__ of __total__ - keep typing to narrow down',
+                            { shown: results.length, total: vm.matchCount })
+                        : '';
                 }
 
                 function retryLibrary(source) {
@@ -858,6 +1102,10 @@ define(['app', 'icons/dzIconService'], function (app) {
                     dzIconPickerData.ensureStylesheet(source.css).then(function (added) {
                         if (added) {
                             dzIconPickerData.forgetGlyphs(source.provider);
+                            // The one retry has fired. Still nothing to enumerate means the
+                            // stylesheet never loaded, which is a different dead end from a
+                            // query that matched nothing, and has to read as one.
+                            exhausted[source.provider] = !dzIconPickerData.glyphs(source.provider).length;
                             rebuild();
                         }
                     });
@@ -878,6 +1126,12 @@ define(['app', 'icons/dzIconService'], function (app) {
                     });
                 }
 
+                // Mirrors dzIconService's own gate, so a tile can never promise something the
+                // resolver would not draw.
+                function glyphStyle() {
+                    return !!($rootScope.config && $rootScope.config.IconStyle == 1);
+                }
+
                 function imageTile(entry) {
                     var item = entry.item;
 
@@ -886,6 +1140,11 @@ define(['app', 'icons/dzIconService'], function (app) {
                         kind: 'img',
                         idx: item.idx,
                         src: item.src,
+                        // A tile shows what picking it will actually produce, which depends on
+                        // Settings > Icon style: the glyph style stands the FaClass from
+                        // switch_icons.txt in for a built-in, the classic style keeps the PNG.
+                        // kind stays 'img' either way — the selection is still a CustomImage.
+                        cls: glyphStyle() ? (item.FaClass || '') : '',
                         name: item.text || item.description || ('#' + item.idx),
                         title: item.description || item.text
                     };
@@ -999,7 +1258,7 @@ define(['app', 'icons/dzIconService'], function (app) {
                     vm.slot = slot;
                     if (slot === 'off') {
                         vm.offOpen = true;
-                        selectSource(sourceById(vm.sel.provider === 'fa' ? 'fa' : 'lib-' + vm.sel.provider) || vm.active, true);
+                        selectSource(sourceById(vm.sel.provider === 'fa' ? 'fa' : 'lib-' + vm.sel.provider) || vm.active);
                     }
                     refresh();
                 }
@@ -1054,7 +1313,23 @@ define(['app', 'icons/dzIconService'], function (app) {
                     vm.onCancel();
                 }
 
+                // Custom Icons opens beside the picker rather than in place of it: installing a
+                // library is a detour, and routing there threw away the selection being made.
                 function addLibrary() {
+                    if (window.open('#/CustomIcons', '_blank')) {
+                        awaitingLibraries = true;
+                        return;
+                    }
+
+                    // Popup blocked, so leaving is the only way there. Say what it costs first.
+                    bootbox.confirm($.t('Adding an icon library leaves this dialog and discards the icon you picked. Continue?'), function (result) {
+                        if (result) {
+                            $scope.$evalAsync(leaveForLibraries);
+                        }
+                    });
+                }
+
+                function leaveForLibraries() {
                     // The dialogs jQuery UI parked on <body> outlive the route change otherwise.
                     $('.ui-dialog-content:visible').each(function () {
                         try {
@@ -1066,6 +1341,19 @@ define(['app', 'icons/dzIconService'], function (app) {
 
                     vm.onCancel();
                     $location.path('/CustomIcons');
+                }
+
+                // A library installed in the other tab broadcasts nothing into this one, so coming
+                // back is the cue to refetch. Same path an in-tab install takes.
+                function onWindowFocus() {
+                    if (!awaitingLibraries) {
+                        return;
+                    }
+
+                    awaitingLibraries = false;
+                    $scope.$evalAsync(function () {
+                        $rootScope.$broadcast(ASSETS_CHANGED);
+                    });
                 }
 
                 function onBackdrop(event) {
