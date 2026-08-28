@@ -418,8 +418,9 @@ define(['app', 'icons/dzIconService'], function (app) {
                 return $q.resolve(false);
             }
 
-            if (!findLink(href)) {
-                var link = document.createElement('link');
+            var link = findLink(href);
+            if (!link) {
+                link = document.createElement('link');
                 link.rel = 'stylesheet';
                 link.href = href;
                 document.getElementsByTagName('head')[0].appendChild(link);
@@ -427,11 +428,34 @@ define(['app', 'icons/dzIconService'], function (app) {
                 injectedLinks[href] = link;
             }
 
-            // Resolving true means "enumerate again": a link that was already there can still be
-            // parsing, which is what a library installed moments ago looks like.
-            return $timeout(angular.noop, 600).then(function () {
-                return true;
-            });
+            // Resolve once the stylesheet has actually parsed (its rules become readable),
+            // not after a fixed delay: a large or slowly-served icon library can take well
+            // over half a second, and giving up early made it look permanently empty. Poll
+            // for readiness up to a generous cap; a sheet that never parses (missing file,
+            // load error) resolves false so the caller can report it as a load failure.
+            var deferred = $q.defer();
+            var settled = false;
+            function settle(value) { if (!settled) { settled = true; deferred.resolve(value); } }
+            function sheetReady() {
+                try {
+                    // Same-origin sheets only, which the icon libraries are; a throw or an
+                    // empty rule list means it has not finished parsing yet.
+                    var sheet = link.sheet;
+                    return !!(sheet && sheet.cssRules && sheet.cssRules.length);
+                } catch (e) {
+                    return false;
+                }
+            }
+            link.addEventListener('error', function () { settle(false); });
+            var waited = 0, step = 100, cap = 6000;
+            (function poll() {
+                if (settled) { return; }
+                if (sheetReady()) { settle(true); return; }
+                if (waited >= cap) { settle(false); return; }
+                waited += step;
+                $timeout(poll, step);
+            })();
+            return deferred.promise;
         }
 
         function findLink(href) {
