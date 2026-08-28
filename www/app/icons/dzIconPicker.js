@@ -1093,8 +1093,28 @@ define(['app', 'icons/dzIconService'], function (app) {
                         : '';
                 }
 
+                // "All icons" has no provider of its own, so a library that is still loading has
+                // to be retried through the member source it belongs to. Retrying only the
+                // selected source would leave that library missing from the combined results
+                // until the user went and picked it on its own.
                 function retryLibrary(source) {
-                    if (source.kind !== 'glyph' || source.provider === 'fa' || vm.matchCount || retried[source.provider]) {
+                    if (source.kind === 'all') {
+                        vm.sources.filter(isSearchable).forEach(retryOne);
+                        return;
+                    }
+
+                    retryOne(source);
+                }
+
+                function retryOne(source) {
+                    if (source.kind !== 'glyph' || source.provider === 'fa' || retried[source.provider]) {
+                        return;
+                    }
+                    // Whether the provider enumerated anything is the signal to retry on, not
+                    // whether the query matched: in the aggregate view another library having
+                    // matched says nothing about this one, and a query that matches none of a
+                    // loaded library's names is not a load failure.
+                    if (dzIconPickerData.glyphs(source.provider).length) {
                         return;
                     }
 

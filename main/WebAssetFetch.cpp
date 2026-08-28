@@ -995,6 +995,31 @@ namespace WebAssetFetch
 				return false;
 			return ((result[0][0] == szURL) && (result[0][1] == szCompanions));
 		}
+
+		// The row is written before it is verified, and each safe_query autocommits, so a
+		// failed verification has to undo the row as well as the files. Leaving it behind
+		// would point a later refresh or delete at a file set that was just rolled back:
+		// new metadata owning old files on an update, or metadata for files that no longer
+		// exist on a fresh install.
+		bool RestoreMetadata(const std::string& szName, const std::vector<std::vector<std::string>>& before)
+		{
+			if (before.empty())
+			{
+				// Nothing was there beforehand, so the row this install added has to go.
+				m_sql.safe_query("DELETE FROM WebAssets WHERE (Name=='%q')", szName.c_str());
+				return m_sql.safe_query("SELECT ID FROM WebAssets WHERE (Name=='%q')", szName.c_str()).empty();
+			}
+
+			const int iID = atoi(before[0][0].c_str());
+			// LastUpdate goes back too: a refresh that was rolled back must not leave the
+			// library reading as though it had just been updated.
+			m_sql.safe_query("UPDATE WebAssets SET SourceURL='%q', Companions='%q', Title='%q', LastUpdate='%q' WHERE (ID==%d)", before[0][1].c_str(),
+					 before[0][2].c_str(), before[0][3].c_str(), before[0][4].c_str(), iID);
+
+			auto result = m_sql.safe_query("SELECT SourceURL, Companions, Title, LastUpdate FROM WebAssets WHERE (ID==%d)", iID);
+			return (!result.empty() && (result[0][0] == before[0][1]) && (result[0][1] == before[0][2]) && (result[0][2] == before[0][3])
+				&& (result[0][3] == before[0][4]));
+		}
 	} // namespace
 
 	bool Install(const std::string& szName, const std::string& szURL, const std::string& szTitle, std::string& szError)
@@ -1079,7 +1104,9 @@ namespace WebAssetFetch
 		}
 
 		const std::vector<std::string> previous = LoadCompanions(szName);
-		auto existing = m_sql.safe_query("SELECT ID FROM WebAssets WHERE (Name=='%q')", szName.c_str());
+		// Every column the write below touches is read first, so a failed verification can put
+		// the row back exactly as it was rather than only undoing the files.
+		auto existing = m_sql.safe_query("SELECT ID, SourceURL, Companions, Title, LastUpdate FROM WebAssets WHERE (Name=='%q')", szName.c_str());
 		const bool bIsUpdate = !existing.empty();
 
 		// Every generated companion name is checked against files owned by some other
@@ -1201,6 +1228,11 @@ namespace WebAssetFetch
 			_log.Log(LOG_ERROR, "%s: could not record metadata for '%s', rolling the files back", LOGTAG, szName.c_str());
 			RollBackCommitted(committed, unrestored);
 			szError = "Could not record " + szName;
+			if (!RestoreMetadata(szName, existing))
+			{
+				_log.Log(LOG_ERROR, "%s: could not roll back the metadata for '%s'", LOGTAG, szName.c_str());
+				szError += ", and its metadata could not be rolled back";
+			}
 			ReportUnrestored(unrestored, szError);
 			return false;
 		}
