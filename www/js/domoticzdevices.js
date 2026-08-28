@@ -484,8 +484,7 @@ function Slider(event) {
         curLevel = parseInt(oSliderHandle.getAttribute("level"));
         maxLevel = parseInt(oSliderHandle.getAttribute("maxlevel"));
         newLevel = Math.round(maxLevel * result);
-        var handleWidth = parseInt(oSliderHandle.getAttribute("width"));
-        oSliderHandle.setAttribute("x", (backWidth * (newLevel / maxLevel)) - (handleWidth / 2));
+        oSliderHandle.setAttribute("cx", backWidth * (newLevel / maxLevel));
         oSlider.setAttribute("width", (backWidth * (newLevel / maxLevel)));
     };
     this.Click = function (event) {
@@ -725,7 +724,7 @@ function Device(item) {
                 var maxSpan = getMaxSpanWidth(oText);
                 el = makeSVGnode('g', { id: this.uniquename + "_Tile", 'class': 'DeviceTile', style: (maxSpan == 0) ? 'display:none' : 'display:inline' }, '');
                 var offset = (Device.iconSize / 2) - (maxSpan / 2) - Device.elementPadding;
-                el.appendChild(makeSVGnode('rect', { x: offset + 2, y: Device.iconSize - (Device.elementPadding * 0.5) + 2, rx: Device.elementPadding, ry: Device.elementPadding, width: maxSpan + (Device.elementPadding * 2), height: oText.childNodes.length * Device.elementPadding * 3, 'stroke-width': '0', fill: 'black', opacity: "0.5" }, ''));
+                el.appendChild(makeSVGnode('rect', { x: offset + 2, y: Device.iconSize - (Device.elementPadding * 0.5) + 2, rx: Device.elementPadding, ry: Device.elementPadding, width: maxSpan + (Device.elementPadding * 2), height: oText.childNodes.length * Device.elementPadding * 3, 'stroke-width': '0', style: 'fill:var(--dz-floorplan-popup-shadow, black)', opacity: "0.5" }, ''));
                 el.appendChild(makeSVGnode('rect', { 'class': 'header', x: offset, y: Device.iconSize - (Device.elementPadding * 0.5), rx: Device.elementPadding, ry: Device.elementPadding, width: maxSpan + (Device.elementPadding * 2), height: oText.childNodes.length * Device.elementPadding * 3, style: 'fill:' + nbackcolor }, ''));
                 el.appendChild(oText);
             } else {
@@ -809,8 +808,8 @@ function Device(item) {
             } else {
                 el = makeSVGnode('g', { 'class': 'DeviceDetails', id: this.uniquename + '_Detail', transform: 'translate(-' + Device.elementPadding + ',-' + Device.elementPadding * 6 + ')', width: this.width, height: this.height, direction: 'right', style: 'display:' + showme + '; -webkit-user-select: none;', onmouseleave: "$('.DeviceDetails').css('display', 'none');", 'pointer-events': 'none' }, '');
             }
-            el.appendChild(makeSVGnode('rect', { id: "shadow", transform: "translate(2,2)", rx: Device.elementPadding, ry: Device.elementPadding, width: this.width, height: (el.getAttribute('expanded') != "true") ? this.height : this.height + (Device.elementPadding * 6), 'stroke-width': '0', fill: 'black', opacity: "0.3" }, ''));
-            el.appendChild(makeSVGnode('rect', { 'class': 'popup', rx: Device.elementPadding, ry: Device.elementPadding, width: this.width, height: (el.getAttribute('expanded') != "true") ? this.height : this.height + (Device.elementPadding * 6), stroke: 'gray', 'stroke-width': '0.25', fill: 'url(#PopupGradient)', 'pointer-events': 'all' }, ''));
+            el.appendChild(makeSVGnode('rect', { id: "shadow", transform: "translate(2,2)", rx: Device.elementPadding, ry: Device.elementPadding, width: this.width, height: (el.getAttribute('expanded') != "true") ? this.height : this.height + (Device.elementPadding * 6), 'stroke-width': '0', style: 'fill:var(--dz-floorplan-popup-shadow, black)', opacity: "0.3" }, ''));
+            el.appendChild(makeSVGnode('rect', { 'class': 'popup', rx: Device.elementPadding, ry: Device.elementPadding, width: this.width, height: (el.getAttribute('expanded') != "true") ? this.height : this.height + (Device.elementPadding * 6), 'stroke-width': '0.25', fill: 'url(#PopupGradient)', style: 'stroke:var(--dz-floorplan-popup-border, gray)', 'pointer-events': 'all' }, ''));
             el.appendChild(makeSVGnode('rect', {
                 'class': 'header', x: Device.elementPadding, y: Device.elementPadding, rx: Device.elementPadding, ry: Device.elementPadding,
                 width: (this.width - (Device.elementPadding * 2)), height: Device.elementPadding * 4, style: 'fill:' + nbackcolor
@@ -840,9 +839,9 @@ function Device(item) {
                 this.drawCustomStatus(gStatusGroup);
             } else if (this.haveDimmer === true) {
                 gStatusGroup.appendChild(makeSVGnode('text', { id: "status", x: 0, y: Device.elementPadding * 2, 'font-weight': 'bold', 'font-size': '90%' }, TranslateStatus(this.status)));
-                gStatusGroup.appendChild(makeSVGnode('rect', { id: "sliderback", 'class': "SliderBack", x: 0, y: Device.elementPadding * 3, width: Device.elementPadding * 35, height: Device.elementPadding * 2, rx: Device.elementPadding, ry: Device.elementPadding, fill: 'url(#SliderImage)', stroke: 'black', 'stroke-width': '0.5', 'pointer-events': 'all' }, '', $.t('Adjust level')));
-                gStatusGroup.appendChild(makeSVGnode('rect', { id: "slider", 'class': "Slider", x: 0, y: Device.elementPadding * 3, width: (Device.elementPadding * 35) * (this.level / this.levelMax), height: Device.elementPadding * 2, rx: Device.elementPadding, ry: Device.elementPadding, fill: 'url(#SliderGradient)', stroke: 'black', 'stroke-width': '0.5', 'pointer-events': 'all' }, '', $.t('Adjust level')));
-                gStatusGroup.appendChild(makeSVGnode('image', { id: "sliderhandle", 'class': "SliderHandle", x: ((Device.elementPadding * 35) * (this.level / this.levelMax)) - (Device.elementPadding * 2), y: Device.elementPadding * 2, level: this.level, maxlevel: this.levelMax, devindex: this.index, 'xlink:href': 'images/handle.png', width: Device.elementPadding * 4, height: Device.elementPadding * 4, 'pointer-events': 'all', onmouseover: "cursorhand()", onmouseout: "cursordefault()" }, '', $.t('Slide to adjust level')));
+                gStatusGroup.appendChild(makeSVGnode('rect', { id: "sliderback", 'class': "SliderBack", x: 0, y: Device.elementPadding * 3, width: Device.elementPadding * 35, height: Device.elementPadding * 2, rx: Device.elementPadding, ry: Device.elementPadding, fill: 'url(#SliderImage)', 'stroke-width': '0.5', style: 'stroke:var(--dz-floorplan-slider-border, black)', 'pointer-events': 'all' }, '', $.t('Adjust level')));
+                gStatusGroup.appendChild(makeSVGnode('rect', { id: "slider", 'class': "Slider", x: 0, y: Device.elementPadding * 3, width: (Device.elementPadding * 35) * (this.level / this.levelMax), height: Device.elementPadding * 2, rx: Device.elementPadding, ry: Device.elementPadding, fill: 'url(#SliderGradient)', 'stroke-width': '0.5', style: 'stroke:var(--dz-floorplan-slider-border, black)', 'pointer-events': 'all' }, '', $.t('Adjust level')));
+                gStatusGroup.appendChild(makeSVGnode('circle', { id: "sliderhandle", 'class': "SliderHandle", cx: (Device.elementPadding * 35) * (this.level / this.levelMax), cy: Device.elementPadding * 4, r: Device.elementPadding * 2, level: this.level, maxlevel: this.levelMax, devindex: this.index, style: 'fill:var(--dz-floorplan-slider-handle, #dcdcdc); stroke:var(--dz-floorplan-slider-border, #808080); stroke-width:0.5', 'pointer-events': 'all', onmouseover: "cursorhand()", onmouseout: "cursordefault()" }, '', $.t('Slide to adjust level')));
             } else {
                 if (this.hasHTMLContent) {
                     var foWidth = this.width - iOffset - Device.elementPadding * 2;
