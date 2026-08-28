@@ -138,9 +138,9 @@
         <!-- House card -->
         <div class="dd-stat-card" ng-if="ctrl.widgetDef.config.showHouse !== false && ctrl.house" ng-class="{'dd-stat-card--timeout': ctrl.house.timeout}">
             <div class="dd-stat-label">{{'House' | translate}}</div>
-            <a class="dd-stat-link" ng-href="#/Devices/{{ctrl.ids.p1}}/Log">
-                <div class="dd-stat-value dd-energy-house"><i class="fa-solid fa-house"></i> {{ctrl.house.watt}} W</div>
-            </a>
+            <!-- No log link: house consumption is a computed figure with no device of its own,
+                 and linking to the P1 device showed the grid value, which is a different number. -->
+            <div class="dd-stat-value dd-energy-house"><i class="fa-solid fa-house"></i> {{ctrl.house.watt}} W</div>
             <div class="dd-stat-sub">{{'Today' | translate | lowercase}}: {{ctrl.house.today | number:1}} kWh</div>
         </div>
 
