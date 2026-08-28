@@ -138,9 +138,13 @@ define(function() {
     }
 
     function trendIconHtml(trend, isGeneration) {
+        // Colour matches the meaning: generation up = green (more), down = red;
+        // usage up = red (more), down = blue (less); no change = grey. Without a
+        // colour the glyph inherits the link/row colour and is near-invisible on
+        // the light report rows.
         var icons = isGeneration
-            ? { up: 'fa-solid fa-arrow-trend-up', down: 'fa-solid fa-arrow-trend-down', equal: 'fa-solid fa-minus' }
-            : { up: 'fa-solid fa-arrow-up', down: 'fa-solid fa-arrow-down', equal: 'fa-solid fa-minus' };
+            ? { up: 'fa-solid fa-arrow-trend-up dz-act-add', down: 'fa-solid fa-arrow-trend-down dz-act-danger', equal: 'fa-solid fa-minus dz-trend-flat' }
+            : { up: 'fa-solid fa-arrow-up dz-trend-up', down: 'fa-solid fa-arrow-down dz-trend-down', equal: 'fa-solid fa-minus dz-trend-flat' };
 
         return icons[trend] ? '<i class="' + icons[trend] + ' dz-chrome-icon"></i>' : '';
     }

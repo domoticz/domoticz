@@ -427,15 +427,7 @@ define(['app', 'livesocket'], function(app) {
                     return value;
                 }
 
-                if (value === 255) {
-                    return '-'
-                }
-
-                var className = value < 10 ? 'empty' : value < 40 ? 'half' : 'full';
-                var width = Math.ceil(value * 14 / 100);
-                var title = $.t('Battery level') + ': ' + value + '%';
-
-                return '<div class="battery ' + className + '" style="width: ' + width + 'px" title="' + title + '"></div>';
+                return batteryLevelHtml(value);
             }
 
             function renderBatteryLevelTitle() {

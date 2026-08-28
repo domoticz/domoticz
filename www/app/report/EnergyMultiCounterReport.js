@@ -517,7 +517,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                             return row.label || '';
                         }
                         var date = new Date(data);
-                        var link = '<a href="#/Devices/' + vm.device.idx + '/Report/' + vm.selectedYear + '/' + (date.getUTCMonth() + 1) + '"><i class="fa-solid fa-chevron-right dz-chrome-icon"></i></a>';
+                        var link = '<a href="#/Devices/' + vm.device.idx + '/Report/' + vm.selectedYear + '/' + (date.getUTCMonth() + 1) + '"><i class="fa-solid fa-chevron-right dz-chrome-icon dz-act-edit"></i></a>';
                         return dateFormat(data, 'UTC:mm. mmmm') + ' ' + link;
                     }
                 });

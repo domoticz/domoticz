@@ -137,6 +137,18 @@ function makeSVGiconnode(src, cls, size, attrs, title) {
     return makeSVGglyphnode(cls, size, attrs, title);
 }
 
+// Chrome affordances on the popup (webcam, expand twisty, favourite star) are not device
+// artwork, so they carry a fixed Font Awesome class and the dz-chrome-icon colour rather
+// than going through the icon service.
+function makeSVGglyph(attrs, faClass, title) {
+    var fo = makeSVGnode('foreignObject', attrs, '', title);
+    var i = document.createElementNS('http://www.w3.org/1999/xhtml', 'i');
+    i.className = faClass + ' dz-chrome-icon';
+    i.style.cssText = 'font-size:16px;line-height:16px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;';
+    fo.appendChild(i);
+    return fo;
+}
+
 function makeSVGmultiline(attrs, text, title, maxX, minY, incY, separator) {
     // no wrap parameters
     if ((typeof maxX == 'undefined') || (typeof minY == 'undefined') || (typeof incY == 'undefined')) {
@@ -804,7 +816,7 @@ function Device(item) {
                 width: (this.width - (Device.elementPadding * 2)), height: Device.elementPadding * 4, style: 'fill:' + nbackcolor
             }, ''));
             if (this.haveCamera == true) {
-                el.appendChild(makeSVGnode('image', { id: "webcam", 'xlink:href': 'images/webcam.png', width: 16, height: 16, x: (this.width - (Device.elementPadding * 2) - 16), y: (Device.elementPadding * 3) - 8, onclick: this.WebcamLink, onmouseover: "cursorhand();", onmouseout: "cursordefault();", 'pointer-events': 'all' }, '', $.t('Stream Video')));
+                el.appendChild(makeSVGglyph({ id: "webcam", width: 16, height: 16, x: (this.width - (Device.elementPadding * 2) - 16), y: (Device.elementPadding * 3) - 8, onclick: this.WebcamLink, onmouseover: "cursorhand();", onmouseout: "cursordefault();", 'pointer-events': 'all' }, 'fa-solid fa-video', $.t('Stream Video')));
             }
             el.appendChild(makeSVGnode('text', { id: "name", x: Device.elementPadding * 2, y: Device.elementPadding * 4, 'text-anchor': 'start' }, this.name));
             el.appendChild(makeSVGnode('text', { id: "bigtext", x: (this.width - (Device.elementPadding * 2)), y: Device.elementPadding * 4, 'text-anchor': 'end', 'font-weight': 'bold' }, $.t(this.data)));
@@ -919,7 +931,7 @@ function Device(item) {
                 if (bVisible == true) {
                     twistyRotate = " rotate(180,8,8)";
                 }
-                parent.appendChild(makeSVGnode('image', { id: "twisty", 'xlink:href': 'images/expand16.png', width: 16, height: 16, transform: 'translate(' + iOffset + ',' + (this.height - Device.elementPadding - 16) + ')' + twistyRotate, onclick: "Device.popupExpand('" + this.uniquename + "');", onmouseover: "this.style.cursor = 'n-resize';", onmouseout: "cursordefault()", 'pointer-events': 'all' }, '', $.t('Details display')));
+                parent.appendChild(makeSVGglyph({ id: "twisty", width: 16, height: 16, transform: 'translate(' + iOffset + ',' + (this.height - Device.elementPadding - 16) + ')' + twistyRotate, onclick: "Device.popupExpand('" + this.uniquename + "');", onmouseover: "this.style.cursor = 'n-resize';", onmouseout: "cursordefault()", 'pointer-events': 'all' }, 'fa-solid fa-chevron-up', $.t('Details display')));
                 el = makeSVGnode('g', { id: "detailsgroup", transform: 'translate(0,' + Device.elementPadding * 15 + ')', style: bVisible ? 'display:inline' : 'display:none' }, '');
                 iOffset = ((sDirection == 'right') ? ((this.image2 == '') ? Device.iconSize + (Device.elementPadding * 2) : (Device.iconSize * 2 + Device.elementPadding * 3)) : Device.elementPadding * 2);
                 gText = makeSVGnode('text', { id: "type", x: iOffset, y: Device.elementPadding, 'font-size': '80%', 'font-style': 'italic' }, '');
@@ -934,9 +946,9 @@ function Device(item) {
                     gText.appendChild(makeSVGnode('tspan', { id: "typedetail3", 'font-size': '80%' }, ', ' + this.switchType));
                 }
                 if (window.my_config.userrights == 2) {
-                    el.appendChild(makeSVGnode('image', { id: "favorite", x: Device.elementPadding, y: Device.elementPadding * 2, 'xlink:href': (this.favorite == 1) ? 'images/favorite.png' : 'images/nofavorite.png', onclick: (this.favorite == 1) ? "Device.MakeFavorite(" + this.index + ",0);" : "Device.MakeFavorite(" + this.index + ",1);", width: '16', height: '16', onmouseover: "cursorhand()", onmouseout: "cursordefault()", 'pointer-events': 'all' }, '', $.t('Toggle dashboard display')));
+                    el.appendChild(makeSVGglyph({ id: "favorite", x: Device.elementPadding, y: Device.elementPadding * 2, onclick: (this.favorite == 1) ? "Device.MakeFavorite(" + this.index + ",0);" : "Device.MakeFavorite(" + this.index + ",1);", width: '16', height: '16', onmouseover: "cursorhand()", onmouseout: "cursordefault()", 'pointer-events': 'all' }, (this.favorite == 1) ? 'fa-solid fa-star' : 'fa-regular fa-star', $.t('Toggle dashboard display')));
                 } else {
-                    el.appendChild(makeSVGnode('image', { id: "favorite", x: Device.elementPadding, y: Device.elementPadding * 2, 'xlink:href': (this.favorite == 1) ? 'images/favorite.png' : 'images/nofavorite.png', width: '16', height: '16' }, '', $.t('Favorite')));
+                    el.appendChild(makeSVGglyph({ id: "favorite", x: Device.elementPadding, y: Device.elementPadding * 2, width: '16', height: '16' }, (this.favorite == 1) ? 'fa-solid fa-star' : 'fa-regular fa-star', $.t('Favorite')));
                 }
                 var iLength = 0;
                 iOffset = Device.elementPadding * 5;

@@ -91,10 +91,7 @@ define(['app'], function (app) {
 						// Battery cell
 						var tdBattery = $('<td align="center"></td>');
 						if (item.Battery !== undefined && item.Battery !== null) {
-							var batPct = item.Battery;
-							var batClass = batPct < 10 ? 'empty' : batPct < 40 ? 'half' : 'full';
-							var batWidth = Math.ceil(batPct * 14 / 100);
-							tdBattery.append($('<div></div>').attr({ class: 'battery ' + batClass, title: $.t('Battery level') + ': ' + batPct + '%' }).css('width', batWidth + 'px'));
+							tdBattery.append(batteryLevelHtml(item.Battery));
 						}
 
 						// RSSI cell (dBm) — Thread RSSI typically -100 to -30 dBm

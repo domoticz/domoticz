@@ -396,11 +396,11 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                         if (vm.data && vm.data.customStartDate) {
                             var link = '<a href="#/Devices/' + vm.device.idx + '/Report/'
                                      + 'custom-' + vm.data.customStartDate + '/' + (row.periodIndex || '')
-                                     + '"><i class="fa-solid fa-chevron-right dz-chrome-icon"></i></a>';
+                                     + '"><i class="fa-solid fa-chevron-right dz-chrome-icon dz-act-edit"></i></a>';
                             return (row.label || '') + ' ' + link;
                         }
                         var date = new Date(data);
-                        var link = '<a href="#/Devices/' + vm.device.idx + '/Report/' + vm.selectedYear + '/' + (date.getUTCMonth() + 1) + '"><i class="fa-solid fa-chevron-right dz-chrome-icon"></i></a>';
+                        var link = '<a href="#/Devices/' + vm.device.idx + '/Report/' + vm.selectedYear + '/' + (date.getUTCMonth() + 1) + '"><i class="fa-solid fa-chevron-right dz-chrome-icon dz-act-edit"></i></a>';
                         return dateFormat(data, 'UTC:mm. mmmm') + ' ' + link;
                     }
                 });

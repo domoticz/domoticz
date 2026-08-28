@@ -474,7 +474,7 @@
 						</span>
 						<!-- Temperature -->
 						<span ng-if="item.SetPoint !== undefined && item.Temp !== undefined">, </span>
-						<i ng-if="item.trend > 1" class="fa-solid dz-chrome-icon dz-chrome-icon-14" ng-class="item.trend == 2 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'"></i>
+						<i ng-if="item.trend > 1" class="fa-solid dz-chrome-icon dz-chrome-icon-14" ng-class="item.trend == 2 ? 'fa-arrow-trend-up dz-trend-up' : 'fa-arrow-trend-down dz-trend-down'"></i>
 						<span ng-if="item.Temp !== undefined">{{item.Temp}}&deg; {{$parent.config.TempSign}}</span>
 						<!-- Chill -->
 						<span ng-if="(item.SetPoint !== undefined || item.Temp !== undefined) && item.Chill !== undefined">, </span>

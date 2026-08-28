@@ -97,6 +97,24 @@ function fnGetSelected(oTableLocal) {
 	return oTableLocal.$('tr.row_selected');
 }
 
+// Renders a battery level (0-100, or 255 = "not available") as a Font Awesome
+// battery glyph filled to match the level and coloured by it: red when nearly
+// empty, amber when low, green otherwise (the same thresholds the old level bar
+// used). Returned as an HTML string so table renderers can drop it straight in.
+function batteryLevelHtml(value) {
+	if (value === 255 || typeof value === 'undefined' || value === null) {
+		return '-';
+	}
+	var glyph = value < 10 ? 'fa-battery-empty'
+		: value < 37 ? 'fa-battery-quarter'
+		: value < 62 ? 'fa-battery-half'
+		: value < 87 ? 'fa-battery-three-quarters'
+		: 'fa-battery-full';
+	var tier = value < 10 ? 'dz-batt-empty' : value < 40 ? 'dz-batt-low' : 'dz-batt-ok';
+	var title = $.t('Battery level') + ': ' + value + '%';
+	return '<i class="fa-solid ' + glyph + ' dz-chrome-icon ' + tier + '" title="' + title + '"></i>';
+}
+
 function b64EncodeUnicode(str) {
     return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
         return String.fromCharCode(parseInt(p1, 16))

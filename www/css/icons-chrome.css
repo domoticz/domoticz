@@ -81,9 +81,43 @@
 	filter: brightness(0.85);
 }
 
-/* Column headers are labels, not actions. */
+/* Column headers are labels: the icon takes the header text colour (white on
+   the themed dark header) so signal/battery glyphs read like the labels beside
+   them, rather than a mismatched grey. */
 th .dz-chrome-icon {
+	color: inherit;
+}
+
+/* Trend arrows carry the colour their PNGs did: rising = red (warmer / more),
+   falling = blue (cooler / less), stable or unknown = grey. Works whether the
+   arrow is a chrome icon (temperature/mobile) or a device glyph (utility). */
+.dz-chrome-icon.dz-trend-up,
+.dz-icon-glyph.dz-trend-up {
+	color: #d9534f;
+}
+
+.dz-chrome-icon.dz-trend-down,
+.dz-icon-glyph.dz-trend-down {
+	color: #43a4d3;
+}
+
+.dz-chrome-icon.dz-trend-flat,
+.dz-icon-glyph.dz-trend-flat {
 	color: #6c6e74;
+}
+
+/* Battery level glyph, coloured the way the old level bar was: red nearly
+   empty, amber low, green otherwise. */
+.dz-chrome-icon.dz-batt-empty {
+	color: #ED3745;
+}
+
+.dz-chrome-icon.dz-batt-low {
+	color: #F9D023;
+}
+
+.dz-chrome-icon.dz-batt-ok {
+	color: #B8DB23;
 }
 
 /* --- Icon picker: compact form field --- */

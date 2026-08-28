@@ -569,7 +569,9 @@ define(['app', 'widgets/dzBar', 'icons/dzIconPicker', 'icons/dzDeviceIcon'], fun
                 };
 
                 ctrl.getTrendIcon = function () {
-                    return dzIconService.chromeIconFor('images/arrow_' + ctrl.trendState(device.trend) + '.png');
+                    var state = ctrl.trendState(device.trend);
+                    var trendColor = { up: 'dz-trend-up', down: 'dz-trend-down' }[state] || 'dz-trend-flat';
+                    return dzIconService.chromeIconFor('images/arrow_' + state + '.png') + ' ' + trendColor;
                 };
 
                 ctrl.getDeviceIcon = function () {

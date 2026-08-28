@@ -538,7 +538,7 @@ define(['app'], function (app) {
 								"DT_RowId": item.idx,
 								"Area": item.Area,
 								"0": item.Name,
-								"1": ((item.Area.length == 0) ? '<i class="fa-solid fa-circle-xmark dz-chrome-icon"></i>' : '<i class="fa-solid fa-circle-check dz-chrome-icon"></i>'),
+								"1": ((item.Area.length == 0) ? '<i class="fa-solid fa-circle-xmark dz-chrome-icon dz-act-danger"></i>' : '<i class="fa-solid fa-circle-check dz-chrome-icon dz-act-add"></i>'),
 								"2": item.Area
 							});
 							var el = makeSVGnode('polygon', { id: item.Name + "_Room", 'class': "nothoverable", points: item.Area }, '');
