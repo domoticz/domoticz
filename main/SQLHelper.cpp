@@ -8381,10 +8381,13 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				CalcMeterPrice(ID, divider, szDateStart, szDateEnd, price);
 				if (price != 0.0f && total_real > 0)
 				{
-					// Spike protection: discard price if implied tariff exceeds max plausible rate
-					constexpr float max_unit_price = 3.0f;  
-					if (std::abs(price) > (static_cast<float>(total_real) / divider) * max_unit_price)
-						price = 0;
+					// Spike protection only applies to energy tariffs; other meter types use different units.
+					if ((metertype == MTYPE_ENERGY) || (metertype == MTYPE_ENERGY_GENERATED))
+					{
+						constexpr float max_unit_price = 3.0f;
+						if (std::abs(price) > (static_cast<float>(total_real) / divider) * max_unit_price)
+							price = 0;
+					}
 				}
 				else if (total_real <= 0)
 					price = 0;
