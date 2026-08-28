@@ -802,7 +802,36 @@ namespace WebAssetFetch
 					break;
 				}
 				const size_t iOpen = iFound + 4;
-				const size_t iClose = szCss.find(')', iOpen);
+				// A quoted url() value may legally contain ')': icon sets built on inline SVG
+				// masks carry a nested url(#clip...) inside the data URI. Taking the first ')'
+				// would cut the value in half, so for a quoted value the paren is looked for
+				// after the closing quote instead.
+				size_t iValue = iOpen;
+				while ((iValue < szCss.size()) && (isspace(static_cast<unsigned char>(szCss[iValue])) != 0))
+					iValue++;
+
+				size_t iClose = std::string::npos;
+				if ((iValue < szCss.size()) && ((szCss[iValue] == '"') || (szCss[iValue] == '\'')))
+				{
+					const char cOpenQuote = szCss[iValue];
+					size_t iScan = iValue + 1;
+					while (iScan < szCss.size())
+					{
+						if (szCss[iScan] == '\\')
+						{
+							iScan += 2;
+							continue;
+						}
+						if (szCss[iScan] == cOpenQuote)
+							break;
+						iScan++;
+					}
+					if (iScan < szCss.size())
+						iClose = szCss.find(')', iScan + 1);
+				}
+				else
+					iClose = szCss.find(')', iOpen);
+
 				if (iClose == std::string::npos)
 				{
 					szOut.append(szCss, iPos, std::string::npos);
@@ -925,6 +954,72 @@ namespace WebAssetFetch
 			}
 			return false;
 		}
+
+		// Puts every already-committed file in a batch back to what it was, collecting the
+		// names it could not put back. A rollback that itself fails leaves the library on a
+		// mix of old and new files, so those names must not be swallowed.
+		void RollBackCommitted(const std::vector<std::pair<std::string, std::string>>& committed, std::vector<std::string>& unrestored)
+		{
+			for (const auto& cd : committed)
+			{
+				if (!RestoreWebAssetFile(cd.first, cd.second))
+					unrestored.push_back(cd.first);
+			}
+		}
+
+		// The backups are deliberately left in place when this reports something, so the
+		// files can still be recovered by hand.
+		void ReportUnrestored(const std::vector<std::string>& unrestored, std::string& szError)
+		{
+			if (unrestored.empty())
+				return;
+
+			std::string szNames;
+			for (const auto& szUnrestored : unrestored)
+			{
+				if (!szNames.empty())
+					szNames += ", ";
+				szNames += szUnrestored;
+			}
+			_log.Log(LOG_ERROR, "%s: could not roll back %s; the backup files have been kept", LOGTAG, szNames.c_str());
+			szError += ", and " + szNames + " could not be rolled back";
+		}
+
+		// safe_query cannot report a failed write, so the row is read back instead. Without
+		// the right source URL and companion list a later refresh or delete would act on the
+		// wrong set of files, which is why a mismatch has to fail the whole install.
+		bool StoredMetadataMatches(const std::string& szName, const std::string& szURL, const std::string& szCompanions)
+		{
+			auto result = m_sql.safe_query("SELECT SourceURL, Companions FROM WebAssets WHERE (Name=='%q')", szName.c_str());
+			if (result.empty())
+				return false;
+			return ((result[0][0] == szURL) && (result[0][1] == szCompanions));
+		}
+
+		// The row is written before it is verified, and each safe_query autocommits, so a
+		// failed verification has to undo the row as well as the files. Leaving it behind
+		// would point a later refresh or delete at a file set that was just rolled back:
+		// new metadata owning old files on an update, or metadata for files that no longer
+		// exist on a fresh install.
+		bool RestoreMetadata(const std::string& szName, const std::vector<std::vector<std::string>>& before)
+		{
+			if (before.empty())
+			{
+				// Nothing was there beforehand, so the row this install added has to go.
+				m_sql.safe_query("DELETE FROM WebAssets WHERE (Name=='%q')", szName.c_str());
+				return m_sql.safe_query("SELECT ID FROM WebAssets WHERE (Name=='%q')", szName.c_str()).empty();
+			}
+
+			const int iID = atoi(before[0][0].c_str());
+			// LastUpdate goes back too: a refresh that was rolled back must not leave the
+			// library reading as though it had just been updated.
+			m_sql.safe_query("UPDATE WebAssets SET SourceURL='%q', Companions='%q', Title='%q', LastUpdate='%q' WHERE (ID==%d)", before[0][1].c_str(),
+					 before[0][2].c_str(), before[0][3].c_str(), before[0][4].c_str(), iID);
+
+			auto result = m_sql.safe_query("SELECT SourceURL, Companions, Title, LastUpdate FROM WebAssets WHERE (ID==%d)", iID);
+			return (!result.empty() && (result[0][0] == before[0][1]) && (result[0][1] == before[0][2]) && (result[0][2] == before[0][3])
+				&& (result[0][3] == before[0][4]));
+		}
 	} // namespace
 
 	bool Install(const std::string& szName, const std::string& szURL, const std::string& szTitle, std::string& szError)
@@ -1009,7 +1104,9 @@ namespace WebAssetFetch
 		}
 
 		const std::vector<std::string> previous = LoadCompanions(szName);
-		auto existing = m_sql.safe_query("SELECT ID FROM WebAssets WHERE (Name=='%q')", szName.c_str());
+		// Every column the write below touches is read first, so a failed verification can put
+		// the row back exactly as it was rather than only undoing the files.
+		auto existing = m_sql.safe_query("SELECT ID, SourceURL, Companions, Title, LastUpdate FROM WebAssets WHERE (Name=='%q')", szName.c_str());
 		const bool bIsUpdate = !existing.empty();
 
 		// Every generated companion name is checked against files owned by some other
@@ -1066,6 +1163,7 @@ namespace WebAssetFetch
 
 		bool bCommitOk = true;
 		std::vector<std::pair<std::string, std::string>> committed; // name -> backup file (empty if none existed)
+		std::vector<std::string> unrestored;
 		for (const auto& sd : staged)
 		{
 			std::string szBackupFile;
@@ -1078,7 +1176,8 @@ namespace WebAssetFetch
 			if (!CommitWebAssetFile(sd.first, sd.second, LOGTAG))
 			{
 				// Nothing was replaced for this name, put the original straight back.
-				RestoreWebAssetFile(sd.first, szBackupFile);
+				if (!RestoreWebAssetFile(sd.first, szBackupFile))
+					unrestored.push_back(sd.first);
 				szError = "Could not store " + sd.first;
 				bCommitOk = false;
 				break;
@@ -1090,16 +1189,11 @@ namespace WebAssetFetch
 			// Roll every already-committed file in this batch back to what it was before,
 			// so a failure part way through leaves the library exactly as it was rather
 			// than on a mix of old and new files.
-			for (const auto& cd : committed)
-				RestoreWebAssetFile(cd.first, cd.second);
+			RollBackCommitted(committed, unrestored);
 			for (const auto& sd : staged)
 				DiscardStagedWebAssetFile(sd.second);
+			ReportUnrestored(unrestored, szError);
 			return false;
-		}
-		for (const auto& cd : committed)
-		{
-			DiscardWebAssetBackup(cd.second);
-			WriteWebAssetGzip(cd.first, LOGTAG);
 		}
 
 		std::string szCompanions;
@@ -1124,7 +1218,27 @@ namespace WebAssetFetch
 			// Refreshing from the stored source URL sends no title, that must not blank it.
 			if (!szCleanTitle.empty())
 				m_sql.safe_query("UPDATE WebAssets SET Title='%q' WHERE (ID==%d)", szCleanTitle.c_str(), atoi(existing[0][0].c_str()));
+		}
 
+		// Only once the metadata is known to be correct is any of this irreversible: the
+		// backups are still held, so a failed write can put the previous files back rather
+		// than leaving new files owned by stale metadata.
+		if (!StoredMetadataMatches(szName, szURL, szCompanions))
+		{
+			_log.Log(LOG_ERROR, "%s: could not record metadata for '%s', rolling the files back", LOGTAG, szName.c_str());
+			RollBackCommitted(committed, unrestored);
+			szError = "Could not record " + szName;
+			if (!RestoreMetadata(szName, existing))
+			{
+				_log.Log(LOG_ERROR, "%s: could not roll back the metadata for '%s'", LOGTAG, szName.c_str());
+				szError += ", and its metadata could not be rolled back";
+			}
+			ReportUnrestored(unrestored, szError);
+			return false;
+		}
+
+		if (bIsUpdate)
+		{
 			for (const auto& szOld : previous)
 			{
 				if (ctx.storedNames.count(szOld) != 0)
@@ -1139,6 +1253,15 @@ namespace WebAssetFetch
 					continue;
 				RemoveWebAssetFile(szOld);
 			}
+		}
+
+		// Both run only once the metadata is known good: until then the backups are
+		// the way back, and a pre-compressed copy of a file we might still roll back
+		// would outlive the file it was made from.
+		for (const auto& cd : committed)
+		{
+			DiscardWebAssetBackup(cd.second);
+			WriteWebAssetGzip(cd.first, LOGTAG);
 		}
 
 		_log.Log(LOG_STATUS, "%s: stored '%s' with %d companion file(s), %d bytes", LOGTAG, szName.c_str(), static_cast<int>(ctx.assets.size()), static_cast<int>(ctx.totalSize));

@@ -57,6 +57,86 @@ function makeSVGnode(tag, attrs, text, title) {
     return el;
 }
 
+// This file is a plain global script, so dzIconService can only be reached through the
+// Angular injector, and only once the app has bootstrapped. Everything degrades to the
+// hand built image path when the injector or the service is not there.
+var dzIconServiceRef = null;
+function getIconService() {
+    if (dzIconServiceRef != null) return dzIconServiceRef;
+    if ((typeof angular == 'undefined') || (document.body == null)) return null;
+    try {
+        var injector = angular.element(document.body).injector();
+        if ((typeof injector == 'undefined') || (injector == null)) return null;
+        if (!injector.has('dzIconService')) return null;
+        dzIconServiceRef = injector.get('dzIconService');
+        // The classes of the built-in icons come from the server, so the devices drawn
+        // before they arrive get the legacy image. Waiting for the next refresh would not
+        // help, that one only returns the devices that changed, so redraw here instead.
+        dzIconServiceRef.preloadBuiltinIcons().then(redrawStoredDevices);
+
+        // Settings > Icon style decides whether a type resolves to a glyph at all, and
+        // resolveIcon() reads it once, when the device is built. The setting arrives with
+        // the server config, which can land after the first devices are drawn, and a user
+        // can change it without leaving the page; either way the drawn icons are stale
+        // until they are rebuilt.
+        var rootScope = injector.get('$rootScope');
+        rootScope.$watch(
+            function () { return rootScope.config ? rootScope.config.IconStyle : undefined; },
+            function (now, before) { if (now !== before) redrawStoredDevices(); });
+    }
+    catch (err) {
+        return null;
+    }
+    return dzIconServiceRef;
+}
+
+// Rebuilds every device already on the plan from the item data kept in the page.
+function redrawStoredDevices() {
+    var nodes = document.querySelectorAll('[id$="_Data"]');
+    for (var i = 0; i < nodes.length; i++) {
+        var target = nodes[i].getAttribute('id').replace(/_Data$/, '');
+        if (document.getElementById(target + "_Detail") != null) {
+            Device.popupRedraw(target);
+        }
+    }
+}
+
+// An icon can resolve to a CSS class instead of a file, and an SVG <image> cannot draw
+// one. A foreignObject carrying the same <i> element the rest of the interface uses keeps
+// every installed icon library working, including the sets that draw with an SVG mask and
+// have no font codepoint at all, and lets the colour come from the stylesheet. Pointer
+// events stay on the foreignObject itself, so hit testing, the editor's drag handler and
+// the inline handlers see the same element they saw when this was an <image>.
+function makeSVGglyphnode(cls, size, attrs, title) {
+    var el = makeSVGnode('foreignObject', attrs, '');
+    if (typeof attrs['pointer-events'] == 'undefined') {
+        // An <image> is hit over its whole box, so make this one behave the same.
+        el.setAttribute('pointer-events', 'all');
+    }
+    var elGlyph = document.createElement('i');
+    elGlyph.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+    elGlyph.setAttribute('class', 'DeviceIconGlyph ' + cls);
+    // A filled glyph is denser than the artwork it replaces, so it is drawn a little
+    // smaller inside the unchanged box, as the widgets do.
+    elGlyph.setAttribute('style', 'pointer-events:none; display:block; width:100%; height:100%; text-align:center;' +
+        ' font-size:' + Math.round(size * 0.8) + 'px; line-height:' + size + 'px;');
+    el.appendChild(elGlyph);
+    if ((typeof title != 'undefined') && (title.length != 0)) {
+        el.appendChild(makeSVGnode('title', null, title));
+    }
+    return el;
+}
+
+// Draws whichever of the two an icon resolved to, so the callers stay unaware of the
+// difference. Uploaded custom icons have no class and must stay images.
+function makeSVGiconnode(src, cls, size, attrs, title) {
+    if ((typeof cls == 'undefined') || (cls.length == 0)) {
+        attrs['xlink:href'] = src;
+        return makeSVGnode('image', attrs, '', title);
+    }
+    return makeSVGglyphnode(cls, size, attrs, title);
+}
+
 function makeSVGmultiline(attrs, text, title, maxX, minY, incY, separator) {
     // no wrap parameters
     if ((typeof maxX == 'undefined') || (typeof minY == 'undefined') || (typeof incY == 'undefined')) {
@@ -476,6 +556,20 @@ function Device(item) {
         this.image_opacity = 1;
         this.image2 = "";
         this.image2_opacity = 1;
+        // Filled in by resolveIcon() once the inheriting constructors have run. The image
+        // paths below stay as they are and remain the fallback when nothing resolves.
+        this.imageClass = '';
+        this.image2Class = '';
+        this.iconItem = item;
+        this.iconActive = true;              // inheriting classes that tell on from off override this
+        this.icon2Active = null;             // and set this where image2 is the same device in the other state
+        // For these the artwork encodes a reading rather than the device (alert level, wind
+        // direction, temperature range), so only an icon set on the device itself may
+        // replace it. Same rule as the device widgets.
+        this.valueDrivenIcon = (String((typeof item.TypeImg != 'undefined') ? item.TypeImg : '').toLowerCase().indexOf('alert') == 0)
+            || (typeof item.Direction != 'undefined')
+            || (typeof item.Temp != 'undefined')
+            || (typeof item.Chill != 'undefined');
         this.favorite = item.Favorite;
         this.forecastURL = (typeof item.forecast_url == 'undefined') ? '' : item.forecast_url;
         this.batteryLevel = (typeof item.BatteryLevel != 'undefined') ? item.BatteryLevel : 0;
@@ -541,6 +635,45 @@ function Device(item) {
     this.setDraggable = function (draggable) {
         this.moveable = draggable;
     };
+    // Hands the icon to dzIconService so the floorplan follows the same order of
+    // precedence as every other page: an icon set on the device, then a custom image,
+    // then the glyph for the device type, and only then the image the inheriting
+    // classes derived.
+    this.resolveIcon = function () {
+        var service = getIconService();
+        if ((service == null) || (typeof this.iconItem == 'undefined')) return;
+
+        var item = this.iconItem;
+        // A compound sensor is split into one device per value, and the splitter sets
+        // CustomImage as a flag meaning "build the image from Image" rather than as a
+        // custom icon index. Resolving with it would draw custom icon 1 for all of them,
+        // so it is cleared here and the per-value TypeImg decides the glyph instead.
+        if (item.SyntheticCustomImage == true) {
+            var probe = {};
+            for (var key in item) { if (item.hasOwnProperty(key)) probe[key] = item[key]; }
+            probe.CustomImage = 0;
+            item = probe;
+        }
+        var device = this;
+        var classFor = function (active) {
+            var cls;
+            if (device.valueDrivenIcon == true) {
+                cls = service.resolveIconClass(item.Icon, active);
+            } else {
+                var resolved = service.resolve(item, active);
+                cls = (resolved.kind == 'font') ? resolved.cls : null;
+            }
+            // The state class is what colours an inactive device on the other pages.
+            return (cls == null) ? null : (cls + (active ? ' dz-icon--on' : ' dz-icon--off'));
+        };
+
+        var cls = classFor(this.iconActive);
+        if (cls != null) this.imageClass = cls;
+        if (this.icon2Active != null) {
+            var cls2 = classFor(this.icon2Active);
+            if (cls2 != null) this.image2Class = cls2;
+        }
+    };
     this.drawIcon = function (parent) {
         var el;
         //Draw device values if option(s) is turned on
@@ -602,10 +735,9 @@ function Device(item) {
             }
         } else {
             if (Device.useSVGtags == true) {
-                el = makeSVGnode('image', {
+                el = makeSVGiconnode(this.image, this.imageClass, Device.iconSize, {
                     id: this.uniquename + "_Icon",
                     'class': 'DeviceIcon',
-                    'xlink:href': this.image,
                     width: Device.iconSize, height: Device.iconSize,
                     onmouseover: (this.moveable == true) ? '' : "Device.popup('" + this.uniquename + "');",
                     onmouseout: (this.moveable == true) ? '' : "Device.popupCancelDelay();",
@@ -613,8 +745,7 @@ function Device(item) {
                     ontouchstart: (this.moveable == true) ? '' : "Device.ignoreClick=true; Device.popup('" + this.uniquename + "');",
                     ontouchend: (this.moveable == true) ? '' : "Device.popupCancelDelay();",
                     style: (this.moveable == true) ? 'cursor:move;' : 'cursor:hand; -webkit-user-select: none;'
-                }, '');
-                el.appendChild(makeSVGnode('title', null, this.name));
+                }, this.name);
             } else {
                 el = makeSVGnode('img', {
                     id: this.uniquename + "_Icon",
@@ -681,14 +812,14 @@ function Device(item) {
             var iOffset = ((sDirection == 'right') ? Device.elementPadding : ((this.image2 == '') ? this.width - Device.elementPadding - Device.iconSize : this.width - (Device.elementPadding * 2) - (Device.iconSize * 2)));
             var gImageGroup = makeSVGnode('g', { id: "imagegroup", transform: 'translate(' + iOffset + ',' + Device.elementPadding * 6 + ')' }, '');
             el.appendChild(gImageGroup);
-            gImageGroup.appendChild(makeSVGnode('image', {
-                id: "image", 'xlink:href': this.image, width: Device.iconSize, height: Device.iconSize, opacity: this.image_opacity,
+            gImageGroup.appendChild(makeSVGiconnode(this.image, this.imageClass, Device.iconSize, {
+                id: "image", width: Device.iconSize, height: Device.iconSize, opacity: this.image_opacity,
                 onclick: (this.onClick.length != 0) ? 'if (Device.ignoreClick!=true) {' + (this.controlable ? '' : '$("body").trigger("pageexit"); ') + this.onClick + '};' : '',
                 onmouseover: (this.onClick.length != 0) ? "cursorhand()" : '',
                 onmouseout: (this.onClick.length != 0) ? "cursordefault()" : '', 'pointer-events': 'all'
-            }, '', $.t(this.imagetext)));
+            }, $.t(this.imagetext)));
             if (this.image2 != '') {
-                gImageGroup.appendChild(makeSVGnode('image', { id: "image2", x: Device.iconSize + Device.elementPadding, 'xlink:href': this.image2, width: Device.iconSize, height: Device.iconSize, opacity: this.image2_opacity, onclick: (this.onClick2.length != 0) ? this.onClick2 : '', onmouseover: (this.onClick.length != 0) ? "cursorhand()" : '', onmouseout: (this.onClick.length != 0) ? "cursordefault()" : '', 'pointer-events': 'all' }, '', $.t(this.imagetext)));
+                gImageGroup.appendChild(makeSVGiconnode(this.image2, this.image2Class, Device.iconSize, { id: "image2", x: Device.iconSize + Device.elementPadding, width: Device.iconSize, height: Device.iconSize, opacity: this.image2_opacity, onclick: (this.onClick2.length != 0) ? this.onClick2 : '', onmouseover: (this.onClick.length != 0) ? "cursorhand()" : '', onmouseout: (this.onClick.length != 0) ? "cursordefault()" : '', 'pointer-events': 'all' }, $.t(this.imagetext)));
             }
             iOffset = ((sDirection == 'right') ? ((this.image2 == '') ? Device.iconSize + (Device.elementPadding * 2) : (Device.iconSize * 2 + Device.elementPadding * 3)) : Device.elementPadding * 2);
             var gStatusGroup = makeSVGnode('g', { id: "statusgroup", transform: 'translate(' + iOffset + ',' + Device.elementPadding * 6 + ')' }, '');
@@ -1143,6 +1274,8 @@ Device.create = function (item) {
             }
     }
 
+    dev.resolveIcon();
+
     return dev;
 }
 Device.scale = function (attr) {
@@ -1376,6 +1509,7 @@ function SecuritySensor(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         this.image = (this.status == "On") ? "images/" + item.TypeImg + "48-on.png" : "images/" + item.TypeImg + "48-off.png";
+        this.iconActive = (this.status == "On");
     }
 }
 SecuritySensor.inheritsFrom(BinarySensor);
@@ -1439,6 +1573,7 @@ function Switch(item) {
         } else {
             this.image = (bIsOffImage) ? "images/" + item.TypeImg + "48_Off.png" : "images/" + item.TypeImg + "48_On.png";
         }
+        this.iconActive = (bIsOffImage == false);
         this.data = '';
         this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
         this.showStatus = (Device.showSwitchValues == true);
@@ -1487,6 +1622,10 @@ function Baro(item) {
         this.parent.constructor(item);
         if (this.name == 'Baro') this.name = 'Barometer';
         this.image = "images/baro48.png";
+        // Static artwork, so the glyph style may replace it. The base test marks the whole
+        // item value driven when it carries a Temp, which is true of every Temp+Hum+Baro
+        // sensor, and that would otherwise pin this barometer to its image for good.
+        this.valueDrivenIcon = false;
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
         if (typeof item.Barometer != 'undefined') {
             this.data = this.smallStatus = item.Barometer + ' hPa';
@@ -1530,9 +1669,11 @@ function Blinds(item) {
 	if ((item.Status == 'Open') || (item.Status.startsWith('Set Level')) || (item.Status == 'Stopped')) {
 		this.image = 'images/blindsopen48sel.png';
 		this.onClick = 'SwitchLight(' + this.index + ",'Close'," + this.protected + ');';
+		this.iconActive = true;   // open is the state the "on" icon stands for here
 	} else {
 		this.image = 'images/blinds48sel.png';
 		this.onClick = 'SwitchLight(' + this.index + ",'Open'," + this.protected + ');';
+		this.iconActive = false;
 	}
 }
 Blinds.inheritsFrom(Switch);
@@ -1619,6 +1760,7 @@ function Contact(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         this.image = (this.status == "Closed") ? "images/" + item.Image + "48_Off.png" : "images/" + item.Image + "48_On.png";
+        this.iconActive = (this.status != "Closed");
         this.data = '';
         this.NotifyLink = this.onClick = "";
         this.smallStatus = this.status;
@@ -1707,6 +1849,7 @@ function Dimmer(item) {
         } else {
             this.image = (this.status == "Off") ? "images/Dimmer48_Off.png" : "images/Dimmer48_On.png";
         }
+        this.iconActive = (this.status != "Off");
         this.status = TranslateStatus(this.status);
     }
 }
@@ -1731,6 +1874,7 @@ function DoorContact(item) {
         if (item.CustomImage == 0) {
             this.image = (this.status == "Closed") ? "images/" + item.Image + "48_Off.png" : this.image = "images/" + item.Image + "48_On.png";
         }
+        this.iconActive = (this.status != "Closed");
         this.imagetext = "";
         this.NotifyLink = this.onClick = "";
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
@@ -1752,6 +1896,7 @@ function DuskSensor(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         this.image = (item.Status == 'On') ? "images/uvdark.png" : this.image = "images/uvsunny.png";
+        this.iconActive = (item.Status == 'On');
         this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
         this.data = '';
     }
@@ -1765,6 +1910,10 @@ function Group(item) {
         this.onClick = 'SwitchScene(' + this.index + ", 'On', undefined, " + this.protected + ');';
         this.image2 = 'images/Push48_Off.png';
         this.onClick2 = 'SwitchScene(' + this.index + ", 'Off', undefined, " + this.protected + ');';
+        // Both halves of the group are always drawn, the opacity marks which one is current,
+        // so the icons are the device's on and off state rather than one following the status.
+        this.iconActive = true;
+        this.icon2Active = false;
         (this.status == 'Off') ? this.image2_opacity = 0.5 : this.image_opacity = 0.5;
         this.data = '';
         this.showStatus = (Device.showSceneNames || Device.showSwitchValues);
@@ -1791,6 +1940,9 @@ function Humidity(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         this.image = "images/moisture48.png";
+        // Same as the barometer: one fixed image, not a reading, so it is free to become a
+        // glyph even though the sensor it belongs to also reports a temperature.
+        this.valueDrivenIcon = false;
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
         if (typeof item.Humidity != 'undefined') {
             this.data = this.smallStatus = item.Humidity + '%';
@@ -1836,6 +1988,7 @@ function Motion(item) {
         if (item.CustomImage == 0) {
             this.image = (this.status == "On") ? "images/" + item.TypeImg + "48-on.png" : "images/" + item.TypeImg + "48-off.png";
         }
+        this.iconActive = (this.status == "On");
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
         this.data = '';
         this.smallStatus = this.status;
@@ -1847,6 +2000,7 @@ function Pushon(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         this.image = "images/" + item.Image + "48_On.png";
+        this.iconActive = true;
         this.onClick = "SwitchLight(" + this.index + ",'On'," + this.protected + ");";
     }
 }
@@ -1856,6 +2010,7 @@ function Pushoff(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         this.image = "images/" + item.Image + "48_Off.png";
+        this.iconActive = false;
         this.onClick = "SwitchLight(" + this.index + ",'Off'," + this.protected + ");";
     }
 }
@@ -1875,9 +2030,11 @@ function Rain(item) {
         if (typeof item.Rain != 'undefined') {
             this.status = item.Rain;
             this.image = "images/Rain48_Off.png";
+            this.iconActive = false;
             if ($.isNumeric(item.Rain)) {
                 if (parseFloat(item.Rain) > 0.0) {
                     this.image = "images/Rain48_On.png";
+                    this.iconActive = true;
                 }
                 this.status += ' mm';
             }
@@ -1939,6 +2096,7 @@ function Siren(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         this.image = ((item.Status == 'On') || (item.Status == 'Chime') || (item.Status == 'Group On') || (item.Status == 'All On')) ? "images/siren-on.png" : this.image = "images/siren-off.png";
+        this.iconActive = ((item.Status == 'On') || (item.Status == 'Chime') || (item.Status == 'Group On') || (item.Status == 'All On'));
         this.onClick = '';
     }
 }
@@ -1948,6 +2106,7 @@ function Smoke(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         this.image = ((item.Status == "Panic") || (item.Status == "On")) ? "images/smoke48on.png" : this.image = "images/smoke48off.png";
+        this.iconActive = ((item.Status == "Panic") || (item.Status == "On"));
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
         this.data = '';
     }
@@ -1963,6 +2122,7 @@ function Sound(item) {
         } else {
             this.image = "images/Speaker48_" + onoff + ".png";
         }
+        this.iconActive = (onoff == "On");
         this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
     }
 }
@@ -2081,6 +2241,7 @@ function Selector(item) {
         } else {
             this.image = (this.levelName === "Off") ? "images/" + item.TypeImg + "48_Off.png" : "images/" + item.TypeImg + "48_On.png";
         }
+        this.iconActive = (this.levelName !== "Off");
         if ((this.levelName === "Off") || (this.levelOffHidden === true)) {
             this.ignoreClick = true;
             this.onClick = 'DoNothing';
