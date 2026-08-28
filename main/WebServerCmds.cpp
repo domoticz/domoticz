@@ -6913,6 +6913,15 @@ namespace http
 
 		void CWebServer::Cmd_GetSettings(WebEmSession& session, const request& req, Json::Value& root)
 		{
+			// getsettings returns the full Preferences set, including the security-panel and
+			// protection PINs and the notification-backend credentials, and its setter sibling
+			// (storesettings) is already admin-only. Match it: the Settings page that calls
+			// this is admin-only too, so no legitimate non-admin caller is affected.
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
 			std::vector<std::vector<std::string>> result;
 			char szTmp[100];
 
