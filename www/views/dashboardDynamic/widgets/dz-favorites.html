@@ -42,23 +42,34 @@
                             <tr>
                                 <td id="name" class="item-name" ng-bind="device.Name"></td>
                                 <td id="bigtext">{{ ctrl.isGroup(device) ? device.Status : '' }}</td>
-                                <!-- Glyphs, matching the scene widget; the icon-style toggle
-                                     shows these in glyph mode (scenes were left as images here). -->
+                                <!-- Scene/group run/on/off: classic Push48 image (dz-classic-only) or
+                                     Font Awesome glyph (dz-glyph-only), per the icon-style toggle. -->
                                 <td id="img1">
                                     <i ng-if="!ctrl.isGroup(device)"
-                                       class="dz-icon-glyph dz-icon-40 lcursor fa-solid fa-play dz-scene-run"
+                                       class="dz-icon-glyph dz-icon-40 lcursor fa-solid fa-play dz-scene-run dz-glyph-only"
                                        ng-click="ctrl.activateScene(device, 'On')" title="Activate"></i>
+                                    <img ng-if="!ctrl.isGroup(device)" class="dz-classic-only lcursor"
+                                         src="images/Push48_On.png" ng-click="ctrl.activateScene(device, 'On')"
+                                         height="40" width="40" title="Activate">
                                     <i ng-if="ctrl.isGroup(device)"
-                                       class="dz-icon-glyph dz-icon-40 lcursor fa-solid fa-power-off dz-scene-on"
+                                       class="dz-icon-glyph dz-icon-40 lcursor fa-solid fa-power-off dz-scene-on dz-glyph-only"
                                        ng-click="ctrl.activateScene(device, 'On')"
                                        ng-class="{'transimg': device.Status === 'On' || device.Status === 'Group On'}"
                                        title="Turn On"></i>
+                                    <img ng-if="ctrl.isGroup(device)" class="dz-classic-only lcursor"
+                                         src="images/Push48_On.png" ng-click="ctrl.activateScene(device, 'On')"
+                                         ng-class="{'transimg': device.Status === 'On' || device.Status === 'Group On'}"
+                                         height="40" width="40" title="Turn On">
                                 </td>
                                 <td ng-if="ctrl.isGroup(device)" id="img2">
-                                    <i class="dz-icon-glyph dz-icon-40 lcursor fa-solid fa-power-off dz-scene-off"
+                                    <i class="dz-icon-glyph dz-icon-40 lcursor fa-solid fa-power-off dz-scene-off dz-glyph-only"
                                        ng-click="ctrl.activateScene(device, 'Off')"
                                        ng-class="{'transimg': device.Status === 'Off' || device.Status === 'Group Off'}"
                                        title="Turn Off"></i>
+                                    <img class="dz-classic-only lcursor" src="images/Push48_Off.png"
+                                         ng-click="ctrl.activateScene(device, 'Off')"
+                                         ng-class="{'transimg': device.Status === 'Off' || device.Status === 'Group Off'}"
+                                         height="40" width="40" title="Turn Off">
                                 </td>
                                 <td id="status">
                                     <span ng-if="!ctrl.isGroup(device)" data-i18n="Scene">Scene</span>

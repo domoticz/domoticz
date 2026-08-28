@@ -11,15 +11,18 @@
                 </td>
                 <!-- Scene: single Activate button -->
                 <td ng-if="ctrl.isScene()" id="img1">
-                    <i class="dz-icon-glyph dz-icon-48 lcursor fa-solid fa-play dz-scene-run" ng-click="ctrl.switchOn()" title="Activate scene"></i>
+                    <i class="dz-icon-glyph dz-icon-48 lcursor fa-solid fa-play dz-scene-run dz-glyph-only" ng-click="ctrl.switchOn()" title="Activate scene"></i>
+                    <img class="dz-classic-only lcursor" src="images/Push48_On.png" ng-click="ctrl.switchOn()" height="48" width="48" title="Activate scene">
                 </td>
                 <!-- Group: On push button -->
                 <td ng-if="ctrl.isGroup()" id="img1">
-                    <i class="dz-icon-glyph dz-icon-48 lcursor fa-solid fa-power-off dz-scene-on" ng-click="ctrl.switchOn()" ng-class="{'transimg': ctrl.isOn()}" title="Turn On"></i>
+                    <i class="dz-icon-glyph dz-icon-48 lcursor fa-solid fa-power-off dz-scene-on dz-glyph-only" ng-click="ctrl.switchOn()" ng-class="{'transimg': ctrl.isOn()}" title="Turn On"></i>
+                    <img class="dz-classic-only lcursor" src="images/Push48_On.png" ng-click="ctrl.switchOn()" ng-class="{'transimg': ctrl.isOn()}" height="48" width="48" title="Turn On">
                 </td>
                 <!-- Group: Off push button -->
                 <td ng-if="ctrl.isGroup()" id="img2">
-                    <i class="dz-icon-glyph dz-icon-48 lcursor fa-solid fa-power-off dz-scene-off" ng-click="ctrl.switchOff()" ng-class="{'transimg': ctrl.scene.Status === 'Off' || ctrl.scene.Status === 'Group Off'}" title="Turn Off"></i>
+                    <i class="dz-icon-glyph dz-icon-48 lcursor fa-solid fa-power-off dz-scene-off dz-glyph-only" ng-click="ctrl.switchOff()" ng-class="{'transimg': ctrl.scene.Status === 'Off' || ctrl.scene.Status === 'Group Off'}" title="Turn Off"></i>
+                    <img class="dz-classic-only lcursor" src="images/Push48_Off.png" ng-click="ctrl.switchOff()" ng-class="{'transimg': ctrl.scene.Status === 'Off' || ctrl.scene.Status === 'Group Off'}" height="48" width="48" title="Turn Off">
                 </td>
                 <td id="status">&nbsp;</td>
                 <td id="lastupdate" class="lastupdate"><span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: {{ctrl.scene.LastUpdate}}</td>

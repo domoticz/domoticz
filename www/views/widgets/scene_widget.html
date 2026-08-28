@@ -6,15 +6,18 @@
 				<td id="bigtext" class="ng-cloak">{{ctrl.getStatusText()}}</td>
 				<!-- Scene: single Activate button (5-column layout) -->
 				<td ng-if="ctrl.isScene()" id="img1">
-					<i class="dz-icon-glyph dz-icon-48 lcursor fa-solid fa-play dz-scene-run" ng-click="ctrl.switchOn()" title="Activate"></i>
+					<i class="dz-icon-glyph dz-icon-40 lcursor fa-solid fa-play dz-scene-run dz-glyph-only" ng-click="ctrl.switchOn()" title="Activate"></i>
+					<img class="dz-classic-only lcursor" src="images/Push48_On.png" ng-click="ctrl.switchOn()" height="40" width="40" title="Activate">
 				</td>
 				<!-- Group: On push button (6-column layout, td 3 of 6) -->
 				<td ng-if="ctrl.isGroup()" id="img1">
-					<i class="dz-icon-glyph dz-icon-48 lcursor fa-solid fa-power-off dz-scene-on" ng-click="ctrl.switchOn()" ng-class="{'transimg': ctrl.isOn()}" title="Turn On"></i>
+					<i class="dz-icon-glyph dz-icon-40 lcursor fa-solid fa-power-off dz-scene-on dz-glyph-only" ng-click="ctrl.switchOn()" ng-class="{'transimg': ctrl.isOn()}" title="Turn On"></i>
+					<img class="dz-classic-only lcursor" src="images/Push48_On.png" ng-click="ctrl.switchOn()" ng-class="{'transimg': ctrl.isOn()}" height="40" width="40" title="Turn On">
 				</td>
 				<!-- Group: Off push button (6-column layout, td 4 of 6) -->
 				<td ng-if="ctrl.isGroup()" id="img2">
-					<i class="dz-icon-glyph dz-icon-48 lcursor fa-solid fa-power-off dz-scene-off" ng-click="ctrl.switchOff()" ng-class="{'transimg': ctrl.scene.Status === 'Off' || ctrl.scene.Status === 'Group Off'}" title="Turn Off"></i>
+					<i class="dz-icon-glyph dz-icon-40 lcursor fa-solid fa-power-off dz-scene-off dz-glyph-only" ng-click="ctrl.switchOff()" ng-class="{'transimg': ctrl.scene.Status === 'Off' || ctrl.scene.Status === 'Group Off'}" title="Turn Off"></i>
+					<img class="dz-classic-only lcursor" src="images/Push48_Off.png" ng-click="ctrl.switchOff()" ng-class="{'transimg': ctrl.scene.Status === 'Off' || ctrl.scene.Status === 'Group Off'}" height="40" width="40" title="Turn Off">
 				</td>
 				<td id="status" class="ng-cloak">
 					<span ng-if="ctrl.isScene()" data-i18n="Scene">Scene</span>
