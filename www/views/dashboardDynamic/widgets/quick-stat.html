@@ -26,10 +26,11 @@
         <span class="dd-qs-value-wrap" ng-class="{'dd-qs-value-link': !ctrl.editMode}" ng-click="!ctrl.editMode && ctrl.goToLog(item)">
             <span class="dd-qs-value"
                   ng-class="{'dd-qs-value--on': item.isOn}"
+                  title="{{item.value}}"
                   ng-bind="item.value"></span><span class="dd-qs-unit" ng-if="item.unit" ng-bind="item.unit"></span>
         </span>
         <span ng-if="item.secondValue !== null" class="dd-qs-secondary" ng-class="{'dd-qs-value-link': !ctrl.editMode}" ng-click="!ctrl.editMode && ctrl.goToLog(item)">
-            <span class="dd-qs-value" ng-bind="item.secondValue"></span><span class="dd-qs-unit" ng-if="item.unit2" ng-bind="item.unit2"></span>
+            <span class="dd-qs-value" title="{{item.secondValue}}" ng-bind="item.secondValue"></span><span class="dd-qs-unit" ng-if="item.unit2" ng-bind="item.unit2"></span>
         </span>
     </div>
 

@@ -3581,6 +3581,9 @@ body.dd-standby::after {
     font-weight: 600;
     color: var(--dz-widget-accent);
     white-space: nowrap;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .dd-qs-value--on {
     color: var(--dz-accent-color);
@@ -3592,16 +3595,22 @@ body.dd-standby::after {
     display: inline-flex;
     align-items: baseline;
     gap: 0.3em;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
 }
 .dd-qs-value-link { cursor: pointer; }
 .dd-qs-value-link:hover { opacity: 0.8; }
 .dd-quick-stat--list .dd-qs-value-wrap,
 .dd-quick-stat--list .dd-qs-secondary {
     margin-left: auto;
-    flex-shrink: 0;
+    flex-shrink: 1;
+    min-width: 0;
 }
 .dd-qs-secondary {
     white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
 }
 .dd-qs-empty {
     display: flex;
