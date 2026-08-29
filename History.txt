@@ -1,6 +1,7 @@
 Version 2026.xxxx
 - Added: Applications, OAuth2 redirect URIs can now be registered per application under Setup - Applications; leaving the list empty keeps the current behaviour of accepting any valid redirect URI, so existing account linking is unaffected until the list is filled in
 - Added: Cameras, a camera can be linked to a device with 'When: Never', so the device shows the camera button without a notification ever being sent (#5617)
+- Added: Charts, the advanced charts of the temperature log now include a Humidity Distribution chart below the Temperature Distribution, for devices that report humidity (including humidity-only devices); both distribution charts have Day/Month/Year range buttons (month and year bin the daily averages) that stay in sync, and their tooltips show the reading count with its percentage of the total
 - Added: Dashboard Dynamic, Quick Stat and Energy Dashboard widgets now show a timeout indicator when a device has not reported within the sensor timeout period (#6906)
 - Added: Dashboard Dynamic, the Energy Dashboard widget has a House card with the live house consumption and today's kWh (grid import - export + solar - battery charge) (#6992)
 - Added: Energy, per-device 'Anomaly detection' opt-out in the energy device edit dialog, for appliances that only run on some days and were flagged for it (#6988)
