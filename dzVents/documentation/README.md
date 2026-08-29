@@ -2259,6 +2259,8 @@ For every script file that defines persisted variables (using the `data={ … }`
 If you dare to, you can watch inside these files. Every time some data are changed, dzVents will stream the changes back into the data files.
 **Again, make sure you don't put too much stuff in your persistent data as it may slow things down too much.**
 
+Since dzVents 3.1.13 the data files are written atomically and the previous version of each file is kept alongside it with a `.lua.bak` extension. When a data file turns out to be unreadable (for instance truncated by a power cut in the middle of a write), dzVents restores the values from that backup automatically and preserves the broken file with a `.faulty` extension for inspection. Deleting a data file by hand still resets its storage to the initial values; the backup is only used when the data file is present but corrupt.
+
 # Asynchronous HTTP requests
 dzVents allows you to make asynchronous HTTP request and handle the results. Asynchronous means that you don't block the system while waiting for the response. Earlier you had to use os functions like `curl` or `wget` and some magic to make sure that you didn't block the system for too long after which Domoticz will terminate the script with a message that it took more than 10 seconds.
 

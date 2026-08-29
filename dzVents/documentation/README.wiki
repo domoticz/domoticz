@@ -2305,6 +2305,8 @@ For every script file that defines persisted variables (using the <code>data={ â
                 global_data.lua</pre>
 If you dare to, you can watch inside these files. Every time some data are changed, dzVents will stream the changes back into the data files. '''Again, make sure you donâ€™t put too much stuff in your persistent data as it may slow things down too much.'''
 
+Since dzVents 3.1.13 the data files are written atomically and the previous version of each file is kept alongside it with a <code>.lua.bak</code> extension. When a data file turns out to be unreadable (for instance truncated by a power cut in the middle of a write), dzVents restores the values from that backup automatically and preserves the broken file with a <code>.faulty</code> extension for inspection. Deleting a data file by hand still resets its storage to the initial values; the backup is only used when the data file is present but corrupt.
+
 <span id="asynchronous-http-requests"></span>
 = Asynchronous HTTP requests =
 

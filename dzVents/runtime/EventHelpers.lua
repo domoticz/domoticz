@@ -92,16 +92,51 @@ local function EventHelpers(domoticz, mainMethod)
 		end
 	end
 
+	local function loadStorageFile(path)
+		local file = io.open(path, 'r')
+		if (file == nil) then
+			return nil, 'notfound'
+		end
+		file:close()
+		local chunk, err = loadfile(path)
+		if (chunk == nil) then
+			return nil, err
+		end
+		local ok, contents = pcall(chunk)
+		if (not ok) then
+			return nil, contents
+		end
+		if (type(contents) ~= 'table') then
+			-- an empty or truncated file (e.g. after a power cut mid-write)
+			-- yields nil instead of the data table
+			return nil, 'the file does not contain a data table'
+		end
+		return contents
+	end
+
 	function self.getStorageContext(storageDef, module)
 
 		local storageContext = {}
-		local fileStorage, value, ok
-		
+		local fileStorage, err
+
 		if (storageDef ~= nil) then
 			-- load the datafile for this module
-			ok, fileStorage = pcall(require, module)
+			local basePath = _G.dataFolderPath .. sep .. module
+			fileStorage, err = loadStorageFile(basePath .. '.lua')
+			if (fileStorage == nil and err ~= 'notfound') then
+				-- the data file exists but cannot be used: preserve it for
+				-- inspection and fall back to the last good backup
+				utils.log('There was an issue reading the datamodule "' .. basePath .. '.lua": ' .. tostring(err), utils.LOG_ERROR)
+				os.remove(basePath .. '.faulty')
+				os.rename(basePath .. '.lua', basePath .. '.faulty')
+				fileStorage = loadStorageFile(basePath .. '.lua.bak')
+				if (fileStorage ~= nil) then
+					utils.log('Restored the storage data for "' .. module .. '" from the backup file', utils.LOG_FORCE)
+				end
+			end
 			package.loaded[module] = nil -- no caching
-			if (ok) then
+
+			if (fileStorage ~= nil) then
 				-- only transfer data as defined in storageDef
 				for _var, _def in pairs(storageDef) do
 					local var, def
@@ -113,23 +148,7 @@ local function EventHelpers(domoticz, mainMethod)
 						def = _def
 					end
 
-					if type(fileStorage) == 'boolean' then
-
-						local function preserve(fullQualifiedName, fullQualifiedNameFaulty)
-							local inf = io.open(fullQualifiedName, 'rb')
-							local outf = io.open(fullQualifiedNameFaulty, 'w')
-							outf:write(inf:read('*a'))
-							inf:close()
-							outf:close()
-							os.remove(fullQualifiedName)
-						end
-
-						local fullQualifiedName = _G.dataFolderPath .. sep .. module .. '.lua'
-						local fullQualifiedNameFaulty = _G.dataFolderPath .. sep .. module .. '.faulty'
-
-						utils.log('There was an issue with the require of the datamodule "' .. fullQualifiedName .. '"', utils.LOG_ERROR)
-						preserve(fullQualifiedName,fullQualifiedNameFaulty)
-					elseif def.history ~= nil and def.history == true then
+					if def.history ~= nil and def.history == true then
 						storageContext[var] = HistoricalStorage(fileStorage[var], def.maxItems, def.maxHours, def.maxMinutes, def.getValue)
 					else
 						if (fileStorage[var] == nil) then
@@ -156,7 +175,7 @@ local function EventHelpers(domoticz, mainMethod)
 
 					if (def.history ~= nil and def.history == true) then
 						-- no initial value, just an empty history
-						storageContext[var] = HistoricalStorage(fileStorage[var], def.maxItems, def.maxHours, def.maxMinutes, def.getValue)
+						storageContext[var] = HistoricalStorage(nil, def.maxItems, def.maxHours, def.maxMinutes, def.getValue)
 					else
 						if (def.initial ~= nil) then
 							storageContext[var] = def.initial
@@ -357,7 +376,26 @@ local function EventHelpers(domoticz, mainMethod)
 		end
 
 		local t = {}
-		local files = dz_scandir(directory)
+		local files
+		if (dz_scandir ~= nil) then
+			files = dz_scandir(directory)
+		else
+			-- not running inside Domoticz (e.g. busted tests): fall back to a shell listing
+			files = {}
+			local cmd
+			if (sep == '/') then
+				cmd = 'ls -a "' .. directory .. '"'
+			else
+				cmd = 'dir "' .. directory .. '" /B'
+			end
+			local pfile = io.popen(cmd)
+			if (pfile ~= nil) then
+				for filename in pfile:lines() do
+					table.insert(files, filename)
+				end
+				pfile:close()
+			end
+		end
 
 		for _, filename in ipairs(files) do
 			pos, len = string.find(filename, '.lua', 1, true)

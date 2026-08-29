@@ -1,6 +1,12 @@
 ```{=mediawiki}
 __NOTOC__
 ```
+## 3.1.13 (2026-08-29) ##
+- Persistent storage (`domoticz.data` / `domoticz.globalData`) is now crash-safe: data is written to a temporary file that is atomically renamed over the data file, and the previous version is kept as a `.bak` backup. Before this, a power cut or hard reboot during a write could truncate the data file and silently reset all persistent variables to their initial values
+- When a data file is corrupt (for example truncated by a power cut), the values are now restored from the backup; the broken file is preserved with a `.faulty` extension. Deleting a data file by hand still resets the storage to initial values
+- Unchanged data is no longer rewritten after every script run, reducing SD card wear
+- Serialization is now done with the maintained serpent library instead of the unmaintained persistence code; existing data files load unchanged
+
 ## 3.1.12 (2026-04-20) ##
 - Added `domoticz.switchTimerPlan(idx)` to switch the active timer plan by its database ID
 - Added `device.resumeTimerPlan()` / `scene.resumeTimerPlan()` / `group.resumeTimerPlan()` to replay the last timer that should have fired today for a device, scene, or group (useful for catch-up after a restart or power loss)
