@@ -26,6 +26,15 @@
   --dz-btn-text:                   #fff;
   --dz-btn-border:                 #444;
   --dz-btn-hover-bg:               #626060;
+
+  --dz-icon-accent:                #43a4d3;
+  --dz-icon-muted:                 #8B8D93;
+  --dz-icon-success:               #5cb85c;
+  --dz-icon-warn:                  #f0ad4e;
+  --dz-icon-danger:                #DE6A66;
+  --dz-batt-empty:                 #F05863;
+  --dz-batt-low:                   #F9D023;
+  --dz-batt-ok:                    #B8DB23;
 }
 
 .row-fluid .span12,

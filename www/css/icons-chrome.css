@@ -46,28 +46,28 @@
    the base to a bare .dz-chrome-icon would also grey out the trend arrows and
    state glyphs inside device widgets, which are not actions. */
 :where(.btn.btn-icon) > .dz-chrome-icon {
-	color: #6c6e74;
+	color: var(--dz-icon-muted, #6c6e74);
 	transition: color 0.12s ease;
 }
 
 .dz-chrome-icon.dz-act-add {
-	color: #5cb85c;
+	color: var(--dz-icon-success, #5cb85c);
 }
 
 .dz-chrome-icon.dz-act-edit {
-	color: #43a4d3;
+	color: var(--dz-icon-accent, #43a4d3);
 }
 
 .dz-chrome-icon.dz-act-warn {
-	color: #f0ad4e;
+	color: var(--dz-icon-warn, #f0ad4e);
 }
 
 .dz-chrome-icon.dz-act-danger {
-	color: #d9534f;
+	color: var(--dz-icon-danger, #d9534f);
 }
 
 .dz-chrome-icon.dz-act-neutral {
-	color: #6c6e74;
+	color: var(--dz-icon-muted, #6c6e74);
 }
 
 /* Hover lifts the icon rather than recolouring it, so the meaning stays put.
@@ -93,31 +93,31 @@ th .dz-chrome-icon {
    arrow is a chrome icon (temperature/mobile) or a device glyph (utility). */
 .dz-chrome-icon.dz-trend-up,
 .dz-icon-glyph.dz-trend-up {
-	color: #d9534f;
+	color: var(--dz-icon-danger, #d9534f);
 }
 
 .dz-chrome-icon.dz-trend-down,
 .dz-icon-glyph.dz-trend-down {
-	color: #43a4d3;
+	color: var(--dz-icon-accent, #43a4d3);
 }
 
 .dz-chrome-icon.dz-trend-flat,
 .dz-icon-glyph.dz-trend-flat {
-	color: #6c6e74;
+	color: var(--dz-icon-muted, #6c6e74);
 }
 
 /* Battery level glyph, coloured the way the old level bar was: red nearly
    empty, amber low, green otherwise. */
 .dz-chrome-icon.dz-batt-empty {
-	color: #ED3745;
+	color: var(--dz-batt-empty, #ED3745);
 }
 
 .dz-chrome-icon.dz-batt-low {
-	color: #F9D023;
+	color: var(--dz-batt-low, #F9D023);
 }
 
 .dz-chrome-icon.dz-batt-ok {
-	color: #B8DB23;
+	color: var(--dz-batt-ok, #B8DB23);
 }
 
 /* --- Icon picker: compact form field --- */
@@ -140,7 +140,7 @@ dz-icon-picker {
 	line-height: 28px;
 	text-align: center;
 	font-size: 22px;
-	color: #43A4D3;
+	color: var(--dz-icon-accent, #43A4D3);
 }
 
 .dz-icon-field-preview img {
@@ -571,13 +571,13 @@ dz-icon-picker-modal {
    rather than the device glyph colour. transimg still dims whichever one
    represents the state the group is already in. */
 .dz-scene-run {
-	color: #43a4d3;
+	color: var(--dz-icon-accent, #43a4d3);
 }
 
 .dz-scene-on {
-	color: #5cb85c;
+	color: var(--dz-icon-success, #5cb85c);
 }
 
 .dz-scene-off {
-	color: #6c6e74;
+	color: var(--dz-icon-muted, #6c6e74);
 }

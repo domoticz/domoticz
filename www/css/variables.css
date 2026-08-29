@@ -36,7 +36,7 @@
   --dz-input-border:               #ccc;
   --dz-modal-bg:                   #013;
   --dz-modal-text:                 #ddd;
-  --dz-modal-header-bg:            #f5f5f5;
+  --dz-modal-header-bg:            #283750;
   --dz-nav-bg:                     #283750;
   --dz-btn-bg:                     #f5f5f5;
   --dz-btn-text:                   #333;
@@ -59,6 +59,17 @@
   --dz-table-odd-text:             #333;
   --dz-table-even-bg:              #ffffff;
   --dz-table-even-text:            #333;
+
+  --dz-icon-accent:                #2F96C8;
+  --dz-icon-muted:                 #6c6e74;
+  --dz-icon-success:               #46A046;
+  --dz-icon-warn:                  #C77C11;
+  --dz-icon-danger:                #d9534f;
+  --dz-icon-star:                  var(--dz-widget-amber, #ffb300);
+  --dz-batt-empty:                 #ED3745;
+  --dz-batt-low:                   #C77C11;
+  --dz-batt-ok:                    #7F9718;
+  --dz-accent-text:                #fff;
 
   --dz-remote-face-start:          #cbcccb;
   --dz-remote-face-end:            #989898;

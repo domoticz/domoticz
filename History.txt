@@ -27,7 +27,6 @@ Version 2026.xxxx
 - Fixed: Charts, on counter (kWh, gas, water) log charts a sustained pinch zoomed in and then back out while the fingers kept spreading, and Shift+drag widened the visible range instead of panning; the hourly bars' pointPlacement 'between' broke Highcharts' panning and pinch translation, and a two-finger move whose fingers rested on different elements was transformed twice (#6987)
 - Fixed: Counters, virtual counter devices set to type Energy, Gas or Energy Generated now show their unit (kWh, m3) in the log and reports instead of a question mark (#6928)
 - Fixed: Counters, the daily price of gas, water and generic counter meters was reset to 0 when the tariff was above 3 per unit; the spike guard that discards an implausible price is calibrated for energy (kWh) and is now applied to energy meters only (#7005)
-- Fixed: Custom Icons, the Icon Libraries table stuck out of its panel, and a PNG icon sat on the bottom edge of the icon picker preview instead of being centred like the font icons (#7000)
 - Fixed: Dashboard Dynamic, dimmer and blind position sliders in the Quick Actions and Room widgets now send the level when released on a touch device; the slider moved but the command was only sent when using a mouse (#6938)
 - Fixed: Dashboard Dynamic, Quick Actions buttons for protected devices no longer become unresponsive after the passcode prompt is cancelled or a wrong password is entered
 - Fixed: Dashboard Dynamic, Quick Actions dimmer slider is now always visible instead of hidden behind a reveal toggle, and uses the device's actual dim range so the shown percentage matches the device level (#6938)
@@ -49,8 +48,6 @@ Version 2026.xxxx
 - Fixed: Floorplans, the pagination dots are now positioned against the visual viewport, so they stay on screen while the page is pinch zoomed instead of drifting out of view (#6954)
 - Fixed: Floorplans, the pagination dots now carry a dark contrast ring so they stay visible on light floorplan backgrounds, where the white-only dots were all but invisible (#6954)
 - Fixed: Hardware, the Update and Delete buttons did nothing for a plugin whose Mode field contains a single quote or backslash, for example a Tuya SmartPlug local key, which left that field impossible to change (#6963)
-- Fixed: Icons, a classic Domoticz icon chosen in the icon picker rendered as its Font Awesome look-alike, on the device and in the picker's preview; it now shows the chosen icon
-- Fixed: Icons, in the Font Awesome glyph style the blinds Open/Stop/Close buttons kept their images, a temperature reading was always shown with the same thermometer (it now follows the reading like the classic images did, with a snowflake below zero), and a barometer-only device showed a thermometer instead of a gauge
 - Fixed: Lights, restored touch dragging on the RGBW color picker wheel and sliders; on touch devices dragging did nothing and only taps registered (#6917)
 - Fixed: Lights, the RGBW color picker mode buttons (Color, White, Color temperature, Color and white mix) now show a tooltip describing their function (#6911)
 - Fixed: Lights, the Switches page could be dragged sideways on a phone while other pages stayed put; a long device name and the button row of a selector switch with many levels both ran past the right edge of the screen, which also let a fast vertical swipe slip the page horizontally (#6817)
@@ -78,7 +75,6 @@ Version 2026.xxxx
 - Fixed: Users, deleting a user now also removes that user's dashboard layouts; the rows were left behind and a newly created user could inherit them
 - Fixed: Users, saving a user's device list reset that user's dashboard order to alphabetical; order and favourites are now kept and new devices are appended, and non-admin users can reorder their own dashboard (#6970)
 - Fixed: Utilities, the Update button in the edit dialog of an Alert or Thermostat Operating State device did nothing and silently discarded the change; it could also store another device's icon and bar colour ranges on the device being edited (#6946)
-- Fixed: Web assets, installed icon libraries are stored with a pre-compressed copy so page loads no longer spend seconds gzipping large stylesheets on every request, and installing a library by URL runs in the background instead of blocking the web server (#7001)
 - Fixed: Web server, every request through a reverse proxy that writes more than one forwarded-client header returned 403; nginx Proxy Manager sends X-Forwarded-For and X-Real-IP together, which made the whole site inaccessible (#6939)
 - Fixed: Web server, restore trusted-network client detection behind reverse proxies using X-Forwarded-For (#6937)
 - Fixed: WebUI, a Text or Alert device whose value is one long unbreakable string, for example a JSON payload, painted out of its widget and made the whole page wider than the screen, which on a tablet or phone left the Utilities tab zoomed far out; such values now wrap inside their widget

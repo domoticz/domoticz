@@ -122,7 +122,7 @@ body.dd-navbar-hidden .dd-topbar {
 
 /* Navbar toggle button: accent when navbar is currently visible */
 .dd-topbar-btn.dd-topbar-nav-on {
-    color: #fff !important;
+    color: var(--dz-accent-text, #fff) !important;
     background: var(--dz-btn-primary-bg, #337ab7) !important;
     border-radius: 10px;
 }
@@ -3298,7 +3298,7 @@ dd-wcp-color {
 
 /* Kiosk button: accent when kiosk is running */
 .dd-topbar-btn.dd-topbar-kiosk-active {
-    color: #fff !important;
+    color: var(--dz-accent-text, #fff) !important;
     background: var(--dz-widget-accent) !important;
     border-radius: 10px;
 }
