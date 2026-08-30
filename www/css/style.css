@@ -3281,6 +3281,13 @@ dz-temp-bar {
     z-index: 1;
 }
 
+/* The UA underline on icon-wrapping anchors propagates onto the block-level
+   glyph inside and paints a skip-ink "stripe" under it (classic <img> icons,
+   being replaced elements, never showed it). The reset must sit on the anchor:
+   a descendant cannot cancel a propagated text-decoration. */
+#img a {
+    text-decoration: none;
+}
 dz-device-icon {
     display: block;
 }
