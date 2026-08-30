@@ -182,10 +182,10 @@ define([
                 }
 
                 function fetchViaProxy(cfg, maxItems, proxyIndex) {
+                    // Only Domoticz's own server-side proxy: public CORS proxies now
+                    // answer 401/5xx, and the feed URL should not leave the network anyway.
                     var proxies = [
-                        '__domoticz__', // server-side proxy via Domoticz backend
-                        'https://corsproxy.io/?url=',
-                        'https://api.codetabs.com/v1/proxy?quest='
+                        '__domoticz__'
                     ];
                     var idx = proxyIndex || 0;
                     if (idx >= proxies.length) {
@@ -208,8 +208,7 @@ define([
                         ctrl.loading = false;
                         var xml;
                         if (useServerProxy) {
-                            // Domoticz fetchurl returns JSON; if the proxy upgrade hasn't been
-                            // deployed yet, resp.data may still be a string — parse it manually.
+                            // Domoticz fetchurl returns JSON; tolerate a string body as well.
                             var d = resp.data;
                             if (typeof d === 'string') {
                                 try { d = JSON.parse(d); } catch(e) { d = null; }
@@ -245,8 +244,7 @@ define([
                     if (cancelToken) { cancelToken.resolve(); }
                     cancelToken = $q.defer();
 
-                    // Prefer Domoticz's own server-side fetchurl (same origin, no third party).
-                    // CORS proxies (corsproxy.io, codetabs, rss2json) are kept as fallbacks only.
+                    // Fetched through Domoticz's own server-side fetchurl (same origin, no third party).
                     fetchViaProxy(cfg, maxItems);
                 };
 

@@ -214,6 +214,17 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
     });
 
 	app.config(function ($httpProvider) {
+		// A 401 only means "the Domoticz session is gone" when Domoticz itself sent it.
+		// Widgets fetch third-party URLs through $http too (a calendar ICS fetched
+		// directly, the open-meteo weather API); a 401 from one of those must not
+		// log the user out.
+		var isDomoticzRequest = function (config) {
+			var url = (config && config.url) || '';
+			if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(url) && url.indexOf('//') !== 0) {
+				return true; // relative URL -> same origin
+			}
+			return url.indexOf(window.location.origin + '/') === 0;
+		};
 		var logsOutUserOn401 = ['$q', '$location', 'permissions', function ($q, $location, permissions) {
 			return {
 				request: function (config) {
@@ -226,7 +237,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 					return response || $q.when(response);
 				},
 				responseError: function (response) {
-					if (response && response.status === 401) {
+					if (response && response.status === 401 && isDomoticzRequest(response.config)) {
 						if (window.needsSetup) {
 							$location.path('/SetupWizard');
 						} else {
