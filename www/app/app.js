@@ -736,6 +736,14 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			}
 		});
 
+		$rootScope.$on("$routeChangeStart", function () {
+			if ($.fn.dialog) {
+				$('.ui-dialog-content:visible').filter(function () {
+					return $(this).dialog('instance') !== undefined;
+				}).dialog('close');
+			}
+		});
+
 		$rootScope.$on("$routeChangeStart", function (scope, next, current) {
 			if (!isOnline) {
 				$location.path('/Offline');
