@@ -14,10 +14,7 @@ define(['app'], function (app) {
             $.devIdx = $ctrl.hardware.idx;
 
             $('#mysensorsnodestable').dataTable({
-                "sDom": '<"H"lfrC>t<"F"ip>',
-                "oTableTools": {
-                    "sRowSelect": "single"
-                },
+                "sDom": '<"H"lfr>t<"F"ip>',
                 "aaSorting": [[0, "asc"]],
                 "bSortClasses": false,
                 "bProcessing": true,
@@ -29,10 +26,7 @@ define(['app'], function (app) {
                 language: $.DataTableLanguage
             });
             $('#mysensorsactivetable').dataTable({
-                "sDom": '<"H"lfrC>t<"F"ip>',
-                "oTableTools": {
-                    "sRowSelect": "single"
-                },
+                "sDom": '<"H"lfr>t<"F"ip>',
                 "aaSorting": [[0, "asc"]],
                 "bSortClasses": false,
                 "bProcessing": true,

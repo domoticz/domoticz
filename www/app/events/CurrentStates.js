@@ -10,7 +10,7 @@ define(['app', 'events/factories'], function (app) {
 
             function init() {
                 table = $element.find('table').dataTable(Object.assign({}, dataTableDefaultSettings, {
-                    'sDom': 't',
+                    dom: 't',
                     paging: false,
                     columns: [
                         { title: $.t('Idx'), data: 'id', type: 'num', width: '10%' },

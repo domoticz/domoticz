@@ -442,7 +442,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             });
 
             table.dataTable(Object.assign({}, dataTableDefaultSettings, {
-                sDom: '<"H"rC>t<"F">',
+                dom: '<"H"r>t<"F">',
                 columns: columns,
                 pageLength: 50,
                 order: [[0, 'asc']],

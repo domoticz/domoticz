@@ -270,10 +270,7 @@ define(['app'], function (app) {
 			$('#timerplancontent').i18n();
 			
 			oTable = $('#timerplantable').dataTable( {
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"bSort": false,
 				"bProcessing": true,
 				"bStateSave": true,
@@ -285,10 +282,7 @@ define(['app'], function (app) {
 				} );
 
 			oTable = $('#activetable').dataTable( {
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"bSort": false,
 				"bProcessing": true,
 				"bStateSave": false,

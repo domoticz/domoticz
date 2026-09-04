@@ -150,10 +150,7 @@ define(['app'], function (app) {
 		$scope.ShowUserVariables = function () {
 			$('#fibaromain').i18n();
 			var oTable = $('#uservariablestable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"aaSorting": [[0, "desc"]],
 				"bSortClasses": false,
 				"bProcessing": true,

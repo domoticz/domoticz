@@ -18,10 +18,7 @@ define(['app'], function (app) {
             $("#hardwarecontent #bleboxsettingstable #ipmask").val("192.168.1.*");
 
             $('#bleboxnodestable').dataTable({
-                "sDom": '<"H"lfrC>t<"F"ip>',
-                "oTableTools": {
-                    "sRowSelect": "single",
-                },
+                "sDom": '<"H"lfr>t<"F"ip>',
                 "aaSorting": [[0, "desc"]],
                 "bSortClasses": false,
                 "bProcessing": true,

@@ -328,10 +328,7 @@ define(['app'], function (app) {
 		{
 			$('#googlepubsubmain').i18n();
 			var oTable = $('#linkgooglepubsubtable').dataTable( {
-			  "sDom": '<"H"lfrC>t<"F"ip>',
-			  "oTableTools": {
-				"sRowSelect": "single"
-			  },
+			  "sDom": '<"H"lfr>t<"F"ip>',
 			  "fnDrawCallback": function (oSettings) {
 				var nTrs = this.fnGetNodes();
 				$(nTrs).click(

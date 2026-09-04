@@ -455,10 +455,7 @@ define(['app'], function (app) {
 			$('#floorplaneditcontent').i18n();
 
 			oTable = $('#floorplantable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"bSort": false,
 				"bProcessing": true,
 				"bStateSave": true,
@@ -470,10 +467,7 @@ define(['app'], function (app) {
 			});
 
 			oTable = $('#plantable2').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"bSort": false,
 				"bProcessing": true,
 				"bStateSave": false,
@@ -483,10 +477,7 @@ define(['app'], function (app) {
 			});
 
 			oTable = $('#imagetable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"bSort": true,
 				"bProcessing": true,
 				"bStateSave": false,
