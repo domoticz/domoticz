@@ -157,8 +157,8 @@ define(['app'], function (app) {
             $("#hardwarecontent #panasonicnodeparamstable #nodeip").val("");
             $("#hardwarecontent #panasonicnodeparamstable #nodeport").val("55000");
 
-            var oTable = $('#panasonicnodestable').dataTable();
-            oTable.fnClearTable();
+            var oTable = $('#panasonicnodestable').DataTable();
+            oTable.clear().draw();
 
             $.ajax({
                 url: "json.htm?type=command&param=panasonicgetnodes&idx=" + $.devIdx,
@@ -167,7 +167,7 @@ define(['app'], function (app) {
                 success: function (data) {
                     if (typeof data.result != 'undefined') {
                         $.each(data.result, function (i, item) {
-                            var addId = oTable.fnAddData({
+                            oTable.row.add({
                                 "DT_RowId": item.idx,
                                 "Name": item.Name,
                                 "IP": item.IP,
@@ -175,7 +175,7 @@ define(['app'], function (app) {
                                 "1": item.Name,
                                 "2": item.IP,
                                 "3": item.Port
-                            });
+                            }).draw();
                         });
                     }
                 }
@@ -193,13 +193,13 @@ define(['app'], function (app) {
                     $("#hardwarecontent #panasonicnodeparamstable #nodeport").val("55000");
                 }
                 else {
-                    var oTable = $('#panasonicnodestable').dataTable();
+                    var oTable = $('#panasonicnodestable').DataTable();
                     oTable.$('tr.row_selected').removeClass('row_selected');
                     $(this).addClass('row_selected');
                     $('#updelclr #nodeupdate').attr("class", "btnstyle3");
                     var anSelected = fnGetSelected(oTable);
                     if (anSelected.length !== 0) {
-                        var data = oTable.fnGetData(anSelected[0]);
+                        var data = oTable.row(anSelected[0]).data();
                         var idx = data["DT_RowId"];
                         $("#updelclr #nodeupdate").attr("href", "javascript:PanasonicUpdateNode(" + idx + ")");
                         $('#updelclr #nodedelete').attr("class", "btnstyle3");

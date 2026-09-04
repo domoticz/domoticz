@@ -185,8 +185,8 @@ define(['app'], function (app) {
 			$('#updelclr #timerplancopy').attr("class", "btnstyle3-dis");
 			$('#updelclr #timerplandelete').attr("class", "btnstyle3-dis");
 
-			var oTable = $('#timerplantable').dataTable();
-			oTable.fnClearTable();
+			var oTable = $('#timerplantable').DataTable();
+			oTable.clear().draw();
 			$.ajax({
 			 url: "json.htm?type=command&param=gettimerplans",
 			 async: false, 
@@ -200,12 +200,12 @@ define(['app'], function (app) {
 					if (DisplayName == 'default') {
 						DisplayName = $.t(DisplayName);
 					}
-					var addId = oTable.fnAddData( {
+					oTable.row.add( {
 						"DT_RowId": item.idx,
 						"Name": item.Name,
 						"0": item.idx,
 						"1": DisplayName
-					} );
+					} ).draw();
 				});
 			  }
 			 }
@@ -223,7 +223,7 @@ define(['app'], function (app) {
 					$("#dialog-add-edit-plan #planname").val("");
 				}
 				else {
-					var oTable = $('#timerplantable').dataTable();
+					var oTable = $('#timerplantable').DataTable();
 					oTable.$('tr.row_selected').removeClass('row_selected');
 					$(this).addClass('row_selected');
 					$('#updelclr #timerplanedit').attr("class", "btnstyle3-dis");
@@ -232,7 +232,7 @@ define(['app'], function (app) {
 					
 					var anSelected = fnGetSelected( oTable );
 					if ( anSelected.length !== 0 ) {
-						var data = oTable.fnGetData( anSelected[0] );
+						var data = oTable.row( anSelected[0] ).data();
 						var idx= data["DT_RowId"];
 						$.devIdx=idx;
 						$('#updelclr #timerplanedit').attr("class", "btnstyle3");

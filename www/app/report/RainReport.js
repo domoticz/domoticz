@@ -260,7 +260,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 order: [[0, 'asc']]
             }));
 
-            table.dataTable().api().rows
+            table.DataTable().rows
                 .add(data.items)
                 .draw();
 

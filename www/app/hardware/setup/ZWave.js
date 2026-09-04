@@ -839,8 +839,8 @@ define(['app'], function (app) {
 			$("#hardwarecontent #configuration").html("");
 			$("#hardwarecontent #nodeparamstable #nodename").val("");
 
-			var oTable = $('#nodestable').dataTable();
-			oTable.fnClearTable();
+			var oTable = $('#nodestable').DataTable();
+			oTable.clear().draw();
 
 			$http({
 				url: "json.htm?type=command&param=getopenzwavenodes&idx=" + $.devIdx,
@@ -880,7 +880,7 @@ define(['app'], function (app) {
 							Description += "+";
 						}
 						var nodeStr = addLeadingZeros(item.NodeID, 3) + " (0x" + addLeadingZeros(item.NodeID.toString(16), 2) + ")";
-						var addId = oTable.fnAddData({
+						oTable.row.add({
 							"DT_RowId": item.idx,
 							"Name": item.Name,
 							"PollEnabled": item.PollEnabled,
@@ -898,7 +898,7 @@ define(['app'], function (app) {
 							"7": $.t((item.PollEnabled === "true") ? "Yes" : "No"),
 							"8": item.Battery,
 							"9": statusImg + '&nbsp;&nbsp;' + healButton,
-						});
+						}).draw();
 					});
 				}
 			}, function errorCallback(response) {
@@ -920,7 +920,7 @@ define(['app'], function (app) {
 				}
 				else {
 					var iOwnNodeId = parseInt($("#ownNodeId").val());
-					var oTable = $('#nodestable').dataTable();
+					var oTable = $('#nodestable').DataTable();
 					oTable.$('tr.row_selected').removeClass('row_selected');
 					$(this).addClass('row_selected');
 					$('#updelclr #nodeupdate').attr("class", "btnstyle3");
@@ -929,7 +929,7 @@ define(['app'], function (app) {
 					$('#updelclr #replacefailednode').attr("class", "btnstyle3");
 					var anSelected = fnGetSelected(oTable);
 					if (anSelected.length !== 0) {
-						var data = oTable.fnGetData(anSelected[0]);
+						var data = oTable.row(anSelected[0]).data();
 						var idx = data["DT_RowId"];
 						var iNode = parseInt(data["NodeID"]);
 						$("#updelclr #nodeupdate").attr("href", "javascript:UpdateNode(" + idx + ")");
@@ -1077,8 +1077,8 @@ define(['app'], function (app) {
 		RefreshOpenZWaveUserCodesTable = function () {
 			$('#modal').show();
 
-			var oTable = $('#codestable').dataTable();
-			oTable.fnClearTable();
+			var oTable = $('#codestable').DataTable();
+			oTable.clear().draw();
 			$http({
 				url: "json.htm?type=command&param=zwavegetusercodes&idx=" + $.nodeIdx,
 				async: true,
@@ -1088,14 +1088,14 @@ define(['app'], function (app) {
 				if (typeof data.result !== 'undefined') {
 					$.each(data.result, function (i, item) {
 						var removeButton = '<span class="label label-info lcursor" onclick="RemoveUserCode(' + item.index + ');">Remove</span>';
-						var addId = oTable.fnAddData({
+						oTable.row.add({
 							"DT_RowId": item.index,
 							"Code": item.index,
 							"Value": item.code,
 							"0": item.index,
 							"1": item.code,
 							"2": removeButton
-						});
+						}).draw();
 					});
 				}
 			}, function errorCallback(response) {
@@ -1107,12 +1107,12 @@ define(['app'], function (app) {
 					$(this).removeClass('row_selected');
 				}
 				else {
-					var oTable = $('#codestable').dataTable();
+					var oTable = $('#codestable').DataTable();
 					oTable.$('tr.row_selected').removeClass('row_selected');
 					$(this).addClass('row_selected');
 					var anSelected = fnGetSelected(oTable);
 					if (anSelected.length !== 0) {
-						var data = oTable.fnGetData(anSelected[0]);
+						var data = oTable.row(anSelected[0]).data();
 						//var idx= data["DT_RowId"];
 					}
 				}

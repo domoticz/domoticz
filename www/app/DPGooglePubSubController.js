@@ -231,8 +231,8 @@ define(['app'], function (app) {
 			$('#linkgooglepubsubparamstable #linkupdate').attr("class", "btnstyle3-dis");
 			$('#linkgooglepubsubparamstable #linkdelete').attr("class", "btnstyle3-dis");
 
-		  var oTable = $('#linkgooglepubsubtable').dataTable();
-		  oTable.fnClearTable();
+		  var oTable = $('#linkgooglepubsubtable').DataTable();
+		  oTable.clear().draw();
 		  $.ajax({
 			 url: "json.htm?type=command&param=getgooglepubsublinks",
 			 async: false, 
@@ -285,7 +285,7 @@ define(['app'], function (app) {
 							DelimitedValue = $.t(GetDeviceValueOptionWording(item.DeviceID,item.Delimitedvalue));
 						}
 					}
-					var addId = oTable.fnAddData( {
+					oTable.row.add( {
 						"DT_RowId": item.idx,
 						"TargetType": item.TargetType,
 						"DeviceID": item.DeviceID,
@@ -300,7 +300,7 @@ define(['app'], function (app) {
 						"5": item.TargetProperty,
 						"6": includeUnit,
 						"7": enabled
-					} );
+					} ).draw();
 				});
 			  }
 			 }
@@ -327,10 +327,10 @@ define(['app'], function (app) {
 		ShowLinks = function()
 		{
 			$('#googlepubsubmain').i18n();
-			var oTable = $('#linkgooglepubsubtable').dataTable( {
+			var oTable = $('#linkgooglepubsubtable').DataTable( {
 			  "sDom": '<"H"lfr>t<"F"ip>',
 			  "fnDrawCallback": function (oSettings) {
-				var nTrs = this.fnGetNodes();
+				var nTrs = this.api().rows().nodes();
 				$(nTrs).click(
 					function(){
 						$(nTrs).removeClass('row_selected');
@@ -339,7 +339,7 @@ define(['app'], function (app) {
 						$('#linkgooglepubsubparamstable #linkdelete').attr("class", "btnstyle3");
 						var anSelected = fnGetSelected( oTable );
 						if ( anSelected.length !== 0 ) {
-							var data = oTable.fnGetData( anSelected[0] );
+							var data = oTable.row( anSelected[0] ).data();
 							var idx= data["DT_RowId"];
 							$.linkIdx=idx;	
 							$("#linkgooglepubsubparamstable #linkupdate").attr("href", "javascript:AddLink('u')");

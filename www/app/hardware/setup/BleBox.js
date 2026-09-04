@@ -144,8 +144,8 @@ define(['app'], function (app) {
             $("#hardwarecontent #bleboxnodeparamstable #nodeip").val("");
 
 
-            var oTable = $('#bleboxnodestable').dataTable();
-            oTable.fnClearTable();
+            var oTable = $('#bleboxnodestable').DataTable();
+            oTable.clear().draw();
 
             $.ajax({
                 url: "json.htm?type=command&param=bleboxgetnodes&idx=" + $.devIdx,
@@ -154,7 +154,7 @@ define(['app'], function (app) {
                 success: function (data) {
                     if (typeof data.result != 'undefined') {
                         $.each(data.result, function (i, item) {
-                            var addId = oTable.fnAddData({
+                            oTable.row.add({
                                 "DT_RowId": item.idx,
                                 "Name": item.Name,
                                 "IP": item.IP,
@@ -166,7 +166,7 @@ define(['app'], function (app) {
                                 "5": item.hv,
                                 "6": item.fv,
                                 "7": item.rssi
-                            });
+                            }).draw();
                         });
                     }
                 }
@@ -182,12 +182,12 @@ define(['app'], function (app) {
                     $("#hardwarecontent #bleboxnodeparamstable #nodeip").val("");
                 }
                 else {
-                    var oTable = $('#bleboxnodestable').dataTable();
+                    var oTable = $('#bleboxnodestable').DataTable();
                     oTable.$('tr.row_selected').removeClass('row_selected');
                     $(this).addClass('row_selected');
                     var anSelected = fnGetSelected(oTable);
                     if (anSelected.length !== 0) {
-                        var data = oTable.fnGetData(anSelected[0]);
+                        var data = oTable.row(anSelected[0]).data();
                         var idx = data["DT_RowId"];
                         $('#updelclr #nodedelete').attr("class", "btnstyle3");
                         $("#updelclr #nodedelete").attr("href", "javascript:BleBoxDeleteNode(" + idx + ")");
