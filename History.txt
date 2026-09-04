@@ -2446,6 +2446,7 @@ Version 1.0.6 (January 9th 2013)
 - Changed: P1 Smart Meter, Gas value now only send/update when the value is changing (once every 1 a 2 hours)
 - Fixed: Lighting 1, ARC Doorbell is now send with a 'Chime' instead of All On
 - Fixed: Temp, Hum, TempHumBaro ID
+- Fixed: Themes, the media remote (Kodi, Logitech Media Server, HEOS) painted as solid black shapes on any theme that does not import css/legacy.css; the --dz-remote-* colours now carry their stock values as fallbacks, so the remote renders as before and a theme only has to declare the tokens to recolour it (#7016)
 
 Version 1.0.5 (December 29th 2012)
 - Start of History document
