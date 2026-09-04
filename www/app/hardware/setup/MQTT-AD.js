@@ -14,10 +14,7 @@ define(['app'], function (app) {
             $.devIdx = $ctrl.hardware.idx;
 
             var oTable = $('#numberstable').dataTable({
-                "sDom": '<"H"lfrC>t<"F"ip>',
-                "oTableTools": {
-                    "sRowSelect": "single",
-                },
+                "sDom": '<"H"lfr>t<"F"ip>',
                 "aaSorting": [[0, "desc"]],
                 "bSortClasses": false,
                 "bProcessing": true,
@@ -69,8 +66,8 @@ define(['app'], function (app) {
             $("#numbervaluetable #numval").val("");
             document.getElementById("numunit").innerText = "";
 
-            var oTable = $('#numberstable').dataTable();
-            oTable.fnClearTable();
+            var oTable = $('#numberstable').DataTable();
+            oTable.clear().draw();
 
             $.ajax({
                 url: "json.htm?type=command&param=mqttadgetconfig&idx=" + $.devIdx,
@@ -79,7 +76,7 @@ define(['app'], function (app) {
                 success: function (data) {
                     if (typeof data.result != 'undefined') {
                         $.each(data.result, function (i, item) {
-                            var addId = oTable.fnAddData({
+                            oTable.row.add({
                                 "DT_RowId": item.idx,
                                 "Device": item.dev_name,
                                 "Name": item.name,
@@ -92,7 +89,7 @@ define(['app'], function (app) {
                                 "1": item.name,
                                 "2": (item.value!="") ? item.value : "Unknown",
                                 "3": item.unit
-                            });
+                            }).draw();
                         });
                     }
                 }
@@ -108,13 +105,13 @@ define(['app'], function (app) {
 					document.getElementById("numunit").innerText = "";
                 }
                 else {
-                    var oTable = $('#numberstable').dataTable();
+                    var oTable = $('#numberstable').DataTable();
                     oTable.$('tr.row_selected').removeClass('row_selected');
                     $(this).addClass('row_selected');
                     $('#numbervaluetable #numberupdate').attr("class", "btnstyle3");
                     var anSelected = fnGetSelected(oTable);
                     if (anSelected.length !== 0) {
-                        var data = oTable.fnGetData(anSelected[0]);
+                        var data = oTable.row(anSelected[0]).data();
                         var id = data["DT_RowId"];
                         $("#numbervaluetable #numberupdate").attr("href", "javascript:UpdateNumber('" + id + "')");
                         $('#numbervaluetable #numberupdate').attr("class", "btnstyle3");

@@ -87,8 +87,8 @@ define(['app'], function (app) {
 			$('#updelclr #mobileupdate').attr("class", "btnstyle3-dis");
 			$('#updelclr #mobiledelete').attr("class", "btnstyle3-dis");
 
-			var oTable = $('#mobiletable').dataTable();
-			oTable.fnClearTable();
+			var oTable = $('#mobiletable').DataTable();
+			oTable.clear().draw();
 			$.ajax({
 				url: "json.htm?type=command&param=getmobiles",
 				async: false,
@@ -103,7 +103,7 @@ define(['app'], function (app) {
 							}
 							var lUpdateItem = item.LastUpdate;
 							lUpdateItem += '&nbsp;<i class="fa-solid fa-plus dz-chrome-icon dz-act-neutral" title="' + $.t('Test') + '" onclick="SendMobileTestMessage(' + item.idx + ');"></i>';
-							var addId = oTable.fnAddData({
+							oTable.row.add({
 								"DT_RowId": item.idx,
 								"Enabled": item.Enabled,
 								"Name": item.Name,
@@ -114,7 +114,7 @@ define(['app'], function (app) {
 								"3": item.UUID,
 								"4": item.DeviceType,
 								"5": lUpdateItem
-							});
+							}).draw();
 						});
 					}
 				}
@@ -131,14 +131,14 @@ define(['app'], function (app) {
 					$('#updelclr #mobiledelete').attr("class", "btnstyle3-dis");
 				}
 				else {
-					var oTable = $('#mobiletable').dataTable();
+					var oTable = $('#mobiletable').DataTable();
 					oTable.$('tr.row_selected').removeClass('row_selected');
 					$(this).addClass('row_selected');
 					$('#updelclr #mobileupdate').attr("class", "btnstyle3");
 					$('#updelclr #mobiledelete').attr("class", "btnstyle3");
 					var anSelected = fnGetSelected(oTable);
 					if (anSelected.length !== 0) {
-						var data = oTable.fnGetData(anSelected[0]);
+						var data = oTable.row(anSelected[0]).data();
 						var idx = data["DT_RowId"];
 						$.devIdx = idx;
 						$.devUUID = data["UUID"];
@@ -166,10 +166,7 @@ define(['app'], function (app) {
 			$('#mobilecontent').i18n();
 
 			oTable = $('#mobiletable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"aoColumnDefs": [
 					{ "bSortable": false, "aTargets": [0] }
 				],

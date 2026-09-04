@@ -79,7 +79,7 @@ define(['app'], function (app) {
 			$('#floorplaneditcontent #delclractive #activeplandelete').attr("class", "btnstyle3-dis");
 			$('#floorplaneditcontent #delclractive #activeplanupdate').attr("class", "btnstyle3-dis");
 
-			var anSelected = fnGetSelected($('#floorplantable').dataTable());
+			var anSelected = fnGetSelected($('#floorplantable').DataTable());
 			if (anSelected.length !== 0) {
 				$('#updelclr #floorplanedit').attr("class", "btnstyle3");
 				$('#updelclr #floorplandelete').attr("class", "btnstyle3");
@@ -88,10 +88,10 @@ define(['app'], function (app) {
 					$('#floorplaneditcontent #delclractive #activeplanadd').attr("class", "btnstyle3");
 				}
 
-				anSelected = fnGetSelected($('#plantable2').dataTable());
+				anSelected = fnGetSelected($('#plantable2').DataTable());
 				if (anSelected.length !== 0) {
 					$('#floorplaneditcontent #delclractive #activeplandelete').attr("class", "btnstyle3");
-					var data = $('#plantable2').dataTable().fnGetData(anSelected[0]);
+					var data = $('#plantable2').DataTable().row(anSelected[0]).data();
 					if (data["Area"].length != 0) {
 						$('#floorplaneditcontent #delclractive #activeplanclear').attr("class", "btnstyle3");
 					}
@@ -297,10 +297,10 @@ define(['app'], function (app) {
 			}
 			Device.initialise();
 
-			var oTable = $('#floorplaneditcontent #plantable2').dataTable();
-			oTable.fnClearTable();
-			oTable = $('#floorplantable').dataTable();
-			oTable.fnClearTable();
+			var oTable = $('#floorplaneditcontent #plantable2').DataTable();
+			oTable.clear().draw();
+			oTable = $('#floorplantable').DataTable();
+			oTable.clear().draw();
 
 			$.ajax({
 				url: "json.htm?type=command&param=getfloorplans",
@@ -333,7 +333,7 @@ define(['app'], function (app) {
 							var imgsrc = item.Image + "&dtime=" + Math.round(+new Date() / 1000);
 							var previewimg = '<img src="' + imgsrc + '" height="40"> ';
 
-							var addId = oTable.fnAddData({
+							oTable.row.add({
 								"DT_RowId": item.idx,
 								"Name": item.Name,
 								"Image": item.Image,
@@ -345,7 +345,7 @@ define(['app'], function (app) {
 								"2": (item.Plans>0)?item.Plans:"-",
 								"3": item.ScaleFactor,
 								"4": updownImg
-							});
+							}).draw();
 						});
 						// handle settings
 						if (typeof data.RoomColour != 'undefined') {
@@ -389,7 +389,7 @@ define(['app'], function (app) {
 										$(param).addClass('row_selected');
 										var anSelected = fnGetSelected(oTable);
 										if (anSelected.length !== 0) {
-											var data = oTable.fnGetData(anSelected[0]);
+											var data = oTable.row(anSelected[0]).data();
 											var idx = data["DT_RowId"];
 											$.devIdx = idx;
 											$("#updelclr #floorplanedit").attr("href", "javascript:EditFloorplan(" + idx + ")");
@@ -455,10 +455,7 @@ define(['app'], function (app) {
 			$('#floorplaneditcontent').i18n();
 
 			oTable = $('#floorplantable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"bSort": false,
 				"bProcessing": true,
 				"bStateSave": true,
@@ -470,10 +467,7 @@ define(['app'], function (app) {
 			});
 
 			oTable = $('#plantable2').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"bSort": false,
 				"bProcessing": true,
 				"bStateSave": false,
@@ -483,10 +477,7 @@ define(['app'], function (app) {
 			});
 
 			oTable = $('#imagetable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"bSort": true,
 				"bProcessing": true,
 				"bStateSave": false,
@@ -521,8 +512,8 @@ define(['app'], function (app) {
 				$interval.cancel($scope.mytimer);
 				$scope.mytimer = undefined;
 			}
-			var oTable = $('#floorplaneditcontent #plantable2').dataTable();
-			oTable.fnClearTable();
+			var oTable = $('#floorplaneditcontent #plantable2').DataTable();
+			oTable.clear().draw();
 			Device.initialise();
 
 			$.ajax({
@@ -534,13 +525,13 @@ define(['app'], function (app) {
 						var totalItems = data.result.length;
 						var planGroup = $("#roomplangroup")[0];
 						$.each(data.result, function (i, item) {
-							var addId = oTable.fnAddData({
+							oTable.row.add({
 								"DT_RowId": item.idx,
 								"Area": item.Area,
 								"0": item.Name,
 								"1": ((item.Area.length == 0) ? '<i class="fa-solid fa-circle-xmark dz-chrome-icon dz-act-danger"></i>' : '<i class="fa-solid fa-circle-check dz-chrome-icon dz-act-add"></i>'),
 								"2": item.Area
-							});
+							}).draw();
 							var el = makeSVGnode('polygon', { id: item.Name + "_Room", 'class': "nothoverable", points: item.Area }, '');
 							el.appendChild(makeSVGnode('title', null, item.Name));
 							planGroup.appendChild(el);
@@ -577,7 +568,7 @@ define(['app'], function (app) {
 										Device.initialise();
 										var anSelected = fnGetSelected(oTable);
 										if (anSelected.length !== 0) {
-											var data = oTable.fnGetData(anSelected[0]);
+											var data = oTable.row(anSelected[0]).data();
 											var idx = data["DT_RowId"];
 											$("#floorplaneditcontent #delclractive #activeplandelete").attr("href", "javascript:DeleteFloorplanPlan(" + idx + ")");
 											$("#floorplaneditcontent #delclractive #activeplanupdate").attr("href", "javascript:UpdateFloorplanPlan(" + idx + ",false)");

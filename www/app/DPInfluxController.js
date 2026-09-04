@@ -181,8 +181,8 @@ define(['app'], function (app) {
 			$('#linkparamstable #linkupdate').attr("class", "btnstyle3-dis");
 			$('#linkparamstable #linkdelete').attr("class", "btnstyle3-dis");
 
-		  var oTable = $('#iflinktable').dataTable();
-		  oTable.fnClearTable();
+		  var oTable = $('#iflinktable').DataTable();
+		  oTable.clear().draw();
 		  $.ajax({
 			 url: "json.htm?type=command&param=getinfluxlinks",
 			 async: false, 
@@ -190,7 +190,7 @@ define(['app'], function (app) {
 			 success: function(data) {   
 			  if (typeof data.result != 'undefined') {
 				$.each(data.result, function(i,item){
-					var addId = oTable.fnAddData( {
+					oTable.row.add( {
 						"DT_RowId": item.idx,
 						"DeviceID": item.DeviceID,
 						"TargetType": item.TargetType,
@@ -201,7 +201,7 @@ define(['app'], function (app) {
 						"2": $.t(item.Delimitedname),
 						"3": (item.TargetType==0) ? $.t('On Value Change') : $.t('Direct'),
 						"4": (item.Enabled == 1) ? $.t("Yes") : $.t("No")
-					} );
+					} ).draw();
 				});
 			  }
 			 }
@@ -213,10 +213,7 @@ define(['app'], function (app) {
 		{
 			$('#influxmain').i18n();
 			var oTable = $('#iflinktable').dataTable( {
-			  "sDom": '<"H"lfrC>t<"F"ip>',
-			  "oTableTools": {
-				"sRowSelect": "single"
-			  },
+			  "sDom": '<"H"lfr>t<"F"ip>',
 			  "aaSorting": [[ 0, "desc" ]],
 			  "bSortClasses": false,
 			  "bProcessing": true,
@@ -239,12 +236,12 @@ define(['app'], function (app) {
                 else {
 					$('#linkparamstable #linkupdate').attr("class", "btnstyle3");
 					$('#linkparamstable #linkdelete').attr("class", "btnstyle3");
-                    var oTable = $('#iflinktable').dataTable();
+                    var oTable = $('#iflinktable').DataTable();
                     oTable.$('tr.row_selected').removeClass('row_selected');
                     $(this).addClass('row_selected');
                     var anSelected = fnGetSelected(oTable);
                     if (anSelected.length !== 0) {
-                        var data = oTable.fnGetData(anSelected[0]);
+                        var data = oTable.row(anSelected[0]).data();
                         var idx = data["DT_RowId"];
 						$.linkIdx=idx;	
 						$("#linkparamstable #linkupdate").attr("href", "javascript:AddLink('u')");

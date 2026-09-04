@@ -30,10 +30,10 @@ define(['app'], function (app) {
 				var tokens = data.result || [];
 
 				if ($.fn.dataTable.isDataTable('#accesstokentable')) {
-					oTable = $('#accesstokentable').dataTable();
+					oTable = $('#accesstokentable').DataTable();
 				} else {
-					oTable = $('#accesstokentable').dataTable({
-						'sDom': '<"H"lfrC>t<"F"ip>',
+					oTable = $('#accesstokentable').DataTable({
+						'sDom': '<"H"lfr>t<"F"ip>',
 						'bStateSave': true,
 						'bJQueryUI': true,
 						'aLengthMenu': [[25, 50, 100, -1], [25, 50, 100, $.t('All')]],
@@ -48,16 +48,16 @@ define(['app'], function (app) {
 					});
 				}
 
-				oTable.fnClearTable();
+				oTable.clear().draw();
 				tokens.forEach(function (token) {
-					oTable.fnAddData([
+					oTable.row.add([
 						token.Name,
 						rightsLabel(token.Rights),
 						token.CreatedAt || '-',
 						formatLastUpdate(token.LastUpdate),
 						formatExpiry(token.Expiry),
 						'<button class="btn btn-danger btn-xs" data-idx="' + token.idx + '" data-name="' + $('<div/>').text(token.Name).html() + '">' + $.t('Delete') + '</button>'
-					]);
+					]).draw();
 				});
 
 				$('#accesstokentable').i18n();

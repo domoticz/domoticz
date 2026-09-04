@@ -3359,8 +3359,8 @@ define(['app'], function (app) {
 			$("#hardwarecontent #lmsnodeparamstable #nodeip").val("");
 			$("#hardwarecontent #lmsnodeparamstable #nodeport").val("9000");
 
-			var oTable = $('#lmsnodestable').dataTable();
-			oTable.fnClearTable();
+			var oTable = $('#lmsnodestable').DataTable();
+			oTable.clear().draw();
 
 			$.ajax({
 				url: "json.htm?type=command&param=lmsgetnodes&idx=" + $.devIdx,
@@ -3369,7 +3369,7 @@ define(['app'], function (app) {
 				success: function (data) {
 					if (typeof data.result != 'undefined') {
 						$.each(data.result, function (i, item) {
-							var addId = oTable.fnAddData({
+							oTable.row.add({
 								"DT_RowId": item.idx,
 								"Name": item.Name,
 								"Mac": item.Mac,
@@ -3378,7 +3378,7 @@ define(['app'], function (app) {
 								"1": item.Name,
 								"2": item.Mac,
 								"3": item.Status
-							});
+							}).draw();
 						});
 					}
 				}
@@ -3418,10 +3418,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #lmssettingstable #pollinterval").val(Mode1);
 
 			var oTable = $('#lmsnodestable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"aaSorting": [[0, "desc"]],
 				"bSortClasses": false,
 				"bProcessing": true,
@@ -4126,8 +4123,8 @@ define(['app'], function (app) {
 			$('#modal').show();
 			EnableUpdateAndDeleteButtons(false);
 
-			var oTable = $('#hardwaretable').dataTable();
-			oTable.fnClearTable();
+			var oTable = $('#hardwaretable').DataTable();
+			oTable.clear().draw();
 
 			$.ajax({
 				url: "json.htm?type=command&param=gethardware",
@@ -4365,7 +4362,7 @@ define(['app'], function (app) {
 								dispAddress = "I2C-" + dispAddress;
 							}
 
-							var addId = oTable.fnAddData({
+							oTable.row.add({
 								"DT_RowId": item.idx,
 								"Username": item.Username,
 								"Password": item.Password,
@@ -4391,7 +4388,7 @@ define(['app'], function (app) {
 								"4": dispAddress,
 								"5": SerialName,
 								"6": sDataTimeout
-							});
+							}).draw();
 						});
 					}
 				}
@@ -4405,12 +4402,12 @@ define(['app'], function (app) {
 					EnableUpdateAndDeleteButtons(false);
 				}
 				else {
-					var oTable = $('#hardwaretable').dataTable();
+					var oTable = $('#hardwaretable').DataTable();
 					oTable.$('tr.row_selected').removeClass('row_selected');
 					$(this).addClass('row_selected');
 					var anSelected = fnGetSelected(oTable);
 					if (anSelected.length !== 0) {
-						var data = oTable.fnGetData(anSelected[0]);
+						var data = oTable.row(anSelected[0]).data();
 						var idx = data["DT_RowId"];
 						if (data["Type"] != "PLUGIN") {
 							// gethardware sends these through atoi() for every non-plugin type
@@ -5378,10 +5375,10 @@ define(['app'], function (app) {
 		}
 
 		UpdateHardwareParamControls = function () {
-			var oTable = $('#hardwaretable').dataTable();
+			var oTable = $('#hardwaretable').DataTable();
 			var anSelected = fnGetSelected(oTable);
 			if (anSelected.length !== 0) {
-				var data = oTable.fnGetData(anSelected[0]);
+				var data = oTable.row(anSelected[0]).data();
 			}
 			$scope.calledFetch = false;
 			extraHWInitParams = function() { };
@@ -5817,10 +5814,7 @@ define(['app'], function (app) {
 			$('#hardwarecontent').html(htmlcontent);
 			$('#hardwarecontent').i18n();
 			var oTable = $('#hardwaretable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				columnDefs: [
 					{
 					targets: 1, // first column (0-based index)
