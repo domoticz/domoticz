@@ -354,10 +354,7 @@ define(['app'], function (app) {
 		ShowLinks = function () {
 			$('#httpmain').i18n();
 			var oTable = $('#linkhttptable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single"
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"fnDrawCallback": function (oSettings) {
 					var nTrs = this.fnGetNodes();
 					$(nTrs).click(

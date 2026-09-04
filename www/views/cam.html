@@ -533,10 +533,7 @@
 		$('#cameracontent').i18n();
 
 		oTable = $('#cameratable').dataTable({
-			"sDom": '<"H"lfrC>t<"F"ip>',
-			"oTableTools": {
-				"sRowSelect": "single",
-			},
+			"sDom": '<"H"lfr>t<"F"ip>',
 			"aoColumnDefs": [
 				{ "bSortable": false, "aTargets": [0, 2, 3] }
 			],
@@ -552,10 +549,7 @@
 		});
 
 		oTable = $('#activetable').dataTable({
-			"sDom": '<"H"frC>t<"F"i>',
-			"oTableTools": {
-				"sRowSelect": "single",
-			},
+			"sDom": '<"H"fr>t<"F"i>',
 			"aaSorting": [[0, "asc"]],
 			"bSortClasses": false,
 			"bProcessing": true,
