@@ -273,8 +273,8 @@ define(['app'], function (app) {
 			$('#userupdate').hide();
 			$('#userdelete').hide();
 
-			var oTable = $('#usertable').dataTable();
-			oTable.fnClearTable();
+			var oTable = $('#usertable').DataTable();
+			oTable.clear().draw();
 			$.ajax({
 				url: "json.htm?type=command&param=getusers",
 				async: false,
@@ -306,7 +306,7 @@ define(['app'], function (app) {
 								sharedstr = $.t('Yes');
 							}
 							var devicesstr = '<span class="label label-info lcursor" onclick="EditSharedDevices(' + item.idx + ',\'' + item.Username + '\');">' + $.t('Set Devices') + '</span>';
-							var addId = oTable.fnAddData({
+							oTable.row.add({
 								"DT_RowId": item.idx,
 								"Enabled": item.Enabled,
 								"Username": item.Username,
@@ -319,7 +319,7 @@ define(['app'], function (app) {
 								"2": rightstr,
 								"3": sharedstr,
 								"4": devicesstr
-							});
+							}).draw();
 						});
 					}
 				}
@@ -339,12 +339,12 @@ define(['app'], function (app) {
 					$('#userupdate').show();
 					$('#userdelete').show();
 					
-					var oTable = $('#usertable').dataTable();
+					var oTable = $('#usertable').DataTable();
 					oTable.$('tr.row_selected').removeClass('row_selected');
 					$(this).addClass('row_selected');
 					var anSelected = fnGetSelected(oTable);
 					if (anSelected.length !== 0) {
-						var data = oTable.fnGetData(anSelected[0]);
+						var data = oTable.row(anSelected[0]).data();
 						var idx = data["DT_RowId"];
 						$.devIdx = idx;
 						$("#userupdate").attr("href", "javascript:UpdateUser(" + idx + ")");

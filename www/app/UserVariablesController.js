@@ -68,8 +68,8 @@ define(['app'], function (app) {
 			$("#uservariabledelete").attr("href", "");
 
 			$scope.varNames = [];
-			var oTable = $('#uservariablestable').dataTable();
-			oTable.fnClearTable();
+			var oTable = $('#uservariablestable').DataTable();
+			oTable.clear().draw();
 			$.ajax({
 				url: "json.htm?type=command&param=getuservariables",
 				async: false,
@@ -101,7 +101,7 @@ define(['app'], function (app) {
 								default:
 									typeWording = "undefined";
 							}
-							var addId = oTable.fnAddData({
+							oTable.row.add({
 								"DT_RowId": item.idx,
 								"DT_ItemType": item.Type,
 								"DT_Value": item.Value,
@@ -110,7 +110,7 @@ define(['app'], function (app) {
 								"2": typeWording,
 								"3": truncateString(item.Value, 150),
 								"4": item.LastUpdate
-							});
+							}).draw();
 						});
 					}
 				}
@@ -126,12 +126,12 @@ define(['app'], function (app) {
 					$("#uservariabledelete").attr("href", "");
 				}
 				else {
-					var oTable = $('#uservariablestable').dataTable();
+					var oTable = $('#uservariablestable').DataTable();
 					oTable.$('tr.row_selected').removeClass('row_selected');
 					$(this).addClass('row_selected');
 					var anSelected = fnGetSelected(oTable);
 					if (anSelected.length !== 0) {
-						var data = oTable.fnGetData(anSelected[0]);
+						var data = oTable.row(anSelected[0]).data();
 						var idx = data["DT_RowId"];
 						$("#uservariableupdate").attr("href", "javascript:AddUpdateVariable('u', " + idx + ")");
 						$("#uservariabledelete").attr("href", "javascript:DeleteVariable(" + idx + ")");
