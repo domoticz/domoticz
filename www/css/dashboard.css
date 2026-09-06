@@ -1546,13 +1546,34 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 /* ── Quick Actions widget ─────────────────────────────────── */
+/* The widget content sits in an inline custom element inside a plain block, so a
+   height chain has to be built here. Without it the widget grows past the widget
+   body and the body's own overflow:auto puts a scrollbar around the whole widget. */
+.dd-widget--quick-actions > .dd-widget-body {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.dd-widget--quick-actions > .dd-widget-body > div,
+.dd-widget--quick-actions > .dd-widget-body > div > * {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
 .dd-quick-actions {
     height: 100%;
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
     align-content: center;
+    align-content: safe center;
     padding: 6px;
+    overflow-x: hidden;
+    overflow-y: auto;
     box-sizing: border-box;
 }
 
@@ -1701,8 +1722,7 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 .dd-quick-actions--list {
-    height: auto;
-    flex: 1;
+    height: 100%;
     min-height: 0;
     flex-direction: column;
     flex-wrap: nowrap;
@@ -3493,6 +3513,24 @@ body.dd-standby::after {
 .dd-dial-clickable:hover { opacity: 0.8; }
 
 /* ── Quick Stat widget ─────────────────────────────── */
+/* The widget content sits in an inline custom element inside a plain block, so a
+   height chain has to be built here. Without it the widget grows past the widget
+   body and the body's own overflow:auto puts a scrollbar around the whole widget. */
+.dd-widget--quick-stat > .dd-widget-body {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.dd-widget--quick-stat > .dd-widget-body > div,
+.dd-widget--quick-stat > .dd-widget-body > div > * {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
 .dd-quick-stat > .dd-chart-unconfigured {
     grid-column: 1 / -1;
     height: auto;
