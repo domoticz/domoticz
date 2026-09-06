@@ -471,6 +471,25 @@ void SolarEdgeAPI::GetBatteryFromInventory()
 	else
 		m_bPollBattery = true;
 
+	// Model and firmware of the first inverter, shown in the hardware overview
+	const Json::Value& inverters = root["Inventory"]["inverters"];
+	if (!inverters.empty())
+	{
+		const Json::Value& inverter = inverters[0];
+		std::string szModel = inverter.get("partNumber", inverter.get("model", "")).asString();
+		std::string szCpu = inverter.get("cpuVersion", "").asString();
+		std::string szVersion = szModel;
+		if (!szCpu.empty())
+			szVersion += " (cpu " + szCpu + ")";
+		if (inverters.size() > 1)
+			szVersion += " +" + std::to_string(inverters.size() - 1) + " more";
+		if (!szVersion.empty() && szVersion != m_szSoftwareVersion)
+		{
+			m_szSoftwareVersion = szVersion;
+			Log(LOG_STATUS, "Inverter: %s", m_szSoftwareVersion.c_str());
+		}
+	}
+
 	return;
 }
 
@@ -991,14 +1010,31 @@ void SolarEdgeAPI::GetEnergyDetails()
 	}
 }
 
+std::string SolarEdgeAPI::GetWebTokenPrefKey() const
+{
+	return "SolarEdgeWebToken_" + std::to_string(m_HwdID);
+}
+
 bool SolarEdgeAPI::LoadWebRefreshToken()
 {
+	// Earlier builds kept the token in the Hardware row, where the web interface displays it
 	auto result = m_sql.safe_query("SELECT Address, SerialPort FROM Hardware WHERE (ID==%d)", m_HwdID);
-	if (result.empty())
+	if (!result.empty() && !result[0][0].empty())
+	{
+		m_WebRefreshToken = result[0][0];
+		if (!result[0][1].empty())
+			m_WebNextRefreshTs = std::stol(result[0][1]);
+		m_sql.safe_query("UPDATE Hardware SET Address='', SerialPort='' WHERE (ID == %d)", m_HwdID);
+		StoreWebRefreshToken();
+		return true;
+	}
+
+	int nValue = 0;
+	std::string sValue;
+	if (!m_sql.GetPreferencesVar(GetWebTokenPrefKey(), nValue, sValue))
 		return false;
-	m_WebRefreshToken = result[0][0];
-	if (!result[0][1].empty())
-		m_WebNextRefreshTs = std::stol(result[0][1]);
+	m_WebRefreshToken = sValue;
+	m_WebNextRefreshTs = nValue;
 	return !m_WebRefreshToken.empty();
 }
 
@@ -1006,7 +1042,8 @@ void SolarEdgeAPI::StoreWebRefreshToken()
 {
 	if (m_WebRefreshToken.empty())
 		return;
-	m_sql.safe_query("UPDATE Hardware SET Address='%q', SerialPort='%q' WHERE (ID == %d)", m_WebRefreshToken.c_str(), std::to_string(m_WebNextRefreshTs).c_str(), m_HwdID);
+	// Kept out of the Hardware row on purpose, the web interface returns every column of it
+	m_sql.UpdatePreferencesVar(GetWebTokenPrefKey(), (int)m_WebNextRefreshTs, m_WebRefreshToken);
 }
 
 std::string SolarEdgeAPI::GetCookieValue(const std::string& name) const

@@ -53,6 +53,7 @@ public:
 	SolarEdgeAPI(int ID, const std::string& APIKey, const std::string& Password, const std::string& Extra, int Mode1);
 	~SolarEdgeAPI() override = default;
 	bool WriteToHardware(const char* pdata, unsigned char length) override;
+	std::string m_szSoftwareVersion;
 
 private:
 	bool StartHardware() override;
@@ -76,6 +77,7 @@ private:
 	bool WebLogin();
 	bool WebRefreshToken();
 	bool WebExchangeSession(const std::string& tokenJsonBody);
+	std::string GetWebTokenPrefKey() const;
 	bool LoadWebRefreshToken();
 	void StoreWebRefreshToken();
 	bool ParseLoginForm(const std::string& html, std::string& formAction, std::map<std::string, std::string>& fields) const;
