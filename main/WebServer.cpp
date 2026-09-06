@@ -5,6 +5,7 @@
 #include <json/json.h>
 #include <algorithm>
 #include "WebServer.h"
+#include "WebAssetFetch.h"
 #include "WebServerHelper.h"
 #include "mainworker.h"
 #include "Helper.h"
@@ -590,6 +591,11 @@ namespace http
 			RegisterCommandCode("deletecustomicon", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteCustomIcon(session, req, root); });
 			RegisterCommandCode("updatecustomicon", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateCustomIcon(session, req, root); });
 
+			RegisterCommandCode("uploadwebasset", [this](auto&& session, auto&& req, auto&& root) { Cmd_UploadWebAsset(session, req, root); });
+			RegisterCommandCode("getwebassets", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetWebAssets(session, req, root); });
+			RegisterCommandCode("getwebassetjob", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetWebAssetJob(session, req, root); });
+			RegisterCommandCode("deletewebasset", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteWebAsset(session, req, root); });
+
 			RegisterCommandCode("renamedevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_RenameDevice(session, req, root); });
 			RegisterCommandCode("setdevused", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetDeviceUsed(session, req, root); });
 
@@ -781,6 +787,7 @@ namespace http
 		void CWebServer::StopServer()
 		{
 			g_McpPush.Stop();
+			WebAssetFetch::Shutdown();
 			m_bDoStop = true;
 			try
 			{
@@ -1479,7 +1486,7 @@ namespace http
 						" A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2,"
 						" A.Protected, IFNULL(B.XOffset,0), IFNULL(B.YOffset,0), IFNULL(B.PlanID,0), A.Description,"
-						" A.Options, A.Color "
+						" A.Options, A.Color, A.Icon "
 						"FROM DeviceStatus A LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) "
 						"WHERE (A.ID IN (%q))",
 						rowid.c_str());
@@ -1493,7 +1500,7 @@ namespace http
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
 						" A.StrParam2, A.Protected, B.XOffset, B.YOffset,"
 						" B.PlanID, A.Description,"
-						" A.Options, A.Color "
+						" A.Options, A.Color, A.Icon "
 						"FROM DeviceStatus as A, DeviceToPlansMap as B "
 						"WHERE (B.PlanID=='%q') AND (B.DeviceRowID==a.ID)"
 						" AND (B.DevSceneType==0) ORDER BY B.[Order]",
@@ -1507,7 +1514,7 @@ namespace http
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
 						" A.StrParam2, A.Protected, B.XOffset, B.YOffset,"
 						" B.PlanID, A.Description,"
-						" A.Options, A.Color "
+						" A.Options, A.Color, A.Icon "
 						"FROM DeviceStatus as A, DeviceToPlansMap as B,"
 						" Plans as C "
 						"WHERE (C.FloorplanID=='%q') AND (C.ID==B.PlanID)"
@@ -1550,7 +1557,7 @@ namespace http
 							" A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 							" A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2,"
 							" A.Protected, IFNULL(B.XOffset,0), IFNULL(B.YOffset,0), IFNULL(B.PlanID,0), A.Description,"
-							" A.Options, A.Color "
+							" A.Options, A.Color, A.Icon "
 							"FROM DeviceStatus as A LEFT OUTER JOIN DeviceToPlansMap as B "
 							"ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) "
 							"WHERE (A.HardwareID == %q) "
@@ -1566,7 +1573,7 @@ namespace http
 							" A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 							" A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2,"
 							" A.Protected, IFNULL(B.XOffset,0), IFNULL(B.YOffset,0), IFNULL(B.PlanID,0), A.Description,"
-							" A.Options, A.Color "
+							" A.Options, A.Color, A.Icon "
 							"FROM DeviceStatus as A LEFT OUTER JOIN DeviceToPlansMap as B "
 							"ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) "
 							"ORDER BY ");
@@ -1593,7 +1600,7 @@ namespace http
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
 						" A.StrParam2, A.Protected, 0 as XOffset,"
 						" 0 as YOffset, 0 as PlanID, A.Description,"
-						" A.Options, A.Color "
+						" A.Options, A.Color, A.Icon "
 						"FROM DeviceStatus as A, SharedDevices as B "
 						"WHERE (B.DeviceRowID==a.ID)"
 						" AND (B.SharedUserID==%lu) AND (A.ID IN (%q))",
@@ -1608,7 +1615,7 @@ namespace http
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
 						" A.StrParam2, A.Protected, C.XOffset,"
 						" C.YOffset, C.PlanID, A.Description,"
-						" A.Options, A.Color "
+						" A.Options, A.Color, A.Icon "
 						"FROM DeviceStatus as A, SharedDevices as B,"
 						" DeviceToPlansMap as C "
 						"WHERE (C.PlanID=='%q') AND (C.DeviceRowID==a.ID)"
@@ -1624,7 +1631,7 @@ namespace http
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
 						" A.StrParam2, A.Protected, C.XOffset, C.YOffset,"
 						" C.PlanID, A.Description,"
-						" A.Options, A.Color "
+						" A.Options, A.Color, A.Icon "
 						"FROM DeviceStatus as A, SharedDevices as B,"
 						" DeviceToPlansMap as C, Plans as D "
 						"WHERE (D.FloorplanID=='%q') AND (D.ID==C.PlanID)"
@@ -1669,7 +1676,7 @@ namespace http
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
 						" A.StrParam2, A.Protected, IFNULL(C.XOffset,0),"
 						" IFNULL(C.YOffset,0), IFNULL(C.PlanID,0), A.Description,"
-						" A.Options, A.Color "
+						" A.Options, A.Color, A.Icon "
 						"FROM DeviceStatus as A, SharedDevices as B "
 						"LEFT OUTER JOIN DeviceToPlansMap as C  ON (C.DeviceRowID==A.ID)"
 						"WHERE (B.DeviceRowID==A.ID)"
@@ -1969,6 +1976,9 @@ namespace http
 					root["result"][ii]["LastUpdate"] = sLastUpdate;
 
 					root["result"][ii]["CustomImage"] = CustomImage;
+
+					if (!sd[30].empty())
+						root["result"][ii]["Icon"] = sd[30];
 
 					if (CustomImage != 0)
 					{
@@ -3502,6 +3512,7 @@ namespace http
 						root["result"][ii]["TypeImg"] = "current";
 						root["result"][ii]["SwitchTypeVal"] = switchtype;		    // MTYPE_ENERGY
 						root["result"][ii]["EnergyMeterMode"] = options["EnergyMeterMode"]; // for alternate Energy Reading
+						root["result"][ii]["DisableAnomalyDetection"] = (options["DisableAnomalyDetection"] == "1") ? 1 : 0;
 					}
 					else if (dType == pTypeAirQuality)
 					{
@@ -4540,13 +4551,18 @@ namespace http
 					{
 						std::vector<std::string> results;
 						StringSplit(sLine, ";", results);
-						if (results.size() == 3)
+						if (results.size() >= 3)
 						{
 							_tCustomIcon cImage;
 							cImage.idx = index++;
 							cImage.RootFile = results[0];
 							cImage.Title = results[1];
 							cImage.Description = results[2];
+							if (results.size() >= 4)
+							{
+								cImage.FaClass = results[3];
+								stdstring_trimws(cImage.FaClass);
+							}
 							m_custom_light_icons.push_back(cImage);
 							m_custom_light_icons_lookup[cImage.idx] = (int)m_custom_light_icons.size() - 1;
 						}

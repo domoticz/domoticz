@@ -38,18 +38,16 @@
 			</tr>
 			<tr>
 				<td colspan="2" class="options" style="padding-top: 10px;">
-					<img ng-if="ctrl.scene.Favorite == 0"
-						 src="images/nofavorite.png"
-						 data-i18n="[title]Add to Dashboard"
-						 title="Add to Dashboard"
-						 ng-click="ctrl.makeFavorite(1)"
-						 class="favorite favoriteOff lcursor">
-					<img ng-if="ctrl.scene.Favorite != 0"
-						 src="images/favorite.png"
-						 data-i18n="[title]Remove from Dashboard"
-						 title="Remove from Dashboard"
-						 ng-click="ctrl.makeFavorite(0)"
-						 class="favorite favoriteOn lcursor">
+					<i ng-if="ctrl.scene.Favorite == 0"
+					   data-i18n="[title]Add to Dashboard"
+					   title="Add to Dashboard"
+					   ng-click="ctrl.makeFavorite(1)"
+					   class="dz-icon-glyph dz-icon-16 fa-regular fa-star favorite favoriteOff lcursor"></i>
+					<i ng-if="ctrl.scene.Favorite != 0"
+					   data-i18n="[title]Remove from Dashboard"
+					   title="Remove from Dashboard"
+					   ng-click="ctrl.makeFavorite(0)"
+					   class="dz-icon-glyph dz-icon-16 fa-solid fa-star favorite favoriteOn lcursor"></i>
 					&nbsp;&nbsp;
 					<a class="btnsmall" ng-href="#/Scenes/{{ctrl.scene.idx}}/Log" data-i18n="Log">Log</a>
 					<span has-permission="Admin">

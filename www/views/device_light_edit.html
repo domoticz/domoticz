@@ -75,7 +75,7 @@
              <tr ng-if="::!vm.isSecurityDevice()" ng-show="vm.isSwitchIconAvailable()">
                 <td><label data-i18n="Switch Icon"></label>:</td>
                 <td>
-                   <device-icon-select ng-model="vm.device.CustomImage" switch-type="vm.device.SwitchTypeVal"></device-icon-select>
+                   <device-icon-select ng-model="vm.device.CustomImage" icon-json="vm.device.Icon" device="vm.device" switch-type="vm.device.SwitchTypeVal"></device-icon-select>
                 </td>
              </tr>
              <tr ng-if="::!vm.isSecurityDevice()" ng-show="vm.isMotionAvailable()">
@@ -255,7 +255,7 @@
                                <td ng-repeat="i in ::vm.planIDsOptions" ng-if="items == i.value">{{ i.label }}</td>
                                <td ng-if="items == 0"><span data-i18n="No roomplan assigned"></span></td>
                                <td  ng-repeat="i in ::vm.planIDsOptions" ng-if="items == i.value" ng-click="vm.removeDeviceFromPlan(vm.device.idx, i.value)">
-                                  <img src="images/delete.png" title="{{:: 'Delete' | translate}}" class="lcursor js-delete" width="16" height="16"></img>
+                                  <i class="fa-solid fa-trash-can dz-chrome-icon dz-act-danger lcursor js-delete" title="{{:: 'Delete' | translate}}"></i>
                                </td>
                                <td ng-if="items == 0"></td>
                             </tr>

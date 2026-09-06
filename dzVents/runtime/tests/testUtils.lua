@@ -46,7 +46,7 @@ describe('event helpers', function()
 
 			utils.log('abc', utils.LOG_ERROR)
 			assert.is_same('Error: abc', printed)
-			assert.is_same('3.1.12', utils.DZVERSION)
+			assert.is_same('3.1.13', utils.DZVERSION)
 		end)
 
 		it('should log INFO by default', function()

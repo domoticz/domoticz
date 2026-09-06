@@ -828,6 +828,8 @@
     <ClInclude Include="..\main\stdafx.h" />
     <ClInclude Include="..\main\SunRiseSet.h" />
     <ClInclude Include="..\main\ThemeSettings.h" />
+    <ClInclude Include="..\main\WebAssetFetch.h" />
+    <ClInclude Include="..\main\WebAssets.h" />
     <ClInclude Include="..\tcpserver\TCPClient.h" />
     <ClInclude Include="..\tcpserver\TCPServer.h" />
     <ClInclude Include="..\httpclient\UrlEncode.h" />
@@ -1123,6 +1125,7 @@
     <ClCompile Include="..\tcpserver\TCPClient.cpp" />
     <ClCompile Include="..\tcpserver\TCPServer.cpp" />
     <ClCompile Include="..\httpclient\UrlEncode.cpp" />
+    <ClCompile Include="..\main\WebAssetFetch.cpp" />
     <ClCompile Include="..\main\WebServer.cpp" />
     <ClCompile Include="..\main\WebServerCmds.cpp" />
     <ClCompile Include="..\main\WebServerCommands.cpp" />

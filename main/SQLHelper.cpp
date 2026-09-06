@@ -44,7 +44,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 182
+#define DB_VERSION 183
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -83,7 +83,9 @@ constexpr auto sqlCreateDeviceStatus =
 "[CustomImage] INTEGER DEFAULT 0, "
 "[Description] VARCHAR(200) DEFAULT '', "
 "[Options] TEXT DEFAULT null, "
-"[Color] TEXT DEFAULT NULL);";
+"[Color] TEXT DEFAULT NULL, "
+// Declared last: the upgrade path appends it with ALTER TABLE, so both schemas match.
+"[Icon] TEXT DEFAULT '');";
 
 constexpr auto sqlCreateDeviceStatusTrigger =
 "CREATE TRIGGER IF NOT EXISTS devicestatusupdate AFTER INSERT ON DeviceStatus\n"
@@ -572,6 +574,15 @@ constexpr auto sqlCreateCustomImages =
 "	[IconOn] BLOB, "
 "	[IconOff] BLOB);";
 
+constexpr auto sqlCreateWebAssets =
+"CREATE TABLE IF NOT EXISTS [WebAssets]("
+"	[ID] INTEGER PRIMARY KEY, "
+"	[Name] VARCHAR(128) NOT NULL, "
+"	[SourceURL] VARCHAR(500) DEFAULT '', "
+"	[Companions] TEXT DEFAULT '', "
+"	[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')), "
+"	[Title] VARCHAR(128) DEFAULT '');";
+
 constexpr auto sqlCreateMySensors =
 "CREATE TABLE IF NOT EXISTS [MySensors]("
 " [HardwareID] INTEGER NOT NULL,"
@@ -786,6 +797,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateFloorplans);
 	query(sqlCreateFloorplanOrderTrigger);
 	query(sqlCreateCustomImages);
+	query(sqlCreateWebAssets);
 	query(sqlCreateMySensors);
 	query(sqlCreateMySensorsVariables);
 	query(sqlCreateMySensorsChilds);
@@ -3455,6 +3467,11 @@ bool CSQLHelper::OpenDatabase()
 		{
 			CThemeSettings::MigrateFromPreferences();
 		}
+		if (dbversion < 183)
+		{
+			query("ALTER TABLE DeviceStatus ADD COLUMN [Icon] TEXT DEFAULT ''");
+			query(sqlCreateWebAssets);
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -5293,7 +5310,7 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, int OrgHardwareID, const 
 			//Set the status of all slave devices from this device (except the one we just received) to off
 			//Check if this switch was a Sub/Slave device for other devices, if so adjust the state of those other devices
 			result2 = safe_query(
-				"SELECT a.DeviceRowID, b.Type, b.HardwareID FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='%q') AND (a.DeviceRowID!='%q') AND (b.ID == a.DeviceRowID) AND (a.DeviceRowID!=a.ParentID)",
+				"SELECT a.DeviceRowID, b.Type, b.HardwareID, b.Unit, b.SubType, b.SignalLevel, b.BatteryLevel FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='%q') AND (a.DeviceRowID!='%q') AND (b.ID == a.DeviceRowID) AND (a.DeviceRowID!=a.ParentID)",
 				sd[0].c_str(),
 				idx.c_str()
 			);
@@ -5376,6 +5393,9 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, int OrgHardwareID, const 
 						sd[0].c_str()
 					);
 					m_mainworker.sOnDeviceUpdate(std::stoi(sd[2]), std::stoll(sd[0]));
+					// Feed the new state to the event system as well, so scripts and the Python
+					// event module see the slave change and not only the web sockets.
+					m_mainworker.m_eventsystem.ProcessDevice(std::stoi(sd[2]), std::stoull(sd[0]), (unsigned char)atoi(sd[3].c_str()), (unsigned char)oDevType, (unsigned char)atoi(sd[4].c_str()), (unsigned char)atoi(sd[5].c_str()), (unsigned char)atoi(sd[6].c_str()), newnValue, "", sLastUpdate);
 				}
 			}
 			// TODO: Should plugin be notified?
@@ -5385,7 +5405,7 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, int OrgHardwareID, const 
 	//If this is a 'Main' device, and it has Sub/Slave devices,
 	//set the status of the Sub/Slave devices to Off, as we might be out of sync then
 	result = safe_query(
-		"SELECT a.DeviceRowID, b.Type, b.HardwareID FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='%q') AND (b.ID == a.DeviceRowID) AND (a.DeviceRowID!=a.ParentID)",
+		"SELECT a.DeviceRowID, b.Type, b.HardwareID, b.Unit, b.SubType, b.SignalLevel, b.BatteryLevel FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='%q') AND (b.ID == a.DeviceRowID) AND (a.DeviceRowID!=a.ParentID)",
 		idx.c_str()
 	);
 	if (!result.empty())
@@ -5468,6 +5488,9 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, int OrgHardwareID, const 
 				sd[0].c_str()
 			);
 			m_mainworker.sOnDeviceUpdate(std::stoi(sd[2]), std::stoll(sd[0]));
+			// Feed the new state to the event system as well, so scripts and the Python
+			// event module see the slave change and not only the web sockets.
+			m_mainworker.m_eventsystem.ProcessDevice(std::stoi(sd[2]), std::stoull(sd[0]), (unsigned char)atoi(sd[3].c_str()), (unsigned char)oDevType, (unsigned char)atoi(sd[4].c_str()), (unsigned char)atoi(sd[5].c_str()), (unsigned char)atoi(sd[6].c_str()), newnValue, "", sLastUpdate);
 		}
 		// TODO: Should plugin be notified?
 	}
@@ -8358,10 +8381,17 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				CalcMeterPrice(ID, divider, szDateStart, szDateEnd, price);
 				if (price != 0.0f && total_real > 0)
 				{
-					// Spike protection: discard price if implied tariff exceeds max plausible rate
-					constexpr float max_unit_price = 3.0f;  
-					if (std::abs(price) > (static_cast<float>(total_real) / divider) * max_unit_price)
-						price = 0;
+					// Spike protection: discard price if the implied tariff exceeds a plausible
+					// rate. The 3/unit cap is calibrated for energy (kWh) and is meaningless for
+					// gas, water or generic counters, whose tariff per unit is routinely higher,
+					// so it is applied to energy meters only (it was zeroing valid non-energy
+					// prices, #7005). The independent P1/MultiMeter spike check is energy-scoped too.
+					if ((metertype == MTYPE_ENERGY) || (metertype == MTYPE_ENERGY_GENERATED))
+					{
+						constexpr float max_unit_price = 3.0f;
+						if (std::abs(price) > (static_cast<float>(total_real) / divider) * max_unit_price)
+							price = 0;
+					}
 				}
 				else if (total_real <= 0)
 					price = 0;

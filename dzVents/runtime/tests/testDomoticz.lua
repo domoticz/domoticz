@@ -334,9 +334,15 @@ describe('Domoticz', function()
 			assert.is_same({ { ['SwitchTimerPlan:3'] = '' } }, domoticz.commandArray)
 		end)
 
+		it('should accept timer plan 0 (the default plan)', function()
+			domoticz.commandArray = {}
+			local res = domoticz.switchTimerPlan(0)
+			assert.is_table(res)
+			assert.is_same({ { ['SwitchTimerPlan:0'] = '' } }, domoticz.commandArray)
+		end)
+
 		it('should reject invalid timer plan idx', function()
 			domoticz.commandArray = {}
-			assert.is_nil(domoticz.switchTimerPlan(0))
 			assert.is_nil(domoticz.switchTimerPlan(-1))
 			assert.is_nil(domoticz.switchTimerPlan('abc'))
 			assert.is_nil(domoticz.switchTimerPlan(nil))

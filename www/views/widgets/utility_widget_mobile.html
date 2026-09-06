@@ -4,18 +4,19 @@
             <tr>
                 <!-- Device Icon -->
                 <td class="img">
-                    <img ng-if="!ctrl.isSetpoint() && ctrl.device.Type != 'Radiator 1'"
-                         ng-src="{{ctrl.getDeviceIcon()}}"
-                         title="{{ctrl.device.Name}}"
-                         height="48"
-                         width="48">
-                    <img ng-if="ctrl.isSetpoint() || ctrl.device.Type == 'Radiator 1'"
-                         ng-src="{{ctrl.getDeviceIcon()}}"
-                         title="{{ctrl.device.Name}}"
-                         class="lcursor"
-                         ng-click="ctrl.showSetpointPopup($event)"
-                         height="48"
-                         width="48">
+                    <dz-device-icon ng-if="!ctrl.isSetpoint() && ctrl.device.Type != 'Radiator 1'"
+                                    class="dz-icon-48"
+                                    device="ctrl.device"
+                                    fallback-src="ctrl.getDeviceIcon()"
+                                    use-glyph="!ctrl.isValueDrivenIcon()"
+                                    title="{{ctrl.device.Name}}"></dz-device-icon>
+                    <dz-device-icon ng-if="ctrl.isSetpoint() || ctrl.device.Type == 'Radiator 1'"
+                                    class="dz-icon-48 lcursor"
+                                    device="ctrl.device"
+                                    fallback-src="ctrl.getDeviceIcon()"
+                                    use-glyph="!ctrl.isValueDrivenIcon()"
+                                    title="{{ctrl.device.Name}}"
+                                    ng-click="ctrl.showSetpointPopup($event)"></dz-device-icon>
                 </td>
 
                 <!-- Device Name -->
@@ -25,8 +26,8 @@
 
                 <!-- Value Text (bigtext + status stacked) -->
                 <td class="bigtext">
-                    <img ng-show="ctrl.displayTrend(ctrl.device.trend)" height="12"
-                         ng-src="images/arrow_{{ctrl.trendState(ctrl.device.trend)}}.png">
+                    <i class="dz-icon-glyph dz-icon-12" ng-class="ctrl.getTrendIcon()"
+                       ng-show="ctrl.displayTrend(ctrl.device.trend)"></i>
                     <span ng-bind-html="ctrl.getMobileText()"></span>
                 </td>
 

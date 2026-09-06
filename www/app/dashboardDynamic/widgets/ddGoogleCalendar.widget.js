@@ -81,6 +81,7 @@ define([
 
                 var cancelToken  = null;
                 var refreshTimer = null;
+                var destroyed    = false;
 
                 // ── ICS date parser ───────────────────────────────────────
                 function parseICSDate(str) {
@@ -481,19 +482,20 @@ define([
                 }
 
                 // ── Fetch with proxy fallback ─────────────────────────────
+                // No public CORS proxies: they now answer 401/5xx, and a private ICS URL
+                // (its token is the only secret) should not be handed to a third party.
                 var ICS_PROXIES = [
                     null,           // try direct first (works for same-origin or CORS-enabled sources)
-                    '__domoticz__', // server-side proxy via Domoticz backend
-                    'https://corsproxy.io/?url=',
-                    'https://api.codetabs.com/v1/proxy?quest='
+                    '__domoticz__'  // server-side proxy via Domoticz backend
                 ];
 
                 function fetchAndParse(cfg, proxyIndex) {
                     var idx = proxyIndex || 0;
+                    if (destroyed) { return; }
                     if (idx >= ICS_PROXIES.length) {
                         ctrl.loading      = false;
                         ctrl.loadError    = true;
-                        ctrl.errorMessage = 'Could not load calendar (CORS or network error).';
+                        ctrl.errorMessage = 'Could not load calendar (the Domoticz server could not fetch the URL).';
                         return;
                     }
 
@@ -508,18 +510,26 @@ define([
                     }
                     var isICS = /\.ics(\?.*)?$/i.test(cfg.calendarUrl) || idx > 0 || useServerProxy;
 
-                    $http.get(url, {
-                        timeout:           cancelToken ? cancelToken.promise : undefined,
-                        transformResponse: useServerProxy ? undefined : [function(data) { return data; }]
-                    }).then(function(resp) {
+                    // Do not pass transformResponse: undefined for the server proxy: angular.extend
+                    // copies undefined keys, which would disable the default JSON transform and
+                    // leave resp.data a string (so the proxy reply was never recognised as OK).
+                    var httpOpts = { timeout: cancelToken ? cancelToken.promise : undefined };
+                    if (!useServerProxy) {
+                        httpOpts.transformResponse = [function(data) { return data; }];
+                    }
+                    $http.get(url, httpOpts).then(function(resp) {
                         ctrl.loading = false;
                         var text;
                         if (useServerProxy) {
-                            if (!resp.data || resp.data.status !== 'OK') {
+                            var d = resp.data;
+                            if (typeof d === 'string') {
+                                try { d = JSON.parse(d); } catch(e) { d = null; }
+                            }
+                            if (!d || d.status !== 'OK') {
                                 fetchAndParse(cfg, idx + 1);
                                 return;
                             }
-                            text = resp.data.data;
+                            text = d.data;
                         } else {
                             text = typeof resp.data === 'string' ? resp.data : JSON.stringify(resp.data);
                         }
@@ -581,6 +591,7 @@ define([
                 }
 
                 $scope.$on('$destroy', function() {
+                    destroyed = true;
                     if (cancelToken)  { cancelToken.resolve(); cancelToken = null; }
                     if (refreshTimer) { $interval.cancel(refreshTimer); refreshTimer = null; }
                 });

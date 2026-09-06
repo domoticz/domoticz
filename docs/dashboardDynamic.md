@@ -594,7 +594,7 @@ Live: refreshes every 60 seconds.
 ### Energy Dashboard
 **Category:** Energy
 
-Full energy overview widget — combines all cards (Weather, Grid, Solar, Gas, Battery) and the self-sufficiency balance bar in one resizable widget. Lifted directly from `forecast.html`. Clicking any value on a card navigates to the corresponding device log.
+Full energy overview widget — combines all cards (Weather, Grid, Solar, House, Gas, Water, Battery) and the self-sufficiency balance bar in one resizable widget. Lifted directly from `forecast.html`. Clicking any value on a card navigates to the corresponding device log.
 
 **Configuration:**
 
@@ -602,6 +602,7 @@ Full energy overview widget — combines all cards (Weather, Grid, Solar, Gas, B
 |-------|---------|-------------|
 | Show weather card | on | Weather conditions |
 | Show solar card | on | Solar power and yield |
+| Show house card | on | What the house itself draws right now and has used today: grid import − grid export + solar − battery charge (needs the P1 device; solar and the battery watt device are used when configured) |
 | Show gas card | on | Gas usage |
 | Show battery card | on | Battery status |
 | Show balance bar | on | Self-sufficiency stats |
@@ -821,7 +822,7 @@ Displays items from any RSS or Atom feed.
 | Open in new tab | on | Links open in a new browser tab |
 | Title | feed title | Optional override |
 
-Fetches feeds via the [rss2json.com](https://api.rss2json.com) proxy (free tier, no API key needed) which solves CORS limitations.
+Feeds are fetched by the Domoticz server itself (`json.htm?type=command&param=fetchurl`), so the feed URL never leaves your network and browser CORS limits do not apply. The feed must be reachable from the Domoticz server.
 
 **Single item mode** (`Max items: 1`): Shows the latest item with a large image, headline, and excerpt.
 
@@ -863,9 +864,8 @@ The widget auto-detects `.ics` vs JSON API URLs.
 
 1. Direct request (works for CORS-friendly URLs)
 2. Domoticz server-side proxy (`json.htm?type=command&param=fetchurl&url=<encoded>`) — avoids CORS entirely for any URL reachable from the Domoticz server
-3. Public CORS proxies (corsproxy.io / codetabs) as last resort
 
-A helpful error message is shown if all methods fail.
+No public CORS proxies are used: the calendar URL (which contains its private token) never leaves your network. A helpful error message is shown if both methods fail.
 
 Past events today are shown in muted color. All-day events display without a time.
 

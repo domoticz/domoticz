@@ -355,7 +355,7 @@ namespace Plugins {
 			const char* buf = PyBytes_AsString(pObj);
 			Py_ssize_t len = PyBytes_Size(pObj);
 			if (buf && len >= 0)
-				sJson += Json::valueToQuotedString(buf, (size_t)len);
+				sJson += Json::valueToQuotedString(std::string(buf, (size_t)len).c_str());
 			else
 				sJson += "\"\"";
 		}
@@ -363,7 +363,7 @@ namespace Plugins {
 		{
 			const char* buf = PyByteArray_AsString(pObj);
 			if (buf)
-				sJson += Json::valueToQuotedString(buf, (size_t)PyByteArray_Size(pObj));
+				sJson += Json::valueToQuotedString(std::string(buf, (size_t)PyByteArray_Size(pObj)).c_str());
 			else
 				sJson += "\"\"";
 		}

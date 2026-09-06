@@ -11,7 +11,7 @@
                 <td id="bigtext">
                     <span>{{ctrl.getStatusText()}}</span>
                     <a ng-if="ctrl.device.UsedByCamera" ng-click="ctrl.showCameraStream()" class="lcursor">
-                        <img src="images/webcam.png" height="16" width="16" data-i18n="[title]Stream Video">
+                        <i class="dz-icon-glyph dz-icon-16 fa-solid fa-video" title="Stream Video"></i>
                     </a>
                 </td>
 
@@ -23,39 +23,52 @@
                              class="lcursor" ng-click="ctrl.showEvohomeModal()" height="40" width="40">
                     </div>
 
-                    <!-- Blinds - Open button -->
+                    <!-- Blinds - Open button (image in the classic icon style, glyph in the glyph style) -->
                     <img ng-if="ctrl.isBlinds() && !ctrl.isEvohome()"
                          ng-src="images/{{ctrl.device.TypeImg}}open48{{ctrl.isBlindsOpen() ? 'sel' : ''}}.png"
-                         ng-click="ctrl.switchLight('Open')" class="lcursor"
+                         ng-click="ctrl.switchLight('Open')" class="lcursor dz-classic-only"
                          height="40" width="40" data-i18n="[title]Open Blinds">
+                    <i ng-if="ctrl.isBlinds() && !ctrl.isEvohome()"
+                       class="fa-solid fa-chevron-up dz-icon-glyph dz-icon-40 dz-blind-glyph dz-glyph-only lcursor"
+                       ng-class="{'dz-icon--off': !ctrl.isBlindsOpen()}"
+                       ng-click="ctrl.switchLight('Open')" title="{{:: 'Open Blinds' | translate}}"></i>
 
                     <!-- Media Player main icon -->
-                    <img ng-if="ctrl.isMediaPlayer()"
-                         ng-src="{{ctrl.getMediaPlayerIcon()}}"
-                         ng-click="ctrl.switchLight(ctrl.isMediaPlayerActive() ? 'Off' : 'On')"
-                         ng-class="{'lcursor': !ctrl.isMediaPlayerDisconnected()}"
-                         height="40" width="40">
+                    <dz-device-icon ng-if="ctrl.isMediaPlayer()"
+                                    class="dz-icon-40"
+                                    device="ctrl.device"
+                                    is-active="ctrl.isMediaPlayerActive()"
+                                    fallback-src="ctrl.getMediaPlayerIcon()"
+                                    ng-click="ctrl.switchLight(ctrl.isMediaPlayerActive() ? 'Off' : 'On')"
+                                    ng-class="{'lcursor': !ctrl.isMediaPlayerDisconnected()}"></dz-device-icon>
 
                     <!-- All other devices: single toggling icon -->
-                    <img ng-if="!ctrl.isBlinds() && !ctrl.isEvohome() && !ctrl.isMediaPlayer()"
-                         ng-src="{{ctrl.getDeviceIcon()}}"
-                         ng-click="ctrl.deviceIconClick($event)"
-                         ng-class="{'lcursor': ctrl.isClickable()}"
-                         height="40" width="40">
+                    <dz-device-icon ng-if="!ctrl.isBlinds() && !ctrl.isEvohome() && !ctrl.isMediaPlayer()"
+                                    class="dz-icon-40"
+                                    device="ctrl.device"
+                                    is-active="ctrl.iconState()"
+                                    fallback-src="ctrl.getDeviceIcon()"
+                                    ng-click="ctrl.deviceIconClick($event)"
+                                    ng-class="{'lcursor': ctrl.isClickable()}"></dz-device-icon>
                 </td>
 
                 <!-- Blinds stop button (td#img2) -->
                 <td ng-if="ctrl.isBlinds() && ctrl.hasStopButton()" id="img2">
                     <img ng-src="images/{{ctrl.device.TypeImg}}stop.png"
-                         ng-click="ctrl.switchLight('Stop')" class="lcursor"
+                         ng-click="ctrl.switchLight('Stop')" class="lcursor dz-classic-only"
                          height="40" width="24" data-i18n="[title]Stop Blinds">
+                    <i class="fa-solid fa-stop dz-icon-glyph dz-icon-40 dz-blind-glyph dz-blind-glyph-stop dz-glyph-only lcursor"
+                       ng-click="ctrl.switchLight('Stop')" title="{{:: 'Stop Blinds' | translate}}"></i>
                 </td>
 
                 <!-- Blinds close button -->
                 <td ng-if="ctrl.isBlinds()" ng-attr-id="{{ctrl.hasStopButton() ? 'img3' : 'img2'}}">
                     <img ng-src="images/{{ctrl.device.TypeImg}}48{{ctrl.isBlindsOpen() ? '' : 'sel'}}.png"
-                         ng-click="ctrl.switchLight('Close')" class="lcursor"
+                         ng-click="ctrl.switchLight('Close')" class="lcursor dz-classic-only"
                          height="40" width="40" data-i18n="[title]Close Blinds">
+                    <i class="fa-solid fa-chevron-down dz-icon-glyph dz-icon-40 dz-blind-glyph dz-glyph-only lcursor"
+                       ng-class="{'dz-icon--off': ctrl.isBlindsOpen()}"
+                       ng-click="ctrl.switchLight('Close')" title="{{:: 'Close Blinds' | translate}}"></i>
                 </td>
 
                 <!-- Media Player remote icon (img2) -->
@@ -107,7 +120,7 @@
                 </td>
                 <!-- Blinds Percentage slider -->
                 <td ng-if="ctrl.device.SwitchType == 'Blinds Percentage'" class="input">
-                    <div style="margin-left:94px; margin-top: 7px; visibility:hidden;" class="dimslider dimslidersmalldouble"
+                    <div style="margin-left:106px; margin-top: 7px; visibility:hidden;" class="dimslider dimslidersmalldouble"
                          id="slider_{{ctrl.device.idx}}_blinds" data-idx="{{ctrl.device.idx}}" data-type="blinds"
                          data-maxlevel="{{ctrl.device.MaxDimLevel}}"
                          data-isprotected="{{ctrl.device.Protected}}"
@@ -116,7 +129,7 @@
                 </td>
                 <!-- Blinds % + Stop slider -->
                 <td ng-if="ctrl.device.SwitchType == 'Blinds % + Stop'" class="input">
-                    <div style="margin-left:124px; margin-top: 7px; visibility:hidden;" class="dimslider dimslidersmalltripple"
+                    <div style="margin-left:136px; margin-top: 7px; visibility:hidden;" class="dimslider dimslidersmalltripple"
                          id="slider_{{ctrl.device.idx}}_blindsstop" data-idx="{{ctrl.device.idx}}" data-type="blinds"
                          data-maxlevel="{{ctrl.device.MaxDimLevel}}"
                          data-isprotected="{{ctrl.device.Protected}}"

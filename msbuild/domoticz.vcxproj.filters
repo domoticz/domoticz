@@ -2104,6 +2104,12 @@
     <ClInclude Include="..\main\HTMLSanitizer.h">
       <Filter>Helpers</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\WebAssetFetch.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\WebAssets.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\Buienradar.h">
       <Filter>Devices\Buienradar</Filter>
     </ClInclude>
@@ -2923,6 +2929,9 @@
       <Filter>EventSystem\Python</Filter>
     </ClCompile>
     <ClCompile Include="..\main\HTMLSanitizer.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\WebAssetFetch.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\Buienradar.cpp">

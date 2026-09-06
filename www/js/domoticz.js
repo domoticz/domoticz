@@ -69,6 +69,25 @@ if (typeof (Highcharts) !== 'undefined') {
 				} catch (oException_) { /* too bad, no state */ }
 				fProceed_.apply(this, Array.prototype.slice.call(arguments, 1));
 			});
+
+			// A two-finger gesture whose fingers rest on different elements (one on a column
+			// bar, one on the plot background) makes the browser deliver one touchmove per
+			// target, both carrying the same two touches. Highcharts runs its pinch transform
+			// for each, so the second transforms an already transformed axis and the chart
+			// zooms in and straight back out while the fingers keep spreading. Handle each
+			// distinct multi-touch move once per pointer.
+			H_.wrap(H_.Pointer.prototype, 'onContainerTouchMove', function (fProceed_, oEvent_) {
+				if (oEvent_ && oEvent_.touches && oEvent_.touches.length > 1) {
+					var sKey = oEvent_.timeStamp + ':' + Array.prototype.map.call(oEvent_.touches, function (oTouch_) {
+						return oTouch_.identifier + '@' + oTouch_.clientX + ',' + oTouch_.clientY;
+					}).join('|');
+					if (this.dzLastMultiTouchMove === sKey) {
+						return;
+					}
+					this.dzLastMultiTouchMove = sKey;
+				}
+				fProceed_.apply(this, Array.prototype.slice.call(arguments, 1));
+			});
 		}(Highcharts));
 	}
 }
@@ -76,6 +95,24 @@ if (typeof (Highcharts) !== 'undefined') {
 /* Get the rows which are currently selected */
 function fnGetSelected(oTableLocal) {
 	return oTableLocal.$('tr.row_selected');
+}
+
+// Renders a battery level (0-100, or 255 = "not available") as a Font Awesome
+// battery glyph filled to match the level and coloured by it: red when nearly
+// empty, amber when low, green otherwise (the same thresholds the old level bar
+// used). Returned as an HTML string so table renderers can drop it straight in.
+function batteryLevelHtml(value) {
+	if (value === 255 || typeof value === 'undefined' || value === null) {
+		return '-';
+	}
+	var glyph = value < 10 ? 'fa-battery-empty'
+		: value < 37 ? 'fa-battery-quarter'
+		: value < 62 ? 'fa-battery-half'
+		: value < 87 ? 'fa-battery-three-quarters'
+		: 'fa-battery-full';
+	var tier = value < 10 ? 'dz-batt-empty' : value < 40 ? 'dz-batt-low' : 'dz-batt-ok';
+	var title = $.t('Battery level') + ': ' + value + '%';
+	return '<i class="fa-solid ' + glyph + ' dz-chrome-icon ' + tier + '" title="' + title + '"></i>';
 }
 
 function b64EncodeUnicode(str) {

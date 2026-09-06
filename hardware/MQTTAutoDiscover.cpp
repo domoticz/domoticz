@@ -4882,6 +4882,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
 	std::string szSwitchCmd = pSensor->last_value;
 	int level = 0;
+	bool bHaveActionLevel = false;
 	int switchType = STYPE_OnOff;
 	std::string szSensorName = pSensor->name;
 
@@ -5065,6 +5066,21 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			szSwitchCmd = "on";
 		}
 		szSensorName += "_" + pSensor->last_value;
+
+		// Rotary and scroll controls (IKEA BILRESA/SOMRIG, Aqara cube, ...) send how far
+		// they were turned as action_level (0..255) next to the action name. Keep it as
+		// the level of the action's push button so scripts can read it; the button
+		// itself has no level of its own to lose.
+		if (pSensor->bIsJSON)
+		{
+			Json::Value jPayload;
+			if (ParseJSon(pSensor->last_json_value, jPayload) && jPayload.isObject() && jPayload["action_level"].isNumeric())
+			{
+				const int iActionLevel = jPayload["action_level"].asInt();
+				level = std::max(0, std::min(100, (int)round((100.0 / 255.0) * iActionLevel)));
+				bHaveActionLevel = true;
+			}
+		}
 	}
 	else if (pSensor->object_id.find("scene_state_scene") != std::string::npos)
 	{
@@ -5586,6 +5602,14 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	else if (switchType == STYPE_PushOn)
 	{
 		nValue = gswitch_sOn;
+		if (bHaveActionLevel)
+		{
+			// "Set Level: n %" carries the value through to the UI, dzVents (level) and
+			// the event system; a plain "On" would drop it.
+			nValue = gswitch_sSetLevel;
+			bHaveLevelChange = (atoi(sValue.c_str()) != level);
+			sValue = std_format("%d", level);
+		}
 	}
 	else if (switchType == STYPE_PushOff)
 	{

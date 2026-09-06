@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 1
           submodules: false
@@ -80,7 +80,7 @@ jobs:
 
       # Artifact upload
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: domoticz_linux_x86_64-${{ github.event.pull_request.number }}-${{ github.run_number }}
           path: package/domoticz_linux_x86_64.tgz

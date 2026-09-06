@@ -29,6 +29,7 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 		std::string RootFile;
 		std::string Title;
 		std::string Description;
+		std::string FaClass;
 	};
 	CWebServer();
 	~CWebServer() override;
@@ -280,6 +281,10 @@ private:
 	void Cmd_UploadCustomIcon(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_DeleteCustomIcon(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdateCustomIcon(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_UploadWebAsset(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetWebAssets(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_GetWebAssetJob(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_DeleteWebAsset(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_RenameDevice(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_SetDeviceUsed(WebEmSession & session, const request& req, Json::Value &root);
 

@@ -69,7 +69,7 @@ The core part, the _Resource server_ is always used. It is the heart of the syst
 
 Depending on the User(s) environment 1 of more different _User Interfaces (UI's)_ are used to interact with the _resource server_. Each of those different _UI's_ is called a _client_. And a standard Domoticz installation comes with a default _client_, the _web UI_.
 
-When a Domoticz setup becomes either more complex, gets more users, needs connection to the Internet or other less- or insecure networks, it becomes neccessary to add ___SECURITY___. This is where the functions and features of the _IAM server_ comes into play.
+When a Domoticz setup becomes either more complex, gets more users, needs connection to the Internet or other less- or insecure networks, it becomes necessary to add ___SECURITY___. This is where the functions and features of the _IAM server_ comes into play.
 
 ### IAM server
 
@@ -107,7 +107,7 @@ But when coming from 'outside' a trusted network, Domoticz will require the user
 
 In 'Setup/Settings' on the _security_ tab, there is a section called _'Trusted Networks'_ where IP-addresses and IP-ranges (with wild-cards) can be entered. This ; (semicolon) separated list is used by Domoticz to allow requests coming from clients with an IP-address that falls in one of the listed ranges, to access Domoticz without the need to provide valid credentials.
 
-__NOTE__: Although this functionality seems very handy for easy access to Domoticz for example for scripting and connectivity reasons, it is easy to overlook the possible risks. It is prefered/safer to make sure that scripts, etc. use valid credentials. This has become easier with the use of tokens, so no need to store user credentials in scripts and pass them over the network with each request.
+__NOTE__: Although this functionality seems very handy for easy access to Domoticz for example for scripting and connectivity reasons, it is easy to overlook the possible risks. It is preferred/safer to make sure that scripts, etc. use valid credentials. This has become easier with the use of tokens, so no need to store user credentials in scripts and pass them over the network with each request.
 
 ## Add _clients_
 
@@ -257,7 +257,7 @@ Now only at start-up, the Dashboard has to ask for the users credentials and pro
 ## PKCE extension (RFC7636)
 
 Proof Key Code Exchange (pronounced "pixy")
-More secure auth_code flow for public clients (alternative to depricated implicit flow).
+More secure auth_code flow for public clients (alternative to deprecated implicit flow).
 
 ## OpenID Connect (OIDC) support
 

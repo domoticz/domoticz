@@ -391,7 +391,10 @@ define([
                         xDateFormat:   xFmt
                     };
                     opts.series = [{
-                        name:  titleForChartType(cfg, chartType) || info.unit,
+                        // The chart title already carries the range ("Last month"); the
+                        // tooltip names the series only, so a single day's value is
+                        // not labelled with the whole range.
+                        name:  ctrl.deviceName || info.unit,
                         data:  series,
                         // User-configurable; defaults to the same cyan as the P1 "Usage" series
                         color: cfg.barColor || '#03befc'

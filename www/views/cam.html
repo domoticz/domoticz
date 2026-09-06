@@ -129,6 +129,7 @@
 				<select id="activewhen" style="width:80px" class="combobox ui-corner-all">
 					<option value="0" data-i18n="On">On</option>
 					<option value="1" data-i18n="Off">Off</option>
+					<option value="2" data-i18n="Never">Never</option>
 				</select>
 				<label for="name"> <span data-i18n="Delay"></span>: </label>
 				<input type="text" id="delay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="0">
@@ -406,11 +407,11 @@
 							previewimg = '<img src="" height="40"> ';
 						}
 
-						var captureimg = '<img src="images/capture.png" title="' + $.t('Take Snapshot') + '" height="32">';
+						var captureimg = '<i class="fa-solid fa-camera dz-chrome-icon dz-chrome-icon-32 dz-act-neutral" title="' + $.t('Take Snapshot') + '"></i>';
 
 						captureurl = "<a href=\"camsnapshot.jpg?idx=" + item.idx + "\">" + captureimg + "</a>";
 
-						var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="32">';
+						var streamimg = '<i class="fa-solid fa-video dz-chrome-icon dz-chrome-icon-32 dz-act-neutral" title="' + $.t('Stream Video') + '"></i>';
 						streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + item.Name + "'," + item.idx + "," + item.AspectRatio + ")\">" + streamimg + "</a>";
 
 						var protocol;
@@ -589,9 +590,12 @@
 			success: function (data) {
 				if (typeof data.result != 'undefined') {
 					$.each(data.result, function (i, item) {
-						var swhen = "On";
+						var swhen = $.t("On");
 						if (item.when == 1) {
-							swhen = "Off";
+							swhen = $.t("Off");
+						} else if (item.when == 2) {
+							// Linked for the camera button only; no notification is ever sent
+							swhen = $.t("Never");
 						}
 						var addId = oTable.fnAddData({
 							"DT_RowId": item.idx,

@@ -37,6 +37,12 @@ define([
                 default: true
             },
             {
+                key:     'showHouse',
+                type:    'boolean',
+                label:   'Show house card',
+                default: true
+            },
+            {
                 key:     'showWater',
                 type:    'boolean',
                 label:   'Show water card',
@@ -85,6 +91,7 @@ define([
                 ctrl.batteryLive = null;
                 ctrl.weather     = null;
                 ctrl.balance     = null;
+                ctrl.house       = null;
                 ctrl.isNight     = false;
                 ctrl.currentTime = '';
                 ctrl.sunrise     = '';
@@ -269,6 +276,28 @@ define([
                         };
                     } else {
                         ctrl.batteryLive = null;
+                    }
+
+                    // House: what the home itself draws right now and has used today.
+                    //   live  = grid import - grid export + solar - battery charge
+                    //   today = grid import + solar - grid export - battery net (as the balance bar)
+                    // The battery watt device counts positive as charging; a battery that has
+                    // no watt device configured is left out of the live figure.
+                    if (ctrl.grid) {
+                        var solarW = ctrl.solar ? ctrl.solar.usageWatt : 0;
+                        var batW   = (ctrl.batteryLive && ctrl.batteryLive.watt !== null) ? ctrl.batteryLive.watt : 0;
+                        var houseW = Math.round(ctrl.grid.usageWatt - ctrl.grid.usageDelivWatt + solarW - batW);
+                        var houseTodayKwh = parseKwh(ctrl.grid.counterToday)
+                            + (ctrl.solar ? parseKwh(ctrl.solar.counterToday) : 0)
+                            - parseKwh(ctrl.grid.counterDelivToday)
+                            - (batImportedKwh - batExportedKwh);
+                        ctrl.house = {
+                            watt:    Math.max(0, houseW),
+                            today:   Math.max(0, houseTodayKwh),
+                            timeout: ctrl.grid.timeout || (ctrl.solar ? ctrl.solar.timeout : false)
+                        };
+                    } else {
+                        ctrl.house = null;
                     }
 
                     // Energy balance calculation

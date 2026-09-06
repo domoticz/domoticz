@@ -764,6 +764,7 @@ define(['app'], function (app) {
 						$("#settingscontent #combothemes").val(data.WebTheme);
 						$scope.WebTheme = data.WebTheme;
 					}
+					$("#settingscontent #comboiconstyle").val(data.IconStyle == 1 ? "1" : "0");
 					if (typeof data.Title != 'undefined') {
 						sessionStorage.title = data.Title;
 					}

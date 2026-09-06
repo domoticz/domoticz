@@ -32,7 +32,7 @@ jobs:
     steps:
     - name : Checkout
       if: ${{ github.event_name != 'workflow_dispatch' }}
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         fetch-depth: 0
         submodules: false
@@ -70,7 +70,7 @@ jobs:
 #The install parameter need to be exactly the same in all qemu steps
     - name : Build system (qemu)
       if: ${{ !contains(matrix.qemu_arch, 'x86') }}
-      uses: uraimo/run-on-arch-action@v2.8.1
+      uses: uraimo/run-on-arch-action@v3.2.0
       with:
         arch: ${{ matrix.qemu_arch }}
         distro: ubuntu_latest
@@ -112,7 +112,7 @@ jobs:
 
     - name: Build domoticz (qemu)
       if: ${{ ( !contains(matrix.qemu_arch, 'x86') && github.event_name != 'workflow_dispatch' ) }}
-      uses: uraimo/run-on-arch-action@v2.8.1
+      uses: uraimo/run-on-arch-action@v3.2.0
       with:
         arch: ${{ matrix.qemu_arch }}
         distro: ubuntu_latest
@@ -170,7 +170,7 @@ jobs:
       # Artifact upload
     - name: Upload asset
       if: ${{ github.event_name != 'workflow_dispatch' }}
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
       with:
         files: |
           src/package/domoticz_linux_${{ matrix.appimage_arch }}.tgz

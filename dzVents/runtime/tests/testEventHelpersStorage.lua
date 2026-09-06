@@ -80,9 +80,12 @@ describe('event helper storage', function()
 		helpers = EventHelpers(domoticz)
 		utils = helpers._getUtilsInstance()
 		utils.print = function() end
-		os.remove('../tests/data/__data_script_data.lua')
-		os.remove('../tests/data/__data_global_data.lua')
-		os.remove('../tests/data/__data_internal1.lua')
+		for _, base in ipairs({ '__data_script_data', '__data_global_data', '__data_internal1' }) do
+			os.remove('../tests/data/' .. base .. '.lua')
+			os.remove('../tests/data/' .. base .. '.lua.bak')
+			os.remove('../tests/data/' .. base .. '.lua.tmp')
+			os.remove('../tests/data/' .. base .. '.faulty')
+		end
 	end)
 
 	after_each(function()
@@ -307,6 +310,175 @@ describe('event helper storage', function()
 		-- require the file
 		fileStorage = require(script_data.dataFileName)
 		assert.is_same({ 'a', 'x', 'y'}, keys(fileStorage)) -- z is no longer there
+	end)
+
+	describe('Crash-safe storage', function()
+
+		local def
+		local dataPath = './data/__data_internal1.lua'
+		local moduleName = '__data_internal1'
+
+		local function write(context)
+			helpers.writeStorageContext(def, dataPath, moduleName, context)
+		end
+
+		local function corruptDataFile(content)
+			local f = io.open(dataPath, 'w')
+			f:write(content)
+			f:close()
+		end
+
+		before_each(function()
+			def = { x = { initial = 1 }, 'a' }
+		end)
+
+		it('should not leave a temporary file behind after a write', function()
+			local context = helpers.getStorageContext(def, moduleName)
+			context.x = 7
+			write(context)
+			assert.is_true(utils.fileExists(dataPath))
+			assert.is_false(utils.fileExists(dataPath .. '.tmp'))
+		end)
+
+		it('should keep the previous data as a backup file', function()
+			local context = helpers.getStorageContext(def, moduleName)
+			context.x = 42
+			write(context)
+			context.x = 43
+			write(context)
+
+			assert.is_true(utils.fileExists(dataPath .. '.bak'))
+			local backup = dofile(dataPath .. '.bak')
+			assert.is_same(42, backup.x)
+		end)
+
+		it('should skip the write when nothing changed', function()
+			local context = helpers.getStorageContext(def, moduleName)
+			context.x = 7
+			write(context)
+			-- first write of a new file: nothing to back up
+			assert.is_false(utils.fileExists(dataPath .. '.bak'))
+
+			-- identical data: the write is skipped, so still no backup appears
+			local again = helpers.getStorageContext(def, moduleName)
+			write(again)
+			assert.is_false(utils.fileExists(dataPath .. '.bak'))
+
+			-- changed data: written, and now the backup exists
+			again.x = 8
+			write(again)
+			assert.is_true(utils.fileExists(dataPath .. '.bak'))
+		end)
+
+		it('should recover from a truncated data file using the backup', function()
+			local context = helpers.getStorageContext(def, moduleName)
+			context.x = 42
+			context.a = 'important'
+			write(context)
+			context.x = 43
+			write(context)
+
+			-- an empty file is what a power cut mid-write leaves behind
+			corruptDataFile('')
+
+			local recovered = helpers.getStorageContext(def, moduleName)
+			assert.is_same(42, recovered.x)
+			assert.is_same('important', recovered.a)
+
+			-- the broken file was preserved for inspection and removed
+			assert.is_true(utils.fileExists('./data/' .. moduleName .. '.faulty'))
+			assert.is_false(utils.fileExists(dataPath))
+		end)
+
+		it('should recover from a garbage data file using the backup', function()
+			local context = helpers.getStorageContext(def, moduleName)
+			context.x = 42
+			write(context)
+			context.x = 43
+			write(context)
+
+			corruptDataFile('this is not valid lua {{{')
+
+			local recovered = helpers.getStorageContext(def, moduleName)
+			assert.is_same(42, recovered.x)
+			assert.is_true(utils.fileExists('./data/' .. moduleName .. '.faulty'))
+		end)
+
+		it('should fall back to initial values when there is no backup', function()
+			local context = helpers.getStorageContext(def, moduleName)
+			context.x = 42
+			write(context)
+			-- only one write ever happened, so there is no .bak
+			corruptDataFile('')
+
+			local recovered = helpers.getStorageContext(def, moduleName)
+			assert.is_same(1, recovered.x)
+			assert.is_true(utils.fileExists('./data/' .. moduleName .. '.faulty'))
+		end)
+
+		it('should use initial values when the data file was deliberately deleted', function()
+			local context = helpers.getStorageContext(def, moduleName)
+			context.x = 42
+			write(context)
+			context.x = 43
+			write(context)
+
+			-- deleting the data file is the documented way to reset storage;
+			-- the backup must NOT resurrect the old values
+			os.remove(dataPath)
+
+			local recovered = helpers.getStorageContext(def, moduleName)
+			assert.is_same(1, recovered.x)
+		end)
+	end)
+
+	describe('persistence serialization', function()
+
+		local persistence = require('persistence')
+		local path = './data/__test_persistence.lua'
+
+		after_each(function()
+			os.remove(path)
+			os.remove(path .. '.bak')
+			os.remove(path .. '.tmp')
+		end)
+
+		it('should round-trip nested tables with shared references', function()
+			local shared = { deep = { 1, 2, 3 } }
+			local data = {
+				a = shared,
+				b = shared,
+				s = 'text with \'quotes\', "double quotes"\nand newlines',
+				n = 1.5,
+				neg = -2,
+				flag = false,
+				list = { 'one', 'two', { three = 3 } },
+			}
+			persistence.store(path, data)
+			local loaded = persistence.load(path)
+			assert.is_same(data, loaded)
+			-- the shared reference is still shared after the round trip
+			assert.is_true(loaded.a == loaded.b)
+		end)
+
+		it('should write a file that is loadable with require', function()
+			persistence.store(path, { x = 5 })
+			package.loaded['__test_persistence'] = nil
+			local loaded = require('__test_persistence')
+			package.loaded['__test_persistence'] = nil
+			assert.is_same({ x = 5 }, loaded)
+		end)
+
+		it('should load files written in the previous storage format', function()
+			local f = io.open(path, 'w')
+			f:write('-- Persistent Data\n' ..
+				'local multiRefObjects = {\n\n} -- multiRefObjects\n' ..
+				'local obj1 = {\n\t["x"] = 5;\n\t["a"] = "hello";\n}\n' ..
+				'return obj1\n')
+			f:close()
+			local loaded = persistence.load(path)
+			assert.is_same({ x = 5, a = 'hello' }, loaded)
+		end)
 	end)
 
 	describe('Historical storage', function()

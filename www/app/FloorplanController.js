@@ -327,8 +327,14 @@ define(['app', 'livesocket'], function (app) {
 				item.Scale = $scope.floorPlans[$scope.GetFloorplanIdx(item.FloorID)].scaleFactor;
 				if (compoundDevice) {
 					item.Type = aSplit[0];					// handle multi value sensors (Baro, Humidity, Temp etc)
+					// CustomImage is set so the legacy image is built from Image rather than
+					// from the type; it is not a custom icon index, so it is flagged as such
+					// for anything that reads it as one. TypeImg follows the split too, or all
+					// three parts would resolve to the icon of the compound device.
 					item.CustomImage = 1;
+					item.SyntheticCustomImage = true;
 					item.Image = aSplit[0].toLowerCase();
+					item.TypeImg = item.Image;
 				}
 				try {
 					var dev = Device.create(item);
@@ -406,8 +412,12 @@ define(['app', 'livesocket'], function (app) {
 								var sDev = aDev[k].trim();
 								item.Name = ((k == 0) ? item.Name : sDev);
 								item.Type = sDev;
+								// See the compound handling above: a flag for the legacy image,
+								// not a custom icon index, and TypeImg follows the split.
 								item.CustomImage = 1;
+								item.SyntheticCustomImage = true;
 								item.Image = sDev.toLowerCase();
+								item.TypeImg = item.Image;
 								item.XOffset = Math.abs(item.XOffset) + ((k == 0) ? 0 : (50 * $scope.floorPlans[floorIdx].scaleFactor));
 								dev = Device.create(item);
 								var existing = document.getElementById(dev.uniquename);

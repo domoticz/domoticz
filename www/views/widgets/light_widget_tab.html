@@ -6,9 +6,9 @@
                 <td id="bigtext">
                     <span>{{ctrl.getStatusText()}}</span>
                     <a ng-if="ctrl.device.UsedByCamera" ng-click="ctrl.showCameraStream()" class="lcursor">
-                        <img src="images/webcam.png" height="16" width="16" data-i18n="[title]Stream Video">
+                        <i class="dz-icon-glyph dz-icon-16 fa-solid fa-video" title="Stream Video"></i>
                     </a>
-                    <img ng-if="ctrl.isAdmin && ctrl.isRFY()" src="images/devices.png" data-i18n="[title]Setup" ng-click="ctrl.showRFYSetup($event)" class="lcursor" height="16" width="16">&nbsp;
+                    <i ng-if="ctrl.isAdmin && ctrl.isRFY()" class="dz-icon-glyph dz-icon-16 fa-solid fa-sliders lcursor" title="Setup" ng-click="ctrl.showRFYSetup($event)"></i>&nbsp;
                 </td>
                 <td id="img">
                     <!-- Evohome -->
@@ -17,28 +17,38 @@
                     </div>
 
                     <!-- Blinds - Open button -->
-                    <img ng-if="ctrl.isBlinds() && !ctrl.isEvohome()" ng-src="images/{{ctrl.device.TypeImg}}open48{{ctrl.isBlindsOpen() ? 'sel' : ''}}.png" ng-click="ctrl.switchLight('Open')" class="lcursor" height="48" width="48" data-i18n="[title]Open Blinds">
+                    <img ng-if="ctrl.isBlinds() && !ctrl.isEvohome()" ng-src="images/{{ctrl.device.TypeImg}}open48{{ctrl.isBlindsOpen() ? 'sel' : ''}}.png" ng-click="ctrl.switchLight('Open')" class="lcursor dz-classic-only" height="48" width="48" data-i18n="[title]Open Blinds">
+                    <i ng-if="ctrl.isBlinds() && !ctrl.isEvohome()" class="fa-solid fa-chevron-up dz-icon-glyph dz-icon-48 dz-blind-glyph dz-glyph-only lcursor" ng-class="{'dz-icon--off': !ctrl.isBlindsOpen()}" ng-click="ctrl.switchLight('Open')" title="{{:: 'Open Blinds' | translate}}"></i>
 
                     <!-- Media Player main icon -->
-                    <img ng-if="ctrl.isMediaPlayer()" ng-src="{{ctrl.getMediaPlayerIcon()}}"
-                         ng-click="ctrl.switchLight(ctrl.isMediaPlayerActive() ? 'Off' : 'On')"
-                         ng-class="{'lcursor': !ctrl.isMediaPlayerDisconnected()}"
-                         height="48" width="48">
+                    <dz-device-icon ng-if="ctrl.isMediaPlayer()" class="dz-icon-48"
+                                    device="ctrl.device"
+                                    is-active="ctrl.isMediaPlayerActive()"
+                                    fallback-src="ctrl.getMediaPlayerIcon()"
+                                    ng-click="ctrl.switchLight(ctrl.isMediaPlayerActive() ? 'Off' : 'On')"
+                                    ng-class="{'lcursor': !ctrl.isMediaPlayerDisconnected()}"></dz-device-icon>
 
                     <!-- All other devices: single toggling icon -->
                     <div ng-if="!ctrl.isBlinds() && !ctrl.isEvohome() && !ctrl.isMediaPlayer()" style="position: relative; display: inline-block;">
-                        <img ng-src="{{ctrl.getDeviceIcon()}}" ng-click="ctrl.deviceIconClick($event)" ng-class="{'lcursor': ctrl.isClickable()}" height="48" width="48">
+                        <dz-device-icon class="dz-icon-48"
+                                        device="ctrl.device"
+                                        is-active="ctrl.iconState()"
+                                        fallback-src="ctrl.getDeviceIcon()"
+                                        ng-click="ctrl.deviceIconClick($event)"
+                                        ng-class="{'lcursor': ctrl.isClickable()}"></dz-device-icon>
                     </div>
                 </td>
 
                 <!-- Blinds stop button (td#img2) -->
                 <td ng-if="ctrl.isBlinds() && ctrl.hasStopButton()" id="img2">
-                    <img ng-src="images/{{ctrl.device.TypeImg}}stop.png" ng-click="ctrl.switchLight('Stop')" class="lcursor" height="48" width="24" data-i18n="[title]Stop Blinds">
+                    <img ng-src="images/{{ctrl.device.TypeImg}}stop.png" ng-click="ctrl.switchLight('Stop')" class="lcursor dz-classic-only" height="48" width="24" data-i18n="[title]Stop Blinds">
+                    <i class="fa-solid fa-stop dz-icon-glyph dz-icon-48 dz-blind-glyph dz-blind-glyph-stop dz-glyph-only lcursor" ng-click="ctrl.switchLight('Stop')" title="{{:: 'Stop Blinds' | translate}}"></i>
                 </td>
 
                 <!-- Blinds close button -->
                 <td ng-if="ctrl.isBlinds()" ng-attr-id="{{ctrl.hasStopButton() ? 'img3' : 'img2'}}">
-                    <img ng-src="images/{{ctrl.device.TypeImg}}48{{ctrl.isBlindsOpen() ? '' : 'sel'}}.png" ng-click="ctrl.switchLight('Close')" class="lcursor" height="48" width="48" data-i18n="[title]Close Blinds">
+                    <img ng-src="images/{{ctrl.device.TypeImg}}48{{ctrl.isBlindsOpen() ? '' : 'sel'}}.png" ng-click="ctrl.switchLight('Close')" class="lcursor dz-classic-only" height="48" width="48" data-i18n="[title]Close Blinds">
+                    <i class="fa-solid fa-chevron-down dz-icon-glyph dz-icon-48 dz-blind-glyph dz-glyph-only lcursor" ng-class="{'dz-icon--off': ctrl.isBlindsOpen()}" ng-click="ctrl.switchLight('Close')" title="{{:: 'Close Blinds' | translate}}"></i>
                 </td>
 
                 <!-- Media Player remote icon (img2) -->
@@ -61,9 +71,9 @@
                     <!-- Dimmer slider for regular dimmers -->
                     <span ng-if="ctrl.isDimmer() && !ctrl.isBlinds() && ctrl.device.DimmerType != 'rel'"><br><br><div style="margin-left:60px; margin-bottom:10px; visibility:hidden;" class="dimslider dimslidernorm" data-idx="{{ctrl.device.idx}}" data-type="norm" data-maxlevel="{{ctrl.device.MaxDimLevel}}" data-isprotected="{{ctrl.device.Protected}}" data-svalue="{{ctrl.device.LevelInt}}" data-isled="{{ctrl.isRGB()}}" data-disabled="{{!ctrl.isClickable()}}"></div></span>
                     <!-- Blinds Percentage slider -->
-                    <span ng-if="ctrl.device.SwitchType == 'Blinds Percentage'"><br><div style="margin-left:108px; margin-top:7px; margin-bottom:10px; visibility:hidden;" class="dimslider dimsmall" data-idx="{{ctrl.device.idx}}" data-type="blinds" data-maxlevel="{{ctrl.device.MaxDimLevel}}" data-isprotected="{{ctrl.device.Protected}}" data-svalue="{{ctrl.device.LevelInt}}"></div></span>
+                    <span ng-if="ctrl.device.SwitchType == 'Blinds Percentage'"><br><div style="margin-left:120px; margin-top:7px; margin-bottom:10px; visibility:hidden;" class="dimslider dimsmall" data-idx="{{ctrl.device.idx}}" data-type="blinds" data-maxlevel="{{ctrl.device.MaxDimLevel}}" data-isprotected="{{ctrl.device.Protected}}" data-svalue="{{ctrl.device.LevelInt}}"></div></span>
                     <!-- Blinds % + Stop slider -->
-                    <span ng-if="ctrl.device.SwitchType == 'Blinds % + Stop'"><br><div style="margin-left:132px; margin-top:12px; margin-bottom:10px; visibility:hidden;" class="dimslider dimsmall3" data-idx="{{ctrl.device.idx}}" data-type="blinds" data-maxlevel="{{ctrl.device.MaxDimLevel}}" data-isprotected="{{ctrl.device.Protected}}" data-svalue="{{ctrl.device.LevelInt}}"></div></span>
+                    <span ng-if="ctrl.device.SwitchType == 'Blinds % + Stop'"><br><div style="margin-left:144px; margin-top:12px; margin-bottom:10px; visibility:hidden;" class="dimslider dimsmall3" data-idx="{{ctrl.device.idx}}" data-type="blinds" data-maxlevel="{{ctrl.device.MaxDimLevel}}" data-isprotected="{{ctrl.device.Protected}}" data-svalue="{{ctrl.device.LevelInt}}"></div></span>
                     <!-- Selector buttons (SelectorStyle 0) -->
                     <span ng-if="ctrl.isSelector() && ctrl.device.SelectorStyle === 0"><br><div class="btn-group selectorlevelbuttons" style="display: block; margin-top: 4px;">
                         <button ng-repeat="level in ctrl.selectorLevels track by level.value" type="button" class="btn btn-small" ng-class="{'btn-selected': level.isActive, 'btn-default': !level.isActive}" ng-click="ctrl.setSelectorLevel(level.value, level.name)">
@@ -76,8 +86,8 @@
                     </div></span>
                 </td>
                 <td class="options">
-                    <span ng-if="ctrl.device.Favorite == 0"><img src="images/nofavorite.png" data-i18n="[title]Add to Dashboard" ng-click="ctrl.makeFavorite(1)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                    <span ng-if="ctrl.device.Favorite != 0"><img src="images/favorite.png" data-i18n="[title]Remove from Dashboard" ng-click="ctrl.makeFavorite(0)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span ng-if="ctrl.device.Favorite == 0"><i class="dz-icon-glyph dz-icon-16 fa-regular fa-star lcursor" title="Add to Dashboard" ng-click="ctrl.makeFavorite(1)"></i>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span ng-if="ctrl.device.Favorite != 0"><i class="dz-icon-glyph dz-icon-16 fa-solid fa-star lcursor" title="Remove from Dashboard" ng-click="ctrl.makeFavorite(0)"></i>&nbsp;&nbsp;&nbsp;&nbsp;</span>
                     <a class="btnsmall" ng-href="{{ctrl.getGraphLogLink()}}" data-i18n="Log">Log</a>
                     <a ng-if="ctrl.isAdmin" class="btnsmall" ng-click="ctrl.editDevice()" data-i18n="Edit">Edit</a>
                     <a ng-if="ctrl.isAdmin && ctrl.hasTimers()" class="btnsmall-sel" ng-href="{{ctrl.getTimerLink()}}" data-i18n="Timers">Timers</a>

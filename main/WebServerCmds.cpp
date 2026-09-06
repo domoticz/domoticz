@@ -15,6 +15,9 @@
 #include <stdarg.h>
 #include <json/json.h>
 #include <algorithm>
+#ifdef WIN32
+#include <windows.h>
+#endif
 #include <openssl/sha.h>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
@@ -34,6 +37,8 @@
 #include "SQLHelper.h"
 #include "KWHStats.h"
 #include "ThemeSettings.h"
+#include "WebAssets.h"
+#include "WebAssetFetch.h"
 #include "../httpclient/HTTPClient.h"
 #include "../hardware/hardwaretypes.h"
 #include <libwebem/Base64.h>
@@ -1601,10 +1606,17 @@ namespace http
 		// field names declared as password fields. The password attribute is matched case-insensitively
 		// ("true"/"TRUE"/"1") so a manifest typo does not silently expose a secret. Pure: operates on
 		// the manifest XML string, no I/O. keyOut is empty when the manifest has no key attribute.
-		static void ParsePluginManifest(const std::string &manifestXml, std::string &keyOut, std::set<std::string> &passwordFieldsOut)
+		struct _tPluginSettingsFields
+		{
+			std::set<std::string> passwordFields; // params declared password="true"
+			std::set<std::string> allFields;      // every param the manifest declares
+		};
+
+		static void ParsePluginManifest(const std::string &manifestXml, std::string &keyOut, _tPluginSettingsFields &fieldsOut)
 		{
 			keyOut.clear();
-			passwordFieldsOut.clear();
+			fieldsOut.passwordFields.clear();
+			fieldsOut.allFields.clear();
 			TiXmlDocument xmlDoc;
 			xmlDoc.Parse(manifestXml.c_str());
 			if (xmlDoc.Error())
@@ -1631,8 +1643,11 @@ namespace http
 			};
 			auto checkParam = [&](TiXmlElement *pEle) {
 				const char *pField = pEle->Attribute("field");
-				if (pField && isPasswordAttr(pEle->Attribute("password")))
-					passwordFieldsOut.insert(pField);
+				if (!pField)
+					return;
+				fieldsOut.allFields.insert(pField);
+				if (isPasswordAttr(pEle->Attribute("password")))
+					fieldsOut.passwordFields.insert(pField);
 			};
 			for (TiXmlNode *pChild = pParamsNode->FirstChild(); pChild; pChild = pChild->NextSibling())
 			{
@@ -1658,16 +1673,16 @@ namespace http
 		// column) to its set of password field names. GetManifest() is keyed by plugin DIRECTORY, not by
 		// the key attribute, so it must be walked and re-keyed. Only plugins that declare at least one
 		// password field appear.
-		static std::map<std::string, std::set<std::string>> BuildPluginPasswordFieldsByKey()
+		static std::map<std::string, _tPluginSettingsFields> BuildPluginSettingsFieldsByKey()
 		{
-			std::map<std::string, std::set<std::string>> byKey;
+			std::map<std::string, _tPluginSettingsFields> byKey;
 			Plugins::CPluginSystem pluginSystem;
 			for (const auto &manifest : *pluginSystem.GetManifest())
 			{
 				std::string key;
-				std::set<std::string> fields;
+				_tPluginSettingsFields fields;
 				ParsePluginManifest(manifest.second, key, fields);
-				if (!key.empty() && !fields.empty())
+				if (!key.empty() && !fields.allFields.empty())
 					byKey[key] = fields;
 			}
 			return byKey;
@@ -1987,13 +2002,13 @@ namespace http
 					{
 						// Preserve custom password fields left blank on save ("leave blank to keep").
 						// Extra holds the plugin key; a password field submitted empty keeps its stored value.
-						std::map<std::string, std::set<std::string>> pluginPasswordFields = BuildPluginPasswordFieldsByKey();
-						auto itPwd = pluginPasswordFields.find(extra);
-						if (itPwd != pluginPasswordFields.end() && !itPwd->second.empty())
+						std::map<std::string, _tPluginSettingsFields> pluginFields = BuildPluginSettingsFieldsByKey();
+						auto itPwd = pluginFields.find(extra);
+						if (itPwd != pluginFields.end() && !itPwd->second.passwordFields.empty())
 						{
 							std::vector<std::vector<std::string>> storedRes = m_sql.safe_query("SELECT Settings FROM Hardware WHERE ID=%q", idx.c_str());
 							std::string storedSettings = storedRes.empty() ? "" : storedRes[0][0];
-							settings = MergePluginSettingsPreservePasswords(settings, storedSettings, itPwd->second);
+							settings = MergePluginSettingsPreservePasswords(settings, storedSettings, itPwd->second.passwordFields);
 						}
 					}
 #endif
@@ -3099,6 +3114,10 @@ namespace http
 			m_sql.GetPreferencesVar("MobileType", nValue);
 			root["MobileType"] = nValue;
 
+			nValue = 0;
+			m_sql.GetPreferencesVar("IconStyle", nValue);
+			root["IconStyle"] = nValue; // 0 = classic image icons, 1 = Font Awesome glyphs
+
 			nValue = 1;
 			m_sql.GetPreferencesVar("5MinuteHistoryDays", nValue);
 			root["FiveMinuteHistoryDays"] = nValue;
@@ -4171,6 +4190,14 @@ namespace http
 				m_pWebEm->SetWebTheme(SelectedTheme);
 				cntSettings++;
 
+				// Icon style: 0 = the classic image icons (default), 1 = Font Awesome glyphs
+				std::string sIconStyle = request::findValue(&req, "IconStyle");
+				if (!sIconStyle.empty())
+				{
+					m_sql.UpdatePreferencesVar("IconStyle", (sIconStyle == "1") ? 1 : 0);
+					cntSettings++;
+				}
+
 				//Update the Max kWh value
 				rnvalue = 6000;
 				if (m_sql.GetPreferencesVar("MaxElectricPower", rnvalue))
@@ -4429,6 +4456,7 @@ namespace http
 				root["result"][ii]["imageSrc"] = icon.RootFile;
 				root["result"][ii]["text"] = icon.Title;
 				root["result"][ii]["description"] = icon.Description;
+				root["result"][ii]["FaClass"] = icon.FaClass;
 				ii++;
 			}
 			root["status"] = "OK";
@@ -4704,13 +4732,13 @@ namespace http
 #ifdef ENABLE_PYTHON
 				// Map plugin key -> password field names, built once, but only when the result actually
 				// contains a plugin row (avoids parsing manifests for non-plugin queries).
-				std::map<std::string, std::set<std::string>> pluginPasswordFields;
+				std::map<std::string, _tPluginSettingsFields> pluginFields;
 				{
 					bool hasPlugin = false;
 					for (const auto &sd : result)
 						if ((_eHardwareTypes)atoi(sd[3].c_str()) == HTYPE_PythonPlugin) { hasPlugin = true; break; }
 					if (hasPlugin)
-						pluginPasswordFields = BuildPluginPasswordFieldsByKey();
+						pluginFields = BuildPluginSettingsFieldsByKey();
 				}
 #endif
 				int ii = 0;
@@ -4765,11 +4793,11 @@ namespace http
 							// Strip password-type field values so secrets never reach the browser, and
 							// report which ones are set so the UI can show "leave blank to keep".
 							std::string pluginKey = sd[9]; // Extra holds the plugin key
-							auto itPwdFields = pluginPasswordFields.find(pluginKey);
-							if (itPwdFields != pluginPasswordFields.end())
+							auto itFields = pluginFields.find(pluginKey);
+							if (itFields != pluginFields.end())
 							{
 								Json::Value pwdSet(Json::objectValue);
-								for (const auto &field : itPwdFields->second)
+								for (const auto &field : itFields->second.passwordFields)
 								{
 									if (settingsJson.isMember(field))
 									{
@@ -4780,6 +4808,16 @@ namespace http
 								}
 								if (!pwdSet.empty())
 									root["result"][ii]["SettingsPwdSet"] = pwdSet;
+
+								// A field the manifest no longer declares (renamed or removed) may
+								// still hold a secret from an older version. Nothing can display
+								// it, so it never leaves the server; the next save drops it.
+								const std::vector<std::string> storedKeys = settingsJson.getMemberNames();
+								for (const auto &key : storedKeys)
+								{
+									if (itFields->second.allFields.count(key) == 0)
+										settingsJson.removeMember(key);
+								}
 							}
 #else
 							// Without Python support the plugin manifest is unavailable, so password
@@ -5612,6 +5650,7 @@ namespace http
 					root["result"][ii]["IconFile16"] = IconFile16;
 					root["result"][ii]["IconFile48On"] = IconFile48On;
 					root["result"][ii]["IconFile48Off"] = IconFile48Off;
+					root["result"][ii]["FaClass"] = icon.FaClass;
 					ii++;
 				}
 			}
@@ -5671,6 +5710,230 @@ namespace http
 
 			m_sql.safe_query("UPDATE CustomImages SET Name='%q', Description='%q' WHERE (ID == %d)", sname.c_str(), sdescription.c_str(), idx);
 			ReloadCustomSwitchIcons();
+		}
+
+		void CWebServer::Cmd_UploadWebAsset(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "UploadWebAsset";
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			std::string szName = request::findValue(&req, "name");
+			std::string szData = request::findValue(&req, "data"); // base64 encoded
+			std::string szURL = request::findValue(&req, "url");
+			std::string szTitle = request::findValue(&req, "title"); // optional, display only
+
+			if (szName.empty() || (szData.empty() && szURL.empty()))
+			{
+				root["error"] = "Missing name, and data or url";
+				return;
+			}
+			if (!IsSafeWebAssetName(szName))
+			{
+				root["error"] = "Invalid asset name";
+				return;
+			}
+			if (!IsAllowedWebAssetType(szName))
+			{
+				root["error"] = "Unsupported asset type";
+				return;
+			}
+
+			if (szData.empty())
+			{
+				// The download runs in the background; the caller polls getwebassetjob
+				// with the returned job id until it reports done.
+				std::string szError;
+				const std::string szJobID = WebAssetFetch::StartInstall(szName, szURL, szTitle, szError);
+				if (szJobID.empty())
+				{
+					root["error"] = szError;
+					return;
+				}
+				root["status"] = "OK";
+				root["job"] = szJobID;
+				root["path"] = "assets/" + szName;
+				return;
+			}
+
+			if (WebAssetFetch::IsInstallRunning(szName))
+			{
+				root["error"] = "This library is currently being installed";
+				return;
+			}
+
+			std::string szContent = base64_decode(szData);
+			if (szContent.empty())
+			{
+				root["error"] = "Could not decode asset data";
+				return;
+			}
+			if (szContent.size() > WEB_ASSET_MAX_SIZE)
+			{
+				root["error"] = "Asset too large";
+				return;
+			}
+
+			if (WebAssetFetch::IsNameOwnedByOther(szName, szName))
+			{
+				root["error"] = "Asset file name '" + szName + "' is already used by another installed library";
+				return;
+			}
+
+			if (!EnsureWebAssetFolder())
+			{
+				root["error"] = "Could not create assets folder";
+				return;
+			}
+
+			if (!WriteWebAssetFile(szName, szContent, "UploadWebAsset"))
+			{
+				root["error"] = "Could not write asset";
+				return;
+			}
+			WriteWebAssetGzip(szName, "UploadWebAsset");
+			WebAssetFetch::SetTitle(szName, szTitle);
+
+			root["status"] = "OK";
+			root["path"] = "assets/" + szName;
+			root["size"] = static_cast<int>(szContent.size());   // capped well below INT_MAX
+		}
+
+		void CWebServer::Cmd_GetWebAssetJob(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "GetWebAssetJob";
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			const std::string szJobID = request::findValue(&req, "job");
+			WebAssetFetch::JobStatus status;
+			if (szJobID.empty() || (szJobID.size() > 64) || !WebAssetFetch::GetJobStatus(szJobID, status))
+			{
+				root["error"] = "Unknown job";
+				return;
+			}
+
+			root["status"] = "OK";
+			root["name"] = status.szName;
+			if (status.bRunning)
+				root["state"] = "running";
+			else if (status.bSuccess)
+			{
+				root["state"] = "done";
+				root["path"] = "assets/" + status.szName;
+			}
+			else
+			{
+				root["state"] = "failed";
+				root["error"] = status.szError.empty() ? "Could not install the library" : status.szError;
+			}
+		}
+
+		void CWebServer::Cmd_GetWebAssets(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "GetWebAssets";
+
+			// Not admin-only: every user's browser has to know which stylesheets to load.
+			if (session.rights == URIGHTS_NONE)
+			{
+				session.reply_status = reply::forbidden;
+				return;
+			}
+
+			root["status"] = "OK";
+
+			DIR* lDir = opendir(WebAssetFolder().c_str());
+			if (lDir == nullptr)
+				return; // no assets stored yet — an empty result is not an error
+
+			struct _tAssetMeta
+			{
+				std::string szSourceURL;
+				std::string szLastUpdate;
+				std::string szTitle;
+			};
+			std::map<std::string, _tAssetMeta> metadata;
+			auto result = m_sql.safe_query("SELECT Name, SourceURL, LastUpdate, Title FROM WebAssets");
+			for (const auto& sd : result)
+				metadata[sd[0]] = _tAssetMeta{ sd[1], sd[2], sd[3] };
+
+			int ii = 0;
+			struct dirent* ent;
+			while ((ent = readdir(lDir)) != nullptr)
+			{
+				const std::string szFileName = ent->d_name;
+				if ((szFileName == ".") || (szFileName == ".."))
+					continue;
+				if (!IsAllowedWebAssetType(szFileName))
+					continue;
+				// Libraries installed before pre-compression existed, or copied in by
+				// hand, get their .gz here so the first page load pays the cost once.
+				if (IsWebAssetStylesheet(szFileName) && !WebAssetGzipIsCurrent(szFileName))
+					WriteWebAssetGzip(szFileName, "GetWebAssets");
+				std::string szSourceURL;
+				std::string szLastUpdate;
+				std::string szTitle;
+				auto itt = metadata.find(szFileName);
+				if (itt != metadata.end())
+				{
+					szSourceURL = itt->second.szSourceURL;
+					szLastUpdate = itt->second.szLastUpdate;
+					szTitle = itt->second.szTitle;
+				}
+
+				root["result"][ii]["name"] = szFileName;
+				root["result"][ii]["path"] = "assets/" + szFileName;
+				root["result"][ii]["LastUpdate"] = szLastUpdate;
+				root["result"][ii]["Title"] = szTitle;
+				// Withheld from viewers: a source URL can name a host on the local network.
+				if (session.rights == URIGHTS_ADMIN)
+					root["result"][ii]["SourceURL"] = szSourceURL;
+				ii++;
+			}
+			closedir(lDir);
+		}
+
+		void CWebServer::Cmd_DeleteWebAsset(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "DeleteWebAsset";
+			if (session.rights != URIGHTS_ADMIN)
+			{
+				session.reply_status = reply::forbidden;
+				return; // Only admin user allowed
+			}
+
+			std::string szName = request::findValue(&req, "name");
+			if (szName.empty() || !IsSafeWebAssetName(szName) || !IsAllowedWebAssetType(szName))
+			{
+				root["error"] = "Invalid asset name";
+				return;
+			}
+			if (WebAssetFetch::IsInstallRunning(szName))
+			{
+				root["error"] = "This library is currently being installed";
+				return;
+			}
+
+			const std::string szFile = WebAssetFolder() + "/" + szName;
+			if (!file_exist(szFile.c_str()))
+			{
+				root["error"] = "Asset not found";
+				return;
+			}
+			if (std::remove(szFile.c_str()) != 0)
+			{
+				root["error"] = "Could not remove asset";
+				return;
+			}
+			RemoveWebAssetGzip(szName);
+			WebAssetFetch::Forget(szName);
+			root["status"] = "OK";
 		}
 
 		void CWebServer::Cmd_RenameDevice(WebEmSession& session, const request& req, Json::Value& root)
@@ -6205,18 +6468,27 @@ namespace http
 			std::vector<std::string> strarray;
 			StringSplit(userdevices, ";", strarray);
 
-			// First make a backup of the favorite devices before deleting the devices for this user, then add the (new) onces and restore favorites
-			m_sql.safe_query("UPDATE SharedDevices SET SharedUserID = 0 WHERE SharedUserID == '%q' and Favorite == 1", idx.c_str());
+			// The list is rebuilt from scratch, so remember each device's favourite flag and
+			// dashboard position first. Losing [Order] here is what put the user's dashboard
+			// back in alphabetical order every time a device was added; devices that are new
+			// to the list get the next free position from the insert trigger.
+			std::map<std::string, std::pair<std::string, std::string>> previous; // DeviceRowID -> (Favorite, Order)
+			auto prevResult = m_sql.safe_query("SELECT DeviceRowID, Favorite, [Order] FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
+			for (const auto& sd : prevResult)
+				previous[sd[0]] = std::make_pair(sd[1], sd[2]);
+
 			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == '%q'", idx.c_str());
 
-			int nDevices = static_cast<int>(strarray.size());
-			for (int ii = 0; ii < nDevices; ii++)
+			for (const auto& szDeviceRowID : strarray)
 			{
-				m_sql.safe_query("INSERT INTO SharedDevices (SharedUserID,DeviceRowID) VALUES ('%q','%q')", idx.c_str(), strarray[ii].c_str());
-				m_sql.safe_query("UPDATE SharedDevices SET Favorite = 1 WHERE SharedUserid == '%q' AND DeviceRowID IN (SELECT DeviceRowID FROM SharedDevices WHERE SharedUserID == 0)",
-					idx.c_str());
+				m_sql.safe_query("INSERT INTO SharedDevices (SharedUserID,DeviceRowID) VALUES ('%q','%q')", idx.c_str(), szDeviceRowID.c_str());
+				auto itt = previous.find(szDeviceRowID);
+				if (itt != previous.end())
+				{
+					m_sql.safe_query("UPDATE SharedDevices SET Favorite = %d, [Order] = %d WHERE (SharedUserID == '%q') AND (DeviceRowID == '%q')",
+						atoi(itt->second.first.c_str()), atoi(itt->second.second.c_str()), idx.c_str(), szDeviceRowID.c_str());
+				}
 			}
-			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == 0");
 			LoadUsers();
 			root["status"] = "OK";
 		}
@@ -6235,6 +6507,59 @@ namespace http
 			root["title"] = "ClearSharedUserDevices";
 			m_sql.safe_query("DELETE FROM SharedDevices WHERE SharedUserID == '%q'", idx.c_str());
 			LoadUsers();
+		}
+
+		static bool IsIconToken(const std::string& szToken, size_t maxLen, bool bAllowSpaces)
+		{
+			if (szToken.empty() || (szToken.size() > maxLen))
+				return false;
+			for (const char c : szToken)
+			{
+				if ((c >= '0') && (c <= '9'))
+					continue;
+				if ((c >= 'a') && (c <= 'z'))
+					continue;
+				if ((c >= 'A') && (c <= 'Z'))
+					continue;
+				if ((c == '-') || (c == '_'))
+					continue;
+				if (bAllowSpaces && (c == ' '))
+					continue;
+				return false;
+			}
+			return true;
+		}
+
+		static bool NormaliseDeviceIcon(const std::string& szIn, std::string& szOut)
+		{
+			szOut.clear();
+			if (szIn.empty())
+				return true;
+			if (szIn.size() > 512)
+				return false;
+
+			Json::Value jIn;
+			if (!ParseJSon(szIn, jIn) || !jIn.isObject())
+				return false;
+
+			const std::string szType = jIn["t"].isString() ? jIn["t"].asString() : "";
+			const std::string szOn = jIn["on"].isString() ? jIn["on"].asString() : "";
+			const std::string szOff = jIn["off"].isString() ? jIn["off"].asString() : "";
+
+			if (!IsIconToken(szType, 32, false))
+				return false;
+			if (!IsIconToken(szOn, 128, true))
+				return false;
+			if (!szOff.empty() && !IsIconToken(szOff, 128, true))
+				return false;
+
+			Json::Value jOut;
+			jOut["t"] = szType;
+			jOut["on"] = szOn;
+			if (!szOff.empty())
+				jOut["off"] = szOff;
+			szOut = JSonToRawString(jOut);
+			return true;
 		}
 
 		void CWebServer::Cmd_SetUsed(WebEmSession& session, const request& req, Json::Value& root)
@@ -6277,6 +6602,8 @@ namespace http
 			std::string tmode = request::findValue(&req, "tmode");
 			std::string fmode = request::findValue(&req, "fmode");
 			std::string sCustomImage = request::findValue(&req, "customimage");
+			bool bHasIcon = request::hasValue(&req, "icon");
+			std::string sIcon = request::findValue(&req, "icon");
 
 			std::string strunit = request::findValue(&req, "unit");
 			std::string strParam1 = HTMLSanitizer::Sanitize(base64_decode(request::findValue(&req, "strparam1")));
@@ -6288,6 +6615,7 @@ namespace http
 			std::string sOptions = HTMLSanitizer::Sanitize(base64_decode(request::findValue(&req, "options")));
 			std::string devoptions = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "devoptions")));
 			std::string EnergyMeterMode = CURLEncode::URLDecode(request::findValue(&req, "EnergyMeterMode"));
+			std::string sDisableAnomalyDetection = request::findValue(&req, "DisableAnomalyDetection");
 			std::string sShowIcon = request::findValue(&req, "ShowIcon");
 
 			char szTmp[200];
@@ -6379,6 +6707,21 @@ namespace http
 				{
 					m_sql.safe_query("UPDATE DeviceStatus SET Used=%d, Name='%q', Description='%q', SwitchType=%d, CustomImage=%d WHERE (ID == '%q')", used, name.c_str(),
 						description.c_str(), switchtype, CustomImage, idx.c_str());
+				}
+			}
+
+			if (bHasIcon)
+			{
+				std::string szIconNormalised;
+				if (NormaliseDeviceIcon(sIcon, szIconNormalised))
+				{
+					m_sql.safe_query("UPDATE DeviceStatus SET Icon='%q' WHERE (ID == '%q')", szIconNormalised.c_str(), idx.c_str());
+				}
+				else
+				{
+					_log.Log(LOG_ERROR, "SetUsed: rejected invalid icon reference for device %s", idx.c_str());
+					root["error"] = "Invalid icon";
+					return;
 				}
 			}
 
@@ -6476,11 +6819,13 @@ namespace http
 			}
 			bool bNeedShowIcon = (!sShowIcon.empty() && (sShowIcon == "0" || sShowIcon == "1") &&
 				atoi(result[0][0].c_str()) == pTypeGeneral && atoi(result[0][1].c_str()) == sTypeTextStatus);
-			if (!EnergyMeterMode.empty() || bNeedShowIcon)
+			if (!EnergyMeterMode.empty() || !sDisableAnomalyDetection.empty() || bNeedShowIcon)
 			{
 				auto options = m_sql.GetDeviceOptions(idx);
 				if (!EnergyMeterMode.empty())
 					options["EnergyMeterMode"] = EnergyMeterMode;
+				if (!sDisableAnomalyDetection.empty())
+					options["DisableAnomalyDetection"] = (sDisableAnomalyDetection == "1") ? "1" : "0";
 				if (bNeedShowIcon)
 					options["ShowIcon"] = sShowIcon;
 				uint64_t ullidx = std::stoull(idx);
@@ -6900,6 +7245,10 @@ namespace http
 				else if (Key == "WebTheme")
 				{
 					root["WebTheme"] = sValue;
+				}
+				else if (Key == "IconStyle")
+				{
+					root["IconStyle"] = nValue;
 				}
 				else if (Key == "MyDomoticzSubsystems")
 				{

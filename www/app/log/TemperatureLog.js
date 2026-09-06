@@ -9,6 +9,7 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
             const $ctrl = this;
             $ctrl.autoRefresh = true;
             $ctrl.showAdvancedCharts = false;
+            $ctrl.distributionRange = 'day';
             $ctrl.toggleAdvancedCharts = function () {
                 $ctrl.showAdvancedCharts = !$ctrl.showAdvancedCharts;
             };
@@ -513,6 +514,102 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
             '</div>' +
         '</div>';
 
+    var distributionChartTemplate =
+        '<div class="chart noselect">' +
+            '<div class="chart-title-center">' +
+                '<div class="chart-title-container"><h2>{{vm.chartTitle}}</h2></div>' +
+            '</div>' +
+            '<div class="chartarea">' +
+                '<div class="zoom-buttons-container">' +
+                    '<button class="zoom-button" ng-class="{\'zoom-button-active\': vm.range === \'day\'}" ng-click="vm.setRange(\'day\')">{{vm.rangeLabels.day}}</button>' +
+                    '<button class="zoom-button" ng-class="{\'zoom-button-active\': vm.range === \'month\'}" ng-click="vm.setRange(\'month\')">{{vm.rangeLabels.month}}</button>' +
+                    '<button class="zoom-button" ng-class="{\'zoom-button-active\': vm.range === \'year\'}" ng-click="vm.setRange(\'year\')">{{vm.rangeLabels.year}}</button>' +
+                '</div>' +
+                '<div class="chartcontainer" style="height:300px;"></div>' +
+            '</div>' +
+        '</div>';
+
+    function distributionRangeLabels() {
+        return { day: $.t('Day'), month: $.t('Month'), year: $.t('Year') };
+    }
+
+    function binDistribution(values, suffix) {
+        var minV = Math.floor(Math.min.apply(null, values));
+        var maxV = Math.max.apply(null, values);
+        var binSize = Math.max(1, Math.round((Math.ceil(maxV) - minV) / 15));
+        var binStart = Math.floor(minV / binSize) * binSize;
+        var bins = [];
+        var categories = [];
+
+        // <= so the exact maximum value always lands in the last bin
+        while (binStart <= maxV) {
+            var binEnd = binStart + binSize;
+            var count = 0;
+            values.forEach(function (v) {
+                if (v >= binStart && v < binEnd) count++;
+            });
+            bins.push(count);
+            categories.push(binStart + '-' + binEnd + suffix);
+            binStart = binEnd;
+        }
+        return { bins: bins, categories: categories };
+    }
+
+    function destroyDistributionChart(container) {
+        var chartIndex = container.getAttribute('data-highcharts-chart');
+        if (chartIndex !== null && Highcharts.charts[chartIndex]) {
+            Highcharts.charts[chartIndex].destroy();
+        }
+    }
+
+    function showDistributionNoData(element) {
+        var container = element.find('.chartcontainer');
+        destroyDistributionChart(container[0]);
+        container.html(
+            '<div style="display:flex;align-items:center;justify-content:center;height:100%;opacity:0.6;">' +
+            $.t('No data available') + '</div>');
+    }
+
+    function drawDistributionChart(container, binned, xTitle, colorForRatio) {
+        destroyDistributionChart(container);
+        var totalReadings = binned.bins.reduce(function (a, b) { return a + b; }, 0);
+        var colors = binned.bins.map(function (val, i) {
+            return colorForRatio(i / Math.max(binned.bins.length - 1, 1));
+        });
+
+        Highcharts.chart(container, {
+            chart: { type: 'column' },
+            title: { text: null },
+            xAxis: {
+                categories: binned.categories,
+                crosshair: true,
+                title: { text: xTitle }
+            },
+            yAxis: {
+                title: { text: $.t('Readings') },
+                allowDecimals: false
+            },
+            tooltip: {
+                formatter: function () {
+                    return $.t('Readings') + ': <b>' + this.y + '</b> (' +
+                        Math.round(this.y * 100 / totalReadings) + '%)';
+                }
+            },
+            legend: { enabled: false },
+            plotOptions: {
+                column: {
+                    colorByPoint: true,
+                    colors: colors,
+                    borderWidth: 0
+                }
+            },
+            series: [{
+                name: $.t('Readings'),
+                data: binned.bins
+            }]
+        });
+    }
+
     app.component('temperatureCurrentConditions', {
         require: {
             logCtrl: '^deviceTemperatureLog'
@@ -778,93 +875,152 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
         bindings: {
             device: '<'
         },
-        template: customChartTemplate,
+        template: distributionChartTemplate,
         controllerAs: 'vm',
-        controller: function ($element, domoticzApi) {
+        controller: function ($scope, $element, domoticzApi) {
             const self = this;
             self.chartTitle = $.t('Temperature') + ' ' + $.t('Distribution');
+            self.range = 'day';
+            self.rangeLabels = distributionRangeLabels();
+
+            let loadSeq = 0;
+            let hasRendered = false;
+
+            // The range is shared with the humidity distribution chart via the
+            // parent log controller, so both charts always show the same window
+            self.setRange = function (range) {
+                self.logCtrl.distributionRange = range;
+            };
 
             self.$onInit = function () {
+                $scope.$watch(function () { return self.logCtrl.distributionRange; }, function (range) {
+                    self.range = range;
+                    load(range);
+                });
+            };
+
+            function load(range) {
+                const seq = ++loadSeq;
                 domoticzApi.sendCommand('graph', {
-                    sensor: 'temp', idx: self.device.idx, range: 'day'
+                    sensor: 'temp', idx: self.device.idx, range: range
                 }).then(function (data) {
-                    if (!data || !data.result || data.result.length < 10) {
-                        $element.hide();
+                    if (seq !== loadSeq) {
                         return;
                     }
 
+                    // The short log carries individual readings (te), the month
+                    // and year archives one average (ta) per day
                     var temps = [];
-                    data.result.forEach(function (item) {
-                        var te = parseFloat(item.te);
+                    ((data && data.result) || []).forEach(function (item) {
+                        var te = parseFloat(range === 'day' ? item.te : item.ta);
                         if (!isNaN(te)) temps.push(te);
                     });
 
                     if (temps.length < 10) {
-                        $element.hide();
+                        if (!hasRendered) {
+                            $element.hide();
+                        } else {
+                            showDistributionNoData($element);
+                        }
                         return;
                     }
 
-                    var minT = Math.floor(Math.min.apply(null, temps));
-                    var maxT = Math.ceil(Math.max.apply(null, temps));
-                    var range = maxT - minT;
-                    var binSize = Math.max(1, Math.round(range / 15));
-                    var binStart = minT;
-                    var bins = [];
-                    var categories = [];
+                    hasRendered = true;
+                    $element.show();
+                    drawDistributionChart(
+                        $element.find('.chartcontainer')[0],
+                        binDistribution(temps, degreeSuffix),
+                        $.t('Temperature') + ' ' + degreeSuffix,
+                        function (ratio) {
+                            // Color gradient: blue (cold) to red (hot)
+                            var r = Math.round(50 + ratio * 200);
+                            var b = Math.round(200 - ratio * 180);
+                            return 'rgba(' + r + ',80,' + b + ',0.8)';
+                        }
+                    );
+                });
+            }
+        }
+    });
 
-                    while (binStart < maxT) {
-                        var binEnd = binStart + binSize;
-                        var count = 0;
-                        temps.forEach(function (t) {
-                            if (t >= binStart && t < binEnd) count++;
-                        });
-                        bins.push(count);
-                        categories.push(binStart + '-' + binEnd + degreeSuffix);
-                        binStart = binEnd;
-                    }
+    app.component('humidityDistributionChart', {
+        require: {
+            logCtrl: '^deviceTemperatureLog'
+        },
+        bindings: {
+            device: '<'
+        },
+        template: distributionChartTemplate,
+        controllerAs: 'vm',
+        controller: function ($scope, $element, domoticzApi) {
+            const self = this;
+            self.chartTitle = $.t('Humidity') + ' ' + $.t('Distribution');
+            self.range = 'day';
+            self.rangeLabels = distributionRangeLabels();
 
-                    // Color gradient: blue (cold) to red (hot)
-                    var colors = bins.map(function (val, i) {
-                        var ratio = i / Math.max(bins.length - 1, 1);
-                        var r = Math.round(50 + ratio * 200);
-                        var b = Math.round(200 - ratio * 180);
-                        return 'rgba(' + r + ',80,' + b + ',0.8)';
-                    });
+            let loadSeq = 0;
+            let hasRendered = false;
 
-                    var chartElement = $element.find('.chartcontainer');
-                    Highcharts.chart(chartElement[0], {
-                        chart: { type: 'column' },
-                        title: { text: null },
-                        xAxis: {
-                            categories: categories,
-                            crosshair: true,
-                            title: { text: $.t('Temperature') + ' ' + degreeSuffix }
-                        },
-                        yAxis: {
-                            title: { text: $.t('Readings') },
-                            allowDecimals: false
-                        },
-                        tooltip: {
-                            formatter: function () {
-                                return this.x + '<br/>' +
-                                    $.t('Readings') + ': <b>' + this.y + '</b>';
-                            }
-                        },
-                        legend: { enabled: false },
-                        plotOptions: {
-                            column: {
-                                colorByPoint: true,
-                                colors: colors,
-                                borderWidth: 0
-                            }
-                        },
-                        series: [{
-                            name: $.t('Readings'),
-                            data: bins
-                        }]
-                    });
+            // The range is shared with the temperature distribution chart via the
+            // parent log controller, so both charts always show the same window
+            self.setRange = function (range) {
+                self.logCtrl.distributionRange = range;
+            };
+
+            self.$onInit = function () {
+                if (self.device.Humidity === undefined && self.device.Type !== 'Humidity') {
+                    $element.hide();
+                    return;
+                }
+
+                $scope.$watch(function () { return self.logCtrl.distributionRange; }, function (range) {
+                    self.range = range;
+                    load(range);
                 });
             };
+
+            function load(range) {
+                const seq = ++loadSeq;
+                domoticzApi.sendCommand('graph', {
+                    sensor: 'temp', idx: self.device.idx, range: range
+                }).then(function (data) {
+                    if (seq !== loadSeq) {
+                        return;
+                    }
+
+                    // The short log carries individual readings, the month and
+                    // year archives one average per day
+                    var hums = [];
+                    ((data && data.result) || []).forEach(function (item) {
+                        var hu = parseInt(item.hu, 10);
+                        if (!isNaN(hu)) hums.push(hu);
+                    });
+
+                    if (hums.length < 10) {
+                        if (!hasRendered) {
+                            $element.hide();
+                        } else {
+                            showDistributionNoData($element);
+                        }
+                        return;
+                    }
+
+                    hasRendered = true;
+                    $element.show();
+                    drawDistributionChart(
+                        $element.find('.chartcontainer')[0],
+                        binDistribution(hums, '%'),
+                        $.t('Humidity') + ' (%)',
+                        function (ratio) {
+                            // Color gradient: tan (dry) to blue (humid)
+                            var r = Math.round(210 - ratio * 160);
+                            var g = Math.round(180 - ratio * 60);
+                            var b = Math.round(60 + ratio * 190);
+                            return 'rgba(' + r + ',' + g + ',' + b + ',0.8)';
+                        }
+                    );
+                });
+            }
         }
     });
 

@@ -4,10 +4,11 @@
             <tr>
                 <!-- Device Icon -->
                 <td class="img">
-                    <img ng-src="{{ctrl.getDeviceIcon()}}"
-                         title="{{ctrl.device.Name}}"
-                         height="40"
-                         width="40">
+                    <dz-device-icon class="dz-icon-40"
+                                    device="ctrl.device"
+                                    is-active="ctrl.iconState()"
+                                    fallback-src="ctrl.getDeviceIcon()"
+                                    title="{{ctrl.device.Name}}"></dz-device-icon>
                 </td>
 
                 <!-- Device Name and Controls -->

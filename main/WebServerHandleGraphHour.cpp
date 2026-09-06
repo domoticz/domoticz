@@ -75,6 +75,7 @@ void HandleGraphHour(const GraphContext& ctx, const request& req,
 				bool bHaveFirstValue = false;
 				int64_t lastUsage, lastDeliv;
 				time_t lastTime = 0;
+				std::string lastStime;
 				float lastPrice = 0;
 
 				int lastDay = 0;
@@ -113,6 +114,7 @@ void HandleGraphHour(const GraphContext& ctx, const request& req,
 							lastUsage = actUsage;
 							lastDeliv = actDeliv;
 							lastTime = atime;
+							lastStime = stime;
 							lastPrice = actPrice;
 							continue;
 						}
@@ -120,8 +122,10 @@ void HandleGraphHour(const GraphContext& ctx, const request& req,
 						long curUsage = (long)(actUsage - lastUsage);
 						long curDeliv = (long)(actDeliv - lastDeliv);
 
-						std::string stime = sd[0].substr(0, 16);
-						root["result"][ii]["d"] = stime;
+						// The delta is what was used between the previous slot and this one,
+						// so it belongs to the slot it started in: the 13:00 bar holds
+						// 13:00-14:00, matching the other energy charts.
+						root["result"][ii]["d"] = lastStime.substr(0, 16);
 
 						if (curDeliv != 0)
 							bHaveDeliverd = true;
@@ -143,6 +147,7 @@ void HandleGraphHour(const GraphContext& ctx, const request& req,
 					lastUsage = actUsage;
 					lastDeliv = actDeliv;
 					lastTime = atime;
+					lastStime = stime;
 					lastPrice = actPrice;
 				}
 				if (bHaveDeliverd)
