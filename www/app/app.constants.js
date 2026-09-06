@@ -33,7 +33,7 @@ define(['angular'], function () {
     });
 
     module.constant('dataTableDefaultSettings', {
-        dom: '<"H"lfrC>t<"F"ip>',
+        dom: '<"H"lfr>t<"F"ip>',
         order: [[0, 'desc']],
         "bSortClasses": false,
         "bJQueryUI": true,

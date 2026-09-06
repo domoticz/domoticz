@@ -137,7 +137,7 @@ define(['app'], function (app) {
 				var oTableSettings = $.extend({}, dataTableDefaultSettings, {
 					bFilter: false,
 					bSortClasses: false,
-					aaSorting: [[0, 'asc']]
+					order: [[0, 'asc']]
 				});
 				oNodeTable = $('#matterNodeTable').DataTable(oTableSettings);
 			}).fail(function () {

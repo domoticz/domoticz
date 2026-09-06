@@ -636,10 +636,7 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 			}
 
 			$element.find('#scenedevicestable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"aoColumnDefs": [
 					{ "bSortable": false, "aTargets": [1] }
 				],
@@ -653,10 +650,7 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 				language: $.DataTableLanguage
 			});
 			$element.find('#scenedactivationtable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"aoColumnDefs": [
 					{ "bSortable": false, "aTargets": [1] }
 				],

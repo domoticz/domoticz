@@ -29,10 +29,7 @@ define(['app'], function (app) {
 
 			// Prepare EnOcean Nodes table
 			var oTable = $("#nodestable").dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"aaSorting": [[0, "asc"]],
 				"bSortClasses": false,
 				"bProcessing": true,

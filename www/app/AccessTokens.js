@@ -33,7 +33,7 @@ define(['app'], function (app) {
 					oTable = $('#accesstokentable').dataTable();
 				} else {
 					oTable = $('#accesstokentable').dataTable({
-						'sDom': '<"H"lfrC>t<"F"ip>',
+						'sDom': '<"H"lfr>t<"F"ip>',
 						'bStateSave': true,
 						'bJQueryUI': true,
 						'aLengthMenu': [[25, 50, 100, -1], [25, 50, 100, $.t('All')]],
