@@ -383,8 +383,8 @@
 		$('#updelclr #cameraedit').attr("class", "btnstyle3-dis");
 		$('#updelclr #cameradelete').attr("class", "btnstyle3-dis");
 
-		var oTable = $('#cameratable').dataTable();
-		oTable.fnClearTable();
+		var oTable = $('#cameratable').DataTable();
+		oTable.clear().draw();
 		$.ajax({
 			url: "json.htm?type=command&param=getcameras",
 			async: false,
@@ -420,7 +420,7 @@
 						else
 							protocol = "HTTPS";
 
-						var addId = oTable.fnAddData({
+						oTable.row.add({
 							"DT_RowId": item.idx,
 							"Name": item.Name,
 							"Address": item.Address,
@@ -441,7 +441,7 @@
 							"7": item.Address,
 							"8": item.Port,
 							"9": item.ImageURL
-						});
+						}).draw();
 					});
 				}
 			}
@@ -468,14 +468,14 @@
 				$("#dialog-add-edit-camera #cameraparamstable #imageurl").val("image.jpg");
 			}
 			else {
-				var oTable = $('#cameratable').dataTable();
+				var oTable = $('#cameratable').DataTable();
 				oTable.$('tr.row_selected').removeClass('row_selected');
 				$(this).addClass('row_selected');
 				$('#updelclr #cameraedit').attr("class", "btnstyle3");
 				$('#updelclr #cameradelete').attr("class", "btnstyle3");
 				var anSelected = fnGetSelected(oTable);
 				if (anSelected.length !== 0) {
-					var data = oTable.fnGetData(anSelected[0]);
+					var data = oTable.row(anSelected[0]).data();
 					var idx = data["DT_RowId"];
 					$.devIdx = idx;
 					$("#updelclr #cameraedit").attr("href", "javascript:EditCamera(" + idx + ")");
@@ -574,8 +574,8 @@
 
 		$('#cameracontent #delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
 
-		var oTable = $('#cameracontent #activetable').dataTable();
-		oTable.fnClearTable();
+		var oTable = $('#cameracontent #activetable').DataTable();
+		oTable.clear().draw();
 
 		$.ajax({
 			url: "json.htm?type=command&param=getcamactivedevices&idx=" + idx,
@@ -591,12 +591,12 @@
 							// Linked for the camera button only; no notification is ever sent
 							swhen = $.t("Never");
 						}
-						var addId = oTable.fnAddData({
+						oTable.row.add({
 							"DT_RowId": item.idx,
 							"0": item.Name,
 							"1": swhen,
 							"2": item.delay
-						});
+						}).draw();
 					});
 				}
 			}
@@ -610,14 +610,14 @@
 				$('#cameracontent #delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
 			}
 			else {
-				var oTable = $('#cameracontent #activetable').dataTable();
+				var oTable = $('#cameracontent #activetable').DataTable();
 				oTable.$('tr.row_selected').removeClass('row_selected');
 				$(this).addClass('row_selected');
 				$('#cameracontent #delclractive #activedevicedelete').attr("class", "btnstyle3");
 
 				var anSelected = fnGetSelected(oTable);
 				if (anSelected.length !== 0) {
-					var data = oTable.fnGetData(anSelected[0]);
+					var data = oTable.row(anSelected[0]).data();
 					var idx = data["DT_RowId"];
 					$("#cameracontent #delclractive #activedevicedelete").attr("href", "javascript:DeleteActiveDevice(" + idx + ")");
 				}
