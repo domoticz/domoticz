@@ -542,8 +542,19 @@ define(['app', 'icons/dzIconService'], function (app) {
             }
 
             var src = sel.customImage > 0 ? (item ? item.src : '') : defaultImage;
+            if (src) {
+                return { kind: 'img', src: src };
+            }
 
-            return src ? { kind: 'img', src: src } : { kind: 'none' };
+            // Only the glyph style resolves to a font, so without this the classic style (the
+            // default) discards the image the resolver just produced and draws the empty-square
+            // placeholder instead. Mount points that pass a defaultImage still win above; this is
+            // the fallback for the ones that pass the device record instead.
+            if (resolved && resolved.kind === 'img') {
+                return resolved;
+            }
+
+            return { kind: 'none' };
         }
     }]);
 
