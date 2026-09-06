@@ -143,7 +143,7 @@ define(['app', 'icons/dzIconPicker', 'components/rgbw-picker/RgbwPicker'], funct
 
             function init() {
                 table = $element.find('#subdevicestable').dataTable(Object.assign({}, dataTableDefaultSettings, {
-                    sDom: '<"H"frC>t<"F"i>',
+                    dom: '<"H"fr>t<"F"i>',
                     columns: [
                         { title: $.t('Name'), data: 'Name' }
                     ],

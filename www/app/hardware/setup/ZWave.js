@@ -114,21 +114,7 @@ define(['app'], function (app) {
 			tfoot = $('<tfoot></tfoot>');
 			tfoot.appendTo($('#legendtable'));
 
-			$('#legendtable').DataTable(Object.assign({}, dataTableDefaultSettings, {
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single"
-				},
-				"aaSorting": [[0, "desc"]],
-				"bSortClasses": false,
-				"bProcessing": true,
-				"bStateSave": true,
-				"bJQueryUI": true,
-				"aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
-				"iDisplayLength": 25,
-				"sPaginationType": "full_numbers",
-				language: $.DataTableLanguage
-			}));
+			$('#legendtable').DataTable(Object.assign({}, dataTableDefaultSettings));
 			
 		}
 
@@ -220,21 +206,7 @@ define(['app'], function (app) {
 							tfoot = $('<tfoot></tfoot>');
 							tfoot.appendTo($('#grouptable'));
 
-							$('#grouptable').DataTable(Object.assign({}, dataTableDefaultSettings, {
-								"sDom": '<"H"lfrC>t<"F"ip>',
-								"oTableTools": {
-									"sRowSelect": "single"
-								},
-								"aaSorting": [[0, "desc"]],
-								"bSortClasses": false,
-								"bProcessing": true,
-								"bStateSave": true,
-								"bJQueryUI": true,
-								"aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
-								"iDisplayLength": 25,
-								"sPaginationType": "full_numbers",
-								language: $.DataTableLanguage
-							}));
+							$('#grouptable').DataTable(Object.assign({}, dataTableDefaultSettings));
 						}
 					}
 				}
@@ -1158,10 +1130,7 @@ define(['app'], function (app) {
 			$('#hardwarecontent').i18n();
 			$('#hardwarecontent #nodeidx').val(idx);
 			var oTable = $('#codestable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single"
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"aaSorting": [[0, "desc"]],
 				"bSortClasses": false,
 				"bProcessing": true,
@@ -1188,10 +1157,7 @@ define(['app'], function (app) {
 			$('#hardwarecontent #usercodegrp').hide();
 
 			var oTable = $('#nodestable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"aaSorting": [[0, "desc"]],
 				"bSortClasses": false,
 				"bProcessing": true,

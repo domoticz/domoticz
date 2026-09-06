@@ -221,10 +221,7 @@ define(['app'], function (app) {
             $('#hardwarecontent #kodisettingstable #pingtimeout').val(Mode2);
 
             var oTable = $('#kodinodestable').dataTable({
-                'sDom': '<"H"lfrC>t<"F"ip>',
-                'oTableTools': {
-                    'sRowSelect': 'single',
-                },
+                'sDom': '<"H"lfr>t<"F"ip>',
                 'aaSorting': [[0, 'desc']],
                 'bSortClasses': false,
                 'bProcessing': true,

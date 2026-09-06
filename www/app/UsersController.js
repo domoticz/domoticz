@@ -386,10 +386,7 @@ define(['app'], function (app) {
 			$('#usercontent').i18n();
 
 			oTable = $('#usertable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"aoColumnDefs": [
 					{ "bSortable": false, "aTargets": [0] }
 				],

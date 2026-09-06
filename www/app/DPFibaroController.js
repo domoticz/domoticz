@@ -308,10 +308,7 @@ define(['app'], function (app) {
 		ShowLinks = function () {
 			$('#fibaromain').i18n();
 			var oTable = $('#linktable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single"
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"fnDrawCallback": function (oSettings) {
 					var nTrs = this.fnGetNodes();
 					$(nTrs).click(

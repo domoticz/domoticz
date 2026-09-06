@@ -3418,10 +3418,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #lmssettingstable #pollinterval").val(Mode1);
 
 			var oTable = $('#lmsnodestable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"aaSorting": [[0, "desc"]],
 				"bSortClasses": false,
 				"bProcessing": true,
@@ -5817,10 +5814,7 @@ define(['app'], function (app) {
 			$('#hardwarecontent').html(htmlcontent);
 			$('#hardwarecontent').i18n();
 			var oTable = $('#hardwaretable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				columnDefs: [
 					{
 					targets: 1, // first column (0-based index)

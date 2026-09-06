@@ -508,7 +508,7 @@ function updateDevices() {
 
 			$ctrl.$onInit = function () {
 				table = $element.find('table').dataTable(Object.assign({}, dataTableDefaultSettings, {
-					dom: '<"H"lfrC>t',
+					dom: '<"H"lfr>t',
 					order: [[1, 'asc']],
 					paging: false,
 					select: { style: 'multi' },
