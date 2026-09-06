@@ -12,6 +12,7 @@
 #include "SolarEdgeAPI.h"
 #include "../main/Helper.h"
 #include "../main/Logger.h"
+#include "../main/SQLHelper.h"
 #include "../httpclient/UrlEncode.h"
 #include "hardwaretypes.h"
 #include "../httpclient/HTTPClient.h"
@@ -19,6 +20,9 @@
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
 #include <libwebem/Base64.h>
+#include <openssl/rand.h>
+#include <fstream>
+#include <regex>
 
 #define SE_VOLT_DC 20
 #define SE_POWERLIMIT 21
@@ -49,18 +53,20 @@
 
 // Optimizer web-portal sensor sub-IDs (per optimizer node, base node 300+)
 #define SE_OPT_POWER 1
-#define SE_OPT_VOLTAGE 2
-#define SE_OPT_OPTIMIZER_VOLTAGE 3
-#define SE_OPT_CURRENT 4
-#define SE_OPT_LIFETIME_ENERGY 5
 
 // Web portal node ID bases for inverters and strings
 #define SE_WEB_INVERTER_BASE 250
 #define SE_WEB_STRING_BASE 260
 
-// Web portal energy sub-IDs (for inverter/string nodes)
-#define SE_WEB_ENERGY_TODAY 1
-#define SE_WEB_ENERGY_LIFETIME 2
+// Web portal power sub-ID (aggregated from child optimizers), for inverter/string nodes
+#define SE_WEB_POWER 1
+
+// SolarEdge web portal OAuth2 (PKCE) endpoints
+#define SE_WEB_CLIENT_ID "ugfnsujd3384sshcjehaphlh3"
+#define SE_WEB_REDIRECT_URI "https://monitoring.solaredge.com/mfe/auth/callback"
+#define SE_WEB_AUTHORIZE_URL "https://login.solaredge.com/oauth2/authorize"
+#define SE_WEB_TOKEN_URL "https://login.solaredge.com/oauth2/token"
+#define SE_WEB_EXCHANGE_URL "https://monitoring.solaredge.com/services/auth/token?legacy=false"
 
 
 #ifdef _DEBUG
@@ -98,6 +104,74 @@ std::string ReadFile(std::string filename)
 }
 #endif
 
+namespace
+{
+	std::string ExtractNodeIdentity(const Json::Value& node)
+	{
+		if (!node["serial"].empty())
+			return node["serial"].asString();
+		const Json::Value& props = node["properties"];
+		if (!props.empty() && !props["identifier"].empty())
+			return props["identifier"].asString();
+		if (!node["uuid"].empty())
+			return node["uuid"].asString();
+		return "";
+	}
+
+	bool IsInactiveNode(const Json::Value& node)
+	{
+		const Json::Value& props = node["properties"];
+		if (props.empty())
+			return false;
+		return props.get("status", "").asString() == "INACTIVE";
+	}
+
+	int LastHttpStatusCode(const std::vector<std::string>& vHeaderData)
+	{
+		int iStatusCode = 0;
+		for (const auto& line : vHeaderData)
+		{
+			if (line.compare(0, 5, "HTTP/") != 0)
+				continue;
+			size_t pos = line.find(' ');
+			if (pos != std::string::npos)
+				iStatusCode = atoi(line.c_str() + pos + 1);
+		}
+		return iStatusCode;
+	}
+
+	bool HeaderNameIs(const std::string& line, const std::string& headerName)
+	{
+		if (line.size() < headerName.size())
+			return false;
+		for (size_t i = 0; i < headerName.size(); i++)
+		{
+			if (tolower((unsigned char)line[i]) != tolower((unsigned char)headerName[i]))
+				return false;
+		}
+		return true;
+	}
+
+	// Scans every captured redirect hop for a Location header carrying an OAuth "code" parameter
+	std::string ExtractLocationCode(const std::vector<std::string>& vHeaderData)
+	{
+		for (const auto& line : vHeaderData)
+		{
+			if (!HeaderNameIs(line, "location:"))
+				continue;
+			size_t codePos = line.find("code=");
+			if (codePos == std::string::npos)
+				continue;
+			size_t valueStart = codePos + 5;
+			size_t valueEnd = line.find_first_of("&\r\n", valueStart);
+			if (valueEnd == std::string::npos)
+				return line.substr(valueStart);
+			return line.substr(valueStart, valueEnd - valueStart);
+		}
+		return "";
+	}
+}
+
 SolarEdgeAPI::SolarEdgeAPI(const int ID, const std::string& APIKey, const std::string& Password, const std::string& Extra, const int Mode1) :
 	m_APIKey(APIKey)
 {
@@ -119,6 +193,8 @@ SolarEdgeAPI::SolarEdgeAPI(const int ID, const std::string& APIKey, const std::s
 	}
 	m_WebPassword = Password;
 	m_bPollOptimizers = (Mode1 != 0);
+
+	LoadWebRefreshToken();
 }
 
 bool SolarEdgeAPI::StartHardware()
@@ -150,12 +226,8 @@ void SolarEdgeAPI::Do_Work()
 	Log(LOG_STATUS, "Worker started...");
 
 	// Polling intervals (seconds)
-	// Layout: every 2 hours (also provides site/inverter/string/optimizer energy data)
-	// Optimizer systemData: every 10 minutes (20 calls per cycle, daylight only)
-	//
-	// With 20 optimizers at 10-min intervals during ~14h daylight:
-	//   Layout: ~12 calls/day
-	//   systemData: ~84 cycles × 20 = ~1680 calls/day (web portal, no strict daily limit)
+	// Layout: every 2 hours (also provides site/inverter/string/optimizer structure)
+	// Optimizer playback: every 10 minutes (1 call for all optimizers, daylight only)
 	constexpr int LAYOUT_INTERVAL = 7200;         // 2 hours
 	constexpr int OPTIMIZER_DATA_INTERVAL = 600;   // 10 minutes
 
@@ -200,16 +272,16 @@ void SolarEdgeAPI::Do_Work()
 		// Web portal polling (requires web credentials)
 		bool bWebCredentials = !m_WebUsername.empty() && !m_WebPassword.empty();
 
-		// Web portal: refresh site layout + energy every 2 hours (site/inverter/string/optimizer energy)
+		// Web portal: refresh site layout every 2 hours (site/inverter/string/optimizer structure)
 		// Need either a configured Web Site ID or an API-discovered m_SiteID
-		if (bWebCredentials && !m_WebSiteID.empty() && (m_optimizers.empty() || layout_timer >= LAYOUT_INTERVAL))
+		if (bWebCredentials && !m_WebSiteID.empty() && layout_timer >= LAYOUT_INTERVAL)
 		{
 			layout_timer = 0;
 			GetSiteLayout();
 		}
 
-		// Web portal: poll optimizer real-time data (power/voltage/current) every 10 minutes
-		// This makes 1 HTTP call per optimizer, so gated by the Poll Optimizers setting
+		// Web portal: poll optimizer power data every 10 minutes
+		// This makes 1 HTTP call for all optimizers, so gated by the Poll Optimizers setting
 		if (bWebCredentials && m_bPollOptimizers && !m_optimizers.empty() && optimizer_data_timer >= OPTIMIZER_DATA_INTERVAL)
 		{
 			optimizer_data_timer = 0;
@@ -300,12 +372,16 @@ void SolarEdgeAPI::ResetPowerValues()
 		{
 			sprintf(szTmp, "%s Power", opt.displayName.c_str());
 			SendWattMeter(opt.nodeId, SE_OPT_POWER, 255, 0, szTmp);
-			sprintf(szTmp, "Voltage %s", opt.displayName.c_str());
-			SendVoltageSensor(opt.nodeId, SE_OPT_VOLTAGE, 255, 0, szTmp);
-			sprintf(szTmp, "Optimizer Voltage %s", opt.displayName.c_str());
-			SendVoltageSensor(opt.nodeId, SE_OPT_OPTIMIZER_VOLTAGE, 255, 0, szTmp);
-			sprintf(szTmp, "%s Current", opt.displayName.c_str());
-			SendCustomSensor(opt.nodeId, SE_OPT_CURRENT, 255, 0, szTmp, "A");
+		}
+		for (const auto& str : m_webStrings)
+		{
+			sprintf(szTmp, "%s Power", str.displayName.c_str());
+			SendWattMeter(str.nodeId, SE_WEB_POWER, 255, 0, szTmp);
+		}
+		for (const auto& inv : m_webInverters)
+		{
+			sprintf(szTmp, "%s Power", inv.displayName.c_str());
+			SendWattMeter(inv.nodeId, SE_WEB_POWER, 255, 0, szTmp);
 		}
 	}
 }
@@ -915,169 +991,439 @@ void SolarEdgeAPI::GetEnergyDetails()
 	}
 }
 
-bool SolarEdgeAPI::GetLayoutFromAPI(Json::Value& json_output, bool bGetLifeTimeData)
+bool SolarEdgeAPI::LoadWebRefreshToken()
+{
+	auto result = m_sql.safe_query("SELECT Address, SerialPort FROM Hardware WHERE (ID==%d)", m_HwdID);
+	if (result.empty())
+		return false;
+	m_WebRefreshToken = result[0][0];
+	if (!result[0][1].empty())
+		m_WebNextRefreshTs = std::stol(result[0][1]);
+	return !m_WebRefreshToken.empty();
+}
+
+void SolarEdgeAPI::StoreWebRefreshToken()
+{
+	if (m_WebRefreshToken.empty())
+		return;
+	m_sql.safe_query("UPDATE Hardware SET Address='%q', SerialPort='%q' WHERE (ID == %d)", m_WebRefreshToken.c_str(), std::to_string(m_WebNextRefreshTs).c_str(), m_HwdID);
+}
+
+std::string SolarEdgeAPI::GetCookieValue(const std::string& name) const
+{
+	extern std::string szUserDataFolder;
+	std::string sPath = szUserDataFolder + "domocookie.txt";
+	std::ifstream file(sPath);
+	if (!file.is_open())
+		return "";
+	std::string sLine;
+	while (std::getline(file, sLine))
+	{
+		if (sLine.empty() || sLine[0] == '#')
+			continue;
+		std::vector<std::string> fields;
+		StringSplit(sLine, "\t", fields);
+		if (fields.size() < 7)
+			continue;
+		if (fields[5] == name)
+			return fields[6];
+	}
+	return "";
+}
+
+bool SolarEdgeAPI::ParseLoginForm(const std::string& html, std::string& formAction, std::map<std::string, std::string>& fields) const
+{
+	static const std::regex formRegex("<form[^>]*action=\"([^\"]*)\"", std::regex::icase);
+	std::smatch formMatch;
+	if (!std::regex_search(html, formMatch, formRegex))
+		return false;
+	formAction = formMatch[1].str();
+
+	// Unescape the only HTML entity that realistically shows up in a form action URL
+	size_t pos = 0;
+	while ((pos = formAction.find("&amp;", pos)) != std::string::npos)
+	{
+		formAction.replace(pos, 5, "&");
+		pos += 1;
+	}
+
+	static const std::regex inputRegex("<input[^>]*>", std::regex::icase);
+	static const std::regex nameRegex("name=\"([^\"]*)\"", std::regex::icase);
+	static const std::regex valueRegex("value=\"([^\"]*)\"", std::regex::icase);
+
+	auto inputsBegin = std::sregex_iterator(html.begin(), html.end(), inputRegex);
+	auto inputsEnd = std::sregex_iterator();
+	for (auto it = inputsBegin; it != inputsEnd; ++it)
+	{
+		std::string tag = it->str();
+		std::smatch nameMatch;
+		if (!std::regex_search(tag, nameMatch, nameRegex))
+			continue;
+		std::string value;
+		std::smatch valueMatch;
+		if (std::regex_search(tag, valueMatch, valueRegex))
+			value = valueMatch[1].str();
+		fields[nameMatch[1].str()] = value;
+	}
+
+	return !formAction.empty();
+}
+
+bool SolarEdgeAPI::WebExchangeSession(const std::string& tokenJsonBody)
+{
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Authorization: Bearer " + m_WebAccessToken);
+	ExtraHeaders.push_back("Content-Type: application/json");
+
+	std::string sResult;
+	std::vector<std::string> vHeaderData;
+	HTTPClient::POST(SE_WEB_EXCHANGE_URL, tokenJsonBody, ExtraHeaders, sResult, vHeaderData, true, true);
+
+	int iStatusCode = LastHttpStatusCode(vHeaderData);
+	Debug(DEBUG_HARDWARE, "Web portal: Session exchange status %d", iStatusCode);
+	return (iStatusCode >= 200 && iStatusCode < 300);
+}
+
+bool SolarEdgeAPI::WebRefreshToken()
+{
+	if (m_WebRefreshToken.empty())
+		return false;
+
+	std::string httpData = "grant_type=refresh_token";
+	httpData += "&client_id=" SE_WEB_CLIENT_ID;
+	httpData += "&refresh_token=" + CURLEncode::URLEncode(m_WebRefreshToken);
+
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Content-Type: application/x-www-form-urlencoded");
+
+	std::string sResult;
+	std::vector<std::string> vHeaderData;
+	HTTPClient::POST(SE_WEB_TOKEN_URL, httpData, ExtraHeaders, sResult, vHeaderData);
+
+	int iStatusCode = LastHttpStatusCode(vHeaderData);
+	Debug(DEBUG_HARDWARE, "Web portal: Token refresh status %d", iStatusCode);
+
+	Json::Value root;
+	// The refresh response only carries a new access_token, the existing refresh token stays valid
+	if (iStatusCode != 200 || !ParseJSon(sResult, root) || !root.isObject() || root["access_token"].empty() || root["expires_in"].empty())
+	{
+		Log(LOG_ERROR, "Web portal: Failed to refresh access token, a new login will be attempted");
+		m_WebAccessToken.clear();
+		return false;
+	}
+
+	m_WebAccessToken = root["access_token"].asString();
+	if (!root["refresh_token"].empty())
+		m_WebRefreshToken = root["refresh_token"].asString();
+	int expiresIn = root["expires_in"].asInt();
+	int refreshIn = (expiresIn * 2) / 3;
+	if (refreshIn < 30)
+		refreshIn = 30; // never schedule the next refresh in the past
+	m_WebNextRefreshTs = mytime(nullptr) + refreshIn;
+	StoreWebRefreshToken();
+
+	// The session exchange rejects a body without a refresh token, and the refresh response omits it
+	root["refresh_token"] = m_WebRefreshToken;
+
+	if (!WebExchangeSession(JSonToRawString(root)))
+	{
+		Log(LOG_ERROR, "Web portal: Session exchange failed after token refresh!");
+		return false;
+	}
+
+	Debug(DEBUG_HARDWARE, "Web portal: Token refresh succeeded");
+	return true;
+}
+
+bool SolarEdgeAPI::WebLogin()
+{
+	if (m_WebUsername.empty() || m_WebPassword.empty())
+	{
+		Log(LOG_ERROR, "Web portal: No web username/password configured!");
+		return false;
+	}
+
+	unsigned char verifierBytes[32];
+	if (RAND_bytes(verifierBytes, sizeof(verifierBytes)) != 1)
+	{
+		Log(LOG_ERROR, "Web portal: Failed to generate PKCE code verifier!");
+		return false;
+	}
+	std::string codeVerifier = base64url_encode_buf(verifierBytes, sizeof(verifierBytes));
+	std::string codeChallenge = base64url_encode(sha256raw(codeVerifier));
+
+	std::stringstream sAuthorizeURL;
+	sAuthorizeURL << SE_WEB_AUTHORIZE_URL
+		<< "?client_id=" SE_WEB_CLIENT_ID
+		<< "&response_type=code"
+		<< "&redirect_uri=" << CURLEncode::URLEncode(SE_WEB_REDIRECT_URI)
+		<< "&code_challenge=" << CURLEncode::URLEncode(codeChallenge)
+		<< "&code_challenge_method=S256";
+
+	std::vector<std::string> authorizeHeaders;
+	authorizeHeaders.push_back("Accept: text/html");
+
+	std::string sFormResult;
+	std::vector<std::string> vAuthorizeHeaderData;
+	// Rely on the process-wide cookie jar so the login session carries through to the form POST below
+	HTTPClient::GET(sAuthorizeURL.str(), authorizeHeaders, sFormResult, vAuthorizeHeaderData);
+
+	int iAuthorizeStatus = LastHttpStatusCode(vAuthorizeHeaderData);
+	Debug(DEBUG_HARDWARE, "Web portal: Authorize status %d", iAuthorizeStatus);
+	if (iAuthorizeStatus != 200 || sFormResult.empty())
+	{
+		Log(LOG_ERROR, "Web portal: Error requesting login form!");
+		return false;
+	}
+
+	// With a valid SSO session the authorize call redirects straight to the callback and there
+	// is no login form to submit, so take the code from the redirect chain when it is already there
+	std::string authCode = ExtractLocationCode(vAuthorizeHeaderData);
+	if (!authCode.empty())
+		Debug(DEBUG_HARDWARE, "Web portal: Reused existing session, authorization code received");
+
+	if (authCode.empty())
+	{
+		std::string formAction;
+		std::map<std::string, std::string> formFields;
+		if (!ParseLoginForm(sFormResult, formAction, formFields))
+		{
+			Log(LOG_ERROR, "Web portal: Could not find login form in authorize response!");
+			return false;
+		}
+
+		if (formAction.compare(0, 4, "http") != 0)
+		{
+			if (formAction.empty() || formAction[0] != '/')
+				formAction = "/" + formAction;
+			formAction = "https://login.solaredge.com" + formAction;
+		}
+
+		static const std::regex hostRegex("^https?://([^/:]+)", std::regex::icase);
+		std::smatch hostMatch;
+		std::string host;
+		if (std::regex_search(formAction, hostMatch, hostRegex))
+			host = hostMatch[1].str();
+		std::transform(host.begin(), host.end(), host.begin(), ::tolower);
+		bool bHostOk = (host == "solaredge.com") || (host.size() > 14 && host.compare(host.size() - 14, 14, ".solaredge.com") == 0);
+		if (!bHostOk)
+		{
+			Log(LOG_ERROR, "Web portal: Login form action does not point to a solaredge.com host, aborting for safety!");
+			return false;
+		}
+
+		formFields["username"] = m_WebUsername;
+		formFields["password"] = m_WebPassword;
+
+		std::string postData;
+		for (const auto& field : formFields)
+		{
+			if (!postData.empty())
+				postData += "&";
+			postData += CURLEncode::URLEncode(field.first) + "=" + CURLEncode::URLEncode(field.second);
+		}
+
+		std::vector<std::string> loginHeaders;
+		loginHeaders.push_back("Content-Type: application/x-www-form-urlencoded");
+
+		std::string sLoginResult;
+		std::vector<std::string> vLoginHeaderData;
+		HTTPClient::POST(formAction, postData, loginHeaders, sLoginResult, vLoginHeaderData, true, true);
+
+		authCode = ExtractLocationCode(vLoginHeaderData);
+		Debug(DEBUG_HARDWARE, "Web portal: Login form submitted, authorization code %s", authCode.empty() ? "not found" : "received");
+		if (authCode.empty())
+		{
+			Log(LOG_ERROR, "Web portal: Could not extract authorization code, check web username/password!");
+			return false;
+		}
+	}
+
+	std::string tokenData = "grant_type=authorization_code";
+	tokenData += "&client_id=" SE_WEB_CLIENT_ID;
+	tokenData += "&redirect_uri=" + CURLEncode::URLEncode(SE_WEB_REDIRECT_URI);
+	tokenData += "&code=" + CURLEncode::URLEncode(authCode);
+	tokenData += "&code_verifier=" + CURLEncode::URLEncode(codeVerifier);
+
+	std::vector<std::string> tokenHeaders;
+	tokenHeaders.push_back("Content-Type: application/x-www-form-urlencoded");
+
+	std::string sTokenResult;
+	std::vector<std::string> vTokenHeaderData;
+	HTTPClient::POST(SE_WEB_TOKEN_URL, tokenData, tokenHeaders, sTokenResult, vTokenHeaderData);
+
+	int iTokenStatus = LastHttpStatusCode(vTokenHeaderData);
+	Debug(DEBUG_HARDWARE, "Web portal: Token exchange status %d", iTokenStatus);
+
+	Json::Value tokenRoot;
+	if (iTokenStatus != 200 || !ParseJSon(sTokenResult, tokenRoot) || !tokenRoot.isObject()
+		|| tokenRoot["access_token"].empty() || tokenRoot["refresh_token"].empty() || tokenRoot["expires_in"].empty())
+	{
+		Log(LOG_ERROR, "Web portal: Failed to obtain an access token!");
+		return false;
+	}
+
+	m_WebAccessToken = tokenRoot["access_token"].asString();
+	m_WebRefreshToken = tokenRoot["refresh_token"].asString();
+	int expiresIn = tokenRoot["expires_in"].asInt();
+	int refreshIn = (expiresIn * 2) / 3;
+	if (refreshIn < 30)
+		refreshIn = 30; // never schedule the next refresh in the past
+	m_WebNextRefreshTs = mytime(nullptr) + refreshIn;
+	StoreWebRefreshToken();
+
+	if (!WebExchangeSession(sTokenResult))
+	{
+		Log(LOG_ERROR, "Web portal: Session exchange failed after login!");
+		return false;
+	}
+
+	Log(LOG_STATUS, "Web portal: Login succeeded");
+	return true;
+}
+
+bool SolarEdgeAPI::WebEnsureLoggedIn()
+{
+	if (!m_WebAccessToken.empty() && (mytime(nullptr) - 15) < m_WebNextRefreshTs)
+		return true;
+
+	if (!m_WebRefreshToken.empty())
+	{
+		if (WebRefreshToken())
+			return true;
+		Log(LOG_ERROR, "Web portal: Refresh token failed, a full login will be attempted");
+	}
+
+	return WebLogin();
+}
+
+bool SolarEdgeAPI::GetLayoutFromAPI(Json::Value& json_output)
 {
 	std::string sResult;
-	// Json::Value root;
 
 #ifdef DEBUG_SolarEdgeAPIR
-	if (bGetLifeTimeData)
-		sResult = ReadFile("E:\\SolarEdge_web_layout_lifetime.json");
-	else
-		sResult = ReadFile("E:\\SolarEdge_web_layout.json");
+	sResult = ReadFile("E:\\SolarEdge_web_layout.json");
 #else
-	// Determine site ID for URL
 	if (m_WebSiteID.empty())
 	{
 		Log(LOG_ERROR, "Web portal: No Site ID available! Configure Site ID or enable API polling.");
 		return false;
 	}
 
-	// Build Basic Auth header
-	std::string credentials = m_WebUsername + ":" + m_WebPassword;
-	std::string basicAuth = "Authorization: Basic " + base64_encode(credentials);
-
 	std::vector<std::string> ExtraHeaders;
-	ExtraHeaders.push_back(basicAuth);
-	ExtraHeaders.push_back("Accept: */*");
-	ExtraHeaders.push_back("Content-Type: application/json");
-	ExtraHeaders.push_back("X-Requested-With: XMLHttpRequest");
+	ExtraHeaders.push_back("Authorization: Bearer " + m_WebAccessToken);
+	ExtraHeaders.push_back("Accept: application/json");
 
 	std::stringstream sURL;
-	sURL << "https://monitoring.solaredge.com/solaredge-apigw/api/sites/" << m_WebSiteID << "/layout/logical";
-	if (bGetLifeTimeData)
-	{
-		sURL << "?timeUnit=ALL"; // timeUnit required for lifetime data
-	}
+	sURL << "https://monitoring.solaredge.com/services/layout/logical/generic/v2/site/" << m_WebSiteID << "?include-optimizers=true";
 
-	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
+	std::vector<std::string> vHeaderData;
+	bool bOK = HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData);
+	int iStatusCode = LastHttpStatusCode(vHeaderData);
+	Debug(DEBUG_HARDWARE, "Web portal: Layout URL %s status %d", sURL.str().c_str(), iStatusCode);
+	if (!bOK)
 	{
-		Log(LOG_ERROR, "Web portal: Error getting site layout!");
+		std::string sStatusLine = !vHeaderData.empty() ? vHeaderData[0] : "no response";
+		Log(LOG_ERROR, "Web portal: Error getting site layout! (%s)", sStatusLine.c_str());
 		return false;
 	}
 #ifdef DEBUG_SolarEdgeAPIW
-	if (bGetLifeTimeData)
-		SaveString2Disk(sResult, "E:\\SolarEdge_web_layout_lifetime.json");
-	else
-		SaveString2Disk(sResult, "E:\\SolarEdge_web_layout.json");
+	SaveString2Disk(sResult, "E:\\SolarEdge_web_layout.json");
 #endif
 #endif
 
-	// Json::Value root;
 	if (!ParseJSon(sResult, json_output) || !json_output.isObject())
 	{
 		Log(LOG_ERROR, "Web portal: Invalid JSON in site layout response!");
 		return false;
 	}
-	if (json_output["logicalTree"].empty())
+	if (json_output["siteStructure"].empty())
 	{
-		Log(LOG_ERROR, "Web portal: No logicalTree in site layout response!");
+		Log(LOG_ERROR, "Web portal: No siteStructure in site layout response!");
 		return false;
 	}
 
 	return true;
 }
 
+void SolarEdgeAPI::WalkLayoutNode(const Json::Value& node, const std::string& inverterName, int inverterNodeId, int stringNodeId, int& inverterIndex, int& stringIndex, int& optimizerNodeBase)
+{
+	if (!node.isObject())
+		return;
+	if (IsInactiveNode(node))
+		return;
+
+	std::string type = node.get("type", "").asString();
+	std::string name = node.get("name", "").asString();
+	std::string identity = ExtractNodeIdentity(node);
+
+	std::string curInverterName = inverterName;
+	int curInverterNodeId = inverterNodeId;
+	int curStringNodeId = stringNodeId;
+
+	if (type == "INVERTER")
+	{
+		_tWebNodeInfo info;
+		info.reporterId = identity;
+		info.displayName = name;
+		info.nodeId = SE_WEB_INVERTER_BASE + inverterIndex++;
+		m_webInverters.push_back(info);
+		curInverterName = name;
+		curInverterNodeId = info.nodeId;
+	}
+	else if (type == "STRING")
+	{
+		_tWebNodeInfo info;
+		info.reporterId = identity;
+		// The v2 layout already names strings "String x.y", so only add the prefix when it is missing
+		info.displayName = (name.find("String") == 0) ? name : "String " + name;
+		info.nodeId = SE_WEB_STRING_BASE + stringIndex++;
+		m_webStrings.push_back(info);
+		curStringNodeId = info.nodeId;
+	}
+	else if (type == "OPTIMIZER")
+	{
+		_tOptimizerInfo info;
+		info.reporterId = identity;
+		info.serialNumber = node.get("serial", "").asString();
+		info.displayName = name;
+		info.inverterName = curInverterName;
+		info.stringNodeId = curStringNodeId;
+		info.inverterNodeId = curInverterNodeId;
+		info.nodeId = optimizerNodeBase++;
+		m_optimizers.push_back(info);
+		return; // optimizers are leaves
+	}
+
+	const Json::Value& children = node["children"];
+	if (!children.isArray())
+		return;
+	for (const auto& child : children)
+		WalkLayoutNode(child, curInverterName, curInverterNodeId, curStringNodeId, inverterIndex, stringIndex, optimizerNodeBase);
+}
+
 bool SolarEdgeAPI::GetSiteLayout()
 {
-	Json::Value root;
-	if (!GetLayoutFromAPI(root, false))  // get live data
-	{
+	if (!WebEnsureLoggedIn())
 		return false;
-	}
+
+	Json::Value root;
+	if (!GetLayoutFromAPI(root))
+		return false;
 
 	m_optimizers.clear();
 	m_webInverters.clear();
 	m_webStrings.clear();
-	int optimizerNodeBase = 300;
+
 	int inverterIndex = 0;
 	int stringIndex = 0;
+	int optimizerNodeBase = 300;
 
-	const Json::Value& tree = root["logicalTree"];
-	const Json::Value& inverterChildren = tree["children"];
-	if (inverterChildren.empty())
-		return true;
-
-	for (const auto& inverterNode : inverterChildren)
-	{
-		const Json::Value& invData = inverterNode["data"];
-		if (invData.empty())
-			continue;
-
-		std::string inverterName = invData.get("displayName", invData.get("name", "").asString()).asString();
-
-		// Collect inverter info
-		int invId = invData.get("id", 0).asInt();
-		if (invId != 0)
-		{
-			_tWebNodeInfo invInfo;
-			invInfo.reporterId = invId;
-			invInfo.displayName = inverterName;
-			invInfo.nodeId = SE_WEB_INVERTER_BASE + inverterIndex++;
-			m_webInverters.push_back(invInfo);
-		}
-
-		const Json::Value& strings = inverterNode["children"];
-		if (strings.empty())
-			continue;
-
-		for (const auto& stringNode : strings)
-		{
-			const Json::Value& strData = stringNode["data"];
-
-			// Collect string info
-			if (!strData.empty())
-			{
-				int strId = strData.get("id", 0).asInt();
-				if (strId != 0)
-				{
-					_tWebNodeInfo strInfo;
-					strInfo.reporterId = strId;
-					strInfo.displayName = "String " + strData.get("displayName", strData.get("name", "").asString()).asString();
-					strInfo.nodeId = SE_WEB_STRING_BASE + stringIndex++;
-					m_webStrings.push_back(strInfo);
-				}
-			}
-
-			const Json::Value& panels = stringNode["children"];
-			if (panels.empty())
-				continue;
-
-			for (const auto& panelNode : panels)
-			{
-				const Json::Value& data = panelNode["data"];
-				if (data.empty())
-					continue;
-
-				// Only pick up POWER_BOX (optimizer) nodes
-				std::string nodeType = data.get("type", "").asString();
-				if (nodeType != "POWER_BOX")
-					continue;
-
-				int id = data.get("id", 0).asInt();
-				if (id == 0)
-					continue;
-
-				_tOptimizerInfo info;
-				info.reporterId = id;
-				info.serialNumber = data.get("serialNumber", "").asString();
-				info.displayName = data.get("displayName", data.get("name", "").asString()).asString();
-				info.inverterName = inverterName;
-				info.nodeId = optimizerNodeBase++;
-				m_optimizers.push_back(info);
-			}
-		}
-	}
+	const Json::Value& siteNode = root["siteStructure"];
+	WalkLayoutNode(siteNode, "", -1, -1, inverterIndex, stringIndex, optimizerNodeBase);
 
 	Log(LOG_STATUS, "Web portal: Discovered %d inverters, %d strings, %d optimizers",
 		(int)m_webInverters.size(), (int)m_webStrings.size(), (int)m_optimizers.size());
-	GetEnergyFromLayout(root["reportersData"], false);
-
-	if (!GetLayoutFromAPI(root, true))  // get lifetime data
-	{
-		return false;
-	}
-	GetEnergyFromLayout(root["reportersData"], true);
 
 	return true;
 }
@@ -1091,172 +1437,133 @@ void SolarEdgeAPI::GetOptimizerData()
 	if (!isDaylightWindow())
 		return;
 
-#ifndef DEBUG_SolarEdgeAPIR
-	std::string basicAuth = "Authorization: Basic " + base64_encode(m_WebUsername + ":" + m_WebPassword);
-#endif
+	if (!WebEnsureLoggedIn())
+		return;
+
+	time_t atime = mytime(nullptr);
+	struct tm ltime;
+	localtime_r(&atime, &ltime);
+
+	char szStart[40];
+	char szEnd[40];
+	snprintf(szStart, sizeof(szStart), "%04d-%02d-%02dT00:00:00Z", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday);
+	snprintf(szEnd, sizeof(szEnd), "%04d-%02d-%02dT%02d:%02d:%02dZ", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
+
+	std::string startDate = CURLEncode::URLEncode(szStart);
+	std::string endDate = CURLEncode::URLEncode(szEnd);
+
+	std::stringstream sURL;
+	sURL << "https://monitoring.solaredge.com/services/layout/playback/site/" << m_WebSiteID << "/optimizers-compact"
+		<< "?resolution=hours&start-date=" << startDate << "&end-date=" << endDate;
+
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Authorization: Bearer " + m_WebAccessToken);
+	ExtraHeaders.push_back("Accept: application/json");
+	std::string csrfToken = GetCookieValue("CSRF-TOKEN");
+	if (!csrfToken.empty())
+		ExtraHeaders.push_back("X-CSRF-TOKEN: " + csrfToken);
+
+	std::string sResult;
+	std::vector<std::string> vHeaderData;
+	bool bOK = HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData);
+	int iStatusCode = LastHttpStatusCode(vHeaderData);
+	Debug(DEBUG_HARDWARE, "Web portal: Playback URL %s status %d", sURL.str().c_str(), iStatusCode);
+	if (!bOK)
+	{
+		Log(LOG_ERROR, "Web portal: Error getting optimizer playback data! (status %d)", iStatusCode);
+		return;
+	}
+
+	Json::Value root;
+	if (!ParseJSon(sResult, root) || !root.isObject())
+	{
+		Log(LOG_ERROR, "Web portal: Invalid JSON in optimizer playback response!");
+		return;
+	}
+
+	const Json::Value& serials = root["optimizerSerials"];
+	const Json::Value& compressPowerData = root["compressPowerData"];
+	if (!serials.isArray() || !compressPowerData.isArray())
+	{
+		Log(LOG_ERROR, "Web portal: Missing optimizerSerials/compressPowerData in playback response!");
+		return;
+	}
+
+	int timeSlotsCount = root["timeSlotsCount"].asInt();
+	size_t serialCount = serials.size();
+	size_t headerLen = 2 + (2 * serialCount);
+	if (compressPowerData.size() <= headerLen || timeSlotsCount <= 0)
+	{
+		Debug(DEBUG_HARDWARE, "Web portal: Playback response carries no measurements (serials %d, slots %d)", (int)serialCount, timeSlotsCount);
+		return;
+	}
+
+	int dataStartIdx = compressPowerData[1].asInt();
+	if (dataStartIdx < 0 || (size_t)dataStartIdx >= compressPowerData.size())
+	{
+		Log(LOG_ERROR, "Web portal: Invalid playback data start index %d!", dataStartIdx);
+		return;
+	}
+
+	std::map<std::string, float> powerByShortSerial;
+	for (size_t i = 0; i < serialCount; i++)
+	{
+		std::string shortSerial = serials[(Json::ArrayIndex)i].asString();
+		int offset = compressPowerData[(Json::ArrayIndex)(3 + (i * 2))].asInt();
+		if (offset < 0)
+			continue;
+
+		float value = 0;
+		for (int s = timeSlotsCount - 1; s >= 0; s--)
+		{
+			size_t idx = (size_t)dataStartIdx + (size_t)offset + (size_t)s;
+			if (idx >= compressPowerData.size())
+				continue;
+			value = compressPowerData[(Json::ArrayIndex)idx].asFloat();
+			if (value != 0)
+				break;
+		}
+		powerByShortSerial[shortSerial] = value;
+	}
+
+	Debug(DEBUG_HARDWARE, "Web portal: Playback decoded %d optimizer serials, %d slots", (int)serialCount, timeSlotsCount);
+
+	std::map<int, double> stringPower;
+	std::map<int, double> inverterPower;
+	char szTmp[200];
 
 	for (const auto& opt : m_optimizers)
 	{
-		std::string sResult;
-#ifdef DEBUG_SolarEdgeAPIR
-		sResult = ReadFile("E:\\SolarEdge_web_optimizer_" + std::to_string(opt.reporterId) + ".html");
-#else
-		time_t now = mytime(nullptr);
-		std::stringstream sURL;
-		sURL << "https://monitoring.solaredge.com/solaredge-web/p/systemData?reporterId=" << opt.reporterId
-			<< "&type=panel&activeTab=0&fieldId=" << m_WebSiteID
-			<< "&isPublic=false&locale=en_US&v=" << (long long)now * 1000;
-
-		std::vector<std::string> ExtraHeaders;
-		ExtraHeaders.push_back(basicAuth);
-		ExtraHeaders.push_back("Accept: */*");
-		ExtraHeaders.push_back("X-Requested-With: XMLHttpRequest");
-
-		// Use bStartNewSession=true to avoid stale cookie jar interfering with Basic Auth
-		if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, true, true))
-		{
-			Log(LOG_ERROR, "Web portal: Error getting data for optimizer %d (%s)!", opt.reporterId, opt.displayName.c_str());
-			return;
-		}
-#ifdef DEBUG_SolarEdgeAPIW
-		SaveString2Disk(sResult, "E:\\SolarEdge_web_optimizer_" + std::to_string(opt.reporterId) + ".html");
-#endif
-#endif
-
-		// The response is HTML containing SE.systemData = { ... }
-		// Extract the JSON block after "SE.systemData = "
-		const std::string marker = "SE.systemData = ";
-		size_t pos = sResult.find(marker);
-		if (pos == std::string::npos)
-		{
-			Log(LOG_ERROR, "Web portal: systemData marker not found for optimizer %d!", opt.reporterId);
-			continue;
-		}
-		pos += marker.size();
-		// Find the opening brace
-		size_t braceStart = sResult.find('{', pos);
-		if (braceStart == std::string::npos)
+		std::string shortSerial = opt.serialNumber.substr(0, opt.serialNumber.find('-'));
+		auto it = powerByShortSerial.find(shortSerial);
+		if (it == powerByShortSerial.end())
 			continue;
 
-		// Find the matching closing brace
-		int depth = 0;
-		size_t braceEnd = braceStart;
-		for (size_t i = braceStart; i < sResult.size(); i++)
-		{
-			if (sResult[i] == '{')
-				depth++;
-			else if (sResult[i] == '}')
-			{
-				depth--;
-				if (depth == 0)
-				{
-					braceEnd = i;
-					break;
-				}
-			}
-		}
-		if (depth != 0)
-			continue;
+		float power = it->second;
+		snprintf(szTmp, sizeof(szTmp), "%s Power", opt.displayName.c_str());
+		SendWattMeter(opt.nodeId, SE_OPT_POWER, 255, power, szTmp);
 
-		std::string jsonStr = sResult.substr(braceStart, braceEnd - braceStart + 1);
-		Json::Value dataRoot;
-		if (!ParseJSon(jsonStr, dataRoot) || !dataRoot.isObject())
-		{
-			Log(LOG_ERROR, "Web portal: Invalid systemData JSON for optimizer %d!", opt.reporterId);
-			continue;
-		}
-
-		// Response is per-optimizer: measurements are directly on root object with string values
-		const Json::Value& measurements = dataRoot["measurements"];
-		if (measurements.empty())
-			continue;
-
-		char szTmp[200];
-
-		if (!measurements["Power [W]"].empty())
-		{
-			float power = static_cast<float>(atof(measurements["Power [W]"].asString().c_str()));
-			snprintf(szTmp, sizeof(szTmp), "Power %s", opt.displayName.c_str());
-			SendWattMeter(opt.nodeId, SE_OPT_POWER, 255, power, szTmp);
-		}
-		if (!measurements["Voltage [V]"].empty())
-		{
-			float voltage = static_cast<float>(atof(measurements["Voltage [V]"].asString().c_str()));
-			snprintf(szTmp, sizeof(szTmp), "Voltage %s", opt.displayName.c_str());
-			SendVoltageSensor(opt.nodeId, SE_OPT_VOLTAGE, 255, voltage, szTmp);
-		}
-		if (!measurements["Optimizer Voltage [V]"].empty())
-		{
-			float optVoltage = static_cast<float>(atof(measurements["Optimizer Voltage [V]"].asString().c_str()));
-			snprintf(szTmp, sizeof(szTmp), "Optimizer Voltage %s", opt.displayName.c_str());
-			SendVoltageSensor(opt.nodeId, SE_OPT_OPTIMIZER_VOLTAGE, 255, optVoltage, szTmp);
-		}
-		if (!measurements["Current [A]"].empty())
-		{
-			float current = static_cast<float>(atof(measurements["Current [A]"].asString().c_str()));
-			snprintf(szTmp, sizeof(szTmp), "Current %s", opt.displayName.c_str());
-			SendCustomSensor(opt.nodeId, SE_OPT_CURRENT, 255, current, szTmp, "A");
-		}
-	}
-}
-
-void SolarEdgeAPI::GetEnergyFromLayout(const Json::Value& reportersData, bool bSetLifeTimeData)
-{
-	if (reportersData.empty())
-		return;
-
-	// We only process live data one hour before sunrise till one hour after sunset
-	if (!bSetLifeTimeData && !isDaylightWindow())
-		return;
-
-	char szTmp[200];
-	int childID = bSetLifeTimeData ? SE_WEB_ENERGY_LIFETIME : SE_WEB_ENERGY_TODAY;
-
-	// Inverter-level energy
-	for (const auto& inv : m_webInverters)
-	{
-		std::string key = std::to_string(inv.reporterId);
-		if (reportersData[key].empty() || reportersData[key]["unscaledEnergy"].empty())
-			continue;
-
-		float energy = reportersData[key]["unscaledEnergy"].asFloat();
-		if (energy < 0)
-			continue;
-
-		snprintf(szTmp, sizeof(szTmp), bSetLifeTimeData ? "Lifetime Energy Inverter %s" : "Energy Today Inverter %s", inv.displayName.c_str());
-		SendCustomSensor(inv.nodeId, childID, 255, energy / 1000, szTmp, "kWh");
+		if (opt.stringNodeId >= 0)
+			stringPower[opt.stringNodeId] += power;
+		if (opt.inverterNodeId >= 0)
+			inverterPower[opt.inverterNodeId] += power;
 	}
 
-	// String-level energy
 	for (const auto& str : m_webStrings)
 	{
-		std::string key = std::to_string(str.reporterId);
-		if (reportersData[key].empty() || reportersData[key]["unscaledEnergy"].empty())
+		auto it = stringPower.find(str.nodeId);
+		if (it == stringPower.end())
 			continue;
-
-	    float energy = reportersData[key]["unscaledEnergy"].asFloat();
-		if (energy < 0)
-			continue;
-
-		snprintf(szTmp, sizeof(szTmp), bSetLifeTimeData ? "Lifetime Energy %s" : "Energy Today %s", str.displayName.c_str());
-		SendCustomSensor(str.nodeId, childID, 255, energy / 1000, szTmp, "kWh");
+		snprintf(szTmp, sizeof(szTmp), "%s Power", str.displayName.c_str());
+		SendWattMeter(str.nodeId, SE_WEB_POWER, 255, (float)it->second, szTmp);
 	}
 
-	// Optimizer-level energy
-	if (bSetLifeTimeData)
+	for (const auto& inv : m_webInverters)
 	{
-		for (const auto& opt : m_optimizers)
-		{
-			std::string key = std::to_string(opt.reporterId);
-			if (reportersData[key].empty() || reportersData[key]["unscaledEnergy"].empty())
-				continue;
-
-			float energy = reportersData[key]["unscaledEnergy"].asFloat();
-			if (energy < 0)
-				continue;
-
-			snprintf(szTmp, sizeof(szTmp), "Lifetime Energy %s", opt.displayName.c_str());
-			SendCustomSensor(opt.nodeId, SE_OPT_LIFETIME_ENERGY, 255, energy / 1000, szTmp, "kWh");
-		}
+		auto it = inverterPower.find(inv.nodeId);
+		if (it == inverterPower.end())
+			continue;
+		snprintf(szTmp, sizeof(szTmp), "%s Power", inv.displayName.c_str());
+		SendWattMeter(inv.nodeId, SE_WEB_POWER, 255, (float)it->second, szTmp);
 	}
 }

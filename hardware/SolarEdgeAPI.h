@@ -33,16 +33,18 @@ class SolarEdgeAPI : public CDomoticzHardwareBase
 
 	struct _tOptimizerInfo
 	{
-		int reporterId;
-		std::string serialNumber;
+		std::string reporterId; // device identity (serial, falling back to properties.identifier or uuid)
+		std::string serialNumber; // full serial as reported by the layout, used to match playback data
 		std::string displayName;
 		std::string inverterName;
+		int stringNodeId = -1;
+		int inverterNodeId = -1;
 		int nodeId; // unique node ID starting at 300
 	};
 
 	struct _tWebNodeInfo
 	{
-		int reporterId;
+		std::string reporterId; // device identity (serial, falling back to properties.identifier or uuid)
 		std::string displayName;
 		int nodeId;
 	};
@@ -69,11 +71,21 @@ private:
 	void GetOverview();
 	void GetEnergyDetails();
 
+	// Web portal OAuth2 (PKCE) authentication
+	bool WebEnsureLoggedIn();
+	bool WebLogin();
+	bool WebRefreshToken();
+	bool WebExchangeSession(const std::string& tokenJsonBody);
+	bool LoadWebRefreshToken();
+	void StoreWebRefreshToken();
+	bool ParseLoginForm(const std::string& html, std::string& formAction, std::map<std::string, std::string>& fields) const;
+	std::string GetCookieValue(const std::string& name) const;
+
 	// Web portal methods
-	bool GetLayoutFromAPI(Json::Value& json_output, bool bGetLifeTimeData);
+	bool GetLayoutFromAPI(Json::Value& json_output);
 	bool GetSiteLayout();
+	void WalkLayoutNode(const Json::Value& node, const std::string& inverterName, int inverterNodeId, int stringNodeId, int& inverterIndex, int& stringIndex, int& optimizerNodeBase);
 	void GetOptimizerData();
-	void GetEnergyFromLayout(const Json::Value& reportersData, bool bSetLifeTimeData);
 
 private:
 	int m_SiteID;
@@ -89,6 +101,10 @@ private:
 	std::string m_WebPassword;
 	std::string m_WebSiteID;
 	bool m_bPollOptimizers = false;
+
+	std::string m_WebAccessToken;
+	std::string m_WebRefreshToken;
+	time_t m_WebNextRefreshTs = 0;
 
 	// Web portal state
 	std::vector<_tOptimizerInfo> m_optimizers;
