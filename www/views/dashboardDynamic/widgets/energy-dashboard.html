@@ -120,7 +120,7 @@
             <div class="dd-stat-sub" ng-if="ctrl.grid">
                 &darr; {{ctrl.grid.counterToday}} &nbsp;&bull;&nbsp; &uarr; {{ctrl.grid.counterDelivToday}}
             </div>
-            <div ng-if="ctrl.grid && ctrl.grid.price !== null" class="dd-energy-price" style="font-size:1em;font-weight:bold;margin-top:4px;">
+            <div ng-if="ctrl.grid && ctrl.grid.price !== null" class="dd-energy-price" style="font-size:1em;font-weight:bold;">
                 {{ctrl.grid.price | number:4}} {{$root.config.CurrencySign}}
             </div>
         </div>
