@@ -3,21 +3,21 @@
 }
 .remotehoverable:hover {
 	cursor: pointer;
-	fill: var(--dz-remote-hover);
+	fill: var(--dz-remote-hover, #289fe3);
 }
 .remotedisabled {
 	pointer-events: none;
-	fill: var(--dz-remote-disabled);
+	fill: var(--dz-remote-disabled, #2e2e2e);
 }
 .remoteshadow {
-	fill: var(--dz-remote-edge);
+	fill: var(--dz-remote-edge, #393a39);
 	pointer-events: none;
 }
 .remotetext {
 	cursor: pointer;
 	text-anchor: middle;
 	dominant-baseline: middle;
-	fill: var(--dz-remote-symbol);
+	fill: var(--dz-remote-symbol, #393a39);
 	font-size: 180px;
 	font-family: sans-serif;
 	font-stretch: ultra-condensed ;
@@ -35,8 +35,8 @@
    presentation attributes (stroke="#393a39" / fill="#393a39"), which cannot
    take a var(), so the paint moves here. */
 .remotesymbolstroke {
-	stroke: var(--dz-remote-symbol);
+	stroke: var(--dz-remote-symbol, #393a39);
 }
 .remotesymbolfill {
-	fill: var(--dz-remote-symbol);
+	fill: var(--dz-remote-symbol, #393a39);
 }
