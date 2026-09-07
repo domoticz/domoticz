@@ -181,7 +181,12 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                             // Non-P1: single value for month and year
                             // Water values from API are in m³, charts multiply by 1000 to show liters
                             var valueFactor = (device.SwitchTypeVal === chart.deviceTypes.Water) ? 1000 : 1;
-                            var decimals = (device.SwitchTypeVal === chart.deviceTypes.Water) ? 0 : 3;
+                            // Generic counters derive their precision from the Counter Divider
+                            var decimals = (device.SwitchTypeVal === chart.deviceTypes.Water)
+                                ? 0
+                                : (device.SwitchTypeVal === chart.deviceTypes.Counter)
+                                    ? device.Divider.numDecimalsDiv1()
+                                    : 3;
                             var monthTotal = 0, yearTotal = 0;
                             result.forEach(function (item) {
                                 var v = parseFloat(item.v || 0) * valueFactor;
