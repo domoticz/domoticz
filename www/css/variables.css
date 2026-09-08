@@ -70,13 +70,6 @@
   --dz-batt-low:                   #C77C11;
   --dz-batt-ok:                    #7F9718;
   --dz-accent-text:                #fff;
-
-  --dz-remote-face-start:          #cbcccb;
-  --dz-remote-face-end:            #989898;
-  --dz-remote-edge:                #393a39;
-  --dz-remote-symbol:              #393a39;
-  --dz-remote-hover:               #289fe3;
-  --dz-remote-disabled:            #2e2e2e;
 }
 
 /* --- Shared table/tbody block display --- */
