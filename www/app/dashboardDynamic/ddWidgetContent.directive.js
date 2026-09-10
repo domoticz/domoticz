@@ -79,7 +79,7 @@ define([
                         return;
                     }
 
-                    if (descriptor.custom && !descriptor.$loaded) {
+                    if (descriptor.custom && !customWidgets.isLoaded(descriptor)) {
                         showMessage('dd-widget-loading', 'fa-solid fa-circle-notch fa-spin',
                                     'Loading ' + (descriptor.label || type) + '…');
 

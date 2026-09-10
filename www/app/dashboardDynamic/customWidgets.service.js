@@ -50,6 +50,17 @@ define([
         var _injectedCss = {};      // css url -> true
         var _usedDirectiveNames = {};
 
+        /* Per-widget load state, keyed by type.
+         *
+         * Deliberately NOT stored on the descriptor: ddGrid.addWidgetToGrid()
+         * does an angular.copy() of the descriptor into the widget it saves, so
+         * anything parked on a descriptor ends up in the persisted layout. A
+         * promise there made the layout cyclic and JSON.stringify threw, which
+         * broke saving for every dashboard holding a custom widget. Descriptors
+         * stay pure, serialisable data.
+         */
+        var _loadState = {};        // type -> { promise, loaded }
+
         /* Package base urls are webroot-relative ('styles/x/widgets/y/') or a
          * query-based asset route for plugins ('customwidgetasset?...&file=').
          * In both cases appending the asset name yields the right url. */
@@ -211,14 +222,15 @@ define([
          * Resolves once the widget's element name is compilable.
          */
         function load(descriptor) {
-            if (descriptor.$loadPromise) { return descriptor.$loadPromise; }
+            var state = _loadState[descriptor.type];
+            if (state) { return state.promise; }
 
             var deferred = $q.defer();
+            state = _loadState[descriptor.type] = { promise: deferred.promise, loaded: false };
 
             if (!descriptor.entryUrl) {
                 deferred.reject('widget has no entry script');
-                descriptor.$loadPromise = deferred.promise;
-                return descriptor.$loadPromise;
+                return state.promise;
             }
 
             injectCss(descriptor.cssUrl);
@@ -233,7 +245,7 @@ define([
                     // what lets us add a directive after the app has bootstrapped.
                     angularAMD.getCachedProvider('$compileProvider')
                         .directive(descriptor.directiveName, function() { return definition; });
-                    descriptor.$loaded = true;
+                    state.loaded = true;
                     deferred.resolve(descriptor);
                 } catch (err) {
                     console.error('customWidgets: "' + descriptor.type + '" failed to initialise', err);
@@ -246,13 +258,16 @@ define([
                 $rootScope.$applyAsync();
             });
 
-            descriptor.$loadPromise = deferred.promise;
-            return descriptor.$loadPromise;
+            return state.promise;
         }
 
         return {
             discover: discover,
             load: load,
+            isLoaded: function(descriptor) {
+                var state = descriptor && _loadState[descriptor.type];
+                return !!(state && state.loaded);
+            },
             getPackages: function() { return _packages.slice(); },
             apiVersion: SUPPORTED_API_VERSION
         };
