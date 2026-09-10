@@ -454,6 +454,26 @@ body.dd-navbar-hidden .dd-toolbar {
     text-overflow: ellipsis;
 }
 
+/* Marks a widget as coming from a theme, plugin or dropped-in package */
+.dd-library-item-provider {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin-left: 6px;
+    padding: 1px 5px;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--dz-accent-color, #4e9af1) 16%, transparent);
+    color: var(--dz-body-text);
+    font-weight: 500;
+    font-size: 0.78em;
+    vertical-align: middle;
+    opacity: 0.85;
+}
+
+.dd-library-item-provider i {
+    font-size: 0.9em;
+}
+
 .dd-library-item-desc {
     font-size: 0.78em;
     color: var(--dz-body-text);
