@@ -8263,5 +8263,284 @@ namespace http
 			root["id"] = newid;
 		}
 
+		// ---------------------------------------------------------------------
+		// Custom (third-party) dashboard widgets
+		//
+		// A widget package is a folder holding a 'widget.json' manifest plus the
+		// assets it references. Packages are discovered in three places:
+		//
+		//   <www>/widgets/<pkg>/                        standalone widget repos
+		//   <www>/styles/<theme>/widgets/<pkg>/         widgets shipped by a theme
+		//   <userdata>/plugins/<Plugin>/widgets/<pkg>/  widgets shipped by a plugin
+		//
+		// Only the active theme is scanned, so widgets belonging to a theme the
+		// user is not running never show up in the picker.
+		//
+		// The manifest carries the widget descriptors (label, icon, default size,
+		// config schema), which lets the dashboard populate its widget picker
+		// without executing any third-party code. A widget's javascript is only
+		// fetched once the user actually places one on a dashboard.
+		// ---------------------------------------------------------------------
+
+		static constexpr int CUSTOM_WIDGET_API_VERSION = 1;
+		static constexpr size_t CUSTOM_WIDGET_MANIFEST_MAX_SIZE = 256 * 1024;
+
+		// A widget 'type' becomes part of a DOM element name and is persisted in
+		// the user's dashboard layout, so keep it to a conservative character set.
+		static bool IsSafeCustomWidgetType(const std::string& type)
+		{
+			if (type.empty() || type.size() > 64)
+				return false;
+			if (isalpha(static_cast<unsigned char>(type[0])) == 0)
+				return false;
+			return std::all_of(type.begin(), type.end(), [](unsigned char c) { return (isalnum(c) != 0) || c == '-' || c == '_'; });
+		}
+
+		// One path segment naming a package, theme or plugin folder. These end up
+		// in both a filesystem path and a url, so no traversal and no separators,
+		// but dots are common enough in real theme and plugin names to allow.
+		static bool IsSafePathSegment(const std::string& segment)
+		{
+			if (segment.empty() || segment.size() > 64)
+				return false;
+			if (isalnum(static_cast<unsigned char>(segment[0])) == 0)
+				return false;
+			if (segment.find("..") != std::string::npos)
+				return false;
+			return std::all_of(segment.begin(), segment.end(), [](unsigned char c) { return (isalnum(c) != 0) || c == '-' || c == '_' || c == '.'; });
+		}
+
+		// A relative asset reference out of a manifest ('entry', 'template', 'css').
+		// The browser resolves it against the package folder, so it has to stay
+		// inside it: no traversal, no absolute paths, no scheme.
+		static bool IsSafeCustomWidgetAsset(const std::string& asset)
+		{
+			if (asset.empty() || asset.size() > 128)
+				return false;
+			if (asset.find("..") != std::string::npos)
+				return false;
+			if (asset.find(':') != std::string::npos)
+				return false;
+			if (asset.front() == '/' || asset.front() == '\\')
+				return false;
+			return asset.find_first_of("?#\\") == std::string::npos;
+		}
+
+		// Read and validate one widget.json. Returns false when the package is
+		// unusable, so that a single broken package cannot keep the rest of the
+		// dashboard's widgets from loading.
+		static bool ReadCustomWidgetManifest(const std::string& pkgDir, const std::string& pkgName, const std::string& source, const std::string& origin,
+						     const std::string& baseUrl, Json::Value& pkgOut)
+		{
+			std::string manifestPath = pkgDir + "/widget.json";
+			std::ifstream manifestFile(manifestPath.c_str(), std::ios::binary);
+			if (!manifestFile.is_open())
+				return false; // just a folder without a manifest; not an error
+
+			std::string content((std::istreambuf_iterator<char>(manifestFile)), std::istreambuf_iterator<char>());
+			manifestFile.close();
+
+			if (content.empty() || content.size() > CUSTOM_WIDGET_MANIFEST_MAX_SIZE)
+			{
+				_log.Log(LOG_ERROR, "Custom widget: '%s' has an empty or oversized widget.json, ignoring it", pkgName.c_str());
+				return false;
+			}
+
+			Json::Value manifest;
+			std::string parseError;
+			if (!ParseJSonStrict(content, manifest, &parseError) || !manifest.isObject())
+			{
+				_log.Log(LOG_ERROR, "Custom widget: could not parse '%s/widget.json' (%s), ignoring it", pkgName.c_str(), parseError.c_str());
+				return false;
+			}
+
+			int apiVersion = manifest.get("apiVersion", 0).asInt();
+			if (apiVersion != CUSTOM_WIDGET_API_VERSION)
+			{
+				_log.Log(LOG_ERROR, "Custom widget: '%s' declares apiVersion %d but this Domoticz supports %d, ignoring it", pkgName.c_str(), apiVersion,
+					 CUSTOM_WIDGET_API_VERSION);
+				return false;
+			}
+
+			if (!manifest["widgets"].isArray() || manifest["widgets"].empty())
+			{
+				_log.Log(LOG_ERROR, "Custom widget: '%s' has no 'widgets' array in its manifest, ignoring it", pkgName.c_str());
+				return false;
+			}
+
+			// Validate each descriptor, but otherwise pass it through untouched so
+			// that new descriptor fields do not need a server-side change.
+			Json::Value widgets(Json::arrayValue);
+			for (const auto& widget : manifest["widgets"])
+			{
+				if (!widget.isObject())
+					continue;
+
+				std::string type = widget.get("type", "").asString();
+				if (!IsSafeCustomWidgetType(type))
+				{
+					_log.Log(LOG_ERROR, "Custom widget: '%s' declares an invalid widget type '%s', skipping it", pkgName.c_str(), type.c_str());
+					continue;
+				}
+
+				bool bAssetsOk = IsSafeCustomWidgetAsset(widget.get("entry", "").asString());
+				for (const char* optional : { "template", "css" })
+				{
+					if (widget.isMember(optional))
+						bAssetsOk = bAssetsOk && IsSafeCustomWidgetAsset(widget[optional].asString());
+				}
+				if (!bAssetsOk)
+				{
+					_log.Log(LOG_ERROR, "Custom widget: '%s/%s' references an invalid asset path, skipping it", pkgName.c_str(), type.c_str());
+					continue;
+				}
+
+				widgets.append(widget);
+			}
+
+			if (widgets.empty())
+				return false;
+
+			pkgOut = manifest;
+			pkgOut["widgets"] = widgets;
+			pkgOut["id"] = pkgName;
+			pkgOut["source"] = source;
+			pkgOut["origin"] = origin;
+			pkgOut["baseUrl"] = baseUrl;
+			return true;
+		}
+
+		// Scan one directory of widget packages. Missing directories are the
+		// normal case (most installs have none), so they pass silently.
+		static void ScanCustomWidgetDir(const std::string& dir, const std::string& source, const std::string& origin, const std::string& baseUrl,
+						Json::Value& result, std::set<std::string>& seenTypes)
+		{
+			std::vector<std::string> packages;
+			DirectoryListing(packages, dir, true, false);
+			std::sort(packages.begin(), packages.end()); // stable order across platforms
+
+			for (const auto& pkgName : packages)
+			{
+				if (!IsSafePathSegment(pkgName))
+					continue;
+
+				Json::Value pkg;
+				if (!ReadCustomWidgetManifest(dir + pkgName, pkgName, source, origin, baseUrl + pkgName + "/", pkg))
+					continue;
+
+				// Two packages claiming the same widget type would fight over one
+				// DOM element name; first one discovered wins.
+				Json::Value accepted(Json::arrayValue);
+				for (const auto& widget : pkg["widgets"])
+				{
+					std::string type = widget["type"].asString();
+					if (!seenTypes.insert(type).second)
+					{
+						_log.Log(LOG_ERROR, "Custom widget: type '%s' from package '%s' is already provided by another package, skipping it",
+							 type.c_str(), pkgName.c_str());
+						continue;
+					}
+					accepted.append(widget);
+				}
+				if (accepted.empty())
+					continue;
+
+				pkg["widgets"] = accepted;
+				result.append(pkg);
+			}
+		}
+
+		void CWebServer::Cmd_GetCustomWidgets(WebEmSession& session, const request& req, Json::Value& root)
+		{
+			root["title"] = "GetCustomWidgets";
+			root["apiVersion"] = CUSTOM_WIDGET_API_VERSION;
+			root["result"] = Json::Value(Json::arrayValue);
+
+			std::set<std::string> seenTypes;
+
+			// Standalone widget packages, dropped in or cloned by the user.
+			ScanCustomWidgetDir(szWWWFolder + "/widgets/", "webroot", "", "widgets/", root["result"], seenTypes);
+
+			// Widgets shipped by the active theme.
+			std::string activeTheme;
+			if (m_sql.GetPreferencesVar("WebTheme", activeTheme) && IsSafePathSegment(activeTheme))
+			{
+				ScanCustomWidgetDir(szWWWFolder + "/styles/" + activeTheme + "/widgets/", "theme", activeTheme, "styles/" + activeTheme + "/widgets/",
+						    root["result"], seenTypes);
+			}
+
+			// Widgets shipped by Python plugins. These live outside the webroot, so
+			// they are served through the 'customwidgetasset' page instead.
+			std::string pluginsRoot = szUserDataFolder + "plugins/";
+			std::vector<std::string> plugins;
+			DirectoryListing(plugins, pluginsRoot, true, false);
+			std::sort(plugins.begin(), plugins.end());
+			for (const auto& pluginName : plugins)
+			{
+				if (!IsSafePathSegment(pluginName))
+					continue;
+				ScanCustomWidgetDir(pluginsRoot + pluginName + "/widgets/", "plugin", pluginName,
+						    "customwidgetasset?plugin=" + pluginName + "&package=", root["result"], seenTypes);
+			}
+
+			root["status"] = "OK";
+		}
+
+		// Serve a single file out of <userdata>/plugins/<Plugin>/widgets/<package>/.
+		// Plugins live outside the webroot, so the static file handler cannot reach
+		// them; this page stands in for it.
+		//
+		// The URL is query-based because libwebem matches registered pages on the
+		// exact request path, so a '/prefix/<anything>' route is not available.
+		void CWebServer::ServeCustomWidgetAsset(WebEmSession& session, const request& req, reply& rep)
+		{
+			std::string pluginName = request::findValue(&req, "plugin");
+			std::string packageName = request::findValue(&req, "package");
+			std::string fileName = request::findValue(&req, "file");
+
+			if (!IsSafePathSegment(pluginName) || !IsSafePathSegment(packageName) || !IsSafeCustomWidgetAsset(fileName))
+			{
+				rep = reply::stock_reply(reply::bad_request);
+				return;
+			}
+
+			// Only the asset kinds a widget package is meant to contain.
+			static const std::map<std::string, std::string> allowedTypes = {
+				{ "js", "application/javascript" }, { "html", "text/html" },	 { "css", "text/css" },	     { "json", "application/json" },
+				{ "png", "image/png" },		    { "jpg", "image/jpeg" },	 { "jpeg", "image/jpeg" },   { "gif", "image/gif" },
+				{ "svg", "image/svg+xml" },	    { "webp", "image/webp" },	 { "woff", "font/woff" },    { "woff2", "font/woff2" },
+			};
+
+			size_t dotPos = fileName.find_last_of('.');
+			if (dotPos == std::string::npos)
+			{
+				rep = reply::stock_reply(reply::bad_request);
+				return;
+			}
+			std::string extension = fileName.substr(dotPos + 1);
+			std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+
+			auto contentType = allowedTypes.find(extension);
+			if (contentType == allowedTypes.end())
+			{
+				rep = reply::stock_reply(reply::forbidden);
+				return;
+			}
+
+			std::string fullPath = szUserDataFolder + "plugins/" + pluginName + "/widgets/" + packageName + "/" + fileName;
+			std::ifstream assetFile(fullPath.c_str(), std::ios::binary);
+			if (!assetFile.is_open())
+			{
+				rep = reply::stock_reply(reply::not_found);
+				return;
+			}
+
+			std::string content((std::istreambuf_iterator<char>(assetFile)), std::istreambuf_iterator<char>());
+			assetFile.close();
+
+			reply::set_content(&rep, content.begin(), content.end());
+			reply::add_header_content_type(&rep, contentType->second);
+		}
+
 	} // namespace server
 } // namespace http

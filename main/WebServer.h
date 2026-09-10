@@ -50,6 +50,7 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void GetFloorplanImage(WebEmSession& session, const request& req, reply& rep);
 	void GetServiceWorker(WebEmSession& session, const request& req, reply& rep);
 	void GetDatabaseBackup(WebEmSession & session, const request& req, reply & rep);
+	void ServeCustomWidgetAsset(WebEmSession& session, const request& req, reply& rep);
 
 	void GetOauth2AuthCode(WebEmSession &session, const request &req, reply &rep);
 	void PostOauth2AccessToken(WebEmSession &session, const request &req, reply &rep);
@@ -379,6 +380,9 @@ private:
 	void Cmd_SaveDashboardLayout(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_DeleteDashboardLayout(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_CopyDashboardLayout(WebEmSession& session, const request& req, Json::Value& root);
+
+	// Custom (third-party) dashboard widgets, shipped by themes, plugins or dropped in standalone
+	void Cmd_GetCustomWidgets(WebEmSession& session, const request& req, Json::Value& root);
 
 	void Cmd_GetMatterNodes(WebEmSession& session, const request& req, Json::Value& root);
 	void Cmd_GetMatterNetworkGraph(WebEmSession& session, const request& req, Json::Value& root);

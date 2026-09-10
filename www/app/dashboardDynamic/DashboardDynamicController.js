@@ -3,6 +3,7 @@ define([
     'dashboardDynamic/dashboardDynamic.module',
     'dashboardDynamic/dashboardDynamicService',
     'dashboardDynamic/widgetRegistry.service',
+    'dashboardDynamic/customWidgets.service',
     'dashboardDynamic/ddToast.service',
     'dashboardDynamic/ddSparkline.service',
     'dashboardDynamic/ddVisibility.service',
@@ -66,9 +67,9 @@ define([
 
     app.controller('DashboardDynamicController', [
         '$scope', '$timeout', '$interval', '$document', '$location', '$route', '$uibModal', '$q', '$http',
-        'dashboardDynamicService', 'widgetRegistry', 'ddToast', 'bootbox', 'livesocket',
+        'dashboardDynamicService', 'widgetRegistry', 'customWidgets', 'ddToast', 'bootbox', 'livesocket',
         function($scope, $timeout, $interval, $document, $location, $route, $uibModal, $q, $http,
-                 dashboardDynamicService, widgetRegistry, ddToast, bootbox, livesocket) {
+                 dashboardDynamicService, widgetRegistry, customWidgets, ddToast, bootbox, livesocket) {
 
         // One-time migration of legacy localStorage keys
         try {
@@ -259,7 +260,13 @@ define([
                 .then(function(resp) {
                     $scope.roomPlans = (resp.data && resp.data.result) || [];
                 });
-            dashboardDynamicService.listLayouts().then(function(layouts) {
+            // Register any installed custom widget packages before the first
+            // layout renders, so a dashboard that holds one does not paint an
+            // "unknown widget type" card first. discover() never rejects.
+            customWidgets.discover().then(function() {
+                refreshWidgetCatalog();
+                return dashboardDynamicService.listLayouts();
+            }).then(function(layouts) {
                 $scope.layouts = layouts;
                 if (layouts.length === 0) {
                     return createStarterLayout();
@@ -438,9 +445,16 @@ define([
                    $scope.activeData.widgets.find(function(w) { return w.id === id; });
         }
 
-        // All widgets are pre-loaded via RequireJS deps — snapshot once at init.
-        // Using a live getter would return a new object every digest → infinite loop.
+        // Built-in widgets are pre-loaded via RequireJS deps; custom widget
+        // packages are added by customWidgets.discover() during init, after
+        // which refreshWidgetCatalog() re-snapshots.
+        // Snapshot rather than a live getter: a getter would return a new object
+        // every digest → infinite loop.
         $scope.widgetCatalogGrouped = widgetRegistry.getGrouped();
+
+        function refreshWidgetCatalog() {
+            $scope.widgetCatalogGrouped = widgetRegistry.getGrouped();
+        }
 
         $scope.libraryItemFilter = function(item) {
             var q = ($scope.librarySearch || '').trim().toLowerCase();

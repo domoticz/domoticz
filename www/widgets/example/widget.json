@@ -1,0 +1,32 @@
+{
+    "name": "Example Widgets",
+    "description": "Reference implementation of the Domoticz custom widget API",
+    "author": "Domoticz",
+    "version": "1.0.0",
+    "apiVersion": 1,
+    "widgets": [
+        {
+            "type": "example-device",
+            "label": "Example: Device Readout",
+            "description": "Shows one device's value and stays in sync with it. Reference implementation for custom widgets.",
+            "category": "Custom Content",
+            "icon": "fa-solid fa-flask",
+            "entry": "exampleDevice.widget.js",
+            "template": "exampleDevice.html",
+            "css": "exampleDevice.css",
+            "defaultW": 3,
+            "defaultH": 2,
+            "minW": 2,
+            "minH": 2,
+            "maxW": 6,
+            "maxH": 4,
+            "configSchema": [
+                { "key": "title", "type": "text", "label": "Title (optional)", "required": false },
+                { "key": "deviceIdx", "type": "device-picker", "label": "Device", "required": true },
+                { "key": "accent", "type": "color", "label": "Accent colour", "default": "#4e9af1" },
+                { "key": "decimals", "type": "number", "label": "Decimal places", "default": 1, "min": 0, "max": 4 },
+                { "key": "showUpdated", "type": "boolean", "label": "Show last-updated time", "default": true }
+            ]
+        }
+    ]
+}

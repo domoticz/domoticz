@@ -674,6 +674,17 @@ body.dd-navbar-hidden .dd-toolbar {
     font-size: 0.85em;
 }
 
+/* Shown while a custom widget's script is being fetched on first render */
+.dd-widget-loading {
+    padding: 12px 16px;
+    color: var(--dz-body-text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85em;
+    opacity: 0.7;
+}
+
 .dd-widget--loading {
     opacity: 0.7;
     pointer-events: none;
