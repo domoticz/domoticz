@@ -241,8 +241,22 @@
         <div class="dd-library-panel-body">
             <div class="dd-library-search">
                 <input type="text" class="form-control input-sm"
-                       placeholder="Search widgets..."
+                       placeholder="Search widgets, themes, plugins..."
                        ng-model="librarySearch">
+            </div>
+            <!-- Only worth showing once something is actually installed -->
+            <div class="dd-library-sources" ng-if="hasCustomWidgets()">
+                <button type="button" class="dd-library-source"
+                        ng-class="{active: librarySource === 'all'}"
+                        ng-click="setLibrarySource('all')">All</button>
+                <button type="button" class="dd-library-source"
+                        ng-class="{active: librarySource === 'builtin'}"
+                        ng-click="setLibrarySource('builtin')">Built-in</button>
+                <button type="button" class="dd-library-source"
+                        ng-class="{active: librarySource === 'custom'}"
+                        ng-click="setLibrarySource('custom')">
+                    <i class="fa-solid fa-puzzle-piece"></i> Custom
+                </button>
             </div>
             <div ng-repeat="group in widgetCatalogGrouped" ng-show="(group.items | filter:libraryItemFilter).length > 0">
                 <div class="dd-library-category-label" ng-bind="group.category"></div>

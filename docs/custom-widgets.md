@@ -367,6 +367,12 @@ served. Others get a 403.
 
 ## Troubleshooting
 
+**Finding your widget in the picker.** Installed widgets sit in whatever
+category their manifest declares, badged with the package they came from. The
+Widget Library's **Custom** filter narrows the list to package widgets only,
+and its search box matches package, theme, plugin and author names as well as
+widget labels.
+
 **The widget is not in the picker.** Call
 `json.htm?type=command&param=getcustomwidgets` directly and see whether your
 package is listed. If it is not, check the Domoticz log: every rejected package

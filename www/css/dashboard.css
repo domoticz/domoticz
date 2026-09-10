@@ -393,6 +393,44 @@ body.dd-navbar-hidden .dd-toolbar {
     z-index: 1;
 }
 
+/* Built-in vs installed-package filter, above the categories */
+.dd-library-sources {
+    display: flex;
+    gap: 4px;
+    padding: 0 8px 8px;
+    position: sticky;
+    top: 46px;
+    background: var(--dz-nav-bg);
+    z-index: 1;
+}
+
+.dd-library-source {
+    flex: 1 1 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 4px 6px;
+    border: 1px solid var(--dz-border-color, rgba(127, 127, 127, 0.25));
+    border-radius: 6px;
+    background: transparent;
+    color: var(--dz-body-text);
+    font-size: 0.78em;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.dd-library-source:hover {
+    opacity: 1;
+}
+
+.dd-library-source.active {
+    background: color-mix(in srgb, var(--dz-accent-color, #4e9af1) 20%, transparent);
+    border-color: var(--dz-accent-color, #4e9af1);
+    opacity: 1;
+}
+
 .dd-library-category {
     margin-bottom: 12px;
 }

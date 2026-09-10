@@ -456,12 +456,32 @@ define([
             $scope.widgetCatalogGrouped = widgetRegistry.getGrouped();
         }
 
+        // Installed widget packages scatter across categories, so offer a way to
+        // see only what came from a package (or only what ships with Domoticz).
+        $scope.librarySource = 'all';   // 'all' | 'builtin' | 'custom'
+
+        $scope.setLibrarySource = function(source) {
+            $scope.librarySource = source;
+        };
+
+        $scope.hasCustomWidgets = function() {
+            return customWidgets.getPackages().length > 0;
+        };
+
         $scope.libraryItemFilter = function(item) {
+            if ($scope.librarySource === 'custom'  && !item.custom) { return false; }
+            if ($scope.librarySource === 'builtin' &&  item.custom) { return false; }
+
             var q = ($scope.librarySearch || '').trim().toLowerCase();
             if (!q) { return true; }
-            return (item.label       || '').toLowerCase().indexOf(q) !== -1 ||
-                   (item.description || '').toLowerCase().indexOf(q) !== -1 ||
-                   (item.category    || '').toLowerCase().indexOf(q) !== -1;
+            return (item.label            || '').toLowerCase().indexOf(q) !== -1 ||
+                   (item.description      || '').toLowerCase().indexOf(q) !== -1 ||
+                   (item.category         || '').toLowerCase().indexOf(q) !== -1 ||
+                   // so searching a theme, plugin or package name finds its widgets
+                   (item.provider && (
+                       (item.provider.name   || '').toLowerCase().indexOf(q) !== -1 ||
+                       (item.provider.origin || '').toLowerCase().indexOf(q) !== -1 ||
+                       (item.provider.author || '').toLowerCase().indexOf(q) !== -1));
         };
 
         $scope.saveCurrentLayout = function() {
