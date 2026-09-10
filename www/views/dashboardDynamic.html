@@ -264,13 +264,16 @@
                     <div class="dd-library-item"
                          ng-repeat="item in group.items | filter:libraryItemFilter"
                          ng-click="addWidgetToGrid(item)"
+                         data-widget-type="{{ item.type }}"
                          title="{{ item.description }}">
                         <div class="dd-library-item-icon">
                             <i ng-class="item.icon"></i>
                         </div>
                         <div class="dd-library-item-info">
                             <div class="dd-library-item-label">
-                                <span ng-bind="item.label"></span>
+                                <!-- Own element so the label text stays readable on its own,
+                                     rather than running into the provider badge beside it -->
+                                <span class="dd-library-item-name" ng-bind="item.label"></span>
                                 <!-- Where a third-party widget came from, so installed packages are attributable -->
                                 <span class="dd-library-item-provider" ng-if="item.custom"
                                       title="{{ item.provider.name }}{{ item.provider.version ? ' ' + item.provider.version : '' }}{{ item.provider.author ? ' by ' + item.provider.author : '' }}">

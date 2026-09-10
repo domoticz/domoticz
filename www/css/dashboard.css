@@ -393,6 +393,14 @@ body.dd-navbar-hidden .dd-toolbar {
     z-index: 1;
 }
 
+/* .form-control carries no width declaration in this build, so without this the
+   search box sits at the browser's intrinsic input width (~185px) in a 320px
+   panel rather than filling it. */
+.dd-library-search input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
 /* Built-in vs installed-package filter, above the categories */
 .dd-library-sources {
     display: flex;
@@ -485,9 +493,20 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 .dd-library-item-label {
+    display: flex;
+    align-items: center;
+    min-width: 0;
     font-weight: 600;
     font-size: 0.9em;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* The name gives up room before the badge does, so a long widget name
+   truncates rather than pushing its provider off the row. */
+.dd-library-item-name {
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -496,6 +515,7 @@ body.dd-navbar-hidden .dd-toolbar {
 .dd-library-item-provider {
     display: inline-flex;
     align-items: center;
+    flex: 0 0 auto;
     gap: 3px;
     margin-left: 6px;
     padding: 1px 5px;
