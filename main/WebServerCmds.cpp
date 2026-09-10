@@ -8412,8 +8412,14 @@ namespace http
 
 		// Scan one directory of widget packages. Missing directories are the
 		// normal case (most installs have none), so they pass silently.
-		static void ScanCustomWidgetDir(const std::string& dir, const std::string& source, const std::string& origin, const std::string& baseUrl,
-						Json::Value& result, std::set<std::string>& seenTypes)
+		//
+		// A package's base url is built as prefix + <package> + suffix, because
+		// the two kinds of url differ in more than their prefix: webroot and
+		// theme packages are plain paths ending in '/', while plugin packages
+		// are a query onto the asset route ending in '&file='. Either way,
+		// appending an asset name to the base url yields its url.
+		static void ScanCustomWidgetDir(const std::string& dir, const std::string& source, const std::string& origin, const std::string& baseUrlPrefix,
+						const std::string& baseUrlSuffix, Json::Value& result, std::set<std::string>& seenTypes)
 		{
 			std::vector<std::string> packages;
 			DirectoryListing(packages, dir, true, false);
@@ -8425,7 +8431,7 @@ namespace http
 					continue;
 
 				Json::Value pkg;
-				if (!ReadCustomWidgetManifest(dir + pkgName, pkgName, source, origin, baseUrl + pkgName + "/", pkg))
+				if (!ReadCustomWidgetManifest(dir + pkgName, pkgName, source, origin, baseUrlPrefix + pkgName + baseUrlSuffix, pkg))
 					continue;
 
 				// Two packages claiming the same widget type would fight over one
@@ -8459,13 +8465,13 @@ namespace http
 			std::set<std::string> seenTypes;
 
 			// Standalone widget packages, dropped in or cloned by the user.
-			ScanCustomWidgetDir(szWWWFolder + "/widgets/", "webroot", "", "widgets/", root["result"], seenTypes);
+			ScanCustomWidgetDir(szWWWFolder + "/widgets/", "webroot", "", "widgets/", "/", root["result"], seenTypes);
 
 			// Widgets shipped by the active theme.
 			std::string activeTheme;
 			if (m_sql.GetPreferencesVar("WebTheme", activeTheme) && IsSafePathSegment(activeTheme))
 			{
-				ScanCustomWidgetDir(szWWWFolder + "/styles/" + activeTheme + "/widgets/", "theme", activeTheme, "styles/" + activeTheme + "/widgets/",
+				ScanCustomWidgetDir(szWWWFolder + "/styles/" + activeTheme + "/widgets/", "theme", activeTheme, "styles/" + activeTheme + "/widgets/", "/",
 						    root["result"], seenTypes);
 			}
 
@@ -8480,7 +8486,7 @@ namespace http
 				if (!IsSafePathSegment(pluginName))
 					continue;
 				ScanCustomWidgetDir(pluginsRoot + pluginName + "/widgets/", "plugin", pluginName,
-						    "customwidgetasset?plugin=" + pluginName + "&package=", root["result"], seenTypes);
+						    "customwidgetasset?plugin=" + pluginName + "&package=", "&file=", root["result"], seenTypes);
 			}
 
 			root["status"] = "OK";
