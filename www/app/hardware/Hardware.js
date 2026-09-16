@@ -5195,11 +5195,7 @@ define(['app'], function (app) {
 				ShowNotify($.t('Please enter an Address!'), 2500, true);
 				return;
 			}
-			var port = $("#hardwarecontent #divremote #tcpport").val();
-			if (port == "") {
-				ShowNotify($.t('Please enter an Port!'), 2500, true);
-				return;
-			}
+			var port = 443;
 			var username = $("#hardwarecontent #hardwareparamsphilipshue #username").val();
 			$.ajax({
 				url: "json.htm?type=command&param=registerhue" +
