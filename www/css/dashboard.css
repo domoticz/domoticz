@@ -393,6 +393,52 @@ body.dd-navbar-hidden .dd-toolbar {
     z-index: 1;
 }
 
+/* .form-control carries no width declaration in this build, so without this the
+   search box sits at the browser's intrinsic input width (~185px) in a 320px
+   panel rather than filling it. */
+.dd-library-search input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Built-in vs installed-package filter, above the categories */
+.dd-library-sources {
+    display: flex;
+    gap: 4px;
+    padding: 0 8px 8px;
+    position: sticky;
+    top: 46px;
+    background: var(--dz-nav-bg);
+    z-index: 1;
+}
+
+.dd-library-source {
+    flex: 1 1 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 4px 6px;
+    border: 1px solid var(--dz-border-color, rgba(127, 127, 127, 0.25));
+    border-radius: 6px;
+    background: transparent;
+    color: var(--dz-body-text);
+    font-size: 0.78em;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.dd-library-source:hover {
+    opacity: 1;
+}
+
+.dd-library-source.active {
+    background: color-mix(in srgb, var(--dz-accent-color, #4e9af1) 20%, transparent);
+    border-color: var(--dz-accent-color, #4e9af1);
+    opacity: 1;
+}
+
 .dd-library-category {
     margin-bottom: 12px;
 }
@@ -447,11 +493,43 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 .dd-library-item-label {
+    display: flex;
+    align-items: center;
+    min-width: 0;
     font-weight: 600;
     font-size: 0.9em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* The name gives up room before the badge does, so a long widget name
+   truncates rather than pushing its provider off the row. */
+.dd-library-item-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Marks a widget as coming from a theme, plugin or dropped-in package */
+.dd-library-item-provider {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: 3px;
+    margin-left: 6px;
+    padding: 1px 5px;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--dz-accent-color, #4e9af1) 16%, transparent);
+    color: var(--dz-body-text);
+    font-weight: 500;
+    font-size: 0.78em;
+    vertical-align: middle;
+    opacity: 0.85;
+}
+
+.dd-library-item-provider i {
+    font-size: 0.9em;
 }
 
 .dd-library-item-desc {
@@ -672,6 +750,17 @@ body.dd-navbar-hidden .dd-toolbar {
     align-items: center;
     gap: 6px;
     font-size: 0.85em;
+}
+
+/* Shown while a custom widget's script is being fetched on first render */
+.dd-widget-loading {
+    padding: 12px 16px;
+    color: var(--dz-body-text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85em;
+    opacity: 0.7;
 }
 
 .dd-widget--loading {

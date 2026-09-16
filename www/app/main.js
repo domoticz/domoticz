@@ -36,6 +36,7 @@ require.config({
 		'dashboardDynamic/DashboardDynamicController':    'dashboardDynamic/DashboardDynamicController',
 		'dashboardDynamic/ddGrid':                 'dashboardDynamic/ddGrid.directive',
 		'dashboardDynamic/widgetRegistry.service':  'dashboardDynamic/widgetRegistry.service',
+		'dashboardDynamic/customWidgets.service':   'dashboardDynamic/customWidgets.service',
 		'dashboardDynamic/ddWidgetWrapper':        'dashboardDynamic/ddWidgetWrapper.directive',
 		'dashboardDynamic/ddWidgetContent.directive': 'dashboardDynamic/ddWidgetContent.directive',
 		'dashboardDynamic/ddWidgetSettings.controller': 'dashboardDynamic/ddWidgetSettings.controller',
