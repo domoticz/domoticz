@@ -1,9 +1,9 @@
 # Custom dashboard widgets
 
 The dynamic dashboard ("Dashboard 2.0") can load widgets that do not ship with
-Domoticz. A theme can bring its own widgets, a Python plugin can ship a widget
-for the hardware it talks to, and a widget can be published on its own as a
-folder you drop in or clone. None of that requires patching Domoticz.
+Domoticz. A Python plugin can ship a widget for the hardware it talks to, and a
+widget can be published on its own as a folder you drop in or clone. Neither
+requires patching Domoticz.
 
 This document is the contract. It covers `apiVersion` **1**.
 
@@ -21,21 +21,21 @@ This document is the contract. It covers `apiVersion` **1**.
 
 ## Where packages live
 
-Domoticz scans three locations on every `getcustomwidgets` call, so adding or
+Domoticz scans two locations on every `getcustomwidgets` call, so adding or
 removing a package needs a browser reload, not a restart:
 
 | Location | Use it for | Served from |
 | --- | --- | --- |
 | `<www>/widgets/<package>/` | standalone widget repositories, dropped in or cloned | the webroot, directly |
-| `<www>/styles/<theme>/widgets/<package>/` | widgets that belong to a theme | the webroot, directly |
 | `<userdata>/plugins/<Plugin>/widgets/<package>/` | widgets shipped alongside a Python plugin | the `customwidgetasset` route |
 
 `<www>` is the Domoticz web folder (`www/` in a source checkout) and
 `<userdata>` is the folder holding `domoticz.db` and `plugins/`. In a source
 checkout they are the same tree; in a packaged install they usually are not.
 
-Only the **active** theme is scanned. Widgets belonging to a theme the user is
-not running never show up in the picker.
+A theme is not a widget source. If a theme wants to offer widgets, it ships the
+packages and the user installs them into `<www>/widgets/` like any other
+standalone package.
 
 Plugin packages sit outside the webroot, so their files are served by a
 dedicated route rather than the static file handler. This is transparent — your
@@ -322,7 +322,7 @@ $scope.$on('$destroy',        stop);
 Worth understanding, because it explains the constraints:
 
 1. On dashboard load, the browser calls `getcustomwidgets`. Domoticz scans the
-   three locations, validates each `widget.json`, and returns the packages.
+   two locations, validates each `widget.json`, and returns the packages.
 2. Every descriptor is registered into the widget registry. **No third-party
    code has run yet** — this is why a broken package cannot keep the picker, or
    the rest of the dashboard, from working.
@@ -355,9 +355,9 @@ installing a plugin. Read what you install.
 **Plugin packages: build asset urls from `ctx.baseUrl`.** Files under
 `plugins/…/widgets/` are served through a query-based route, so a relative
 `<img src="logo.svg">` inside your template will not resolve. Use
-`ctx.baseUrl + 'logo.svg'`. Widgets in `www/widgets/` and theme widgets are
-served as ordinary paths and do not have this constraint, but using `baseUrl`
-everywhere keeps a package portable between the three locations.
+`ctx.baseUrl + 'logo.svg'`. Widgets in `www/widgets/` are served as ordinary
+paths and do not have this constraint, but using `baseUrl` everywhere keeps a
+package portable between both locations.
 
 **Allowed asset extensions.** For plugin packages, only `js`, `html`, `css`,
 `json`, `png`, `jpg`, `jpeg`, `gif`, `svg`, `webp`, `woff` and `woff2` are
@@ -370,15 +370,15 @@ served. Others get a 403.
 **Finding your widget in the picker.** Installed widgets sit in whatever
 category their manifest declares, badged with the package they came from. The
 Widget Library's **Custom** filter narrows the list to package widgets only,
-and its search box matches package, theme, plugin and author names as well as
-widget labels.
+and its search box matches package, plugin and author names as well as widget
+labels.
 
 **The widget is not in the picker.** Call
 `json.htm?type=command&param=getcustomwidgets` directly and see whether your
 package is listed. If it is not, check the Domoticz log: every rejected package
 is logged with the reason (bad JSON, wrong `apiVersion`, no `widgets` array,
-unsafe asset path). Confirm the folder holds a `widget.json`, and for a theme
-package, that the theme is the active one.
+unsafe asset path). Confirm the folder holds a `widget.json` and sits directly
+under one of the two scanned locations.
 
 **The card says "failed to load".** The browser console has the detail. Usual
 causes: the `entry` file 404s, the module throws while loading, or it returned
@@ -395,6 +395,5 @@ comparison.
 ## See also
 
 - [`docs/dashboardDynamic.md`](dashboardDynamic.md) — the dashboard itself
-- [`docs/Theming.wiki`](Theming.wiki) — building a theme
 - [`docs/Developing_a_Python_plugin.wiki`](Developing_a_Python_plugin.wiki) — plugins
 - `www/widgets/example/` — a working reference package

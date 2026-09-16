@@ -8267,14 +8267,10 @@ namespace http
 		// Custom (third-party) dashboard widgets
 		//
 		// A widget package is a folder holding a 'widget.json' manifest plus the
-		// assets it references. Packages are discovered in three places:
+		// assets it references. Packages are discovered in two places:
 		//
 		//   <www>/widgets/<pkg>/                        standalone widget repos
-		//   <www>/styles/<theme>/widgets/<pkg>/         widgets shipped by a theme
 		//   <userdata>/plugins/<Plugin>/widgets/<pkg>/  widgets shipped by a plugin
-		//
-		// Only the active theme is scanned, so widgets belonging to a theme the
-		// user is not running never show up in the picker.
 		//
 		// The manifest carries the widget descriptors (label, icon, default size,
 		// config schema), which lets the dashboard populate its widget picker
@@ -8466,14 +8462,6 @@ namespace http
 
 			// Standalone widget packages, dropped in or cloned by the user.
 			ScanCustomWidgetDir(szWWWFolder + "/widgets/", "webroot", "", "widgets/", "/", root["result"], seenTypes);
-
-			// Widgets shipped by the active theme.
-			std::string activeTheme;
-			if (m_sql.GetPreferencesVar("WebTheme", activeTheme) && IsSafePathSegment(activeTheme))
-			{
-				ScanCustomWidgetDir(szWWWFolder + "/styles/" + activeTheme + "/widgets/", "theme", activeTheme, "styles/" + activeTheme + "/widgets/", "/",
-						    root["result"], seenTypes);
-			}
 
 			// Widgets shipped by Python plugins. These live outside the webroot, so
 			// they are served through the 'customwidgetasset' page instead.

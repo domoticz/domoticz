@@ -9,8 +9,8 @@ define([
      * customWidgets
      *
      * Discovers and loads third-party dashboard widgets. Packages can be shipped
-     * by a theme, by a Python plugin, or simply dropped into www/widgets; the
-     * server finds them all and reports them through 'getcustomwidgets'.
+     * by a Python plugin or simply dropped into www/widgets; the server finds
+     * them both and reports them through 'getcustomwidgets'.
      *
      * Loading happens in two stages. The manifest a package ships carries the
      * whole widget descriptor -- label, icon, default size, config schema -- so
@@ -61,7 +61,7 @@ define([
          */
         var _loadState = {};        // type -> { promise, loaded }
 
-        /* Package base urls are webroot-relative ('styles/x/widgets/y/') or a
+        /* Package base urls are webroot-relative ('widgets/<pkg>/') or a
          * query-based asset route for plugins ('customwidgetasset?...&file=').
          * In both cases appending the asset name yields the right url. */
         function assetUrl(baseUrl, asset) {
