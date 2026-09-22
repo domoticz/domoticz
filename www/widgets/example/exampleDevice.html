@@ -1,0 +1,20 @@
+<div class="example-widget" ng-style="{ '--example-accent': ctrl.accent }">
+
+    <div class="example-widget__title" ng-if="ctrl.title">{{ ctrl.title }}</div>
+
+    <div class="example-widget__state" ng-if="ctrl.loading">
+        <i class="fa-solid fa-circle-notch fa-spin"></i>
+    </div>
+
+    <div class="example-widget__state example-widget__state--error" ng-if="!ctrl.loading && ctrl.error">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span>{{ ctrl.error }}</span>
+    </div>
+
+    <div class="example-widget__body" ng-if="!ctrl.loading && !ctrl.error && ctrl.device">
+        <div class="example-widget__value">{{ ctrl.device.Data }}</div>
+        <div class="example-widget__name">{{ ctrl.device.Name }}</div>
+        <div class="example-widget__updated" ng-if="ctrl.showUpdated">{{ ctrl.device.LastUpdate }}</div>
+    </div>
+
+</div>

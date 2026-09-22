@@ -334,6 +334,8 @@ namespace http
 			// Maybe handle these differently? (Or remove)
 			m_pWebEm->RegisterPageCode("/images/floorplans/plan", [this](auto&& session, auto&& req, auto&& rep) { GetFloorplanImage(session, req, rep); });
 			m_pWebEm->RegisterPageCode("/service-worker.js", [this](auto&& session, auto&& req, auto&& rep) { GetServiceWorker(session, req, rep); }, true);
+			// Widget packages shipped by Python plugins live outside the webroot, so the static file handler cannot reach them
+			m_pWebEm->RegisterPageCode("/customwidgetasset", [this](auto&& session, auto&& req, auto&& rep) { ServeCustomWidgetAsset(session, req, rep); });
 
 			// End of 'Pages' to be moved...
 
@@ -769,6 +771,8 @@ namespace http
 			RegisterCommandCode("savedashboardlayout",    [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveDashboardLayout(session, req, root); });
 			RegisterCommandCode("deletedashboardlayout",  [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteDashboardLayout(session, req, root); });
 			RegisterCommandCode("copydashboardlayout",    [this](auto&& session, auto&& req, auto&& root) { Cmd_CopyDashboardLayout(session, req, root); });
+
+			RegisterCommandCode("getcustomwidgets",       [this](auto&& session, auto&& req, auto&& root) { Cmd_GetCustomWidgets(session, req, root); });
 
 			//Whitelist
 			m_pWebEm->RegisterWhitelistURLString("/images/floorplans/plan");
