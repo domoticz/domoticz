@@ -215,6 +215,49 @@ bool SMTPClient::SendEmail()
 	return true;
 }
 
+// RFC 2047: headers may only carry 7-bit ASCII, so non-ASCII text is sent as
+// one or more =?UTF-8?B?...?= encoded-words, folded onto continuation lines.
+// Chunks are split on UTF-8 character boundaries, as a multi-byte character
+// may not span two encoded-words.
+static std::string EncodeHeaderValue(const std::string& value)
+{
+	std::string sValue = value;
+	stdreplace(sValue, "\r", " ");
+	stdreplace(sValue, "\n", " ");
+
+	bool bIsASCII = true;
+	for (const unsigned char c : sValue)
+	{
+		if (c >= 0x80)
+		{
+			bIsASCII = false;
+			break;
+		}
+	}
+	if (bIsASCII)
+		return sValue;
+
+	// 39 raw bytes -> 52 base64 chars, keeps "Subject: " + encoded-word under 78 chars
+	const size_t maxChunkBytes = 39;
+	std::string ret;
+	size_t pos = 0;
+	while (pos < sValue.size())
+	{
+		size_t len = std::min(maxChunkBytes, sValue.size() - pos);
+		if (pos + len < sValue.size())
+		{
+			// back off while the next byte is a UTF-8 continuation byte
+			while ((len > 1) && ((static_cast<unsigned char>(sValue[pos + len]) & 0xC0) == 0x80))
+				len--;
+		}
+		if (!ret.empty())
+			ret += "\r\n ";
+		ret += "=?UTF-8?B?" + base64_encode(sValue.substr(pos, len)) + "?=";
+		pos += len;
+	}
+	return ret;
+}
+
 void MakeBoundry(char* pszBoundry)
 {
 	char* p = pszBoundry;
@@ -261,7 +304,7 @@ std::string SMTPClient::MakeMessage()
 
 	///////////////////////////////////////////////////////////////////////////
 	// add the subject
-	ret += "Subject: " + m_Subject + "\r\n";
+	ret += "Subject: " + EncodeHeaderValue(m_Subject) + "\r\n";
 	///////////////////////////////////////////////////////////////////////////
 	// add the current time.
 	// format is
