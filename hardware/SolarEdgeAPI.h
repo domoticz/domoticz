@@ -62,15 +62,27 @@ private:
 	bool GetSite();
 	void GetBatteryFromInventory();
 	void GetInverters();
-	void GetMeterDetails();
-	void GetInverterDetails(const _tInverterSettings* pInverterSettings, int iInverterNumber);
+	void GetInverterTelemetry();
 	int getSunRiseSunSetMinutes(bool bGetSunRise);
 	bool isDaylightWindow();
 	void ResetPowerValues();
 
 	void GetBatteryDetails();
 	void GetOverview();
-	void GetEnergyDetails();
+	void GetSiteEnergyTotals();
+
+	// Monitoring API v2 authentication: either a static Fleet Access API key (X-API-Key),
+	// or, when no Fleet key is configured, OAuth2 Site Access (Authorization: Bearer ...)
+	// for accounts that only have homeowner-level access to their own site.
+	bool ApiUsesOAuth() const;
+	std::string BuildApiAuthHeader() const;
+	bool ApiEnsureLoggedIn();
+	bool ApiAutoAuthorize();
+	bool ApiExchangeAuthCode();
+	bool ApiRefreshToken();
+	std::string GetApiTokenPrefKey() const;
+	bool LoadApiRefreshToken();
+	void StoreApiRefreshToken();
 
 	// Web portal OAuth2 (PKCE) authentication
 	bool WebEnsureLoggedIn();
@@ -93,6 +105,14 @@ private:
 	int m_SiteID;
 	std::string m_APIKey;
 	std::vector<_tInverterSettings> m_inverters;
+
+	// Monitoring API v2: OAuth2 Site Access (used only when m_APIKey is empty)
+	std::string m_ApiClientId;
+	std::string m_ApiClientSecret;
+	std::string m_ApiAuthCode; // one-time authorization code (or callback URL), consumed on first use
+	std::string m_ApiAccessToken;
+	std::string m_ApiRefreshToken;
+	time_t m_ApiNextRefreshTs = 0;
 
 	double m_totalActivePower;
 	double m_totalEnergy;

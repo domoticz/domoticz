@@ -1101,7 +1101,48 @@
                     <td align="right" style="width:110px"></td>
                     <td>
                         <b>Monitoring API</b><br>
-                        <span>Provides: inverter telemetry, site overview (current power, today/month/year/lifetime energy), energy details (production/consumption/feed-in), battery status and power flow.</span>
+                        <span>Provides: inverter telemetry, site overview (current power, today/month/year/lifetime energy), energy details (production/consumption/feed-in), battery status and power flow.</span><br>
+                        <span>Most home installs should use OAuth2 Client ID/Secret below &#8212; a Fleet API Key only exists for SolarEdge accounts with an installer/fleet profile, which plain homeowner accounts don't have.</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"></td>
+                    <td>
+                        <b>OAuth2 Site Access</b><br>
+                        <span>At <a href="https://developer.solaredge.com/" target="_blank" rel="noopener">developer.solaredge.com</a>, create a "Site Access" Application (Scopes: SITE_DATA + DEVICE_DATA, Redirect URI <code>http://localhost</code>) and copy its Client ID and Client Secret below. That's it &#8212; Domoticz signs in and authorizes itself automatically, using the Web Username/Password configured further below.</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Client ID">Client ID</span>:</label></td>
+                    <td><input type="text" id="oauthclientid" style="width: 280px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Client Secret">Client Secret</span>:</label></td>
+                    <td><input type="text" id="oauthclientsecret" style="width: 280px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"></td>
+                    <td>
+                        <span>If the account has two-factor authentication enabled, automatic sign-in can't complete it and you'll need to authorize manually instead: fill in the Client ID, click "Open SolarEdge authorization page", sign in and approve. Your browser will then land on an address that may show a connection error &#8212; that's expected, ignore it and copy the full address into "Authorization Code" below.</span><br>
+                        <button type="button" id="oauthauthorizebtn" class="ui-button ui-widget ui-corner-all">Open SolarEdge authorization page</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Authorization Code">Authorization Code</span>:</label></td>
+                    <td>
+                        <input type="text" id="oauthcode" style="width: 280px; padding: .2em;" class="text ui-widget-content ui-corner-all"><br>
+                        <span>Only needed for the manual fallback above; leave blank otherwise.</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"></td>
+                    <td>
+                        <b>Fleet API Key</b> (installer/fleet SolarEdge accounts only)<br>
+                        <span>Leave blank unless your account has an installer/fleet profile, in which case this replaces the OAuth2 fields above.</span>
                     </td>
                 </tr>
                 <tr>
@@ -1123,7 +1164,7 @@
                     <td align="right" style="width:110px"><label><span data-i18n="Site ID">Site ID</span>:</label></td>
                     <td>
                         <input type="text" id="siteid" style="width: 280px; padding: .2em;" class="text ui-widget-content ui-corner-all"><br>
-                        <span>Leave empty to auto-detect from API or web portal.</span>
+                        <span>Leave empty to auto-detect from the API, the OAuth2 authorization above, or the web portal.</span>
                     </td>
                 </tr>
                 <tr>
