@@ -141,12 +141,12 @@ define([
 
                         ctrl.totalWithBattery = withBattery.length;
 
+                        var lowBattery = withBattery.filter(function(d) {
+                            return d.BatteryLevel <= threshold;
+                        });
+
                         // Apply threshold filter unless showFull is true
-                        var visible = showFull
-                            ? withBattery
-                            : withBattery.filter(function(d) {
-                                return d.BatteryLevel <= threshold;
-                              });
+                        var visible = showFull ? withBattery : lowBattery;
 
                         // Sort
                         if (sortBy === 'name') {
@@ -168,7 +168,7 @@ define([
                             };
                         });
 
-                        ctrl.count = ctrl.devices.length;
+                        ctrl.count = lowBattery.length;
                     }).catch(function(err) {
                         if (err.status === -1) { return; }
                         ctrl.loading   = false;
