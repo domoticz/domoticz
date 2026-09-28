@@ -251,14 +251,8 @@ void CHttpPush::DoHttpPush(const uint64_t DeviceRowIdx)
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_SaveHttpLinkConfig(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_SaveHttpLinkConfig(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string url = request::findValue(&req, "url");
 			std::string method = request::findValue(&req, "method");
 			std::string data = request::findValue(&req, "data");
@@ -289,13 +283,8 @@ namespace http {
 			root["title"] = "SaveHttpLinkConfig";
 		}
 
-		void CWebServer::Cmd_GetHttpLinkConfig(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_GetHttpLinkConfig(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
 			std::string sValue;
 			int nValue;
 			if (m_sql.GetPreferencesVar("HttpActive", nValue)) {
@@ -348,13 +337,8 @@ namespace http {
 			root["title"] = "GetHttpLinkConfig";
 		}
 
-		void CWebServer::Cmd_GetHttpLinks(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_GetHttpLinks(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT A.ID,A.DeviceRowID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM PushLink as A, DeviceStatus as B WHERE (A.PushType==%d AND A.DeviceRowID==B.ID)", CBasePush::PushType::PUSHTYPE_HTTP);
 			if (!result.empty())
@@ -379,13 +363,8 @@ namespace http {
 			root["title"] = "GetHttpLinks";
 		}
 
-		void CWebServer::Cmd_SaveHttpLink(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_SaveHttpLink(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
 			std::string idx = request::findValue(&req, "idx");
 			std::string deviceid = request::findValue(&req, "deviceid");
 			int deviceidi = atoi(deviceid.c_str());
@@ -436,14 +415,8 @@ namespace http {
 			root["title"] = "SaveHttpLink";
 		}
 
-		void CWebServer::Cmd_DeleteHttpLink(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_DeleteHttpLink(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;

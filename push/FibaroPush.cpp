@@ -215,14 +215,8 @@ void CFibaroPush::DoFibaroPush(const uint64_t DeviceRowIdx)
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_SaveFibaroLinkConfig(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_SaveFibaroLinkConfig(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string remote = request::findValue(&req, "remote");
 			std::string username = request::findValue(&req, "username");
 			std::string password = request::findValue(&req, "password");
@@ -245,13 +239,8 @@ namespace http {
 			root["title"] = "SaveFibaroLinkConfig";
 		}
 
-		void CWebServer::Cmd_GetFibaroLinkConfig(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_GetFibaroLinkConfig(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
 			std::string sValue;
 			int nValue;
 			if (m_sql.GetPreferencesVar("FibaroActive", nValue)) {
@@ -288,13 +277,8 @@ namespace http {
 			root["title"] = "GetFibaroLinkConfig";
 		}
 
-		void CWebServer::Cmd_GetFibaroLinks(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_GetFibaroLinks(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
 			std::vector<std::vector<std::string> > result;
 			result = m_sql.safe_query("SELECT A.ID,A.DeviceRowID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit FROM PushLink as A, DeviceStatus as B WHERE (A.PushType==%d AND A.DeviceRowID==B.ID)", CBasePush::PushType::PUSHTYPE_FIBARO);
 			if (!result.empty())
@@ -319,13 +303,8 @@ namespace http {
 			root["title"] = "GetFibaroLinks";
 		}
 
-		void CWebServer::Cmd_SaveFibaroLink(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_SaveFibaroLink(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
 			std::string idx = request::findValue(&req, "idx");
 			std::string deviceid = request::findValue(&req, "deviceid");
 			int deviceidi = atoi(deviceid.c_str());
@@ -376,14 +355,8 @@ namespace http {
 			root["title"] = "SaveFibaroLink";
 		}
 
-		void CWebServer::Cmd_DeleteFibaroLink(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_DeleteFibaroLink(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;

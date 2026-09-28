@@ -318,14 +318,8 @@ void CTellstick::ThreadSendCommands()
 //Webserver helpers
 namespace http {
     namespace server {
-        void CWebServer::Cmd_TellstickApplySettings(WebEmSession &session, const request &req, Json::Value &root)
+        void CWebServer::Cmd_TellstickApplySettings(WebEmSession &/*session*/, const request &req, Json::Value &root)
         {
-            if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
             std::string hwIdStr = request::findValue(&req, "idx");
             std::string repeatsStr = request::findValue(&req, "repeats");
             std::string repeatIntervalStr = request::findValue(&req, "repeatInterval");

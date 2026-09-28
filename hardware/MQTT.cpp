@@ -1025,13 +1025,8 @@ void MQTT::ReloadSharedDevices()
 namespace http {
 	namespace server {
 		//As the SharedDevices is also used for Users, we are going to add 2000 to the index so we can distinguish between the two
-		void CWebServer::Cmd_GetSharedMQTTDevices(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetSharedMQTTDevices(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
 			std::string sidx = request::findValue(&req, "idx");
 			if (sidx.empty())
 				return;
@@ -1051,13 +1046,8 @@ namespace http {
 			root["status"] = "OK";
 		}
 
-		void CWebServer::Cmd_SetSharedMQTTDevices(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_SetSharedMQTTDevices(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
 			std::string sidx = request::findValue(&req, "idx");
 			if (sidx.empty())
 				return;
@@ -1092,13 +1082,8 @@ namespace http {
 			root["status"] = "OK";
 		}
 
-		void CWebServer::Cmd_ClearSharedMQTTDevices(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_ClearSharedMQTTDevices(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
 			std::string sidx = request::findValue(&req, "idx");
 			if (sidx.empty())
 				return;

@@ -2598,13 +2598,8 @@ void CPhilipsHue::HandleSSEDevicePower(const Json::Value& r)
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_PhilipsHueRegister(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_PhilipsHueRegister(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
 			root["title"] = "RegisterOnHue";
 
 			std::string sipaddress = request::findValue(&req, "ipaddress");

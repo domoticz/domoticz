@@ -2399,13 +2399,8 @@ void MySensorsBase::Do_Work()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_MySensorsGetNodes(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_MySensorsGetNodes(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid.empty())
 				return;
@@ -2471,13 +2466,8 @@ namespace http {
 				}
 			}
 		}
-		void CWebServer::Cmd_MySensorsGetChilds(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_MySensorsGetChilds(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
 			if ((hwid.empty()) || (nodeid.empty()))
@@ -2547,14 +2537,8 @@ namespace http {
 				ii++;
 			}
 		}
-		void CWebServer::Cmd_MySensorsUpdateNode(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_MySensorsUpdateNode(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
@@ -2576,14 +2560,8 @@ namespace http {
 			root["title"] = "MySensorsUpdateNode";
 			pMySensorsHardware->UpdateNode(NodeID, name);
 		}
-		void CWebServer::Cmd_MySensorsRemoveNode(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_MySensorsRemoveNode(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
 			if ((hwid.empty()) || (nodeid.empty()))
@@ -2604,14 +2582,8 @@ namespace http {
 			root["title"] = "MySensorsRemoveNode";
 			pMySensorsHardware->RemoveNode(NodeID);
 		}
-		void CWebServer::Cmd_MySensorsRemoveChild(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_MySensorsRemoveChild(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
 			std::string childid = request::findValue(&req, "childid");
@@ -2634,14 +2606,8 @@ namespace http {
 			root["title"] = "MySensorsRemoveChild";
 			pMySensorsHardware->RemoveChild(NodeID, ChildID);
 		}
-		void CWebServer::Cmd_MySensorsUpdateChild(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_MySensorsUpdateChild(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
 			std::string childid = request::findValue(&req, "childid");

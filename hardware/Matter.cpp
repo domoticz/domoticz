@@ -2770,23 +2770,20 @@ namespace http {
 	CMatter* pMatter = dynamic_cast<CMatter*>(pHardware); \
 	if (!pMatter) return;
 
-		void CWebServer::Cmd_GetMatterNodes(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetMatterNodes(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
 			GET_MATTER_HW
 			root = pMatter->GetNodesJSON(pMatter->m_HwdID);
 		}
 
-		void CWebServer::Cmd_GetMatterNetworkGraph(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetMatterNetworkGraph(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
 			GET_MATTER_HW
 			root = pMatter->GetNetworkGraphJSON();
 		}
 
-		void CWebServer::Cmd_MatterCommissionNode(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_MatterCommissionNode(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
 			GET_MATTER_HW
 			std::string sCode = request::findValue(&req, "code");
 			if (sCode.empty()) return;
@@ -2795,9 +2792,8 @@ namespace http {
 			root["title"]  = "MatterCommissionNode";
 		}
 
-		void CWebServer::Cmd_GetMatterCommissionStatus(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetMatterCommissionStatus(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
 			GET_MATTER_HW
 			root["status"]      = "OK";
 			root["title"]       = "GetMatterCommissionStatus";
@@ -2807,9 +2803,8 @@ namespace http {
 			root["productName"] = "";
 		}
 
-		void CWebServer::Cmd_MatterExcludeNode(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_MatterExcludeNode(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
 			GET_MATTER_HW
 			std::string sNode = request::findValue(&req, "node");
 			if (sNode.empty()) return;
@@ -2818,9 +2813,8 @@ namespace http {
 			root["title"]  = "MatterExcludeNode";
 		}
 
-		void CWebServer::Cmd_DeleteMatterNode(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_DeleteMatterNode(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
 			GET_MATTER_HW
 			std::string sNode = request::findValue(&req, "node");
 			if (sNode.empty()) return;
@@ -2829,9 +2823,8 @@ namespace http {
 			root["title"]  = "DeleteMatterNode";
 		}
 
-		void CWebServer::Cmd_RequestMatterNodeInfo(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_RequestMatterNodeInfo(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
 			GET_MATTER_HW
 			std::string sNode = request::findValue(&req, "node");
 			if (sNode.empty()) return;
@@ -2840,16 +2833,14 @@ namespace http {
 			root["title"]  = "RequestMatterNodeInfo";
 		}
 
-		void CWebServer::Cmd_MatterGetServerInfo(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_MatterGetServerInfo(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
 			GET_MATTER_HW
 			root = pMatter->GetServerInfoJSON();
 		}
 
-		void CWebServer::Cmd_MatterSetWifiCredentials(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_MatterSetWifiCredentials(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
 			std::string ssid  = request::findValue(&req, "ssid");
 			std::string creds = request::findValue(&req, "credentials");
 			if (ssid.empty()) { root["status"] = "ERR"; root["message"] = "ssid required"; return; }
@@ -2858,9 +2849,8 @@ namespace http {
 			root["status"] = "OK";
 		}
 
-		void CWebServer::Cmd_MatterSetThreadDataset(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_MatterSetThreadDataset(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
 			std::string dataset = request::findValue(&req, "dataset");
 			if (dataset.empty()) { root["status"] = "ERR"; root["message"] = "dataset required"; return; }
 			GET_MATTER_HW
@@ -2868,9 +2858,8 @@ namespace http {
 			root["status"] = "OK";
 		}
 
-		void CWebServer::Cmd_MatterSetFabricLabel(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_MatterSetFabricLabel(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2) { session.reply_status = reply::forbidden; return; }
 			std::string label = request::findValue(&req, "label");
 			GET_MATTER_HW
 			pMatter->SetFabricLabel(label);

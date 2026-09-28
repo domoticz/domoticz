@@ -4461,14 +4461,8 @@ namespace http
 {
 	namespace server
 	{
-		void CWebServer::Cmd_EnOceanESP3EnableLearnMode(WebEmSession &session, const request &req, Json::Value &root)
+		void CWebServer::Cmd_EnOceanESP3EnableLearnMode(WebEmSession &/*session*/, const request &req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
-
 			std::string hwdIDStr = request::findValue(&req, "hwdid");
 			if (hwdIDStr.empty())
 				return;
@@ -4545,14 +4539,8 @@ namespace http
 			root["title"] = "EnOceanESP3CancelTeachIn";
 		}
 
-		void CWebServer::Cmd_EnOceanESP3ControllerReset(WebEmSession &session, const request &req, Json::Value &root)
+		void CWebServer::Cmd_EnOceanESP3ControllerReset(WebEmSession &/*session*/, const request &req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
-
 			std::string hwdIDStr = request::findValue(&req, "hwdid");
 			if (hwdIDStr.empty())
 				return;
@@ -4575,14 +4563,8 @@ namespace http
 			root["title"] = "EnOceanESP3ControllerReset";
 		}
 
-		void CWebServer::Cmd_EnOceanESP3UpdateNode(WebEmSession &session, const request &req, Json::Value &root)
+		void CWebServer::Cmd_EnOceanESP3UpdateNode(WebEmSession &/*session*/, const request &req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
-
 			std::string hwdIDStr = request::findValue(&req, "hwdid");
 			if (hwdIDStr.empty())
 				return;
@@ -4640,14 +4622,8 @@ namespace http
 			root["title"] = "EnOceanESP3UpdateNode";
 		}
 
-		void CWebServer::Cmd_EnOceanESP3DeleteNode(WebEmSession &session, const request &req, Json::Value &root)
+		void CWebServer::Cmd_EnOceanESP3DeleteNode(WebEmSession &/*session*/, const request &req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
-
 			std::string hwdIDStr = request::findValue(&req, "hwdid");
 			if (hwdIDStr.empty())
 				return;

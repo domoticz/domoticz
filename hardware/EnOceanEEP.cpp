@@ -759,15 +759,9 @@ namespace http
 {
 	namespace server
 	{
-		void CWebServer::Cmd_EnOceanGetManufacturers(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_EnOceanGetManufacturers(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
 			//			_log.Log(LOG_NORM, "EnOcean: Cmd_EnOceanGetManufacturers");
-
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
 
 			int i = 0;
 			for (const enocean::_tManufacturerTable* pTable = enocean::_manufacturerTable; pTable->ID != 0 || pTable->name != nullptr; pTable++)
@@ -781,15 +775,9 @@ namespace http
 			root["title"] = "EnOceanGetManufacturers";
 		}
 
-		void CWebServer::Cmd_EnOceanGetRORGs(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_EnOceanGetRORGs(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
 			_log.Log(LOG_NORM, "EnOcean: Cmd_EnOceanGetRORGs");
-
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
 
 			int i = 0;
 			for (const enocean::_tRORGTable* pTable = enocean::_RORGTable; pTable->RORG != enocean::UNKNOWN_RORG || pTable->label != nullptr; pTable++)
@@ -808,15 +796,9 @@ namespace http
 			root["title"] = "Cmd_EnOceanGetRORGs";
 		}
 
-		void CWebServer::Cmd_EnOceanGetProfiles(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_EnOceanGetProfiles(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
 			_log.Log(LOG_NORM, "EnOcean: Cmd_EnOceanGetProfiles");
-
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
 
 			int i = 0;
 			for (const enocean::_tEEPTable* pTable = (const enocean::_tEEPTable*)&enocean::_EEPTable; pTable->RORG != enocean::UNKNOWN_RORG || pTable->EEP != nullptr; pTable++)

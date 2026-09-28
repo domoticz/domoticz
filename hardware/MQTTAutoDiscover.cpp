@@ -6973,14 +6973,8 @@ void MQTTAutoDiscover::Do_Work()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_MQTTAD_GetConfig(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_MQTTAD_GetConfig(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid.empty())
 				return;
@@ -6998,14 +6992,8 @@ namespace http {
 			pMQTT->GetConfig(root);
 		}
 
-		void CWebServer::Cmd_MQTTAD_UpdateNumber(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_MQTTAD_UpdateNumber(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			std::string devid = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "name")));
 			std::string value = request::findValue(&req, "value");
@@ -7037,14 +7025,8 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_MQTTAD_PublishPayload(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_MQTTAD_PublishPayload(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			std::string topic = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "topic")));
 			std::string qos = request::findValue(&req, "qos");

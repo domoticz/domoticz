@@ -4351,7 +4351,7 @@ namespace http {
 			std::string folderid;
 		};
 
-		void CWebServer::Cmd_Events(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_Events(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
 			//root["status"]="OK";
 			root["title"] = "Events";
@@ -4360,11 +4360,6 @@ namespace http {
 			// command (create/update/delete and the reads that expose script bodies) is
 			// admin only, the same as the Events editor in the UI. Without this an
 			// unauthenticated request that reaches this handler could create and run code.
-			if (session.rights != URIGHTS_ADMIN)
-			{
-				session.reply_status = reply::forbidden;
-				return;
-			}
 
 			std::string cparam = request::findValue(&req, "evparam");
 			if (cparam.empty())

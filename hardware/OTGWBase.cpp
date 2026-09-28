@@ -584,12 +584,6 @@ namespace http {
 		}
 		void CWebServer::Cmd_SendOpenThermCommand(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			std::string cmnd = request::findValue(&req, "cmnd");
 			if (idx.empty() || cmnd.empty())

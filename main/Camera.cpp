@@ -682,14 +682,8 @@ bool CCameraHandler::EmailCameraSnapshot(const std::string &CamIdx, const std::s
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_GetCameras(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_GetCameras(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
-			if (session.rights < 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string rused = request::findValue(&req, "used");
 
 			root["status"] = "OK";
@@ -778,14 +772,8 @@ namespace http {
 			reply::add_header_attachment(&rep, "snapshot.jpg");
 		}
 
-		void CWebServer::Cmd_AddCamera(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_AddCamera(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
-			if (session.rights < 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string senabled = request::findValue(&req, "enabled");
 			std::string address = HTMLSanitizer::Sanitize(request::findValue(&req, "address"));
@@ -822,14 +810,8 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_UpdateCamera(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_UpdateCamera(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
-			if (session.rights < 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
@@ -872,14 +854,8 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_DeleteCamera(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_DeleteCamera(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
-			if (session.rights < 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;

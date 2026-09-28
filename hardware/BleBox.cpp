@@ -684,14 +684,8 @@ void BleBox::SendSwitch(const int NodeID, const uint8_t ChildID, const int Batte
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_BleBoxGetNodes(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_BleBoxGetNodes(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
@@ -750,14 +744,8 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_BleBoxSetMode(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_BleBoxSetMode(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
 			std::string mode2 = request::findValue(&req, "mode2");
@@ -780,14 +768,8 @@ namespace http {
 		}
 
 
-		void CWebServer::Cmd_BleBoxAddNode(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_BleBoxAddNode(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string ip = HTMLSanitizer::Sanitize(request::findValue(&req, "ip"));
@@ -803,14 +785,8 @@ namespace http {
 			pHardware->AddNode(name, ip, true);
 		}
 
-		void CWebServer::Cmd_BleBoxRemoveNode(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_BleBoxRemoveNode(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
 			if ((hwid.empty()) || (nodeid.empty()))
@@ -826,14 +802,8 @@ namespace http {
 			pHardware->RemoveNode(ID);
 		}
 
-		void CWebServer::Cmd_BleBoxClearNodes(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_BleBoxClearNodes(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)
@@ -845,14 +815,8 @@ namespace http {
 			pHardware->RemoveAllNodes();
 		}
 
-		void CWebServer::Cmd_BleBoxAutoSearchingNodes(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_BleBoxAutoSearchingNodes(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			std::string ipmask = request::findValue(&req, "ipmask");
 			if ((hwid.empty()) || (ipmask.empty()))
@@ -867,14 +831,8 @@ namespace http {
 			pHardware->SearchNodes(ipmask);
 		}
 
-		void CWebServer::Cmd_BleBoxUpdateFirmware(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_BleBoxUpdateFirmware(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			CDomoticzHardwareBase* pBaseHardware = m_mainworker.GetHardwareByIDType(hwid, HTYPE_BleBox);
 			if (pBaseHardware == nullptr)

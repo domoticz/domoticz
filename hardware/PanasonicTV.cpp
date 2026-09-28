@@ -1139,13 +1139,8 @@ bool CPanasonic::SetExecuteCommand(const int ID, const std::string& command)
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_PanasonicGetNodes(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_PanasonicGetNodes(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid.empty())
 				return;
@@ -1176,13 +1171,8 @@ namespace http {
 		}
 
 
-		void CWebServer::Cmd_PanasonicSetMode(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_PanasonicSetMode(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
 			std::string mode2 = request::findValue(&req, "mode2");
@@ -1212,14 +1202,8 @@ namespace http {
 		}
 
 
-		void CWebServer::Cmd_PanasonicAddNode(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_PanasonicAddNode(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			std::string ip = HTMLSanitizer::Sanitize(request::findValue(&req, "ip"));
@@ -1239,14 +1223,8 @@ namespace http {
 			pHardware->AddNode(name, ip, Port);
 		}
 
-		void CWebServer::Cmd_PanasonicUpdateNode(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_PanasonicUpdateNode(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
@@ -1268,14 +1246,8 @@ namespace http {
 			pHardware->UpdateNode(NodeID, name, ip, Port);
 		}
 
-		void CWebServer::Cmd_PanasonicRemoveNode(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_PanasonicRemoveNode(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			std::string nodeid = request::findValue(&req, "nodeid");
 			if ((hwid.empty()) || (nodeid.empty()))
@@ -1294,14 +1266,8 @@ namespace http {
 			pHardware->RemoveNode(NodeID);
 		}
 
-		void CWebServer::Cmd_PanasonicClearNodes(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_PanasonicClearNodes(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid.empty())
 				return;
