@@ -4844,6 +4844,27 @@ namespace http
 						root["result"][ii]["Settings"] = Json::objectValue;
 					}
 
+					if (session.rights != URIGHTS_ADMIN)
+					{
+						// Non-admin callers (dashboard widgets, the Panasonic remote) only need to know which
+						// hardware exists; credentials, addresses and plugin configuration stay admin only.
+						Json::Value& hw = root["result"][ii];
+						hw["Username"] = "";
+						hw["Password"] = "";
+						hw["Address"] = "";
+						hw["Port"] = 0;
+						hw["SerialPort"] = "";
+						if (hType != HTYPE_PanasonicTV) // holds the custom remote button layout
+							hw["Extra"] = "";
+						if (hType == HTYPE_PythonPlugin)
+						{
+							for (const char* szMode : { "Mode1", "Mode2", "Mode3", "Mode4", "Mode5", "Mode6" })
+								hw[szMode] = "";
+						}
+						hw["Settings"] = Json::objectValue;
+						hw.removeMember("SettingsPwdSet");
+					}
+
 					CDomoticzHardwareBase* pHardware = m_mainworker.GetHardware(atoi(sd[0].c_str()));
 					if (pHardware != nullptr)
 					{
