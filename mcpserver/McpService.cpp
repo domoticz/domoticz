@@ -605,7 +605,13 @@ namespace http
 			}
 			else if (sReqMethod == "resources/read")
 			{
-				mcp::McpResourcesRead(jsonRequest, jsonRPCRep);
+				if ((session.rights != http::server::URIGHTS_ADMIN) && mcp::McpIsAdminResource(jsonRequest))
+				{
+					jsonRPCRep["error"]["code"] = mcp::MCP_PERMISSION_DENIED;
+					jsonRPCRep["error"]["message"] = "Admin rights required for this resource";
+				}
+				else
+					mcp::McpResourcesRead(jsonRequest, jsonRPCRep);
 			}
 			else if (sReqMethod == "prompts/list")
 			{
@@ -1402,16 +1408,21 @@ namespace mcp		// Model Context Protocol
 			"rename_device", "delete_device", "hide_device",
 			"add_user_variable", "update_user_variable", "delete_user_variable",
 			"create_event", "update_event", "delete_event",
-			"update_device_value", "set_security_status"
+			"update_device_value", "set_security_status",
+			// reads that expose scripts, credentials, configuration or accounts
+			"get_events", "get_event", "get_user_variables", "get_hardware",
+			"get_settings", "get_users", "get_logging"
 		};
 
-		if (kAdminTools.count(sMethodName) && session.rights < http::server::URIGHTS_ADMIN)
+		const bool bIsAdmin = (session.rights == http::server::URIGHTS_ADMIN);
+		const bool bIsSwitcher = bIsAdmin || (session.rights == http::server::URIGHTS_SWITCHER);
+		if (kAdminTools.count(sMethodName) && !bIsAdmin)
 		{
 			jsonRPCRep["error"]["code"] = mcp::MCP_PERMISSION_DENIED;
 			jsonRPCRep["error"]["message"] = "Admin rights required for: " + sMethodName;
 			return;
 		}
-		if (kSwitcherTools.count(sMethodName) && session.rights < http::server::URIGHTS_SWITCHER)
+		if (kSwitcherTools.count(sMethodName) && !bIsSwitcher)
 		{
 			jsonRPCRep["error"]["code"] = mcp::MCP_PERMISSION_DENIED;
 			jsonRPCRep["error"]["message"] = "Switcher rights required for: " + sMethodName;
@@ -1678,6 +1689,23 @@ namespace mcp		// Model Context Protocol
 		{ 1009, "Thermostat (Temp/Hum/Baro/Setpoint)",            73,  3  },  // pTypeThermostat6 / sTypeThermostat6TempHumBaro
 		{ 0,    nullptr,                                          0,   0  }   // sentinel
 	};
+
+	bool McpIsAdminResource(const Json::Value &jsonRequest)
+	{
+		if (!jsonRequest.isMember("params") || !jsonRequest["params"].isMember("uri"))
+			return false;
+		const std::string sReadURI = jsonRequest["params"]["uri"].asString();
+		if (sReadURI.substr(0, 11) != "domoticz://")
+			return false;
+		const std::string sPath = sReadURI.substr(11);
+		const std::string sResourceType = sPath.substr(0, sPath.find('/'));
+		// Same scope as the admin-only JSON commands and MCP tools that expose this data
+		static const std::unordered_set<std::string> kAdminResources = {
+			"user-variables", "user-variable", "events", "event", "settings",
+			"log", "hardware", "notifications"
+		};
+		return kAdminResources.count(sResourceType) > 0;
+	}
 
 	void McpResourcesRead(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{

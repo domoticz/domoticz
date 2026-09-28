@@ -30,6 +30,8 @@ namespace mcp
 	void McpResourcesList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	void McpResourcesTemplatesList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	void McpResourcesRead(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	// True when the resources/read request targets a resource only an admin may read
+	bool McpIsAdminResource(const Json::Value &jsonRequest);
 	void McpPromptsList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	void McpPromptsGet(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	void McpCompletionComplete(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
