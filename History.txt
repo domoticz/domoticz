@@ -1,4 +1,4 @@
-Version 2026.xxxx
+Version 2026.4
 This release contains important security fixes in the web server, the API and the MCP server, upgrading is strongly recommended. Scripts or apps that call the API with a Viewer or User account should check the Security lines below: several commands now require higher rights.
 - Added: Applications, OAuth2 redirect URIs can now be registered per application under Setup - Applications; leaving the list empty keeps the current behaviour of accepting any valid redirect URI, so existing account linking is unaffected until the list is filled in
 - Added: Cameras, a camera can be linked to a device with 'When: Never', so the device shows the camera button without a notification ever being sent (#5617)
