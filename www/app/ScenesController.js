@@ -289,8 +289,8 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 		RefreshActivators = function () {
 			$element.find('#delclract #removecode').attr("class", "btnstyle3-dis");
 
-			var oTable = $element.find('#scenedactivationtable').dataTable();
-			oTable.fnClearTable();
+			var oTable = $element.find('#scenedactivationtable').DataTable();
+			oTable.clear().draw();
 
 			$.ajax({
 				url: "json.htm?type=command&param=getsceneactivations&idx=" + SceneIdx,
@@ -300,13 +300,13 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 
 					if (typeof data.result != 'undefined') {
 						$.each(data.result, function (i, item) {
-							var addId = oTable.fnAddData({
+							oTable.row.add({
 								"DT_RowId": item.idx,
 								"code": item.code,
 								"0": item.idx,
 								"1": item.name,
 								"2": item.codestr
-							});
+							}).draw();
 						});
 					}
 				}
@@ -319,14 +319,14 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 					$element.find('#delclract #removecode').attr("class", "btnstyle3-dis");
 				}
 				else {
-					var oTable = $element.find('#scenedactivationtable').dataTable();
+					var oTable = $element.find('#scenedactivationtable').DataTable();
 					oTable.$('tr.row_selected').removeClass('row_selected');
 					$(this).addClass('row_selected');
 
 					$element.find('#delclract #removecode').attr("class", "btnstyle3");
 					var anSelected = fnGetSelected(oTable);
 					if (anSelected.length !== 0) {
-						var data = oTable.fnGetData(anSelected[0]);
+						var data = oTable.row(anSelected[0]).data();
 						var idx = data["DT_RowId"];
 						var code = data["code"];
 						$element.find("#delclract #removecode").attr("href", "javascript:RemoveCode(" + idx + ", " + code + ")");
@@ -343,8 +343,8 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 			$element.find('#delclr #devicedelete').attr("class", "btnstyle3-dis");
 			$element.find('#delclr #updatedelete').attr("class", "btnstyle3-dis");
 
-			var oTable = $element.find('#scenedevicestable').dataTable();
-			oTable.fnClearTable();
+			var oTable = $element.find('#scenedevicestable').DataTable();
+			oTable.clear().draw();
 
 			$.ajax({
 				url: "json.htm?type=command&param=getscenedevices&idx=" + idx + "&isscene=" + $.isScene,
@@ -416,7 +416,7 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 							}
 
 
-							var addId = oTable.fnAddData({
+							oTable.row.add({
 								"DT_RowId": item.ID,
 								"Command": item.Command,
 								"RealIdx": item.DevRealIdx,
@@ -432,7 +432,7 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 								"3": item.OnDelay,
 								"4": item.OffDelay,
 								"5": updownImg
-							});
+							}).draw();
 						});
 					}
 				}
@@ -446,7 +446,7 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 					$element.find('#delclr #updatedelete').attr("class", "btnstyle3-dis");
 				}
 				else {
-					var oTable = $element.find('#scenedevicestable').dataTable();
+					var oTable = $element.find('#scenedevicestable').DataTable();
 					oTable.$('tr.row_selected').removeClass('row_selected');
 					$(this).addClass('row_selected');
 
@@ -457,7 +457,7 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 
 					var anSelected = fnGetSelected(oTable);
 					if (anSelected.length !== 0) {
-						var data = oTable.fnGetData(anSelected[0]);
+						var data = oTable.row(anSelected[0]).data();
 						var idx = data["DT_RowId"];
 						var devidx = data["RealIdx"];
 						$element.find("#delclr #devicedelete").attr("href", "javascript:DeleteDevice(" + idx + ")");
@@ -636,10 +636,7 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 			}
 
 			$element.find('#scenedevicestable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"aoColumnDefs": [
 					{ "bSortable": false, "aTargets": [1] }
 				],
@@ -653,10 +650,7 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 				language: $.DataTableLanguage
 			});
 			$element.find('#scenedactivationtable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"aoColumnDefs": [
 					{ "bSortable": false, "aTargets": [1] }
 				],

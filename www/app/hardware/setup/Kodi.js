@@ -134,8 +134,8 @@ define(['app'], function (app) {
             $('#hardwarecontent #kodinodeparamstable #nodeip').val('');
             $('#hardwarecontent #kodinodeparamstable #nodeport').val('9090');
 
-            var oTable = $('#kodinodestable').dataTable();
-            oTable.fnClearTable();
+            var oTable = $('#kodinodestable').DataTable();
+            oTable.clear().draw();
 
             $.ajax({
                 url: 'json.htm?type=command&param=kodigetnodes&idx=' + $.devIdx,
@@ -144,7 +144,7 @@ define(['app'], function (app) {
                 success: function (data) {
                     if (typeof data.result != 'undefined') {
                         $.each(data.result, function (i, item) {
-                            var addId = oTable.fnAddData({
+                            oTable.row.add({
                                 'DT_RowId': item.idx,
                                 'Name': item.Name,
                                 'IP': item.IP,
@@ -152,7 +152,7 @@ define(['app'], function (app) {
                                 '1': item.Name,
                                 '2': item.IP,
                                 '3': item.Port
-                            });
+                            }).draw();
                         });
                     }
                 }
@@ -170,13 +170,13 @@ define(['app'], function (app) {
                     $('#hardwarecontent #kodinodeparamstable #nodeport').val('9090');
                 }
                 else {
-                    var oTable = $('#kodinodestable').dataTable();
+                    var oTable = $('#kodinodestable').DataTable();
                     oTable.$('tr.row_selected').removeClass('row_selected');
                     $(this).addClass('row_selected');
                     $('#updelclr #nodeupdate').attr('class', 'btnstyle3');
                     var anSelected = fnGetSelected(oTable);
                     if (anSelected.length !== 0) {
-                        var data = oTable.fnGetData(anSelected[0]);
+                        var data = oTable.row(anSelected[0]).data();
                         var idx = data['DT_RowId'];
                         $('#updelclr #nodeupdate').attr('href', 'javascript:KodiUpdateNode(' + idx + ')');
                         $('#updelclr #nodedelete').attr('class', 'btnstyle3');
@@ -221,10 +221,7 @@ define(['app'], function (app) {
             $('#hardwarecontent #kodisettingstable #pingtimeout').val(Mode2);
 
             var oTable = $('#kodinodestable').dataTable({
-                'sDom': '<"H"lfrC>t<"F"ip>',
-                'oTableTools': {
-                    'sRowSelect': 'single',
-                },
+                'sDom': '<"H"lfr>t<"F"ip>',
                 'aaSorting': [[0, 'desc']],
                 'bSortClasses': false,
                 'bProcessing': true,

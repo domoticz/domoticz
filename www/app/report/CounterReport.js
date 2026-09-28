@@ -353,7 +353,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             var table = $element.find('#reporttable');
             // Destroy existing DataTable instance if present
             if ($.fn.dataTable.isDataTable(table)) {
-                table.dataTable().api().destroy();
+                table.DataTable().destroy();
                 table.empty();
             }
             var columns = [];
@@ -442,7 +442,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
             });
 
             table.dataTable(Object.assign({}, dataTableDefaultSettings, {
-                sDom: '<"H"rC>t<"F">',
+                dom: '<"H"r>t<"F">',
                 columns: columns,
                 pageLength: 50,
                 order: [[0, 'asc']],
@@ -451,7 +451,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 }
             }));
 
-            table.dataTable().api().rows
+            table.DataTable().rows
                 .add(data.items)
                 .draw();
 

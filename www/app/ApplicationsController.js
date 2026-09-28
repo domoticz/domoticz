@@ -120,8 +120,8 @@ define(['app'], function (app) {
 			$('#applicationupdate').hide();
 			$('#applicationdelete').hide();
 
-			var oTable = $('#applicationtable').dataTable();
-			oTable.fnClearTable();
+			var oTable = $('#applicationtable').DataTable();
+			oTable.clear().draw();
 			$.ajax({
 				url: "json.htm?type=command&param=getapplications",
 				async: false,
@@ -138,7 +138,7 @@ define(['app'], function (app) {
 							if (item.Public == "true") {
 								publicstr = $.t('Yes');
 							}
-							var addId = oTable.fnAddData({
+							oTable.row.add({
 								"DT_RowId": item.idx,
 								"Enabled": item.Enabled,
 								"Applicationname": item.Applicationname,
@@ -153,7 +153,7 @@ define(['app'], function (app) {
 								"1": item.Applicationname,
 								"2": publicstr,
 								"3": item.LastSeen
-							});
+							}).draw();
 					});
 					}
 				}
@@ -170,14 +170,14 @@ define(['app'], function (app) {
 					$('#applicationdelete').hide();
 				}
 				else {
-					var oTable = $('#applicationtable').dataTable();
+					var oTable = $('#applicationtable').DataTable();
 					oTable.$('tr.row_selected').removeClass('row_selected');
 					$(this).addClass('row_selected');
 					$('#applicationupdate').show();
 					$('#applicationdelete').show();
 					var anSelected = fnGetSelected(oTable);
 					if (anSelected.length !== 0) {
-						var data = oTable.fnGetData(anSelected[0]);
+						var data = oTable.row(anSelected[0]).data();
 						var idx = data["DT_RowId"];
 						$.devIdx = idx;
 						$("#applicationupdate").attr("href", "javascript:UpdateApplication(" + idx + ")");
@@ -211,10 +211,7 @@ define(['app'], function (app) {
 			$('#applicationcontent').i18n();
 
 			oTable = $('#applicationtable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"aoColumnDefs": [
 					{ "bSortable": false, "aTargets": [0] }
 				],

@@ -78,6 +78,7 @@
 #include "../hardware/MySensorsBase.h"
 #include "../hardware/OTGWBase.h"
 #include "../hardware/EnphaseAPI.h"
+#include "../hardware/SolarEdgeAPI.h"
 #include "../hardware/AlfenEve.h"
 #include "../hardware/Matter.h"
 #include "../hardware/RFLinkBase.h"
@@ -4868,6 +4869,11 @@ namespace http
 						else if (pHardware->HwdType == HTYPE_EnphaseAPI)
 						{
 							EnphaseAPI* pMyHardware = dynamic_cast<EnphaseAPI*>(pHardware);
+							root["result"][ii]["version"] = pMyHardware->m_szSoftwareVersion;
+						}
+						else if (pHardware->HwdType == HTYPE_SolarEdgeAPI)
+						{
+							SolarEdgeAPI* pMyHardware = dynamic_cast<SolarEdgeAPI*>(pHardware);
 							root["result"][ii]["version"] = pMyHardware->m_szSoftwareVersion;
 						}
 						else if (pHardware->HwdType == HTYPE_AlfenEveCharger)

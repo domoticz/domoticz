@@ -4447,12 +4447,12 @@ input[type="submit"].btn.btn-mini {
 }
 
 .modal-header {
-  padding: 9px 15px;
+  padding: 18px 15px;
   border-bottom: 1px solid #eee;
 }
 
 .modal-header .close {
-  margin-top: 2px;
+  margin-top: -12px;
 }
 
 .modal-header h3 {

@@ -14,10 +14,7 @@ define(['app'], function (app) {
             $.devIdx = $ctrl.hardware.idx;
 
             $('#mysensorsnodestable').dataTable({
-                "sDom": '<"H"lfrC>t<"F"ip>',
-                "oTableTools": {
-                    "sRowSelect": "single"
-                },
+                "sDom": '<"H"lfr>t<"F"ip>',
                 "aaSorting": [[0, "asc"]],
                 "bSortClasses": false,
                 "bProcessing": true,
@@ -29,10 +26,7 @@ define(['app'], function (app) {
                 language: $.DataTableLanguage
             });
             $('#mysensorsactivetable').dataTable({
-                "sDom": '<"H"lfrC>t<"F"ip>',
-                "oTableTools": {
-                    "sRowSelect": "single"
-                },
+                "sDom": '<"H"lfr>t<"F"ip>',
                 "aaSorting": [[0, "asc"]],
                 "bSortClasses": false,
                 "bProcessing": true,
@@ -146,8 +140,8 @@ define(['app'], function (app) {
         MySensorsRefreshActiveDevicesTable = function () {
             //$('#plancontent #delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
             $('#hardwarecontent #trChildSettings').hide();
-            var oTable = $('#mysensorsactivetable').dataTable();
-            oTable.fnClearTable();
+            var oTable = $('#mysensorsactivetable').DataTable();
+            oTable.clear().draw();
             if ($.nodeid == -1) {
                 return;
             }
@@ -161,7 +155,7 @@ define(['app'], function (app) {
                     if (typeof data.result != 'undefined') {
                         var totalItems = data.result.length;
                         $.each(data.result, function (i, item) {
-                            var addId = oTable.fnAddData({
+                            oTable.row.add({
                                 "DT_RowId": item.child_id,
                                 "AckEnabled": item.use_ack,
                                 "AckTimeout": item.ack_timeout,
@@ -172,7 +166,7 @@ define(['app'], function (app) {
                                 "4": item.use_ack,
                                 "5": item.ack_timeout,
                                 "6": item.LastReceived
-                            });
+                            }).draw();
                         });
                     }
                 }
@@ -187,7 +181,7 @@ define(['app'], function (app) {
                     $('#hardwarecontent #trChildSettings').hide();
                 }
                 else {
-                    var oTable = $('#mysensorsactivetable').dataTable();
+                    var oTable = $('#mysensorsactivetable').DataTable();
                     oTable.$('tr.row_selected').removeClass('row_selected');
                     $(this).addClass('row_selected');
                     $('#activedevicedelete').attr("class", "btnstyle3");
@@ -195,7 +189,7 @@ define(['app'], function (app) {
                     $('#hardwarecontent #trChildSettings').show();
                     var anSelected = fnGetSelected(oTable);
                     if (anSelected.length !== 0) {
-                        var data = oTable.fnGetData(anSelected[0]);
+                        var data = oTable.row(anSelected[0]).data();
                         var idx = data["DT_RowId"];
                         $('#hardwarecontent #mchildsettings #Ack').prop('checked', (data["AckEnabled"] == "true"));
                         $('#hardwarecontent #mchildsettings #AckTimeout').val(data["AckTimeout"]);
@@ -212,8 +206,8 @@ define(['app'], function (app) {
             $('#hardwarecontent #trChildSettings').hide();
             $('#updelclr #trNodeSettings').hide();
             $('#modal').show();
-            var oTable = $('#mysensorsnodestable').dataTable();
-            oTable.fnClearTable();
+            var oTable = $('#mysensorsnodestable').DataTable();
+            oTable.clear().draw();
             $.nodeid = -1;
             $.ajax({
                 url: "json.htm?type=command&param=mysensorsgetnodes&idx=" + $.devIdx,
@@ -222,7 +216,7 @@ define(['app'], function (app) {
                 success: function (data) {
                     if (typeof data.result != 'undefined') {
                         $.each(data.result, function (i, item) {
-                            var addId = oTable.fnAddData({
+                            oTable.row.add({
                                 "DT_RowId": item.idx,
                                 "Name": item.Name,
                                 "SketchName": item.SketchName,
@@ -233,7 +227,7 @@ define(['app'], function (app) {
                                 "3": item.Version,
                                 "4": item.Childs,
                                 "5": item.LastReceived
-                            });
+                            }).draw();
                         });
                     }
                 }
@@ -249,12 +243,12 @@ define(['app'], function (app) {
                     $(this).removeClass('row_selected');
                 }
                 else {
-                    var oTable = $('#mysensorsnodestable').dataTable();
+                    var oTable = $('#mysensorsnodestable').DataTable();
                     oTable.$('tr.row_selected').removeClass('row_selected');
                     $(this).addClass('row_selected');
                     var anSelected = fnGetSelected(oTable);
                     if (anSelected.length !== 0) {
-                        var data = oTable.fnGetData(anSelected[0]);
+                        var data = oTable.row(anSelected[0]).data();
                         var idx = data["DT_RowId"];
                         $('#updelclr #nodedelete').attr("class", "btnstyle3");
                         $('#updelclr #nodeupdate').attr("class", "btnstyle3");

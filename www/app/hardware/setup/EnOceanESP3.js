@@ -29,10 +29,7 @@ define(['app'], function (app) {
 
 			// Prepare EnOcean Nodes table
 			var oTable = $("#nodestable").dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"aaSorting": [[0, "asc"]],
 				"bSortClasses": false,
 				"bProcessing": true,
@@ -126,8 +123,8 @@ define(['app'], function (app) {
 			$("#modal").show();
 
 			// Get EnOcean Nodes and initialize Nodes table rows
-			var oTable = $("#nodestable").dataTable();
-			oTable.fnClearTable();
+			var oTable = $("#nodestable").DataTable();
+			oTable.clear().draw();
 			$.ajax({
 				url: "json.htm?type=command&param=esp3getnodes&hwdid=" + $.esp3hwdid,
 				async: false,
@@ -154,7 +151,7 @@ define(['app'], function (app) {
 							else if (node.state === "Sleeping")
 								state = '<i class="fa-solid fa-moon dz-chrome-icon"></i>';
 	
-							oTable.fnAddData({
+							oTable.row.add({
 								"nodeid": node.nodeid,
 								"name": node.name,
 								"manufacturerid": node.manufacturerid,
@@ -172,7 +169,7 @@ define(['app'], function (app) {
 								"7": node.batterylevel,
 								"8": state,
 								"9": node.lastupdate,
-							});
+							}).draw();
 						});
 					}
 				},
@@ -188,13 +185,13 @@ define(['app'], function (app) {
 					ResetNodeParameters();
 				} else {
 					// No row is selected : select current row
-					var oTable = $("#nodestable").dataTable();
+					var oTable = $("#nodestable").DataTable();
 					oTable.$("tr.row_selected").removeClass("row_selected");
 					$(this).addClass("row_selected");
 
 					var selectedrow = fnGetSelected(oTable);
 					if (selectedrow.length !== 0) {
-						var data = oTable.fnGetData(selectedrow[0]);
+						var data = oTable.row(selectedrow[0]).data();
 
 						// Set values of node parameter controls					
 						RefreshNodeParameters(
