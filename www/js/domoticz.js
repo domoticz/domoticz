@@ -1557,15 +1557,13 @@ function ShowMediaRemote(Name, devIdx, HWType) {
 													var buttonSVG = "";
 													bindex++;
 													bx = $(svgId).prop("viewBox").baseVal.x + index * (bwidth+bspacing);
-													// Button shadow
-													buttonSVG += '<rect id="toto" class="remoteshadow" x="'+bx+'" y="'+(bvline+10)+'" width="'+bwidth+'" height="'+bheight+'" rx="50" ry="50"></rect>';
-													// Button 
+													// Button
 													buttonSVG += '<rect class="remotehoverable" fill="url(#grad1)" x="'+bx+'" y="'+(bvline)+'" width="'+bwidth+'" height="'+bheight+'"  rx="50" ry="50" ';
 													buttonSVG += 'onclick="javascript: click_media_remote(\'' + bcommand + '\');" ';
 													buttonSVG += '><title id="dialog-media-remote-opt1-title">' + btitle + '</title></rect>';
 													// Button text
 													buttonSVG += '<text text-anchor="middle" x="'+(bx+bwidth/2)+'" y="'+(bvline+bheight*0.55)+'" class="remotetext" ';
-													buttonSVG += 'fill="black"  style="font-size: 60px; font-weight: bold;">' + btitle + '</text>';
+													buttonSVG += 'style="font-size: 60px; font-weight: bold;">' + btitle + '</text>';
 													// Add button
 													$("#MediaRemote-custom-buttons").append(buttonSVG);
 												});
