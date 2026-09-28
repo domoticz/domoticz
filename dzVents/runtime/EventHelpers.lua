@@ -131,6 +131,13 @@ local function EventHelpers(domoticz, mainMethod)
 				os.rename(basePath .. '.lua', basePath .. '.faulty')
 				fileStorage = loadStorageFile(basePath .. '.lua.bak')
 				if (fileStorage ~= nil) then
+					-- rewrite the main file right away, otherwise a script error or
+					-- shutdown before the next write would look like a deliberately
+					-- deleted file on the next load and reset the storage
+					local ok, writeErr = pcall(persistence.store, basePath .. '.lua', fileStorage)
+					if (not ok) then
+						utils.log('Could not restore the datamodule "' .. basePath .. '.lua": ' .. tostring(writeErr), utils.LOG_ERROR)
+					end
 					utils.log('Restored the storage data for "' .. module .. '" from the backup file', utils.LOG_FORCE)
 				end
 			end

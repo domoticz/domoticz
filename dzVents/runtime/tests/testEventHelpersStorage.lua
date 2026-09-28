@@ -385,9 +385,15 @@ describe('event helper storage', function()
 			assert.is_same(42, recovered.x)
 			assert.is_same('important', recovered.a)
 
-			-- the broken file was preserved for inspection and removed
+			-- the broken file was preserved for inspection
 			assert.is_true(utils.fileExists('./data/' .. moduleName .. '.faulty'))
-			assert.is_false(utils.fileExists(dataPath))
+
+			-- the main file was restored from the backup, so the data survives
+			-- even when nothing is written before the next load
+			assert.is_true(utils.fileExists(dataPath))
+			local again = helpers.getStorageContext(def, moduleName)
+			assert.is_same(42, again.x)
+			assert.is_same('important', again.a)
 		end)
 
 		it('should recover from a garbage data file using the backup', function()
