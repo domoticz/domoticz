@@ -2273,24 +2273,35 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	return ret;
 }
 
-std::string CEventSystem::ParseBlocklyString(const std::string &oString)
+std::string CEventSystem::ParseBlocklyString(const std::string &oString, const bool bForShell)
 {
 	std::string retString = oString;
+	size_t searchPos = 0;
 
 	while (true)
 	{
 		size_t pos1, pos2;
-		pos1 = retString.find("{{");
+		pos1 = retString.find("{{", searchPos);
 		if (pos1 == std::string::npos)
 			return retString;
-		pos2 = retString.find("}}");
+		pos2 = retString.find("}}", pos1 + 2);
 		if (pos2 == std::string::npos)
 			return retString;
 		std::string part_left = retString.substr(0, pos1);
 		std::string part_middle = retString.substr(pos1 + 2, pos2 - pos1 - 2);
 		std::string part_right = retString.substr(pos2 + 2);
 		part_middle = ProcessVariableArgument(part_middle);
+		if (bForShell)
+		{
+			// Device and variable values can be set by non-admin users or external feeds, so they
+			// must not be able to add shell syntax to the command line of a started script.
+			part_middle.erase(std::remove_if(part_middle.begin(), part_middle.end(),
+				[](const char c) { return (strchr(";&|`$<>()\\\"'\r\n", c) != nullptr) || (c == 0); }),
+				part_middle.end());
+		}
 		retString = part_left + part_middle + part_right;
+		// continue after the inserted value, a value containing "{{...}}" is not expanded again
+		searchPos = part_left.size() + part_middle.size();
 	}
 
 	return retString;
@@ -2531,7 +2542,7 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 			{
 				sPath = sPath.substr(0, tpos);
 				sParam = doWhat.substr(tpos + 1);
-				sParam = ParseBlocklyString(sParam);
+				sParam = ParseBlocklyString(sParam, true);
 			}
 #if !defined WIN32
 			if (sPath.find('/') != 0)

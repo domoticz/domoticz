@@ -44,7 +44,7 @@
 #include "../hardware/GpioPin.h"
 #endif // WITH_GPIO
 
-constexpr inline std::array<std::string_view,16> sViewerCommands = {
+constexpr inline std::array<std::string_view,15> sViewerCommands = {
 	"getsubdevices",
 	"getscenedevices",
 	"getmanualhardware",
@@ -53,7 +53,6 @@ constexpr inline std::array<std::string_view,16> sViewerCommands = {
 	"getlightswitches",
 	"getlightswitchesscenes",
 	"getcamactivedevices",
-	"resetsecuritystatus",
 	"verifypasscode",
 	"getSunRiseSet",
 	"getServerTime",
@@ -62,7 +61,8 @@ constexpr inline std::array<std::string_view,16> sViewerCommands = {
 	"getfloorplanimages",
 	"getfloorplanplans"
 };
-constexpr inline std::array<std::string_view,30> sAdminCommands = {
+constexpr inline std::array<std::string_view,31> sAdminCommands = {
+	"resetsecuritystatus",
 	"deleteallsubdevices",
 	"deletesubdevice",
 	"addsubdevice",
