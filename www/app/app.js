@@ -659,6 +659,10 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						if (items.length > 0) {
 							var $custommenuLi = $(".clcustommenu");
 							var $custommenuToggle = $custommenuLi.find('> a');
+							// the config is reloaded after a logout/login without a page refresh, reset the toggle first
+							$custommenuToggle.find('b.caret').remove();
+							$custommenuLi.removeClass('dropdown');
+							$custommenuToggle.removeClass('dropdown-toggle').removeAttr('data-toggle');
 							if (items.length === 1) {
 								var item = items[0];
 								$custommenuToggle.attr('href', item.href);
