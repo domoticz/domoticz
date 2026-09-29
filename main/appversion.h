@@ -3,7 +3,7 @@
 
 // Define BUILD_MASTER for stable (master) channel builds.
 // Normally set by the build system (CMake: -DBUILD_MASTER=ON); uncomment to force locally.
-#define BUILD_MASTER
+//#define BUILD_MASTER
 
 #define VERSION_MAJOR               2026
 #define VERSION_MINOR               4
