@@ -128,17 +128,38 @@ local function EventHelpers(domoticz, mainMethod)
 				-- inspection and fall back to the last good backup
 				utils.log('There was an issue reading the datamodule "' .. basePath .. '.lua": ' .. tostring(err), utils.LOG_ERROR)
 				os.remove(basePath .. '.faulty')
-				os.rename(basePath .. '.lua', basePath .. '.faulty')
+				local moved, moveErr = os.rename(basePath .. '.lua', basePath .. '.faulty')
+				if (not moved) then
+					utils.log('Could not move the datamodule "' .. basePath .. '.lua" aside: ' .. tostring(moveErr), utils.LOG_ERROR)
+				end
 				fileStorage = loadStorageFile(basePath .. '.lua.bak')
 				if (fileStorage ~= nil) then
 					-- rewrite the main file right away, otherwise a script error or
 					-- shutdown before the next write would look like a deliberately
-					-- deleted file on the next load and reset the storage
-					local ok, writeErr = pcall(persistence.store, basePath .. '.lua', fileStorage)
-					if (not ok) then
+					-- deleted file on the next load and reset the storage.
+					-- The backup is copied as is instead of going through
+					-- persistence.store: that would first copy a corrupt main file that
+					-- could not be moved aside over the .bak, destroying the good copy.
+					-- The .bak is never written here, so an interrupted copy just
+					-- recovers from it again on the next load.
+					local restored, writeErr = false, nil
+					local bak = io.open(basePath .. '.lua.bak', 'rb')
+					if (bak ~= nil) then
+						local content = bak:read('*a')
+						bak:close()
+						local main
+						main, writeErr = io.open(basePath .. '.lua', 'wb')
+						if (main ~= nil) then
+							main:write(content)
+							main:close()
+							restored = true
+						end
+					end
+					if (restored) then
+						utils.log('Restored the storage data for "' .. module .. '" from the backup file', utils.LOG_FORCE)
+					else
 						utils.log('Could not restore the datamodule "' .. basePath .. '.lua": ' .. tostring(writeErr), utils.LOG_ERROR)
 					end
-					utils.log('Restored the storage data for "' .. module .. '" from the backup file', utils.LOG_FORCE)
 				end
 			end
 			package.loaded[module] = nil -- no caching
