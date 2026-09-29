@@ -29,13 +29,9 @@ namespace
 	constexpr auto kMinRefreshInterval = std::chrono::seconds(1);
 	constexpr auto kMaxRefreshInterval = std::chrono::seconds(30);
 
-	// How long a request waits for the very first frame of a camera that has nothing cached
-	// yet, so the first page load still shows a picture. A camera that has already failed
-	// carries a backoff deadline and returns immediately instead of waiting again.
-	constexpr auto kFirstFrameWait = std::chrono::seconds(3);
-
-	// How many cameras are fetched at the same time, so one slow camera does not hold up
-	// the refresh of the others.
+	// How many cameras are fetched at the same time. Each fetch thread picks the next due
+	// camera on its own, so one slow camera only ever occupies a single thread and never
+	// holds up the refresh of the others.
 	constexpr size_t kMaxParallelFetches = 4;
 
 	// Backoff after a failed fetch: 5s, 10s, 20s, 40s, capped at 60s.
@@ -58,21 +54,25 @@ CCameraHandler::CCameraHandler()
 void CCameraHandler::Start()
 {
 	m_stoprequested = false;
-	m_snapshot_thread = std::make_shared<std::thread>([this] { Do_Work(); });
-	SetThreadName(m_snapshot_thread->native_handle(), "CameraSnapshot");
+	for (size_t ii = 0; ii < kMaxParallelFetches; ii++)
+	{
+		m_snapshot_threads.emplace_back([this] { Do_Work(); });
+		SetThreadName(m_snapshot_threads.back().native_handle(), "CameraSnapshot");
+	}
 }
 
 void CCameraHandler::Stop()
 {
-	if (!m_snapshot_thread)
+	if (m_snapshot_threads.empty())
 		return;
 	{
 		std::lock_guard<std::mutex> l(m_snapshot_mutex);
 		m_stoprequested = true;
 	}
 	m_snapshot_cond.notify_all();
-	m_snapshot_thread->join();
-	m_snapshot_thread.reset();
+	for (auto &worker : m_snapshot_threads)
+		worker.join();
+	m_snapshot_threads.clear();
 }
 
 bool CCameraHandler::IsSnapshotDue(const snapshotCache &cache, clock_t::time_point now) const
@@ -88,7 +88,17 @@ bool CCameraHandler::IsSnapshotDue(const snapshotCache &cache, clock_t::time_poi
 	return (now - cache.ImageTime) >= cache.RequestInterval;
 }
 
-void CCameraHandler::FetchSnapshot(const uint64_t CamID)
+void CCameraHandler::ResetSnapshot(snapshotCache &cache)
+{
+	cache.Image.clear();
+	cache.HaveImage = false;
+	cache.Fetching = false;
+	cache.FailCount = 0;
+	cache.RetryAfter = clock_t::time_point();
+	cache.Generation = ++m_snapshot_generation;
+}
+
+void CCameraHandler::FetchSnapshot(const uint64_t CamID, const uint64_t Generation)
 {
 	std::vector<unsigned char> camimage;
 	bool bOk = TakeSnapshot(CamID, camimage) && !camimage.empty();
@@ -97,10 +107,11 @@ void CCameraHandler::FetchSnapshot(const uint64_t CamID)
 	auto itt = m_snapshots.find(CamID);
 	if (itt == m_snapshots.end())
 		return; // camera was removed while we were fetching
+	if (itt->second.Generation != Generation)
+		return; // camera settings changed while we were fetching, the result is stale
 
 	snapshotCache &cache = itt->second;
 	cache.Fetching = false;
-	cache.Tried = true;
 
 	auto now = clock_t::now();
 	if (bOk)
@@ -120,38 +131,31 @@ void CCameraHandler::FetchSnapshot(const uint64_t CamID)
 	m_snapshot_cond.notify_all();
 }
 
+// Runs on each of the kMaxParallelFetches snapshot threads. Every thread claims one due
+// camera at a time, so a camera that hangs until the network timeout only blocks the thread
+// that is fetching it while the other threads keep serving the remaining cameras.
 void CCameraHandler::Do_Work()
 {
+	std::unique_lock<std::mutex> l(m_snapshot_mutex);
 	while (!m_stoprequested)
 	{
-		std::vector<uint64_t> due;
+		auto now = clock_t::now();
+		auto itt = std::find_if(m_snapshots.begin(), m_snapshots.end(),
+					[this, now](const std::pair<const uint64_t, snapshotCache> &snapshot) { return IsSnapshotDue(snapshot.second, now); });
+		if (itt == m_snapshots.end())
 		{
-			std::unique_lock<std::mutex> l(m_snapshot_mutex);
-			m_snapshot_cond.wait_for(l, std::chrono::milliseconds(500),
-						 [this] { return m_stoprequested.load() || m_wake_worker; });
-			m_wake_worker = false;
-			if (m_stoprequested)
-				break;
-
-			auto now = clock_t::now();
-			for (auto &snapshot : m_snapshots)
-			{
-				if (IsSnapshotDue(snapshot.second, now))
-				{
-					snapshot.second.Fetching = true;
-					due.push_back(snapshot.first);
-				}
-			}
+			// Woken early by GetSnapshot() when a camera without an image is asked for
+			m_snapshot_cond.wait_for(l, std::chrono::milliseconds(500));
+			continue;
 		}
 
-		for (size_t ii = 0; ii < due.size(); ii += kMaxParallelFetches)
-		{
-			std::vector<std::thread> batch;
-			for (size_t jj = ii; jj < due.size() && jj < ii + kMaxParallelFetches; jj++)
-				batch.emplace_back([this, CamID = due[jj]] { FetchSnapshot(CamID); });
-			for (auto &worker : batch)
-				worker.join();
-		}
+		itt->second.Fetching = true;
+		const uint64_t CamID = itt->first;
+		const uint64_t Generation = itt->second.Generation;
+
+		l.unlock();
+		FetchSnapshot(CamID, Generation);
+		l.lock();
 	}
 }
 
@@ -178,76 +182,48 @@ bool CCameraHandler::GetSnapshot(const uint64_t CamID, std::vector<unsigned char
 	}
 
 	auto now = clock_t::now();
-	std::unique_lock<std::mutex> l(m_snapshot_mutex);
+	std::lock_guard<std::mutex> l(m_snapshot_mutex);
 
-	// Scoped deliberately: the wait below releases the lock, and ReloadCameras() may erase
-	// this entry while it is released, so no reference into the map may outlive this block.
-	bool bWaitForFirstFrame = false;
+	auto res = m_snapshots.try_emplace(CamID);
+	snapshotCache &cache = res.first->second;
+	if (res.second)
+		cache.Generation = ++m_snapshot_generation;
+
+	// Follow the rate at which this camera is actually being asked for, so the background
+	// refresh matches the UI's poll interval instead of running at a fixed rate.
+	if (cache.LastRequest.time_since_epoch().count() != 0)
 	{
-		snapshotCache &cache = m_snapshots[CamID];
+		auto gap = now - cache.LastRequest;
+		if (gap < kMinRefreshInterval)
+			gap = kMinRefreshInterval;
+		else if (gap > kMaxRefreshInterval)
+			gap = kMaxRefreshInterval;
+		cache.RequestInterval = gap;
+	}
+	cache.LastRequest = now;
 
-		// Follow the rate at which this camera is actually being asked for, so the background
-		// refresh matches the UI's poll interval instead of running at a fixed rate.
-		if (cache.LastRequest.time_since_epoch().count() != 0)
-		{
-			auto gap = now - cache.LastRequest;
-			if (gap < kMinRefreshInterval)
-				gap = kMinRefreshInterval;
-			else if (gap > kMaxRefreshInterval)
-				gap = kMaxRefreshInterval;
-			cache.RequestInterval = gap;
-		}
-		cache.LastRequest = now;
-
-		if (cache.HaveImage)
-		{
-			// Always answer from the cache, even when the frame is stale. The worker replaces
-			// it as soon as the camera responds again; blocking here is what froze the UI.
-			camimage = cache.Image;
-			return true;
-		}
-
-		m_wake_worker = true;
-		m_snapshot_cond.notify_all();
-
-		// Nothing cached yet. Wait briefly for the first frame, but only for a camera that
-		// has never been fetched, so the first page load still shows a picture. Once a
-		// camera has been tried we know whether it answers, and a failing one must never
-		// make a request wait again: that is what blocked the web server thread. Only one
-		// request waits, so a camera that is slow to answer its first frame cannot collect
-		// a queue of them either.
-		if (!cache.Tried && !cache.WaitingFirst)
-		{
-			cache.WaitingFirst = true;
-			bWaitForFirstFrame = true;
-		}
+	if (cache.HaveImage)
+	{
+		// Always answer from the cache, even when the frame is stale. The worker replaces
+		// it as soon as the camera responds again; blocking here is what froze the UI.
+		camimage = cache.Image;
+		return true;
 	}
 
-	if (bWaitForFirstFrame)
-	{
-		m_snapshot_cond.wait_for(l, kFirstFrameWait, [this, CamID] {
-			if (m_stoprequested)
-				return true;
-			auto itt = m_snapshots.find(CamID);
-			return (itt != m_snapshots.end()) && (itt->second.HaveImage || itt->second.Tried);
-		});
-		auto itw = m_snapshots.find(CamID);
-		if (itw != m_snapshots.end())
-			itw->second.WaitingFirst = false;
-	}
-
-	auto itt = m_snapshots.find(CamID);
-	if (itt == m_snapshots.end() || !itt->second.HaveImage)
-		return false;
-	camimage = itt->second.Image;
-	return true;
+	// Nothing cached yet. Wake the fetch threads and answer right away without an image:
+	// the web interface polls the snapshot again and gets the frame once it has arrived.
+	// Waiting here for the first frame would still stall the web server thread for as long
+	// as a camera that does not answer takes to time out.
+	m_snapshot_cond.notify_all();
+	return false;
 }
 
 void CCameraHandler::ReloadCameras()
 {
 	std::vector<std::string> _AddedCameras;
 	std::lock_guard<std::mutex> l(m_mutex);
-	m_cameradevices.clear();
+	std::vector<cameraDevice> oldCameras;
+	oldCameras.swap(m_cameradevices);
 	std::vector<std::vector<std::string> > result;
 
 	result = m_sql.safe_query("SELECT ID, Name, Address, Port, Username, Password, ImageURL, Protocol, AspectRatio FROM Cameras WHERE (Enabled == 1) ORDER BY ID");
@@ -277,13 +253,24 @@ void CCameraHandler::ReloadCameras()
 		ReloadCameraActiveDevices(camera);
 	}
 
-	//Drop cached snapshots of cameras that no longer exist or were disabled
+	//Drop cached snapshots of cameras that no longer exist or were disabled, and discard the
+	//image of cameras whose connection settings changed so it is not shown for the new camera
 	std::lock_guard<std::mutex> ls(m_snapshot_mutex);
 	for (auto itt = m_snapshots.begin(); itt != m_snapshots.end();)
 	{
-		bool bFound = std::any_of(m_cameradevices.begin(), m_cameradevices.end(),
+		auto itCam = std::find_if(m_cameradevices.begin(), m_cameradevices.end(),
 					  [&itt](const cameraDevice &cam) { return cam.ID == itt->first; });
-		itt = bFound ? std::next(itt) : m_snapshots.erase(itt);
+		if (itCam == m_cameradevices.end())
+		{
+			itt = m_snapshots.erase(itt);
+			continue;
+		}
+		auto itOld = std::find_if(oldCameras.begin(), oldCameras.end(),
+					  [&itt](const cameraDevice &cam) { return cam.ID == itt->first; });
+		if ((itOld == oldCameras.end()) || (itOld->Address != itCam->Address) || (itOld->Port != itCam->Port) || (itOld->Protocol != itCam->Protocol)
+		    || (itOld->ImageURL != itCam->ImageURL) || (itOld->Username != itCam->Username) || (itOld->Password != itCam->Password))
+			ResetSnapshot(itt->second);
+		++itt;
 	}
 }
 
