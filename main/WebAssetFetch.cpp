@@ -726,47 +726,78 @@ namespace WebAssetFetch
 		// the bare-string form, which carries no url() for the rewrite pass to catch.
 		std::string StripImports(const std::string& szCss)
 		{
+			static const std::string szImport = "@import";
 			std::string szOut;
 			szOut.reserve(szCss.size());
 
-			size_t iPos = 0;
-			while (true)
+			// Only an @import at rule level is an import. The same text inside a comment or a
+			// quoted string is plain content that must be kept, otherwise dropping it would cut
+			// a valid declaration short. String boundaries follow the CSS tokenizer: a backslash
+			// escapes the next character and an unescaped newline ends the string.
+			char cQuote = 0;
+			size_t iPos = 0; // start of the input that has not been copied yet
+			size_t ii = 0;
+			while (ii < szCss.size())
 			{
-				const size_t iFound = FindCaseInsensitive(szCss, "@import", iPos);
-				if (iFound == std::string::npos)
+				const char c = szCss[ii];
+				if (cQuote != 0)
 				{
-					szOut.append(szCss, iPos, std::string::npos);
-					break;
+					if (c == '\\')
+						ii++;
+					else if ((c == cQuote) || (c == '\n') || (c == '\r') || (c == '\f'))
+						cQuote = 0;
+					ii++;
+					continue;
+				}
+				if ((c == '"') || (c == '\''))
+				{
+					cQuote = c;
+					ii++;
+					continue;
+				}
+				if ((c == '/') && ((ii + 1) < szCss.size()) && (szCss[ii + 1] == '*'))
+				{
+					const size_t iEnd = szCss.find("*/", ii + 2);
+					ii = (iEnd == std::string::npos) ? szCss.size() : iEnd + 2;
+					continue;
+				}
+				if ((c != '@') || (szCss.size() - ii < szImport.size())
+				    || !std::equal(szImport.begin(), szImport.end(), szCss.begin() + ii,
+						   [](char a, char b) { return a == std::tolower(static_cast<unsigned char>(b)); }))
+				{
+					ii++;
+					continue;
 				}
 
-				const size_t iAfter = iFound + 7;
+				const size_t iAfter = ii + szImport.size();
 				const char cNext = (iAfter < szCss.size()) ? szCss[iAfter] : ' ';
 				// Do not match a longer identifier that merely starts with @import.
 				if ((isspace(static_cast<unsigned char>(cNext)) == 0) && (cNext != '"') && (cNext != '\'') && (cNext != 'u') && (cNext != 'U'))
 				{
-					szOut.append(szCss, iPos, iAfter - iPos);
-					iPos = iAfter;
+					ii = iAfter;
 					continue;
 				}
 
-				szOut.append(szCss, iPos, iFound - iPos);
+				szOut.append(szCss, iPos, ii - iPos);
 
 				// A statement at-rule, so run to its terminating semicolon, stepping over
 				// quoted sections so a ';' inside a URL cannot end it early. A '}' also
 				// stops the scan, so malformed input cannot swallow the rest of the sheet.
 				size_t iScan = iAfter;
-				char cQuote = 0;
+				char cRuleQuote = 0;
 				while (iScan < szCss.size())
 				{
-					const char c = szCss[iScan];
-					if (cQuote != 0)
+					const char cs = szCss[iScan];
+					if (cRuleQuote != 0)
 					{
-						if (c == cQuote)
-							cQuote = 0;
+						if (cs == '\\')
+							iScan++;
+						else if ((cs == cRuleQuote) || (cs == '\n') || (cs == '\r') || (cs == '\f'))
+							cRuleQuote = 0;
 					}
-					else if ((c == '"') || (c == '\''))
-						cQuote = c;
-					else if ((c == ';') || (c == '}'))
+					else if ((cs == '"') || (cs == '\''))
+						cRuleQuote = cs;
+					else if ((cs == ';') || (cs == '}'))
 						break;
 					iScan++;
 				}
@@ -775,7 +806,10 @@ namespace WebAssetFetch
 
 				_log.Log(LOG_STATUS, "%s: dropped an @import rule while storing a stylesheet", LOGTAG);
 				iPos = iScan;
+				ii = iScan;
 			}
+			if (iPos < szCss.size())
+				szOut.append(szCss, iPos, std::string::npos);
 			return szOut;
 		}
 
