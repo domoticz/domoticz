@@ -150,9 +150,13 @@ local function EventHelpers(domoticz, mainMethod)
 						local main
 						main, writeErr = io.open(basePath .. '.lua', 'wb')
 						if (main ~= nil) then
-							main:write(content)
-							main:close()
-							restored = true
+							local written
+							written, writeErr = main:write(content)
+							local closed, closeErr = main:close()
+							if (written and not closed) then
+								writeErr = closeErr
+							end
+							restored = (written ~= nil) and (closed == true)
 						end
 					end
 					if (restored) then
