@@ -797,6 +797,13 @@ namespace WebAssetFetch
 					}
 					else if ((cs == '"') || (cs == '\''))
 						cRuleQuote = cs;
+					else if ((cs == '/') && ((iScan + 1) < szCss.size()) && (szCss[iScan + 1] == '*'))
+					{
+						// a quote inside a comment must not open a string
+						const size_t iEnd = szCss.find("*/", iScan + 2);
+						iScan = (iEnd == std::string::npos) ? szCss.size() : iEnd + 2;
+						continue;
+					}
 					else if ((cs == ';') || (cs == '}'))
 						break;
 					iScan++;
