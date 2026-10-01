@@ -9878,7 +9878,7 @@ void MainWorker::decode_RFXMeter(const CDomoticzHardwareBase* pHardware, const t
 			sprintf(szTmp, "ID            = %d", (pResponse->RFXMETER.id1 * 256) + pResponse->RFXMETER.id2);
 			WriteMessage(szTmp);
 			counter = (((pResponse->RFXMETER.count2 & 0x3F) << 16) + (pResponse->RFXMETER.count3 << 8) + pResponse->RFXMETER.count4) / 1000;
-			sprintf(szTmp, "Calibrate cnt = %lu msec", counter);
+			sprintf(szTmp, "Calibrate cnt = %u msec", counter);
 			WriteMessage(szTmp);
 
 			sprintf(szTmp, "RFXPwr        = %.3f kW", 1.0F / (float(16 * counter) / (3600000.0F / 62.5F)));
