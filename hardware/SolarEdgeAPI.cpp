@@ -24,12 +24,12 @@
 #include <fstream>
 #include <regex>
 
+#ifdef _WIN32
+#define gmtime_r(timep, result) gmtime_s(result, timep)
+#endif
+
 #define SE_VOLT_DC 20
-#define SE_POWERLIMIT 21
-#define SE_GROUND_RES 22
-#define SE_INV_MODE 23
 #define SE_AC_CURRENT 24
-#define SE_DATE 25
 
 #define SE_GRID 30
 #define SE_LOAD 31
@@ -37,7 +37,6 @@
 #define SE_STORAGE_STATUS 33
 #define SE_STORAGE_POWER 34
 #define SE_STORAGE_CHARGELEVEL 35
-#define SE_STORAGE_CRITITAL 36
 
 #define SE_OVERVIEW_CURRENT 40
 #define SE_OVERVIEW_TODAY 41
@@ -67,6 +66,20 @@
 #define SE_WEB_AUTHORIZE_URL "https://login.solaredge.com/oauth2/authorize"
 #define SE_WEB_TOKEN_URL "https://login.solaredge.com/oauth2/token"
 #define SE_WEB_EXCHANGE_URL "https://monitoring.solaredge.com/services/auth/token?legacy=false"
+
+// SolarEdge Basic Monitoring API v2 (X-API-Key header, no more ?api_key= query param)
+#define SE_API_BASE_URL "https://monitoringapi.solaredge.com/v2"
+
+// Monitoring API v2 OAuth2 Site Access (used for homeowner-only accounts with no Fleet API key;
+// see developer.solaredge.com - Fleet Access is not offered to accounts without an installer profile)
+#define SE_OAUTH_TOKEN_URL "https://monitoringapi.solaredge.com/v2/oauth2/token"
+
+// SolarEdge Connect (the developer console's consent UI) - undocumented, reverse-engineered endpoints
+// used to fully automate the one-time Site Access authorization using the account's SSO login,
+// the same way the Web Portal login below already automates login.solaredge.com.
+#define SE_CONNECT_LOGIN_REQUEST_URL "https://connect.solaredge.com/services/key-manager/connect-consent/login-request"
+#define SE_CONNECT_SESSION_TOKEN_URL "https://connect.solaredge.com/services/key-manager/connect-consent/token"
+#define SE_CONNECT_APPROVE_URL_PREFIX "https://connect.solaredge.com/services/key-manager/applications/"
 
 
 #ifdef _DEBUG
@@ -152,23 +165,60 @@ namespace
 		return true;
 	}
 
-	// Scans every captured redirect hop for a Location header carrying an OAuth "code" parameter
-	std::string ExtractLocationCode(const std::vector<std::string>& vHeaderData)
+	// Scans every captured redirect hop for a Location header carrying the named query parameter
+	std::string ExtractLocationParam(const std::vector<std::string>& vHeaderData, const std::string& paramName)
 	{
 		for (const auto& line : vHeaderData)
 		{
 			if (!HeaderNameIs(line, "location:"))
 				continue;
-			size_t codePos = line.find("code=");
-			if (codePos == std::string::npos)
+			size_t paramPos = line.find(paramName);
+			if (paramPos == std::string::npos)
 				continue;
-			size_t valueStart = codePos + 5;
+			size_t valueStart = paramPos + paramName.size();
 			size_t valueEnd = line.find_first_of("&\r\n", valueStart);
 			if (valueEnd == std::string::npos)
 				return line.substr(valueStart);
 			return line.substr(valueStart, valueEnd - valueStart);
 		}
 		return "";
+	}
+
+	// Scans every captured redirect hop for a Location header carrying an OAuth "code" parameter
+	std::string ExtractLocationCode(const std::vector<std::string>& vHeaderData)
+	{
+		return ExtractLocationParam(vHeaderData, "code=");
+	}
+
+	// V2 monitoring API date-time parameters are UTC, formatted as e.g. "2026-01-01T00:00:00Z"
+	std::string FormatApiUtcTime(time_t t)
+	{
+		struct tm tmv;
+		gmtime_r(&t, &tmv);
+		char szBuf[40];
+		snprintf(szBuf, sizeof(szBuf), "%04d-%02d-%02dT%02d:%02d:%02dZ", tmv.tm_year + 1900, tmv.tm_mon + 1, tmv.tm_mday, tmv.tm_hour, tmv.tm_min, tmv.tm_sec);
+		return szBuf;
+	}
+
+	// V2 energy responses carry an explicit "unit" (WH/KWH/MWH/GWH); normalize everything to Wh
+	double ToWattHours(double value, const std::string& unit)
+	{
+		if (unit == "KWH")
+			return value * 1000.0;
+		if (unit == "MWH")
+			return value * 1000000.0;
+		if (unit == "GWH")
+			return value * 1000000000.0;
+		return value;
+	}
+
+	// V2 telemetry metrics are { unit, values: [ { timestamp, value } ] }; we only ever want the latest sample
+	double LastMetricValue(const Json::Value& metric)
+	{
+		const Json::Value& values = metric["values"];
+		if (!values.isArray() || values.empty())
+			return 0;
+		return values[values.size() - 1]["value"].asDouble();
 	}
 }
 
@@ -180,21 +230,29 @@ SolarEdgeAPI::SolarEdgeAPI(const int ID, const std::string& APIKey, const std::s
 	m_totalActivePower = 0;
 	m_totalEnergy = 0;
 
-	// Parse Extra: "web_username|site_id"
-	size_t pipePos = Extra.find('|');
-	if (pipePos != std::string::npos)
-	{
-		m_WebUsername = Extra.substr(0, pipePos);
-		m_WebSiteID = Extra.substr(pipePos + 1);
-	}
-	else
-	{
-		m_WebUsername = Extra; // No pipe, treat entire string as username
-	}
+	// Parse Extra: "web_username|site_id|client_id_b64|client_secret_b64|auth_code_b64"
+	// The last three fields are only used for OAuth2 Site Access, when no Fleet API Key is configured.
+	// web_username/site_id stay plain text (not base64) to keep reading already-deployed Hardware
+	// rows from before OAuth2 support existed; neither value can contain '|' in practice (an email
+	// address and a numeric site ID), so the split is unambiguous without encoding them too.
+	std::vector<std::string> vExtra;
+	StringSplit(Extra, "|", vExtra);
+	if (vExtra.size() > 0)
+		m_WebUsername = vExtra[0];
+	if (vExtra.size() > 1)
+		m_WebSiteID = vExtra[1];
+	if (vExtra.size() > 2)
+		m_ApiClientId = base64_decode(vExtra[2]);
+	if (vExtra.size() > 3)
+		m_ApiClientSecret = base64_decode(vExtra[3]);
+	if (vExtra.size() > 4)
+		m_ApiAuthCode = base64_decode(vExtra[4]);
+
 	m_WebPassword = Password;
 	m_bPollOptimizers = (Mode1 != 0);
 
 	LoadWebRefreshToken();
+	LoadApiRefreshToken();
 }
 
 bool SolarEdgeAPI::StartHardware()
@@ -228,24 +286,28 @@ void SolarEdgeAPI::Do_Work()
 	// Polling intervals (seconds)
 	// Layout: every 2 hours (also provides site/inverter/string/optimizer structure)
 	// Optimizer playback: every 10 minutes (1 call for all optimizers, daylight only)
+	// Energy totals (month/year/lifetime): every hour, these barely move within a 5-minute window
 	constexpr int LAYOUT_INTERVAL = 7200;         // 2 hours
 	constexpr int OPTIMIZER_DATA_INTERVAL = 600;   // 10 minutes
+	constexpr int ENERGY_TOTALS_INTERVAL = 3600;   // 1 hour
 
 	// Start counters so layout runs ~5s after startup, optimizer data ~15s after
 	int sec_counter = 295;
 	int layout_timer = LAYOUT_INTERVAL - 5;
 	int optimizer_data_timer = OPTIMIZER_DATA_INTERVAL - 15;
+	int energy_totals_timer = ENERGY_TOTALS_INTERVAL - 20;
 
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
 		layout_timer++;
 		optimizer_data_timer++;
+		energy_totals_timer++;
 
 		if (sec_counter % 12 == 0)
 			m_LastHeartbeat = mytime(nullptr);
 
-		// API-key polling (site overview, inverter telemetry, energy details, battery)
+		// API-key polling (site overview, inverter telemetry, grid/load/pv/battery)
 		if (sec_counter % 300 == 0)
 		{
 			if (m_SiteID == 0)
@@ -257,11 +319,16 @@ void SolarEdgeAPI::Do_Work()
 			}
 
 			if (!m_inverters.empty())
-				GetMeterDetails();
+				GetInverterTelemetry();
 			GetOverview();
-			GetEnergyDetails();
-			if (m_bPollBattery)
-				GetBatteryDetails();
+			GetBatteryDetails();
+		}
+
+		// API-key polling: month/year/lifetime energy totals, once an hour
+		if (m_SiteID != 0 && energy_totals_timer >= ENERGY_TOTALS_INTERVAL)
+		{
+			energy_totals_timer = 0;
+			GetSiteEnergyTotals();
 		}
 
 		bool bNowInDaylight = isDaylightWindow();
@@ -386,9 +453,345 @@ void SolarEdgeAPI::ResetPowerValues()
 	}
 }
 
+bool SolarEdgeAPI::ApiUsesOAuth() const
+{
+	return m_APIKey.empty();
+}
+
+std::string SolarEdgeAPI::BuildApiAuthHeader() const
+{
+	if (!ApiUsesOAuth())
+		return "X-API-Key: " + m_APIKey;
+	return "Authorization: Bearer " + m_ApiAccessToken;
+}
+
+std::string SolarEdgeAPI::GetApiTokenPrefKey() const
+{
+	return "SolarEdgeApiToken_" + std::to_string(m_HwdID);
+}
+
+bool SolarEdgeAPI::LoadApiRefreshToken()
+{
+	int nValue = 0;
+	std::string sValue;
+	if (!m_sql.GetPreferencesVar(GetApiTokenPrefKey(), nValue, sValue))
+		return false;
+	m_ApiRefreshToken = sValue;
+	m_ApiNextRefreshTs = nValue;
+	return !m_ApiRefreshToken.empty();
+}
+
+void SolarEdgeAPI::StoreApiRefreshToken()
+{
+	if (m_ApiRefreshToken.empty())
+		return;
+	m_sql.UpdatePreferencesVar(GetApiTokenPrefKey(), (int)m_ApiNextRefreshTs, m_ApiRefreshToken);
+}
+
+bool SolarEdgeAPI::ApiExchangeAuthCode()
+{
+	if (m_ApiClientId.empty() || m_ApiClientSecret.empty() || m_ApiAuthCode.empty())
+		return false;
+
+	// Accept either a bare authorization code, or the full (possibly unreachable) callback URL
+	// the user copied from their browser's address bar after approving access.
+	std::string code = m_ApiAuthCode;
+	size_t codePos = code.find("code=");
+	if (codePos != std::string::npos)
+	{
+		size_t valueStart = codePos + 5;
+		size_t valueEnd = code.find_first_of("&#", valueStart);
+		code = (valueEnd == std::string::npos) ? code.substr(valueStart) : code.substr(valueStart, valueEnd - valueStart);
+	}
+	if (m_WebSiteID.empty())
+	{
+		size_t sitePos = m_ApiAuthCode.find("site_id=");
+		if (sitePos != std::string::npos)
+		{
+			size_t valueStart = sitePos + 8;
+			size_t valueEnd = m_ApiAuthCode.find_first_of("&#", valueStart);
+			m_WebSiteID = (valueEnd == std::string::npos) ? m_ApiAuthCode.substr(valueStart) : m_ApiAuthCode.substr(valueStart, valueEnd - valueStart);
+		}
+	}
+
+	Json::Value body;
+	body["grant_type"] = "authorization_code";
+	body["code"] = code;
+	body["client_id"] = m_ApiClientId;
+	body["client_secret"] = m_ApiClientSecret;
+
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Content-Type: application/json");
+
+	std::string sResult;
+	std::vector<std::string> vHeaderData;
+	HTTPClient::POST(SE_OAUTH_TOKEN_URL, JSonToRawString(body), ExtraHeaders, sResult, vHeaderData, true, true);
+
+	int iStatusCode = LastHttpStatusCode(vHeaderData);
+	Debug(DEBUG_HARDWARE, "Monitoring API: OAuth code exchange status %d", iStatusCode);
+
+	Json::Value root;
+	if (iStatusCode != 200 || !ParseJSon(sResult, root) || !root.isObject() || root["access_token"].empty() || root["refresh_token"].empty())
+	{
+		Log(LOG_ERROR, "Monitoring API: Failed to exchange the authorization code for a token! Check the Client ID/Secret, and that the code hasn't already been used or expired.");
+		return false;
+	}
+
+	m_ApiAccessToken = root["access_token"].asString();
+	m_ApiRefreshToken = root["refresh_token"].asString();
+	int expiresIn = root.get("expires_in", 7200).asInt();
+	int refreshIn = (expiresIn * 2) / 3;
+	if (refreshIn < 30)
+		refreshIn = 30; // never schedule the next refresh in the past
+	m_ApiNextRefreshTs = mytime(nullptr) + refreshIn;
+	StoreApiRefreshToken();
+
+	// The authorization code is single-use; drop it from the Hardware row so we don't try to
+	// redeem it again on the next restart (it would just fail, but there's no reason to try).
+	m_ApiAuthCode.clear();
+	m_sql.safe_query("UPDATE Hardware SET Extra='%q|%q|%q|%q|' WHERE (ID == %d)", m_WebUsername.c_str(), m_WebSiteID.c_str(), base64_encode(m_ApiClientId).c_str(),
+			  base64_encode(m_ApiClientSecret).c_str(), m_HwdID);
+
+	Log(LOG_STATUS, "Monitoring API: OAuth authorization succeeded");
+	return true;
+}
+
+bool SolarEdgeAPI::ApiRefreshToken()
+{
+	if (m_ApiRefreshToken.empty() || m_ApiClientId.empty() || m_ApiClientSecret.empty())
+		return false;
+
+	Json::Value body;
+	body["grant_type"] = "refresh_token";
+	body["refresh_token"] = m_ApiRefreshToken;
+	body["client_id"] = m_ApiClientId;
+	body["client_secret"] = m_ApiClientSecret;
+
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Content-Type: application/json");
+
+	std::string sResult;
+	std::vector<std::string> vHeaderData;
+	HTTPClient::POST(SE_OAUTH_TOKEN_URL, JSonToRawString(body), ExtraHeaders, sResult, vHeaderData, true, true);
+
+	int iStatusCode = LastHttpStatusCode(vHeaderData);
+	Debug(DEBUG_HARDWARE, "Monitoring API: OAuth token refresh status %d", iStatusCode);
+
+	Json::Value root;
+	// Each refresh returns a fresh access+refresh token pair; the old refresh token is invalidated
+	if (iStatusCode != 200 || !ParseJSon(sResult, root) || !root.isObject() || root["access_token"].empty() || root["refresh_token"].empty())
+	{
+		Log(LOG_ERROR, "Monitoring API: Failed to refresh the OAuth access token! A new authorization code will be needed (see hardware settings).");
+		m_ApiAccessToken.clear();
+		m_ApiRefreshToken.clear();
+		return false;
+	}
+
+	m_ApiAccessToken = root["access_token"].asString();
+	m_ApiRefreshToken = root["refresh_token"].asString();
+	int expiresIn = root.get("expires_in", 7200).asInt();
+	int refreshIn = (expiresIn * 2) / 3;
+	if (refreshIn < 30)
+		refreshIn = 30;
+	m_ApiNextRefreshTs = mytime(nullptr) + refreshIn;
+	StoreApiRefreshToken();
+
+	Debug(DEBUG_HARDWARE, "Monitoring API: OAuth token refresh succeeded");
+	return true;
+}
+
+bool SolarEdgeAPI::ApiEnsureLoggedIn()
+{
+	if (!ApiUsesOAuth())
+		return true; // static Fleet API Key, nothing to refresh
+
+	if (!m_ApiAccessToken.empty() && (mytime(nullptr) - 15) < m_ApiNextRefreshTs)
+		return true;
+
+	if (!m_ApiRefreshToken.empty())
+	{
+		if (ApiRefreshToken())
+			return true;
+	}
+
+	if (!m_ApiAuthCode.empty())
+		return ApiExchangeAuthCode();
+
+	// No manually-pasted code: attempt a fully automatic authorization using the SolarEdge SSO
+	// login already configured for the Web Portal (same account, same credentials).
+	if (!m_WebUsername.empty() && !m_WebPassword.empty())
+		return ApiAutoAuthorize();
+
+	Log(LOG_ERROR, "Monitoring API: No Fleet API Key, no valid OAuth token, and no Web Username/Password configured for automatic authorization!");
+	return false;
+}
+
+bool SolarEdgeAPI::ApiAutoAuthorize()
+{
+	if (m_ApiClientId.empty() || m_ApiClientSecret.empty())
+		return false;
+
+	std::vector<std::string> jsonHeaders;
+	jsonHeaders.push_back("Content-Type: application/json");
+	jsonHeaders.push_back("Accept: application/json");
+
+	// Step 1: ask SolarEdge Connect for the (internal) SSO authorize URL and an opaque transaction blob
+	Json::Value reqBody;
+	reqBody["clientId"] = m_ApiClientId;
+
+	std::string sResult;
+	std::vector<std::string> vHeaderData;
+	HTTPClient::POST(SE_CONNECT_LOGIN_REQUEST_URL, JSonToRawString(reqBody), jsonHeaders, sResult, vHeaderData, true, true);
+	int iStatusCode = LastHttpStatusCode(vHeaderData);
+	Debug(DEBUG_HARDWARE, "Monitoring API: OAuth auto-authorize step 1 (login-request) status %d", iStatusCode);
+
+	Json::Value root;
+	if (iStatusCode != 200 || !ParseJSon(sResult, root) || !root.isObject() || root["authorizeUrl"].empty() || root["transaction"].empty())
+	{
+		Log(LOG_ERROR, "Monitoring API: OAuth auto-authorize failed requesting a login session!");
+		return false;
+	}
+	std::string authorizeUrl = root["authorizeUrl"].asString();
+	std::string transaction = root["transaction"].asString();
+
+	// Step 2: follow it through to the SolarEdge SSO login form (same identity provider the Web Portal uses)
+	std::vector<std::string> getHeaders;
+	getHeaders.push_back("Accept: text/html");
+
+	std::string sLoginPage;
+	if (!HTTPClient::GET(authorizeUrl, getHeaders, sLoginPage) || sLoginPage.empty())
+	{
+		Log(LOG_ERROR, "Monitoring API: OAuth auto-authorize failed loading the SolarEdge login form!");
+		return false;
+	}
+
+	std::string formAction;
+	std::map<std::string, std::string> formFields;
+	if (!ParseLoginForm(sLoginPage, formAction, formFields))
+	{
+		Log(LOG_ERROR, "Monitoring API: OAuth auto-authorize failed, could not find the login form!");
+		return false;
+	}
+
+	if (formAction.compare(0, 4, "http") != 0)
+	{
+		if (formAction.empty() || formAction[0] != '/')
+			formAction = "/" + formAction;
+		formAction = "https://login.solaredge.com" + formAction;
+	}
+
+	static const std::regex hostRegex("^https?://([^/:]+)", std::regex::icase);
+	std::smatch hostMatch;
+	std::string host;
+	if (std::regex_search(formAction, hostMatch, hostRegex))
+		host = hostMatch[1].str();
+	std::transform(host.begin(), host.end(), host.begin(), ::tolower);
+	bool bHostOk = (host == "solaredge.com") || (host.size() > 14 && host.compare(host.size() - 14, 14, ".solaredge.com") == 0);
+	if (!bHostOk)
+	{
+		Log(LOG_ERROR, "Monitoring API: OAuth auto-authorize login form does not point to a solaredge.com host, aborting for safety!");
+		return false;
+	}
+
+	// Step 3: submit the SolarEdge SSO credentials (the same account as the Web Portal login).
+	// The form ships a "cognitoAsfData" field as empty; that's a client-side device-fingerprint
+	// signal used only for risk scoring, submitting it empty is accepted like any other login.
+	formFields["username"] = m_WebUsername;
+	formFields["password"] = m_WebPassword;
+
+	std::string postData;
+	for (const auto& field : formFields)
+	{
+		if (!postData.empty())
+			postData += "&";
+		postData += CURLEncode::URLEncode(field.first) + "=" + CURLEncode::URLEncode(field.second);
+	}
+
+	std::vector<std::string> loginHeaders;
+	loginHeaders.push_back("Content-Type: application/x-www-form-urlencoded");
+
+	std::string sLoginResult;
+	std::vector<std::string> vLoginHeaderData;
+	HTTPClient::POST(formAction, postData, loginHeaders, sLoginResult, vLoginHeaderData, true, true);
+
+	std::string ssoCode = ExtractLocationParam(vLoginHeaderData, "code=");
+	std::string ssoState = ExtractLocationParam(vLoginHeaderData, "state=");
+	Debug(DEBUG_HARDWARE, "Monitoring API: OAuth auto-authorize step 3 (credentials) %s", ssoCode.empty() ? "failed" : "succeeded");
+	if (ssoCode.empty() || ssoState.empty())
+	{
+		Log(LOG_ERROR, "Monitoring API: OAuth auto-authorize failed submitting credentials! Check the Web Username/Password (2FA-protected accounts aren't supported here; use a manually pasted authorization code instead).");
+		return false;
+	}
+
+	// Step 4: exchange that SSO code for a SolarEdge Connect session
+	Json::Value tokenBody;
+	tokenBody["code"] = ssoCode;
+	tokenBody["state"] = ssoState;
+	tokenBody["transaction"] = transaction;
+
+	std::string sSessionResult;
+	std::vector<std::string> vSessionHeaderData;
+	HTTPClient::POST(SE_CONNECT_SESSION_TOKEN_URL, JSonToRawString(tokenBody), jsonHeaders, sSessionResult, vSessionHeaderData, true, true);
+	int iSessionStatus = LastHttpStatusCode(vSessionHeaderData);
+	Debug(DEBUG_HARDWARE, "Monitoring API: OAuth auto-authorize step 4 (session) status %d", iSessionStatus);
+
+	Json::Value sessionRoot;
+	if (iSessionStatus != 200 || !ParseJSon(sSessionResult, sessionRoot) || !sessionRoot.isObject() || sessionRoot["accessToken"].empty())
+	{
+		Log(LOG_ERROR, "Monitoring API: OAuth auto-authorize failed establishing a Connect session!");
+		return false;
+	}
+	std::string sessionToken = sessionRoot["accessToken"].asString();
+
+	// Step 5: approve the application's access request on the user's behalf
+	Json::Value approveBody;
+	approveBody["transaction"] = transaction;
+
+	std::vector<std::string> approveHeaders;
+	approveHeaders.push_back("Content-Type: application/json");
+	approveHeaders.push_back("Accept: application/json");
+	approveHeaders.push_back("Authorization: Bearer " + sessionToken);
+
+	std::string sApproveResult;
+	std::vector<std::string> vApproveHeaderData;
+	HTTPClient::POST(SE_CONNECT_APPROVE_URL_PREFIX + m_ApiClientId + "/approve", JSonToRawString(approveBody), approveHeaders, sApproveResult, vApproveHeaderData, true, true);
+	int iApproveStatus = LastHttpStatusCode(vApproveHeaderData);
+	Debug(DEBUG_HARDWARE, "Monitoring API: OAuth auto-authorize step 5 (approve) status %d", iApproveStatus);
+
+	Json::Value approveRoot;
+	if (iApproveStatus != 200 || !ParseJSon(sApproveResult, approveRoot) || !approveRoot.isObject() || approveRoot["uri"].empty())
+	{
+		Log(LOG_ERROR, "Monitoring API: OAuth auto-authorize failed approving access!");
+		return false;
+	}
+
+	// The approved "uri" carries our application's own authorization code and Site ID, e.g.
+	// "http://localhost?code=...&site_id=...". Feed it through the same parser used for a
+	// manually pasted callback URL, then exchange it for an access/refresh token pair.
+	m_ApiAuthCode = approveRoot["uri"].asString();
+	Log(LOG_STATUS, "Monitoring API: OAuth auto-authorize succeeded, exchanging the authorization code");
+	return ApiExchangeAuthCode();
+}
+
 bool SolarEdgeAPI::GetSite()
 {
 	m_SiteID = 0;
+
+	if (ApiUsesOAuth())
+	{
+		// Fleet-wide Site List (GET /sites) is X-API-Key only and rejects OAuth bearer tokens entirely,
+		// so under Site Access we rely on the Site ID captured from the OAuth callback (or set manually).
+		if (!ApiEnsureLoggedIn())
+			return false;
+		if (m_WebSiteID.empty())
+		{
+			Log(LOG_ERROR, "Monitoring API: OAuth Site Access requires a Site ID! It's normally captured automatically from the authorization callback URL; otherwise set it manually in the hardware settings.");
+			return false;
+		}
+		m_SiteID = atoi(m_WebSiteID.c_str());
+		return (m_SiteID != 0);
+	}
+
 	std::string sResult;
 #ifdef DEBUG_SolarEdgeAPIR
 	sResult = ReadFile("E:\\SolarEdge_sites.json");
@@ -396,14 +799,18 @@ bool SolarEdgeAPI::GetSite()
 
 	std::vector<std::string> ExtraHeaders;
 	ExtraHeaders.push_back("Accept: application/json");
+	ExtraHeaders.push_back(BuildApiAuthHeader());
 
 	std::stringstream sURL;
-	sURL << "https://monitoringapi.solaredge.com/sites/list.json?size=1&api_key=" << m_APIKey;
-	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
+	sURL << SE_API_BASE_URL << "/sites?page=1&sites-in-page=1";
+
+	std::vector<std::string> vHeaderData;
+	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData))
 	{
 		Log(LOG_ERROR, "Error getting http data (Sites)!");
 		return false;
 	}
+	Debug(DEBUG_HARDWARE, "API: Sites status %d", LastHttpStatusCode(vHeaderData));
 #ifdef DEBUG_SolarEdgeAPIW
 	SaveString2Disk(sResult, "E:\\SolarEdge_sites.json");
 #endif
@@ -431,12 +838,12 @@ bool SolarEdgeAPI::GetSite()
 		return false;
 	Json::Value reading = root["sites"]["site"][0];
 
-	if (reading["id"].empty() == true)
+	if (reading["siteId"].empty() == true)
 	{
 		Log(LOG_ERROR, "Invalid data received, or invalid APIKey");
 		return false;
 	}
-	m_SiteID = reading["id"].asInt();
+	m_SiteID = reading["siteId"].asInt();
 	if (m_WebSiteID.empty())
 		m_WebSiteID = std::to_string(m_SiteID);
 	return true;
@@ -444,58 +851,76 @@ bool SolarEdgeAPI::GetSite()
 
 void SolarEdgeAPI::GetBatteryFromInventory()
 {
+	if (!ApiEnsureLoggedIn())
+		return;
+
 	std::string sResult;
 
 	std::vector<std::string> ExtraHeaders;
 	ExtraHeaders.push_back("Accept: application/json");
+	ExtraHeaders.push_back(BuildApiAuthHeader());
 
 	std::stringstream sURL;
-	sURL << "https://monitoringapi.solaredge.com/site/" << m_SiteID << "/inventory.json?api_key=" << m_APIKey;
+	sURL << SE_API_BASE_URL << "/sites/" << m_SiteID << "/devices";
 
-	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
+	std::vector<std::string> vHeaderData;
+	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData))
 	{
 		Log(LOG_ERROR, "Error getting http data (Inventory)!");
 		return;
 	}
+	Debug(DEBUG_HARDWARE, "API: Inventory status %d", LastHttpStatusCode(vHeaderData));
 
 	Json::Value root;
 
 	bool ret = ParseJSon(sResult, root);
-	if ((!ret) || (!root.isObject()))
+	if ((!ret) || (!root.isArray()))
 	{
 		Log(LOG_ERROR, "Invalid data received!");
 		return;
 	}
-	if (root["Inventory"]["batteries"].empty() == true)
-		m_bPollBattery = false;
-	else
-		m_bPollBattery = true;
+
+	m_bPollBattery = false;
+	int inverterCount = 0;
+	std::string szModel, szFirmware;
+	for (const auto& device : root)
+	{
+		std::string type = device.get("type", "").asString();
+		if (type == "BATTERY")
+			m_bPollBattery = true;
+		else if (type == "INVERTER")
+		{
+			inverterCount++;
+			if (szModel.empty())
+			{
+				szModel = device.get("partNumber", device.get("model", "")).asString();
+				szFirmware = device.get("firmwareVersion", "").asString();
+			}
+		}
+	}
 
 	// Model and firmware of the first inverter, shown in the hardware overview
-	const Json::Value& inverters = root["Inventory"]["inverters"];
-	if (!inverters.empty())
+	if (!szModel.empty())
 	{
-		const Json::Value& inverter = inverters[0];
-		std::string szModel = inverter.get("partNumber", inverter.get("model", "")).asString();
-		std::string szCpu = inverter.get("cpuVersion", "").asString();
 		std::string szVersion = szModel;
-		if (!szCpu.empty())
-			szVersion += " (cpu " + szCpu + ")";
-		if (inverters.size() > 1)
-			szVersion += " +" + std::to_string(inverters.size() - 1) + " more";
-		if (!szVersion.empty() && szVersion != m_szSoftwareVersion)
+		if (!szFirmware.empty())
+			szVersion += " (fw " + szFirmware + ")";
+		if (inverterCount > 1)
+			szVersion += " +" + std::to_string(inverterCount - 1) + " more";
+		if (szVersion != m_szSoftwareVersion)
 		{
 			m_szSoftwareVersion = szVersion;
 			Log(LOG_STATUS, "Inverter: %s", m_szSoftwareVersion.c_str());
 		}
 	}
-
-	return;
 }
 
 void SolarEdgeAPI::GetInverters()
 {
 	m_inverters.clear();
+	if (!ApiEnsureLoggedIn())
+		return;
+
 	std::string sResult;
 #ifdef DEBUG_SolarEdgeAPIR
 	sResult = ReadFile("E:\\SolarEdge_inverters.json");
@@ -503,14 +928,18 @@ void SolarEdgeAPI::GetInverters()
 
 	std::vector<std::string> ExtraHeaders;
 	ExtraHeaders.push_back("Accept: application/json");
+	ExtraHeaders.push_back(BuildApiAuthHeader());
 
 	std::stringstream sURL;
-	sURL << "https://monitoringapi.solaredge.com/equipment/" << m_SiteID << "/list.json?api_key=" << m_APIKey;
-	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
+	sURL << SE_API_BASE_URL << "/sites/" << m_SiteID << "/devices?types=INVERTER";
+
+	std::vector<std::string> vHeaderData;
+	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData))
 	{
 		Log(LOG_ERROR, "Error getting http data (Equipment)!");
 		return;
 	}
+	Debug(DEBUG_HARDWARE, "API: Equipment status %d", LastHttpStatusCode(vHeaderData));
 #ifdef DEBUG_SolarEdgeAPIW
 	SaveString2Disk(sResult, "E:\\SolarEdge_inverters.json");
 #endif
@@ -518,49 +947,168 @@ void SolarEdgeAPI::GetInverters()
 	Json::Value root;
 
 	bool ret = ParseJSon(sResult, root);
-	if ((!ret) || (!root.isObject()))
+	if ((!ret) || (!root.isArray()))
 	{
 		Log(LOG_ERROR, "Invalid data received!");
 		return;
 	}
-	if (root["reporters"].empty() == true)
-	{
-		Log(LOG_ERROR, "Invalid data received, or invalid APIKey");
-		return;
-	}
-	if (root["reporters"]["count"].empty() == true)
-	{
-		Log(LOG_ERROR, "Invalid data received, or invalid APIKey");
-		return;
-	}
-	int tot_results = root["reporters"]["count"].asInt();
-	if (tot_results < 1)
-		return;
 
-	for (int iInverter = 0; iInverter < tot_results; iInverter++)
+	for (const auto& reading : root)
 	{
-		Json::Value reading = root["reporters"]["list"][iInverter];
-
-		if (reading["name"].empty() == true)
-			return;
+		if (reading["serialNumber"].empty() == true)
+			continue;
 		_tInverterSettings iSettings;
-		iSettings.name = reading["name"].asString();
-		iSettings.manufacturer = reading["manufacturer"].asString();
-		iSettings.model = reading["model"].asString();
+		iSettings.name = reading.get("name", "").asString();
+		iSettings.manufacturer = reading.get("manufacturer", "").asString();
+		iSettings.model = reading.get("model", "").asString();
 		iSettings.SN = reading["serialNumber"].asString();
+		if (iSettings.name.empty())
+			iSettings.name = iSettings.SN;
 		m_inverters.push_back(iSettings);
 	}
 	m_lastInverterEnergy.assign(m_inverters.size(), 0.0);
 }
 
-void SolarEdgeAPI::GetMeterDetails()
+void SolarEdgeAPI::GetInverterTelemetry()
 {
 	m_totalActivePower = 0;
 	m_totalEnergy = 0;
 
-	for (int iInverter = 0; iInverter < (int)m_inverters.size(); iInverter++)
+	if (m_inverters.empty())
+		return;
+
+	//We only poll one hour before sunrise till one hour after sunset
+	if (!isDaylightWindow())
+		return;
+
+	if (!ApiEnsureLoggedIn())
+		return;
+
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Accept: application/json");
+	ExtraHeaders.push_back(BuildApiAuthHeader());
+
+	time_t now = mytime(nullptr);
+	std::string szNow = FormatApiUtcTime(now);
+
+	std::map<std::string, float> powerBySN, voltageBySN, currentBySN, frequencyBySN;
+	std::map<std::string, double> energyBySN;
+
+	// Current power/voltage/current/frequency, one bulk call for every inverter on the site
 	{
-		GetInverterDetails(&m_inverters[iInverter], iInverter);
+		std::string szFrom = FormatApiUtcTime(now - 900); // last 15 minutes
+
+		std::stringstream sURL;
+		sURL << SE_API_BASE_URL << "/sites/" << m_SiteID << "/inverters/telemetry"
+			<< "?resolution=QUARTER_HOUR&from=" << CURLEncode::URLEncode(szFrom) << "&to=" << CURLEncode::URLEncode(szNow);
+
+		std::string sResult;
+		std::vector<std::string> vHeaderData;
+		if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData))
+			Log(LOG_ERROR, "Error getting http data (Inverter telemetry)!");
+		else
+		{
+			Debug(DEBUG_HARDWARE, "API: Inverter telemetry status %d", LastHttpStatusCode(vHeaderData));
+			Json::Value root;
+			if (!ParseJSon(sResult, root) || !root.isObject() || root["inverters"].empty())
+				Log(LOG_ERROR, "Invalid data received, or invalid APIKey (Inverter telemetry)!");
+			else
+			{
+				const Json::Value& inverters = root["inverters"];
+				for (const auto& sn : inverters.getMemberNames())
+				{
+					const Json::Value& node = inverters[sn];
+					if (!node["power"].empty())
+						powerBySN[sn] = (float)LastMetricValue(node["power"]);
+					if (!node["voltage"].empty())
+						voltageBySN[sn] = (float)LastMetricValue(node["voltage"]);
+					if (!node["current"].empty())
+						currentBySN[sn] = (float)LastMetricValue(node["current"]);
+					if (!node["frequency"].empty())
+						frequencyBySN[sn] = (float)LastMetricValue(node["frequency"]);
+				}
+			}
+		}
+	}
+
+	// Lifetime energy (TOTAL resolution), the closest V2 equivalent of the old cumulative inverter counter
+	{
+		std::stringstream sURL;
+		sURL << SE_API_BASE_URL << "/sites/" << m_SiteID << "/inverters/telemetry"
+			<< "?resolution=TOTAL&from=" << CURLEncode::URLEncode(std::string("2000-01-01T00:00:00Z")) << "&to=" << CURLEncode::URLEncode(szNow);
+
+		std::string sResult;
+		std::vector<std::string> vHeaderData;
+		if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData))
+			Log(LOG_ERROR, "Error getting http data (Inverter lifetime energy)!");
+		else
+		{
+			Debug(DEBUG_HARDWARE, "API: Inverter lifetime energy status %d", LastHttpStatusCode(vHeaderData));
+			Json::Value root;
+			if (!ParseJSon(sResult, root) || !root.isObject() || root["inverters"].empty())
+				Log(LOG_ERROR, "Invalid data received, or invalid APIKey (Inverter lifetime energy)!");
+			else
+			{
+				const Json::Value& inverters = root["inverters"];
+				for (const auto& sn : inverters.getMemberNames())
+				{
+					const Json::Value& node = inverters[sn];
+					if (!node["energy"].empty())
+						energyBySN[sn] = LastMetricValue(node["energy"]);
+				}
+			}
+		}
+	}
+
+	char szTmp[200];
+	for (int i = 0; i < (int)m_inverters.size(); i++)
+	{
+		const _tInverterSettings& inv = m_inverters[i];
+		float curActivePower = 0;
+
+		auto itP = powerBySN.find(inv.SN);
+		if (itP != powerBySN.end())
+		{
+			curActivePower = itP->second;
+			m_totalActivePower += curActivePower;
+			sprintf(szTmp, "Power %s", inv.name.c_str());
+			SendWattMeter(1 + i, 1, 255, curActivePower, szTmp);
+		}
+
+		auto itE = energyBySN.find(inv.SN);
+		if (itE != energyBySN.end())
+		{
+			double curEnergy = itE->second;
+			if (curEnergy != 0)
+			{
+				sprintf(szTmp, "kWh Meter %s", inv.name.c_str());
+				SendKwhMeter(0, 1 + i, 255, curActivePower, curEnergy / 1000.0, szTmp);
+			}
+			if (i < (int)m_lastInverterEnergy.size())
+				m_lastInverterEnergy[i] = curEnergy;
+			m_totalEnergy += curEnergy;
+		}
+
+		// V2 no longer exposes DC voltage; this is now the AC voltage averaged across active phases
+		auto itV = voltageBySN.find(inv.SN);
+		if (itV != voltageBySN.end())
+		{
+			sprintf(szTmp, "AC %s", inv.name.c_str());
+			SendVoltageSensor(i, SE_VOLT_DC, 255, itV->second, szTmp);
+		}
+		// V2 no longer exposes a per-phase breakdown; this is a derived value (power / voltage), averaged across active phases
+		auto itC = currentBySN.find(inv.SN);
+		if (itC != currentBySN.end())
+		{
+			sprintf(szTmp, "acCurrent %s", inv.name.c_str());
+			SendCustomSensor(i, SE_AC_CURRENT, 255, itC->second, szTmp, "A");
+		}
+		auto itF = frequencyBySN.find(inv.SN);
+		if (itF != frequencyBySN.end())
+		{
+			sprintf(szTmp, "Hz %s", inv.name.c_str());
+			SendCustomSensor(1 + i, 1, 255, itF->second, szTmp, "Hz");
+		}
 	}
 
 	if ((m_inverters.size() > 1) && (m_totalEnergy > 0))
@@ -570,300 +1118,179 @@ void SolarEdgeAPI::GetMeterDetails()
 	}
 }
 
-void SolarEdgeAPI::GetInverterDetails(const _tInverterSettings* pInverterSettings, const int iInverterNumber)
-{
-	std::string sResult;
-	char szTmp[200];
-#ifdef DEBUG_SolarEdgeAPIR
-	sResult = ReadFile("E:\\SolarEdge.json");
-#else
-	time_t atime = mytime(nullptr);
-	struct tm ltime;
-	localtime_r(&atime, &ltime);
-
-	//We only poll one hour before sunrise till one hour after sunset
-	if (!isDaylightWindow())
-		return;
-
-	struct tm ltime_min10;
-	time_t atime_min10;
-	constructTime(atime_min10, ltime_min10, ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min - 10, ltime.tm_sec, ltime.tm_isdst);
-
-	sprintf(szTmp, "%04d-%02d-%02d %02d:%02d:%02d", ltime_min10.tm_year + 1900, ltime_min10.tm_mon + 1, ltime_min10.tm_mday, ltime_min10.tm_hour, ltime_min10.tm_min, ltime_min10.tm_sec);
-	std::string startDate = CURLEncode::URLEncode(szTmp);
-
-	sprintf(szTmp, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, ltime.tm_sec);
-	std::string endDate = CURLEncode::URLEncode(szTmp);
-
-	std::vector<std::string> ExtraHeaders;
-	ExtraHeaders.push_back("Accept: application/json");
-
-	std::stringstream sURL;
-	sURL << "https://monitoringapi.solaredge.com/equipment/" << m_SiteID << "/" << pInverterSettings->SN << "/data.json?startTime=" << startDate << "&endTime=" << endDate << "&api_key=" << m_APIKey;
-	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
-	{
-		Log(LOG_ERROR, "Error getting http data (Equipment details)!");
-		return;
-	}
-#ifdef DEBUG_SolarEdgeAPIW
-	SaveString2Disk(sResult, "E:\\SolarEdge.json");
-#endif
-#endif
-	Json::Value root;
-
-	bool ret = ParseJSon(sResult, root);
-	if ((!ret) || (!root.isObject()))
-	{
-		Log(LOG_ERROR, "Invalid data received!");
-		return;
-	}
-	if (root["data"].empty() == true)
-	{
-		Log(LOG_ERROR, "Invalid data received, or invalid APIKey");
-		return;
-	}
-	if (root["data"]["count"].empty() == true)
-	{
-		Log(LOG_ERROR, "Invalid data received, or invalid APIKey");
-		return;
-	}
-	int tot_results = root["data"]["count"].asInt();
-	if (tot_results < 1)
-		return;
-	if (root["data"]["telemetries"].empty() == true)
-	{
-		Log(LOG_ERROR, "Invalid data received, or invalid APIKey");
-		return;
-	}
-
-	int rsize = (int)root["data"]["telemetries"].size();
-	if (rsize < 1)
-	{
-		return;
-	}
-
-	//We could have multiple sites here
-	Json::Value reading = root["data"]["telemetries"][rsize - 1];
-	if ((!reading["totalActivePower"].empty()) && (!reading["totalEnergy"].empty()))
-	{
-		double curActivePower = reading["totalActivePower"].asDouble();
-		double curEnergy = reading["totalEnergy"].asDouble();
-		if (curEnergy != 0)
-		{
-			sprintf(szTmp, "kWh Meter %s", pInverterSettings->name.c_str());
-			SendKwhMeter(0, 1 + iInverterNumber, 255, curActivePower, curEnergy / 1000.0, szTmp);
-		}
-		if (iInverterNumber < (int)m_lastInverterEnergy.size())
-			m_lastInverterEnergy[iInverterNumber] = curEnergy;
-		m_totalActivePower += curActivePower;
-		m_totalEnergy += curEnergy;
-	}
-	if (!reading["dcVoltage"].empty())
-	{
-		float dcVoltage = reading["dcVoltage"].asFloat();
-		sprintf(szTmp, "DC %s", pInverterSettings->name.c_str());
-		SendVoltageSensor(iInverterNumber, SE_VOLT_DC, 255, dcVoltage, szTmp);
-	}
-	if (!reading["powerLimit"].empty())
-	{
-		float powerLimit = reading["powerLimit"].asFloat();
-		sprintf(szTmp, "powerLimit %s", pInverterSettings->name.c_str());
-		SendPercentageSensor(iInverterNumber, SE_POWERLIMIT, 255, powerLimit, szTmp);
-	}
-	if (!reading["groundFaultResistance"].empty())
-	{
-		float groundFaultResistance = reading["groundFaultResistance"].asFloat();
-		sprintf(szTmp, "groundFaultResistance %s", pInverterSettings->name.c_str());
-		SendCustomSensor(iInverterNumber, SE_GROUND_RES, 255, groundFaultResistance, szTmp, "kOhm");
-	}
-	if (!reading["inverterMode"].empty())
-	{
-		sprintf(szTmp, "inverterMode %s", pInverterSettings->name.c_str());
-		SendTextSensor(iInverterNumber, SE_INV_MODE, 255, reading["inverterMode"].asString(), szTmp);
-	}
-	if (!reading["date"].empty())
-	{
-		sprintf(szTmp, "date %s", pInverterSettings->name.c_str());
-		SendTextSensor(iInverterNumber, SE_DATE, 255, reading["date"].asString(), szTmp);
-	}
-	if (!reading["temperature"].empty())
-	{
-		float temp = reading["temperature"].asFloat();
-		sprintf(szTmp, "Temp %s", pInverterSettings->name.c_str());
-		SendTempSensor(1 + iInverterNumber, 255, temp, szTmp);
-	}
-
-	char szPhase[30];
-	for (int ii = 0; ii < 3; ii++)
-	{
-		int iPhase = ii + 1;
-		sprintf(szPhase, "L%dData", iPhase);
-		if (!reading[szPhase].empty())
-		{
-			if (!reading[szPhase]["acVoltage"].empty())
-			{
-				float acVoltage = reading[szPhase]["acVoltage"].asFloat();
-				sprintf(szTmp, "AC L%d %s", iPhase, pInverterSettings->name.c_str());
-				SendVoltageSensor(iInverterNumber, iPhase, 255, acVoltage, szTmp);
-			}
-			if (!reading[szPhase]["acFrequency"].empty())
-			{
-				float acFrequency = reading[szPhase]["acFrequency"].asFloat();
-				sprintf(szTmp, "Hz L%d %s", iPhase, pInverterSettings->name.c_str());
-				SendCustomSensor(1 + iInverterNumber, iPhase, 255, acFrequency, szTmp, "Hz");
-			}
-			if (!reading[szPhase]["acCurrent"].empty())
-			{
-				float acCurrent = reading[szPhase]["acCurrent"].asFloat();
-				sprintf(szTmp, "acCurrent L%d %s", iPhase, pInverterSettings->name.c_str());
-				SendCustomSensor(iInverterNumber, SE_AC_CURRENT + ii, 255, acCurrent, szTmp, "A");
-			}
-
-			if (!reading[szPhase]["activePower"].empty())
-			{
-				float ActivePower = reading[szPhase]["activePower"].asFloat();
-				sprintf(szTmp, "Power L%d %s", iPhase, pInverterSettings->name.c_str());
-				SendWattMeter(1 + iInverterNumber, iPhase, 255, ActivePower, szTmp);
-			}
-		}
-	}
-}
-
 void SolarEdgeAPI::GetBatteryDetails()
 {
-	std::string sResult;
-#ifdef DEBUG_SolarEdgeAPIR
-	sResult = ReadFile("E:\\SolarEdge_currentPowerFlow.json");
-#else
+	if (!ApiEnsureLoggedIn())
+		return;
 
+	// V1's currentPowerFlow endpoint moved to the paid-tier-only Advanced Monitoring API in V2.
+	// Grid/Load/PV power is available on every tier via the site-wide meter telemetry bulk endpoint instead.
 	std::vector<std::string> ExtraHeaders;
 	ExtraHeaders.push_back("Accept: application/json");
+	ExtraHeaders.push_back(BuildApiAuthHeader());
+
+	time_t now = mytime(nullptr);
+	std::string szFrom = FormatApiUtcTime(now - 900); // last 15 minutes
+	std::string szTo = FormatApiUtcTime(now);
+
+	{
+		std::stringstream sURL;
+		sURL << SE_API_BASE_URL << "/sites/" << m_SiteID << "/meters/telemetry"
+			<< "?resolution=QUARTER_HOUR&from=" << CURLEncode::URLEncode(szFrom) << "&to=" << CURLEncode::URLEncode(szTo);
+
+		std::string sResult;
+		std::vector<std::string> vHeaderData;
+		if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData))
+			Log(LOG_ERROR, "Error getting http data (Meter telemetry)!");
+		else
+		{
+			Debug(DEBUG_HARDWARE, "API: Meter telemetry status %d", LastHttpStatusCode(vHeaderData));
+			Json::Value root;
+			// An empty "meters" object is a normal response for a site with no separate physical
+			// meter device (inverter-only systems, common without a net-metering CT clamp) - not an error.
+			if (!ParseJSon(sResult, root) || !root.isObject())
+				Log(LOG_ERROR, "Invalid data received (Meter telemetry)!");
+			else
+			{
+				double production = 0, consumption = 0, imported = 0, exported = 0;
+				bool bHaveProduction = false, bHaveConsumption = false, bHaveGrid = false;
+				const Json::Value& meters = root["meters"];
+				for (const auto& sn : meters.getMemberNames())
+				{
+					const Json::Value& meter = meters[sn];
+					if (!meter["productionPower"].empty())
+					{
+						production += LastMetricValue(meter["productionPower"]);
+						bHaveProduction = true;
+					}
+					if (!meter["consumptionPower"].empty())
+					{
+						consumption += LastMetricValue(meter["consumptionPower"]);
+						bHaveConsumption = true;
+					}
+					if (!meter["importPower"].empty())
+					{
+						imported += LastMetricValue(meter["importPower"]);
+						bHaveGrid = true;
+					}
+					if (!meter["exportPower"].empty())
+					{
+						exported += LastMetricValue(meter["exportPower"]);
+						bHaveGrid = true;
+					}
+				}
+				if (bHaveProduction)
+					SendWattMeter(200, SE_PV, 255, (float)production, "PV Power");
+				if (bHaveConsumption)
+					SendWattMeter(200, SE_LOAD, 255, (float)consumption, "Load Power");
+				if (bHaveGrid)
+				{
+					// positive = importing from grid, negative = exporting to grid (matches the old currentPowerFlow convention)
+					SendWattMeter(200, SE_GRID, 255, (float)(imported - exported), "Grid Power");
+				}
+			}
+		}
+	}
+
+	if (!m_bPollBattery)
+		return;
 
 	std::stringstream sURL;
-	sURL << "https://monitoringapi.solaredge.com/site/" << m_SiteID << "/currentPowerFlow?api_key=" << m_APIKey;
-	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
+	sURL << SE_API_BASE_URL << "/sites/" << m_SiteID << "/storage/telemetry"
+		<< "?resolution=QUARTER_HOUR&from=" << CURLEncode::URLEncode(szFrom) << "&to=" << CURLEncode::URLEncode(szTo);
+
+	std::string sResult;
+	std::vector<std::string> vHeaderData;
+	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData))
 	{
-		Log(LOG_ERROR, "Error getting http data (currentPowerFlow details)!");
+		Log(LOG_ERROR, "Error getting http data (Storage telemetry)!");
 		return;
 	}
-#ifdef DEBUG_SolarEdgeAPIW
-	SaveString2Disk(sResult, "E:\\SolarEdge_currentPowerFlow.json");
-#endif
-#endif
+	Debug(DEBUG_HARDWARE, "API: Storage telemetry status %d", LastHttpStatusCode(vHeaderData));
+
 	Json::Value root;
-
-	bool ret = ParseJSon(sResult, root);
-	if ((!ret) || (!root.isObject()))
+	if (!ParseJSon(sResult, root) || !root.isObject() || root["storage"].empty())
 	{
-		Log(LOG_ERROR, "Invalid data received!");
+		Log(LOG_ERROR, "Invalid data received (Storage telemetry)!");
 		return;
 	}
-	if (root["siteCurrentPowerFlow"].empty() == true)
-	{
-		return;
-	}
-	root = root["siteCurrentPowerFlow"];
 
-	// Parse connections to determine power flow direction
-	std::vector<std::string> power_from;
-	std::vector<std::string> power_to;
-	if (!root["connections"].empty())
+	double chargePower = 0, dischargePower = 0, socSum = 0;
+	int socCount = 0;
+	const Json::Value& storage = root["storage"];
+	for (const auto& sn : storage.getMemberNames())
 	{
-		for (const auto& conn : root["connections"])
+		const Json::Value& batt = storage[sn];
+		if (!batt["chargePower"].empty())
+			chargePower += LastMetricValue(batt["chargePower"]);
+		if (!batt["dischargePower"].empty())
+			dischargePower += LastMetricValue(batt["dischargePower"]);
+		if (!batt["stateOfEnergy"].empty())
 		{
-			if (!conn["from"].empty())
-			{
-				std::string from = conn["from"].asString();
-				std::transform(from.begin(), from.end(), from.begin(), ::tolower);
-				power_from.push_back(from);
-			}
-			if (!conn["to"].empty())
-			{
-				std::string to = conn["to"].asString();
-				std::transform(to.begin(), to.end(), to.begin(), ::tolower);
-				power_to.push_back(to);
-			}
+			socSum += LastMetricValue(batt["stateOfEnergy"]);
+			socCount++;
 		}
 	}
 
-	std::string status;
-	float power;
+	// positive = discharging, negative = charging (matches the old currentPowerFlow convention)
+	float batteryPower = (float)(dischargePower - chargePower);
+	SendWattMeter(200, SE_STORAGE_POWER, 255, batteryPower, "Battery Power");
 
-	if (!root["GRID"].empty())
-	{
-		status = root["GRID"]["status"].asString();
-		if (status == "Active")
-			power = root["GRID"]["currentPower"].asFloat();
-		else
-			power = 0;
-		// If grid is in power_to, we are exporting — negate
-		if (std::find(power_to.begin(), power_to.end(), "grid") != power_to.end())
-			power = -power;
-		SendWattMeter(200, SE_GRID, 255, power * 1000, "Grid Power");
-	}
-	if (!root["LOAD"].empty())
-	{
-		status = root["LOAD"]["status"].asString();
-		if (status == "Active")
-			power = root["LOAD"]["currentPower"].asFloat();
-		else
-			power = 0;
-		SendWattMeter(200, SE_LOAD, 255, power * 1000, "Load Power");
-	}
-	if (!root["PV"].empty())
-	{
-		status = root["PV"]["status"].asString();
-		if (status == "Active")
-			power = root["PV"]["currentPower"].asFloat();
-		else
-			power = 0;
-		SendWattMeter(200, SE_PV, 255, power * 1000, "PV Power");
-	}
-	if (!root["STORAGE"].empty())
-	{
-		status = root["STORAGE"]["status"].asString();
-		SendTextSensor(200, SE_STORAGE_STATUS, 255, status, "Battery Status");
+	// V2 has no direct "status" string; derive it from the power flow instead
+	std::string status = (chargePower > 0) ? "Charging" : (dischargePower > 0) ? "Discharging" : "Idle";
+	SendTextSensor(200, SE_STORAGE_STATUS, 255, status, "Battery Status");
 
-		power = root["STORAGE"]["currentPower"].asFloat();
+	if (socCount > 0)
+		SendPercentageSensor(200, SE_STORAGE_CHARGELEVEL, 255, (float)(socSum / socCount), "Battery Charge Level");
 
-		// If storage is in power_to, it is charging — negate
-		if (std::find(power_to.begin(), power_to.end(), "storage") != power_to.end())
-		{
-			if (power > 0)
-				power = -power;
-		}
-
-		SendWattMeter(200, SE_STORAGE_POWER, 255, power * 1000, "Battery Power");
-
-		float chargeLevel = root["STORAGE"]["chargeLevel"].asFloat();
-		SendPercentageSensor(200, SE_STORAGE_CHARGELEVEL, 255, chargeLevel, "Battery Charge Level");
-
-		bool batteryCritical = root["STORAGE"]["critical"].asBool();
-		SendSwitch(200, SE_STORAGE_CRITITAL, 255, batteryCritical, 0, "Battery Critical", "SolarEdge");
-	}
+	// Note: V1's "critical" battery flag has no V2 equivalent, so it is no longer sent.
 }
 
 void SolarEdgeAPI::GetOverview()
 {
-	// Check daylight window
-	if (!isDaylightWindow())
+	if (!ApiEnsureLoggedIn())
 		return;
 
+	std::vector<std::string> ExtraHeaders;
+	ExtraHeaders.push_back("Accept: application/json");
+	ExtraHeaders.push_back(BuildApiAuthHeader());
+
+	// Current site power (Site Overview no longer carries an instantaneous power figure in V2)
+	{
+		time_t now = mytime(nullptr);
+		std::stringstream sURL;
+		sURL << SE_API_BASE_URL << "/sites/" << m_SiteID << "/power"
+			<< "?resolution=QUARTER_HOUR&from=" << CURLEncode::URLEncode(FormatApiUtcTime(now - 900)) << "&to=" << CURLEncode::URLEncode(FormatApiUtcTime(now));
+
+		std::string sResult;
+		std::vector<std::string> vHeaderData;
+		if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData))
+			Log(LOG_ERROR, "Error getting http data (Site Power)!");
+		else
+		{
+			Debug(DEBUG_HARDWARE, "API: Site Power status %d", LastHttpStatusCode(vHeaderData));
+			Json::Value root;
+			if (ParseJSon(sResult, root) && root.isObject() && !root["values"].empty())
+				SendWattMeter(200, SE_OVERVIEW_CURRENT, 255, (float)LastMetricValue(root), "Site Current Power");
+		}
+	}
+
+	// Today's production/consumption breakdown (defaults to midnight-today .. now when from/to are omitted).
+	// This also replaces the old, separate EnergyDetails call: V2's per-category energy is already in this response.
 	std::string sResult;
 #ifdef DEBUG_SolarEdgeAPIR
 	sResult = ReadFile("E:\\SolarEdge_overview.json");
 #else
-
-	std::vector<std::string> ExtraHeaders;
-	ExtraHeaders.push_back("Accept: application/json");
-
 	std::stringstream sURL;
-	sURL << "https://monitoringapi.solaredge.com/site/" << m_SiteID << "/overview.json?api_key=" << m_APIKey;
-	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
+	sURL << SE_API_BASE_URL << "/sites/" << m_SiteID << "/overview";
+
+	std::vector<std::string> vHeaderData;
+	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData))
 	{
 		Log(LOG_ERROR, "Error getting http data (Overview)!");
 		return;
 	}
+	Debug(DEBUG_HARDWARE, "API: Overview status %d", LastHttpStatusCode(vHeaderData));
 #ifdef DEBUG_SolarEdgeAPIW
 	SaveString2Disk(sResult, "E:\\SolarEdge_overview.json");
 #endif
@@ -876,137 +1303,91 @@ void SolarEdgeAPI::GetOverview()
 		Log(LOG_ERROR, "Invalid data received!");
 		return;
 	}
-	if (root["overview"].empty() == true)
+
+	const Json::Value& production = root["production"];
+	const Json::Value& consumption = root["consumption"];
+
+	if (!production.empty() && !production["total"].empty())
 	{
-		Log(LOG_ERROR, "Invalid data received, or invalid APIKey");
-		return;
+		double energyWh = ToWattHours(production["total"].asDouble(), production.get("unit", "WH").asString());
+		SendCustomSensor(200, SE_OVERVIEW_TODAY, 255, (float)(energyWh / 1000.0), "Energy Today", "kWh");
+		SendCustomSensor(201, SE_ENERGY_PRODUCTION, 255, (float)(energyWh / 1000.0), "Energy Production", "kWh");
 	}
-	const Json::Value& overview = root["overview"];
-
-	float power = 0;
-	if (!overview["currentPower"].empty())
+	if (!production.empty() && !production["toSelfConsumption"].empty())
 	{
-		power = overview["currentPower"]["power"].asFloat();
-		SendWattMeter(200, SE_OVERVIEW_CURRENT, 255, power, "Site Current Power");
-
-		if (power > 0) // "last..." is only valid if there is power, otherwise API may return previous values
-		{
-			if (!overview["lastDayData"].empty())
-			{
-				float energy = overview["lastDayData"]["energy"].asFloat();
-				SendCustomSensor(200, SE_OVERVIEW_TODAY, 255, energy / 1000, "Energy Today", "kWh");
-			}
-
-			if (!overview["lastMonthData"].empty())
-			{
-				float energy = overview["lastMonthData"]["energy"].asFloat();
-				SendCustomSensor(200, SE_OVERVIEW_MONTH, 255, energy / 1000, "Energy This Month", "kWh");
-			}
-			if (!overview["lastYearData"].empty())
-			{
-				float energy = overview["lastYearData"]["energy"].asFloat();
-				SendCustomSensor(200, SE_OVERVIEW_YEAR, 255, energy / 1000, "Energy This Year", "kWh");
-			}
-		}
+		double energyWh = ToWattHours(production["toSelfConsumption"].asDouble(), production.get("unit", "WH").asString());
+		SendCustomSensor(201, SE_ENERGY_SELFCONSUMPTION, 255, (float)(energyWh / 1000.0), "Energy Self Consumption", "kWh");
 	}
-	if (!overview["lifeTimeData"].empty())
+	if (!production.empty() && !production["toGrid"].empty())
 	{
-		float energy = overview["lifeTimeData"]["energy"].asFloat();
-		SendCustomSensor(200, SE_OVERVIEW_LIFETIME, 255, energy / 1000, "Lifetime Energy", "kWh");
+		double energyWh = ToWattHours(production["toGrid"].asDouble(), production.get("unit", "WH").asString());
+		SendCustomSensor(201, SE_ENERGY_FEEDIN, 255, (float)(energyWh / 1000.0), "Energy Feed In", "kWh");
+	}
+	if (!consumption.empty() && !consumption["total"].empty())
+	{
+		double energyWh = ToWattHours(consumption["total"].asDouble(), consumption.get("unit", "WH").asString());
+		SendCustomSensor(201, SE_ENERGY_CONSUMPTION, 255, (float)(energyWh / 1000.0), "Energy Consumption", "kWh");
+	}
+	if (!consumption.empty() && !consumption["fromGrid"].empty())
+	{
+		double energyWh = ToWattHours(consumption["fromGrid"].asDouble(), consumption.get("unit", "WH").asString());
+		SendCustomSensor(201, SE_ENERGY_PURCHASED, 255, (float)(energyWh / 1000.0), "Energy Purchased", "kWh");
 	}
 }
 
-void SolarEdgeAPI::GetEnergyDetails()
+void SolarEdgeAPI::GetSiteEnergyTotals()
 {
-	std::string sResult;
-#ifdef DEBUG_SolarEdgeAPIR
-	sResult = ReadFile("E:\\SolarEdge_energyDetails.json");
-#else
-	time_t atime = mytime(nullptr);
-	struct tm ltime;
-	localtime_r(&atime, &ltime);
-	
-	// get yesterday from today's noon
-	struct tm ltime_noon;
-	getNoon(atime, ltime_noon);
-	struct tm ltime_yesterday;
-	time_t yesterday = atime - 86400;
-	localtime_r(&yesterday, &ltime_yesterday);
-
-	char szTmp[200];
-	sprintf(szTmp, "%04d-%02d-%02d %02d:%02d:%02d", ltime_yesterday.tm_year + 1900, ltime_yesterday.tm_mon + 1, ltime_yesterday.tm_mday, 0, 0, 0);
-	std::string startDate = CURLEncode::URLEncode(szTmp);
-
-	sprintf(szTmp, "%04d-%02d-%02d %02d:%02d:%02d", ltime.tm_year + 1900, ltime.tm_mon + 1, ltime.tm_mday, 0, 0, 0);
-	std::string endDate = CURLEncode::URLEncode(szTmp);
+	if (!ApiEnsureLoggedIn())
+		return;
 
 	std::vector<std::string> ExtraHeaders;
 	ExtraHeaders.push_back("Accept: application/json");
+	ExtraHeaders.push_back(BuildApiAuthHeader());
 
-	std::stringstream sURL;
-	sURL << "https://monitoringapi.solaredge.com/site/" << m_SiteID << "/energyDetails.json?startTime=" << startDate << "&endTime=" << endDate << "&timeUnit=DAY&api_key=" << m_APIKey;
-	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult))
-	{
-		Log(LOG_ERROR, "Error getting http data (EnergyDetails)!");
-		return;
-	}
-#ifdef DEBUG_SolarEdgeAPIW
-	SaveString2Disk(sResult, "E:\\SolarEdge_energyDetails.json");
-#endif
-#endif
-	Json::Value root;
+	time_t now = mytime(nullptr);
+	struct tm ltime;
+	localtime_r(&now, &ltime);
 
-	bool ret = ParseJSon(sResult, root);
-	if ((!ret) || (!root.isObject()))
-	{
-		Log(LOG_ERROR, "Invalid data received!");
-		return;
-	}
-	if (root["energyDetails"].empty() == true)
-	{
-		Log(LOG_ERROR, "Invalid data received, or invalid APIKey");
-		return;
-	}
-	if (root["energyDetails"]["meters"].empty() == true)
-		return;
+	char szMonthFrom[40], szYearFrom[40];
+	snprintf(szMonthFrom, sizeof(szMonthFrom), "%04d-%02d-01T00:00:00Z", ltime.tm_year + 1900, ltime.tm_mon + 1);
+	snprintf(szYearFrom, sizeof(szYearFrom), "%04d-01-01T00:00:00Z", ltime.tm_year + 1900);
+	std::string szNow = FormatApiUtcTime(now);
 
-	const Json::Value& meters = root["energyDetails"]["meters"];
-	for (const auto& meter : meters)
+	struct _tEnergyQuery
 	{
-		if (meter["type"].empty() || meter["values"].empty())
+		std::string from;
+		int sensorId;
+		const char* label;
+	};
+	const _tEnergyQuery queries[] = {
+		{ szMonthFrom, SE_OVERVIEW_MONTH, "Energy This Month" },
+		{ szYearFrom, SE_OVERVIEW_YEAR, "Energy This Year" },
+		{ "2000-01-01T00:00:00Z", SE_OVERVIEW_LIFETIME, "Lifetime Energy" },
+	};
+
+	for (const auto& query : queries)
+	{
+		std::stringstream sURL;
+		sURL << SE_API_BASE_URL << "/sites/" << m_SiteID << "/energy"
+			<< "?resolution=TOTAL&from=" << CURLEncode::URLEncode(query.from) << "&to=" << CURLEncode::URLEncode(szNow);
+
+		std::string sResult;
+		std::vector<std::string> vHeaderData;
+		if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData))
+		{
+			Log(LOG_ERROR, "Error getting http data (Site Energy - %s)!", query.label);
 			continue;
-		const std::string meterType = meter["type"].asString();
-		const Json::Value& values = meter["values"];
-		if (values.empty())
+		}
+		Debug(DEBUG_HARDWARE, "API: Site Energy (%s) status %d", query.label, LastHttpStatusCode(vHeaderData));
+
+		Json::Value root;
+		if (!ParseJSon(sResult, root) || !root.isObject() || root["values"].empty())
+		{
+			Log(LOG_ERROR, "Invalid data received (Site Energy - %s)!", query.label);
 			continue;
-		const Json::Value& yesterday = values[0];
-		if (yesterday["value"].empty()) // no previous value, skip
-			continue;
-
-		const Json::Value& today = values[1]; // this is todays value
-
-		float energy = today["value"].asFloat();
-
-		if (meterType == "Production")
-		{
-			SendCustomSensor(201, SE_ENERGY_PRODUCTION, 255, energy / 1000, "Energy Production", "kWh");
 		}
-		else if (meterType == "Consumption")
-		{
-			SendCustomSensor(201, SE_ENERGY_CONSUMPTION, 255, energy / 1000, "Energy Consumption", "kWh");
-		}
-		else if (meterType == "SelfConsumption")
-		{
-			SendCustomSensor(201, SE_ENERGY_SELFCONSUMPTION, 255, energy / 1000, "Energy Self Consumption", "kWh");
-		}
-		else if (meterType == "FeedIn")
-		{
-			SendCustomSensor(201, SE_ENERGY_FEEDIN, 255, energy / 1000, "Energy Feed In", "kWh");
-		}
-		else if (meterType == "Purchased")
-		{
-			SendCustomSensor(201, SE_ENERGY_PURCHASED, 255, energy / 1000, "Energy Purchased", "kWh");
-		}
+		double energyWh = ToWattHours(LastMetricValue(root), root.get("unit", "WH").asString());
+		SendCustomSensor(200, query.sensorId, 255, (float)(energyWh / 1000.0), query.label, "kWh");
 	}
 }
 
