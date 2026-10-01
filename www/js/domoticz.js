@@ -2784,8 +2784,8 @@ function WatchLiveSearch(){
 		if(_debug_livesearch)  console.log('LiveSearch: processing on keyup - "'+$(this).val()+'"');
 		var query	=$(this).val();
 		if(window.myglobals) window.myglobals.LastSearchFilter = query;
-		var div		=$('.divider');
 		var cont	=$('.devicesList');
+		var div		=cont.find('.divider');
 		var items	=$('.itemBlock');
 		var cl_shown	='liveSearchShown';
 		var filt_search		=$(this).closest('.jsTbFiltSearch');
@@ -2804,7 +2804,9 @@ function WatchLiveSearch(){
 		else{
 			filt_search.addClass(cl_withres);
 			if(! cont.hasClass('devicesListFiltered')){
-				cont.addClass('devicesListFiltered');
+				if(div.hasClass('row')){
+					cont.addClass('devicesListFiltered');
+				}
 				div.css('display','inline');
 			}
 			div.removeClass('row');
