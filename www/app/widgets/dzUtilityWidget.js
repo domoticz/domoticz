@@ -271,9 +271,13 @@ define(['app', 'widgets/dzBar', 'icons/dzIconPicker', 'icons/dzDeviceIcon'], fun
                 var ctrl = this;
                 var device = $scope.device;
 
-                function scopedDeviceHtml(data, prefix) {
+                function scopedDeviceHtml(data, prefix, keepTextLinesBesideIcon) {
                     var scopeId = prefix + String(parseInt(device.idx, 10) || 0);
-                    return $sce.trustAsHtml('<div id="' + scopeId + '">' + sanitizeHTML(data, scopeId) + '</div>');
+                    var html = sanitizeHTML(data, scopeId);
+                    if (keepTextLinesBesideIcon) {
+                        html = '<div style="overflow:hidden">' + html + '</div>';
+                    }
+                    return $sce.trustAsHtml('<div id="' + scopeId + '">' + html + '</div>');
                 }
 
                 ctrl.device = device;
@@ -493,7 +497,7 @@ define(['app', 'widgets/dzBar', 'icons/dzIconPicker', 'icons/dzDeviceIcon'], fun
                     } else if (device.SubType === 'Soil Moisture') {
                         status = device.Desc;
                     } else if (ctrl.isText()) {
-                        return scopedDeviceHtml(device.Data, 'dz-uw-');
+                        return scopedDeviceHtml(device.Data, 'dz-uw-', true);
                     } else if (ctrl.isAlert()) {
                         return scopedDeviceHtml(device.Data, 'dz-ua-');
                     } else if (typeof device.Rain !== 'undefined' && typeof device.RainRate !== 'undefined') {
@@ -530,7 +534,7 @@ define(['app', 'widgets/dzBar', 'icons/dzIconPicker', 'icons/dzDeviceIcon'], fun
                 ctrl.getMobileText = function () {
                     if (ctrl.isText() || ctrl.isAlert()) {
                         if (ctrl.isText()) {
-                            return scopedDeviceHtml(device.Data, 'dz-um-');
+                            return scopedDeviceHtml(device.Data, 'dz-um-', true);
                         }
                         var scopeId = 'dz-ua-' + String(parseInt(device.idx, 10) || 0);
                         var aLevel = Math.min(parseInt(device.Level) || 0, 4);
