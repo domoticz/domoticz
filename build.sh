@@ -30,6 +30,7 @@ case "$BUILD_TYPE" in
     beta)
         BRANCH="origin/development"
         UPLOAD_PATH="beta/"
+        CMAKE_CHANNEL_OPT="-DBUILD_MASTER=OFF"
         ;;
     release)
         BRANCH="origin/master"

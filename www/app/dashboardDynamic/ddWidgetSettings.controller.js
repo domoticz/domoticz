@@ -520,6 +520,20 @@ define([
         var rangeListFields = (descriptor.configSchema || []).filter(function(f) {
             return f.type === 'range-list';
         });
+
+        // Accept both '3.8' and '3,8' (and coerce strings coming from a stored config).
+        function parseDecimal(v) {
+            return parseFloat(String(v).replace(',', '.'));
+        }
+
+        function normalizeRange(r) {
+            if (!r) { return; }
+            var from = parseDecimal(r.from);
+            var to   = parseDecimal(r.to);
+            if (!isNaN(from)) { r.from = from; }
+            if (!isNaN(to))   { r.to   = to; }
+        }
+
         if (rangeListFields.length) {
             rangeListFields.forEach(function(field) {
                 var val = $scope.config[field.key];
@@ -534,9 +548,9 @@ define([
             $scope.newRange = { from: '', to: '', color: '#66bb6a' };
             $scope.rangeDirectionError = {};
 
-            function parseDecimal(v) {
-                return parseFloat(String(v).replace(',', '.'));
-            }
+            $scope.rangeNormalize = function(fieldKey, index) {
+                normalizeRange(($scope.config[fieldKey] || [])[index]);
+            };
 
             $scope.rangeAddItem = function(fieldKey) {
                 var r    = $scope.newRange;
@@ -574,6 +588,7 @@ define([
                 var ranges = $scope.config[field.key] || [];
                 var hasAsc = false, hasDesc = false;
                 ranges.forEach(function(r) {
+                    normalizeRange(r);
                     if (r.from < r.to) { hasAsc  = true; }
                     if (r.from > r.to) { hasDesc = true; }
                 });

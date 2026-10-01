@@ -43,11 +43,20 @@ private:
 		int    levelMaxLevel = 254; // CLUSTER_LEVEL_CONTROL attr 3
 		bool   occupied   = false; bool hasOccupancy = false;
 		bool   contact    = false; bool hasContact   = false;
+		int    deviceType = 0;   bool hasDeviceType = false; // Descriptor DeviceTypeList (Contact/Leak/Rain/Freeze detection)
+		bool   smokeAlarm = false; bool hasSmoke     = false;
+		bool   coAlarm    = false; bool hasCOAlarm   = false;
+		int    airQuality = 0;   bool hasAirQuality = false;
 		int    co2_ppm    = 0;   bool hasCO2       = false;
 		float  co_ppm     = 0;   bool hasCO        = false;
 		float  no2_ppm    = 0;   bool hasNO2       = false;
 		float  pm25_ugm3  = 0;   bool hasPM25      = false;
 		float  pm10_ugm3  = 0;   bool hasPM10      = false;
+		float  pm1_ugm3   = 0;   bool hasPM1       = false;
+		float  tvoc_ppb   = 0;   bool hasTVOC      = false;
+		float  ozone_ppb  = 0;   bool hasOzone     = false;
+		float  formaldehyde_ppb = 0; bool hasFormaldehyde = false;
+		float  radon_Bqm3 = 0;   bool hasRadon     = false;
 		float  flow_lpm   = 0;   bool hasFlow      = false;
 		bool   locked     = false; bool hasLock     = false;
 		double blind_pct  = 0;   bool hasBlind     = false;
@@ -162,6 +171,7 @@ private:
 	void SendGeneralSwitchInt(int domoticzID, int unit, int battery, int value, int level,
 	                          const std::string& label, _eSwitchType switchType);
 	void _ApplySwitchTypeOnCreate(int domoticzID, int unit, bool wasNew, _eSwitchType switchType);
+	void _SendAlertSensorFullId(int domoticzID, int unit, int battery, int alertLevel, const std::string& text, const std::string& label);
 	void ApplyAttributeToState(int cluster_id, int attr_id, const Json::Value& v, EndpointState& state);
 	void ApplyNodeMetadata(int cluster_id, int attr_id, const Json::Value& v, NodeState& node);
 	std::string ExtractLabel(const Json::Value& endpointAttrs, int nodeId, int endpointId) const;

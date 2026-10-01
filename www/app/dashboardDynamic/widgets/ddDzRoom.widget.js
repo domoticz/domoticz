@@ -47,8 +47,8 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$timeout', '$q', '$location', 'ddDeviceClassifier', 'ddToast',
-                function($scope, $http, $timeout, $q, $location, ddDeviceClassifier, ddToast) {
+            controller: ['$scope', '$http', '$timeout', '$q', '$location', 'ddDeviceClassifier', 'ddToast', 'dzIconService',
+                function($scope, $http, $timeout, $q, $location, ddDeviceClassifier, ddToast, dzIconService) {
                 var ctrl = this;
                 ctrl.devices           = [];
                 ctrl.listItems         = [];
@@ -114,15 +114,15 @@ define([
                 }
 
                 var CATEGORY_DEFS = [
-                    { key: 'lights',  label: 'Switches',    icon: 'images/lightbulb.png',
+                    { key: 'lights',  label: 'Switches',    icon: dzIconService.chromeIconFor('images/lightbulb.png'),
                       test: function(d) { return ddDeviceClassifier.getDirective(d) === 'dz-light-widget'; } },
-                    { key: 'temp',    label: 'Temperature',  icon: 'images/temperature.png',
+                    { key: 'temp',    label: 'Temperature',  icon: dzIconService.chromeIconFor('images/temperature.png'),
                       test: function(d) { return d.Temp !== undefined || d.Humidity !== undefined; } },
-                    { key: 'weather', label: 'Weather',      icon: 'images/rain.png',
+                    { key: 'weather', label: 'Weather',      icon: dzIconService.chromeIconFor('images/rain.png'),
                       test: function(d) { return d.Rain !== undefined || d.Barometer !== undefined || d.Direction !== undefined || d.UVI !== undefined; } },
-                    { key: 'utility', label: 'Utility',      icon: 'images/utility.png',
+                    { key: 'utility', label: 'Utility',      icon: dzIconService.chromeIconFor('images/utility.png'),
                       test: function(d) { return ddDeviceClassifier.getDirective(d) === 'dz-utility-widget' && d.Temp === undefined && d.Rain === undefined; } },
-                    { key: 'scenes',  label: 'Scenes',       icon: 'images/scenes.png',
+                    { key: 'scenes',  label: 'Scenes',       icon: dzIconService.chromeIconFor('images/scenes.png'),
                       test: function(d) { return ddDeviceClassifier.getDirective(d) === 'dz-scene-widget'; } }
                 ];
 
@@ -253,6 +253,10 @@ define([
                 ctrl.applyDimLevel = function(item) {
                     var level = parseInt(ctrl.dimLevel[item.idx], 10);
                     if (isNaN(level)) { return; }
+                    // A tap fires touchend plus a synthesized mouseup; send the command only once
+                    var busyKey = item.idx + '_dim';
+                    if (ctrl.busy[busyKey]) { return; }
+                    ctrl.busy[busyKey] = true;
                     $http.get('json.htm', { params: { type: 'command', param: 'switchlight', idx: item.idx, switchcmd: 'Set Level', level: level } })
                         .then(function(resp) {
                             if (resp.data && resp.data.status === 'OK') {
@@ -263,7 +267,8 @@ define([
                         })
                         .catch(function(err) {
                             ddToast.error((item.label || item.idx) + ': ' + ((err && err.statusText) || 'Request failed'));
-                        });
+                        })
+                        .finally(function() { ctrl.busy[busyKey] = false; });
                 };
 
                 ctrl.toggleLevelPicker = function(idx, $event) {

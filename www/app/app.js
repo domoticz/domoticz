@@ -214,6 +214,17 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
     });
 
 	app.config(function ($httpProvider) {
+		// A 401 only means "the Domoticz session is gone" when Domoticz itself sent it.
+		// Widgets fetch third-party URLs through $http too (a calendar ICS fetched
+		// directly, the open-meteo weather API); a 401 from one of those must not
+		// log the user out.
+		var isDomoticzRequest = function (config) {
+			var url = (config && config.url) || '';
+			if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(url) && url.indexOf('//') !== 0) {
+				return true; // relative URL -> same origin
+			}
+			return url.indexOf(window.location.origin + '/') === 0;
+		};
 		var logsOutUserOn401 = ['$q', '$location', 'permissions', function ($q, $location, permissions) {
 			return {
 				request: function (config) {
@@ -226,7 +237,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 					return response || $q.when(response);
 				},
 				responseError: function (response) {
-					if (response && response.status === 401) {
+					if (response && response.status === 401 && isDomoticzRequest(response.config)) {
 						if (window.needsSetup) {
 							$location.path('/SetupWizard');
 						} else {
@@ -370,7 +381,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
     	template: '<section class="page-spinner">{{:: "Loading..." | translate }}</section>'
 	});
 
-	app.run(function ($rootScope, $location, $window, $route, $http, dzTimeAndSun, permissions, $uibModal) {
+	app.run(function ($rootScope, $location, $window, $route, $http, dzTimeAndSun, permissions, $uibModal, $timeout) {
 		var permissionList = {
 			isloggedin: false,
 			rights: -1,
@@ -410,6 +421,12 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 
 			$.myglobals.DashboardType = $rootScope.config.DashboardType;
 			$.myglobals.enableDashboardDynamic = $rootScope.config.EnableTabDashboardDynamic;
+			// Icon style (Settings): the classic image icons by default, Font Awesome glyphs
+			// when chosen. The navigation bar carries both and CSS picks one by this class;
+			// dzIconService reads the same config value for the device icons. The class goes
+			// on <html>: several controllers reset the body's classes when their page loads.
+			$.myglobals.iconGlyphs = ($rootScope.config.IconStyle == 1);
+			document.documentElement.classList.toggle('dz-icons-glyph', $.myglobals.iconGlyphs);
 			$.myglobals.DateFormat = $rootScope.config.DateFormat;
 
 			if (typeof $rootScope.config.WindScale != 'undefined') {
@@ -451,6 +468,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			FiveMinuteHistoryDays: 1,
 			DashboardType: 1,
 			MobileType: 0,
+			IconStyle: 0,
 			TempScale: 1.0,
 			DegreeDaysBaseTemperature: 18.0,
 			PriceResolution: 60,
@@ -485,6 +503,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						$rootScope.config.FiveMinuteHistoryDays = data.FiveMinuteHistoryDays;
 						$rootScope.config.DashboardType = data.DashboardType;
 						$rootScope.config.MobileType = data.MobileType;
+						$rootScope.config.IconStyle = data.IconStyle;
 						$rootScope.config.TempScale = data.TempScale;
 						$rootScope.config.TempSign = data.TempSign;
 						$rootScope.config.WindScale = data.WindScale;
@@ -523,6 +542,19 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						const decimalPoint = formattedNumber[5] === '.' || formattedNumber[5] === ',' ? formattedNumber[5] : '.';
 						const thousandsSep = formattedNumber[1] === ',' || formattedNumber[1] === '.' || formattedNumber[1] === '\u00A0' ? formattedNumber[1] : ',';
 						Highcharts.Templating.helpers.abs3 = value => Math.abs(value).toFixed(3);
+						//Highcharts 12 renders the default axis/tooltip date labels through Intl.
+						//Without an explicit locale it uses the browser locale and ignores the
+						//translated month/weekday arrays below, so map our language to a BCP-47 tag.
+						var chartLocale = 'en';
+						if (typeof $rootScope.config.language === 'string' && $rootScope.config.language !== '') {
+							var wantedLocale = $rootScope.config.language.replace('_', '-');
+							try {
+								Intl.DateTimeFormat.supportedLocalesOf(wantedLocale);
+								chartLocale = wantedLocale;
+							} catch (e) {
+								chartLocale = 'en';
+							}
+						}
 						Highcharts.setOptions({
 							noData: {
 								style: {
@@ -544,7 +576,7 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 								}
 							},
 							lang: {
-								//locale: $rootScope.config.language,
+								locale: chartLocale,
 								noData: $.t('No data to display'),
 								decimalPoint: decimalPoint,
 								thousandsSep: thousandsSep,
@@ -584,6 +616,15 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 									$.t('Thursday'),
 									$.t('Friday'),
 									$.t('Saturday')
+								],
+								shortWeekdays: [
+									$.t('Sun'),
+									$.t('Mon'),
+									$.t('Tue'),
+									$.t('Wed'),
+									$.t('Thu'),
+									$.t('Fri'),
+									$.t('Sat')
 								]
 							}/* to be used when all graphs are timezone aware,
 							global: {
@@ -618,6 +659,10 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 						if (items.length > 0) {
 							var $custommenuLi = $(".clcustommenu");
 							var $custommenuToggle = $custommenuLi.find('> a');
+							// the config is reloaded after a logout/login without a page refresh, reset the toggle first
+							$custommenuToggle.find('b.caret').remove();
+							$custommenuLi.removeClass('dropdown');
+							$custommenuToggle.removeClass('dropdown-toggle').removeAttr('data-toggle');
 							if (items.length === 1) {
 								var item = items[0];
 								$custommenuToggle.attr('href', item.href);
@@ -695,6 +740,14 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			}
 		});
 
+		$rootScope.$on("$routeChangeStart", function () {
+			if ($.fn.dialog) {
+				$('.ui-dialog-content:visible').filter(function () {
+					return $(this).dialog('instance') !== undefined;
+				}).dialog('close');
+			}
+		});
+
 		$rootScope.$on("$routeChangeStart", function (scope, next, current) {
 			if (!isOnline) {
 				$location.path('/Offline');
@@ -742,6 +795,25 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 		});
 
 		var _tipsShown = false;
+		// Log pages build several Highcharts charts straight into their view; when the view is
+		// replaced those charts stayed registered in Highcharts.charts with their SVG, data and
+		// listeners. Once the new view is in place, destroy every chart whose container is no
+		// longer in the document. (Charts that manage their own teardown are already gone.)
+		function destroyDetachedCharts() {
+			if (!window.Highcharts || !window.Highcharts.charts) return;
+			window.Highcharts.charts.forEach(function (chart) {
+				if (chart && chart.renderTo && !document.contains(chart.renderTo)) {
+					try { chart.destroy(); } catch (e) { /* already torn down */ }
+				}
+			});
+		}
+		$rootScope.$on('$routeChangeSuccess', function () {
+			destroyDetachedCharts();
+			// a chart whose data arrives after the page was left renders into the old view;
+			// sweep once more when those requests have had time to finish
+			$timeout(destroyDetachedCharts, 5000, false);
+		});
+
 		$rootScope.$on('$routeChangeSuccess', function() {
 			if (_tipsShown) return;
 			var path = $location.path();
@@ -923,6 +995,120 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 			if (trend == 3) return "down";
 			return "unk";
 		};
+
+		// Fit-based compact toggle and content-offset calibration.
+		//
+		// At viewport widths > 979px (where Bootstrap's hidden-tablet no longer
+		// applies), we detect whether the full-text nav buttons would wrap to a
+		// second row and toggle the 'nav-compact' class on the navbar to hide
+		// labels before that happens.  CSS for .nav-compact lives in style.css.
+		//
+		// --navbar-h is set to: 43 + max(0, currentHeight - singleRowHeight)
+		// so a single-row bar always produces exactly the original 43px offset
+		// and only a genuinely wrapped bar increases the offset.
+		//
+		// The single-row height is only meaningful for the layout the theme
+		// produces at one viewport width, so it is discarded as soon as the
+		// width changes. Keeping it across a breakpoint would latch the
+		// smallest navbar any layout ever had and inflate the offset for every
+		// wider layout afterwards.
+		(function() {
+			var _nav = document.querySelector('.navbar.navbar-fixed-top');
+			if (!_nav) return;
+			var _navList = _nav.querySelector('.nav');
+			var _singleRowH = 0;
+			var _singleRowW = -1;
+
+			// Count the number of rows the nav items occupy by bucketing their
+			// top positions. Items with zero width and height are skipped
+			// (hidden by ng-show). Tops within 3px of a seen row are treated
+			// as the same row to absorb subpixel rounding.
+			function _countRows() {
+				var rows = [];
+				var items = _navList.children;
+				for (var i = 0; i < items.length; i++) {
+					var r = items[i].getBoundingClientRect();
+					if (r.width === 0 && r.height === 0) continue;
+					var matched = false;
+					for (var j = 0; j < rows.length; j++) {
+						if (Math.abs(r.top - rows[j]) <= 3) { matched = true; break; }
+					}
+					if (!matched) rows.push(r.top);
+				}
+				return rows.length;
+			}
+
+			function _needsCompact() {
+				if (window.innerWidth <= 979) return false;
+				if (!_navList) return false;
+				// Capture the nav top and row count in the expanded state then in
+				// the compact state. The top check catches float-drop (the whole
+				// floated ul.nav moving below the brand), which is the common
+				// overflow mode and does not change the ul height. The row-count
+				// check catches genuine internal li wrapping. Raw height is not
+				// used because themes that hide the menu icons would let label
+				// removal shrink the row height without eliminating any row,
+				// re-triggering the original bug.
+				// getBoundingClientRect forces a synchronous reflow so we always
+				// read the layout that matches the current DOM state.
+				_nav.classList.remove('nav-compact');
+				var expandedTop  = _navList.getBoundingClientRect().top;
+				var expandedRows = _countRows();
+				_nav.classList.add('nav-compact');
+				var compactTop  = _navList.getBoundingClientRect().top;
+				var compactRows = _countRows();
+				_nav.classList.remove('nav-compact');
+				return compactTop < expandedTop - 1 ||
+				       compactRows < expandedRows;
+			}
+
+			function _syncAll() {
+				// Drop the baseline when the viewport width changes. Media
+				// queries can give the navbar a completely different layout
+				// (a stacked bar, or a full height sidebar rail) whose height
+				// says nothing about the single-row height of the layout we
+				// are about to measure.
+				if (window.innerWidth !== _singleRowW) {
+					_singleRowW = window.innerWidth;
+					_singleRowH = 0;
+				}
+
+				// Always clear first so a wide-to-narrow resize does not leave a
+				// stale class; _needsCompact also removes it internally but the
+				// early return for narrow viewports skips that path.
+				_nav.classList.remove('nav-compact');
+				if (_needsCompact()) {
+					_nav.classList.add('nav-compact');
+				}
+
+				// offsetHeight forces a reflow and reflects the final compact state.
+				var h = _nav.offsetHeight;
+				if (h > 0) {
+					// Track the smallest height seen at this viewport width as
+					// the single-row height (brand height drives it, same
+					// whether labels are visible or hidden) so a wrapped
+					// measurement is never mistaken for the single-row baseline.
+					if (_singleRowH === 0 || h < _singleRowH) _singleRowH = h;
+					var offset = 43 + Math.max(0, h - _singleRowH);
+					document.documentElement.style.setProperty('--navbar-h', offset + 'px');
+				}
+			}
+
+			_syncAll();
+			window.addEventListener('resize', _syncAll);
+			if (window.ResizeObserver) {
+				// Coalesce observer callbacks to one sync per animation frame.
+				var _rafPending = false;
+				new ResizeObserver(function () {
+					if (_rafPending) return;
+					_rafPending = true;
+					window.requestAnimationFrame(function () {
+						_rafPending = false;
+						_syncAll();
+					});
+				}).observe(_nav);
+			}
+		})();
 
 	});
 

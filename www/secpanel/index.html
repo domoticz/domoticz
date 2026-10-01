@@ -224,7 +224,7 @@
 		function ArmDelay() {
 			var secondelay=0;
 			$.ajax({
-				url: "../json.htm?type=command&param=getsettings",
+				url: "../json.htm?type=command&param=getsecstatus",
 				async: false,
 				dataType: 'json',
 				success: function(data) {
@@ -233,8 +233,8 @@
 						return;
 					}
 					else {
-						if (typeof(data.SecOnDelay) != "undefined") {
-							secondelay=data.SecOnDelay;
+						if (typeof(data.secondelay) != "undefined") {
+							secondelay=data.secondelay;
 						}
 					}
 				},

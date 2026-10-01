@@ -122,7 +122,7 @@ body.dd-navbar-hidden .dd-topbar {
 
 /* Navbar toggle button: accent when navbar is currently visible */
 .dd-topbar-btn.dd-topbar-nav-on {
-    color: #fff !important;
+    color: var(--dz-accent-text, #fff) !important;
     background: var(--dz-btn-primary-bg, #337ab7) !important;
     border-radius: 10px;
 }
@@ -578,6 +578,10 @@ body.dd-navbar-hidden .dd-toolbar {
     display: flex;
     flex-direction: column;
     height: 100%;
+    /* The page is content-box, so height:100% plus the 1px border made the widget 2px
+       taller than its grid cell; .dd-widget-cell clipped that away, hiding the bottom
+       border and the last 2px of the body. */
+    box-sizing: border-box;
     background: var(--dz-panel-bg);
     border: 1px solid var(--dz-border-color, rgba(255, 255, 255, 0.08));
     border-radius: var(--dz-widget-border-radius, 5px);
@@ -1162,10 +1166,24 @@ body.dd-navbar-hidden .dd-toolbar {
     margin-left: 0 !important;
 }
 
-/* Energy dashboard: transparent body only (has its own inline padding/layout) */
+/* Energy dashboard: transparent body, tight padding, content centred vertically.
+   The grid snaps to whole rows, so the card row rarely fills the box exactly;
+   centring splits the leftover instead of stacking it all at the bottom. */
 .dd-widget--energy-dashboard > .dd-widget-body {
     background: transparent;
     overflow: hidden;
+    /* Vertical padding is kept to a minimum: with an energy price the Grid card grows a
+       fourth line and its today line wraps, which has to fit the two-row minimum box. */
+    padding: 2px 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /* safe: when the cards are taller than the box, fall back to top-aligned
+       so the first row is never clipped off the top by the centring. */
+    justify-content: safe center;
+}
+.dd-widget--energy-dashboard > .dd-widget-body > div {
+    min-height: 0;
 }
 
 .dd-dz-device {
@@ -1534,13 +1552,37 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 /* ── Quick Actions widget ─────────────────────────────────── */
+/* The widget content sits in an inline custom element inside a plain block, so a
+   height chain has to be built here. Without it the widget grows past the widget
+   body and the body's own overflow:auto puts a scrollbar around the whole widget. */
+.dd-widget--quick-actions > .dd-widget-body {
+    /* .dd-quick-actions brings its own 6px padding, so the body's default 10px only ate
+       20px of row space and pushed the last row out of the widget at minimum height. */
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.dd-widget--quick-actions > .dd-widget-body > div,
+.dd-widget--quick-actions > .dd-widget-body > div > * {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
 .dd-quick-actions {
     height: 100%;
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
     align-content: center;
+    align-content: safe center;
     padding: 6px;
+    overflow-x: hidden;
+    overflow-y: auto;
     box-sizing: border-box;
 }
 
@@ -1689,8 +1731,7 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 .dd-quick-actions--list {
-    height: auto;
-    flex: 1;
+    height: 100%;
     min-height: 0;
     flex-direction: column;
     flex-wrap: nowrap;
@@ -1702,7 +1743,7 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 /* Full-width row buttons: switch, scene, selector — excludes blind sub-buttons */
-.dd-quick-actions--list .dd-qa-btn:not(.dd-qa-btn--blind):not(.dd-qa-btn--group):not(.dd-qa-btn--dim-slider):not(.dd-qa-btn--dim-toggle) {
+.dd-quick-actions--list .dd-qa-btn:not(.dd-qa-btn--blind):not(.dd-qa-btn--group):not(.dd-qa-btn--dim-toggle) {
     flex: none;
     width: 100%;
     box-sizing: border-box;
@@ -1777,6 +1818,11 @@ body.dd-navbar-hidden .dd-toolbar {
     display: flex;
     gap: 3px;
     flex-shrink: 0;
+}
+
+/* Grid mode: center the On/Off pair below the label, same as the blind group */
+.dd-quick-actions .dd-qa-group-group {
+    align-items: center;
 }
 
 .dd-qa-btn--group {
@@ -1885,8 +1931,7 @@ body.dd-navbar-hidden .dd-toolbar {
     text-align: center;
 }
 
-.dd-qa-dimmer-group > .dd-qa-btn--dim-toggle,
-.dd-qa-dimmer-group > .dd-qa-btn--dim-slider {
+.dd-qa-dimmer-group > .dd-qa-btn--dim-toggle {
     order: 1;
 }
 
@@ -1895,7 +1940,6 @@ body.dd-navbar-hidden .dd-toolbar {
     flex: 0 0 100%;
 }
 
-.dd-qa-btn--dim-slider,
 .dd-qa-btn--dim-toggle {
     flex: none;
     min-width: 0;
@@ -1907,19 +1951,16 @@ body.dd-navbar-hidden .dd-toolbar {
     font-size: 1em;
 }
 
-.dd-qa-btn--dim-slider:hover:not(:disabled),
 .dd-qa-btn--dim-toggle:hover:not(:disabled) {
     background: transparent;
     border: none;
 }
 
-.dd-qa-btn--dim-slider.dd-qa-btn--success,
 .dd-qa-btn--dim-toggle.dd-qa-btn--success {
     background: #dff0d8;
     border: 1px solid var(--dz-btn-success-bg, #27ae60);
 }
 
-.dd-qa-btn--dim-slider.dd-qa-btn--error,
 .dd-qa-btn--dim-toggle.dd-qa-btn--error {
     background: #f2dede;
     border: 1px solid var(--dz-btn-danger-bg, #d9534f);
@@ -1930,18 +1971,22 @@ body.dd-navbar-hidden .dd-toolbar {
     align-items: center;
     gap: 8px;
     width: 100%;
+    box-sizing: border-box;
     padding: 4px 2px 2px;
 }
 
+/* min-width: 0 lets the range shrink past the browser's default input width;
+   without it a narrow card pushes the percentage text outside the widget */
 .dd-qa-dim-range-h {
     flex: 1;
+    min-width: 0;
     cursor: pointer;
     accent-color: var(--dz-accent-color);
 }
 
 .dd-qa-dim-value-text {
     font-size: 0.78em;
-    color: var(--dz-widget-stat-muted);
+    color: var(--dz-body-text);
     white-space: nowrap;
     min-width: 30px;
     text-align: right;
@@ -1962,13 +2007,11 @@ body.dd-navbar-hidden .dd-toolbar {
 }
 
 .dd-quick-actions--list .dd-qa-dimmer-group > .dd-qa-btn--dim-toggle {
-    order: 0;
     flex: none;
     padding: 0;
 }
 
 .dd-quick-actions--list .dd-qa-dimmer-group > .dd-qa-label {
-    order: 1;
     flex: 1;
     text-align: left;
     min-width: 0;
@@ -1977,14 +2020,8 @@ body.dd-navbar-hidden .dd-toolbar {
     white-space: nowrap;
 }
 
-.dd-quick-actions--list .dd-qa-dimmer-group > .dd-qa-btn--dim-slider {
-    order: 2;
-    flex: none;
-    padding: 0;
-}
-
 .dd-quick-actions--list .dd-qa-dimmer-group > .dd-qa-dim-slider-row {
-    order: 3;
+    order: 2;
     flex: 0 0 100%;
     padding: 4px 0 2px;
 }
@@ -2911,6 +2948,9 @@ dd-wcp-color {
     overflow: hidden;
     position: relative;
 }
+.dd-stat-card--timeout {
+    background: color-mix(in srgb, var(--dz-status-timeout) 25%, var(--dz-panel-bg));
+}
 .dd-stat-label {
     font-size: 0.85em;
     color: var(--dz-body-text);
@@ -2982,6 +3022,7 @@ dd-wcp-color {
 .dd-energy-export  { color: var(--dz-widget-energy-export); }
 .dd-energy-price   { color: var(--dz-widget-energy-price);  }
 .dd-energy-solar   { color: var(--dz-widget-amber);  }
+.dd-energy-house { color: var(--dz-widget-accent); }
 .dd-energy-gas     { color: var(--dz-widget-energy-gas);    }
 .dd-energy-water   { color: var(--dz-widget-energy-water);  }
 .dd-energy-battery { color: var(--dz-widget-accent); }
@@ -2993,13 +3034,20 @@ dd-wcp-color {
     gap: 6px;
     justify-content: center;
     align-items: stretch;
-    padding: 2px 0 4px;
+    /* No padding of its own: the widget body supplies it. The bottom padding used to be
+       the only gap to the balance bar, so that moved onto the bar, where it costs height
+       only when the bar is actually there. */
+    padding: 0;
 }
 .dd-fc-conditions .dd-stat-card {
     min-width: 120px;
     flex: 1 1 120px;
     max-width: 200px;
     height: auto;
+    /* Tighter than the shared .dd-stat-card: a Grid card with a price line has four rows
+       of text and must still fit the widget's two-row minimum box. */
+    padding: 6px 12px;
+    gap: 3px;
 }
 .dd-fc-conditions .dd-stat-value {
     white-space: nowrap;
@@ -3046,6 +3094,12 @@ dd-wcp-color {
     gap: 6px 20px;
     height: 100%;
     box-sizing: border-box;
+}
+/* Only where the bar follows the card row, i.e. inside the Energy Dashboard widget: the
+   row gave up the bottom padding that used to separate the two. The self-sufficiency
+   widget uses .dd-balance as its own root and must not gain a top margin. */
+.dd-fc-conditions + .dd-balance {
+    margin-top: 4px;
 }
 .dd-balance-stats {
     display: flex;
@@ -3129,9 +3183,10 @@ dd-wcp-color {
 /* ── Text Sensor Widget ───────────────────────────────────── */
 .dd-widget--text-sensor > .dd-widget-body { padding: 4px; background: transparent; }
 .dd-text-sensor {
+    display: flex;
+    flex-direction: column;
     padding: 8px;
     height: 100%;
-    overflow-y: auto;
     box-sizing: border-box;
     border-radius: var(--dz-border-radius, 8px);
     background: var(--dz-panel-bg);
@@ -3139,6 +3194,8 @@ dd-wcp-color {
 .dd-text-sensor-inner {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    min-height: 0;
 }
 .dd-text-sensor-header {
     display: flex;
@@ -3168,7 +3225,9 @@ dd-wcp-color {
     margin-left: 8px;
 }
 .dd-text-sensor-content {
-    flex-shrink: 0;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
     word-break: break-word;
     line-height: 1.5;
     text-align: left;
@@ -3272,7 +3331,7 @@ dd-wcp-color {
 
 /* Kiosk button: accent when kiosk is running */
 .dd-topbar-btn.dd-topbar-kiosk-active {
-    color: #fff !important;
+    color: var(--dz-accent-text, #fff) !important;
     background: var(--dz-widget-accent) !important;
     border-radius: 10px;
 }
@@ -3467,6 +3526,27 @@ body.dd-standby::after {
 .dd-dial-clickable:hover { opacity: 0.8; }
 
 /* ── Quick Stat widget ─────────────────────────────── */
+/* The widget content sits in an inline custom element inside a plain block, so a
+   height chain has to be built here. Without it the widget grows past the widget
+   body and the body's own overflow:auto puts a scrollbar around the whole widget. */
+.dd-widget--quick-stat > .dd-widget-body {
+    /* .dd-quick-stat brings its own 6px padding, so the body's default 10px only ate
+       20px of row space and pushed the last row out of the widget at minimum height. */
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.dd-widget--quick-stat > .dd-widget-body > div,
+.dd-widget--quick-stat > .dd-widget-body > div > * {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
 .dd-quick-stat > .dd-chart-unconfigured {
     grid-column: 1 / -1;
     height: auto;
@@ -3520,6 +3600,10 @@ body.dd-standby::after {
     color: var(--dz-accent-color);
     opacity: 1;
 }
+.dd-qs-item--timeout {
+    background: color-mix(in srgb, var(--dz-status-timeout) 25%, var(--dz-panel-bg));
+    border-color: var(--dz-status-timeout);
+}
 .dd-log-icon {
     cursor: pointer;
     flex-shrink: 0;
@@ -3551,6 +3635,9 @@ body.dd-standby::after {
     font-weight: 600;
     color: var(--dz-widget-accent);
     white-space: nowrap;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .dd-qs-value--on {
     color: var(--dz-accent-color);
@@ -3562,16 +3649,22 @@ body.dd-standby::after {
     display: inline-flex;
     align-items: baseline;
     gap: 0.3em;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
 }
 .dd-qs-value-link { cursor: pointer; }
 .dd-qs-value-link:hover { opacity: 0.8; }
 .dd-quick-stat--list .dd-qs-value-wrap,
 .dd-quick-stat--list .dd-qs-secondary {
     margin-left: auto;
-    flex-shrink: 0;
+    flex-shrink: 1;
+    min-width: 0;
 }
 .dd-qs-secondary {
     white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
 }
 .dd-qs-empty {
     display: flex;

@@ -37,6 +37,128 @@ Two things it is careful about, both of which produce false results if ignored:
 It also probes the request-size limits, HTTP keep-alive behaviour, and the
 authenticated WebSocket API.
 
+### Device calibration (AddjValue/AddjMulti)
+
+`python/test_calibration.py` proves whether calibration offsets (the device
+edit dialog's "Calibration" tab) are actually applied, and applied exactly
+once, across the different ways a device's value can be updated. It exists
+because calibration is historically re-implemented ad hoc at each ingest
+point (the JSON `udevice` API, `hardware/MQTTAutoDiscover.cpp`) instead of
+living in one place, so some paths applied it and others silently did not;
+the Python plugin ingest path (`hardware/plugins/PythonObjects.cpp`) was one
+that did not.
+
+```
+python test/python/test_calibration.py msbuild/x64/Debug/domoticz.exe
+```
+
+Like the API sweep, it starts its own Domoticz on a free port with a
+throwaway database and userdata folder, so it never touches an existing
+installation, and it is subject to the same single-instance-mutex caveat
+described above.
+
+It exercises the udevice and plugin ingest paths against pTypeTEMP,
+pTypeTEMP_HUM, pTypeTEMP_HUM_BARO (both the integer- and float-barometer
+sValue formats, covering temperature via AddjValue *and* barometer via
+AddjValue2), a bare barometer, and UV:
+
+* The JSON `udevice` API, which already calibrates temperature and the
+  paired barometer correctly today. This is the regression guard.
+* A small example plugin, `plugins/examples/CalibrationTest/`, copied by the
+  test into its own throwaway `userdata/plugins/CalibrationTest/` folder for
+  the run (Domoticz scans `<userdata>/plugins/<Name>/plugin.py` once at
+  boot, so the real checkout's `plugins/` directory is never touched). A
+  "Push Raw Values" switch device lets the test set calibration first, then
+  deterministically trigger the plugin to push known raw values, rather
+  than waiting on a heartbeat.
+
+* MQTT Auto Discovery (`hardware/MQTTAutoDiscover.cpp`), against a small
+  in-process MQTT 3.1.1 broker, `python/mini_mqtt_broker.py`, since there is
+  no broker installed on this machine and none bundled in this repository.
+  The test starts the broker on a free loopback port, adds an "MQTT Auto
+  Discovery Client Gateway" hardware instance pointed at it, waits for
+  Domoticz to actually connect (it watches for the `<prefix>/status` =
+  `online` message Domoticz publishes once connected and subscribed, rather
+  than assuming), then uses a real `paho-mqtt` client to replay the Home
+  Assistant discovery handshake for two standalone sensors: a temperature
+  sensor (retained config on `<prefix>/sensor/tempnode/temperature/config`,
+  `AddjValue`) and a bare atmospheric-pressure sensor in hPa (retained config
+  on `<prefix>/sensor/baronode/pressure/config`, `AddjValue2` -- this is the
+  case `MQTTAutoDiscover.cpp` never calibrated even before the refactor,
+  since it only ever hand-applied calibration for temperature). Each sensor
+  gets an initial uncalibrated push so it becomes visible via `getdevices`
+  (same empty-`sValue` caveat as the plugin path, see below), calibration is
+  set, then a second value is published and read back. If `paho-mqtt` is not
+  installed, or Domoticz never connects to the mini broker, or the
+  discovered devices never appear, this path is skipped with a clear `SKIP`
+  line rather than failing.
+
+  `mini_mqtt_broker.py` is also runnable standalone for debugging
+  (`python test/python/mini_mqtt_broker.py [port]`), printing every publish
+  it sees. It supports CONNECT/CONNACK, SUBSCRIBE/SUBACK,
+  UNSUBSCRIBE/UNSUBACK, PUBLISH both directions, PUBACK, PINGREQ/PINGRESP,
+  DISCONNECT, QoS 0 and 1 (QoS 1 is acknowledged with PUBACK but always
+  forwarded to subscribers at QoS 0 -- "at most once" on the broker side,
+  which is enough for one publisher and one subscriber on loopback), and
+  retained messages (stored and replayed to subscribers that subscribe
+  later, which the discovery flow depends on). It does not implement
+  sessions, Will messages, QoS 2, or TLS, and a malformed or unexpected
+  packet is logged and the connection dropped rather than taking the whole
+  broker thread down.
+
+Pass `--record baseline.json` to additionally dump every case's raw value,
+calibration, expected value, observed value, and PASS/FAIL/SKIP status to a
+JSON file, so a run against a pre-fix binary and a run against a post-fix
+binary can be diffed directly. The printed table and exit code always
+reflect PASS/FAIL/SKIP regardless of `--record`.
+
+Set `KEEP_TESTDATA=1` to leave the throwaway database, log and plugins
+folder behind after the run instead of deleting them, which is what you want
+when a case fails and you need to inspect the instance's `DeviceStatus`
+table or log.
+
+One thing worth knowing when reading a failure: a device whose `sValue` is
+still empty is not returned by `getdevices` at all, and a bare barometer has
+no value until something updates it. The plugin cases therefore fire one
+uncalibrated push purely to make every device visible, then set calibration
+and push a second time. Skipping that first push makes the barometer, the
+device this test cares most about, permanently invisible.
+
+### Command rights
+
+`python/test_command_rights.py` guards the minimum user rights of the JSON
+commands. Each command is registered in `main/WebServer.cpp` with the rights it
+needs (`RegisterCommandCode(name, fn, minRights, bypassAuthentication)`) and
+`CWebServer::GetJSonPage` refuses a caller below that level before the handler
+runs.
+
+```
+python test/python/test_command_rights.py msbuild/x64/Debug/domoticz.exe
+```
+
+It checks two things:
+
+* **Static**, from the sources: every registration must match the reviewed
+  list in `python/command_rights.json` (its level, and `(no login)` for a
+  command that bypasses authentication). Most handlers do not check the rights
+  themselves, so the registration is all that protects them; comparing it with
+  the list means a level cannot be lowered, and a command cannot be added,
+  without a deliberate edit there. A handler that still refuses callers itself
+  must not be registered below that level, and no command that bypasses
+  authentication may claim a level above viewer.
+* **Runtime**, against its own throwaway Domoticz (same single-instance-mutex
+  caveat as the API sweep) with an admin, a user and a viewer account:
+  anonymous callers get 401 on every non-bypass command, the viewer and the
+  user get 403 on every admin command and the viewer on every user command.
+  Only requests that must be refused are sent, so no handler runs. Spot checks
+  cover what the lower roles may still do, the `gethardware` credential
+  redaction, `resetsecuritystatus` and the MCP resource/tool role checks.
+
+When a command is added or its level changes, set the level on its
+`RegisterCommandCode` line and add or update its entry in
+`python/command_rights.json` (`viewer`, `user` or `admin`), so the change shows
+up in review.
+
 ## Unit testing
 
 For _dzVents_ quite some unit-tests are available (_code-coverage above 80%_) testing many aspects of 'dzVents' ensuring that functionality does not change or break when changes are made.

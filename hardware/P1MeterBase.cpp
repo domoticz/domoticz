@@ -642,8 +642,21 @@ bool P1MeterBase::MatchLine()
 				} //if (difftime(atime, m_lastUpdateTime) >= m_ratelimit)
 
 #define kWh_Update_Interval 10
+				// Integrate per-phase energy using the ACTUAL elapsed time since the previous
+				// accumulation instead of assuming exactly kWh_Update_Interval seconds passed.
+				// With an irregular telegram cadence (gateway hiccups, high ratelimit) the fixed
+				// crediting systematically under-counts. A long data gap is capped so a stale
+				// average is not extrapolated across it.
+				// Note: these counters integrate per-phase GROSS power (OBIS 21/41/61.7.0 and
+				// 22/42/62.7.0). Meters net simultaneous cross-phase import/export in their
+				// 1.8.x/2.8.x registers (e.g. solar/battery exporting on one phase while another
+				// phase imports), so these calculated totals legitimately read higher than the
+				// meter registers on installations with per-phase generation.
 				if (difftime(atime, m_lastSendCalculated) >= kWh_Update_Interval)
 				{
+					double elapsed = difftime(atime, m_lastSendCalculated);
+					if (elapsed > 4 * kWh_Update_Interval)
+						elapsed = 4 * kWh_Update_Interval; // data gap: credit at most 40 seconds
 					m_lastSendCalculated = atime;
 
 					for (int iif = 0; iif < 3; iif++)
@@ -652,15 +665,18 @@ bool P1MeterBase::MatchLine()
 						float avr_deliv = m_avr_calculated[iif].Get_Delivery_Avr();
 						m_avr_calculated[iif].ResetTotals();
 
+						// An average of exactly -1 means the phase never reported (the -1 init
+						// value was accumulated every telegram, e.g. a single phase meter):
+						// skip it, or the counter would slowly decay by -1 W worth of energy.
 						if (avr_usage != -1)
 						{
-							m_avr_calculated[iif].usage_cntr += (avr_usage * kWh_Update_Interval / 3600.0);
+							m_avr_calculated[iif].usage_cntr += (avr_usage * elapsed / 3600.0);
 							if (m_avr_calculated[iif].usage_cntr > 0)
 								SendKwhMeter(0, 1 + iif, 255, round(avr_usage), m_avr_calculated[iif].usage_cntr * 0.001, std_format("kWh Usage L%d (Calculated)", 1 + iif));
 						}
 						if (avr_deliv != -1)
 						{
-							m_avr_calculated[iif].delivery_cntr += (avr_deliv * kWh_Update_Interval / 3600.0);
+							m_avr_calculated[iif].delivery_cntr += (avr_deliv * elapsed / 3600.0);
 							if (m_avr_calculated[iif].delivery_cntr > 0)
 								SendKwhMeter(0, 4 + iif, 255, round(avr_deliv), m_avr_calculated[iif].delivery_cntr * 0.001, std_format("kWh Delivery L%d (Calculated)", 1 + iif));
 						}
@@ -1265,7 +1281,8 @@ void P1MeterBase::ParseP1Data(const uint8_t* pDataIn, const int LenIn, const boo
 	// state — m_runningCRC still holds the previous message's accumulated value at this point.
 	if (pData[ii] == 0x2f)
 	{
-		if ((l_buffer[0] == 0x21) && !l_exclmarkfound && (m_linecount > 0))
+		// an oversized line fills l_buffer completely and leaves no room for the terminator
+		if ((l_buffer[0] == 0x21) && !l_exclmarkfound && (m_linecount > 0) && (l_bufferpos < sizeof(l_buffer)))
 		{
 			Log(LOG_STATUS, "WARNING: got new message but buffer still contains unprocessed data from previous message.");
 			l_buffer[l_bufferpos] = 0;

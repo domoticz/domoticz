@@ -195,8 +195,10 @@ main/SignalHandler.cpp
 main/SQLHelper.cpp
 main/StoppableTask.cpp
 main/SunRiseSet.cpp
+main/ThemeSettings.cpp
 main/TrendCalculator.cpp
 main/DomoticzWebsocketHandler.cpp
+main/WebAssetFetch.cpp
 main/WebServer.cpp
 main/WebServerCmds.cpp
 main/WebServerCommands.cpp
@@ -571,9 +573,11 @@ MESSAGE(STATUS "###########################")
 MESSAGE(STATUS "Compiling Revision #${ProjectRevision}")
 MESSAGE(STATUS "###########################")
 
-# The version number.
+# The version number. Keep in sync with VERSION_MAJOR/VERSION_MINOR in
+# main/appversion.h, which is what the running application reports; these two
+# only feed the CPack package name and had drifted a release behind.
 set (domoticz_VERSION_MAJOR 2026)
-set (domoticz_VERSION_MINOR 2)
+set (domoticz_VERSION_MINOR 4)
 set (domoticz_VERSION_PATCH ${ProjectRevision})
 
 # explicitly say that the executable depends on the revisiontag

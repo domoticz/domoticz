@@ -44,6 +44,7 @@ define([
             {
                 key:     'refreshInterval',
                 type:    'number',
+                step:    1,
                 label:   'Refresh interval (seconds)',
                 default: 300
             }

@@ -13,8 +13,8 @@ define([
         icon:        'fa-solid fa-gauge',
         defaultW:    6,
         defaultH:    4,
-        minW:        4,
-        minH:        3,
+        minW:        2,
+        minH:        2,
         maxW:        12,
         maxH:        8,
         configSchema: [
@@ -34,6 +34,12 @@ define([
                 key:     'showGas',
                 type:    'boolean',
                 label:   'Show gas card',
+                default: true
+            },
+            {
+                key:     'showHouse',
+                type:    'boolean',
+                label:   'Show house card',
                 default: true
             },
             {
@@ -57,6 +63,7 @@ define([
             {
                 key:     'refreshInterval',
                 type:    'number',
+                step:    1,
                 label:   'Refresh interval (seconds)',
                 default: 60
             }
@@ -84,6 +91,7 @@ define([
                 ctrl.batteryLive = null;
                 ctrl.weather     = null;
                 ctrl.balance     = null;
+                ctrl.house       = null;
                 ctrl.isNight     = false;
                 ctrl.currentTime = '';
                 ctrl.sunrise     = '';
@@ -107,6 +115,25 @@ define([
                     battVolt:    -1
                 };
                 ctrl.ids = ids; // exposed to template for ng-href log links
+
+                // A card is only rendered when its device is actually configured in
+                // Setup > Settings > Energy Dashboard. Until those settings are known
+                // (or when they could not be fetched) every card stays visible.
+                ctrl.settingsLoaded = false;
+
+                ctrl.hasDevice = function(name) {
+                    if (!ctrl.settingsLoaded) { return true; }
+                    if (name === 'battery') {
+                        return ids.battEnergyIn !== -1 || ids.battEnergyOut !== -1 ||
+                               ids.battSoc !== -1 || ids.battWatt !== -1 || ids.battVolt !== -1;
+                    }
+                    return ids[name] !== -1;
+                };
+
+                ctrl.hasAnyDevice = function() {
+                    return ctrl.hasDevice('p1') || ctrl.hasDevice('solar') || ctrl.hasDevice('weather') ||
+                           ctrl.hasDevice('gas') || ctrl.hasDevice('water') || ctrl.hasDevice('battery');
+                };
 
                 function parseWatt(str) {
                     if (!str) { return 0; }
@@ -161,6 +188,7 @@ define([
                             usageDelivWatt:    parseWatt(gr.UsageDeliv),
                             counterToday:      gr.CounterToday || '',
                             counterDelivToday: gr.CounterDelivToday || '',
+                            timeout:           gr.HaveTimeout === true,
                             price:             gr.hasOwnProperty('price') ? (parseFloat(gr.price) || 0) : null
                         };
                     } else {
@@ -172,7 +200,8 @@ define([
                     if (sl) {
                         ctrl.solar = {
                             usageWatt:    Math.round(parseWatt(sl.Usage)),
-                            counterToday: sl.CounterToday || ''
+                            counterToday: sl.CounterToday || '',
+                            timeout:      sl.HaveTimeout === true
                         };
                     } else {
                         ctrl.solar = null;
@@ -185,6 +214,7 @@ define([
                             temp:        parseFloat(wt.Temp) || 0,
                             humidity:    parseFloat(wt.Humidity) || 0,
                             barometer:   parseInt(wt.Barometer, 10) || 0,
+                            timeout:     wt.HaveTimeout === true,
                             forecastStr: wt.ForecastStr || '',
                             scene:       getWeatherScene(wt.ForecastStr || ''),
                             dewPoint:    parseFloat(wt.DewPoint) || 0
@@ -200,7 +230,8 @@ define([
                         ctrl.gas = {
                             counterToday: gs.CounterToday || '',
                             counter:      gs.Counter || '',
-                            price: (!isNaN(rawGasPrice) && rawGasPrice !== 1000 && rawGasPrice !== 0) ? rawGasPrice : null
+                            price: (!isNaN(rawGasPrice) && rawGasPrice !== 1000 && rawGasPrice !== 0) ? rawGasPrice : null,
+                            timeout:      gs.HaveTimeout === true
                         };
                     } else {
                         ctrl.gas = null;
@@ -213,21 +244,22 @@ define([
                         ctrl.water = {
                             counterToday: wm.CounterToday || '',
                             counter:      wm.Counter || '',
-                            price: (!isNaN(rawWaterPrice) && rawWaterPrice !== 1000 && rawWaterPrice !== 0) ? rawWaterPrice : null
+                            price: (!isNaN(rawWaterPrice) && rawWaterPrice !== 1000 && rawWaterPrice !== 0) ? rawWaterPrice : null,
+                            timeout:      wm.HaveTimeout === true
                         };
                     } else {
                         ctrl.water = null;
                     }
 
                     // Battery energy meters
-                    var batImportedKwh = 0, batExportedKwh = 0;
+                    var batImportedKwh = 0, batExportedKwh = 0, timeout = false;
                     var bi = get(ids.battEnergyIn);
-                    if (bi) { batImportedKwh = parseKwh(bi.CounterToday); }
+                    if (bi) { batImportedKwh = parseKwh(bi.CounterToday); timeout = bi.HaveTimeout === true; }
                     var bo = get(ids.battEnergyOut);
-                    if (bo) { batExportedKwh = parseKwh(bo.CounterToday); }
+                    if (bo) { batExportedKwh = parseKwh(bo.CounterToday); timeout = timeout || bo.HaveTimeout === true; }
 
                     if (bi || bo) {
-                        ctrl.battery = { importedKwh: batImportedKwh, exportedKwh: batExportedKwh };
+                        ctrl.battery = { importedKwh: batImportedKwh, exportedKwh: batExportedKwh, timeout: timeout };
                     } else {
                         ctrl.battery = null;
                     }
@@ -244,6 +276,28 @@ define([
                         };
                     } else {
                         ctrl.batteryLive = null;
+                    }
+
+                    // House: what the home itself draws right now and has used today.
+                    //   live  = grid import - grid export + solar - battery charge
+                    //   today = grid import + solar - grid export - battery net (as the balance bar)
+                    // The battery watt device counts positive as charging; a battery that has
+                    // no watt device configured is left out of the live figure.
+                    if (ctrl.grid) {
+                        var solarW = ctrl.solar ? ctrl.solar.usageWatt : 0;
+                        var batW   = (ctrl.batteryLive && ctrl.batteryLive.watt !== null) ? ctrl.batteryLive.watt : 0;
+                        var houseW = Math.round(ctrl.grid.usageWatt - ctrl.grid.usageDelivWatt + solarW - batW);
+                        var houseTodayKwh = parseKwh(ctrl.grid.counterToday)
+                            + (ctrl.solar ? parseKwh(ctrl.solar.counterToday) : 0)
+                            - parseKwh(ctrl.grid.counterDelivToday)
+                            - (batImportedKwh - batExportedKwh);
+                        ctrl.house = {
+                            watt:    Math.max(0, houseW),
+                            today:   Math.max(0, houseTodayKwh),
+                            timeout: ctrl.grid.timeout || (ctrl.solar ? ctrl.solar.timeout : false)
+                        };
+                    } else {
+                        ctrl.house = null;
                     }
 
                     // Energy balance calculation
@@ -371,6 +425,7 @@ define([
                             ids.battSoc       = s.idBatterySoc       || -1;
                             ids.battWatt      = s.idBatteryWatt      || -1;
                             ids.battVolt      = s.idBatteryVolt      || -1;
+                            ctrl.settingsLoaded = true;
                         }
                         fetchDevices();
                     }).catch(function() {

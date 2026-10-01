@@ -16,7 +16,7 @@
           <td align="right"><label for="latitude">Latitude: </label></td>
           <td>
 			<input type="text" id="latitude" style="width: 90px; padding: .2em;" class="text ui-widget-content ui-corner-all">
-			<img id="geodetect" src="images/location.png" class="lcursor unselected" height="24" width="24">
+			<i id="geodetect" class="fa-solid fa-location-dot dz-chrome-icon dz-chrome-icon-24 lcursor unselected"></i>
 		  </td>
 	    </tr>
         <tr>
@@ -35,7 +35,6 @@
 <div id="maindiv" class="container">
 	<div id="settingscontent">
 		<form id="settings">
-			<input type="hidden" id="ThemeSettings" name="ThemeSettings">
 			<div id="content">
 				<ul id="tabs" class="nav nav-tabs sub-tabs" data-tabs="tabs">
 					<li class="active"><a data-target="#tabsystem" data-toggle="tab" data-i18n="System">System</a></li>
@@ -73,6 +72,15 @@
 										<td align="right"><label for="Themes"><span data-i18n="Theme"></span>: </label></td>
 										<td>
 											<select id="combothemes" name="Themes" style="width:200px" class="combobox ui-corner-all">
+											</select>
+										</td>
+									</tr>
+									<tr>
+										<td align="right"><label for="IconStyle"><span data-i18n="Icon style"></span>: </label></td>
+										<td>
+											<select id="comboiconstyle" name="IconStyle" style="width:200px" class="combobox ui-corner-all">
+												<option data-i18n="Classic images" value="0">Classic images</option>
+												<option data-i18n="Font Awesome glyphs" value="1">Font Awesome glyphs</option>
 											</select>
 										</td>
 									</tr>
@@ -1447,6 +1455,38 @@
 											<input type="input" id="WebLocalNetworks" name="WebLocalNetworks" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all"><br>
 											<span data-i18n="(Separate by a semicolon, For Example"></span>: 127.0.0.*;192.168.0.*)
 										</td>
+									</tr>
+									<tr>
+										<td align="right"><label><span data-i18n="Reverse proxy header"></span>: </label></td>
+										<td>
+											<select id="WebProxyHeaderFamily" name="WebProxyHeaderFamily" class="combobox ui-corner-all">
+												<option value="0" data-i18n="None (no reverse proxy)"></option>
+												<option value="2">X-Forwarded-For</option>
+												<option value="3">X-Real-IP</option>
+												<option value="1">Forwarded (RFC 7239)</option>
+											</select><br>
+											<span data-i18n="Which header your reverse proxy writes the client address into. Only this header is trusted; the others are ignored. Requires a restart"></span>
+										</td>
+									</tr>
+									</table>
+								</div>
+							</div>
+							<div class="row-fluid">
+								<div class="span12">
+									<h2><span data-i18n="Allowed CORS Origins"></span>:</h2>
+									<table class="display" id="webcorstable" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="right" style="width:60px"><label><span data-i18n="Origins"></span>: </label></td>
+										<td>
+											<input type="text" id="WebAllowedCORSOrigins" name="WebAllowedCORSOrigins" style="width: 300px; padding: .2em;" class="text ui-widget-content ui-corner-all"><br>
+											<span data-i18n="(Separate by a semicolon, For Example"></span>: http://192.168.0.5:8082;https://dashboard.example.com)
+										</td>
+									</tr>
+									<tr>
+										<td colspan="2"><input type="checkbox" id="WebCORSAllowTrustedNetworks" name="WebCORSAllowTrustedNetworks"> <label for="WebCORSAllowTrustedNetworks" data-i18n="Also allow origins from local networks (no username/password)"></label></td>
+									</tr>
+									<tr>
+										<td colspan="2"><span data-i18n="Warning: allowed origins can read and control the API from a browser on your local networks!"></span></td>
 									</tr>
 									</table>
 								</div>

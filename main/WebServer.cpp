@@ -5,6 +5,7 @@
 #include <json/json.h>
 #include <algorithm>
 #include "WebServer.h"
+#include "WebAssetFetch.h"
 #include "WebServerHelper.h"
 #include "mainworker.h"
 #include "Helper.h"
@@ -133,10 +134,41 @@ namespace http
 			_log.Log(LOG_STATUS, "WebServer(%s) stopped", m_server_alias.c_str());
 		}
 
+		std::vector<std::string> CWebServer::ParseCorsOrigins(const std::string& sOrigins)
+		{
+			std::vector<std::string> result;
+			std::vector<std::string> strarray;
+			StringSplit(sOrigins, ";", strarray);
+			for (auto& str : strarray)
+			{
+				stdstring_trim(str);
+				while (!str.empty() && str.back() == '/')
+					str.pop_back();
+				if (!str.empty())
+					result.push_back(str);
+			}
+			return result;
+		}
+
 		bool CWebServer::StartServer(server_settings& settings, const std::string& serverpath, const bool bIgnoreUsernamePassword)
 		{
 			if (!settings.is_enabled())
 				return true;
+
+			// Which forwarded-client-address header (if any) we are allowed to trust.
+			// Only the configured family is ever read, so naming the wrong one silently
+			// loses the real client address; naming none means the peer address is used
+			// as-is, which is what a deployment without a reverse proxy wants.
+			// Defaults to X-Forwarded-For, the value this was hardcoded to before it
+			// became configurable.
+			int iProxyHeaderFamily = static_cast<int>(ProxyHeaderFamily::XForwardedFor);
+			m_sql.GetPreferencesVar("WebProxyHeaderFamily", iProxyHeaderFamily);
+			if ((iProxyHeaderFamily < static_cast<int>(ProxyHeaderFamily::None)) || (iProxyHeaderFamily > static_cast<int>(ProxyHeaderFamily::XRealIP)))
+			{
+				_log.Log(LOG_ERROR, "WebServer: Invalid proxy header family setting (%d), falling back to X-Forwarded-For", iProxyHeaderFamily);
+				iProxyHeaderFamily = static_cast<int>(ProxyHeaderFamily::XForwardedFor);
+			}
+			settings.trusted_proxy_header_family = static_cast<ProxyHeaderFamily>(iProxyHeaderFamily);
 
 			m_server_alias = (settings.is_secure() == true) ? "SSL" : "HTTP";
 
@@ -256,6 +288,14 @@ namespace http
 				for (const auto& str : strarray)
 					m_pWebEm->AddTrustedNetworks(str);
 			}
+
+			std::string sAllowedCorsOrigins;
+			int nCorsAllowTrusted = 0;
+			m_sql.GetPreferencesVar("WebAllowedCORSOrigins", sAllowedCorsOrigins);
+			m_sql.GetPreferencesVar("WebCORSAllowTrustedNetworks", nCorsAllowTrusted);
+			m_pWebEm->SetCorsPolicy(ParseCorsOrigins(sAllowedCorsOrigins), nCorsAllowTrusted != 0);
+			if (sAllowedCorsOrigins.find('*') != std::string::npos)
+				_log.Log(LOG_STATUS, "SECURITY RISK! CORS origin '*' is configured: every website can call the API from a browser on a trusted network! Restrict 'Allowed CORS origins' in Settings/Security to specific origins.");
 			if (bIgnoreUsernamePassword)
 			{
 				m_pWebEm->AddTrustedNetworks("0.0.0.0/0");	// IPv4
@@ -311,9 +351,9 @@ namespace http
 			m_pWebEm->RegisterActionCode("sbfspotimportolddata", [this](auto&& session, auto&& req, auto&& redirect_uri) { SBFSpotImportOldData(session, req, redirect_uri); });
 
 			// Passkey/WebAuthn commands (bypass authentication - needed during login)
-			RegisterCommandCode("passkeylogin-begin", [this](auto&& session, auto&& req, auto&& root) { Cmd_PasskeyLoginBegin(session, req, root); }, true);
-			RegisterCommandCode("passkeylogin-complete", [this](auto&& session, auto&& req, auto&& root) { Cmd_PasskeyLoginComplete(session, req, root); }, true);
-			RegisterCommandCode("haspasskeys", [this](auto&& session, auto&& req, auto&& root) { Cmd_HasPasskeys(session, req, root); }, true);
+			RegisterCommandCode("passkeylogin-begin", [this](auto&& session, auto&& req, auto&& root) { Cmd_PasskeyLoginBegin(session, req, root); }, URIGHTS_VIEWER, true);
+			RegisterCommandCode("passkeylogin-complete", [this](auto&& session, auto&& req, auto&& root) { Cmd_PasskeyLoginComplete(session, req, root); }, URIGHTS_VIEWER, true);
+			RegisterCommandCode("haspasskeys", [this](auto&& session, auto&& req, auto&& root) { Cmd_HasPasskeys(session, req, root); }, URIGHTS_VIEWER, true);
 
 			// Passkey/WebAuthn commands (require authentication)
 			RegisterCommandCode("registerpasskey-begin", [this](auto&& session, auto&& req, auto&& root) { Cmd_RegisterPasskeyBegin(session, req, root); });
@@ -322,172 +362,172 @@ namespace http
 			RegisterCommandCode("deletepasskey", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeletePasskey(session, req, root); });
 
 			// Commands that do NOT require authentication
-			RegisterCommandCode("gettimertypes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTimerTypes(session, req, root); }, true);
-			RegisterCommandCode("getlanguages", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLanguages(session, req, root); }, true);
-			RegisterCommandCode("getswitchtypes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSwitchTypes(session, req, root); }, true);
-			RegisterCommandCode("getmetertypes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMeterTypes(session, req, root); }, true);
-			RegisterCommandCode("getthemes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetThemes(session, req, root); }, true);
-			RegisterCommandCode("gettitle", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTitle(session, req, root); }, true);
+			RegisterCommandCode("gettimertypes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTimerTypes(session, req, root); }, URIGHTS_VIEWER, true);
+			RegisterCommandCode("getlanguages", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLanguages(session, req, root); }, URIGHTS_VIEWER, true);
+			RegisterCommandCode("getswitchtypes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSwitchTypes(session, req, root); }, URIGHTS_VIEWER, true);
+			RegisterCommandCode("getmetertypes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMeterTypes(session, req, root); }, URIGHTS_VIEWER, true);
+			RegisterCommandCode("getthemes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetThemes(session, req, root); }, URIGHTS_VIEWER, true);
+			RegisterCommandCode("gettitle", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTitle(session, req, root); }, URIGHTS_VIEWER, true);
 			RegisterCommandCode("fetchurl", [this](auto&& session, auto&& req, auto&& root) { Cmd_FetchUrl(session, req, root); });
-			RegisterCommandCode("logincheck", [this](auto&& session, auto&& req, auto&& root) { Cmd_LoginCheck(session, req, root); }, true);
+			RegisterCommandCode("logincheck", [this](auto&& session, auto&& req, auto&& root) { Cmd_LoginCheck(session, req, root); }, URIGHTS_VIEWER, true);
 
-			RegisterCommandCode("getversion", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetVersion(session, req, root); }, true);
-			RegisterCommandCode("getauth", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetAuth(session, req, root); }, true);
-			RegisterCommandCode("getuptime", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUptime(session, req, root); }, true);
-			RegisterCommandCode("getconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetConfig(session, req, root); }, true);
-			RegisterCommandCode("getsetuprequired", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSetupRequired(session, req, root); }, true);
-			RegisterCommandCode("setupwizardcreateadmin", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetupWizardCreateAdmin(session, req, root); }, true);
+			RegisterCommandCode("getversion", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetVersion(session, req, root); }, URIGHTS_VIEWER, true);
+			RegisterCommandCode("getauth", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetAuth(session, req, root); }, URIGHTS_VIEWER, true);
+			RegisterCommandCode("getuptime", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUptime(session, req, root); }, URIGHTS_VIEWER, true);
+			RegisterCommandCode("getconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetConfig(session, req, root); }, URIGHTS_VIEWER, true);
+			RegisterCommandCode("getsetuprequired", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSetupRequired(session, req, root); }, URIGHTS_VIEWER, true);
+			RegisterCommandCode("setupwizardcreateadmin", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetupWizardCreateAdmin(session, req, root); }, URIGHTS_VIEWER, true);
 
 			// Commands that require authentication
-			RegisterCommandCode("sendopenthermcommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_SendOpenThermCommand(session, req, root); });
+			RegisterCommandCode("sendopenthermcommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_SendOpenThermCommand(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("storesettings", [this](auto&& session, auto&& req, auto&& root) { Cmd_PostSettings(session, req, root); });
-			RegisterCommandCode("getlog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLog(session, req, root); });
-			RegisterCommandCode("clearlog", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearLog(session, req, root); });
-			RegisterCommandCode("gethardwaretypes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetHardwareTypes(session, req, root); });
-			RegisterCommandCode("addhardware", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddHardware(session, req, root); });
-			RegisterCommandCode("updatehardware", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateHardware(session, req, root); });
-			RegisterCommandCode("deletehardware", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteHardware(session, req, root); });
+			RegisterCommandCode("storesettings", [this](auto&& session, auto&& req, auto&& root) { Cmd_PostSettings(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("getlog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLog(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("clearlog", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearLog(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("gethardwaretypes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetHardwareTypes(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("addhardware", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddHardware(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("updatehardware", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateHardware(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deletehardware", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteHardware(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("addcamera", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddCamera(session, req, root); });
-			RegisterCommandCode("updatecamera", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateCamera(session, req, root); });
-			RegisterCommandCode("deletecamera", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteCamera(session, req, root); });
+			RegisterCommandCode("addcamera", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddCamera(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("updatecamera", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateCamera(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deletecamera", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteCamera(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("getapplications", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetApplications(session, req, root); });
-			RegisterCommandCode("addapplication", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddApplication(session, req, root); });
-			RegisterCommandCode("updateapplication", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateApplication(session, req, root); });
-			RegisterCommandCode("deleteapplication", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteApplication(session, req, root); });
+			RegisterCommandCode("getapplications", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetApplications(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("addapplication", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddApplication(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("updateapplication", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateApplication(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deleteapplication", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteApplication(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("getaccesstokens", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetAccessTokens(session, req, root); });
-			RegisterCommandCode("createaccesstoken", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateAccessToken(session, req, root); });
-			RegisterCommandCode("deleteaccesstoken", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteAccessToken(session, req, root); });
+			RegisterCommandCode("getaccesstokens", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetAccessTokens(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("createaccesstoken", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateAccessToken(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deleteaccesstoken", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteAccessToken(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("wolgetnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_WOLGetNodes(session, req, root); });
-			RegisterCommandCode("woladdnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_WOLAddNode(session, req, root); });
-			RegisterCommandCode("wolupdatenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_WOLUpdateNode(session, req, root); });
-			RegisterCommandCode("wolremovenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_WOLRemoveNode(session, req, root); });
-			RegisterCommandCode("wolclearnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_WOLClearNodes(session, req, root); });
+			RegisterCommandCode("wolgetnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_WOLGetNodes(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("woladdnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_WOLAddNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("wolupdatenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_WOLUpdateNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("wolremovenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_WOLRemoveNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("wolclearnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_WOLClearNodes(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("mysensorsgetnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_MySensorsGetNodes(session, req, root); });
-			RegisterCommandCode("mysensorsgetchilds", [this](auto&& session, auto&& req, auto&& root) { Cmd_MySensorsGetChilds(session, req, root); });
-			RegisterCommandCode("mysensorsupdatenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_MySensorsUpdateNode(session, req, root); });
-			RegisterCommandCode("mysensorsremovenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_MySensorsRemoveNode(session, req, root); });
-			RegisterCommandCode("mysensorsremovechild", [this](auto&& session, auto&& req, auto&& root) { Cmd_MySensorsRemoveChild(session, req, root); });
-			RegisterCommandCode("mysensorsupdatechild", [this](auto&& session, auto&& req, auto&& root) { Cmd_MySensorsUpdateChild(session, req, root); });
+			RegisterCommandCode("mysensorsgetnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_MySensorsGetNodes(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("mysensorsgetchilds", [this](auto&& session, auto&& req, auto&& root) { Cmd_MySensorsGetChilds(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("mysensorsupdatenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_MySensorsUpdateNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("mysensorsremovenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_MySensorsRemoveNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("mysensorsremovechild", [this](auto&& session, auto&& req, auto&& root) { Cmd_MySensorsRemoveChild(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("mysensorsupdatechild", [this](auto&& session, auto&& req, auto&& root) { Cmd_MySensorsUpdateChild(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("pingersetmode", [this](auto&& session, auto&& req, auto&& root) { Cmd_PingerSetMode(session, req, root); });
-			RegisterCommandCode("pingergetnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_PingerGetNodes(session, req, root); });
-			RegisterCommandCode("pingeraddnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_PingerAddNode(session, req, root); });
-			RegisterCommandCode("pingerupdatenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_PingerUpdateNode(session, req, root); });
-			RegisterCommandCode("pingerremovenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_PingerRemoveNode(session, req, root); });
-			RegisterCommandCode("pingerclearnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_PingerClearNodes(session, req, root); });
+			RegisterCommandCode("pingersetmode", [this](auto&& session, auto&& req, auto&& root) { Cmd_PingerSetMode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("pingergetnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_PingerGetNodes(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("pingeraddnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_PingerAddNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("pingerupdatenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_PingerUpdateNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("pingerremovenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_PingerRemoveNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("pingerclearnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_PingerClearNodes(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("kodisetmode", [this](auto&& session, auto&& req, auto&& root) { Cmd_KodiSetMode(session, req, root); });
-			RegisterCommandCode("kodigetnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_KodiGetNodes(session, req, root); });
-			RegisterCommandCode("kodiaddnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_KodiAddNode(session, req, root); });
-			RegisterCommandCode("kodiupdatenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_KodiUpdateNode(session, req, root); });
-			RegisterCommandCode("kodiremovenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_KodiRemoveNode(session, req, root); });
-			RegisterCommandCode("kodiclearnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_KodiClearNodes(session, req, root); });
-			RegisterCommandCode("kodimediacommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_KodiMediaCommand(session, req, root); });
+			RegisterCommandCode("kodisetmode", [this](auto&& session, auto&& req, auto&& root) { Cmd_KodiSetMode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("kodigetnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_KodiGetNodes(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("kodiaddnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_KodiAddNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("kodiupdatenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_KodiUpdateNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("kodiremovenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_KodiRemoveNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("kodiclearnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_KodiClearNodes(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("kodimediacommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_KodiMediaCommand(session, req, root); }, URIGHTS_SWITCHER);
 
-			RegisterCommandCode("panasonicsetmode", [this](auto&& session, auto&& req, auto&& root) { Cmd_PanasonicSetMode(session, req, root); });
-			RegisterCommandCode("panasonicgetnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_PanasonicGetNodes(session, req, root); });
-			RegisterCommandCode("panasonicaddnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_PanasonicAddNode(session, req, root); });
-			RegisterCommandCode("panasonicupdatenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_PanasonicUpdateNode(session, req, root); });
-			RegisterCommandCode("panasonicremovenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_PanasonicRemoveNode(session, req, root); });
-			RegisterCommandCode("panasonicclearnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_PanasonicClearNodes(session, req, root); });
-			RegisterCommandCode("panasonicmediacommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_PanasonicMediaCommand(session, req, root); });
+			RegisterCommandCode("panasonicsetmode", [this](auto&& session, auto&& req, auto&& root) { Cmd_PanasonicSetMode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("panasonicgetnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_PanasonicGetNodes(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("panasonicaddnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_PanasonicAddNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("panasonicupdatenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_PanasonicUpdateNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("panasonicremovenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_PanasonicRemoveNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("panasonicclearnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_PanasonicClearNodes(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("panasonicmediacommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_PanasonicMediaCommand(session, req, root); }, URIGHTS_SWITCHER);
 
-			RegisterCommandCode("getmatternodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMatterNodes(session, req, root); }, true);
-			RegisterCommandCode("getmatternetworkgraph", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMatterNetworkGraph(session, req, root); }, true);
-			RegisterCommandCode("mattercommissionnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_MatterCommissionNode(session, req, root); }, true);
-			RegisterCommandCode("getmattercommissionstatus", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMatterCommissionStatus(session, req, root); }, true);
-			RegisterCommandCode("matterexcludenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_MatterExcludeNode(session, req, root); }, true);
-			RegisterCommandCode("deletematternode", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteMatterNode(session, req, root); }, true);
-			RegisterCommandCode("requestmatternodeinfo", [this](auto&& session, auto&& req, auto&& root) { Cmd_RequestMatterNodeInfo(session, req, root); }, true);
-			RegisterCommandCode("mattergetserverinfo",      [this](auto&& session, auto&& req, auto&& root) { Cmd_MatterGetServerInfo(session, req, root); },      true);
-			RegisterCommandCode("mattersetwificredentials", [this](auto&& session, auto&& req, auto&& root) { Cmd_MatterSetWifiCredentials(session, req, root); }, true);
-			RegisterCommandCode("mattersetthreaddataset",   [this](auto&& session, auto&& req, auto&& root) { Cmd_MatterSetThreadDataset(session, req, root); },   true);
-			RegisterCommandCode("mattersetfabriclabel",     [this](auto&& session, auto&& req, auto&& root) { Cmd_MatterSetFabricLabel(session, req, root); },     true);
+			RegisterCommandCode("getmatternodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMatterNodes(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("getmatternetworkgraph", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMatterNetworkGraph(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("mattercommissionnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_MatterCommissionNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("getmattercommissionstatus", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMatterCommissionStatus(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("matterexcludenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_MatterExcludeNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deletematternode", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteMatterNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("requestmatternodeinfo", [this](auto&& session, auto&& req, auto&& root) { Cmd_RequestMatterNodeInfo(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("mattergetserverinfo",      [this](auto&& session, auto&& req, auto&& root) { Cmd_MatterGetServerInfo(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("mattersetwificredentials", [this](auto&& session, auto&& req, auto&& root) { Cmd_MatterSetWifiCredentials(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("mattersetthreaddataset",   [this](auto&& session, auto&& req, auto&& root) { Cmd_MatterSetThreadDataset(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("mattersetfabriclabel",     [this](auto&& session, auto&& req, auto&& root) { Cmd_MatterSetFabricLabel(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("heossetmode", [this](auto&& session, auto&& req, auto&& root) { Cmd_HEOSSetMode(session, req, root); });
-			RegisterCommandCode("heosmediacommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_HEOSMediaCommand(session, req, root); });
+			RegisterCommandCode("heossetmode", [this](auto&& session, auto&& req, auto&& root) { Cmd_HEOSSetMode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("heosmediacommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_HEOSMediaCommand(session, req, root); }, URIGHTS_SWITCHER);
 
-			RegisterCommandCode("onkyoeiscpcommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_OnkyoEiscpCommand(session, req, root); });
+			RegisterCommandCode("onkyoeiscpcommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_OnkyoEiscpCommand(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("bleboxsetmode", [this](auto&& session, auto&& req, auto&& root) { Cmd_BleBoxSetMode(session, req, root); });
-			RegisterCommandCode("bleboxgetnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_BleBoxGetNodes(session, req, root); });
-			RegisterCommandCode("bleboxaddnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_BleBoxAddNode(session, req, root); });
-			RegisterCommandCode("bleboxremovenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_BleBoxRemoveNode(session, req, root); });
-			RegisterCommandCode("bleboxclearnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_BleBoxClearNodes(session, req, root); });
-			RegisterCommandCode("bleboxautosearchingnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_BleBoxAutoSearchingNodes(session, req, root); });
-			RegisterCommandCode("bleboxupdatefirmware", [this](auto&& session, auto&& req, auto&& root) { Cmd_BleBoxUpdateFirmware(session, req, root); });
+			RegisterCommandCode("bleboxsetmode", [this](auto&& session, auto&& req, auto&& root) { Cmd_BleBoxSetMode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("bleboxgetnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_BleBoxGetNodes(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("bleboxaddnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_BleBoxAddNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("bleboxremovenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_BleBoxRemoveNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("bleboxclearnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_BleBoxClearNodes(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("bleboxautosearchingnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_BleBoxAutoSearchingNodes(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("bleboxupdatefirmware", [this](auto&& session, auto&& req, auto&& root) { Cmd_BleBoxUpdateFirmware(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("lmssetmode", [this](auto&& session, auto&& req, auto&& root) { Cmd_LMSSetMode(session, req, root); });
-			RegisterCommandCode("lmsgetnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_LMSGetNodes(session, req, root); });
-			RegisterCommandCode("lmsgetplaylists", [this](auto&& session, auto&& req, auto&& root) { Cmd_LMSGetPlaylists(session, req, root); });
-			RegisterCommandCode("lmsmediacommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_LMSMediaCommand(session, req, root); });
-			RegisterCommandCode("lmsdeleteunuseddevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_LMSDeleteUnusedDevices(session, req, root); });
+			RegisterCommandCode("lmssetmode", [this](auto&& session, auto&& req, auto&& root) { Cmd_LMSSetMode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("lmsgetnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_LMSGetNodes(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("lmsgetplaylists", [this](auto&& session, auto&& req, auto&& root) { Cmd_LMSGetPlaylists(session, req, root); }, URIGHTS_SWITCHER);
+			RegisterCommandCode("lmsmediacommand", [this](auto&& session, auto&& req, auto&& root) { Cmd_LMSMediaCommand(session, req, root); }, URIGHTS_SWITCHER);
+			RegisterCommandCode("lmsdeleteunuseddevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_LMSDeleteUnusedDevices(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("savefibarolinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveFibaroLinkConfig(session, req, root); });
-			RegisterCommandCode("getfibarolinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetFibaroLinkConfig(session, req, root); });
-			RegisterCommandCode("getfibarolinks", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetFibaroLinks(session, req, root); });
-			RegisterCommandCode("savefibarolink", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveFibaroLink(session, req, root); });
-			RegisterCommandCode("deletefibarolink", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteFibaroLink(session, req, root); });
+			RegisterCommandCode("savefibarolinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveFibaroLinkConfig(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("getfibarolinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetFibaroLinkConfig(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("getfibarolinks", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetFibaroLinks(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("savefibarolink", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveFibaroLink(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deletefibarolink", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteFibaroLink(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("saveinfluxlinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveInfluxLinkConfig(session, req, root); });
-			RegisterCommandCode("getinfluxlinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetInfluxLinkConfig(session, req, root); });
-			RegisterCommandCode("getinfluxlinks", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetInfluxLinks(session, req, root); });
-			RegisterCommandCode("saveinfluxlink", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveInfluxLink(session, req, root); });
-			RegisterCommandCode("deleteinfluxlink", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteInfluxLink(session, req, root); });
+			RegisterCommandCode("saveinfluxlinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveInfluxLinkConfig(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("getinfluxlinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetInfluxLinkConfig(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("getinfluxlinks", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetInfluxLinks(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("saveinfluxlink", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveInfluxLink(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deleteinfluxlink", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteInfluxLink(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("savehttplinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveHttpLinkConfig(session, req, root); });
-			RegisterCommandCode("gethttplinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetHttpLinkConfig(session, req, root); });
-			RegisterCommandCode("gethttplinks", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetHttpLinks(session, req, root); });
-			RegisterCommandCode("savehttplink", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveHttpLink(session, req, root); });
-			RegisterCommandCode("deletehttplink", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteHttpLink(session, req, root); });
+			RegisterCommandCode("savehttplinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveHttpLinkConfig(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("gethttplinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetHttpLinkConfig(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("gethttplinks", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetHttpLinks(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("savehttplink", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveHttpLink(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deletehttplink", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteHttpLink(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("savegooglepubsublinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveGooglePubSubLinkConfig(session, req, root); });
-			RegisterCommandCode("getgooglepubsublinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetGooglePubSubLinkConfig(session, req, root); });
-			RegisterCommandCode("getgooglepubsublinks", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetGooglePubSubLinks(session, req, root); });
-			RegisterCommandCode("savegooglepubsublink", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveGooglePubSubLink(session, req, root); });
-			RegisterCommandCode("deletegooglepubsublink", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteGooglePubSubLink(session, req, root); });
+			RegisterCommandCode("savegooglepubsublinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveGooglePubSubLinkConfig(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("getgooglepubsublinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetGooglePubSubLinkConfig(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("getgooglepubsublinks", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetGooglePubSubLinks(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("savegooglepubsublink", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveGooglePubSubLink(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deletegooglepubsublink", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteGooglePubSubLink(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("savemqttlinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveMQTTLinkConfig(session, req, root); });
-			RegisterCommandCode("getmqttlinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMQTTLinkConfig(session, req, root); });
-			RegisterCommandCode("getmqttlinks", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMQTTLinks(session, req, root); });
-			RegisterCommandCode("savemqttlink", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveMQTTLink(session, req, root); });
-			RegisterCommandCode("deletemqttlink", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteMQTTLink(session, req, root); });
+			RegisterCommandCode("savemqttlinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveMQTTLinkConfig(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("getmqttlinkconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMQTTLinkConfig(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("getmqttlinks", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMQTTLinks(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("savemqttlink", [this](auto&& session, auto&& req, auto&& root) { Cmd_SaveMQTTLink(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deletemqttlink", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteMQTTLink(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("getdevicevalueoptions", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDeviceValueOptions(session, req, root); });
-			RegisterCommandCode("getdevicevalueoptionwording", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDeviceValueOptionWording(session, req, root); });
+			RegisterCommandCode("getdevicevalueoptions", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDeviceValueOptions(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("getdevicevalueoptionwording", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDeviceValueOptionWording(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("adduservariable", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddUserVariable(session, req, root); });
-			RegisterCommandCode("updateuservariable", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateUserVariable(session, req, root); });
-			RegisterCommandCode("deleteuservariable", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteUserVariable(session, req, root); });
+			RegisterCommandCode("adduservariable", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddUserVariable(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("updateuservariable", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateUserVariable(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deleteuservariable", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteUserVariable(session, req, root); }, URIGHTS_ADMIN);
 			RegisterCommandCode("getuservariables", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUserVariables(session, req, root); });
 			RegisterCommandCode("getuservariable", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUserVariable(session, req, root); });
 
-			RegisterCommandCode("allownewhardware", [this](auto&& session, auto&& req, auto&& root) { Cmd_AllowNewHardware(session, req, root); });
+			RegisterCommandCode("allownewhardware", [this](auto&& session, auto&& req, auto&& root) { Cmd_AllowNewHardware(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("addplan", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddPlan(session, req, root); });
-			RegisterCommandCode("updateplan", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdatePlan(session, req, root); });
-			RegisterCommandCode("deleteplan", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeletePlan(session, req, root); });
+			RegisterCommandCode("addplan", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddPlan(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("updateplan", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdatePlan(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deleteplan", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeletePlan(session, req, root); }, URIGHTS_ADMIN);
 			RegisterCommandCode("getunusedplandevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUnusedPlanDevices(session, req, root); });
-			RegisterCommandCode("addplanactivedevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddPlanActiveDevice(session, req, root); });
+			RegisterCommandCode("addplanactivedevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddPlanActiveDevice(session, req, root); }, URIGHTS_ADMIN);
 			RegisterCommandCode("getplandevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetPlanDevices(session, req, root); });
-			RegisterCommandCode("deleteplandevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeletePlanDevice(session, req, root); });
-			RegisterCommandCode("setplandevicecoords", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetPlanDeviceCoords(session, req, root); });
-			RegisterCommandCode("deleteallplandevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteAllPlanDevices(session, req, root); });
-			RegisterCommandCode("changeplanorder", [this](auto&& session, auto&& req, auto&& root) { Cmd_ChangePlanOrder(session, req, root); });
-			RegisterCommandCode("changeplanfullorder", [this](auto&& session, auto&& req, auto&& root) { Cmd_ChangePlanFullOrder(session, req, root); });
-			RegisterCommandCode("changeplandeviceorder", [this](auto&& session, auto&& req, auto&& root) { Cmd_ChangePlanDeviceOrder(session, req, root); });
+			RegisterCommandCode("deleteplandevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeletePlanDevice(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("setplandevicecoords", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetPlanDeviceCoords(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deleteallplandevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteAllPlanDevices(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("changeplanorder", [this](auto&& session, auto&& req, auto&& root) { Cmd_ChangePlanOrder(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("changeplanfullorder", [this](auto&& session, auto&& req, auto&& root) { Cmd_ChangePlanFullOrder(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("changeplandeviceorder", [this](auto&& session, auto&& req, auto&& root) { Cmd_ChangePlanDeviceOrder(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("gettimerplans", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTimerPlans(session, req, root); });
-			RegisterCommandCode("addtimerplan", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddTimerPlan(session, req, root); });
-			RegisterCommandCode("updatetimerplan", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateTimerPlan(session, req, root); });
-			RegisterCommandCode("deletetimerplan", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteTimerPlan(session, req, root); });
-			RegisterCommandCode("duplicatetimerplan", [this](auto&& session, auto&& req, auto&& root) { Cmd_DuplicateTimerPlan(session, req, root); });
+			RegisterCommandCode("gettimerplans", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTimerPlans(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("addtimerplan", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddTimerPlan(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("updatetimerplan", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateTimerPlan(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deletetimerplan", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteTimerPlan(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("duplicatetimerplan", [this](auto&& session, auto&& req, auto&& root) { Cmd_DuplicateTimerPlan(session, req, root); }, URIGHTS_ADMIN);
 
 			RegisterCommandCode("getactualhistory", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetActualHistory(session, req, root); });
 			RegisterCommandCode("getnewhistory", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetNewHistory(session, req, root); });
@@ -496,104 +536,112 @@ namespace http
 			RegisterCommandCode("updatemyprofile", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateMyProfile(session, req, root); });
 
 			RegisterCommandCode("getforecastconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetForecastConfig(session, req, root); });
-			RegisterCommandCode("sendnotification", [this](auto&& session, auto&& req, auto&& root) { Cmd_SendNotification(session, req, root); });
-			RegisterCommandCode("emailcamerasnapshot", [this](auto&& session, auto&& req, auto&& root) { Cmd_EmailCameraSnapshot(session, req, root); });
-			RegisterCommandCode("udevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateDevice(session, req, root); });
-			RegisterCommandCode("udevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateDevices(session, req, root); });
+			RegisterCommandCode("sendnotification", [this](auto&& session, auto&& req, auto&& root) { Cmd_SendNotification(session, req, root); }, URIGHTS_SWITCHER);
+			RegisterCommandCode("emailcamerasnapshot", [this](auto&& session, auto&& req, auto&& root) { Cmd_EmailCameraSnapshot(session, req, root); }, URIGHTS_SWITCHER);
+			RegisterCommandCode("udevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateDevice(session, req, root); }, URIGHTS_SWITCHER);
+			RegisterCommandCode("udevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateDevices(session, req, root); }, URIGHTS_SWITCHER);
 			RegisterCommandCode("thermostatstate", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetThermostatState(session, req, root); });
-			RegisterCommandCode("system_shutdown", [this](auto&& session, auto&& req, auto&& root) { Cmd_SystemShutdown(session, req, root); });
-			RegisterCommandCode("system_reboot", [this](auto&& session, auto&& req, auto&& root) { Cmd_SystemReboot(session, req, root); });
-			RegisterCommandCode("execute_script", [this](auto&& session, auto&& req, auto&& root) { Cmd_ExcecuteScript(session, req, root); });
+			RegisterCommandCode("system_shutdown", [this](auto&& session, auto&& req, auto&& root) { Cmd_SystemShutdown(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("system_reboot", [this](auto&& session, auto&& req, auto&& root) { Cmd_SystemReboot(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("execute_script", [this](auto&& session, auto&& req, auto&& root) { Cmd_ExcecuteScript(session, req, root); }, URIGHTS_ADMIN);
 			RegisterCommandCode("getcosts", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetCosts(session, req, root); });
-			RegisterCommandCode("checkforupdate", [this](auto&& session, auto&& req, auto&& root) { Cmd_CheckForUpdate(session, req, root); });
-			RegisterCommandCode("update_application", [this](auto&& session, auto&& req, auto&& root) { Cmd_ApplicationUpdate(session, req, root); });
-			RegisterCommandCode("getupdatelog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUpdateLog(session, req, root); });
-			RegisterCommandCode("deletedatapoint", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteDataPoint(session, req, root); });
-			RegisterCommandCode("deletedaterange", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteDateRange(session, req, root); });
-			RegisterCommandCode("customevent", [this](auto&& session, auto&& req, auto&& root) { Cmd_CustomEvent(session, req, root); });
+			RegisterCommandCode("checkforupdate", [this](auto&& session, auto&& req, auto&& root) { Cmd_CheckForUpdate(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("update_application", [this](auto&& session, auto&& req, auto&& root) { Cmd_ApplicationUpdate(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("getupdatelog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUpdateLog(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deletedatapoint", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteDataPoint(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deletedaterange", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteDateRange(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("customevent", [this](auto&& session, auto&& req, auto&& root) { Cmd_CustomEvent(session, req, root); }, URIGHTS_SWITCHER);
 
-			RegisterCommandCode("setactivetimerplan", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetActiveTimerPlan(session, req, root); });
-			RegisterCommandCode("addtimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddTimer(session, req, root); });
-			RegisterCommandCode("updatetimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateTimer(session, req, root); });
-			RegisterCommandCode("deletetimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteTimer(session, req, root); });
-			RegisterCommandCode("enabletimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnableTimer(session, req, root); });
-			RegisterCommandCode("disabletimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_DisableTimer(session, req, root); });
-			RegisterCommandCode("cleartimers", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearTimers(session, req, root); });
+			RegisterCommandCode("setactivetimerplan", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetActiveTimerPlan(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("addtimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddTimer(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("updatetimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateTimer(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deletetimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteTimer(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("enabletimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnableTimer(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("disabletimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_DisableTimer(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("cleartimers", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearTimers(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("addscenetimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddSceneTimer(session, req, root); });
-			RegisterCommandCode("updatescenetimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateSceneTimer(session, req, root); });
-			RegisterCommandCode("deletescenetimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteSceneTimer(session, req, root); });
-			RegisterCommandCode("enablescenetimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnableSceneTimer(session, req, root); });
-			RegisterCommandCode("disablescenetimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_DisableSceneTimer(session, req, root); });
-			RegisterCommandCode("clearscenetimers", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearSceneTimers(session, req, root); });
-			RegisterCommandCode("getsceneactivations", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSceneActivations(session, req, root); });
-			RegisterCommandCode("addscenecode", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddSceneCode(session, req, root); });
-			RegisterCommandCode("removescenecode", [this](auto&& session, auto&& req, auto&& root) { Cmd_RemoveSceneCode(session, req, root); });
-			RegisterCommandCode("clearscenecodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearSceneCodes(session, req, root); });
-			RegisterCommandCode("renamescene", [this](auto&& session, auto&& req, auto&& root) { Cmd_RenameScene(session, req, root); });
+			RegisterCommandCode("addscenetimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddSceneTimer(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("updatescenetimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateSceneTimer(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deletescenetimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteSceneTimer(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("enablescenetimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnableSceneTimer(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("disablescenetimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_DisableSceneTimer(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("clearscenetimers", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearSceneTimers(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("getsceneactivations", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSceneActivations(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("addscenecode", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddSceneCode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("removescenecode", [this](auto&& session, auto&& req, auto&& root) { Cmd_RemoveSceneCode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("clearscenecodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearSceneCodes(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("renamescene", [this](auto&& session, auto&& req, auto&& root) { Cmd_RenameScene(session, req, root); }, URIGHTS_ADMIN);
 
 			RegisterCommandCode("setsetpoint", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetSetpoint(session, req, root); });
-			RegisterCommandCode("addsetpointtimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddSetpointTimer(session, req, root); });
-			RegisterCommandCode("updatesetpointtimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateSetpointTimer(session, req, root); });
-			RegisterCommandCode("deletesetpointtimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteSetpointTimer(session, req, root); });
-			RegisterCommandCode("enablesetpointtimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnableSetpointTimer(session, req, root); });
-			RegisterCommandCode("disablesetpointtimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_DisableSetpointTimer(session, req, root); });
-			RegisterCommandCode("clearsetpointtimers", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearSetpointTimers(session, req, root); });
+			RegisterCommandCode("addsetpointtimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddSetpointTimer(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("updatesetpointtimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateSetpointTimer(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deletesetpointtimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteSetpointTimer(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("enablesetpointtimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnableSetpointTimer(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("disablesetpointtimer", [this](auto&& session, auto&& req, auto&& root) { Cmd_DisableSetpointTimer(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("clearsetpointtimers", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearSetpointTimers(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("serial_devices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSerialDevices(session, req, root); });
+			RegisterCommandCode("serial_devices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSerialDevices(session, req, root); }, URIGHTS_ADMIN);
 			RegisterCommandCode("devices_list", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDevicesList(session, req, root); });
 			RegisterCommandCode("devices_list_onoff", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDevicesListOnOff(session, req, root); });
 
-			RegisterCommandCode("registerhue", [this](auto&& session, auto&& req, auto&& root) { Cmd_PhilipsHueRegister(session, req, root); });
+			RegisterCommandCode("registerhue", [this](auto&& session, auto&& req, auto&& root) { Cmd_PhilipsHueRegister(session, req, root); }, URIGHTS_ADMIN);
 
 			RegisterCommandCode("getcustomiconset", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetCustomIconSet(session, req, root); });
-			RegisterCommandCode("uploadcustomicon", [this](auto&& session, auto&& req, auto&& root) { Cmd_UploadCustomIcon(session, req, root); });
-			RegisterCommandCode("deletecustomicon", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteCustomIcon(session, req, root); });
-			RegisterCommandCode("updatecustomicon", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateCustomIcon(session, req, root); });
+			RegisterCommandCode("uploadcustomicon", [this](auto&& session, auto&& req, auto&& root) { Cmd_UploadCustomIcon(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deletecustomicon", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteCustomIcon(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("updatecustomicon", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateCustomIcon(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("renamedevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_RenameDevice(session, req, root); });
-			RegisterCommandCode("setdevused", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetDeviceUsed(session, req, root); });
+			RegisterCommandCode("uploadwebasset", [this](auto&& session, auto&& req, auto&& root) { Cmd_UploadWebAsset(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("getwebassets", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetWebAssets(session, req, root); });
+			RegisterCommandCode("getwebassetjob", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetWebAssetJob(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deletewebasset", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteWebAsset(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("addlogmessage", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddLogMessage(session, req, root); });
-			RegisterCommandCode("clearshortlog", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearShortLog(session, req, root); });
-			RegisterCommandCode("pruneunusedsensorlogs", [this](auto&& session, auto&& req, auto&& root) { Cmd_PruneUnusedSensorLogs(session, req, root); });
-			RegisterCommandCode("vacuumdatabase", [this](auto&& session, auto&& req, auto&& root) { Cmd_VacuumDatabase(session, req, root); });
-			RegisterCommandCode("getdbstats", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDbStats(session, req, root); });
-			RegisterCommandCode("fixkwhcounterspikes", [this](auto&& session, auto&& req, auto&& root) { Cmd_FixKwhCounterSpikes(session, req, root); });
-			RegisterCommandCode("spreadcounterspike", [this](auto&& session, auto&& req, auto&& root) { Cmd_SpreadCounterSpike(session, req, root); });
+			RegisterCommandCode("renamedevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_RenameDevice(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("setdevused", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetDeviceUsed(session, req, root); }, URIGHTS_ADMIN);
+
+			RegisterCommandCode("addlogmessage", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddLogMessage(session, req, root); }, URIGHTS_SWITCHER);
+			RegisterCommandCode("clearshortlog", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearShortLog(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("pruneunusedsensorlogs", [this](auto&& session, auto&& req, auto&& root) { Cmd_PruneUnusedSensorLogs(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("vacuumdatabase", [this](auto&& session, auto&& req, auto&& root) { Cmd_VacuumDatabase(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("getdbstats", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDbStats(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("fixkwhcounterspikes", [this](auto&& session, auto&& req, auto&& root) { Cmd_FixKwhCounterSpikes(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("spreadcounterspike", [this](auto&& session, auto&& req, auto&& root) { Cmd_SpreadCounterSpike(session, req, root); }, URIGHTS_ADMIN);
 
 			RegisterCommandCode("addmobiledevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddMobileDevice(session, req, root); });
-			RegisterCommandCode("updatemobiledevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateMobileDevice(session, req, root); });
-			RegisterCommandCode("deletemobiledevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteMobileDevice(session, req, root); });
+			RegisterCommandCode("updatemobiledevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateMobileDevice(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deletemobiledevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteMobileDevice(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("addyeelight", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddYeeLight(session, req, root); });
+			RegisterCommandCode("addyeelight", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddYeeLight(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("addArilux", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddArilux(session, req, root); });
+			RegisterCommandCode("addArilux", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddArilux(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("tellstickApplySettings", [this](auto&& session, auto&& req, auto&& root) { Cmd_TellstickApplySettings(session, req, root); });
+			RegisterCommandCode("tellstickApplySettings", [this](auto&& session, auto&& req, auto&& root) { Cmd_TellstickApplySettings(session, req, root); }, URIGHTS_ADMIN);
 
 			// Migrated RTypes to regular commands
-			RegisterCommandCode("getusers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUsers(session, req, root); });
-			RegisterCommandCode("getsettings", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSettings(session, req, root); });
+			RegisterCommandCode("getusers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetUsers(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("getsettings", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSettings(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("themesettings_get", [this](auto&& session, auto&& req, auto&& root) { Cmd_ThemeSettingsGet(session, req, root); });
+			RegisterCommandCode("themesettings_set", [this](auto&& session, auto&& req, auto&& root) { Cmd_ThemeSettingsSet(session, req, root); });
+			RegisterCommandCode("themesettings_setdefault", [this](auto&& session, auto&& req, auto&& root) { Cmd_ThemeSettingsSetDefault(session, req, root); }, URIGHTS_ADMIN);
 			RegisterCommandCode("getdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDevices(session, req, root); });
 			RegisterCommandCode("gethardware", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetHardware(session, req, root); });
-			RegisterCommandCode("events", [this](auto&& session, auto&& req, auto&& root) { Cmd_Events(session, req, root); });
+			RegisterCommandCode("events", [this](auto&& session, auto&& req, auto&& root) { Cmd_Events(session, req, root); }, URIGHTS_ADMIN);
 
 			RegisterCommandCode("getnotifications", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetNotifications(session, req, root); });
-			RegisterCommandCode("addnotification", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddNotification(session, req, root); });
-			RegisterCommandCode("updatenotification", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateNotification(session, req, root); });
-			RegisterCommandCode("deletenotification", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteNotification(session, req, root); });
+			RegisterCommandCode("addnotification", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddNotification(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("updatenotification", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateNotification(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deletenotification", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteNotification(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("createvirtualsensor", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateMappedSensor(session, req, root); });
-			RegisterCommandCode("createdevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateDevice(session, req, root); });
+			RegisterCommandCode("createvirtualsensor", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateMappedSensor(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("createdevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateDevice(session, req, root); }, URIGHTS_ADMIN);
 
 			RegisterCommandCode("getscenelog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSceneLog(session, req, root); });
 			RegisterCommandCode("getscenes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetScenes(session, req, root); });
-			RegisterCommandCode("addscene", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddScene(session, req, root); });
-			RegisterCommandCode("deletescene", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteScene(session, req, root); });
-			RegisterCommandCode("updatescene", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateScene(session, req, root); });
-			RegisterCommandCode("getmobiles", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMobiles(session, req, root); });
-			RegisterCommandCode("getcameras", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetCameras(session, req, root); });
+			RegisterCommandCode("addscene", [this](auto&& session, auto&& req, auto&& root) { Cmd_AddScene(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deletescene", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteScene(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("updatescene", [this](auto&& session, auto&& req, auto&& root) { Cmd_UpdateScene(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("getmobiles", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetMobiles(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("getcameras", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetCameras(session, req, root); }, URIGHTS_ADMIN);
 			RegisterCommandCode("getcameras_user", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetCamerasUser(session, req, root); });
 			RegisterCommandCode("getschedules", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSchedules(session, req, root); });
 			RegisterCommandCode("gettimers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTimers(session, req, root); });
@@ -603,71 +651,71 @@ namespace http
 			RegisterCommandCode("getfloorplans", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetFloorPlans(session, req, root); });
 			RegisterCommandCode("getlightlog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetLightLog(session, req, root); });
 			RegisterCommandCode("gettextlog", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTextLog(session, req, root); });
-			RegisterCommandCode("gettransfers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTransfers(session, req, root); });
-			RegisterCommandCode("dotransferdevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_DoTransferDevice(session, req, root); });
-			RegisterCommandCode("createrflinkdevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateRFLinkDevice(session, req, root); });
-			RegisterCommandCode("createevohomesensor", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateEvohomeSensor(session, req, root); });
-			RegisterCommandCode("bindevohome", [this](auto&& session, auto&& req, auto&& root) { Cmd_BindEvohome(session, req, root); });
+			RegisterCommandCode("gettransfers", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetTransfers(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("dotransferdevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_DoTransferDevice(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("createrflinkdevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateRFLinkDevice(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("createevohomesensor", [this](auto&& session, auto&& req, auto&& root) { Cmd_CreateEvohomeSensor(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("bindevohome", [this](auto&& session, auto&& req, auto&& root) { Cmd_BindEvohome(session, req, root); }, URIGHTS_ADMIN);
 			RegisterCommandCode("custom_light_icons", [this](auto&& session, auto&& req, auto&& root) { Cmd_CustomLightIcons(session, req, root); });
-			RegisterCommandCode("deletedevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteDevice(session, req, root); });
+			RegisterCommandCode("deletedevice", [this](auto&& session, auto&& req, auto&& root) { Cmd_DeleteDevice(session, req, root); }, URIGHTS_ADMIN);
 			RegisterCommandCode("graph", [this](auto&& session, auto&& req, auto&& root) { Cmd_HandleGraph(session, req, root); });
-			RegisterCommandCode("rclientslog", [this](auto&& session, auto&& req, auto&& root) { Cmd_RemoteWebClientsLog(session, req, root); });
-			RegisterCommandCode("setused", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetUsed(session, req, root); });
+			RegisterCommandCode("rclientslog", [this](auto&& session, auto&& req, auto&& root) { Cmd_RemoteWebClientsLog(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("setused", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetUsed(session, req, root); }, URIGHTS_ADMIN);
 
 			// Migrated ActionCodes to regular commands
-			RegisterCommandCode("setccmetertype", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetCurrentCostUSBType(session, req, root); });
+			RegisterCommandCode("setccmetertype", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetCurrentCostUSBType(session, req, root); }, URIGHTS_ADMIN);
 
 			//Shared User Devices
-			RegisterCommandCode("getshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSharedUserDevices(session, req, root); });
-			RegisterCommandCode("setshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetSharedUserDevices(session, req, root); });
-			RegisterCommandCode("clearshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearSharedUserDevices(session, req, root); });
+			RegisterCommandCode("getshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSharedUserDevices(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("setshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetSharedUserDevices(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("clearshareduserdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearSharedUserDevices(session, req, root); }, URIGHTS_ADMIN);
 
 			//Shared MQTT Devices
-			RegisterCommandCode("getsharedmqttdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSharedMQTTDevices(session, req, root); });
-			RegisterCommandCode("setsharedmqttdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetSharedMQTTDevices(session, req, root); });
-			RegisterCommandCode("clearsharedmqttdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearSharedMQTTDevices(session, req, root); });
+			RegisterCommandCode("getsharedmqttdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetSharedMQTTDevices(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("setsharedmqttdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_SetSharedMQTTDevices(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("clearsharedmqttdevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_ClearSharedMQTTDevices(session, req, root); }, URIGHTS_ADMIN);
 
 			//MQTT-AD
-			RegisterCommandCode("mqttadgetconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_MQTTAD_GetConfig(session, req, root); });
-			RegisterCommandCode("mqttupdatenumber", [this](auto&& session, auto&& req, auto&& root) { Cmd_MQTTAD_UpdateNumber(session, req, root); });
-			RegisterCommandCode("mqttpublishpayload", [this](auto&& session, auto&& req, auto&& root) { Cmd_MQTTAD_PublishPayload(session, req, root); });
+			RegisterCommandCode("mqttadgetconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_MQTTAD_GetConfig(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("mqttupdatenumber", [this](auto&& session, auto&& req, auto&& root) { Cmd_MQTTAD_UpdateNumber(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("mqttpublishpayload", [this](auto&& session, auto&& req, auto&& root) { Cmd_MQTTAD_PublishPayload(session, req, root); }, URIGHTS_ADMIN);
 
 #ifdef WITH_OPENZWAVE
 			// ZWave
-			RegisterCommandCode("updatezwavenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveUpdateNode(session, req, root); });
-			RegisterCommandCode("deletezwavenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveDeleteNode(session, req, root); });
-			RegisterCommandCode("zwaveinclude", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveInclude(session, req, root); });
-			RegisterCommandCode("zwaveexclude", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveExclude(session, req, root); });
+			RegisterCommandCode("updatezwavenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveUpdateNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("deletezwavenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveDeleteNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("zwaveinclude", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveInclude(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("zwaveexclude", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveExclude(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("zwaveisnodeincluded", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveIsNodeIncluded(session, req, root); });
-			RegisterCommandCode("zwaveisnodeexcluded", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveIsNodeExcluded(session, req, root); });
-			RegisterCommandCode("zwaveisnodereplaced", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveIsNodeReplaced(session, req, root); });
-			RegisterCommandCode("zwaveishasnodefaileddone", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveIsHasNodeFailedDone(session, req, root); });
+			RegisterCommandCode("zwaveisnodeincluded", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveIsNodeIncluded(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("zwaveisnodeexcluded", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveIsNodeExcluded(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("zwaveisnodereplaced", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveIsNodeReplaced(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("zwaveishasnodefaileddone", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveIsHasNodeFailedDone(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("zwavesoftreset", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveSoftReset(session, req, root); });
-			RegisterCommandCode("zwavehardreset", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveHardReset(session, req, root); });
-			RegisterCommandCode("zwavenetworkheal", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveNetworkHeal(session, req, root); });
-			RegisterCommandCode("zwavenodeheal", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveNodeHeal(session, req, root); });
-			RegisterCommandCode("zwavenetworkinfo", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveNetworkInfo(session, req, root); });
-			RegisterCommandCode("zwaveremovegroupnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveRemoveGroupNode(session, req, root); });
-			RegisterCommandCode("zwaveaddgroupnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveAddGroupNode(session, req, root); });
-			RegisterCommandCode("zwavegroupinfo", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveGroupInfo(session, req, root); });
-			RegisterCommandCode("zwavecancel", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveCancel(session, req, root); });
-			RegisterCommandCode("applyzwavenodeconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_ApplyZWaveNodeConfig(session, req, root); });
-			RegisterCommandCode("zwavehasnodefailed", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveHasNodeFailed(session, req, root); });
-			RegisterCommandCode("zwavereplacefailednode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveReplaceFailedNode(session, req, root); });
-			RegisterCommandCode("requestzwavenodeconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveRequestNodeConfig(session, req, root); });
-			RegisterCommandCode("requestzwavenodeinfo", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveRequestNodeInfo(session, req, root); });
-			RegisterCommandCode("zwavestatecheck", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveStateCheck(session, req, root); });
+			RegisterCommandCode("zwavesoftreset", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveSoftReset(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("zwavehardreset", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveHardReset(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("zwavenetworkheal", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveNetworkHeal(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("zwavenodeheal", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveNodeHeal(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("zwavenetworkinfo", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveNetworkInfo(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("zwaveremovegroupnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveRemoveGroupNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("zwaveaddgroupnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveAddGroupNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("zwavegroupinfo", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveGroupInfo(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("zwavecancel", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveCancel(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("applyzwavenodeconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_ApplyZWaveNodeConfig(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("zwavehasnodefailed", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveHasNodeFailed(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("zwavereplacefailednode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveReplaceFailedNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("requestzwavenodeconfig", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveRequestNodeConfig(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("requestzwavenodeinfo", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveRequestNodeInfo(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("zwavestatecheck", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveStateCheck(session, req, root); }, URIGHTS_ADMIN);
 			RegisterCommandCode("zwavereceiveconfigurationfromothercontroller",
-				[this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveReceiveConfigurationFromOtherController(session, req, root); });
+				[this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveReceiveConfigurationFromOtherController(session, req, root); }, URIGHTS_ADMIN);
 			RegisterCommandCode("zwavesendconfigurationtosecondcontroller",
-				[this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveSendConfigurationToSecondaryController(session, req, root); });
-			RegisterCommandCode("zwavetransferprimaryrole", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveTransferPrimaryRole(session, req, root); });
-			RegisterCommandCode("zwavestartusercodeenrollmentmode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveSetUserCodeEnrollmentMode(session, req, root); });
-			RegisterCommandCode("zwavegetusercodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveGetNodeUserCodes(session, req, root); });
-			RegisterCommandCode("zwaveremoveusercode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveRemoveUserCode(session, req, root); });
-			RegisterCommandCode("zwavegetbatterylevels", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveGetBatteryLevels(session, req, root); });
+				[this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveSendConfigurationToSecondaryController(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("zwavetransferprimaryrole", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveTransferPrimaryRole(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("zwavestartusercodeenrollmentmode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveSetUserCodeEnrollmentMode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("zwavegetusercodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveGetNodeUserCodes(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("zwaveremoveusercode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveRemoveUserCode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("zwavegetbatterylevels", [this](auto&& session, auto&& req, auto&& root) { Cmd_ZWaveGetBatteryLevels(session, req, root); }, URIGHTS_ADMIN);
 
 			m_pWebEm->RegisterPageCode("/zwavegetconfig.php", [this](auto&& session, auto&& req, auto&& rep) { ZWaveGetConfigFile(session, req, rep); });
 
@@ -684,36 +732,36 @@ namespace http
 			m_pWebEm->RegisterPageCode("/ozwcp/statpost.html", [this](auto&& session, auto&& req, auto&& rep) { ZWaveCPGetStats(session, req, rep); });
 			m_pWebEm->RegisterPageCode("/ozwcp/grouppost.html", [this](auto&& session, auto&& req, auto&& rep) { ZWaveCPSetGroup(session, req, rep); });
 			//
-			RegisterCommandCode("getopenzwavenodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetOpenZWaveNodes(session, req, root); });
+			RegisterCommandCode("getopenzwavenodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetOpenZWaveNodes(session, req, root); }, URIGHTS_ADMIN);
 #endif
 
 			// EnOcean helpers cmds
-			RegisterCommandCode("enoceangetmanufacturers", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanGetManufacturers(session, req, root); });
-			RegisterCommandCode("enoceangetrorgs", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanGetRORGs(session, req, root); });
-			RegisterCommandCode("enoceangetprofiles", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanGetProfiles(session, req, root); });
+			RegisterCommandCode("enoceangetmanufacturers", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanGetManufacturers(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("enoceangetrorgs", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanGetRORGs(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("enoceangetprofiles", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanGetProfiles(session, req, root); }, URIGHTS_ADMIN);
 
 			// EnOcean ESP3 cmds
-			RegisterCommandCode("esp3enablelearnmode", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3EnableLearnMode(session, req, root); });
-			RegisterCommandCode("esp3isnodeteachedin", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3IsNodeTeachedIn(session, req, root); });
-			RegisterCommandCode("esp3cancelteachin", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3CancelTeachIn(session, req, root); });
+			RegisterCommandCode("esp3enablelearnmode", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3EnableLearnMode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("esp3isnodeteachedin", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3IsNodeTeachedIn(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("esp3cancelteachin", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3CancelTeachIn(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("esp3controllerreset", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3ControllerReset(session, req, root); });
+			RegisterCommandCode("esp3controllerreset", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3ControllerReset(session, req, root); }, URIGHTS_ADMIN);
 
-			RegisterCommandCode("esp3updatenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3UpdateNode(session, req, root); });
-			RegisterCommandCode("esp3deletenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3DeleteNode(session, req, root); });
-			RegisterCommandCode("esp3getnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3GetNodes(session, req, root); });
+			RegisterCommandCode("esp3updatenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3UpdateNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("esp3deletenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3DeleteNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("esp3getnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_EnOceanESP3GetNodes(session, req, root); }, URIGHTS_ADMIN);
 
 			//Dynamic Price
-			RegisterCommandCode("getdynamicpricedevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDynamicPriceDevices(session, req, root); });
+			RegisterCommandCode("getdynamicpricedevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDynamicPriceDevices(session, req, root); }, URIGHTS_ADMIN);
 
 			//EnergyDashboard
 			RegisterCommandCode("getenergydashboarddevices", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetEnergyDashboardDevices(session, req, root); });
 
 			//kWh stats
 			RegisterCommandCode("getkwhstats", [this](auto&& session, auto&& req, auto&& root) { Cmd_GetkWhStats(session, req, root); });
-			RegisterCommandCode("resetkwhstats", [this](auto&& session, auto&& req, auto&& root) { Cmd_ResetkWhStats(session, req, root); });
-			RegisterCommandCode("fixkwhstats", [this](auto&& session, auto&& req, auto&& root) { Cmd_FixkWhStats(session, req, root); });
-			RegisterCommandCode("fixcounterprices", [this](auto&& session, auto&& req, auto&& root) { Cmd_FixCounterPrices(session, req, root); });
+			RegisterCommandCode("resetkwhstats", [this](auto&& session, auto&& req, auto&& root) { Cmd_ResetkWhStats(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("fixkwhstats", [this](auto&& session, auto&& req, auto&& root) { Cmd_FixkWhStats(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("fixcounterprices", [this](auto&& session, auto&& req, auto&& root) { Cmd_FixCounterPrices(session, req, root); }, URIGHTS_ADMIN);
 
 			// Dashboard 2.0 layout management
 			RegisterCommandCode("getdashboardlayouts",    [this](auto&& session, auto&& req, auto&& root) { Cmd_GetDashboardLayouts(session, req, root); });
@@ -739,6 +787,7 @@ namespace http
 		void CWebServer::StopServer()
 		{
 			g_McpPush.Stop();
+			WebAssetFetch::Shutdown();
 			m_bDoStop = true;
 			try
 			{
@@ -793,14 +842,14 @@ namespace http
 			m_iamsettings = iamsettings;
 		}
 
-		void CWebServer::RegisterCommandCode(const char* idname, const webserver_response_function& ResponseFunction, bool bypassAuthentication)
+		void CWebServer::RegisterCommandCode(const char* idname, const webserver_response_function& ResponseFunction, const _eUserRights minRights, bool bypassAuthentication)
 		{
 			if (m_webcommands.find(idname) != m_webcommands.end())
 			{
 				_log.Debug(DEBUG_WEBSERVER, "CWebServer::RegisterCommandCode :%s already registered", idname);
 				return;
 			}
-			m_webcommands.insert(std::pair<std::string, webserver_response_function>(std::string(idname), ResponseFunction));
+			m_webcommands.insert(std::pair<std::string, _tWebCommand>(std::string(idname), { ResponseFunction, minRights }));
 			if (bypassAuthentication)
 			{
 				m_pWebEm->RegisterWhitelistCommandsString(idname);
@@ -855,7 +904,8 @@ namespace http
 			}
 			// Add 'Applications' as User with special privilege URIGHTS_CLIENTID
 			result.clear();
-			result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile, RefreshExpire, SigningSecret, AcceptLegacyTokensUntil FROM Applications");
+			m_client_redirect_uris.clear();
+			result = m_sql.safe_query("SELECT ID, Active, Public, Applicationname, Secret, Pemfile, RefreshExpire, SigningSecret, AcceptLegacyTokensUntil, RedirectUris FROM Applications");
 			if (!result.empty())
 			{
 				for (const auto& sd : result)
@@ -874,6 +924,18 @@ namespace http
 						// Use asymmetric signing only when a PEM key file is actually configured
 						int useAsymmetric = (bPublic && !pemfile.empty()) ? 1 : 0;
 						AddUser(ID, applicationname, secret, "", "", URIGHTS_CLIENTID, useAsymmetric, pemfile, refreshexpire, signingsecret, accept_legacy_until);
+
+						std::vector<std::string> rawuris;
+						StringSplit(sd[9], "\n", rawuris);
+						std::vector<std::string> redirecturis;
+						for (auto& uri : rawuris)
+						{
+							stdreplace(uri, "\r", "");
+							stdstring_trim(uri);
+							if (!uri.empty())
+								redirecturis.push_back(uri);
+						}
+						m_client_redirect_uris[applicationname] = redirecturis;
 					}
 				}
 			}
@@ -1424,7 +1486,7 @@ namespace http
 						" A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2,"
 						" A.Protected, IFNULL(B.XOffset,0), IFNULL(B.YOffset,0), IFNULL(B.PlanID,0), A.Description,"
-						" A.Options, A.Color "
+						" A.Options, A.Color, A.Icon "
 						"FROM DeviceStatus A LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) "
 						"WHERE (A.ID IN (%q))",
 						rowid.c_str());
@@ -1438,7 +1500,7 @@ namespace http
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
 						" A.StrParam2, A.Protected, B.XOffset, B.YOffset,"
 						" B.PlanID, A.Description,"
-						" A.Options, A.Color "
+						" A.Options, A.Color, A.Icon "
 						"FROM DeviceStatus as A, DeviceToPlansMap as B "
 						"WHERE (B.PlanID=='%q') AND (B.DeviceRowID==a.ID)"
 						" AND (B.DevSceneType==0) ORDER BY B.[Order]",
@@ -1452,7 +1514,7 @@ namespace http
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
 						" A.StrParam2, A.Protected, B.XOffset, B.YOffset,"
 						" B.PlanID, A.Description,"
-						" A.Options, A.Color "
+						" A.Options, A.Color, A.Icon "
 						"FROM DeviceStatus as A, DeviceToPlansMap as B,"
 						" Plans as C "
 						"WHERE (C.FloorplanID=='%q') AND (C.ID==B.PlanID)"
@@ -1495,7 +1557,7 @@ namespace http
 							" A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 							" A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2,"
 							" A.Protected, IFNULL(B.XOffset,0), IFNULL(B.YOffset,0), IFNULL(B.PlanID,0), A.Description,"
-							" A.Options, A.Color "
+							" A.Options, A.Color, A.Icon "
 							"FROM DeviceStatus as A LEFT OUTER JOIN DeviceToPlansMap as B "
 							"ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) "
 							"WHERE (A.HardwareID == %q) "
@@ -1511,7 +1573,7 @@ namespace http
 							" A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 							" A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2,"
 							" A.Protected, IFNULL(B.XOffset,0), IFNULL(B.YOffset,0), IFNULL(B.PlanID,0), A.Description,"
-							" A.Options, A.Color "
+							" A.Options, A.Color, A.Icon "
 							"FROM DeviceStatus as A LEFT OUTER JOIN DeviceToPlansMap as B "
 							"ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) "
 							"ORDER BY ");
@@ -1538,7 +1600,7 @@ namespace http
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
 						" A.StrParam2, A.Protected, 0 as XOffset,"
 						" 0 as YOffset, 0 as PlanID, A.Description,"
-						" A.Options, A.Color "
+						" A.Options, A.Color, A.Icon "
 						"FROM DeviceStatus as A, SharedDevices as B "
 						"WHERE (B.DeviceRowID==a.ID)"
 						" AND (B.SharedUserID==%lu) AND (A.ID IN (%q))",
@@ -1553,7 +1615,7 @@ namespace http
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
 						" A.StrParam2, A.Protected, C.XOffset,"
 						" C.YOffset, C.PlanID, A.Description,"
-						" A.Options, A.Color "
+						" A.Options, A.Color, A.Icon "
 						"FROM DeviceStatus as A, SharedDevices as B,"
 						" DeviceToPlansMap as C "
 						"WHERE (C.PlanID=='%q') AND (C.DeviceRowID==a.ID)"
@@ -1569,7 +1631,7 @@ namespace http
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
 						" A.StrParam2, A.Protected, C.XOffset, C.YOffset,"
 						" C.PlanID, A.Description,"
-						" A.Options, A.Color "
+						" A.Options, A.Color, A.Icon "
 						"FROM DeviceStatus as A, SharedDevices as B,"
 						" DeviceToPlansMap as C, Plans as D "
 						"WHERE (D.FloorplanID=='%q') AND (D.ID==C.PlanID)"
@@ -1614,7 +1676,7 @@ namespace http
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
 						" A.StrParam2, A.Protected, IFNULL(C.XOffset,0),"
 						" IFNULL(C.YOffset,0), IFNULL(C.PlanID,0), A.Description,"
-						" A.Options, A.Color "
+						" A.Options, A.Color, A.Icon "
 						"FROM DeviceStatus as A, SharedDevices as B "
 						"LEFT OUTER JOIN DeviceToPlansMap as C  ON (C.DeviceRowID==A.ID)"
 						"WHERE (B.DeviceRowID==A.ID)"
@@ -1914,6 +1976,9 @@ namespace http
 					root["result"][ii]["LastUpdate"] = sLastUpdate;
 
 					root["result"][ii]["CustomImage"] = CustomImage;
+
+					if (!sd[30].empty())
+						root["result"][ii]["Icon"] = sd[30];
 
 					if (CustomImage != 0)
 					{
@@ -2240,7 +2305,7 @@ namespace http
 						}
 						else if (switchtype == STYPE_Dimmer)
 						{
-							root["result"][ii]["TypeImg"] = "dimmer";
+							root["result"][ii]["TypeImg"] = "Dimmer";
 						}
 						else if (switchtype == STYPE_Motion)
 						{
@@ -2866,17 +2931,17 @@ namespace http
 							std::vector<std::string> sd2 = result2[0];
 							if (sd2[0].empty())
 							{
-								_log.Log(LOG_ERROR, "Empty Value in Meter table for device idx: '%q'", sd[0].c_str());
+								_log.Log(LOG_ERROR, "Empty Value in Meter table for device idx: '%s'", sd[0].c_str());
 								continue;
 							}
 							if (!is_number(sValue))
 							{
-								_log.Log(LOG_ERROR, "Invalid Number sValue: '%q' for device idx: '%q'", sValue.c_str(), sd[0].c_str());
+								_log.Log(LOG_ERROR, "Invalid Number sValue: '%s' for device idx: '%s'", sValue.c_str(), sd[0].c_str());
 								continue;
 							}
 							if (!is_number(sd2[0]))
 							{
-								_log.Log(LOG_ERROR, "Invalid Number value: '%q' for device idx: '%q'", sd2[0].c_str(), sd[0].c_str());
+								_log.Log(LOG_ERROR, "Invalid Number value: '%s' for device idx: '%s'", sd2[0].c_str(), sd[0].c_str());
 								continue;
 							}
 							int64_t total_first = std::stoll(sd2[0]);
@@ -3447,6 +3512,7 @@ namespace http
 						root["result"][ii]["TypeImg"] = "current";
 						root["result"][ii]["SwitchTypeVal"] = switchtype;		    // MTYPE_ENERGY
 						root["result"][ii]["EnergyMeterMode"] = options["EnergyMeterMode"]; // for alternate Energy Reading
+						root["result"][ii]["DisableAnomalyDetection"] = (options["DisableAnomalyDetection"] == "1") ? 1 : 0;
 					}
 					else if (dType == pTypeAirQuality)
 					{
@@ -3868,17 +3934,17 @@ namespace http
 
 								if (sd2[0].empty())
 								{
-									_log.Log(LOG_ERROR, "Empty Value in Meter table for device idx: '%q'", sd[0].c_str());
+									_log.Log(LOG_ERROR, "Empty Value in Meter table for device idx: '%s'", sd[0].c_str());
 									continue;
 								}
 								if (!is_number(sValue))
 								{
-									_log.Log(LOG_ERROR, "Invalid Number sValue: '%q' for device idx: '%q'", sValue.c_str(), sd[0].c_str());
+									_log.Log(LOG_ERROR, "Invalid Number sValue: '%s' for device idx: '%s'", sValue.c_str(), sd[0].c_str());
 									continue;
 								}
 								if (!is_number(sd2[0]))
 								{
-									_log.Log(LOG_ERROR, "Invalid Number value: '%q' for device idx: '%q'", sd2[0].c_str(), sd[0].c_str());
+									_log.Log(LOG_ERROR, "Invalid Number value: '%s' for device idx: '%s'", sd2[0].c_str(), sd[0].c_str());
 									continue;
 								}
 
@@ -4485,13 +4551,18 @@ namespace http
 					{
 						std::vector<std::string> results;
 						StringSplit(sLine, ";", results);
-						if (results.size() == 3)
+						if (results.size() >= 3)
 						{
 							_tCustomIcon cImage;
 							cImage.idx = index++;
 							cImage.RootFile = results[0];
 							cImage.Title = results[1];
 							cImage.Description = results[2];
+							if (results.size() >= 4)
+							{
+								cImage.FaClass = results[3];
+								stdstring_trimws(cImage.FaClass);
+							}
 							m_custom_light_icons.push_back(cImage);
 							m_custom_light_icons_lookup[cImage.idx] = (int)m_custom_light_icons.size() - 1;
 						}
@@ -4605,7 +4676,21 @@ namespace http
 					auto pf = m_webcommands.find(cparam);
 					if (pf != m_webcommands.end())
 					{
-						pf->second(session, req, root);
+						// Enforce the minimum rights the command was registered with. Compare exactly:
+						// URIGHTS_NONE and URIGHTS_CLIENTID are numerically above URIGHTS_ADMIN.
+						const _eUserRights minRights = pf->second.minRights;
+						const bool bAllowed = (minRights == URIGHTS_VIEWER)
+							|| (session.rights == URIGHTS_ADMIN)
+							|| ((minRights == URIGHTS_SWITCHER) && (session.rights == URIGHTS_SWITCHER));
+						if (!bAllowed)
+						{
+							_log.Debug(DEBUG_WEBSERVER, "CWebServer::GetJSonPage: %s refused for user '%s' with rights %d", cparam.c_str(), session.username.c_str(), (int)session.rights);
+							session.reply_status = reply::forbidden;
+							reply::set_content(&rep, root.toStyledString());
+							rep.status = static_cast<http::server::reply::status_type>(session.reply_status);
+							return;
+						}
+						pf->second.ResponseFunction(session, req, root);
 					}
 					else
 					{	// See if we still have a Param based version not converted to a proper command

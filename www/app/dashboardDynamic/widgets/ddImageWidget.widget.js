@@ -29,7 +29,7 @@ define([
               ],
               default: 'contain'
             },
-            { key: 'refreshInterval', type: 'number', label: 'Refresh every N seconds (0=off)', default: 0 },
+            { key: 'refreshInterval', type: 'number', step: 1, label: 'Refresh every N seconds (0=off)', default: 0 },
             { key: 'showBackground', type: 'boolean', label: 'Show panel background', default: true }
         ]
     });

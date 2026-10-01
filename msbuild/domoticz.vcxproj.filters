@@ -2104,6 +2104,12 @@
     <ClInclude Include="..\main\HTMLSanitizer.h">
       <Filter>Helpers</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\WebAssetFetch.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\WebAssets.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\Buienradar.h">
       <Filter>Devices\Buienradar</Filter>
     </ClInclude>
@@ -2243,6 +2249,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\main\KWHStats.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main\ThemeSettings.h">
       <Filter>Helpers</Filter>
     </ClInclude>
     <ClInclude Include="..\iamserver\iam_settings.hpp">
@@ -2922,6 +2931,9 @@
     <ClCompile Include="..\main\HTMLSanitizer.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
+    <ClCompile Include="..\main\WebAssetFetch.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
     <ClCompile Include="..\hardware\Buienradar.cpp">
       <Filter>Devices\Buienradar</Filter>
     </ClCompile>
@@ -3040,6 +3052,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\main\KWHStats.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\ThemeSettings.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
     <ClCompile Include="..\iamserver\IamService.cpp">

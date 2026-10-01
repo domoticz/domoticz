@@ -1,0 +1,67 @@
+name: Beta native builds
+
+# Runs the native build chain on the self-hosted build infrastructure.
+# armv7l and aarch64 build in schroots on raspb5, x86_64 in a schroot on the
+# intel machine, and the docker image is only assembled when all three builds
+# succeeded.
+#
+# Gated on the GitHub-hosted CI build: a push to development (beta) or master
+# (release) first runs the x86_64 compile check on GitHub, and the native
+# builders only start after it succeeded. The channel follows the branch the
+# CI ran on: development = beta, master = release.
+#
+# Manual dispatch bypasses the CI gate and asks for the channel; build.sh
+# checks out the matching branch itself, so the ref chosen in the UI does
+# not matter.
+
+on:
+  workflow_run:
+    workflows: ["Domoticz Development (Beta) Unix"]
+    types: [completed]
+    branches:
+      - development
+      - master
+
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: 'Build channel'
+        type: choice
+        default: beta
+        options:
+          - beta
+          - release
+
+concurrency:
+  group: beta-native
+  cancel-in-progress: false
+
+env:
+  CHANNEL: ${{ github.event_name == 'workflow_dispatch' && inputs.channel || (github.event.workflow_run.head_branch == 'master' && 'release' || 'beta') }}
+
+jobs:
+  build-arm:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: [self-hosted, raspb5]
+    timeout-minutes: 360
+    steps:
+      - name: Build armv7l
+        run: schroot -c pi32 -- ~/build32/dev-domoticz/build.sh armv7l "$CHANNEL" force
+      - name: Build aarch64
+        run: schroot -c pi64 -- ~/build64/dev-domoticz/build.sh aarch64 "$CHANNEL" force
+
+  build-x64:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: [self-hosted, intel]
+    timeout-minutes: 360
+    steps:
+      - name: Build x86_64
+        run: schroot -c amd64 -- ~/build64/dev-domoticz/build.sh x86_64 "$CHANNEL" force
+
+  docker:
+    needs: [build-arm, build-x64]
+    runs-on: [self-hosted, intel]
+    timeout-minutes: 120
+    steps:
+      - name: Build and push docker image
+        run: cd ~/build64/domoticz-docker && ./build.sh --"$CHANNEL"

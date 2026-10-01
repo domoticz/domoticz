@@ -13,7 +13,7 @@
 					--><span ng-show="ctrl.displaySpeed()"> / {{item.Speed}} {{windsign}}</span><!--
 					--><span ng-show="!ctrl.displaySpeed() && ctrl.displayGust()"> / {{item.Gust}} {{windsign}}</span>
 				</td>
-				<td id="img"><img ng-src="images/{{ctrl.image()}}" height="48" width="48"></td>
+				<td id="img"><dz-device-icon class="dz-icon-48" device="item" fallback-src="'images/' + ctrl.image()"></dz-device-icon></td>
 				<td id="status" class="ng-cloak">
 					<span ng-show="ctrl.displayForecast()"></span><span ng-show="ctrl.displayForecast()" data-i18n="Prediction">Prediction</span><span ng-show="ctrl.displayForecast()">: {{ctrl.Forecast()}}</span><!--
 					--><span ng-show="ctrl.displayAltitude()">, Altitude: {{item.Altitude}} meter</span>
@@ -31,8 +31,8 @@
 					<span data-i18n="Last Seen" style="font-style: italic">Last Seen</span>: <span ng-bind="item.LastUpdate"></span>
 				</td>
 				<td class="options">
-					<img ng-if="item.Favorite == 0" src="images/nofavorite.png" ng-click="ctrl.MakeFavorite(1)" class="lcursor" data-i18n="[title]Add to Dashboard" title="Add to Dashboard">
-					<img ng-if="item.Favorite != 0" src="images/favorite.png" ng-click="ctrl.MakeFavorite(0)" class="lcursor" data-i18n="[title]Remove from Dashboard" title="Remove from Dashboard">
+					<i ng-if="item.Favorite == 0" class="fa-regular fa-star dz-chrome-icon lcursor" ng-click="ctrl.MakeFavorite(1)" title="Add to Dashboard"></i>
+					<i ng-if="item.Favorite != 0" class="fa-solid fa-star dz-chrome-icon lcursor" ng-click="ctrl.MakeFavorite(0)" title="Remove from Dashboard"></i>
 					&nbsp;&nbsp;
 					<a class="btnsmall" ng-click="ctrl.ShowLog()" data-i18n="Log">Log</a>
 

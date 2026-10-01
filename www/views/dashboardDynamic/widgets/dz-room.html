@@ -24,7 +24,7 @@
                     ng-repeat="cat in ctrl.categories track by cat.key"
                     ng-class="{ 'dd-cat-tab--active': ctrl.activeCategory === cat.key }"
                     ng-click="ctrl.activeCategory = cat.key">
-                <img ng-src="{{ cat.icon }}" width="14" height="14" alt="">
+                <i class="dz-icon-glyph dz-icon-16" ng-class="cat.icon"></i>
                 {{ cat.label }}
                 <span class="dd-cat-badge">{{ cat.devices.length }}</span>
             </button>
@@ -131,7 +131,7 @@
                            min="0" max="100" step="5"
                            ng-model="ctrl.dimLevel[item.idx]"
                            ng-mouseup="ctrl.applyDimLevel(item)"
-                           ng-touchend="ctrl.applyDimLevel(item)">
+                           ng-on-touchend="ctrl.applyDimLevel(item)">
                     <span class="dd-qa-dim-value-text">{{ ctrl.dimLevel[item.idx] }}%</span>
                 </div>
             </div>

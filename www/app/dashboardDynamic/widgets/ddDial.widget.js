@@ -104,11 +104,19 @@ define([
         return step * mag;
     }
 
-    function fmtLabel(v) {
+    // How many decimals a label needs follows from the tick step, not from the
+    // device: a 0.02 step needs two, a 20 step needs none.
+    function stepDecimals(step) {
+        if (!step || step <= 0 || !isFinite(step)) { return 1; }
+        return Math.max(0, Math.min(3, -Math.floor(Math.log(step) / Math.LN10)));
+    }
+
+    function fmtLabel(v, step) {
         if (Math.abs(v) >= 10000) { return Math.round(v / 1000) + 'k'; }
         if (Math.abs(v) >= 1000)  { return (v / 1000).toFixed(1).replace('.0', '') + 'k'; }
-        var r = Math.round(v * 10) / 10;
-        return String(r % 1 === 0 ? Math.round(r) : r);
+        var s = v.toFixed(stepDecimals(step));
+        if (s.indexOf('.') !== -1) { s = s.replace(/0+$/, '').replace(/\.$/, ''); }
+        return s === '-0' ? '0' : s;
     }
 
     // ── Minor tick helper ──────────────────────────────────────────────────
@@ -157,7 +165,7 @@ define([
                 y1:      (CY + (TICK_R - TICK_LEN) * sin).toFixed(2),
                 x2:      (CX + TICK_R * cos).toFixed(2),
                 y2:      (CY + TICK_R * sin).toFixed(2),
-                label:   fmtLabel(sv),
+                label:   fmtLabel(sv, step),
                 textX:   (CX + LBL_R * cos).toFixed(2),
                 textY:   (CY + LBL_R * sin).toFixed(2),
                 textRot: (angleDeg + 90).toFixed(1)

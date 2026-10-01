@@ -1759,14 +1759,8 @@ namespace http {
 				}
 			}
 		}
-		void CWebServer::Cmd_AddNotification(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_AddNotification(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights < 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
@@ -1824,14 +1818,8 @@ namespace http {
 				root["title"] = "AddNotification";
 			}
 		}
-		void CWebServer::Cmd_UpdateNotification(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_UpdateNotification(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights < 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			std::string devidx = request::findValue(&req, "devidx");
 			if ((idx.empty()) || (devidx.empty()))
@@ -1896,14 +1884,8 @@ namespace http {
 			int priority = atoi(spriority.c_str());
 			m_notifications.AddNotification(devidx, (sactive == "true") ? true : false, Param, scustommessage, scustomaction, sactivesystems, priority, (ssendalways == "true") ? true : false);
 		}
-		void CWebServer::Cmd_DeleteNotification(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_DeleteNotification(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights < 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;

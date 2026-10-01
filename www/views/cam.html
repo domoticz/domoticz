@@ -129,6 +129,7 @@
 				<select id="activewhen" style="width:80px" class="combobox ui-corner-all">
 					<option value="0" data-i18n="On">On</option>
 					<option value="1" data-i18n="Off">Off</option>
+					<option value="2" data-i18n="Never">Never</option>
 				</select>
 				<label for="name"> <span data-i18n="Delay"></span>: </label>
 				<input type="text" id="delay" style="width: 40px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="0">
@@ -382,8 +383,8 @@
 		$('#updelclr #cameraedit').attr("class", "btnstyle3-dis");
 		$('#updelclr #cameradelete').attr("class", "btnstyle3-dis");
 
-		var oTable = $('#cameratable').dataTable();
-		oTable.fnClearTable();
+		var oTable = $('#cameratable').DataTable();
+		oTable.clear().draw();
 		$.ajax({
 			url: "json.htm?type=command&param=getcameras",
 			async: false,
@@ -406,11 +407,11 @@
 							previewimg = '<img src="" height="40"> ';
 						}
 
-						var captureimg = '<img src="images/capture.png" title="' + $.t('Take Snapshot') + '" height="32">';
+						var captureimg = '<i class="fa-solid fa-camera dz-chrome-icon dz-chrome-icon-32 dz-act-neutral" title="' + $.t('Take Snapshot') + '"></i>';
 
 						captureurl = "<a href=\"camsnapshot.jpg?idx=" + item.idx + "\">" + captureimg + "</a>";
 
-						var streamimg = '<img src="images/webcam.png" title="' + $.t('Stream Video') + '" height="32">';
+						var streamimg = '<i class="fa-solid fa-video dz-chrome-icon dz-chrome-icon-32 dz-act-neutral" title="' + $.t('Stream Video') + '"></i>';
 						streamurl = "<a href=\"javascript:ShowCameraLiveStream('" + item.Name + "'," + item.idx + "," + item.AspectRatio + ")\">" + streamimg + "</a>";
 
 						var protocol;
@@ -419,7 +420,7 @@
 						else
 							protocol = "HTTPS";
 
-						var addId = oTable.fnAddData({
+						oTable.row.add({
 							"DT_RowId": item.idx,
 							"Name": item.Name,
 							"Address": item.Address,
@@ -440,7 +441,7 @@
 							"7": item.Address,
 							"8": item.Port,
 							"9": item.ImageURL
-						});
+						}).draw();
 					});
 				}
 			}
@@ -467,14 +468,14 @@
 				$("#dialog-add-edit-camera #cameraparamstable #imageurl").val("image.jpg");
 			}
 			else {
-				var oTable = $('#cameratable').dataTable();
+				var oTable = $('#cameratable').DataTable();
 				oTable.$('tr.row_selected').removeClass('row_selected');
 				$(this).addClass('row_selected');
 				$('#updelclr #cameraedit').attr("class", "btnstyle3");
 				$('#updelclr #cameradelete').attr("class", "btnstyle3");
 				var anSelected = fnGetSelected(oTable);
 				if (anSelected.length !== 0) {
-					var data = oTable.fnGetData(anSelected[0]);
+					var data = oTable.row(anSelected[0]).data();
 					var idx = data["DT_RowId"];
 					$.devIdx = idx;
 					$("#updelclr #cameraedit").attr("href", "javascript:EditCamera(" + idx + ")");
@@ -532,10 +533,7 @@
 		$('#cameracontent').i18n();
 
 		oTable = $('#cameratable').dataTable({
-			"sDom": '<"H"lfrC>t<"F"ip>',
-			"oTableTools": {
-				"sRowSelect": "single",
-			},
+			"sDom": '<"H"lfr>t<"F"ip>',
 			"aoColumnDefs": [
 				{ "bSortable": false, "aTargets": [0, 2, 3] }
 			],
@@ -551,10 +549,7 @@
 		});
 
 		oTable = $('#activetable').dataTable({
-			"sDom": '<"H"frC>t<"F"i>',
-			"oTableTools": {
-				"sRowSelect": "single",
-			},
+			"sDom": '<"H"fr>t<"F"i>',
 			"aaSorting": [[0, "asc"]],
 			"bSortClasses": false,
 			"bProcessing": true,
@@ -579,8 +574,8 @@
 
 		$('#cameracontent #delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
 
-		var oTable = $('#cameracontent #activetable').dataTable();
-		oTable.fnClearTable();
+		var oTable = $('#cameracontent #activetable').DataTable();
+		oTable.clear().draw();
 
 		$.ajax({
 			url: "json.htm?type=command&param=getcamactivedevices&idx=" + idx,
@@ -589,16 +584,19 @@
 			success: function (data) {
 				if (typeof data.result != 'undefined') {
 					$.each(data.result, function (i, item) {
-						var swhen = "On";
+						var swhen = $.t("On");
 						if (item.when == 1) {
-							swhen = "Off";
+							swhen = $.t("Off");
+						} else if (item.when == 2) {
+							// Linked for the camera button only; no notification is ever sent
+							swhen = $.t("Never");
 						}
-						var addId = oTable.fnAddData({
+						oTable.row.add({
 							"DT_RowId": item.idx,
 							"0": item.Name,
 							"1": swhen,
 							"2": item.delay
-						});
+						}).draw();
 					});
 				}
 			}
@@ -612,14 +610,14 @@
 				$('#cameracontent #delclractive #activedevicedelete').attr("class", "btnstyle3-dis");
 			}
 			else {
-				var oTable = $('#cameracontent #activetable').dataTable();
+				var oTable = $('#cameracontent #activetable').DataTable();
 				oTable.$('tr.row_selected').removeClass('row_selected');
 				$(this).addClass('row_selected');
 				$('#cameracontent #delclractive #activedevicedelete').attr("class", "btnstyle3");
 
 				var anSelected = fnGetSelected(oTable);
 				if (anSelected.length !== 0) {
-					var data = oTable.fnGetData(anSelected[0]);
+					var data = oTable.row(anSelected[0]).data();
 					var idx = data["DT_RowId"];
 					$("#cameracontent #delclractive #activedevicedelete").attr("href", "javascript:DeleteActiveDevice(" + idx + ")");
 				}

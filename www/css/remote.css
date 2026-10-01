@@ -3,21 +3,17 @@
 }
 .remotehoverable:hover {
 	cursor: pointer;
-	fill: #289fe3;
+	fill: color-mix(in srgb, var(--dz-btn-info-bg) 80%, #000);
 }
 .remotedisabled {
 	pointer-events: none;
-	fill: #2e2e2e;
-}
-.remoteshadow {
-	fill: #393a39;
-	pointer-events: none;
+	fill: var(--dz-status-disabled);
 }
 .remotetext {
 	cursor: pointer;
 	text-anchor: middle;
 	dominant-baseline: middle;
-	fill: #393a39;
+	fill: var(--dz-btn-primary-text);
 	font-size: 180px;
 	font-family: sans-serif;
 	font-stretch: ultra-condensed ;
@@ -29,4 +25,14 @@
 	bottom:0;
 	left:0;
 	right:0;
+}
+
+/* Symbol groups inside the remote <defs>. An SVG presentation attribute cannot
+   take a var(), so the symbols carry no stroke/fill of their own and are painted
+   from here instead. */
+.remotesymbolstroke {
+	stroke: var(--dz-btn-primary-text);
+}
+.remotesymbolfill {
+	fill: var(--dz-btn-primary-text);
 }

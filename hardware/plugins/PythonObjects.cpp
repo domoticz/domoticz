@@ -815,7 +815,7 @@ namespace Plugins {
 					Py_XDECREF(self->Description);
 					self->Description = PyUnicode_FromString(sd[15].c_str());
 					Py_XDECREF(self->Color);
-					self->Color = PyUnicode_FromString(_tColor(std::string(sd[16])).toJSONString().c_str()); //Parse the color to detect incorrectly formatted color data
+					self->Color = PyUnicode_FromString(NormalizeDeviceColor(sd[16]).c_str());
 					self->Used = atoi(sd[17].c_str());
 				}
 			}
@@ -852,7 +852,7 @@ namespace Plugins {
 					if (result.empty())
 					{
 						std::string	sValue = PyUnicode_AsUTF8(self->sValue);
-						std::string	sColor = _tColor(std::string(PyUnicode_AsUTF8(self->Color))).toJSONString(); //Parse the color to detect incorrectly formatted color data
+						std::string	sColor = NormalizeDeviceColor(std::string(PyUnicode_AsUTF8(self->Color)));
 						std::string	sLongName = self->pPlugin->m_Name + " - " + sName;
 						std::string	sDescription = PyUnicode_AsUTF8(self->Description);
 						if ((self->SubType == sTypeCustom) && (PyDict_Size(self->Options) > 0))
@@ -1130,7 +1130,7 @@ namespace Plugins {
                         // Color change
                         if (Color)
                         {
-                                std::string     sColor = _tColor(std::string(Color)).toJSONString(); //Parse the color to detect incorrectly formatted color data
+                                std::string     sColor = NormalizeDeviceColor(std::string(Color));
                                 Py_BEGIN_ALLOW_THREADS
                                 m_sql.UpdateDeviceValue("Color", sColor, sID);
                                 Py_END_ALLOW_THREADS
@@ -1197,10 +1197,15 @@ namespace Plugins {
 				}
 
 				std::vector<std::vector<std::string> > result;
-				result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
+				result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
 				if (!result.empty())
 				{
-					m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", self->HwdID, self->Unit);
+					// Same path as deleting the device from the web UI, so its history,
+					// notifications, timers, scene and plan rows go with it.
+					{
+						PyAllowThreads gil;
+						m_sql.DeleteDevices(result[0][0]);
+					}
 
 					PyNewRef	pKey = PyLong_FromLong(self->Unit);
 					if (PyDict_DelItem((PyObject*)self->pPlugin->m_DeviceDict, pKey) == -1)

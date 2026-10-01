@@ -605,7 +605,13 @@ namespace http
 			}
 			else if (sReqMethod == "resources/read")
 			{
-				mcp::McpResourcesRead(jsonRequest, jsonRPCRep);
+				if ((session.rights != http::server::URIGHTS_ADMIN) && mcp::McpIsAdminResource(jsonRequest))
+				{
+					jsonRPCRep["error"]["code"] = mcp::MCP_PERMISSION_DENIED;
+					jsonRPCRep["error"]["message"] = "Admin rights required for this resource";
+				}
+				else
+					mcp::McpResourcesRead(jsonRequest, jsonRPCRep);
 			}
 			else if (sReqMethod == "prompts/list")
 			{
@@ -1024,6 +1030,7 @@ namespace mcp		// Model Context Protocol
 			{
 				{ "hw_idx", "integer", "IDX of the virtual/dummy hardware to attach the sensor to", true, {} },
 				{ "sensorname", "string", "Name for the new virtual sensor", true, {} },
+				{ "sensoroptions", "string", "Required for 'Custom Sensor': the axis label / unit shown for the sensor (e.g. 'km/h' or 'µSv/h'). Ignored for other sensor types.", false, {} },
 				{ "sensortype", "string", "Sensor type name or numeric mapped value. Read domoticz://sensor-types for the full list.", true, {
 					"Air Quality", "Alert", "Ampere (1 Phase)", "Ampere (3 Phase)", "Barometer",
 					"Counter", "Counter Incremental", "Custom Sensor", "Distance",
@@ -1401,16 +1408,21 @@ namespace mcp		// Model Context Protocol
 			"rename_device", "delete_device", "hide_device",
 			"add_user_variable", "update_user_variable", "delete_user_variable",
 			"create_event", "update_event", "delete_event",
-			"update_device_value", "set_security_status"
+			"update_device_value", "set_security_status",
+			// reads that expose scripts, credentials, configuration or accounts
+			"get_events", "get_event", "get_user_variables", "get_hardware",
+			"get_settings", "get_users", "get_logging"
 		};
 
-		if (kAdminTools.count(sMethodName) && session.rights < http::server::URIGHTS_ADMIN)
+		const bool bIsAdmin = (session.rights == http::server::URIGHTS_ADMIN);
+		const bool bIsSwitcher = bIsAdmin || (session.rights == http::server::URIGHTS_SWITCHER);
+		if (kAdminTools.count(sMethodName) && !bIsAdmin)
 		{
 			jsonRPCRep["error"]["code"] = mcp::MCP_PERMISSION_DENIED;
 			jsonRPCRep["error"]["message"] = "Admin rights required for: " + sMethodName;
 			return;
 		}
-		if (kSwitcherTools.count(sMethodName) && session.rights < http::server::URIGHTS_SWITCHER)
+		if (kSwitcherTools.count(sMethodName) && !bIsSwitcher)
 		{
 			jsonRPCRep["error"]["code"] = mcp::MCP_PERMISSION_DENIED;
 			jsonRPCRep["error"]["message"] = "Switcher rights required for: " + sMethodName;
@@ -1677,6 +1689,23 @@ namespace mcp		// Model Context Protocol
 		{ 1009, "Thermostat (Temp/Hum/Baro/Setpoint)",            73,  3  },  // pTypeThermostat6 / sTypeThermostat6TempHumBaro
 		{ 0,    nullptr,                                          0,   0  }   // sentinel
 	};
+
+	bool McpIsAdminResource(const Json::Value &jsonRequest)
+	{
+		if (!jsonRequest.isMember("params") || !jsonRequest["params"].isMember("uri"))
+			return false;
+		const std::string sReadURI = jsonRequest["params"]["uri"].asString();
+		if (sReadURI.substr(0, 11) != "domoticz://")
+			return false;
+		const std::string sPath = sReadURI.substr(11);
+		const std::string sResourceType = sPath.substr(0, sPath.find('/'));
+		// Same scope as the admin-only JSON commands and MCP tools that expose this data
+		static const std::unordered_set<std::string> kAdminResources = {
+			"user-variables", "user-variable", "events", "event", "settings",
+			"log", "hardware", "notifications"
+		};
+		return kAdminResources.count(sResourceType) > 0;
+	}
 
 	void McpResourcesRead(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
@@ -3571,7 +3600,7 @@ namespace mcp		// Model Context Protocol
 	}
 
 	// Shared creation logic used by both createSensor and createVirtualSensor.
-	static bool doCreateVirtualSensor(int nHwIdx, const std::string &sSensorName, const std::string &sSensorType, Json::Value &jsonRPCRep)
+	static bool doCreateVirtualSensor(int nHwIdx, const std::string &sSensorName, const std::string &sSensorType, const std::string &sSensorOptions, Json::Value &jsonRPCRep)
 	{
 		int iType, iSubType;
 		std::string sError;
@@ -3579,6 +3608,22 @@ namespace mcp		// Model Context Protocol
 		{
 			mcp::setToolResult(jsonRPCRep, sError, true);
 			return true;
+		}
+
+		// A Custom Sensor cannot be created without its axis label; CreateDevice
+		// silently returns -1 without it, so refuse up front with a usable message.
+		std::string soptions;
+		if ((iType == pTypeGeneral) && (iSubType == sTypeCustom))
+		{
+			std::string sLabel = sSensorOptions;
+			stdstring_trimws(sLabel);
+			if (sLabel.empty())
+			{
+				mcp::setToolResult(jsonRPCRep, "sensortype 'Custom Sensor' requires 'sensoroptions' with the axis label / unit for the sensor (e.g. \"km/h\").", true);
+				return true;
+			}
+			// The web UI stores the label as "1;<label>"; accept both a bare label and the stored form.
+			soptions = (sLabel.compare(0, 2, "1;") == 0) ? sLabel : ("1;" + sLabel);
 		}
 
 		auto maxResult = m_sql.safe_query("SELECT MAX(ID) FROM DeviceStatus");
@@ -3589,7 +3634,6 @@ namespace mcp		// Model Context Protocol
 
 		bool bPrevAccept = m_sql.m_bAcceptNewHardware;
 		m_sql.m_bAcceptNewHardware = true;
-		std::string soptions;
 		std::string sName = sSensorName;
 		uint64_t DeviceRowIdx = m_sql.CreateDevice(nHwIdx, iType, iSubType, sName, nid, soptions, "MCP");
 		m_sql.m_bAcceptNewHardware = bPrevAccept;
@@ -3616,6 +3660,9 @@ namespace mcp		// Model Context Protocol
 		int nHwIdx = jsonRequest["params"]["arguments"]["hw_idx"].asInt();
 		std::string sSensorName = jsonRequest["params"]["arguments"]["sensorname"].asString();
 		std::string sSensorType = jsonRequest["params"]["arguments"]["sensortype"].asString();
+		std::string sSensorOptions;
+		if (jsonRequest["params"]["arguments"].isMember("sensoroptions"))
+			sSensorOptions = jsonRequest["params"]["arguments"]["sensoroptions"].asString();
 
 		auto hwResult = m_sql.safe_query("SELECT ID FROM Hardware WHERE ID=%d", nHwIdx);
 		if (hwResult.empty())
@@ -3624,7 +3671,7 @@ namespace mcp		// Model Context Protocol
 			return true;
 		}
 
-		return doCreateVirtualSensor(nHwIdx, sSensorName, sSensorType, jsonRPCRep);
+		return doCreateVirtualSensor(nHwIdx, sSensorName, sSensorType, sSensorOptions, jsonRPCRep);
 	}
 
 	bool updateDeviceValue(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)

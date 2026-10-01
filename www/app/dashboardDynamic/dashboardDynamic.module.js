@@ -1,4 +1,4 @@
-define(['app'], function(app) {
+define(['app', 'icons/dzIconService'], function(app) {
     'use strict';
 
     /**
@@ -23,7 +23,9 @@ define(['app'], function(app) {
      *   'dz-scene-widget'   — scenes and groups
      *   'dz-utility-widget' — temperature, humidity, weather, meters, counters, …
      */
-    app.factory('ddDeviceClassifier', [function() {
+    app.factory('ddDeviceClassifier', ['dzIconService', function(dzIconService) {
+
+        dzIconService.preloadBuiltinIcons();
 
         function getDirective(device) {
             if (!device) { return null; }
@@ -80,6 +82,11 @@ define(['app'], function(app) {
         };
 
         function autoDeviceIcon(d) {
+            var resolved = d ? dzIconService.resolve(d) : null;
+            if (resolved && resolved.kind === 'font') {
+                return resolved.cls;
+            }
+
             var type = (d.Type || '').toLowerCase();
             if (d.Temp !== undefined)                                           { return 'fa-solid fa-temperature-half'; }
             if (d.Humidity !== undefined)                                       { return 'fa-solid fa-droplet'; }
@@ -103,7 +110,25 @@ define(['app'], function(app) {
             return (!isNaN(n) && n > 1000) ? Math.round(n) + m[2] : str;
         }
 
+        // Text devices may carry HTML in their Data (<br> line breaks); a one-line
+        // stat renders plain text, so breaks become ', ' and remaining tags are dropped
+        function toPlainText(s) {
+            return String(s)
+                .replace(/<br\s*\/?>/gi, ', ')
+                .replace(/<[^>]*>/g, '')
+                .replace(/\s+/g, ' ')
+                .replace(/(,\s*)+$/, '')
+                .trim();
+        }
+
         function extractDeviceValue(d) {
+            var res = rawDeviceValue(d);
+            if (typeof res.value === 'string') { res.value = toPlainText(res.value); }
+            if (typeof res.secondValue === 'string') { res.secondValue = toPlainText(res.secondValue); }
+            return res;
+        }
+
+        function rawDeviceValue(d) {
             var type = (d.Type || '').toLowerCase();
             if (d.SwitchType === 'Selector') {
                 var levelNames = [];

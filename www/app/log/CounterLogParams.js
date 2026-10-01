@@ -45,7 +45,11 @@ define(['app', 'log/Chart'], function (app) {
                         },
                         plotOptions: {
 							column: {
-								pointPlacement: 'between'
+								// Numeric 0.5 puts the hourly bar between its tick and the next
+								// like 'between' did, but 'between' breaks Highcharts 12's panning
+								// (Shift+drag widened the range) and pinch zoom (it reversed)
+								// on these columns (#6987).
+								pointPlacement: 0.5
 							},
                             series: {
                                 matchExtremes: true

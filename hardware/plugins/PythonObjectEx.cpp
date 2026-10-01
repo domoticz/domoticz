@@ -530,7 +530,7 @@ namespace Plugins {
 					Py_XDECREF(self->Description);
 					self->Description = PyUnicode_FromString(sd[14].c_str());
 					Py_XDECREF(self->Color);
-					self->Color = PyUnicode_FromString(_tColor(std::string(sd[15])).toJSONString().c_str()); // Parse the color to detect incorrectly formatted color data
+					self->Color = PyUnicode_FromString(NormalizeDeviceColor(sd[15]).c_str());
 					self->Used = atoi(sd[16].c_str());
 					self->Adjustment = static_cast<float>(atof(sd[17].c_str()));
 					self->Multiplier = static_cast<float>(atof(sd[18].c_str()));
@@ -585,7 +585,7 @@ namespace Plugins {
 					if (result.empty())
 					{
 						std::string sValue = PyBorrowedRef(self->sValue);
-						std::string sColor = _tColor(std::string(PyBorrowedRef(self->Color))).toJSONString(); // Parse the color to detect incorrectly formatted color data
+						std::string sColor = NormalizeDeviceColor(std::string(PyBorrowedRef(self->Color)));
 						std::string sLongName = sName;
 						std::string sDescription = PyBorrowedRef(self->Description);
 						std::string sOptionValue = "";
@@ -758,7 +758,7 @@ namespace Plugins {
 			std::string sDescription = PyBorrowedRef(self->Description);
 			std::string sValue = PyBorrowedRef(self->sValue);
 			std::string sColor = PyBorrowedRef(self->Color);
-			sColor = _tColor(sColor).toJSONString();
+			sColor = NormalizeDeviceColor(sColor);
 			int nValue = self->nValue;
 			int iImage = self->Image;
 			int iBatteryLevel = self->BatteryLevel;
@@ -1025,8 +1025,11 @@ namespace Plugins {
 				{
 					PyAllowThreads gil;
 					result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%d)", pModState->pPlugin->m_HwdID, self->ID);
+					// Same path as deleting the device from the web UI, so its history,
+					// notifications, timers, scene and plan rows go with it instead of
+					// lingering for whichever device is handed this idx next.
 					if (!result.empty())
-						m_sql.safe_query("DELETE FROM DeviceStatus WHERE (HardwareID==%d) AND (ID==%d)", pModState->pPlugin->m_HwdID, self->ID);
+						m_sql.DeleteDevices(std::to_string(self->ID));
 				}
 				if (result.empty())
 				{

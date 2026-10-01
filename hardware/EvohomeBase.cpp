@@ -220,12 +220,6 @@ namespace http {
 				Username = session.username;
 			std::string szUser = Username + " (IP: " + session.remote_host + ")";
 
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			std::string ssensortype = request::findValue(&req, "sensortype");
 			if ((idx.empty()) || (ssensortype.empty()))

@@ -71,6 +71,7 @@ define([
                     item.typeClass   = extracted.typeClass;
                     item.icon        = item.configIcon || ddDeviceClassifier.autoDeviceIcon(d);
                     item.label       = item.configLabel || d.Name || String(d.idx);
+                    item.timeout     = d.HaveTimeout === true;
                 }
 
                 function loadAll() {

@@ -1,6 +1,6 @@
 define(function () {
 
-    return function (dzDefaultSwitchIcons, deviceLightApi, sceneApi) {
+    return function (deviceLightApi, sceneApi, dzIconService) {
         return Device;
 
         function DeviceIcon(device) {
@@ -9,30 +9,13 @@ define(function () {
                     [0, 2, 7, 9, 10, 11, 17, 18, 19, 20].includes(device.SwitchTypeVal);
             };
 
+            this.resolve = function() {
+                return dzIconService.resolve(device, device.isActive());
+            };
+
             this.getIcon = function() {
-                var image;
-                var TypeImg = device.TypeImg;
-
-                if (this.isConfigurable()) {
-                    image = device.CustomImage === 0
-                        ? dzDefaultSwitchIcons[device.SwitchTypeVal][device.isActive() ? 0 : 1]
-                        : device.Image + '48_' + (device.isActive() ? 'On' : 'Off') + '.png'
-                } else if (TypeImg.indexOf('Alert') === 0) {
-                    image = 'Alert48_' + Math.min(device.Level, 4) + '.png';
-                } else if (TypeImg.indexOf('motion') === 0) {
-                    image = device.isActive() ? 'motion.png' : 'motionoff.png';
-                } else if (TypeImg.indexOf('smoke') === 0) {
-                    image = device.isActive() ? 'smoke.png' : 'smokeoff.png';
-                } else if (device.Type === 'Scene' || device.Type === 'Group') {
-                    image = device.isActive() ? 'push.png' : 'pushoff.png'
-                } else {
-                    if(device.CustomImage == 0)
-                        image = device.TypeImg + '.png'
-                    else
-                        image = device.Image + '48_On.png';
-                }
-
-                return 'images/' + image;
+                var icon = this.resolve();
+                return icon.kind === 'img' ? icon.src : null;
             }
         }
 
@@ -137,10 +120,15 @@ define(function () {
                     return 'kWh';
                 } else if (this.Type === 'YouLess Meter') {
                     return 'kWh';
-                } else if (this.Type === 'RFXMeter' && this.SwitchTypeVal === 2) {
-                    return 'm3';
-                } else if (this.Type === 'RFXMeter' && this.SwitchTypeVal === 3) {
-                    return this.ValueUnits; //counter
+                } else if (this.Type === 'RFXMeter') {
+                    if (this.SwitchTypeVal === 0 || this.SwitchTypeVal === 4) {
+                        return 'kWh'; //energy, energy generated
+                    } else if (this.SwitchTypeVal === 1 || this.SwitchTypeVal === 2) {
+                        return 'm3'; //gas, water
+                    } else if (this.SwitchTypeVal === 3) {
+                        return this.ValueUnits; //custom units
+                    }
+                    return '?';
                 } else if (this.Type === 'Usage' && this.SubType === 'Electric') {
                     return 'W';
                 } else if (this.SubType === 'Gas' || this.SubType === 'Water') {

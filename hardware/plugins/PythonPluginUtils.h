@@ -2,10 +2,37 @@
 #ifdef ENABLE_PYTHON
 
 #include "DelayedLink.h"
+#include "../ColorSwitch.h"
+#include "../../main/json_helper.h"
 #include <string>
 #include <algorithm>
 
 namespace Plugins {
+
+	// DeviceStatus.Color carries two unrelated payloads: RGB/WW color state for color
+	// switches, and the bar range definitions rendered by the utility, temperature and
+	// weather cards (www/app/widgets/dzBar.js). Only color state may be normalized
+	// through _tColor: a range payload carries no color mode, so _tColor would reduce it
+	// to the empty string and silently discard it.
+	//
+	// Color state is normalized as before (preserving the "detect incorrectly formatted
+	// color data" behaviour), any other well-formed JSON is stored verbatim, and anything
+	// that is not JSON at all is still rejected.
+	inline std::string NormalizeDeviceColor(const std::string &sColor)
+	{
+		if (sColor.empty())
+			return "";
+
+		Json::Value root;
+		if (!ParseJSonStrict(sColor, root))
+			return ""; // Not JSON at all, so incorrectly formatted whichever payload was meant
+
+		// A color mode member is what distinguishes color state from a range definition
+		if (root.isObject() && root.isMember("m"))
+			return _tColor(root).toJSONString();
+
+		return sColor;
+	}
 
 	// Case-insensitive keyword normalization for PyArg_ParseTupleAndKeywords
 	// Returns a new reference to a normalized dictionary, or a borrowed reference if kwds is NULL

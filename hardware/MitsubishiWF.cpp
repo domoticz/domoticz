@@ -193,6 +193,8 @@ bool MitsubishiWF::Execute_Command(const std::string& sCommand, std::string& sRe
 
 bool MitsubishiWF::Execute_Command(const std::string& sCommand, const Json::Value contents, std::string& sResult)
 {
+	//The WF-RAC module runs a tiny single-threaded webserver; serialize the poll thread and user commands
+	std::lock_guard<std::mutex> lock(m_commandMutex);
 #ifdef DEBUG_MitsubishiWF_R
 	sResult = ReadFile(std_format("E:\\MitsubishiWF_%s.json", sCommand.c_str()).c_str());
 #else
@@ -219,7 +221,15 @@ bool MitsubishiWF::Execute_Command(const std::string& sCommand, const Json::Valu
 	if (m_method == eConnectionMethod::Http || m_method == eConnectionMethod::Https)
 	{
 		std::string scheme = (m_method == eConnectionMethod::Http) ? "http" : "https";
-		if (!HTTPClient::POST(buildURL(scheme), szPostData, ExtraHeaders, sResult))
+		bool bOK = HTTPClient::POST(buildURL(scheme), szPostData, ExtraHeaders, sResult);
+		if (!bOK)
+		{
+			//The module intermittently ignores/drops a request (it is busy with its own
+			//cloud communication); a single retry resolves nearly all of these
+			sleep_milliseconds(1000);
+			bOK = HTTPClient::POST(buildURL(scheme), szPostData, ExtraHeaders, sResult);
+		}
+		if (!bOK)
 		{
 			Log(LOG_ERROR, "Error executing command (%s)", sCommand.c_str());
 			return false;

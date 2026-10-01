@@ -309,7 +309,25 @@ void CEventSystem::LoadEvents()
 			// Write active dzVents scripts to disk.
 			if ((eitem.Interpreter == "dzVents") && (eitem.EventStatus != 0))
 			{
-				std::string sFile = dzv_Dir + eitem.Name + ".lua";
+				// The name is used as a filename, so it must not be able to escape the
+				// generated_scripts folder: drop path separators and any parent-dir hops.
+				std::string szSafeName;
+				szSafeName.reserve(eitem.Name.size());
+				for (const char c : eitem.Name)
+				{
+					if ((c == '/') || (c == '\\') || (c == ':') || (c == 0))
+						continue;
+					szSafeName += c;
+				}
+				size_t iDotDot;
+				while ((iDotDot = szSafeName.find("..")) != std::string::npos)
+					szSafeName.erase(iDotDot, 2);
+				if (szSafeName.empty())
+				{
+					_log.Log(LOG_ERROR, "dzVents: skipping event with an unusable name '%s'", eitem.Name.c_str());
+					continue;
+				}
+				std::string sFile = dzv_Dir + szSafeName + ".lua";
 				_log.Log(LOG_STATUS, "dzVents: Write file: %s", sFile.c_str());
 				FILE* fOut = fopen(sFile.c_str(), "wb+");
 				if (fOut)
@@ -2255,24 +2273,35 @@ std::string CEventSystem::ProcessVariableArgument(const std::string &Argument)
 	return ret;
 }
 
-std::string CEventSystem::ParseBlocklyString(const std::string &oString)
+std::string CEventSystem::ParseBlocklyString(const std::string &oString, const bool bForShell)
 {
 	std::string retString = oString;
+	size_t searchPos = 0;
 
 	while (true)
 	{
 		size_t pos1, pos2;
-		pos1 = retString.find("{{");
+		pos1 = retString.find("{{", searchPos);
 		if (pos1 == std::string::npos)
 			return retString;
-		pos2 = retString.find("}}");
+		pos2 = retString.find("}}", pos1 + 2);
 		if (pos2 == std::string::npos)
 			return retString;
 		std::string part_left = retString.substr(0, pos1);
 		std::string part_middle = retString.substr(pos1 + 2, pos2 - pos1 - 2);
 		std::string part_right = retString.substr(pos2 + 2);
 		part_middle = ProcessVariableArgument(part_middle);
+		if (bForShell)
+		{
+			// Device and variable values can be set by non-admin users or external feeds, so they
+			// must not be able to add shell syntax to the command line of a started script.
+			part_middle.erase(std::remove_if(part_middle.begin(), part_middle.end(),
+				[](const char c) { return (strchr(";&|`$<>()\\\"'\r\n", c) != nullptr) || (c == 0); }),
+				part_middle.end());
+		}
 		retString = part_left + part_middle + part_right;
+		// continue after the inserted value, a value containing "{{...}}" is not expanded again
+		searchPos = part_left.size() + part_middle.size();
 	}
 
 	return retString;
@@ -2513,7 +2542,7 @@ bool CEventSystem::parseBlocklyActions(const _tEventItem &item)
 			{
 				sPath = sPath.substr(0, tpos);
 				sParam = doWhat.substr(tpos + 1);
-				sParam = ParseBlocklyString(sParam);
+				sParam = ParseBlocklyString(sParam, true);
 			}
 #if !defined WIN32
 			if (sPath.find('/') != 0)
@@ -4322,10 +4351,15 @@ namespace http {
 			std::string folderid;
 		};
 
-		void CWebServer::Cmd_Events(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_Events(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
 			//root["status"]="OK";
 			root["title"] = "Events";
+
+			// Event scripts run arbitrary Lua/dzVents/Python on the server, so the whole
+			// command (create/update/delete and the reads that expose script bodies) is
+			// admin only, the same as the Events editor in the UI. Without this an
+			// unauthenticated request that reaches this handler could create and run code.
 
 			std::string cparam = request::findValue(&req, "evparam");
 			if (cparam.empty())

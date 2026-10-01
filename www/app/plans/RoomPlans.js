@@ -313,8 +313,8 @@ define(['app'], function (app) {
 
 			function actionsRenderer() {
 				var actions = [];
-				actions.push('<button class="btn btn-icon js-rename" title="' + $.t('Rename') + '"><img src="./images/rename.png" /></button>');
-				actions.push('<button class="btn btn-icon js-remove" title="' + $.t('Remove') + '"><img src="./images/delete.png" /></button>');
+				actions.push('<button class="btn btn-icon js-rename" title="' + $.t('Rename') + '"><i class="fa-solid fa-pen-to-square dz-chrome-icon dz-act-edit"></i></button>');
+				actions.push('<button class="btn btn-icon js-remove" title="' + $.t('Remove') + '"><i class="fa-solid fa-trash-can dz-chrome-icon dz-act-danger"></i></button>');
 				return actions.join('&nbsp;');
 			}
 		}
@@ -447,7 +447,7 @@ define(['app'], function (app) {
 			}
 
 			function actionsRenderer() {
-				return '<button class="btn btn-icon js-remove" title="' + $.t('Remove') + '"><img src="./images/delete.png" /></button>';
+				return '<button class="btn btn-icon js-remove" title="' + $.t('Remove') + '"><i class="fa-solid fa-trash-can dz-chrome-icon dz-act-danger"></i></button>';
 			}
 		}
 	});
@@ -508,7 +508,7 @@ function updateDevices() {
 
 			$ctrl.$onInit = function () {
 				table = $element.find('table').dataTable(Object.assign({}, dataTableDefaultSettings, {
-					dom: '<"H"lfrC>t',
+					dom: '<"H"lfr>t',
 					order: [[1, 'asc']],
 					paging: false,
 					select: { style: 'multi' },

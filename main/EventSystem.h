@@ -223,7 +223,7 @@ private:
 	bool ScheduleEvent(std::string ID, const std::string &Action, const std::string &eventName);
 	lua_State *CreateBlocklyLuaState();
 
-	std::string ParseBlocklyString(const std::string &oString);
+	std::string ParseBlocklyString(const std::string &oString, bool bForShell = false);
 	void ParseActionString( const std::string &oAction_, _tActionParseResults &oResults_ );
 	void UpdateJsonMap(_tDeviceStatus &item, uint64_t ulDevID);
 	void RefreshCounterJsonMaps();

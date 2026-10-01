@@ -40,6 +40,7 @@ define([
             {
                 key:      'maxEntries',
                 type:     'number',
+                step:     1,
                 label:    'Max entries',
                 default:  50
             },

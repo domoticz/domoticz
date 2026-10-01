@@ -799,13 +799,8 @@ void CHEOS::ReloadNodes()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_HEOSSetMode(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_HEOSSetMode(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
 			std::string mode2 = request::findValue(&req, "mode2");

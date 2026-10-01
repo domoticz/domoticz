@@ -3,7 +3,6 @@
 </div>
 
 <div id="fphtmlcontent">
-	<svg style="width:1px; height:1px;"></svg>
 	<style  type="text/css">
 		body {
 			padding-left: 0px;
@@ -81,6 +80,9 @@
 			border-radius: 100%;
 			background: rgba(0,0,0,0);
 			border: 1px solid white;
+			/* dark ring on both sides of the white border, so the dot stays
+			   visible on light and dark floorplan backgrounds alike */
+			box-shadow: 0 0 0 1px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(0,0,0,0.55);
 		}
 		.bullet:hover {
 			background: red;
@@ -94,6 +96,7 @@
 			background: white;
 			border: 1px solid white;
 			border-color: white;
+			box-shadow: 0 0 0 1px rgba(0,0,0,0.55);
 		}
 		
 		#BulletImages img {

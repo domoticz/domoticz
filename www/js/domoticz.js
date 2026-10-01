@@ -69,6 +69,25 @@ if (typeof (Highcharts) !== 'undefined') {
 				} catch (oException_) { /* too bad, no state */ }
 				fProceed_.apply(this, Array.prototype.slice.call(arguments, 1));
 			});
+
+			// A two-finger gesture whose fingers rest on different elements (one on a column
+			// bar, one on the plot background) makes the browser deliver one touchmove per
+			// target, both carrying the same two touches. Highcharts runs its pinch transform
+			// for each, so the second transforms an already transformed axis and the chart
+			// zooms in and straight back out while the fingers keep spreading. Handle each
+			// distinct multi-touch move once per pointer.
+			H_.wrap(H_.Pointer.prototype, 'onContainerTouchMove', function (fProceed_, oEvent_) {
+				if (oEvent_ && oEvent_.touches && oEvent_.touches.length > 1) {
+					var sKey = oEvent_.timeStamp + ':' + Array.prototype.map.call(oEvent_.touches, function (oTouch_) {
+						return oTouch_.identifier + '@' + oTouch_.clientX + ',' + oTouch_.clientY;
+					}).join('|');
+					if (this.dzLastMultiTouchMove === sKey) {
+						return;
+					}
+					this.dzLastMultiTouchMove = sKey;
+				}
+				fProceed_.apply(this, Array.prototype.slice.call(arguments, 1));
+			});
 		}(Highcharts));
 	}
 }
@@ -76,6 +95,24 @@ if (typeof (Highcharts) !== 'undefined') {
 /* Get the rows which are currently selected */
 function fnGetSelected(oTableLocal) {
 	return oTableLocal.$('tr.row_selected');
+}
+
+// Renders a battery level (0-100, or 255 = "not available") as a Font Awesome
+// battery glyph filled to match the level and coloured by it: red when nearly
+// empty, amber when low, green otherwise (the same thresholds the old level bar
+// used). Returned as an HTML string so table renderers can drop it straight in.
+function batteryLevelHtml(value) {
+	if (value === 255 || typeof value === 'undefined' || value === null) {
+		return '-';
+	}
+	var glyph = value < 10 ? 'fa-battery-empty'
+		: value < 37 ? 'fa-battery-quarter'
+		: value < 62 ? 'fa-battery-half'
+		: value < 87 ? 'fa-battery-three-quarters'
+		: 'fa-battery-full';
+	var tier = value < 10 ? 'dz-batt-empty' : value < 40 ? 'dz-batt-low' : 'dz-batt-ok';
+	var title = $.t('Battery level') + ': ' + value + '%';
+	return '<i class="fa-solid ' + glyph + ' dz-chrome-icon ' + tier + '" title="' + title + '"></i>';
 }
 
 function b64EncodeUnicode(str) {
@@ -1520,15 +1557,13 @@ function ShowMediaRemote(Name, devIdx, HWType) {
 													var buttonSVG = "";
 													bindex++;
 													bx = $(svgId).prop("viewBox").baseVal.x + index * (bwidth+bspacing);
-													// Button shadow
-													buttonSVG += '<rect id="toto" class="remoteshadow" x="'+bx+'" y="'+(bvline+10)+'" width="'+bwidth+'" height="'+bheight+'" rx="50" ry="50"></rect>';
-													// Button 
+													// Button
 													buttonSVG += '<rect class="remotehoverable" fill="url(#grad1)" x="'+bx+'" y="'+(bvline)+'" width="'+bwidth+'" height="'+bheight+'"  rx="50" ry="50" ';
 													buttonSVG += 'onclick="javascript: click_media_remote(\'' + bcommand + '\');" ';
 													buttonSVG += '><title id="dialog-media-remote-opt1-title">' + btitle + '</title></rect>';
 													// Button text
 													buttonSVG += '<text text-anchor="middle" x="'+(bx+bwidth/2)+'" y="'+(bvline+bheight*0.55)+'" class="remotetext" ';
-													buttonSVG += 'fill="black"  style="font-size: 60px; font-weight: bold;">' + btitle + '</text>';
+													buttonSVG += 'style="font-size: 60px; font-weight: bold;">' + btitle + '</text>';
 													// Add button
 													$("#MediaRemote-custom-buttons").append(buttonSVG);
 												});
@@ -1673,31 +1708,37 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 	function UpdateColorPicker(mode)
 	{
 		colorPickerMode = mode;
+		var sliderFmt = {
+			m: {min:1, max:100, decimals:0, unit:'%'},
+			v: {min:0, max:100, decimals:0, unit:'%'},
+			l: {min:0, max:100, decimals:0, unit:'%'},
+			k: {min:0, max:100, decimals:0, unit:'%'}
+		};
 		if (mode == "color") {
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'wm', preserveWheel:true});
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'wm', preserveWheel:true, sliderValue:true, sliderFormat:sliderFmt});
 		}
 		else if (mode == "color_no_master") {
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'w', preserveWheel:true});
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'w', preserveWheel:true, sliderValue:true, sliderFormat:sliderFmt});
 		}
 		else if (mode == "white") {
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'m', preserveWheel:true});
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'m', preserveWheel:true, sliderValue:true, sliderFormat:sliderFmt});
 		}
 		else if (mode == "white_no_master") {
 			// TODO: Silly, nothing to show!
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'', preserveWheel:true});
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'', preserveWheel:true, sliderValue:true, sliderFormat:sliderFmt});
 		}
 		else if (mode == "temperature") {
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'xm'});
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'xm', sliderValue:true, sliderFormat:sliderFmt});
 		}
 		else if (mode == "temperature_no_master") {
 			// TODO: Silly, nothing to show!
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:''});
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'', sliderValue:true, sliderFormat:sliderFmt});
 		}
 		else if (mode == "customw") {
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'wvlm', preserveWheel:false});
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'wvlm', preserveWheel:false, sliderValue:true, sliderFormat:sliderFmt});
 		}
 		else if (mode == "customww") {
-			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'wvklm', preserveWheel:false});
+			$(selector + ' #popup_picker').wheelColorPicker('setOptions', {sliders:'wvklm', preserveWheel:false, sliderValue:true, sliderFormat:sliderFmt});
 		}
 
 		$(selector + ' .pickermodergb').hide();
@@ -1779,6 +1820,17 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 
 	var color_m = (color.m==null)?3:color.m; // Default to 3: ColorModeRGB
 
+	// MQTT Auto Discovery and some hardware store the device state as Custom (mode 4) even when
+	// only one channel group is in use, which would always open the custom sliders. Open the
+	// picker in the matching simple mode instead: pure white in the White (or Temperature) view,
+	// pure color (and all channels off) in the RGB view. Mixed colors keep the custom view.
+	if (color_m == 4) {
+		var bHasColorValue = (color.r > 0 || color.g > 0 || color.b > 0);
+		var bHasWhiteValue = (color.cw > 0 || color.ww > 0);
+		if (!bHasColorValue && bHasWhiteValue) color_m = LEDType.bHasTemperature ? 2 : 1;
+		else if (!bHasWhiteValue) color_m = 3;
+	}
+
 	if (color_m != 1 && color_m != 2 && color_m != 3 && color_m != 4) color_m = 3; // Default to RGB if not valid
 	if (color_m == 4 && !LEDType.bHasCustom) color_m = 3; // Default to RGB if light does not support custom color
 	if (color_m == 1 && !LEDType.bHasWhite) color_m = 3; // Default to RGB if light does not support white
@@ -1839,19 +1891,19 @@ function ShowRGBWPicker(selector, idx, Protected, MaxDimLevel, LevelInt, colorJS
 		}
 	}
 
-	$(selector + ' .pickermodergb').off().click(function(){
+	$(selector + ' .pickermodergb').attr('title', $.t('Color')).off().click(function(){
 		UpdateColorPicker(DimmerType!="rel"?"color":"color_no_master");
 	});
-	$(selector + ' .pickermodewhite').off().click(function(){
+	$(selector + ' .pickermodewhite').attr('title', $.t('White')).off().click(function(){
 		UpdateColorPicker(DimmerType!="rel"?"white":"white_no_master");
 	});
-	$(selector + ' .pickermodetemp').off().click(function(){
+	$(selector + ' .pickermodetemp').attr('title', $.t('Color temperature')).off().click(function(){
 		UpdateColorPicker(DimmerType!="rel"?"temperature":"temperature_no_master");
 	});
-	$(selector + ' .pickermodecustomw').off().click(function(){
+	$(selector + ' .pickermodecustomw').attr('title', $.t('Color and white mix')).off().click(function(){
 		UpdateColorPicker("customw");
 	});
-	$(selector + ' .pickermodecustomww').off().click(function(){
+	$(selector + ' .pickermodecustomww').attr('title', $.t('Color and white mix')).off().click(function(){
 		UpdateColorPicker("customww");
 	});
 

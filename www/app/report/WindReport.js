@@ -270,7 +270,7 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     title: $.t('Month'),
                     data: 'date',
                     render: function (data) {
-                        var link = '<a href="#/Devices/' + vm.device.idx + '/Report/' + vm.selectedYear + '/' + data + '"><img src="images/next.png" /></a>';
+                        var link = '<a href="#/Devices/' + vm.device.idx + '/Report/' + vm.selectedYear + '/' + data + '"><i class="fa-solid fa-chevron-right dz-chrome-icon"></i></a>';
                         return data.toString().padStart(2, '0') + '. ' + $.t(monthNames[data - 1]) + ' ' + link;
                     }
                 });
@@ -289,18 +289,18 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 orderable: false,
                 data: 'trend',
                 render: function (data) {
-                    return '<img src="images/' + data + '.png">';
+                    return reportHelpers.trendIconHtml(data, false);
                 }
             });
 
             table.dataTable(Object.assign({}, dataTableDefaultSettings, {
-                sDom: '<"H"rC>t<"F">',
+                dom: '<"H"r>t<"F">',
                 columns: columns,
                 pageLength: 50,
                 order: [[0, 'asc']]
             }));
 
-            table.dataTable().api().rows
+            table.DataTable().rows
                 .add(data.items)
                 .draw();
         }

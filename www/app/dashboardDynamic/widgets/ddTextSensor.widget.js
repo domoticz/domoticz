@@ -15,7 +15,7 @@ define([
         minW:        2,
         minH:        1,
         maxW:        12,
-        maxH:        6,
+        maxH:        11,
         transparentBackground: true,
         configSchema: [
             {
@@ -34,12 +34,14 @@ define([
             {
                 key:     'fontSize',
                 type:    'number',
+                step:    1,
                 label:   'Font size (px)',
                 default: 14
             },
             {
                 key:     'refreshInterval',
                 type:    'number',
+                step:    1,
                 label:   'Refresh interval (seconds)',
                 default: 60
             },

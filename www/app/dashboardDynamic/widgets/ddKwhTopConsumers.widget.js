@@ -27,6 +27,7 @@ define([
             {
                 key:     'maxDevices',
                 type:    'number',
+                step:    1,
                 label:   'Max devices to show',
                 default: 20,
                 min:     1

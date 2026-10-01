@@ -3359,8 +3359,8 @@ define(['app'], function (app) {
 			$("#hardwarecontent #lmsnodeparamstable #nodeip").val("");
 			$("#hardwarecontent #lmsnodeparamstable #nodeport").val("9000");
 
-			var oTable = $('#lmsnodestable').dataTable();
-			oTable.fnClearTable();
+			var oTable = $('#lmsnodestable').DataTable();
+			oTable.clear().draw();
 
 			$.ajax({
 				url: "json.htm?type=command&param=lmsgetnodes&idx=" + $.devIdx,
@@ -3369,7 +3369,7 @@ define(['app'], function (app) {
 				success: function (data) {
 					if (typeof data.result != 'undefined') {
 						$.each(data.result, function (i, item) {
-							var addId = oTable.fnAddData({
+							oTable.row.add({
 								"DT_RowId": item.idx,
 								"Name": item.Name,
 								"Mac": item.Mac,
@@ -3378,7 +3378,7 @@ define(['app'], function (app) {
 								"1": item.Name,
 								"2": item.Mac,
 								"3": item.Status
-							});
+							}).draw();
 						});
 					}
 				}
@@ -3418,10 +3418,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #lmssettingstable #pollinterval").val(Mode1);
 
 			var oTable = $('#lmsnodestable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				"aaSorting": [[0, "desc"]],
 				"bSortClasses": false,
 				"bProcessing": true,
@@ -4077,18 +4074,35 @@ define(['app'], function (app) {
 			});
 		}
 
-		EnableUpdateAndDeleteButtons = function (enableFlag,hrefUpdate = "", hrefDelete = "") {
+		// Set while a hardware row is selected. Callers used to test this by looking
+		// for the Update button's href attribute, which no longer exists.
+		var bHardwareRowSelected = false;
+
+		// The action buttons in this view are anchors without an href, which the browser
+		// does not activate from the keyboard on its own. tabindex="0" in Hardware.html puts
+		// them in the tab order and this maps Enter and Space onto their click handler.
+		ActivateButtonOnKey = function (e) {
+			if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+				e.preventDefault();
+				$(e.currentTarget).trigger("click");
+			}
+		}
+
+		EnableUpdateAndDeleteButtons = function (enableFlag, onUpdate, onDelete) {
+			var $update = $("#updelclr #hardwareupdate");
+			var $delete = $("#updelclr #hardwaredelete");
+			$update.off(".updelclr");
+			$delete.off(".updelclr");
+			bHardwareRowSelected = !!enableFlag;
 			if (enableFlag){
-				$("#updelclr #hardwareupdate").attr("href", hrefUpdate);
-				$("#updelclr #hardwaredelete").attr("href", hrefDelete);
-				$('#updelclr #hardwareupdate').show();
-				$('#updelclr #hardwaredelete').show();
+				$update.on("click.updelclr", onUpdate);
+				$delete.on("click.updelclr", onDelete);
+				$update.show();
+				$delete.show();
 			}
 			else {
-				$("#updelclr #hardwareupdate").removeAttr("href");
-				$("#updelclr #hardwaredelete").removeAttr("href");
-				$('#updelclr #hardwareupdate').hide();
-				$('#updelclr #hardwaredelete').hide();
+				$update.hide();
+				$delete.hide();
 			}
 		}
 
@@ -4109,8 +4123,8 @@ define(['app'], function (app) {
 			$('#modal').show();
 			EnableUpdateAndDeleteButtons(false);
 
-			var oTable = $('#hardwaretable').dataTable();
-			oTable.fnClearTable();
+			var oTable = $('#hardwaretable').DataTable();
+			oTable.clear().draw();
 
 			$.ajax({
 				url: "json.htm?type=command&param=gethardware",
@@ -4214,6 +4228,11 @@ define(['app'], function (app) {
 							}
 							else if (HwTypeStr.indexOf("Alfen") >= 0) {
 								HwTypeStr += '<br>Version: ' + item.version;
+							}
+							else if (HwTypeStr.indexOf("SolarEdge") >= 0) {
+								if (typeof item.version !== 'undefined' && item.version !== '') {
+									HwTypeStr += '<br>Version: ' + item.version;
+								}
 							}
 							else if (HwTypeStr.indexOf("EnOcean") >= 0 && HwTypeStr.indexOf("(ESP3)") >= 0) {
 								HwTypeStr += ' ' + hardwareSetupLink;
@@ -4348,7 +4367,7 @@ define(['app'], function (app) {
 								dispAddress = "I2C-" + dispAddress;
 							}
 
-							var addId = oTable.fnAddData({
+							oTable.row.add({
 								"DT_RowId": item.idx,
 								"Username": item.Username,
 								"Password": item.Password,
@@ -4374,7 +4393,7 @@ define(['app'], function (app) {
 								"4": dispAddress,
 								"5": SerialName,
 								"6": sDataTimeout
-							});
+							}).draw();
 						});
 					}
 				}
@@ -4388,25 +4407,33 @@ define(['app'], function (app) {
 					EnableUpdateAndDeleteButtons(false);
 				}
 				else {
-					var oTable = $('#hardwaretable').dataTable();
+					var oTable = $('#hardwaretable').DataTable();
 					oTable.$('tr.row_selected').removeClass('row_selected');
 					$(this).addClass('row_selected');
 					var anSelected = fnGetSelected(oTable);
 					if (anSelected.length !== 0) {
-						var data = oTable.fnGetData(anSelected[0]);
+						var data = oTable.row(anSelected[0]).data();
 						var idx = data["DT_RowId"];
-						if (data["Type"] != "PLUGIN") { // Plugins can have non-numeric Mode data
+						if (data["Type"] != "PLUGIN") {
+							// gethardware sends these through atoi() for every non-plugin type
+							// (main/WebServerCmds.cpp), so they are already numbers here, which
+							// UpdateHardware() relies on (Netatmo tests Mode1 for truthiness).
 							EnableUpdateAndDeleteButtons(
 								true,
-								"javascript:UpdateHardware(" + idx + "," + data["Mode1"] + "," + data["Mode2"] + "," + data["Mode3"] + "," + data["Mode4"] + "," + data["Mode5"] + "," + data["Mode6"] + ")",
-								"javascript:DeleteHardware(" + idx + ")"
+								function () {
+									UpdateHardware(idx, data["Mode1"], data["Mode2"], data["Mode3"],
+										data["Mode4"], data["Mode5"], data["Mode6"]);
+								},
+								function () { DeleteHardware(idx); }
 							);
 						}
 						else {
+							// For plugins, UpdateHardware() reads every Mode value from the form
+							// fields, so the Mode1..Mode6 arguments are unused here. Pass only idx.
 							EnableUpdateAndDeleteButtons(
 								true,
-								"javascript:UpdateHardware(" + idx + ",'" + data["Mode1"] + "','" + data["Mode2"] + "','" + data["Mode3"] + "','" + data["Mode4"] + "','" + data["Mode5"] + "','" + data["Mode6"] + "')",
-								"javascript:DeleteHardware(" + idx + ")"
+								function () { UpdateHardware(idx); },
+								function () { DeleteHardware(idx); }
 							);
 						}
 						$("#hardwarecontent #hardwareparamstable #hardwarename").val(data["Name"]);
@@ -5077,8 +5104,7 @@ define(['app'], function (app) {
 				return;
 			}
 
-			var href = $("#updelclr #hardwareupdate").attr("href");
-			if (typeof href == 'undefined') {
+			if (!bHardwareRowSelected) {
 				if (!confirm('No device selected, this data will be added as a new device; Do you want to Continue?'))
 					return;
 			}
@@ -5140,8 +5166,7 @@ define(['app'], function (app) {
 								console.log(`Error: Access denied: Failed to receive a valid reponse from server:  ${xhr.status}`);
 								$scope.loginRequired = true;             //Still need to login
 							}
-							var href = $("#updelclr #hardwareupdate").attr("href");
-							if (typeof href == 'undefined') {
+							if (!bHardwareRowSelected) {
 								AddHardware ();	                         //Is not a selected device. so must be new
 							}
 							else
@@ -5170,11 +5195,7 @@ define(['app'], function (app) {
 				ShowNotify($.t('Please enter an Address!'), 2500, true);
 				return;
 			}
-			var port = $("#hardwarecontent #divremote #tcpport").val();
-			if (port == "") {
-				ShowNotify($.t('Please enter an Port!'), 2500, true);
-				return;
-			}
+			var port = 443;
 			var username = $("#hardwarecontent #hardwareparamsphilipshue #username").val();
 			$.ajax({
 				url: "json.htm?type=command&param=registerhue" +
@@ -5279,6 +5300,28 @@ define(['app'], function (app) {
 				$label.text(initVal);
 			});
 
+			// A group header with every param inside it hidden by visible_when is an
+			// empty section, so hide the whole group row. The group <tr> holds both the
+			// header and the nested param table, so one row covers both.
+			// This tests each row's INLINE display: groups render collapsed, so every
+			// row inside has a display:none ancestor and :visible would report them all
+			// hidden regardless of their own visible_when state.
+			var updateGroupVisibility = function () {
+				$table.find("tr.plugin-group-row").each(function () {
+					var $groupRow = $(this);
+					var $groupParams = $groupRow.find("table tr");
+					if ($groupParams.length === 0)
+						return;
+					var bAnyVisible = $groupParams.filter(function () {
+						return this.style.display !== "none";
+					}).length > 0;
+					if (bAnyVisible)
+						$groupRow.show();
+					else
+						$groupRow.hide();
+				});
+			};
+
 			// Set up conditional visibility within this plugin table
 			$table.find("tr[data-visible-when]").each(function () {
 				var $row = $(this);
@@ -5306,6 +5349,9 @@ define(['app'], function (app) {
 				$depInput.on("change", updateVisibility);
 				updateVisibility();
 			});
+
+			$table.off("change.plugingroup").on("change.plugingroup", "input, select, textarea", updateGroupVisibility);
+			updateGroupVisibility();
 		}
 
 		CollectPluginSettings = function (selector) {
@@ -5330,10 +5376,10 @@ define(['app'], function (app) {
 		}
 
 		UpdateHardwareParamControls = function () {
-			var oTable = $('#hardwaretable').dataTable();
+			var oTable = $('#hardwaretable').DataTable();
 			var anSelected = fnGetSelected(oTable);
 			if (anSelected.length !== 0) {
-				var data = oTable.fnGetData(anSelected[0]);
+				var data = oTable.row(anSelected[0]).data();
 			}
 			$scope.calledFetch = false;
 			extraHWInitParams = function() { };
@@ -5769,10 +5815,7 @@ define(['app'], function (app) {
 			$('#hardwarecontent').html(htmlcontent);
 			$('#hardwarecontent').i18n();
 			var oTable = $('#hardwaretable').dataTable({
-				"sDom": '<"H"lfrC>t<"F"ip>',
-				"oTableTools": {
-					"sRowSelect": "single",
-				},
+				"sDom": '<"H"lfr>t<"F"ip>',
 				columnDefs: [
 					{
 					targets: 1, // first column (0-based index)
@@ -5837,7 +5880,17 @@ define(['app'], function (app) {
 			return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
 		}
 
+		$scope.$on('$destroy', function () {
+			$(document).off("keydown.hwbtnkeys");
+		});
+
 		function init() {
+			// Anchors styled as buttons are not keyboard operable by themselves. Delegated so
+			// it also covers the ones living in the hidden sub-tab templates outside
+			// #hardwarecontent, and re-bound defensively so re-entering the view cannot stack it.
+			$(document).off("keydown.hwbtnkeys")
+				.on("keydown.hwbtnkeys", "a.btn[role='button']", ActivateButtonOnKey);
+
 			//global var
 			$.devIdx = 0;
 			$.extend($.myglobals, {
@@ -5915,12 +5968,16 @@ define(['app'], function (app) {
 								}
 								var currentGroup = "";
 								var renderParam = function (param) {
-									if (typeof (param.description) != "undefined") {
-										PluginParams += '<tr><td></td><td>' + param.description + '</td></tr>';
-									}
+									// Build the visibility markers before the description row is emitted. A
+									// param's description belongs to its input, so one visible_when has to
+									// govern both rows, otherwise the help text is left behind on its own
+									// with no field under it.
 									var visibleWhen = (typeof (param.visible_when) != "undefined") ? param.visible_when : "";
 									var trStyle = visibleWhen ? ' style="display:none"' : '';
 									var trAttr = visibleWhen ? ' data-visible-when="' + escapeHtml(param.visible_when) + '"' : '';
+									if (typeof (param.description) != "undefined") {
+										PluginParams += '<tr' + trStyle + trAttr + '><td></td><td>' + param.description + '</td></tr>';
+									}
 									PluginParams += '<tr' + trStyle + trAttr + '><td align="right" style="width:110px"><label id="lbl' + escapeHtml(param.field) + '"><span data-i18n="' + escapeHtml(param.label) + '">' + escapeHtml(param.label) + '</span>:</label></td>';
 									var paramType = (typeof (param.type) != "undefined") ? param.type : "";
 									var paramWidth = (typeof (param.width) != "undefined") ? param.width : "200px";
@@ -6015,7 +6072,7 @@ define(['app'], function (app) {
 										}
 										if (paramGroup !== "") {
 											// Open new collapsible group
-											PluginParams += '<tr><td colspan="2">' +
+											PluginParams += '<tr class="plugin-group-row"><td colspan="2">' +
 												'<div class="plugin-group" style="margin:5px 0; cursor:pointer;" onclick="var t=$(this).next(); t.toggle(); $(this).find(\'.fa\').toggleClass(\'fa-chevron-right fa-chevron-down\');">' +
 												'<i class="fa fa-chevron-right" style="margin-right:5px;"></i><b>' + escapeHtml(paramGroup) + '</b></div>' +
 												'<div style="display:none;"><table class="display" border="0" cellpadding="0" cellspacing="5">';

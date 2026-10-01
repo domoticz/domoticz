@@ -63,3 +63,4 @@ www/templates/*
 !www/templates/*.example
 !www/templates/*.txt
 /docs/*.wiki
+/www/assets/

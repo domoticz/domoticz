@@ -14,6 +14,21 @@ define(['app', 'livesocket'], function (app) {
 		$scope.touchStartY = 0;			// used on tablets & phones
 		var refreshDebounceTimer = null;
 
+		// Returns the actual bottom of the visible navbar content in viewport pixels.
+		// The brand logo image overflows below the navbar's own layout box, so we
+		// check all img elements inside .brand and use the deepest one found.
+		function getNavbarBottom() {
+			var nav = document.querySelector('.navbar.navbar-fixed-top');
+			if (!nav) { return 0; }
+			var bottom = nav.getBoundingClientRect().bottom;
+			var imgs = nav.querySelectorAll('.brand img');
+			for (var i = 0; i < imgs.length; i++) {
+				var b = imgs[i].getBoundingClientRect().bottom;
+				if (b > bottom) { bottom = b; }
+			}
+			return Math.ceil(bottom);
+		}
+
 		$scope.makeHTMLnode = function (tag, attrs) {
 			var el = document.createElement(tag);
 			for (var k in attrs) el.setAttribute(k, attrs[k]);
@@ -165,24 +180,44 @@ define(['app', 'livesocket'], function (app) {
 			return -1;
 		}
 
+		function positionBulletGroup() {
+			var bullets = $("#BulletGroup:first");
+			if (bullets.length == 0 || $scope.FloorplanCount <= 1) return;
+			var bottomMargin = ($("#copyright").css('display') == 'none') ? 10 : $("#copyright").height() + 10;
+			var vv = $window.visualViewport;
+			if (typeof vv != 'undefined' && vv != null) {
+				// BulletGroup is position:fixed, so it is anchored to the layout viewport.
+				// While the page is pinch zoomed the visual viewport is smaller and offset,
+				// which moves the dots out of sight, so map the position onto it instead.
+				bullets.css("left", vv.offsetLeft + (vv.width - bullets.outerWidth()) / 2)
+					.css("top", vv.offsetTop + vv.height - bullets.outerHeight() - bottomMargin)
+					.css("bottom", "auto")
+					.css("display", "inline");
+			}
+			else {
+				bullets.css("left", ($window.innerWidth - bullets.width()) / 2)
+					.css("top", "auto")
+					.css("bottom", bottomMargin)
+					.css("display", "inline");
+			}
+		}
+
 		$scope.FloorplanResize = function () {
 			if (typeof $("#floorplancontent") != 'undefined') {
 				var wrpHeight = $window.innerHeight;
 				// when the small menu bar is displayed main-view jumps to the top so force it down
 				if ($(".navbar").css('display') != 'none') {
-					$("#floorplancontent").offset({ top: $(".navbar").height() });
-					wrpHeight = $window.innerHeight - $("#floorplancontent").offset().top - (($("#copyright").css('display') == 'none') ? 0 : $("#copyright").height()) - 52;
+					var navBottom = getNavbarBottom();
+					$("#floorplancontent").offset({ top: navBottom });
+					var copyrightH = ($("#copyright").css('display') == 'none') ? 0 : ($("#copyright").outerHeight() || 0);
+					wrpHeight = $window.innerHeight - navBottom - copyrightH;
 				}
 				else {
 					$("#floorplancontent").offset({ top: 0 });
 				}
 				$("#floorplancontent").width($("#main-view").width()).height(wrpHeight);
 				$(".imageparent").each(function (i) { $("#" + $(this).attr('id') + '_svg').width($("#floorplancontent").width()).height(wrpHeight); });
-				if ($scope.FloorplanCount > 1) {
-					$("#BulletGroup:first").css("left", ($window.innerWidth - $("#BulletGroup:first").width()) / 2)
-						.css("bottom", ($("#copyright").css('display') == 'none') ? 10 : $("#copyright").height() + 10)
-						.css("display", "inline");
-				}
+				positionBulletGroup();
 				if (typeof $scope.actFloorplan != 'undefined') ScrollFloorplans($scope.floorPlans[$scope.actFloorplan].tagName, false);
 			}
 		}
@@ -292,8 +327,14 @@ define(['app', 'livesocket'], function (app) {
 				item.Scale = $scope.floorPlans[$scope.GetFloorplanIdx(item.FloorID)].scaleFactor;
 				if (compoundDevice) {
 					item.Type = aSplit[0];					// handle multi value sensors (Baro, Humidity, Temp etc)
+					// CustomImage is set so the legacy image is built from Image rather than
+					// from the type; it is not a custom icon index, so it is flagged as such
+					// for anything that reads it as one. TypeImg follows the split too, or all
+					// three parts would resolve to the icon of the compound device.
 					item.CustomImage = 1;
+					item.SyntheticCustomImage = true;
 					item.Image = aSplit[0].toLowerCase();
+					item.TypeImg = item.Image;
 				}
 				try {
 					var dev = Device.create(item);
@@ -371,8 +412,12 @@ define(['app', 'livesocket'], function (app) {
 								var sDev = aDev[k].trim();
 								item.Name = ((k == 0) ? item.Name : sDev);
 								item.Type = sDev;
+								// See the compound handling above: a flag for the legacy image,
+								// not a custom icon index, and TypeImg follows the split.
 								item.CustomImage = 1;
+								item.SyntheticCustomImage = true;
 								item.Image = sDev.toLowerCase();
+								item.TypeImg = item.Image;
 								item.XOffset = Math.abs(item.XOffset) + ((k == 0) ? 0 : (50 * $scope.floorPlans[floorIdx].scaleFactor));
 								dev = Device.create(item);
 								var existing = document.getElementById(dev.uniquename);
@@ -581,6 +626,10 @@ define(['app', 'livesocket'], function (app) {
 			});
 
 			$(window).resize(function () { $scope.FloorplanResize(); });
+			if (typeof $window.visualViewport != 'undefined' && $window.visualViewport != null) {
+				$window.visualViewport.addEventListener('resize', positionBulletGroup);
+				$window.visualViewport.addEventListener('scroll', positionBulletGroup);
+			}
 
 			document.addEventListener('touchstart', FPtouchstart, { passive: true });
 			document.addEventListener('touchmove', FPtouchmove, { passive: true });
@@ -593,6 +642,10 @@ define(['app', 'livesocket'], function (app) {
 					document.removeEventListener('keydown', FPkeydown);
 					$(".fp-nav-arrow").hide();
 					$(window).off('resize');
+					if (typeof $window.visualViewport != 'undefined' && $window.visualViewport != null) {
+						$window.visualViewport.removeEventListener('resize', positionBulletGroup);
+						$window.visualViewport.removeEventListener('scroll', positionBulletGroup);
+					}
 					$("body").off('pageexit').css('overflow', '');
 
 					//Make vertical scrollbar disappear
@@ -601,7 +654,7 @@ define(['app', 'livesocket'], function (app) {
 
 					//Move nav bar with Back and Report button down
 					if ($(".navbar").css('display') != 'none') {
-						$("#floorplancontent").offset({ top: $(".navbar").height() });
+						$("#floorplancontent").offset({ top: getNavbarBottom() });
 					}
 					else {
 						$("#floorplancontent").offset({ top: 0 });

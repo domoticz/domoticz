@@ -160,6 +160,11 @@ define(['app'], function (app) {
     }
 
     function markSpikeDatapoints(datapoints) {
+        // Per-device opt-out (device edit dialog): an appliance that only runs on some
+        // days is not anomalous, it is just irregular.
+        if (this && this.dataSupplier && this.dataSupplier.device && String(this.dataSupplier.device.DisableAnomalyDetection) === '1') {
+            return;
+        }
         const values = datapoints
             .map(function(dp) { return dp[1]; })
             .filter(function(v) { return v !== null && v > 0; });

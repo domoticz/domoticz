@@ -361,6 +361,69 @@ define(['app'], function (app) {
                     bootbox.alert(modalContent);
                 };
 
+                ctrl.dragActive = null;
+
+                function iconActive(actual) {
+                    return ctrl.dragActive === null ? actual : ctrl.dragActive;
+                }
+
+                ctrl.iconState = function () {
+                    if (ctrl.dragActive !== null) {
+                        return ctrl.dragActive;
+                    }
+                    var status = device.Status || '';
+
+                    if (device.SwitchType == 'Doorbell') {
+                        return null;
+                    }
+                    if (device.SwitchType == 'Dusk Sensor') {
+                        return status == 'On';
+                    }
+                    if (device.SubType == 'Security Panel') {
+                        return null;
+                    }
+                    if (device.SwitchType == 'TPI') {
+                        return status != 'Off';
+                    }
+                    if (device.SubType && (
+                        device.SubType.indexOf('Itho') == 0 ||
+                        device.SubType.indexOf('Orcon') == 0 ||
+                        device.SubType.indexOf('Lucci') == 0 ||
+                        device.SubType.indexOf('Falmec') == 0 ||
+                        device.SubType.indexOf('Westinghouse') == 0
+                    )) {
+                        return null;
+                    }
+                    if (device.Type == 'Security') {
+                        if (device.SubType && device.SubType.indexOf('remote') > 0) {
+                            return null;
+                        }
+                        if (device.SubType == 'X10 security') {
+                            return status.indexOf('Normal') < 0;
+                        }
+                        if (device.SubType == 'X10 security motion') {
+                            return status != 'No Motion';
+                        }
+                        if (status.indexOf('Alarm') >= 0 || status.indexOf('Tamper') >= 0) {
+                            return true;
+                        }
+                        return null;
+                    }
+                    if (device.SwitchType == 'Door Lock' || device.SwitchType == 'Door Lock Inverted') {
+                        return device.InternalState == 'Unlocked';
+                    }
+                    if (device.SwitchType == 'Contact' || device.SwitchType == 'Door Contact') {
+                        return status == 'Open';
+                    }
+                    if (device.SwitchType == 'Push On Button') {
+                        return true;
+                    }
+                    if (device.SwitchType == 'Push Off Button') {
+                        return false;
+                    }
+                    return ctrl.isActive();
+                };
+
                 ctrl.getDeviceIcon = function () {
                     // Special types with non-standard icon naming
                     if (device.SwitchType == 'Doorbell') {
@@ -389,7 +452,7 @@ define(['app'], function (app) {
 
                     // TPI uses Fireplace images
                     if (device.SwitchType == 'TPI') {
-                        return device.Status != 'Off' ? 'images/Fireplace48_On.png' : 'images/Fireplace48_Off.png';
+                        return iconActive(device.Status != 'Off') ? 'images/Fireplace48_On.png' : 'images/Fireplace48_Off.png';
                     }
 
                     // Fan subtypes always show Fan48_On.png
@@ -469,7 +532,7 @@ define(['app'], function (app) {
                         return 'images/' + image + '48_Off.png';
                     }
 
-                    return 'images/' + image + '48_' + (ctrl.isActive() ? 'On' : 'Off') + '.png';
+                    return 'images/' + image + '48_' + (iconActive(ctrl.isActive()) ? 'On' : 'Off') + '.png';
                 };
 
                 ctrl.getTableId = function () {
@@ -851,25 +914,13 @@ define(['app'], function (app) {
                                     var deviceElem = element.closest('.itemBlock');
                                     if (deviceElem.length > 0) {
                                         var bigtext = fPercentage + " %";
-                                        scope.$apply(function() { scope.ctrl.dragText = bigtext; });
+                                        scope.$apply(function() {
+                                            scope.ctrl.dragText = bigtext;
 
-                                        // Update icon for non-blinds non-LED dimmers
-                                        if ((dtype != "blinds") && !isled) {
-                                            var imgElem = deviceElem.find('#img img.lcursor');
-                                            if (imgElem.length > 0) {
-                                                var imgname = imgElem.attr('src');
-                                                if (imgname) {
-                                                    imgname = imgname.substring(imgname.lastIndexOf("/") + 1, imgname.lastIndexOf("_O") + 2);
-                                                    if (dtype == "relay")
-                                                        imgname = "Fireplace48_O";
-
-                                                    var newSrc = fPercentage == 0 ?
-                                                        'images/' + imgname + 'ff.png' :
-                                                        'images/' + imgname + 'n.png';
-                                                    imgElem.attr('src', newSrc);
-                                                }
+                                            if ((dtype != "blinds") && !isled) {
+                                                scope.ctrl.dragActive = fPercentage != 0;
                                             }
-                                        }
+                                        });
                                     }
                                     if (dtype != "relay")
                                         $.setDimValue = setTimeout(function () { scope.ctrl.setDimLevel(ui.value); }, 500);
@@ -943,6 +994,7 @@ define(['app'], function (app) {
                 // Update slider/selectmenu value when device.LevelInt changes (e.g. WebSocket updates)
                 scope.$watch('device.LevelInt', function(newVal) {
                     scope.ctrl.dragText = null;
+                    scope.ctrl.dragActive = null;
                     if (typeof newVal !== 'undefined') {
                         element.find('.dimslider').each(function() {
                             var $slider = $(this);

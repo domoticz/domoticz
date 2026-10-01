@@ -1,7 +1,9 @@
 #pragma once
 #ifdef ENABLE_PYTHON
+#include <cstdlib>
 #include <set>
 #include <string>
+#include <vector>
 #include <functional> // Required for std::greater
 #include "../../main/Helper.h"
 
@@ -166,6 +168,58 @@ namespace Plugins {
 		DECLARE_PYTHON_SYMBOL(long, PyType_GetFlags, PyTypeObject*);
 		DECLARE_PYTHON_SYMBOL(void, _Py_Dealloc, PyObject*);
 
+#ifdef WIN32
+		// LoadLibrary only looks in the process folder, System32 and PATH. Neither the
+		// Python install manager (%LOCALAPPDATA%\Python\pythoncore-3.x-64) nor the
+		// classic per-user installer (%LOCALAPPDATA%\Programs\Python\Python3xx) puts the
+		// interpreter folder on PATH, so when the plain load fails, ask the registry for
+		// the install path and then try the known install folders directly.
+		static HMODULE LoadPythonLibrary(const std::string& szVersion, const std::string& szDllName)
+		{
+			HMODULE hLib = LoadLibraryA(szDllName.c_str());
+			if (hLib != nullptr)
+				return hLib;
+
+			const std::string szShort = szVersion.substr(6); // "python3.14" -> "3.14"
+			std::string szCompact = szShort;
+			stdreplace(szCompact, ".", "");
+
+			std::vector<std::string> folders;
+			for (HKEY hRoot : { HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE })
+			{
+				for (const std::string& szKey : { "Software\\Python\\PythonCore\\" + szShort + "\\InstallPath", "Software\\Python\\PythonCore\\" + szShort + "-32\\InstallPath" })
+				{
+					char szPath[MAX_PATH];
+					DWORD dwSize = sizeof(szPath);
+					if (RegGetValueA(hRoot, szKey.c_str(), nullptr, RRF_RT_REG_SZ, nullptr, szPath, &dwSize) == ERROR_SUCCESS)
+						folders.emplace_back(szPath);
+				}
+			}
+			const char* szLocalAppData = std::getenv("LOCALAPPDATA");
+			if (szLocalAppData != nullptr)
+			{
+				const std::string szBase(szLocalAppData);
+				folders.push_back(szBase + "\\Python\\pythoncore-" + szShort + "-64");
+				folders.push_back(szBase + "\\Python\\pythoncore-" + szShort + "-arm64");
+				folders.push_back(szBase + "\\Python\\pythoncore-" + szShort + "-32");
+				folders.push_back(szBase + "\\Programs\\Python\\Python" + szCompact);
+				folders.push_back(szBase + "\\Programs\\Python\\Python" + szCompact + "-32");
+			}
+			for (auto& szFolder : folders)
+			{
+				while (!szFolder.empty() && ((szFolder.back() == '\\') || (szFolder.back() == '/')))
+					szFolder.pop_back();
+				const std::string szFull = szFolder + "\\" + szDllName;
+				// The altered search path makes the DLL's own dependencies (vcruntime) resolve
+				// from its folder, and lets Python derive its home from the DLL location.
+				hLib = LoadLibraryExA(szFull.c_str(), nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+				if (hLib != nullptr)
+					return hLib;
+			}
+			return nullptr;
+		}
+#endif
+
         SharedLibraryProxy() {
             Py_None = nullptr;
             shared_lib_ = nullptr;
@@ -187,7 +241,7 @@ namespace Plugins {
 #ifdef WIN32
 				stdreplace(lib_name, ".", "");
 				lib_name += extension;
-				shared_lib_ = LoadLibrary(lib_name.c_str());
+				shared_lib_ = LoadPythonLibrary(version, lib_name);
 #else
 				lib_name += extension;
 				FindLibrary(lib_name.c_str(), true);

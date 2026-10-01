@@ -53,6 +53,26 @@ enum SwitchCommands {
 #define CLIMATE_HIGH_TEMP_SETPOINT_UNIT 2
 #define CLIMATE_LOW_TEMP_SETPOINT_UNIT 3
 
+// Some devices send booleans as quoted strings ("true"/"false"/"1"/"0").
+// jsoncpp's asBool() throws on those, so handle both forms here.
+static bool JSonGetBool(const Json::Value& value, const bool bDefaultValue)
+{
+	if (value.isBool())
+		return value.asBool();
+	if (value.isNumeric())
+		return (value.asDouble() != 0);
+	if (value.isString())
+	{
+		std::string szValue = value.asString();
+		stdlower(szValue);
+		if ((szValue == "true") || (szValue == "1") || (szValue == "on") || (szValue == "yes"))
+			return true;
+		if ((szValue == "false") || (szValue == "0") || (szValue == "off") || (szValue == "no"))
+			return false;
+	}
+	return bDefaultValue;
+}
+
 
 MQTTAutoDiscover::MQTTAutoDiscover(const int ID, const std::string& Name, const std::string& IPAddress, const unsigned short usIPPort, const std::string& Username, const std::string& Password,
 	const std::string& CAfilenameExtra, const int TLS_Version)
@@ -169,15 +189,26 @@ void MQTTAutoDiscover::CleanValueTemplate(std::string& szValueTemplate)
 	if (
 		(szValueTemplate.find("% if value_json.") == 0)
 		|| (szValueTemplate.find("%if value_json.") == 0)
+		|| (szValueTemplate.find("% if value_json[") == 0)
+		|| (szValueTemplate.find("%if value_json[") == 0)
 		)
 	{
-		szValueTemplate = szValueTemplate.substr(szValueTemplate.find("value_json."));
+		szValueTemplate = szValueTemplate.substr(szValueTemplate.find("value_json"));
 		szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find(" "));
+	}
+	else if (
+		(szValueTemplate.find(" in [") != std::string::npos)
+		&& (szValueTemplate.find(" else ") != std::string::npos)
+		)
+	{
+		//Inline membership conditional, like: value_json[fan_mode] if value_json[fan_mode] in [auto] else None
+		//Keep it intact, GetValueFromTemplate knows how to evaluate this
 	}
 	else
 	{
 		//still needed?
 		szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find("if value_json."));
+		szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find("if value_json["));
 	}
 
 	stdstring_trim(szValueTemplate);
@@ -251,6 +282,57 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 	try
 	{
 		size_t pos;
+
+		//Inline membership conditional, like: value_json[fan_mode] if value_json[fan_mode] in [auto] else None
+		pos = szValueTemplate.find(" if ");
+		if (pos != std::string::npos)
+		{
+			std::string szCondition = szValueTemplate.substr(pos + 4);
+			std::string szElse;
+
+			size_t elsePos = szCondition.find(" else ");
+			if (elsePos != std::string::npos)
+			{
+				szElse = szCondition.substr(elsePos + 6);
+				szCondition = szCondition.substr(0, elsePos);
+				stdstring_trim(szElse);
+			}
+			size_t inPos = szCondition.find(" in [");
+			if (inPos != std::string::npos)
+			{
+				std::string szAllowed = szCondition.substr(inPos + 5);
+				szAllowed = szAllowed.substr(0, szAllowed.find(']'));
+				szCondition = szCondition.substr(0, inPos);
+				stdstring_trim(szCondition);
+
+				std::string szActual = GetValueFromTemplate(root, szCondition, isNull);
+
+				bool bIsAllowed = false;
+				std::vector<std::string> allowed;
+				StringSplit(szAllowed, ",", allowed);
+				for (auto itt : allowed)
+				{
+					stdstring_trim(itt);
+					if (itt == szActual)
+					{
+						bIsAllowed = true;
+						break;
+					}
+				}
+				if (!bIsAllowed)
+				{
+					if (szElse.empty() || szElse == "None")
+					{
+						isNull = true; //there is no value, this is not an error
+						return "";
+					}
+					return szElse;
+				}
+				szValueTemplate = szValueTemplate.substr(0, pos);
+				stdstring_trim(szValueTemplate);
+			}
+		}
+
 		std::map<std::string, std::string> value_options_;
 		pos = szValueTemplate.find("[value_json");
 		if (pos != std::string::npos)
@@ -282,6 +364,8 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 
 				if (szKey.find('[') == std::string::npos)
 				{
+					if (!root.isObject())
+						return ""; //we can only look up keys in an object
 					if (!root.isMember(szKey))
 					{
 						return ""; //key not found!
@@ -306,6 +390,8 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 
 					szKey = szKey.substr(0, szKey.find('['));
 					int iIndex = std::stoi(szIndex);
+					if (!(root.isObject() || root.isArray()))
+						return ""; //we can only look up keys in an object/array
 					if (root[szKey].empty())
 						return ""; //key not found!
 
@@ -324,6 +410,8 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 					{
 						//Not an array, we need a field value
 						root = root[szKey];
+						if (!root.isObject())
+							return ""; //we can only look up keys in an object
 						if (!root.isMember(szIndex))
 						{
 							return ""; //key not found!
@@ -392,8 +480,17 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 				}
 				else
 				{
-					if (root[szKey].empty())
+					if (!root.isObject())
+						return ""; //we can only look up keys in an object
+					if (!root.isMember(szKey))
+					{
 						return ""; //key not found!
+					}
+					if (root[szKey].isNull())
+					{
+						isNull = true;
+						return ""; //key not found!
+					}
 					root = root[szKey];
 				}
 			}
@@ -406,6 +503,8 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 			}
 			else
 			{
+				if (!root.isObject())
+					return ""; //we can only look up keys in an object
 				if (root[suffix].empty())
 					return ""; //not found
 				if (root[suffix].isObject() || root[suffix].isArray())
@@ -426,6 +525,8 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 				szKey = szValueTemplate;
 		}
 		stdstring_trim(szKey);
+		if (!root.isObject())
+			return ""; //we can only look up keys in an object
 		if (!root[szKey].empty())
 		{
 			if (root[szKey].isObject() || root[szKey].isArray())
@@ -984,12 +1085,12 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		pSensor->name = sensor_name;
 
 		if (!root["enabled_by_default"].empty())
-			pSensor->bEnabled_by_default = root["enabled_by_default"].asBool();
+			pSensor->bEnabled_by_default = JSonGetBool(root["enabled_by_default"], true);
 
 		if (!root["force_update"].empty())
-			pSensor->bForce_update = root["force_update"].asBool();
+			pSensor->bForce_update = JSonGetBool(root["force_update"], false);
 		else if (!root["frc_upd"].empty())
-			pSensor->bForce_update = root["frc_upd"].asBool();
+			pSensor->bForce_update = JSonGetBool(root["frc_upd"], false);
 
 		if (!root["availability_topic"].empty())
 			pSensor->availability_topic = root["availability_topic"].asString();
@@ -1211,7 +1312,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->position_closed = root["pos_clsd"].asInt();
 
 		else if (!root["optimistic"].empty())
-			pSensor->bIsOptimistic = root["optimistic"].asBool();
+			pSensor->bIsOptimistic = JSonGetBool(root["optimistic"], false);
 
 		if (!root["on_command_type"].empty())
 			pSensor->on_command_type = root["on_command_type"].asString();
@@ -1844,6 +1945,8 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			SubscribeTopic(pSensor->percentage_state_topic, pSensor->qos);
 			SubscribeTopic(pSensor->action_topic, pSensor->qos);
 			SubscribeTopic(pSensor->preset_mode_state_topic, pSensor->qos);
+			SubscribeTopic(pSensor->fan_state_topic, pSensor->qos);
+			SubscribeTopic(pSensor->swing_state_topic, pSensor->qos);
 
 		}
 	}
@@ -1908,6 +2011,8 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 			|| (pSensor->percentage_state_topic == topic)
 			|| (pSensor->preset_mode_state_topic == topic)
 			|| (pSensor->action_topic == topic)
+			|| (pSensor->fan_state_topic == topic)
+			|| (pSensor->swing_state_topic == topic)
 			)
 		{
 			matching_keys.emplace_back(itt.first, MatchType::State);
@@ -2060,7 +2165,10 @@ uint64_t MQTTAutoDiscover::UpdateValueInt(int HardwareID, const char* ID, unsign
 		Log(LOG_NORM, szLogString);
 	}
 	m_mainworker.sOnDeviceReceived(m_HwdID, DeviceRowIdx, devname, nullptr);
-	m_notifications.CheckAndHandleNotification(DeviceRowIdx, m_HwdID, ID, devname, unit, devType, subType, nValue, sValue);
+	//UpdateValue above stores/applies calibration on the raw sValue; the notification check needs the same
+	//calibrated value the device now shows, so look it up the same way CSQLHelper::UpdateValueInt did.
+	std::string sValueCalibrated = m_sql.GetCalibratedValue(HardwareID, ID, unit, devType, subType, sValue);
+	m_notifications.CheckAndHandleNotification(DeviceRowIdx, m_HwdID, ID, devname, unit, devType, subType, nValue, sValueCalibrated);
 	m_mainworker.CheckSceneCode(DeviceRowIdx, devType, subType, nValue, sValue, "MQTT Auto");
 	return DeviceRowIdx;
 }
@@ -2104,9 +2212,6 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 			szUnit = "text";
 		}
 	}
-
-	float AddjValue = 0.0F;
-	float AddjMulti = 1.0F;
 
 	if (
 		(szUnit == "hpa")
@@ -2442,8 +2547,7 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 			temp = ConvertToCelsius(temp);
 		}
 
-		m_sql.GetAddjustment(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, devType, subType, AddjValue, AddjMulti);
-		temp += AddjValue;
+		//Calibration (Calibration tab AddjValue) is now applied centrally by CSQLHelper::UpdateValueInt.
 		sValue = std_format("%.2f", temp);
 	}
 	else if (szUnit == "%")
@@ -3251,7 +3355,7 @@ void MQTTAutoDiscover::handle_auto_discovery_fan(_tMQTTASensor* pSensor, const s
 		{
 			bool isNull = false;
 			current_mode = GetValueFromTemplate(root, pSensor->preset_mode_value_template, isNull);
-			if ((pSensor->preset_mode_state_topic == topic) && current_mode.empty())
+			if ((pSensor->preset_mode_state_topic == topic) && current_mode.empty() && !isNull)
 			{
 				Log(LOG_ERROR, "Climate device no idea how to interpret preset_mode_state value (%s)", pSensor->unique_id.c_str());
 				bValid = false;
@@ -4654,11 +4758,8 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 
 			pSensor->nValue = 0;
 
-			float AddjValue = 0.0F;
-			float AddjMulti = 1.0F;
-
-			m_sql.GetAddjustment(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType, AddjValue, AddjMulti);
-			temp_current += AddjValue;
+			//Calibration (Calibration tab AddjValue) is now applied centrally by CSQLHelper::UpdateValueInt,
+			//keyed on the actual row being written below (pTypeTEMP/sTypeSetpoint at CLIMATE_TEMP_SETPOINT_UNIT).
 			pSensor->sValue = std_format("%.1f", temp_current);
 
 			pSensor->subType = sTypeSetpoint;
@@ -4781,6 +4882,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
 	std::string szSwitchCmd = pSensor->last_value;
 	int level = 0;
+	bool bHaveActionLevel = false;
 	int switchType = STYPE_OnOff;
 	std::string szSensorName = pSensor->name;
 
@@ -4964,6 +5066,21 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			szSwitchCmd = "on";
 		}
 		szSensorName += "_" + pSensor->last_value;
+
+		// Rotary and scroll controls (IKEA BILRESA/SOMRIG, Aqara cube, ...) send how far
+		// they were turned as action_level (0..255) next to the action name. Keep it as
+		// the level of the action's push button so scripts can read it; the button
+		// itself has no level of its own to lose.
+		if (pSensor->bIsJSON)
+		{
+			Json::Value jPayload;
+			if (ParseJSon(pSensor->last_json_value, jPayload) && jPayload.isObject() && jPayload["action_level"].isNumeric())
+			{
+				const int iActionLevel = jPayload["action_level"].asInt();
+				level = std::max(0, std::min(100, (int)round((100.0 / 255.0) * iActionLevel)));
+				bHaveActionLevel = true;
+			}
+		}
 	}
 	else if (pSensor->object_id.find("scene_state_scene") != std::string::npos)
 	{
@@ -5485,6 +5602,14 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	else if (switchType == STYPE_PushOn)
 	{
 		nValue = gswitch_sOn;
+		if (bHaveActionLevel)
+		{
+			// "Set Level: n %" carries the value through to the UI, dzVents (level) and
+			// the event system; a plain "On" would drop it.
+			nValue = gswitch_sSetLevel;
+			bHaveLevelChange = (atoi(sValue.c_str()) != level);
+			sValue = std_format("%d", level);
+		}
 	}
 	else if (switchType == STYPE_PushOff)
 	{
@@ -5771,8 +5896,12 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 
 			bool bCouldUseBrightness = false;
 
+			// ColorModeWhite is meaningful for lights with a white channel (subtypes with a 'W');
+			// the color picker only offers White mode for those, so xy/hs conversions below
+			// see it in pathological cases only (a script sending mode 1 to an xy/hs light)
 			if (color.mode == ColorModeRGB ||
-				color.mode == ColorModeCustom)
+				color.mode == ColorModeCustom ||
+				color.mode == ColorModeWhite)
 			{
 				if (pSensor->supported_color_modes.find("xy") != pSensor->supported_color_modes.end())
 				{
@@ -5822,20 +5951,33 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					root["color"]["g"] = color.g;
 					root["color"]["b"] = color.b;
 				}
+				uint8_t iColdWhite = color.cw;
+				uint8_t iWarmWhite = color.ww;
+				if (color.mode == ColorModeWhite)
+				{
+					// ColorModeWhite has no valid color fields: white fully on, the dim level carries the brightness
+					iColdWhite = 255;
+					iWarmWhite = 255;
+				}
+				else if (pSensor->subType == sTypeColor_RGB_W_Z)
+				{
+					// single white channel: state updates store it in ww, the web UI sets both cw and ww
+					iColdWhite = std::max(color.cw, color.ww);
+				}
 				if (
 					(pSensor->subType == sTypeColor_RGB_W_Z)
 					|| (pSensor->subType == sTypeColor_RGB_CW_WW_Z)
 					|| (pSensor->subType == sTypeColor_RGB_CW_WW)
 					)
 				{
-					root["color"]["c"] = color.cw;
+					root["color"]["c"] = iColdWhite;
 				}
 				if (
 					(pSensor->subType == sTypeColor_RGB_CW_WW_Z)
 					|| (pSensor->subType == sTypeColor_RGB_CW_WW)
 					)
 				{
-					root["color"]["w"] = color.ww;
+					root["color"]["w"] = iWarmWhite;
 				}
 
 				// Check if the rgb_command_template suggests to use "red", "green"... instead of the default "r", "g"... (e.g. Fibaro FGRGBW)
@@ -5860,17 +6002,10 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 					}
 					else if (pSensor->subType == sTypeColor_RGB_W_Z)
 					{
-						// only a single 'white'. check if this is warm or coldwhite. 
-						// If not coldwhite it is warmwhite
-						// Single white is stored as coldwhite within Domoticz
-						//if (pSensor->color_temp_command_template.find("coldWhite") != std::string::npos)
-						{
-							colorDef["coldWhite"] = root["color"]["c"];
-						}
-						//if (pSensor->color_temp_command_template.find("warmWhite") != std::string::npos)
-						{
-							colorDef["warmWhite"] = root["color"]["c"];
-						}
+						// single white channel, sent as both warm and cold white;
+						// the gateway (e.g. Z-Wave JS) strips the component the device does not support
+						colorDef["coldWhite"] = root["color"]["c"];
+						colorDef["warmWhite"] = root["color"]["c"];
 					}
 
 					root["value"] = colorDef;
@@ -6838,14 +6973,8 @@ void MQTTAutoDiscover::Do_Work()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_MQTTAD_GetConfig(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_MQTTAD_GetConfig(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid.empty())
 				return;
@@ -6863,14 +6992,8 @@ namespace http {
 			pMQTT->GetConfig(root);
 		}
 
-		void CWebServer::Cmd_MQTTAD_UpdateNumber(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_MQTTAD_UpdateNumber(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			std::string devid = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "name")));
 			std::string value = request::findValue(&req, "value");
@@ -6902,14 +7025,8 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_MQTTAD_PublishPayload(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_MQTTAD_PublishPayload(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			std::string topic = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "topic")));
 			std::string qos = request::findValue(&req, "qos");

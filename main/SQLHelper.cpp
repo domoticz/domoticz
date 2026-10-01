@@ -28,6 +28,7 @@
 #include "../notifications/NotificationHelper.h"
 #include "IFTTT.h"
 #include "KWHStats.h"
+#include "ThemeSettings.h"
 #ifdef ENABLE_PYTHON
 #include "../hardware/plugins/Plugins.h"
 #endif
@@ -43,7 +44,7 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-#define DB_VERSION 178
+#define DB_VERSION 183
 
 #define DEFAULT_ADMINUSER "admin"
 #define DEFAULT_ADMINPWD "domoticz"
@@ -82,7 +83,9 @@ constexpr auto sqlCreateDeviceStatus =
 "[CustomImage] INTEGER DEFAULT 0, "
 "[Description] VARCHAR(200) DEFAULT '', "
 "[Options] TEXT DEFAULT null, "
-"[Color] TEXT DEFAULT NULL);";
+"[Color] TEXT DEFAULT NULL, "
+// Declared last: the upgrade path appends it with ALTER TABLE, so both schemas match.
+"[Icon] TEXT DEFAULT '');";
 
 constexpr auto sqlCreateDeviceStatusTrigger =
 "CREATE TRIGGER IF NOT EXISTS devicestatusupdate AFTER INSERT ON DeviceStatus\n"
@@ -571,6 +574,15 @@ constexpr auto sqlCreateCustomImages =
 "	[IconOn] BLOB, "
 "	[IconOff] BLOB);";
 
+constexpr auto sqlCreateWebAssets =
+"CREATE TABLE IF NOT EXISTS [WebAssets]("
+"	[ID] INTEGER PRIMARY KEY, "
+"	[Name] VARCHAR(128) NOT NULL, "
+"	[SourceURL] VARCHAR(500) DEFAULT '', "
+"	[Companions] TEXT DEFAULT '', "
+"	[LastUpdate] DATETIME DEFAULT (datetime('now','localtime')), "
+"	[Title] VARCHAR(128) DEFAULT '');";
+
 constexpr auto sqlCreateMySensors =
 "CREATE TABLE IF NOT EXISTS [MySensors]("
 " [HardwareID] INTEGER NOT NULL,"
@@ -634,6 +646,7 @@ constexpr auto sqlCreateApplications =
 "[SigningSecret] VARCHAR(100) DEFAULT '',"
 "[RefreshExpire] INTEGER DEFAULT 0,"
 "[AcceptLegacyTokensUntil] INTEGER DEFAULT 0,"
+"[RedirectUris] TEXT DEFAULT '',"
 "[LastSeen] DATETIME DEFAULT NULL,"
 "[LastUpdate] DATETIME DEFAULT(datetime('now', 'localtime'))"
 ");";
@@ -784,6 +797,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateFloorplans);
 	query(sqlCreateFloorplanOrderTrigger);
 	query(sqlCreateCustomImages);
+	query(sqlCreateWebAssets);
 	query(sqlCreateMySensors);
 	query(sqlCreateMySensorsVariables);
 	query(sqlCreateMySensorsChilds);
@@ -793,6 +807,7 @@ bool CSQLHelper::OpenDatabase()
 	query(sqlCreateApplications);
 	query(sqlCreateAccessTokens);
 	query(sqlCreateDashboardLayouts);
+	CThemeSettings::CreateTable();
 	//Add indexes to log tables
 	query("create index if not exists ds_hduts_idx	on DeviceStatus(HardwareID, DeviceID, Unit, Type, SubType);");
 	query("create index if not exists f_id_idx		on Fan(DeviceRowID);");
@@ -3425,6 +3440,38 @@ bool CSQLHelper::OpenDatabase()
 					priceT1, priceT2, priceR1, priceR2);
 			}
 		}
+		if (dbversion < 179)
+		{
+			// Seed the proxy-forwarding header family with the value that was hardcoded
+			// before it became configurable, so upgrading changes nothing for existing
+			// reverse-proxy setups.
+			UpdatePreferencesVar("WebProxyHeaderFamily", static_cast<int>(http::server::ProxyHeaderFamily::XForwardedFor));
+		}
+		if (dbversion < 180)
+		{
+			// Deleting a user used to leave its DashboardLayouts rows behind. Since Users.ID
+			// is an INTEGER PRIMARY KEY (a rowid alias), SQLite can reuse that id for a new
+			// user, who would then silently inherit the old user's dashboard layouts. Purge
+			// any layouts whose userid no longer matches an existing user.
+			query("DELETE FROM DashboardLayouts WHERE userid NOT IN (SELECT ID FROM Users)");
+		}
+		if (dbversion < 181)
+		{
+			// Applications can now pin the OAuth2 redirect URIs they accept. Existing
+			// applications start with none registered, which keeps the previous
+			// behaviour of accepting any shape-valid URI until an administrator fills
+			// the list in, so upgrading breaks no existing account linking.
+			query("ALTER TABLE Applications ADD COLUMN [RedirectUris] TEXT DEFAULT ''");
+		}
+		if (dbversion < 182)
+		{
+			CThemeSettings::MigrateFromPreferences();
+		}
+		if (dbversion < 183)
+		{
+			query("ALTER TABLE DeviceStatus ADD COLUMN [Icon] TEXT DEFAULT ''");
+			query(sqlCreateWebAssets);
+		}
 	}
 	else if (bNewInstall)
 	{
@@ -3435,6 +3482,9 @@ bool CSQLHelper::OpenDatabase()
 		// Admin user is no longer created here - created via setup wizard or Docker env vars
 		safe_query("INSERT INTO Applications (Active, Public, Applicationname) VALUES (1, 1, 'domoticzUI')");
 		safe_query("INSERT INTO Applications (Active, Public, Applicationname) VALUES (0, 0, 'domoticzMobileApp')");
+		// Same default as the upgrade path (DB_VERSION 179), so the Settings page
+		// shows the family that is actually in use rather than an empty selection.
+		UpdatePreferencesVar("WebProxyHeaderFamily", static_cast<int>(http::server::ProxyHeaderFamily::XForwardedFor));
 	}
 	UpdatePreferencesVar("DB_Version", DB_VERSION);
 
@@ -4682,6 +4732,37 @@ void CSQLHelper::safe_exec_no_return(const char* fmt, ...)
 	sqlite3_free(zQuery);
 }
 
+int CSQLHelper::safe_exec_changes(const char* fmt, ...)
+{
+	if (!m_dbase)
+		return -1;
+
+	va_list args;
+	va_start(args, fmt);
+	char* zQuery = sqlite3_vmprintf(fmt, args);
+	va_end(args);
+	if (!zQuery)
+		return -1;
+	std::string szQuery = zQuery;
+	sqlite3_free(zQuery);
+
+	std::unique_lock<std::timed_mutex> l(m_sqlQueryMutex, std::defer_lock);
+	if (!l.try_lock_for(std::chrono::minutes(5)))
+	{
+		_log.Log(LOG_ERROR, "SQL exec mutex timeout (>5min, possible query backlog). Query: %.200s", szQuery.c_str());
+		return -1;
+	}
+	char* errMsg = nullptr;
+	_log.Debug(DEBUG_SQL, "Exec:%s", szQuery.c_str());
+	if (sqlite3_exec(m_dbase, szQuery.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK)
+	{
+		_log.Log(LOG_ERROR, "SQL exec failed: %s (%.200s)", errMsg ? errMsg : "unknown error", szQuery.c_str());
+		sqlite3_free(errMsg);
+		return -1;
+	}
+	return sqlite3_changes(m_dbase);
+}
+
 bool CSQLHelper::safe_UpdateBlobInTableWithID(const std::string& Table, const std::string& Column, const std::string& sID, const std::string& BlobData)
 {
 	if (!m_dbase)
@@ -5229,7 +5310,7 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, int OrgHardwareID, const 
 			//Set the status of all slave devices from this device (except the one we just received) to off
 			//Check if this switch was a Sub/Slave device for other devices, if so adjust the state of those other devices
 			result2 = safe_query(
-				"SELECT a.DeviceRowID, b.Type, b.HardwareID FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='%q') AND (a.DeviceRowID!='%q') AND (b.ID == a.DeviceRowID) AND (a.DeviceRowID!=a.ParentID)",
+				"SELECT a.DeviceRowID, b.Type, b.HardwareID, b.Unit, b.SubType, b.SignalLevel, b.BatteryLevel FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='%q') AND (a.DeviceRowID!='%q') AND (b.ID == a.DeviceRowID) AND (a.DeviceRowID!=a.ParentID)",
 				sd[0].c_str(),
 				idx.c_str()
 			);
@@ -5312,6 +5393,9 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, int OrgHardwareID, const 
 						sd[0].c_str()
 					);
 					m_mainworker.sOnDeviceUpdate(std::stoi(sd[2]), std::stoll(sd[0]));
+					// Feed the new state to the event system as well, so scripts and the Python
+					// event module see the slave change and not only the web sockets.
+					m_mainworker.m_eventsystem.ProcessDevice(std::stoi(sd[2]), std::stoull(sd[0]), (unsigned char)atoi(sd[3].c_str()), (unsigned char)oDevType, (unsigned char)atoi(sd[4].c_str()), (unsigned char)atoi(sd[5].c_str()), (unsigned char)atoi(sd[6].c_str()), newnValue, "", sLastUpdate);
 				}
 			}
 			// TODO: Should plugin be notified?
@@ -5321,7 +5405,7 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, int OrgHardwareID, const 
 	//If this is a 'Main' device, and it has Sub/Slave devices,
 	//set the status of the Sub/Slave devices to Off, as we might be out of sync then
 	result = safe_query(
-		"SELECT a.DeviceRowID, b.Type, b.HardwareID FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='%q') AND (b.ID == a.DeviceRowID) AND (a.DeviceRowID!=a.ParentID)",
+		"SELECT a.DeviceRowID, b.Type, b.HardwareID, b.Unit, b.SubType, b.SignalLevel, b.BatteryLevel FROM LightSubDevices a, DeviceStatus b WHERE (a.ParentID=='%q') AND (b.ID == a.DeviceRowID) AND (a.DeviceRowID!=a.ParentID)",
 		idx.c_str()
 	);
 	if (!result.empty())
@@ -5404,6 +5488,9 @@ uint64_t CSQLHelper::UpdateValue(const int HardwareID, int OrgHardwareID, const 
 				sd[0].c_str()
 			);
 			m_mainworker.sOnDeviceUpdate(std::stoi(sd[2]), std::stoll(sd[0]));
+			// Feed the new state to the event system as well, so scripts and the Python
+			// event module see the slave change and not only the web sockets.
+			m_mainworker.m_eventsystem.ProcessDevice(std::stoi(sd[2]), std::stoull(sd[0]), (unsigned char)atoi(sd[3].c_str()), (unsigned char)oDevType, (unsigned char)atoi(sd[4].c_str()), (unsigned char)atoi(sd[5].c_str()), (unsigned char)atoi(sd[6].c_str()), newnValue, "", sLastUpdate);
 		}
 		// TODO: Should plugin be notified?
 	}
@@ -5584,6 +5671,198 @@ uint64_t CSQLHelper::UpdateManagedValueInt(
 	return ulID;
 }
 
+namespace
+{
+	//Returns the number of digits after the decimal point in a numeric token, or 0 if it has none.
+	int CountDecimals(const std::string &token)
+	{
+		size_t dot = token.find('.');
+		if (dot == std::string::npos)
+			return 0;
+		int count = 0;
+		for (size_t i = dot + 1; i < token.size() && (token[i] >= '0') && (token[i] <= '9'); i++)
+			count++;
+		return count;
+	}
+
+	//Formats value with as many decimals as originalToken had (never fewer than minDecimals), so a
+	//calibrated field keeps the precision convention of whichever ingest path produced the raw value
+	//(e.g. 1 decimal from RFXCom hardware, 2 decimals from the JSON API), instead of a single hardcoded
+	//precision that would silently change what already-working paths store.
+	std::string FormatWithMatchingPrecision(const float value, const std::string &originalToken, const int minDecimals)
+	{
+		int decimals = CountDecimals(originalToken);
+		if (decimals < minDecimals)
+			decimals = minDecimals;
+		return std_format("%.*f", decimals, value);
+	}
+}
+
+std::string CSQLHelper::ApplyDeviceCalibration(const unsigned char devType, const unsigned char subType, const float AddjValue, const float AddjMulti, const float AddjValue2, const float AddjMulti2, const std::string &sValue) const
+{
+	//Nothing configured on the Calibration tab for this device, leave the value untouched (including its
+	//formatting) so uncalibrated devices are never affected by this function.
+	if ((AddjValue == 0.0F) && (AddjMulti == 1.0F) && (AddjValue2 == 0.0F) && (AddjMulti2 == 1.0F))
+		return sValue;
+
+	std::vector<std::string> parts;
+	StringSplit(sValue, ";", parts);
+
+	auto joinParts = [&parts]() -> std::string {
+		std::string sResult;
+		for (size_t i = 0; i < parts.size(); i++)
+		{
+			if (i != 0)
+				sResult += ";";
+			sResult += parts[i];
+		}
+		return sResult;
+	};
+
+	switch (devType)
+	{
+	case pTypeTEMP:
+	{
+		//Single temperature value
+		if (AddjValue == 0.0F)
+			return sValue;
+		float temp = static_cast<float>(atof(sValue.c_str())) + AddjValue;
+		return FormatWithMatchingPrecision(temp, sValue, 1);
+	}
+	case pTypeTEMP_HUM:
+	{
+		//temp;humidity;humidity_status
+		//sTypeTH_LC_TC (LaCrosse combined temp+hum) is built up manually in MainWorker from two
+		//already calibrated sources and deliberately not touched here again, see decode_Temp/decode_Hum
+		if (subType == sTypeTH_LC_TC)
+			return sValue;
+		if ((AddjValue == 0.0F) || (parts.size() < 3))
+			return sValue;
+		std::string origTemp = parts[0];
+		float temp = static_cast<float>(atof(origTemp.c_str())) + AddjValue;
+		parts[0] = FormatWithMatchingPrecision(temp, origTemp, 1);
+		return joinParts();
+	}
+	case pTypeTEMP_HUM_BARO:
+	{
+		//temp;humidity;humidity_status;barometer;forecast
+		if (parts.size() < 5)
+			return sValue;
+		bool bChanged = false;
+		if (AddjValue != 0.0F)
+		{
+			std::string origTemp = parts[0];
+			float temp = static_cast<float>(atof(origTemp.c_str())) + AddjValue;
+			parts[0] = FormatWithMatchingPrecision(temp, origTemp, 1);
+			bChanged = true;
+		}
+		if (AddjValue2 != 0.0F)
+		{
+			std::string origBaro = parts[3];
+			float baro = static_cast<float>(atof(origBaro.c_str())) + AddjValue2;
+			//Matches decode_TempHumBaro/MainWorker::UpdateDevice: float barometer for THBFloat, rounded int
+			//otherwise. Kept explicit (rather than only relying on derived precision) so a non-float
+			//barometer is always stored as a whole number even if a caller ever hands in a fractional token.
+			if (subType == sTypeTHBFloat)
+				parts[3] = FormatWithMatchingPrecision(baro, origBaro, 1);
+			else
+				parts[3] = std_format("%d", static_cast<int>(rint(baro)));
+			bChanged = true;
+		}
+		if (!bChanged)
+			return sValue;
+		return joinParts();
+	}
+	case pTypeTEMP_BARO:
+	{
+		//temp;barometer;forecast;altitude
+		if (parts.size() < 2)
+			return sValue;
+		bool bChanged = false;
+		if (AddjValue != 0.0F)
+		{
+			std::string origTemp = parts[0];
+			float temp = static_cast<float>(atof(origTemp.c_str())) + AddjValue;
+			parts[0] = FormatWithMatchingPrecision(temp, origTemp, 1);
+			bChanged = true;
+		}
+		if (AddjValue2 != 0.0F)
+		{
+			std::string origBaro = parts[1];
+			float baro = static_cast<float>(atof(origBaro.c_str())) + AddjValue2;
+			parts[1] = FormatWithMatchingPrecision(baro, origBaro, 1);
+			bChanged = true;
+		}
+		if (!bChanged)
+			return sValue;
+		return joinParts();
+	}
+	case pTypeUV:
+	{
+		//UV Level;temp (temp is only meaningful for sTypeUV3, but is always present)
+		if (parts.size() < 2)
+			return sValue;
+		bool bChanged = false;
+		if (AddjMulti2 != 1.0F)
+		{
+			std::string origLevel = parts[0];
+			float level = static_cast<float>(atof(origLevel.c_str())) * AddjMulti2;
+			parts[0] = FormatWithMatchingPrecision(level, origLevel, 1);
+			bChanged = true;
+		}
+		if ((subType == sTypeUV3) && (AddjValue != 0.0F))
+		{
+			std::string origTemp = parts[1];
+			float temp = static_cast<float>(atof(origTemp.c_str())) + AddjValue;
+			parts[1] = FormatWithMatchingPrecision(temp, origTemp, 1);
+			bChanged = true;
+		}
+		if (!bChanged)
+			return sValue;
+		return joinParts();
+	}
+	case pTypeWEIGHT:
+	{
+		if (AddjValue == 0.0F)
+			return sValue;
+		float weight = static_cast<float>(atof(sValue.c_str())) + AddjValue;
+		return FormatWithMatchingPrecision(weight, sValue, 1);
+	}
+	case pTypeRFXSensor:
+	{
+		//Only the temperature subtype was ever calibrated
+		if ((subType != sTypeRFXSensorTemp) || (AddjValue == 0.0F))
+			return sValue;
+		float temp = static_cast<float>(atof(sValue.c_str())) + AddjValue;
+		return FormatWithMatchingPrecision(temp, sValue, 1);
+	}
+	case pTypeGeneral:
+	{
+		//pressure;forecast (used by MQTT Auto Discovery standalone pressure sensors). MQTT builds this
+		//field with "%.02f", so floor the precision at 2 decimals to match.
+		if ((subType != sTypeBaro) || (AddjValue2 == 0.0F) || (parts.size() < 2))
+			return sValue;
+		std::string origPressure = parts[0];
+		float pressure = static_cast<float>(atof(origPressure.c_str())) + AddjValue2;
+		parts[0] = FormatWithMatchingPrecision(pressure, origPressure, 2);
+		return joinParts();
+	}
+	default:
+		return sValue;
+	}
+}
+
+std::string CSQLHelper::GetCalibratedValue(const int HardwareID, const char *ID, const unsigned char unit, const unsigned char devType, const unsigned char subType, const std::string &sValue)
+{
+	float AddjValue = 0.0F;
+	float AddjMulti = 1.0F;
+	float AddjValue2 = 0.0F;
+	float AddjMulti2 = 1.0F;
+	GetAddjustment(HardwareID, ID, unit, devType, subType, AddjValue, AddjMulti);
+	GetAddjustment2(HardwareID, ID, unit, devType, subType, AddjValue2, AddjMulti2);
+	return ApplyDeviceCalibration(devType, subType, AddjValue, AddjMulti, AddjValue2, AddjMulti2, sValue);
+}
+
 uint64_t CSQLHelper::UpdateValueInt(
         const int HardwareID, const int OrgHardwareID, const char *ID, const unsigned char unit, const unsigned char devType, const unsigned char subType,
         const unsigned char signallevel, const unsigned char batterylevel, const int nValue, const char *sValue, std::string &devname,
@@ -5606,7 +5885,7 @@ uint64_t CSQLHelper::UpdateValueInt(
 	bool bIsManagedCounter = (devType == pTypeGeneral && subType == sTypeManagedCounter);
 
 	std::vector<std::vector<std::string> > result;
-	result = safe_query("SELECT ID, Name, Used, SwitchType, nValue, sValue, LastUpdate, Options FROM DeviceStatus WHERE (HardwareID=%d AND OrgHardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, OrgHardwareID, ID, unit, devType, subType);
+	result = safe_query("SELECT ID, Name, Used, SwitchType, nValue, sValue, LastUpdate, Options, AddjValue, AddjMulti, AddjValue2, AddjMulti2 FROM DeviceStatus WHERE (HardwareID=%d AND OrgHardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d)", HardwareID, OrgHardwareID, ID, unit, devType, subType);
 
 	if (!result.empty())
 	{
@@ -5658,6 +5937,17 @@ uint64_t CSQLHelper::UpdateValueInt(
 		stype = (_eSwitchType)atoi(result[0][3].c_str());
 		nValueBeforeUpdate = atoi(result[0][4].c_str());
 		sValueBeforeUpdate = result[0][5];
+
+		//Apply the device Calibration tab (if any) to the incoming value before it is compared, stored or
+		//used for notifications, so every ingest path (hardware, MQTT, Python plugins, dzVents, JSON API, ...)
+		//is calibrated the same way, instead of only the paths that historically did this by hand.
+		//New devices (the Insert branch above) cannot have user set calibration yet, so this only applies here.
+		float calAddjValue = static_cast<float>(atof(result[0][8].c_str()));
+		float calAddjMulti = static_cast<float>(atof(result[0][9].c_str()));
+		float calAddjValue2 = static_cast<float>(atof(result[0][10].c_str()));
+		float calAddjMulti2 = static_cast<float>(atof(result[0][11].c_str()));
+		sValueUpdate = ApplyDeviceCalibration(devType, subType, calAddjValue, calAddjMulti, calAddjValue2, calAddjMulti2, sValue);
+		sValue = sValueUpdate.c_str();
 
 		std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
 
@@ -8091,10 +8381,17 @@ void CSQLHelper::AddCalendarUpdateMeter()
 				CalcMeterPrice(ID, divider, szDateStart, szDateEnd, price);
 				if (price != 0.0f && total_real > 0)
 				{
-					// Spike protection: discard price if implied tariff exceeds max plausible rate
-					constexpr float max_unit_price = 3.0f;  
-					if (std::abs(price) > (static_cast<float>(total_real) / divider) * max_unit_price)
-						price = 0;
+					// Spike protection: discard price if the implied tariff exceeds a plausible
+					// rate. The 3/unit cap is calibrated for energy (kWh) and is meaningless for
+					// gas, water or generic counters, whose tariff per unit is routinely higher,
+					// so it is applied to energy meters only (it was zeroing valid non-energy
+					// prices, #7005). The independent P1/MultiMeter spike check is energy-scoped too.
+					if ((metertype == MTYPE_ENERGY) || (metertype == MTYPE_ENERGY_GENERATED))
+					{
+						constexpr float max_unit_price = 3.0f;
+						if (std::abs(price) > (static_cast<float>(total_real) / divider) * max_unit_price)
+							price = 0;
+					}
 				}
 				else if (total_real <= 0)
 					price = 0;
@@ -11399,7 +11696,8 @@ void CSQLHelper::SendUpdateInt(const std::string& Idx)
 
 void CSQLHelper::UpdateDeviceValue(const char* FieldName, const std::string& Value, const std::string& Idx)
 {
-	safe_query("UPDATE DeviceStatus SET %s='%s' , LastUpdate='%q' WHERE (ID == %s )", FieldName, Value.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
+	// Value is caller supplied and may legitimately contain quotes, so it has to be escaped (%q, not %s)
+	safe_query("UPDATE DeviceStatus SET %s='%q' , LastUpdate='%q' WHERE (ID == %s )", FieldName, Value.c_str(), TimeToString(nullptr, TF_DateTime).c_str(), Idx.c_str());
 	SendUpdateInt(Idx);
 }
 void CSQLHelper::UpdateDeviceValue(const char* FieldName, const int Value, const std::string& Idx)
@@ -12189,6 +12487,18 @@ bool CSQLHelper::CopyDashboardLayout(int userid, const std::string &srcid, const
 		"INSERT INTO DashboardLayouts (id, userid, name, isdefault, layout, created, updated) "
 		"VALUES ('%q', %d, '%q', 0, '%q', datetime('now','localtime'), datetime('now','localtime'))",
 		newid.c_str(), userid, newname.c_str(), layout_json.c_str());
+	return true;
+}
+
+bool CSQLHelper::DeleteUser(const std::string &idx)
+{
+	// Users.ID is an INTEGER PRIMARY KEY (a rowid alias), so SQLite can hand the same id
+	// out again to a later user. Remove every row keyed by this user's id before removing
+	// the user itself, so a newly created user does not silently inherit them.
+	safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
+	safe_query("DELETE FROM DashboardLayouts WHERE (userid == '%q')", idx.c_str());
+	CThemeSettings::DeleteForUser(static_cast<unsigned long>(std::strtoul(idx.c_str(), nullptr, 10)));
+	safe_query("DELETE FROM Users WHERE (ID == '%q')", idx.c_str());
 	return true;
 }
 

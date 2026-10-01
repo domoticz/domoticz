@@ -42,7 +42,7 @@ define([
                           { value: 'system-ui, -apple-system, sans-serif',           label: 'System UI' }
                       ]
                     },
-                    { key: 'fontSize', type: 'number', label: 'Size (px)', default: 14, min: 8, max: 72 }
+                    { key: 'fontSize', type: 'number', step: 1, label: 'Size (px)', default: 14, min: 8, max: 72 }
                 ]
             },
             {

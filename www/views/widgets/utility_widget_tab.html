@@ -7,13 +7,22 @@
                 <td id="img" ng-hide="ctrl.isText() && ctrl.hideTextIcon()">
                     <a ng-if="ctrl.device.SubType === 'Sound Level'"
                        ng-href="#/Devices/{{ctrl.device.idx}}/Log">
-                        <img ng-src="{{ctrl.getDeviceIcon()}}" class="lcursor" height="48" width="48">
+                        <dz-device-icon class="dz-icon-48 lcursor"
+                                        device="ctrl.device"
+                                        fallback-src="ctrl.getDeviceIcon()"
+                                        use-glyph="!ctrl.isValueDrivenIcon()"></dz-device-icon>
                     </a>
-                    <img ng-if="!ctrl.isSetpoint() && ctrl.device.Type !== 'Radiator 1' && ctrl.device.SubType !== 'Sound Level'"
-                         ng-src="{{ctrl.getDeviceIcon()}}" height="48" width="48">
-                    <img ng-if="ctrl.isSetpoint() || ctrl.device.Type === 'Radiator 1'"
-                         ng-src="{{ctrl.getDeviceIcon()}}" class="lcursor"
-                         ng-click="ctrl.showSetpointPopup($event)" height="48" width="48">
+                    <dz-device-icon ng-if="!ctrl.isSetpoint() && ctrl.device.Type !== 'Radiator 1' && ctrl.device.SubType !== 'Sound Level'"
+                                    class="dz-icon-48"
+                                    device="ctrl.device"
+                                    fallback-src="ctrl.getDeviceIcon()"
+                                    use-glyph="!ctrl.isValueDrivenIcon()"></dz-device-icon>
+                    <dz-device-icon ng-if="ctrl.isSetpoint() || ctrl.device.Type === 'Radiator 1'"
+                                    class="dz-icon-48 lcursor"
+                                    device="ctrl.device"
+                                    fallback-src="ctrl.getDeviceIcon()"
+                                    use-glyph="!ctrl.isValueDrivenIcon()"
+                                    ng-click="ctrl.showSetpointPopup($event)"></dz-device-icon>
                 </td>
                 <td id="status" ng-bind-html="ctrl.getStatusText()"></td>
                 <td id="lastupdate" ng-class="{'lastupdate-spaced': ctrl.isText() && ctrl.hideTextIcon()}">
@@ -22,8 +31,8 @@
                 </td>
                 <td id="type">{{ctrl.getTypeSubTypeText()}}</td>
                 <td class="options">
-                    <span ng-if="ctrl.device.Favorite == 0"><img src="images/nofavorite.png" data-i18n="[title]Add to Dashboard" ng-click="ctrl.makeFavorite(1)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                    <span ng-if="ctrl.device.Favorite != 0"><img src="images/favorite.png" data-i18n="[title]Remove from Dashboard" ng-click="ctrl.makeFavorite(0)" class="lcursor">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span ng-if="ctrl.device.Favorite == 0"><i class="dz-icon-glyph dz-icon-16 fa-regular fa-star lcursor" title="Add to Dashboard" ng-click="ctrl.makeFavorite(1)"></i>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span ng-if="ctrl.device.Favorite != 0"><i class="dz-icon-glyph dz-icon-16 fa-solid fa-star lcursor" title="Remove from Dashboard" ng-click="ctrl.makeFavorite(0)"></i>&nbsp;&nbsp;&nbsp;&nbsp;</span>
                     <a ng-if="ctrl.hasLogLink()" class="btnsmall" ng-href="{{ctrl.getGraphLogLink()}}" data-i18n="Log">Log</a>
                     <a ng-if="ctrl.isAdmin" class="btnsmall" ng-click="ctrl.editDevice()" data-i18n="Edit">Edit</a>
                     <a ng-if="ctrl.isAdmin && ctrl.hasTimerSupport() && ctrl.hasTimers()" class="btnsmall-sel" ng-href="{{ctrl.getTimerLink()}}" data-i18n="Timers">Timers</a>

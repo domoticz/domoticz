@@ -44,7 +44,7 @@
 #include "../hardware/GpioPin.h"
 #endif // WITH_GPIO
 
-constexpr inline std::array<std::string_view,16> sViewerCommands = {
+constexpr inline std::array<std::string_view,15> sViewerCommands = {
 	"getsubdevices",
 	"getscenedevices",
 	"getmanualhardware",
@@ -53,7 +53,6 @@ constexpr inline std::array<std::string_view,16> sViewerCommands = {
 	"getlightswitches",
 	"getlightswitchesscenes",
 	"getcamactivedevices",
-	"resetsecuritystatus",
 	"verifypasscode",
 	"getSunRiseSet",
 	"getServerTime",
@@ -63,6 +62,7 @@ constexpr inline std::array<std::string_view,16> sViewerCommands = {
 	"getfloorplanplans"
 };
 constexpr inline std::array<std::string_view,31> sAdminCommands = {
+	"resetsecuritystatus",
 	"deleteallsubdevices",
 	"deletesubdevice",
 	"addsubdevice",
@@ -78,7 +78,6 @@ constexpr inline std::array<std::string_view,31> sAdminCommands = {
 	"testswitch",
 	"addswitch",
 	"getnotificationtypes",
-	"switchdeviceorder",
 	"switchsceneorder",
 	"clearnotifications",
 	"adduser",
@@ -95,7 +94,8 @@ constexpr inline std::array<std::string_view,31> sAdminCommands = {
 	"clearscenelog",
 	"learnsw"
 };
-constexpr inline std::array<std::string_view,23> sSwitcherCommands = {
+constexpr inline std::array<std::string_view,24> sSwitcherCommands = {
+	"switchdeviceorder", // a non-admin user reorders their own dashboard (SharedDevices); admins reorder DeviceStatus
 	"makefavorite",
 	"makescenefavorite",
 	"switchmodal",
@@ -212,8 +212,9 @@ namespace http
 							root["result"][ii]["Name"] = sd[1];
 							ii++;
 						}
-						root["status"] = "OK";
 					}
+					// having no sub devices is a normal situation, not an error
+					root["status"] = "OK";
 					break;
 				}
 				case "getscenedevices"_sh:
@@ -286,8 +287,9 @@ namespace http
 							root["result"][ii]["SubType"] = RFX_Type_SubType_Desc(devType, subType);
 							ii++;
 						}
-						root["status"] = "OK";
 					}
+					// an empty scene/group is a normal situation, not an error
+					root["status"] = "OK";
 					break;
 				}
 				case "getmanualhardware"_sh:	// used by Add Manual Light/Switch dialog
@@ -3177,9 +3179,7 @@ namespace http
 							}
 							RemoveUsersSessions(result[0][0], session);
 
-							m_sql.safe_query("DELETE FROM SharedDevices WHERE (SharedUserID == '%q')", idx.c_str());
-
-							m_sql.safe_query("DELETE FROM Users WHERE (ID == '%q')", idx.c_str());
+							m_sql.DeleteUser(idx);
 						}
 					}
 					LoadUsers();

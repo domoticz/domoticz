@@ -53,7 +53,7 @@
                    ng-required="field.required"
                    min="{{ field.min }}"
                    max="{{ field.max }}"
-                   step="{{ field.step || 1 }}">
+                   step="{{ field.step || 'any' }}">
 
             <!-- boolean -->
             <div ng-if="field.type === 'boolean'" class="dd-checkbox-label"
@@ -251,10 +251,14 @@
                 <div class="dd-al-items">
                     <div class="dd-al-item dd-range-row" ng-repeat="range in config[field.key] track by $index">
                         <input type="number" class="text ui-widget-content ui-corner-all dd-range-input"
-                               ng-model="range.from" placeholder="{{'From' | translate}}">
+                               ng-model="range.from" step="any"
+                               ng-change="rangeNormalize(field.key, $index)"
+                               placeholder="{{'From' | translate}}">
                         <span class="dd-range-dash">&mdash;</span>
                         <input type="number" class="text ui-widget-content ui-corner-all dd-range-input"
-                               ng-model="range.to" placeholder="{{'To' | translate}}">
+                               ng-model="range.to" step="any"
+                               ng-change="rangeNormalize(field.key, $index)"
+                               placeholder="{{'To' | translate}}">
                         <input type="color" class="dd-range-color-picker" ng-model="range.color"
                                title="{{'Color' | translate}}">
                         <i class="fa-solid fa-trash dd-al-action-icon dd-al-delete-icon"
@@ -282,10 +286,10 @@
                 <div class="dd-al-add">
                     <div class="dd-al-add-row">
                         <input type="number" class="text ui-widget-content ui-corner-all"
-                               ng-model="newRange.from"
+                               ng-model="newRange.from" step="any"
                                placeholder="{{'From' | translate}}" style="flex:1;min-width:0">
                         <input type="number" class="text ui-widget-content ui-corner-all"
-                               ng-model="newRange.to"
+                               ng-model="newRange.to" step="any"
                                placeholder="{{'To' | translate}}" style="flex:1;min-width:0">
                         <input type="color" class="dd-range-color-picker" ng-model="newRange.color"
                                title="{{'Color' | translate}}">
@@ -333,7 +337,7 @@
                            ng-required="subField.required"
                            min="{{ subField.min }}"
                            max="{{ subField.max }}"
-                           step="{{ subField.step || 1 }}"
+                           step="{{ subField.step || 'any' }}"
                            style="width:100%">
 
                     <select ng-if="subField.type === 'select'"

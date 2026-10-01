@@ -11,8 +11,8 @@
 
                 <!-- Big Text - Main Value -->
                 <td id="bigtext" class="ng-cloak">
-                    <img ng-show="ctrl.displayTrend(ctrl.device.trend)" height="12"
-                         ng-src="images/arrow_{{ctrl.trendState(ctrl.device.trend)}}.png">
+                    <i class="dz-icon-glyph dz-icon-12" ng-class="ctrl.getTrendIcon()"
+                       ng-show="ctrl.displayTrend(ctrl.device.trend)"></i>
                     <span ng-bind-html="ctrl.getBigText()"></span>
                 </td>
 
@@ -20,11 +20,17 @@
                 <td id="img" ng-hide="ctrl.isText() && ctrl.hideTextIcon()">
                     <a ng-if="!ctrl.isSetpoint() && ctrl.device.Type != 'Radiator 1'"
                        ng-href="{{ctrl.getGraphLogLink()}}">
-                        <img ng-src="{{ctrl.getDeviceIcon()}}" height="40" width="40" class="lcursor">
+                        <dz-device-icon class="dz-icon-40 lcursor"
+                                        device="ctrl.device"
+                                        fallback-src="ctrl.getDeviceIcon()"
+                                        use-glyph="!ctrl.isValueDrivenIcon()"></dz-device-icon>
                     </a>
-                    <img ng-if="ctrl.isSetpoint() || ctrl.device.Type == 'Radiator 1'"
-                         ng-src="{{ctrl.getDeviceIcon()}}" height="40" width="40"
-                         class="lcursor" ng-click="ctrl.showSetpointPopup($event)">
+                    <dz-device-icon ng-if="ctrl.isSetpoint() || ctrl.device.Type == 'Radiator 1'"
+                                    class="dz-icon-40 lcursor"
+                                    device="ctrl.device"
+                                    fallback-src="ctrl.getDeviceIcon()"
+                                    use-glyph="!ctrl.isValueDrivenIcon()"
+                                    ng-click="ctrl.showSetpointPopup($event)"></dz-device-icon>
                 </td>
 
                 <!-- Status Text -->

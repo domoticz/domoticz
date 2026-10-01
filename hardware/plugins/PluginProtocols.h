@@ -55,6 +55,7 @@ namespace Plugins {
 		size_t			m_RemainingChunk;
 	protected:
 		void			ExtractHeaders(std::string* pData);
+		void			ProcessInboundData(const ReadEvent* Message);
 		void Flush(CPlugin* pPlugin, CConnection* pConnection) override;
 
 	public:

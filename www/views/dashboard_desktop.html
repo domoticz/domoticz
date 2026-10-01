@@ -102,7 +102,7 @@
 									</a>
 								</td>
 								<td ng-if="device.SetPoint != undefined" id="img2" class="img2">
-									<img src="images/override.png" class="lcursor" ng-click="showSetpointPopup($event, device.idx, device.Protected, device.SetPoint, false, device.step || 0.5, device.min || -200, device.max || 200)" height="36" width="40" title="Adjust Setpoint">
+									<i class="fa-solid fa-sliders dz-chrome-icon dz-chrome-icon-36 lcursor" ng-click="showSetpointPopup($event, device.idx, device.Protected, device.SetPoint, false, device.step || 0.5, device.min || -200, device.max || 200)" title="Adjust Setpoint"></i>
 								</td>
 								<td id="status" class="status"><span>
 									<span ng-if="device.HumidityStatus">{{device.HumidityStatus}}</span>

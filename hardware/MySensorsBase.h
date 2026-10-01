@@ -451,7 +451,13 @@ class MySensorsBase : public CDomoticzHardwareBase
 	_tMySensorNode *InsertNode(int nodeID);
 	int FindNextNodeID();
 	_tMySensorChild *FindSensorWithPresentationType(int nodeID, _ePresentationType presType);
-	_tMySensorChild *FindChildWithValueType(int nodeID, _eSetType valType, int groupID);
+	// Finds the child in the caller's group that reports valType, for pairing a
+	// temperature with the humidity/pressure of the same physical sensor. A child that
+	// carries the caller's own value type as well is a self-contained combined sensor
+	// (a DHT reporting V_TEMP and V_HUM on one child): it can pair with itself, but it
+	// never lends its readings to another child, otherwise every extra DS18B20 on the
+	// node would be merged with the DHT's humidity.
+	_tMySensorChild *FindChildWithValueType(int nodeID, _eSetType valType, int groupID, int callerChildID = -1, _eSetType callerValType = V_UNKNOWN);
 	void UpdateNodeBatteryLevel(int nodeID, int Level);
 	void UpdateNodeHeartbeat(uint8_t nodeID);
 

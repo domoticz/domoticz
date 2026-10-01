@@ -20,12 +20,28 @@
                 <option label="HTTPS" value="https"/>
             </options>
         </param>
-        <param field="Certificate" label="Certificate Path" width="200px" visible_when="Protocol=https" default=""/>
+        <param field="Certificate" label="Certificate Path" width="200px" visible_when="Protocol=https" default="">
+            <description>
+                Path to the client certificate. Only used when the protocol is HTTPS.
+            </description>
+        </param>
         <param field="ApiKey" label="API Key" password="true" width="200px" default=""/>
         <group label="Advanced Settings">
             <param field="RetryCount" type="number" label="Retry Count" min="0" max="10" default="3" width="100px"/>
             <param field="Timeout" type="number" label="Timeout (s)" min="1" max="60" default="10" width="100px"/>
             <param field="EnableNotifications" type="boolean" label="Enable Notifications" default="true"/>
+        </group>
+        <param field="AllowControl" type="boolean" label="Allow Control" default="false">
+            <description>
+                Turn on to reveal the control settings below.
+            </description>
+        </param>
+        <group label="Control">
+            <param field="AllowReboot" type="boolean" label="Allow Reboot" default="false" visible_when="AllowControl=true">
+                <description>
+                    Permit the plugin to reboot the target device.
+                </description>
+            </param>
         </group>
         <param field="Mode6" label="Legacy Debug" width="150px">
             <options>

@@ -22,7 +22,7 @@ define([
             { key: 'title',           type: 'text',    label: 'Title',                      required: false },
             { key: 'allowScripts',    type: 'boolean', label: 'Allow scripts (\u26a0 trusted sources only)',
               default: false },
-            { key: 'refreshInterval', type: 'number',  label: 'Auto-reload (seconds, 0=off)', default: 0 }
+            { key: 'refreshInterval', type: 'number',  step: 1, label: 'Auto-reload (seconds, 0=off)', default: 0 }
         ]
     });
 
