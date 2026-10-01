@@ -1025,7 +1025,7 @@ void CPhilipsHue::LightStateFromJSON(const Json::Value& lightstate, _tHueLightSt
 		// Clamp to conform to HUE API
 		tbri = std::max(1, tbri);
 		tbri = std::min(254, tbri);
-		tlight.level = int(std::ceil((100.0F / 254.0F) * float(tbri)));
+		tlight.level = std::max(1, ground((100.0F / 254.0F) * float(tbri)));
 	}
 	if (!lightstate["sat"].empty())
 	{
