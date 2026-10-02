@@ -7849,9 +7849,18 @@ void CSQLHelper::UpdateMultiMeter()
 				if (splitresults.size() != 3)
 					continue; //impossible
 
-				double val1 = std::stod(splitresults[0]);
-				double val2 = std::stod(splitresults[1]);
-				double val3 = std::stod(splitresults[2]);
+				double val1, val2, val3;
+				try
+				{
+					val1 = std::stod(splitresults[0]);
+					val2 = std::stod(splitresults[1]);
+					val3 = std::stod(splitresults[2]);
+				}
+				catch (const std::exception &)
+				{
+					_log.Log(LOG_ERROR, "UpdateMultiMeter: Error converting sValue values! (IDX: %s, sValue: '%s', dType: %d, sType: %d)", sd[0].c_str(), sValue.c_str(), dType, dSubType);
+					continue;
+				}
 
 				value1 = std::llround(val1 * 10.0);
 				value2 = std::llround(val2 * 10.0);
@@ -7863,10 +7872,19 @@ void CSQLHelper::UpdateMultiMeter()
 				if (splitresults.size() != 4)
 					continue; //impossible
 
-				double val1 = std::stod(splitresults[0]);
-				double val2 = std::stod(splitresults[1]);
-				double val3 = std::stod(splitresults[2]);
-				double val4 = std::stod(splitresults[3]);
+				double val1, val2, val3, val4;
+				try
+				{
+					val1 = std::stod(splitresults[0]);
+					val2 = std::stod(splitresults[1]);
+					val3 = std::stod(splitresults[2]);
+					val4 = std::stod(splitresults[3]);
+				}
+				catch (const std::exception &)
+				{
+					_log.Log(LOG_ERROR, "UpdateMultiMeter: Error converting sValue values! (IDX: %s, sValue: '%s', dType: %d, sType: %d)", sd[0].c_str(), sValue.c_str(), dType, dSubType);
+					continue;
+				}
 
 				value1 = std::llround(val1 * 10.0);
 				value2 = std::llround(val2 * 10.0);
