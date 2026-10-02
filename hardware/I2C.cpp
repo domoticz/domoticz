@@ -500,7 +500,7 @@ int I2C::MCP23017_WritePin(uint8_t pin_number, uint8_t value)
 	int rc;
 
 	pin_mask = 0x01 << (pin_number);
-	iodir_mask &= ~(0x01 << (pin_number));
+	iodir_mask = ~pin_mask;
 
 	// open i2c device
 	int fd = i2c_Open(m_ActI2CBus.c_str());
@@ -521,7 +521,8 @@ int I2C::MCP23017_WritePin(uint8_t pin_number, uint8_t value)
 		close(fd);
 		return -2; // read from i2c failed
 	}
-	cur_iodir.word &= iodir_mask; // create mask for iodir register to set pin as output.
+	const uint16_t original_iodir = cur_iodir.word;
+	cur_iodir.word &= iodir_mask; // Set this pin as output while preserving other pin directions.
 
 	if (value == 1)
 		new_data = cur_data.word | pin_mask; // prepare new value by combinating current value, mask and new value
@@ -536,8 +537,11 @@ int I2C::MCP23017_WritePin(uint8_t pin_number, uint8_t value)
 			close(fd);
 			return -3;
 		}
+	}
+	if (cur_iodir.word != original_iodir)
+	{
 		if (I2CWriteReg16(fd, MCP23x17_IODIRA, cur_iodir.word) < 0)
-		{ // write to iodir register, set gpio pin as output
+		{
 			Log(LOG_ERROR, "MCP23017_WritePin. %s: Failed to write to I2C device at address: 0x%x", szI2CTypeNames[m_dev_type], m_i2c_addr);
 			close(fd);
 			return -3; // write to i2c failed
