@@ -526,7 +526,7 @@ void C1Wire::ReportLightState(const std::string& deviceId, const uint8_t unit, c
 
 void C1Wire::ReportCounter(const std::string& deviceId, const int unit, const unsigned long counter)
 {
-	if (counter < 0)	//Detect NULL reads of DS2423 counter.
+	if (counter == static_cast<unsigned long>(-1))	//Detect NULL reads of DS2423 counter.
 		return;
 	
 	unsigned char deviceIdByteArray[DEVICE_ID_SIZE] = { 0 };
