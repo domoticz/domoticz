@@ -181,7 +181,6 @@ void CTE923::GetSensorDetails()
 		tsen.WIND.packetlength = sizeof(tsen.WIND) - 1;
 		tsen.WIND.packettype = pTypeWIND;
 		tsen.WIND.subtype = sTypeWINDNoTemp;
-		dev.batteryWind = true;
 		if (dev.batteryWind)
 			tsen.WIND.battery_level = 9;
 		else
