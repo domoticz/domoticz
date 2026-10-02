@@ -238,7 +238,7 @@ class CKodi : public CDomoticzHardwareBase
 	void UnloadNodes();
 
       private:
-	static std::vector<std::shared_ptr<CKodiNode>> m_pNodes;
+	std::vector<std::shared_ptr<CKodiNode>> m_pNodes;
 	int m_iPollInterval;
 	int m_iPingTimeoutms;
 	std::shared_ptr<std::thread> m_thread;

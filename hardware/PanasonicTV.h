@@ -32,7 +32,7 @@ class CPanasonic : public CDomoticzHardwareBase
 	void UnloadNodes();
 
       private:
-	static std::vector<std::shared_ptr<CPanasonicNode>> m_pNodes;
+	std::vector<std::shared_ptr<CPanasonicNode>> m_pNodes;
 	int m_iPollInterval;
 	int m_iPingTimeoutms;
 	bool m_bUnknownCommandAllowed;

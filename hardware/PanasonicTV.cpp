@@ -835,8 +835,6 @@ void CPanasonicNode::SetExecuteCommand(const std::string& command)
 	_log.Log(LOG_ERROR, "Panasonic Plugin: (%s) SetExecuteCommand called with: '%s.", m_Name.c_str(), command.c_str());
 }
 
-std::vector<std::shared_ptr<CPanasonicNode> > CPanasonic::m_pNodes;
-
 CPanasonic::CPanasonic(const int ID, const int PollIntervalsec, const int PingTimeoutms, const int mode3)
 {
 	m_HwdID = ID;

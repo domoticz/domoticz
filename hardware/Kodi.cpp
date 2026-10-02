@@ -897,8 +897,6 @@ void CKodiNode::SetExecuteCommand(const std::string& command)
 	m_ExecuteCommand = command;
 }
 
-std::vector<std::shared_ptr<CKodiNode> > CKodi::m_pNodes;
-
 CKodi::CKodi(const int ID, const int PollIntervalsec, const int PingTimeoutms)
 {
 	m_HwdID = ID;
