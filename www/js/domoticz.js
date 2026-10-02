@@ -1372,6 +1372,19 @@ function reload_cam_image() {
 	$('#dialog-camera-live #camfeed').attr("src", xx.src);
 }
 
+function retry_cam_image() {
+	if ((typeof $.camfeed == 'undefined') || ($.camfeed == ""))
+		return;
+	if (typeof $.myglobals.refreshTimer != 'undefined') {
+		clearTimeout($.myglobals.refreshTimer)
+	}
+	// The cached snapshot endpoint can return an empty response while its first
+	// background fetch is still running. An image error has no onload callback to
+	// restart polling, so retry after a short delay instead of leaving the dialog
+	// permanently blank.
+	$.myglobals.refreshTimer = setTimeout(reload_cam_image, 1000);
+}
+
 function ShowCameraLiveStream(Name, camIdx, AspectRatio) {
 	$.count = 0;
 	$.camfeed = "camsnapshot.jpg?idx=" + camIdx;

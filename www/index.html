@@ -609,7 +609,7 @@ $(document).ready(function() {
 		</table>
 	</div>
 	<div id="dialog-camera-live" style="display:none;">
-		<img id="camfeed" name="camfeed" onload="load_cam_video()" src="images/camera_default.png" width="600" height="337" style="border: 1px solid #1E2832;">
+		<img id="camfeed" name="camfeed" onload="load_cam_video()" onerror="retry_cam_image()" src="images/camera_default.png" width="600" height="337" style="border: 1px solid #1E2832;">
 	</div>
 	<div id="dialog-media-remote" style="display:none;">
 		<svg id="MediaRemote" class="MediaRemote" viewBox="50 -150 900 1875" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1">
