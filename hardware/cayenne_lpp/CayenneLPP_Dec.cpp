@@ -86,7 +86,8 @@ bool CayenneLPPDec::ParseLPP(const uint8_t *pBuffer, size_t Len, Json::Value &ro
 			root[iIndex]["channel"] = channel;
 			root[iIndex]["type"] = "analog_input";
 
-			float value = float((pBuffer[2] << 8) | pBuffer[3]) / 100.0F;
+			const int16_t rawValue = static_cast<int16_t>((pBuffer[2] << 8) | pBuffer[3]);
+			float value = float(rawValue) / 100.0F;
 			root[iIndex++]["value"] = value;
 
 			pBuffer += LPP_ANALOG_INPUT_SIZE;
@@ -99,7 +100,8 @@ bool CayenneLPPDec::ParseLPP(const uint8_t *pBuffer, size_t Len, Json::Value &ro
 			root[iIndex]["channel"] = channel;
 			root[iIndex]["type"] = "analog_output";
 
-			float value = float((pBuffer[2] << 8) | pBuffer[3]) / 100.0F;
+			const int16_t rawValue = static_cast<int16_t>((pBuffer[2] << 8) | pBuffer[3]);
+			float value = float(rawValue) / 100.0F;
 			root[iIndex++]["value"] = value;
 
 			pBuffer += LPP_ANALOG_OUTPUT_SIZE;
