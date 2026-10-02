@@ -30,7 +30,7 @@ namespace Plugins {
 		{ "ID", T_INT, offsetof(CImage, ImageID), READONLY, "Domoticz internal Custom Image Number" },
 		{ "Name", T_OBJECT, offsetof(CImage, Name), READONLY, "Name" },
 		{ "Base", T_OBJECT, offsetof(CImage, Base), READONLY, "Base name, must start with plugin Key" },
-		{ "Description", T_INT, offsetof(CImage, Description), READONLY, "Description" },
+		{ "Description", T_OBJECT, offsetof(CImage, Description), READONLY, "Description" },
 		{ nullptr } /* Sentinel */
 	};
 
