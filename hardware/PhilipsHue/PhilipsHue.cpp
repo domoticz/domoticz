@@ -2460,6 +2460,8 @@ void CPhilipsHue::HandleSSEButton(const Json::Value& r)
 
 	if (button_count == 0)
 		button_count = 1;
+	if (control_id <= 0 && button_count > 1)
+		return; // Do not misreport an event with missing metadata as a button 1 press.
 
 	int v1Num = ParseV1NumericId(base_id_v1);
 	int nodeID = (v1Num >= 0) ? (v1Num + 3000) : (NodeIDFromRid(ownerRid) + 8000);
