@@ -110,6 +110,7 @@ void CTE923::GetSensorDetails()
 	FILE *fIn = fopen("weatherdata.bin", "rb+");
 	fread(&data, 1, sizeof(Te923DataSet_t), fIn);
 	fclose(fIn);
+	dev.batteryWind = true; // Debug sample files do not contain device battery status.
 #endif
 
 	if (data._press != 0)
