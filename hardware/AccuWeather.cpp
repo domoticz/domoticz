@@ -233,17 +233,19 @@ void CAccuWeather::GetMeterDetails()
 		int humidity = 0;
 		int barometric = 0;
 		int barometric_forcast = baroForecastNoInfo;
+		bool hasTemp = false;
 
-		if (!root["Temperature"].empty())
+		if (!root["Temperature"]["Metric"]["Value"].empty())
 		{
 			temp = root["Temperature"]["Metric"]["Value"].asFloat();
+			hasTemp = true;
 		}
 
 		if (!root["RelativeHumidity"].empty())
 		{
 			humidity = root["RelativeHumidity"].asInt();
 		}
-		if (!root["Pressure"].empty())
+		if (!root["Pressure"]["Metric"]["Value"].empty())
 		{
 			barometric = atoi(root["Pressure"]["Metric"]["Value"].asString().c_str());
 			if (barometric < 1000)
@@ -307,20 +309,23 @@ void CAccuWeather::GetMeterDetails()
 			}
 		}
 
-		if (barometric != 0)
+		if (hasTemp)
 		{
-			//Add temp+hum+baro device
-			SendTempHumBaroSensor(1, 255, temp, humidity, static_cast<float>(barometric), barometric_forcast, "THB");
-		}
-		else if (humidity != 0)
-		{
-			//add temp+hum device
-			SendTempHumSensor(1, 255, temp, humidity, "TempHum");
-		}
-		else
-		{
-			//add temp device
-			SendTempSensor(1, 255, temp, "Temperature");
+			if (barometric != 0)
+			{
+				//Add temp+hum+baro device
+				SendTempHumBaroSensor(1, 255, temp, humidity, static_cast<float>(barometric), barometric_forcast, "THB");
+			}
+			else if (humidity != 0)
+			{
+				//add temp+hum device
+				SendTempHumSensor(1, 255, temp, humidity, "TempHum");
+			}
+			else
+			{
+				//add temp device
+				SendTempSensor(1, 255, temp, "Temperature");
+			}
 		}
 
 		//Wind
@@ -336,22 +341,22 @@ void CAccuWeather::GetMeterDetails()
 			{
 				wind_degrees = root["Wind"]["Direction"]["Degrees"].asInt();
 			}
-			if (!root["Wind"]["Speed"].empty())
+			if (!root["Wind"]["Speed"]["Metric"]["Value"].empty())
 			{
 				windspeed_ms = root["Wind"]["Speed"]["Metric"]["Value"].asFloat() / 3.6F; // km/h to m/s
 			}
 			if (!root["WindGust"].empty())
 			{
-				if (!root["WindGust"]["Speed"].empty())
+				if (!root["WindGust"]["Speed"]["Metric"]["Value"].empty())
 				{
 					windgust_ms = root["WindGust"]["Speed"]["Metric"]["Value"].asFloat() / 3.6F; // km/h to m/s
 				}
 			}
-			if (!root["RealFeelTemperature"].empty())
+			if (!root["RealFeelTemperature"]["Metric"]["Value"].empty())
 			{
 				wind_chill = root["RealFeelTemperature"]["Metric"]["Value"].asFloat();
 			}
-			if (wind_degrees != -1)
+			if ((wind_degrees != -1) && hasTemp)
 			{
 				SendWind(1, 255, wind_degrees, windspeed_ms, windgust_ms, temp, wind_chill, true, true, "Wind");
 			}
@@ -370,7 +375,7 @@ void CAccuWeather::GetMeterDetails()
 		//Rain
 		if (!root["PrecipitationSummary"].empty())
 		{
-			if (!root["PrecipitationSummary"]["Precipitation"].empty())
+			if (!root["PrecipitationSummary"]["Precipitation"]["Metric"]["Value"].empty())
 			{
 				float RainCount = static_cast<float>(atof(root["PrecipitationSummary"]["Precipitation"]["Metric"]["Value"].asString().c_str()));
 				if ((RainCount != -9999.00F) && (RainCount >= 0.00F))
@@ -388,7 +393,7 @@ void CAccuWeather::GetMeterDetails()
 					tsen.RAIN.rainrateh = 0;
 					tsen.RAIN.rainratel = 0;
 
-					if (!root["PrecipitationSummary"]["PastHour"].empty())
+					if (!root["PrecipitationSummary"]["PastHour"]["Metric"]["Value"].empty())
 					{
 						float rainrateph = static_cast<float>(atof(root["PrecipitationSummary"]["PastHour"]["Metric"]["Value"].asString().c_str()));
 						if (rainrateph != -9999.00F)
@@ -414,7 +419,7 @@ void CAccuWeather::GetMeterDetails()
 		//Visibility
 		if (!root["Visibility"].empty())
 		{
-			if (!root["Visibility"]["Metric"].empty())
+			if (!root["Visibility"]["Metric"]["Value"].empty())
 			{
 				float visibility = root["Visibility"]["Metric"]["Value"].asFloat();
 				if (visibility >= 0)
