@@ -274,31 +274,40 @@ void CVisualCrossing::GetMeterDetails()
 
 	//UV
 	float UV = 0;
+	bool hasUV = false;
 	if (root["currentConditions"]["uvindex"].empty() == false)
 	{
 		if ((root["currentConditions"]["uvindex"] != "N/A") && (root["currentConditions"]["uvindex"] != "--"))
 		{
 			UV = root["currentConditions"]["uvindex"].asFloat();
+			hasUV = true;
 		}
 	}
-	if ((UV < 16) && (UV >= 0))
+	if (hasUV && (UV < 16) && (UV >= 0))
 	{
 		SendUVSensor(0, 1, 255, UV, "UV Index");
 	}
 
 	//Rain
 	float rainrateph = 0.0F;
+	bool hasRainRate = false;
 	if (root["currentConditions"]["precip"].empty() == false)
 	{
-		float precip = root["currentConditions"]["precip"].asFloat();
-		rainrateph += precip;
+		if ((root["currentConditions"]["precip"] != "N/A") && (root["currentConditions"]["precip"] != "--"))
+		{
+			rainrateph += root["currentConditions"]["precip"].asFloat();
+			hasRainRate = true;
+		}
 	}
 	if (root["currentConditions"]["snow"].empty() == false)
 	{
-		float snow = root["currentConditions"]["snow"].asFloat();
-		rainrateph += snow;
+		if ((root["currentConditions"]["snow"] != "N/A") && (root["currentConditions"]["snow"] != "--"))
+		{
+			rainrateph += root["currentConditions"]["snow"].asFloat();
+			hasRainRate = true;
+		}
 	}
-	if (rainrateph >= 0.0F) {
+	if (hasRainRate && (rainrateph >= 0.0F)) {
 		SendRainRateSensor(1, 255, rainrateph, "Rain");
 	}
 
@@ -319,28 +328,32 @@ void CVisualCrossing::GetMeterDetails()
 	}
 	//Solar Radiation
 	float radiation = 0;
+	bool hasRadiation = false;
 	if (root["currentConditions"]["solarradiation"].empty() == false)
 	{
 		if ((root["currentConditions"]["solarradiation"] != "N/A") && (root["currentConditions"]["solarradiation"] != "--"))
 		{
 			radiation = root["currentConditions"]["solarradiation"].asFloat();
+			hasRadiation = true;
 		}
 	}
-	if (radiation >= 0.0F)
+	if (hasRadiation && (radiation >= 0.0F))
 	{
 		SendCustomSensor(2, 0, 255, radiation, "Solar radiation Sensor", "W/m2"); //Device id 2, because of switching from DarkSky results in using the Ozon sensor
 	}
 
 	//Cloud Cover
 	float cloudcover = 0;
+	bool hasCloudCover = false;
 	if (root["currentConditions"]["cloudcover"].empty() == false)
 	{
 		if ((root["currentConditions"]["cloudcover"] != "N/A") && (root["currentConditions"]["cloudcover"] != "--"))
 		{
 			cloudcover = root["currentConditions"]["cloudcover"].asFloat();
+			hasCloudCover = true;
 		}
 	}
-	if (cloudcover >= 0.0F)
+	if (hasCloudCover && (cloudcover >= 0.0F))
 	{
 		SendPercentageSensor(1, 0, 255, cloudcover, "Cloud Cover");
 	}
