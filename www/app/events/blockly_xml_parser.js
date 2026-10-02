@@ -151,8 +151,8 @@ define(function () {
             }
             else if (variableType == 'math_single') {
                 var op = _fld('OP'), num = _val('NUM');
-                var singleMap = { ROOT: 'math.sqrt', ABS: 'math.abs', NEG: '-', LN: 'math.log', LOG10: 'math.log10', EXP: 'math.exp', POWTEN: null };
-                if (op == 'POWTEN') return '(' + num + ')^10';
+                var singleMap = { ROOT: 'math.sqrt', ABS: 'math.abs', NEG: '-', LN: 'math.log', LOG10: 'math.log10', EXP: 'math.exp' };
+                if (op == 'POWTEN' || op == 'POW10') return '(' + num + ')^10'; // v13 renamed POWTEN -> POW10
                 if (singleMap[op]) return singleMap[op] + '(' + num + ')';
                 return num;
             }
