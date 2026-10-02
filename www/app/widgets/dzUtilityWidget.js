@@ -275,7 +275,7 @@ define(['app', 'widgets/dzBar', 'icons/dzIconPicker', 'icons/dzDeviceIcon'], fun
                     var scopeId = prefix + String(parseInt(device.idx, 10) || 0);
                     var html = sanitizeHTML(data, scopeId);
                     if (keepTextLinesBesideIcon) {
-                        html = '<div style="overflow:hidden">' + html + '</div>';
+                        html = '<div style="overflow:auto">' + html + '</div>';
                     }
                     return $sce.trustAsHtml('<div id="' + scopeId + '">' + html + '</div>');
                 }
