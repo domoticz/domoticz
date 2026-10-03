@@ -396,18 +396,17 @@ void CEnOceanESP2::Do_Work()
 				OpenSerialDevice();
 			}
 		}
-		if (!m_sendqueue.empty())
+		std::string sBytes;
 		{
 			std::lock_guard<std::mutex> l(m_sendMutex);
-
-			auto itt = m_sendqueue.begin();
-			if (itt != m_sendqueue.end())
+			if (!m_sendqueue.empty())
 			{
-				std::string sBytes = *itt;
-				write(sBytes.c_str(), sBytes.size());
-				m_sendqueue.erase(itt);
+				sBytes = m_sendqueue.front();
+				m_sendqueue.erase(m_sendqueue.begin());
 			}
 		}
+		if (!sBytes.empty())
+			write(sBytes.c_str(), sBytes.size());
 	}
 	terminate();
 
