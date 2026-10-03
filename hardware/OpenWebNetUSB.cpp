@@ -262,11 +262,12 @@ bool COpenWebNetUSB::FindDevice(int deviceID, int deviceUnit, int subType, int* 
 
 bool COpenWebNetUSB::writeRead(const char* command, unsigned int commandSize, bool silent)
 {
-	std::lock_guard<std::mutex> l(readQueueMutex);
-
-	m_readBufferSize = 0;
-	memset(m_readBuffer, 0, OPENWEBNET_SERIAL_BUFFER_SIZE);
-	m_bHaveReceived = false;
+	{
+		std::lock_guard<std::mutex> l(readQueueMutex);
+		m_readBufferSize = 0;
+		memset(m_readBuffer, 0, OPENWEBNET_SERIAL_BUFFER_SIZE);
+		m_bHaveReceived = false;
+	}
 
 	if (!isOpen()) {
 		if (!silent) {
@@ -275,7 +276,12 @@ bool COpenWebNetUSB::writeRead(const char* command, unsigned int commandSize, bo
 		return false;
 	}
 	AsyncSerial::write(command, commandSize);
-	while (!m_bHaveReceived) {
+	while (true) {
+		{
+			std::lock_guard<std::mutex> l(readQueueMutex);
+			if (m_bHaveReceived)
+				break;
+		}
 		sleep_milliseconds(SLEEP_READ_TIME);
 	}
 
