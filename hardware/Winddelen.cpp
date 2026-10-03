@@ -178,11 +178,8 @@ void CWinddelen::GetMeterDetails()
 
 		if (m_winddelen_per_mill.find(m_usMillID) == m_winddelen_per_mill.end())
 		{
-			if (root["kwh"].empty())
-			{
-				Log(LOG_ERROR, "unknown location!");
-				return;
-			}
+			Log(LOG_ERROR, "unknown location!");
+			return;
 		}
 
 		double powerAbsTot = root["powerAbsTot"].asDouble();
