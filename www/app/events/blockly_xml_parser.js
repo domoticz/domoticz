@@ -125,9 +125,9 @@ define(function () {
             function _val(vname) { var v = $(_b).children('value[name=\'' + vname + '\']')[0]; return v ? resolveValue(v, $(v).children('block:first').attr('type')) : ''; }
             function _fld(fname) { var f = $(_b).children('field[name=\'' + fname + '\']')[0]; return f ? $(f).text() : ''; }
             // reverse a Lua array (returns a new array)
-            function _rev(a) { return '((function(t) local r={} for i=#t,1,-1 do r[#r+1]=t[i] end return r end)' + '(' + a + '));' }
-            function _median(a) { return '((function(t) local s={} for i=1,#t do s[i]=t[i] end table.sort(s) local n=#s if n==0 then return 0 end if n%2==1 then return s[(n+1)/2] end return (s[n/2]+s[n/2+1])/2 end)' + '(' + a + '));' }
-            function _stddev(a) { return '((function(t) local n=#t if n==0 then return 0 end local s=0 for i=1,n do s=s+t[i] end local m=s/n local q=0 for i=1,n do q=q+(t[i]-m)^2 end return math.sqrt(q/n) end)' + '(' + a + '));' }
+            function _rev(a) { return '(function(t) local r={} for i=#t,1,-1 do r[#r+1]=t[i] end return r end)' + '(' + a + ')' }
+            function _median(a) { return '(function(t) local s={} for i=1,#t do s[i]=t[i] end table.sort(s) local n=#s if n==0 then return 0 end if n%2==1 then return s[(n+1)/2] end return (s[n/2]+s[n/2+1])/2 end)' + '(' + a + ')' }
+            function _stddev(a) { return '(function(t) local n=#t if n==0 then return 0 end local s=0 for i=1,n do s=s+t[i] end local m=s/n local q=0 for i=1,n do q=q+(t[i]-m)^2 end return math.sqrt(q/n) end)' + '(' + a + ')' }
 
             if (variableType == 'logic_boolean') {
                 var bv = _fld('BOOL');
@@ -145,9 +145,9 @@ define(function () {
             }
             else if (variableType == 'math_round') {
                 var op = _fld('OP'), num = _val('NUM');
-                if (op == 'ROUNDUP')   return '((function(n) return math.floor(n + 0.5) end)' + '(' + num + '));'
-                if (op == 'ROUNDDOWN') return '((function(n) return math.floor(n - 0.5) end)' + '(' + num + '));'
-                return '((function(n) return math.floor(n + 0.5) end)' + '(' + num + '));' // ROUND
+                if (op == 'ROUNDUP')   return '(function(n) return math.floor(n + 0.5) end)' + '(' + num + ')'
+                if (op == 'ROUNDDOWN') return '(function(n) return math.floor(n - 0.5) end)' + '(' + num + ')'
+                return '(function(n) return math.floor(n + 0.5) end)' + '(' + num + ')' // ROUND
             }
             else if (variableType == 'math_single') {
                 var op = _fld('OP'), num = _val('NUM');
@@ -171,10 +171,10 @@ define(function () {
                 return 'math.atan(' + _val('Y') + ',' + _val('X') + ')'; // Lua 5.4: atan(y,x)
             }
             else if (variableType == 'math_modulo') {
-                return '((function(a,b) return a - math.floor(a/b)*b end)' + '(' + _val('DIVIDEND') + ',' + _val('DIVISOR') + '));'
+                return '(function(a,b) return a - math.floor(a/b)*b end)' + '(' + _val('DIVIDEND') + ',' + _val('DIVISOR') + ')'
             }
             else if (variableType == 'math_constrain') {
-                return '((function(v,lo,hi) return math.min(math.max(v,lo),hi) end)' + '(' + _val('VALUE') + ',' + _val('LOW') + ',' + _val('HIGH') + '));'
+                return '(function(v,lo,hi) return math.min(math.max(v,lo),hi) end)' + '(' + _val('VALUE') + ',' + _val('LOW') + ',' + _val('HIGH') + ')'
             }
             else if (variableType == 'math_random_float') {
                 return 'math.random()';
@@ -185,11 +185,11 @@ define(function () {
             }
             else if (variableType == 'math_on_list') {
                 var op = _fld('OP'), list = _val('LIST');
-                if (op == 'SUM')     return '((function(t) local s=0 for i=1,#t do s=s+t[i] end return s end)' + '(' + list + '));'
-                if (op == 'AVERAGE') return '((function(t) if #t==0 then return 0 end local s=0 for i=1,#t do s=s+t[i] end return s/#t end)' + '(' + list + '));'
+                if (op == 'SUM')     return '(function(t) local s=0 for i=1,#t do s=s+t[i] end return s end)' + '(' + list + ')'
+                if (op == 'AVERAGE') return '(function(t) if #t==0 then return 0 end local s=0 for i=1,#t do s=s+t[i] end return s/#t end)' + '(' + list + ')'
                 if (op == 'MEDIAN')  return _median(list);
                 if (op == 'STD_DEV') return _stddev(list);
-                if (op == 'RANDOM')  return '((function(t) if #t==0 then return nil end return t[math.random(1,#t)] end)' + '(' + list + '));'
+                if (op == 'RANDOM')  return '(function(t) if #t==0 then return nil end return t[math.random(1,#t)] end)' + '(' + list + ')'
                 return list;
             }
             else if (variableType == 'lists_create_with') {
@@ -199,7 +199,7 @@ define(function () {
             }
             else if (variableType == 'lists_repeat') {
                 var item = _val('ITEM'), n = _val('NUM');
-                return '((function(it,n) local r={} for i=1,n do r[i]=it end return r end)' + '(' + item + ',' + n + '));'
+                return '(function(it,n) local r={} for i=1,n do r[i]=it end return r end)' + '(' + item + ',' + n + ')'
             }
             else if (variableType == 'lists_length') {
                 return '#' + _val('VALUE');
@@ -209,19 +209,19 @@ define(function () {
             }
             else if (variableType == 'lists_indexOf') {
                 var list = _val('VALUE'), find = _val('FIND'), end_ = _fld('END');
-                if (end_ == 'LAST') return '((function(t,x) for i=#t,1,-1 do if t[i]==x then return i end end return 0 end)' + '(' + list + ',' + find + '));'
-                return '((function(t,x) for i=1,#t do if t[i]==x then return i end end return 0 end)' + '(' + list + ',' + find + '));' // FIRST
+                if (end_ == 'LAST') return '(function(t,x) for i=#t,1,-1 do if t[i]==x then return i end end return 0 end)' + '(' + list + ',' + find + ')'
+                return '(function(t,x) for i=1,#t do if t[i]==x then return i end end return 0 end)' + '(' + list + ',' + find + ')' // FIRST
             }
             else if (variableType == 'lists_getIndex') {
                 var list = _val('VALUE'), mode = _fld('MODE'), where = _fld('WHERE');
                 var atEl = $(_b).children('value[name=\'AT\']')[0];
                 var at = atEl ? resolveValue(atEl, $(atEl).children('block:first').attr('type')) : '1';
-                if (where == 'FIRST') return '((function(t) if #t==0 then return nil end return t[1] end)' + '(' + list + '));'
-                if (where == 'LAST')  return '((function(t) if #t==0 then return nil end return t[#t] end)' + '(' + list + '));'
-                if (where == 'RANDOM')return '((function(t) if #t==0 then return nil end return t[math.random(1,#t)] end)' + '(' + list + '));'
+                if (where == 'FIRST') return '(function(t) if #t==0 then return nil end return t[1] end)' + '(' + list + ')'
+                if (where == 'LAST')  return '(function(t) if #t==0 then return nil end return t[#t] end)' + '(' + list + ')'
+                if (where == 'RANDOM')return '(function(t) if #t==0 then return nil end return t[math.random(1,#t)] end)' + '(' + list + ')'
                 // FROM_START / FROM_END with AT number (1-based in Blockly)
                 var idx = where == 'FROM_END' ? '(' + at + ' - #' + list + ')' : at;
-                return '((function(t,i) if i<1 or i>#t then return nil end return t[i] end)' + '(' + list + ',' + idx + '));'
+                return '(function(t,i) if i<1 or i>#t then return nil end return t[i] end)' + '(' + list + ',' + idx + ')'
             }
             else if (variableType == 'lists_setIndex') {
                 var list = _val('LIST'), mode = _fld('MODE'), where = _fld('WHERE');
@@ -229,18 +229,18 @@ define(function () {
                 var at = atEl ? resolveValue(atEl, $(atEl).children('block:first').attr('type')) : '1';
                 var toEl = $(_b).children('value[name=\'TO\']')[0];
                 var to = toEl ? resolveValue(toEl, $(toEl).children('block:first').attr('type')) : 'nil';
-                if (where == 'FIRST') return '((function(t,x) local r={} for i=1,#t do r[i]=t[i] end r[1]=x return r end)' + '(' + list + ',' + to + '));'
-                if (where == 'LAST')  return '((function(t,x) local r={} for i=1,#t do r[i]=t[i] end r[#r+1]=x return r end)' + '(' + list + ',' + to + '));'
+                if (where == 'FIRST') return '(function(t,x) local r={} for i=1,#t do r[i]=t[i] end r[1]=x return r end)' + '(' + list + ',' + to + ')'
+                if (where == 'LAST')  return '(function(t,x) local r={} for i=1,#t do r[i]=t[i] end r[#r+1]=x return r end)' + '(' + list + ',' + to + ')'
                 var idx = where == 'FROM_END' ? '(' + at + ' - #' + list + ')' : at;
-                if (mode == 'INSERT') return '((function(t,i,x) local r={} for j=1,#t do if j==i then r[#r+1]=x end r[#r+1]=t[j] end return r end)' + '(' + list + ',' + idx + ',' + to + '));'
-                return '((function(t,i,x) local r={} for j=1,#t do r[j]=(j==i and x or t[j]) end return r end)' + '(' + list + ',' + idx + ',' + to + '));' // SET
+                if (mode == 'INSERT') return '(function(t,i,x) local r={} for j=1,#t do if j==i then r[#r+1]=x end r[#r+1]=t[j] end return r end)' + '(' + list + ',' + idx + ',' + to + ')'
+                return '(function(t,i,x) local r={} for j=1,#t do r[j]=(j==i and x or t[j]) end return r end)' + '(' + list + ',' + idx + ',' + to + ')' // SET
             }
             else if (variableType == 'lists_sort') {
                 var list = _val('LIST'), type = _fld('TYPE'), dir = _fld('DIRECTION');
                 // table.sort needs a strict "a comes before b" comparator
                 var less = type == 'NUMERIC' ? 'a<b' : 'a<tostring(b)';
                 var order = dir == '-1' ? 'function(a,b) return a>b end' : 'function(a,b) return ' + less + ' end';
-                return '((function(t) local s={} for i=1,#t do s[i]=t[i] end table.sort(s,' + order + ') return s end)' + '(' + list + '));'
+                return '(function(t) local s={} for i=1,#t do s[i]=t[i] end table.sort(s,' + order + ') return s end)' + '(' + list + ')'
             }
             else if (variableType == 'lists_getSublist') {
                 var list = _val('LIST');
@@ -257,7 +257,7 @@ define(function () {
                 if (we == 'LAST') endIdx = '#' + list;
                 else if (we == 'FROM_END') endIdx = '(' + to + ' - #' + list + ')';
                 else endIdx = to; // FROM_START
-                return '((function(t,a,b) local r={} for i=a,b do if t[i]~=nil then r[#r+1]=t[i] end end return r end)' + '(' + list + ',' + startIdx + ',' + endIdx + '));'
+                return '(function(t,a,b) local r={} for i=a,b do if t[i]~=nil then r[#r+1]=t[i] end end return r end)' + '(' + list + ',' + startIdx + ',' + endIdx + ')'
             }
             else if (variableType == 'lists_reverse') {
                 return _rev(_val('LIST'));
@@ -266,11 +266,11 @@ define(function () {
                 var mode = _fld('MODE');
                 if (mode == 'JOIN') {
                     var list = _val('INPUT'), delim = _val('DELIM');
-                    return '((function(t,d) local r="" for i=1,#t do r=r..(i>1 and d or "")..tostring(t[i]) end return r end)' + '(' + list + ',' + delim + '));'
+                    return '(function(t,d) local r="" for i=1,#t do r=r..(i>1 and d or "")..tostring(t[i]) end return r end)' + '(' + list + ',' + delim + ')'
                 }
                 // SPLIT: split string by delimiter -> array (Lua 5.4 has no table.split; emulate)
                 var str = _val('INPUT'), delim = _val('DELIM');
-                return '((function(s,d) local r={} local i=1 while true do local p=s:find(d,i,true) if not p then r[#r+1]=s:sub(i) break end r[#r+1]=s:sub(i,p-1) i=p+#d end return r end)' + '(' + str + ',' + delim + '));'
+                return '(function(s,d) local r={} local i=1 while true do local p=s:find(d,i,true) if not p then r[#r+1]=s:sub(i) break end r[#r+1]=s:sub(i,p-1) i=p+#d end return r end)' + '(' + str + ',' + delim + ')'
             }
             else if (variableType == 'text_join') {
                 var parts = [];
@@ -294,18 +294,18 @@ define(function () {
             }
             else if (variableType == 'text_charAt') {
                 var val = _val('VALUE'), where = _fld('WHERE');
-                if (where == 'FIRST')  return '((function(s) return s:sub(1,1) end)' + '(' + val + '));'
-                if (where == 'LAST')   return '((function(s) return s:sub(-1,-1) end)' + '(' + val + '));'
-                return '((function(s) local i=math.random(1,#s) return s:sub(i,i) end)' + '(' + val + '));' // RANDOM
+                if (where == 'FIRST')  return '(function(s) return s:sub(1,1) end)' + '(' + val + ')'
+                if (where == 'LAST')   return '(function(s) return s:sub(-1,-1) end)' + '(' + val + ')'
+                return '(function(s) local i=math.random(1,#s) return s:sub(i,i) end)' + '(' + val + ')' // RANDOM
             }
             else if (variableType == 'text_count') {
                 var sub = _val('SUB'), txt = _val('TEXT');
-                return '((function(s,x) local c=0 local i=1 while true do local p=s:find(x,i,true) if not p then break end c=c+1 i=p+#x end return c end)' + '(' + txt + ',' + sub + '));'
+                return '(function(s,x) local c=0 local i=1 while true do local p=s:find(x,i,true) if not p then break end c=c+1 i=p+#x end return c end)' + '(' + txt + ',' + sub + ')'
             }
             else if (variableType == 'text_indexOf') {
                 var val = _val('VALUE'), find = _val('FIND'), end_ = _fld('END');
-                if (end_ == 'LAST') return '((function(s,x) local r=0 for i=#s,1,-1 do if s:sub(i,i)==x then r=i break end end return r end)' + '(' + val + ',' + find + '));'
-                return '((function(s,x) local p=s:find(x,1,true) return p or 0 end)' + '(' + val + ',' + find + '));' // FIRST
+                if (end_ == 'LAST') return '(function(s,x) local r=0 for i=#s,1,-1 do if s:sub(i,i)==x then r=i break end end return r end)' + '(' + val + ',' + find + ')'
+                return '(function(s,x) local p=s:find(x,1,true) return p or 0 end)' + '(' + val + ',' + find + ')' // FIRST
             }
             else if (variableType == 'text_getSubstring') {
                 var val = _val('VALUE');
@@ -321,28 +321,28 @@ define(function () {
                 if (we == 'LAST') endIdx = '#' + val;
                 else if (we == 'FROM_END') endIdx = '(' + to + ' - #' + val + ')';
                 else endIdx = to; // FROM_START
-                return '((function(s,a,b) if a<1 then a=1 end if b>#s then b=#s end if a>b then return "" end return s:sub(a,b) end)' + '(' + val + ',' + startIdx + ',' + endIdx + '));'
+                return '(function(s,a,b) if a<1 then a=1 end if b>#s then b=#s end if a>b then return "" end return s:sub(a,b) end)' + '(' + val + ',' + startIdx + ',' + endIdx + ')'
             }
             else if (variableType == 'text_changeCase') {
                 var op = _fld('CASE'), txt = _val('TEXT');
                 if (op == 'UPPERCASE') return 'string.upper(' + txt + ')';
                 if (op == 'LOWERCASE') return 'string.lower(' + txt + ')';
                 // TITLECASE: capitalize first letter of each word
-                return '((function(s) local r="" for i=1,#s do local c=s:sub(i,i) if i==1 or s:sub(i-1,i-1)==" " then r=r..string.upper(c) else r=r..c end end return r end)' + '(' + txt + '));'
+                return '(function(s) local r="" for i=1,#s do local c=s:sub(i,i) if i==1 or s:sub(i-1,i-1)==" " then r=r..string.upper(c) else r=r..c end end return r end)' + '(' + txt + ')'
             }
             else if (variableType == 'text_replace') {
                 var from = _val('FROM'), to = _val('TO'), txt = _val('TEXT');
-                return '((function(s,a,b) local r="" local i=1 while true do local p=s:find(a,i,true) if not p then r=r..s:sub(i) break end r=r..s:sub(i,p-1)..b i=p+#a end return r end)' + '(' + txt + ',' + from + ',' + to + '));'
+                return '(function(s,a,b) local r="" local i=1 while true do local p=s:find(a,i,true) if not p then r=r..s:sub(i) break end r=r..s:sub(i,p-1)..b i=p+#a end return r end)' + '(' + txt + ',' + from + ',' + to + ')'
             }
             else if (variableType == 'text_reverse') {
                 var txt = _val('TEXT');
-                return '((function(s) local r="" for i=#s,1,-1 do r=r..s:sub(i,i) end return r end)' + '(' + txt + '));'
+                return '(function(s) local r="" for i=#s,1,-1 do r=r..s:sub(i,i) end return r end)' + '(' + txt + ')'
             }
             else if (variableType == 'text_trim') {
                 var op = _fld('MODE'), txt = _val('TEXT');
-                if (op == 'LEFT')  return '((function(s) return s:match("^%s*(.-)$") end)' + '(' + txt + '));'
-                if (op == 'RIGHT') return '((function(s) return s:match("^(.-)%s*$") end)' + '(' + txt + '));'
-                return '((function(s) return s:match("^%s*(.-)%s*$") end)' + '(' + txt + '));' // BOTH
+                if (op == 'LEFT')  return '(function(s) return s:match("^%s*(.-)$") end)' + '(' + txt + ')'
+                if (op == 'RIGHT') return '(function(s) return s:match("^(.-)%s*$") end)' + '(' + txt + ')'
+                return '(function(s) return s:match("^%s*(.-)%s*$") end)' + '(' + txt + ')' // BOTH
             }
             else if (variableType == 'url_text') {
                 var f = $(_b).children('field[name=\'TEXT\']')[0];
