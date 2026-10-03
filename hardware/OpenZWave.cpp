@@ -1751,6 +1751,8 @@ void COpenZWave::AddValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 		}
 		else if (vType == OpenZWave::ValueID::ValueType_Byte)
 		{
+			if (m_pManager->GetValueAsByte(vID, &byteValue) == false)
+				return;
 			if (byteValue == 0)
 				_device.intvalue = 0;
 			else
