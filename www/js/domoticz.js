@@ -2784,27 +2784,34 @@ function WatchLiveSearch(){
 		if(_debug_livesearch)  console.log('LiveSearch: processing on keyup - "'+$(this).val()+'"');
 		var query	=$(this).val();
 		if(window.myglobals) window.myglobals.LastSearchFilter = query;
-		var div		=$('.divider');
 		var cont	=$('.devicesList');
+		var div		=cont.find('.divider');
 		var items	=$('.itemBlock');
 		var cl_shown	='liveSearchShown';
+		var cl_search	='devicesListSearchFiltered';
 		var filt_search		=$(this).closest('.jsTbFiltSearch');
 		var cl_withres	='tbFiltSearchWithResults';
 
 		if(query.length == 0){
 			filt_search.removeClass(cl_withres);
-			if(cont.hasClass('devicesListFiltered')){
-				cont.removeClass('devicesListFiltered');
+			if(cont.hasClass(cl_search)){
+				cont.removeClass(cl_search);
+				if(cont.hasClass('devicesListFiltered')){
+					cont.removeClass('devicesListFiltered');
+					div.addClass('row');
+				}
 				div.css('display','block');
-				div.addClass('row');
 				div.find('.clearfix').show(); /* only for Weather and Temperatures pages */
 				items.show().removeClass('liveSearchShown').trigger('dz:livesearch:show');
 			}
 		}
 		else{
 			filt_search.addClass(cl_withres);
-			if(! cont.hasClass('devicesListFiltered')){
-				cont.addClass('devicesListFiltered');
+			if(! cont.hasClass(cl_search)){
+				cont.addClass(cl_search);
+				if(div.hasClass('row')){
+					cont.addClass('devicesListFiltered');
+				}
 				div.css('display','inline');
 			}
 			div.removeClass('row');
