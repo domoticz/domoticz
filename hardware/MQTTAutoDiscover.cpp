@@ -88,6 +88,10 @@ MQTTAutoDiscover::MQTTAutoDiscover(const int ID, const std::string& Name, const 
 		{
 			m_TopicDiscoveryPrefix = strarray[3];
 		}
+		if (strarray.size() > 4)
+		{
+			m_bEnableNewDevicesByDefault = (strarray[4] != "0");
+		}
 	}
 	if (m_TopicDiscoveryPrefix.empty())
 	{
@@ -1075,6 +1079,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		}
 
 		_tMQTTASensor tmpSensor;
+		tmpSensor.bEnabled_by_default = m_bEnableNewDevicesByDefault;
 		m_discovered_sensors[sensor_unique_id] = tmpSensor;
 		_tMQTTASensor* pSensor = &m_discovered_sensors[sensor_unique_id];
 		pSensor->unique_id = sensor_unique_id;
