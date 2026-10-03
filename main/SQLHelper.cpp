@@ -5518,12 +5518,12 @@ uint64_t CSQLHelper::InsertDevice(const int HardwareID, const int OrgHardwareID,
 	}
 
 	safe_query(
-		"INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SwitchType, SignalLevel, BatteryLevel, nValue, sValue, Name) "
-		"VALUES (%d,%d,'%q',%d,%d,%d,%d,%d,%d,%d,'%q','%q')",
+		"INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SwitchType, SignalLevel, BatteryLevel, nValue, sValue, Name, Used) "
+		"VALUES (%d,%d,'%q',%d,%d,%d,%d,%d,%d,%d,'%q','%q',%d)",
 		HardwareID, OrgHardwareID, ID, unit,
 		devType, subType, switchType,
 		signallevel, batterylevel,
-		nValue, sValue, name.c_str());
+		nValue, sValue, name.c_str(), used);
 
 	//Get new ID
 	result = safe_query(
