@@ -31,6 +31,7 @@
 
 #include <string>
 #include <algorithm>
+#include <atomic>
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
@@ -57,7 +58,7 @@ public:
     boost::asio::io_context io; ///< Io service object
     boost::asio::serial_port port; ///< Serial port object
     boost::thread backgroundThread; ///< Thread that runs read/write operations
-    bool open{ false };		    ///< True if port open
+    std::atomic_bool open{ false }; ///< True if port open
     bool error{ false };	    ///< Error flag
     mutable std::mutex errorMutex; ///< Mutex for access to error
 
@@ -119,13 +120,14 @@ void AsyncSerial::open(const std::string& devname, unsigned int baud_rate,
 
 	pimpl->io.restart();
 
+	pimpl->open = true; // Port is open before the worker can run doRead.
+
 	// This gives some work to the io_context before it is started
 	boost::asio::post(pimpl->io, [this] { return doRead(); });
 
 	boost::thread t([p = &pimpl->io] { p->run(); });
 	pimpl->backgroundThread.swap(t);
 	setErrorStatus(false); // If we get here, no error
-	pimpl->open = true;    // Port is now open
 }
 
 void AsyncSerial::openOnlyBaud(const std::string& devname, unsigned int baud_rate,
@@ -151,13 +153,14 @@ void AsyncSerial::openOnlyBaud(const std::string& devname, unsigned int baud_rat
 
 	pimpl->io.restart();
 
+	pimpl->open = true; // Port is open before the worker can run doRead.
+
 	//This gives some work to the io_context before it is started
 	boost::asio::post(pimpl->io, [this] { return doRead(); });
 
 	boost::thread t([p = &pimpl->io] { p->run(); });
 	pimpl->backgroundThread.swap(t);
 	setErrorStatus(false);//If we get here, no error
-	pimpl->open=true; //Port is now open
 }
 
 bool AsyncSerial::isOpen() const
