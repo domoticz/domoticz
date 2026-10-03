@@ -120,8 +120,10 @@ bool MQTT::StartHardware()
 
 void MQTT::StopMQTT()
 {
+	// Only drops the broker connection. m_bIsStarted is left alone: this runs on every
+	// (re)connect from the worker thread, and clearing it there would make the hardware
+	// look stopped, so a scheduled MainWorker start would start it a second time.
 	disconnect();
-	m_bIsStarted = false;
 }
 
 bool MQTT::StopHardware()

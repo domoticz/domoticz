@@ -6869,9 +6869,20 @@ bool MQTTAutoDiscover::UpdateNumber(const std::string& idx, const std::string& s
 
 bool MQTTAutoDiscover::StartHardware()
 {
-	MQTT::StartHardware();
+	// Never overwrite a still-joinable worker thread, its destructor would call std::terminate().
+	// Stop it before MQTT::StartHardware() calls RequestStart(), mirroring StopHardware().
+	if (m_worker_thread)
+	{
+		RequestStop();
+		m_inc_msg_cv.notify_all();
+		m_worker_thread->join();
+		m_worker_thread.reset();
+	}
 
-	m_worker_thread = std::make_shared<std::thread>([this] { Do_Work(); });
+	if (!MQTT::StartHardware())
+		return false;
+
+	m_worker_thread =std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_worker_thread->native_handle());
 
 	return (m_worker_thread != nullptr);

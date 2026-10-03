@@ -166,8 +166,9 @@ bool CRFLinkMQTT::StartHardware()
 
 void CRFLinkMQTT::StopMQTT()
 {
+	// Called on every (re)connect while the worker thread keeps running,
+	// so m_bIsStarted must stay set (see MQTT::StopMQTT)
 	disconnect();
-	m_bIsStarted = false;
 	m_IsConnected = false;
 }
 
