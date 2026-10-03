@@ -101,7 +101,10 @@ StoppableTask::StoppableTask() : m_stopfd{INVALID_SOCKET, INVALID_SOCKET}
 
 			n = GetTempPathA(UNIX_PATH_MAX, a.unaddr.sun_path);
 			if (n == 0 || n >= UNIX_PATH_MAX)
+			{
+				closesocket(listener);
 				continue;
+			}
 
 			/* Use high-res timer ticks and PID for unique filename */
 			QueryPerformanceCounter(&ticks);
