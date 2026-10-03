@@ -99,8 +99,6 @@ bool CYouLess::WriteToHardware(const char *pdata, const unsigned char length)
 
 bool CYouLess::GetP1Details()
 {
-	m_bCheckP1 = false;
-
 	std::string sResult;
 	std::stringstream szURL;
 
@@ -120,9 +118,12 @@ bool CYouLess::GetP1Details()
 	{
 		return false;
 	}
-	if (root.empty())
-		return false;
 	root = root[0];
+	if (!root.isObject())
+	{
+		return false;
+	}
+	m_bCheckP1 = false;
 
 
 	if (!root["p1"].empty())
