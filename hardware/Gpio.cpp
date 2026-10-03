@@ -264,7 +264,7 @@ bool CGpio::StartHardware()
 	m_bIsStarted = true;
 	sOnConnected(this);
 	StartHeartbeatThread();
-	return (m_thread != nullptr);
+	return (m_thread_updatestartup != nullptr);
 }
 
 bool CGpio::StopHardware()
