@@ -356,7 +356,7 @@ unsigned int C1WireForWindows::GetNbChannels(const _t1WireDevice& device) const
 	}
 }
 
-unsigned long C1WireForWindows::GetCounter(const _t1WireDevice& device, int unit) const
+bool C1WireForWindows::GetCounter(const _t1WireDevice& device, int unit, unsigned long& counter) const
 {
 	Json::Value ansRoot;
 	try
@@ -365,10 +365,11 @@ unsigned long C1WireForWindows::GetCounter(const _t1WireDevice& device, int unit
 	}
 	catch (C1WireForWindowsReadException&)
 	{
-		return 0;
+		return false;
 	}
 
-	return ansRoot.get("Counter", 0).asUInt();
+	counter = ansRoot.get("Counter", 0).asUInt();
+	return true;
 }
 
 int C1WireForWindows::GetVoltage(const _t1WireDevice& device, int unit) const

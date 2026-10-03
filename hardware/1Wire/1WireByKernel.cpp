@@ -336,9 +336,10 @@ unsigned int C1WireByKernel::GetNbChannels(const _t1WireDevice& /*device*/) cons
 	return 0;// Device not supported in kernel mode (maybe later...), use OWFS solution.
 }
 
-unsigned long C1WireByKernel::GetCounter(const _t1WireDevice& /*device*/, int /*unit*/) const
+bool C1WireByKernel::GetCounter(const _t1WireDevice& /*device*/, int /*unit*/, unsigned long& counter) const
 {
-	return 0;// Device not supported in kernel mode (maybe later...), use OWFS solution.
+	counter = 0; // Device not supported in kernel mode (maybe later...), use OWFS solution.
+	return true;
 }
 
 int C1WireByKernel::GetVoltage(const _t1WireDevice& /*device*/, int /*unit*/) const

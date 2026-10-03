@@ -17,7 +17,7 @@ public:
    float GetPressure(const _t1WireDevice &device) const override;
    bool GetLightState(const _t1WireDevice &device, int unit) const override;
    unsigned int GetNbChannels(const _t1WireDevice &device) const override;
-   unsigned long GetCounter(const _t1WireDevice &device, int unit) const override;
+   bool GetCounter(const _t1WireDevice &device, int unit, unsigned long& counter) const override;
    int GetVoltage(const _t1WireDevice &device, int unit) const override;
    float GetIlluminance(const _t1WireDevice &device) const override;
    int GetWiper(const _t1WireDevice &device) const override;
