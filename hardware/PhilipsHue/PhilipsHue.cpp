@@ -376,7 +376,12 @@ bool CPhilipsHue::WriteToHardware(const char* pdata, const unsigned char /*lengt
 					//get the xy color
 					double x = 0;
 					double y = 0;
-					RgbToXY(m_lightModels[nodeID], pLed->color.r, pLed->color.g, pLed->color.b, x, y);
+					std::string model;
+					{
+						std::lock_guard<std::mutex> lock(m_mutex);
+						model = m_lightModels[nodeID];
+					}
+					RgbToXY(model, pLed->color.r, pLed->color.g, pLed->color.b, x, y);
 					LCmd = "Set XY";
 					svalue2 = ground(x * 1000);
 					svalue3 = ground(y * 1000);
