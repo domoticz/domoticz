@@ -10627,11 +10627,19 @@ bool CSQLHelper::RestoreDatabaseFromFile(const std::string& sourceFilePath)
 	sqlite3_stmt* statement = nullptr;
 	rc = sqlite3_prepare_v2(dbase_restore,
 		"SELECT sValue FROM Preferences WHERE (Key='DB_Version')", -1, &statement, nullptr);
-	// Always finalize the statement before closing to avoid resource leaks
+	bool validDomoticzDatabase = (rc == SQLITE_OK) && (sqlite3_step(statement) == SQLITE_ROW);
 	sqlite3_finalize(statement);
+	statement = nullptr;
+	if (validDomoticzDatabase)
+	{
+		rc = sqlite3_prepare_v2(dbase_restore,
+			"SELECT 1 FROM DeviceStatus LIMIT 0", -1, &statement, nullptr);
+		validDomoticzDatabase = (rc == SQLITE_OK);
+		sqlite3_finalize(statement);
+	}
 	sqlite3_close(dbase_restore);
 
-	if (rc != SQLITE_OK)
+	if (!validDomoticzDatabase)
 	{
 		_log.Log(LOG_ERROR, "Restore Database: Not a valid Domoticz database!");
 		return false;
