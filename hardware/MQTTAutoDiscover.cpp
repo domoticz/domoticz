@@ -5619,10 +5619,12 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	pSensor->nValue = nValue;
 	pSensor->sValue = sValue;
 
-	UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue, pSensor->sValue.c_str(),
-		szDeviceName);
+	// UpdateValueInt() fires the device event synchronously, and the event reads the color
+	// from the database, so store it first.
 	if (bHaveColorChange)
 		m_sql.UpdateDeviceValue("Color", color_new.toJSONString(), szIdx);
+	UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue, pSensor->sValue.c_str(),
+		szDeviceName);
 	if (bHaveLevelChange && !bDoNotUpdateLevel)
 		m_sql.UpdateDeviceValue("LastLevel", level, szIdx);
 }

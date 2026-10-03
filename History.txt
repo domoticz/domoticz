@@ -18,6 +18,7 @@ Version 2026.xxxx
 - Fixed: Limitless, the V6 generic disco mode command was sent with the mode of the previous numbered disco command
 - Fixed: Lua, the fourth path argument of applyJsonPath was ignored
 - Fixed: MQTT, org_hwid in the device info message repeated hwid instead of the original hardware id
+- Fixed: MQTT Auto Discovery, an event triggered by a color light report carried the color of the previous report, so dzVents getColor() was always one change behind; the color is now stored before the event fires (#7054)
 - Fixed: Nefit Easy, switching the hot water mode sent its second request to a malformed URL
 - Fixed: OpenWebNet USB, sending a command could deadlock because the receive lock was held while waiting for the reply
 - Fixed: OpenZWave, switches and sensors that report a Byte value are created with their actual state instead of Off
