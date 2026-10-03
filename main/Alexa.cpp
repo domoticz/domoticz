@@ -2103,7 +2103,7 @@ static void Alexa_HandleControl_ReportState(WebEmSession& session, const Json::V
 					if (!color_result.empty() && !color_result[0][0].empty())
 					{
 						Json::Value color_json;
-						if (!ParseJSon(color_result[0][0], color_json))
+						if (ParseJSon(color_result[0][0], color_json))
 						{
 							int r = color_json.get("r", 0).asInt();
 							int g = color_json.get("g", 0).asInt();
