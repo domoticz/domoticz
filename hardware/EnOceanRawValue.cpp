@@ -18,7 +18,7 @@ namespace enocean
 			int destByte = bitDest / 8;
 			int DestBit = 7 - bitDest % 8;
 			if (data[destByte] & (1 << DestBit))
-				value |= (1 << bitsrc);
+				value |= (uint32_t(1) << bitsrc);
 			bitDest--;
 		}
 		return value;
@@ -37,7 +37,7 @@ namespace enocean
 		{
 			int destByte = bitDest / 8;
 			int DestBit = 7 - bitDest % 8;
-			if (value & (1 << bitsrc))
+			if (value & (uint32_t(1) << bitsrc))
 				data[destByte] |= (1 << DestBit);
 			else
 				data[destByte] &= ~(1 << DestBit);
