@@ -1,3 +1,37 @@
+Version 2026.xxxx
+- Changed: InComfort, the Room-2 thermostat setpoint now has its own device; it shared a device ID with the central heating water temperature, so the two values overwrote each other. Existing installations get a new 'Room-2 Thermostat Setpoint' device (make sure 'Accept new Hardware Devices' is enabled, or allow it temporarily), the old device keeps showing the central heating water temperature
+- Fixed: 1-Wire, a DS2423 counter that could not be read is no longer reported as a huge counter value (#7064)
+- Fixed: Alexa, ReportState now includes the color of RGB dimmers; the check on the stored color was inverted
+- Fixed: Cameras, the live camera dialog keeps refreshing after a failed snapshot instead of staying blank (#7042)
+- Fixed: Cayenne LPP, analog input and output values are decoded as signed, negative values were shown as large positive ones
+- Fixed: Charts, the Compare view dropped every group above 20,000 kWh for normal counters and lost the trend of the following group (#7047)
+- Fixed: Current meters, a malformed stored value no longer aborts the short log update, the record is skipped and logged
+- Fixed: Database, restoring a backup now checks that the file is a valid Domoticz database before replacing the current one
+- Fixed: dzVents, an integer sValue3 in an IFTTT trigger overwrote sValue2
+- Fixed: EcoDevices, RT2 mode now reads BBRHPJR and IINST3; the XML tag names were misspelled
+- Fixed: Enever, an invalid provider response no longer overwrites the cached valid prices
+- Fixed: EnOcean, node IDs and raw values with the highest bit set were built with signed shifts
+- Fixed: EnOcean ESP2/ESP3 and PiFace, queued telegrams are now taken from the queue under its lock, preventing a possible crash
+- Fixed: Events, a random delay of 0 could crash Domoticz (division by zero); random delays now range from 0 up to and including the requested maximum
+- Fixed: Hardware, new Kodi, HEOS, Logitech Media Server, Panasonic TV and Wake-on-LAN nodes are created as used again; the used flag was ignored when inserting the device
+- Fixed: HomeConfort, group commands stored a wrong value because the command was formatted as a string
+- Fixed: Limitless, the V6 generic disco mode command was sent with the mode of the previous numbered disco command
+- Fixed: Lua, the fourth path argument of applyJsonPath was ignored
+- Fixed: MQTT, org_hwid in the device info message repeated hwid instead of the original hardware id
+- Fixed: Nefit Easy, switching the hot water mode sent its second request to a malformed URL
+- Fixed: OpenWebNet USB, sending a command could deadlock because the receive lock was held while waiting for the reply
+- Fixed: OpenZWave, switches and sensors that report a Byte value are created with their actual state instead of Off
+- Fixed: Philips Hue, the displayed brightness was rounded up while commands round to the nearest step, so 11% showed as 12% (#7026)
+- Fixed: Philips Hue, RGB colors outside the gamut are now clamped to the gamut of the lamp model instead of the default gamut
+- Fixed: Python plugins, the Description of an Image object is readable again; it was exposed as an integer
+- Fixed: Tado, memory was leaked on every API request
+- Fixed: TE923, the wind sensor now reports the battery state of the sensor instead of always OK
+- Fixed: Voltcraft CO-20, a failed USB open is now detected
+- Fixed: Weather Underground, the forecast link was two URLs glued together and exposed the API key; it is now a single wunderground.com link
+- Fixed: WebUI, live search no longer shifts the device cards on pages without a divider row, and clearing the search always restores the hidden cards (#7027)
+- Fixed: WebUI, the lines of a multi-line Text device now line up next to the icon in the Utility widgets (#7040)
+- Fixed: Winddelen, an unknown mill ID is rejected instead of causing a division by zero
+
 Version 2026.4
 This release contains important security fixes in the web server, the API and the MCP server, upgrading is strongly recommended. Scripts or apps that call the API with a Viewer or User account should check the Security lines below: several commands now require higher rights.
 - Added: Applications, OAuth2 redirect URIs can now be registered per application under Setup - Applications; leaving the list empty keeps the current behaviour of accepting any valid redirect URI, so existing account linking is unaffected until the list is filled in
