@@ -507,7 +507,7 @@ int I2C::MCP23017_WritePin(uint8_t pin_number, uint8_t value)
 	if (fd < 0)
 		return -1; // Error opening i2c device!
 
-	rc = I2CReadReg16(fd, MCP23x17_GPIOA, &cur_data); // get current gio port value
+	rc = I2CReadReg16(fd, MCP23x17_OLATA, &cur_data); // Preserve output latches, not live input levels.
 	if (rc < 0)
 	{
 		Log(LOG_NORM, "MCP23017_WritePin. %s. Failed to read from I2C device at address: 0x%x", szI2CTypeNames[m_dev_type], m_i2c_addr);
@@ -531,7 +531,7 @@ int I2C::MCP23017_WritePin(uint8_t pin_number, uint8_t value)
 
 	if (new_data != cur_data.word)
 	{ // if value change write new value
-		if (I2CWriteReg16(fd, MCP23x17_GPIOA, new_data) < 0)
+		if (I2CWriteReg16(fd, MCP23x17_OLATA, new_data) < 0)
 		{
 			Log(LOG_ERROR, "MCP23017_WritePin. %s: Failed to write to I2C device at address: 0x%x", szI2CTypeNames[m_dev_type], m_i2c_addr);
 			close(fd);
