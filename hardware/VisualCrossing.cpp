@@ -299,14 +299,8 @@ void CVisualCrossing::GetMeterDetails()
 			hasRainRate = true;
 		}
 	}
-	if (root["currentConditions"]["snow"].empty() == false)
-	{
-		if ((root["currentConditions"]["snow"] != "N/A") && (root["currentConditions"]["snow"] != "--"))
-		{
-			rainrateph += root["currentConditions"]["snow"].asFloat();
-			hasRainRate = true;
-		}
-	}
+	// precip already includes the liquid equivalent of snow; snowfall depth
+	// must not supply a missing precipitation reading or be added to it.
 	if (hasRainRate && (rainrateph >= 0.0F)) {
 		SendRainRateSensor(1, 255, rainrateph, "Rain");
 	}
