@@ -35,6 +35,7 @@ extraHWInitParams = function(data) {
 	$("#hardwarecontent #divextrahwparams #mqtttopicin").val("");
 	$("#hardwarecontent #divextrahwparams #mqtttopicout").val("");
 	$("#hardwarecontent #divextrahwparams #mqttdiscoveryprefix").val("");
+	$("#hardwarecontent #hardwareparamsmqtt #mqttenablebydefault").prop("checked", true);
 
 	if (!data["Extra"])
 	{
