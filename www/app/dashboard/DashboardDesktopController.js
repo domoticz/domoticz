@@ -181,7 +181,7 @@ define([
 
 				// Handle floorplan redirect
 				if ($scope.config.DashboardType == 3) {
-					$window.location = '/#Floorplans';
+					dzNavigateHash('#Floorplans');
 					$("body").addClass("dashFloorplan");
 					return;
 				}

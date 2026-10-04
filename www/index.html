@@ -387,7 +387,7 @@ $(document).ready(function() {
 			 success: function(data) {
 				if (data.status == 'OK') {
 					if (typeof $.backfunction == 'undefined') {
-						window.location = '#';
+						dzNavigateHash('#');
 					} else {
 						$.backfunction();
 					}

@@ -877,7 +877,7 @@ function GetLayoutFromURL() {
 }
 
 function SetLayoutURL(name) {
-	window.location.hash = name;
+	dzNavigateHash('#' + name);
 }
 
 function SwitchLayout(layout) {
@@ -885,7 +885,7 @@ function SwitchLayout(layout) {
 		clearInterval($.myglobals.refreshTimer);
 		var dest_layout = layout.substring(10);
 		dest_layout = dest_layout.replace(/ /g, "%20");
-		window.location = '#/Custom/' + dest_layout;
+		dzNavigateHash('#/Custom/' + dest_layout);
 		return;
 	}
 	if (layout == "Restart") {
@@ -944,7 +944,7 @@ function SwitchLayout(layout) {
 		layout = 'Floorplans';
 	}
 
-	window.location = '#' + layout;
+	dzNavigateHash('#' + layout);
 }
 
 function checkLength(o, min, max) {

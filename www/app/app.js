@@ -4,6 +4,41 @@ function formatBytes(bytes) {
 	return (bytes / 1048576).toFixed(1) + ' MB';
 }
 
+// iOS/iPadOS 27 reloads the whole document when a page served over plain http moves to
+// another fragment (link, location.hash, location = '#...'), and again when the history
+// later crosses such an entry, which breaks the Back buttons. Entries made with
+// history.pushState are not affected, so on those devices every route change goes through it.
+var dzHashNavViaPushState = (function () {
+	var ua = navigator.userAgent || '';
+	var isAppleTouch = /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+	return isAppleTouch && window.location.protocol === 'http:' && !!(window.history && window.history.pushState);
+})();
+
+if (dzHashNavViaPushState) {
+	// AngularJS only picks pushState over location.hash when the entry's state differs from
+	// the null it passes, so every entry is given a non-null state.
+	['pushState', 'replaceState'].forEach(function (name) {
+		var original = window.history[name];
+		window.history[name] = function (state, title, url) {
+			return original.call(window.history, (state === null || state === undefined) ? { dzNav: true } : state, title, url);
+		};
+	});
+	window.history.replaceState(window.history.state, '', window.location.href);
+}
+
+// Route change from code outside AngularJS; use instead of assigning window.location a '#...' value.
+function dzNavigateHash(hash) {
+	if (!dzHashNavViaPushState) {
+		window.location.hash = hash;
+		return;
+	}
+	if (window.location.hash === hash) {
+		return;
+	}
+	window.history.pushState(null, '', hash);
+	window.dispatchEvent(new PopStateEvent('popstate', { state: window.history.state }));
+}
+
 define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.permissions', 'domoticz.api', 'livesocket', 'devices/deviceFactory', 'ui-grid', 'highcharts-ng', 'angular-tree-control', 'ngDraggable', 'ngSanitize', 'angular-md5', 'ui.bootstrap', 'angular.directives-round-progress', 'angular.scrollglue'], function (angularAMD, appRoutesModule, appConstantsModule, appNotificationsModule, appPermissionsModule, apiModule, websocketModule, deviceFactory) {
 	var app = angular.module('domoticz', [
 		'ngRoute', 'ui.grid', 'ngSanitize',
