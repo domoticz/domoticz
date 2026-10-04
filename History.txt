@@ -29,6 +29,7 @@ Version 2026.xxxx
 - Fixed: Voltcraft CO-20, a failed USB open is now detected
 - Fixed: Weather Underground, the forecast link was two URLs glued together and exposed the API key; it is now a single wunderground.com link
 - Fixed: WebUI, live search no longer shifts the device cards on pages without a divider row, and clearing the search always restores the hidden cards (#7027)
+- Fixed: WebUI, on iOS/iPadOS 27 (Safari, Chrome and Edge) every page change reloaded the whole page when Domoticz is opened over http, and the Back button of the log, timers and notification pages reloaded the current page instead of going back; https was not affected
 - Fixed: WebUI, the lines of a multi-line Text device now line up next to the icon in the Utility widgets (#7040)
 - Fixed: Winddelen, an unknown mill ID is rejected instead of causing a division by zero
 
