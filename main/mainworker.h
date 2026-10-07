@@ -39,6 +39,7 @@ public:
 
 	void HeartbeatUpdate(const std::string &component, bool critical = true);
 	void HeartbeatRemove(const std::string &component);
+	void HeartbeatReset();
 	void HeartbeatCheck();
 
 	void SetWebserverSettings(const http::server::server_settings & settings);

@@ -14332,6 +14332,18 @@ void MainWorker::HeartbeatRemove(const std::string& component)
 	}
 }
 
+void MainWorker::HeartbeatReset()
+{
+	std::lock_guard<std::mutex> l(m_heartbeatmutex);
+	time_t now;
+	mytime(&now);
+	m_LastHeartbeat = now;
+	for (auto& heartbeat : m_componentheartbeats)
+	{
+		heartbeat.second.first = now;
+	}
+}
+
 void MainWorker::HeartbeatCheck()
 {
 	std::lock_guard<std::mutex> l(m_heartbeatmutex);
@@ -14342,8 +14354,20 @@ void MainWorker::HeartbeatCheck()
 	time_t now;
 	mytime(&now);
 
-	for (const auto& heartbeat : m_componentheartbeats)
+	// This runs every few seconds; a much larger gap means the whole process was suspended
+	// (system sleep), so every heartbeat is stale and checking them would only report hangs
+	// that never happened
+	static time_t lastCheck = now;
+	bool bResumed = (difftime(now, lastCheck) > 60);
+	lastCheck = now;
+
+	for (auto& heartbeat : m_componentheartbeats)
 	{
+		if (bResumed)
+		{
+			heartbeat.second.first = now;
+			continue;
+		}
 		double diff = difftime(now, heartbeat.second.first);
 		if (diff > 60)
 		{
@@ -14365,6 +14389,8 @@ void MainWorker::HeartbeatCheck()
 			*/
 		}
 	}
+	if (bResumed)
+		return; // the hardware threads refresh their own heartbeats within seconds
 
 	//Check hardware heartbeats
 	for (const auto& pHardware : m_hardwaredevices)
