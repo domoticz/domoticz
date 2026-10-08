@@ -244,6 +244,7 @@ void CAccuWeather::GetMeterDetails()
 		int barometric = 0;
 		int barometric_forcast = baroForecastNoInfo;
 		bool hasTemp = false;
+		bool hasHumidity = false;
 
 		if (IsValidMeasurement(root["Temperature"]["Metric"]["Value"]))
 		{
@@ -254,6 +255,7 @@ void CAccuWeather::GetMeterDetails()
 		if (root["RelativeHumidity"].isInt() && root["RelativeHumidity"].asInt() >= 0 && root["RelativeHumidity"].asInt() <= 100)
 		{
 			humidity = root["RelativeHumidity"].asInt();
+			hasHumidity = true;
 		}
 		if (IsValidMeasurement(root["Pressure"]["Metric"]["Value"])
 			&& root["Pressure"]["Metric"]["Value"].asDouble() > 0
@@ -269,9 +271,9 @@ void CAccuWeather::GetMeterDetails()
 			else
 				barometric_forcast = baroForecastSunny;
 
-			if (root["WeatherIcon"].isInt())
+			if (!root["WeatherIcon"].empty())
 			{
-				int forcasticon = root["WeatherIcon"].asInt();
+				int forcasticon = atoi(root["WeatherIcon"].asString().c_str());
 				switch (forcasticon)
 				{
 				case 1:
@@ -323,12 +325,12 @@ void CAccuWeather::GetMeterDetails()
 
 		if (hasTemp)
 		{
-			if (barometric != 0)
+			if (barometric != 0 && hasHumidity)
 			{
 				//Add temp+hum+baro device
 				SendTempHumBaroSensor(1, 255, temp, humidity, static_cast<float>(barometric), barometric_forcast, "THB");
 			}
-			else if (humidity != 0)
+			else if (hasHumidity)
 			{
 				//add temp+hum device
 				SendTempHumSensor(1, 255, temp, humidity, "TempHum");
@@ -349,7 +351,6 @@ void CAccuWeather::GetMeterDetails()
 			//float wind_temp = temp;
 			float wind_chill = temp;
 			bool hasWindSpeed = false;
-			bool hasWindChill = hasTemp;
 
 			if (root["Wind"]["Direction"]["Degrees"].isInt())
 			{
@@ -370,13 +371,13 @@ void CAccuWeather::GetMeterDetails()
 			if (IsValidMeasurement(root["RealFeelTemperature"]["Metric"]["Value"]))
 			{
 				wind_chill = root["RealFeelTemperature"]["Metric"]["Value"].asFloat();
-				hasWindChill = true;
 			}
 			if (wind_degrees >= 0 && wind_degrees <= 360 && hasWindSpeed
 				&& windgust_ms >= 0 && windgust_ms <= 6553.5F
 				&& std::abs(temp) <= 6553.5F && std::abs(wind_chill) <= 6553.5F)
 			{
-				SendWind(1, 255, wind_degrees, windspeed_ms, windgust_ms, temp, wind_chill, hasTemp, hasWindChill, "Wind");
+				// Preserve the existing wind device subtype; zero temperature fallback is supported.
+				SendWind(1, 255, wind_degrees, windspeed_ms, windgust_ms, temp, wind_chill, true, true, "Wind");
 			}
 		}
 
