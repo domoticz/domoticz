@@ -20,6 +20,7 @@ void sleep_milliseconds(long ms) {
 }
 
 std::atomic_bool failThread{false};
+std::atomic_bool delayThreadReturn{false};
 struct TestSerial : AsyncSerial {
     using AsyncSerial::setReadCallback;
 };
@@ -28,11 +29,39 @@ extern "C" int pthread_create(pthread_t* thread, const pthread_attr_t* attr,
     if (failThread.exchange(false)) return EAGAIN;
     using Function = int (*)(pthread_t*, const pthread_attr_t*, void* (*)(void*), void*);
     static auto real = reinterpret_cast<Function>(dlsym(RTLD_NEXT, "pthread_create"));
-    return real(thread, attr, start, arg);
+    int result = real(thread, attr, start, arg);
+    // A new worker may run before pthread_create returns to the opener.
+    // Delay only the caller, exposing that valid ordering deterministically.
+    if (result == 0 && delayThreadReturn.exchange(false))
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    return result;
 }
 
-int main() {
+int main(int argc, char** argv) {
     for (bool onlyBaud : {false, true}) {
+        if (argc > 1 && onlyBaud != (std::string(argv[1]) == "baud")) continue;
+        // Exercise a successful open with the worker running before return.
+        int raceMaster, raceSlave;
+        char raceName[128];
+        assert(openpty(&raceMaster, &raceSlave, raceName, nullptr, nullptr) == 0);
+        TestSerial raceSerial;
+        std::atomic_size_t raceReceived{0};
+        raceSerial.setReadCallback([&](const char* data, size_t size) {
+            assert(size == 1 && data[0] == 'r');
+            raceReceived += size;
+        });
+        delayThreadReturn = true;
+        if (onlyBaud) raceSerial.openOnlyBaud(raceName, 9600);
+        else raceSerial.open(raceName, 9600);
+        assert(raceSerial.isOpen());
+        assert(write(raceMaster, "r", 1) == 1);
+        for (int attempt = 0; raceReceived == 0 && attempt < 200; ++attempt)
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        assert(raceReceived == 1);
+        raceSerial.close();
+        ::close(raceMaster);
+        ::close(raceSlave);
+
         int master, slave;
         char name[128];
         assert(openpty(&master, &slave, name, nullptr, nullptr) == 0);
@@ -65,5 +94,5 @@ int main() {
         ::close(master);
         ::close(slave);
     }
-    puts("Both startup-failure rollback and PTY reopen/read paths passed");
+    puts("Both pre-return worker scheduling and startup rollback/reopen paths passed");
 }
