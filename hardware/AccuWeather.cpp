@@ -1,5 +1,15 @@
 #include "stdafx.h"
 #include "AccuWeather.h"
+#include <limits>
+
+namespace
+{
+bool IsValidMeasurement(const Json::Value& value)
+{
+	return value.isNumeric() && std::isfinite(value.asDouble())
+		&& std::abs(value.asDouble()) <= std::numeric_limits<float>::max();
+}
+}
 #include "../main/Helper.h"
 #include "../main/Logger.h"
 #include "../httpclient/UrlEncode.h"
@@ -233,19 +243,25 @@ void CAccuWeather::GetMeterDetails()
 		int humidity = 0;
 		int barometric = 0;
 		int barometric_forcast = baroForecastNoInfo;
+		bool hasTemp = false;
+		bool hasHumidity = false;
 
-		if (!root["Temperature"].empty())
+		if (IsValidMeasurement(root["Temperature"]["Metric"]["Value"]))
 		{
 			temp = root["Temperature"]["Metric"]["Value"].asFloat();
+			hasTemp = true;
 		}
 
-		if (!root["RelativeHumidity"].empty())
+		if (root["RelativeHumidity"].isInt() && root["RelativeHumidity"].asInt() >= 0 && root["RelativeHumidity"].asInt() <= 100)
 		{
 			humidity = root["RelativeHumidity"].asInt();
+			hasHumidity = true;
 		}
-		if (!root["Pressure"].empty())
+		if (IsValidMeasurement(root["Pressure"]["Metric"]["Value"])
+			&& root["Pressure"]["Metric"]["Value"].asDouble() > 0
+			&& root["Pressure"]["Metric"]["Value"].asDouble() <= 65535)
 		{
-			barometric = atoi(root["Pressure"]["Metric"]["Value"].asString().c_str());
+			barometric = static_cast<int>(root["Pressure"]["Metric"]["Value"].asDouble());
 			if (barometric < 1000)
 				barometric_forcast = baroForecastRain;
 			else if (barometric < 1020)
@@ -307,20 +323,23 @@ void CAccuWeather::GetMeterDetails()
 			}
 		}
 
-		if (barometric != 0)
+		if (hasTemp)
 		{
-			//Add temp+hum+baro device
-			SendTempHumBaroSensor(1, 255, temp, humidity, static_cast<float>(barometric), barometric_forcast, "THB");
-		}
-		else if (humidity != 0)
-		{
-			//add temp+hum device
-			SendTempHumSensor(1, 255, temp, humidity, "TempHum");
-		}
-		else
-		{
-			//add temp device
-			SendTempSensor(1, 255, temp, "Temperature");
+			if (barometric != 0 && hasHumidity)
+			{
+				//Add temp+hum+baro device
+				SendTempHumBaroSensor(1, 255, temp, humidity, static_cast<float>(barometric), barometric_forcast, "THB");
+			}
+			else if (hasHumidity)
+			{
+				//add temp+hum device
+				SendTempHumSensor(1, 255, temp, humidity, "TempHum");
+			}
+			else
+			{
+				//add temp device
+				SendTempSensor(1, 255, temp, "Temperature");
+			}
 		}
 
 		//Wind
@@ -331,36 +350,41 @@ void CAccuWeather::GetMeterDetails()
 			float windgust_ms = 0;
 			//float wind_temp = temp;
 			float wind_chill = temp;
+			bool hasWindSpeed = false;
 
-			if (!root["Wind"]["Direction"].empty())
+			if (root["Wind"]["Direction"]["Degrees"].isInt())
 			{
 				wind_degrees = root["Wind"]["Direction"]["Degrees"].asInt();
 			}
-			if (!root["Wind"]["Speed"].empty())
+			if (IsValidMeasurement(root["Wind"]["Speed"]["Metric"]["Value"]))
 			{
 				windspeed_ms = root["Wind"]["Speed"]["Metric"]["Value"].asFloat() / 3.6F; // km/h to m/s
+				hasWindSpeed = windspeed_ms >= 0 && windspeed_ms <= 6553.5F;
 			}
 			if (!root["WindGust"].empty())
 			{
-				if (!root["WindGust"]["Speed"].empty())
+				if (IsValidMeasurement(root["WindGust"]["Speed"]["Metric"]["Value"]))
 				{
 					windgust_ms = root["WindGust"]["Speed"]["Metric"]["Value"].asFloat() / 3.6F; // km/h to m/s
 				}
 			}
-			if (!root["RealFeelTemperature"].empty())
+			if (IsValidMeasurement(root["RealFeelTemperature"]["Metric"]["Value"]))
 			{
 				wind_chill = root["RealFeelTemperature"]["Metric"]["Value"].asFloat();
 			}
-			if (wind_degrees != -1)
+			if (wind_degrees >= 0 && wind_degrees <= 360 && hasWindSpeed
+				&& windgust_ms >= 0 && windgust_ms <= 6553.5F
+				&& std::abs(temp) <= 6553.5F && std::abs(wind_chill) <= 6553.5F)
 			{
+				// Preserve the existing wind device subtype; zero temperature fallback is supported.
 				SendWind(1, 255, wind_degrees, windspeed_ms, windgust_ms, temp, wind_chill, true, true, "Wind");
 			}
 		}
 
 		//UV
-		if (!root["UVIndex"].empty())
+		if (IsValidMeasurement(root["UVIndex"]))
 		{
-			float UV = static_cast<float>(atof(root["UVIndex"].asString().c_str()));
+			float UV = root["UVIndex"].asFloat();
 			if ((UV < 16) && (UV >= 0))
 			{
 				SendUVSensor(0, 1, 255, UV, "UV");
@@ -370,10 +394,13 @@ void CAccuWeather::GetMeterDetails()
 		//Rain
 		if (!root["PrecipitationSummary"].empty())
 		{
-			if (!root["PrecipitationSummary"]["Precipitation"].empty())
+			if (IsValidMeasurement(root["PrecipitationSummary"]["Precipitation"]["Metric"]["Value"])
+				&& IsValidMeasurement(root["PrecipitationSummary"]["PastHour"]["Metric"]["Value"]))
 			{
-				float RainCount = static_cast<float>(atof(root["PrecipitationSummary"]["Precipitation"]["Metric"]["Value"].asString().c_str()));
-				if ((RainCount != -9999.00F) && (RainCount >= 0.00F))
+				float RainCount = root["PrecipitationSummary"]["Precipitation"]["Metric"]["Value"].asFloat();
+				if (RainCount >= 0 && RainCount <= 6553.5F
+					&& root["PrecipitationSummary"]["PastHour"]["Metric"]["Value"].asDouble() >= 0
+					&& root["PrecipitationSummary"]["PastHour"]["Metric"]["Value"].asDouble() <= 6553.5)
 				{
 					RBUF tsen;
 					memset(&tsen, 0, sizeof(RBUF));
@@ -388,10 +415,10 @@ void CAccuWeather::GetMeterDetails()
 					tsen.RAIN.rainrateh = 0;
 					tsen.RAIN.rainratel = 0;
 
-					if (!root["PrecipitationSummary"]["PastHour"].empty())
+					if (!root["PrecipitationSummary"]["PastHour"]["Metric"]["Value"].empty())
 					{
-						float rainrateph = static_cast<float>(atof(root["PrecipitationSummary"]["PastHour"]["Metric"]["Value"].asString().c_str()));
-						if (rainrateph != -9999.00F)
+						float rainrateph = root["PrecipitationSummary"]["PastHour"]["Metric"]["Value"].asFloat();
+						if (rainrateph >= 0 && rainrateph <= 6553.5F && RainCount <= 6553.5F)
 						{
 							int at10 = ground(std::abs(rainrateph * 10.0F));
 							tsen.RAIN.rainrateh = (BYTE)(at10 / 256);
@@ -414,7 +441,7 @@ void CAccuWeather::GetMeterDetails()
 		//Visibility
 		if (!root["Visibility"].empty())
 		{
-			if (!root["Visibility"]["Metric"].empty())
+			if (IsValidMeasurement(root["Visibility"]["Metric"]["Value"]))
 			{
 				float visibility = root["Visibility"]["Metric"]["Value"].asFloat();
 				if (visibility >= 0)
