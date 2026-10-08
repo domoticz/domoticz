@@ -44,6 +44,7 @@ void CYouLess::Init()
 	m_bHaveP1OrS0 = false;
 	m_bCheckP1 = true;
 	m_P1DiscoveryAttempts = 0;
+	m_bP1DiscoveryHttpFailureLogged = false;
 	m_lastgasusage = 0;
 	m_lastSharedSendGas = mytime(nullptr);
 }
@@ -112,8 +113,11 @@ bool CYouLess::GetP1Details()
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-		if (m_bHaveP1OrS0 || m_P1DiscoveryAttempts == 1)
+		if (m_bHaveP1OrS0 || !m_bP1DiscoveryHttpFailureLogged)
+		{
 			Log(LOG_ERROR, "Error getting meter details from %s !", m_szIPAddress.c_str() );
+			m_bP1DiscoveryHttpFailureLogged = true;
+		}
 		return false;
 	}
 	Json::Value root;
