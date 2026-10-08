@@ -88,6 +88,10 @@ MQTTAutoDiscover::MQTTAutoDiscover(const int ID, const std::string& Name, const 
 		{
 			m_TopicDiscoveryPrefix = strarray[3];
 		}
+		if (strarray.size() > 4)
+		{
+			m_bEnableNewDevicesByDefault = (strarray[4] != "0");
+		}
 	}
 	if (m_TopicDiscoveryPrefix.empty())
 	{
@@ -3170,7 +3174,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 				Log(LOG_NORM, "Accept new hardware disabled. Ignoring new sensor %s", sDeviceName.c_str());
 				return;
 			}
-			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+			int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
 				"VALUES (%d, %d, '%q', 1, %d, %d, %d, %d, '%q', %d, %d, '%q')",
 				m_HwdID, 0, szDeviceID.c_str(), devType, subType, pSensor->SignalLevel, pSensor->BatteryLevel, sDeviceName.c_str(), iUsed, nValue, sValue.c_str());
@@ -3204,7 +3208,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 				return;
 			}
 
-			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+			int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 			uint8_t SwitchType = 0;
 
 			if (
@@ -3325,7 +3329,7 @@ void MQTTAutoDiscover::handle_auto_discovery_fan(_tMQTTASensor* pSensor, const s
 			return;
 		}
 		bIsNewDevice = true;
-		int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+		int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
 			"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, %d, '%q', %d, %d, '0')",
 			m_HwdID, 0, pSensor->unique_id.c_str(), unit, pSensor->devType, pSensor->subType, switchType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed, 0);
@@ -3504,7 +3508,7 @@ void MQTTAutoDiscover::handle_auto_discovery_select(_tMQTTASensor* pSensor, cons
 			Log(LOG_NORM, "Accept new hardware disabled. Ignoring new sensor %s", pSensor->name.c_str());
 			return;
 		}
-		int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+		int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue, Options) "
 			"VALUES (%d, %d, '%q', 1, %d, %d, %d, %d, %d, '%q', %d, %d, '0', null)",
 			m_HwdID, 0, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, switchType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed, 0);
@@ -3682,7 +3686,7 @@ bool MQTTAutoDiscover::InsertUpdateSetpoint(
 				Log(LOG_NORM, "Accept new hardware disabled. Ignoring new sensor %s", pSensor->name.c_str());
 				return false;
 			}
-			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+			int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
 				"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, '%q', %d, %d, '%q')",
 				m_HwdID, 0, pSensor->unique_id.c_str(), Unit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed,
@@ -3776,7 +3780,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				return;
 			}
 			bIsNewDevice = true;
-			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+			int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 			std::string szName = pSensor->name + " Mode";
 			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue, Options) "
 				"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, %d, '%q', %d, %d, '0', null)",
@@ -3934,7 +3938,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				return;
 			}
 			bIsNewDevice = true;
-			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+			int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue, Options) "
 				"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, %d, '%q', %d, %d, '0', null)",
 				m_HwdID, 0, pSensor->unique_id.c_str(), unit, pSensor->devType, pSensor->subType, switchType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed, 0);
@@ -4071,7 +4075,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				return;
 			}
 			bIsNewDevice = true;
-			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+			int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 			std::string szName = pSensor->name + " Fan Mode";
 			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue, Options) "
 				"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, %d, '%q', %d, %d, '0', null)",
@@ -4225,7 +4229,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				return;
 			}
 			bIsNewDevice = true;
-			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+			int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 			std::string szName = pSensor->name + " Swing Mode";
 			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue, Options) "
 				"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, %d, '%q', %d, %d, '0', null)",
@@ -4379,7 +4383,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				return;
 			}
 			bIsNewDevice = true;
-			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+			int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 			std::string szName = pSensor->name + " Action Mode";
 			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue, Options) "
 				"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, %d, '%q', %d, %d, '0', null)",
@@ -4673,7 +4677,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					Log(LOG_NORM, "Accept new hardware disabled. Ignoring new sensor %s", pSensor->name.c_str());
 					return;
 				}
-				int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+				int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 				m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
 					"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, '%q', %d, %d, '%q')",
 					m_HwdID, 0, pSensor->unique_id.c_str(), Unit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed,
@@ -4777,7 +4781,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					Log(LOG_NORM, "Accept new hardware disabled. Ignoring new sensor %s", pSensor->name.c_str());
 					return;
 				}
-				int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+				int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 				m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
 					"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, '%q', %d, %d, '%q')",
 					m_HwdID, 0, pSensor->unique_id.c_str(), Unit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed,
@@ -4814,7 +4818,7 @@ void MQTTAutoDiscover::handle_auto_discovery_text(_tMQTTASensor* pSensor, const 
 			Log(LOG_NORM, "Accept new hardware disabled. Ignoring new sensor %s", pSensor->name.c_str());
 			return;
 		}
-		int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+		int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
 			"VALUES (%d, %d, '%q', 1, %d, %d, %d, %d, '%q', %d, %d, '%q')",
 			m_HwdID, 0, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed,
@@ -4858,7 +4862,7 @@ void MQTTAutoDiscover::handle_auto_discovery_ir_code(_tMQTTASensor* pSensor)
 			Log(LOG_NORM, "Accept new hardware disabled. Ignoring new sensor %s", pSensor->name.c_str());
 			return;
 		}
-		int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+		int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, Options) "
 			"VALUES (%d, %d, '%q', 1, %d, %d, %d, %d, '%q', %d, %d, '%q')",
 			m_HwdID, 0, devID.c_str(), pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, devName.c_str(), iUsed,
@@ -4879,7 +4883,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		return;
 	}
 
-	int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+	int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 	std::string szSwitchCmd = pSensor->last_value;
 	int level = 0;
 	bool bHaveActionLevel = false;
@@ -6303,7 +6307,7 @@ void MQTTAutoDiscover::UpdateBlindPosition(_tMQTTASensor* pSensor)
 	pSensor->devType = pTypeGeneralSwitch;
 	pSensor->subType = sSwitchGeneralSwitch;
 
-	int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+	int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 	std::string szSwitchCmd = pSensor->last_value;
 	int level = 0;
 	int switchType = STYPE_Blinds;
