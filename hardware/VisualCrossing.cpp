@@ -290,7 +290,8 @@ void CVisualCrossing::GetMeterDetails()
 
 	//Rain
 	float rainrateph = 0.0F;
-	bool hasRainRate = false;
+	// Keep the established dry-weather fallback for absent/null precipitation.
+	bool hasRainRate = root["currentConditions"]["precip"].empty();
 	if (root["currentConditions"]["precip"].empty() == false)
 	{
 		if ((root["currentConditions"]["precip"] != "N/A") && (root["currentConditions"]["precip"] != "--"))
@@ -300,7 +301,7 @@ void CVisualCrossing::GetMeterDetails()
 		}
 	}
 	// precip already includes the liquid equivalent of snow; snowfall depth
-	// must not supply a missing precipitation reading or be added to it.
+	// must not be added to the liquid precipitation reading.
 	if (hasRainRate && (rainrateph >= 0.0F)) {
 		SendRainRateSensor(1, 255, rainrateph, "Rain");
 	}
