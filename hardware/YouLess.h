@@ -35,6 +35,7 @@ class CYouLess : public CDomoticzHardwareBase
 
 	YouLessMeter m_meter;
 	bool m_bCheckP1;
+	unsigned int m_P1DiscoveryAttempts;
 	bool m_bHaveP1OrS0;
 	P1Power m_p1power;
 	P1Gas m_p1gas;

@@ -43,6 +43,7 @@ void CYouLess::Init()
 
 	m_bHaveP1OrS0 = false;
 	m_bCheckP1 = true;
+	m_P1DiscoveryAttempts = 0;
 	m_lastgasusage = 0;
 	m_lastSharedSendGas = mytime(nullptr);
 }
@@ -99,6 +100,9 @@ bool CYouLess::WriteToHardware(const char *pdata, const unsigned char length)
 
 bool CYouLess::GetP1Details()
 {
+	if (m_bCheckP1 && ++m_P1DiscoveryAttempts >= 3)
+		m_bCheckP1 = false;
+
 	std::string sResult;
 	std::stringstream szURL;
 
@@ -108,13 +112,14 @@ bool CYouLess::GetP1Details()
 
 	if (!HTTPClient::GET(szURL.str(), sResult))
 	{
-		Log(LOG_ERROR, "Error getting meter details from %s !", m_szIPAddress.c_str() );
+		if (m_bHaveP1OrS0 || m_P1DiscoveryAttempts == 1)
+			Log(LOG_ERROR, "Error getting meter details from %s !", m_szIPAddress.c_str() );
 		return false;
 	}
 	Json::Value root;
 
 	bool ret = ParseJSon(sResult, root);
-	if ((!ret) || (root.empty()))
+	if ((!ret) || !root.isArray() || root.empty())
 	{
 		return false;
 	}
