@@ -277,6 +277,10 @@ def runtime_checks(exe, regs):
         for who, cookie in (("viewer", viewer), ("user", user)):
             code, _ = api(d, cookie, "param=getdevices")
             check(code == 200, "the %s can list devices (got %d)" % (who, code))
+            # Themes boot from getconfig, since getsettings is admin only
+            code, body = api(d, cookie, "param=getconfig")
+            theme = json.loads(body).get("WebTheme") if code == 200 else None
+            check(theme == "default", "the %s reads the active theme from getconfig (got %d, %r)" % (who, code, theme))
         code, body = api(d, user, "param=addlogmessage&message=command+rights+test")
         check(code == 200, "the user can add a log message (got %d)" % code)
 

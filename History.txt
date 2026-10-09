@@ -26,6 +26,7 @@ Version 2026.xxxx
 - Fixed: Python plugins, the Description of an Image object is readable again; it was exposed as an integer
 - Fixed: Tado, memory was leaked on every API request
 - Fixed: TE923, the wind sensor now reports the battery state of the sensor instead of always OK
+- Fixed: Themes, getconfig now returns the active theme name as WebTheme; getsettings is admin only, so a theme that read the theme name from it failed to start for users without admin rights
 - Fixed: Voltcraft CO-20, a failed USB open is now detected
 - Fixed: Weather Underground, the forecast link was two URLs glued together and exposed the API key; it is now a single wunderground.com link
 - Fixed: WebUI, live search no longer shifts the device cards on pages without a divider row, and clearing the search always restores the hidden cards (#7027)
