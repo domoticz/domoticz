@@ -20,6 +20,24 @@ define(['app'], function (app) {
 		$scope.SerialPortStr = [];
 		$scope.calledFetch = 0;
 
+		// SolarEdge: build the OAuth2 Site Access authorization URL from the entered Client ID
+		// and open it in a new tab. Delegated so it keeps working across hardware panel re-renders.
+		$(document).on('click', '#hardwarecontent #oauthauthorizebtn', function (e) {
+			e.preventDefault();
+			var clientId = $("#hardwarecontent #divsolaredgeapi #oauthclientid").val();
+			if (clientId == "") {
+				ShowNotify($.t('Please enter a Client ID first!'), 2500, true);
+				return;
+			}
+			var url = "https://connect.solaredge.com/authorize" +
+				"?client_id=" + encodeURIComponent(clientId) +
+				"&response_type=code" +
+				"&scope=" + encodeURIComponent("SITE_DATA DEVICE_DATA") +
+				"&redirect_uri=" + encodeURIComponent("http://localhost") +
+				"&access_duration=24";
+			window.open(url, "_blank");
+		});
+
 		var validators = { Integer:function (val, minVal, maxVal, fldName) {
 			//alert("val:" + val + ", minVal:" + minVal + ", maxVal:" + maxVal + ", fldName:" + fldName);
 			var testno = parseInt(val);
@@ -1168,15 +1186,18 @@ define(['app'], function (app) {
 				});
 			} else if (text.indexOf("SolarEdge via Web") >= 0) {
 				var apikey = $("#hardwarecontent #divsolaredgeapi #apikey").val();
-				if (apikey == "") {
-					ShowNotify($.t('Please enter an API Key!'), 2500, true);
+				var oauthclientid = $("#hardwarecontent #divsolaredgeapi #oauthclientid").val();
+				var oauthclientsecret = $("#hardwarecontent #divsolaredgeapi #oauthclientsecret").val();
+				var oauthcode = $("#hardwarecontent #divsolaredgeapi #oauthcode").val();
+				if (apikey == "" && (oauthclientid == "" || oauthclientsecret == "")) {
+					ShowNotify($.t('Please enter a Fleet API Key, or an OAuth2 Client ID and Client Secret!'), 2500, true);
 					return;
 				}
 				var webusername = $("#hardwarecontent #divsolaredgeapi #webusername").val();
 				var webpassword = $("#hardwarecontent #divsolaredgeapi #webpassword").val();
 				var siteid = $("#hardwarecontent #divsolaredgeapi #siteid").val();
 				var polloptimizers = $("#hardwarecontent #divsolaredgeapi #polloptimizers").prop("checked") ? 1 : 0;
-				var extra = encodeURIComponent(webusername + "|" + siteid);
+				var extra = encodeURIComponent(webusername + "|" + siteid + "|" + btoa(oauthclientid) + "|" + btoa(oauthclientsecret) + "|" + btoa(oauthcode));
 
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -2908,15 +2929,18 @@ define(['app'], function (app) {
 			}
 			else if (text.indexOf("SolarEdge via Web") >= 0) {
 				var apikey = $("#hardwarecontent #divsolaredgeapi #apikey").val();
-				if (apikey == "") {
-					ShowNotify($.t('Please enter an API Key!'), 2500, true);
+				var oauthclientid = $("#hardwarecontent #divsolaredgeapi #oauthclientid").val();
+				var oauthclientsecret = $("#hardwarecontent #divsolaredgeapi #oauthclientsecret").val();
+				var oauthcode = $("#hardwarecontent #divsolaredgeapi #oauthcode").val();
+				if (apikey == "" && (oauthclientid == "" || oauthclientsecret == "")) {
+					ShowNotify($.t('Please enter a Fleet API Key, or an OAuth2 Client ID and Client Secret!'), 2500, true);
 					return;
 				}
 				var webusername = $("#hardwarecontent #divsolaredgeapi #webusername").val();
 				var webpassword = $("#hardwarecontent #divsolaredgeapi #webpassword").val();
 				var siteid = $("#hardwarecontent #divsolaredgeapi #siteid").val();
 				var polloptimizers = $("#hardwarecontent #divsolaredgeapi #polloptimizers").prop("checked") ? 1 : 0;
-				var extra = encodeURIComponent(webusername + "|" + siteid);
+				var extra = encodeURIComponent(webusername + "|" + siteid + "|" + btoa(oauthclientid) + "|" + btoa(oauthclientsecret) + "|" + btoa(oauthcode));
 
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
@@ -4792,6 +4816,14 @@ define(['app'], function (app) {
 							if (parts.length >= 2) {
 								$("#hardwarecontent #hardwareparamssolaredgeapi #siteid").val(parts[1]);
 							}
+							if (parts.length >= 3 && parts[2] !== "") {
+								$("#hardwarecontent #hardwareparamssolaredgeapi #oauthclientid").val(atob(parts[2]));
+							}
+							if (parts.length >= 4 && parts[3] !== "") {
+								$("#hardwarecontent #hardwareparamssolaredgeapi #oauthclientsecret").val(atob(parts[3]));
+							}
+							// parts[4] (the one-time authorization code) is intentionally never restored here:
+							// it's cleared server-side once exchanged, and left blank means "already authorized".
 						}
 						else if (data["Type"].indexOf("Nest Th") >= 0 && data["Type"].indexOf("OAuth") >= 0) {
 							$("#hardwarecontent #hardwareparamsnestoauthapi #apikey").val(data["Username"]);
