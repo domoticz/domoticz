@@ -5175,6 +5175,8 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 
 		if (bIsJSON)
 		{
+			bool bReceivedLevel = false;
+
 			if (root["value"].isObject() && (!root["value"]["red"].empty() && root["value"]["r"].empty()))
 			{
 				// Color values are defined in "value" object instead of "color" as expected by domoticz (e.g. Fibaro FGRGBW)
@@ -5267,6 +5269,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 						{
 							//must be a level
 							level = atoi(szSwitchCmd.c_str());
+							bReceivedLevel = true;
 
 							if (pSensor->bHave_brightness_scale)
 								level = (int)round((100.0 / pSensor->brightness_scale) * level);
@@ -5321,6 +5324,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			{
 				float dLevel = (100.F / pSensor->brightness_scale) * root["brightness"].asInt();
 				level = (int)round(dLevel);
+				bReceivedLevel = true;
 				if (
 					(szSwitchCmd != pSensor->payload_on)
 					&& (szSwitchCmd != pSensor->payload_off))
@@ -5426,6 +5430,12 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				bHaveColorChange = szColorOld != szColorNew;
 				bDoNotUpdateLevel = true;
 			}
+
+			// A light that reports color and brightness on separate state topics (e.g. Fibaro
+			// FGRGBW via Z-Wave JS) sends color messages without a level. Keep the stored level
+			// so such a message only changes the color and on/off state, not the brightness.
+			if (bDoNotUpdateLevel && !bReceivedLevel)
+				level = atoi(sValue.c_str());
 		}
 		else
 		{
