@@ -1,0 +1,70 @@
+/*
+ * Styles for the example widget.
+ *
+ * A package's css is injected once, the first time one of its widgets is
+ * rendered. It is global, so prefix your selectors: there is nothing scoping
+ * them to your widget.
+ *
+ * Prefer the Domoticz theme variables over hard-coded colours so the widget
+ * follows whatever theme the user has picked.
+ */
+.example-widget {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 10px 14px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.example-widget__title {
+    font-size: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.7;
+    color: var(--dz-body-text);
+}
+
+.example-widget__body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.example-widget__value {
+    font-size: 1.9em;
+    font-weight: 600;
+    line-height: 1.1;
+    color: var(--example-accent, var(--dz-accent-color, #4e9af1));
+}
+
+.example-widget__name {
+    font-size: 0.85em;
+    color: var(--dz-body-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.example-widget__updated {
+    font-size: 0.75em;
+    opacity: 0.6;
+    color: var(--dz-body-text);
+}
+
+.example-widget__state {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1 1 auto;
+    font-size: 0.85em;
+    color: var(--dz-body-text);
+    opacity: 0.75;
+}
+
+.example-widget__state--error {
+    color: var(--dz-status-timeout, #DF2D3A);
+    opacity: 1;
+}
