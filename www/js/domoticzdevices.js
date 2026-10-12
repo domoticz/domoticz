@@ -798,6 +798,9 @@ function Device(item) {
             if (existing != undefined) {
                 el = existing.cloneNode(false);  // shallow clone only
                 sDirection = el.getAttribute('direction');
+                // A Text device changes size when its content gains or loses line breaks
+                el.setAttribute('width', this.width);
+                el.setAttribute('height', this.height);
                 el.setAttribute('transform', Device.popupTransform(el));
             } else {
                 el = makeSVGnode('g', { 'class': 'DeviceDetails', id: this.uniquename + '_Detail', transform: 'translate(-' + Device.elementPadding + ',-' + Device.elementPadding * 6 + ')', width: this.width, height: this.height, direction: 'right', style: 'display:' + showme + '; -webkit-user-select: none;', onmouseleave: "$('.DeviceDetails').css('display', 'none');", 'pointer-events': 'none' }, '');
@@ -1368,11 +1371,17 @@ Device.popupFit = function (target, bKeepDirection) {
     var oMatrix = oTarget.getScreenCTM();
     var oRect = oTarget.getBoundingClientRect();
     var oSvgRect = oSvg.getBoundingClientRect();
+    // While the page is pinch zoomed only the visual viewport is on screen, a smaller and offset part
+    // of the layout viewport that getBoundingClientRect measures against
+    var vv = window.visualViewport;
+    var oScreen = ((typeof vv != 'undefined') && (vv != null))
+        ? { left: vv.offsetLeft, top: vv.offsetTop, right: vv.offsetLeft + vv.width, bottom: vv.offsetTop + vv.height }
+        : { left: 0, top: 0, right: document.documentElement.clientWidth, bottom: document.documentElement.clientHeight };
     var oView = {
-        left: Math.max(oSvgRect.left, 0),
-        top: Math.max(oSvgRect.top, 0),
-        right: Math.min(oSvgRect.right, document.documentElement.clientWidth),
-        bottom: Math.min(oSvgRect.bottom, document.documentElement.clientHeight)
+        left: Math.max(oSvgRect.left, oScreen.left),
+        top: Math.max(oSvgRect.top, oScreen.top),
+        right: Math.min(oSvgRect.right, oScreen.right),
+        bottom: Math.min(oSvgRect.bottom, oScreen.bottom)
     };
     if ((oMatrix == null) || (oMatrix.a <= 0) || (oRect.width == 0) || (oView.right <= oView.left) || (oView.bottom <= oView.top)) {
         return;
