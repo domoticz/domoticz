@@ -798,13 +798,7 @@ function Device(item) {
             if (existing != undefined) {
                 el = existing.cloneNode(false);  // shallow clone only
                 sDirection = el.getAttribute('direction');
-                var oTransform = new Transform(el);
-                if (sDirection == 'right') {
-                    oTransform.xOffset = -Device.elementPadding;
-                } else {
-                    oTransform.xOffset = -(this.width - Device.iconSize - Device.elementPadding);
-                }
-                el.setAttribute('transform', oTransform.toString());
+                el.setAttribute('transform', Device.popupTransform(el));
             } else {
                 el = makeSVGnode('g', { 'class': 'DeviceDetails', id: this.uniquename + '_Detail', transform: 'translate(-' + Device.elementPadding + ',-' + Device.elementPadding * 6 + ')', width: this.width, height: this.height, direction: 'right', style: 'display:' + showme + '; -webkit-user-select: none;', onmouseleave: "$('.DeviceDetails').css('display', 'none');", 'pointer-events': 'none' }, '');
             }
@@ -1309,6 +1303,12 @@ Device.popupCancelDelay = function () {
 Device.popup = function (target) {
     var ignorePopupDelay = (Device.popupDelayDevice != "");
     Device.popupCancelDelay();
+    // Zoomed into a room the device icon is larger than its popup and not fully covered by it, so
+    // the pointer reaches the icon again while its popup is open; reopening would hide it and
+    // restart the delay on every pass
+    if ($(document.getElementById(target + "_Detail")).css('display') == 'inline') {
+        return;
+    }
     $('.DeviceDetails').css('display', 'none');   // hide all popups
     if (Device.expandVar != null) {
         clearInterval(Device.expandVar);
@@ -1324,25 +1324,90 @@ Device.popup = function (target) {
         return;
     }
 
-    // try to check if the popup needs to be flipped, if this can't be done just display it
     var oTarget = document.getElementById(target + "_Detail");
-    var oTemp = oTarget.parentNode;
-    var oTransform = new Transform();
-    while (oTemp.nodeName.toLowerCase() != 'svg') {
-        var oNew = new Transform(oTemp);
-        oTransform.Add(oNew);
-        oTemp = oTemp.parentNode;
-    }
     oTarget.setAttribute('style', 'display:inline; -webkit-user-select: none;');
-
-    var imageWidth = (oTransform.scale == 0) ? Device.xImageSize : Device.xImageSize / oTransform.scale;
-    var requiredWidth = oTransform.xOffset + parseInt(oTarget.getAttribute('width'));
-    var sDir = (imageWidth < requiredWidth) ? 'left' : 'right';
-    if (sDir != oTarget.getAttribute('direction')) {
-        oTarget.setAttribute('direction', sDir);
-    }
     oTarget.setAttribute("expanded", "false");
     Device.popupRedraw(target);
+    Device.popupFit(target);
+}
+// The popup's placement around its device icon. 'direction' picks the side of the icon it opens
+// to; zoomscale, nudgex and nudgey are set by Device.popupFit and kept as attributes so they
+// survive every redraw (the shallow clone in drawDetails copies them).
+// The scale comes first so the offsets scale with it, keeping the popup's own icon on the device.
+Device.popupTransform = function (el) {
+    var fWidth = parseFloat(el.getAttribute('width'));
+    var fX = (el.getAttribute('direction') == 'right') ? -Device.elementPadding : -(fWidth - Device.iconSize - Device.elementPadding);
+    var fY = -(Device.elementPadding * 6);
+    fX += parseFloat(el.getAttribute('nudgex')) || 0;
+    fY += parseFloat(el.getAttribute('nudgey')) || 0;
+    var fZoomScale = parseFloat(el.getAttribute('zoomscale')) || 1;
+    return 'scale(' + fZoomScale + ') translate(' + fX + ',' + fY + ')';
+}
+// Keep a shown popup readable and inside the part of the plan the user can see.
+// Zooming into a room scales the whole plan group, popups included, which on a small screen
+// makes a popup wider than the screen; the popup is scaled back so it keeps its unzoomed size.
+// Placement is then measured on screen, because the popup sits under nested transforms (the
+// room zoom, the icon's own scale) and the plan svg is clipped by both its own box and the
+// browser viewport: plan coordinates cannot tell what is visible once a room is zoomed in.
+// Horizontally the popup opens to the right of its icon or flips to the left of it, which keeps
+// the popup's icon over the device; only what still sticks out is shifted, as it is vertically,
+// where there is no flip.
+Device.popupFit = function (target, bKeepDirection) {
+    var oTarget = document.getElementById(target + "_Detail");
+    if ((oTarget == null) || (typeof oTarget.getScreenCTM != "function") || (oTarget.ownerSVGElement == null)) {
+        return;
+    }
+    var oSvg = oTarget.ownerSVGElement;
+    var oZoomGroup = (typeof oTarget.closest == "function") ? oTarget.closest('[zoomed]') : null;
+    var oZoomMatrix = (oZoomGroup != null) ? oZoomGroup.getScreenCTM() : null;
+    var oSvgMatrix = oSvg.getScreenCTM();
+    var fZoom = ((oZoomMatrix != null) && (oSvgMatrix != null) && (oSvgMatrix.a > 0) && (oZoomMatrix.a > 0)) ? oZoomMatrix.a / oSvgMatrix.a : 1;
+    oTarget.setAttribute('zoomscale', String(1 / fZoom));
+    oTarget.setAttribute('transform', Device.popupTransform(oTarget));
+
+    var oMatrix = oTarget.getScreenCTM();
+    var oRect = oTarget.getBoundingClientRect();
+    var oSvgRect = oSvg.getBoundingClientRect();
+    var oView = {
+        left: Math.max(oSvgRect.left, 0),
+        top: Math.max(oSvgRect.top, 0),
+        right: Math.min(oSvgRect.right, document.documentElement.clientWidth),
+        bottom: Math.min(oSvgRect.bottom, document.documentElement.clientHeight)
+    };
+    if ((oMatrix == null) || (oMatrix.a <= 0) || (oRect.width == 0) || (oView.right <= oView.left) || (oView.bottom <= oView.top)) {
+        return;
+    }
+    var fScale = oMatrix.a;  // screen pixels per popup unit; the plan is never rotated
+    var fNudgeX = parseFloat(oTarget.getAttribute('nudgex')) || 0;
+    var fNudgeY = parseFloat(oTarget.getAttribute('nudgey')) || 0;
+    var fFlip = (parseFloat(oTarget.getAttribute('width')) - Device.iconSize) * fScale;
+
+    // Where the popup would be with no nudge, opened to the right of its icon
+    var fRightLeft = oRect.left - (fNudgeX * fScale) + ((oTarget.getAttribute('direction') == 'right') ? 0 : fFlip);
+    var fTop = oRect.top - (fNudgeY * fScale);
+    var fOverflowRight = Math.max(0, (fRightLeft + oRect.width) - oView.right) + Math.max(0, oView.left - fRightLeft);
+    var fOverflowLeft = Math.max(0, (fRightLeft - fFlip + oRect.width) - oView.right) + Math.max(0, oView.left - (fRightLeft - fFlip));
+    var sDir = ((fOverflowRight > 0) && (fOverflowLeft < fOverflowRight)) ? 'left' : 'right';
+    if (bKeepDirection == true) {
+        sDir = (oTarget.getAttribute('direction') == 'right') ? 'right' : 'left';
+    }
+    var fLeft = (sDir == 'left') ? fRightLeft - fFlip : fRightLeft;
+
+    // Shift by whatever still sticks out; a popup larger than the view keeps its top left visible
+    var fShiftX = Math.max(Math.min(0, oView.right - (fLeft + oRect.width)), oView.left - fLeft);
+    var fShiftY = Math.max(Math.min(0, oView.bottom - (fTop + oRect.height)), oView.top - fTop);
+
+    var bFlip = (sDir != oTarget.getAttribute('direction'));
+    oTarget.setAttribute('direction', sDir);
+    oTarget.setAttribute('nudgex', String(fShiftX / fScale));
+    oTarget.setAttribute('nudgey', String(fShiftY / fScale));
+    if (bFlip) {
+        // The contents are laid out per side, so the flipped box is only known after the redraw
+        Device.popupRedraw(target);
+        Device.popupFit(target, true);
+    } else {
+        oTarget.setAttribute('transform', Device.popupTransform(oTarget));
+    }
 }
 Device.popupRedraw = function (target) {
     var oData = document.getElementById(target + "_Data");
@@ -1430,6 +1495,7 @@ Device.popupExpansion = function () {
         Device.expandShadow = null;
         Device.expandVar = null;
         Device.popupRedraw(Device.expandTarget);
+        Device.popupFit(Device.expandTarget);
     }
 }
 Device.MakeFavorite = function (id, isfavorite) {
