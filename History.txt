@@ -1,4 +1,5 @@
 Version 2026.xxxx
+- Added: MCP, new admin tools add_room, update_room, delete_room, reorder_rooms, add_room_devices, remove_room_devices and reorder_room_devices to manage rooms (plans) and the devices and scenes in them, including their order; get_rooms now lists the rooms in their display order
 - Changed: InComfort, the Room-2 thermostat setpoint now has its own device; it shared a device ID with the central heating water temperature, so the two values overwrote each other. Existing installations get a new 'Room-2 Thermostat Setpoint' device (make sure 'Accept new Hardware Devices' is enabled, or allow it temporarily), the old device keeps showing the central heating water temperature
 - Fixed: 1-Wire, a DS2423 counter that could not be read is no longer reported as a huge counter value (#7064)
 - Fixed: Alexa, ReportState now includes the color of RGB dimmers; the check on the stored color was inverted

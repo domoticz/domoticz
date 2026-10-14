@@ -56,6 +56,13 @@ namespace mcp
 	bool switchScene(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool getRooms(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool getRoomDevices(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool addRoom(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool updateRoom(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool deleteRoom(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool reorderRooms(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool addRoomDevices(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool removeRoomDevices(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool reorderRoomDevices(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool getSceneDevices(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool getSceneHistory(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 
