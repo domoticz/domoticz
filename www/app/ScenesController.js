@@ -930,6 +930,13 @@ define(['app', 'livesocket', 'widgets/dzSceneWidget'], function (app) {
 											ShowNotify(data.message, 3000, true);
 										}
 									}
+								},
+								error: function (xhr) {
+									var msg = $.t("Request failed") + " (" + xhr.status + ")";
+									if (xhr.responseJSON && xhr.responseJSON.message) {
+										msg = xhr.responseJSON.message;
+									}
+									ShowNotify(msg, 3000, true);
 								}
 							});
 
