@@ -31,6 +31,7 @@
 
 #include <string>
 #include <algorithm>
+#include <atomic>
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
@@ -57,7 +58,7 @@ public:
     boost::asio::io_context io; ///< Io service object
     boost::asio::serial_port port; ///< Serial port object
     boost::thread backgroundThread; ///< Thread that runs read/write operations
-    bool open{ false };		    ///< True if port open
+    std::atomic_bool open{ false }; ///< True if port open
     bool error{ false };	    ///< Error flag
     mutable std::mutex errorMutex; ///< Mutex for access to error
 
@@ -119,13 +120,27 @@ void AsyncSerial::open(const std::string& devname, unsigned int baud_rate,
 
 	pimpl->io.restart();
 
-	// This gives some work to the io_context before it is started
-	boost::asio::post(pimpl->io, [this] { return doRead(); });
+	pimpl->open = true; // Port is open before the worker can run doRead.
 
-	boost::thread t([p = &pimpl->io] { p->run(); });
-	pimpl->backgroundThread.swap(t);
-	setErrorStatus(false); // If we get here, no error
-	pimpl->open = true;    // Port is now open
+	setErrorStatus(false); // Initialize before the worker can report an error.
+	try
+	{
+		// This gives some work to the io_context before it is started.
+		boost::asio::post(pimpl->io, [this] { return doRead(); });
+		boost::thread t([p = &pimpl->io] { p->run(); });
+		pimpl->backgroundThread.swap(t);
+	}
+	catch (...)
+	{
+		pimpl->open = false;
+		setErrorStatus(true);
+		boost::system::error_code ec;
+		pimpl->port.close(ec);
+		// Drain the posted read while closed so a retry cannot start two reads.
+		pimpl->io.restart();
+		pimpl->io.poll();
+		throw;
+	}
 }
 
 void AsyncSerial::openOnlyBaud(const std::string& devname, unsigned int baud_rate,
@@ -151,13 +166,25 @@ void AsyncSerial::openOnlyBaud(const std::string& devname, unsigned int baud_rat
 
 	pimpl->io.restart();
 
-	//This gives some work to the io_context before it is started
-	boost::asio::post(pimpl->io, [this] { return doRead(); });
+	pimpl->open = true; // Port is open before the worker can run doRead.
 
-	boost::thread t([p = &pimpl->io] { p->run(); });
-	pimpl->backgroundThread.swap(t);
-	setErrorStatus(false);//If we get here, no error
-	pimpl->open=true; //Port is now open
+	setErrorStatus(false); // Initialize before the worker can report an error.
+	try
+	{
+		boost::asio::post(pimpl->io, [this] { return doRead(); });
+		boost::thread t([p = &pimpl->io] { p->run(); });
+		pimpl->backgroundThread.swap(t);
+	}
+	catch (...)
+	{
+		pimpl->open = false;
+		setErrorStatus(true);
+		boost::system::error_code ec;
+		pimpl->port.close(ec);
+		pimpl->io.restart();
+		pimpl->io.poll();
+		throw;
+	}
 }
 
 bool AsyncSerial::isOpen() const
