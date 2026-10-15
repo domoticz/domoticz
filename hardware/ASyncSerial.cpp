@@ -277,6 +277,9 @@ void AsyncSerial::readEnd(const boost::system::error_code& error,
 
 void AsyncSerial::doWrite()
 {
+    // Startup rollback drains queued handlers after closing the port.
+    // Leave queued bytes intact; do not start I/O on the closed port.
+    if (!isOpen()) return;
     //If a write operation is already in progress, do nothing
     if (pimpl->writeBuffer == nullptr)
     {

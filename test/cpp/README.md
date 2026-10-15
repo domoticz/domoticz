@@ -1,13 +1,15 @@
 # AsyncSerial startup regression (Linux)
 
 This standalone regression compiles the production serial implementation and uses
-a real PTY. It delays return from successful pthread creation while the actual worker
-runs, exposing the valid ordering where doRead executes before open returns. It
-checks received input for both open methods. It also injects one pthread creation
-failure, checks rollback/error state, then retries and verifies input. Application
+a real PTY. It holds return from successful pthread creation until the actual worker
+has delivered PTY input, using a bounded condition-variable wait rather than a delay.
+Both open methods must deliver the callback before open returns. It also injects one
+pthread creation failure after a separate writer has queued data, checks rollback/error
+state, then retries and verifies both queued output and input. Application
 logging and the sleep helper are stubbed; production serial I/O and scheduling run.
 Pass `baud` to test only openOnlyBaud or `full` to test only open.
 
+Assertions must remain enabled (do not compile with NDEBUG).
 Requires a C++17 compiler, Boost Thread/System and JsonCpp headers. Run from the
 repository root, placing outputs outside the checkout:
 
