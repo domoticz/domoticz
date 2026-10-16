@@ -341,6 +341,10 @@ define(['app', 'livesocket'], function (app) {
 					var existing = document.getElementById(dev.uniquename);
 					if (existing != undefined) {
 						dev.htmlMinimum(existing.parentNode);
+						// An open popup can change size with its content (Text devices); fit it again
+						if ($(document.getElementById(dev.uniquename + "_Detail")).css('display') == 'inline') {
+							Device.popupFit(dev.uniquename);
+						}
 					}
 				}
 				catch (err) {

@@ -14,6 +14,7 @@ Version 2026.xxxx
 - Fixed: EnOcean, node IDs and raw values with the highest bit set were built with signed shifts
 - Fixed: EnOcean ESP2/ESP3 and PiFace, queued telegrams are now taken from the queue under its lock, preventing a possible crash
 - Fixed: Events, a random delay of 0 could crash Domoticz (division by zero); random delays now range from 0 up to and including the requested maximum
+- Fixed: Floorplans, device popups stay inside the visible part of the plan, also when zoomed into a room, and keep their normal size instead of growing with the zoom
 - Fixed: Hardware, new Kodi, HEOS, Logitech Media Server, Panasonic TV and Wake-on-LAN nodes are created as used again; the used flag was ignored when inserting the device
 - Fixed: HomeConfort, group commands stored a wrong value because the command was formatted as a string
 - Fixed: Limitless, the V6 generic disco mode command was sent with the mode of the previous numbered disco command
