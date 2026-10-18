@@ -1418,7 +1418,7 @@
 					error: function (xhr) {
 						var msg = $.t("Request failed") + " (" + xhr.status + ")";
 						if (xhr.responseJSON && xhr.responseJSON.message) {
-							msg = xhr.responseJSON.message;
+							msg = $("<div>").text(xhr.responseJSON.message).html();
 						}
 						ShowNotify(msg, 3000, true);
 					}
