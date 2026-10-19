@@ -281,6 +281,7 @@ protected:
 	bool StopHardware() override;
 private:
 	std::string m_TopicDiscoveryPrefix;
+	bool m_bEnableNewDevicesByDefault = true;
 
 	std::map<std::string, _tMQTTADevice> m_discovered_devices;
 	std::map<std::string, _tMQTTASensor> m_discovered_sensors;
