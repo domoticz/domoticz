@@ -2227,9 +2227,13 @@ bool CSQLHelper::OpenDatabase()
 				for (const auto &sd : result)
 				{
 					std::string lowerName = "fitbit";
-					for (uint8_t i = 0; i < 6; i++)
-						lowerName[i] = sd[1][i] | 0x20;
-					if (lowerName == "fitbit")
+					const bool isLongEnoughForFitbit = sd[1].size() >= lowerName.size();
+					if (isLongEnoughForFitbit)
+					{
+						for (uint8_t i = 0; i < lowerName.size(); i++)
+							lowerName[i] = sd[1][i] | 0x20;
+					}
+					if (isLongEnoughForFitbit && lowerName == "fitbit")
 						safe_query("DELETE FROM Hardware WHERE ID=%s", sd[0].c_str());
 					else
 					{
