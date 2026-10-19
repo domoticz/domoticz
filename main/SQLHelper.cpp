@@ -10633,8 +10633,9 @@ bool CSQLHelper::RestoreDatabaseFromFile(const std::string& sourceFilePath)
 	if (validDomoticzDatabase)
 	{
 		rc = sqlite3_prepare_v2(dbase_restore,
-			"SELECT 1 FROM DeviceStatus LIMIT 0", -1, &statement, nullptr);
-		validDomoticzDatabase = (rc == SQLITE_OK);
+			"SELECT 1 FROM sqlite_master WHERE type='table' AND name IN ('Preferences','DeviceStatus') GROUP BY type HAVING COUNT(DISTINCT name)=2",
+			-1, &statement, nullptr);
+		validDomoticzDatabase = (rc == SQLITE_OK) && (sqlite3_step(statement) == SQLITE_ROW);
 		sqlite3_finalize(statement);
 	}
 	sqlite3_close(dbase_restore);
