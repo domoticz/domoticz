@@ -13,6 +13,7 @@ define(['app'], function (app) {
 		'MQTT Auto Discovery Client Gateway with LAN interface': ['MQTTParams', 3],
 		'RFLink Gateway MQTT': ['MQTTParams', 4],
 		'Tado Thermostat': 'TadoParams',
+		'Enigma2 receiver': 'Enigma2Params',
 	};
 
 	app.controller('HardwareController', function ($scope, $rootScope, $timeout, $http) {
@@ -4145,7 +4146,7 @@ define(['app'], function (app) {
 
 							var SerialName = "Unknown!?";
 							var intport = 0;
-							if ((HwTypeStr.indexOf("LAN") >= 0) || (HwTypeStr.indexOf("MySensors Gateway with MQTT") >= 0) || (HwTypeStr.indexOf("Domoticz") >= 0) || (HwTypeStr.indexOf("Harmony") >= 0) || (HwTypeStr.indexOf("Philips Hue") >= 0) || (HwTypeStr.indexOf("Daikin") >= 0)) {
+							if ((HwTypeStr.indexOf("LAN") >= 0) || (HwTypeStr.indexOf("MySensors Gateway with MQTT") >= 0) || (HwTypeStr.indexOf("Domoticz") >= 0) || (HwTypeStr.indexOf("Harmony") >= 0) || (HwTypeStr.indexOf("Philips Hue") >= 0) || (HwTypeStr.indexOf("Daikin") >= 0) || (HwTypeStr.indexOf("Enigma2 receiver") >= 0)) {
 								SerialName = item.Port;
 							}
 							else if ((item.Type == 7) || (item.Type == 11)) {

@@ -159,6 +159,7 @@
 #include "../hardware/Enever.h"
 #include "../hardware/MitsubishiWF.h"
 #include "../hardware/Matter.h"
+#include "../hardware/Enigma2.h"
 
 // load notifications configuration
 #include "../notifications/NotificationHelper.h"
@@ -1113,6 +1114,9 @@ bool MainWorker::AddHardwareFromParams(
 			uint16_t matterPort = (Port == 0) ? 5580 : static_cast<uint16_t>(Port);
 			pHardware = new CMatter(ID, Address, matterPort);
 		}
+		break;
+	case HTYPE_Enigma2:
+		pHardware = new CEnigma2(ID, Address, Port, Username, Password, Mode1, Mode2, Mode3);
 		break;
 
 	}

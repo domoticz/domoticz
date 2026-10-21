@@ -281,6 +281,7 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_DaikinModbus, "Daikin Altherma (Modbus TCP via Homehub)", "DaikinHH" },
 	{ HTYPE_OpenMeteo, "Open-Meteo (Weather Lookup)", "OpenMeteo" },
 	{ HTYPE_Matter, "Matter (python-matterjs-server)", "Matter" },
+	{ HTYPE_Enigma2, "Enigma2 receiver", "Enigma2" },
 	{ 0, nullptr, nullptr },
 };
 
@@ -4053,6 +4054,7 @@ bool IsNetworkDevice(const _eHardwareTypes htype)
 	case HTYPE_AlfenEveCharger:
 	case HTYPE_MitsubishiWF:
 	case HTYPE_Matter:
+	case HTYPE_Enigma2:
 		return true;
 	default:
 		return false;
