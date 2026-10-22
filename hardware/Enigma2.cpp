@@ -92,25 +92,45 @@ void CEnigma2::Do_Work()
 }
 
 // Status and Source are created when missing. Existing devices (also those created by the
-// Enigma2 Python plugin, which uses the same units) are left as they are.
+// Enigma2 Python plugin, which uses the same units) are kept with their history.
 void CEnigma2::CreateDevices()
 {
 	char szID[20];
 	std::vector<std::vector<std::string>> result;
 
-	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", m_HwdID, ENIGMA2_UNIT_STATUS);
-	if (result.empty())
+	// The ID a Lighting2 command echo uses; the Python plugin stored it as %04X%04X
+	snprintf(szID, sizeof(szID), "%X%02X%02X%02X", 0, 0, (m_HwdID & 0xFF00) >> 8, m_HwdID & 0xFF);
+	result = m_sql.safe_query("SELECT ID, DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", m_HwdID, ENIGMA2_UNIT_STATUS);
+	if (!result.empty())
 	{
-		sprintf(szID, "%X%02X%02X%02X", 0, 0, (m_HwdID & 0xFF00) >> 8, m_HwdID & 0xFF);
+		if (result[0][1] != szID)
+		{
+			Log(LOG_STATUS, "Status device ID %s changed to %s", result[0][1].c_str(), szID);
+			m_sql.safe_query("UPDATE DeviceStatus SET DeviceID='%q' WHERE (ID==%s)", szID, result[0][0].c_str());
+		}
+	}
+	else
+	{
 		uint64_t idx = m_sql.InsertDevice(m_HwdID, 0, szID, ENIGMA2_UNIT_STATUS, pTypeLighting2, sTypeAC, STYPE_Media, 0, "Enigma2 OFF", m_Name + " - Status", 12, 255, 1);
 		if (idx != (uint64_t)-1)
 			m_sql.safe_query("UPDATE DeviceStatus SET CustomImage=2 WHERE (ID==%" PRIu64 ")", idx);
 	}
 
 	result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", m_HwdID, ENIGMA2_UNIT_SOURCE);
-	if (result.empty())
+	if (!result.empty())
 	{
-		sprintf(szID, "%08X", m_HwdID);
+		// Off is shown only when it sends deep standby; follow the setting after it changes
+		std::map<std::string, std::string> options = m_sql.GetDeviceOptions(result[0][0]);
+		const std::string offHidden = m_bDeepStandby ? "false" : "true";
+		if (options["LevelOffHidden"] != offHidden)
+		{
+			options["LevelOffHidden"] = offHidden;
+			m_sql.SetDeviceOptions(std::stoull(result[0][0]), options);
+		}
+	}
+	else
+	{
+		snprintf(szID, sizeof(szID), "%08X", m_HwdID);
 		uint64_t idx = m_sql.InsertDevice(m_HwdID, 0, szID, ENIGMA2_UNIT_SOURCE, pTypeGeneralSwitch, sSwitchTypeSelector, STYPE_Selector, 0, "0", m_Name + " - Source", 12, 255, 1);
 		if (idx != (uint64_t)-1)
 		{
@@ -223,9 +243,13 @@ void CEnigma2::Poll()
 	if (!m_bInfoLogged)
 		LogBoxInfo();
 
+	// Anything but true/false (an error page that parses as XML) keeps the last state
 	std::string inStandby = ChildText(doc.RootElement(), "e2instandby");
-	if (inStandby.empty())
+	if ((inStandby != "true") && (inStandby != "false"))
+	{
 		Log(LOG_ERROR, "Unexpected /web/powerstate response");
+		return;
+	}
 
 	if (inStandby == "false")
 	{
@@ -259,8 +283,12 @@ void CEnigma2::UpdateUnit(const int unit, const int nValue, const std::string &s
 		return;
 
 	std::string devname = result[0][5];
-	m_sql.UpdateValue(m_HwdID, 0, result[0][0].c_str(), (unsigned char)unit, (unsigned char)atoi(result[0][1].c_str()), (unsigned char)atoi(result[0][2].c_str()), 12, 255, nValue,
-			  sValue.c_str(), devname, true, m_Name.c_str());
+	uint64_t DeviceRowIdx = m_sql.UpdateValue(m_HwdID, 0, result[0][0].c_str(), (unsigned char)unit, (unsigned char)atoi(result[0][1].c_str()), (unsigned char)atoi(result[0][2].c_str()), 12, 255,
+						  nValue, sValue.c_str(), devname, true, m_Name.c_str());
+	if (DeviceRowIdx == (uint64_t)-1)
+		return;
+	// Live updates for the web interface and push/MQTT exports
+	m_mainworker.sOnDeviceReceived(m_HwdID, DeviceRowIdx, devname, nullptr);
 }
 
 bool CEnigma2::SendPowerState(const int newState)
