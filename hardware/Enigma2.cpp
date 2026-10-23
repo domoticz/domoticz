@@ -98,7 +98,7 @@ void CEnigma2::CreateDevices()
 	char szID[20];
 	std::vector<std::vector<std::string>> result;
 
-	// The ID a Lighting2 command echo uses; the Python plugin stored it as %04X%04X
+	// The ID this driver gives the Status device; one stored by the Python plugin (%04X%04X) is rewritten to it
 	snprintf(szID, sizeof(szID), "%X%02X%02X%02X", 0, 0, (m_HwdID & 0xFF00) >> 8, m_HwdID & 0xFF);
 	result = m_sql.safe_query("SELECT ID, DeviceID FROM DeviceStatus WHERE (HardwareID==%d) AND (Unit==%d)", m_HwdID, ENIGMA2_UNIT_STATUS);
 	if (!result.empty())
