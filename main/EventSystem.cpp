@@ -3815,6 +3815,9 @@ bool CEventSystem::ScheduleEvent(std::string deviceName, const std::string &Acti
 	}
 	if (!result.empty())
 	{
+		if (result.size() > 1)
+			_log.Log(LOG_ERROR, "EventSystem: %s '%s' is not unique (%d matches), the command goes to idx %s. Give each %s a unique name.",
+				isScene ? "Scene/Group name" : "Device name", deviceName.c_str(), static_cast<int>(result.size()), result[0][0].c_str(), isScene ? "scene/group" : "device");
 		std::vector<std::string> sd = result[0];
 		int idx = atoi(sd[0].c_str());
 		return (ScheduleEvent(idx, Action, isScene, eventName, sceneType));
