@@ -457,6 +457,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
                                     }
                                     this.categories.forEach(function (c) {
                                         self.chart.chart.xAxis[0].categories.push(c); });
+                                    self.chart.chart.xAxis[0].userOptions.categories = this.categories;
 
                                     function categoriesFromGroupingBy(groupingBy) {
                                         if (groupingBy === 'year') {

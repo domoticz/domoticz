@@ -80,6 +80,9 @@ define(['app'], function (app) {
                     date: item.d
                 });
             });
+            if (dataPoints.length > 0 && dataPoints[0].x > 1) {
+                dataPoints.unshift({ x: 1, y: 0, date: String(yr) + '-01-01' });
+            }
             return dataPoints;
         }
 

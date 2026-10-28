@@ -326,7 +326,14 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                             }
                         }
                     },
-                    title: false,
+                    title: { text: null },
+                    exporting: {
+                        chartOptions: {
+                            title: {
+                                text: typeof self.chartName === 'string' ? self.chartName : null
+                            }
+                        }
+                    },
                     series: [],
                     legend: {
                         enabled: true

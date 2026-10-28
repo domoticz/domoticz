@@ -226,7 +226,11 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader'],
                                 valueKeySuffix: '_avg',
                                 colorIndex: 0,
                                 template: {
-                                    name: $.t('Average')
+                                    name: $.t('Average'),
+                                    // The average is calculated, not measured, so it has no natural precision
+                                    tooltip: {
+                                        valueDecimals: 2
+                                    }
                                 }
                             }
                         ]

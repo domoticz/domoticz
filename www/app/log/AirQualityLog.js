@@ -102,7 +102,10 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 									valueKeySuffix: '_avg',
 									colorIndex: 0,
 									template: {
-										name: $.t('Average')
+										name: $.t('Average'),
+										tooltip: {
+											valueDecimals: 2
+										}
 									}
 								}
 							]
