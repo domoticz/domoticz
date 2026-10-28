@@ -545,9 +545,10 @@
                     id: 'PRMSS',
                     dataIsValid: function (data) {
 						//make all values negative for the graph
-						for (var i = 0; i < data.result.length; i++) {
-							data.result[i]['r1']= -data.result[i]['r1'];
-							data.result[i]['r2']= -data.result[i]['r2'];
+						var items = data.result || [];
+						for (var i = 0; i < items.length; i++) {
+							items[i]['r1']= -items[i]['r1'];
+							items[i]['r2']= -items[i]['r2'];
 						}
                         return data.delivered === true;
                     },

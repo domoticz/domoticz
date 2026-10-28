@@ -5518,12 +5518,12 @@ uint64_t CSQLHelper::InsertDevice(const int HardwareID, const int OrgHardwareID,
 	}
 
 	safe_query(
-		"INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SwitchType, SignalLevel, BatteryLevel, nValue, sValue, Name) "
-		"VALUES (%d,%d,'%q',%d,%d,%d,%d,%d,%d,%d,'%q','%q')",
+		"INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SwitchType, SignalLevel, BatteryLevel, nValue, sValue, Name, Used) "
+		"VALUES (%d,%d,'%q',%d,%d,%d,%d,%d,%d,%d,'%q','%q',%d)",
 		HardwareID, OrgHardwareID, ID, unit,
 		devType, subType, switchType,
 		signallevel, batterylevel,
-		nValue, sValue, name.c_str());
+		nValue, sValue, name.c_str(), used);
 
 	//Get new ID
 	result = safe_query(
@@ -7849,9 +7849,18 @@ void CSQLHelper::UpdateMultiMeter()
 				if (splitresults.size() != 3)
 					continue; //impossible
 
-				double val1 = std::stod(splitresults[0]);
-				double val2 = std::stod(splitresults[1]);
-				double val3 = std::stod(splitresults[2]);
+				double val1, val2, val3;
+				try
+				{
+					val1 = std::stod(splitresults[0]);
+					val2 = std::stod(splitresults[1]);
+					val3 = std::stod(splitresults[2]);
+				}
+				catch (const std::exception &)
+				{
+					_log.Log(LOG_ERROR, "UpdateMultiMeter: Error converting sValue values! (IDX: %s, sValue: '%s', dType: %d, sType: %d)", sd[0].c_str(), sValue.c_str(), dType, dSubType);
+					continue;
+				}
 
 				value1 = std::llround(val1 * 10.0);
 				value2 = std::llround(val2 * 10.0);
@@ -7863,10 +7872,19 @@ void CSQLHelper::UpdateMultiMeter()
 				if (splitresults.size() != 4)
 					continue; //impossible
 
-				double val1 = std::stod(splitresults[0]);
-				double val2 = std::stod(splitresults[1]);
-				double val3 = std::stod(splitresults[2]);
-				double val4 = std::stod(splitresults[3]);
+				double val1, val2, val3, val4;
+				try
+				{
+					val1 = std::stod(splitresults[0]);
+					val2 = std::stod(splitresults[1]);
+					val3 = std::stod(splitresults[2]);
+					val4 = std::stod(splitresults[3]);
+				}
+				catch (const std::exception &)
+				{
+					_log.Log(LOG_ERROR, "UpdateMultiMeter: Error converting sValue values! (IDX: %s, sValue: '%s', dType: %d, sType: %d)", sd[0].c_str(), sValue.c_str(), dType, dSubType);
+					continue;
+				}
 
 				value1 = std::llround(val1 * 10.0);
 				value2 = std::llround(val2 * 10.0);
@@ -10609,11 +10627,19 @@ bool CSQLHelper::RestoreDatabaseFromFile(const std::string& sourceFilePath)
 	sqlite3_stmt* statement = nullptr;
 	rc = sqlite3_prepare_v2(dbase_restore,
 		"SELECT sValue FROM Preferences WHERE (Key='DB_Version')", -1, &statement, nullptr);
-	// Always finalize the statement before closing to avoid resource leaks
+	bool validDomoticzDatabase = (rc == SQLITE_OK) && (sqlite3_step(statement) == SQLITE_ROW);
 	sqlite3_finalize(statement);
+	statement = nullptr;
+	if (validDomoticzDatabase)
+	{
+		rc = sqlite3_prepare_v2(dbase_restore,
+			"SELECT 1 FROM DeviceStatus LIMIT 0", -1, &statement, nullptr);
+		validDomoticzDatabase = (rc == SQLITE_OK);
+		sqlite3_finalize(statement);
+	}
 	sqlite3_close(dbase_restore);
 
-	if (rc != SQLITE_OK)
+	if (!validDomoticzDatabase)
 	{
 		_log.Log(LOG_ERROR, "Restore Database: Not a valid Domoticz database!");
 		return false;
@@ -10853,7 +10879,7 @@ uint64_t CSQLHelper::UpdateValueHomeConfortGroupCmd(const int HardwareID, const 
 void CSQLHelper::HomeConfortGroupCmd(const std::string& ID, const unsigned char subType, const unsigned char GroupCmd)
 {
 	std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
-	safe_query("UPDATE DeviceStatus SET nValue='%s', sValue='%q', LastUpdate='%q' WHERE (DeviceID=='%q') And (Type==%d) And (SubType==%d) And (nValue!=%d)",
+	safe_query("UPDATE DeviceStatus SET nValue='%d', sValue='%q', LastUpdate='%q' WHERE (DeviceID=='%q') And (Type==%d) And (SubType==%d) And (nValue!=%d)",
 		GroupCmd,
 		"OFF",
 		sLastUpdate.c_str(),

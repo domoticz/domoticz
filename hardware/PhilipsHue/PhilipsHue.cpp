@@ -376,7 +376,12 @@ bool CPhilipsHue::WriteToHardware(const char* pdata, const unsigned char /*lengt
 					//get the xy color
 					double x = 0;
 					double y = 0;
-					RgbToXY(m_lightModels[nodeID], pLed->color.r, pLed->color.g, pLed->color.b, x, y);
+					std::string model;
+					{
+						std::lock_guard<std::mutex> lock(m_mutex);
+						model = m_lightModels[nodeID];
+					}
+					RgbToXY(model, pLed->color.r, pLed->color.g, pLed->color.b, x, y);
 					LCmd = "Set XY";
 					svalue2 = ground(x * 1000);
 					svalue3 = ground(y * 1000);
@@ -1025,7 +1030,7 @@ void CPhilipsHue::LightStateFromJSON(const Json::Value& lightstate, _tHueLightSt
 		// Clamp to conform to HUE API
 		tbri = std::max(1, tbri);
 		tbri = std::min(254, tbri);
-		tlight.level = int(std::ceil((100.0F / 254.0F) * float(tbri)));
+		tlight.level = std::max(1, ground((100.0F / 254.0F) * float(tbri)));
 	}
 	if (!lightstate["sat"].empty())
 	{
@@ -2598,13 +2603,8 @@ void CPhilipsHue::HandleSSEDevicePower(const Json::Value& r)
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_PhilipsHueRegister(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_PhilipsHueRegister(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
 			root["title"] = "RegisterOnHue";
 
 			std::string sipaddress = request::findValue(&req, "ipaddress");

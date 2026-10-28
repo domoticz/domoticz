@@ -280,14 +280,8 @@ namespace http
 {
 	namespace server
 	{
-		void CWebServer::Cmd_SaveInfluxLinkConfig(WebEmSession &session, const request &req, Json::Value &root)
+		void CWebServer::Cmd_SaveInfluxLinkConfig(WebEmSession &/*session*/, const request &req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
-
 			std::string linkactive = request::findValue(&req, "linkactive");
 			std::string isversion2 = request::findValue(&req, "isversion2");
 			std::string remote = request::findValue(&req, "remote");
@@ -315,13 +309,8 @@ namespace http
 			root["title"] = "SaveInfluxLinkConfig";
 		}
 
-		void CWebServer::Cmd_GetInfluxLinkConfig(WebEmSession &session, const request &req, Json::Value &root)
+		void CWebServer::Cmd_GetInfluxLinkConfig(WebEmSession &/*session*/, const request &req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
 			std::string sValue;
 			int nValue;
 			if (m_sql.GetPreferencesVar("InfluxActive", nValue))
@@ -376,13 +365,8 @@ namespace http
 			root["title"] = "GetInfluxLinkConfig";
 		}
 
-		void CWebServer::Cmd_GetInfluxLinks(WebEmSession &session, const request &req, Json::Value &root)
+		void CWebServer::Cmd_GetInfluxLinks(WebEmSession &/*session*/, const request &req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
 			std::vector<std::vector<std::string>> result;
 			result = m_sql.safe_query("SELECT A.ID,A.DeviceRowID,A.Delimitedvalue,A.TargetType,A.TargetVariable,A.TargetDeviceID,A.TargetProperty,A.Enabled, B.Name, A.IncludeUnit, "
 						  "B.Type, B.SubType FROM PushLink as A, DeviceStatus as B WHERE (A.PushType==%d AND A.DeviceRowID==B.ID)",
@@ -414,13 +398,8 @@ namespace http
 			root["title"] = "GetInfluxLinks";
 		}
 
-		void CWebServer::Cmd_SaveInfluxLink(WebEmSession &session, const request &req, Json::Value &root)
+		void CWebServer::Cmd_SaveInfluxLink(WebEmSession &/*session*/, const request &req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
 			std::string idx = request::findValue(&req, "idx");
 			std::string deviceid = request::findValue(&req, "deviceid");
 			int deviceidi = atoi(deviceid.c_str());
@@ -449,14 +428,8 @@ namespace http
 			root["title"] = "SaveInfluxLink";
 		}
 
-		void CWebServer::Cmd_DeleteInfluxLink(WebEmSession &session, const request &req, Json::Value &root)
+		void CWebServer::Cmd_DeleteInfluxLink(WebEmSession &/*session*/, const request &req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;

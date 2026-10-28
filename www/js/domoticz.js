@@ -877,7 +877,7 @@ function GetLayoutFromURL() {
 }
 
 function SetLayoutURL(name) {
-	window.location.hash = name;
+	dzNavigateHash('#' + name);
 }
 
 function SwitchLayout(layout) {
@@ -885,7 +885,7 @@ function SwitchLayout(layout) {
 		clearInterval($.myglobals.refreshTimer);
 		var dest_layout = layout.substring(10);
 		dest_layout = dest_layout.replace(/ /g, "%20");
-		window.location = '#/Custom/' + dest_layout;
+		dzNavigateHash('#/Custom/' + dest_layout);
 		return;
 	}
 	if (layout == "Restart") {
@@ -944,7 +944,7 @@ function SwitchLayout(layout) {
 		layout = 'Floorplans';
 	}
 
-	window.location = '#' + layout;
+	dzNavigateHash('#' + layout);
 }
 
 function checkLength(o, min, max) {
@@ -1372,6 +1372,19 @@ function reload_cam_image() {
 	$('#dialog-camera-live #camfeed').attr("src", xx.src);
 }
 
+function retry_cam_image() {
+	if ((typeof $.camfeed == 'undefined') || ($.camfeed == ""))
+		return;
+	if (typeof $.myglobals.refreshTimer != 'undefined') {
+		clearTimeout($.myglobals.refreshTimer)
+	}
+	// The cached snapshot endpoint can return an empty response while its first
+	// background fetch is still running. An image error has no onload callback to
+	// restart polling, so retry after a short delay instead of leaving the dialog
+	// permanently blank.
+	$.myglobals.refreshTimer = setTimeout(reload_cam_image, 1000);
+}
+
 function ShowCameraLiveStream(Name, camIdx, AspectRatio) {
 	$.count = 0;
 	$.camfeed = "camsnapshot.jpg?idx=" + camIdx;
@@ -1557,15 +1570,13 @@ function ShowMediaRemote(Name, devIdx, HWType) {
 													var buttonSVG = "";
 													bindex++;
 													bx = $(svgId).prop("viewBox").baseVal.x + index * (bwidth+bspacing);
-													// Button shadow
-													buttonSVG += '<rect id="toto" class="remoteshadow" x="'+bx+'" y="'+(bvline+10)+'" width="'+bwidth+'" height="'+bheight+'" rx="50" ry="50"></rect>';
-													// Button 
+													// Button
 													buttonSVG += '<rect class="remotehoverable" fill="url(#grad1)" x="'+bx+'" y="'+(bvline)+'" width="'+bwidth+'" height="'+bheight+'"  rx="50" ry="50" ';
 													buttonSVG += 'onclick="javascript: click_media_remote(\'' + bcommand + '\');" ';
 													buttonSVG += '><title id="dialog-media-remote-opt1-title">' + btitle + '</title></rect>';
 													// Button text
 													buttonSVG += '<text text-anchor="middle" x="'+(bx+bwidth/2)+'" y="'+(bvline+bheight*0.55)+'" class="remotetext" ';
-													buttonSVG += 'fill="black"  style="font-size: 60px; font-weight: bold;">' + btitle + '</text>';
+													buttonSVG += 'style="font-size: 60px; font-weight: bold;">' + btitle + '</text>';
 													// Add button
 													$("#MediaRemote-custom-buttons").append(buttonSVG);
 												});
@@ -2786,27 +2797,34 @@ function WatchLiveSearch(){
 		if(_debug_livesearch)  console.log('LiveSearch: processing on keyup - "'+$(this).val()+'"');
 		var query	=$(this).val();
 		if(window.myglobals) window.myglobals.LastSearchFilter = query;
-		var div		=$('.divider');
 		var cont	=$('.devicesList');
+		var div		=cont.find('.divider');
 		var items	=$('.itemBlock');
 		var cl_shown	='liveSearchShown';
+		var cl_search	='devicesListSearchFiltered';
 		var filt_search		=$(this).closest('.jsTbFiltSearch');
 		var cl_withres	='tbFiltSearchWithResults';
 
 		if(query.length == 0){
 			filt_search.removeClass(cl_withres);
-			if(cont.hasClass('devicesListFiltered')){
-				cont.removeClass('devicesListFiltered');
+			if(cont.hasClass(cl_search)){
+				cont.removeClass(cl_search);
+				if(cont.hasClass('devicesListFiltered')){
+					cont.removeClass('devicesListFiltered');
+					div.addClass('row');
+				}
 				div.css('display','block');
-				div.addClass('row');
 				div.find('.clearfix').show(); /* only for Weather and Temperatures pages */
 				items.show().removeClass('liveSearchShown').trigger('dz:livesearch:show');
 			}
 		}
 		else{
 			filt_search.addClass(cl_withres);
-			if(! cont.hasClass('devicesListFiltered')){
-				cont.addClass('devicesListFiltered');
+			if(! cont.hasClass(cl_search)){
+				cont.addClass(cl_search);
+				if(div.hasClass('row')){
+					cont.addClass('devicesListFiltered');
+				}
 				div.css('display','inline');
 			}
 			div.removeClass('row');

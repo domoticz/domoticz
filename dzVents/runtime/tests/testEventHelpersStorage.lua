@@ -385,9 +385,15 @@ describe('event helper storage', function()
 			assert.is_same(42, recovered.x)
 			assert.is_same('important', recovered.a)
 
-			-- the broken file was preserved for inspection and removed
+			-- the broken file was preserved for inspection
 			assert.is_true(utils.fileExists('./data/' .. moduleName .. '.faulty'))
-			assert.is_false(utils.fileExists(dataPath))
+
+			-- the main file was restored from the backup, so the data survives
+			-- even when nothing is written before the next load
+			assert.is_true(utils.fileExists(dataPath))
+			local again = helpers.getStorageContext(def, moduleName)
+			assert.is_same(42, again.x)
+			assert.is_same('important', again.a)
 		end)
 
 		it('should recover from a garbage data file using the backup', function()
@@ -402,6 +408,41 @@ describe('event helper storage', function()
 			local recovered = helpers.getStorageContext(def, moduleName)
 			assert.is_same(42, recovered.x)
 			assert.is_true(utils.fileExists('./data/' .. moduleName .. '.faulty'))
+		end)
+
+		it('should keep the backup when the faulty file cannot be moved aside', function()
+			local context = helpers.getStorageContext(def, moduleName)
+			context.x = 42
+			write(context)
+			context.x = 43
+			write(context)
+
+			corruptDataFile('')
+
+			-- a non-empty directory named .faulty can neither be removed nor
+			-- replaced, so the corrupt main file stays where it is
+			local faultyPath = './data/' .. moduleName .. '.faulty'
+			os.execute('mkdir "' .. faultyPath .. '"')
+			local blocker = io.open(faultyPath .. '/keep', 'w')
+			blocker:write('x')
+			blocker:close()
+
+			local ok, err = pcall(function()
+				local recovered = helpers.getStorageContext(def, moduleName)
+				assert.is_same(42, recovered.x)
+
+				-- the good backup was not overwritten with the corrupt data
+				local backup = dofile(dataPath .. '.bak')
+				assert.is_same(42, backup.x)
+
+				-- and the main file now holds the recovered data
+				local again = helpers.getStorageContext(def, moduleName)
+				assert.is_same(42, again.x)
+			end)
+
+			os.remove(faultyPath .. '/keep')
+			os.remove(faultyPath)
+			assert(ok, err)
 		end)
 
 		it('should fall back to initial values when there is no backup', function()

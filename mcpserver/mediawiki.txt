@@ -265,6 +265,20 @@ Tools are actions an AI agent can invoke. All tools accept and return plain text
 |-
 | <code>get_room_devices</code> || <code>roomname</code> or <code>room_id</code> (one required) || List all devices assigned to a specific room.
 |-
+| <code>add_room</code> || <code>name</code> (required) || Create a new room (plan), placed last in the room order. Admin only.
+|-
+| <code>update_room</code> || <code>roomname</code> or <code>room_id</code> (one required), <code>new_name</code> (required) || Rename a room. Admin only.
+|-
+| <code>delete_room</code> || <code>roomname</code> or <code>room_id</code> (one required) || Delete a room and its device/scene assignments (the devices and scenes themselves are kept). Admin only.
+|-
+| <code>reorder_rooms</code> || <code>order</code> (required, comma separated room IDXs) || Set the display order of the rooms. Rooms not listed follow in their current order. Admin only.
+|-
+| <code>add_room_devices</code> || <code>roomname</code> or <code>room_id</code> (one required), <code>device_ids</code> and/or <code>scene_ids</code> (comma separated IDXs) || Assign devices and/or scenes to a room. Entries already present are skipped. Admin only.
+|-
+| <code>remove_room_devices</code> || <code>roomname</code> or <code>room_id</code> (one required), <code>device_ids</code> and/or <code>scene_ids</code> (comma separated IDXs) || Remove devices and/or scenes from a room. Admin only.
+|-
+| <code>reorder_room_devices</code> || <code>roomname</code> or <code>room_id</code> (one required), <code>order</code> (required, comma separated; a plain number is a device IDX, <code>S</code> plus a number is a scene IDX, e.g. <code>12,S2,15</code>) || Set the order of the entries in a room. Entries not listed follow in their current order. Admin only.
+|-
 | <code>get_scene_devices</code> || <code>scenename</code> or <code>scene_id</code> (one required) || List the devices and commands that make up a specific scene.
 |-
 | <code>get_scene_history</code> || <code>scenename</code> or <code>scene_id</code> (one required), <code>days</code> (optional, 1–366, default 7), <code>start_date</code> / <code>end_date</code> (optional, YYYY-MM-DD), <code>count</code> (optional, 1–500) || Retrieve the On/Off activation log for a scene or group from <code>SceneLog</code>, including the user/actor that triggered each change. Use <code>count</code> for the last N events, or <code>days</code>/<code>start_date</code>+<code>end_date</code> for a date-filtered log.

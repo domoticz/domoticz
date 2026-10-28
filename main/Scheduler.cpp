@@ -1573,14 +1573,8 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_SetActiveTimerPlan(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_SetActiveTimerPlan(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			root["title"] = "SetActiveTimerPlan";
 			int rnOldvalue = 0;
 			int rnvalue = 0;
@@ -1605,14 +1599,8 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_AddTimer(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_AddTimer(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			std::string active = request::findValue(&req, "active");
 			std::string stimertype = request::findValue(&req, "timertype");
@@ -1708,14 +1696,8 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_UpdateTimer(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_UpdateTimer(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			std::string active = request::findValue(&req, "active");
 			std::string stimertype = request::findValue(&req, "timertype");
@@ -1812,14 +1794,8 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_DeleteTimer(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_DeleteTimer(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
@@ -1832,14 +1808,8 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_EnableTimer(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_EnableTimer(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
@@ -1852,14 +1822,8 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_DisableTimer(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_DisableTimer(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
@@ -1872,14 +1836,8 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_ClearTimers(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_ClearTimers(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
@@ -1942,14 +1900,8 @@ namespace http {
 				}
 			}
 		}
-		void CWebServer::Cmd_AddSetpointTimer(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_AddSetpointTimer(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			std::string active = request::findValue(&req, "active");
 			std::string stimertype = request::findValue(&req, "timertype");
@@ -2053,14 +2005,8 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_UpdateSetpointTimer(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_UpdateSetpointTimer(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			std::string active = request::findValue(&req, "active");
 			std::string stimertype = request::findValue(&req, "timertype");
@@ -2148,14 +2094,8 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_DeleteSetpointTimer(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_DeleteSetpointTimer(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
@@ -2168,14 +2108,8 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_EnableSetpointTimer(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_EnableSetpointTimer(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
@@ -2188,14 +2122,8 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_DisableSetpointTimer(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_DisableSetpointTimer(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
@@ -2208,14 +2136,8 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_ClearSetpointTimers(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_ClearSetpointTimers(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
@@ -2289,14 +2211,8 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_AddSceneTimer(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_AddSceneTimer(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			std::string active = request::findValue(&req, "active");
 			std::string stimertype = request::findValue(&req, "timertype");
@@ -2390,14 +2306,8 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_UpdateSceneTimer(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_UpdateSceneTimer(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			std::string active = request::findValue(&req, "active");
 			std::string stimertype = request::findValue(&req, "timertype");
@@ -2490,14 +2400,8 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_DeleteSceneTimer(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_DeleteSceneTimer(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
@@ -2510,14 +2414,8 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_EnableSceneTimer(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_EnableSceneTimer(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
@@ -2530,14 +2428,8 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_DisableSceneTimer(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_DisableSceneTimer(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
@@ -2550,14 +2442,8 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_ClearSceneTimers(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_ClearSceneTimers(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			int timer_plan = m_sql.m_ActiveTimerPlan;
 
 			std::string idx = request::findValue(&req, "idx");
@@ -2573,13 +2459,8 @@ namespace http {
 			m_mainworker.m_scheduler.ReloadSchedules();
 		}
 
-		void CWebServer::Cmd_GetTimerPlans(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetTimerPlans(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
 			root["status"] = "OK";
 			root["title"] = "GetTimerPlans";
 			std::vector<std::vector<std::string> > result;
@@ -2599,12 +2480,6 @@ namespace http {
 
 		void CWebServer::Cmd_AddTimerPlan(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string name = HTMLSanitizer::Sanitize(request::findValue(&req, "name"));
 			if (name.empty())
 			{
@@ -2618,12 +2493,6 @@ namespace http {
 
 		void CWebServer::Cmd_UpdateTimerPlan(WebEmSession& session, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
@@ -2640,14 +2509,8 @@ namespace http {
 			m_sql.safe_query("UPDATE TimerPlans SET Name='%q' WHERE (ID == '%q')", name.c_str(), idx.c_str());
 		}
 
-		void CWebServer::Cmd_DeleteTimerPlan(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_DeleteTimerPlan(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;
@@ -2673,14 +2536,8 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_DuplicateTimerPlan(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_DuplicateTimerPlan(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
 				return;

@@ -1281,7 +1281,8 @@ void P1MeterBase::ParseP1Data(const uint8_t* pDataIn, const int LenIn, const boo
 	// state — m_runningCRC still holds the previous message's accumulated value at this point.
 	if (pData[ii] == 0x2f)
 	{
-		if ((l_buffer[0] == 0x21) && !l_exclmarkfound && (m_linecount > 0))
+		// an oversized line fills l_buffer completely and leaves no room for the terminator
+		if ((l_buffer[0] == 0x21) && !l_exclmarkfound && (m_linecount > 0) && (l_bufferpos < sizeof(l_buffer)))
 		{
 			Log(LOG_STATUS, "WARNING: got new message but buffer still contains unprocessed data from previous message.");
 			l_buffer[l_bufferpos] = 0;

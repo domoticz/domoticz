@@ -348,7 +348,6 @@ bool Enever::GetPriceElectricity()
 		//Store for later usage
 		std::string szName = "Enever_Electricity_" + std::to_string(m_HwdID);
 		std::string errorMessage;
-		m_sql.AddUserVariableEx(szName, USERVARTYPE_STRING, sResult, true, errorMessage);
 
 		Json::Value result;
 		bool ret = ParseJSon(sResult, result);
@@ -365,6 +364,7 @@ bool Enever::GetPriceElectricity()
 			Log(LOG_ERROR, "Invalid (no) data received (electricity prices, date object not found). Check Token!");
 			return false;
 		}
+		m_sql.AddUserVariableEx(szName, USERVARTYPE_STRING, sResult, true, errorMessage);
 		m_szCurrentElectricityPrices = sResult;
 		return true;
 	}
@@ -440,7 +440,6 @@ bool Enever::GetPriceElectricity_Tomorrow()
 		//Store for later usage
 		std::string szName = "Enever_Electricity_tomorrow_" + std::to_string(m_HwdID);
 		std::string errorMessage;
-		m_sql.AddUserVariableEx(szName, USERVARTYPE_STRING, sResult, true, errorMessage);
 
 		Json::Value result;
 		bool ret = ParseJSon(sResult, result);
@@ -457,6 +456,7 @@ bool Enever::GetPriceElectricity_Tomorrow()
 			Log(LOG_ERROR, "Invalid (no) data received (electricity prices tomorrow, data object not found). Check Token!");
 			return false;
 		}
+		m_sql.AddUserVariableEx(szName, USERVARTYPE_STRING, sResult, true, errorMessage);
 		m_szCurrentElectricityPrices_Tomorrow = sResult;
 		return true;
 	}
@@ -674,7 +674,6 @@ bool Enever::GetPriceGas(const bool bForce)
 		//Store for later usage
 		std::string szName = "Enever_Gas_" + std::to_string(m_HwdID);
 		std::string sErrorMessage;
-		m_sql.AddUserVariableEx(szName, USERVARTYPE_STRING, sResult, true, sErrorMessage);
 
 		Json::Value result;
 		bool ret = ParseJSon(sResult, result);
@@ -691,6 +690,7 @@ bool Enever::GetPriceGas(const bool bForce)
 			Log(LOG_ERROR, "Invalid (no) data received (gas prices, date object not found). Check Token!");
 			return false;
 		}
+		m_sql.AddUserVariableEx(szName, USERVARTYPE_STRING, sResult, true, sErrorMessage);
 		m_szCurrentGasPrices = sResult;
 		return true;
 	}

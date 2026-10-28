@@ -734,18 +734,21 @@ void CEnOceanESP3::Do_Work()
 			}
 			continue;
 		}
-		if (!m_sendqueue.empty())
-		{ // Send first queued telegram
-			auto it = m_sendqueue.begin();
-			std::string sBytes = *it;
-
+		std::string sBytes;
+		{
+			std::lock_guard<std::mutex> l(m_sendMutex);
+			if (!m_sendqueue.empty())
+			{
+				sBytes = m_sendqueue.front();
+				m_sendqueue.erase(m_sendqueue.begin());
+			}
+		}
+		if (!sBytes.empty())
+		{ // Send the telegram removed from the queue above
 			Debug(DEBUG_HARDWARE, "Send: %s", DumpESP3Packet(sBytes).c_str());
 
 			// Write telegram to ESP3 hardware
 			write(sBytes.c_str(), sBytes.size());
-
-			std::lock_guard<std::mutex> l(m_sendMutex);
-			m_sendqueue.erase(it);
 		}
 	}
 	// Close ESP3 hardware
@@ -4461,14 +4464,8 @@ namespace http
 {
 	namespace server
 	{
-		void CWebServer::Cmd_EnOceanESP3EnableLearnMode(WebEmSession &session, const request &req, Json::Value &root)
+		void CWebServer::Cmd_EnOceanESP3EnableLearnMode(WebEmSession &/*session*/, const request &req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
-
 			std::string hwdIDStr = request::findValue(&req, "hwdid");
 			if (hwdIDStr.empty())
 				return;
@@ -4545,14 +4542,8 @@ namespace http
 			root["title"] = "EnOceanESP3CancelTeachIn";
 		}
 
-		void CWebServer::Cmd_EnOceanESP3ControllerReset(WebEmSession &session, const request &req, Json::Value &root)
+		void CWebServer::Cmd_EnOceanESP3ControllerReset(WebEmSession &/*session*/, const request &req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
-
 			std::string hwdIDStr = request::findValue(&req, "hwdid");
 			if (hwdIDStr.empty())
 				return;
@@ -4575,14 +4566,8 @@ namespace http
 			root["title"] = "EnOceanESP3ControllerReset";
 		}
 
-		void CWebServer::Cmd_EnOceanESP3UpdateNode(WebEmSession &session, const request &req, Json::Value &root)
+		void CWebServer::Cmd_EnOceanESP3UpdateNode(WebEmSession &/*session*/, const request &req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
-
 			std::string hwdIDStr = request::findValue(&req, "hwdid");
 			if (hwdIDStr.empty())
 				return;
@@ -4640,14 +4625,8 @@ namespace http
 			root["title"] = "EnOceanESP3UpdateNode";
 		}
 
-		void CWebServer::Cmd_EnOceanESP3DeleteNode(WebEmSession &session, const request &req, Json::Value &root)
+		void CWebServer::Cmd_EnOceanESP3DeleteNode(WebEmSession &/*session*/, const request &req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
-
 			std::string hwdIDStr = request::findValue(&req, "hwdid");
 			if (hwdIDStr.empty())
 				return;

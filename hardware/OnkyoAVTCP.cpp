@@ -681,14 +681,8 @@ namespace http
 {
 	namespace server
 	{
-		void CWebServer::Cmd_OnkyoEiscpCommand(WebEmSession &session, const request &req, Json::Value &root)
+		void CWebServer::Cmd_OnkyoEiscpCommand(WebEmSession &/*session*/, const request &req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
-
 			std::string sIdx = request::findValue(&req, "idx");
 			std::string sAction = request::findValue(&req, "action");
 			if (sIdx.empty())

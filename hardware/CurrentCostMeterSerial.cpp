@@ -116,14 +116,9 @@ void CurrentCostMeterSerial::Do_Work()
 namespace http {
 	namespace server {
 
-		void CWebServer::Cmd_SetCurrentCostUSBType(WebEmSession & session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_SetCurrentCostUSBType(WebEmSession & /*session*/, const request& req, Json::Value& root)
 		{
 			root["title"] = "SetCurrentCostUSBType";
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
 
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())

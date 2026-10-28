@@ -124,6 +124,41 @@ uncalibrated push purely to make every device visible, then set calibration
 and push a second time. Skipping that first push makes the barometer, the
 device this test cares most about, permanently invisible.
 
+### Command rights
+
+`python/test_command_rights.py` guards the minimum user rights of the JSON
+commands. Each command is registered in `main/WebServer.cpp` with the rights it
+needs (`RegisterCommandCode(name, fn, minRights, bypassAuthentication)`) and
+`CWebServer::GetJSonPage` refuses a caller below that level before the handler
+runs.
+
+```
+python test/python/test_command_rights.py msbuild/x64/Debug/domoticz.exe
+```
+
+It checks two things:
+
+* **Static**, from the sources: every registration must match the reviewed
+  list in `python/command_rights.json` (its level, and `(no login)` for a
+  command that bypasses authentication). Most handlers do not check the rights
+  themselves, so the registration is all that protects them; comparing it with
+  the list means a level cannot be lowered, and a command cannot be added,
+  without a deliberate edit there. A handler that still refuses callers itself
+  must not be registered below that level, and no command that bypasses
+  authentication may claim a level above viewer.
+* **Runtime**, against its own throwaway Domoticz (same single-instance-mutex
+  caveat as the API sweep) with an admin, a user and a viewer account:
+  anonymous callers get 401 on every non-bypass command, the viewer and the
+  user get 403 on every admin command and the viewer on every user command.
+  Only requests that must be refused are sent, so no handler runs. Spot checks
+  cover what the lower roles may still do, the `gethardware` credential
+  redaction, `resetsecuritystatus` and the MCP resource/tool role checks.
+
+When a command is added or its level changes, set the level on its
+`RegisterCommandCode` line and add or update its entry in
+`python/command_rights.json` (`viewer`, `user` or `admin`), so the change shows
+up in review.
+
 ## Unit testing
 
 For _dzVents_ quite some unit-tests are available (_code-coverage above 80%_) testing many aspects of 'dzVents' ensuring that functionality does not change or break when changes are made.

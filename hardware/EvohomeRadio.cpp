@@ -2572,14 +2572,8 @@ void CEvohomeRadio::Idle_Work()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_BindEvohome(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_BindEvohome(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			std::string type = request::findValue(&req, "devtype");
 			int HwdID = atoi(idx.c_str());

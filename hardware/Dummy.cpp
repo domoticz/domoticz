@@ -123,11 +123,6 @@ namespace http {
 			std::string Username = "Admin";
 			if (!session.username.empty())
 				Username = session.username;
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
 
 			std::string idx = request::findValue(&req, "idx");
 			std::string ssensorname = request::findValue(&req, "sensorname");
@@ -189,11 +184,6 @@ namespace http {
 			std::string Username = "Admin";
 			if (!session.username.empty())
 				Username = session.username;
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
 
 			std::string idx = request::findValue(&req, "idx");
 			std::string ssensorname = request::findValue(&req, "sensorname");

@@ -672,6 +672,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char /*length
 						pCMD = (unsigned char *)&V6_RGBWW_Disco_Mode;
 						pCMD[0x09] = pLed->dunit;
 					}
+					pCMD[0x05] = 1;
 					break;
 				}
 				case Color_DiscoMode_1:
@@ -822,6 +823,7 @@ bool CLimitLess::WriteToHardware(const char *pdata, const unsigned char /*length
 						return false;
 					pCMD = (unsigned char *)&V6_RGBW_Disco_Mode;
 					pCMD[0x09] = pLed->dunit;
+					pCMD[0x05] = 1;
 					break;
 				}
 				case Color_DiscoMode_1:

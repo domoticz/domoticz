@@ -478,12 +478,12 @@ void CEcoDevices::GetMeterRT2Details()
 	m_teleinfo1.BBRHCJW = atoi(XMLmap["BBRHCJW"].c_str());
 	m_teleinfo1.BBRHPJW = atoi(XMLmap["BBRHPJW"].c_str());
 	m_teleinfo1.BBRHCJR = atoi(XMLmap["BBRHCJR"].c_str());
-	m_teleinfo1.BBRHPJR = atoi(XMLmap["BBRPJR"].c_str());
+	m_teleinfo1.BBRHPJR = atoi(XMLmap["BBRHPJR"].c_str());
 	m_teleinfo1.PEJP = atoi(XMLmap["PEJP"].c_str());
 	m_teleinfo1.IINST = atoi(XMLmap["IINST"].c_str());
 	m_teleinfo1.IINST1 = atoi(XMLmap["IINST1"].c_str());
 	m_teleinfo1.IINST2 = atoi(XMLmap["IINST2"].c_str());
-	m_teleinfo1.IINST3 = atoi(XMLmap["IISNT3"].c_str());
+	m_teleinfo1.IINST3 = atoi(XMLmap["IINST3"].c_str());
 	m_teleinfo1.PPOT = atoi(XMLmap["PPOT"].c_str());
 	m_teleinfo1.ADPS = atoi(XMLmap["ADPS"].c_str());
 

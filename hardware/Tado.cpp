@@ -165,10 +165,11 @@ bool CTado::CreateOverlay(const int idx, const float temp, const bool heatingEna
 	_jsPostData["termination"] = _jsPostDataTermination;
 
 	Json::Value _jsRoot;
+	std::vector<std::string> _vResponseHeaders;
 
 	try
 	{
-		SendToTadoApi(Put, _sUrl, _jsPostData.toStyledString(), _sResponse, *(new std::vector<std::string>()), _jsRoot);
+		SendToTadoApi(Put, _sUrl, _jsPostData.toStyledString(), _sResponse, _vResponseHeaders, _jsRoot);
 	}
 	catch (std::exception& e)
 	{
@@ -303,10 +304,11 @@ bool CTado::GetZoneState(const int HomeIndex, const int ZoneIndex, const _tTadoH
 		std::string _sUrl = m_TadoEnvironment["tgaRestApiV2Endpoint"] + "/homes/" + zone.HomeId + "/zones/" + zone.Id + "/state";
 		Json::Value _jsRoot;
 		std::string _sResponse;
+		std::vector<std::string> _vResponseHeaders;
 
 		try
 		{
-			SendToTadoApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot);
+			SendToTadoApi(Get, _sUrl, "", _sResponse, _vResponseHeaders, _jsRoot);
 		}
 		catch (std::exception& e)
 		{
@@ -400,9 +402,10 @@ bool CTado::GetHomeState(const int HomeIndex, _tTadoHome& home)
 		std::string _sUrl = _sstr.str();
 		Json::Value _jsRoot;
 		std::string _sResponse;
+		std::vector<std::string> _vResponseHeaders;
 		try
 		{
-			SendToTadoApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot);
+			SendToTadoApi(Get, _sUrl, "", _sResponse, _vResponseHeaders, _jsRoot);
 		}
 		catch (std::exception& e)
 		{
@@ -514,10 +517,12 @@ bool CTado::CancelOverlay(const int Idx)
 	_sstr << m_TadoEnvironment["tgaRestApiV2Endpoint"] << "/homes/" << m_TadoHomes[HomeIdx].Id << "/zones/" << m_TadoHomes[HomeIdx].Zones[ZoneIdx].Id << "/overlay";
 	std::string _sUrl = _sstr.str();
 	std::string _sResponse;
+	std::vector<std::string> _vResponseHeaders;
+	Json::Value _jsResponse;
 
 	try
 	{
-		SendToTadoApi(Delete, _sUrl, "", _sResponse, *(new std::vector<std::string>()), *(new Json::Value), false, true);
+		SendToTadoApi(Delete, _sUrl, "", _sResponse, _vResponseHeaders, _jsResponse, false, true);
 
 	}
 	catch (std::exception& e)
@@ -872,10 +877,11 @@ bool CTado::GetHomes() {
 
 	Json::Value _jsRoot;
 	std::string _sResponse;
+	std::vector<std::string> _vResponseHeaders;
 
 	try
 	{
-		SendToTadoApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot);
+		SendToTadoApi(Get, _sUrl, "", _sResponse, _vResponseHeaders, _jsRoot);
 	}
 	catch (std::exception& e)
 	{
@@ -921,10 +927,11 @@ bool CTado::GetZones(_tTadoHome& tTadoHome) {
 	Json::Value _jsRoot;
 
 	tTadoHome.Zones.clear();
+	std::vector<std::string> _vResponseHeaders;
 
 	try
 	{
-		SendToTadoApi(Get, _sUrl, "", _sResponse, *(new std::vector<std::string>()), _jsRoot);
+		SendToTadoApi(Get, _sUrl, "", _sResponse, _vResponseHeaders, _jsRoot);
 	}
 	catch (std::exception& e)
 	{
@@ -976,7 +983,8 @@ bool CTado::SendToTadoApi(const eTadoApiMethod eMethod, const std::string& sUrl,
 		// If the supplied postdata validates as json, add an appropriate content type header
 		if (!sPostData.empty())
 		{
-			if (ParseJSon(sPostData, *(new Json::Value))) {
+			Json::Value jsPostData;
+			if (ParseJSon(sPostData, jsPostData)) {
 				_vExtraHeaders.push_back("Content-Type: application/json");
 			}
 		}

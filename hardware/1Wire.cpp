@@ -195,8 +195,11 @@ void C1Wire::SensorThread()
 
 			case _4k_ram_with_counter:
 			{
-				ReportCounter(device.devid, 0, m_system->GetCounter(device, 0));
-				ReportCounter(device.devid, 1, m_system->GetCounter(device, 1));
+				unsigned long counter = 0;
+				if (m_system->GetCounter(device, 0, counter))
+					ReportCounter(device.devid, 0, counter);
+				if (m_system->GetCounter(device, 1, counter))
+					ReportCounter(device.devid, 1, counter);
 				break;
 			}
 

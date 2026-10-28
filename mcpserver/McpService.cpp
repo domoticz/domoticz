@@ -29,6 +29,7 @@
 #include "../main/Logger.h"
 #include "../main/Helper.h"
 #include "../main/SQLHelper.h"
+#include "../main/HTMLSanitizer.h"
 #include "../main/json_helper.h"
 #include "../main/WebServer.h"
 #include "../main/WebServerHelper.h"
@@ -605,7 +606,13 @@ namespace http
 			}
 			else if (sReqMethod == "resources/read")
 			{
-				mcp::McpResourcesRead(jsonRequest, jsonRPCRep);
+				if ((session.rights != http::server::URIGHTS_ADMIN) && mcp::McpIsAdminResource(jsonRequest))
+				{
+					jsonRPCRep["error"]["code"] = mcp::MCP_PERMISSION_DENIED;
+					jsonRPCRep["error"]["message"] = "Admin rights required for this resource";
+				}
+				else
+					mcp::McpResourcesRead(jsonRequest, jsonRPCRep);
 			}
 			else if (sReqMethod == "prompts/list")
 			{
@@ -1263,6 +1270,73 @@ namespace mcp		// Model Context Protocol
 			}
 		},
 		{
+			"add_room",
+			"Create a room",
+			"Create a new room (plan). It is placed last in the room order. Returns the new room IDX.",
+			{
+				{ "name", "string", "Name of the new room", true, {} },
+			}
+		},
+		{
+			"update_room",
+			"Rename a room",
+			"Rename an existing room (plan).",
+			{
+				{ "roomname", "string", "Current name of the room", false, {} },
+				{ "room_id", "integer", "Room IDX (use either this or roomname)", false, {} },
+				{ "new_name", "string", "New name for the room", true, {} },
+			}
+		},
+		{
+			"delete_room",
+			"Delete a room",
+			"Permanently delete a room (plan) and all its device/scene assignments. The devices and scenes themselves are not deleted.",
+			{
+				{ "roomname", "string", "Name of the room", false, {} },
+				{ "room_id", "integer", "Room IDX (use either this or roomname)", false, {} },
+			}
+		},
+		{
+			"reorder_rooms",
+			"Change the order of the rooms",
+			"Set the display order of the rooms (plans). Rooms not listed keep their current relative order and are placed after the listed ones.",
+			{
+				{ "order", "string", "Comma separated room IDXs in the wanted order, e.g. \"3,1,2\"", true, {} },
+			}
+		},
+		{
+			"add_room_devices",
+			"Add devices or scenes to a room",
+			"Assign devices and/or scenes to a room (plan). Entries already in the room are skipped. New entries are placed at the end of the room.",
+			{
+				{ "roomname", "string", "Name of the room", false, {} },
+				{ "room_id", "integer", "Room IDX (use either this or roomname)", false, {} },
+				{ "device_ids", "string", "Comma separated device IDXs to add, e.g. \"12,15\"", false, {} },
+				{ "scene_ids", "string", "Comma separated scene/group IDXs to add, e.g. \"2,4\"", false, {} },
+			}
+		},
+		{
+			"remove_room_devices",
+			"Remove devices or scenes from a room",
+			"Remove devices and/or scenes from a room (plan). The devices and scenes themselves are not deleted.",
+			{
+				{ "roomname", "string", "Name of the room", false, {} },
+				{ "room_id", "integer", "Room IDX (use either this or roomname)", false, {} },
+				{ "device_ids", "string", "Comma separated device IDXs to remove, e.g. \"12,15\"", false, {} },
+				{ "scene_ids", "string", "Comma separated scene/group IDXs to remove, e.g. \"2,4\"", false, {} },
+			}
+		},
+		{
+			"reorder_room_devices",
+			"Change the order of devices in a room",
+			"Set the order of the devices and scenes inside a room (plan). Entries not listed keep their current relative order and are placed after the listed ones.",
+			{
+				{ "roomname", "string", "Name of the room", false, {} },
+				{ "room_id", "integer", "Room IDX (use either this or roomname)", false, {} },
+				{ "order", "string", "Comma separated entries in the wanted order. A plain number is a device IDX, a number prefixed with S is a scene IDX, e.g. \"12,S2,15\"", true, {} },
+			}
+		},
+		{
 			"get_scene_devices",
 			"Get devices in a scene",
 			"Return all devices that belong to a specific scene or group.",
@@ -1402,16 +1476,23 @@ namespace mcp		// Model Context Protocol
 			"rename_device", "delete_device", "hide_device",
 			"add_user_variable", "update_user_variable", "delete_user_variable",
 			"create_event", "update_event", "delete_event",
-			"update_device_value", "set_security_status"
+			"update_device_value", "set_security_status",
+			"add_room", "update_room", "delete_room", "reorder_rooms",
+			"add_room_devices", "remove_room_devices", "reorder_room_devices",
+			// reads that expose scripts, credentials, configuration or accounts
+			"get_events", "get_event", "get_user_variables", "get_hardware",
+			"get_settings", "get_users", "get_logging"
 		};
 
-		if (kAdminTools.count(sMethodName) && session.rights < http::server::URIGHTS_ADMIN)
+		const bool bIsAdmin = (session.rights == http::server::URIGHTS_ADMIN);
+		const bool bIsSwitcher = bIsAdmin || (session.rights == http::server::URIGHTS_SWITCHER);
+		if (kAdminTools.count(sMethodName) && !bIsAdmin)
 		{
 			jsonRPCRep["error"]["code"] = mcp::MCP_PERMISSION_DENIED;
 			jsonRPCRep["error"]["message"] = "Admin rights required for: " + sMethodName;
 			return;
 		}
-		if (kSwitcherTools.count(sMethodName) && session.rights < http::server::URIGHTS_SWITCHER)
+		if (kSwitcherTools.count(sMethodName) && !bIsSwitcher)
 		{
 			jsonRPCRep["error"]["code"] = mcp::MCP_PERMISSION_DENIED;
 			jsonRPCRep["error"]["message"] = "Switcher rights required for: " + sMethodName;
@@ -1458,6 +1539,13 @@ namespace mcp		// Model Context Protocol
 			{ "switch_scene",           switchScene },
 			{ "get_rooms",              getRooms },
 			{ "get_room_devices",       getRoomDevices },
+			{ "add_room",               addRoom },
+			{ "update_room",            updateRoom },
+			{ "delete_room",            deleteRoom },
+			{ "reorder_rooms",          reorderRooms },
+			{ "add_room_devices",       addRoomDevices },
+			{ "remove_room_devices",    removeRoomDevices },
+			{ "reorder_room_devices",   reorderRoomDevices },
 			{ "get_scene_devices",      getSceneDevices },
 			{ "get_scene_history",      getSceneHistory },
 			{ "get_user_variables",     getUserVariables },
@@ -1678,6 +1766,23 @@ namespace mcp		// Model Context Protocol
 		{ 1009, "Thermostat (Temp/Hum/Baro/Setpoint)",            73,  3  },  // pTypeThermostat6 / sTypeThermostat6TempHumBaro
 		{ 0,    nullptr,                                          0,   0  }   // sentinel
 	};
+
+	bool McpIsAdminResource(const Json::Value &jsonRequest)
+	{
+		if (!jsonRequest.isMember("params") || !jsonRequest["params"].isMember("uri"))
+			return false;
+		const std::string sReadURI = jsonRequest["params"]["uri"].asString();
+		if (sReadURI.substr(0, 11) != "domoticz://")
+			return false;
+		const std::string sPath = sReadURI.substr(11);
+		const std::string sResourceType = sPath.substr(0, sPath.find('/'));
+		// Same scope as the admin-only JSON commands and MCP tools that expose this data
+		static const std::unordered_set<std::string> kAdminResources = {
+			"user-variables", "user-variable", "events", "event", "settings",
+			"log", "hardware", "notifications"
+		};
+		return kAdminResources.count(sResourceType) > 0;
+	}
 
 	void McpResourcesRead(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
@@ -5262,7 +5367,7 @@ namespace mcp		// Model Context Protocol
 	bool getRooms(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
 	{
 		auto result = m_sql.safe_query(
-			"SELECT ID, Name, [Order] FROM Plans WHERE (Name!='') ORDER BY Name");
+			"SELECT ID, Name, [Order] FROM Plans WHERE (Name!='') ORDER BY [Order], ID");
 
 		std::string sResult;
 		if (result.empty())
@@ -5346,6 +5451,435 @@ namespace mcp		// Model Context Protocol
 				sResult = std::to_string(iCount) + " device(s) in room \"" + sRoomName + "\":\n" + sDeviceList;
 		}
 		mcp::setToolResult(jsonRPCRep, sResult, !bFound);
+		return true;
+	}
+
+	// Resolves a room (plan) from 'room_id' or 'roomname'.
+	// Returns false when neither parameter is present, bFound tells whether the room exists.
+	static bool resolveRoom(const Json::Value &args, bool &bFound, std::string &sPlanID, std::string &sRoomName)
+	{
+		const bool bHasId = args.isMember("room_id");
+		const bool bHasName = args.isMember("roomname") && !args["roomname"].asString().empty();
+		if (!bHasId && !bHasName)
+			return false;
+		std::vector<std::vector<std::string>> result;
+		if (bHasId)
+		{
+			const int nRoomId = jsonAsIdx(args["room_id"]);
+			sRoomName = "idx=" + std::to_string(nRoomId);
+			result = m_sql.safe_query("SELECT ID, Name FROM Plans WHERE ID=%d", nRoomId);
+		}
+		else
+		{
+			sRoomName = args["roomname"].asString();
+			result = m_sql.safe_query("SELECT ID, Name FROM Plans WHERE Name='%q'", sRoomName.c_str());
+		}
+		bFound = !result.empty();
+		if (bFound)
+		{
+			sPlanID = result[0][0];
+			sRoomName = result[0][1];
+		}
+		return true;
+	}
+
+	// Splits a comma separated string (or a JSON array) into trimmed, non-empty tokens.
+	static bool splitTokens(const Json::Value &v, std::vector<std::string> &tokens)
+	{
+		auto addToken = [&tokens](std::string s)
+		{
+			const size_t b = s.find_first_not_of(" \t\r\n");
+			if (b == std::string::npos)
+				return;
+			const size_t e = s.find_last_not_of(" \t\r\n");
+			tokens.push_back(s.substr(b, e - b + 1));
+		};
+		if (v.isArray())
+		{
+			for (const auto &e : v)
+				addToken(e.asString());
+			return true;
+		}
+		if (!v.isString() && !v.isNumeric())
+			return false;
+		std::stringstream ss(v.asString());
+		std::string token;
+		while (std::getline(ss, token, ','))
+			addToken(token);
+		return true;
+	}
+
+	// Parses a positive number, rejects anything else
+	static bool parseIdxToken(const std::string &s, int &nIdx)
+	{
+		if (s.empty() || s.size() > 9 || s.find_first_not_of("0123456789") != std::string::npos)
+			return false;
+		nIdx = std::stoi(s);
+		return true;
+	}
+
+	// One row of DeviceToPlansMap
+	struct RoomEntry
+	{
+		std::string mapID;
+		int type = 0; // 0 = device, 1 = scene/group
+		int rowID = 0;
+	};
+
+	static std::vector<RoomEntry> getRoomEntries(const std::string &sPlanID)
+	{
+		std::vector<RoomEntry> entries;
+		auto result = m_sql.safe_query("SELECT ID, DevSceneType, DeviceRowID FROM DeviceToPlansMap WHERE (PlanID=%d) ORDER BY [Order], ID", atoi(sPlanID.c_str()));
+		for (const auto &row : result)
+		{
+			RoomEntry e;
+			e.mapID = row[0];
+			e.type = (atoi(row[1].c_str()) == 1) ? 1 : 0;
+			e.rowID = atoi(row[2].c_str());
+			entries.push_back(e);
+		}
+		return entries;
+	}
+
+	static std::string describeRoomEntry(const RoomEntry &e)
+	{
+		auto result = (e.type == 1)
+			? m_sql.safe_query("SELECT Name FROM Scenes WHERE ID=%d", e.rowID)
+			: m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE ID=%d", e.rowID);
+		const std::string sName = result.empty() ? "?" : result[0][0];
+		return (e.type == 1) ? "\"" + sName + "\" [scene idx=" + std::to_string(e.rowID) + "]"
+				     : "\"" + sName + "\" [idx=" + std::to_string(e.rowID) + "]";
+	}
+
+	static std::string describeRoomContents(const std::string &sPlanID, const std::string &sRoomName)
+	{
+		const auto entries = getRoomEntries(sPlanID);
+		if (entries.empty())
+			return "Room \"" + sRoomName + "\" is now empty.";
+		std::string s = "Room \"" + sRoomName + "\" now contains " + std::to_string(entries.size()) + " entr" + (entries.size() == 1 ? "y" : "ies") + " in this order:\n";
+		int pos = 1;
+		for (const auto &e : entries)
+			s += std::to_string(pos++) + ". " + describeRoomEntry(e) + "\n";
+		return s;
+	}
+
+	// Reads the optional 'device_ids' and 'scene_ids' parameters into (type, idx) pairs.
+	// Returns false (and fills sError) on malformed input, or when neither parameter holds an entry.
+	static bool parseRoomTargets(const Json::Value &args, std::vector<std::pair<int, int>> &targets, std::string &sError)
+	{
+		const char *szKeys[2] = { "device_ids", "scene_ids" };
+		for (int type = 0; type < 2; type++)
+		{
+			if (!args.isMember(szKeys[type]))
+				continue;
+			std::vector<std::string> tokens;
+			if (!splitTokens(args[szKeys[type]], tokens))
+			{
+				sError = std::string("Invalid '") + szKeys[type] + "', expected a comma separated list of IDXs.";
+				return false;
+			}
+			for (const auto &t : tokens)
+			{
+				int nIdx;
+				if (!parseIdxToken(t, nIdx))
+				{
+					sError = std::string("Invalid IDX \"") + t + "\" in '" + szKeys[type] + "'.";
+					return false;
+				}
+				targets.emplace_back(type, nIdx);
+			}
+		}
+		if (targets.empty())
+		{
+			sError = "Provide at least one IDX in 'device_ids' or 'scene_ids'.";
+			return false;
+		}
+		return true;
+	}
+
+	static std::string sanitizeRoomName(const std::string &sName)
+	{
+		const std::string s = HTMLSanitizer::Sanitize(sName);
+		const size_t b = s.find_first_not_of(" \t\r\n");
+		if (b == std::string::npos)
+			return "";
+		return s.substr(b, s.find_last_not_of(" \t\r\n") - b + 1);
+	}
+
+	bool addRoom(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		if (!args.isMember("name"))
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: addRoom: Missing required parameter 'name'");
+			return false;
+		}
+		const std::string sName = sanitizeRoomName(args["name"].asString());
+		if (sName.empty())
+		{
+			mcp::setToolResult(jsonRPCRep, "The room name cannot be empty.", true);
+			return true;
+		}
+		if (!m_sql.safe_query("SELECT ID FROM Plans WHERE Name='%q'", sName.c_str()).empty())
+		{
+			mcp::setToolResult(jsonRPCRep, "A room named \"" + sName + "\" already exists.", true);
+			return true;
+		}
+		m_sql.safe_query("INSERT INTO Plans (Name) VALUES ('%q')", sName.c_str());
+		auto result = m_sql.safe_query("SELECT ID FROM Plans WHERE Name='%q' ORDER BY ID DESC LIMIT 1", sName.c_str());
+		const std::string sIdx = result.empty() ? "?" : result[0][0];
+		mcp::setToolResult(jsonRPCRep, "Room \"" + sName + "\" created with idx=" + sIdx + ".", false);
+		return true;
+	}
+
+	bool updateRoom(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bFound = false;
+		std::string sPlanID, sRoomName;
+		if (!resolveRoom(args, bFound, sPlanID, sRoomName) || !args.isMember("new_name"))
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: updateRoom: Missing required parameter 'roomname'/'room_id' or 'new_name'");
+			return false;
+		}
+		if (!bFound)
+		{
+			mcp::setToolResult(jsonRPCRep, "No room (plan) exists with the name \"" + sRoomName + "\".", true);
+			return true;
+		}
+		const std::string sNewName = sanitizeRoomName(args["new_name"].asString());
+		if (sNewName.empty())
+		{
+			mcp::setToolResult(jsonRPCRep, "The new room name cannot be empty.", true);
+			return true;
+		}
+		if (!m_sql.safe_query("SELECT ID FROM Plans WHERE Name='%q' AND ID!=%d", sNewName.c_str(), atoi(sPlanID.c_str())).empty())
+		{
+			mcp::setToolResult(jsonRPCRep, "A room named \"" + sNewName + "\" already exists.", true);
+			return true;
+		}
+		m_sql.safe_query("UPDATE Plans SET Name='%q' WHERE (ID=%d)", sNewName.c_str(), atoi(sPlanID.c_str()));
+		mcp::setToolResult(jsonRPCRep, "Room \"" + sRoomName + "\" (idx=" + sPlanID + ") renamed to \"" + sNewName + "\".", false);
+		return true;
+	}
+
+	bool deleteRoom(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bFound = false;
+		std::string sPlanID, sRoomName;
+		if (!resolveRoom(args, bFound, sPlanID, sRoomName))
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: deleteRoom: Missing required parameter 'roomname' or 'room_id'");
+			return false;
+		}
+		if (!bFound)
+		{
+			mcp::setToolResult(jsonRPCRep, "No room (plan) exists with the name \"" + sRoomName + "\".", true);
+			return true;
+		}
+		const int nPlanID = atoi(sPlanID.c_str());
+		const size_t iEntries = getRoomEntries(sPlanID).size();
+		m_sql.safe_query("DELETE FROM DeviceToPlansMap WHERE (PlanID=%d)", nPlanID);
+		m_sql.safe_query("DELETE FROM Plans WHERE (ID=%d)", nPlanID);
+		mcp::setToolResult(jsonRPCRep, "Room \"" + sRoomName + "\" (idx=" + sPlanID + ") deleted, " + std::to_string(iEntries) + " device/scene assignment(s) removed.", false);
+		return true;
+	}
+
+	bool reorderRooms(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		std::vector<std::string> tokens;
+		if (!args.isMember("order") || !splitTokens(args["order"], tokens) || tokens.empty())
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: reorderRooms: Missing or invalid required parameter 'order'");
+			return false;
+		}
+		std::vector<int> ordered;
+		for (const auto &t : tokens)
+		{
+			int nIdx;
+			if (!parseIdxToken(t, nIdx))
+			{
+				mcp::setToolResult(jsonRPCRep, "Invalid room IDX \"" + t + "\" in 'order'.", true);
+				return true;
+			}
+			if (m_sql.safe_query("SELECT ID FROM Plans WHERE ID=%d", nIdx).empty())
+			{
+				mcp::setToolResult(jsonRPCRep, "No room exists with idx=" + t + ", nothing was changed.", true);
+				return true;
+			}
+			if (std::find(ordered.begin(), ordered.end(), nIdx) == ordered.end())
+				ordered.push_back(nIdx);
+		}
+		// Rooms that were not mentioned follow in their current order
+		auto current = m_sql.safe_query("SELECT ID FROM Plans ORDER BY [Order], ID");
+		for (const auto &row : current)
+		{
+			const int nIdx = atoi(row[0].c_str());
+			if (std::find(ordered.begin(), ordered.end(), nIdx) == ordered.end())
+				ordered.push_back(nIdx);
+		}
+		int pos = 1;
+		for (const int nIdx : ordered)
+			m_sql.safe_query("UPDATE Plans SET [Order]=%d WHERE (ID=%d)", pos++, nIdx);
+
+		std::string sResult = "Room order updated:\n";
+		auto rooms = m_sql.safe_query("SELECT ID, Name FROM Plans WHERE (Name!='') ORDER BY [Order], ID");
+		pos = 1;
+		for (const auto &row : rooms)
+			sResult += std::to_string(pos++) + ". \"" + row[1] + "\" [idx=" + row[0] + "]\n";
+		mcp::setToolResult(jsonRPCRep, sResult, false);
+		return true;
+	}
+
+	bool addRoomDevices(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bFound = false;
+		std::string sPlanID, sRoomName;
+		if (!resolveRoom(args, bFound, sPlanID, sRoomName))
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: addRoomDevices: Missing required parameter 'roomname' or 'room_id'");
+			return false;
+		}
+		if (!bFound)
+		{
+			mcp::setToolResult(jsonRPCRep, "No room (plan) exists with the name \"" + sRoomName + "\".", true);
+			return true;
+		}
+		std::vector<std::pair<int, int>> targets;
+		std::string sError;
+		if (!parseRoomTargets(args, targets, sError))
+		{
+			mcp::setToolResult(jsonRPCRep, sError, true);
+			return true;
+		}
+		// Validate everything first so a bad IDX does not leave a half applied change
+		for (const auto &t : targets)
+		{
+			auto result = (t.first == 1) ? m_sql.safe_query("SELECT ID FROM Scenes WHERE ID=%d", t.second)
+						     : m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE ID=%d", t.second);
+			if (result.empty())
+			{
+				mcp::setToolResult(jsonRPCRep, std::string("No ") + (t.first == 1 ? "scene" : "device") + " exists with idx=" + std::to_string(t.second) + ", nothing was changed.", true);
+				return true;
+			}
+		}
+		const int nPlanID = atoi(sPlanID.c_str());
+		int iAdded = 0, iSkipped = 0;
+		for (const auto &t : targets)
+		{
+			if (!m_sql.safe_query("SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID=%d) AND (DevSceneType=%d) AND (PlanID=%d)", t.second, t.first, nPlanID).empty())
+			{
+				iSkipped++;
+				continue;
+			}
+			m_sql.safe_query("INSERT INTO DeviceToPlansMap (DevSceneType, DeviceRowID, PlanID) VALUES (%d,%d,%d)", t.first, t.second, nPlanID);
+			iAdded++;
+		}
+		std::string sResult = std::to_string(iAdded) + " entr" + (iAdded == 1 ? "y" : "ies") + " added to room \"" + sRoomName + "\"";
+		if (iSkipped)
+			sResult += ", " + std::to_string(iSkipped) + " already present";
+		sResult += ".\n" + describeRoomContents(sPlanID, sRoomName);
+		mcp::setToolResult(jsonRPCRep, sResult, false);
+		return true;
+	}
+
+	bool removeRoomDevices(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bFound = false;
+		std::string sPlanID, sRoomName;
+		if (!resolveRoom(args, bFound, sPlanID, sRoomName))
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: removeRoomDevices: Missing required parameter 'roomname' or 'room_id'");
+			return false;
+		}
+		if (!bFound)
+		{
+			mcp::setToolResult(jsonRPCRep, "No room (plan) exists with the name \"" + sRoomName + "\".", true);
+			return true;
+		}
+		std::vector<std::pair<int, int>> targets;
+		std::string sError;
+		if (!parseRoomTargets(args, targets, sError))
+		{
+			mcp::setToolResult(jsonRPCRep, sError, true);
+			return true;
+		}
+		const int nPlanID = atoi(sPlanID.c_str());
+		int iRemoved = 0, iMissing = 0;
+		for (const auto &t : targets)
+		{
+			if (m_sql.safe_query("SELECT ID FROM DeviceToPlansMap WHERE (DeviceRowID=%d) AND (DevSceneType=%d) AND (PlanID=%d)", t.second, t.first, nPlanID).empty())
+			{
+				iMissing++;
+				continue;
+			}
+			m_sql.safe_query("DELETE FROM DeviceToPlansMap WHERE (DeviceRowID=%d) AND (DevSceneType=%d) AND (PlanID=%d)", t.second, t.first, nPlanID);
+			iRemoved++;
+		}
+		std::string sResult = std::to_string(iRemoved) + " entr" + (iRemoved == 1 ? "y" : "ies") + " removed from room \"" + sRoomName + "\"";
+		if (iMissing)
+			sResult += ", " + std::to_string(iMissing) + " not in the room";
+		sResult += ".\n" + describeRoomContents(sPlanID, sRoomName);
+		mcp::setToolResult(jsonRPCRep, sResult, false);
+		return true;
+	}
+
+	bool reorderRoomDevices(const Json::Value &jsonRequest, Json::Value &jsonRPCRep)
+	{
+		const Json::Value &args = jsonRequest["params"]["arguments"];
+		bool bFound = false;
+		std::string sPlanID, sRoomName;
+		std::vector<std::string> tokens;
+		if (!resolveRoom(args, bFound, sPlanID, sRoomName) || !args.isMember("order") || !splitTokens(args["order"], tokens) || tokens.empty())
+		{
+			_log.Debug(DEBUG_WEBSERVER, "MCP: reorderRoomDevices: Missing or invalid required parameter 'roomname'/'room_id' or 'order'");
+			return false;
+		}
+		if (!bFound)
+		{
+			mcp::setToolResult(jsonRPCRep, "No room (plan) exists with the name \"" + sRoomName + "\".", true);
+			return true;
+		}
+		const auto entries = getRoomEntries(sPlanID);
+		std::vector<std::string> orderedMapIDs;
+		for (const auto &t : tokens)
+		{
+			int type = 0;
+			std::string sNum = t;
+			if (!sNum.empty() && (sNum[0] == 'S' || sNum[0] == 's'))
+			{
+				type = 1;
+				sNum = sNum.substr(1);
+			}
+			int nIdx;
+			if (!parseIdxToken(sNum, nIdx))
+			{
+				mcp::setToolResult(jsonRPCRep, "Invalid entry \"" + t + "\" in 'order'.", true);
+				return true;
+			}
+			auto it = std::find_if(entries.begin(), entries.end(), [&](const RoomEntry &e) { return e.type == type && e.rowID == nIdx; });
+			if (it == entries.end())
+			{
+				mcp::setToolResult(jsonRPCRep, std::string(type ? "Scene" : "Device") + " idx=" + std::to_string(nIdx) + " is not in room \"" + sRoomName + "\", nothing was changed.", true);
+				return true;
+			}
+			if (std::find(orderedMapIDs.begin(), orderedMapIDs.end(), it->mapID) == orderedMapIDs.end())
+				orderedMapIDs.push_back(it->mapID);
+		}
+		// Entries that were not mentioned follow in their current order
+		for (const auto &e : entries)
+			if (std::find(orderedMapIDs.begin(), orderedMapIDs.end(), e.mapID) == orderedMapIDs.end())
+				orderedMapIDs.push_back(e.mapID);
+
+		int pos = 1;
+		for (const auto &sMapID : orderedMapIDs)
+			m_sql.safe_query("UPDATE DeviceToPlansMap SET [Order]=%d WHERE (ID=%d) AND (PlanID=%d)", pos++, atoi(sMapID.c_str()), atoi(sPlanID.c_str()));
+
+		mcp::setToolResult(jsonRPCRep, describeRoomContents(sPlanID, sRoomName), false);
 		return true;
 	}
 

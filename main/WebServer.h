@@ -35,7 +35,9 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	~CWebServer() override;
 	bool StartServer(server_settings &settings, const std::string &serverpath, bool bIgnoreUsernamePassword);
 	void StopServer();
-	void RegisterCommandCode(const char *idname, const webserver_response_function &ResponseFunction, bool bypassAuthentication = false);
+	// minRights is enforced by GetJSonPage before the handler runs. URIGHTS_VIEWER means any
+	// authenticated caller (or anyone, with bypassAuthentication); handlers may still check further.
+	void RegisterCommandCode(const char *idname, const webserver_response_function &ResponseFunction, _eUserRights minRights = URIGHTS_VIEWER, bool bypassAuthentication = false);
 
 	void GetJSonPage(WebEmSession & session, const request& req, reply & rep);
 	void GetAlexaPage(WebEmSession & session, const request& req, reply & rep);
@@ -529,7 +531,12 @@ private:
     void Cmd_TellstickApplySettings(WebEmSession &session, const request &req, Json::Value &root);
 	std::shared_ptr<std::thread> m_thread;
 
-	std::map < std::string, webserver_response_function > m_webcommands;	//Commands
+	struct _tWebCommand
+	{
+		webserver_response_function ResponseFunction;
+		_eUserRights minRights;
+	};
+	std::map < std::string, _tWebCommand > m_webcommands;	//Commands
 	void Do_Work();
 	std::vector<_tCustomIcon> m_custom_light_icons;
 	std::map<int, int> m_custom_light_icons_lookup;

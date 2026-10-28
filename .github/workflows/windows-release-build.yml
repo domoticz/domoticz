@@ -70,6 +70,10 @@ jobs:
 
       - name: Build Domoticz
         shell: cmd
+        env:
+          # Stable channel: version string without build number (see main/appversion.h).
+          # cl.exe picks up extra options from the CL environment variable.
+          CL: /DBUILD_MASTER
         run: msbuild msbuild\domoticz.sln /m /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /verbosity:minimal
 
       - name: Create installer and package

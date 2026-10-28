@@ -250,7 +250,7 @@ void CInComfort::ParseAndUpdateDevices(const std::string &jsonData)
 		if ((m_LastRoom2SetTemperature != room2SetTemperature) || updateSlowChangingValues)
 		{
 			m_LastRoom2SetTemperature = room2SetTemperature;
-			SendTempSensor(4, 255, m_LastRoom2SetTemperature, "Room-2 Thermostat Setpoint");
+			SendTempSensor(7, 255, m_LastRoom2SetTemperature, "Room-2 Thermostat Setpoint");
 		}
 		if ((m_LastRoom2OverrideTemperature != room2OverrideTemperature) || updateSlowChangingValues)
 		{

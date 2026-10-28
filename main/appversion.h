@@ -6,7 +6,7 @@
 //#define BUILD_MASTER
 
 #define VERSION_MAJOR               2026
-#define VERSION_MINOR               3
+#define VERSION_MINOR               4
 #define VERSION_REVISION            0
 #define VERSION_BUILD               APPVERSION
 

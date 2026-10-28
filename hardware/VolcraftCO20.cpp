@@ -88,7 +88,7 @@ static int read_one_sensor(struct usb_device *dev, uint16_t &value)
 
 	/* Open USB device.  */
 	devh = usb_open(dev);
-	if (!dev)
+	if (!devh)
 	{
 		fprintf(stderr, "Failed to usb_open(%p)\n", (void *)dev);
 		ret = -1;

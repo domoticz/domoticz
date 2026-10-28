@@ -69,7 +69,7 @@ check_dependencies() {
 
 if [ "${DOMOTICZ_UPDATE_REEXEC}" != "1" ]; then
     log_info "Downloading latest release version..."
-    wget -4 -q --show-progress -O "$ARCHIVE" --no-check-certificate \
+    wget -4 -q --show-progress -O "$ARCHIVE" \
         "https://www.domoticz.com/download.php?channel=release&type=release&system=${OS}&machine=${MACH}"
     if [ $? -ne 0 ]; then
         die "Problem downloading new Domoticz version!!"
@@ -91,7 +91,7 @@ fi
 # Ensure archive exists (re-exec starts a new process; archive file persists on disk)
 if [ ! -f "$ARCHIVE" ]; then
     log_info "Downloading latest release version..."
-    if ! wget -4 -q --show-progress -O "$ARCHIVE" --no-check-certificate \
+    if ! wget -4 -q --show-progress -O "$ARCHIVE" \
         "https://www.domoticz.com/download.php?channel=release&type=release&system=${OS}&machine=${MACH}"; then
         die "Failed to download Domoticz archive"
     fi

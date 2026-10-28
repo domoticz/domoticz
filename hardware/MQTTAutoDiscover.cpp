@@ -88,6 +88,10 @@ MQTTAutoDiscover::MQTTAutoDiscover(const int ID, const std::string& Name, const 
 		{
 			m_TopicDiscoveryPrefix = strarray[3];
 		}
+		if (strarray.size() > 4)
+		{
+			m_bEnableNewDevicesByDefault = (strarray[4] != "0");
+		}
 	}
 	if (m_TopicDiscoveryPrefix.empty())
 	{
@@ -3170,7 +3174,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 				Log(LOG_NORM, "Accept new hardware disabled. Ignoring new sensor %s", sDeviceName.c_str());
 				return;
 			}
-			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+			int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
 				"VALUES (%d, %d, '%q', 1, %d, %d, %d, %d, '%q', %d, %d, '%q')",
 				m_HwdID, 0, szDeviceID.c_str(), devType, subType, pSensor->SignalLevel, pSensor->BatteryLevel, sDeviceName.c_str(), iUsed, nValue, sValue.c_str());
@@ -3204,7 +3208,7 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor(_tMQTTASensor* pSensor, cons
 				return;
 			}
 
-			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+			int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 			uint8_t SwitchType = 0;
 
 			if (
@@ -3325,7 +3329,7 @@ void MQTTAutoDiscover::handle_auto_discovery_fan(_tMQTTASensor* pSensor, const s
 			return;
 		}
 		bIsNewDevice = true;
-		int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+		int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
 			"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, %d, '%q', %d, %d, '0')",
 			m_HwdID, 0, pSensor->unique_id.c_str(), unit, pSensor->devType, pSensor->subType, switchType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed, 0);
@@ -3504,7 +3508,7 @@ void MQTTAutoDiscover::handle_auto_discovery_select(_tMQTTASensor* pSensor, cons
 			Log(LOG_NORM, "Accept new hardware disabled. Ignoring new sensor %s", pSensor->name.c_str());
 			return;
 		}
-		int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+		int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue, Options) "
 			"VALUES (%d, %d, '%q', 1, %d, %d, %d, %d, %d, '%q', %d, %d, '0', null)",
 			m_HwdID, 0, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, switchType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed, 0);
@@ -3682,7 +3686,7 @@ bool MQTTAutoDiscover::InsertUpdateSetpoint(
 				Log(LOG_NORM, "Accept new hardware disabled. Ignoring new sensor %s", pSensor->name.c_str());
 				return false;
 			}
-			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+			int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
 				"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, '%q', %d, %d, '%q')",
 				m_HwdID, 0, pSensor->unique_id.c_str(), Unit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed,
@@ -3776,7 +3780,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				return;
 			}
 			bIsNewDevice = true;
-			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+			int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 			std::string szName = pSensor->name + " Mode";
 			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue, Options) "
 				"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, %d, '%q', %d, %d, '0', null)",
@@ -3934,7 +3938,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				return;
 			}
 			bIsNewDevice = true;
-			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+			int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue, Options) "
 				"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, %d, '%q', %d, %d, '0', null)",
 				m_HwdID, 0, pSensor->unique_id.c_str(), unit, pSensor->devType, pSensor->subType, switchType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed, 0);
@@ -4071,7 +4075,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				return;
 			}
 			bIsNewDevice = true;
-			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+			int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 			std::string szName = pSensor->name + " Fan Mode";
 			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue, Options) "
 				"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, %d, '%q', %d, %d, '0', null)",
@@ -4225,7 +4229,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				return;
 			}
 			bIsNewDevice = true;
-			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+			int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 			std::string szName = pSensor->name + " Swing Mode";
 			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue, Options) "
 				"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, %d, '%q', %d, %d, '0', null)",
@@ -4379,7 +4383,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				return;
 			}
 			bIsNewDevice = true;
-			int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+			int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 			std::string szName = pSensor->name + " Action Mode";
 			m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, switchType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue, Options) "
 				"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, %d, '%q', %d, %d, '0', null)",
@@ -4673,7 +4677,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					Log(LOG_NORM, "Accept new hardware disabled. Ignoring new sensor %s", pSensor->name.c_str());
 					return;
 				}
-				int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+				int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 				m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
 					"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, '%q', %d, %d, '%q')",
 					m_HwdID, 0, pSensor->unique_id.c_str(), Unit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed,
@@ -4777,7 +4781,7 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					Log(LOG_NORM, "Accept new hardware disabled. Ignoring new sensor %s", pSensor->name.c_str());
 					return;
 				}
-				int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+				int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 				m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
 					"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, '%q', %d, %d, '%q')",
 					m_HwdID, 0, pSensor->unique_id.c_str(), Unit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed,
@@ -4814,7 +4818,7 @@ void MQTTAutoDiscover::handle_auto_discovery_text(_tMQTTASensor* pSensor, const 
 			Log(LOG_NORM, "Accept new hardware disabled. Ignoring new sensor %s", pSensor->name.c_str());
 			return;
 		}
-		int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+		int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
 			"VALUES (%d, %d, '%q', 1, %d, %d, %d, %d, '%q', %d, %d, '%q')",
 			m_HwdID, 0, pSensor->unique_id.c_str(), pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed,
@@ -4858,7 +4862,7 @@ void MQTTAutoDiscover::handle_auto_discovery_ir_code(_tMQTTASensor* pSensor)
 			Log(LOG_NORM, "Accept new hardware disabled. Ignoring new sensor %s", pSensor->name.c_str());
 			return;
 		}
-		int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+		int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, Options) "
 			"VALUES (%d, %d, '%q', 1, %d, %d, %d, %d, '%q', %d, %d, '%q')",
 			m_HwdID, 0, devID.c_str(), pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, devName.c_str(), iUsed,
@@ -4879,7 +4883,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		return;
 	}
 
-	int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+	int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 	std::string szSwitchCmd = pSensor->last_value;
 	int level = 0;
 	bool bHaveActionLevel = false;
@@ -5175,6 +5179,8 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 
 		if (bIsJSON)
 		{
+			bool bReceivedLevel = false;
+
 			if (root["value"].isObject() && (!root["value"]["red"].empty() && root["value"]["r"].empty()))
 			{
 				// Color values are defined in "value" object instead of "color" as expected by domoticz (e.g. Fibaro FGRGBW)
@@ -5267,6 +5273,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 						{
 							//must be a level
 							level = atoi(szSwitchCmd.c_str());
+							bReceivedLevel = true;
 
 							if (pSensor->bHave_brightness_scale)
 								level = (int)round((100.0 / pSensor->brightness_scale) * level);
@@ -5321,6 +5328,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			{
 				float dLevel = (100.F / pSensor->brightness_scale) * root["brightness"].asInt();
 				level = (int)round(dLevel);
+				bReceivedLevel = true;
 				if (
 					(szSwitchCmd != pSensor->payload_on)
 					&& (szSwitchCmd != pSensor->payload_off))
@@ -5426,6 +5434,12 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				bHaveColorChange = szColorOld != szColorNew;
 				bDoNotUpdateLevel = true;
 			}
+
+			// A light that reports color and brightness on separate state topics (e.g. Fibaro
+			// FGRGBW via Z-Wave JS) sends color messages without a level. Keep the stored level
+			// so such a message only changes the color and on/off state, not the brightness.
+			if (bDoNotUpdateLevel && !bReceivedLevel)
+				level = atoi(sValue.c_str());
 		}
 		else
 		{
@@ -5619,10 +5633,14 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	pSensor->nValue = nValue;
 	pSensor->sValue = sValue;
 
+	// UpdateValueInt() fires the device event synchronously, and the event reads the color
+	// from the database, so store it first. Write it without UpdateDeviceValue(): that would
+	// publish the new color with the previous state, and UpdateValueInt() publishes the
+	// complete new state anyway.
+	if (bHaveColorChange)
+		m_sql.safe_query("UPDATE DeviceStatus SET Color='%q' WHERE (ID == %s)", color_new.toJSONString().c_str(), szIdx.c_str());
 	UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), pSensor->devUnit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->nValue, pSensor->sValue.c_str(),
 		szDeviceName);
-	if (bHaveColorChange)
-		m_sql.UpdateDeviceValue("Color", color_new.toJSONString(), szIdx);
 	if (bHaveLevelChange && !bDoNotUpdateLevel)
 		m_sql.UpdateDeviceValue("LastLevel", level, szIdx);
 }
@@ -6303,7 +6321,7 @@ void MQTTAutoDiscover::UpdateBlindPosition(_tMQTTASensor* pSensor)
 	pSensor->devType = pTypeGeneralSwitch;
 	pSensor->subType = sSwitchGeneralSwitch;
 
-	int iUsed = (pSensor->bEnabled_by_default) ? 1 : 0;
+	int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
 	std::string szSwitchCmd = pSensor->last_value;
 	int level = 0;
 	int switchType = STYPE_Blinds;
@@ -6869,9 +6887,20 @@ bool MQTTAutoDiscover::UpdateNumber(const std::string& idx, const std::string& s
 
 bool MQTTAutoDiscover::StartHardware()
 {
-	MQTT::StartHardware();
+	// Never overwrite a still-joinable worker thread, its destructor would call std::terminate().
+	// Stop it before MQTT::StartHardware() calls RequestStart(), mirroring StopHardware().
+	if (m_worker_thread)
+	{
+		RequestStop();
+		m_inc_msg_cv.notify_all();
+		m_worker_thread->join();
+		m_worker_thread.reset();
+	}
 
-	m_worker_thread = std::make_shared<std::thread>([this] { Do_Work(); });
+	if (!MQTT::StartHardware())
+		return false;
+
+	m_worker_thread =std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_worker_thread->native_handle());
 
 	return (m_worker_thread != nullptr);
@@ -6973,14 +7002,8 @@ void MQTTAutoDiscover::Do_Work()
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_MQTTAD_GetConfig(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_MQTTAD_GetConfig(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid.empty())
 				return;
@@ -6998,14 +7021,8 @@ namespace http {
 			pMQTT->GetConfig(root);
 		}
 
-		void CWebServer::Cmd_MQTTAD_UpdateNumber(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_MQTTAD_UpdateNumber(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			std::string devid = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "name")));
 			std::string value = request::findValue(&req, "value");
@@ -7037,14 +7054,8 @@ namespace http {
 			}
 		}
 
-		void CWebServer::Cmd_MQTTAD_PublishPayload(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_MQTTAD_PublishPayload(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string hwid = request::findValue(&req, "idx");
 			std::string topic = HTMLSanitizer::Sanitize(CURLEncode::URLDecode(request::findValue(&req, "topic")));
 			std::string qos = request::findValue(&req, "qos");

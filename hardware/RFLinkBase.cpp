@@ -1164,12 +1164,6 @@ namespace http {
 	namespace server {
 		void CWebServer::Cmd_CreateRFLinkDevice(WebEmSession & session, const request& req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
-
 			std::string idx = request::findValue(&req, "idx");
 			std::string scommand = request::findValue(&req, "rflcommand");
 			if (idx.empty() || scommand.empty())

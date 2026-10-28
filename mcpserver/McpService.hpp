@@ -30,6 +30,8 @@ namespace mcp
 	void McpResourcesList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	void McpResourcesTemplatesList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	void McpResourcesRead(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	// True when the resources/read request targets a resource only an admin may read
+	bool McpIsAdminResource(const Json::Value &jsonRequest);
 	void McpPromptsList(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	void McpPromptsGet(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	void McpCompletionComplete(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
@@ -54,6 +56,13 @@ namespace mcp
 	bool switchScene(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool getRooms(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool getRoomDevices(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool addRoom(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool updateRoom(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool deleteRoom(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool reorderRooms(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool addRoomDevices(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool removeRoomDevices(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
+	bool reorderRoomDevices(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool getSceneDevices(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 	bool getSceneHistory(const Json::Value &jsonRequest, Json::Value &jsonRPCRep);
 

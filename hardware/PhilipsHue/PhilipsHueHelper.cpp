@@ -153,7 +153,7 @@ void CPhilipsHue::RgbToXY(const std::string& bulbModel, uint8_t red, uint8_t gre
 
 	bool inReachOfLamps = check_point_in_lamps_reach(xy, bulbModel);
 	if (!inReachOfLamps)
-		xy = get_closest_point_to_point(xy, "");
+		xy = get_closest_point_to_point(xy, bulbModel);
 
 	x = xy.x;
 	y = xy.y;

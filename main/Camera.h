@@ -84,11 +84,11 @@ private:
 		clock_t::time_point LastRequest; // when the web interface last asked for this camera
 		clock_t::time_point RetryAfter;	 // failure backoff deadline
 		clock_t::duration RequestInterval{ std::chrono::seconds(5) };
+		uint64_t Generation{ 0 }; // bumped when the camera settings change, so a fetch
+					  // started with the old settings is discarded
 		int FailCount{ 0 };
 		bool Fetching{ false };
 		bool HaveImage{ false };
-		bool Tried{ false };	   // a fetch has completed at least once, successful or not
-		bool WaitingFirst{ false }; // a request is already waiting for the first frame
 	};
 
 	void ReloadCameraActiveDevices(const std::string &CamID);
@@ -96,9 +96,12 @@ private:
 	bool TakeRaspberrySnapshotRPICamStill(std::vector<unsigned char>& camimage);
 
 	void Do_Work();
-	void FetchSnapshot(uint64_t CamID);
+	void FetchSnapshot(uint64_t CamID, uint64_t Generation);
 	// Caller must hold m_snapshot_mutex.
 	bool IsSnapshotDue(const snapshotCache &cache, clock_t::time_point now) const;
+	// Caller must hold m_snapshot_mutex. Discards the cached image and restarts the cache slot
+	// under a new generation, keeping the demand information so it is fetched again right away.
+	void ResetSnapshot(snapshotCache &cache);
 
 	std::mutex m_mutex;
 	unsigned char m_seconds_counter;
@@ -107,8 +110,8 @@ private:
 	std::mutex m_snapshot_mutex;
 	std::condition_variable m_snapshot_cond;
 	std::map<uint64_t, snapshotCache> m_snapshots;
-	std::shared_ptr<std::thread> m_snapshot_thread;
+	uint64_t m_snapshot_generation{ 0 };
+	std::vector<std::thread> m_snapshot_threads;
 	std::atomic_bool m_stoprequested{ false };
-	bool m_wake_worker{ false };
 };
 

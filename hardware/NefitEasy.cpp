@@ -293,6 +293,8 @@ void CNefitEasy::SetHotWaterMode(bool bTurnOn)
 			Log(LOG_ERROR, "Error setting User Mode!");
 			return;
 		}
+		szURL.clear();
+		szURL.str("");
 		szURL << "http://" << m_szIPAddress << ":" << m_usIPPort << NEFITEASY_HTTP_BRIDGE << NEFITEASY_SET_HOT_WATER_MANUAL_MODE;
 		if (!HTTPClient::POST(szURL.str(), root.toStyledString(), ExtraHeaders, sResult))
 		{

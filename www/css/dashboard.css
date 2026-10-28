@@ -578,6 +578,10 @@ body.dd-navbar-hidden .dd-toolbar {
     display: flex;
     flex-direction: column;
     height: 100%;
+    /* The page is content-box, so height:100% plus the 1px border made the widget 2px
+       taller than its grid cell; .dd-widget-cell clipped that away, hiding the bottom
+       border and the last 2px of the body. */
+    box-sizing: border-box;
     background: var(--dz-panel-bg);
     border: 1px solid var(--dz-border-color, rgba(255, 255, 255, 0.08));
     border-radius: var(--dz-widget-border-radius, 5px);
@@ -1168,7 +1172,9 @@ body.dd-navbar-hidden .dd-toolbar {
 .dd-widget--energy-dashboard > .dd-widget-body {
     background: transparent;
     overflow: hidden;
-    padding: 4px;
+    /* Vertical padding is kept to a minimum: with an energy price the Grid card grows a
+       fourth line and its today line wraps, which has to fit the two-row minimum box. */
+    padding: 2px 4px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -1550,6 +1556,9 @@ body.dd-navbar-hidden .dd-toolbar {
    height chain has to be built here. Without it the widget grows past the widget
    body and the body's own overflow:auto puts a scrollbar around the whole widget. */
 .dd-widget--quick-actions > .dd-widget-body {
+    /* .dd-quick-actions brings its own 6px padding, so the body's default 10px only ate
+       20px of row space and pushed the last row out of the widget at minimum height. */
+    padding: 0;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -3035,6 +3044,10 @@ dd-wcp-color {
     flex: 1 1 120px;
     max-width: 200px;
     height: auto;
+    /* Tighter than the shared .dd-stat-card: a Grid card with a price line has four rows
+       of text and must still fit the widget's two-row minimum box. */
+    padding: 6px 12px;
+    gap: 3px;
 }
 .dd-fc-conditions .dd-stat-value {
     white-space: nowrap;
@@ -3517,6 +3530,9 @@ body.dd-standby::after {
    height chain has to be built here. Without it the widget grows past the widget
    body and the body's own overflow:auto puts a scrollbar around the whole widget. */
 .dd-widget--quick-stat > .dd-widget-body {
+    /* .dd-quick-stat brings its own 6px padding, so the body's default 10px only ate
+       20px of row space and pushed the last row out of the widget at minimum height. */
+    padding: 0;
     overflow: hidden;
     display: flex;
     flex-direction: column;

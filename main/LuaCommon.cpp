@@ -117,7 +117,7 @@ int CLuaCommon::l_domoticz_applyJsonPath(lua_State* lua_state)
 						{
 							if (lua_isstring(lua_state, 6))
 							{
-								arg2 = Json::PathArgument(lua_tostring(lua_state, 6));
+								arg4 = Json::PathArgument(lua_tostring(lua_state, 6));
 							}
 							else
 							{

@@ -120,8 +120,10 @@ bool MQTT::StartHardware()
 
 void MQTT::StopMQTT()
 {
+	// Only drops the broker connection. m_bIsStarted is left alone: this runs on every
+	// (re)connect from the worker thread, and clearing it there would make the hardware
+	// look stopped, so a scheduled MainWorker start would start it a second time.
 	disconnect();
-	m_bIsStarted = false;
 }
 
 bool MQTT::StopHardware()
@@ -815,7 +817,7 @@ void MQTT::SendDeviceInfo(const int HwdID, const uint64_t DeviceRowIdx, const st
 
 		root["idx"] = Json::Value::UInt64(DeviceRowIdx);
 		root["hwid"] = hwid;
-		root["org_hwid"] = hwid;
+		root["org_hwid"] = org_hwid;
 
 		if ((dType == pTypeTEMP) || (dType == pTypeTEMP_BARO) || (dType == pTypeTEMP_HUM) || (dType == pTypeTEMP_HUM_BARO) || (dType == pTypeBARO) || (dType == pTypeHUM) ||
 		    (dType == pTypeWIND) || (dType == pTypeRAIN) || (dType == pTypeUV) || (dType == pTypeCURRENT) || (dType == pTypeCURRENTENERGY) || (dType == pTypeENERGY) ||
@@ -1025,13 +1027,8 @@ void MQTT::ReloadSharedDevices()
 namespace http {
 	namespace server {
 		//As the SharedDevices is also used for Users, we are going to add 2000 to the index so we can distinguish between the two
-		void CWebServer::Cmd_GetSharedMQTTDevices(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_GetSharedMQTTDevices(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
 			std::string sidx = request::findValue(&req, "idx");
 			if (sidx.empty())
 				return;
@@ -1051,13 +1048,8 @@ namespace http {
 			root["status"] = "OK";
 		}
 
-		void CWebServer::Cmd_SetSharedMQTTDevices(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_SetSharedMQTTDevices(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
 			std::string sidx = request::findValue(&req, "idx");
 			if (sidx.empty())
 				return;
@@ -1092,13 +1084,8 @@ namespace http {
 			root["status"] = "OK";
 		}
 
-		void CWebServer::Cmd_ClearSharedMQTTDevices(WebEmSession& session, const request& req, Json::Value& root)
+		void CWebServer::Cmd_ClearSharedMQTTDevices(WebEmSession& /*session*/, const request& req, Json::Value& root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; // Only admin user allowed
-			}
 			std::string sidx = request::findValue(&req, "idx");
 			if (sidx.empty())
 				return;

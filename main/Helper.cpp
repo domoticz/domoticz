@@ -16,6 +16,7 @@
 #include <fstream>
 #include <math.h>
 #include <algorithm>
+#include <cstdint>
 #include <sstream>
 #include <openssl/aes.h>
 #include <openssl/evp.h>
@@ -1449,6 +1450,9 @@ static int accSeed = 0;
 
 int GenerateRandomNumber(const int range)
 {
+	if (range <= 0)
+		return 0;
+
 	if (p == ((unsigned char*)(&entropy + 1)))
 	{
 		switch (entropy.which)
@@ -1470,7 +1474,9 @@ int GenerateRandomNumber(const int range)
 	accSeed = ((accSeed * (UCHAR_MAX + 2U)) | 1) + (int)*p;
 	p++;
 	srand(accSeed);
-	return (rand() / (RAND_MAX / range));
+	const std::uint64_t randomValue = static_cast<std::uint64_t>(rand());
+	const std::uint64_t bucketCount = static_cast<std::uint64_t>(range) + 1;
+	return static_cast<int>((randomValue * bucketCount) / (static_cast<std::uint64_t>(RAND_MAX) + 1));
 }
 
 int GetDirFilesRecursive(const std::string& DirPath, std::map<std::string, int>& _Files)

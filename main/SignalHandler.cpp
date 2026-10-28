@@ -532,12 +532,26 @@ void Do_Watchdog_Work()
 	// Initialize hartbeats with current time (fixes issues #5252)
 	m_LastHeartbeat = mytime(nullptr);
 	m_mainworker.m_LastHeartbeat = mytime(nullptr);
+	time_t lastCheck = mytime(nullptr);
 
 	while(!g_stop_watchdog)
 	{
 		sleep_milliseconds(1000);
 		if (g_stop_watchdog)
 			break;
+		// This loop runs every second. When far more wall clock time has passed, the whole
+		// process was suspended (system sleep/hibernate, debugger break) and every heartbeat
+		// is as stale as ours, so they are reset instead of being mistaken for a hang.
+		time_t now = mytime(nullptr);
+		if (difftime(now, lastCheck) > 30)
+		{
+			_log.Log(LOG_STATUS, "Watchdog: time jumped %.0f seconds (system resumed from sleep?), resetting heartbeats", difftime(now, lastCheck));
+			m_LastHeartbeat = now;
+			m_mainworker.HeartbeatReset();
+			lastCheck = now;
+			continue;
+		}
+		lastCheck = now;
 		heartbeat_check();
 	}
 }

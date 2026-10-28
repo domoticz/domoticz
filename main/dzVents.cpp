@@ -581,7 +581,7 @@ bool CdzVents::TriggerIFTTT(lua_State* lua_state, const std::vector<_tLuaTableVa
 			else if (item.name == "sValue2")
 				sValue2 = std::to_string(item.iValue);
 			else if (item.name == "sValue3")
-				sValue2 = std::to_string(item.iValue);
+				sValue3 = std::to_string(item.iValue);
 		}
 
 		else if ((item.type == TYPE_FLOAT) && (item.name == "_after"))

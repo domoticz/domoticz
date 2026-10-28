@@ -798,13 +798,10 @@ function Device(item) {
             if (existing != undefined) {
                 el = existing.cloneNode(false);  // shallow clone only
                 sDirection = el.getAttribute('direction');
-                var oTransform = new Transform(el);
-                if (sDirection == 'right') {
-                    oTransform.xOffset = -Device.elementPadding;
-                } else {
-                    oTransform.xOffset = -(this.width - Device.iconSize - Device.elementPadding);
-                }
-                el.setAttribute('transform', oTransform.toString());
+                // A Text device changes size when its content gains or loses line breaks
+                el.setAttribute('width', this.width);
+                el.setAttribute('height', this.height);
+                el.setAttribute('transform', Device.popupTransform(el));
             } else {
                 el = makeSVGnode('g', { 'class': 'DeviceDetails', id: this.uniquename + '_Detail', transform: 'translate(-' + Device.elementPadding + ',-' + Device.elementPadding * 6 + ')', width: this.width, height: this.height, direction: 'right', style: 'display:' + showme + '; -webkit-user-select: none;', onmouseleave: "$('.DeviceDetails').css('display', 'none');", 'pointer-events': 'none' }, '');
             }
@@ -1309,6 +1306,12 @@ Device.popupCancelDelay = function () {
 Device.popup = function (target) {
     var ignorePopupDelay = (Device.popupDelayDevice != "");
     Device.popupCancelDelay();
+    // Zoomed into a room the device icon is larger than its popup and not fully covered by it, so
+    // the pointer reaches the icon again while its popup is open; reopening would hide it and
+    // restart the delay on every pass
+    if ($(document.getElementById(target + "_Detail")).css('display') == 'inline') {
+        return;
+    }
     $('.DeviceDetails').css('display', 'none');   // hide all popups
     if (Device.expandVar != null) {
         clearInterval(Device.expandVar);
@@ -1324,25 +1327,96 @@ Device.popup = function (target) {
         return;
     }
 
-    // try to check if the popup needs to be flipped, if this can't be done just display it
     var oTarget = document.getElementById(target + "_Detail");
-    var oTemp = oTarget.parentNode;
-    var oTransform = new Transform();
-    while (oTemp.nodeName.toLowerCase() != 'svg') {
-        var oNew = new Transform(oTemp);
-        oTransform.Add(oNew);
-        oTemp = oTemp.parentNode;
-    }
     oTarget.setAttribute('style', 'display:inline; -webkit-user-select: none;');
-
-    var imageWidth = (oTransform.scale == 0) ? Device.xImageSize : Device.xImageSize / oTransform.scale;
-    var requiredWidth = oTransform.xOffset + parseInt(oTarget.getAttribute('width'));
-    var sDir = (imageWidth < requiredWidth) ? 'left' : 'right';
-    if (sDir != oTarget.getAttribute('direction')) {
-        oTarget.setAttribute('direction', sDir);
-    }
     oTarget.setAttribute("expanded", "false");
     Device.popupRedraw(target);
+    Device.popupFit(target);
+}
+// The popup's placement around its device icon. 'direction' picks the side of the icon it opens
+// to; zoomscale, nudgex and nudgey are set by Device.popupFit and kept as attributes so they
+// survive every redraw (the shallow clone in drawDetails copies them).
+// The scale comes first so the offsets scale with it, keeping the popup's own icon on the device.
+Device.popupTransform = function (el) {
+    var fWidth = parseFloat(el.getAttribute('width'));
+    var fX = (el.getAttribute('direction') == 'right') ? -Device.elementPadding : -(fWidth - Device.iconSize - Device.elementPadding);
+    var fY = -(Device.elementPadding * 6);
+    fX += parseFloat(el.getAttribute('nudgex')) || 0;
+    fY += parseFloat(el.getAttribute('nudgey')) || 0;
+    var fZoomScale = parseFloat(el.getAttribute('zoomscale')) || 1;
+    return 'scale(' + fZoomScale + ') translate(' + fX + ',' + fY + ')';
+}
+// Keep a shown popup readable and inside the part of the plan the user can see.
+// Zooming into a room scales the whole plan group, popups included, which on a small screen
+// makes a popup wider than the screen; the popup is scaled back so it keeps its unzoomed size.
+// Placement is then measured on screen, because the popup sits under nested transforms (the
+// room zoom, the icon's own scale) and the plan svg is clipped by both its own box and the
+// browser viewport: plan coordinates cannot tell what is visible once a room is zoomed in.
+// Horizontally the popup opens to the right of its icon or flips to the left of it, which keeps
+// the popup's icon over the device; only what still sticks out is shifted, as it is vertically,
+// where there is no flip.
+Device.popupFit = function (target, bKeepDirection) {
+    var oTarget = document.getElementById(target + "_Detail");
+    if ((oTarget == null) || (typeof oTarget.getScreenCTM != "function") || (oTarget.ownerSVGElement == null)) {
+        return;
+    }
+    var oSvg = oTarget.ownerSVGElement;
+    var oZoomGroup = (typeof oTarget.closest == "function") ? oTarget.closest('[zoomed]') : null;
+    var oZoomMatrix = (oZoomGroup != null) ? oZoomGroup.getScreenCTM() : null;
+    var oSvgMatrix = oSvg.getScreenCTM();
+    var fZoom = ((oZoomMatrix != null) && (oSvgMatrix != null) && (oSvgMatrix.a > 0) && (oZoomMatrix.a > 0)) ? oZoomMatrix.a / oSvgMatrix.a : 1;
+    oTarget.setAttribute('zoomscale', String(1 / fZoom));
+    oTarget.setAttribute('transform', Device.popupTransform(oTarget));
+
+    var oMatrix = oTarget.getScreenCTM();
+    var oRect = oTarget.getBoundingClientRect();
+    var oSvgRect = oSvg.getBoundingClientRect();
+    // While the page is pinch zoomed only the visual viewport is on screen, a smaller and offset part
+    // of the layout viewport that getBoundingClientRect measures against
+    var vv = window.visualViewport;
+    var oScreen = ((typeof vv != 'undefined') && (vv != null))
+        ? { left: vv.offsetLeft, top: vv.offsetTop, right: vv.offsetLeft + vv.width, bottom: vv.offsetTop + vv.height }
+        : { left: 0, top: 0, right: document.documentElement.clientWidth, bottom: document.documentElement.clientHeight };
+    var oView = {
+        left: Math.max(oSvgRect.left, oScreen.left),
+        top: Math.max(oSvgRect.top, oScreen.top),
+        right: Math.min(oSvgRect.right, oScreen.right),
+        bottom: Math.min(oSvgRect.bottom, oScreen.bottom)
+    };
+    if ((oMatrix == null) || (oMatrix.a <= 0) || (oRect.width == 0) || (oView.right <= oView.left) || (oView.bottom <= oView.top)) {
+        return;
+    }
+    var fScale = oMatrix.a;  // screen pixels per popup unit; the plan is never rotated
+    var fNudgeX = parseFloat(oTarget.getAttribute('nudgex')) || 0;
+    var fNudgeY = parseFloat(oTarget.getAttribute('nudgey')) || 0;
+    var fFlip = (parseFloat(oTarget.getAttribute('width')) - Device.iconSize) * fScale;
+
+    // Where the popup would be with no nudge, opened to the right of its icon
+    var fRightLeft = oRect.left - (fNudgeX * fScale) + ((oTarget.getAttribute('direction') == 'right') ? 0 : fFlip);
+    var fTop = oRect.top - (fNudgeY * fScale);
+    var fOverflowRight = Math.max(0, (fRightLeft + oRect.width) - oView.right) + Math.max(0, oView.left - fRightLeft);
+    var fOverflowLeft = Math.max(0, (fRightLeft - fFlip + oRect.width) - oView.right) + Math.max(0, oView.left - (fRightLeft - fFlip));
+    var sDir = ((fOverflowRight > 0) && (fOverflowLeft < fOverflowRight)) ? 'left' : 'right';
+    if (bKeepDirection == true) {
+        sDir = (oTarget.getAttribute('direction') == 'right') ? 'right' : 'left';
+    }
+    var fLeft = (sDir == 'left') ? fRightLeft - fFlip : fRightLeft;
+
+    // Shift by whatever still sticks out; a popup larger than the view keeps its top left visible
+    var fShiftX = Math.max(Math.min(0, oView.right - (fLeft + oRect.width)), oView.left - fLeft);
+    var fShiftY = Math.max(Math.min(0, oView.bottom - (fTop + oRect.height)), oView.top - fTop);
+
+    var bFlip = (sDir != oTarget.getAttribute('direction'));
+    oTarget.setAttribute('direction', sDir);
+    oTarget.setAttribute('nudgex', String(fShiftX / fScale));
+    oTarget.setAttribute('nudgey', String(fShiftY / fScale));
+    if (bFlip) {
+        // The contents are laid out per side, so the flipped box is only known after the redraw
+        Device.popupRedraw(target);
+        Device.popupFit(target, true);
+    } else {
+        oTarget.setAttribute('transform', Device.popupTransform(oTarget));
+    }
 }
 Device.popupRedraw = function (target) {
     var oData = document.getElementById(target + "_Data");
@@ -1430,6 +1504,7 @@ Device.popupExpansion = function () {
         Device.expandShadow = null;
         Device.expandVar = null;
         Device.popupRedraw(Device.expandTarget);
+        Device.popupFit(Device.expandTarget);
     }
 }
 Device.MakeFavorite = function (id, isfavorite) {
@@ -1491,10 +1566,10 @@ function Sensor(item) {
         
         var sensorType = this.type.replace(/\s/g, '');
 
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
 
         this.imagetext = "Show graph";
-        this.NotifyLink = "window.location.href = '#/Devices/" + this.index + "/Notifications'";
+        this.NotifyLink = "dzNavigateHash('#/Devices/" + this.index + "/Notifications')";
 
         if (this.haveCamera == true) this.WebcamLink = "javascript:ShowCameraLiveStream('" + this.name + "'," + this.cameraIdx + "," + this.cameraAspect + ")";
         this.showStatus = (Device.showSensorValues == true);
@@ -1530,7 +1605,7 @@ function TemperatureSensor(item) {
         this.parent.constructor(item);
         this.image = "images/temp48.png";
         this.status = $.t('Temp') + ': ' + this.data;
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
     }
 }
 TemperatureSensor.inheritsFrom(VariableSensor);
@@ -1544,7 +1619,7 @@ function PercentageSensor(item) {
 		} else {
 			this.image += item.Image + '48_On.png';
 		}
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
     }
 }
 PercentageSensor.inheritsFrom(VariableSensor);
@@ -1586,7 +1661,7 @@ function Switch(item) {
         }
         this.iconActive = (bIsOffImage == false);
         this.data = '';
-        this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
         this.showStatus = (Device.showSwitchValues == true);
         this.imagetext = "Activate switch";
         this.controlable = true;
@@ -1613,7 +1688,7 @@ BinarySwitch.inheritsFrom(Switch);
 function Alert(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
         this.NotifyLink = "";   
         this.data = item.Data.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br />');
         if (this.data.indexOf("<br />") != -1) {
@@ -1637,7 +1712,7 @@ function Baro(item) {
         // item value driven when it carries a Temp, which is true of every Temp+Hum+Baro
         // sensor, and that would otherwise pin this barometer to its image for good.
         this.valueDrivenIcon = false;
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
         if (typeof item.Barometer != 'undefined') {
             this.data = this.smallStatus = item.Barometer + ' hPa';
             if (typeof item.ForecastStr != 'undefined') {
@@ -1723,7 +1798,7 @@ function Counter(item) {
               this.image = "images/"+item.Image+"48_On.png";
             }
         }
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
 
         if (typeof item.CounterToday != 'undefined') {
             this.status = this.data;
@@ -1775,7 +1850,7 @@ function Contact(item) {
         this.data = '';
         this.NotifyLink = this.onClick = "";
         this.smallStatus = this.status;
-        this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
     }
 }
 Contact.inheritsFrom(BinarySensor);
@@ -1801,33 +1876,33 @@ function Current(item) {
         }
         switch (this.type) {
             case "Energy":
-                this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+                this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
                 this.smallStatus = this.data;
                 break;
             case "Usage":
-                this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+                this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
                 break;
             case "General":
                 switch (this.subtype) {
                     case "kWh":
-                        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+                        this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
                         this.smallStatus = this.data;
                         break;
                     case "Voltage":
-                        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+                        this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
                         this.smallStatus = this.data;
                         break;
                     case "Current":		
-                        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+                        this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
                         this.smallStatus = this.data;
                         break;
                     default:
-                        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+                        this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
                         break;
                 }
                 break;
             default:
-                this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+                this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
                 break;
         }
     }
@@ -1842,7 +1917,7 @@ function Custom(item) {
         } else {
             this.image = "images/Custom.png";
         }
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
         this.status = this.data;
         this.data = '';
     }
@@ -1874,7 +1949,7 @@ function Door(item) {
         }
         this.data = '';
         this.NotifyLink = "";
-        this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
     }
 }
 Door.inheritsFrom(BinarySwitch);
@@ -1888,7 +1963,7 @@ function DoorContact(item) {
         this.iconActive = (this.status != "Closed");
         this.imagetext = "";
         this.NotifyLink = this.onClick = "";
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
         this.data = '';
     }
 }
@@ -1908,7 +1983,7 @@ function DuskSensor(item) {
         this.parent.constructor(item);
         this.image = (item.Status == 'On') ? "images/uvdark.png" : this.image = "images/uvsunny.png";
         this.iconActive = (item.Status == 'On');
-        this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
         this.data = '';
     }
 }
@@ -1936,7 +2011,7 @@ Group.inheritsFrom(Switch);
 function Hardware(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
 
         if (item.CustomImage == 0) {
 			//?
@@ -1954,7 +2029,7 @@ function Humidity(item) {
         // Same as the barometer: one fixed image, not a reading, so it is free to become a
         // glyph even though the sensor it belongs to also reports a temperature.
         this.valueDrivenIcon = false;
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
         if (typeof item.Humidity != 'undefined') {
             this.data = this.smallStatus = item.Humidity + '%';
             this.status = $.t('Humidity') + ': ' + item.Humidity + '%';
@@ -2000,7 +2075,7 @@ function Motion(item) {
             this.image = (this.status == "On") ? "images/" + item.TypeImg + "48-on.png" : "images/" + item.TypeImg + "48-off.png";
         }
         this.iconActive = (this.status == "On");
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
         this.data = '';
         this.smallStatus = this.status;
     }
@@ -2030,7 +2105,7 @@ Pushoff.inheritsFrom(BinarySwitch);
 function Radiation(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
     }
 }
 Radiation.inheritsFrom(WeatherSensor);
@@ -2075,7 +2150,7 @@ function SecurityPanel(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
         this.image = "images/security48.png";
-        this.LogLink = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
         this.imagetext = "Security Panel";
         this.onClick = "window.location.href = 'secpanel/'";
     }
@@ -2118,7 +2193,7 @@ function Smoke(item) {
         this.parent.constructor(item);
         this.image = ((item.Status == "Panic") || (item.Status == "On")) ? "images/smoke48on.png" : this.image = "images/smoke48off.png";
         this.iconActive = ((item.Status == "Panic") || (item.Status == "On"));
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
         this.data = '';
     }
 }
@@ -2134,7 +2209,7 @@ function Sound(item) {
             this.image = "images/Speaker48_" + onoff + ".png";
         }
         this.iconActive = (onoff == "On");
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
     }
 }
 Sound.inheritsFrom(UtilitySensor);
@@ -2163,7 +2238,7 @@ function Percentage(item) {
 		} else {
 			this.image += item.Image + '48_On.png';
 		}
-		this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+		this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
     }
 }
 Percentage.inheritsFrom(PercentageSensor);
@@ -2173,7 +2248,7 @@ function Text(item) {
         this.parent.constructor(item);
         this.imagetext = "";
         this.NotifyLink = "";
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
         this.hasHTMLContent = /<(?!br[\s/>])[a-zA-Z][^>]*>/i.test(item.Data);
         if (this.hasHTMLContent) {
             this.data = item.Data;
@@ -2198,7 +2273,7 @@ Text.inheritsFrom(Sensor);
 function Visibility(item) {
     if (arguments.length != 0) {
         this.parent.constructor(item);
-        this.LogLink = this.onClick = "window.location.href = '#/Devices/" + this.index + "/Log'";
+        this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
     }
 }
 Visibility.inheritsFrom(WeatherSensor);

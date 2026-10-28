@@ -31,7 +31,7 @@ define(['app'], function (app) {
 					});
 					permissions.setPermissions(permissionList);
 					$rootScope.GetGlobalConfig();
-					window.location = '#/Dashboard';
+					dzNavigateHash('#/Dashboard');
 				},
 				error: function (xhr, status, error) {
 					var authenticate = xhr.getResponseHeader("WWW-Authenticate");
@@ -40,7 +40,7 @@ define(['app'], function (app) {
 						$('#logout').html('<div style="text-align: center;"><span>Please close this browser tab or browser window before you log in again.</span></div>')
 						return;
 					}
-					window.location = '#/Dashboard';
+					dzNavigateHash('#/Dashboard');
 				}
 			});
 		})();

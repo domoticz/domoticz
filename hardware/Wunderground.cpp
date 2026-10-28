@@ -122,8 +122,7 @@ std::string CWunderground::GetForecastURL()
 {
 	std::stringstream sURL;
 	std::string szLoc = CURLEncode::URLEncode(m_Location);
-	sURL << "https://api.weather.com/v3/location/point?geocode=" << szLoc << "&language=en-US&format=json&apiKey=" << m_APIKey;
-	sURL << "http://www.wunderground.com/cgi-bin/findweather/getForecast?query=" << szLoc;
+	sURL << "https://www.wunderground.com/cgi-bin/findweather/getForecast?query=" << szLoc;
 	return sURL.str();
 }
 

@@ -67,6 +67,7 @@ int csocket::resolveHost(const std::string& szRemoteHostName, struct sockaddr_in
 		struct sockaddr_in *saddr = (((struct sockaddr_in *)addr->ai_addr));
 		sa.sin_family = saddr->sin_family;
 		memcpy(&sa, saddr, sizeof(sockaddr_in));
+		freeaddrinfo(addr);
 		return SUCCESS;
 	}
 	sa.sin_family = AF_INET;

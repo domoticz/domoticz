@@ -838,13 +838,8 @@ int CLogitechMediaServer::GetPlaylistRefID(const std::string &name)
 //Webserver helpers
 namespace http {
 	namespace server {
-		void CWebServer::Cmd_LMSSetMode(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_LMSSetMode(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
 			std::string hwid = request::findValue(&req, "idx");
 			std::string mode1 = request::findValue(&req, "mode1");
 			if ((hwid.empty()) || (mode1.empty()))
@@ -867,13 +862,8 @@ namespace http {
 			pHardware->Restart();
 		}
 
-		void CWebServer::Cmd_LMSDeleteUnusedDevices(WebEmSession & session, const request& req, Json::Value &/*root*/)
+		void CWebServer::Cmd_LMSDeleteUnusedDevices(WebEmSession & /*session*/, const request& req, Json::Value &/*root*/)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid.empty())
 				return;
@@ -886,13 +876,8 @@ namespace http {
 			m_sql.safe_query("DELETE FROM WOLNodes WHERE ((HardwareID==%d) AND (Timeout==-1))", iHardwareID);
 		}
 
-		void CWebServer::Cmd_LMSGetNodes(WebEmSession & session, const request& req, Json::Value &root)
+		void CWebServer::Cmd_LMSGetNodes(WebEmSession & /*session*/, const request& req, Json::Value &root)
 		{
-			if (session.rights != 2)
-			{
-				session.reply_status = reply::forbidden;
-				return; //Only admin user allowed
-			}
 			std::string hwid = request::findValue(&req, "idx");
 			if (hwid.empty())
 				return;

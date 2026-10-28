@@ -868,19 +868,19 @@ void CPiFace::Do_Work()
 
 void CPiFace::Do_Work_Queue()
 {
-	std::vector<std::string>::iterator itt;
 	while (!m_TaskQueue.IsStopRequested(100))
 	{
-		if (m_send_queue.empty())
-			continue;
-
 		std::string sendData;
-		m_queue_mutex.lock();
-		itt = m_send_queue.begin();
-		sendData = *itt;
-		m_send_queue.erase(itt);
-		m_queue_mutex.unlock();
-		sDecodeRXMessage(this, (const unsigned char*)sendData.c_str(), nullptr, 255, m_Name.c_str());
+		{
+			std::lock_guard<std::mutex> l(m_queue_mutex);
+			if (!m_send_queue.empty())
+			{
+				sendData = m_send_queue.front();
+				m_send_queue.erase(m_send_queue.begin());
+			}
+		}
+		if (!sendData.empty())
+			sDecodeRXMessage(this, (const unsigned char*)sendData.c_str(), nullptr, 255, m_Name.c_str());
 	}
 }
 
