@@ -4086,20 +4086,25 @@ namespace http
 				}
 
 				//Energy Dashboard Settings
-				int EP1 = atoi(request::findValue(&req, "EP1").c_str());
-				int EGas = atoi(request::findValue(&req, "EGas").c_str());
-				int EWater = atoi(request::findValue(&req, "EWater").c_str());
-				int ESolar = atoi(request::findValue(&req, "ESolar").c_str());
-				int EBatteryWatt = atoi(request::findValue(&req, "EBatteryWatt").c_str());
-				int EBatterySoc = atoi(request::findValue(&req, "EBatterySoc").c_str());
-				int EBatteryVolt = atoi(request::findValue(&req, "EBatteryVolt").c_str());
-				int EBatteryEnergyIn = atoi(request::findValue(&req, "EBatteryEnergyIn").c_str());
-				int EBatteryEnergyOut = atoi(request::findValue(&req, "EBatteryEnergyOut").c_str());
-				int ETextSensor = atoi(request::findValue(&req, "ETextSensor").c_str());
-				int EOutsideTempSensor = atoi(request::findValue(&req, "EOutsideTempSensor").c_str());
-				int EExtra1 = atoi(request::findValue(&req, "EExtra1").c_str());
-				int EExtra2 = atoi(request::findValue(&req, "EExtra2").c_str());
-				int EExtra3 = atoi(request::findValue(&req, "EExtra3").c_str());
+				// A device select without a matching option (deleted device) is left out of the form, store it as Disabled (-1) instead of 0
+				auto getEDeviceIdx = [&req](const char* szName) {
+					std::string sValue = request::findValue(&req, szName);
+					return sValue.empty() ? -1 : atoi(sValue.c_str());
+				};
+				int EP1 = getEDeviceIdx("EP1");
+				int EGas = getEDeviceIdx("EGas");
+				int EWater = getEDeviceIdx("EWater");
+				int ESolar = getEDeviceIdx("ESolar");
+				int EBatteryWatt = getEDeviceIdx("EBatteryWatt");
+				int EBatterySoc = getEDeviceIdx("EBatterySoc");
+				int EBatteryVolt = getEDeviceIdx("EBatteryVolt");
+				int EBatteryEnergyIn = getEDeviceIdx("EBatteryEnergyIn");
+				int EBatteryEnergyOut = getEDeviceIdx("EBatteryEnergyOut");
+				int ETextSensor = getEDeviceIdx("ETextSensor");
+				int EOutsideTempSensor = getEDeviceIdx("EOutsideTempSensor");
+				int EExtra1 = getEDeviceIdx("EExtra1");
+				int EExtra2 = getEDeviceIdx("EExtra2");
+				int EExtra3 = getEDeviceIdx("EExtra3");
 				std::string EExtra1Field = request::findValue(&req, "EExtra1Field");
 				std::string EExtra2Field = request::findValue(&req, "EExtra2Field");
 				std::string EExtra3Field = request::findValue(&req, "EExtra3Field");
@@ -6453,6 +6458,10 @@ namespace http
 					m_sql.safe_query("UPDATE DeviceStatus SET sValue='%q' WHERE (ID == '%q')", text.c_str(), idx.c_str());
 					m_mainworker.SetTextDevice(idx, text);
 					m_sql.UpdateLastUpdate(idx);
+					// Let other open pages (websocket), MQTT and the push services see the new text
+					auto devResult = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (ID == '%q')", idx.c_str());
+					if (!devResult.empty())
+						m_mainworker.sOnDeviceReceived(HwdID, std::stoull(idx), devResult[0][0], nullptr);
 				}
 			}
 
