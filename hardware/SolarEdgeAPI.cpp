@@ -1189,6 +1189,7 @@ void SolarEdgeAPI::GetInverterTelemetry()
 	}
 
 	char szTmp[200];
+	bool bAllInverterEnergy = true;
 	for (int i = 0; i < (int)m_inverters.size(); i++)
 	{
 		const _tInverterSettings& inv = m_inverters[i];
@@ -1204,7 +1205,9 @@ void SolarEdgeAPI::GetInverterTelemetry()
 		}
 
 		auto itE = energyBySN.find(inv.SN);
-		if (itE != energyBySN.end())
+		if (itE == energyBySN.end())
+			bAllInverterEnergy = false;
+		else
 		{
 			double curEnergy = itE->second;
 			if (curEnergy != 0)
@@ -1240,7 +1243,8 @@ void SolarEdgeAPI::GetInverterTelemetry()
 		}
 	}
 
-	if ((m_inverters.size() > 1) && (m_totalEnergy > 0))
+	// The total is a counter too; leave it alone when an inverter had no energy value this time
+	if ((m_inverters.size() > 1) && bAllInverterEnergy && (m_totalEnergy > 0))
 	{
 		//Send total kWh
 		SendKwhMeter(1, 1, 255, m_totalActivePower, m_totalEnergy / 1000.0, "kWh Meter Total");
