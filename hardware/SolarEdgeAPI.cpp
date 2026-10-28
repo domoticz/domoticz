@@ -232,6 +232,13 @@ namespace
 			return 0;
 		return values[values.size() - 1]["value"].asDouble();
 	}
+
+	// SolarEdge answers null when it has no data for the period; an energy counter must then be left alone, not set to 0
+	bool HasLastMetricValue(const Json::Value& metric)
+	{
+		const Json::Value& values = metric["values"];
+		return values.isArray() && !values.empty() && !values[values.size() - 1]["value"].isNull();
+	}
 }
 
 SolarEdgeAPI::SolarEdgeAPI(const int ID, const std::string& APIKey, const std::string& Password, const std::string& Extra, const int Mode1) :
@@ -641,9 +648,19 @@ bool SolarEdgeAPI::ApiRefreshToken()
 	// Each refresh returns a fresh access+refresh token pair; the old refresh token is invalidated
 	if (iStatusCode != 200 || !ParseJSon(sResult, root) || !root.isObject() || root["access_token"].empty() || root["refresh_token"].empty())
 	{
-		Log(LOG_ERROR, "Monitoring API: Failed to refresh the OAuth access token! A new authorization code will be needed (see hardware settings).");
 		m_ApiAccessToken.clear();
-		m_ApiRefreshToken.clear();
+		if (iStatusCode == 400 || iStatusCode == 401)
+		{
+			// The refresh token was rejected; only a new authorization helps
+			Log(LOG_ERROR, "Monitoring API: Failed to refresh the OAuth access token! A new authorization code will be needed (see hardware settings).");
+			m_ApiRefreshToken.clear();
+		}
+		else
+		{
+			// Network error or server trouble: keep the refresh token and try again later
+			Log(LOG_ERROR, "Monitoring API: Failed to refresh the OAuth access token (status %d), retrying in %d minutes.", iStatusCode, SE_API_THROTTLE_SEC / 60);
+			m_ApiAuthRetryTs = mytime(nullptr) + SE_API_THROTTLE_SEC;
+		}
 		return false;
 	}
 
@@ -672,17 +689,20 @@ bool SolarEdgeAPI::ApiEnsureLoggedIn()
 	if (!m_ApiAccessToken.empty() && (mytime(nullptr) - 15) < m_ApiNextRefreshTs)
 		return true;
 
+	// Every Get* call ends up here, so without these guards a failing authorization would repeat
+	// the full login several times per poll (and risk locking the SolarEdge account)
+	if (mytime(nullptr) < m_ApiAuthRetryTs)
+		return false;
+
 	if (!m_ApiRefreshToken.empty())
 	{
 		if (ApiRefreshToken())
 			return true;
+		if (!m_ApiRefreshToken.empty())
+			return false; // temporary failure, the refresh token is kept for the next attempt
 	}
 
-	// Every Get* call ends up here, so without these guards a failing authorization would repeat
-	// the full login several times per poll (and risk locking the SolarEdge account)
 	if (m_bApiAuthBlocked)
-		return false;
-	if (mytime(nullptr) < m_ApiAuthRetryTs)
 		return false;
 
 	if (!m_ApiAuthCode.empty())
@@ -747,70 +767,82 @@ bool SolarEdgeAPI::ApiAutoAuthorize()
 	getHeaders.push_back("Accept: text/html");
 
 	std::string sLoginPage;
-	if (!HTTPClient::GET(authorizeUrl, getHeaders, sLoginPage) || sLoginPage.empty())
+	std::vector<std::string> vLoginPageHeaderData;
+	HTTPClient::GET(authorizeUrl, getHeaders, sLoginPage, vLoginPageHeaderData, true);
+
+	// With a valid SSO session (the Web Portal login shares the cookie jar) the authorize URL redirects
+	// straight back with the SSO code, and there is no login form to submit
+	std::string ssoCode = ExtractLocationParam(vLoginPageHeaderData, "code=");
+	std::string ssoState = ExtractLocationParam(vLoginPageHeaderData, "state=");
+	if (!ssoCode.empty() && !ssoState.empty())
+		Debug(DEBUG_HARDWARE, "Monitoring API: OAuth auto-authorize reused the existing SSO session");
+	else
 	{
-		Log(LOG_ERROR, "Monitoring API: OAuth auto-authorize failed loading the SolarEdge login form!");
-		return false;
-	}
+		if (sLoginPage.empty())
+		{
+			Log(LOG_ERROR, "Monitoring API: OAuth auto-authorize failed loading the SolarEdge login form!");
+			return false;
+		}
 
-	std::string formAction;
-	std::map<std::string, std::string> formFields;
-	if (!ParseLoginForm(sLoginPage, formAction, formFields))
-	{
-		Log(LOG_ERROR, "Monitoring API: OAuth auto-authorize failed, could not find the login form!");
-		return false;
-	}
+		std::string formAction;
+		std::map<std::string, std::string> formFields;
+		if (!ParseLoginForm(sLoginPage, formAction, formFields))
+		{
+			Log(LOG_ERROR, "Monitoring API: OAuth auto-authorize failed, could not find the login form!");
+			return false;
+		}
 
-	if (formAction.compare(0, 4, "http") != 0)
-	{
-		if (formAction.empty() || formAction[0] != '/')
-			formAction = "/" + formAction;
-		formAction = "https://login.solaredge.com" + formAction;
-	}
+		if (formAction.compare(0, 4, "http") != 0)
+		{
+			if (formAction.empty() || formAction[0] != '/')
+				formAction = "/" + formAction;
+			formAction = "https://login.solaredge.com" + formAction;
+		}
 
-	static const std::regex hostRegex("^https?://([^/:]+)", std::regex::icase);
-	std::smatch hostMatch;
-	std::string host;
-	if (std::regex_search(formAction, hostMatch, hostRegex))
-		host = hostMatch[1].str();
-	std::transform(host.begin(), host.end(), host.begin(), ::tolower);
-	bool bHostOk = (host == "solaredge.com") || (host.size() > 14 && host.compare(host.size() - 14, 14, ".solaredge.com") == 0);
-	if (!bHostOk)
-	{
-		Log(LOG_ERROR, "Monitoring API: OAuth auto-authorize login form does not point to a solaredge.com host, aborting for safety!");
-		return false;
-	}
+		static const std::regex hostRegex("^https?://([^/:]+)", std::regex::icase);
+		std::smatch hostMatch;
+		std::string host;
+		if (std::regex_search(formAction, hostMatch, hostRegex))
+			host = hostMatch[1].str();
+		std::transform(host.begin(), host.end(), host.begin(), ::tolower);
+		bool bHostOk = (host == "solaredge.com") || (host.size() > 14 && host.compare(host.size() - 14, 14, ".solaredge.com") == 0);
+		if (!bHostOk)
+		{
+			Log(LOG_ERROR, "Monitoring API: OAuth auto-authorize login form does not point to a solaredge.com host, aborting for safety!");
+			return false;
+		}
 
-	// Step 3: submit the SolarEdge SSO credentials (the same account as the Web Portal login).
-	// The form ships a "cognitoAsfData" field as empty; that's a client-side device-fingerprint
-	// signal used only for risk scoring, submitting it empty is accepted like any other login.
-	formFields["username"] = m_WebUsername;
-	formFields["password"] = m_WebPassword;
+		// Step 3: submit the SolarEdge SSO credentials (the same account as the Web Portal login).
+		// The form ships a "cognitoAsfData" field as empty; that's a client-side device-fingerprint
+		// signal used only for risk scoring, submitting it empty is accepted like any other login.
+		formFields["username"] = m_WebUsername;
+		formFields["password"] = m_WebPassword;
 
-	std::string postData;
-	for (const auto& field : formFields)
-	{
-		if (!postData.empty())
-			postData += "&";
-		postData += CURLEncode::URLEncode(field.first) + "=" + CURLEncode::URLEncode(field.second);
-	}
+		std::string postData;
+		for (const auto& field : formFields)
+		{
+			if (!postData.empty())
+				postData += "&";
+			postData += CURLEncode::URLEncode(field.first) + "=" + CURLEncode::URLEncode(field.second);
+		}
 
-	std::vector<std::string> loginHeaders;
-	loginHeaders.push_back("Content-Type: application/x-www-form-urlencoded");
+		std::vector<std::string> loginHeaders;
+		loginHeaders.push_back("Content-Type: application/x-www-form-urlencoded");
 
-	std::string sLoginResult;
-	std::vector<std::string> vLoginHeaderData;
-	HTTPClient::POST(formAction, postData, loginHeaders, sLoginResult, vLoginHeaderData, true, true);
+		std::string sLoginResult;
+		std::vector<std::string> vLoginHeaderData;
+		HTTPClient::POST(formAction, postData, loginHeaders, sLoginResult, vLoginHeaderData, true, true);
 
-	std::string ssoCode = ExtractLocationParam(vLoginHeaderData, "code=");
-	std::string ssoState = ExtractLocationParam(vLoginHeaderData, "state=");
-	Debug(DEBUG_HARDWARE, "Monitoring API: OAuth auto-authorize step 3 (credentials) %s", ssoCode.empty() ? "failed" : "succeeded");
-	if (ssoCode.empty() || ssoState.empty())
-	{
-		// Wrong credentials or a 2FA account will not fix themselves; don't retry until the settings change
-		m_bApiAuthBlocked = true;
-		Log(LOG_ERROR, "Monitoring API: OAuth auto-authorize failed submitting credentials! Check the Web Username/Password (2FA-protected accounts aren't supported here; use a manually pasted authorization code instead).");
-		return false;
+		ssoCode = ExtractLocationParam(vLoginHeaderData, "code=");
+		ssoState = ExtractLocationParam(vLoginHeaderData, "state=");
+		Debug(DEBUG_HARDWARE, "Monitoring API: OAuth auto-authorize step 3 (credentials) %s", ssoCode.empty() ? "failed" : "succeeded");
+		if (ssoCode.empty() || ssoState.empty())
+		{
+			// Wrong credentials or a 2FA account will not fix themselves; don't retry until the settings change
+			m_bApiAuthBlocked = true;
+			Log(LOG_ERROR, "Monitoring API: OAuth auto-authorize failed submitting credentials! Check the Web Username/Password (2FA-protected accounts aren't supported here; use a manually pasted authorization code instead).");
+			return false;
+		}
 	}
 
 	// Step 4: exchange that SSO code for a SolarEdge Connect session
@@ -1149,8 +1181,8 @@ void SolarEdgeAPI::GetInverterTelemetry()
 				for (const auto& sn : inverters.getMemberNames())
 				{
 					const Json::Value& node = inverters[sn];
-					if (!node["energy"].empty())
-						energyBySN[sn] = LastMetricValue(node["energy"]);
+					if (HasLastMetricValue(node["energy"]))
+						energyBySN[sn] = ToWattHours(LastMetricValue(node["energy"]), node["energy"].get("unit", "WH").asString());
 				}
 			}
 		}
@@ -1167,7 +1199,7 @@ void SolarEdgeAPI::GetInverterTelemetry()
 		{
 			curActivePower = itP->second;
 			m_totalActivePower += curActivePower;
-			sprintf(szTmp, "Power %s", inv.name.c_str());
+			snprintf(szTmp, sizeof(szTmp), "Power %s", inv.name.c_str());
 			SendWattMeter(1 + i, 1, 255, curActivePower, szTmp);
 		}
 
@@ -1177,7 +1209,7 @@ void SolarEdgeAPI::GetInverterTelemetry()
 			double curEnergy = itE->second;
 			if (curEnergy != 0)
 			{
-				sprintf(szTmp, "kWh Meter %s", inv.name.c_str());
+				snprintf(szTmp, sizeof(szTmp), "kWh Meter %s", inv.name.c_str());
 				SendKwhMeter(0, 1 + i, 255, curActivePower, curEnergy / 1000.0, szTmp);
 			}
 			if (i < (int)m_lastInverterEnergy.size())
@@ -1190,20 +1222,20 @@ void SolarEdgeAPI::GetInverterTelemetry()
 		auto itV = voltageBySN.find(inv.SN);
 		if (itV != voltageBySN.end())
 		{
-			sprintf(szTmp, "AC %s", inv.name.c_str());
+			snprintf(szTmp, sizeof(szTmp), "AC %s", inv.name.c_str());
 			SendVoltageSensor(i, SE_VOLT_AC, 255, itV->second, szTmp);
 		}
 		// V2 no longer exposes a per-phase breakdown; this is a derived value (power / voltage), averaged across active phases
 		auto itC = currentBySN.find(inv.SN);
 		if (itC != currentBySN.end())
 		{
-			sprintf(szTmp, "acCurrent %s", inv.name.c_str());
+			snprintf(szTmp, sizeof(szTmp), "acCurrent %s", inv.name.c_str());
 			SendCustomSensor(i, SE_AC_CURRENT, 255, itC->second, szTmp, "A");
 		}
 		auto itF = frequencyBySN.find(inv.SN);
 		if (itF != frequencyBySN.end())
 		{
-			sprintf(szTmp, "Hz %s", inv.name.c_str());
+			snprintf(szTmp, sizeof(szTmp), "Hz %s", inv.name.c_str());
 			SendCustomSensor(1 + i, 1, 255, itF->second, szTmp, "Hz");
 		}
 	}
@@ -1485,6 +1517,11 @@ void SolarEdgeAPI::GetSiteEnergyTotals()
 		if (!ParseJSon(sResult, root) || !root.isObject() || root["values"].empty())
 		{
 			Log(LOG_ERROR, "Invalid data received (Site Energy - %s)!", query.label);
+			continue;
+		}
+		if (!HasLastMetricValue(root))
+		{
+			Debug(DEBUG_HARDWARE, "API: Site Energy (%s) has no data for this period", query.label);
 			continue;
 		}
 		double energyWh = ToWattHours(LastMetricValue(root), root.get("unit", "WH").asString());
