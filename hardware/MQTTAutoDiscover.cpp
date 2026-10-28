@@ -187,6 +187,18 @@ void MQTTAutoDiscover::CleanValueTemplate(std::string& szValueTemplate)
 	stdreplace(szValueTemplate, "'", "");
 	stdreplace(szValueTemplate, "\"", "");
 
+	//Keep a trailing scale, like: value_json.humidity / 100, value_json.x | float * 1000
+	//Canonical result: "value_json.x / 100", evaluated by GetValueFromTemplate
+	{
+		static const std::regex scaleRe(R"(^\s*(value_json[^\s|*/+]*)\s*(?:\|\s*(?:float|int)(?:\([^)]*\))?\s*)?([*/+-])\s*(-?\d+(?:\.\d+)?)\s*$)");
+		std::smatch m;
+		if (std::regex_match(szValueTemplate, m, scaleRe))
+		{
+			szValueTemplate = m[1].str() + " " + m[2].str() + " " + m[3].str();
+			return;
+		}
+	}
+
 	szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find("|"));
 	szValueTemplate = szValueTemplate.substr(0, szValueTemplate.find(".split("));
 
@@ -286,6 +298,28 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(Json::Value root, std::string
 	try
 	{
 		size_t pos;
+
+		//Trailing scale, like: value_json.humidity / 100 (see CleanValueTemplate)
+		{
+			static const std::regex scaleRe(R"(^(value_json\S*) ([*/+-]) (-?\d+(?:\.\d+)?)$)");
+			std::smatch m;
+			if (std::regex_match(szValueTemplate, m, scaleRe))
+			{
+				std::string szBase = GetValueFromTemplate(root, m[1].str(), isNull);
+				if (szBase.empty() || !is_number(szBase))
+					return szBase;
+				double val = atof(szBase.c_str());
+				double operand = atof(m[3].str().c_str());
+				switch (m[2].str()[0])
+				{
+				case '*': val *= operand; break;
+				case '/': if (operand == 0) return ""; val /= operand; break;
+				case '+': val += operand; break;
+				case '-': val -= operand; break;
+				}
+				return std_format("%.12g", val);
+			}
+		}
 
 		//Inline membership conditional, like: value_json[fan_mode] if value_json[fan_mode] in [auto] else None
 		pos = szValueTemplate.find(" if ");
@@ -592,6 +626,24 @@ bool MQTTAutoDiscover::SetValueWithTemplate(Json::Value& root, std::string szVal
 				root[szKey] = szValue;
 			return true;
 		}
+
+		//Bracket notation, like: value_json["key"] (cleaned: value_json[key]), used by Zigbee2MQTT 2.x
+		pos = szValueTemplate.find("value_json[");
+		if (pos != std::string::npos)
+		{
+			std::string szKey = szValueTemplate.substr(pos + std::string("value_json[").size());
+			szKey = szKey.substr(0, szKey.find(']'));
+			stdstring_trim(szKey);
+			if (szKey.empty())
+				return false;
+			if (value_options_.find(szValue) != value_options_.end())
+				szValue = value_options_[szValue];
+			if (is_number(szValue))
+				root[szKey] = atoi(szValue.c_str());
+			else
+				root[szKey] = szValue;
+			return true;
+		}
 	}
 	catch (const std::exception& e)
 	{
@@ -624,10 +676,23 @@ The result will be:
 void MQTTAutoDiscover::FixCommandTopic(std::string& command_topic, std::string& command_template)
 {
 	size_t pos = command_template.find("value_json.");
-	if (pos == std::string::npos)
-		return; //no fixing needed
-	std::string value_json = command_template.substr(pos + std::string("value_json.").size());
-	stdreplace(value_json, "]", "");
+	std::string value_json;
+	if (pos != std::string::npos)
+	{
+		value_json = command_template.substr(pos + std::string("value_json.").size());
+		stdreplace(value_json, "]", "");
+	}
+	else
+	{
+		//Bracket notation, like: value_json[key]
+		pos = command_template.find("value_json[");
+		if (pos == std::string::npos)
+			return; //no fixing needed
+		value_json = command_template.substr(pos + std::string("value_json[").size());
+		value_json = value_json.substr(0, value_json.find(']'));
+	}
+	if (value_json.empty())
+		return;
 
 	std::string svalue = "/" + value_json;
 
@@ -6815,7 +6880,7 @@ bool MQTTAutoDiscover::SendIRCommand(const std::string& DeviceID, const std::str
 		}
 		else
 		{
-			Log(LOG_ERROR, "%s device unhandled mode_state_template (%s/%s)", pSensor->component_type.c_str(), DeviceID.c_str(), DeviceName.c_str());
+			Log(LOG_ERROR, "%s device unhandled value_template (%s/%s)", pSensor->component_type.c_str(), DeviceID.c_str(), DeviceName.c_str());
 			return false;
 		}
 	}
