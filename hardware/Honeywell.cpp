@@ -13,9 +13,9 @@
 
 constexpr auto HONEYWELL_DEFAULT_APIKEY = "atD3jtzXC5z4X8WPbzvo0CBqWi7S81Nh";
 constexpr auto HONEYWELL_DEFAULT_APISECRET = "TXDzy2aHpAJw6YiO";
-constexpr auto HONEYWELL_LOCATIONS_PATH = "https://api.honeywell.com/v2/locations?apikey=[apikey]";
-constexpr auto HONEYWELL_UPDATE_THERMOSTAT = "https://api.honeywell.com/v2/devices/thermostats/[deviceid]?apikey=[apikey]&locationId=[locationid]";
-constexpr auto HONEYWELL_TOKEN_PATH = "https://api.honeywell.com/oauth2/token";
+constexpr auto HONEYWELL_LOCATIONS_PATH = "https://api.honeywellhome.com/v2/locations?apikey=[apikey]";
+constexpr auto HONEYWELL_UPDATE_THERMOSTAT = "https://api.honeywellhome.com/v2/devices/thermostats/[deviceid]?apikey=[apikey]&locationId=[locationid]";
+constexpr auto HONEYWELL_TOKEN_PATH = "https://api.honeywellhome.com/oauth2/token";
 
 constexpr auto kSetPointDesc = "Target temperature ([devicename])";
 constexpr auto kHeatingDesc = "Heating Mode([devicename])";
@@ -226,6 +226,8 @@ void CHoneywell::GetThermostatData()
 	HTTPClient::SetTimeout(HWAPITIMEOUT);
 	if (!HTTPClient::GET(sURL, mSessionHeaders, sResult)) {
 		Log(LOG_ERROR, "Error getting thermostat data!");
+		// The API can reject the access token before its expiry, refresh it on the next attempt
+		mTokenExpires = 0;
 		return;
 	}
 
@@ -391,6 +393,7 @@ void CHoneywell::SetPauseStatus(const int idx, bool bCommand, const int nodeID)
 	HTTPClient::SetTimeout(HWAPITIMEOUT);
 	if (!HTTPClient::POST(url, JSonToRawString(reqRoot), mSessionHeaders, sResult, true, true)) {
 		Log(LOG_ERROR, "Error setting thermostat data!");
+		mTokenExpires = 0;
 		return;
 	}
 	std::string desc = kHeatingDesc;
@@ -470,6 +473,7 @@ void CHoneywell::SetSetpoint(const int idx, const float temp, const int nodeid)
 		HTTPClient::SetTimeout(HWAPITIMEOUT);
 		if (!HTTPClient::POST(url, JSonToRawString(reqRoot), mSessionHeaders, sResult, true, true)) {
 			Log(LOG_ERROR, "Error setting thermostat data!");
+			mTokenExpires = 0;
 			return;
 		}
 
