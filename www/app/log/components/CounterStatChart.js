@@ -85,7 +85,7 @@ define(['app', 'luxon'], function (app, luxon) {
 			},
 			yAxis: [{
 				labels: {
-					format: '{value} Watt',
+					format: '{value}',
 					style: {
 						color: 'white'
 					}
@@ -134,7 +134,7 @@ define(['app', 'luxon'], function (app, luxon) {
 			},
 			yAxis: {
 				labels: {
-					format: '{value} Watt',
+					format: '{value}',
 					style: {
 						color: Highcharts.getOptions().colors[1]
 					}

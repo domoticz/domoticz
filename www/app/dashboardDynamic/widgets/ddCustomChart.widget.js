@@ -45,13 +45,14 @@ define([
         if (type === 'Air Quality') {
             return { sensor: 'counter', field: function(d){ return d.co2 !== undefined ? d.co2 : d.co2_avg; }, unit: 'ppm', weekApi: true };
         }
+        if (type === 'P1 Smart Meter') {
+            // The P1 day graph returns the average power (Watt) per interval, not energy
+            return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v1; }, unit: (range === 'day') ? 'W' : 'kWh', weekApi: true };
+        }
         if (type.indexOf('Meter') >= 0 || type === 'Cube Electric' ||
             (type === 'General' && (sub === 'kWh' || sub === 'Counter Incremental' || sub === 'Managed Counter'))) {
             if (stv === 1) { return { sensor: 'counter', field: function(d){ return d.v; }, unit: 'm³', weekApi: true }; }
             if (stv === 2) { return { sensor: 'counter', field: function(d){ return d.v; }, unit: 'L', weekApi: true }; }
-            return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v1; }, unit: energyUnit, weekApi: true };
-        }
-        if (type === 'P1 Smart Meter') {
             return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v1; }, unit: energyUnit, weekApi: true };
         }
         // Usage devices (instantaneous Watts — P1 phase power, smart plugs, etc.)

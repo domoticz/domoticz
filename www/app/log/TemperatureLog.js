@@ -186,6 +186,8 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
                                     }
                                     this.categories.forEach(function (c) {
                                         self.chart.chart.xAxis[0].categories.push(c); });
+                                    // The export rebuilds the axis from userOptions, keep the categories there too
+                                    self.chart.chart.xAxis[0].userOptions.categories = this.categories;
 
                                     function categoriesFromGroupingBy(groupingBy) {
                                         if (groupingBy === 'year') {

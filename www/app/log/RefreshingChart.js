@@ -48,6 +48,14 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
         configureZoomingAndPanning();
         configureSpikeContextMenu();
 
+        // The exported image carries the heading shown above the chart (name plus period);
+        // the heading may contain markup (Compare), the export title must be plain text
+        self.$scope.$watch('chartTitle', function (title) {
+            if (self.chart && typeof title === 'string' && title !== '') {
+                self.chart.options.exporting.chartOptions.title.text = $('<div>').html(title).text().trim();
+            }
+        });
+
         self.$scope.$on('$routeChangeStart', function($event, next, current) {
             if (self.chart) {
                 self.chart.tooltip.hide();

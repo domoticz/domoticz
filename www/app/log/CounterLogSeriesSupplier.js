@@ -177,7 +177,9 @@ define(['app', 'log/Chart'], function (app) {
                     const daysDiff = Math.round((currentDate - lastDate) / (1000 * 60 * 60 * 24));
 
                     if (daysDiff > 1) {
-                        // Missing days between last entry and this one — fill and spread value
+                        // Work on a copy: the original rows are shared with other charts (cumulative)
+                        item = Object.assign({}, item);
+                        // Missing days between last entry and this one: fill and spread value
                         const avgValue = v / daysDiff;
                         const avgV2 = item.v2 ? parseFloat(item.v2) / daysDiff : 0;
                         const avgPrice = item.p ? parseFloat(item.p) / daysDiff : 0;

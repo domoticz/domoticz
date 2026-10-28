@@ -182,7 +182,7 @@ define(['app', 'icons/dzIconService'], function(app) {
                 var kwhVal  = (d.Usage !== undefined) ? kwhData + ' / ' + roundIfLarge(d.Usage) : kwhData;
                 return { value: kwhVal, secondValue: null, isOn: false, unit: '', unit2: null, typeClass: 'generic' };
             }
-            // Counters (incremental, managed, RFXMeter): total plus today's figure, as on the device widget
+            // Counters that report today's value (incremental, RFXMeter): total plus today's figure, as on the device widget
             if (d.CounterToday !== undefined) {
                 return { value: roundIfLarge(d.Data || '\u2014'), secondValue: $.t('Today') + ': ' + d.CounterToday,
                          isOn: false, unit: '', unit2: null, typeClass: 'generic' };
