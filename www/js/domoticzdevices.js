@@ -1404,7 +1404,17 @@ Device.popupFit = function (target, bKeepDirection) {
 
     // Shift by whatever still sticks out; a popup larger than the view keeps its top left visible
     var fShiftX = Math.max(Math.min(0, oView.right - (fLeft + oRect.width)), oView.left - fLeft);
-    var fShiftY = Math.max(Math.min(0, oView.bottom - (fTop + oRect.height)), oView.top - fTop);
+    // The floorplan page dots are an html overlay that paints above the svg, keep the popup above them
+    var fViewBottom = oView.bottom;
+    var oBullets = document.getElementById('BulletGroup');
+    if (oBullets != null) {
+        var oBulletRect = oBullets.getBoundingClientRect();
+        if ((oBulletRect.width > 0) && (oBulletRect.top < fViewBottom)
+            && (fLeft + fShiftX < oBulletRect.right) && (fLeft + fShiftX + oRect.width > oBulletRect.left)) {
+            fViewBottom = Math.max(oView.top, oBulletRect.top);
+        }
+    }
+    var fShiftY = Math.max(Math.min(0, fViewBottom - (fTop + oRect.height)), oView.top - fTop);
 
     var bFlip = (sDir != oTarget.getAttribute('direction'));
     oTarget.setAttribute('direction', sDir);

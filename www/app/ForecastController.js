@@ -22,7 +22,7 @@ define(['app'], function (app) {
 					var lon = parseFloat(data.Longitude);
 					var fallbackhtml = '';
 					if (isFinite(lat) && isFinite(lon)) {
-						var fallbackurl = "//www.visualcrossing.com/weather-history/" + lat + "," + lon + "/metric/next7days";
+						var fallbackurl = "https://www.visualcrossing.com/weather-history/" + lat + "," + lon + "/metric/next7days";
 						fallbackhtml = '<iframe style="background: #fff; height: calc(100% - 140px);" class="cIFrame" id="IMain" src="' + fallbackurl + '"></iframe>';
 					}
 					if (typeof data.Forecastdata != 'undefined' ) {

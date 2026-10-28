@@ -176,7 +176,7 @@ define(['app'], function (app) {
 
 			function refreshPlanAvailableDevices() {
 				dzRoomPlanApi.getPlanAvailableDevices(dzRoomPlanApi.selectedPlan).then(function(devices) {
-					var regex = new RegExp('^\\[(.*)\] (.*)$');
+					var regex = new RegExp('^\\[(.*?)\] (.*)$');
 
 					$ctrl.devices = devices.map(function (device) {
 						var result = regex.exec(device.Name);
