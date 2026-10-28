@@ -9,7 +9,9 @@ define([
         return '°' + (($.myglobals && $.myglobals.tempsign) || 'C');
     }
 
-    function detectSensor(device) {
+    function detectSensor(device, range) {
+        // The day graph returns energy per interval in Wh, the longer ranges in kWh
+        var energyUnit = (range === 'day') ? 'Wh' : 'kWh';
         var type = device.Type || '';
         var sub  = device.SubType || '';
         var stv  = device.SwitchTypeVal;
@@ -47,10 +49,10 @@ define([
             (type === 'General' && (sub === 'kWh' || sub === 'Counter Incremental' || sub === 'Managed Counter'))) {
             if (stv === 1) { return { sensor: 'counter', field: function(d){ return d.v; }, unit: 'm³', weekApi: true }; }
             if (stv === 2) { return { sensor: 'counter', field: function(d){ return d.v; }, unit: 'L', weekApi: true }; }
-            return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v1; }, unit: 'kWh', weekApi: true };
+            return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v1; }, unit: energyUnit, weekApi: true };
         }
         if (type === 'P1 Smart Meter') {
-            return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v1; }, unit: 'kWh', weekApi: true };
+            return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v1; }, unit: energyUnit, weekApi: true };
         }
         // Usage devices (instantaneous Watts — P1 phase power, smart plugs, etc.)
         // The graph endpoint returns the wattage in field `u` for these devices.
@@ -77,8 +79,8 @@ define([
 
     // Auto-detect the sensor, then apply an optional metric override. The override
     // only takes effect on temp-routed sensors (where te/hu/ba/se share one graph).
-    function resolveSensor(device, metric) {
-        var base = detectSensor(device);
+    function resolveSensor(device, metric, range) {
+        var base = detectSensor(device, range);
         if (metric && base.sensor === 'temp' && TEMP_METRICS[metric]) {
             var m = TEMP_METRICS[metric];
             return {
@@ -260,7 +262,7 @@ define([
                         if (devices.some(function(d) { return d === undefined; })) { return; }
 
                         var sensorInfos = devices.map(function(device, i) {
-                            return device ? resolveSensor(device, selected[i].metric)
+                            return device ? resolveSensor(device, selected[i].metric, range)
                                           : { sensor: 'temp', field: function(d){ return d.te; }, unit: '?' };
                         });
 
