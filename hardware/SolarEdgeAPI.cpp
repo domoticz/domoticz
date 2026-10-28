@@ -28,8 +28,9 @@
 #define gmtime_r(timep, result) gmtime_s(result, timep)
 #endif
 
-#define SE_VOLT_DC 20
+#define SE_VOLT_DC 20 // no longer reported, the v2 API has no DC voltage
 #define SE_AC_CURRENT 24
+#define SE_VOLT_AC 26
 
 #define SE_GRID 30
 #define SE_LOAD 31
@@ -80,6 +81,17 @@
 #define SE_CONNECT_LOGIN_REQUEST_URL "https://connect.solaredge.com/services/key-manager/connect-consent/login-request"
 #define SE_CONNECT_SESSION_TOKEN_URL "https://connect.solaredge.com/services/key-manager/connect-consent/token"
 #define SE_CONNECT_APPROVE_URL_PREFIX "https://connect.solaredge.com/services/key-manager/applications/"
+
+// Wait this long before a new automatic authorization attempt after one failed
+#define SE_API_AUTH_RETRY_SEC (30 * 60)
+
+// The Monitoring API v2 allows 10 requests per minute (x-ratelimit-limit-minute). Requests are spaced
+// to stay below that, leaving room for the OAuth token calls that go to the same server.
+#define SE_API_MINUTE_LIMIT 8
+#define SE_API_POLL_SEC (15 * 60) // SolarEdge itself only refreshes the data every 15 minutes
+#define SE_API_TOTALS_SEC (60 * 60)
+#define SE_API_THROTTLE_SEC (5 * 60) // pause after HTTP 429 when the server sends no Retry-After
+#define SE_API_MAX_PAUSE_SEC (60 * 60)
 
 
 #ifdef _DEBUG
@@ -286,20 +298,21 @@ void SolarEdgeAPI::Do_Work()
 	// Polling intervals (seconds)
 	// Layout: every 2 hours (also provides site/inverter/string/optimizer structure)
 	// Optimizer playback: every 10 minutes (1 call for all optimizers, daylight only)
-	// Energy totals (month/year/lifetime): every hour, these barely move within a 5-minute window
+	// Monitoring API: every 15 minutes; energy totals (month/year/lifetime) every hour
 	constexpr int LAYOUT_INTERVAL = 7200;         // 2 hours
 	constexpr int OPTIMIZER_DATA_INTERVAL = 600;   // 10 minutes
-	constexpr int ENERGY_TOTALS_INTERVAL = 3600;   // 1 hour
 
-	// Start counters so layout runs ~5s after startup, optimizer data ~15s after
-	int sec_counter = 295;
+	// Start counters so the API poll runs ~5s after startup, layout ~5s, optimizer data ~15s after
+	int sec_counter = 0;
+	int api_timer = SE_API_POLL_SEC - 5;
 	int layout_timer = LAYOUT_INTERVAL - 5;
 	int optimizer_data_timer = OPTIMIZER_DATA_INTERVAL - 15;
-	int energy_totals_timer = ENERGY_TOTALS_INTERVAL - 20;
+	int energy_totals_timer = SE_API_TOTALS_SEC - 20;
 
 	while (!IsStopRequested(1000))
 	{
 		sec_counter++;
+		api_timer++;
 		layout_timer++;
 		optimizer_data_timer++;
 		energy_totals_timer++;
@@ -307,9 +320,10 @@ void SolarEdgeAPI::Do_Work()
 		if (sec_counter % 12 == 0)
 			m_LastHeartbeat = mytime(nullptr);
 
-		// API-key polling (site overview, inverter telemetry, grid/load/pv/battery)
-		if (sec_counter % 300 == 0)
+		// API polling (site overview, inverter telemetry, grid/load/pv/battery)
+		if (api_timer >= SE_API_POLL_SEC)
 		{
+			api_timer = 0;
 			if (m_SiteID == 0)
 			{
 				if (!GetSite())
@@ -324,8 +338,8 @@ void SolarEdgeAPI::Do_Work()
 			GetBatteryDetails();
 		}
 
-		// API-key polling: month/year/lifetime energy totals, once an hour
-		if (m_SiteID != 0 && energy_totals_timer >= ENERGY_TOTALS_INTERVAL)
+		// API polling: month/year/lifetime energy totals, once an hour
+		if (m_SiteID != 0 && energy_totals_timer >= SE_API_TOTALS_SEC)
 		{
 			energy_totals_timer = 0;
 			GetSiteEnergyTotals();
@@ -465,6 +479,52 @@ std::string SolarEdgeAPI::BuildApiAuthHeader() const
 	return "Authorization: Bearer " + m_ApiAccessToken;
 }
 
+// False while requests are paused after HTTP 429 Too Many Requests
+bool SolarEdgeAPI::ApiRequestsAllowed()
+{
+	return mytime(nullptr) >= m_ApiPauseUntil;
+}
+
+// Every Monitoring API request goes through here, so the driver stays within the SolarEdge rate limit
+bool SolarEdgeAPI::ApiGet(const std::string& sURL, const std::vector<std::string>& ExtraHeaders, std::string& sResult, std::vector<std::string>& vHeaderData)
+{
+	if (!ApiRequestsAllowed())
+		return false;
+
+	// Wait for a free slot when the last minute already used the allowed number of requests
+	time_t now = mytime(nullptr);
+	while (!m_ApiRecentCalls.empty() && (now - m_ApiRecentCalls.front() >= 60))
+		m_ApiRecentCalls.pop_front();
+	if (m_ApiRecentCalls.size() >= SE_API_MINUTE_LIMIT)
+	{
+		int iWait = 61 - (int)(now - m_ApiRecentCalls.front());
+		Debug(DEBUG_HARDWARE, "API: rate limit, waiting %d seconds", iWait);
+		if (IsStopRequested(iWait * 1000))
+			return false;
+		m_LastHeartbeat = mytime(nullptr);
+		m_ApiRecentCalls.pop_front();
+	}
+	m_ApiRecentCalls.push_back(mytime(nullptr));
+
+	bool bRet = HTTPClient::GET(sURL, ExtraHeaders, sResult, vHeaderData);
+	if (LastHttpStatusCode(vHeaderData) != 429)
+		return bRet;
+
+	int iPause = SE_API_THROTTLE_SEC;
+	for (const auto& line : vHeaderData)
+	{
+		if (HeaderNameIs(line, "retry-after:"))
+		{
+			int iRetryAfter = atoi(line.substr(12).c_str());
+			if (iRetryAfter > 0)
+				iPause = std::min(std::max(iRetryAfter, 60), SE_API_MAX_PAUSE_SEC);
+		}
+	}
+	m_ApiPauseUntil = mytime(nullptr) + iPause;
+	Log(LOG_ERROR, "Monitoring API: SolarEdge reports too many requests, pausing for %d minutes.", (iPause + 59) / 60);
+	return false;
+}
+
 std::string SolarEdgeAPI::GetApiTokenPrefKey() const
 {
 	return "SolarEdgeApiToken_" + std::to_string(m_HwdID);
@@ -602,6 +662,10 @@ bool SolarEdgeAPI::ApiRefreshToken()
 
 bool SolarEdgeAPI::ApiEnsureLoggedIn()
 {
+	// Every Get* call starts here; this also skips them quietly while requests are paused
+	if (!ApiRequestsAllowed())
+		return false;
+
 	if (!ApiUsesOAuth())
 		return true; // static Fleet API Key, nothing to refresh
 
@@ -614,14 +678,38 @@ bool SolarEdgeAPI::ApiEnsureLoggedIn()
 			return true;
 	}
 
+	// Every Get* call ends up here, so without these guards a failing authorization would repeat
+	// the full login several times per poll (and risk locking the SolarEdge account)
+	if (m_bApiAuthBlocked)
+		return false;
+	if (mytime(nullptr) < m_ApiAuthRetryTs)
+		return false;
+
 	if (!m_ApiAuthCode.empty())
-		return ApiExchangeAuthCode();
+	{
+		if (ApiExchangeAuthCode())
+			return true;
+		// An authorization code is single-use, retrying the same one can never succeed
+		m_bApiAuthBlocked = true;
+		Log(LOG_ERROR, "Monitoring API: Paste a new authorization code in the hardware settings.");
+		return false;
+	}
 
 	// No manually-pasted code: attempt a fully automatic authorization using the SolarEdge SSO
 	// login already configured for the Web Portal (same account, same credentials).
 	if (!m_WebUsername.empty() && !m_WebPassword.empty())
-		return ApiAutoAuthorize();
+	{
+		if (ApiAutoAuthorize())
+			return true;
+		if (!m_bApiAuthBlocked)
+		{
+			m_ApiAuthRetryTs = mytime(nullptr) + SE_API_AUTH_RETRY_SEC;
+			Log(LOG_ERROR, "Monitoring API: Next authorization attempt in %d minutes.", SE_API_AUTH_RETRY_SEC / 60);
+		}
+		return false;
+	}
 
+	m_bApiAuthBlocked = true;
 	Log(LOG_ERROR, "Monitoring API: No Fleet API Key, no valid OAuth token, and no Web Username/Password configured for automatic authorization!");
 	return false;
 }
@@ -719,6 +807,8 @@ bool SolarEdgeAPI::ApiAutoAuthorize()
 	Debug(DEBUG_HARDWARE, "Monitoring API: OAuth auto-authorize step 3 (credentials) %s", ssoCode.empty() ? "failed" : "succeeded");
 	if (ssoCode.empty() || ssoState.empty())
 	{
+		// Wrong credentials or a 2FA account will not fix themselves; don't retry until the settings change
+		m_bApiAuthBlocked = true;
 		Log(LOG_ERROR, "Monitoring API: OAuth auto-authorize failed submitting credentials! Check the Web Username/Password (2FA-protected accounts aren't supported here; use a manually pasted authorization code instead).");
 		return false;
 	}
@@ -805,7 +895,7 @@ bool SolarEdgeAPI::GetSite()
 	sURL << SE_API_BASE_URL << "/sites?page=1&sites-in-page=1";
 
 	std::vector<std::string> vHeaderData;
-	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData))
+	if (!ApiGet(sURL.str(), ExtraHeaders, sResult, vHeaderData))
 	{
 		Log(LOG_ERROR, "Error getting http data (Sites)!");
 		return false;
@@ -864,7 +954,7 @@ void SolarEdgeAPI::GetBatteryFromInventory()
 	sURL << SE_API_BASE_URL << "/sites/" << m_SiteID << "/devices";
 
 	std::vector<std::string> vHeaderData;
-	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData))
+	if (!ApiGet(sURL.str(), ExtraHeaders, sResult, vHeaderData))
 	{
 		Log(LOG_ERROR, "Error getting http data (Inventory)!");
 		return;
@@ -934,7 +1024,7 @@ void SolarEdgeAPI::GetInverters()
 	sURL << SE_API_BASE_URL << "/sites/" << m_SiteID << "/devices?types=INVERTER";
 
 	std::vector<std::string> vHeaderData;
-	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData))
+	if (!ApiGet(sURL.str(), ExtraHeaders, sResult, vHeaderData))
 	{
 		Log(LOG_ERROR, "Error getting http data (Equipment)!");
 		return;
@@ -1004,14 +1094,20 @@ void SolarEdgeAPI::GetInverterTelemetry()
 
 		std::string sResult;
 		std::vector<std::string> vHeaderData;
-		if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData))
+		if (!ApiGet(sURL.str(), ExtraHeaders, sResult, vHeaderData))
 			Log(LOG_ERROR, "Error getting http data (Inverter telemetry)!");
 		else
 		{
 			Debug(DEBUG_HARDWARE, "API: Inverter telemetry status %d", LastHttpStatusCode(vHeaderData));
 			Json::Value root;
-			if (!ParseJSon(sResult, root) || !root.isObject() || root["inverters"].empty())
+			if (!ParseJSon(sResult, root) || !root.isObject() || !root["inverters"].isObject())
 				Log(LOG_ERROR, "Invalid data received, or invalid APIKey (Inverter telemetry)!");
+			else if (root["inverters"].empty())
+			{
+				// A valid answer without data: SolarEdge offers no interval telemetry for some inverters
+				// (only the lifetime energy below); the site power device still shows the current power
+				Debug(DEBUG_HARDWARE, "API: Inverter telemetry has no data for this site");
+			}
 			else
 			{
 				const Json::Value& inverters = root["inverters"];
@@ -1039,7 +1135,7 @@ void SolarEdgeAPI::GetInverterTelemetry()
 
 		std::string sResult;
 		std::vector<std::string> vHeaderData;
-		if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData))
+		if (!ApiGet(sURL.str(), ExtraHeaders, sResult, vHeaderData))
 			Log(LOG_ERROR, "Error getting http data (Inverter lifetime energy)!");
 		else
 		{
@@ -1089,12 +1185,13 @@ void SolarEdgeAPI::GetInverterTelemetry()
 			m_totalEnergy += curEnergy;
 		}
 
-		// V2 no longer exposes DC voltage; this is now the AC voltage averaged across active phases
+		// V2 no longer exposes DC voltage; this is the AC voltage averaged across active phases,
+		// on its own device so the old DC voltage device does not suddenly show AC values
 		auto itV = voltageBySN.find(inv.SN);
 		if (itV != voltageBySN.end())
 		{
 			sprintf(szTmp, "AC %s", inv.name.c_str());
-			SendVoltageSensor(i, SE_VOLT_DC, 255, itV->second, szTmp);
+			SendVoltageSensor(i, SE_VOLT_AC, 255, itV->second, szTmp);
 		}
 		// V2 no longer exposes a per-phase breakdown; this is a derived value (power / voltage), averaged across active phases
 		auto itC = currentBySN.find(inv.SN);
@@ -1140,7 +1237,7 @@ void SolarEdgeAPI::GetBatteryDetails()
 
 		std::string sResult;
 		std::vector<std::string> vHeaderData;
-		if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData))
+		if (!ApiGet(sURL.str(), ExtraHeaders, sResult, vHeaderData))
 			Log(LOG_ERROR, "Error getting http data (Meter telemetry)!");
 		else
 		{
@@ -1201,7 +1298,7 @@ void SolarEdgeAPI::GetBatteryDetails()
 
 	std::string sResult;
 	std::vector<std::string> vHeaderData;
-	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData))
+	if (!ApiGet(sURL.str(), ExtraHeaders, sResult, vHeaderData))
 	{
 		Log(LOG_ERROR, "Error getting http data (Storage telemetry)!");
 		return;
@@ -1248,6 +1345,10 @@ void SolarEdgeAPI::GetBatteryDetails()
 
 void SolarEdgeAPI::GetOverview()
 {
+	// Site power and today's production only change while the sun is up; saves requests at night
+	if (!isDaylightWindow())
+		return;
+
 	if (!ApiEnsureLoggedIn())
 		return;
 
@@ -1264,7 +1365,7 @@ void SolarEdgeAPI::GetOverview()
 
 		std::string sResult;
 		std::vector<std::string> vHeaderData;
-		if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData))
+		if (!ApiGet(sURL.str(), ExtraHeaders, sResult, vHeaderData))
 			Log(LOG_ERROR, "Error getting http data (Site Power)!");
 		else
 		{
@@ -1285,7 +1386,7 @@ void SolarEdgeAPI::GetOverview()
 	sURL << SE_API_BASE_URL << "/sites/" << m_SiteID << "/overview";
 
 	std::vector<std::string> vHeaderData;
-	if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData))
+	if (!ApiGet(sURL.str(), ExtraHeaders, sResult, vHeaderData))
 	{
 		Log(LOG_ERROR, "Error getting http data (Overview)!");
 		return;
@@ -1373,7 +1474,7 @@ void SolarEdgeAPI::GetSiteEnergyTotals()
 
 		std::string sResult;
 		std::vector<std::string> vHeaderData;
-		if (!HTTPClient::GET(sURL.str(), ExtraHeaders, sResult, vHeaderData))
+		if (!ApiGet(sURL.str(), ExtraHeaders, sResult, vHeaderData))
 		{
 			Log(LOG_ERROR, "Error getting http data (Site Energy - %s)!", query.label);
 			continue;

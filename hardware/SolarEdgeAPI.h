@@ -13,6 +13,7 @@
 
 #include "DomoticzHardware.h"
 #include "CounterHelper.h"
+#include <deque>
 #include <map>
 #include <string>
 
@@ -76,6 +77,8 @@ private:
 	// for accounts that only have homeowner-level access to their own site.
 	bool ApiUsesOAuth() const;
 	std::string BuildApiAuthHeader() const;
+	bool ApiGet(const std::string& sURL, const std::vector<std::string>& ExtraHeaders, std::string& sResult, std::vector<std::string>& vHeaderData);
+	bool ApiRequestsAllowed();
 	bool ApiEnsureLoggedIn();
 	bool ApiAutoAuthorize();
 	bool ApiExchangeAuthCode();
@@ -113,6 +116,12 @@ private:
 	std::string m_ApiAccessToken;
 	std::string m_ApiRefreshToken;
 	time_t m_ApiNextRefreshTs = 0;
+	time_t m_ApiAuthRetryTs = 0; // no new authorization attempt before this time (after a failure)
+	bool m_bApiAuthBlocked = false; // credentials or authorization code rejected; wait for a settings change
+
+	// Monitoring API rate limit
+	time_t m_ApiPauseUntil = 0; // set after HTTP 429 Too Many Requests
+	std::deque<time_t> m_ApiRecentCalls; // request times within the last minute
 
 	double m_totalActivePower;
 	double m_totalEnergy;
