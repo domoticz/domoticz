@@ -2516,7 +2516,7 @@ bool CSQLHelper::OpenDatabase()
 				std::string sname = sd.first.substr(szWWWFolder.size() + 1);
 				//Find the image file in our database
 				std::vector<std::vector<std::string> > result;
-				result = safe_query("SELECT ID FROM Floorplans WHERE (ImageFile == '%s') COLLATE NOCASE", sname.c_str());
+				result = safe_query("SELECT ID FROM Floorplans WHERE (ImageFile == '%q') COLLATE NOCASE", sname.c_str());
 				if (result.empty())
 				{
 					//could be our example sketch, or left over images, add it to the database
@@ -2526,8 +2526,8 @@ bool CSQLHelper::OpenDatabase()
 					{
 						vname = vname.substr(0, tpos);
 					}
-					safe_query("INSERT INTO Floorplans ([Name],[ImageFile]) VALUES('%s','%s')", vname.c_str(), sname.c_str());
-					result = safe_query("SELECT ID FROM Floorplans WHERE (ImageFile == '%s')", sname.c_str());
+					safe_query("INSERT INTO Floorplans ([Name],[ImageFile]) VALUES('%q','%q')", vname.c_str(), sname.c_str());
+					result = safe_query("SELECT ID FROM Floorplans WHERE (ImageFile == '%q')", sname.c_str());
 				}
 				if (!result.empty())
 				{
