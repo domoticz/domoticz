@@ -14,7 +14,8 @@
         <block type="math_random_float"></block>
         <block type="math_round"></block>
         <block type="math_trig"></block>
-        <block type="math_atan2"></block>
+        <!-- math_atan2 hidden: Domoticz's bundled Blockly build does not define this block type;
+             showing it in the Math flyout breaks it with "Unknown block type: math_atan2". -->
         <block type="math_on_list"></block>
         <block type="math_constrain"></block>
         <block type="math_modulo"></block>
@@ -22,7 +23,8 @@
     <category name="Text">
         <block type="text"></block>
         <block type="text_join"></block>
-        <block type="text_append"></block>
+        <!-- text_append hidden: it mutates a Blockly workspace variable (which the event parser
+             cannot represent) and any event containing it cannot be saved ("single block structure"). -->
         <block type="text_length"></block>
         <block type="text_isEmpty"></block>
         <block type="text_indexOf"></block>
