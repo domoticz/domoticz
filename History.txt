@@ -1,24 +1,40 @@
 Version 2026.xxxx
+- Added: Dashboard Dynamic, Quick Stat now shows today's value next to the total for counter devices (#7146)
 - Added: MCP, new admin tools add_room, update_room, delete_room, reorder_rooms, add_room_devices, remove_room_devices and reorder_room_devices to manage rooms (plans) and the devices and scenes in them, including their order; get_rooms now lists the rooms in their display order
 - Changed: InComfort, the Room-2 thermostat setpoint now has its own device; it shared a device ID with the central heating water temperature, so the two values overwrote each other. Existing installations get a new 'Room-2 Thermostat Setpoint' device (make sure 'Accept new Hardware Devices' is enabled, or allow it temporarily), the old device keeps showing the central heating water temperature
 - Fixed: 1-Wire, a DS2423 counter that could not be read is no longer reported as a huge counter value (#7064)
+- Fixed: AccuWeather, missing or invalid measurements are no longer reported as 0 (#7066)
 - Fixed: Alexa, ReportState now includes the color of RGB dimmers; the check on the stored color was inverted
 - Fixed: Cameras, the live camera dialog keeps refreshing after a failed snapshot instead of staying blank (#7042)
 - Fixed: Cayenne LPP, analog input and output values are decoded as signed, negative values were shown as large positive ones
+- Fixed: Charts, 'Download PNG image' uses the title of the chart instead of 'Chart title', and the exported Compare chart keeps the correct month and year labels (#7154)
+- Fixed: Charts, the Average in the tooltip of the month and year graphs is rounded to 2 decimals instead of showing the raw average (#7144)
 - Fixed: Charts, the Compare view dropped every group above 20,000 kWh for normal counters and lost the trend of the following group (#7047)
+- Fixed: Charts, the cumulative chart starts every year on 1 January, also when the first days of a year have no data (#7145)
+- Fixed: Charts, the hourly energy chart no longer shows 'Watt' behind every value of the y-axis (#7151)
 - Fixed: Current meters, a malformed stored value no longer aborts the short log update, the record is skipped and logged
+- Fixed: Dashboard Dynamic, the Custom Chart labels the energy of the Last 24h range in Wh instead of kWh (#7152)
+- Fixed: Dashboard Dynamic, the Website Embed widget shows the 'Script execution enabled' warning only while editing, and sends the Domoticz origin as referrer so sites like YouTube can be embedded (#7038)
 - Fixed: Database, restoring a backup now checks that the file is a valid Domoticz database before replacing the current one
 - Fixed: dzVents, an integer sValue3 in an IFTTT trigger overwrote sValue2
 - Fixed: EcoDevices, RT2 mode now reads BBRHPJR and IINST3; the XML tag names were misspelled
+- Fixed: Energy Dashboard, a device that no longer exists is stored as Disabled when saving the settings instead of idx 0, so a removed battery is no longer drawn at 0 Watt (#7163)
 - Fixed: Enever, an invalid provider response no longer overwrites the cached valid prices
 - Fixed: EnOcean, node IDs and raw values with the highest bit set were built with signed shifts
 - Fixed: EnOcean ESP2/ESP3 and PiFace, queued telegrams are now taken from the queue under its lock, preventing a possible crash
+- Fixed: Events, a command by device, scene or group name that matches more than one item now logs an error; it went silently to the first match (#7143)
 - Fixed: Events, a random delay of 0 could crash Domoticz (division by zero); random delays now range from 0 up to and including the requested maximum
 - Fixed: Floorplans, device popups stay inside the visible part of the plan, also when zoomed into a room, and keep their normal size instead of growing with the zoom
+- Fixed: Floorplans, the page dots no longer cover a device popup near the bottom of the plan (#7162)
+- Fixed: Forecast, the fallback forecast page now loads over https; it stayed blank on an http install (#7161)
 - Fixed: Hardware, new Kodi, HEOS, Logitech Media Server, Panasonic TV and Wake-on-LAN nodes are created as used again; the used flag was ignored when inserting the device
 - Fixed: HomeConfort, group commands stored a wrong value because the command was formatted as a string
+- Fixed: Honeywell, the hardware now uses the api.honeywellhome.com domain (the certificate of the old domain has expired) and refreshes the access token after a rejected request instead of waiting for its expiry (#7157)
+- Fixed: Kodi and Panasonic TV, every hardware instance now keeps its own list of nodes; reloading one instance removed the nodes of the others (#7111)
 - Fixed: Limitless, the V6 generic disco mode command was sent with the mode of the previous numbered disco command
 - Fixed: Lua, the fourth path argument of applyJsonPath was ignored
+- Fixed: MQTT Auto Discovery, IR blasters (e.g. Tuya) can send learned codes again with Zigbee2MQTT 2.x, which writes its templates as value_json["key"] (#7156)
+- Fixed: MQTT Auto Discovery, value templates with a simple calculation, such as {{ value_json.humidity / 100 }} or {{ value_json.x | float * 1000 }}, are now applied; the message was dropped or the unscaled value was used (#7034)
 - Fixed: MQTT, org_hwid in the device info message repeated hwid instead of the original hardware id
 - Fixed: MQTT Auto Discovery, an event triggered by a color light report carried the color of the previous report, so dzVents getColor() was always one change behind; the color is now stored before the event fires (#7054)
 - Fixed: MQTT Auto Discovery, a light that reports brightness and color on separate state topics (e.g. a Fibaro FGRGBW via Z-Wave JS UI) dropped to level 0 on every color report while staying on, so dzVents read level 0; a color report without a brightness now keeps the stored level (#7053)
@@ -27,16 +43,22 @@ Version 2026.xxxx
 - Fixed: OpenZWave, switches and sensors that report a Byte value are created with their actual state instead of Off
 - Fixed: Philips Hue, the displayed brightness was rounded up while commands round to the nearest step, so 11% showed as 12% (#7026)
 - Fixed: Philips Hue, RGB colors outside the gamut are now clamped to the gamut of the lamp model instead of the default gamut
+- Fixed: Python plugins, commands that arrive while a DomoticzEx plugin is still starting no longer log misleading 'Devices dictionary null' errors (#7046)
 - Fixed: Python plugins, the Description of an Image object is readable again; it was exposed as an integer
+- Fixed: Roomplan, the Select Device dialog no longer splits a device whose name contains '] ' into a separate hardware entry (#7166)
+- Fixed: SolarEdge, the hardware now uses the Monitoring API v2, as SolarEdge switches off the v1 API in November 2026. An existing API key keeps working (it is now sent as a header); accounts without a Fleet API key can use OAuth2 Site Access with a Client ID and Client Secret, authorized automatically through the web portal login or with a pasted authorization code. A failed authorization is retried at most every 30 minutes, and not at all after the login was rejected until the hardware settings are changed. The hardware stays within the SolarEdge rate limit of 10 requests per minute: requests are spaced out, the site is polled every 15 minutes (SolarEdge itself only refreshes its data every 15 minutes), the site overview is skipped at night, and polling pauses when SolarEdge answers 'too many requests'. Inverters for which SolarEdge offers no interval telemetry no longer log an error every poll. The v2 API no longer offers per phase values, DC voltage, inverter temperature, power limit, ground fault resistance, inverter mode and the battery critical state, so those devices stop updating and can be removed. The inverter AC voltage (averaged over the active phases) is a new device; the old DC voltage device is no longer updated, and AC current is now a single value derived from power and voltage
 - Fixed: Tado, memory was leaked on every API request
 - Fixed: TE923, the wind sensor now reports the battery state of the sensor instead of always OK
 - Fixed: Themes, getconfig now returns the active theme name as WebTheme; getsettings is admin only, so a theme that read the theme name from it failed to start for users without admin rights
+- Fixed: Visual Crossing, values reported as N/A are no longer stored as 0, and snow depth is no longer added to the rain rate (#7065)
 - Fixed: Voltcraft CO-20, a failed USB open is now detected
 - Fixed: Weather Underground, the forecast link was two URLs glued together and exposed the API key; it is now a single wunderground.com link
+- Fixed: WebUI, changing the text of a Text device in its edit dialog now updates other open pages, MQTT and the push services (#7082)
 - Fixed: WebUI, live search no longer shifts the device cards on pages without a divider row, and clearing the search always restores the hidden cards (#7027)
 - Fixed: WebUI, on iOS/iPadOS 27 (Safari, Chrome and Edge) every page change reloaded the whole page when Domoticz is opened over http, and the Back button of the log, timers and notification pages reloaded the current page instead of going back; https was not affected
 - Fixed: WebUI, the lines of a multi-line Text device now line up next to the icon in the Utility widgets (#7040)
 - Fixed: Winddelen, an unknown mill ID is rejected instead of causing a division by zero
+- Fixed: YouLess, P1/S0 meter discovery is retried up to three times after a failed request instead of being disabled until a restart (#7068)
 
 Version 2026.4
 This release contains important security fixes in the web server, the API and the MCP server, upgrading is strongly recommended. Scripts or apps that call the API with a Viewer or User account should check the Security lines below: several commands now require higher rights.
@@ -129,7 +151,6 @@ This release contains important security fixes in the web server, the API and th
 - Fixed: Python plugins, Unit.Delete() and Device.Delete() only removed the device row, leaving its history, notifications, timers, scene and plan rows behind for the next device that received the same idx (#6982)
 - Fixed: Reports, the counter totals in the yearly and monthly energy, gas and water reports kept showing the highest value ever recorded, which was wrong after a meter replacement; they now show the last actual meter reading, and the summary figures above the report are presented as a compact labeled overview (#6926)
 - Fixed: SolarEdge, the web portal part of the hardware logged 'Web portal: Error getting site layout!' about once per second: SolarEdge has permanently retired the undocumented endpoints it used, which now answer HTTP 410 Gone. Signing in to the web portal now uses the OAuth2 PKCE flow the monitoring site itself uses, and the site layout and optimizer data are read from the current endpoints. A failing layout fetch no longer retries every second, and all optimizers are read in a single call per cycle instead of one call each. Per optimizer voltage and current are no longer offered by that API, so those sub devices are gone and optimizer power is now an hourly value; the API key based polling (site overview, inverter telemetry, energy details, battery) is unchanged
-- Fixed: SolarEdge, the hardware now uses the Monitoring API v2, as SolarEdge switches off the v1 API in November 2026. An existing API key keeps working (it is now sent as a header); accounts without a Fleet API key can use OAuth2 Site Access with a Client ID and Client Secret, authorized automatically through the web portal login or with a pasted authorization code. A failed authorization is retried at most every 30 minutes, and not at all after the login was rejected until the hardware settings are changed. The hardware stays within the SolarEdge rate limit of 10 requests per minute: requests are spaced out, the site is polled every 15 minutes (SolarEdge itself only refreshes its data every 15 minutes), the site overview is skipped at night, and polling pauses when SolarEdge answers 'too many requests'. Inverters for which SolarEdge offers no interval telemetry no longer log an error every poll. The v2 API no longer offers per phase values, DC voltage, inverter temperature, power limit, ground fault resistance, inverter mode and the battery critical state, so those devices stop updating and can be removed. The inverter AC voltage (averaged over the active phases) is a new device; the old DC voltage device is no longer updated, and AC current is now a single value derived from power and voltage
 - Fixed: Users, deleting a user now also removes that user's dashboard layouts; the rows were left behind and a newly created user could inherit them
 - Fixed: Users, saving a user's device list reset that user's dashboard order to alphabetical; order and favourites are now kept and new devices are appended, and non-admin users can reorder their own dashboard (#6970)
 - Fixed: Utilities, the Update button in the edit dialog of an Alert or Thermostat Operating State device did nothing and silently discarded the change; it could also store another device's icon and bar colour ranges on the device being edited (#6946)
