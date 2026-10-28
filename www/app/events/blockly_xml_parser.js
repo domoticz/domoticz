@@ -60,9 +60,15 @@ define(function () {
                 if (sf) {
                     var sn = $(sf).attr('name');
                     if (sn == 'NUM') return $(sf).text();
-                    if (sn == 'TEXT' || sn == 'State') return '"' + $(sf).text() + '"';
+                    if (sn == 'TEXT' || sn == 'State') return luaLiteral($(sf).text());
                 }
-                return 'nil';
+                throw new Error('Please connect a block to every input of your event: an input is empty and has no default value');
+            }
+            if (isExpressionBlock(variableType)) {
+                // Actions and notification texts are command strings parsed by EventSystem, not Lua
+                // expressions: a computed value would arrive at the device as literal text. Reject at
+                // save with a clear reason instead of emitting garbage.
+                throw new Error('Blocks that compute a result (math, text or list operations) cannot be used where a simple value (number, text, device or state) is expected; store the value in a User variable instead');
             }
             if (variableType.indexOf('switchvariables') >= 0) {
                 var fieldA = $(value).find('field')[0];
@@ -106,16 +112,35 @@ define(function () {
             else {
                 var fieldB = $(value).find('field')[0];
                 if ($(fieldB).attr('name') == 'State') {
-                    return '"' + $(fieldB).text() + '"';
+                    return luaLiteral($(fieldB).text());
                 }
                 else if ($(fieldB).attr('name') == 'TEXT') {
-                    return '"' + $(fieldB).text() + '"';
+                    return luaLiteral($(fieldB).text());
                 }
                 else if ($(fieldB).attr('name') == 'NUM') {
                     return $(fieldB).text();
                 }
                 return 'unknown comparevariable ' + variableType;
             }
+        }
+
+        function luaLiteral(s) {
+            // Escape a raw string for embedding in a generated Lua string literal.
+            return '"' + String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t') + '"';
+        }
+
+        function isExpressionBlock(t) {
+            // Blockly value blocks that generate a Lua expression (valid only inside conditions),
+            // as opposed to literal/state/device references which actions accept.
+            var expressionTypes = [
+                'math_arithmetic', 'math_single', 'math_constant', 'math_modulo', 'math_constrain',
+                'math_random_int', 'math_random_float', 'math_round', 'math_trig', 'math_atan2', 'math_on_list',
+                'text_join', 'text_length', 'text_isEmpty', 'text_indexOf', 'text_charAt', 'text_getSubstring',
+                'text_changeCase', 'text_count', 'text_replace', 'text_reverse', 'text_trim',
+                'lists_repeat', 'lists_length', 'lists_isEmpty', 'lists_indexOf', 'lists_getIndex',
+                'lists_getSublist', 'lists_sort', 'lists_reverse', 'lists_split', 'lists_create_with'
+            ];
+            return expressionTypes.indexOf(t) >= 0;
         }
 
         function resolveValue(value, variableType) {
@@ -155,7 +180,7 @@ define(function () {
                 return _fld('NUM');
             }
             else if (variableType == 'text') {
-                return '"' + _fld('TEXT') + '"';
+                return luaLiteral(_fld('TEXT'));
             }
             else if (variableType == 'math_constant') {
                 var c = _fld('CONSTANT');
@@ -307,7 +332,7 @@ define(function () {
                 }
                 // SPLIT: split string by delimiter -> array (Lua 5.4 has no table.split; emulate)
                 var str = _val('INPUT'), delim = _val('DELIM');
-                return '(function(s,d) if d=="" then local r={} for i=1,#s do r[i]=s:sub(i,i) end r[#r+1]="" return r end local r={} local i=1 while true do local p=s:find(d,i,true) if not p then r[#r+1]=s:sub(i) break end r[#r+1]=s:sub(i,p-1) i=p+#d end return r end)' + '(' + str + ',' + delim + ')'
+                return '(function(s,d) if d=="" then local r={} for i=1,#s do r[i]=s:sub(i,i) end return r end local r={} local i=1 while true do local p=s:find(d,i,true) if not p then r[#r+1]=s:sub(i) break end r[#r+1]=s:sub(i,p-1) i=p+#d end return r end)' + '(' + str + ',' + delim + ')'
             }
             else if (variableType == 'text_join') {
                 // Saved XML carries the joined operands as ADD0/ADD1/... value inputs on the block itself;
@@ -319,12 +344,6 @@ define(function () {
                 });
                 if (!parts.length) return '""';
                 return '(' + parts.join('..') + ')';
-            }
-            else if (variableType == 'text_append') {
-                // v13: field VAR (a variable name) + value input TEXT.
-                var txt = _val('TEXT');
-                var vn = _fld('VAR');
-                return '(' + (vn ? ('variable[\'' + vn + '\']') : '""') + '..' + txt + ')';
             }
             else if (variableType == 'text_length') {
                 return '#' + _val('VALUE');
@@ -368,8 +387,8 @@ define(function () {
                 var op = _fld('CASE'), txt = _val('TEXT');
                 if (op == 'UPPERCASE') return 'string.upper(' + txt + ')';
                 if (op == 'LOWERCASE') return 'string.lower(' + txt + ')';
-                // TITLECASE: capitalize first letter of each word
-                return '(function(s) local r="" for i=1,#s do local c=s:sub(i,i) if i==1 or s:sub(i-1,i-1)==" " then r=r..string.upper(c) else r=r..c end end return r end)' + '(' + txt + ')'
+                // TITLECASE: capitalize first letter of each word, lowercase the rest of it
+                return '(function(s) local r=s:gsub("(%w)(%w*)", function(a,b) return a:upper()..b:lower() end) return r end)' + '(' + txt + ')'
             }
             else if (variableType == 'text_replace') {
                 var from = _val('FROM'), to = _val('TO'), txt = _val('TEXT');
@@ -482,6 +501,10 @@ define(function () {
                 var conditionstring = parseSecurityStatus(firstBlock);
                 return conditionstring;
             }
+            else if (firstBlock.attr('type') == 'text_isEmpty' || firstBlock.attr('type') == 'lists_isEmpty' || firstBlock.attr('type') == 'logic_boolean') {
+                // Boolean value blocks (e.g. text_isEmpty) are valid tests inside AND/OR too.
+                return resolveValue(thisBlock, firstBlock.attr('type'));
+            }
         }
 
         function parseLogicOperation(thisBlock) {
@@ -494,7 +517,8 @@ define(function () {
             return conditionstring;
         }
 
-        var ifBlock = $($(xml).find('value[name=\'IF' + pairId + '\']')[0]).children('block:first');
+        var ifWrapper = $($(xml).find('value[name=\'IF' + pairId + '\']')[0]);
+        var ifBlock = $(ifWrapper).children('block:first');
 
         if (ifBlock.attr('type') == 'logic_compare') {
             // just the one compare, easy
@@ -521,6 +545,10 @@ define(function () {
             // nested logic operation, drill down
             var compareString = parseSecurityStatus(ifBlock);
             boolString += compareString;
+        }
+        else if (ifBlock.attr('type') == 'text_isEmpty' || ifBlock.attr('type') == 'lists_isEmpty' || ifBlock.attr('type') == 'logic_boolean') {
+            // Boolean value block used directly as the IF test (e.g. text_isEmpty): emit its Lua expression.
+            boolString += resolveValue(ifWrapper[0], ifBlock.attr('type'));
         }
         var setArray = [];
         var doBlock = $($(xml).find('statement[name=\'DO' + pairId + '\']')[0]);
