@@ -96,16 +96,20 @@ namespace Plugins {
 		virtual const char* PythonName() { return m_Callback.c_str(); };
 
 	      protected:
-		bool UpdateEventTarget(const std::string DeviceID, int Unit)
+		bool UpdateEventTarget(CPlugin* pPlugin, const std::string DeviceID, int Unit)
 		{
 			// Used by some events in DomoticzEx.  Looks for callback existance on Unit, Device and Plugin in that order
 			PyBorrowedRef pModule = CPlugin::FindPyModule("DomoticzEx");
 			if (pModule)
 			{
-				module_state *pModState = ((struct module_state *)PyModule_GetState(pModule));
-				if (pModState)
+				// Commands and device events can be queued while the plugin is still
+				// initialising, before CPlugin::Start() has created m_DeviceDict. In
+				// that case object-level routing is not available yet; fall through to
+				// the plugin-level callback without calling FindDevice(), which would
+				// otherwise log two misleading errors for every early command.
+				if (pPlugin && pPlugin->m_DeviceDict)
 				{
-					PyBorrowedRef	pUnit = pModState->pPlugin->FindUnitInDevice(m_DeviceID, m_Unit);
+					PyBorrowedRef	pUnit = pPlugin->FindUnitInDevice(DeviceID, Unit);
 					if ((pUnit) && (PyObject_HasAttrString(pUnit, m_Callback.c_str())))
 					{
 						PyNewRef pFunc = PyObject_GetAttrString(pUnit, m_Callback.c_str());
@@ -116,7 +120,7 @@ namespace Plugins {
 						}
 					}
 
-					PyBorrowedRef	pDevice = pModState->pPlugin->FindDevice(m_DeviceID);
+					PyBorrowedRef	pDevice = pPlugin->FindDevice(DeviceID);
 					if ((pDevice) && (PyObject_HasAttrString(pDevice, m_Callback.c_str())))
 					{
 						PyNewRef pFunc = PyObject_GetAttrString(pDevice, m_Callback.c_str());
@@ -264,7 +268,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		{
 			pPlugin->onDeviceAdded(m_DeviceID, m_Unit);
 
-			if (UpdateEventTarget(m_DeviceID, m_Unit))
+			if (UpdateEventTarget(pPlugin, m_DeviceID, m_Unit))
 			{
 				if (CUnitEx::isInstance(m_Target))
 				{
@@ -303,7 +307,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 		{
 			pPlugin->onDeviceModified(m_DeviceID, m_Unit);
 
-			if (UpdateEventTarget(m_DeviceID, m_Unit))
+			if (UpdateEventTarget(pPlugin, m_DeviceID, m_Unit))
 			{
 				if (CUnitEx::isInstance(m_Target))
 				{
@@ -340,7 +344,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	protected:
 	  void ProcessLocked(CPlugin* pPlugin) override
 	  {
-		  if (UpdateEventTarget(m_DeviceID, m_Unit))
+		  if (UpdateEventTarget(pPlugin, m_DeviceID, m_Unit))
 		  {
 			  if (CUnitEx::isInstance(m_Target))
 			  {
@@ -402,7 +406,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	  void ProcessLocked(CPlugin* pPlugin) override
 	  {
 		  PyNewRef pParams;
-		  if (UpdateEventTarget(m_DeviceID, m_Unit))
+		  if (UpdateEventTarget(pPlugin, m_DeviceID, m_Unit))
 		  {
 			  if (CUnitEx::isInstance(m_Target))
 			  {
@@ -471,7 +475,7 @@ static std::string get_utf8_from_ansi(const std::string &utf8, int codepage)
 	protected:
 	  void ProcessLocked(CPlugin* pPlugin) override
 	  {
-		  if (UpdateEventTarget(m_DeviceID, m_Unit))
+		  if (UpdateEventTarget(pPlugin, m_DeviceID, m_Unit))
 		  {
 			  if (CUnitEx::isInstance(m_Target))
 			  {
