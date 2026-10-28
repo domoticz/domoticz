@@ -3037,6 +3037,11 @@ namespace http
 			{
 				root["language"] = sValue;
 			}
+			// Themes read the active theme name here: getsettings requires admin rights
+			if (m_sql.GetPreferencesVar("WebTheme", sValue))
+			{
+				root["WebTheme"] = sValue;
+			}
 			if (m_sql.GetPreferencesVar("DegreeDaysBaseTemperature", sValue))
 			{
 				root["DegreeDaysBaseTemperature"] = atof(sValue.c_str());
