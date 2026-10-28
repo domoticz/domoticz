@@ -1535,8 +1535,16 @@ namespace http
 			}
 			else if (htype == HTYPE_SolarEdgeAPI)
 			{
-				if ((username.empty()))
-					return false;
+				if (username.empty())
+				{
+					// Fleet API Key is blank; only acceptable when OAuth2 Site Access (Client ID + Secret,
+					// stored as the 3rd/4th '|'-separated Extra fields) is configured instead.
+					std::vector<std::string> vExtra;
+					StringSplit(extra, "|", vExtra);
+					bool bHasOAuthClient = (vExtra.size() > 3) && !vExtra[2].empty() && !vExtra[3].empty();
+					if (!bHasOAuthClient)
+						return false;
+				}
 			}
 			else if (htype == HTYPE_Nest_OAuthAPI)
 			{
