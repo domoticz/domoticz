@@ -53,7 +53,7 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$timeout', 'ddToast', function($scope, $http, $timeout, ddToast) {
+            controller: ['$scope', '$http', '$timeout', '$uibModal', 'ddToast', function($scope, $http, $timeout, $uibModal, ddToast) {
                 var ctrl = this;
                 var _verifiedDevices = {};
                 ctrl.actions          = [];
@@ -64,7 +64,6 @@ define([
                 ctrl.levelOptions     = {};
                 ctrl.currentLevel     = {};
                 ctrl.currentLevelText = {};
-                ctrl.showLevelPicker  = {};
                 ctrl.dimLevel         = {};
                 ctrl.blindStatus      = {};
                 ctrl.securityStatus   = {};
@@ -264,13 +263,36 @@ define([
                     fn(_verifiedDevices[action.idx] || '');
                 }
 
-                ctrl.toggleLevelPicker = function(idx, $event) {
+                // The levels open in a dialog: an inline row below the button falls outside
+                // the widget for buttons on its bottom row
+                ctrl.toggleLevelPicker = function(action, $event) {
                     if ($event) { $event.stopPropagation(); }
-                    ctrl.showLevelPicker[idx] = !ctrl.showLevelPicker[idx];
+                    $uibModal.open({
+                        template:
+                            '<div class="modal-header"><h4 class="modal-title" ng-bind="dlg.title"></h4></div>' +
+                            '<div class="modal-body dd-qa-level-dialog">' +
+                                '<button class="dd-qa-level-btn" ng-repeat="opt in dlg.options" ' +
+                                        'ng-click="$close(opt.value)" ' +
+                                        'ng-class="{\'dd-qa-level-btn--active\': dlg.current === opt.value}" ' +
+                                        'ng-bind="opt.label"></button>' +
+                            '</div>' +
+                            '<div class="modal-footer">' +
+                                '<button class="btn btn-default" ng-click="$dismiss()" ng-bind="::dlg.cancel"></button>' +
+                            '</div>',
+                        controller: ['$scope', function($scope) {
+                            $scope.dlg = {
+                                title:   action.label,
+                                options: ctrl.levelOptions[action.idx] || [],
+                                current: ctrl.currentLevel[action.idx],
+                                cancel:  $.t('Cancel')
+                            };
+                        }]
+                    }).result.then(function(level) {
+                        ctrl.selectLevel(action, level);
+                    }, angular.noop);
                 };
 
                 ctrl.selectLevel = function(action, level) {
-                    ctrl.showLevelPicker[action.idx] = false;
                     var busyKey = action.idx + '_sel';
                     if (ctrl.busy[busyKey]) { return; }
                     runProtected(action, function(passcode) {

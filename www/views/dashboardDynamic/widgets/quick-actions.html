@@ -29,7 +29,7 @@
         <!-- Selector button + level picker -->
         <div class="dd-qa-selector-group" ng-if="action.type === 'selector'" style="display:contents">
             <button class="dd-qa-btn dd-qa-btn--selector"
-                    ng-click="ctrl.toggleLevelPicker(action.idx, $event)"
+                    ng-click="ctrl.toggleLevelPicker(action, $event)"
                     ng-class="{
                         'dd-qa-btn--success': ctrl.success[action.idx + '_sel'],
                         'dd-qa-btn--error':   ctrl.error[action.idx + '_sel'],
@@ -40,16 +40,6 @@
                 <i ng-class="action.icon || 'fa-solid fa-sliders'"></i>
                 <span class="dd-qa-level-text" ng-bind="ctrl.currentLevelText[action.idx]"></span>
             </button>
-            <div class="dd-qa-level-picker"
-                 ng-show="ctrl.showLevelPicker[action.idx]"
-                 ng-click="$event.stopPropagation()">
-                <button class="dd-qa-level-btn"
-                        ng-repeat="opt in ctrl.levelOptions[action.idx]"
-                        ng-click="ctrl.selectLevel(action, opt.value)"
-                        ng-class="{'dd-qa-level-btn--active': ctrl.currentLevel[action.idx] === opt.value}">
-                    {{ opt.label }}
-                </button>
-            </div>
         </div>
 
         <!-- Dimmer button group

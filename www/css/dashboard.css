@@ -1707,6 +1707,18 @@ body.dd-navbar-hidden .dd-toolbar {
     padding: 4px 0;
 }
 
+.dd-qa-level-dialog {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.dd-qa-level-dialog .dd-qa-level-btn {
+    flex: 1 1 40%;
+    padding: 8px;
+    font-size: 0.95em;
+}
+
 .dd-qa-level-btn {
     flex: 1;
     min-width: 60px;
@@ -2044,11 +2056,6 @@ body.dd-navbar-hidden .dd-toolbar {
     flex: 1;
     width: 100%;
     box-sizing: border-box;
-}
-
-.dd-quick-actions--list .dd-qa-level-picker {
-    flex: 0 0 100%;
-    padding: 2px 0 2px 10px;
 }
 
 .dd-quick-actions--list .dd-qs-item {
