@@ -119,6 +119,7 @@ public:
 	void WWWGetItemStates(std::vector<_tDeviceStatus> &iStates);
 	void SetEnabled(bool bEnabled);
 	void GetCurrentStates();
+	void UpdateDeviceAdjustments(uint64_t ulDevID, float AddjValue, float AddjMulti, float AddjValue2, float AddjMulti2);
 	void GetCurrentScenesGroups();
 	void GetCurrentUserVariables();
 	bool UpdateSceneGroup(uint64_t ulDevID, int nValue, const std::string &lastUpdate);

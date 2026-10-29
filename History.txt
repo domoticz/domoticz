@@ -25,6 +25,7 @@ Version 2026.xxxx
 - Fixed: EnOcean, node IDs and raw values with the highest bit set were built with signed shifts
 - Fixed: EnOcean ESP2/ESP3 and PiFace, queued telegrams are now taken from the queue under its lock, preventing a possible crash
 - Fixed: Events, a command by device, scene or group name that matches more than one item now logs an error; it went silently to the first match (#7143)
+- Fixed: Events, a device first seen by the event system after startup now has its adjustment fields in dzVents and Lua (for example a counter's divider and offset) instead of unset values
 - Fixed: Events, a random delay of 0 could crash Domoticz (division by zero); random delays now range from 0 up to and including the requested maximum
 - Fixed: Floorplans, device popups stay inside the visible part of the plan, also when zoomed into a room, and keep their normal size instead of growing with the zoom
 - Fixed: Floorplans, the page dots no longer cover a device popup near the bottom of the plan (#7162)

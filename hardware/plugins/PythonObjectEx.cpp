@@ -701,11 +701,6 @@ namespace Plugins {
 							// can observe a stale value between the SELECT and the assignment.
 							if (!result.empty())
 								self->ID = atoi(result[0][0].c_str());
-							// The event system caches the adjustment fields (a counter's divider among them) and
-							// does not read them for a device it has not seen yet, so reload it like setused does
-							const bool bNonDefaultAdjustments = (fAdjustment != 0.0F) || (fMultiplier != 1.0F) || (fAdjustment2 != 0.0F) || (fMultiplier2 != 1.0F);
-							if (!result.empty() && bNonDefaultAdjustments && m_sql.m_bEnableEventSystem)
-								m_mainworker.m_eventsystem.GetCurrentStates();
 						}
 						if (!result.empty())
 						{
@@ -960,6 +955,12 @@ namespace Plugins {
 				if ((bAdjustment || bMultiplier || bAdjustment2 || bMultiplier2)
 					&& NormalizeUnitAdjustments(pModState->pPlugin, self->Unit, fAdjustment, fMultiplier, fAdjustment2, fMultiplier2))
 				{
+					// What the database holds after the writes below, for the event system cache
+					const float fCachedAdjustment = bAdjustment ? fAdjustment : self->Adjustment;
+					const float fCachedMultiplier = bMultiplier ? fMultiplier : self->Multiplier;
+					const float fCachedAdjustment2 = bAdjustment2 ? fAdjustment2 : self->Adjustment2;
+					const float fCachedMultiplier2 = bMultiplier2 ? fMultiplier2 : self->Multiplier2;
+					const uint64_t ulDevID = static_cast<uint64_t>(self->ID);
 					Py_BEGIN_ALLOW_THREADS
 					if (bAdjustment)
 						m_sql.safe_query("UPDATE DeviceStatus SET AddjValue=%.9g WHERE (ID==%s)", fAdjustment, sID.c_str());
@@ -969,9 +970,8 @@ namespace Plugins {
 						m_sql.safe_query("UPDATE DeviceStatus SET AddjValue2=%.9g WHERE (ID==%s)", fAdjustment2, sID.c_str());
 					if (bMultiplier2)
 						m_sql.safe_query("UPDATE DeviceStatus SET AddjMulti2=%.9g WHERE (ID==%s)", fMultiplier2, sID.c_str());
-					// The event system caches these fields, reload it like setused does
-					if (m_sql.m_bEnableEventSystem)
-						m_mainworker.m_eventsystem.GetCurrentStates();
+					// The event system caches these fields (a counter's divider among them)
+					m_mainworker.m_eventsystem.UpdateDeviceAdjustments(ulDevID, fCachedAdjustment, fCachedMultiplier, fCachedAdjustment2, fCachedMultiplier2);
 					Py_END_ALLOW_THREADS
 				}
 			}

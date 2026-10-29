@@ -1521,6 +1521,20 @@ std::string CEventSystem::UpdateSingleState(
 		newitem.lastLevel = lastLevel;
 		newitem.batteryLevel = batteryLevel;
 		newitem.signalLevel = signalLevel;
+		// UpdateJsonMap() below divides a counter by AddjValue2, so read the stored adjustment fields
+		// instead of leaving them unset
+		newitem.AddjValue = 0.0F;
+		newitem.AddjMulti = 1.0F;
+		newitem.AddjValue2 = 0.0F;
+		newitem.AddjMulti2 = 1.0F;
+		auto result = m_sql.safe_query("SELECT AddjValue, AddjMulti, AddjValue2, AddjMulti2 FROM DeviceStatus WHERE (ID == %" PRIu64 ")", ulDevID);
+		if (!result.empty())
+		{
+			newitem.AddjValue = static_cast<float>(atof(result[0][0].c_str()));
+			newitem.AddjMulti = static_cast<float>(atof(result[0][1].c_str()));
+			newitem.AddjValue2 = static_cast<float>(atof(result[0][2].c_str()));
+			newitem.AddjMulti2 = static_cast<float>(atof(result[0][3].c_str()));
+		}
 
 		if (!m_sql.m_bDisableDzVentsSystem)
 		{
@@ -1529,6 +1543,20 @@ std::string CEventSystem::UpdateSingleState(
 		m_devicestates[newitem.ID] = newitem;
 	}
 	return nValueWording;
+}
+
+// Updates the cached adjustment fields of one device after they were changed outside the Edit dialog,
+// without reloading every device state (GetCurrentStates() would also overwrite states whose events are still queued)
+void CEventSystem::UpdateDeviceAdjustments(const uint64_t ulDevID, const float AddjValue, const float AddjMulti, const float AddjValue2, const float AddjMulti2)
+{
+	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+	auto itt = m_devicestates.find(ulDevID);
+	if (itt == m_devicestates.end())
+		return; // not cached yet: UpdateSingleState() reads the fields when it adds the device
+	itt->second.AddjValue = AddjValue;
+	itt->second.AddjMulti = AddjMulti;
+	itt->second.AddjValue2 = AddjValue2;
+	itt->second.AddjMulti2 = AddjMulti2;
 }
 
 void CEventSystem::UnlockEventQueueThread()
