@@ -610,14 +610,22 @@ E.g: <code>Domoticz.Log(Devices["123456"].Units[2].Name)</code>
 |Color state for color switches, or bar ranges for the Utility, Temperature and Weather cards. See [[Developing a Python plugin#The Color field|The Color field]] for both formats.
 |-
 |Adjustment
-|Read
-|Float value representing the adjustment value set for the Unit (via the web UI)
-Note: This is made available to the Plugin author so it can be applied if required, it is not applied by the framework automatically.
+|Read/Write
+|Float value of the first adjustment field of the Unit (AddjValue), default 0. It holds what the device's Edit dialog in the web UI stores there, so its meaning depends on the device type: a temperature offset for temperature sensors, the meter offset for counters, the Off Delay for switches.
+Set it before Create() to create the Unit with it, or change it and call Update(UpdateProperties=True); only the fields the plugin changed are written. A multiplier of 0 is stored as 1, as in the Edit dialog.
+Domoticz applies these values itself where the Edit dialog's Calibration does (for example a temperature or barometer offset is added to every value the plugin reports, and counters are shown with their offset and divider), so do not apply them again in the plugin.
 |-
 |Multiplier
-|Read
-|Float value representing the multiplier value set for the Unit (via the web UI).  
-Note: This is made available to the Plugin author so it can be applied if required, it is not applied by the framework automatically.
+|Read/Write
+|Float value of the first multiplier field of the Unit (AddjMulti), default 1. Set it like Adjustment.
+|-
+|Adjustment2
+|Read/Write
+|Float value of the second adjustment field of the Unit (AddjValue2), default 0, set like Adjustment. For a counter this is the divider: the card shows the total divided by it. With 0, energy, gas and water meters use the meter divider from the Settings page, other counters show the total as is. For example, feed a running time in seconds and set Adjustment2 to 3600 to show hours. For barometers it is the pressure offset.
+|-
+|Multiplier2
+|Read/Write
+|Float value of the second multiplier field of the Unit (AddjMulti2), default 1, set like Adjustment.
 |-
 |Parent
 |Read
@@ -719,7 +727,7 @@ During the update a row will be written to the log table.
 |Optional, String.<br>Common device types, this will set the values for Type, Subtype and Switchtype prior to the database update.<br>See [[#Available_Device_Types]]
 |-
 |UpdateProperties
-|Optional, Boolean, Default: False, from version 2024.4.16100<br>Update db based on unit current Name, SignalLevel, BatteryLevel, Image, Type, Subtype, Switchtype, Used Description and Color members.
+|Optional, Boolean, Default: False, from version 2024.4.16100<br>Update db based on unit current Name, SignalLevel, BatteryLevel, Image, Type, Subtype, Switchtype, Used, Description and Color members, and (from version 2026.xxxx) Adjustment, Multiplier, Adjustment2 and Multiplier2.
 |-
 |UpdateOptions
 |Optional, Boolean, Default: False, from version 2024.4.16100
@@ -920,12 +928,6 @@ E.g: <code>Domoticz.Log(Devices[2].Name)</code>
 |-
 |Color
 |Color state for color switches, or bar ranges for the Utility, Temperature and Weather cards. See [[Developing a Python plugin#The Color field|The Color field]] for both formats.
-|-
-|Adjustment
-|Float value representing the adjustment value set for the Device
-|-
-|Multiplier
-|Float value representing the multiplier value set for the Device
 |-
 |}
 |-

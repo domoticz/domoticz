@@ -22,6 +22,22 @@
 
 namespace Plugins {
 
+	// The adjustment fields follow the device edit dialog (setused): a multiplier of 0 is stored as 1.
+	// Returns false, after logging it, when a value cannot be stored (NaN or infinity).
+	static bool NormalizeUnitAdjustments(CPlugin *pPlugin, const int iUnit, float &fAdjustment, float &fMultiplier, float &fAdjustment2, float &fMultiplier2)
+	{
+		if (!std::isfinite(fAdjustment) || !std::isfinite(fMultiplier) || !std::isfinite(fAdjustment2) || !std::isfinite(fMultiplier2))
+		{
+			pPlugin->Log(LOG_ERROR, "Unit %d: Adjustment, Multiplier, Adjustment2 and Multiplier2 must be finite numbers, so they are not stored.", iUnit);
+			return false;
+		}
+		if (fMultiplier == 0.0F)
+			fMultiplier = 1.0F;
+		if (fMultiplier2 == 0.0F)
+			fMultiplier2 = 1.0F;
+		return true;
+	}
+
 	extern struct PyModuleDef DomoticzExModuleDef;
 
 	void CDeviceEx_dealloc(CDeviceEx *self)
@@ -299,6 +315,15 @@ namespace Plugins {
 					Py_DECREF(self);
 					return nullptr;
 				}
+				// Match the DeviceStatus column defaults, so Create() of a Unit that never sets them stores the same values
+				self->Adjustment = 0.0F;
+				self->Multiplier = 1.0F;
+				self->Adjustment2 = 0.0F;
+				self->Multiplier2 = 1.0F;
+				self->LoadedAdjustment = self->Adjustment;
+				self->LoadedMultiplier = self->Multiplier;
+				self->LoadedAdjustment2 = self->Adjustment2;
+				self->LoadedMultiplier2 = self->Multiplier2;
 				self->Parent = nullptr;
 			}
 		}
@@ -478,7 +503,7 @@ namespace Plugins {
 			
 			Py_BEGIN_ALLOW_THREADS
 			result = m_sql.safe_query("SELECT Unit, ID, Name, nValue, sValue, Type, SubType, SwitchType, LastLevel, CustomImage, SignalLevel, BatteryLevel, LastUpdate, Options, "
-						  "Description, Color, Used, AddjValue, AddjMulti FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d) ORDER BY Unit ASC",
+						  "Description, Color, Used, AddjValue, AddjMulti, AddjValue2, AddjMulti2 FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%s') AND (Unit==%d) ORDER BY Unit ASC",
 						  pModState->pPlugin->m_HwdID, sDevice.c_str(), self->Unit);
 			Py_END_ALLOW_THREADS
 			if (!result.empty())
@@ -534,6 +559,12 @@ namespace Plugins {
 					self->Used = atoi(sd[16].c_str());
 					self->Adjustment = static_cast<float>(atof(sd[17].c_str()));
 					self->Multiplier = static_cast<float>(atof(sd[18].c_str()));
+					self->Adjustment2 = static_cast<float>(atof(sd[19].c_str()));
+					self->Multiplier2 = static_cast<float>(atof(sd[20].c_str()));
+					self->LoadedAdjustment = self->Adjustment;
+					self->LoadedMultiplier = self->Multiplier;
+					self->LoadedAdjustment2 = self->Adjustment2;
+					self->LoadedMultiplier2 = self->Multiplier2;
 				}
 			}
 		}
@@ -627,11 +658,22 @@ namespace Plugins {
 						// Capture TimeToString in a named variable to avoid passing a dangling
 						// .c_str() pointer from a temporary into safe_query.
 						std::string sLastUpdate = TimeToString(nullptr, TF_DateTime);
+						float fAdjustment = self->Adjustment;
+						float fMultiplier = self->Multiplier;
+						float fAdjustment2 = self->Adjustment2;
+						float fMultiplier2 = self->Multiplier2;
+						if (!NormalizeUnitAdjustments(pModState->pPlugin, self->Unit, fAdjustment, fMultiplier, fAdjustment2, fMultiplier2))
+						{
+							fAdjustment = 0.0F;
+							fMultiplier = 1.0F;
+							fAdjustment2 = 0.0F;
+							fMultiplier2 = 1.0F;
+						}
 						{
 							PyAllowThreads gil;
 							m_sql.safe_query("INSERT INTO DeviceStatus "
-								"(HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Description, Color, Options, LastUpdate) "
-								"VALUES (%d, %d,'%q',%d,%d,%d,%d,%d,%d,%d,'%q',%d,'%q',%d,'%q','%q','%q','%q')",
+								"(HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Description, Color, Options, LastUpdate, AddjValue, AddjMulti, AddjValue2, AddjMulti2) "
+								"VALUES (%d, %d,'%q',%d,%d,%d,%d,%d,%d,%d,'%q',%d,'%q',%d,'%q','%q','%q','%q',%.9g,%.9g,%.9g,%.9g)",
 								pModState->pPlugin->m_HwdID,
 								0,
 								sDeviceID.c_str(),
@@ -649,7 +691,11 @@ namespace Plugins {
 								sDescription.c_str(),
 								sColor.c_str(),
 								sOptionValue.c_str(),
-								sLastUpdate.c_str());
+								sLastUpdate.c_str(),
+								fAdjustment,
+								fMultiplier,
+								fAdjustment2,
+								fMultiplier2);
 							result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (OrgHardwareID==0) AND (DeviceID=='%s') AND (Unit==%d)", pModState->pPlugin->m_HwdID, sDeviceID.c_str(), self->Unit);
 							// Assign self->ID inside the guard so no other Python thread
 							// can observe a stale value between the SELECT and the assignment.
@@ -767,6 +813,16 @@ namespace Plugins {
 			int iType = self->Type;
 			int iSubType = self->SubType;
 			int iSwitchType = self->SwitchType;
+			float fAdjustment = self->Adjustment;
+			float fMultiplier = self->Multiplier;
+			float fAdjustment2 = self->Adjustment2;
+			float fMultiplier2 = self->Multiplier2;
+			// Compared against the values loaded with the object, not against the database after the refresh below:
+			// a field the plugin did not change must not overwrite a newer value saved from the edit dialog
+			const float fLoadedAdjustment = self->LoadedAdjustment;
+			const float fLoadedMultiplier = self->LoadedMultiplier;
+			const float fLoadedAdjustment2 = self->LoadedAdjustment2;
+			const float fLoadedMultiplier2 = self->LoadedMultiplier2;
 			PyBorrowedRef pOptionsDict = self->Options;
 			PyObject *OptionsTypeName = PyDict_New();
 			if (OptionsTypeName == nullptr)
@@ -887,6 +943,35 @@ namespace Plugins {
 				{
 					Py_BEGIN_ALLOW_THREADS
 					m_sql.UpdateDeviceValue("Color", sColor, sID);
+					Py_END_ALLOW_THREADS
+				}
+
+				// Adjustment and multiplier changes. Written with %.9g, which round-trips any float, not through
+				// UpdateDeviceValue(), whose float overload rounds to two decimals
+				const bool bAdjustment = (fAdjustment != fLoadedAdjustment);
+				const bool bMultiplier = (fMultiplier != fLoadedMultiplier);
+				const bool bAdjustment2 = (fAdjustment2 != fLoadedAdjustment2);
+				const bool bMultiplier2 = (fMultiplier2 != fLoadedMultiplier2);
+				if ((bAdjustment || bMultiplier || bAdjustment2 || bMultiplier2)
+					&& NormalizeUnitAdjustments(pModState->pPlugin, self->Unit, fAdjustment, fMultiplier, fAdjustment2, fMultiplier2))
+				{
+					// What the database holds after the writes below, for the event system cache
+					const float fCachedAdjustment = bAdjustment ? fAdjustment : self->Adjustment;
+					const float fCachedMultiplier = bMultiplier ? fMultiplier : self->Multiplier;
+					const float fCachedAdjustment2 = bAdjustment2 ? fAdjustment2 : self->Adjustment2;
+					const float fCachedMultiplier2 = bMultiplier2 ? fMultiplier2 : self->Multiplier2;
+					const uint64_t ulDevID = static_cast<uint64_t>(self->ID);
+					Py_BEGIN_ALLOW_THREADS
+					if (bAdjustment)
+						m_sql.safe_query("UPDATE DeviceStatus SET AddjValue=%.9g WHERE (ID==%s)", fAdjustment, sID.c_str());
+					if (bMultiplier)
+						m_sql.safe_query("UPDATE DeviceStatus SET AddjMulti=%.9g WHERE (ID==%s)", fMultiplier, sID.c_str());
+					if (bAdjustment2)
+						m_sql.safe_query("UPDATE DeviceStatus SET AddjValue2=%.9g WHERE (ID==%s)", fAdjustment2, sID.c_str());
+					if (bMultiplier2)
+						m_sql.safe_query("UPDATE DeviceStatus SET AddjMulti2=%.9g WHERE (ID==%s)", fMultiplier2, sID.c_str());
+					// The event system caches these fields (a counter's divider among them)
+					m_mainworker.m_eventsystem.UpdateDeviceAdjustments(ulDevID, fCachedAdjustment, fCachedMultiplier, fCachedAdjustment2, fCachedMultiplier2);
 					Py_END_ALLOW_THREADS
 				}
 			}

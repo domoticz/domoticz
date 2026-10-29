@@ -51,6 +51,13 @@ namespace Plugins {
 		int			nValue;
 		float		Adjustment;
 		float		Multiplier;
+		float		Adjustment2;
+		float		Multiplier2;
+		// Adjustment values as last read from the database, so Update() only writes the ones the plugin changed
+		float		LoadedAdjustment;
+		float		LoadedMultiplier;
+		float		LoadedAdjustment2;
+		float		LoadedMultiplier2;
 		int SignalLevel;
 		int			BatteryLevel;
 		PyObject*	sValue;
@@ -92,8 +99,10 @@ namespace Plugins {
 		{ "Used", T_INT, offsetof(CUnitEx, Used), 0, "Numeric device Used flag" },
 		{ "Description", T_OBJECT, offsetof(CUnitEx, Description), 0, "Description" },
 		{ "Color", T_OBJECT, offsetof(CUnitEx, Color), 0, "Color JSON dictionary" },
-		{ "Adjustment", T_FLOAT, offsetof(CUnitEx, Adjustment), 0, "nValue adjusted by this vale on update" },
-		{ "Multiplier", T_FLOAT, offsetof(CUnitEx, Multiplier), 0, "nValue multiplied by this vale on update" },
+		{ "Adjustment", T_FLOAT, offsetof(CUnitEx, Adjustment), 0, "Adjustment value (AddjValue), e.g. a meter offset" },
+		{ "Multiplier", T_FLOAT, offsetof(CUnitEx, Multiplier), 0, "Multiplier value (AddjMulti)" },
+		{ "Adjustment2", T_FLOAT, offsetof(CUnitEx, Adjustment2), 0, "Second adjustment value (AddjValue2), e.g. a counter divider" },
+		{ "Multiplier2", T_FLOAT, offsetof(CUnitEx, Multiplier2), 0, "Second multiplier value (AddjMulti2)" },
 		{ "Parent", T_OBJECT, offsetof(CUnitEx, Parent), READONLY, "Parent device" },
 		{ nullptr } /* Sentinel */
 	};
