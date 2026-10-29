@@ -1521,8 +1521,8 @@ std::string CEventSystem::UpdateSingleState(
 		newitem.lastLevel = lastLevel;
 		newitem.batteryLevel = batteryLevel;
 		newitem.signalLevel = signalLevel;
-		// UpdateJsonMap() below divides a counter by AddjValue2, so read the stored adjustment fields
-		// instead of leaving them unset
+		// The Lua utility values divide a counter by the cached AddjValue2 (GetCurrentMeasurementStates()),
+		// so read the stored adjustment fields instead of leaving them unset
 		newitem.AddjValue = 0.0F;
 		newitem.AddjMulti = 1.0F;
 		newitem.AddjValue2 = 0.0F;
@@ -1545,8 +1545,9 @@ std::string CEventSystem::UpdateSingleState(
 	return nValueWording;
 }
 
-// Updates the cached adjustment fields of one device after they were changed outside the Edit dialog,
-// without reloading every device state (GetCurrentStates() would also overwrite states whose events are still queued)
+// Updates the cached adjustment fields of one device, and its dzVents data, after they were changed outside the
+// Edit dialog, without reloading every device state (GetCurrentStates() would also overwrite states whose events are
+// still queued). The new values must already be stored: UpdateJsonMap() reads the device from the database.
 void CEventSystem::UpdateDeviceAdjustments(const uint64_t ulDevID, const float AddjValue, const float AddjMulti, const float AddjValue2, const float AddjMulti2)
 {
 	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
@@ -1557,6 +1558,8 @@ void CEventSystem::UpdateDeviceAdjustments(const uint64_t ulDevID, const float A
 	itt->second.AddjMulti = AddjMulti;
 	itt->second.AddjValue2 = AddjValue2;
 	itt->second.AddjMulti2 = AddjMulti2;
+	if (!m_sql.m_bDisableDzVentsSystem)
+		UpdateJsonMap(itt->second, ulDevID);
 }
 
 void CEventSystem::UnlockEventQueueThread()
