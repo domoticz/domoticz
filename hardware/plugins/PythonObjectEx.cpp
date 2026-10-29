@@ -673,7 +673,7 @@ namespace Plugins {
 							PyAllowThreads gil;
 							m_sql.safe_query("INSERT INTO DeviceStatus "
 								"(HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SwitchType, Used, SignalLevel, BatteryLevel, Name, nValue, sValue, CustomImage, Description, Color, Options, LastUpdate, AddjValue, AddjMulti, AddjValue2, AddjMulti2) "
-								"VALUES (%d, %d,'%q',%d,%d,%d,%d,%d,%d,%d,'%q',%d,'%q',%d,'%q','%q','%q','%q',%f,%f,%f,%f)",
+								"VALUES (%d, %d,'%q',%d,%d,%d,%d,%d,%d,%d,'%q',%d,'%q',%d,'%q','%q','%q','%q',%.9g,%.9g,%.9g,%.9g)",
 								pModState->pPlugin->m_HwdID,
 								0,
 								sDeviceID.c_str(),
@@ -701,6 +701,11 @@ namespace Plugins {
 							// can observe a stale value between the SELECT and the assignment.
 							if (!result.empty())
 								self->ID = atoi(result[0][0].c_str());
+							// The event system caches the adjustment fields (a counter's divider among them) and
+							// does not read them for a device it has not seen yet, so reload it like setused does
+							const bool bNonDefaultAdjustments = (fAdjustment != 0.0F) || (fMultiplier != 1.0F) || (fAdjustment2 != 0.0F) || (fMultiplier2 != 1.0F);
+							if (!result.empty() && bNonDefaultAdjustments && m_sql.m_bEnableEventSystem)
+								m_mainworker.m_eventsystem.GetCurrentStates();
 						}
 						if (!result.empty())
 						{
@@ -946,7 +951,7 @@ namespace Plugins {
 					Py_END_ALLOW_THREADS
 				}
 
-				// Adjustment and multiplier changes, written like the device edit dialog does (setused), without
+				// Adjustment and multiplier changes. Written with %.9g, which round-trips any float, not through
 				// UpdateDeviceValue(), whose float overload rounds to two decimals
 				const bool bAdjustment = (fAdjustment != fLoadedAdjustment);
 				const bool bMultiplier = (fMultiplier != fLoadedMultiplier);
@@ -957,13 +962,16 @@ namespace Plugins {
 				{
 					Py_BEGIN_ALLOW_THREADS
 					if (bAdjustment)
-						m_sql.safe_query("UPDATE DeviceStatus SET AddjValue=%f WHERE (ID==%s)", fAdjustment, sID.c_str());
+						m_sql.safe_query("UPDATE DeviceStatus SET AddjValue=%.9g WHERE (ID==%s)", fAdjustment, sID.c_str());
 					if (bMultiplier)
-						m_sql.safe_query("UPDATE DeviceStatus SET AddjMulti=%f WHERE (ID==%s)", fMultiplier, sID.c_str());
+						m_sql.safe_query("UPDATE DeviceStatus SET AddjMulti=%.9g WHERE (ID==%s)", fMultiplier, sID.c_str());
 					if (bAdjustment2)
-						m_sql.safe_query("UPDATE DeviceStatus SET AddjValue2=%f WHERE (ID==%s)", fAdjustment2, sID.c_str());
+						m_sql.safe_query("UPDATE DeviceStatus SET AddjValue2=%.9g WHERE (ID==%s)", fAdjustment2, sID.c_str());
 					if (bMultiplier2)
-						m_sql.safe_query("UPDATE DeviceStatus SET AddjMulti2=%f WHERE (ID==%s)", fMultiplier2, sID.c_str());
+						m_sql.safe_query("UPDATE DeviceStatus SET AddjMulti2=%.9g WHERE (ID==%s)", fMultiplier2, sID.c_str());
+					// The event system caches these fields, reload it like setused does
+					if (m_sql.m_bEnableEventSystem)
+						m_mainworker.m_eventsystem.GetCurrentStates();
 					Py_END_ALLOW_THREADS
 				}
 			}
