@@ -55,11 +55,11 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 
 					function find24hAgo(items) {
 						var latest = items[items.length - 1];
-						var target24h = GetLocalDateTimeFromString(latest.d) - 24 * 3600000;
+						var target24h = (latest.ts || GetLocalDateTimeFromString(latest.d)) - 24 * 3600000;
 						var closest = items[0];
-						var closestDiff = Math.abs(GetLocalDateTimeFromString(items[0].d) - target24h);
+						var closestDiff = Math.abs((items[0].ts || GetLocalDateTimeFromString(items[0].d)) - target24h);
 						for (var i = 1; i < items.length; i++) {
-							var diff = Math.abs(GetLocalDateTimeFromString(items[i].d) - target24h);
+							var diff = Math.abs((items[i].ts || GetLocalDateTimeFromString(items[i].d)) - target24h);
 							if (diff < closestDiff) {
 								closestDiff = diff;
 								closest = items[i];

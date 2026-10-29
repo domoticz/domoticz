@@ -57,6 +57,10 @@ define(function () {
                             return this.convertZeroToNull && processedValue === 0 ? null : processedValue;
                         },
                         timestampFromDataItem: function (dataItem) {
+                            // Day graphs carry an exact epoch (ms), which tells the repeated hour at the end of DST apart
+                            if (!this.useDataItemsFromPrevious && typeof dataItem.ts === 'number') {
+                                return dataItem.ts;
+                            }
                             return dataSupplier.timestampFromDataItem(dataItem, this.useDataItemsFromPrevious ? 1 : 0);
                         }
                     }, seriesSupplier);

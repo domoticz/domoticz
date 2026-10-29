@@ -654,11 +654,11 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
 
                 function find24hAgo(items) {
                     var latest = items[items.length - 1];
-                    var target24h = GetLocalDateTimeFromString(latest.d) - 24 * 3600000;
+                    var target24h = (latest.ts || GetLocalDateTimeFromString(latest.d)) - 24 * 3600000;
                     var closest = items[0];
-                    var closestDiff = Math.abs(GetLocalDateTimeFromString(items[0].d) - target24h);
+                    var closestDiff = Math.abs((items[0].ts || GetLocalDateTimeFromString(items[0].d)) - target24h);
                     for (var i = 1; i < items.length; i++) {
-                        var diff = Math.abs(GetLocalDateTimeFromString(items[i].d) - target24h);
+                        var diff = Math.abs((items[i].ts || GetLocalDateTimeFromString(items[i].d)) - target24h);
                         if (diff < closestDiff) {
                             closestDiff = diff;
                             closest = items[i];
@@ -1174,7 +1174,7 @@ define(['app', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Chart', 'log
                         var hu = parseInt(item.hu, 10);
                         if (isNaN(te) || isNaN(hu) || hu <= 0) return;
 
-                        var ts = GetLocalDateTimeFromString(item.d);
+                        var ts = (item.ts || GetLocalDateTimeFromString(item.d));
                         // Magnus-Tetens formula
                         var a = 17.27, b = 237.7;
                         var alpha = (a * te) / (b + te) + Math.log(hu / 100.0);

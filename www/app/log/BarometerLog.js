@@ -240,11 +240,11 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 
 				function find24hAgo(items) {
 					var latest = items[items.length - 1];
-					var target24h = GetLocalDateTimeFromString(latest.d) - 24 * 3600000;
+					var target24h = (latest.ts || GetLocalDateTimeFromString(latest.d)) - 24 * 3600000;
 					var closest = items[0];
-					var closestDiff = Math.abs(GetLocalDateTimeFromString(items[0].d) - target24h);
+					var closestDiff = Math.abs((items[0].ts || GetLocalDateTimeFromString(items[0].d)) - target24h);
 					for (var i = 1; i < items.length; i++) {
-						var diff = Math.abs(GetLocalDateTimeFromString(items[i].d) - target24h);
+						var diff = Math.abs((items[i].ts || GetLocalDateTimeFromString(items[i].d)) - target24h);
 						if (diff < closestDiff) {
 							closestDiff = diff;
 							closest = items[i];
@@ -370,8 +370,8 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 							continue;
 						}
 
-						var prevTime = GetLocalDateTimeFromString(prev.d);
-						var currTime = GetLocalDateTimeFromString(curr.d);
+						var prevTime = (prev.ts || GetLocalDateTimeFromString(prev.d));
+						var currTime = (curr.ts || GetLocalDateTimeFromString(curr.d));
 						var hoursDiff = (currTime - prevTime) / 3600000;
 
 						if (hoursDiff <= 0) {
@@ -379,7 +379,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 						}
 
 						var rate = (currBa - prevBa) / hoursDiff;
-						var ts = GetLocalDateTimeFromString(curr.d);
+						var ts = (curr.ts || GetLocalDateTimeFromString(curr.d));
 
 						if (rate >= 0) {
 							positiveData.push([ts, Math.round(rate * 100) / 100]);
@@ -501,7 +501,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 					var huData = [];
 
 					data.result.forEach(function (item) {
-						var ts = GetLocalDateTimeFromString(item.d);
+						var ts = (item.ts || GetLocalDateTimeFromString(item.d));
 						var ba = parseFloat(item.ba);
 						if (!isNaN(ba)) {
 							baData.push([ts, ba]);
@@ -826,7 +826,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 					data.result.forEach(function (item) {
 						var ba = parseFloat(item.ba);
 						if (!isNaN(ba)) {
-							rawData.push([GetLocalDateTimeFromString(item.d), ba]);
+							rawData.push([(item.ts || GetLocalDateTimeFromString(item.d)), ba]);
 						}
 					});
 
@@ -934,7 +934,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 					data.result.forEach(function (item) {
 						var ba = parseFloat(item.ba);
 						if (!isNaN(ba)) {
-							rawData.push([GetLocalDateTimeFromString(item.d), ba]);
+							rawData.push([(item.ts || GetLocalDateTimeFromString(item.d)), ba]);
 						}
 					});
 

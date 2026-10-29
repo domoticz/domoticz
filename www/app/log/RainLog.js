@@ -318,7 +318,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 							cumulative += val;
 						}
 						seriesData.push([
-							GetLocalDateTimeFromString(items[i].d),
+							(items[i].ts || GetLocalDateTimeFromString(items[i].d)),
 							Math.round(cumulative * 10) / 10
 						]);
 					}
@@ -390,8 +390,8 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 
 					for (var i = 1; i < items.length; i++) {
 						var rain = parseFloat(items[i][valueKey]);
-						var ts = GetLocalDateTimeFromString(items[i].d);
-						var tsPrev = GetLocalDateTimeFromString(items[i - 1].d);
+						var ts = (items[i].ts || GetLocalDateTimeFromString(items[i].d));
+						var tsPrev = (items[i - 1].ts || GetLocalDateTimeFromString(items[i - 1].d));
 						var dtHours = (ts - tsPrev) / 3600000;
 
 						if (!isNaN(rain) && dtHours > 0) {
@@ -465,8 +465,8 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 					var rates = [];
 					for (var i = 1; i < items.length; i++) {
 						var rain = parseFloat(items[i][valueKey]);
-						var ts = GetLocalDateTimeFromString(items[i].d);
-						var tsPrev = GetLocalDateTimeFromString(items[i - 1].d);
+						var ts = (items[i].ts || GetLocalDateTimeFromString(items[i].d));
+						var tsPrev = (items[i - 1].ts || GetLocalDateTimeFromString(items[i - 1].d));
 						var dtHours = (ts - tsPrev) / 3600000;
 						if (!isNaN(rain) && dtHours > 0) {
 							var rate = rain / dtHours;

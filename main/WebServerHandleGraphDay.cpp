@@ -53,6 +53,155 @@ static std::string CalcDbasetableDay(const GraphContext& ctx)
 }
 
 // ---------------------------------------------------------------------------
+// Short log dates are local time without an offset. When DST ends one local hour
+// occurs twice, so the date string alone is ambiguous. The rows are read in
+// insertion order (ROWID) and every row gets an exact epoch.
+// ---------------------------------------------------------------------------
+
+// Epochs of a local date string: tFirst is the DST occurrence, tSecond the standard time
+// occurrence. Both are equal when the local time is not ambiguous.
+static bool LocalEpochs(const std::string& szDate, time_t& tFirst, time_t& tSecond)
+{
+	struct tm t = {};
+	t.tm_year = atoi(szDate.substr(0, 4).c_str()) - 1900;
+	t.tm_mon = atoi(szDate.substr(5, 2).c_str()) - 1;
+	t.tm_mday = atoi(szDate.substr(8, 2).c_str());
+	t.tm_hour = atoi(szDate.substr(11, 2).c_str());
+	t.tm_min = atoi(szDate.substr(14, 2).c_str());
+	t.tm_sec = atoi(szDate.substr(17, 2).c_str());
+
+	struct tm tAuto = t;
+	tAuto.tm_isdst = -1;
+	tFirst = tSecond = mktime(&tAuto);
+	if (tFirst == -1)
+		return false;
+
+	// Ambiguous when the time exists both as DST and as standard time
+	struct tm tDst = t, tStd = t;
+	tDst.tm_isdst = 1;
+	tStd.tm_isdst = 0;
+	const time_t eDst = mktime(&tDst);
+	const time_t eStd = mktime(&tStd);
+	if ((eDst == -1) || (eStd == -1) || (eDst >= eStd))
+		return true;
+	struct tm cDst, cStd;
+	localtime_r(&eDst, &cDst);
+	localtime_r(&eStd, &cStd);
+	if ((cDst.tm_isdst > 0) && (cStd.tm_isdst == 0)
+		&& (cDst.tm_mday == t.tm_mday) && (cDst.tm_hour == t.tm_hour) && (cDst.tm_min == t.tm_min)
+		&& (cStd.tm_mday == t.tm_mday) && (cStd.tm_hour == t.tm_hour) && (cStd.tm_min == t.tm_min))
+	{
+		tFirst = eDst;
+		tSecond = eStd;
+	}
+	return true;
+}
+
+// Epoch of the start of a local hour ("YYYY-MM-DD HH") when the whole hour has one fixed UTC
+// offset, so the rows in it only need their minutes and seconds added
+static bool PlainHourStart(const std::string& szHour, time_t& tStart)
+{
+	time_t tFirst, tSecond, tLastFirst, tLastSecond;
+	if (!LocalEpochs(szHour + ":00:00", tFirst, tSecond) || (tFirst != tSecond))
+		return false;
+	if (!LocalEpochs(szHour + ":59:59", tLastFirst, tLastSecond) || (tLastFirst != tLastSecond))
+		return false;
+	if (tLastFirst - tFirst != 3599)
+		return false;
+	struct tm ltime;
+	localtime_r(&tFirst, &ltime);
+	if ((ltime.tm_hour != atoi(szHour.substr(11, 2).c_str())) || (ltime.tm_min != 0))
+		return false;
+	tStart = tFirst;
+	return true;
+}
+
+// Epochs for dates given in insertion order. Inside an ambiguous hour the DST occurrence is
+// used until the local time goes backwards, from then on the standard time occurrence.
+// Without a backward step (logging stopped during the first occurrence and resumed during the
+// second) the rows of the second occurrence get the DST epoch; the stored local time cannot
+// tell them apart. A small backward step (clock correction) is absorbed. Returns false when
+// the result is not chronological (imported or manually inserted rows).
+static bool ComputeDayEpochs(const std::vector<std::string>& dates, std::vector<time_t>& epochs)
+{
+	constexpr time_t kMaxClockCorrection = 120;
+	epochs.clear();
+	epochs.reserve(dates.size());
+	bool bSecond = false;
+	bool bPrevAmbiguous = false;
+	time_t tPrevFirst = 0;
+	std::string szCachedHour;
+	bool bCachedPlain = false;
+	time_t tCachedStart = 0;
+	for (const auto& szDate : dates)
+	{
+		if (szDate.length() < 19)
+			return false;
+		if (szDate.compare(0, 13, szCachedHour) != 0)
+		{
+			szCachedHour = szDate.substr(0, 13);
+			bCachedPlain = PlainHourStart(szCachedHour, tCachedStart);
+		}
+		time_t tFirst, tSecond;
+		if (bCachedPlain)
+			tFirst = tSecond = tCachedStart + atoi(szDate.substr(14, 2).c_str()) * 60 + atoi(szDate.substr(17, 2).c_str());
+		else if (!LocalEpochs(szDate, tFirst, tSecond))
+			return false;
+		const bool bAmbiguous = (tFirst != tSecond);
+		if (!bAmbiguous)
+			bSecond = false;
+		else if (bPrevAmbiguous && (tPrevFirst - tFirst > kMaxClockCorrection))
+			bSecond = true;
+		time_t t = bSecond ? tSecond : tFirst;
+		if (!epochs.empty() && (t < epochs.back()))
+		{
+			if (epochs.back() - t > kMaxClockCorrection)
+				return false;
+			t = epochs.back();
+		}
+		epochs.push_back(t);
+		bPrevAmbiguous = bAmbiguous;
+		tPrevFirst = tFirst;
+	}
+	return true;
+}
+
+// Reads short log rows in chronological order. The date is column dateCol, an extra last
+// column holds the exact epoch in seconds. Falls back to ordering by Date when the
+// insertion order is not chronological.
+static std::vector<std::vector<std::string>> QueryDayRows(CSQLHelper& sql, const char* columns, const std::string& dbasetable, uint64_t idx, size_t dateCol)
+{
+	auto rows = sql.safe_query("SELECT %s, ROWID FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY ROWID", columns, dbasetable.c_str(), idx);
+
+	std::vector<std::string> dates;
+	dates.reserve(rows.size());
+	for (const auto& sd : rows)
+		dates.push_back(sd[dateCol]);
+
+	std::vector<time_t> epochs;
+	if (!ComputeDayEpochs(dates, epochs))
+	{
+		rows = sql.safe_query("SELECT %s, ROWID FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", columns, dbasetable.c_str(), idx);
+		epochs.clear();
+		for (const auto& sd : rows)
+		{
+			time_t atime = 0;
+			struct tm ntime;
+			ParseSQLdatetime(atime, ntime, sd[dateCol], -1);
+			epochs.push_back(atime);
+		}
+	}
+	for (size_t ii = 0; ii < rows.size(); ii++)
+		rows[ii].back() = std::to_string(static_cast<int64_t>(epochs[ii]));
+	return rows;
+}
+
+static void AddEpochMs(Json::Value& item, const std::string& szEpoch)
+{
+	item["ts"] = static_cast<Json::Int64>(std::stoll(szEpoch)) * 1000;
+}
+
+// ---------------------------------------------------------------------------
 
 static void HandleGraphDay_Counter_P1Power(
 	const GraphContext& ctx, const request& /*req*/,
@@ -74,8 +223,7 @@ static void HandleGraphDay_Counter_P1Power(
 	sql.GetPreferencesVar("P1DisplayType", P1DisplayType);
 	root["P1DisplayType"] = P1DisplayType;
 
-	result = sql.safe_query("SELECT Value1, Value2, Value3, Value4, Value5, Value6, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC",
-		dbasetable.c_str(), idx);
+	result = QueryDayRows(sql, "Value1, Value2, Value3, Value4, Value5, Value6, Date", dbasetable, idx, 6);
 	if (!result.empty())
 	{
 		int ii = 0;
@@ -104,6 +252,7 @@ static void HandleGraphDay_Counter_P1Power(
 			struct tm ntime;
 			time_t atime;
 			ParseSQLdatetime(atime, ntime, stime, -1);
+			atime = static_cast<time_t>(std::stoll(sd.back())); // exact epoch, also in the repeated DST hour
 			if (lastDay != ntime.tm_mday)
 			{
 				lastDay = ntime.tm_mday;
@@ -156,6 +305,7 @@ static void HandleGraphDay_Counter_P1Power(
 					curDeliv2 = 0;
 
 				root["result"][ii]["d"] = sd[6].substr(0, 16);
+				AddEpochMs(root["result"][ii], sd.back());
 
 				if ((curDeliv1 != 0) || (curDeliv2 != 0))
 					bHaveDeliverd = true;
@@ -260,7 +410,7 @@ static void HandleGraphDay_Counter_Current(
 
 	root["displaytype"] = displaytype;
 
-	result = sql.safe_query("SELECT Value1, Value2, Value3, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+	result = QueryDayRows(sql, "Value1, Value2, Value3, Date", dbasetable, idx, 3);
 	if (!result.empty())
 	{
 		int ii = 0;
@@ -270,6 +420,7 @@ static void HandleGraphDay_Counter_Current(
 		for (const auto& sd : result)
 		{
 			root["result"][ii]["d"] = sd[3].substr(0, 16);
+			AddEpochMs(root["result"][ii], sd.back());
 
 			float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0F);
 			float fval2 = static_cast<float>(atof(sd[1].c_str()) / 10.0F);
@@ -343,7 +494,7 @@ static void HandleGraphDay_Counter_CurrentEnergy(
 
 	root["displaytype"] = displaytype;
 
-	result = sql.safe_query("SELECT Value1, Value2, Value3, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+	result = QueryDayRows(sql, "Value1, Value2, Value3, Date", dbasetable, idx, 3);
 	if (!result.empty())
 	{
 		int ii = 0;
@@ -353,6 +504,7 @@ static void HandleGraphDay_Counter_CurrentEnergy(
 		for (const auto& sd : result)
 		{
 			root["result"][ii]["d"] = sd[3].substr(0, 16);
+			AddEpochMs(root["result"][ii], sd.back());
 
 			float fval1 = static_cast<float>(atof(sd[0].c_str()) / 10.0F);
 			float fval2 = static_cast<float>(atof(sd[1].c_str()) / 10.0F);
@@ -689,13 +841,14 @@ static void HandleGraphDay_Counter_Meter(
 		root["status"] = "OK";
 		root["title"] = "Graph " + sensor + " " + srange;
 
-		result = sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+		result = QueryDayRows(sql, "Value, Date", dbasetable, idx, 1);
 		if (!result.empty())
 		{
 			int ii = 0;
 			for (const auto& sd : result)
 			{
 				root["result"][ii]["d"] = sd[1].substr(0, 16);
+				AddEpochMs(root["result"][ii], sd.back());
 				root["result"][ii]["co2"] = sd[0];
 				ii++;
 			}
@@ -706,13 +859,14 @@ static void HandleGraphDay_Counter_Meter(
 		root["status"] = "OK";
 		root["title"] = "Graph " + sensor + " " + srange;
 
-		result = sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+		result = QueryDayRows(sql, "Value, Date", dbasetable, idx, 1);
 		if (!result.empty())
 		{
 			int ii = 0;
 			for (const auto& sd : result)
 			{
 				root["result"][ii]["d"] = sd[1].substr(0, 16);
+				AddEpochMs(root["result"][ii], sd.back());
 				root["result"][ii]["v"] = sd[0];
 				ii++;
 			}
@@ -730,13 +884,14 @@ static void HandleGraphDay_Counter_Meter(
 		{
 			vdiv = 1000.0F;
 		}
-		result = sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+		result = QueryDayRows(sql, "Value, Date", dbasetable, idx, 1);
 		if (!result.empty())
 		{
 			int ii = 0;
 			for (const auto& sd : result)
 			{
 				root["result"][ii]["d"] = sd[1].substr(0, 16);
+				AddEpochMs(root["result"][ii], sd.back());
 				float fValue = float(atof(sd[0].c_str())) / vdiv;
 				if (ctx.metertype == 1)
 				{
@@ -761,13 +916,14 @@ static void HandleGraphDay_Counter_Meter(
 		root["status"] = "OK";
 		root["title"] = "Graph " + sensor + " " + srange;
 
-		result = sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+		result = QueryDayRows(sql, "Value, Date", dbasetable, idx, 1);
 		if (!result.empty())
 		{
 			int ii = 0;
 			for (const auto& sd : result)
 			{
 				root["result"][ii]["d"] = sd[1].substr(0, 16);
+				AddEpochMs(root["result"][ii], sd.back());
 				root["result"][ii]["v"] = sd[0];
 				ii++;
 			}
@@ -778,13 +934,14 @@ static void HandleGraphDay_Counter_Meter(
 		root["status"] = "OK";
 		root["title"] = "Graph " + sensor + " " + srange;
 
-		result = sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+		result = QueryDayRows(sql, "Value, Date", dbasetable, idx, 1);
 		if (!result.empty())
 		{
 			int ii = 0;
 			for (const auto& sd : result)
 			{
 				root["result"][ii]["d"] = sd[1].substr(0, 16);
+				AddEpochMs(root["result"][ii], sd.back());
 				root["result"][ii]["lux"] = sd[0];
 				ii++;
 			}
@@ -795,13 +952,14 @@ static void HandleGraphDay_Counter_Meter(
 		root["status"] = "OK";
 		root["title"] = "Graph " + sensor + " " + srange;
 
-		result = sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+		result = QueryDayRows(sql, "Value, Date", dbasetable, idx, 1);
 		if (!result.empty())
 		{
 			int ii = 0;
 			for (const auto& sd : result)
 			{
 				root["result"][ii]["d"] = sd[1].substr(0, 16);
+				AddEpochMs(root["result"][ii], sd.back());
 				snprintf(szTmp, sizeof(szTmp), "%.1f", sql.m_weightscale * atof(sd[0].c_str()) / 10.0F);
 				root["result"][ii]["v"] = szTmp;
 				ii++;
@@ -813,13 +971,14 @@ static void HandleGraphDay_Counter_Meter(
 		root["status"] = "OK";
 		root["title"] = "Graph " + sensor + " " + srange;
 
-		result = sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+		result = QueryDayRows(sql, "Value, Date", dbasetable, idx, 1);
 		if (!result.empty())
 		{
 			int ii = 0;
 			for (const auto& sd : result)
 			{
 				root["result"][ii]["d"] = sd[1].substr(0, 16);
+				AddEpochMs(root["result"][ii], sd.back());
 				root["result"][ii]["u"] = atof(sd[0].c_str()) / 10.0F;
 				ii++;
 			}
@@ -848,7 +1007,7 @@ static void HandleGraphDay_Counter_Meter(
 		}
 
 		int ii = 0;
-		result = sql.safe_query("SELECT Value,[Usage], Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+		result = QueryDayRows(sql, "Value,[Usage], Date", dbasetable, idx, 2);
 
 		int method = 0;
 		std::string sMethod = request::findValue(&req, "method");
@@ -962,6 +1121,7 @@ static void HandleGraphDay_Counter_Meter(
 					int64_t actValue = std::stoll(sd[1]);
 
 					root["result"][ii]["d"] = sd[2].substr(0, 16);
+					AddEpochMs(root["result"][ii], sd.back());
 
 					double TotalValue = double(actValue);
 					if ((dType == pTypeGeneral) && (dSubType == sTypeKwh))
@@ -1007,12 +1167,12 @@ static void HandleGraphDay_Counter_Meter(
 
 		if (bIsManagedCounter)
 		{
-			result = sql.safe_query("SELECT Usage, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+			result = QueryDayRows(sql, "Usage, Date", dbasetable, idx, 1);
 			method = 1;
 		}
 		else
 		{
-			result = sql.safe_query("SELECT Value, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+			result = QueryDayRows(sql, "Value, Date", dbasetable, idx, 1);
 		}
 
 		if (!result.empty())
@@ -1037,6 +1197,7 @@ static void HandleGraphDay_Counter_Meter(
 					struct tm ntime;
 					time_t atime;
 					ParseSQLdatetime(atime, ntime, stime, -1);
+					atime = static_cast<time_t>(std::stoll(sd.back())); // exact epoch, also in the repeated DST hour
 					if (bHaveFirstRealValue)
 					{
 						int64_t curValue;
@@ -1059,6 +1220,7 @@ static void HandleGraphDay_Counter_Meter(
 						curValue *= int(tlaps);
 
 						root["result"][ii]["d"] = sd[1].substr(0, 16);
+						AddEpochMs(root["result"][ii], sd.back());
 
 						double TotalValue = double(curValue);
 						// if (TotalValue != 0)
@@ -1152,14 +1314,14 @@ void HandleGraphDay(const GraphContext& ctx, const request& req,
 		root["status"] = "OK";
 		root["title"] = "Graph " + sensor + " " + srange;
 
-		result = sql.safe_query("SELECT Temperature, Chill, Humidity, Barometer, Date, SetPoint FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC",
-			dbasetable.c_str(), idx);
+		result = QueryDayRows(sql, "Temperature, Chill, Humidity, Barometer, Date, SetPoint", dbasetable, idx, 4);
 		if (!result.empty())
 		{
 			int ii = 0;
 			for (const auto& sd : result)
 			{
 				root["result"][ii]["d"] = sd[4].substr(0, 16);
+				AddEpochMs(root["result"][ii], sd.back());
 				if (dType == pTypeRego6XXTemp
 					|| dType == pTypeTEMP
 					|| dType == pTypeTEMP_HUM
@@ -1247,13 +1409,14 @@ void HandleGraphDay(const GraphContext& ctx, const request& req,
 		root["status"] = "OK";
 		root["title"] = "Graph " + sensor + " " + srange;
 
-		result = sql.safe_query("SELECT Percentage, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+		result = QueryDayRows(sql, "Percentage, Date", dbasetable, idx, 1);
 		if (!result.empty())
 		{
 			int ii = 0;
 			for (const auto& sd : result)
 			{
 				root["result"][ii]["d"] = sd[1].substr(0, 16);
+				AddEpochMs(root["result"][ii], sd.back());
 				root["result"][ii]["v"] = sd[0];
 				ii++;
 			}
@@ -1264,13 +1427,14 @@ void HandleGraphDay(const GraphContext& ctx, const request& req,
 		root["status"] = "OK";
 		root["title"] = "Graph " + sensor + " " + srange;
 
-		result = sql.safe_query("SELECT Speed, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+		result = QueryDayRows(sql, "Speed, Date", dbasetable, idx, 1);
 		if (!result.empty())
 		{
 			int ii = 0;
 			for (const auto& sd : result)
 			{
 				root["result"][ii]["d"] = sd[1].substr(0, 16);
+				AddEpochMs(root["result"][ii], sd.back());
 				root["result"][ii]["v"] = sd[0];
 				ii++;
 			}
@@ -1285,13 +1449,14 @@ void HandleGraphDay(const GraphContext& ctx, const request& req,
 		root["status"] = "OK";
 		root["title"] = "Graph " + sensor + " " + srange;
 
-		result = sql.safe_query("SELECT Level, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+		result = QueryDayRows(sql, "Level, Date", dbasetable, idx, 1);
 		if (!result.empty())
 		{
 			int ii = 0;
 			for (const auto& sd : result)
 			{
 				root["result"][ii]["d"] = sd[1].substr(0, 16);
+				AddEpochMs(root["result"][ii], sd.back());
 				root["result"][ii]["uvi"] = sd[0];
 				ii++;
 			}
@@ -1309,7 +1474,7 @@ void HandleGraphDay(const GraphContext& ctx, const request& req,
 		float LastValue = -1;
 		std::string LastDate;
 
-		result = sql.safe_query("SELECT Total, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+		result = QueryDayRows(sql, "Total, Date", dbasetable, idx, 1);
 		if (!result.empty())
 		{
 			int ii = 0;
@@ -1366,13 +1531,14 @@ void HandleGraphDay(const GraphContext& ctx, const request& req,
 		root["status"] = "OK";
 		root["title"] = "Graph " + sensor + " " + srange;
 
-		result = sql.safe_query("SELECT Direction, Speed, Gust, Date FROM %s WHERE (DeviceRowID==%" PRIu64 ") ORDER BY Date ASC", dbasetable.c_str(), idx);
+		result = QueryDayRows(sql, "Direction, Speed, Gust, Date", dbasetable, idx, 3);
 		if (!result.empty())
 		{
 			int ii = 0;
 			for (const auto& sd : result)
 			{
 				root["result"][ii]["d"] = sd[3].substr(0, 16);
+				AddEpochMs(root["result"][ii], sd.back());
 				root["result"][ii]["di"] = sd[0];
 
 				int intSpeed = atoi(sd[1].c_str());
