@@ -1,6 +1,9 @@
 Version 2026.xxxx
 - Added: Dashboard Dynamic, Quick Stat now shows today's value next to the total for counter devices (#7146)
 - Added: MCP, new admin tools add_room, update_room, delete_room, reorder_rooms, add_room_devices, remove_room_devices and reorder_room_devices to manage rooms (plans) and the devices and scenes in them, including their order; get_rooms now lists the rooms in their display order
+- Added: MQTT Auto Discovery, templates with jinja statements ({% set %}, {% if %}/{% elif %}/{% else %}, dictionaries, comparisons and common filters) are now evaluated, for state templates and for the climate and select mode command templates; for example the Bosch Room Thermostat II modes from Zigbee2MQTT now map to heat, cool, auto and off, and switching the mode sends the right payload (#7165)
+- Added: Voltage devices, an Adjustment offset in the edit dialog on the Utility page to calibrate the sensor, like temperature devices have (#7168)
+- Changed: Dashboard Dynamic, a selector switch in the Quick Actions widget opens its levels in a dialog instead of a row below the button, which fell outside the widget for buttons on the bottom row (#7141)
 - Changed: InComfort, the Room-2 thermostat setpoint now has its own device; it shared a device ID with the central heating water temperature, so the two values overwrote each other. Existing installations get a new 'Room-2 Thermostat Setpoint' device (make sure 'Accept new Hardware Devices' is enabled, or allow it temporarily), the old device keeps showing the central heating water temperature
 - Fixed: 1-Wire, a DS2423 counter that could not be read is no longer reported as a huge counter value (#7064)
 - Fixed: AccuWeather, missing or invalid measurements are no longer reported as 0 (#7066)
@@ -12,6 +15,7 @@ Version 2026.xxxx
 - Fixed: Charts, the Compare view dropped every group above 20,000 kWh for normal counters and lost the trend of the following group (#7047)
 - Fixed: Charts, the cumulative chart starts every year on 1 January, also when the first days of a year have no data (#7145)
 - Fixed: Charts, the cumulative chart of the current year no longer loses energy after days without data; filling the gap in the year chart changed the values the cumulative chart reads
+- Fixed: Charts, the day graph no longer shows a sawtooth in the hour that repeats when daylight saving time ends; the points of both hours are now drawn in the right order, and the energy usage in that hour is no longer skipped (#7167)
 - Fixed: Charts, the Hourly Energy Usage chart of energy devices no longer shows 'Watt' behind every value of the y-axis; the values are Wh (#7151)
 - Fixed: Current meters, a malformed stored value no longer aborts the short log update, the record is skipped and logged
 - Fixed: Dashboard Dynamic, the Custom Chart labels the energy of the Last 24h range in Wh instead of kWh, and the power of a P1 meter in that range in W (#7152)
