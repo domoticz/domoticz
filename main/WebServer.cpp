@@ -70,6 +70,22 @@ extern std::string szPyVersion;
 
 extern bool bDoCachePages;
 
+// Plain counters (MTYPE_COUNTER) are shown with at most three decimals, the precision energy, gas and water
+// meters use, so a divider that does not divide evenly (60, 3600) gives no long fraction. Trailing zeros are
+// removed, so a counter without a divider, or a value that divides evenly, shows no decimals it does not need.
+static std::string FormatCounterValue(const double value)
+{
+	char szValue[64];
+	snprintf(szValue, sizeof(szValue), "%.3f", value);
+	std::string sValue = szValue;
+	sValue.erase(sValue.find_last_not_of('0') + 1);
+	if (sValue.back() == '.')
+		sValue.pop_back();
+	if (sValue == "-0")
+		sValue = "0";
+	return sValue;
+}
+
 namespace http
 {
 	namespace server
@@ -2968,7 +2984,7 @@ namespace http
 								break;
 							case MTYPE_COUNTER:
 								musage = double(total_real) / divider;
-								sprintf(szTmp, "%.10g", musage);
+								strcpy(szTmp, FormatCounterValue(musage).c_str());
 								if (!ValueUnits.empty())
 								{
 									strcat(szTmp, " ");
@@ -3030,7 +3046,7 @@ namespace http
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.10g", meteroffset + (dvalue / divider));
+							strcpy(szTmp, FormatCounterValue(meteroffset + (dvalue / divider)).c_str());
 							if (!ValueUnits.empty())
 							{
 								strcat(szTmp, " ");
@@ -3094,7 +3110,7 @@ namespace http
 								sprintf(szTmp, "%d Liter", ground(musage));
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%.10g", double(total_real) / divider);
+								strcpy(szTmp, FormatCounterValue(double(total_real) / divider).c_str());
 								if (!ValueUnits.empty())
 								{
 									strcat(szTmp, " ");
@@ -3150,7 +3166,7 @@ namespace http
 							sprintf(szTmp, "%d", ground(musage));
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.10g", double(total_actual) / divider);
+							strcpy(szTmp, FormatCounterValue(double(total_actual) / divider).c_str());
 							break;
 						default:
 							strcpy(szTmp, "0");
@@ -3178,7 +3194,7 @@ namespace http
 							sprintf(szTmp, "%d Liter", ground(musage));
 							break;
 						case MTYPE_COUNTER:
-							sprintf(szTmp, "%.10g", double(acounter) / divider);
+							strcpy(szTmp, FormatCounterValue(double(acounter) / divider).c_str());
 							if (!ValueUnits.empty())
 							{
 								strcat(szTmp, " ");
@@ -3969,7 +3985,7 @@ namespace http
 									sprintf(szTmp, "%d Liter", ground(musage));
 									break;
 								case MTYPE_COUNTER:
-									sprintf(szTmp, "%.10g", double(total_real) / divider);
+									strcpy(szTmp, FormatCounterValue(double(total_real) / divider).c_str());
 									if (!ValueUnits.empty())
 									{
 										strcat(szTmp, " ");
@@ -4031,7 +4047,7 @@ namespace http
 								root["result"][ii]["Counter"] = szTmp;
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%.10g", meteroffset + (dvalue / divider));
+								strcpy(szTmp, FormatCounterValue(meteroffset + (dvalue / divider)).c_str());
 								if (!ValueUnits.empty())
 								{
 									strcat(szTmp, " ");
@@ -4100,7 +4116,7 @@ namespace http
 								root["result"][ii]["Counter"] = szTmp;
 								break;
 							case MTYPE_COUNTER:
-								sprintf(szTmp, "%.10g", meteroffset + (dvalue / divider));
+								strcpy(szTmp, FormatCounterValue(meteroffset + (dvalue / divider)).c_str());
 								if (!ValueUnits.empty())
 								{
 									strcat(szTmp, " ");
