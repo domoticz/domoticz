@@ -10461,6 +10461,9 @@ void MainWorker::decode_General(const CDomoticzHardwareBase* pHardware, const tR
 		DevRowIdx = m_sql.UpdateValue(pHardware->m_HwdID, 0, ID.c_str(), Unit, devType, subType, SignalLevel, BatteryLevel, cmnd, szTmp, procResult.DeviceName, true, procResult.Username.c_str());
 		if (DevRowIdx == (uint64_t)-1)
 			return;
+		//The notification check below needs the calibrated value the device now shows
+		std::string sCalibrated = m_sql.GetCalibratedValue(pHardware->m_HwdID, ID.c_str(), Unit, devType, subType, szTmp);
+		snprintf(szTmp, sizeof(szTmp), "%s", sCalibrated.c_str());
 	}
 	else if (subType == sTypeCurrent)
 	{

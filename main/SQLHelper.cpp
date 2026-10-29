@@ -5842,6 +5842,14 @@ std::string CSQLHelper::ApplyDeviceCalibration(const unsigned char devType, cons
 	}
 	case pTypeGeneral:
 	{
+		if (subType == sTypeVoltage)
+		{
+			//Single voltage value, an offset to calibrate the sensor
+			if (AddjValue == 0.0F)
+				return sValue;
+			float voltage = static_cast<float>(atof(sValue.c_str())) + AddjValue;
+			return FormatWithMatchingPrecision(voltage, sValue, 2);
+		}
 		//pressure;forecast (used by MQTT Auto Discovery standalone pressure sensors). MQTT builds this
 		//field with "%.02f", so floor the precision at 2 decimals to match.
 		if ((subType != sTypeBaro) || (AddjValue2 == 0.0F) || (parts.size() < 2))

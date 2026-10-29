@@ -48,6 +48,11 @@ define(['app', 'widgets/dzBar', 'icons/dzIconPicker', 'icons/dzDeviceIcon'], fun
             }
             $iconRow.toggle(showIcon);
             if (!isText) {
+                // Voltage sensors can be calibrated with an offset, like temperature sensors
+                var showAdjustment = (device.SubType === 'Voltage');
+                $(dialogId + ' #adjustmentrow').toggle(showAdjustment);
+                $(dialogId + ' #adjustment').val(showAdjustment ? (device.AddjValue || 0) : '');
+                $(dialogId).data('dzShowAdjustment', showAdjustment);
                 $(dialogId).data('dzShowIcon', showIcon).data('dzShowBar', showBar);
                 var $utilForm = $(dialogId + ' form');
                 $utilForm.find('.dz-bar-btn').remove();

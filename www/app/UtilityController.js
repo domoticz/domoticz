@@ -249,6 +249,7 @@
 			dialog_editutilitydevice_buttons[$.t("Update")] = function () {
 				var bValid = true;
 				bValid = bValid && checkLength($("#dialog-editutilitydevice #devicename"), 2, 100);
+				var showAdjustment = ($('#dialog-editutilitydevice').data('dzShowAdjustment') === true);
 				if (bValid) {
 					var url = "json.htm?type=command&param=setused&idx=" + $.devIdx +
 						'&name=' + encodeURIComponent($("#dialog-editutilitydevice #devicename").val()) +
@@ -258,6 +259,10 @@
 					}
 					if ($('#dialog-editutilitydevice').data('dzShowBar') === true) {
 						url += '&color=' + encodeURIComponent(dzBarService.getColorJson());
+					}
+					if (showAdjustment) {
+						var adjustment = $("#dialog-editutilitydevice #adjustment").val().trim().replace(',', '.');
+						url += '&addjvalue=' + encodeURIComponent(adjustment === '' ? '0' : adjustment);
 					}
 					url += '&used=true';
 					$(this).dialog("close");
