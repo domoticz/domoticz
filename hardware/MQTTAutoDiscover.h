@@ -232,10 +232,14 @@ private:
 	void UpdateBlindPosition(_tMQTTASensor* pSensor);
 	bool SendCoverCommand(_tMQTTASensor* pSensor, const std::string& DeviceName, std::string command, int level, const std::string& user);
 	void CleanValueTemplate(std::string& szValueTemplate);
+	void CleanValueTemplateLegacy(std::string& szValueTemplate);
+	bool RenderStateTemplate(const std::string& szJinjaTemplate, const Json::Value& root, std::string& szResult);
+	bool RenderCommandTemplate(const std::string& szJinjaTemplate, const std::string& szValue, std::string& szPayload, const char* szAltName = nullptr);
+	void LogJinjaFailureOnce(const std::string& szJinjaSource, const std::string& szError);
 	void FixCommandTopic(std::string& command_topic, std::string& state_template);
 	bool parseMapTemplate(const std::string& templateStr, std::vector<std::tuple<std::string, std::string>>& valuesMap, std::string& szKey);
 	std::string GetValueTemplateKey(const std::string& szValueTemplate);
-	std::string GetValueFromTemplate(Json::Value root, std::string szValueTemplate, bool &isNull);
+	std::string GetValueFromTemplate(const Json::Value& rootIn, const std::string& szTemplateIn, bool &isNull);
 	bool SetValueWithTemplate(Json::Value& root, std::string szValueTemplate, std::string szValue);
 	bool GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& devType, uint8_t& subType, std::string& szOptions, int& nValue, std::string& sValue);
 	void ApplySignalLevelDevice(const _tMQTTASensor* pSensor);

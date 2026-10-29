@@ -2146,6 +2146,9 @@
     <ClInclude Include="..\main\json_helper.h">
       <Filter>JSON</Filter>
     </ClInclude>
+    <ClInclude Include="..\main\JinjaLite.h">
+      <Filter>JSON</Filter>
+    </ClInclude>
     <ClInclude Include="..\notifications\NotificationFCM.h">
       <Filter>Notifications</Filter>
     </ClInclude>
@@ -2959,6 +2962,9 @@
       <Filter>Devices\eVehicles</Filter>
     </ClCompile>
     <ClCompile Include="..\main\json_helper.cpp">
+      <Filter>JSON</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main\JinjaLite.cpp">
       <Filter>JSON</Filter>
     </ClCompile>
     <ClCompile Include="..\notifications\NotificationFCM.cpp">
