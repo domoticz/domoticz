@@ -70,12 +70,18 @@ extern std::string szPyVersion;
 
 extern bool bDoCachePages;
 
-// Plain counters (MTYPE_COUNTER) are shown with at most three decimals, the precision energy, gas and water
-// meters use, so a divider that does not divide evenly (60, 3600) gives no long fraction. Trailing zeros are
-// removed, so a counter without a divider, or a value that divides evenly, shows no decimals it does not need.
-static std::string FormatCounterValue(const double value)
+// A plain counter (MTYPE_COUNTER) divided by its divider is shown with at most three decimals, the precision
+// energy, gas and water meters use, so a divider that does not divide evenly (60, 3600) gives no long fraction.
+// Trailing zeros are removed, so a value that divides evenly shows no decimals it does not need. Without a divider
+// (1) nothing was divided, and the stored value, which may have more decimals, is shown in full.
+static std::string FormatCounterValue(const double value, const float divider)
 {
 	char szValue[64];
+	if (divider == 1.0F)
+	{
+		snprintf(szValue, sizeof(szValue), "%.10g", value);
+		return szValue;
+	}
 	snprintf(szValue, sizeof(szValue), "%.3f", value);
 	std::string sValue = szValue;
 	sValue.erase(sValue.find_last_not_of('0') + 1);
@@ -2984,7 +2990,7 @@ namespace http
 								break;
 							case MTYPE_COUNTER:
 								musage = double(total_real) / divider;
-								strcpy(szTmp, FormatCounterValue(musage).c_str());
+								strcpy(szTmp, FormatCounterValue(musage, divider).c_str());
 								if (!ValueUnits.empty())
 								{
 									strcat(szTmp, " ");
@@ -3046,7 +3052,7 @@ namespace http
 							root["result"][ii]["Counter"] = szTmp;
 							break;
 						case MTYPE_COUNTER:
-							strcpy(szTmp, FormatCounterValue(meteroffset + (dvalue / divider)).c_str());
+							strcpy(szTmp, FormatCounterValue(meteroffset + (dvalue / divider), divider).c_str());
 							if (!ValueUnits.empty())
 							{
 								strcat(szTmp, " ");
@@ -3110,7 +3116,7 @@ namespace http
 								sprintf(szTmp, "%d Liter", ground(musage));
 								break;
 							case MTYPE_COUNTER:
-								strcpy(szTmp, FormatCounterValue(double(total_real) / divider).c_str());
+								strcpy(szTmp, FormatCounterValue(double(total_real) / divider, divider).c_str());
 								if (!ValueUnits.empty())
 								{
 									strcat(szTmp, " ");
@@ -3166,7 +3172,7 @@ namespace http
 							sprintf(szTmp, "%d", ground(musage));
 							break;
 						case MTYPE_COUNTER:
-							strcpy(szTmp, FormatCounterValue(double(total_actual) / divider).c_str());
+							strcpy(szTmp, FormatCounterValue(double(total_actual) / divider, divider).c_str());
 							break;
 						default:
 							strcpy(szTmp, "0");
@@ -3194,7 +3200,7 @@ namespace http
 							sprintf(szTmp, "%d Liter", ground(musage));
 							break;
 						case MTYPE_COUNTER:
-							strcpy(szTmp, FormatCounterValue(double(acounter) / divider).c_str());
+							strcpy(szTmp, FormatCounterValue(double(acounter) / divider, divider).c_str());
 							if (!ValueUnits.empty())
 							{
 								strcat(szTmp, " ");
@@ -3985,7 +3991,7 @@ namespace http
 									sprintf(szTmp, "%d Liter", ground(musage));
 									break;
 								case MTYPE_COUNTER:
-									strcpy(szTmp, FormatCounterValue(double(total_real) / divider).c_str());
+									strcpy(szTmp, FormatCounterValue(double(total_real) / divider, divider).c_str());
 									if (!ValueUnits.empty())
 									{
 										strcat(szTmp, " ");
@@ -4047,7 +4053,7 @@ namespace http
 								root["result"][ii]["Counter"] = szTmp;
 								break;
 							case MTYPE_COUNTER:
-								strcpy(szTmp, FormatCounterValue(meteroffset + (dvalue / divider)).c_str());
+								strcpy(szTmp, FormatCounterValue(meteroffset + (dvalue / divider), divider).c_str());
 								if (!ValueUnits.empty())
 								{
 									strcat(szTmp, " ");
@@ -4116,7 +4122,7 @@ namespace http
 								root["result"][ii]["Counter"] = szTmp;
 								break;
 							case MTYPE_COUNTER:
-								strcpy(szTmp, FormatCounterValue(meteroffset + (dvalue / divider)).c_str());
+								strcpy(szTmp, FormatCounterValue(meteroffset + (dvalue / divider), divider).c_str());
 								if (!ValueUnits.empty())
 								{
 									strcat(szTmp, " ");
