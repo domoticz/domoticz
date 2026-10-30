@@ -138,6 +138,12 @@ bool Enever::StartHardware()
 {
 	RequestStart();
 
+	//Price counters created with only the euro sign as unit get the same unit as the actual price sensors
+	m_sql.safe_query("UPDATE DeviceStatus SET Options='%q' WHERE (HardwareID==%d) AND (Type==%d) AND (SubType==%d) AND (Unit==1) AND (Options=='%q')",
+		"ValueQuantity:RXVybyAvIGtXaA==;ValueUnits:RXVybyAvIGtXaA==", m_HwdID, pTypeGeneral, sTypeManagedCounter, "ValueQuantity:RXVybyAvIGtXaA==;ValueUnits:4oKs");
+	m_sql.safe_query("UPDATE DeviceStatus SET Options='%q' WHERE (HardwareID==%d) AND (Type==%d) AND (SubType==%d) AND (Unit==2) AND (Options=='%q')",
+		"ValueQuantity:RXVybyAvIG0z;ValueUnits:RXVybyAvIG0z", m_HwdID, pTypeGeneral, sTypeManagedCounter, "ValueQuantity:RXVybyAvIG0z;ValueUnits:4oKs");
+
 	//Start worker thread
 	m_thread = std::make_shared<std::thread>([this] { Do_Work(); });
 	SetThreadNameInt(m_thread->native_handle());
@@ -570,7 +576,7 @@ void Enever::parseElectricity(const std::string& szElectricityData, const bool b
 			if (!bDoesMeterExitstInSystem)
 			{
 				//Set right units
-				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=3, AddjValue2=10000, Options='%q' WHERE (ID==%" PRIu64 ")", "ValueQuantity:RXVybyAvIGtXaA==;ValueUnits:4oKs", idx);
+				m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=3, AddjValue2=10000, Options='%q' WHERE (ID==%" PRIu64 ")", "ValueQuantity:RXVybyAvIGtXaA==;ValueUnits:RXVybyAvIGtXaA==", idx);
 				bDoesMeterExitstInSystem = true;
 			}
 			if (bIsNow)
@@ -760,7 +766,7 @@ void Enever::parseGas()
 		if (!bDoesMeterExitstInSystem)
 		{
 			//Set right units
-			m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=3, AddjValue2=10000, Options='%q' WHERE (ID==%" PRIu64 ")", "ValueQuantity:RXVybyAvIG0z;ValueUnits:4oKs", idx);
+			m_sql.safe_query("UPDATE DeviceStatus SET SwitchType=3, AddjValue2=10000, Options='%q' WHERE (ID==%" PRIu64 ")", "ValueQuantity:RXVybyAvIG0z;ValueUnits:RXVybyAvIG0z", idx);
 			bDoesMeterExitstInSystem = true;
 		}
 
