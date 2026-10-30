@@ -691,6 +691,10 @@ define(['angularAMD', 'app.routes', 'app.constants', 'app.notifications', 'app.p
 								});
 							});
 						}
+						// The server lists the templates folder in directory order, which is not alphabetical on Linux
+						items.sort(function (a, b) {
+							return a.text.localeCompare(b.text, undefined, { numeric: true, sensitivity: 'base' });
+						});
 						if (items.length > 0) {
 							var $custommenuLi = $(".clcustommenu");
 							var $custommenuToggle = $custommenuLi.find('> a');
