@@ -21,6 +21,7 @@ Version 2026.xxxx
 - Fixed: Charts, the Hourly Energy Usage chart of energy devices no longer shows 'Watt' behind every value of the y-axis; the values are Wh (#7151)
 - Fixed: Current meters, a malformed stored value no longer aborts the short log update, the record is skipped and logged
 - Fixed: Dashboard Dynamic, the Custom Chart labels the energy of the Last 24h range in Wh instead of kWh, and the power of a P1 meter in that range in W (#7152)
+- Fixed: Dashboard Dynamic, the Custom Chart shows data for Pressure, Visibility, Distance, Solar Radiation and Sound Level devices, which showed 'No data to display', and week and month charts include today's value (#7173)
 - Fixed: Dashboard Dynamic, the Website Embed widget shows the 'Script execution enabled' warning only while editing, and sends the Domoticz origin as referrer so sites like YouTube can be embedded (#7038)
 - Fixed: Database, restoring a backup now checks that the file is a valid Domoticz database before replacing the current one
 - Fixed: dzVents, an integer sValue3 in an IFTTT trigger overwrote sValue2
