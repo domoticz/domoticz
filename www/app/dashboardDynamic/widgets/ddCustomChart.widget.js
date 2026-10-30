@@ -66,6 +66,8 @@ define([
             (type === 'General' && (sub === 'kWh' || sub === 'Counter Incremental' || sub === 'Managed Counter'))) {
             if (stv === 1) { return { sensor: 'counter', field: function(d){ return d.v; }, unit: 'm³', weekApi: true }; }
             if (stv === 2) { return { sensor: 'counter', field: function(d){ return d.v; }, unit: 'L', weekApi: true }; }
+            // Meter type Counter carries its own units (e.g. a price in €), it is not energy
+            if (stv === 3) { return { sensor: 'counter', field: function(d){ return d.v; }, unit: device.ValueUnits || device.ValueQuantity || '?', weekApi: true }; }
             return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v1; }, unit: energyUnit, weekApi: true };
         }
         // Usage devices (instantaneous Watts — P1 phase power, smart plugs, etc.)
