@@ -11,6 +11,13 @@ define([
 
     function detectSensor(device, range) {
         // The day graph returns energy per interval in Wh, the longer ranges in kWh
+        // Day data has v, week/month rows v_avg; today's row only has v_min/v_max until the day is over
+        function valueOrAvg(d) {
+            if (d.v !== undefined) return d.v;
+            if (d.v_avg !== undefined) return d.v_avg;
+            if (d.v_min !== undefined && d.v_max !== undefined) return (parseFloat(d.v_min) + parseFloat(d.v_max)) / 2;
+            return undefined;
+        }
         var energyUnit = (range === 'day') ? 'Wh' : 'kWh';
         var type = device.Type || '';
         var sub  = device.SubType || '';
@@ -28,19 +35,25 @@ define([
             // Day range returns `v`; week/month/year aggregates return v_min/v_max/v_avg.
             return {
                 sensor: 'Percentage',
-                field: function(d) { return d.v !== undefined ? d.v : d.v_avg; },
+                field: valueOrAvg,
                 unit: '%',
                 weekApi: true
             };
         }
         if (type === 'General' && sub === 'Voltage') {
-            return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v_avg; }, unit: 'V', weekApi: true };
+            return { sensor: 'counter', field: valueOrAvg, unit: 'V', weekApi: true };
         }
         if (type === 'General' && sub === 'Current') {
-            return { sensor: 'counter', field: function(d){ return d.v !== undefined ? d.v : d.v_avg; }, unit: 'A', weekApi: true };
+            return { sensor: 'counter', field: valueOrAvg, unit: 'A', weekApi: true };
+        }
+        // Other single value General sensors share the counter graph with Voltage and Current;
+        // the unit is taken from the device's own value text (e.g. "1.2 bar", "45 dB")
+        if (type === 'General' && ['Pressure', 'Visibility', 'Distance', 'Solar Radiation', 'Sound Level'].indexOf(sub) >= 0) {
+            var unitMatch = String(device.Data || '').match(/^\s*-?[\d.,]+\s*(.*)$/);
+            return { sensor: 'counter', field: valueOrAvg, unit: (unitMatch && unitMatch[1]) || '?', weekApi: true };
         }
         if (type === 'General' && sub === 'Custom Sensor') {
-            return { sensor: 'Percentage', field: function(d){ return d.v !== undefined ? d.v : d.v_avg; }, unit: device.SensorUnit || '?', weekApi: true };
+            return { sensor: 'Percentage', field: valueOrAvg, unit: device.SensorUnit || '?', weekApi: true };
         }
         if (type === 'Air Quality') {
             return { sensor: 'counter', field: function(d){ return d.co2 !== undefined ? d.co2 : d.co2_avg; }, unit: 'ppm', weekApi: true };
