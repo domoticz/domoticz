@@ -1,4 +1,5 @@
 Version 2026.xxxx
+- Added: Blockly, Math, Text and Lists blocks can be used in event conditions, for example to round a value, compare the length of a text or check whether a list is empty; an event with an empty input is refused when saving instead of generating invalid Lua (#7071)
 - Added: Dashboard Dynamic, Quick Stat now shows today's value next to the total for counter devices (#7146)
 - Added: MCP, new admin tools add_room, update_room, delete_room, reorder_rooms, add_room_devices, remove_room_devices and reorder_room_devices to manage rooms (plans) and the devices and scenes in them, including their order; get_rooms now lists the rooms in their display order
 - Added: MQTT Auto Discovery, templates with jinja statements ({% set %}, {% if %}/{% elif %}/{% else %}, dictionaries, comparisons and common filters) are now evaluated, for state templates and for the climate and select mode command templates; for example the Bosch Room Thermostat II modes from Zigbee2MQTT now map to heat, cool, auto and off, and switching the mode sends the right payload (#7165)
@@ -64,6 +65,7 @@ Version 2026.xxxx
 - Fixed: WebUI, changing the text of a Text device in its edit dialog now updates other open pages, MQTT and the push services (#7082)
 - Fixed: WebUI, live search no longer shifts the device cards on pages without a divider row, and clearing the search always restores the hidden cards (#7027)
 - Fixed: WebUI, on iOS/iPadOS 27 (Safari, Chrome and Edge) every page change reloaded the whole page when Domoticz is opened over http, and the Back button of the log, timers and notification pages reloaded the current page instead of going back; https was not affected
+- Fixed: WebUI, the items of the Custom menu are sorted alphabetically; on Linux they appeared in directory order (#7171)
 - Fixed: WebUI, the lines of a multi-line Text device now line up next to the icon in the Utility widgets (#7040)
 - Fixed: Winddelen, an unknown mill ID is rejected instead of causing a division by zero
 - Fixed: YouLess, P1/S0 meter discovery is retried up to three times after a failed request instead of being disabled until a restart (#7068)
