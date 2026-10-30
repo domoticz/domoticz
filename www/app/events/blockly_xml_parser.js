@@ -163,7 +163,14 @@ define(function () {
             // Each returns a Lua *expression*. Domoticz's event interpreter runs
             // under Lua 5.4 with the full math + string libs, so we map directly.
             var _b = $(value).children('block:first');   // the actual <block> inside the <value> wrapper
-            function _val(vname) { var v = $(_b).children('value[name=\'' + vname + '\']')[0]; return v ? resolveValue(v, $(v).children('block:first').attr('type')) : ''; }
+            // Blockly leaves an empty input out of the saved XML. Only the AT1/AT2 positions may be absent
+            // (FIRST/LAST have no position input); any other missing input would produce invalid Lua.
+            function _val(vname, bOptional) {
+                var v = $(_b).children('value[name=\'' + vname + '\']')[0];
+                if (v) return resolveValue(v, $(v).children('block:first').attr('type'));
+                if (bOptional) return '';
+                throw new Error('Please connect a block to every input of your event: an input is empty and has no default value');
+            }
             function _fld(fname) { var f = $(_b).children('field[name=\'' + fname + '\']')[0]; return f ? $(f).text() : ''; }
             function _mut(attr, dflt) { var m = $(_b).children('mutation:first')[0]; var v = m ? $(m).attr(attr) : undefined; return (v === undefined || v === null) ? dflt : v; }
             function _fldOrMut(fname, attr, dflt) { var v = _fld(fname); if (v) return v; v = _mut(attr, null); return v !== null ? v : dflt; }
@@ -309,8 +316,8 @@ define(function () {
                 var list = _val('LIST');
                 var ws = _fldOrMut('WHERE1', 'where1', 'FIRST'), we = _fldOrMut('WHERE2', 'where2', 'LAST');
                 // Blockly mutates the AT1/AT2 dummy inputs into value inputs when FROM_START/FROM_END is selected.
-                var from = _val('AT1'); if (from === '') from = '1';
-                var to = _val('AT2'); if (to === '') to = '#' + list;
+                var from = _val('AT1', true); if (from === '') from = '1';
+                var to = _val('AT2', true); if (to === '') to = '#' + list;
                 // Compute 1-based start/end indices (Blockly is 1-based).
                 var startIdx, endIdx;
                 if (ws == 'FIRST') startIdx = '1';
@@ -372,8 +379,8 @@ define(function () {
                 var val = _val('STRING');
                 var ws = _fldOrMut('WHERE1', 'where1', 'FIRST'), we = _fldOrMut('WHERE2', 'where2', 'LAST');
                 // Blockly mutates the AT1/AT2 dummy inputs into value inputs when FROM_START/FROM_END is selected.
-                var from = _val('AT1'); if (from === '') from = '1';
-                var to = _val('AT2'); if (to === '') to = '#' + val;
+                var from = _val('AT1', true); if (from === '') from = '1';
+                var to = _val('AT2', true); if (to === '') to = '#' + val;
                 var startIdx, endIdx;
                 if (ws == 'FIRST') startIdx = '1';
                 else if (ws == 'FROM_END') startIdx = '(#' + val + ' - ' + from + ' + 1)';
