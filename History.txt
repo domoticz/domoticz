@@ -20,6 +20,7 @@ Version 2026.xxxx
 - Fixed: Charts, the day graph no longer shows a sawtooth in the hour that repeats when daylight saving time ends; the points of both hours are now drawn in the right order, and the energy usage in that hour is no longer skipped (#7167)
 - Fixed: Charts, the Hourly Energy Usage chart of energy devices no longer shows 'Watt' behind every value of the y-axis; the values are Wh (#7151)
 - Fixed: Current meters, a malformed stored value no longer aborts the short log update, the record is skipped and logged
+- Fixed: Dashboard Dynamic, the Custom Chart labels a counter with the meter type Counter (for example the Enever daily price) with its own unit instead of kWh (#7174)
 - Fixed: Dashboard Dynamic, the Custom Chart labels the energy of the Last 24h range in Wh instead of kWh, and the power of a P1 meter in that range in W (#7152)
 - Fixed: Dashboard Dynamic, the Custom Chart shows data for Pressure, Visibility, Distance, Solar Radiation and Sound Level devices, which showed 'No data to display', and week and month charts include today's value (#7173)
 - Fixed: Dashboard Dynamic, the Website Embed widget shows the 'Script execution enabled' warning only while editing, and sends the Domoticz origin as referrer so sites like YouTube can be embedded (#7038)
