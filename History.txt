@@ -45,6 +45,7 @@ Version 2026.xxxx
 - Fixed: Kodi and Panasonic TV, every hardware instance now keeps its own list of nodes; reloading one instance removed the nodes of the others (#7111)
 - Fixed: Limitless, the V6 generic disco mode command was sent with the mode of the previous numbered disco command
 - Fixed: Lua, the fourth path argument of applyJsonPath was ignored
+- Fixed: MQTT Auto Discovery, fans: a speed range above 100 (zigbee2mqtt uses 1..254) gave a wrong level and command, a fan that reports its speed in the same message as its state showed Off, and a fan with named speeds and a preset showed the preset and sent a json body to the attribute topic
 - Fixed: MQTT Auto Discovery, IR blasters (e.g. Tuya) can send learned codes again with Zigbee2MQTT 2.x, which writes its templates as value_json["key"] (#7156)
 - Fixed: MQTT Auto Discovery, the humidity of a combined climate thermostat device stayed at 50%, and the heating and cooling setpoints of such a device could not be set
 - Fixed: MQTT Auto Discovery, value templates with a simple calculation, such as {{ value_json.humidity / 100 }} or {{ value_json.x | float * 1000 }}, are now applied; the message was dropped or the unscaled value was used (#7034)

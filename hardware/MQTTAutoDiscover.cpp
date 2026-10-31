@@ -665,8 +665,11 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(const Json::Value& rootIn, co
 			{
 				if (root.isObject() || root.isArray())
 					return ""; //we don't support arrays as return value, probably a configuration issue
-				else
-					return root.asString();
+				std::string retVal = root.asString();
+				//a lookup table in front, like: {'off':0, 'low':1}[value_json["fan_mode"]]
+				if (value_options_.find(retVal) != value_options_.end())
+					retVal = value_options_[retVal];
+				return retVal;
 			}
 			else
 			{
@@ -1582,11 +1585,11 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 			pSensor->speed_range_min = root["speed_range_min"].asInt();
 		if (!root["spd_rng_min"].empty())
 			pSensor->speed_range_min = root["spd_rng_min"].asInt();
-		if (pSensor->speed_range_max > 100)
-			pSensor->speed_range_max = 100;
 		if (pSensor->speed_range_min < 1)
 			pSensor->speed_range_min = 1;
 		pSensor->speed_range_min--; //include off
+		if (pSensor->speed_range_max <= pSensor->speed_range_min)
+			pSensor->speed_range_max = pSensor->speed_range_min + 1;
 
 		if (!root["brightness"].empty())
 		{
@@ -1955,7 +1958,12 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 					StringSplit(ittMode, ":", strarray2);
 					if (strarray2.size() == 2)
 					{
+						stdstring_trim(strarray2[0]);
+						stdstring_trim(strarray2[1]);
 						pSensor->preset_modes.push_back(strarray2[1]);
+						//named speeds (percentage -> name), shown in the same selector as the preset modes
+						if (is_number(strarray2[0]))
+							pSensor->fan_speed_names[atoi(strarray2[0].c_str())] = strarray2[1];
 					}
 				}
 			}
@@ -3563,6 +3571,21 @@ void MQTTAutoDiscover::handle_auto_discovery_fan(_tMQTTASensor* pSensor, const s
 		{
 			bool isNull = false;
 			current_mode = GetValueFromTemplate(root, pSensor->preset_mode_value_template, isNull);
+			if (current_mode.empty() && !pSensor->fan_speed_names.empty() && !pSensor->percentage_value_template.empty())
+			{
+				//No preset active: show the named speed, which shares this selector
+				bool isSpeedNull = false;
+				std::string szSpeed = GetValueFromTemplate(root, pSensor->percentage_value_template, isSpeedNull);
+				if (is_number(szSpeed))
+				{
+					auto itt = pSensor->fan_speed_names.find(atoi(szSpeed.c_str()));
+					if (itt != pSensor->fan_speed_names.end())
+					{
+						current_mode = itt->second;
+						isNull = false;
+					}
+				}
+			}
 			if ((pSensor->preset_mode_state_topic == topic) && current_mode.empty() && !isNull)
 			{
 				Log(LOG_ERROR, "Climate device no idea how to interpret preset_mode_state value (%s)", pSensor->unique_id.c_str());
@@ -5422,6 +5445,7 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 	{
 		bool bOn = false;
 		bool bIsJSON = false;
+		bool bReceivedFanSpeed = false;
 		Json::Value root;
 		if (pSensor->bIsJSON)
 		{
@@ -5544,6 +5568,24 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 								szSwitchCmd = "Set Level";
 						}
 					}
+				}
+			}
+
+			// A fan that reports its speed in the same json message as its state (like zigbee2mqtt)
+			if (
+				(pSensor->component_type == "fan")
+				&& (pSensor->percentage_state_topic == pSensor->last_topic)
+				&& (!pSensor->percentage_value_template.empty())
+				)
+			{
+				bool isNull = false;
+				std::string szSpeed = GetValueFromTemplate(root, pSensor->percentage_value_template, isNull);
+				if (is_number(szSpeed))
+				{
+					level = (int)round(atof(szSpeed.c_str()) * (100.0 / (pSensor->speed_range_max - pSensor->speed_range_min)));
+					if (level > 100)
+						level = 100;
+					bReceivedFanSpeed = true;
 				}
 			}
 			/*
@@ -5806,7 +5848,18 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		// For fans with separate state and percentage topics, only update the relevant value
 		if (pSensor->component_type == "fan")
 		{
-			if (pSensor->last_topic == pSensor->state_topic)
+			if (bReceivedFanSpeed && (pSensor->last_topic == pSensor->state_topic))
+			{
+				// State and speed in one message
+				if (!bOn || (level == 0))
+					nValue = gswitch_sOff;
+				else if (level == 100)
+					nValue = gswitch_sOn;
+				else
+					nValue = gswitch_sSetLevel;
+				bHaveLevelChange = true;
+			}
+			else if (pSensor->last_topic == pSensor->state_topic)
 			{
 				// Keep existing level
 				sValue = result[0][3];
@@ -6552,16 +6605,34 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 
 			if (iLevel < (int)pSensor->preset_modes.size())
 				newState = pSensor->preset_modes.at(iLevel);
+
+			bool bIsSpeedName = false;
+			for (const auto& itt : pSensor->fan_speed_names)
+			{
+				if (itt.second == newState)
+					bIsSpeedName = true;
+			}
+			if (bIsSpeedName && !pSensor->percentage_command_topic.empty())
+			{
+				//A named speed: the percentage command template maps the speed to this name, send it as is
+				SendMessage(pSensor->percentage_command_topic, newState);
+				return true;
+			}
+
 			command_topic = pSensor->preset_mode_command_topic;
 			if (!pSensor->preset_mode_value_template.empty())
 				state_template = pSensor->preset_mode_value_template;
-			if (state_template.find("value_json.") == 0)
 			{
-				std::string szKey = state_template.substr(state_template.find('.') + 1);
-				//check if command topic ends with szKey
-				if (command_topic.find(szKey) == command_topic.size() - szKey.size())
+				//A command topic that ends with the key of the state template (like .../set/preset)
+				//takes the plain value, not a json object
+				static const std::regex keyRe(R"(value_json(?:\.(\w+)|\[\s*["']?(\w+)["']?\s*\]))");
+				std::smatch m;
+				std::string szTemplateSource = IsJinjaTemplate(state_template) ? GetJinjaSource(state_template) : state_template;
+				if (std::regex_search(szTemplateSource, m, keyRe))
 				{
-					state_template.clear();
+					std::string szKey = m[1].matched ? m[1].str() : m[2].str();
+					if ((command_topic.size() > szKey.size()) && (command_topic.compare(command_topic.size() - szKey.size() - 1, szKey.size() + 1, "/" + szKey) == 0))
+						state_template.clear();
 				}
 			}
 
