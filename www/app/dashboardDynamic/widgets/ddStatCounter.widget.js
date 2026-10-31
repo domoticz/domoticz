@@ -142,14 +142,17 @@ define([
 
                     var fallbackUnit = d.vunit || d.ValueUnits || '';
                     var hasToday     = !!d.CounterToday;
-                    var primary      = formatCounterText(hasToday ? d.CounterToday : (d.Counter || d.Data || '—'), d);
+                    var rawPrimary   = hasToday ? d.CounterToday : (d.Counter || d.Data || '—');
+                    // The shown value is rounded, the number used for thresholds and bars is not
+                    var primary      = formatCounterText(rawPrimary, d);
+                    var rawMatch     = String(rawPrimary || '').match(/^([\d.\-]+)/);
 
                     var match   = (primary || '').match(/^([\d.\-]+)\s*(.*)?$/);
                     var unit    = match ? (match[2] || fallbackUnit) : fallbackUnit;
                     ctrl.value  = match ? String(parseFloat(match[1])) : (primary || '—');
                     ctrl.unit   = unit;
                     ctrl.label  = labelOverride || d.Name || '';
-                    ctrl.numVal = match ? parseFloat(match[1]) : NaN;
+                    ctrl.numVal = rawMatch ? parseFloat(rawMatch[1]) : NaN;
 
                     ctrl.counterTotal = hasToday ? formatTotal(formatCounterText(d.Counter || d.Data, d), unit) : null;
 

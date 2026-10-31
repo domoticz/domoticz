@@ -343,9 +343,9 @@ define(['app', 'widgets/dzBar', 'icons/dzIconPicker', 'icons/dzDeviceIcon'], fun
                     } else if (device.SubType === 'kWh' || device.Type === 'Energy' || device.Type === 'Power' || device.Type === 'Current/Energy') {
                         dataStr = device.Usage || '';
                     } else if (device.SubType === 'Gas' || device.SubType === 'RFXMeter counter' || device.SubType === 'Counter Incremental') {
-                        dataStr = formatCounterText(device.CounterToday || '', device);
+                        dataStr = device.CounterToday || '';
                     } else if (device.SubType === 'Managed Counter') {
-                        dataStr = formatCounterText(device.Counter || '', device);
+                        dataStr = device.Counter || '';
                     } else if (device.Type === 'Setpoint' && device.SubType === 'SetPoint') {
                         dataStr = device.SetPoint !== undefined ? String(device.SetPoint) : (device.Data || '');
                     } else {
