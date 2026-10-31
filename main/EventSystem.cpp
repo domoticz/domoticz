@@ -506,6 +506,85 @@ void CEventSystem::RefreshCounterJsonMaps()
 	}
 }
 
+#define DEVICE_STATE_QUERY \
+	"SELECT A.HardwareID, A.ID, A.Name, A.nValue, A.sValue, A.Type, A.SubType, A.SwitchType, A.LastUpdate, A.LastLevel, A.Options, A.Description, A.BatteryLevel, A.SignalLevel, A.Unit, A.DeviceID, A.Protected, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2 " \
+	"FROM DeviceStatus AS A, Hardware AS B " \
+	"WHERE (A.Used = '1') AND (B.ID == A.HardwareID) AND (B.Enabled == 1)"
+
+// Fills a device state from one row of DEVICE_STATE_QUERY, returns false on invalid device data
+bool CEventSystem::LoadDeviceState(std::vector<std::string>& sd, _tDeviceStatus& sitem)
+{
+	// Fix string capacity to avoid map entry resizing
+	std::string l_deviceName;		l_deviceName.reserve(100);
+	std::string l_sValue;			l_sValue.reserve(200);
+	std::string l_nValueWording;	l_nValueWording.reserve(20);
+	std::string l_lastUpdate;		l_lastUpdate.reserve(30);
+	std::string l_description;		l_description.reserve(200);
+	std::string l_deviceID;			l_deviceID.reserve(25);
+
+	sitem.hardwareID = atoi(sd[0].c_str());
+	sitem.ID = std::stoull(sd[1]);
+	sitem.deviceName = l_deviceName.assign(sd[2]);
+
+	sitem.devType = atoi(sd[5].c_str());
+	sitem.subType = atoi(sd[6].c_str());
+
+	try
+	{
+		if ((sitem.devType == pTypeGeneral) && (sitem.subType == sTypeCounterIncremental))
+		{
+			//special case for incremental counter, need to calculate the actual count value
+
+			std::vector<std::vector<std::string> > result2;
+
+			result2 = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID=%" PRIu64 ")", sitem.ID);
+			uint64_t total_max = std::stoull(result2[0][0]);
+
+			//get value of today
+			std::string szDate = TimeToString(nullptr, TF_Date);
+			result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')", sitem.ID, szDate.c_str());
+			if (!result2.empty())
+			{
+				uint64_t total_min = std::stoull(result2[0][0]);
+				uint64_t total_real = total_max - total_min;
+
+				sd[4] = std::to_string(total_real); //sitem.sValue = l_sValue.assign(sd[4]);
+			}
+		}
+
+		sitem.nValue = atoi(sd[3].c_str());
+		sitem.sValue = l_sValue.assign(sd[4]);
+
+		sitem.switchtype = atoi(sd[7].c_str());
+		_eSwitchType switchtype = (_eSwitchType)sitem.switchtype;
+		std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
+		sitem.nValueWording = l_nValueWording.assign(nValueToWording(sitem.devType, sitem.subType, switchtype, sitem.nValue, sitem.sValue, options));
+		sitem.lastUpdate = l_lastUpdate.assign(sd[8]);
+		sitem.lastLevel = atoi(sd[9].c_str());
+		sitem.description = l_description.assign(sd[11]);
+		sitem.batteryLevel = atoi(sd[12].c_str());
+		sitem.signalLevel = atoi(sd[13].c_str());
+		sitem.unit = atoi(sd[14].c_str());
+		sitem.deviceID = l_deviceID.assign(sd[15]);
+		sitem.protection = atoi(sd[16].c_str());
+		sitem.AddjValue = std::stof(sd[17]);
+		sitem.AddjMulti = std::stof(sd[18]);
+		sitem.AddjValue2 = std::stof(sd[19]);
+		sitem.AddjMulti2 = std::stof(sd[20]);
+
+		if (!m_sql.m_bDisableDzVentsSystem)
+		{
+			UpdateJsonMap(sitem, sitem.ID);
+		}
+	}
+	catch (const std::exception& e)
+	{
+		_log.Log(LOG_ERROR, "EventSystem: Exception in GetCurrentStates, probably invalid device data! (Device: %s): %s", l_deviceName.c_str(), e.what());
+		return false;
+	}
+	return true;
+}
+
 void CEventSystem::GetCurrentStates()
 {
 	std::vector<std::vector<std::string> > result;
@@ -515,89 +594,33 @@ void CEventSystem::GetCurrentStates()
 	_log.Log(LOG_STATUS, "EventSystem: reset all device statuses...");
 	m_devicestates.clear();
 
-	result = m_sql.safe_query(
-		"SELECT A.HardwareID, A.ID, A.Name, A.nValue, A.sValue, A.Type, A.SubType, A.SwitchType, A.LastUpdate, A.LastLevel, A.Options, A.Description, A.BatteryLevel, A.SignalLevel, A.Unit, A.DeviceID, A.Protected, A.AddjValue, A.AddjMulti, A.AddjValue2, A.AddjMulti2 "
-		"FROM DeviceStatus AS A, Hardware AS B "
-		"WHERE (A.Used = '1') AND (B.ID == A.HardwareID) AND (B.Enabled == 1)");
+	result = m_sql.safe_query(DEVICE_STATE_QUERY);
 	if (!result.empty())
 	{
 		std::map<uint64_t, _tDeviceStatus> m_devicestates_temp;
 		for (auto &sd : result)
 		{
 			_tDeviceStatus sitem;
-
-			// Fix string capacity to avoid map entry resizing
-			std::string l_deviceName;		l_deviceName.reserve(100);
-			std::string l_sValue;			l_sValue.reserve(200);
-			std::string l_nValueWording;	l_nValueWording.reserve(20);
-			std::string l_lastUpdate;		l_lastUpdate.reserve(30);
-			std::string l_description;		l_description.reserve(200);
-			std::string l_deviceID;			l_deviceID.reserve(25);
-
-			sitem.hardwareID = atoi(sd[0].c_str());
-			sitem.ID = std::stoull(sd[1]);
-			sitem.deviceName = l_deviceName.assign(sd[2]);
-
-			sitem.devType = atoi(sd[5].c_str());
-			sitem.subType = atoi(sd[6].c_str());
-
-			try
-			{
-				if ((sitem.devType == pTypeGeneral) && (sitem.subType == sTypeCounterIncremental))
-				{
-					//special case for incremental counter, need to calculate the actual count value
-
-					std::vector<std::vector<std::string> > result2;
-
-					result2 = m_sql.safe_query("SELECT sValue FROM DeviceStatus WHERE (ID=%" PRIu64 ")", sitem.ID);
-					uint64_t total_max = std::stoull(result2[0][0]);
-
-					//get value of today
-					std::string szDate = TimeToString(nullptr, TF_Date);
-					result2 = m_sql.safe_query("SELECT MIN(Value) FROM Meter WHERE (DeviceRowID=%" PRIu64 " AND Date>='%q')", sitem.ID, szDate.c_str());
-					if (!result2.empty())
-					{
-						uint64_t total_min = std::stoull(result2[0][0]);
-						uint64_t total_real = total_max - total_min;
-
-						sd[4] = std::to_string(total_real); //sitem.sValue = l_sValue.assign(sd[4]);
-					}
-				}
-
-				sitem.nValue = atoi(sd[3].c_str());
-				sitem.sValue = l_sValue.assign(sd[4]);
-
-				sitem.switchtype = atoi(sd[7].c_str());
-				_eSwitchType switchtype = (_eSwitchType)sitem.switchtype;
-				std::map<std::string, std::string> options = m_sql.BuildDeviceOptions(sd[10]);
-				sitem.nValueWording = l_nValueWording.assign(nValueToWording(sitem.devType, sitem.subType, switchtype, sitem.nValue, sitem.sValue, options));
-				sitem.lastUpdate = l_lastUpdate.assign(sd[8]);
-				sitem.lastLevel = atoi(sd[9].c_str());
-				sitem.description = l_description.assign(sd[11]);
-				sitem.batteryLevel = atoi(sd[12].c_str());
-				sitem.signalLevel = atoi(sd[13].c_str());
-				sitem.unit = atoi(sd[14].c_str());
-				sitem.deviceID = l_deviceID.assign(sd[15]);
-				sitem.protection = atoi(sd[16].c_str());
-				sitem.AddjValue = std::stof(sd[17]);
-				sitem.AddjMulti = std::stof(sd[18]);
-				sitem.AddjValue2 = std::stof(sd[19]);
-				sitem.AddjMulti2 = std::stof(sd[20]);
-
-				if (!m_sql.m_bDisableDzVentsSystem)
-				{
-					UpdateJsonMap(sitem, sitem.ID);
-				}
+			if (LoadDeviceState(sd, sitem))
 				m_devicestates_temp[sitem.ID] = sitem;
-			}
-			catch (const std::exception& e)
-			{
-				_log.Log(LOG_ERROR, "EventSystem: Exception in GetCurrentStates, probably invalid device data! (Device: %s): %s", l_deviceName.c_str(), e.what());
-			}
 		}
 		m_devicestates = m_devicestates_temp;
 	}
 	m_mainworker.m_notificationsystem.Notify(Notification::DZ_ALLDEVICESTATUSRESET, Notification::STATUS_INFO);
+}
+
+// Reloads the state of one device after its settings were changed (name, type, icon, used), without
+// resetting the states of all other devices; a device that is no longer used is removed
+void CEventSystem::ReloadSingleState(const uint64_t ulDevID)
+{
+	std::vector<std::vector<std::string> > result = m_sql.safe_query(DEVICE_STATE_QUERY " AND (A.ID == %" PRIu64 ")", ulDevID);
+
+	boost::unique_lock<boost::shared_mutex> devicestatesMutexLock(m_devicestatesMutex);
+	_tDeviceStatus sitem;
+	if (!result.empty() && LoadDeviceState(result[0], sitem))
+		m_devicestates[sitem.ID] = sitem;
+	else
+		m_devicestates.erase(ulDevID);
 }
 
 void CEventSystem::GetCurrentUserVariables()

@@ -119,6 +119,7 @@ public:
 	void WWWGetItemStates(std::vector<_tDeviceStatus> &iStates);
 	void SetEnabled(bool bEnabled);
 	void GetCurrentStates();
+	void ReloadSingleState(uint64_t ulDevID);
 	void UpdateDeviceAdjustments(uint64_t ulDevID, float AddjValue, float AddjMulti, float AddjValue2, float AddjMulti2);
 	void GetCurrentScenesGroups();
 	void GetCurrentUserVariables();
@@ -227,6 +228,7 @@ private:
 	std::string ParseBlocklyString(const std::string &oString, bool bForShell = false);
 	void ParseActionString( const std::string &oAction_, _tActionParseResults &oResults_ );
 	void UpdateJsonMap(_tDeviceStatus &item, uint64_t ulDevID);
+	bool LoadDeviceState(std::vector<std::string>& sd, _tDeviceStatus& sitem);
 	void RefreshCounterJsonMaps();
 	void EventQueueThread();
 	void UnlockEventQueueThread();

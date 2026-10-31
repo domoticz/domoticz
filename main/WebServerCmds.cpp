@@ -6625,8 +6625,9 @@ namespace http
 			root["status"] = "OK";
 			root["title"] = "SetUsed";
 
+			// only this device changed, reloading every device state would also log a reset of all of them
 			if (m_sql.m_bEnableEventSystem)
-				m_mainworker.m_eventsystem.GetCurrentStates();
+				m_mainworker.m_eventsystem.ReloadSingleState(std::stoull(idx));
 		}
 
 		void CWebServer::Cmd_GetSettings(WebEmSession& session, const request& req, Json::Value& root)
