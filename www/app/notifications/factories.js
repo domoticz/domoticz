@@ -1,5 +1,5 @@
 define(['app'], function (app) {
-    app.factory('deviceNotificationsApi', function (domoticzApi) {
+    app.factory('deviceNotificationsApi', function ($q, domoticzApi) {
         return {
             getNotifications: getNotifications,
             getNotificationTypes: getNotificationTypes,
