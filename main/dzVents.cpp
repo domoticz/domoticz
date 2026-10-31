@@ -44,7 +44,7 @@ enum edzVentsLogLevel
 };
 
 CdzVents::CdzVents()
-	: m_version("3.1.11")
+	: m_version("3.1.13")
 {
 	m_bdzVentsExist = false;
 }
