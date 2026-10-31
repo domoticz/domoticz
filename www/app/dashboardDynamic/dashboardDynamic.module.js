@@ -187,7 +187,7 @@ define(['app', 'icons/dzIconService'], function(app) {
                 return { value: roundIfLarge(formatCounterText(d.Data, d) || '\u2014'), secondValue: $.t('Today') + ': ' + formatCounterText(d.CounterToday, d),
                          isOn: false, unit: '', unit2: null, typeClass: 'generic' };
             }
-            return { value: roundIfLarge(d.Data || '\u2014'), isOn: false, unit: '', unit2: null, secondValue: null, typeClass: 'generic' };
+            return { value: roundIfLarge(formatCounterText(d.Data, d) || '\u2014'), isOn: false, unit: '', unit2: null, secondValue: null, typeClass: 'generic' };
         }
 
         return { getDirective: getDirective, autoDeviceIcon: autoDeviceIcon, extractDeviceValue: extractDeviceValue };

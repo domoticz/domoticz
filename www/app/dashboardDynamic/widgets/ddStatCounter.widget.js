@@ -145,7 +145,7 @@ define([
                     var rawPrimary   = hasToday ? d.CounterToday : (d.Counter || d.Data || '—');
                     // The shown value is rounded, the number used for thresholds and bars is not
                     var primary      = formatCounterText(rawPrimary, d);
-                    var rawMatch     = String(rawPrimary || '').match(/^([\d.\-]+)/);
+                    var rawMatch     = String(rawPrimary || '').match(/^([\d.\-]+(?:e[-+]?\d+)?)/i);
 
                     var match   = (primary || '').match(/^([\d.\-]+)\s*(.*)?$/);
                     var unit    = match ? (match[2] || fallbackUnit) : fallbackUnit;

@@ -351,7 +351,7 @@ define(['app', 'widgets/dzBar', 'icons/dzIconPicker', 'icons/dzDeviceIcon'], fun
                     } else {
                         dataStr = device.Data || '';
                     }
-                    var m = dataStr.match(/^(-?[\d.,]+)/);
+                    var m = dataStr.match(/^(-?[\d.,]+(?:e[-+]?\d+)?)/i);
                     ctrl.barNumVal = m ? parseFloat(m[1].replace(',', '.')) : undefined;
                 }
 
