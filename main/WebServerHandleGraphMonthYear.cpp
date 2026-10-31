@@ -237,7 +237,7 @@ static void HandleGraphMonthYear_Counter_P1MultiMeter(
 			}
 		}
 		// Previous Year
-		result = sql.safe_query("SELECT Value1,Value2,Value5,Value6, Date "
+		result = sql.safe_query("SELECT Value1,Value2,Value5,Value6, Date, Price "
 			"FROM %s WHERE (DeviceRowID==%" PRIu64 " AND Date>='%q' AND Date<='%q') ORDER BY Date ASC",
 			dbasetable.c_str(), idx, szDateStartPrev.c_str(), szDateEndPrev.c_str());
 		if (!result.empty())
@@ -265,6 +265,8 @@ static void HandleGraphMonthYear_Counter_P1MultiMeter(
 				root["resultprev"][iPrev]["r1"] = szTmp;
 				snprintf(szTmp, sizeof(szTmp), "%.3f", fDeliv_2 / divider);
 				root["resultprev"][iPrev]["r2"] = szTmp;
+				snprintf(szTmp, sizeof(szTmp), "%.4f", std::stof(sd[5]));
+				root["resultprev"][iPrev]["p"] = szTmp;
 				iPrev++;
 			}
 			if (bHaveDeliverd)
