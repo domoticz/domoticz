@@ -2,10 +2,12 @@
 #include "JinjaLite.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <ctime>
 #include <limits>
 #include <memory>
 #include <mutex>
@@ -1218,6 +1220,19 @@ namespace JinjaLite
 							return ApplyFilter(callee.str, input, args);
 						}
 					}
+					if (callee.str == "now")
+					{
+						//like Home Assistant's as_timestamp(now()), the current time is a unix timestamp here
+						return Dbl(static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()) / 1000.0);
+					}
+					if ((callee.str == "as_timestamp") || (callee.str == "timestamp_local") || (callee.str == "timestamp_utc"))
+					{
+						if (args.pos.empty())
+							Fail("missing argument");
+						Val input = args.pos[0];
+						args.pos.erase(args.pos.begin());
+						return ApplyFilter(callee.str, input, args);
+					}
 					Fail("unknown function: " + callee.str);
 				}
 				// method call
@@ -1491,6 +1506,42 @@ namespace JinjaLite
 					if (v->isArray() || v->isObject())
 						return Int(static_cast<Json::Int64>(v->size()));
 					Fail("object has no length");
+				}
+				if (name == "as_timestamp")
+				{
+					//a unix timestamp stays as it is, anything else gives None like Home Assistant
+					double dNum = 0;
+					if (IsNumber(v))
+						return v;
+					if (IsString(v) && ParseNumber(v->asString(), dNum))
+						return Dbl(dNum);
+					return MakeVal(Json::Value());
+				}
+				if ((name == "timestamp_local") || (name == "timestamp_utc"))
+				{
+					//unix timestamp to an ISO 8601 date and time, like 2026-10-31T09:30:00+01:00
+					double dNum = 0;
+					if (IsNumber(v))
+						dNum = v->asDouble();
+					else if (!(IsString(v) && ParseNumber(v->asString(), dNum)))
+						return v;
+					const time_t t = static_cast<time_t>(dNum);
+					struct tm tmTime {};
+					bool bOK;
+#ifdef _WIN32
+					bOK = (name == "timestamp_utc") ? (gmtime_s(&tmTime, &t) == 0) : (localtime_s(&tmTime, &t) == 0);
+#else
+					bOK = (name == "timestamp_utc") ? (gmtime_r(&t, &tmTime) != nullptr) : (localtime_r(&t, &tmTime) != nullptr);
+#endif
+					if (!bOK)
+						return v;
+					char szDate[40];
+					char szZone[16];
+					strftime(szDate, sizeof(szDate), "%Y-%m-%dT%H:%M:%S", &tmTime);
+					std::string szOffset = "+00:00";
+					if ((name == "timestamp_local") && (strftime(szZone, sizeof(szZone), "%z", &tmTime) == 5))
+						szOffset = std::string(szZone, 3) + ":" + std::string(szZone + 3, 2);
+					return MakeVal(Json::Value(std::string(szDate) + szOffset));
 				}
 				if (name == "join")
 				{

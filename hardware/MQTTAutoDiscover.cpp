@@ -285,15 +285,19 @@ bool MQTTAutoDiscover::RenderStateTemplate(const std::string& szJinjaTemplate, c
 
 //Renders a command template (see CleanValueTemplate) with value set to the value to send
 //(and optionally the same value under a second name, like 'position')
-bool MQTTAutoDiscover::RenderCommandTemplate(const std::string& szJinjaTemplate, const std::string& szValue, std::string& szPayload, const char* szAltName)
+bool MQTTAutoDiscover::RenderCommandTemplate(const std::string& szJinjaTemplate, const std::string& szValue, std::string& szPayload, const char* szAltName, const bool bNumericValue)
 {
 	if (!IsJinjaTemplate(szJinjaTemplate))
 		return false;
 	const std::string szSource = GetJinjaSource(szJinjaTemplate);
 	if (szSource.find("value_json") != std::string::npos)
 		return false; //a state template, it has no meaning as a command
-	//a named value (like 'position') is a number, as in Home Assistant
-	const Json::Value value = ((szAltName != nullptr) && is_number(szValue)) ? Json::Value(atoi(szValue.c_str())) : Json::Value(szValue);
+	//a named value (like 'position') and a setpoint are numbers, as in Home Assistant
+	Json::Value value(szValue);
+	if (bNumericValue && is_number(szValue))
+		value = Json::Value(atof(szValue.c_str()));
+	else if ((szAltName != nullptr) && is_number(szValue))
+		value = Json::Value(atoi(szValue.c_str()));
 	JinjaLite::VariableRefs vars;
 	vars["value"] = &value;
 	if (szAltName != nullptr)
@@ -2495,8 +2499,30 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		}
 	}
 
+	//a pressure that is not the air pressure, like a tyre (TPMS), water or tank pressure, gets a Pressure device in bar
+	std::string szPressureID = pSensor->unique_id + " " + pSensor->name;
+	stdlower(szPressureID);
+	const bool bIsTyrePressure = (szUnit == "kpa")
+		&& ((szPressureID.find("tpms") != std::string::npos) || (szPressureID.find("tire") != std::string::npos) || (szPressureID.find("tyre") != std::string::npos));
+
 	if (
+		(szUnit == "bar")
+		|| (szUnit == "psi")
+		|| bIsTyrePressure
+		)
+	{
+		devType = pTypeGeneral;
+		subType = sTypePressure;
+		float pressure = static_cast<float>(atof(pSensor->last_value.c_str()));
+		if (szUnit == "kpa")
+			pressure /= 100.0F;
+		else if (szUnit == "psi")
+			pressure *= 0.0689476F;
+		sValue = std_format("%.2f", pressure);
+	}
+	else if (
 		(szUnit == "hpa")
+		|| (szUnit == "mbar")
 		|| (szUnit == "kpa")
 		|| (pSensor->value_template.find("pressure") != std::string::npos)
 		)
@@ -7118,20 +7144,29 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, const uint8_t Un
 	}
 	Json::Value root;
 	std::string szSendValue;
+	const std::string szTemp = std_format("%.1f", Temp);
 	if (!szSendTemplate.empty())
 	{
-		std::string szKey = GetValueTemplateKey(szSendTemplate);
-		if (!szKey.empty())
-			root[szKey] = Temp;
-		else
+		CleanValueTemplate(szSendTemplate);
+		if (!RenderCommandTemplate(szSendTemplate, szTemp, szSendValue, nullptr, true))
 		{
-			Log(LOG_ERROR, "Climate device unhandled temperature_command_template (%s/%s)", DeviceID.c_str(), pSensor->name.c_str());
-			return false;
+			std::string szKey = GetValueTemplateKey(szSendTemplate);
+			if (szKey == "value")
+				szSendValue = szTemp; //{{ value }}: the setpoint itself, as Home Assistant sends it
+			else if (!szKey.empty())
+			{
+				root[szKey] = Temp;
+				szSendValue = JSonToRawString(root);
+			}
+			else
+			{
+				Log(LOG_ERROR, "Climate device unhandled temperature_command_template (%s/%s)", DeviceID.c_str(), pSensor->name.c_str());
+				return false;
+			}
 		}
-		szSendValue = JSonToRawString(root);
 	}
 	else
-		szSendValue = std_format("%.1f", Temp);
+		szSendValue = szTemp;
 
 	SendMessage(szTopic, szSendValue);
 

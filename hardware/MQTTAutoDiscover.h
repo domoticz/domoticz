@@ -243,7 +243,7 @@ private:
 	void CleanValueTemplateLegacy(std::string& szValueTemplate);
 	std::string GetLegacyTemplate(const std::string& szTemplate);
 	bool RenderStateTemplate(const std::string& szJinjaTemplate, const Json::Value& root, std::string& szResult);
-	bool RenderCommandTemplate(const std::string& szJinjaTemplate, const std::string& szValue, std::string& szPayload, const char* szAltName = nullptr);
+	bool RenderCommandTemplate(const std::string& szJinjaTemplate, const std::string& szValue, std::string& szPayload, const char* szAltName = nullptr, bool bNumericValue = false);
 	void LogJinjaFailureOnce(const std::string& szJinjaSource, const std::string& szError);
 	void FixCommandTopic(std::string& command_topic, std::string& state_template);
 	bool parseMapTemplate(const std::string& templateStr, std::vector<std::tuple<std::string, std::string>>& valuesMap, std::string& szKey);
