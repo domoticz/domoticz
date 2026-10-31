@@ -70,6 +70,7 @@ Version 2026.xxxx
 - Fixed: Visual Crossing, values reported as N/A are no longer stored as 0, and snow depth is no longer added to the rain rate (#7065)
 - Fixed: Voltcraft CO-20, a failed USB open is now detected
 - Fixed: Weather Underground, the forecast link was two URLs glued together and exposed the API key; it is now a single wunderground.com link
+- Fixed: Web server, a websocket closed by the browser (closing a tab, a phone going to sleep) was never closed by Domoticz; updates for it were queued until 8 MB and then dropped with 'pre-upgrade write queue exceeded ... dropping connection' in the log. The close is now answered and the connection dropped right away
 - Fixed: WebUI, changing the text of a Text device in its edit dialog now updates other open pages, MQTT and the push services (#7082)
 - Fixed: WebUI, live search no longer shifts the device cards on pages without a divider row, and clearing the search always restores the hidden cards (#7027)
 - Fixed: WebUI, on iOS/iPadOS 27 (Safari, Chrome and Edge) every page change reloaded the whole page when Domoticz is opened over http, and the Back button of the log, timers and notification pages reloaded the current page instead of going back; https was not affected
