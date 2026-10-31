@@ -8,6 +8,7 @@ Version 2026.xxxx
 - Changed: Dashboard Dynamic, a selector switch in the Quick Actions widget opens its levels in a dialog instead of a row below the button, which fell outside the widget for buttons on the bottom row (#7141)
 - Changed: Enever, the daily electricity and gas price counters show their unit as Euro / kWh and Euro / m3, like the actual price sensors, instead of only the euro sign; existing devices are updated unless their units were changed (#7174)
 - Changed: InComfort, the Room-2 thermostat setpoint now has its own device; it shared a device ID with the central heating water temperature, so the two values overwrote each other. Existing installations get a new 'Room-2 Thermostat Setpoint' device (make sure 'Accept new Hardware Devices' is enabled, or allow it temporarily), the old device keeps showing the central heating water temperature
+- Changed: MQTT Auto Discovery, climate devices with only a heating and cooling setpoint (like the Bosch Room Thermostat II) get the combined thermostat device with temperature, humidity and the setpoint of the current mode; existing installs keep their devices until the old temperature device is removed (#7165)
 - Fixed: 1-Wire, a DS2423 counter that could not be read is no longer reported as a huge counter value (#7064)
 - Fixed: AccuWeather, missing or invalid measurements are no longer reported as 0 (#7066)
 - Fixed: Alexa, ReportState now includes the color of RGB dimmers; the check on the stored color was inverted
@@ -45,6 +46,7 @@ Version 2026.xxxx
 - Fixed: Limitless, the V6 generic disco mode command was sent with the mode of the previous numbered disco command
 - Fixed: Lua, the fourth path argument of applyJsonPath was ignored
 - Fixed: MQTT Auto Discovery, IR blasters (e.g. Tuya) can send learned codes again with Zigbee2MQTT 2.x, which writes its templates as value_json["key"] (#7156)
+- Fixed: MQTT Auto Discovery, the humidity of a combined climate thermostat device stayed at 50%, and the heating and cooling setpoints of such a device could not be set
 - Fixed: MQTT Auto Discovery, value templates with a simple calculation, such as {{ value_json.humidity / 100 }} or {{ value_json.x | float * 1000 }}, are now applied; the message was dropped or the unscaled value was used (#7034)
 - Fixed: MQTT, org_hwid in the device info message repeated hwid instead of the original hardware id
 - Fixed: MQTT Auto Discovery, an event triggered by a color light report carried the color of the previous report, so dzVents getColor() was always one change behind; the color is now stored before the event fires (#7054)
