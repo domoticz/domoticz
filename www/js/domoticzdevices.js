@@ -592,7 +592,7 @@ function Device(item) {
         this.level = (typeof item.LevelInt != 'undefined') ? parseInt(item.LevelInt) : 0;
         this.levelMax = (typeof item.MaxDimLevel != 'undefined') ? parseInt(item.MaxDimLevel) : 0;
         if (this.level > this.levelMax) this.levelMax = this.level;
-        this.data = (typeof item.Data != 'undefined') ? item.Data : '';
+        this.data = (typeof item.Data != 'undefined') ? formatCounterText(item.Data, item) : '';
         this.hasNewLine = false;
 
         this.smallStatus = this.data;
@@ -1812,7 +1812,7 @@ function Counter(item) {
 
         if (typeof item.CounterToday != 'undefined') {
             this.status = this.data;
-            this.data = item.CounterToday;
+            this.data = formatCounterText(item.CounterToday, item);
         }
         if (typeof item.CounterDeliv != 'undefined') {
             this.data = this.status;
@@ -1874,7 +1874,7 @@ function Current(item) {
             this.status = (item.Usage != this.data) ? item.Usage : '';
         }
         if (typeof item.CounterToday != 'undefined') {
-            this.status += ' ' + $.t("Today") + ': ' + item.CounterToday;
+            this.status += ' ' + $.t("Today") + ': ' + formatCounterText(item.CounterToday, item);
         }
         if (typeof item.CounterDeliv != 'undefined') {
             if (item.CounterDeliv != 0) {

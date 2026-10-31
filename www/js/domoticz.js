@@ -97,6 +97,23 @@ function fnGetSelected(oTableLocal) {
 	return oTableLocal.$('tr.row_selected');
 }
 
+// A plain counter (meter type Counter) is reported unrounded, so scripts can calculate with it. When it was divided
+// by its divider, show it with at most three decimals, like energy, gas and water meters, and without trailing
+// zeros. The unit after the number is kept, and any other text or device is returned unchanged.
+function formatCounterText(text, device) {
+	if (text === undefined || text === null || !device || device.SwitchTypeVal !== 3) {
+		return text;
+	}
+	var divider = parseFloat(device.Divider);
+	if (isNaN(divider) || divider === 1) {
+		return text;
+	}
+	return String(text).replace(/^-?\d+(?:\.\d+)?(?:e[-+]?\d+)?/i, function (number) {
+		var shown = parseFloat(number).toFixed(3).replace(/\.?0+$/, '');
+		return (shown === '-0') ? '0' : shown;
+	});
+}
+
 // Renders a battery level (0-100, or 255 = "not available") as a Font Awesome
 // battery glyph filled to match the level and coloured by it: red when nearly
 // empty, amber when low, green otherwise (the same thresholds the old level bar
