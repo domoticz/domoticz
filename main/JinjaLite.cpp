@@ -802,6 +802,15 @@ namespace JinjaLite
 					if (IsOp("."))
 					{
 						Next();
+						if ((Peek().type == TK::Num) && Peek().num.isIntegral())
+						{
+							//a numeric attribute is an index, like: value_json.params.events.0.id
+							NodePtr sub = MakeNode(NT::Subscript);
+							sub->kids.push_back(std::move(node));
+							sub->kids.push_back(MakeLiteral(Next().num));
+							node = Fin(std::move(sub));
+							continue;
+						}
 						if (Peek().type != TK::Name)
 							Fail("expected attribute name");
 						NodePtr attr = MakeNode(NT::Attr, Next().s);
@@ -1423,6 +1432,9 @@ namespace JinjaLite
 				}
 				if (name == "abs")
 				{
+					double dNum = 0;
+					if (IsString(v) && ParseNumber(v->asString(), dNum))
+						return ApplyFilter(name, Dbl(dNum), args); //like Home Assistant, a numeric string counts as a number
 					if (!IsNumber(v))
 						Fail("abs needs a number");
 					Json::Int64 i = 0;
@@ -1432,6 +1444,9 @@ namespace JinjaLite
 				}
 				if (name == "round")
 				{
+					double dNum = 0;
+					if (IsString(v) && ParseNumber(v->asString(), dNum))
+						return ApplyFilter(name, Dbl(dNum), args); //like Home Assistant, a numeric string counts as a number
 					if (!IsNumber(v))
 						Fail("round needs a number");
 					Val p = args.Get(0, "precision");
@@ -1476,6 +1491,34 @@ namespace JinjaLite
 					if (v->isArray() || v->isObject())
 						return Int(static_cast<Json::Int64>(v->size()));
 					Fail("object has no length");
+				}
+				if (name == "join")
+				{
+					if (!v || !v->isArray())
+						Fail("join needs a list");
+					Val sep = args.Get(0, "d");
+					std::string szSep = IsString(sep) ? sep->asString() : "";
+					std::string szResult;
+					for (Json::ArrayIndex i = 0; i < v->size(); i++)
+					{
+						if (i != 0)
+							szResult += szSep;
+						szResult += StringifyForString(MakeVal(Json::Value((*v)[i])));
+					}
+					return MakeVal(Json::Value(szResult));
+				}
+				if (name == "multiply")
+				{
+					//Home Assistant extension: value * factor, a value that is not a number stays as it is
+					double dValue = 0;
+					if (IsNumber(v))
+						dValue = v->asDouble();
+					else if (!(IsString(v) && ParseNumber(v->asString(), dValue)))
+						return v;
+					Val f = args.Get(0, "amount");
+					if (!IsNumber(f))
+						Fail("multiply needs a number");
+					return Dbl(dValue * f->asDouble());
 				}
 				Fail("unsupported filter: " + name);
 			}

@@ -9,6 +9,7 @@ Version 2026.xxxx
 - Changed: Enever, the daily electricity and gas price counters show their unit as Euro / kWh and Euro / m3, like the actual price sensors, instead of only the euro sign; existing devices are updated unless their units were changed (#7174)
 - Changed: InComfort, the Room-2 thermostat setpoint now has its own device; it shared a device ID with the central heating water temperature, so the two values overwrote each other. Existing installations get a new 'Room-2 Thermostat Setpoint' device (make sure 'Accept new Hardware Devices' is enabled, or allow it temporarily), the old device keeps showing the central heating water temperature
 - Changed: MQTT Auto Discovery, climate devices with only a heating and cooling setpoint (like the Bosch Room Thermostat II) get the combined thermostat device with temperature, humidity and the setpoint of the current mode; existing installs keep their devices until the old temperature device is removed (#7165)
+- Changed: MQTT Auto Discovery, every template that is more than a key lookup (filters, calculations, conditions) is now evaluated, also on plain payloads; for example rtl_433 battery levels and wind speeds, Shelly rounding, cover position templates and Shelly Gen2 button events now give the right value. The template engine also supports numeric indexes (value_json.events.0.id), the join and multiply filters, and round/abs on numeric strings
 - Fixed: 1-Wire, a DS2423 counter that could not be read is no longer reported as a huge counter value (#7064)
 - Fixed: AccuWeather, missing or invalid measurements are no longer reported as 0 (#7066)
 - Fixed: Alexa, ReportState now includes the color of RGB dimmers; the check on the stored color was inverted
@@ -45,6 +46,7 @@ Version 2026.xxxx
 - Fixed: Kodi and Panasonic TV, every hardware instance now keeps its own list of nodes; reloading one instance removed the nodes of the others (#7111)
 - Fixed: Limitless, the V6 generic disco mode command was sent with the mode of the previous numbered disco command
 - Fixed: Lua, the fourth path argument of applyJsonPath was ignored
+- Fixed: MQTT Auto Discovery, an energy counter for returned energy (like the Shelly 'Returned energy') showed the used power as its usage; it now shows the returned power, and the used energy counter of the same device no longer shows a negative usage while energy is returned
 - Fixed: MQTT Auto Discovery, fans: a speed range above 100 (zigbee2mqtt uses 1..254) gave a wrong level and command, a fan that reports its speed in the same message as its state showed Off, and a fan with named speeds and a preset showed the preset and sent a json body to the attribute topic
 - Fixed: MQTT Auto Discovery, IR blasters (e.g. Tuya) can send learned codes again with Zigbee2MQTT 2.x, which writes its templates as value_json["key"] (#7156)
 - Fixed: MQTT Auto Discovery, the humidity of a combined climate thermostat device stayed at 50%, and the heating and cooling setpoints of such a device could not be set

@@ -241,6 +241,7 @@ private:
 	bool SendCoverCommand(_tMQTTASensor* pSensor, const std::string& DeviceName, std::string command, int level, const std::string& user);
 	void CleanValueTemplate(std::string& szValueTemplate);
 	void CleanValueTemplateLegacy(std::string& szValueTemplate);
+	std::string GetLegacyTemplate(const std::string& szTemplate);
 	bool RenderStateTemplate(const std::string& szJinjaTemplate, const Json::Value& root, std::string& szResult);
 	bool RenderCommandTemplate(const std::string& szJinjaTemplate, const std::string& szValue, std::string& szPayload, const char* szAltName = nullptr);
 	void LogJinjaFailureOnce(const std::string& szJinjaSource, const std::string& szError);
@@ -249,6 +250,7 @@ private:
 	std::string GetValueTemplateKey(const std::string& szValueTemplate);
 	std::string GetValueFromTemplate(const Json::Value& rootIn, const std::string& szTemplateIn, bool &isNull);
 	bool SetValueWithTemplate(Json::Value& root, std::string szValueTemplate, std::string szValue);
+	bool HaveReturnedEnergySensor(const _tMQTTASensor* pSensor);
 	bool GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& devType, uint8_t& subType, std::string& szOptions, int& nValue, std::string& sValue);
 	void ApplySignalLevelDevice(const _tMQTTASensor* pSensor);
 

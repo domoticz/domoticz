@@ -180,9 +180,9 @@ void MQTTAutoDiscover::on_disconnect(int rc)
 	MQTT::on_disconnect(rc);
 }
 
-//Templates that contain jinja statements ({% ... %}) can not be reduced to a simple key lookup.
-//CleanValueTemplate keeps the original template behind this prefix, so it can be rendered by JinjaLite.
-//If rendering fails, the legacy cleaning is applied to the original template instead.
+//Templates that are more than a plain key lookup (filters, expressions, {% ... %} statements) are rendered by JinjaLite.
+//CleanValueTemplate keeps the original template behind this prefix.
+//If rendering an expression fails, the legacy interpretation of the template is used instead.
 static const std::string JINJA_TEMPLATE_PREFIX = std::string("\x01") + "JINJA" + "\x01";
 
 static bool IsJinjaTemplate(const std::string& szTemplate)
@@ -195,16 +195,36 @@ static std::string GetJinjaSource(const std::string& szTemplate)
 	return szTemplate.substr(JINJA_TEMPLATE_PREFIX.size());
 }
 
+//A template that only looks up a key, like: {{ value_json.a.b }}, {{ value_json['a'][0] }} or {{ value }}
+static bool IsPlainKeyTemplate(const std::string& szTemplate)
+{
+	static const std::regex plainRe(R"(^\s*\{\{\s*(value_json(\s*\.\s*\w+|\s*\[\s*(\d+|'[^'\[\]]*'|"[^"\[\]]*")\s*\])+|value)\s*\}\}\s*$)");
+	return std::regex_match(szTemplate, plainRe);
+}
+
 void MQTTAutoDiscover::CleanValueTemplate(std::string& szValueTemplate)
 {
 	if (szValueTemplate.empty() || IsJinjaTemplate(szValueTemplate))
 		return;
-	if (JinjaLite::HasStatements(szValueTemplate))
+	if (
+		JinjaLite::HasStatements(szValueTemplate)
+		|| ((szValueTemplate.find("{{") != std::string::npos) && !IsPlainKeyTemplate(szValueTemplate))
+		)
 	{
 		szValueTemplate = JINJA_TEMPLATE_PREFIX + szValueTemplate;
 		return;
 	}
 	CleanValueTemplateLegacy(szValueTemplate);
+}
+
+//The legacy (key lookup) form of a template, also for one that is rendered by JinjaLite
+std::string MQTTAutoDiscover::GetLegacyTemplate(const std::string& szTemplate)
+{
+	if (!IsJinjaTemplate(szTemplate))
+		return szTemplate;
+	std::string szLegacy = GetJinjaSource(szTemplate);
+	CleanValueTemplateLegacy(szLegacy);
+	return szLegacy;
 }
 
 //A template that can not be rendered stays broken, report it once instead of on every message
@@ -253,7 +273,9 @@ bool MQTTAutoDiscover::RenderStateTemplate(const std::string& szJinjaTemplate, c
 	std::string szError;
 	if (!JinjaLite::Render(szSource, vars, szResult, &szError))
 	{
-		LogJinjaFailureOnce(szSource, szError);
+		//an expression falls back to its key lookup (see GetValueFromTemplate), only report templates with statements
+		if (JinjaLite::HasStatements(szSource))
+			LogJinjaFailureOnce(szSource, szError);
 		szResult.clear();
 		return false;
 	}
@@ -268,7 +290,10 @@ bool MQTTAutoDiscover::RenderCommandTemplate(const std::string& szJinjaTemplate,
 	if (!IsJinjaTemplate(szJinjaTemplate))
 		return false;
 	const std::string szSource = GetJinjaSource(szJinjaTemplate);
-	const Json::Value value(szValue);
+	if (szSource.find("value_json") != std::string::npos)
+		return false; //a state template, it has no meaning as a command
+	//a named value (like 'position') is a number, as in Home Assistant
+	const Json::Value value = ((szAltName != nullptr) && is_number(szValue)) ? Json::Value(atoi(szValue.c_str())) : Json::Value(szValue);
 	JinjaLite::VariableRefs vars;
 	vars["value"] = &value;
 	if (szAltName != nullptr)
@@ -369,12 +394,7 @@ void MQTTAutoDiscover::CleanValueTemplateLegacy(std::string& szValueTemplate)
 
 std::string MQTTAutoDiscover::GetValueTemplateKey(const std::string& szTemplate)
 {
-	std::string szValueTemplate = szTemplate;
-	if (IsJinjaTemplate(szValueTemplate))
-	{
-		szValueTemplate = GetJinjaSource(szValueTemplate);
-		CleanValueTemplateLegacy(szValueTemplate);
-	}
+	std::string szValueTemplate = GetLegacyTemplate(szTemplate);
 	std::string szKey = szValueTemplate;
 	std::vector<std::string> strarray;
 
@@ -409,13 +429,18 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(const Json::Value& rootIn, co
 
 	if (IsJinjaTemplate(szTemplateIn))
 	{
-		//A template with statements has no meaningful legacy interpretation, a failure means no value
 		std::string szResult;
 		if (!RenderStateTemplate(szTemplateIn, rootIn, szResult))
 		{
+			//An expression that can not be rendered falls back to the key lookup it contains,
+			//a template with statements has no meaningful legacy interpretation and means no value
+			if (!JinjaLite::HasStatements(GetJinjaSource(szTemplateIn)))
+				return GetValueFromTemplate(rootIn, GetLegacyTemplate(szTemplateIn), isNull);
 			isNull = true;
 			return "";
 		}
+		if (szResult == "None")
+			szResult.clear();
 		isNull = szResult.empty();
 		return szResult;
 	}
@@ -715,7 +740,11 @@ std::string MQTTAutoDiscover::GetValueFromTemplate(const Json::Value& rootIn, co
 bool MQTTAutoDiscover::SetValueWithTemplate(Json::Value& root, std::string szValueTemplate, std::string szValue)
 {
 	if (IsJinjaTemplate(szValueTemplate))
-		return false; //a template with statements is rendered with RenderCommandTemplate, a guess would send a wrong payload
+	{
+		if (JinjaLite::HasStatements(GetJinjaSource(szValueTemplate)))
+			return false; //a template with statements is rendered with RenderCommandTemplate, a guess would send a wrong payload
+		szValueTemplate = GetLegacyTemplate(szValueTemplate);
+	}
 	try
 	{
 		size_t pos;
@@ -809,13 +838,8 @@ The result will be:
 */
 void MQTTAutoDiscover::FixCommandTopic(std::string& command_topic, std::string& command_template)
 {
-	//Templates with statements are reduced to the field they use, the same way as before they were supported
-	std::string szTemplate(command_template);
-	if (IsJinjaTemplate(szTemplate))
-	{
-		szTemplate = GetJinjaSource(szTemplate);
-		CleanValueTemplateLegacy(szTemplate);
-	}
+	//Rendered templates are reduced to the field they use
+	std::string szTemplate = GetLegacyTemplate(command_template);
 	size_t pos = szTemplate.find("value_json.");
 	std::string value_json;
 	if (pos != std::string::npos)
@@ -1947,7 +1971,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		{
 			if (!pSensor->percentage_command_template.empty())
 			{
-				std::string tstring(pSensor->percentage_command_template);
+				std::string tstring = GetLegacyTemplate(pSensor->percentage_command_template);
 				stdreplace(tstring, "[value]", "");
 				std::vector<std::string> strarray;
 				StringSplit(tstring, ",", strarray);
@@ -2305,6 +2329,22 @@ void MQTTAutoDiscover::handle_auto_discovery_sensor_message(const struct mosquit
 		else
 		{
 			szValue = qMessage;
+			//A plain payload with a template that works on it, like: {{ value | float * 0.1 }}
+			if (
+				(match.second == MatchType::State)
+				&& (pSensor->state_topic == topic)
+				&& IsJinjaTemplate(pSensor->value_template)
+				&& JinjaUsesValueVariable(GetJinjaSource(pSensor->value_template))
+				)
+			{
+				std::string szRendered;
+				if (RenderStateTemplate(pSensor->value_template, Json::Value(qMessage), szRendered) && !szRendered.empty())
+				{
+					if (szRendered == "None")
+						continue;
+					szValue = szRendered;
+				}
+			}
 		}
 		pSensor->last_value = szValue;
 		pSensor->last_received = mytime(nullptr);
@@ -2408,6 +2448,32 @@ void MQTTAutoDiscover::handle_auto_discovery_availability(_tMQTTASensor* pSensor
 	}
 }
 
+//An energy or power sensor for what goes back to the grid, like 'returned_energy' or 'energy_export'
+static bool IsReturnedEnergySensor(const std::string& szUniqueID, const std::string& szName)
+{
+	std::string szText = szUniqueID + " " + szName;
+	stdlower(szText);
+	return (szText.find("return") != std::string::npos) || (szText.find("export") != std::string::npos);
+}
+
+bool MQTTAutoDiscover::HaveReturnedEnergySensor(const _tMQTTASensor* pSensor)
+{
+	auto itt = m_discovered_devices.find(pSensor->device_identifiers);
+	if (itt == m_discovered_devices.end())
+		return false;
+	for (const auto& ittSensorID : itt->second.sensor_ids)
+	{
+		auto ittSensor = m_discovered_sensors.find(ittSensorID.first);
+		if (ittSensor == m_discovered_sensors.end())
+			continue;
+		std::string szUnit = utf8_to_string(ittSensor->second.unit_of_measurement);
+		stdlower(szUnit);
+		if (((szUnit == "kwh") || (szUnit == "wh")) && IsReturnedEnergySensor(ittSensor->second.unique_id, ittSensor->second.name))
+			return true;
+	}
+	return false;
+}
+
 bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& devType, uint8_t& subType, std::string& szOptions, int& nValue, std::string& sValue)
 {
 	devType = pTypeGeneral;
@@ -2497,25 +2563,35 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 
 		sValue = std_format("%.3f", fUsage);
 
-		float fkWh = 0.0F;
-		_tMQTTASensor* pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "kwh");
-		if (!pkWhSensor)
-			pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "wh");
-		if (!pkWhSensor)
-			pkWhSensor = get_auto_discovery_sensor_unit(pSensor, "wm");
-
-		if (pkWhSensor)
+		// Trigger an extra update for the energy counters that use this Watt value
+		// (a device can have a counter for the used and one for the returned energy)
+		std::vector<_tMQTTASensor*> kWhSensors;
+		auto ittDevice = m_discovered_devices.find(pSensor->device_identifiers);
+		if (ittDevice != m_discovered_devices.end())
 		{
-			if (
-				(pkWhSensor->last_received != 0)
-				&& (!pkWhSensor->last_value.empty())
-				)
+			for (const auto& ittSensorID : ittDevice->second.sensor_ids)
 			{
-				mosquitto_message xmessage;
-				xmessage.retain = false;
-				// Trigger extra update for the kWh sensor with the new Watt value
-				handle_auto_discovery_sensor(pkWhSensor, &xmessage);
+				auto ittSensor = m_discovered_sensors.find(ittSensorID.first);
+				if (ittSensor == m_discovered_sensors.end())
+					continue;
+				_tMQTTASensor* pkWhSensor = &ittSensor->second;
+				std::string szkWhUnit = utf8_to_string(pkWhSensor->unit_of_measurement);
+				stdlower(szkWhUnit);
+				if (
+					((szkWhUnit == "kwh") || (szkWhUnit == "wh") || (szkWhUnit == "wm"))
+					&& (pkWhSensor->component_type == "sensor")
+					&& (pkWhSensor->last_received != 0)
+					&& (!pkWhSensor->last_value.empty())
+					&& (get_auto_discovery_sensor_WATT_unit(pkWhSensor) == pSensor)
+					)
+					kWhSensors.push_back(pkWhSensor);
 			}
+		}
+		for (auto pkWhSensor : kWhSensors)
+		{
+			mosquitto_message xmessage;
+			xmessage.retain = false;
+			handle_auto_discovery_sensor(pkWhSensor, &xmessage);
 		}
 	}
 	else if (
@@ -2556,6 +2632,14 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		if (pWattSensor && pWattSensor->last_received != 0)
 		{
 			dUsage = atof(pWattSensor->sValue.c_str());
+			if (!IsReturnedEnergySensor(pWattSensor->unique_id, pWattSensor->name))
+			{
+				//One power sensor for both directions, negative is returned (like Shelly)
+				if (IsReturnedEnergySensor(pSensor->unique_id, pSensor->name))
+					dUsage = (dUsage < 0) ? -dUsage : 0;
+				else if ((dUsage < 0) && HaveReturnedEnergySensor(pSensor))
+					dUsage = 0;
+			}
 		}
 		sValue = std_format("%.3f;%.3f", dUsage, dkWh * multiply);
 	}
@@ -6095,14 +6179,14 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 			{
 				szSendValue = szRendered;
 			}
-			else if (IsJinjaTemplate(pSensor->value_template))
-			{
-				Log(LOG_ERROR, "%s device unhandled value_template (%s/%s)", pSensor->component_type.c_str(), DeviceID.c_str(), DeviceName.c_str());
-				return false;
-			}
 			else if (SetValueWithTemplate(root, pSensor->value_template, szSendValue))
 			{
 				szSendValue = JSonToRawString(root);
+			}
+			else if (IsJinjaTemplate(pSensor->value_template) && JinjaLite::HasStatements(GetJinjaSource(pSensor->value_template)))
+			{
+				Log(LOG_ERROR, "%s device unhandled value_template (%s/%s)", pSensor->component_type.c_str(), DeviceID.c_str(), DeviceName.c_str());
+				return false;
 			}
 		}
 	}
@@ -6320,7 +6404,7 @@ bool MQTTAutoDiscover::SendSwitchCommand(const std::string& DeviceID, const std:
 				}
 
 				// Check if the rgb_command_template suggests to use "red", "green"... instead of the default "r", "g"... (e.g. Fibaro FGRGBW)
-				if (pSensor->rgb_command_template.find("red: red") != std::string::npos)
+				if (GetLegacyTemplate(pSensor->rgb_command_template).find("red: red") != std::string::npos)
 				{
 					// For the Fibaro FGRGBW dimmer:
 					//  "rgb_command_template": "{{ {'red': red, 'green': green, 'blue': blue}|to_json }}",  
@@ -6889,13 +6973,14 @@ bool MQTTAutoDiscover::SendCoverCommand(_tMQTTASensor* pSensor, const std::strin
 			}
 			else
 			{
-				if (IsJinjaTemplate(pSensor->set_position_template))
+				if (RenderCommandTemplate(pSensor->set_position_template, std::to_string(iValue), szSendValue, "position"))
 				{
-					if (!RenderCommandTemplate(pSensor->set_position_template, std::to_string(iValue), szSendValue, "position"))
-					{
-						Log(LOG_ERROR, "Cover device unhandled set_position_template (%s/%s)", pSensor->unique_id.c_str(), DeviceName.c_str());
-						return false;
-					}
+					//the rendered template is the payload
+				}
+				else if (IsJinjaTemplate(pSensor->set_position_template) && JinjaLite::HasStatements(GetJinjaSource(pSensor->set_position_template)))
+				{
+					Log(LOG_ERROR, "Cover device unhandled set_position_template (%s/%s)", pSensor->unique_id.c_str(), DeviceName.c_str());
+					return false;
 				}
 				else if (pSensor->set_position_template.find("%d") != std::string::npos)
 				{
