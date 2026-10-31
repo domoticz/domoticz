@@ -1795,6 +1795,20 @@ describe('device', function()
 			} }, commandArray)
 		end)
 
+		it('should read a youless daily total without decimals', function()
+			local device = getDevice(domoticz, {
+				['name'] = 'myYouless',
+				['type'] = 'YouLess Meter',
+				['subType'] = 'YouLess counter',
+				['rawData'] = { [1] = 123, [2] = 666},
+				['additionalDataData'] = {
+					['counterToday'] = '1'
+				}
+			})
+
+			assert.is_same(1000, device.counterDeliveredToday)
+		end)
+
 		describe('Quiet device ( quietOn and quietOff', function()
 
 			local commandArray = {}
