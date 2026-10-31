@@ -1811,8 +1811,8 @@ function Counter(item) {
         this.LogLink = this.onClick = "dzNavigateHash('#/Devices/" + this.index + "/Log')";
 
         if (typeof item.CounterToday != 'undefined') {
-            this.status = this.data;
-            this.data = item.CounterToday;
+            this.status = formatCounterText(this.data, item);
+            this.data = formatCounterText(item.CounterToday, item);
         }
         if (typeof item.CounterDeliv != 'undefined') {
             this.data = this.status;
@@ -1874,7 +1874,7 @@ function Current(item) {
             this.status = (item.Usage != this.data) ? item.Usage : '';
         }
         if (typeof item.CounterToday != 'undefined') {
-            this.status += ' ' + $.t("Today") + ': ' + item.CounterToday;
+            this.status += ' ' + $.t("Today") + ': ' + formatCounterText(item.CounterToday, item);
         }
         if (typeof item.CounterDeliv != 'undefined') {
             if (item.CounterDeliv != 0) {

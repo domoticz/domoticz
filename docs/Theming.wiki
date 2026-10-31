@@ -303,6 +303,7 @@ body table#itemtablesmall tbody tr td:first-child { background-color: #2a3a50 !i
 * '''Do not override Bootstrap layout globally.''' Overriding <code>.row-fluid</code>, <code>.span*</code>, or <code>.container-fluid</code> at the top level breaks page structure. Scope overrides to specific containers.
 * '''Scope custom selectors.''' Target <code>#holder .item</code> rather than bare <code>.item</code>, to avoid interfering with modals and other contexts.
 * '''Do not use <code>!important</code> on variable-driven properties.''' It defeats the purpose of the variable contract and makes your overrides impossible for downstream themes to fix.
+* '''Show counters with <code>formatCounterText(text, device)</code>''' when your theme builds its own device cards. The JSON keeps a plain counter's <code>Counter</code>, <code>CounterToday</code> and <code>Data</code> unrounded, because dzVents and scripts calculate with them, so a divider of 60 arrives as <code>4566.666667 h</code>. The helper (in <code>js/domoticz.js</code>) shows such a value with at most three decimals, like the stock cards do (<code>4566.667 h</code>), and returns any other device's text unchanged.
 * '''Do not import extras_and_animations.css by default''' unless your theme explicitly wants transitions and hover animations. When you do want them, add <code>@import url("extras_and_animations.css");</code> to your <code>custom.css</code>.
 
 == Button systems ==

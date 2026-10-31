@@ -142,7 +142,7 @@ define([
 
                     var fallbackUnit = d.vunit || d.ValueUnits || '';
                     var hasToday     = !!d.CounterToday;
-                    var primary      = hasToday ? d.CounterToday : (d.Counter || d.Data || '—');
+                    var primary      = formatCounterText(hasToday ? d.CounterToday : (d.Counter || d.Data || '—'), d);
 
                     var match   = (primary || '').match(/^([\d.\-]+)\s*(.*)?$/);
                     var unit    = match ? (match[2] || fallbackUnit) : fallbackUnit;
@@ -151,7 +151,7 @@ define([
                     ctrl.label  = labelOverride || d.Name || '';
                     ctrl.numVal = match ? parseFloat(match[1]) : NaN;
 
-                    ctrl.counterTotal = hasToday ? formatTotal(d.Counter || d.Data, unit) : null;
+                    ctrl.counterTotal = hasToday ? formatTotal(formatCounterText(d.Counter || d.Data, d), unit) : null;
 
                     var hasDeliv = typeof d.CounterDeliv !== 'undefined' && d.CounterDeliv != 0;
                     if (hasDeliv) {

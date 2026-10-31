@@ -93,7 +93,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 
                         // Today card
                         if (device.CounterToday !== undefined && device.CounterToday !== null && String(device.CounterToday) !== '') {
-                            var todayValue = String(device.CounterToday);
+                            var todayValue = String(formatCounterText(device.CounterToday, device));
                             // Water: backend sends m3, convert to chart unit (Liter) to match charts
                             if (device.SwitchTypeVal === chart.deviceTypes.Water && todayValue.indexOf('Liter') === -1) {
                                 var numVal = parseFloat(todayValue) * 1000;

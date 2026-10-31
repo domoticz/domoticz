@@ -343,9 +343,9 @@ define(['app', 'widgets/dzBar', 'icons/dzIconPicker', 'icons/dzDeviceIcon'], fun
                     } else if (device.SubType === 'kWh' || device.Type === 'Energy' || device.Type === 'Power' || device.Type === 'Current/Energy') {
                         dataStr = device.Usage || '';
                     } else if (device.SubType === 'Gas' || device.SubType === 'RFXMeter counter' || device.SubType === 'Counter Incremental') {
-                        dataStr = device.CounterToday || '';
+                        dataStr = formatCounterText(device.CounterToday || '', device);
                     } else if (device.SubType === 'Managed Counter') {
-                        dataStr = device.Counter || '';
+                        dataStr = formatCounterText(device.Counter || '', device);
                     } else if (device.Type === 'Setpoint' && device.SubType === 'SetPoint') {
                         dataStr = device.SetPoint !== undefined ? String(device.SetPoint) : (device.Data || '');
                     } else {
@@ -453,9 +453,9 @@ define(['app', 'widgets/dzBar', 'icons/dzIconPicker', 'icons/dzDeviceIcon'], fun
                         }
                     } else if (ctrl.isCounter()) {
                         if ((device.SubType === 'Gas') || (device.SubType === 'RFXMeter counter') || (device.SubType === 'Counter Incremental')) {
-                            bigtext = device.CounterToday;
+                            bigtext = formatCounterText(device.CounterToday, device);
                         } else if (device.SubType === 'Managed Counter') {
-                            bigtext = device.Counter;
+                            bigtext = formatCounterText(device.Counter, device);
                         }
                     } else if (ctrl.isSetpoint()) {
                         bigtext = device.Data + ' ' + device.vunit;
@@ -485,7 +485,7 @@ define(['app', 'widgets/dzBar', 'icons/dzIconPicker', 'icons/dzDeviceIcon'], fun
 
                     if (ctrl.isCounter()) {
                         if ((device.SubType === 'Gas') || (device.SubType === 'RFXMeter counter') || (device.SubType === 'Counter Incremental')) {
-                            status = device.Counter + (device.vunit ? ' ' + device.vunit : '');
+                            status = formatCounterText(device.Counter, device) + (device.vunit ? ' ' + device.vunit : '');
                         } else if (device.SubType !== 'Managed Counter') {
                             if (device.Type === 'P1 Smart Meter') {
                                 status = $.t('Today') + ': ' + device.CounterToday + ', ' + device.Counter;

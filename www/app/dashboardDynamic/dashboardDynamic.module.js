@@ -184,7 +184,7 @@ define(['app', 'icons/dzIconService'], function(app) {
             }
             // Counters that report today's value (incremental, RFXMeter): total plus today's figure, as on the device widget
             if (d.CounterToday !== undefined) {
-                return { value: roundIfLarge(d.Data || '\u2014'), secondValue: $.t('Today') + ': ' + d.CounterToday,
+                return { value: roundIfLarge(formatCounterText(d.Data, d) || '\u2014'), secondValue: $.t('Today') + ': ' + formatCounterText(d.CounterToday, d),
                          isOn: false, unit: '', unit2: null, typeClass: 'generic' };
             }
             return { value: roundIfLarge(d.Data || '\u2014'), isOn: false, unit: '', unit2: null, secondValue: null, typeClass: 'generic' };
