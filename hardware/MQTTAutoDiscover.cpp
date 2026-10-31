@@ -1988,6 +1988,7 @@ void MQTTAutoDiscover::on_auto_discovery_message(const struct mosquitto_message*
 		CleanValueTemplate(pSensor->temperature_high_state_template);
 		CleanValueTemplate(pSensor->temperature_low_state_template);
 		CleanValueTemplate(pSensor->current_temperature_template);
+		CleanValueTemplate(pSensor->current_humidity_template);
 		CleanValueTemplate(pSensor->preset_mode_value_template);
 		CleanValueTemplate(pSensor->preset_mode_command_template);
 		CleanValueTemplate(pSensor->action_template);
@@ -3811,6 +3812,32 @@ void MQTTAutoDiscover::handle_auto_discovery_select(_tMQTTASensor* pSensor, cons
 	}
 }
 
+// For a climate device with only a heating (low) and cooling (high) setpoint:
+// mode 'cool' uses the cooling setpoint, every other mode the heating setpoint
+bool MQTTAutoDiscover::UseHighClimateSetpoint(const _tMQTTASensor* pSensor)
+{
+	if (pSensor->temperature_low_command_topic.empty())
+		return !pSensor->temperature_high_command_topic.empty();
+	if (pSensor->temperature_high_command_topic.empty())
+		return false;
+	return (pSensor->climate_mode == "cool");
+}
+
+bool MQTTAutoDiscover::GetActiveClimateSetpoint(const _tMQTTASensor* pSensor, double& setpoint)
+{
+	if (UseHighClimateSetpoint(pSensor))
+	{
+		if (!pSensor->bHaveSetpointHigh)
+			return false;
+		setpoint = pSensor->setpoint_high;
+		return true;
+	}
+	if (!pSensor->bHaveSetpointLow)
+		return false;
+	setpoint = pSensor->setpoint_low;
+	return true;
+}
+
 bool MQTTAutoDiscover::InsertUpdateSetpoint(
 	_tMQTTASensor* pSensor,
 	const std::string& command_topic,
@@ -3945,7 +3972,10 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 	if (pSensor->devType == 0)
 	{
 		// If both topics exist, check database for old devices
-		if (!pSensor->temperature_command_topic.empty() && !pSensor->current_temperature_topic.empty())
+		bool bHasSetpointTopic = !pSensor->temperature_command_topic.empty()
+			|| !pSensor->temperature_low_command_topic.empty()
+			|| !pSensor->temperature_high_command_topic.empty();
+		if (bHasSetpointTopic && !pSensor->current_temperature_topic.empty())
 		{
 			std::vector<std::vector<std::string>> old_dev;
 			old_dev = m_sql.safe_query("SELECT COUNT(*) FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d OR Type==%d)",
@@ -4077,6 +4107,8 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 					Log(LOG_ERROR, "Climate device invalid/unknown mode received! (%s: %s)", pSensor->unique_id.c_str(), current_mode.c_str());
 					bValid = false;
 				}
+				else if (!current_mode.empty())
+					pSensor->climate_mode = current_mode;
 
 				if (bValid)
 				{
@@ -4790,6 +4822,29 @@ void MQTTAutoDiscover::handle_auto_discovery_climate(_tMQTTASensor* pSensor, con
 				temp_setpoint = atof(qMessage.c_str());
 				bHaveSetpoint = true;
 			}
+		}
+
+		// No single setpoint: show the heating (low) or cooling (high) setpoint that belongs to the mode
+		if (pSensor->temperature_command_topic.empty())
+		{
+			auto parseSetpoint = [&](const std::string& state_topic, const std::string& state_template, double& value, bool& bHave) {
+				if (state_topic != topic)
+					return false;
+				std::string tstring;
+				if (bIsJSON && !state_template.empty())
+					tstring = GetValueFromTemplate(root, state_template, isNull);
+				else if (!bIsJSON)
+					tstring = qMessage;
+				if (tstring.empty())
+					return false;
+				value = atof(tstring.c_str());
+				bHave = true;
+				return true;
+			};
+			bool bChanged = parseSetpoint(pSensor->temperature_low_state_topic, pSensor->temperature_low_state_template, pSensor->setpoint_low, pSensor->bHaveSetpointLow);
+			bChanged |= parseSetpoint(pSensor->temperature_high_state_topic, pSensor->temperature_high_state_template, pSensor->setpoint_high, pSensor->bHaveSetpointHigh);
+			if (bChanged || (pSensor->mode_state_topic == topic))
+				bHaveSetpoint = GetActiveClimateSetpoint(pSensor, temp_setpoint);
 		}
 
 		// Parse current humidity
@@ -6852,9 +6907,10 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, const uint8_t Un
 
 	std::vector<std::vector<std::string>> result;
 
-	// Use the flag to determine device type
+	// Use the flag to determine device type; the heating/cooling setpoints on units 2/3 are always setpoint devices
 	bool bIsTempHum = false;
-	if (!pSensor->bUseLegacyClimate)
+	bool bIsThermostat6 = (!pSensor->bUseLegacyClimate) && (Unit == CLIMATE_TEMP_SETPOINT_UNIT);
+	if (bIsThermostat6)
 	{
 		// Check for Thermostat6 device (combined temp+setpoint or temp+hum+setpoint)
 		result = m_sql.safe_query("SELECT Name,sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)",
@@ -6879,7 +6935,13 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, const uint8_t Un
 
 	std::string szTopic = pSensor->state_topic;
 	std::string szSendTemplate;
-	switch (Unit)
+	uint8_t SendUnit = Unit;
+	if (bIsThermostat6 && pSensor->temperature_command_topic.empty())
+	{
+		// Combined device without a single setpoint: set the heating or cooling setpoint that belongs to the mode
+		SendUnit = UseHighClimateSetpoint(pSensor) ? CLIMATE_HIGH_TEMP_SETPOINT_UNIT : CLIMATE_LOW_TEMP_SETPOINT_UNIT;
+	}
+	switch (SendUnit)
 	{
 		case CLIMATE_TEMP_SETPOINT_UNIT:
 			if (!pSensor->temperature_command_topic.empty())
@@ -6917,10 +6979,21 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, const uint8_t Un
 
 	SendMessage(szTopic, szSendValue);
 
+	if (SendUnit == CLIMATE_LOW_TEMP_SETPOINT_UNIT)
+	{
+		pSensor->setpoint_low = Temp;
+		pSensor->bHaveSetpointLow = true;
+	}
+	else if (SendUnit == CLIMATE_HIGH_TEMP_SETPOINT_UNIT)
+	{
+		pSensor->setpoint_high = Temp;
+		pSensor->bHaveSetpointHigh = true;
+	}
+
 	//Because thermostats could be battery operated and not listening 24/7
 	//we force a value update internally in Domoticz so the user sees the just set SetPoint
 
-	if (!pSensor->bUseLegacyClimate)
+	if (bIsThermostat6)
 	{
 		// Update Thermostat6 device - preserve current temp and humidity, update setpoint
 		std::vector<std::string> fields;

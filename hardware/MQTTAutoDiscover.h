@@ -165,6 +165,13 @@ class MQTTAutoDiscover : public MQTT
 
 		bool bOnline = false;
 		bool bUseLegacyClimate = false;
+		// Climate devices with only a heating (low) and cooling (high) setpoint: the combined
+		// thermostat device shows the one that belongs to the current mode
+		std::string climate_mode;
+		double setpoint_low = 0;
+		double setpoint_high = 0;
+		bool bHaveSetpointLow = false;
+		bool bHaveSetpointHigh = false;
 		time_t last_received = 0;
 		std::string last_value;
 		double prev_value = 0;
@@ -252,6 +259,8 @@ private:
 		const int Unit,
 		const struct mosquitto_message* message
 		);
+	bool UseHighClimateSetpoint(const _tMQTTASensor* pSensor);
+	bool GetActiveClimateSetpoint(const _tMQTTASensor* pSensor, double& setpoint);
 
 	void on_auto_discovery_message(const struct mosquitto_message* message);
 	void handle_auto_discovery_sensor_message(const struct mosquitto_message* message,const std::string &subscribed_topic);
