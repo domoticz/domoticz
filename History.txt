@@ -33,6 +33,7 @@ Version 2026.xxxx
 - Fixed: Dashboard Dynamic, the Website Embed widget shows the 'Script execution enabled' warning only while editing, and sends the Domoticz origin as referrer so sites like YouTube can be embedded (#7038)
 - Fixed: Database, restoring a backup now checks that the file is a valid Domoticz database before replacing the current one
 - Fixed: dzVents, an integer sValue3 in an IFTTT trigger overwrote sValue2
+- Fixed: dzVents, the YouLess counterDeliveredToday read 0 when the day total was a single digit without decimals, as a YouLess counter with the meter type Counter and no unit shows it
 - Fixed: EcoDevices, RT2 mode now reads BBRHPJR and IINST3; the XML tag names were misspelled
 - Fixed: Energy Dashboard, a device that no longer exists is stored as Disabled when saving the settings instead of idx 0, so a removed battery is no longer drawn at 0 Watt (#7163)
 - Fixed: Enever, an invalid provider response no longer overwrites the cached valid prices
