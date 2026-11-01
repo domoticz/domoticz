@@ -22,7 +22,7 @@ Version 2026.xxxx
 - Fixed: Alexa, ReportState now includes the color of RGB dimmers; the check on the stored color was inverted
 - Fixed: Cameras, the live camera dialog keeps refreshing after a failed snapshot instead of staying blank (#7042)
 - Fixed: Cayenne LPP, analog input and output values are decoded as signed, negative values were shown as large positive ones
-- Fixed: Charts, 'Download PNG image' uses the heading of the chart (for example 'Usage Last Month') instead of 'Chart title', and the exported Compare chart of every log type keeps the correct month and year labels (#7154)
+- Fixed: Charts, 'Download PNG image' uses the heading of the chart (for example 'Usage Last Month') instead of 'Chart title', also for the hourly, weekly pattern, last year heatmap and cumulative charts of a counter, and the exported Compare chart of every log type keeps the correct month and year labels (#7154)
 - Fixed: Charts, the Average in the tooltip of the month and year graphs is rounded to 2 decimals instead of showing the raw average (#7144)
 - Fixed: Charts, the Compare view dropped every group above 20,000 kWh for normal counters and lost the trend of the following group (#7047)
 - Fixed: Charts, the cumulative chart starts every year on 1 January, also when the first days of a year have no data (#7145)

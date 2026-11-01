@@ -80,7 +80,12 @@ define(['app'], function (app) {
                     marginTop: 40,
                     marginBottom: 60
                 },
-                title: null,
+                title: { text: null },
+                exporting: {
+                    chartOptions: {
+                        title: { text: self.chartTitle }
+                    }
+                },
                 xAxis: {
                     categories: hourCategories,
                     title: { text: null }
@@ -194,10 +199,7 @@ define(['app'], function (app) {
                             self.fixWeeklyPattern();
                         }
                     });
-                    if (!self.chartDefinition.exporting) {
-                        self.chartDefinition.exporting = { buttons: { contextButton: {} } };
-                    }
-                    self.chartDefinition.exporting.buttons.contextButton.menuItems = menuItems;
+                    self.chartDefinition.exporting.buttons = { contextButton: { menuItems: menuItems } };
                 }
             });
         };

@@ -68,7 +68,7 @@ define(['app', 'luxon'], function (app, luxon) {
 		$scope.chartTitle = '';
 
 		$scope.chartDefinitionBase = {
-			title: null,
+			title: { text: null },
 			chart: {
 				marginTop: 45
 			},
@@ -163,6 +163,12 @@ define(['app', 'luxon'], function (app, luxon) {
 			]
 		};
 
+		// The title is drawn above the chart, so the exported image gets it through chartOptions
+		function setChartTitle(title) {
+			$scope.chartTitle = title;
+			$scope.chartDefinitionDay.exporting.chartOptions = { title: { text: title } };
+		}
+
 		$scope.setWeekday = function(actDay) {
 			$scope.actDay = actDay;
 			if ((actDay == $scope.currentDay) || (actDay == -1)) {
@@ -177,13 +183,13 @@ define(['app', 'luxon'], function (app, luxon) {
 			$scope.actDay = actDay;
 			if ($scope.actDay >= 0) {
 				var dayName = $scope.chartDefinitionWeek.series[0].data[actDay][0];
-				$scope.chartTitle = dayName + ' ' + $.t('Hourly Energy') + ' ' + $scope.energyLabel;
+				setChartTitle(dayName + ' ' + $.t('Hourly Energy') + ' ' + $scope.energyLabel);
 				$scope.chartDefinitionDay.tooltip.headerFormat = '<span style="font-size: 10px">' + dayName + ' {point.x:%H:%M}</span><br/>';
 				$scope.chart_weekday_hour_kwh = JSON.parse(JSON.stringify($scope.weekday_hour_kwh[actDay]));
 				$scope.chartDefinitionDay.series[0].data = $scope.chart_weekday_hour_kwh;
 			} else {
 				if ($scope.actDay == -1) {
-					$scope.chartTitle = $.t('Hourly Energy') + ' ' + $scope.energyLabel;
+					setChartTitle($.t('Hourly Energy') + ' ' + $scope.energyLabel);
 					$scope.chartDefinitionDay.tooltip.headerFormat = '<span style="font-size: 10px">{point.x:%H:%M}</span><br/>';
 					$scope.chart_weekday_hour_kwh = JSON.parse(JSON.stringify($scope.daily_hour_kwh));
 					$scope.chartDefinitionDay.series[0].data = $scope.chart_weekday_hour_kwh;
@@ -297,7 +303,6 @@ define(['app', 'luxon'], function (app, luxon) {
 
 			$scope.chartSeriesDailyHour.name = $scope.energyLabel;
 			$scope.chartSeriesWeekday.name = $scope.energyLabel;
-			$scope.chartTitle = hourlyTitle;
 			$scope.chartDefinitionBase.yAxis[0].title.text = yAxisTitle;
 			$scope.chartDefinitionWeek.title.text = weeklyTitle;
 			$scope.chartDefinitionWeek.yAxis.title.text = yAxisTitle;
@@ -307,6 +312,7 @@ define(['app', 'luxon'], function (app, luxon) {
 				JSON.parse(JSON.stringify($scope.chartSeriesDailyHour))
 			];
 			$scope.chartDefinitionDay.series[0].data = $scope.chart_weekday_hour_kwh;
+			setChartTitle(hourlyTitle);
 
 			$scope.chart_buttons = Highcharts.getOptions().exporting.buttons.contextButton.menuItems.slice();
 			$scope.chart_buttons.push({
