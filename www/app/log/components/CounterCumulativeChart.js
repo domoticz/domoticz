@@ -130,7 +130,12 @@ define(['app'], function (app) {
 
             self.chartDefinition = {
                 chart: { type: 'spline', zoomType: 'x' },
-                title: null,
+                title: { text: null },
+                exporting: {
+                    chartOptions: {
+                        title: { text: self.chartTitle }
+                    }
+                },
                 xAxis: {
                     min: 1,
                     max: leap ? 366 : 365,

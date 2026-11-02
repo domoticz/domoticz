@@ -126,7 +126,12 @@ define(['app'], function (app) {
                     marginTop: 35,
                     marginBottom: 45
                 },
-                title: null,
+                title: { text: null },
+                exporting: {
+                    chartOptions: {
+                        title: { text: self.chartTitle }
+                    }
+                },
                 xAxis: {
                     categories: xAxisCategories,
                     tickPositions: xAxisTickPositions,
