@@ -5698,42 +5698,42 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					bReceivedFanSpeed = true;
 				}
 			}
-			/*
-						if (pSensor->brightness_state_topic == pSensor->last_topic)
-						{
-							std::string szValue;
-							if (!pSensor->brightness_value_template.empty())
-							{
-								szValue = GetValueFromTemplate(root, pSensor->brightness_value_template, isNull);
-								if (!szValue.empty())
-								{
-									bHandledValue = true;
-								}
-							}
-							if (!bHandledValue)
-							{
-								if (!root["value"].empty())
-								{
-									szValue = root["value"].asString();
-									bHandledValue = true;
-								}
-							}
-							if (bHandledValue)
-							{
-								level = atoi(szValue.c_str());
-
-								if (pSensor->bHave_brightness_scale)
-									level = (int)round((100.0 / pSensor->brightness_scale) * level);
-
-								if (level == 0)
-									szSwitchCmd = "off";
-								else if (level == 100)
-									szSwitchCmd = "on";
-								else
-									szSwitchCmd = "Set Level";
-							}
-						}
-			*/
+			// The level arrives on brightness_state_topic through brightness_value_template (e.g. Z-Wave JS UI
+			// dimmers, where state and brightness share one topic and the state template only says ON/OFF)
+			if (
+				(!bReceivedLevel)
+				&& (pSensor->brightness_state_topic == pSensor->last_topic)
+				&& (!pSensor->brightness_value_template.empty())
+				&& (pSensor->brightness_scale > 0)
+				)
+			{
+				bool isNull = false;
+				std::string szLevel = GetValueFromTemplate(root, pSensor->brightness_value_template, isNull);
+				if ((!isNull) && is_number(szLevel))
+				{
+					level = (int)round((100.0 / pSensor->brightness_scale) * atof(szLevel.c_str()));
+					if (level > 100)
+						level = 100;
+					else if (level < 0)
+						level = 0;
+					bReceivedLevel = true;
+					if (
+						(szSwitchCmd != pSensor->payload_on)
+						&& (szSwitchCmd != pSensor->payload_off))
+					{
+						if (level == 0)
+							szSwitchCmd = pSensor->payload_off;
+						else if (level == 100)
+							szSwitchCmd = pSensor->payload_on;
+						else
+							szSwitchCmd = "Set Level";
+					}
+					else if ((szSwitchCmd == pSensor->payload_on) && (level > 0) && (level < 100))
+					{
+						szSwitchCmd = "Set Level";
+					}
+				}
+			}
 			if (!root["brightness"].empty())
 			{
 				float dLevel = (100.F / pSensor->brightness_scale) * root["brightness"].asInt();
