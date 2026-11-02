@@ -5590,7 +5590,17 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 				JSonRenameKey(root["color"], "coldWhite", "c");
 			}
 
-			if (root["state"].empty() && root["color"].isObject())
+			if (
+				root["state"].empty() && root["color"].isObject()
+				&& (!pSensor->state_topic.empty())
+				&& (pSensor->state_topic != pSensor->last_topic)
+				)
+			{
+				// The on/off state has its own topic (e.g. Z-Wave JS UI, where the color stays set while the
+				// level is 0), so a color report keeps the current state
+				root["state"] = (nValue != gswitch_sOff) ? pSensor->payload_on : pSensor->payload_off;
+			}
+			else if (root["state"].empty() && root["color"].isObject())
 			{
 				// The on/off state is omitted in the message, so guess it from the color components (e.g. Fibaro FGRGBW)
 				int r = root["color"]["r"].asInt();
