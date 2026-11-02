@@ -20,11 +20,14 @@ Do not replay a capture to the broker it came from: the retained discovery confi
 those of the real devices. Use a separate test broker.
 """
 import argparse
+import getpass
+import os
 import ssl
 import sys
 import time
 
-VERSION = '20261102-01'
+VERSION = '20261102-02'
+ASK = object()
 
 
 def parse_args():
@@ -33,7 +36,9 @@ def parse_args():
     ap.add_argument('-h', dest='host', default='127.0.0.1', help='hostname or IP address of the MQTT broker (default 127.0.0.1)')
     ap.add_argument('-p', dest='port', type=int, default=None, help='port of the MQTT broker (default 1883, 8883 with --tls)')
     ap.add_argument('-u', dest='user', default='', help='user for the MQTT broker')
-    ap.add_argument('-P', dest='password', default='', help='password for the MQTT broker (never shown)')
+    ap.add_argument('-P', dest='password', nargs='?', const=ASK, default=None,
+                    help='password for the MQTT broker (never shown); -P without a value asks for it, '
+                    'without -P the environment variable MQTT_PASSWORD is used')
     ap.add_argument('--tls', action='store_true', help='connect with TLS')
     ap.add_argument('--cafile', default=None, help='CA certificate file for TLS (implies --tls)')
     ap.add_argument('--insecure', action='store_true', help='TLS without checking the certificate (implies --tls)')
@@ -43,6 +48,10 @@ def parse_args():
     ap.add_argument('-w', dest='wait', type=int, default=0, help='wait this many milliseconds between messages (default 0)')
     ap.add_argument('-d', dest='dryrun', action='store_true', help='dry run: only show the selected records, send nothing')
     a = ap.parse_args()
+    if a.password is ASK:
+        a.password = '' if a.dryrun else getpass.getpass('Password for the MQTT broker: ')
+    elif a.password is None:
+        a.password = os.environ.get('MQTT_PASSWORD', '')
     if a.cafile or a.insecure:
         a.tls = True
     if a.port is None:

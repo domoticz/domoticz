@@ -20,12 +20,14 @@ When you are asked for a copy of the MQTT messages of your devices:
 
 1. Go to the directory `domoticz/scripts/support/mqtt_ad`.
 2. Run `mqtt_ad_record.py` with the address and login of your broker, for example
-   `python3 mqtt_ad_record.py -h 192.168.1.10 -u UserId -P Password -t 300 -l -x`
+   `python3 mqtt_ad_record.py -h 192.168.1.10 -u UserId -P -t 300 -l -x` (`-P` without a value asks for the
+   password)
 3. While it records, operate the devices that have the problem, so their state messages are included.
 4. Attach the **mqtt_ad_record_*XXX*.log** file to the GitHub issue (or zip it when it is large).
 
 Use `-x` (and `-X` with your room names) when you do not want to share IP addresses, MAC addresses, device ids
-or names. The password is never shown or written to the file.
+or names. The password is never shown or written to the file. To keep it out of the process list and the shell
+history, give `-P` without a value (the script asks for it) or set the environment variable `MQTT_PASSWORD`.
 
 ## mqtt_ad_record.py
 
@@ -33,8 +35,8 @@ Captures the discovery configs and every message on a topic that one of those co
 brightness_state_topic, rgb_state_topic, availability, json_attributes_topic and so on), whatever the topic is
 called. So Zigbee2MQTT, Z-Wave JS UI (`.../currentValue`, `.../currentColor`), Tasmota, Shelly, ESPHome and others
 are all captured completely, and messages of other applications on the same broker are left out. The `~` base
-topic and abbreviated keys (`stat_t`, `bri_stat_t`, ...) are understood. Ctrl+C stops earlier and still writes
-the file.
+topic and abbreviated keys (`stat_t`, `bri_stat_t`, ...) are understood. Ctrl+C, `kill` (SIGTERM) or closing the
+terminal (SIGHUP) stops earlier and still writes the file.
 
 ### usage mqtt_ad_record.py
 
@@ -44,7 +46,8 @@ python3 mqtt_ad_record.py [-h host] [-p port] [-u user] [-P password] [--tls] [-
    -h  Hostname or IP address of the MQTT broker. default is 127.0.0.1
    -p  Port of the MQTT broker. default is 1883, or 8883 with TLS
    -u  User for the MQTT broker
-   -P  Password for the MQTT broker
+   -P  Password for the MQTT broker. -P without a value asks for it; without -P the environment variable
+       MQTT_PASSWORD is used
    --tls       Connect with TLS (checks the certificate against the system certificates)
    --cafile    CA certificate file for TLS (implies --tls)
    --insecure  TLS without checking the certificate, for a self signed certificate (implies --tls)
@@ -53,10 +56,11 @@ python3 mqtt_ad_record.py [-h host] [-p port] [-u user] [-P password] [--tls] [-
        topics their configs point to. With -a: only messages that contain the string in the topic or payload.
    -t  Capture time in seconds. default is 600
    -a  Keep all messages on the broker, not only the discovery related ones
-   -l  Keep only the last message of each topic
+   -l  Keep only the last message of each topic. A topic that had a retained message stays retained.
    -x  Anonymize IP addresses, MAC addresses, Z-Wave home ids and Zigbee IEEE addresses. The same value always
        gets the same placeholder, so the topics in the configs still match their messages.
-   -X  Anonymize these names as well, comma separated (implies -x). Spaces also match "_" and "-", any case.
+   -X  Anonymize these names as well, comma separated (implies -x). Only whole words are replaced, longest name
+       first; the name as given matches with spaces, "_", "-" or no spaces, and in lowercase.
    -o  Output file. default is mqtt_ad_record_all.log, or mqtt_ad_record_<searchstring>.log with -s
    --help  Show the help
 ```
@@ -86,7 +90,8 @@ arrive when the device reports, so record longer or operate the devices when tha
 
 ### File format
 
-One message per line: `<time><TAB><retain 0/1><TAB><topic><TAB><payload>`, the discovery configs first.
+One message per line: `<time><TAB><retain 0/1><TAB><topic><TAB><payload>`, the discovery configs first. The time
+is local time in milliseconds with the UTC offset.
 Lines starting with `#` are comments with a summary. Multi line JSON payloads are written on one line.
 Files made with the older mqtt_ad_record.sh have the same format.
 
@@ -101,7 +106,7 @@ states of the real devices.
 ```text
 python3 mqtt_ad_send.py [-h host] [-p port] [-u user] [-P password] [--tls] [--cafile file] [--insecure]
                         [-i inputfile] [-s searchstring] [-r y|n] [-w milliseconds] [-d]
-   -h, -p, -u, -P, --tls, --cafile, --insecure  as for mqtt_ad_record.py
+   -h, -p, -u, -P, --tls, --cafile, --insecure  as for mqtt_ad_record.py (also MQTT_PASSWORD)
    -i  Input file. default is mqtt_ad_record_all.log
    -s  Only send records that contain this string in the topic or payload (case insensitive)
    -r  Override the retain flag of the records (y/n)

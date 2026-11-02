@@ -18,8 +18,9 @@ examples:
   # Record all discovery configs and their state messages for 10 minutes
   python3 mqtt_ad_record.py
 
-  # Broker with a login and TLS, 5 minutes, latest message per topic only, anonymized
-  python3 mqtt_ad_record.py -h 192.168.1.10 -p 8883 -u UserId -P Password --tls -t 300 -l -x
+  # Broker with a login and TLS, 5 minutes, latest message per topic only, anonymized (-P without a value asks
+  # for the password, so it does not show up in the process list or the shell history)
+  python3 mqtt_ad_record.py -h 192.168.1.10 -p 8883 -u UserId -P --tls -t 300 -l -x
 
   # Also hide room names
   python3 mqtt_ad_record.py -x -X "Living Room,Kitchen,Garage"
@@ -31,15 +32,19 @@ Output file: one message per line, <time><TAB><retain><TAB><topic><TAB><payload>
 Lines starting with # are comments with a summary. Multi line JSON payloads are written on one line.
 """
 import argparse
+import getpass
 import json
+import os
 import re
+import signal
 import ssl
 import sys
 import time
 from collections import OrderedDict
 from datetime import datetime
 
-VERSION = '20261102-01'
+VERSION = '20261102-02'
+ASK = object()
 
 try:
     import paho.mqtt.client as mqtt
@@ -55,7 +60,9 @@ def parse_args():
     ap.add_argument('-h', dest='host', default='127.0.0.1', help='hostname or IP address of the MQTT broker (default 127.0.0.1)')
     ap.add_argument('-p', dest='port', type=int, default=None, help='port of the MQTT broker (default 1883, 8883 with --tls)')
     ap.add_argument('-u', dest='user', default='', help='user for the MQTT broker')
-    ap.add_argument('-P', dest='password', default='', help='password for the MQTT broker (never shown or written to the file)')
+    ap.add_argument('-P', dest='password', nargs='?', const=ASK, default=None,
+                    help='password for the MQTT broker (never shown or written to the file); -P without a value asks for it, '
+                    'without -P the environment variable MQTT_PASSWORD is used')
     ap.add_argument('--tls', action='store_true', help='connect with TLS')
     ap.add_argument('--cafile', default=None, help='CA certificate file for TLS (implies --tls); default: the system certificates')
     ap.add_argument('--insecure', action='store_true', help='TLS without checking the certificate (self signed, implies --tls)')
@@ -71,6 +78,10 @@ def parse_args():
                     'spaces also match "_" and "-" variants, upper and lower case')
     ap.add_argument('-o', dest='outfile', default='', help='output file (default mqtt_ad_record_all.log, or mqtt_ad_record_<search>.log with -s)')
     a = ap.parse_args()
+    if a.password is ASK:
+        a.password = getpass.getpass('Password for the MQTT broker: ')
+    elif a.password is None:
+        a.password = os.environ.get('MQTT_PASSWORD', '')
     a.prefix = a.prefix.rstrip('/')
     if a.cafile or a.insecure:
         a.tls = True
@@ -111,14 +122,20 @@ def capture(a):
         rc = rc.value if hasattr(rc, 'value') else rc
         state['rc'] = rc
         if rc == 0:
-            c.subscribe('#', qos=0)
+            # QoS 1, so the broker queues the burst of retained messages instead of dropping part of it
+            c.subscribe('#', qos=1)
 
     def on_message(c, u, m):
         try:
             p = m.payload.decode('utf-8')
         except UnicodeDecodeError:
             p = m.payload.decode('latin-1')
-        msgs.append((datetime.now().isoformat(timespec='seconds'), 1 if m.retain else 0, m.topic, p))
+        msgs.append((datetime.now().astimezone().isoformat(timespec='milliseconds'), 1 if m.retain else 0, m.topic, p))
+
+    # kill (SIGTERM) or a closed terminal (SIGHUP, not on Windows) stops like Ctrl+C and still writes the file
+    for sig in ('SIGTERM', 'SIGHUP'):
+        if hasattr(signal, sig):
+            signal.signal(getattr(signal, sig), signal.default_int_handler)
 
     c = make_client(a, 'mqtt_ad_record')
     c.on_connect = on_connect
@@ -146,7 +163,7 @@ def capture(a):
                 sys.stdout.write('\r%d messages received, %d seconds left ' % (shown, max(0, end - time.time())))
                 sys.stdout.flush()
     except KeyboardInterrupt:
-        print('\n** Ctrl+C pressed, writing the file')
+        print('\n** Stopped, writing the file')
     c.loop_stop()
     c.disconnect()
     print('\r%d messages received%s' % (len(msgs), ' ' * 30))
@@ -200,13 +217,17 @@ class Anonymizer:
     ]
 
     def __init__(self, words):
-        self.mapping, self.counters, self.words = {}, {}, []
+        self.mapping, self.counters, self.words_map = {}, {}, {}
         for i, w in enumerate([w.strip() for w in words.split(',') if w.strip()], 1):
             ph = 'Name%d' % i
             variants = {w, w.replace(' ', '_'), w.replace(' ', '-'), w.replace(' ', '')}
-            variants |= {v.lower() for v in variants} | {v.upper() for v in variants}
-            for v in sorted(variants, key=len, reverse=True):
-                self.words.append((v, ph.lower() if v.islower() else ph))
+            variants |= {v.lower() for v in variants}  # object ids and topics are often lowercase
+            for v in variants:
+                self.words_map.setdefault(v, ph.lower() if v.islower() else ph)
+        # whole words only (so "Al" does not hit "value" or "Alarm"), case sensitive, longest first and in a
+        # single pass (so "Bedroom Al" wins over "Bedroom" and a placeholder is never replaced again)
+        keys = sorted(self.words_map, key=len, reverse=True)
+        self.words_rx = re.compile('|'.join(r'(?<![0-9A-Za-z])%s(?![0-9A-Za-z])' % re.escape(k) for k in keys)) if keys else None
 
     def _placeholder(self, kind, value, fmt):
         key = (kind, value)
@@ -218,8 +239,8 @@ class Anonymizer:
     def __call__(self, s):
         for kind, rx, fmt in self.PATTERNS:
             s = rx.sub(lambda mo: self._placeholder(kind, mo.group(0).lower(), fmt), s)
-        for w, ph in self.words:
-            s = s.replace(w, ph)
+        if self.words_rx:
+            s = self.words_rx.sub(lambda mo: self.words_map[mo.group(0)], s)
         return s
 
 
@@ -277,10 +298,13 @@ def main():
 
     sel = [m for m in msgs if keep(m[2], m[3])]
     if a.lastonly:
+        # a topic that had a retained message stays retained, also when a live update (retain 0) came after it,
+        # otherwise a replay would publish that state before Domoticz subscribes and the device is not created
+        retained = {m[2] for m in sel if m[1]}
         last = OrderedDict()
         for m in sel:
             last.pop(m[2], None)
-            last[m[2]] = m
+            last[m[2]] = (m[0], 1 if m[2] in retained else m[1], m[2], m[3])
         sel = list(last.values())
     # configs first, so a replay creates the devices before their states arrive
     sel.sort(key=lambda m: 0 if is_config(m[2]) else 1)
