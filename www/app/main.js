@@ -40,6 +40,7 @@ require.config({
 		'dashboardDynamic/ddWidgetContent.directive': 'dashboardDynamic/ddWidgetContent.directive',
 		'dashboardDynamic/ddWidgetSettings.controller': 'dashboardDynamic/ddWidgetSettings.controller',
 		'dashboardDynamic/ddDashboardManager.controller': 'dashboardDynamic/ddDashboardManager.controller',
+		'houseBalance.service':                           'houseBalance.service',
 		'dashboardDynamic/ddToast.service':               'dashboardDynamic/ddToast.service',
 		'dashboardDynamic/ddSparkline.service':           'dashboardDynamic/ddSparkline.service',
 		'widgets/dzLightWidget':                      'widgets/dzLightWidget',

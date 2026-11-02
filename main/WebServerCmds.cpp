@@ -7439,10 +7439,12 @@ namespace http
 		void CWebServer::Cmd_GetEnergyBalance(WebEmSession& session, const request& req, Json::Value& root)
 		{
 			_tEnergyBalance eb;
-			CalculateEnergyBalanceToday(eb);
+			CalculateEnergyBalanceToday(eb, request::findValue(&req, "day"));
 			root["status"] = "OK";
 			root["title"] = "GetEnergyBalance";
 			root["Method"] = eb.Method;
+			root["Day"] = eb.Day;
+			root["OldestDay"] = eb.OldestDay;
 			root["Intervals"] = eb.Intervals;
 			root["Import"] = eb.Import;
 			root["Export"] = eb.Export;

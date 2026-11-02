@@ -1,6 +1,7 @@
 define([
     'app',
-    'dashboardDynamic/widgetRegistry.service'
+    'dashboardDynamic/widgetRegistry.service',
+    'houseBalance.service'
 ], function(app, widgetRegistry) {
     'use strict';
 
@@ -37,8 +38,12 @@ define([
             },
             controllerAs:     'ctrl',
             bindToController: true,
-            controller: ['$scope', '$http', '$q', function($scope, $http, $q) {
+            controller: ['$scope', '$http', '$q', 'dzHouseBalance', function($scope, $http, $q, dzHouseBalance) {
                 var ctrl = this;
+
+                ctrl.openHouse = function() {
+                    if (!ctrl.editMode) { dzHouseBalance.openDialog(); }
+                };
 
                 ctrl.balance   = null;
                 ctrl.showGauge = true;

@@ -153,6 +153,18 @@ History:
 	border: 0;
 	color: inherit;
 }
+#housepanel .hp-nav {
+	background: none;
+	border: 1px solid rgba(255, 255, 255, 0.4);
+	border-radius: 4px;
+	color: inherit;
+	cursor: pointer;
+	padding: 0 8px;
+}
+#housepanel .hp-nav[disabled] {
+	opacity: 0.3;
+	cursor: default;
+}
 #housepanel .hp-totals {
 	display: flex;
 	gap: 18px;
@@ -326,7 +338,7 @@ History:
 					</ellipse>
 					<text class="etext" x="34" y="35" opacity="0.7" font-size="1.1px" style="font-variant-caps: normal; font-variant-east-asian: normal; font-variant-ligatures: normal; font-variant-numeric: normal; white-space: pre;">{{ fBattToHome }} Watt</text>
 				</g>
-				<circle class="ecircle ecircle-batt" ng-click="openLog(idBattWatt != -1 ? idBattWatt : idBattSoc)" r="7" cx="30" cy="50" fill="rgba(144,224,144,0.06)" stroke="#90e090" stroke-width=".5" filter="url(#glowBatt)" ng-class="{'circle-active': fActualBattWatt != 0}"/>
+				<circle class="ecircle ecircle-batt" ng-click="openLog(idBattSoc != -1 ? idBattSoc : idBattWatt)" r="7" cx="30" cy="50" fill="rgba(144,224,144,0.06)" stroke="#90e090" stroke-width=".5" filter="url(#glowBatt)" ng-class="{'circle-active': fActualBattWatt != 0}"/>
 				<g class="eicon" ng-show="!customIconBatt">
 					<g transform="matrix(0.010083, 0, 0, 0.008335, 27.65, 45.2)">
 						<path d="m 319.089 27.221 h -36.475 v -27.221 h -95.27 v 27.221 h -34.607 c -22.517 0 -40.829 18.317 -40.829 40.832 v 362.946 c 0 22.51 18.317 40.83 40.829 40.83 h 166.352 c 22.524 0 40.832 -18.32 40.832 -40.83 v -362.947 c 0 -22.514 -18.308 -40.831 -40.832 -40.831 z m 13.616 403.781 c 0 7.501 -6.108 13.607 -13.616 13.607 h -166.352 c -7.501 0 -13.608 -6.095 -13.608 -13.607 v -362.95 c 0 -7.501 6.107 -13.611 13.608 -13.611 h 166.352 c 7.508 0 13.616 6.109 13.616 13.611 v 362.95 z"/>
@@ -548,7 +560,9 @@ History:
 		</svg>
 		<div id="housepanel" ng-show="house.open" role="dialog">
 			<div class="hp-head">
-				<span class="hp-title">{{ ::'House' | translate }} - {{ ::'Today' | translate }}</span>
+				<span class="hp-title">{{ ::'House' | translate }} - <span class="hp-day">{{ house.isToday !== false ? ('Today' | translate) : house.day }}</span></span>
+				<button type="button" class="hp-nav hp-prev" ng-click="houseStep(-1)" ng-disabled="!house.canPrev" title="{{ ::'Previous day' | translate }}">&lsaquo;</button>
+				<button type="button" class="hp-nav hp-next" ng-click="houseStep(1)" ng-disabled="!house.canNext" title="{{ ::'Next day' | translate }}">&rsaquo;</button>
 				<span ng-show="house.selfSufficiency !== null">{{ ::'Self-sufficiency' | translate }}: {{ house.selfSufficiency | number:0 }}%</span>
 				<button type="button" class="hp-close" ng-click="closeHouse()" title="{{ ::'Close' | translate }}">&times;</button>
 			</div>

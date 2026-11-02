@@ -18,6 +18,8 @@ struct _tEnergyBalance
 {
 	std::string Method;		// "5min" (short log intervals), "daily" (today's counters) or "none" (no grid meter selected)
 	int Intervals = 0;
+	std::string Day;		// "YYYY-MM-DD" the flows belong to
+	std::string OldestDay;		// first day with short log data of the grid meter
 
 	double Import = 0;
 	double Export = 0;
@@ -39,4 +41,5 @@ struct _tEnergyBalance
 	std::vector<_tEnergyBalanceInterval> Series;	// per interval, only with Method "5min"
 };
 
-bool CalculateEnergyBalanceToday(_tEnergyBalance &eb);
+// szDay is "YYYY-MM-DD" of a day still in the short log, empty for today
+bool CalculateEnergyBalanceToday(_tEnergyBalance &eb, const std::string &szDay = "");

@@ -1,5 +1,5 @@
-define(['app'], function (app) {
-	app.controller('EnergyDashboardController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$window', '$timeout', 'livesocket', function ($scope, $rootScope, $location, $http, $interval, $window, $timeout, livesocket) {
+define(['app', 'houseBalance.service'], function (app) {
+	app.controller('EnergyDashboardController', ['$scope', '$rootScope', '$location', '$http', '$interval', '$window', '$timeout', 'livesocket', 'dzHouseBalance', function ($scope, $rootScope, $location, $http, $interval, $window, $timeout, livesocket, dzHouseBalance) {
 
 /*
   fTotalHomeUsage (kWh today):
@@ -939,7 +939,7 @@ define(['app'], function (app) {
 		};
 
 		// The house has no device of its own: show today's consumption per source from the server's energy balance
-		$scope.house = { open: false, hasData: false, selfSufficiency: null, message: '' };
+		$scope.house = { open: false, day: '', isToday: true, canPrev: false, canNext: false, hasData: false, selfSufficiency: null, message: '' };
 		let houseChart;
 
 		$scope.closeHouse = function () {
@@ -950,53 +950,24 @@ define(['app'], function (app) {
 			}
 		};
 
+		let houseSetChart = function (c) {
+			if (houseChart) {
+				houseChart.destroy();
+			}
+			houseChart = c || undefined;
+		};
+
+		let houseShow = function (szDay) {
+			dzHouseBalance.show($scope.house, szDay, 'housechart', function () { return $scope.house.open; }, houseSetChart);
+		};
+
 		$scope.openHouse = function () {
 			$scope.house.open = true;
-			$scope.house.hasData = false;
-			$scope.house.message = '...';
-			$http.get('json.htm?type=command&param=getenergybalance&series=1').then(function (response) {
-				let eb = response.data;
-				let series = (eb && eb.Series) || [];
-				$scope.house.selfSufficiency = (eb && typeof eb.SelfSufficiency == 'number') ? eb.SelfSufficiency : null;
-				if (series.length === 0) {
-					$scope.house.message = $.t('No data available for today');
-					return;
-				}
-				$scope.house.solar = eb.SolarToHouse;
-				$scope.house.battery = eb.BatteryToHouse;
-				$scope.house.grid = eb.GridToHouse;
-				$scope.house.hasData = true;
-				let points = function (key) {
-					return series.map(function (item) { return [GetUTCFromString(item.d), item[key]]; });
-				};
-				// Rendered after the panel is visible, so Highcharts can measure its container
-				$timeout(function () {
-					if (!$scope.house.open) {
-						return;
-					}
-					if (houseChart) {
-						houseChart.destroy();
-					}
-					houseChart = Highcharts.chart('housechart', {
-						chart: { type: 'area', backgroundColor: 'transparent', zoomType: 'x' },
-						credits: { enabled: false },
-						title: { text: null },
-						xAxis: { type: 'datetime', labels: { style: { color: '#ccc' } } },
-						yAxis: { title: { text: 'Watt', style: { color: '#ccc' } }, min: 0, labels: { style: { color: '#ccc' } }, gridLineColor: 'rgba(255,255,255,0.1)' },
-						legend: { itemStyle: { color: '#ddd' }, itemHoverStyle: { color: '#fff' } },
-						tooltip: { shared: true, valueSuffix: ' W', xDateFormat: '%H:%M' },
-						plotOptions: { area: { stacking: 'normal', lineWidth: 1, marker: { enabled: false } } },
-						series: [
-							{ name: $.t('Grid'), color: '#00c6da', data: points('g') },
-							{ name: $.t('Battery') + ' (' + $.t('charged from the grid') + ')', color: '#4f8f8f', data: points('bg') },
-							{ name: $.t('Battery') + ' (' + $.t('charged from solar') + ')', color: '#90e090', data: points('bs') },
-							{ name: $.t('Solar'), color: '#ffd000', data: points('s') }
-						]
-					});
-				});
-			}, function () {
-				$scope.house.message = $.t('Error communicating to server!');
-			});
+			houseShow('');
+		};
+
+		$scope.houseStep = function (delta) {
+			houseShow(dzHouseBalance.step($scope.house.day, delta));
 		};
 
 		$scope.init();

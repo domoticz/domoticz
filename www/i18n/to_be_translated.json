@@ -75,5 +75,8 @@
     "Self-sufficiency": "Self-sufficiency",
     "No data available for today": "No data available for today",
     "charged from solar": "charged from solar",
-    "charged from the grid": "charged from the grid"
+    "charged from the grid": "charged from the grid",
+    "No data available for this day": "No data available for this day",
+    "Previous day": "Previous day",
+    "Next day": "Next day"
 }
