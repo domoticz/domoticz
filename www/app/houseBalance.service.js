@@ -112,7 +112,14 @@ define(['app'], function (app) {
 				windowClass: 'dd-house-modal',
 				size: 'lg',
 				template:
-					'<style>.dd-house-modal .modal-content{background:rgba(20,24,40,0.97);border:1px solid #ff7bff;color:rgba(255,255,255,0.85)}' +
+					// Bootstrap 2 sizes .modal itself (560px, ignoring size:'lg'); centre it with a transform
+					// instead of the fixed -280px margin, so it can be wider and still fit small screens.
+					// Its .modal-body is capped at 400px, which clips the chart legend on a phone, where
+					// the header wraps: let it use the screen height instead (the dialog sits at top:10%,
+					// the body adds 30px padding and a border, so 90vh - 50px keeps it inside the screen).
+					'<style>.modal.dd-house-modal{width:94vw;max-width:1200px;left:50%;right:auto;margin-left:0;transform:translateX(-50%)}' +
+					'.dd-house-modal .modal-body{max-height:calc(90vh - 50px)}' +
+					'.dd-house-modal .modal-content{background:rgba(20,24,40,0.97);border:1px solid #ff7bff;color:rgba(255,255,255,0.85)}' +
 					'.dd-house-modal .hp-head{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}' +
 					'.dd-house-modal .hp-title{font-size:18px;font-weight:bold}' +
 					'.dd-house-modal .hp-nav{background:none;border:1px solid rgba(255,255,255,0.4);border-radius:4px;color:inherit;cursor:pointer;padding:0 8px}' +
