@@ -2459,7 +2459,16 @@ void COpenWebNetTCP::requestEnergyTotalizer()
 		if (fallback)
 		{
 			request.CreateDimensionMsgOpen(whoStr.str(), address, "72#1");
-			sendCommand(request, responses, 0, true);
+			responses.clear();
+			if (sendCommand(request, responses, 1, true))
+			{
+				std::lock_guard<std::mutex> lock(readQueueMutex);
+				for (auto response = responses.begin(); response != responses.end(); ++response)
+					if (response->IsMeasureFrame() && response->Extract_who() == "18"
+						&& response->Extract_where() == std::to_string(where) && response->Extract_dimension() == "72#1"
+						&& GetEnergyInterface(*response) == interfaceID)
+						UpdateDeviceValue(response);
+			}
 		}
 	}
 }
