@@ -767,7 +767,8 @@ void COpenWebNetTCP::UpdateEnergy(const int who, const int where, double fval, c
 /**
  * @brief Publish a legacy actuator reading while preserving any recovered baseline.
  * @param recovering True when switching from a published dimension-72#1 total back to dimension 51.
- * The source offset is saved in device options. Requires readQueueMutex to be held.
+ * Persist the last published source and legacy offset. Restore source alignment
+ * from device options after restart. Requires readQueueMutex to be held.
  */
 void COpenWebNetTCP::UpdateLegacyActuatorEnergy(const int where, const uint64_t reading, const int iInterface,
 	const bool recovering, const char *devname)
@@ -781,22 +782,43 @@ void COpenWebNetTCP::UpdateLegacyActuatorEnergy(const int where, const uint64_t 
 	if (!device.empty())
 	{
 		auto options = m_sql.GetDeviceOptions(device[0][0]);
-		if (recovering)
+		if (recovering || options["OpenWebNetEnergySource"] == "72#1")
 		{
 			double total = 0;
 			const auto latest = m_energyTotals.find((node << 8) | where);
 			if (latest != m_energyTotals.end())
 				total = latest->second;
 			else
-				GetValueMeter(node, where, nullptr, &total);
+			{
+				// The saved fallback state can be newer than the decoded meter
+				// row if Domoticz stopped with an energy message still queued.
+				std::vector<std::string> fields;
+				StringSplit(options["OpenWebNetTotalizer1"], "|", fields);
+				uint64_t savedTotal;
+				if (options["OpenWebNetEnergySource"] == "72#1" && fields.size() == 3
+					&& OpenWebNetEnergy::ParseUnsigned(fields[1], savedTotal))
+					total = static_cast<double>(savedTotal);
+				else if (!GetValueMeter(node, where, nullptr, &total))
+					return;
+			}
+			if (!std::isfinite(total) || total < 0)
+				return;
 			// Changing source must not change the energy already accumulated.
 			offset = total - static_cast<double>(reading);
 			options["OpenWebNetLegacyOffset"] = std::to_string(offset);
-			m_sql.SetDeviceOptions(std::stoull(device[0][0]), options);
 		}
 		else if (options.count("OpenWebNetLegacyOffset"))
 			offset = atof(options["OpenWebNetLegacyOffset"].c_str());
+		if (recovering || options["OpenWebNetEnergySource"] != "51")
+		{
+			options["OpenWebNetEnergySource"] = "51";
+			if (!m_sql.SetDeviceOptions(std::stoull(device[0][0]), options))
+				return;
+			// A delayed baseline flush must not restore the previous source.
+			m_pendingEnergy.erase((node << 8) | where);
+		}
 	}
+	m_energySources[(node << 8) | where].AcceptLegacy();
 	UpdateEnergy(WHO_ENERGY_MANAGEMENT, where, (static_cast<double>(reading) + offset) / 1000., iInterface, 255, devname);
 }
 
@@ -835,7 +857,7 @@ void COpenWebNetTCP::UpdateActuatorEnergy(const int where, const std::vector<std
 	{
 		options = m_sql.GetDeviceOptions(device[0][0]);
 		const auto state = options.find("OpenWebNetTotalizer1");
-		if (state != options.end())
+		if (state != options.end() && options["OpenWebNetEnergySource"] != "51")
 		{
 			std::vector<std::string> fields;
 			StringSplit(state->second, "|", fields);
@@ -861,9 +883,11 @@ void COpenWebNetTCP::UpdateActuatorEnergy(const int where, const std::vector<std
 				return;
 			if (!std::isfinite(total) || total < 0 || total >= static_cast<double>(std::numeric_limits<uint64_t>::max()))
 				return;
-			// The raw 72#1 counter has a different origin. Anchor its first
-			// sample to the existing logical total, then add subsequent deltas.
-			sample.total = static_cast<uint64_t>(std::round(total));
+			// A zero database total alone may be a power-only placeholder.
+			// Anchor only to an accepted in-memory energy reading (including
+			// zero) or a nonzero stored total; otherwise keep the first raw total.
+			if (latest != m_energyTotals.end() || total > 0)
+				sample.total = static_cast<uint64_t>(std::round(total));
 		}
 	}
 
@@ -891,6 +915,7 @@ void COpenWebNetTCP::FlushPendingEnergy()
 			auto options = m_sql.GetDeviceOptions(device[0][0]);
 			const auto &state = pending->second;
 			options["OpenWebNetTotalizer1"] = std::to_string(state.raw) + "|" + std::to_string(state.total) + "|" + std::to_string(state.reset);
+			options["OpenWebNetEnergySource"] = "72#1";
 			if (m_sql.SetDeviceOptions(std::stoull(device[0][0]), options))
 			{
 				pending = m_pendingEnergy.erase(pending);
@@ -1719,7 +1744,6 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 					break;
 				const int key = (atoi(sInterface.c_str()) << 16) | (WHO_ENERGY_MANAGEMENT << 8) | atoi(where.c_str());
 				const bool recovering = m_energySources[key].NeedsLegacyAlignment();
-				m_energySources[key].AcceptLegacy();
 				UpdateLegacyActuatorEnergy(atoi(where.c_str()), reading, atoi(sInterface.c_str()), recovering, devname.c_str());
 				break;
 			}
