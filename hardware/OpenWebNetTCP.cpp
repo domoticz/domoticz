@@ -16,6 +16,7 @@ License: Public domain
 #include "stdafx.h"
 #include "OpenWebNetTCP.h"
 #include "openwebnet/bt_openwebnet.h"
+#include "openwebnet/EnergyTotalizer.h"
 
 #include "../main/Logger.h"
 #include "../main/Helper.h"
@@ -23,6 +24,8 @@ License: Public domain
 #include "csocket.h"
 
 #include <string.h>
+#include <cmath>
+#include <iomanip>
 #include "hardwaretypes.h"
 #include "../main/RFXtrx.h"
 
@@ -73,7 +76,7 @@ enum
  /**
 	 Create new hardware OpenWebNet instance
  **/
-COpenWebNetTCP::COpenWebNetTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &ownPassword, const int ownScanTime, const int ownSynch) : m_szIPAddress(IPAddress)
+COpenWebNetTCP::COpenWebNetTCP(const int ID, const std::string &IPAddress, const unsigned short usIPPort, const std::string &ownPassword, const int ownScanTime, const int ownSynch, const int setpointMethod) : m_szIPAddress(IPAddress)
 {
 	m_HwdID = ID;
 	m_usIPPort = usIPPort;
@@ -83,6 +86,7 @@ COpenWebNetTCP::COpenWebNetTCP(const int ID, const std::string &IPAddress, const
 	Log(LOG_STATUS, "sync time %s(%d)!", ownSynch ? "ENABLED" : "DISABLED", ownSynch);
 
 	m_ownScanTime = ownScanTime;
+	m_useDimension7Heating = setpointMethod == 7;
 	m_ownSynch = ownSynch * 60;	// minutes to seconds..
 	
 	m_heartbeatcntr = OPENWEBNET_HEARTBEAT_DELAY;
@@ -95,6 +99,7 @@ COpenWebNetTCP::COpenWebNetTCP(const int ID, const std::string &IPAddress, const
 bool COpenWebNetTCP::StartHardware()
 {
 	RequestStart();
+	m_energySources.clear();
 
 	m_bIsStarted = true;
 	mask_request_status = 0x1; // Set scan all devices
@@ -746,6 +751,52 @@ void COpenWebNetTCP::UpdateEnergy(const int who, const int where, double fval, c
 	int NodeId = (iInterface << 8) | who;
 	GetValueMeter(NodeId, where, &usage, nullptr);
 	SendKwhMeter(NodeId, where, BatteryLevel, usage, fval, devname);
+}
+
+void COpenWebNetTCP::UpdateActuatorEnergy(const int where, const std::vector<std::string> &values, const int iInterface, const char *devname)
+{
+	OpenWebNetEnergy::Totalizer sample;
+	if (!OpenWebNetEnergy::ReadTotalizer(values, sample))
+		return;
+
+	const int node = (iInterface << 8) | WHO_ENERGY_MANAGEMENT;
+	char deviceID[30];
+	snprintf(deviceID, sizeof(deviceID), "%08X", (node << 8) | where);
+	auto findDevice = [&]() {
+		return m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE HardwareID=%d AND DeviceID='%q' AND Type=%d AND Subtype=%d",
+			m_HwdID, deviceID, int(pTypeGeneral), int(sTypeKwh));
+	};
+	auto device = findDevice();
+	std::map<std::string, std::string> options;
+	if (!device.empty())
+	{
+		options = m_sql.GetDeviceOptions(device[0][0]);
+		const auto state = options.find("OpenWebNetTotalizer1");
+		if (state != options.end())
+		{
+			std::vector<std::string> fields;
+			StringSplit(state->second, "|", fields);
+			OpenWebNetEnergy::Totalizer previous;
+			if (fields.size() != 3 || !OpenWebNetEnergy::ParseUnsigned(fields[0], previous.raw)
+				|| !OpenWebNetEnergy::ParseUnsigned(fields[1], previous.total)
+				|| !OpenWebNetEnergy::ParseUnsigned(fields[2], previous.reset)
+				|| !OpenWebNetEnergy::AdvanceTotalizer(previous, sample))
+				return;
+		}
+	}
+
+	// Store the logical total as well as the physical reading so that resets
+	// remain continuous across hardware reconnects and Domoticz restarts.
+	options["OpenWebNetTotalizer1"] = std::to_string(sample.raw) + "|" + std::to_string(sample.total) + "|" + std::to_string(sample.reset);
+	if (!device.empty())
+		m_sql.SetDeviceOptions(std::stoull(device[0][0]), options);
+	UpdateEnergy(WHO_ENERGY_MANAGEMENT, where, static_cast<double>(sample.total) / 1000., iInterface, 255, devname);
+	if (device.empty())
+	{
+		device = findDevice();
+		if (!device.empty())
+			m_sql.SetDeviceOptions(std::stoull(device[0][0]), options);
+	}
 }
 
 /**
@@ -1521,7 +1572,27 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			UpdatePower(WHO_ENERGY_MANAGEMENT, atoi(where.c_str()), static_cast<float>(atof(value.c_str())), atoi(sInterface.c_str()), 255, devname.c_str());
 			break;
 		case ENERGY_MANAGEMENT_DIMENSION_ENERGY_TOTALIZER:
+		{
+			if (!where.empty() && where[0] == '7' && !whereParam.empty() && whereParam[0] == "0")
+			{
+				uint64_t reading;
+				if (dimension != "51" || !OpenWebNetEnergy::ParseUnsigned(value, reading))
+					break;
+				const int key = (atoi(sInterface.c_str()) << 16) | (WHO_ENERGY_MANAGEMENT << 8) | atoi(where.c_str());
+				if (!m_energySources[key].AcceptLegacy())
+					break;
+			}
 			UpdateEnergy(WHO_ENERGY_MANAGEMENT, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 1000.), atoi(sInterface.c_str()), 255, devname.c_str());
+			break;
+		}
+		case ENERGY_MANAGEMENT_DIMENSION_TOTALIZER:
+			// Select only totalizer 1. atoi(dimension) also matches 72#2.
+			if (dimension == "72#1" && !where.empty() && where[0] == '7' && !whereParam.empty() && whereParam[0] == "0")
+			{
+				const int key = (atoi(sInterface.c_str()) << 16) | (WHO_ENERGY_MANAGEMENT << 8) | atoi(where.c_str());
+				if (m_energySources[key].UsesFallback())
+					UpdateActuatorEnergy(atoi(where.c_str()), valueParam, atoi(sInterface.c_str()), devname.c_str());
+			}
 			break;
 		case ENERGY_MANAGEMENT_DIMENSION_END_AUTOMATIC_UPDATE:			
 			if (atoi(value.c_str()))
@@ -1993,66 +2064,53 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 }
 
 
-bool COpenWebNetTCP::SetSetpoint(const int idx, const float temp)
+static bool BuildSetpointCommand(bt_openwebnet &request, const std::string &where, const int interfaceID,
+	const float temperature, const std::string &method)
 {
-	//int who = (idx >> 16) & 0xff;  fixed to 'WHO_TEMPERATURE_CONTROL'
-	int iInterface = (idx >> 8) & 0xff;
-	int where = idx & 0xff;
-	int _temp = (int)(temp * 10);
-
-	std::vector<bt_openwebnet> responses;
-	bt_openwebnet request;
-
-	std::stringstream whoStr;
-	whoStr << WHO_TEMPERATURE_CONTROL;
-	std::string sWho = whoStr.str();
-
-	// add # to set value permanent
-	std::string sWhere = "#" + getWhereForWrite(where);	
-
-	std::stringstream dimensionStr;
-	dimensionStr << TEMPERATURE_CONTROL_DIMENSION_SET_POINT_TEMPERATURE;
-	std::string sDimension = dimensionStr.str();
-
-	std::stringstream valueStr;
-
-	valueStr << 0;
-	valueStr << _temp;
-	std::vector<std::string> sValue;
-	sValue.push_back(valueStr.str());
-	sValue.push_back("3");					//send generic mode. We don't need to know in witch state the bt3550 or BTI-L4695 is (cooling or heating).
-
-	if (iInterface)
-	{
-		// if Bus Id interface is present...
-		std::stringstream interfaceStr;
-		interfaceStr << iInterface;
-		std::string sInterface = interfaceStr.str();
-
-		std::string sLev;
-		request.CreateWrDimensionMsgOpen(sWho, sWhere, sLev, sInterface, sDimension, sValue);
-		if (sendCommand(request, responses))
-		{
-			if (!responses.empty())
-				return responses.at(0).IsOKFrame();
-		}
-	}
+	const bool heating = method == "7-heating";
+	if (!method.empty() && method != "14" && !heating)
+		return false;
+	if (!std::isfinite(temperature))
+		return false;
+	// Only the manually selected heating variant of dimension 7 is verified.
+	if (heating && (temperature < 5 || temperature > 40 || interfaceID != 0))
+		return false;
+	std::stringstream value;
+	if (heating)
+		value << std::setfill('0') << std::setw(4) << static_cast<int>(std::lround(temperature * 10));
 	else
-	{
-		// Local Bus..
-		request.CreateWrDimensionMsgOpen(sWho, sWhere, sDimension, sValue); // (const std::string& who, const std::string& where, const std::string& dimension, const std::vector<std::string>& value)
-		if (sendCommand(request, responses, 1, false))
-		{
-			if (!responses.empty())
-			{
-				return responses.at(0).IsOKFrame();
-			}
-		}
-	}
-
-	return false;
+		value << 0 << static_cast<int>(temperature * 10); // Preserve legacy formatting.
+	const std::string address = heating ? where : "#" + where;
+	const std::string dimension = heating ? "7" : "14";
+	const std::vector<std::string> values = heating
+		? std::vector<std::string>{"1", "1", value.str()}
+		: std::vector<std::string>{value.str(), "3"};
+	if (interfaceID)
+		request.CreateWrDimensionMsgOpen("4", address, "", std::to_string(interfaceID), dimension, values);
+	else
+		request.CreateWrDimensionMsgOpen("4", address, dimension, values);
+	return true;
 }
 
+bool COpenWebNetTCP::SetSetpoint(const int idx, const float temp)
+{
+	const std::string method = m_useDimension7Heating ? "7-heating" : "14";
+	const int interfaceID = (idx >> 8) & 0xff;
+	const int where = idx & 0xff;
+	bt_openwebnet request;
+	if (!BuildSetpointCommand(request, getWhereForWrite(where), interfaceID, temp, method))
+	{
+		Log(LOG_ERROR, "Invalid OpenWebNet setpoint method or temperature: %s, %.1f", method.c_str(), temp);
+		return false;
+	}
+	std::vector<bt_openwebnet> responses;
+	// An ACK confirms gateway acceptance, not that the thermostat applied it.
+	if (sendCommand(request, responses, 1, false))
+		for (const auto &response : responses)
+			if (response.IsOKFrame())
+				return true;
+	return false;
+}
 
 
 /**
@@ -2086,7 +2144,7 @@ bool COpenWebNetTCP::sendCommand(bt_openwebnet& command, std::vector<bt_openwebn
 		}
 
 		std::lock_guard<std::mutex> l(readQueueMutex);
-		ret = ParseData(responseBuffer, read, response);
+		ret = read > 0 && ParseData(responseBuffer, read, response);
 	}
 	else
 		ret = true;
@@ -2203,14 +2261,41 @@ void COpenWebNetTCP::requestEnergyTotalizer()
 		sendCommand(request, responses, 0, true);
 	}
 	
-	/** request for the energy totalizer of the actuators **/
+	/** Keep dimension 51 for actuators that support it. Probe unknown devices
+	 * on the command connection as well as receiving their monitor events. */
 	for (int where = WHERE_ENERGY_A_1; where < MAX_WHERE_ENERGY_A; where++)
 	{
-		std::stringstream whereStr;
-		whereStr << where;
-		whereStr << "#0";
-		request.CreateDimensionMsgOpen(whoStr.str(), whereStr.str(), dimensionStr.str());
-		sendCommand(request, responses, 0, true);
+		const int key = (WHO_ENERGY_MANAGEMENT << 8) | where;
+		bool probe, fallback;
+		{
+			std::lock_guard<std::mutex> lock(readQueueMutex);
+			probe = m_energySources[key].IsUnknown();
+			fallback = m_energySources[key].UsesFallback();
+		}
+		const std::string address = std::to_string(where) + "#0";
+		if (!fallback)
+		{
+			request.CreateDimensionMsgOpen(whoStr.str(), address, dimensionStr.str());
+			responses.clear();
+			const bool sent = sendCommand(request, responses, probe ? 1 : 0, true);
+			if (probe)
+			{
+				std::lock_guard<std::mutex> lock(readQueueMutex);
+				for (auto response = responses.begin(); response != responses.end(); ++response)
+					if (response->IsMeasureFrame() && response->Extract_who() == "18"
+						&& response->Extract_where() == std::to_string(where) && response->Extract_dimension() == "51")
+						UpdateDeviceValue(response);
+				// A connection failure is not evidence of an unsupported dimension.
+				if (sent)
+					m_energySources[key].EnableFallback();
+				fallback = m_energySources[key].UsesFallback();
+			}
+		}
+		if (fallback)
+		{
+			request.CreateDimensionMsgOpen(whoStr.str(), address, "72#1");
+			sendCommand(request, responses, 0, true);
+		}
 	}
 }
 
