@@ -1,0 +1,440 @@
+<style>
+.ep-page {
+  --ep-text: var(--dz-text, #e0e0e0);
+  --ep-muted: var(--dz-text-muted, #9ab);
+  --ep-accent: var(--dz-accent-color, #43A4D3);
+  --ep-surface: var(--dz-panel-bg, rgba(255,255,255,0.05));
+  --ep-line: rgba(128,128,128,0.25);
+  --ep-blue: #2f8cff; --ep-green: #66bb6a; --ep-orange: #ffb366; --ep-purple: #c8a0ff; --ep-red: #ef7a6b; --ep-yellow: #e8d36a;
+  padding: 8px 12px; color: var(--ep-text); max-width: 1200px; margin: 0 auto;
+}
+.ep-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.ep-head h2 { margin: 0; font-size: 1.3em; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.ep-head small { color: var(--ep-muted); font-weight: normal; font-size: 0.65em; }
+.ep-page h3 { margin: 0 0 8px; font-size: 0.8em; text-transform: uppercase; letter-spacing: 1px; color: var(--ep-accent); display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ep-page h3 small { text-transform: none; letter-spacing: 0; color: var(--ep-muted); font-size: 1em; font-weight: normal; }
+.ep-section { background: var(--ep-surface); border-radius: var(--dz-border-radius, 8px); padding: 12px 14px; margin-bottom: 12px; }
+.ep-btn { cursor: pointer; border: 1px solid var(--ep-line); background: rgba(0,0,0,0.2); color: var(--ep-text); border-radius: 6px; padding: 5px 12px; font: inherit; font-size: 0.85em; }
+.ep-btn:hover { border-color: var(--ep-accent); }
+.ep-btn.active { background: rgba(67,164,211,0.25); border-color: var(--ep-accent); }
+.ep-seg { display: flex; gap: 6px; flex-wrap: wrap; }
+.ep-cards { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+.ep-card { flex: 1; min-width: 180px; background: var(--ep-surface); border-radius: var(--dz-border-radius, 8px); padding: 12px 14px; border-top: 3px solid transparent; }
+.ep-label { font-size: 0.75em; text-transform: uppercase; letter-spacing: 1px; color: var(--ep-muted); }
+.ep-value { font-size: 1.8em; font-weight: bold; line-height: 1.25; }
+.ep-value small { font-size: 0.45em; font-weight: normal; color: var(--ep-muted); }
+.ep-sub { font-size: 0.8em; color: var(--ep-muted); line-height: 1.5; }
+.ep-lv-1 { border-top-color: var(--ep-green); } .ep-lv-2 { border-top-color: var(--ep-yellow); } .ep-lv-3 { border-top-color: var(--ep-orange); } .ep-lv-4 { border-top-color: var(--ep-red); }
+.ep-green { color: var(--ep-green); } .ep-orange { color: var(--ep-orange); } .ep-blue { color: var(--ep-blue); } .ep-red { color: var(--ep-red); } .ep-yellow { color: var(--ep-yellow); } .ep-purple { color: var(--ep-purple); }
+.ep-pill { padding: 2px 9px; border-radius: 10px; font-size: 0.75em; font-weight: normal; vertical-align: middle; }
+.ep-pill.l1 { background: rgba(102,187,106,0.2); color: var(--ep-green); } .ep-pill.l2 { background: rgba(232,211,106,0.2); color: var(--ep-yellow); }
+.ep-pill.l3 { background: rgba(255,179,102,0.2); color: var(--ep-orange); } .ep-pill.l4 { background: rgba(239,122,107,0.2); color: var(--ep-red); }
+.ep-pill.known { background: rgba(47,140,255,0.2); color: var(--ep-blue); } .ep-pill.fc { background: rgba(200,160,255,0.2); color: var(--ep-purple); }
+.ep-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--ep-line); margin-bottom: 12px; overflow-x: auto; }
+.ep-tab { cursor: pointer; background: none; border: 0; border-bottom: 2px solid transparent; color: var(--ep-muted); font: inherit; padding: 9px 14px; white-space: nowrap; }
+.ep-tab:hover { color: var(--ep-text); }
+.ep-tab.active { color: var(--ep-text); border-bottom-color: var(--ep-accent); }
+.ep-badge { display: inline-block; min-width: 16px; padding: 0 5px; margin-left: 4px; border-radius: 9px; font-size: 0.75em; line-height: 16px; text-align: center; background: var(--ep-orange); color: #222; }
+table.ep-t { width: 100%; border-collapse: collapse; font-size: 0.88em; }
+.ep-t th { text-align: left; color: var(--ep-muted); font-weight: normal; padding: 6px 8px; border-bottom: 1px solid var(--ep-line); }
+.ep-t td { padding: 4px 8px; border-bottom: 1px solid rgba(128,128,128,0.12); }
+.ep-t td.n, .ep-t th.n { text-align: right; font-variant-numeric: tabular-nums; }
+.ep-t tr.ep-cheap td { background: rgba(102,187,106,0.08); }
+.ep-t tr.ep-cheap td:first-child { box-shadow: inset 3px 0 0 var(--ep-green); }
+.ep-t tr.ep-now td { background: rgba(67,164,211,0.16); font-weight: bold; }
+.ep-t tr.ep-now td:first-child { box-shadow: inset 3px 0 0 var(--ep-accent); }
+.ep-bar { height: 10px; border-radius: 5px; min-width: 2px; }
+.ep-barcell { width: 40%; }
+.ep-kv { width: 100%; border-collapse: collapse; font-size: 0.88em; }
+.ep-kv td { padding: 5px 4px; border-bottom: 1px solid var(--ep-line); }
+.ep-kv td:last-child { text-align: right; font-weight: bold; word-break: break-all; }
+.ep-warn { font-size: 0.82em; margin: 0 0 8px; padding: 6px 10px; border-left: 3px solid var(--ep-orange); background: rgba(255,179,102,0.1); border-radius: 4px; }
+.ep-warn.err { border-left-color: var(--ep-red); background: rgba(239,122,107,0.12); }
+.ep-help { font-size: 0.8em; color: var(--ep-muted); line-height: 1.5; margin: 6px 0 0; }
+.ep-empty { text-align: center; padding: 24px; color: var(--ep-muted); opacity: .8; }
+.ep-foot { text-align: right; font-size: 0.7em; color: var(--ep-muted); margin-top: 4px; }
+.ep-code { display: block; white-space: pre; overflow-x: auto; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 8px 10px; font-family: monospace; font-size: 0.82em; margin-top: 6px; }
+.ep-step td:first-child { width: 28px; }
+.ep-toast { position: fixed; right: 16px; bottom: 16px; z-index: 1000; padding: 8px 14px; border-radius: 6px; font-size: 0.9em; background: #283750; color: #fff; border: 1px solid var(--ep-accent); box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+@media (max-width: 640px) {
+  .ep-head { flex-direction: column; align-items: flex-start; }
+  .ep-cards { gap: 8px; }
+  .ep-card { min-width: 0; flex: 1 1 calc(50% - 8px); padding: 10px 12px; }
+  .ep-card:first-child { flex-basis: 100%; }
+  .ep-barcell { display: none; }
+}
+</style>
+
+<div ng-app="domoticz" ng-controller="epexCtrl" class="ep-page">
+
+  <div class="ep-head">
+    <h2>EPEX Predictor
+      <small ng-if="s">{{s.region}} &middot; {{s.unit}} &middot; {{ s.hourly ? ('hourly' | translate) : ('15 min' | translate) }}</small>
+    </h2>
+    <div class="ep-seg">
+      <span class="ep-help" ng-if="s" style="margin:auto 6px">{{ ::'Updated' | translate }} {{ clock(s.fetched_at * 1000) }}</span>
+      <button class="ep-btn" ng-click="refresh()"><i class="fa fa-refresh"></i> {{ ::'Refresh' | translate }}</button>
+    </div>
+  </div>
+
+  <div class="ep-warn err" ng-if="s && s.error">{{ s.error }}</div>
+  <div class="ep-warn" ng-if="s && s.prices.length && !cur">{{ ::'The server data does not cover the current time.' | translate }}</div>
+
+  <div class="ep-empty" ng-if="!s">{{ ::'Waiting for the EPEX Predictor plugin...' | translate }}<br><span class="ep-help">{{ ::'Is the EPEX Predictor hardware enabled?' | translate }}</span></div>
+
+  <div ng-if="s">
+  <div class="ep-cards" ng-if="s.prices.length">
+    <div class="ep-card" ng-class="'ep-lv-' + levelNo()">
+      <div class="ep-label">{{ ::'Price now' | translate }}</div>
+      <div class="ep-value">{{ fmt(cur.price) }} <small>{{s.unit}}</small></div>
+      <div class="ep-sub">
+        <span class="ep-pill" ng-class="'l' + levelNo()" ng-if="s.level">{{ s.level.label | translate }}</span>
+        <span class="ep-pill" ng-class="cur.known ? 'known' : 'fc'" ng-if="cur">{{ cur.known ? ('published' | translate) : ('forecast' | translate) }}</span><br>
+        {{ clock(cur.ts * 1000) }} - {{ clock((cur.ts + s.slot_seconds) * 1000) }}
+      </div>
+    </div>
+    <div class="ep-card">
+      <div class="ep-label">{{ ::'Next' | translate }}</div>
+      <div class="ep-value">{{ fmt(nxt.price) }} <small>{{s.unit}}</small></div>
+      <div class="ep-sub" ng-if="nxt"><span ng-class="trendClass()">{{ trendText() }}</span><br>{{ ::'from' | translate }} {{ clock(nxt.ts * 1000) }}</div>
+    </div>
+    <div class="ep-card">
+      <div class="ep-label">{{ ::'Today' | translate }}</div>
+      <div class="ep-value">{{ fmt(s.today.avg) }} <small>{{ ::'average' | translate }}</small></div>
+      <div class="ep-sub" ng-if="s.today"><span class="ep-green">&darr; {{ fmt(s.today.min) }}</span> &nbsp; <span class="ep-red">&uarr; {{ fmt(s.today.max) }}</span></div>
+    </div>
+    <div class="ep-card">
+      <div class="ep-label">{{ ::'Tomorrow' | translate }}</div>
+      <div class="ep-value" ng-if="s.tomorrow">{{ fmt(s.tomorrow.avg) }} <small>{{ ::'average' | translate }}</small></div>
+      <div class="ep-value" ng-if="!s.tomorrow">-</div>
+      <div class="ep-sub" ng-if="s.tomorrow"><span class="ep-green">&darr; {{ fmt(s.tomorrow.min) }}</span> &nbsp; <span class="ep-red">&uarr; {{ fmt(s.tomorrow.max) }}</span></div>
+      <div class="ep-sub" ng-if="!s.tomorrow">{{ ::'Not available yet' | translate }}</div>
+    </div>
+    <div class="ep-card" ng-if="s.cheap">
+      <div class="ep-label">{{ ::'Cheapest' | translate }} {{ s.cheap_hours }} h</div>
+      <div class="ep-value ep-green">{{ clock(isoMs(s.cheap.start)) }} <small>- {{ clock(isoMs(s.cheap.end)) }}</small></div>
+      <div class="ep-sub">{{ ::'average' | translate }} {{ fmt(s.cheap.avg) }} {{s.unit}}<br>
+        <span ng-if="s.cheap.active" class="ep-green">{{ ::'Active now' | translate }}</span>
+        <span ng-if="!s.cheap.active">{{ ::'starts in' | translate }} {{ until(isoMs(s.cheap.start)) }}</span></div>
+    </div>
+  </div>
+
+  <div class="ep-tabs">
+    <button class="ep-tab" ng-class="{active: tab==='overview'}" ng-click="setTab('overview')">{{ ::'Overview' | translate }}</button>
+    <button class="ep-tab" ng-class="{active: tab==='table'}" ng-click="setTab('table')">{{ ::'Prices' | translate }}</button>
+    <button class="ep-tab" ng-class="{active: tab==='setup'}" ng-click="setTab('setup')">{{ ::'Setup' | translate }} <span class="ep-badge" ng-if="openSteps()">{{ openSteps() }}</span></button>
+  </div>
+
+  <!-- Overview -->
+  <div ng-if="tab==='overview'">
+    <div class="ep-section">
+      <h3>{{ ::'Price curve' | translate }} <small>{{ rangeLabel() }}</small>
+        <span class="ep-seg">
+          <button class="ep-btn" ng-class="{active: view.range===r.key}" ng-repeat="r in ranges" ng-click="setRange(r.key)">{{ r.label | translate }}</button>
+        </span>
+      </h3>
+      <div id="ep-chart" style="height: 360px"></div>
+      <p class="ep-help">
+        <span class="ep-blue">&#9632;</span> {{ ::'Published day-ahead prices' | translate }} &nbsp;
+        <span class="ep-purple">&#9632;</span> {{ ::'Forecast by the model (less certain)' | translate }} &nbsp;
+        <span class="ep-green">&#9632;</span> {{ ::'Cheapest period' | translate }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Prices table -->
+  <div ng-if="tab==='table'">
+    <div class="ep-section">
+      <h3>{{ ::'Prices per hour' | translate }} <small>{{ dayLabel(view.day) }}</small>
+        <span class="ep-seg">
+          <button class="ep-btn" ng-class="{active: view.day===d}" ng-repeat="d in days()" ng-click="setDay(d)">{{ dayShort(d) }}</button>
+        </span>
+      </h3>
+      <table class="ep-t">
+        <thead><tr><th>{{ ::'Time' | translate }}</th><th class="n">{{ ::'Average' | translate }} ({{s.unit}})</th><th class="n" ng-if="s.slot_seconds < 3600">{{ ::'Quarters' | translate }}</th><th class="ep-barcell"></th><th>{{ ::'Source' | translate }}</th></tr></thead>
+        <tbody>
+          <tr ng-repeat="r in rows" ng-class="{'ep-now': r.now, 'ep-cheap': r.cheap}">
+            <td>{{ r.label }}</td>
+            <td class="n">{{ fmt(r.avg) }}</td>
+            <td class="n" ng-if="s.slot_seconds < 3600" style="color: var(--ep-muted)">{{ r.quarters }}</td>
+            <td class="ep-barcell"><div class="ep-bar" ng-style="{width: r.width + '%', background: r.color}"></div></td>
+            <td><span class="ep-pill" ng-class="r.known ? 'known' : 'fc'">{{ r.known ? ('published' | translate) : ('forecast' | translate) }}</span> <span class="ep-pill l1" ng-if="r.cheap">{{ ::'cheapest period' | translate }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="ep-empty" ng-if="!rows.length">{{ ::'No prices for this day.' | translate }}</div>
+    </div>
+  </div>
+
+  <!-- Setup -->
+  <div ng-if="tab==='setup'">
+    <div class="ep-section">
+      <h3>{{ ::'Status' | translate }}</h3>
+      <table class="ep-kv">
+        <tr class="ep-step"><td><i class="fa" ng-class="s.connected ? 'fa-check-circle ep-green' : 'fa-times-circle ep-red'"></i></td><td>{{ ::'Server reachable' | translate }}</td><td>{{ s.server }}</td></tr>
+        <tr class="ep-step" ng-if="s.server_version"><td><i class="fa fa-info-circle ep-blue"></i></td><td>{{ ::'Server version' | translate }}</td><td>{{ s.server_version }}</td></tr>
+        <tr class="ep-step"><td><i class="fa" ng-class="s.prices.length ? 'fa-check-circle ep-green' : 'fa-times-circle ep-red'"></i></td><td>{{ ::'Prices loaded' | translate }}</td><td>{{ s.prices.length }} ({{ firstDay() }} - {{ lastDay() }})</td></tr>
+        <tr class="ep-step"><td><i class="fa" ng-class="s.tomorrow ? 'fa-check-circle ep-green' : 'fa-clock-o ep-orange'"></i></td><td>{{ ::'Tomorrow available' | translate }}</td><td>{{ s.tomorrow ? ('yes' | translate) : ('not yet' | translate) }}</td></tr>
+        <tr class="ep-step"><td><i class="fa fa-info-circle ep-blue"></i></td><td>{{ ::'Published prices known until' | translate }}</td><td>{{ s.known_until ? stamp(isoMs(s.known_until)) : '-' }}</td></tr>
+      </table>
+      <p class="ep-help">{{ ::'Tomorrow\'s day-ahead prices are published around 13:00 CET. Until then the model forecast is shown.' | translate }}</p>
+    </div>
+    <div class="ep-section">
+      <h3>{{ ::'Settings' | translate }} <small>{{ ::'change them in Setup, Hardware' | translate }}</small></h3>
+      <table class="ep-kv">
+        <tr><td>{{ ::'Server address' | translate }}</td><td>{{ s.server }}</td></tr>
+        <tr><td>{{ ::'Region' | translate }}</td><td>{{ s.region }}</td></tr>
+        <tr><td>{{ ::'Price unit' | translate }}</td><td>{{ s.unit }}</td></tr>
+        <tr><td>{{ ::'Surcharge' | translate }}</td><td>{{ s.surcharge }} ct/kWh</td></tr>
+        <tr><td>{{ ::'Tax' | translate }}</td><td>{{ s.tax }} %</td></tr>
+        <tr><td>{{ ::'Time zone' | translate }}</td><td>{{ s.timezone }}</td></tr>
+        <tr><td>{{ ::'Cheap period' | translate }}</td><td>{{ s.cheap_hours }} h</td></tr>
+      </table>
+    </div>
+    <div class="ep-section">
+      <h3>{{ ::'Host it yourself' | translate }}</h3>
+      <p class="ep-help" style="margin-top:0">{{ ::'The public server is free (fair use). To run your own at home, for example with Docker compose, and enter its address in the hardware settings (http://<ip>:<port>):' | translate }}</p>
+      <code class="ep-code">git clone https://github.com/b3nn0/EpexPredictor
+cd EpexPredictor
+docker compose up -d</code>
+      <p class="ep-help">{{ ::'Set EPEXPREDICTOR_ENTSOE_API_KEY (free ENTSO-E key) in the compose file for better accuracy; it is required for the Swedish zones. See the project page for details.' | translate }} <a href="https://github.com/b3nn0/EpexPredictor" target="_blank" rel="noopener">github.com/b3nn0/EpexPredictor</a></p>
+    </div>
+  </div>
+
+  <div class="ep-foot">EPEX Predictor plugin {{s.version}} &middot; {{ ::'prices by energy-charts.info and ENTSO-E (CC-BY-4.0), weather by Open-Meteo' | translate }}</div>
+  </div>
+
+  <div class="ep-toast" ng-if="toast">{{ toast }}</div>
+</div>
+
+<script>
+var app = angular.module(['epexApp'], []);
+app.controller('epexCtrl', function ($scope, $timeout, $interval, $element, livesocket) {
+
+  var KEY = 'EpexPredictor';
+  var snaps = {};
+  var chart = null;
+  var DAY = 86400;
+
+  $scope.s = null; $scope.tab = 'overview'; $scope.toast = '';
+  $scope.cur = null; $scope.nxt = null; $scope.rows = [];
+  $scope.ranges = [{ key: 'today', label: 'Today' }, { key: 'tomorrow', label: 'Tomorrow' }, { key: 'next24', label: 'Next 24 h' }, { key: 'all', label: 'All' }];
+  var STORE = 'epex.view', saved = {};
+  try { saved = JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { saved = {}; }
+  $scope.view = { range: ['today', 'tomorrow', 'next24', 'all'].indexOf(saved.range) >= 0 ? saved.range : 'next24', day: null };
+  function saveView() { try { localStorage.setItem(STORE, JSON.stringify({ range: $scope.view.range })); } catch (e) { /* storage not available */ } }
+
+  function p2(n) { return n < 10 ? '0' + n : '' + n; }
+  function toast(t) { $scope.toast = t; $timeout(function () { if ($scope.toast === t) { $scope.toast = ''; } }, 3500); }
+
+  // ---------------------------------------------------------------- time zone handling
+  // Times are shown as wall clock time in the time zone of the region, whatever the browser time zone is.
+  var fmtCache = {};
+  function parts(ts) {
+    var tz = ($scope.s && $scope.s.timezone) || undefined;
+    var f = fmtCache[tz];
+    if (!f) {
+      try { f = fmtCache[tz] = new Intl.DateTimeFormat('en-GB', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', weekday: 'short' }); }
+      catch (e) { f = fmtCache[tz] = new Intl.DateTimeFormat('en-GB', { hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', weekday: 'short' }); }
+    }
+    var o = {};
+    f.formatToParts(new Date(ts * 1000)).forEach(function (p) { o[p.type] = p.value; });
+    return { y: +o.year, mo: +o.month, d: +o.day, h: +o.hour, mi: +o.minute, wd: o.weekday };
+  }
+  function dayKey(ts) { var p = parts(ts); return p.y + '-' + p2(p.mo) + '-' + p2(p.d); }
+  // epoch seconds -> milliseconds that display the wall clock time of the region when drawn as UTC
+  function wallMs(ts) { var p = parts(ts); return Date.UTC(p.y, p.mo - 1, p.d, p.h, p.mi) + (ts % 60) * 1000; }
+  $scope.clock = function (ms) { if (!ms) { return ''; } var p = parts(ms / 1000); return p2(p.h) + ':' + p2(p.mi); };
+  $scope.stamp = function (ms) { var p = parts(ms / 1000); return p.wd + ' ' + p2(p.d) + '-' + p2(p.mo) + ' ' + p2(p.h) + ':' + p2(p.mi); };
+  $scope.isoMs = function (iso) { return new Date(iso).getTime(); };
+  $scope.until = function (ms) {
+    var m = Math.max(0, Math.round((ms - Date.now()) / 60000)), h = Math.floor(m / 60);
+    return h ? h + ' h ' + p2(m % 60) + ' min' : m + ' min';
+  };
+  $scope.fmt = function (v) { return (v === null || v === undefined || isNaN(v)) ? '-' : Number(v).toFixed($scope.s ? $scope.s.decimals : 2); };
+
+  // ---------------------------------------------------------------- plugin channel
+  function send(cmd, extra) { livesocket.sendPluginCommand(KEY, angular.extend({ cmd: cmd }, extra || {})); }
+
+  var off = livesocket.onPluginMessage(KEY, function (msg) {
+    var d = msg.data;
+    if (typeof d === 'string') { try { d = JSON.parse(d); } catch (e) { return; } }
+    if (!d || !d.type) { return; }
+    $scope.$evalAsync(function () {
+      if (d.type === 'snapshot') { snaps[String(d.hwid)] = d; pick(); }
+      else if (d.type === 'error') { toast(d.error); }
+    });
+  });
+  livesocket.subscribePlugin(KEY);
+  send('snapshot');
+  var retry = $timeout(function again() { if (!$scope.s) { send('snapshot'); retry = $timeout(again, 4000); } }, 2500);
+  var tick = $interval(function () { send('snapshot'); }, 60000);
+
+  function pick() {
+    var keys = Object.keys(snaps);
+    if (!keys.length) { return; }
+    $scope.s = snaps[keys[0]];
+    derive();
+    if (!$scope.view.day) { $scope.view.day = dayKey(Date.now() / 1000); }
+    $scope.viewChanged();
+  }
+
+  // ---------------------------------------------------------------- derived data
+  function slotIndex(now) {
+    var p = $scope.s.prices, len = $scope.s.slot_seconds, lo = 0, hi = p.length - 1, f = -1;
+    while (lo <= hi) { var mid = (lo + hi) >> 1; if (p[mid][0] <= now) { f = mid; lo = mid + 1; } else { hi = mid - 1; } }
+    return (f >= 0 && now < p[f][0] + len) ? f : -1;
+  }
+  function knownUntilTs() { return $scope.s.known_until ? new Date($scope.s.known_until).getTime() / 1000 : 0; }
+  function derive() {
+    var s = $scope.s, now = Date.now() / 1000, i = slotIndex(now), ku = knownUntilTs();
+    $scope.cur = i >= 0 ? { ts: s.prices[i][0], price: s.prices[i][1], known: s.prices[i][0] <= ku } : null;
+    $scope.nxt = (i >= 0 && i + 1 < s.prices.length) ? { ts: s.prices[i + 1][0], price: s.prices[i + 1][1] } : null;
+  }
+  $scope.levelNo = function () {
+    var l = $scope.s && $scope.s.level && $scope.s.level.label;
+    return { 'Very cheap': 1, 'Cheap': 1, 'Normal': 2, 'Expensive': 3, 'Very expensive': 4 }[l] || 0;
+  };
+  $scope.trendText = function () {
+    if (!$scope.cur || !$scope.nxt) { return ''; }
+    var d = $scope.nxt.price - $scope.cur.price;
+    return (d > 0 ? '▲ +' : (d < 0 ? '▼ ' : '= ')) + $scope.fmt(d);
+  };
+  $scope.trendClass = function () {
+    if (!$scope.cur || !$scope.nxt) { return ''; }
+    return $scope.nxt.price > $scope.cur.price ? 'ep-red' : ($scope.nxt.price < $scope.cur.price ? 'ep-green' : '');
+  };
+  $scope.firstDay = function () { var p = $scope.s.prices; return p.length ? dayKey(p[0][0]) : ''; };
+  $scope.lastDay = function () { var p = $scope.s.prices; return p.length ? dayKey(p[p.length - 1][0]) : ''; };
+  $scope.days = function () {
+    var seen = {}, out = [];
+    ($scope.s ? $scope.s.prices : []).forEach(function (r) { var k = dayKey(r[0]); if (!seen[k]) { seen[k] = 1; out.push(k); } });
+    return out;
+  };
+  var WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  function dayDate(k) { var a = k.split('-'); return new Date(Date.UTC(+a[0], +a[1] - 1, +a[2])); }
+  $scope.dayShort = function (k) { var today = dayKey(Date.now() / 1000); return k === today ? 'Today' : WD[dayDate(k).getUTCDay()] + ' ' + k.substring(8); };
+  $scope.dayLabel = function (k) { return k ? WD[dayDate(k).getUTCDay()] + ' ' + k : ''; };
+  $scope.openSteps = function () {
+    var s = $scope.s;
+    return s ? (s.connected ? 0 : 1) + (s.prices.length ? 0 : 1) : 0;
+  };
+  $scope.rangeLabel = function () { return ($scope.ranges.filter(function (r) { return r.key === $scope.view.range; })[0] || {}).label; };
+
+  function rangeBounds() {
+    var now = Date.now() / 1000, p = $scope.s.prices, today = dayKey(now), r = $scope.view.range;
+    if (r === 'all') { return [p[0][0], p[p.length - 1][0] + $scope.s.slot_seconds]; }
+    if (r === 'next24') { var st = (slotIndex(now) >= 0 ? p[slotIndex(now)][0] : now); return [st - 3600, st + DAY]; }
+    var from = null, to = null, want = r === 'today' ? today : null;
+    if (r === 'tomorrow') { var ds = $scope.days(), ix = ds.indexOf(today); want = ix >= 0 ? ds[ix + 1] : null; }
+    p.forEach(function (x) { if (dayKey(x[0]) === want) { if (from === null) { from = x[0]; } to = x[0] + $scope.s.slot_seconds; } });
+    return from === null ? [now, now + DAY] : [from, to];
+  }
+
+  function priceColor(v, lo, hi) {
+    var t = hi > lo ? (v - lo) / (hi - lo) : 0.5;
+    return 'hsl(' + Math.round(130 - 130 * Math.max(0, Math.min(1, t))) + ', 65%, 52%)';
+  }
+
+  function buildRows() {
+    var s = $scope.s, day = $scope.view.day, now = Date.now() / 1000, ku = knownUntilTs(), hours = {}, order = [];
+    var ch = s.cheap ? [new Date(s.cheap.start).getTime() / 1000, new Date(s.cheap.end).getTime() / 1000] : null;
+    s.prices.forEach(function (r) {
+      if (dayKey(r[0]) !== day) { return; }
+      var h = r[0] - (r[0] % 3600);
+      // time zones with a half hour offset are not an issue for the supported regions, quarter slots sit inside their hour
+      if (!hours[h]) { hours[h] = { ts: h, sum: 0, n: 0, end: r[0] + s.slot_seconds, cheap: false, known: true }; order.push(h); }
+      var o = hours[h];
+      o.sum += r[1]; o.n++; o.end = r[0] + s.slot_seconds;
+      if (r[0] > ku) { o.known = false; }
+      if (ch && r[0] >= ch[0] && r[0] < ch[1]) { o.cheap = true; }
+    });
+    var rows = order.map(function (h) {
+      var o = hours[h];
+      return { ts: h, label: $scope.clock(h * 1000) + ' - ' + $scope.clock(o.end * 1000), avg: o.sum / o.n, quarters: o.n, known: o.known, cheap: o.cheap, now: now >= h && now < o.end };
+    });
+    var lo = Math.min.apply(null, rows.map(function (r) { return r.avg; })), hi = Math.max.apply(null, rows.map(function (r) { return r.avg; }));
+    var top = Math.max.apply(null, rows.map(function (r) { return Math.abs(r.avg); })) || 1;
+    rows.forEach(function (r) { r.color = priceColor(r.avg, lo, hi); r.width = Math.max(1, Math.abs(r.avg) / top * 100); });
+    $scope.rows = rows;
+  }
+
+  // ---------------------------------------------------------------- chart
+  function cssColor(name, fallback) {
+    var host = $element[0].querySelector('.ep-page') || $element[0];
+    var probe = document.createElement('span');
+    probe.style.color = 'var(' + name + ')';
+    host.appendChild(probe);
+    var v = getComputedStyle(probe).color;
+    host.removeChild(probe);
+    return v || fallback;
+  }
+  function destroy() { if (chart) { chart.destroy(); chart = null; } }
+
+  function drawChart() {
+    destroy();
+    var el = document.getElementById('ep-chart');
+    if (!el || typeof Highcharts === 'undefined' || !$scope.s || !$scope.s.prices.length) { return; }
+    var s = $scope.s, b = rangeBounds(), ku = knownUntilTs(), now = Date.now() / 1000, len = s.slot_seconds;
+    var TXT = cssColor('--ep-text', '#e0e0e0'), MUTED = cssColor('--ep-muted', '#9ab'), GRID = 'rgba(128,128,128,0.2)';
+    var known = [], fc = [];
+    s.prices.forEach(function (r) {
+      if (r[0] < b[0] || r[0] >= b[1]) { return; }
+      var pt = [wallMs(r[0]), r[1]];
+      if (r[0] <= ku) { known.push(pt); } else { fc.push(pt); }
+    });
+    var bands = [];
+    if (s.cheap) {
+      var cs = new Date(s.cheap.start).getTime() / 1000, ce = new Date(s.cheap.end).getTime() / 1000;
+      if (ce > b[0] && cs < b[1]) { bands.push({ from: wallMs(cs), to: wallMs(ce), color: 'rgba(102,187,106,0.18)', label: { text: s.cheap_hours + ' h', style: { color: '#66bb6a', fontSize: '10px' }, y: 12 }, zIndex: 0 }); }
+    }
+    var lines = [];
+    if (now >= b[0] && now <= b[1]) { lines.push({ value: wallMs(now), color: '#43A4D3', width: 2, dashStyle: 'ShortDash', zIndex: 5, label: { text: ($scope.cur ? $scope.fmt($scope.cur.price) : ''), style: { color: '#43A4D3', fontSize: '11px' }, y: 12, rotation: 0 } }); }
+    // the day boundaries help to read a multi day view
+    var d0 = parts(b[0]);
+    var mid = Date.UTC(d0.y, d0.mo - 1, d0.d) + 86400000;
+    for (var m = mid; m < wallMs(b[1]); m += 86400000) { lines.push({ value: m, color: 'rgba(128,128,128,0.45)', width: 1, zIndex: 1 }); }
+    var common = { type: 'area', step: 'left', lineWidth: 1.6, fillOpacity: 0.18, threshold: 0, marker: { enabled: false }, negativeColor: '#ef7a6b', negativeFillColor: 'rgba(239,122,107,0.18)' };
+    chart = Highcharts.chart(el, {
+      chart: { backgroundColor: 'transparent', zoomType: 'x', animation: false, spacingTop: 8 }, title: { text: null }, credits: { enabled: false },
+      time: { useUTC: true },
+      legend: { enabled: false },
+      xAxis: { type: 'datetime', plotBands: bands, plotLines: lines, labels: { style: { color: MUTED, fontSize: '11px' } }, lineColor: GRID, tickColor: GRID, crosshair: true, min: wallMs(b[0]), max: wallMs(b[1]) },
+      yAxis: { title: { text: s.unit, style: { color: MUTED } }, labels: { style: { color: MUTED, fontSize: '11px' } }, gridLineColor: GRID },
+      tooltip: {
+        shared: true, backgroundColor: 'rgba(20,28,40,0.95)', borderColor: 'rgba(255,255,255,0.2)', style: { color: '#e0e0e0' }, valueDecimals: s.decimals, valueSuffix: ' ' + s.unit,
+        xDateFormat: '%a %d-%m %H:%M'
+      },
+      plotOptions: { series: { animation: false } },
+      series: [
+        angular.extend({ name: 'Published', data: known, color: '#2f8cff' }, common),
+        angular.extend({ name: 'Forecast', data: fc, color: '#c8a0ff', dashStyle: 'ShortDash' }, common)
+      ]
+    });
+  }
+
+  var pending = null;
+  $scope.viewChanged = function () {
+    if (pending) { $timeout.cancel(pending); }
+    pending = $timeout(function () {
+      pending = null;
+      if (!$scope.s) { return; }
+      derive();
+      if ($scope.tab === 'table') { buildRows(); }
+      $timeout(function () { if ($scope.tab === 'overview') { drawChart(); } else { destroy(); } }, 0);
+    }, 30);
+  };
+  $scope.setTab = function (t) { $scope.tab = t; $scope.viewChanged(); };
+  $scope.setRange = function (r) { $scope.view.range = r; saveView(); $scope.viewChanged(); };
+  $scope.setDay = function (d) { $scope.view.day = d; $scope.viewChanged(); };
+  $scope.refresh = function () { send('refresh'); $timeout(function () { send('snapshot'); }, 2500); toast('Refreshing'); };
+
+  $scope.$on('$destroy', function () {
+    if (off) { off(); off = null; }
+    $interval.cancel(tick);
+    $timeout.cancel(retry);
+    livesocket.unsubscribePlugin(KEY);
+    destroy();
+  });
+});
+</script>
