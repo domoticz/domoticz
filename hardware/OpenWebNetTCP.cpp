@@ -721,8 +721,10 @@ bool COpenWebNetTCP::GetValueMeter(const int NodeID, const int ChildID, double *
 }
 
 /**
-	Update Active power usage
-**/
+ * @brief Publish instantaneous power with the latest accepted energy total.
+ * Prefer the in-memory total over the database, which can lag queued writes.
+ * Caller holds readQueueMutex.
+ */
 void COpenWebNetTCP::UpdatePower(const int who, const int where, double fval, const int iInterface, const int BatteryLevel, const char *devname)
 {
 	/**
@@ -742,8 +744,10 @@ void COpenWebNetTCP::UpdatePower(const int who, const int where, double fval, co
 
 
 /**
-	Update total energy
-**/
+ * @brief Queue a cumulative kWh reading while retaining the last known power.
+ * Cache the accepted Wh total before publication so later power frames retain it.
+ * Caller holds readQueueMutex.
+ */
 void COpenWebNetTCP::UpdateEnergy(const int who, const int where, double fval, const int iInterface, const int BatteryLevel, const char *devname)
 {
 	/**
@@ -760,6 +764,11 @@ void COpenWebNetTCP::UpdateEnergy(const int who, const int where, double fval, c
 	SendKwhMeter(NodeId, where, BatteryLevel, usage, fval, devname);
 }
 
+/**
+ * @brief Publish a legacy actuator reading while preserving any recovered baseline.
+ * @param recovering True when switching from dimension 72#1 back to dimension 51.
+ * The source offset is saved in device options. Requires readQueueMutex to be held.
+ */
 void COpenWebNetTCP::UpdateLegacyActuatorEnergy(const int where, const uint64_t reading, const int iInterface,
 	const bool recovering, const char *devname)
 {
@@ -791,6 +800,12 @@ void COpenWebNetTCP::UpdateLegacyActuatorEnergy(const int where, const uint64_t 
 	UpdateEnergy(WHO_ENERGY_MANAGEMENT, where, (static_cast<double>(reading) + offset) / 1000., iInterface, 255, devname);
 }
 
+/**
+ * @brief Validate and publish a reset-aware dimension-72#1 actuator total.
+ * Pending in-memory state takes precedence until asynchronous meter creation
+ * permits persistence. Invalid or stale samples are ignored without publishing.
+ * Requires readQueueMutex to be held.
+ */
 void COpenWebNetTCP::UpdateActuatorEnergy(const int where, const std::vector<std::string> &values, const int iInterface, const char *devname)
 {
 	OpenWebNetEnergy::Totalizer sample;
@@ -838,6 +853,8 @@ void COpenWebNetTCP::UpdateActuatorEnergy(const int where, const std::vector<std
 }
 
 // Called under readQueueMutex, like UpdateActuatorEnergy.
+/// @brief Persist pending reset baselines once their meter rows exist.
+/// Retain entries when the row is absent or saving fails. Caller holds readQueueMutex.
 void COpenWebNetTCP::FlushPendingEnergy()
 {
 	for (auto pending = m_pendingEnergy.begin(); pending != m_pendingEnergy.end();)
@@ -1220,11 +1237,12 @@ void COpenWebNetTCP::decodeWhereAndFill(const int who, const std::string &where,
 	}
 }
 
-/**
-	Insert/Update device
-**/
 // WHO 18 addresses retain their parameters in whereParameters, rather than
 // Extract_interface(), after the generic parser splits the WHERE field.
+/**
+ * @brief Resolve the local or remote bus from a WHO 18 frame's WHERE parameters.
+ * @return Zero for the local bus, 1..255 for a remote bus, or -1 for invalid routing.
+ */
 static int GetEnergyInterface(const bt_openwebnet &frame)
 {
 	const auto parameters = frame.Extract_whereParameters();
@@ -1244,6 +1262,11 @@ static int GetEnergyInterface(const bt_openwebnet &frame)
 	return OpenWebNetEnergy::ParseUnsigned(interfaceID, value) && value <= 255 ? static_cast<int>(value) : -1;
 }
 
+/**
+ * @brief Dispatch a received frame to the matching device update handler.
+ * Energy frames are normalized to interface-qualified identities before source
+ * selection and publication. Caller holds readQueueMutex.
+ */
 void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter)
 {
 	std::string who = iter->Extract_who();
@@ -2160,6 +2183,12 @@ bool COpenWebNetTCP::WriteToHardware(const char *pdata, const unsigned char leng
 }
 
 
+/**
+ * @brief Build the selected legacy or KW4691 manual-heating setpoint command.
+ * @param method Empty or "14" preserves legacy framing; "7-heating" selects
+ * the verified dimension-7 variant on the local bus at 5..40 degrees Celsius.
+ * @return False for unknown methods, nonfinite temperatures or unsupported routing.
+ */
 static bool BuildSetpointCommand(bt_openwebnet &request, const std::string &where, const int interfaceID,
 	const float temperature, const std::string &method)
 {
@@ -2188,6 +2217,10 @@ static bool BuildSetpointCommand(bt_openwebnet &request, const std::string &wher
 	return true;
 }
 
+/**
+ * @brief Send a thermostat setpoint using the method selected for this hardware.
+ * @return True for a gateway ACK; this does not confirm physical application.
+ */
 bool COpenWebNetTCP::SetSetpoint(const int idx, const float temp)
 {
 	const std::string method = m_useDimension7Heating ? "7-heating" : "14";
@@ -2210,8 +2243,14 @@ bool COpenWebNetTCP::SetSetpoint(const int idx, const float temp)
 
 
 /**
-   Send OpenWebNet command to device
-**/
+ * @brief Send a command and optionally collect complete replies within a bounded wait.
+ * @param waitForResponse Reply window in seconds; zero sends without reading.
+ * @param silent Suppress routine command and response logging.
+ * @return False on cancellation, socket errors or incomplete/malformed replies.
+ * An empty reply after timeout returns true with no new response frames; callers
+ * must require a nonempty response before treating a probe as conclusive.
+ * The command socket is released on every exit path.
+ */
 bool COpenWebNetTCP::sendCommand(bt_openwebnet& command, std::vector<bt_openwebnet>& response, int waitForResponse, bool silent)
 {
 	if (IsStopRequested(0))
@@ -2355,8 +2394,10 @@ void COpenWebNetTCP::requestDryContactIRDetectionStatus()
 }
 
 /**
-	request energy totalizer
-**/
+ * @brief Poll local and observed remote energy meters, preferring dimension 51.
+ * Only a complete probe reply without a valid legacy reading permits 72#1.
+ * Keep source selection interface-qualified and retry legacy probes during fallback.
+ */
 void COpenWebNetTCP::requestEnergyTotalizer()
 {
 	bt_openwebnet request;
@@ -2585,6 +2626,10 @@ bool COpenWebNetTCP::ParseData(char* data, int length, std::vector<bt_openwebnet
 	return true;
 }
 
+/**
+ * @brief Run cancellable polling, synchronization and pending-baseline persistence.
+ * Pending energy state is retried independently of gateway connectivity.
+ */
 void COpenWebNetTCP::Do_Work()
 {
 	while (!IsStopRequested(OPENWEBNET_HEARTBEAT_DELAY*1000))

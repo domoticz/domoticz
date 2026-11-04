@@ -12,13 +12,17 @@ namespace OpenWebNetEnergy
 class Source
 {
 public:
+	/// @brief Return whether neither totalizer source has been selected.
 	bool IsUnknown() const { return m_source == 0; }
+	/// @brief Return whether reset-aware dimension 72#1 supplies the total.
 	bool UsesFallback() const { return m_source == 2; }
+	/// @brief Prefer a valid dimension-51 reading, including after fallback selection.
 	bool AcceptLegacy()
 	{
 		m_source = 1;
 		return true;
 	}
+	/// @brief Enable dimension 72#1 only while the legacy source is unconfirmed.
 	void EnableFallback()
 	{
 		if (IsUnknown())
@@ -28,6 +32,12 @@ private:
 	int m_source = 0;
 };
 
+/**
+ * @brief Parse an unsigned decimal counter without accepting signs or overflow.
+ * @param text Nonempty sequence of decimal digits.
+ * @param value Receives the parsed value; may be modified on failure.
+ * @return True if the entire input fits in uint64_t.
+ */
 inline bool ParseUnsigned(const std::string &text, uint64_t &value)
 {
 	if (text.empty())
@@ -49,7 +59,13 @@ struct Totalizer
 	uint64_t reset = 0;
 };
 
-// WHO 18, dimension 72#1: Wh, day, month, year, hour, minute.
+/**
+ * @brief Validate and decode a WHO 18 dimension-72#1 reading.
+ * @param values Energy in Wh followed by reset day, month, year, hour and minute.
+ * @param sample Receives the raw total and minute-resolution reset key on success.
+ * @return False for malformed fields, overflow or an invalid day within a month.
+ * Existing zero-valued date fields remain accepted. Failure leaves sample unchanged.
+ */
 inline bool ReadTotalizer(const std::vector<std::string> &values, Totalizer &sample)
 {
 	if (values.size() != 6)
@@ -71,6 +87,14 @@ inline bool ReadTotalizer(const std::vector<std::string> &values, Totalizer &sam
 	return true;
 }
 
+/**
+ * @brief Accumulate consumption across changes in the reported reset timestamp.
+ * @param previous Last accepted raw counter, logical total and reset key.
+ * @param sample New reading; its logical total is updated only on success.
+ * @return False for older reset keys, same-key counter regressions or overflow.
+ * Duplicate readings add nothing. Resets within one minute cannot be distinguished
+ * reliably from delayed readings because the protocol provides no finer reset key.
+ */
 inline bool AdvanceTotalizer(const Totalizer &previous, Totalizer &sample)
 {
 	// Ignore delayed packets from before a reset, and regressing readings

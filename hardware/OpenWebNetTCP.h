@@ -53,6 +53,7 @@ class COpenWebNetTCP : public CDomoticzHardwareBase
 	~COpenWebNetTCP() override = default;
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 	bool SetSetpoint(int idx, float temp);
+	/// @brief Return whether this gateway uses the optional manual-heating setpoint method.
 	bool UsesDimension7Heating() const { return m_useDimension7Heating; }
 	boost::signals2::signal<void()> sDisconnected;
 
