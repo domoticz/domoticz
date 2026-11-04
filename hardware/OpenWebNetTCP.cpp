@@ -766,7 +766,7 @@ void COpenWebNetTCP::UpdateEnergy(const int who, const int where, double fval, c
 
 /**
  * @brief Publish a legacy actuator reading while preserving any recovered baseline.
- * @param recovering True when switching from dimension 72#1 back to dimension 51.
+ * @param recovering True when switching from a published dimension-72#1 total back to dimension 51.
  * The source offset is saved in device options. Requires readQueueMutex to be held.
  */
 void COpenWebNetTCP::UpdateLegacyActuatorEnergy(const int where, const uint64_t reading, const int iInterface,
@@ -802,6 +802,7 @@ void COpenWebNetTCP::UpdateLegacyActuatorEnergy(const int where, const uint64_t 
 
 /**
  * @brief Validate and publish a reset-aware dimension-72#1 actuator total.
+ * Anchor a first fallback sample to any existing logical meter total.
  * Pending in-memory state takes precedence until asynchronous meter creation
  * permits persistence. Invalid or stale samples are ignored without publishing.
  * Requires readQueueMutex to be held.
@@ -823,10 +824,12 @@ void COpenWebNetTCP::UpdateActuatorEnergy(const int where, const std::vector<std
 	const int key = (node << 8) | where;
 	const auto pending = m_pendingEnergy.find(key);
 	std::map<std::string, std::string> options;
+	bool hasResetState = false;
 	if (pending != m_pendingEnergy.end())
 	{
 		if (!OpenWebNetEnergy::AdvanceTotalizer(pending->second, sample))
 			return;
+		hasResetState = true;
 	}
 	else if (!device.empty())
 	{
@@ -842,6 +845,25 @@ void COpenWebNetTCP::UpdateActuatorEnergy(const int where, const std::vector<std
 				|| !OpenWebNetEnergy::ParseUnsigned(fields[2], previous.reset)
 				|| !OpenWebNetEnergy::AdvanceTotalizer(previous, sample))
 				return;
+			hasResetState = true;
+		}
+	}
+
+	if (!hasResetState)
+	{
+		const auto latest = m_energyTotals.find(key);
+		if (latest != m_energyTotals.end() || !device.empty())
+		{
+			double total = 0;
+			if (latest != m_energyTotals.end())
+				total = latest->second;
+			else if (!GetValueMeter(node, where, nullptr, &total))
+				return;
+			if (!std::isfinite(total) || total < 0 || total >= static_cast<double>(std::numeric_limits<uint64_t>::max()))
+				return;
+			// The raw 72#1 counter has a different origin. Anchor its first
+			// sample to the existing logical total, then add subsequent deltas.
+			sample.total = static_cast<uint64_t>(std::round(total));
 		}
 	}
 
@@ -849,6 +871,7 @@ void COpenWebNetTCP::UpdateActuatorEnergy(const int where, const std::vector<std
 	// row exists, and use it for any samples arriving before it can be saved.
 	m_pendingEnergy[key] = sample;
 	FlushPendingEnergy();
+	m_energySources[key].AcceptFallbackReading();
 	UpdateEnergy(WHO_ENERGY_MANAGEMENT, where, static_cast<double>(sample.total) / 1000., iInterface, 255, devname);
 }
 
@@ -1695,7 +1718,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 				if (dimension != "51" || !OpenWebNetEnergy::ParseUnsigned(value, reading))
 					break;
 				const int key = (atoi(sInterface.c_str()) << 16) | (WHO_ENERGY_MANAGEMENT << 8) | atoi(where.c_str());
-				const bool recovering = m_energySources[key].UsesFallback();
+				const bool recovering = m_energySources[key].NeedsLegacyAlignment();
 				m_energySources[key].AcceptLegacy();
 				UpdateLegacyActuatorEnergy(atoi(where.c_str()), reading, atoi(sInterface.c_str()), recovering, devname.c_str());
 				break;

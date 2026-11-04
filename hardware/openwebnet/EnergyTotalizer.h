@@ -14,12 +14,17 @@ class Source
 public:
 	/// @brief Return whether neither totalizer source has been selected.
 	bool IsUnknown() const { return m_source == 0; }
-	/// @brief Return whether reset-aware dimension 72#1 supplies the total.
+	/// @brief Return whether dimension 72#1 is selected, even before its first reading.
 	bool UsesFallback() const { return m_source == 2; }
+	/// @brief Return whether a published fallback total needs alignment with legacy readings.
+	bool NeedsLegacyAlignment() const { return UsesFallback() && m_fallbackAccepted; }
+	/// @brief Record a validated dimension-72#1 total accepted for publication.
+	void AcceptFallbackReading() { m_fallbackAccepted = true; }
 	/// @brief Prefer a valid dimension-51 reading, including after fallback selection.
 	bool AcceptLegacy()
 	{
 		m_source = 1;
+		m_fallbackAccepted = false;
 		return true;
 	}
 	/// @brief Enable dimension 72#1 only while the legacy source is unconfirmed.
@@ -30,6 +35,7 @@ public:
 	}
 private:
 	int m_source = 0;
+	bool m_fallbackAccepted = false;
 };
 
 /**
@@ -64,7 +70,7 @@ struct Totalizer
  * @param values Energy in Wh followed by reset day, month, year, hour and minute.
  * @param sample Receives the raw total and minute-resolution reset key on success.
  * @return False for malformed fields, overflow or an invalid day within a month.
- * Existing zero-valued date fields remain accepted. Failure leaves sample unchanged.
+ * Day and month must be nonzero. Failure leaves sample unchanged.
  */
 inline bool ReadTotalizer(const std::vector<std::string> &values, Totalizer &sample)
 {
@@ -74,7 +80,7 @@ inline bool ReadTotalizer(const std::vector<std::string> &values, Totalizer &sam
 	for (size_t i = 0; i < 6; ++i)
 		if (!ParseUnsigned(values[i], fields[i]))
 			return false;
-	if (fields[2] > 12 || fields[3] > 9999 || fields[4] > 23 || fields[5] > 59)
+	if (fields[1] == 0 || fields[2] == 0 || fields[2] > 12 || fields[3] > 9999 || fields[4] > 23 || fields[5] > 59)
 		return false;
 	const uint64_t year = fields[3];
 	const bool leap = (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
