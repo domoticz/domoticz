@@ -7,8 +7,8 @@
 
 namespace OpenWebNetEnergy
 {
-// Select once per hardware start. A successful legacy reading keeps
-// existing gateways on 51; only a failed probe enables the resettable meter.
+// Prefer a valid legacy reading, including one arriving after a probe timeout.
+// Once legacy is confirmed, a failed poll must not switch it back to 72#1.
 class Source
 {
 public:
@@ -16,8 +16,6 @@ public:
 	bool UsesFallback() const { return m_source == 2; }
 	bool AcceptLegacy()
 	{
-		if (UsesFallback())
-			return false;
 		m_source = 1;
 		return true;
 	}
@@ -60,7 +58,13 @@ inline bool ReadTotalizer(const std::vector<std::string> &values, Totalizer &sam
 	for (size_t i = 0; i < 6; ++i)
 		if (!ParseUnsigned(values[i], fields[i]))
 			return false;
-	if (fields[1] > 31 || fields[2] > 12 || fields[3] > 9999 || fields[4] > 23 || fields[5] > 59)
+	if (fields[2] > 12 || fields[3] > 9999 || fields[4] > 23 || fields[5] > 59)
+		return false;
+	const uint64_t year = fields[3];
+	const bool leap = (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
+	static const uint64_t monthDays[13] = { 31, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+	const uint64_t maxDay = (fields[2] == 2 && leap) ? 29 : monthDays[fields[2]];
+	if (fields[1] > maxDay)
 		return false;
 	sample.raw = sample.total = fields[0];
 	sample.reset = ((((fields[3] * 13 + fields[2]) * 32 + fields[1]) * 24 + fields[4]) * 60 + fields[5]);

@@ -732,7 +732,11 @@ void COpenWebNetTCP::UpdatePower(const int who, const int where, double fval, co
 	double energy = 0.;
 
 	int NodeId = (iInterface << 8) | who;
-	GetValueMeter(NodeId, where, nullptr, &energy);
+	const auto total = m_energyTotals.find((NodeId << 8) | where);
+	if (total != m_energyTotals.end())
+		energy = total->second;
+	else
+		GetValueMeter(NodeId, where, nullptr, &energy);
 	SendKwhMeter(NodeId, where, BatteryLevel, fval, (energy / 1000.), devname);
 }
 
@@ -750,7 +754,41 @@ void COpenWebNetTCP::UpdateEnergy(const int who, const int where, double fval, c
 	double usage = 0.;
 	int NodeId = (iInterface << 8) | who;
 	GetValueMeter(NodeId, where, &usage, nullptr);
+	// Publish the accepted total before queueing the message. A following
+	// power frame must not restore an older total still in the database.
+	m_energyTotals[(NodeId << 8) | where] = fval * 1000.;
 	SendKwhMeter(NodeId, where, BatteryLevel, usage, fval, devname);
+}
+
+void COpenWebNetTCP::UpdateLegacyActuatorEnergy(const int where, const uint64_t reading, const int iInterface,
+	const bool recovering, const char *devname)
+{
+	const int node = (iInterface << 8) | WHO_ENERGY_MANAGEMENT;
+	char deviceID[30];
+	snprintf(deviceID, sizeof(deviceID), "%08X", (node << 8) | where);
+	const auto device = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE HardwareID=%d AND DeviceID='%q' AND Type=%d AND Subtype=%d",
+		m_HwdID, deviceID, int(pTypeGeneral), int(sTypeKwh));
+	double offset = 0;
+	if (!device.empty())
+	{
+		auto options = m_sql.GetDeviceOptions(device[0][0]);
+		if (recovering)
+		{
+			double total = 0;
+			const auto latest = m_energyTotals.find((node << 8) | where);
+			if (latest != m_energyTotals.end())
+				total = latest->second;
+			else
+				GetValueMeter(node, where, nullptr, &total);
+			// Changing source must not change the energy already accumulated.
+			offset = total - static_cast<double>(reading);
+			options["OpenWebNetLegacyOffset"] = std::to_string(offset);
+			m_sql.SetDeviceOptions(std::stoull(device[0][0]), options);
+		}
+		else if (options.count("OpenWebNetLegacyOffset"))
+			offset = atof(options["OpenWebNetLegacyOffset"].c_str());
+	}
+	UpdateEnergy(WHO_ENERGY_MANAGEMENT, where, (static_cast<double>(reading) + offset) / 1000., iInterface, 255, devname);
 }
 
 void COpenWebNetTCP::UpdateActuatorEnergy(const int where, const std::vector<std::string> &values, const int iInterface, const char *devname)
@@ -766,9 +804,16 @@ void COpenWebNetTCP::UpdateActuatorEnergy(const int where, const std::vector<std
 		return m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE HardwareID=%d AND DeviceID='%q' AND Type=%d AND Subtype=%d",
 			m_HwdID, deviceID, int(pTypeGeneral), int(sTypeKwh));
 	};
-	auto device = findDevice();
+	const auto device = findDevice();
+	const int key = (node << 8) | where;
+	const auto pending = m_pendingEnergy.find(key);
 	std::map<std::string, std::string> options;
-	if (!device.empty())
+	if (pending != m_pendingEnergy.end())
+	{
+		if (!OpenWebNetEnergy::AdvanceTotalizer(pending->second, sample))
+			return;
+	}
+	else if (!device.empty())
 	{
 		options = m_sql.GetDeviceOptions(device[0][0]);
 		const auto state = options.find("OpenWebNetTotalizer1");
@@ -785,17 +830,34 @@ void COpenWebNetTCP::UpdateActuatorEnergy(const int where, const std::vector<std
 		}
 	}
 
-	// Store the logical total as well as the physical reading so that resets
-	// remain continuous across hardware reconnects and Domoticz restarts.
-	options["OpenWebNetTotalizer1"] = std::to_string(sample.raw) + "|" + std::to_string(sample.total) + "|" + std::to_string(sample.reset);
-	if (!device.empty())
-		m_sql.SetDeviceOptions(std::stoull(device[0][0]), options);
+	// Device creation is queued by SendKwhMeter. Retain the state until the
+	// row exists, and use it for any samples arriving before it can be saved.
+	m_pendingEnergy[key] = sample;
+	FlushPendingEnergy();
 	UpdateEnergy(WHO_ENERGY_MANAGEMENT, where, static_cast<double>(sample.total) / 1000., iInterface, 255, devname);
-	if (device.empty())
+}
+
+// Called under readQueueMutex, like UpdateActuatorEnergy.
+void COpenWebNetTCP::FlushPendingEnergy()
+{
+	for (auto pending = m_pendingEnergy.begin(); pending != m_pendingEnergy.end();)
 	{
-		device = findDevice();
+		char deviceID[30];
+		snprintf(deviceID, sizeof(deviceID), "%08X", pending->first);
+		const auto device = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE HardwareID=%d AND DeviceID='%q' AND Type=%d AND Subtype=%d",
+			m_HwdID, deviceID, int(pTypeGeneral), int(sTypeKwh));
 		if (!device.empty())
-			m_sql.SetDeviceOptions(std::stoull(device[0][0]), options);
+		{
+			auto options = m_sql.GetDeviceOptions(device[0][0]);
+			const auto &state = pending->second;
+			options["OpenWebNetTotalizer1"] = std::to_string(state.raw) + "|" + std::to_string(state.total) + "|" + std::to_string(state.reset);
+			if (m_sql.SetDeviceOptions(std::stoull(device[0][0]), options))
+			{
+				pending = m_pendingEnergy.erase(pending);
+				continue;
+			}
+		}
+		++pending;
 	}
 }
 
@@ -1161,6 +1223,27 @@ void COpenWebNetTCP::decodeWhereAndFill(const int who, const std::string &where,
 /**
 	Insert/Update device
 **/
+// WHO 18 addresses retain their parameters in whereParameters, rather than
+// Extract_interface(), after the generic parser splits the WHERE field.
+static int GetEnergyInterface(const bt_openwebnet &frame)
+{
+	const auto parameters = frame.Extract_whereParameters();
+	std::string interfaceID = frame.Extract_interface();
+	if (interfaceID.empty())
+	{
+		if (parameters.size() == 3 && parameters[0] == "0" && parameters[1] == "4")
+			interfaceID = parameters[2];
+		else if (parameters.size() == 2 && parameters[0] == "4")
+			interfaceID = parameters[1];
+		else if (parameters.empty() || (parameters.size() == 1 && parameters[0] == "0"))
+			return 0;
+		else
+			return -1;
+	}
+	uint64_t value;
+	return OpenWebNetEnergy::ParseUnsigned(interfaceID, value) && value <= 255 ? static_cast<int>(value) : -1;
+}
+
 void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter)
 {
 	std::string who = iter->Extract_who();
@@ -1556,6 +1639,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 		}
 		break;
 	case WHO_ENERGY_MANAGEMENT:                     // 18
+	{
 		if (!iter->IsMeasureFrame())
 		{
 			if (iter->IsNormalFrame())
@@ -1563,6 +1647,15 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			else
 				Log(LOG_ERROR, "Who=%s frame error!", who.c_str());
 			return;
+		}
+		const int energyInterface = GetEnergyInterface(*iter);
+		if (energyInterface < 0)
+			return;
+		sInterface = std::to_string(energyInterface);
+		if (energyInterface > 0 && !where.empty() && where[0] == '7')
+		{
+			const int key = (energyInterface << 16) | (WHO_ENERGY_MANAGEMENT << 8) | atoi(where.c_str());
+			m_remoteEnergyActuators[key] = where + "#0#4#" + sInterface;
 		}
 		devname = OPENWEBNET_ENERGY_MANAGEMENT;
 		devname += " " + where;
@@ -1573,21 +1666,23 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 			break;
 		case ENERGY_MANAGEMENT_DIMENSION_ENERGY_TOTALIZER:
 		{
-			if (!where.empty() && where[0] == '7' && !whereParam.empty() && whereParam[0] == "0")
+			if (!where.empty() && where[0] == '7')
 			{
 				uint64_t reading;
 				if (dimension != "51" || !OpenWebNetEnergy::ParseUnsigned(value, reading))
 					break;
 				const int key = (atoi(sInterface.c_str()) << 16) | (WHO_ENERGY_MANAGEMENT << 8) | atoi(where.c_str());
-				if (!m_energySources[key].AcceptLegacy())
-					break;
+				const bool recovering = m_energySources[key].UsesFallback();
+				m_energySources[key].AcceptLegacy();
+				UpdateLegacyActuatorEnergy(atoi(where.c_str()), reading, atoi(sInterface.c_str()), recovering, devname.c_str());
+				break;
 			}
 			UpdateEnergy(WHO_ENERGY_MANAGEMENT, atoi(where.c_str()), static_cast<float>(atof(value.c_str()) / 1000.), atoi(sInterface.c_str()), 255, devname.c_str());
 			break;
 		}
 		case ENERGY_MANAGEMENT_DIMENSION_TOTALIZER:
 			// Select only totalizer 1. atoi(dimension) also matches 72#2.
-			if (dimension == "72#1" && !where.empty() && where[0] == '7' && !whereParam.empty() && whereParam[0] == "0")
+			if (dimension == "72#1" && !where.empty() && where[0] == '7')
 			{
 				const int key = (atoi(sInterface.c_str()) << 16) | (WHO_ENERGY_MANAGEMENT << 8) | atoi(where.c_str());
 				if (m_energySources[key].UsesFallback())
@@ -1606,6 +1701,7 @@ void COpenWebNetTCP::UpdateDeviceValue(std::vector<bt_openwebnet>::iterator iter
 		}
 		break;
 
+	}
 	case WHO_GATEWAY_INTERFACES_MANAGEMENT:         // 13
 		int timezone, model;
 		switch (atoi(dimension.c_str()))
@@ -2118,40 +2214,58 @@ bool COpenWebNetTCP::SetSetpoint(const int idx, const float temp)
 **/
 bool COpenWebNetTCP::sendCommand(bt_openwebnet& command, std::vector<bt_openwebnet>& response, int waitForResponse, bool silent)
 {
-	csocket *commandSocket;
-	bool ret;
-	if (!(commandSocket = connectGwOwn(OPENWEBNET_COMMAND_SESSION)))
+	if (IsStopRequested(0))
+		return false;
+	std::unique_ptr<csocket> commandSocket(connectGwOwn(OPENWEBNET_COMMAND_SESSION));
+	if (!commandSocket)
 	{
 		Log(LOG_ERROR, "Command session ERROR");
 		return false;
 	}
-	// Command session correctly open
-	//Log(LOG_STATUS, "Command session connected to: %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-
-	// Command session correctly open -> write command
-	if (!silent) {
+	if (!silent)
 		Log(LOG_STATUS, "Command %s", command.m_frameOpen.c_str());
-	}
-	ownWrite(commandSocket, command.m_frameOpen.c_str(), command.m_frameOpen.length());
+	if (!ownWrite(commandSocket.get(), command.m_frameOpen.c_str(), command.m_frameOpen.length()))
+		return false;
 
-	if (waitForResponse > 0) {
-		sleep_seconds(waitForResponse);
-
-		char responseBuffer[OPENWEBNET_BUFFER_SIZE];
-		int read = ownRead(commandSocket, responseBuffer, OPENWEBNET_BUFFER_SIZE);
-		if (!silent) {
-			Log(LOG_STATUS, "sent=%s received=%s", command.m_frameOpen.c_str(), responseBuffer);
+	if (waitForResponse > 0)
+	{
+		std::string received;
+		for (int remaining = waitForResponse * 1000; remaining > 0; remaining -= 100)
+		{
+			if (IsStopRequested(remaining < 100 ? remaining : 100))
+				return false;
+			bool readable = false;
+			if (commandSocket->canRead(&readable, 0.0F) != 0)
+				return false;
+			if (!readable)
+				continue;
+			char buffer[OPENWEBNET_BUFFER_SIZE];
+			const int count = ownRead(commandSocket.get(), buffer, sizeof(buffer));
+			if (count < 0 || (count == 0 && received.empty()))
+				return false;
+			if (count == 0)
+				break;
+			if (received.size() + count > OPENWEBNET_BUFFER_SIZE)
+				return false;
+			received.append(buffer, count);
 		}
-
-		std::lock_guard<std::mutex> l(readQueueMutex);
-		ret = read > 0 && ParseData(responseBuffer, read, response);
+		if (!silent)
+			Log(LOG_STATUS, "sent=%s received=%s", command.m_frameOpen.c_str(), received.c_str());
+		if (received.empty())
+			return true; // The entire probe window expired without a reply.
+		if (received.size() < 2 || received.compare(received.size() - 2, 2, "##") != 0)
+			return false; // An incomplete reply does not establish lack of support.
+		std::lock_guard<std::mutex> lock(readQueueMutex);
+		std::vector<bt_openwebnet> frames;
+		if (!ParseData(&received[0], static_cast<int>(received.size()), frames) || frames.empty())
+			return false;
+		for (const auto &frame : frames)
+			if (frame.IsErrorFrame() || frame.IsNullFrame())
+				return false;
+		response.insert(response.end(), frames.begin(), frames.end());
+		return true;
 	}
-	else
-		ret = true;
-
-	if (commandSocket->getState() != csocket::CLOSED)
-		commandSocket->close();
-	return (ret);
+	return true;
 }
 
 /**
@@ -2261,19 +2375,28 @@ void COpenWebNetTCP::requestEnergyTotalizer()
 		sendCommand(request, responses, 0, true);
 	}
 	
-	/** Keep dimension 51 for actuators that support it. Probe unknown devices
-	 * on the command connection as well as receiving their monitor events. */
+	// Probe local actuators and remote actuator addresses learned from WHO 18
+	// frames. Keep source selection and requests qualified by the same bus ID.
+	std::map<int, std::string> actuators;
 	for (int where = WHERE_ENERGY_A_1; where < MAX_WHERE_ENERGY_A; where++)
+		actuators[(WHO_ENERGY_MANAGEMENT << 8) | where] = std::to_string(where) + "#0";
 	{
-		const int key = (WHO_ENERGY_MANAGEMENT << 8) | where;
+		std::lock_guard<std::mutex> lock(readQueueMutex);
+		actuators.insert(m_remoteEnergyActuators.begin(), m_remoteEnergyActuators.end());
+	}
+	for (const auto &actuator : actuators)
+	{
+		const int key = actuator.first;
+		const int where = key & 0xff;
+		const int interfaceID = (key >> 16) & 0xff;
 		bool probe, fallback;
 		{
 			std::lock_guard<std::mutex> lock(readQueueMutex);
-			probe = m_energySources[key].IsUnknown();
+			probe = m_energySources[key].IsUnknown() || m_energySources[key].UsesFallback();
 			fallback = m_energySources[key].UsesFallback();
 		}
-		const std::string address = std::to_string(where) + "#0";
-		if (!fallback)
+		const std::string &address = actuator.second;
+		// Recheck 51 while using 72#1 so a delayed legacy meter can recover.
 		{
 			request.CreateDimensionMsgOpen(whoStr.str(), address, dimensionStr.str());
 			responses.clear();
@@ -2283,10 +2406,11 @@ void COpenWebNetTCP::requestEnergyTotalizer()
 				std::lock_guard<std::mutex> lock(readQueueMutex);
 				for (auto response = responses.begin(); response != responses.end(); ++response)
 					if (response->IsMeasureFrame() && response->Extract_who() == "18"
-						&& response->Extract_where() == std::to_string(where) && response->Extract_dimension() == "51")
+						&& response->Extract_where() == std::to_string(where) && response->Extract_dimension() == "51"
+						&& GetEnergyInterface(*response) == interfaceID)
 						UpdateDeviceValue(response);
-				// A connection failure is not evidence of an unsupported dimension.
-				if (sent)
+				// Require a complete reply; silence or a truncated frame is inconclusive.
+				if (sent && !responses.empty())
 					m_energySources[key].EnableFallback();
 				fallback = m_energySources[key].UsesFallback();
 			}
@@ -2465,6 +2589,10 @@ void COpenWebNetTCP::Do_Work()
 {
 	while (!IsStopRequested(OPENWEBNET_HEARTBEAT_DELAY*1000))
 	{
+		{
+			std::lock_guard<std::mutex> lock(readQueueMutex);
+			FlushPendingEnergy();
+		}
 		if (isStatusSocketConnected())
 		{
 			time_t tnow = mytime(nullptr);
