@@ -9,7 +9,10 @@ from datetime import date, datetime, timedelta, timezone
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
+import tempfile  # noqa: E402
+
 import epex_api  # noqa: E402
+import epex_ledger  # noqa: E402
 import epex_logic  # noqa: E402
 
 CET = timezone(timedelta(hours=1))
@@ -221,6 +224,154 @@ class ClientTests(unittest.TestCase):
         for body in (b"<html>nope</html>", json.dumps({"hello": 1}).encode()):
             with self.assertRaises(epex_api.EpexError):
                 epex_api.EpexClient("h.example", opener=lambda req, timeout=0, b=body: FakeResponse(b)).get_prices()
+
+
+class LedgerTests(unittest.TestCase):
+    def test_forecast_is_overwritten_until_published_then_actual_is_filled(self):
+        led = epex_ledger.Ledger("sig")
+        known = T0 + timedelta(minutes=15)
+        led.update(quarter_slots([1.0, 1.0, 5.0, 6.0]), known, 100)  # slots 2 and 3 are forecast
+        led.update(quarter_slots([1.0, 1.0, 7.0, 6.0]), known, 200)  # newer forecast for slot 2
+        ts2 = int((T0 + timedelta(minutes=30)).timestamp())
+        self.assertEqual((led.rows[ts2]["fc"], led.rows[ts2]["issued"]), (7.0, 200))
+        led.update(quarter_slots([1.0, 1.0, 9.0, 9.0]), T0 + timedelta(minutes=45), 300)  # published now
+        self.assertEqual(led.rows[ts2]["act"], 9.0)
+        self.assertEqual(led.rows[ts2]["fc"], 7.0)
+        led.update(quarter_slots([1.0, 1.0, 8.0, 8.0]), T0 + timedelta(minutes=45), 400)  # actual is final
+        self.assertEqual(led.rows[ts2]["act"], 9.0)
+        self.assertEqual([p[1:] for p in led.pairs()], [(7.0, 9.0), (6.0, 9.0)])
+
+    def test_slots_published_without_a_forecast_are_not_compared(self):
+        led = epex_ledger.Ledger("sig")
+        led.update(quarter_slots([1.0, 2.0]), T0 + timedelta(minutes=15), 100)
+        self.assertEqual(led.pairs(), [])
+
+    def test_prune_and_pair_range(self):
+        led = epex_ledger.Ledger("sig")
+        led.update(quarter_slots([1.0, 2.0]), T0 - timedelta(minutes=15), int(T0.timestamp()))
+        self.assertEqual(len(led.rows), 2)
+        self.assertTrue(led.prune(int(T0.timestamp()) + 31 * 86400))
+        self.assertEqual(led.rows, {})
+
+    def test_save_load_and_signature_reset(self):
+        led = epex_ledger.Ledger("a")
+        led.update(quarter_slots([1.0, 2.0]), T0, 100)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "sub", "l.json")
+            led.save(path)
+            self.assertEqual(len(epex_ledger.Ledger.load(path, "a").rows), 1)
+            self.assertEqual(epex_ledger.Ledger.load(path, "b").rows, {})  # other settings: start again
+            self.assertEqual(epex_ledger.Ledger.load(os.path.join(tmp, "missing.json"), "a").rows, {})
+            with open(path, "w") as fh:
+                fh.write("garbage")
+            self.assertEqual(epex_ledger.Ledger.load(path, "a").rows, {})
+
+
+class LedgerEdgeTests(unittest.TestCase):
+    def test_slot_starting_at_known_until_is_published(self):
+        # knownUntil is the start of the last published slot: that slot gets its actual, the next stays a forecast
+        led = epex_ledger.Ledger("s")
+        led.update(quarter_slots([1.0, 2.0, 3.0]), T0 - timedelta(minutes=15), 10)  # all forecast
+        known = T0 + timedelta(minutes=15)
+        led.update(quarter_slots([1.5, 2.5, 3.5]), known, 20)
+        r = led.rows
+        self.assertEqual(r[int(known.timestamp())]["act"], 2.5)
+        self.assertIsNone(r[int((known + timedelta(minutes=15)).timestamp())]["act"])
+
+    def test_missing_known_until_never_overwrites_a_forecast(self):
+        led = epex_ledger.Ledger("s")
+        led.update(quarter_slots([5.0, 6.0]), None, 10)  # nothing known: no row is created either
+        self.assertEqual(led.rows, {})
+        known = T0 + timedelta(minutes=15)
+        led.update(quarter_slots([1.0, 2.0, 3.0]), T0 - timedelta(minutes=15), 20)  # both slots are a forecast
+        led.update(quarter_slots([8.0, 9.0, 3.0]), None, 30)  # real prices, but the server forgot knownUntil
+        led.update(quarter_slots([8.0, 9.0, 3.0]), known, 40)  # knownUntil is back
+        self.assertEqual([p[1:] for p in led.pairs()], [(1.0, 8.0), (2.0, 9.0)])
+
+    def test_corrupt_saved_rows(self):
+        for doc in ({"signature": "s", "rows": 5}, {"signature": "s", "rows": [[1, float("nan"), 0, 1.0], [2, 1.0, 0, float("inf")], "x", [3, 1.0, 0, None]]}, [1], None):
+            led = epex_ledger.Ledger.from_json(doc, "s")
+            self.assertLessEqual(len(led.rows), 1)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "l.json")
+            with open(path, "w") as fh:
+                fh.write("null")
+            self.assertEqual(epex_ledger.Ledger.load(path, "s").rows, {})
+
+
+class RealZoneDstTests(unittest.TestCase):
+    """The plugin groups by day with a ZoneInfo time zone, whose datetimes subtract by wall clock."""
+
+    def setUp(self):
+        try:
+            from zoneinfo import ZoneInfo
+            self.tz = ZoneInfo("Europe/Amsterdam")
+        except Exception:  # noqa: BLE001
+            self.skipTest("no time zone database")
+
+    def day_pairs(self, start, count):
+        ts0 = int(start.timestamp())
+        pairs = []
+        for i in range(count):
+            act = 10.0 if not 8 <= i < 12 else 1.0
+            pairs.append((ts0 + 900 * i, act, act))
+        return pairs
+
+    def test_spring_day_is_complete_with_regret(self):
+        start = datetime(2027, 3, 28, 0, 0, tzinfo=self.tz)
+        r = epex_logic.accuracy(self.day_pairs(start, 92), self.tz, 1)
+        self.assertEqual(r["days"][0]["n"], 92)
+        self.assertAlmostEqual(r["days"][0]["regret"], 0.0)
+
+    def test_autumn_day_is_complete_with_regret(self):
+        start = datetime(2026, 10, 25, 0, 0, tzinfo=self.tz)
+        r = epex_logic.accuracy(self.day_pairs(start, 100), self.tz, 1)
+        self.assertEqual(r["days"][0]["n"], 100)
+        self.assertAlmostEqual(r["days"][0]["regret"], 0.0)
+
+    def test_window_across_the_spring_gap(self):
+        # the cheapest 2 hours are 01:00 to 03:00 local, which crosses the missing hour
+        start = datetime(2027, 3, 28, 0, 0, tzinfo=self.tz)
+        pairs = self.day_pairs(start, 92)
+        pairs = [(ts, 10.0, 10.0) for ts, _, _ in pairs]
+        pairs = [(ts, 1.0, 1.0) if 4 <= i < 12 else (ts, 10.0, 10.0) for i, (ts, _, _) in enumerate(pairs)]
+        r = epex_logic.accuracy(pairs, self.tz, 2)
+        self.assertAlmostEqual(r["days"][0]["regret"], 0.0)
+
+
+class AccuracyTests(unittest.TestCase):
+    def pairs_for(self, fc, act):
+        return [(int((T0 + timedelta(minutes=15 * i)).timestamp()), f, a) for i, (f, a) in enumerate(zip(fc, act))]
+
+    def test_error_statistics(self):
+        r = epex_logic.accuracy(self.pairs_for([10, 10, 10, 10], [8, 12, 10, 14]), CET, 1)
+        s = r["summary"]
+        self.assertEqual(s["n"], 4)
+        self.assertAlmostEqual(s["mae"], 2.0)    # errors 2, -2, 0, -4
+        self.assertAlmostEqual(s["bias"], -1.0)
+        self.assertAlmostEqual(s["rmse"], (6.0) ** 0.5)
+        self.assertEqual(len(r["days"]), 1)
+        self.assertIsNone(r["days"][0]["regret"])  # a partial day has no regret
+
+    def test_empty(self):
+        r = epex_logic.accuracy([], CET, 3)
+        self.assertEqual((r["summary"]["n"], r["summary"]["mae"], r["days"]), (0, None, []))
+
+    def test_regret_of_a_complete_day(self):
+        # the real cheapest hour is 02:00 (price 1), the forecast thought 05:00 was cheapest, where the real price is 4
+        act = [10.0] * 96
+        fc = [10.0] * 96
+        for i in range(8, 12):
+            act[i] = 1.0
+        for i in range(20, 24):
+            fc[i] = 0.5
+            act[i] = 4.0
+        r = epex_logic.accuracy(self.pairs_for(fc, act), CET, 1)
+        self.assertAlmostEqual(r["days"][0]["regret"], 3.0)
+        # a perfect forecast has no regret
+        r = epex_logic.accuracy(self.pairs_for(act, act), CET, 1)
+        self.assertAlmostEqual(r["days"][0]["regret"], 0.0)
+        self.assertAlmostEqual(r["summary"]["mae"], 0.0)
 
 
 if __name__ == "__main__":

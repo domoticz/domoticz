@@ -38,11 +38,29 @@ required for the Swedish zones.
 | cheapest period | Text | for example `Wed 11:15 - 14:15 (avg 25.49 ct/kWh)` |
 | cheap period active | Switch | read only, on while now is inside the cheapest period, handy as an automation trigger |
 | price level | Alert | Very cheap/Cheap (green), Normal (yellow), Expensive (orange), Very expensive (red), relative to the next 24 hours |
-| prices known until | Text | end of the published prices, after it the values are forecast |
+| prices known until | Text | start of the last published price slot, slots after it are forecast |
 | connection | Alert | server unreachable, wrong address, no data |
+| forecast error (MAE) | Custom sensor | yesterday's average absolute error of the forecast, see below |
 
 The current price devices follow the clock every 10 seconds from the cached prices, the server is only asked every
 **Refresh** seconds (default 15 minutes).
+
+## Forecast accuracy
+
+The page has a **Forecast accuracy** tab that compares what the forecast said with the real price. The server keeps no
+history of its forecasts, so the plugin remembers them itself: on every fetch it stores the forecast of the slots that
+are not published yet and, once the day-ahead price of such a slot is published, it adds the real price. The last
+forecast before publication counts, because that is what a planner would have used.
+
+- **Average error (MAE)**, **bias** (forecast minus real, above zero means too high) and **RMSE** of the last 14 days.
+- **Planning regret**: per complete day, how much more the period the forecast picked as cheapest (the *Cheap period*
+  length setting) cost than the really cheapest period. This is the number that matters when you plan charging.
+- A chart per day with the real price, the forecast and the error, and a table per day.
+
+The comparison starts when the plugin starts, so it is empty until the first day-ahead publication (around 13:00 CET) after
+that, and meaningful after a few days. Changing the region, price unit, surcharge, tax or hourly setting starts a new
+comparison, because old forecasts can no longer be compared. The data (30 days) is kept in
+`plugins/EpexPredictor/epex-data/epex_ledger_<hardware idx>.json`.
 
 ## Prices for other software (Node-RED, scripts)
 

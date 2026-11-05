@@ -90,7 +90,7 @@ import shutil
 import sys
 import threading
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import DomoticzEx as Domoticz
 
@@ -99,13 +99,16 @@ if _HERE not in sys.path:
     sys.path.insert(0, _HERE)
 
 import epex_api  # noqa: E402
+import epex_ledger  # noqa: E402
 import epex_logic  # noqa: E402
 
 VERSION = "1.0.0"
 PAGE_NAME = "EpexPredictor.html"
 DEVICE_ID = "EPEX"
 
-(U_NOW, U_NEXT, U_AVG, U_MIN, U_MAX, U_TOMORROW, U_CHEAP, U_LEVEL, U_CHEAP_ON, U_KNOWN, U_ALERT) = range(1, 12)
+(U_NOW, U_NEXT, U_AVG, U_MIN, U_MAX, U_TOMORROW, U_CHEAP, U_LEVEL, U_CHEAP_ON, U_KNOWN, U_ALERT, U_ERROR) = range(1, 13)
+DATA_DIR = os.path.join(_HERE, "epex-data")
+ACCURACY_DAYS = 14  # days of forecast versus real prices sent to the page
 ERROR_BACKOFF = 120  # seconds before a failed request is retried
 
 
@@ -150,6 +153,7 @@ class BasePlugin:
         self.unit_label = "ct/kWh"
         self.tz_name = ""
         self.info = {}
+        self.ledger = None
 
     # ------------------------------------------------------------------ logging
     def log(self, text):
@@ -184,6 +188,7 @@ class BasePlugin:
         self.client = epex_api.EpexClient(_text("ServerUrl", epex_api.DEFAULT_HOST))
         self._install_page()
         self._ensure_devices()
+        self.ledger = epex_ledger.Ledger.load(self._ledger_path(), self._ledger_signature())
         self.stopping = False
         self.inflight = False
         self.next_fetch = 0
@@ -296,10 +301,50 @@ class BasePlugin:
         self.last_key = None  # force a device update
         self._write_unit(U_ALERT, 1, "Connected to %s" % self.client.base)
         self._write_export()
+        self._record_forecast()
         self.log("EPEX Predictor: %d prices (%s to %s), known until %s" % (
             len(slots), slots[0][0].strftime("%d-%m %H:%M"), slots[-1][0].strftime("%d-%m %H:%M"),
             known.strftime("%d-%m %H:%M") if known else "?"))
         self.snapshot_due = True
+
+    # ------------------------------------------------------------------ forecast versus real prices
+    def _ledger_path(self):
+        return os.path.join(DATA_DIR, "epex_ledger_%s.json" % self.hwid)
+
+    def _ledger_signature(self):
+        """Forecasts made with other settings cannot be compared with the new prices, so a change starts a new ledger."""
+        return "%s|%s|%s|%s|%s" % (self.region(), self.unit(), _float("Surcharge", 0), _float("TaxPercent", 0), _bool("Hourly"))
+
+    def _record_forecast(self):
+        if self.ledger is None:
+            return
+        signature = self._ledger_signature()
+        if self.ledger.signature != signature:
+            self.log("EPEX Predictor: settings changed, the forecast comparison starts again")
+            self.ledger = epex_ledger.Ledger(signature)
+        if self.known_until is None:
+            self.dbg("the server gave no knownUntil, the forecast comparison cannot tell published prices from forecast")
+        if self.ledger.update(self.slots, self.known_until, int(time.time())):
+            try:
+                self.ledger.save(self._ledger_path())
+            except OSError as exc:
+                Domoticz.Error("EPEX Predictor: cannot save %s: %r" % (self._ledger_path(), exc))
+        acc = self.accuracy(self._now())
+        yesterday = (self._now().date() - timedelta(days=1)).isoformat()
+        for entry in acc["days"]:
+            if entry["date"] == yesterday:
+                self._write_unit(U_ERROR, 0, self._fmt(entry["mae"]))
+
+    def accuracy(self, now):
+        """Forecast versus real price of the last ACCURACY_DAYS days, see epex_logic.accuracy."""
+        pairs = []
+        if self.ledger is not None:
+            first = now.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=ACCURACY_DAYS)
+            pairs = self.ledger.pairs(int(first.timestamp()))
+        # the real zone, not now.tzinfo (a fixed offset), so days that contain a DST switch are grouped right
+        result = epex_logic.accuracy(pairs, self._zone() or now.tzinfo, _float("CheapHours", 3))
+        result["slots"] = [[ts, round(fc, 5), round(act, 5)] for ts, fc, act in pairs]
+        return result
 
     # ------------------------------------------------------------------ devices
     def _unit(self, unit):
@@ -335,6 +380,7 @@ class BasePlugin:
         self._create(U_CHEAP_ON, "EPEX cheap period active", Type=244, Subtype=73, Switchtype=0)
         self._create(U_KNOWN, "EPEX prices known until", Type=243, Subtype=19)
         self._create(U_ALERT, "EPEX connection", Type=243, Subtype=22)
+        self._price(U_ERROR, "EPEX forecast error (MAE)")
 
     def _write_unit(self, unit, nvalue, svalue):
         u = self._unit(unit)
@@ -349,13 +395,23 @@ class BasePlugin:
     def _fmt(self, value):
         return ("%." + str(self.decimals()) + "f") % value
 
-    def _now(self):
-        """Now in the output time zone, the slots only carry a fixed offset that is wrong after a DST switch."""
+    def _zone(self):
+        """The output time zone, None when the system has no time zone database."""
         try:
             from zoneinfo import ZoneInfo
-            return datetime.now(ZoneInfo(self.tz_name))
+            return ZoneInfo(self.tz_name)
         except Exception:  # noqa: BLE001
-            pass
+            return None
+
+    def _now(self):
+        """Now in the output time zone, as a datetime with a fixed offset so that adding hours is a real duration.
+
+        The slots only carry a fixed offset that is wrong after a DST switch, so the zone itself decides the offset.
+        """
+        zone = self._zone()
+        if zone is not None:
+            d = datetime.now(zone)
+            return d.replace(tzinfo=timezone(d.utcoffset()))
         if not self.slots:
             return datetime.now().astimezone()
         return datetime.now(self.slots[0][0].tzinfo)
@@ -517,6 +573,7 @@ class BasePlugin:
             "level": st["level"] and {"label": st["level"][0], "percentile": st["level"][1]},
             "cheap": cheap and {"start": cheap["start"].isoformat(), "end": cheap["end"].isoformat(), "avg": cheap["avg"], "active": cheap["active"]},
             "prices": [[int(s.timestamp()), round(p, 5)] for s, p in self.slots],
+            "accuracy": self.accuracy(now),
         })
 
     def onWebSocketMessage(self, Data):

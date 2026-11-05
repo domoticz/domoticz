@@ -34,6 +34,7 @@ nohup.out
 /makebetarob
 /plugins/manifest.xml
 /plugins/Joulo/joulo-data/
+/plugins/EpexPredictor/epex-data/
 install_manifest.txt
 .project
 .cproject

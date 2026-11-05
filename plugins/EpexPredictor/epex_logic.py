@@ -3,7 +3,7 @@
 No Domoticz imports, so everything here is unit testable. A slot is a tuple (start: aware datetime, price: float).
 """
 import math
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 LEVELS = ("Very cheap", "Cheap", "Normal", "Expensive", "Very expensive")
 # Domoticz alert levels: 1 green, 2 yellow, 3 orange, 4 red
@@ -130,6 +130,68 @@ def price_level(slots, now, price, horizon_hours=24):
         if pct <= limit:
             return label, pct
     return LEVELS[4], pct
+
+
+def _error_stats(pairs):
+    errors = [fc - act for _, fc, act in pairs]
+    n = len(errors)
+    return {"n": n, "mae": sum(abs(e) for e in errors) / n, "bias": sum(errors) / n,
+            "rmse": math.sqrt(sum(e * e for e in errors) / n)}
+
+
+def day_regret(fc_slots, act_slots, hours):
+    """How much more the window the forecast picked cost than the really cheapest window (average price difference).
+
+    Only for a complete day, None otherwise. fc_slots and act_slots hold the same slot starts of one day.
+    """
+    if len(act_slots) < 2 or hours <= 0:
+        return None
+    first = act_slots[0][0]
+    if not day_stats(act_slots, first.date())["complete"]:
+        return None
+    picked = cheapest_window(fc_slots, first, hours, 26)
+    best = cheapest_window(act_slots, first, hours, 26)
+    if not picked or not best:
+        return None
+    inside = [p for s, p in act_slots if picked["start"] <= s < picked["end"]]
+    if not inside:
+        return None
+    return max(0.0, sum(inside) / len(inside) - best["avg"])
+
+
+def _local(ts, tz):
+    """A slot start as a datetime with its own fixed UTC offset, so differences are real durations also across a DST switch.
+
+    Datetimes that share one ZoneInfo object subtract by wall clock, which makes a 23 hour day look like 24 hours.
+    """
+    d = datetime.fromtimestamp(ts, tz)
+    return d.replace(tzinfo=timezone(d.utcoffset()))
+
+
+def accuracy(pairs, tz, hours):
+    """Forecast versus real price. pairs are (unix ts, forecast, actual), tz the output time zone.
+
+    Returns {"summary": {...}, "days": [{"date", n, mae, bias, rmse, regret}]}, bias is forecast minus actual
+    (positive means the forecast was too high). regret is None for incomplete days.
+    """
+    by_day = {}
+    for ts, fc, act in pairs:
+        by_day.setdefault(_local(ts, tz).date(), []).append((ts, fc, act))
+    days = []
+    for day in sorted(by_day):
+        rows = by_day[day]
+        entry = _error_stats(rows)
+        entry["date"] = day.isoformat()
+        fc_slots = [(_local(ts, tz), fc) for ts, fc, _ in rows]
+        act_slots = [(_local(ts, tz), act) for ts, _, act in rows]
+        entry["regret"] = day_regret(fc_slots, act_slots, hours)
+        days.append(entry)
+    summary = {"n": 0, "days": len(days), "mae": None, "bias": None, "rmse": None, "regret": None}
+    if pairs:
+        summary.update(_error_stats(pairs))
+        regrets = [d["regret"] for d in days if d["regret"] is not None]
+        summary["regret"] = sum(regrets) / len(regrets) if regrets else None
+    return {"summary": summary, "days": days}
 
 
 def hourly_average(slots):
