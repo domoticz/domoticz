@@ -42,6 +42,22 @@
 //15    Blinds
 //16    Status Room Switch
 
+// The "error" of a Netatmo response is a string (OAuth: {"error":"invalid_grant"})
+// or an object (API: {"error":{"code":27,"message":"Service temporarily unavailable"}})
+static std::string NetatmoErrorText(const Json::Value& error)
+{
+	if (error.isObject())
+	{
+		std::string szCode = error["code"].isNumeric() ? std::to_string(error["code"].asInt()) : "";
+		std::string szMessage = error["message"].isString() ? error["message"].asString() : "";
+		if (!szCode.empty() || !szMessage.empty())
+			return szCode + ((szCode.empty() || szMessage.empty()) ? "" : " ") + szMessage;
+	}
+	else if (error.isString() || error.isNumeric() || error.isBool())
+		return error.asString();
+	return JSonToRawString(error);
+}
+
 // Some testfunctions for debugging
 void SaveJson2Disk(Json::Value str, std::string filename)
 {
@@ -226,77 +242,86 @@ void CNetatmo::Do_Work()
 		if (sec_counter % 12 == 0) {
 			m_LastHeartbeat = mytime(nullptr);
 		}
-		if (mytime(nullptr) > m_nextRefreshTs)
+		//An unexpected response (like a value of another type) must not stop Domoticz, retry after the error interval
+		try
 		{
-			//Time is bigger than 2/3 off duration access token
-			if (!m_ErrorFlag)
+			if (mytime(nullptr) > m_nextRefreshTs)
 			{
-				if (RefreshToken(true))
-					Log(LOG_STATUS,"Refresh token %d",  m_isLogged);
-			}
-			else
-			{
-				Debug(DEBUG_HARDWARE, "RefreshToken Time %s", ctime(& m_nextRefreshTs));
-				m_ErrorFlag = true;
-				Log(LOG_ERROR, "Refresh token false %d  %d",  m_isLogged, sec_counter);
-			}
-		}
-		if (sec_counter % NETAMO_ERROR_INTERVALL == 0)
-		{
-			m_ErrorFlag = false;
-		}
-		if (!m_isLogged)
-		{
-			if (!m_ErrorFlag)
-			{
-				if (sec_counter % NETAMO_LOGIN_INTERVALL == 0)
+				//Time is bigger than 2/3 off duration access token
+				if (!m_ErrorFlag)
 				{
-					Login();
-					Log(LOG_STATUS,"Login %d",  m_isLogged);
+					if (RefreshToken(true))
+						Log(LOG_STATUS,"Refresh token %d",  m_isLogged);
+				}
+				else
+				{
+					Debug(DEBUG_HARDWARE, "RefreshToken Time %s", ctime(& m_nextRefreshTs));
+					m_ErrorFlag = true;
+					Log(LOG_ERROR, "Refresh token false %d  %d",  m_isLogged, sec_counter);
 				}
 			}
-		}
-		if (!m_isLogged)
-			continue;
-
-		if (m_ErrorFlag)
-			continue;
-
-		if (!m_accessToken.empty())
-		{
-			// Thermostat is accessable through Homestatus / Homesdata in New API
-			//Weather, HomeCoach, and Thermostat data is updated every  NETAMO_POLL_INTERVALL  seconds
-			if ((sec_counter % NETAMO_POLL_INTERVALL == 0) || (bFirstTime))
+			if (sec_counter % NETAMO_ERROR_INTERVALL == 0)
 			{
-				bFirstTime = false;
-
-				if (m_bPollHomecoachData)
+				m_ErrorFlag = false;
+			}
+			if (!m_isLogged)
+			{
+				if (!m_ErrorFlag)
 				{
-					// ParseStationData
-					GetHomecoachDetails();
-					Log(LOG_STATUS,"HomeCoach %d",  m_isLogged);
-				}
-				if (m_bPollHomeStatus)
-				{
-					// GetHomesDataDetails
-					GetHomeStatusDetails();
-					Log(LOG_STATUS,"Status %d",  m_isLogged);
-					m_bFirstTimeHomeStatus = false;
+					if (sec_counter % NETAMO_LOGIN_INTERVALL == 0)
+					{
+						Login();
+						Log(LOG_STATUS,"Login %d",  m_isLogged);
+					}
 				}
 			}
+			if (!m_isLogged)
+				continue;
 
-			//Update Thermostat data when the
-			//manual set point reach its end
-			if (m_bForceSetpointUpdate)
+			if (m_ErrorFlag)
+				continue;
+
+			if (!m_accessToken.empty())
 			{
-				time_t atime = time(nullptr);
-				if (atime >= m_tSetpointUpdateTime)
+				// Thermostat is accessable through Homestatus / Homesdata in New API
+				//Weather, HomeCoach, and Thermostat data is updated every  NETAMO_POLL_INTERVALL  seconds
+				if ((sec_counter % NETAMO_POLL_INTERVALL == 0) || (bFirstTime))
 				{
-					m_bForceSetpointUpdate = false;
-					if (m_bPollThermostat)
+					bFirstTime = false;
+
+					if (m_bPollHomecoachData)
+					{
+						// ParseStationData
+						GetHomecoachDetails();
+						Log(LOG_STATUS,"HomeCoach %d",  m_isLogged);
+					}
+					if (m_bPollHomeStatus)
+					{
+						// GetHomesDataDetails
 						GetHomeStatusDetails();
+						Log(LOG_STATUS,"Status %d",  m_isLogged);
+						m_bFirstTimeHomeStatus = false;
+					}
+				}
+
+				//Update Thermostat data when the
+				//manual set point reach its end
+				if (m_bForceSetpointUpdate)
+				{
+					time_t atime = time(nullptr);
+					if (atime >= m_tSetpointUpdateTime)
+					{
+						m_bForceSetpointUpdate = false;
+						if (m_bPollThermostat)
+							GetHomeStatusDetails();
+					}
 				}
 			}
+		}
+		catch (const std::exception& e)
+		{
+			Log(LOG_ERROR, "Unexpected data received (%s), retry in %d min.", e.what(), (NETAMO_ERROR_INTERVALL / 60));
+			m_ErrorFlag = true;
 		}
 	}
 	Log(LOG_STATUS, "Worker stopped...");
@@ -433,10 +458,10 @@ bool CNetatmo::RefreshToken(const bool bForce)
 	}
 
 	//Check if token was refreshed and access granted
-	if (root["access_token"].empty() || root["expires_in"].empty() || root["refresh_token"].empty())
+	if (!root["access_token"].isString() || !root["expires_in"].isNumeric() || !root["refresh_token"].isString())
 	{
 		if (!root["error"].empty())
-			sResult = root["error"].asString();
+			sResult = NetatmoErrorText(root["error"]);
 		Log(LOG_ERROR, "No access granted, forcing login again (Refresh tokens): %s", sResult.c_str());
 		//Force login next time
 		StoreRefreshToken(true);
@@ -1746,7 +1771,7 @@ void CNetatmo::Get_Response_API(const m_eNetatmoType& NType, std::string& sResul
 	if (!root["error"].empty())
         {
 		//We received an error
-		Log(LOG_ERROR, "Get_Response_API: Error = %s", root.asString().c_str());  // possible; 'error'  'errors'  'error [message]'
+		Log(LOG_ERROR, "Get_Response_API: Error = %s", NetatmoErrorText(root["error"]).c_str());
 		m_isLogged = false;
 		return ;
 	}

@@ -74,6 +74,10 @@ void HandleGraphHour(const GraphContext& ctx, const request& req,
 				bool bHaveDeliverd = false;
 				bool bHaveFirstValue = false;
 				int64_t lastUsage, lastDeliv;
+				int64_t lastUsage1 = 0, lastUsage2 = 0, lastDeliv1 = 0, lastDeliv2 = 0;
+				//With the tariffs of the meter settings every counter has its own price (as in CalcMultiMeterPrice)
+				float priceT1, priceT2, priceR1, priceR2;
+				const bool bUseMeterTariffs = sql.GetInternalEnergyTariffs(priceT1, priceT2, priceR1, priceR2);
 				time_t lastTime = 0;
 				std::string lastStime;
 				float lastPrice = 0;
@@ -91,7 +95,7 @@ void HandleGraphHour(const GraphContext& ctx, const request& req,
 
 					int64_t actUsage = actUsage1 + actUsage2;
 					int64_t actDeliv = actDeliv1 + actDeliv2;
-					float actPrice = std::stof(sd[5]);
+					float actPrice = static_cast<float>(atof(sd[5].c_str()));
 
 					std::string stime = sd[0];
 					struct tm ntime;
@@ -113,6 +117,10 @@ void HandleGraphHour(const GraphContext& ctx, const request& req,
 							//daylight change happened, meter changed?, ignoring  for now
 							lastUsage = actUsage;
 							lastDeliv = actDeliv;
+							lastUsage1 = actUsage1;
+							lastUsage2 = actUsage2;
+							lastDeliv1 = actDeliv1;
+							lastDeliv2 = actDeliv2;
 							lastTime = atime;
 							lastStime = stime;
 							lastPrice = actPrice;
@@ -133,8 +141,16 @@ void HandleGraphHour(const GraphContext& ctx, const request& req,
 						root["result"][ii]["v"] = std::to_string(curUsage);
 						root["result"][ii]["r"] = std::to_string(curDeliv);
 
-						float total = (curUsage - curDeliv) / 1000.0F;
-						float fPrice = lastPrice * total;
+						float fPrice;
+						if (bUseMeterTariffs)
+						{
+							//a single tariff counter that went back (replaced meter) counts as no usage
+							auto delta = [](int64_t act, int64_t last) { return static_cast<float>((act > last) ? act - last : 0); };
+							fPrice = (delta(actUsage1, lastUsage1) * priceT1 + delta(actUsage2, lastUsage2) * priceT2
+								- delta(actDeliv1, lastDeliv1) * priceR1 - delta(actDeliv2, lastDeliv2) * priceR2) / 1000.0F;
+						}
+						else
+							fPrice = lastPrice * ((curUsage - curDeliv) / 1000.0F);
 						char szPrice[16];
 						snprintf(szPrice, sizeof(szPrice), "%.4f", fPrice);
 						root["result"][ii]["p"] = szPrice;
@@ -146,6 +162,10 @@ void HandleGraphHour(const GraphContext& ctx, const request& req,
 					}
 					lastUsage = actUsage;
 					lastDeliv = actDeliv;
+					lastUsage1 = actUsage1;
+					lastUsage2 = actUsage2;
+					lastDeliv1 = actDeliv1;
+					lastDeliv2 = actDeliv2;
 					lastTime = atime;
 					lastStime = stime;
 					lastPrice = actPrice;

@@ -14,6 +14,7 @@
 #include <mutex>
 #include <set>
 #include <regex>
+#include <boost/algorithm/string/predicate.hpp>
 
 #define PENDING_USER_TIMEOUT_SECONDS 120
 
@@ -195,6 +196,14 @@ static std::string GetJinjaSource(const std::string& szTemplate)
 	return szTemplate.substr(JINJA_TEMPLATE_PREFIX.size());
 }
 
+//A received value equals a configured payload, the words true and false in any case (True from a template, true from JSON)
+static bool PayloadMatches(const std::string& szValue, const std::string& szPayload)
+{
+	if (szValue == szPayload)
+		return true;
+	return (boost::iequals(szValue, "true") || boost::iequals(szValue, "false")) && boost::iequals(szValue, szPayload);
+}
+
 //A template that only looks up a key, like: {{ value_json.a.b }}, {{ value_json['a'][0] }} or {{ value }}
 static bool IsPlainKeyTemplate(const std::string& szTemplate)
 {
@@ -280,6 +289,12 @@ bool MQTTAutoDiscover::RenderStateTemplate(const std::string& szJinjaTemplate, c
 		return false;
 	}
 	stdstring_trim(szResult);
+	//A boolean renders as True/False (as in Home Assistant), the key lookup and the payload_on/payload_off
+	//of a JSON discovery config give true/false, like: {% if "occupancy" in value_json %}{{ value_json["occupancy"] }}{% endif %}
+	if (szResult == "True")
+		szResult = "true";
+	else if (szResult == "False")
+		szResult = "false";
 	return true;
 }
 
@@ -5626,9 +5641,9 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					if (!szValue.empty())
 					{
 						bHandledValue = true;
-						if (szValue == pSensor->state_on)
+						if (PayloadMatches(szValue, pSensor->state_on))
 							szSwitchCmd = pSensor->payload_on;
-						else if (szValue == pSensor->state_off)
+						else if (PayloadMatches(szValue, pSensor->state_off))
 							szSwitchCmd = pSensor->payload_off;
 						else
 							szSwitchCmd = szValue;
@@ -5644,13 +5659,13 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 					if (!szValue.empty())
 					{
 						bHandledValue = true;
-						if (szValue == pSensor->state_on)
+						if (PayloadMatches(szValue, pSensor->state_on))
 							szSwitchCmd = pSensor->payload_on;
-						else if (szValue == pSensor->state_off)
+						else if (PayloadMatches(szValue, pSensor->state_off))
 							szSwitchCmd = pSensor->payload_off;
-						else if (szValue == pSensor->state_locked)
+						else if (PayloadMatches(szValue, pSensor->state_locked))
 							szSwitchCmd = pSensor->payload_on;
-						else if (szValue == pSensor->state_unlocked)
+						else if (PayloadMatches(szValue, pSensor->state_unlocked))
 							szSwitchCmd = pSensor->payload_off;
 						else
 							szSwitchCmd = szValue;
@@ -5902,9 +5917,9 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 			{
 				if (pSensor->component_type == "binary_sensor")
 				{
-					if (szSwitchCmd == pSensor->payload_off)
+					if (PayloadMatches(szSwitchCmd, pSensor->payload_off))
 						szSwitchCmd = "off";
-					else if (szSwitchCmd == pSensor->payload_on)
+					else if (PayloadMatches(szSwitchCmd, pSensor->payload_on))
 						szSwitchCmd = "on";
 				}
 				else if (pSensor->component_type == "lock")
@@ -5931,9 +5946,9 @@ void MQTTAutoDiscover::InsertUpdateSwitch(_tMQTTASensor* pSensor)
 		bHaveLevelChange = (slevel != level);
 
 
-		if (szSwitchCmd == pSensor->payload_on)
+		if (PayloadMatches(szSwitchCmd, pSensor->payload_on))
 			bOn = true;
-		else if (szSwitchCmd == pSensor->payload_off)
+		else if (PayloadMatches(szSwitchCmd, pSensor->payload_off))
 			bOn = false;
 		else
 			bOn = (szSwitchCmd == "on") || (szSwitchCmd == "ON") || (szSwitchCmd == "true") || (szSwitchCmd == "Set Level");

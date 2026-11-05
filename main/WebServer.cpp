@@ -4274,8 +4274,10 @@ namespace http
 		{
 			std::string queryString;
 			queryString.append("SELECT strftime('%Y', Date) as y,");
-			if ((sgroupby == "month") || (sgroupby == "year"))
+			if (sgroupby == "month")
 				queryString.append("strftime('%m', Date) as m");
+			else if (sgroupby == "year")
+				queryString.append("'' as m"); //one row per year, the value stays in the third column
 			else if (sgroupby == "quarter")
 				queryString.append("case when cast(strftime('%m', Date) as integer) between 1 and 3 then 'Q1' when cast(strftime('%m', Date) as integer) between 4 and 6 then 'Q2' when cast(strftime('%m', Date) as integer) between 7 and 9 then 'Q3' else 'Q4' end as Q");
 
@@ -4296,11 +4298,12 @@ namespace http
 			queryString.append(" as s FROM " + dbasetable + " WHERE DeviceRowID == " + std::to_string(deviceidx));
 			if (dfield == "Barometer")
 				queryString.append(" AND " + dfield + " > 0");
-			queryString.append(" GROUP BY strftime('%Y', Date), ");
-			if ((sgroupby == "month") || (sgroupby == "year"))
-				queryString.append("strftime('%m', Date)");
+			queryString.append(" GROUP BY strftime('%Y', Date)");
+			if (sgroupby == "month")
+				queryString.append(", strftime('%m', Date)");
 			else if (sgroupby == "quarter")
-				queryString.append("case when cast(strftime('%m', Date) as integer) between 1 and 3 then 'Q1' when cast(strftime('%m', Date) as integer) between 4 and 6 then 'Q2' when cast(strftime('%m', Date) as integer) between 7 and 9 then 'Q3' else 'Q4' end");
+				queryString.append(", case when cast(strftime('%m', Date) as integer) between 1 and 3 then 'Q1' when cast(strftime('%m', Date) as integer) between 4 and 6 then 'Q2' when cast(strftime('%m', Date) as integer) between 7 and 9 then 'Q3' else 'Q4' end");
+			queryString.append(" ORDER BY 1, 2"); //the trend compares with the previous year
 			auto result = m_sql.unsafe_query(queryString.c_str());
 
 			int firstYearCounting = 0;

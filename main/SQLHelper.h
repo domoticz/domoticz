@@ -474,6 +474,7 @@ public:
 	float GetCounterDivider(int metertype, int dType, float DefaultValue);
 
 	bool CalcMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd, float &price);
+	bool GetInternalEnergyTariffs(float& priceT1, float& priceT2, float& priceR1, float& priceR2);
 	bool CalcMultiMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd, float& price);
 	bool TransferDevice(const std::string& sOldIdx, const std::string&  sNewIdx);
 

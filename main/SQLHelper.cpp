@@ -12180,29 +12180,41 @@ bool CSQLHelper::CalcMeterPrice(const uint64_t idx, const float divider, const c
 	return bResult;
 }
 
+//True when the electricity prices come from the tariffs in the meter settings (not from a price device),
+//then returns them per kWh: usage T1/T2 and return R1/R2
+bool CSQLHelper::GetInternalEnergyTariffs(float& priceT1, float& priceT2, float& priceR1, float& priceR2)
+{
+	priceT1 = priceT2 = priceR1 = priceR2 = 0;
+	int iHP_E_Idx = 0;
+	GetPreferencesVar("HourIdxElectricityDevice", iHP_E_Idx);
+	if (iHP_E_Idx != 0x98765)
+		return false;
+	int nValue = 0;
+	if (GetPreferencesVar("CostEnergy", nValue))
+		priceT1 = static_cast<float>(nValue) / 10000.0F;
+	nValue = 0;
+	if (GetPreferencesVar("CostEnergyT2", nValue))
+		priceT2 = static_cast<float>(nValue) / 10000.0F;
+	nValue = 0;
+	if (GetPreferencesVar("CostEnergyR1", nValue))
+		priceR1 = static_cast<float>(nValue) / 10000.0F;
+	nValue = 0;
+	if (GetPreferencesVar("CostEnergyR2", nValue))
+		priceR2 = static_cast<float>(nValue) / 10000.0F;
+	return true;
+}
+
 bool CSQLHelper::CalcMultiMeterPrice(const uint64_t idx, const float divider, const char* szDateStart, const char* szDateEnd, float& price)
 {
 	if (divider == 0)
 		return false;
 
-	//When prices come from the internal meter tariffs, the logged Price column holds the usage
-	//tariff (T1/T2) active at log time, so returned energy (Value2/Value6) must be priced at the
-	//configured return tariffs (R1/R2). With a dynamic price device the logged market price
-	//applies to usage and return alike.
-	int iHP_E_Idx = 0;
-	GetPreferencesVar("HourIdxElectricityDevice", iHP_E_Idx);
-	const bool bUseReturnTariffs = (iHP_E_Idx == 0x98765);
-	float priceR1 = 0;
-	float priceR2 = 0;
-	if (bUseReturnTariffs)
-	{
-		int nValue = 0;
-		GetPreferencesVar("CostEnergyR1", nValue);
-		priceR1 = static_cast<float>(nValue) / 10000.0F;
-		nValue = 0;
-		GetPreferencesVar("CostEnergyR2", nValue);
-		priceR2 = static_cast<float>(nValue) / 10000.0F;
-	}
+	//When prices come from the internal meter tariffs, every counter has its own tariff:
+	//usage T1/T2 (Value1/Value5) and return R1/R2 (Value2/Value6). The logged Price column only
+	//knows the active tariff when it comes from a P1 USB/LAN meter, so it is not used here.
+	//With a dynamic price device the logged market price applies to usage and return alike.
+	float priceT1, priceT2, priceR1, priceR2;
+	const bool bUseMeterTariffs = GetInternalEnergyTariffs(priceT1, priceT2, priceR1, priceR2);
 
 	auto result = safe_query("SELECT Value1, Value2, Value3, Value4, Value5, Value6, Price FROM MultiMeter WHERE (DeviceRowID='%" PRIu64 "' AND Date>='%q' AND Date<='%q 00:00:00') ORDER BY Date ASC",
 		idx, szDateStart, szDateEnd);
@@ -12215,7 +12227,7 @@ bool CSQLHelper::CalcMultiMeterPrice(const uint64_t idx, const float divider, co
 
 	for (const auto& itt : result)
 	{
-		float rec_price = std::stof(itt[6]);
+		float rec_price = static_cast<float>(atof(itt[6].c_str()));
 
 		int64_t cntrs[6];
 		for (int ii = 0; ii < 6; ii++)
@@ -12225,9 +12237,13 @@ bool CSQLHelper::CalcMultiMeterPrice(const uint64_t idx, const float divider, co
 			{
 				int64_t total = cntrs[ii] - last_cntrs[ii];
 				float rate = rec_price;
-				if (bUseReturnTariffs)
+				if (bUseMeterTariffs)
 				{
-					if (ii == 1) //Value2 = R1 return
+					if (ii == 0) //Value1 = T1 usage
+						rate = priceT1;
+					else if (ii == 4) //Value5 = T2 usage
+						rate = priceT2;
+					else if (ii == 1) //Value2 = R1 return
 						rate = priceR1;
 					else if (ii == 5) //Value6 = R2 return
 						rate = priceR2;

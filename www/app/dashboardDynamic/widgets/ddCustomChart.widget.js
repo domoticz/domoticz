@@ -392,7 +392,8 @@ define([
                         chart: {
                             animation:       false,
                             backgroundColor: 'transparent',
-                            marginTop:       10,
+                            // A title needs its own space above the plot, a fixed margin draws the lines over it
+                            marginTop:       cfg.title ? undefined : 10,
                             style:           { fontFamily: 'inherit' },
                             height:          container.offsetHeight || 200,
                             width:           container.offsetWidth  || null,
@@ -519,8 +520,11 @@ define([
                         // If only display options changed (same devices + range), update chart in-place.
                         if (chart && oldParts[0] === newParts[0] && oldParts[1] === newParts[1]) {
                             var showLegend = cfg.showLegend !== false;
-                            chart.setTitle({ text: cfg.title || null });
-                            chart.legend.update({ enabled: showLegend });
+                            chart.update({
+                                chart:  { marginTop: cfg.title ? null : 10 },
+                                title:  { text: cfg.title || null },
+                                legend: { enabled: showLegend }
+                            });
                         } else {
                             load();
                         }
