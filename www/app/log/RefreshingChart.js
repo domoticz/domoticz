@@ -105,8 +105,15 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     const parsed = GetLocalTimestampFromString(update.serverTime);
                     if (isFinite(parsed)) {
                         sharedServerTimeOffsetMs = parsed - Date.now();
+                        // refreshTimestamp is seeded from the browser clock when
+                        // the offset is not yet known; a browser ahead of the
+                        // server would leave it in a future slot and block
+                        // auto-refresh, so clamp it to the server time.
+                        if (self.refreshTimestamp > parsed) {
+                            self.refreshTimestamp = parsed;
+                        }
                         // The axis window was rendered with a materially different
-                        // offset — browser clock fallback before the first
+                        // offset: browser clock fallback before the first
                         // time_update, or the offset itself moved (DST starts or
                         // ends in one timezone but not the other, or the browser
                         // changed timezone). Redo the render so the window tracks
