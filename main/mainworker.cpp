@@ -14937,7 +14937,7 @@ void MainWorker::HandleHourPrice()
 							float AddjValue2 = std::stof(result[0][5]);
 							if (AddjValue2 == 0)
 								AddjValue2 = 1;
-							fHourPriceG = static_cast<float>(atof(strarray[1].c_str())) / AddjValue2;
+							fHourPriceE = static_cast<float>(atof(strarray[1].c_str())) / AddjValue2;
 						}
 					}
 				}
