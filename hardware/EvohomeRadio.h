@@ -144,7 +144,7 @@ class CEvohomeRadio : public CEvohomeBase
 	int m_retrycntr;
 	int m_nBufPtr;
 
-	unsigned int MultiControllerID[5];
+	unsigned int MultiControllerID[5] = {};
 	bool AllSensors;
 	std::mutex m_mtxRelayCheck;
 	tmap_relay_check m_RelayCheck;
@@ -181,7 +181,7 @@ class CEvohomeRadio : public CEvohomeBase
 	std::mutex m_mtxBindNotify;
 	std::condition_variable m_cndBindNotify;
 
-	unsigned int m_UControllerID;
+	unsigned int m_UControllerID = 0;
 
 	typedef tmap_relay_check::value_type tmap_relay_check_pair;
 

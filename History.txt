@@ -55,6 +55,7 @@ Version 2026.xxxx
 - Fixed: Events, a command by device, scene or group name that matches more than one item now logs an error; it went silently to the first match (#7143)
 - Fixed: Events, a device first seen by the event system after startup now has its adjustment fields in dzVents and Lua (for example a counter's divider and offset) instead of unset values
 - Fixed: Events, a random delay of 0 could crash Domoticz (division by zero); random delays now range from 0 up to and including the requested maximum
+- Fixed: Evohome USB/TCP, on a new installation without a Controller ID entered the controller was never detected, so the heating zones were never created (#6925)
 - Fixed: Floorplans, device popups stay inside the visible part of the plan, also when zoomed into a room, and keep their normal size instead of growing with the zoom
 - Fixed: Floorplans, the page dots no longer cover a device popup near the bottom of the plan (#7162)
 - Fixed: Forecast, the fallback forecast page now loads over https; it stayed blank on an http install (#7161)

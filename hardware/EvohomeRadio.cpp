@@ -22,6 +22,7 @@
 #include "../main/WebServer.h"
 #include <libwebem/cWebem.h>
 #include <json/json.h>
+#include <algorithm>
 
 extern std::string szUserDataFolder;
 
@@ -2509,15 +2510,16 @@ void CEvohomeRadio::Idle_Work()
 
 				if (GetControllerID() == 0xFFFFFF)  //Check whether multiple controllers have been detected
 				{
-					uint8_t MultiControllerCount = sizeof(MultiControllerID) - 1;
-					if (MultiControllerCount > 1) // If multiple controllers detected then stop and user required to set controller ID on hardware settings page
+					const auto MultiControllerCount = std::count_if(std::begin(MultiControllerID), std::end(MultiControllerID), [](const unsigned int id) { return id != 0; });
+					if (MultiControllerCount > 1) // If multiple controllers detected the user has to set the controller ID on the hardware settings page
 					{
-						Log(LOG_ERROR, "Evohome serial: multiple controllers detected!  Please set controller ID in hardware settings.");
-						StopHardware();
+						// Do not call StopHardware() here: this runs on the worker thread, which would then try to join itself.
+						// The check repeats every 300s, so the error stays visible until the ID is set.
+						Log(LOG_ERROR, "multiple controllers detected! Please set controller ID in hardware settings.");
 					}
 					else if (MultiControllerCount == 1) // If only 1 controller detected then proceed, otherwise continue searching for controller
 					{
-						Log(LOG_STATUS, "Evohome serial: Multi-controller check passed. Controller ID: 0x%x", MultiControllerID[0]);
+						Log(LOG_STATUS, "Multi-controller check passed. Controller ID: 0x%x", MultiControllerID[0]);
 						SetControllerID(MultiControllerID[0]);
 						startup = false;
 					}
