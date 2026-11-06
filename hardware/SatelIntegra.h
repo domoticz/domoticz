@@ -65,7 +65,9 @@ class SatelIntegra : public CDomoticzHardwareBase
 	std::string ISO2UTF8(const std::string &name);
 
 	std::pair<unsigned char *, unsigned int> getFullFrame(const unsigned char *pCmd, unsigned int cmdLength);
-	int SendCommand(const unsigned char *cmd, unsigned int cmdLength, unsigned char *answer, int expectedLength);
+	// Returns the answer length, 0 for a positive 0xEF result, -1 on error.
+	// With resultCode set, a negative 0xEF result is stored there instead of being logged.
+	int SendCommand(const unsigned char *cmd, unsigned int cmdLength, unsigned char *answer, int expectedLength, unsigned char *resultCode = nullptr);
 
       private:
 	int m_modelIndex;
