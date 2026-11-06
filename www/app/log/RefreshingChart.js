@@ -53,6 +53,12 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                 : Date.now();
         }
 
+        // "Now" in the coordinates of this chart's points: true epoch when the
+        // data carried per-point epochs, the server's wall-clock otherwise.
+        function chartNow() {
+            return self._pointsAreEpoch ? Date.now() : serverNow();
+        }
+
         self.isZoomLeftSticky = false;
         self.isZoomRightSticky = false;
         self.isZoomed = false;
@@ -414,6 +420,14 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                     self.consoledebug(function () { return '[' + Base.dateToString(new Date()) + '] refreshing ' + self; });
 
                     const stopwatchCycle = stopwatch('cycle');
+                    // Day graphs carry an exact epoch per point ('ts', added for
+                    // the repeated hour at the end of DST) which DataLoader
+                    // prefers over parsing the wall-clock string. Points with it
+                    // are plotted at true epoch, so "now" for the axis window is
+                    // the browser clock; points without it are plotted at the
+                    // server's wall-clock, so "now" is serverNow().
+                    self._pointsAreEpoch = !!(data.result && data.result.length
+                        && typeof data.result[0].ts === 'number');
                     loadDataInChart(data);
                     prepareAxisRange();
                     synchronizeYaxes();
@@ -461,8 +475,9 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
                         // Remember which offset this render used so a later,
                         // materially different offset triggers a re-render.
-                        self._axisNowOffsetUsed = sharedServerTimeOffsetMs;
-                        var now = serverNow();
+                        // Epoch-based points never consume the offset.
+                        self._axisNowOffsetUsed = self._pointsAreEpoch ? undefined : sharedServerTimeOffsetMs;
+                        var now = chartNow();
                         var windowEnd, windowStart = null;
 
                         if (self.range === 'hour') {
@@ -493,7 +508,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                         var windowEnd = self._missingDataWindowEnd;
                         if (!windowEnd) return;
 
-                        var now = serverNow();
+                        var now = chartNow();
                         var dataMax = xAxis.dataMax;
                         if (!dataMax || !isFinite(dataMax)) return;
 
@@ -860,9 +875,9 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 			
 			self.$scope.zoomToday = function() {
 				self.$scope.activeZoom = 'today';
-				var dstart = new Date(serverNow());
+				var dstart = new Date(chartNow());
 				dstart.setHours(0,0,0,0);
-				var dend = new Date(serverNow());
+				var dend = new Date(chartNow());
 				dend.setHours(23,59,59,999);
 				zoom(dstart.getTime(), dend.getTime(), $.t('Today'));
 			}
