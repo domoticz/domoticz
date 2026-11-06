@@ -76,6 +76,7 @@ Version 2026.xxxx
 - Fixed: MQTT Auto Discovery, a Z-Wave JS UI RGB light that was off switched back On on every color report; a light with its own state topic now keeps its on/off state when only the color is reported
 - Fixed: Nefit Easy, switching the hot water mode sent its second request to a malformed URL
 - Fixed: Netatmo, an error response from Netatmo (like 'Service temporarily unavailable') while refreshing the access token stopped Domoticz; the error is logged and the hardware retries later, and any other unexpected response is handled the same way (#7184)
+- Fixed: OpenTherm Gateway, a truncated or corrupted line from the gateway (for example over an unstable WiFi connection) stopped Domoticz; the line is now logged and skipped (#7186, thanks Elmervc)
 - Fixed: OpenWebNet USB, sending a command could deadlock because the receive lock was held while waiting for the reply
 - Fixed: OpenZWave, switches and sensors that report a Byte value are created with their actual state instead of Off
 - Fixed: P1 Meter, with the energy prices from the meter settings, T2 usage was priced at the T1 tariff when the P1 meter is not a P1 USB/LAN hardware (MQTT, a plugin or a virtual device); every counter now uses its own tariff (usage T1/T2, return R1/R2), also in the hourly cost chart, which priced returned energy at the usage tariff (#7185)
