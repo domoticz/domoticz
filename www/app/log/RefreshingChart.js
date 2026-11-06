@@ -1,5 +1,11 @@
 define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoomer'], function (_, Base, DomoticzBase, DataLoader, ChartLoader, ChartZoomer) {
 
+    // Server wall-clock minus browser clock, in chart coordinates (server time
+    // strings parsed as if browser-local). Shared by all chart instances and
+    // kept up to date from time_update events, so a chart created later starts
+    // with the right offset even before its own first time_update.
+    let sharedServerTimeOffsetMs = null;
+
     function RefreshingChart(
             baseParams, angularParams, domoticzParams, params,
             dataLoader = new DataLoader(),
@@ -35,6 +41,18 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
         self.autoRefreshIsEnabled = params.autoRefreshIsEnabled;
         self.refreshTimestamp = 0;
 
+        // Chart timestamps are the server's wall-clock parsed as if browser-local
+        // (GetLocalTimestampFromString), so "now" for axis windows must be the
+        // server's wall-clock in those same coordinates. The browser's own clock
+        // is only a fallback until the first time_update tells us the offset;
+        // with a browser in another timezone it is hours off and would clip the
+        // newest data (or show a bogus missing-data band).
+        function serverNow() {
+            return sharedServerTimeOffsetMs !== null
+                ? Date.now() + sharedServerTimeOffsetMs
+                : Date.now();
+        }
+
         self.isZoomLeftSticky = false;
         self.isZoomRightSticky = false;
         self.isZoomed = false;
@@ -44,7 +62,10 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
             self.$scope.chartTitleToggling = chartTitleIsToggling();
             initialZoom();
         });
-        self.refreshTimestamp = new Date().getTime();
+        // Slot comparison in the time_update handler is in server time; seeding
+        // it from a browser clock ahead of the server would block auto-refresh
+        // until the browser clock's slot is reached.
+        self.refreshTimestamp = serverNow();
         configureZoomingAndPanning();
         configureSpikeContextMenu();
 
@@ -80,6 +101,25 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 
         function refreshChartDataEveryTimeUpdate() {
             self.$scope.$on('time_update', function (event, update) {
+                if (update.serverTime) {
+                    const parsed = GetLocalTimestampFromString(update.serverTime);
+                    if (isFinite(parsed)) {
+                        sharedServerTimeOffsetMs = parsed - Date.now();
+                        // The axis window was rendered with a materially different
+                        // offset — browser clock fallback before the first
+                        // time_update, or the offset itself moved (DST starts or
+                        // ends in one timezone but not the other, or the browser
+                        // changed timezone). Redo the render so the window tracks
+                        // server "now".
+                        const used = self._axisNowOffsetUsed;
+                        if (used !== undefined
+                            && Math.abs(sharedServerTimeOffsetMs - (used !== null ? used : 0)) > 300000) {
+                            self._axisNowOffsetUsed = undefined;
+                            refreshChartData();
+                            self.refreshTimestamp = parsed;
+                        }
+                    }
+                }
                 if (self.autoRefreshIsEnabled()) {
                     const serverTime = GetLocalTimestampFromString(update.serverTime);
                     const secondsIntoCurrentSlot = Math.floor(serverTime % (300 * 1000) / 1000);
@@ -397,6 +437,7 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                         // Computes the window end (today) and updates the x-axis range before redraw.
                         // self._missingDataWindowEnd is used by zoom/reset buttons to end at today.
                         self._missingDataWindowEnd = null;
+                        self._axisNowOffsetUsed = undefined;
 
                         if (self.range !== 'day' && self.range !== 'month' && self.range !== 'year' && self.range !== 'hour') {
                             return;
@@ -411,7 +452,10 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                             return;
                         }
 
-                        var now = Date.now();
+                        // Remember which offset this render used so a later,
+                        // materially different offset triggers a re-render.
+                        self._axisNowOffsetUsed = sharedServerTimeOffsetMs;
+                        var now = serverNow();
                         var windowEnd, windowStart = null;
 
                         if (self.range === 'hour') {
@@ -421,11 +465,8 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                             windowEnd = now;
                             var shortLogDays = (self.$scope.$root.config.FiveMinuteHistoryDays || 1);
                             windowStart = now - shortLogDays * 86400 * 1000;
-                        } else if (self.range === 'month') {
-                            var d = new Date(); d.setHours(23, 59, 59, 999);
-                            windowEnd = d.getTime();
-                        } else { // year
-                            var d = new Date(); d.setHours(23, 59, 59, 999);
+                        } else { // month, year
+                            var d = new Date(now); d.setHours(23, 59, 59, 999);
                             windowEnd = d.getTime();
                         }
 
@@ -445,11 +486,22 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
                         var windowEnd = self._missingDataWindowEnd;
                         if (!windowEnd) return;
 
-                        var now = Date.now();
+                        var now = serverNow();
                         var dataMax = xAxis.dataMax;
                         if (!dataMax || !isFinite(dataMax)) return;
 
-                        var today = new Date(); today.setHours(0, 0, 0, 0);
+                        // Browser clock fallback in another timezone than the server:
+                        // data can legitimately extend past the computed window end.
+                        // Widen the window instead of clipping the newest points.
+                        if (dataMax > windowEnd) {
+                            self._missingDataWindowEnd = dataMax;
+                            if (!self.isZoomed) {
+                                xAxis.update({ max: dataMax }, true);
+                            }
+                            return;
+                        }
+
+                        var today = new Date(now); today.setHours(0, 0, 0, 0);
                         var lastDataDay = new Date(dataMax); lastDataDay.setHours(0, 0, 0, 0);
 
                         var hasMissingData = (self.range === 'hour')
@@ -801,9 +853,9 @@ define(['lodash', 'Base', 'DomoticzBase', 'DataLoader', 'ChartLoader', 'ChartZoo
 			
 			self.$scope.zoomToday = function() {
 				self.$scope.activeZoom = 'today';
-				var dstart = new Date();
+				var dstart = new Date(serverNow());
 				dstart.setHours(0,0,0,0);
-				var dend = new Date();
+				var dend = new Date(serverNow());
 				dend.setHours(23,59,59,999);
 				zoom(dstart.getTime(), dend.getTime(), $.t('Today'));
 			}
