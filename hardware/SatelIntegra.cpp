@@ -387,6 +387,7 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 		bool violate;
 		unsigned int byteNumber;
 		unsigned int bitNumber;
+		unsigned int unusedZones = 0;
 
 		for (unsigned int index = 0; index < zonesCount; ++index)
 		{
@@ -408,15 +409,26 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 					cmd[0] = 0xEE;
 					cmd[1] = 0x05;
 					cmd[2] = (index != 255) ? (index + 1) : 0; // send 0 instead of 256 in INTEGRA 256 PLUS
-					if (SendCommand(cmd, 3, buffer, 21) > 0)
+					unsigned char result = 0;
+					int ret = SendCommand(cmd, 3, buffer, 21, &result);
+					if (ret > 0)
 					{
-						m_isPartitions[buffer[20] - 1] = true;
+						if ((buffer[20] >= 1) && (static_cast<size_t>(buffer[20]) <= m_isPartitions.size()))
+						{
+							m_isPartitions[buffer[20] - 1] = true;
+						}
 						ReportZonesViolation(index + 1, violate);
 						UpdateZoneName(index + 1, &buffer[4], 1);
 					}
+					else if ((ret == 0) || (result != 0))
+					{
+						// Integra answers 0xEF for a zone that does not exist
+						Debug(DEBUG_HARDWARE, "zone %d is not used (result %02X)", index + 1, result);
+						++unusedZones;
+					}
 					else
 					{
-						Log(LOG_ERROR, "Receive info about zone %d failed (probably zone is not used)", index + 1);
+						Log(LOG_ERROR, "Receive info about zone %d failed", index + 1);
 					}
 				}
 				else if (m_zonesLastState[index] != violate)
@@ -426,6 +438,10 @@ bool SatelIntegra::ReadZonesState(const bool firstTime)
 			}
 		}
 
+		if (firstTime && (unusedZones > 0))
+		{
+			Log(LOG_STATUS, "%u of %u zones are not used", unusedZones, zonesCount);
+		}
 	}
 	else
 	{
@@ -1080,7 +1096,7 @@ void calculateCRC(const unsigned char* pCmd, unsigned int length, unsigned short
 	result = crc;
 }
 
-int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer, const int expectedLength)
+int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLength, unsigned char *answer, const int expectedLength, unsigned char *resultCode)
 {
 	std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -1104,45 +1120,75 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 	delete[] cmdPayload.first;
 
 	unsigned char buffer[MAX_LENGTH_OF_ANSWER];
-	// Receive answer
-	fd_set rfds;
-	FD_ZERO(&rfds);
-	FD_SET(m_socket, &rfds);
-
-	struct timeval tv;
-	tv.tv_sec = 3;
-	tv.tv_usec = 0;
-	if (select((int)m_socket + 1, &rfds, nullptr, nullptr, &tv) < 0)
-	{
-		Log(LOG_ERROR, "connection lost.");
-		DestroySocket();
-		return -1;
-	}
-
+	// Receive answer: read until the frame suffix FE 0D. The length of the
+	// answer is not known in advance - a rejected command or a device that
+	// does not exist is answered with a short 0xEF frame. 0xFE inside a frame
+	// is always sent as FE F0, so FE 0D can only be the end of the frame.
 	int totalRet = 0;
-	do
+	while (true)
 	{
-		int ret = recv(m_socket, (char*)&buffer[totalRet], MAX_LENGTH_OF_ANSWER - totalRet, 0);
-		totalRet += ret;
-		if ((ret <= 0) || (totalRet >= MAX_LENGTH_OF_ANSWER))
+		fd_set rfds;
+		FD_ZERO(&rfds);
+		FD_SET(m_socket, &rfds);
+
+		struct timeval tv;
+		tv.tv_sec = 3;
+		tv.tv_usec = 0;
+		int sel = select((int)m_socket + 1, &rfds, nullptr, nullptr, &tv);
+		if (sel < 0)
 		{
-			Log(LOG_ERROR, "bad data length received (totalRet %d)", totalRet);
+			Log(LOG_ERROR, "connection lost.");
 			DestroySocket();
 			return -1;
 		}
-	} while (totalRet < expectedLength);
-
-	// remove special chars
-	int offset = 0;
-	for (int i = 0; i < totalRet; i++)
-	{
-		buffer[i] = buffer[i + offset];
-		if (buffer[i] == 0xFE && buffer[i + 1] == 0xF0)
+		if (sel == 0)
 		{
-			++offset;
-			totalRet--;
+			if (totalRet > 0)
+			{
+				break; // incomplete or not a frame, checked below
+			}
+			Log(LOG_ERROR, "no answer for command %02X", cmd[0]);
+			DestroySocket();
+			return -1;
+		}
+
+		int ret = recv(m_socket, (char*)&buffer[totalRet], MAX_LENGTH_OF_ANSWER - 1 - totalRet, 0);
+		if (ret <= 0)
+		{
+			Log(LOG_ERROR, "connection closed by Integra (received %d bytes)", totalRet);
+			DestroySocket();
+			return -1;
+		}
+		totalRet += ret;
+
+		if (buffer[0] != 0xFE)
+		{
+			break; // not a frame (e.g. busy), checked below
+		}
+		if ((totalRet >= 2) && (buffer[totalRet - 2] == 0xFE) && (buffer[totalRet - 1] == 0x0D))
+		{
+			break; // complete frame
+		}
+		if (totalRet >= MAX_LENGTH_OF_ANSWER - 1)
+		{
+			Log(LOG_ERROR, "answer too long (received %d bytes)", totalRet);
+			DestroySocket();
+			return -1;
 		}
 	}
+
+	// remove special chars (FE F0 -> FE)
+	int frameLength = 0;
+	for (int i = 0; i < totalRet; i++)
+	{
+		const unsigned char c = buffer[i];
+		buffer[frameLength++] = c;
+		if ((c == 0xFE) && (i + 1 < totalRet) && (buffer[i + 1] == 0xF0))
+		{
+			++i;
+		}
+	}
+	totalRet = frameLength;
 	buffer[totalRet] = 0x00; // not needed but look nice :)
 
 	if (totalRet > 6)
@@ -1173,6 +1219,12 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 					{
 						return 0;
 					}
+					if (resultCode != nullptr)
+					{
+						// caller handles the result code itself
+						*resultCode = buffer[3];
+						return -1;
+					}
 					const char *error = "other errors";
 
 					auto it = errorCodes.find(buffer[3]);
@@ -1191,9 +1243,11 @@ int SatelIntegra::SendCommand(const unsigned char* cmd, const unsigned int cmdLe
 		if (buffer[0] == 16)
 		{
 			Log(LOG_ERROR, "busy");
+			DestroySocket();
 			return -1;
 		}
 		Log(LOG_ERROR, "received bad frame (prefix or sufix)");
+		DestroySocket(); // resynchronize with the next frame
 		return -1;
 	}
 	Log(LOG_ERROR, "received frame is too short.");
