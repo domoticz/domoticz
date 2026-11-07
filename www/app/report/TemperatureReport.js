@@ -39,7 +39,6 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     minDate: source.minDate,
                     max: source.max,
                     maxDate: source.maxDate,
-                    degreeDays: source.degreeDays,
                     items: month ? source.days : source.months
                 };
             });
@@ -117,10 +116,6 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                             };
                         }
 
-                        if (item.avg < $.myglobals.DegreeDaysBaseTemperature) {
-                            acc.degreeDays = (acc.degreeDays || 0) + ($.myglobals.DegreeDaysBaseTemperature - item.avg)
-                        }
-
                         acc.total = (acc.total || 0) + item.avg;
                         acc.totalHumidity = (acc.totalHumidity || 0) + item.humidity;
                         acc.totalBaro = (acc.totalBaro || 0) + item.baro;
@@ -133,7 +128,6 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     month.max = stats.max.value;
                     month.maxDate = stats.max.date;
                     month.avg = (stats.total / month.days.length);
-                    month.degreeDays = stats.degreeDays || 0;
                     month.humidity = stats.totalHumidity
                         ? (stats.totalHumidity / month.days.length)
                         : undefined;
@@ -150,7 +144,6 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                 yearsData.minDate = stats.min.date;
                 yearsData.max = stats.max.value;
                 yearsData.maxDate = stats.max.date;
-                yearsData.degreeDays = stats.degreeDays || 0;
                 yearsData.avg = (stats.total / yearsData.months.length);
             });
 
@@ -173,7 +166,6 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                     };
                 }
 
-                acc.degreeDays = (acc.degreeDays || 0) + item.degreeDays;
                 acc.total = (acc.total || 0) + item.avg;
 
                 return acc;
@@ -239,10 +231,6 @@ define(['app', 'report/helpers'], function (app, reportHelpers) {
                             date: dateFormat(data.maxDate, 'UTC:d') + ' ' + $.t(dateFormat(data.maxDate, 'UTC:mmmm')),
                             value: data.max
                         };
-
-                        if (data.degreeDays) {
-                            vm.degreeDays = data.degreeDays.toFixed(1);
-                        }
                     }
                 });
         }

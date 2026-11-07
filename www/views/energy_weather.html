@@ -1,0 +1,97 @@
+<div id="energyweathercontent">
+	<div class="page-header-small">
+		<h1 data-i18n="Energy vs Weather">Energy vs Weather</h1>
+	</div>
+
+	<div ng-if="problem" class="alert alert-info">{{ problem }} <a href="#Setup" data-i18n="Settings">Settings</a></div>
+
+	<div ng-show="!problem">
+		<style>
+			#energyweathercontent .ew-pills { display:flex; flex-wrap:wrap; gap:8px; }
+			#energyweathercontent .ew-pill { border:1px solid rgba(128,128,128,0.4); background:var(--dz-panel-bg); color:var(--dz-body-text); border-radius:6px; padding:9px 18px; font-size:1em; line-height:1.2; cursor:pointer; margin:0; transition:background 0.15s; }
+			#energyweathercontent .ew-pill:hover:not(:disabled):not(.active) { background:rgba(128,128,128,0.4); }
+			#energyweathercontent .ew-pill.active { background:var(--dz-btn-info-bg); border-color:var(--dz-btn-info-bg); color:var(--dz-btn-primary-text, #fff); font-weight:600; }
+			#energyweathercontent .ew-pill:disabled { opacity:0.4; cursor:not-allowed; }
+			#energyweathercontent .ew-pills.small .ew-pill { padding:6px 14px; }
+			#energyweathercontent .ew-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:10px 28px; margin:12px 0 14px 0; }
+			#energyweathercontent .ew-field { display:flex; align-items:center; gap:8px; }
+			#energyweathercontent .ew-field select, #energyweathercontent .ew-field input[type=number] { margin:0; }
+			#energyweathercontent .ew-field label { margin:0; }
+			#energyweathercontent .ew-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:10px; margin-bottom:10px; }
+			#energyweathercontent .ew-tile { background:var(--dz-panel-bg); color:var(--dz-body-text); border-radius:4px; padding:8px 12px; }
+			#energyweathercontent .ew-tile h3 { margin:2px 0; color:var(--dz-widget-accent); }
+			#energyweathercontent .ew-tile h3 small { color:inherit; opacity:0.8; }
+		</style>
+
+		<div class="ew-pills">
+			<button class="ew-pill" ng-class="{active: mode == 'heat'}" ng-disabled="!hasGas" ng-click="setMode('heat')" data-i18n="Heating (Gas)">Heating (Gas)</button>
+			<button class="ew-pill" ng-class="{active: mode == 'both'}" ng-disabled="!hasGas || !hasAirco" ng-click="setMode('both')" data-i18n="Heating (Gas + Heat Pump / Airco)">Heating (Gas + Heat Pump / Airco)</button>
+			<button class="ew-pill" ng-class="{active: mode == 'hp'}" ng-disabled="!hasAirco" ng-click="setMode('hp')" data-i18n="Heating (Heat Pump / Airco)">Heating (Heat Pump / Airco)</button>
+			<button class="ew-pill" ng-class="{active: mode == 'cool'}" ng-disabled="!hasAirco" ng-click="setMode('cool')" data-i18n="Cooling (Heat Pump / Airco)">Cooling (Heat Pump / Airco)</button>
+		</div>
+
+		<div class="ew-toolbar">
+			<div class="ew-pills small">
+				<button class="ew-pill" ng-class="{active: gran == 'day'}" ng-click="setGran('day')" data-i18n="Day">Day</button>
+				<button class="ew-pill" ng-class="{active: gran == 'week'}" ng-click="setGran('week')" data-i18n="Week">Week</button>
+				<button class="ew-pill" ng-class="{active: gran == 'month'}" ng-click="setGran('month')" data-i18n="Month">Month</button>
+			</div>
+			<div class="ew-field">
+				<select ng-model="year" ng-options="y for y in years" style="width:90px;"></select>
+				<select ng-show="gran == 'day'" ng-model="month" ng-options="m.id as m.name for m in months" style="width:140px;"></select>
+			</div>
+			<div class="ew-field">
+				<span data-i18n="Compare with">Compare with</span>
+				<select ng-model="compareYear" ng-options="y for y in years" style="width:90px;"></select>
+			</div>
+			<div class="ew-field" ng-show="mode == 'both'">
+				<span data-i18n="kWh per m3 gas">kWh per m3 gas</span>
+				<input type="number" step="0.01" min="1" ng-model="gasKwh" ng-change="gasKwhChanged()" style="width:70px;">
+			</div>
+			<div class="ew-field" ng-show="mode != 'heat' && multiAirco">
+				<input type="checkbox" id="ewSplit" ng-model="split"><label for="ewSplit"></label><span data-i18n="Split per unit">Split per unit</span>
+			</div>
+		</div>
+
+		<div ng-if="loading" data-i18n="Loading...">Loading...</div>
+		<div ng-if="!loading && noData" class="no-data" data-i18n="No data available">No data available</div>
+
+		<div ng-show="!loading && !noData">
+			<div class="ew-grid" ng-if="tiles">
+				<div class="ew-tile"><small data-i18n="Degree Days">Degree Days</small><h3>{{ tiles.dd }}</h3></div>
+				<div class="ew-tile"><small data-i18n="Usage">Usage</small><h3>{{ tiles.usage }} <small>{{ tiles.unit }}</small></h3></div>
+				<div class="ew-tile"><small>{{ tiles.unit }} / <span data-i18n="Degree Day">Degree Day</span></small><h3>{{ tiles.perDD }}</h3></div>
+				<div class="ew-tile"><small><span data-i18n="Compared to">Compared to</span> {{ compareYear }}</small>
+					<h3 ng-style="{color: tiles.change === null ? '' : (tiles.change > 0 ? '#e53935' : '#43a047')}">
+						<span ng-if="tiles.change !== null">{{ tiles.change > 0 ? '+' : '' }}{{ tiles.change | number:1 }}%</span><span ng-if="tiles.change === null">-</span>
+					</h3></div>
+				<div class="ew-tile"><small data-i18n="Baseload per day">Baseload per day</small><h3>{{ tiles.baseload }} <small>{{ tiles.unit }}</small></h3></div>
+				<div class="ew-tile"><small>R&sup2;</small><h3>{{ tiles.r2 }}</h3></div>
+			</div>
+
+			<div class="ew-grid" ng-if="extras.length">
+				<div class="ew-tile" ng-repeat="x in extras">
+					<small ng-bind="x.label"></small>
+					<h3 ng-bind="x.value"></h3>
+					<small ng-if="x.sub" style="opacity:0.7" ng-bind="x.sub"></small>
+				</div>
+			</div>
+
+			<div id="ewCombined" class="device-log-chart" style="height:380px;"></div>
+			<br>
+			<div id="ewExpected" class="device-log-chart" style="height:300px;"></div>
+			<br>
+			<div ng-if="outliers.length" style="margin-bottom:10px;">
+				<h4 data-i18n="Days above what the weather explains">Days above what the weather explains</h4>
+				<table class="display myrighttable" style="width:auto;">
+					<thead><tr><th data-i18n="Date">Date</th><th data-i18n="Actual">Actual</th><th data-i18n="Expected">Expected</th><th data-i18n="Difference">Difference</th></tr></thead>
+					<tbody><tr ng-repeat="o in outliers"><td ng-bind="o.date"></td><td ng-bind="o.usage"></td><td ng-bind="o.expected"></td><td ng-bind="o.diffText"></td></tr></tbody>
+				</table>
+			</div>
+			<br>
+			<div id="ewEfficiency" class="device-log-chart" style="height:300px;"></div>
+			<br>
+			<div id="ewScatter" class="device-log-chart" style="height:340px;"></div>
+		</div>
+	</div>
+</div>

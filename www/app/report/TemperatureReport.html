@@ -6,11 +6,6 @@
     <span>{{ ::'Coldest Day' | translate }}:</span>
     <span>{{ ::$ctrl.min.date }}, {{ ::$ctrl.min.value }} °{{ ::$ctrl.degreeType}}</span>
 </div>
-<div ng-if="::$ctrl.degreeDays">
-    <span data-i18n="Degree Days">{{ ::'Degree Days' | translate }}:</span>
-    <span id="mddays">{{ ::$ctrl.degreeDays }}</span>
-    <br>
-</div>
 <br>
 <div ng-if="::$ctrl.noDataAvailable" class="no-data">
     {{ ::'No data available' | translate}}

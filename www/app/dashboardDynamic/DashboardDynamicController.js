@@ -40,6 +40,7 @@ define([
     'dashboardDynamic/widgets/ddHtmlWidget.widget',
     'dashboardDynamic/widgets/ddKwhSummary.widget',
     'dashboardDynamic/widgets/ddGasSummary.widget',
+    'dashboardDynamic/widgets/ddEnergyWeather.widget',
     'dashboardDynamic/widgets/ddP1Electricity.widget',
     'dashboardDynamic/widgets/ddTextSensor.widget',
     'dashboardDynamic/widgets/ddBatteryStatus.widget',

@@ -1,0 +1,33 @@
+<div class="dd-stat-card dd-stat-card-full"
+     ng-class="{'dd-stat-card--no-bg': ctrl.widgetDef.config.showBackground === false && !ctrl.editMode}">
+    <div ng-if="ctrl.needSetup" class="dd-chart-unconfigured">
+        <i class="fa-solid fa-temperature-half"></i>
+        <p>{{'Configure the Outside Temperature Sensor, Gas and Airco in the Energy Dashboard settings' | translate}}</p>
+    </div>
+
+    <div ng-if="ctrl.loadError && !ctrl.needSetup" class="dd-chart-unconfigured">
+        <i class="fa-solid fa-circle-xmark"></i>
+        <p>{{'Failed to load data' | translate}}</p>
+    </div>
+
+    <div ng-if="!ctrl.needSetup && !ctrl.loadError" style="width:100%">
+        <div class="dd-stat-label" ng-bind="ctrl.title"></div>
+
+        <a class="dd-stat-link" href="#/EnergyWeather">
+            <div class="dd-stat-value" ng-class="ctrl.widgetDef.config.mode === 'heat' || !ctrl.widgetDef.config.mode ? 'dd-energy-gas' : 'dd-energy-import'">
+                <i class="fa-solid fa-temperature-half"></i>
+                <span ng-if="ctrl.perDD !== null">{{ctrl.perDD | number:2}} <span class="dd-stat-unit">{{ctrl.unit}} / DD</span></span>
+                <span ng-if="ctrl.perDD === null">-</span>
+            </div>
+        </a>
+
+        <div ng-if="ctrl.change !== null" class="dd-stat-sub">
+            <span ng-class="ctrl.change > 0 ? 'dd-energy-import' : 'dd-energy-export'">{{ctrl.change > 0 ? '+' : ''}}{{ctrl.change | number:1}}%</span>
+            {{'vs previous 7 days' | translate}}
+        </div>
+
+        <div ng-if="ctrl.usage !== null && !ctrl.noData" class="dd-stat-sub">
+            {{'7 days' | translate}}: {{ctrl.usage | number:1}} {{ctrl.unit}}, {{ctrl.dd | number:1}} {{'Degree Days' | translate}}
+        </div>
+    </div>
+</div>

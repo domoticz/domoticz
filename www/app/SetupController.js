@@ -446,6 +446,64 @@ define(['app'], function (app) {
 						$comboEBatteryEnergyIn.append($("<option />").val(item.idx).text(item.name));
 						$comboEBatteryEnergyOut.append($("<option />").val(item.idx).text(item.name));
 					});
+						// Airco kWh meters: checkbox list, selected idx values are kept in a hidden comma separated field
+						let $aircoList = $("#EAircoList");
+						// every kWh style meter: the P1 / kWh list plus Energy type devices and energy counters
+						let listAirco = listP1.slice();
+						$.each(data.result, function (j, item) {
+							if (item.Type == "Group") { return; }
+							let isEnergy = (item.Type == "Energy") || (item.Type == "Current/Energy") ||
+								((item.Type == "RFXMeter") && (parseInt(item.SwitchTypeVal) === 0));
+							if (isEnergy && !listAirco.some(function (a) { return a.idx == item.idx; })) {
+								listAirco.push({"idx": item.idx, "name": item.Name});
+							}
+						});
+						listAirco.sort((a,b) => (a.name.trim().toLowerCase() > b.name.trim().toLowerCase()) ? 1 : ((b.name.trim().toLowerCase() > a.name.trim().toLowerCase()) ? -1 : 0));
+						// selected meters are shown as a list with a delete icon, the rest stay in the dropdown below it
+						let aircoSelected = [];
+						let $aircoCombo = $("#comboEAirco");
+						function syncAirco() {
+							$("#EAirco").val(aircoSelected.join(","));
+							$aircoList.empty();
+							$aircoCombo.empty().append($("<option />").val("-1").text($.t("Add...")));
+							$.each(listAirco, function (j, dev) {
+								if (aircoSelected.indexOf(parseInt(dev.idx)) != -1) {
+									// one small table row: the name on the left, the delete icon at the right edge of the dropdown width
+									// same look as the Actions list in the dynamic dashboard widget settings (dd-al-* classes)
+									let $row = $("<div class='dd-al-item eairco-row' />").css({ width: "380px", boxSizing: "border-box", marginBottom: "3px" });
+									$row.append($("<span class='dd-al-label' />").text(dev.name.trim()));
+									$row.append($("<i class='fa-solid fa-trash dd-al-action-icon dd-al-delete-icon eairco-del' />").attr("data-idx", dev.idx).attr("title", $.t("Remove")));
+									$aircoList.append($row);
+								} else {
+									$aircoCombo.append($("<option />").val(dev.idx).text(dev.name.trim()));
+								}
+							});
+							$aircoCombo.val("-1");
+						}
+						$scope.SetAircoSelection = function (ids) {
+							aircoSelected = [];
+							$.each(ids, function (j, id) {
+								id = parseInt(id);
+								// a deleted device has no entry in the list and drops out
+								if (listAirco.some(function (a) { return parseInt(a.idx) === id; }) && aircoSelected.indexOf(id) == -1) {
+									aircoSelected.push(id);
+								}
+							});
+							syncAirco();
+						};
+						$aircoCombo.on("change", function () {
+							let id = parseInt($aircoCombo.val());
+							if (id > 0 && aircoSelected.indexOf(id) == -1) {
+								aircoSelected.push(id);
+								syncAirco();
+							}
+						});
+						$aircoList.on("click", ".eairco-del", function () {
+							let id = parseInt($(this).attr("data-idx"));
+							aircoSelected = aircoSelected.filter(function (x) { return x !== id; });
+							syncAirco();
+						});
+						syncAirco();
 						$.each(listText, function (i, item) {
 							$comboEText.append($("<option />").val(item.idx).text(item.name));
 						});
@@ -708,6 +766,9 @@ define(['app'], function (app) {
 					}
 					if (typeof data.DegreeDaysBaseTemperature != 'undefined') {
 						$("#temperaturetable #DegreeDaysBaseTemperature").val(data.DegreeDaysBaseTemperature);
+						}
+						if (typeof data.CoolingDegreeDaysBaseTemperature != 'undefined') {
+							$("#temperaturetable #CoolingDegreeDaysBaseTemperature").val(data.CoolingDegreeDaysBaseTemperature);
 					}
 					if (typeof data.UseAutoUpdate != 'undefined') {
 						$("#autoupdatetable #checkforupdates").prop('checked', data.UseAutoUpdate == 1);
@@ -911,6 +972,11 @@ define(['app'], function (app) {
 						$("#comboEExtra2Icon").val(data.ESettings.Extra2Icon);
 						$("#comboEExtra3Icon").val(data.ESettings.Extra3Icon);
 						$("#comboEOutsideTempSensor").val(data.ESettings.idOutsideTempSensor);
+						if (Array.isArray(data.ESettings.idAirco)) {
+							// the device list may have failed to load, then there is no list to fill
+							if ($scope.SetAircoSelection) { $scope.SetAircoSelection(data.ESettings.idAirco); }
+						}
+						$("#EDegreeDaysWeighted").prop('checked', data.ESettings.DegreeDaysWeighted == 1);
 
 						$("#EConvertWaterM3ToLiter").prop('checked', data.ESettings.ConvertWaterM3ToLiter == 1);
 						$("#EDisplayTime").prop('checked', data.ESettings.DisplayTime == 1);

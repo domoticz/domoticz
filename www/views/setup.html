@@ -970,6 +970,10 @@
 										<tr>
 											<td align="right"><label><span data-i18n="Degree Days"></span> (<span data-i18n="Base Temperature"></span>): </label></td>
 											<td><input type="input" id="DegreeDaysBaseTemperature" name="DegreeDaysBaseTemperature" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+											</tr>
+											<tr>
+												<td align="right"><label><span data-i18n="Cooling Degree Days"></span> (<span data-i18n="Base Temperature"></span>): </label></td>
+												<td><input type="input" id="CoolingDegreeDaysBaseTemperature" name="CoolingDegreeDaysBaseTemperature" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
 										</tr>
 									</table>
 								</div>
@@ -1171,7 +1175,17 @@
 											</select></td>
 										</tr>
 										<tr>
-											<td align="right"><span data-i18n="Outside Temperature Sensor"></span>:</td>
+											<td align="right" style="vertical-align:top"><label><span data-i18n="Heat Pump / Airco"></span> (kWh): </label></td>
+												<td>
+													<div id="EAircoList" style="width:380px;"></div>
+													<select id="comboEAirco" class="combobox ui-corner-all" style="width:380px">
+														<option value="-1" data-i18n="Add...">Add...</option>
+													</select>
+													<input type="hidden" id="EAirco" name="EAirco" value="">
+												</td>
+											</tr>
+											<tr>
+												<td align="right"><span data-i18n="Outside Temperature Sensor"></span>:</td>
 											<td><select id="comboEOutsideTempSensor" name="EOutsideTempSensor" style="width:380px" class="combobox ui-corner-all">
 												<option data-i18n="Disabled" value="-1" selected="selected">Disabled</option>
 											</select></td>
@@ -1292,6 +1306,14 @@
 											<td align="right"><span data-i18n="Custom Icons"></span>:</td>
 											<td><input type="checkbox" id="EUseCustomIcons" name="EUseCustomIcons"><label for="EUseCustomIcons"></label></td>
 										</tr>
+											<tr>
+												<td align="right"><span data-i18n="Weighted Degree Days"></span>:</td>
+												<td><input type="checkbox" id="EDegreeDaysWeighted" name="EDegreeDaysWeighted"><label for="EDegreeDaysWeighted"></label></td>
+											</tr>
+											<tr>
+												<td></td>
+												<td style="opacity:0.7;"><small data-i18n="Counts the heating degree days of the colder months (November to February) 10% heavier and those of April to September 20% lighter, because the sun and internal heat make a degree of cold in summer matter less. This is the Dutch standard (Mindergas, KNMI). Leave it off for plain degree days.">Counts the heating degree days of the colder months (November to February) 10% heavier and those of April to September 20% lighter, because the sun and internal heat make a degree of cold in summer matter less. This is the Dutch standard (Mindergas, KNMI). Leave it off for plain degree days.</small></td>
+											</tr>
 									</table>
 								</div>
 							</div>

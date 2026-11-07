@@ -543,6 +543,25 @@ Live: refreshes every 60 seconds and on WebSocket device updates.
 
 ---
 
+### Energy vs Weather
+**Category:** Energy
+
+Compact stat card showing gas (or airco) usage per degree day over the last 7 complete days, with the change against the 7 days before. Clicking the value opens the Energy vs Weather page.
+
+**Configuration:**
+
+| Field | Description |
+|-------|-------------|
+| Show | Gas per heating degree day, heat pump / airco kWh per heating degree day, or heat pump / airco kWh per cooling degree day |
+| Title | Optional override |
+| Show panel background | Show the widget panel background (default: on) |
+
+The devices come from the Energy Dashboard settings (Setup > Settings > Energy Dashboard): the Outside Temperature Sensor, Gas, and the Heat Pump / Airco kWh meters (pick each one from the "Add..." dropdown, it is then added to the list and can be removed with its delete icon). Heating degree days use the base temperature from Settings > Temperature (default 18 °C), cooling degree days use the cooling base temperature (default 22 °C). Enabling "Weighted Degree Days" multiplies heating degree days by the Dutch monthly factor (November to February 1.1, March and October 1.0, April to September 0.8). Today is left out because it is not complete yet. A value is only shown when the last 7 days together have at least 1 degree day.
+
+Live: loads on start, on manual refresh and when the date changes.
+
+---
+
 ### Water Summary
 **Category:** Energy
 
@@ -1199,6 +1218,7 @@ Shows Domoticz version, build number, and hardware count.
 | kWh Summary | 30s interval + instant WebSocket |
 | P1 Electricity | 30s interval + instant WebSocket |
 | Gas Summary | 60s interval + instant WebSocket |
+| Energy vs Weather | Loads on start, refresh and date change |
 | Water Summary | 60s interval + instant WebSocket |
 | Battery Status | 60s interval |
 | Energy Dashboard | 60s interval |

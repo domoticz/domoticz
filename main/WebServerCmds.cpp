@@ -15,6 +15,7 @@
 #include <stdarg.h>
 #include <json/json.h>
 #include <algorithm>
+#include <cmath>
 #ifdef WIN32
 #include <windows.h>
 #endif
@@ -3047,6 +3048,10 @@ namespace http
 			{
 				root["DegreeDaysBaseTemperature"] = atof(sValue.c_str());
 			}
+			if (m_sql.GetPreferencesVar("CoolingDegreeDaysBaseTemperature", sValue))
+			{
+				root["CoolingDegreeDaysBaseTemperature"] = atof(sValue.c_str());
+			}
 			m_sql.GetPreferencesVar("DashboardType", iDashboardType);
 			root["DashboardType"] = iDashboardType;
 			m_sql.GetPreferencesVar("MobileType", nValue);
@@ -3773,6 +3778,16 @@ namespace http
 
 				m_sql.UpdatePreferencesVar("Language", request::findValue(&req, "Language")); cntSettings++;
 				m_sql.UpdatePreferencesVar("DegreeDaysBaseTemperature", request::findValue(&req, "DegreeDaysBaseTemperature")); cntSettings++;
+				{
+					// a blank or non numeric value would read back as 0 degrees, keep the default instead
+					std::string sCooling = request::findValue(&req, "CoolingDegreeDaysBaseTemperature");
+					char* pEnd = nullptr;
+					double dCooling = strtod(sCooling.c_str(), &pEnd);
+					if (sCooling.empty() || (pEnd == sCooling.c_str()) || (*pEnd != '\0') || !std::isfinite(dCooling) || (dCooling < -50.0) || (dCooling > 100.0))
+						sCooling = "22.0";
+					m_sql.UpdatePreferencesVar("CoolingDegreeDaysBaseTemperature", sCooling);
+					cntSettings++;
+				}
 
 				m_sql.UpdatePreferencesVar("FloorplanRoomColour", CURLEncode::URLDecode(request::findValue(&req, "FloorplanRoomColour"))); cntSettings++;
 				m_sql.UpdatePreferencesVar("IFTTTAPI", base64_encode(request::findValue(&req, "IFTTTAPI"))); cntSettings++;
@@ -4113,6 +4128,25 @@ namespace http
 				std::string EExtra2Icon = request::findValue(&req, "EExtra2Icon");
 				std::string EExtra3Icon = request::findValue(&req, "EExtra3Icon");
 
+				// Airco kWh meters: comma separated device idx list from the setup page
+				Json::Value jAirco(Json::arrayValue);
+				{
+					std::vector<std::string> aircoIds;
+					StringSplit(request::findValue(&req, "EAirco"), ",", aircoIds);
+					for (const auto& sId : aircoIds)
+					{
+						int iId = atoi(sId.c_str());
+						if (iId <= 0)
+							continue;
+						bool bKnown = false;
+						for (const auto& jId : jAirco)
+							bKnown = bKnown || (jId.asInt() == iId);
+						if (!bKnown)
+							jAirco.append(iId);
+					}
+				}
+				bool bDegreeDaysWeighted = (request::findValue(&req, "EDegreeDaysWeighted") == "on" ? 1 : 0);
+
 				bool bConvertWaterM3ToLiter = (request::findValue(&req, "EConvertWaterM3ToLiter") == "on" ? 1 : 0);
 				bool bDisplayTime = (request::findValue(&req, "EDisplayTime") == "on" ? 1 : 0);
 				bool bDisplayOutsideTemp = (request::findValue(&req, "EDisplayOutsideTemp") == "on" ? 1 : 0);
@@ -4131,6 +4165,8 @@ namespace http
 				ESettings["idBatteryEnergyOut"] = EBatteryEnergyOut;
 				ESettings["idTextSensor"] = ETextSensor;
 				ESettings["idOutsideTempSensor"] = EOutsideTempSensor;
+				ESettings["idAirco"] = jAirco;
+				ESettings["DegreeDaysWeighted"] = bDegreeDaysWeighted;
 				ESettings["idExtra1"] = EExtra1;
 				ESettings["idExtra2"] = EExtra2;
 				ESettings["idExtra3"] = EExtra3;
@@ -6897,6 +6933,10 @@ namespace http
 				else if (Key == "DegreeDaysBaseTemperature")
 				{
 					root["DegreeDaysBaseTemperature"] = sValue;
+				}
+				else if (Key == "CoolingDegreeDaysBaseTemperature")
+				{
+					root["CoolingDegreeDaysBaseTemperature"] = sValue;
 				}
 				else if (Key == "EnableEventScriptSystem")
 				{
