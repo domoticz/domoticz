@@ -6,9 +6,6 @@ define(['app', 'icons/dzIconService'], function(app) {
      * All dashboardDynamic services, directives, and controllers are registered here.
      */
 
-    // Module-level constant: supported grid columns
-    app.constant('DD_GRID_COLUMNS', 12);
-
     // Module-level constant: list of all widget types (used by Feature 05)
     app.constant('DD_WIDGET_CATALOG', []);  // populated by Feature 05
 

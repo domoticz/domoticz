@@ -99,6 +99,20 @@ Each widget shows a header bar in edit mode with:
 
 Resize any widget by dragging the bottom-right corner handle.
 
+The grid has 24 columns and rows of 60 pixels. Dashboards made before the 24 column grid (layout version 1, 12 columns) are converted when they are opened, every widget keeps its place and size, and they are stored in the new format the next time the dashboard is saved. A layout that a plugin writes in the old format is converted the same way.
+
+#### Design width (tablets and smaller windows)
+
+Every dashboard remembers the width it was arranged at, its *design width*. The first time you save a dashboard it gets the width of your window at that moment.
+
+- On a **narrower** screen, such as a tablet, the whole dashboard is shown smaller: cards, text and icons shrink together, so a row of five cards stays five cards and no text is cut off. It never goes below 60 %; on an even narrower screen the dashboard keeps 60 % and scrolls sideways. In kiosk mode there is no such limit, so a wall display always shows the whole dashboard.
+- On a **wider** screen nothing changes: the columns get wider and the text keeps its size.
+- In **edit mode** the grid is shown at exactly the design width (with a dashed outline), unscaled. When your window is wider or narrower than the design width, a bar says so and offers **Use … px** to take the current window width. **Change...** (also in the Edit menu as **Design width...**) lets you pick the current window width, another width, or **Off** (no scaling, the grid always fills the window, as before).
+
+The design width is between 600 and 7680 px; a save from a window narrower than 600 px (a phone) does not set it. Dashboards made before this option are not scaled until you save them. Browsers without CSS zoom support (Firefox before version 126) show the dashboard unscaled, as before.
+
+**For widget and plugin authors:** the widget sizes in the registry (`minW`, `maxW`, `defaultW`) stay in 12 column units and are doubled by the grid. A layout written with `version: 2` and `columns: 24` uses 24 column positions and widths; a layout without a version (or `version: 1`) is read as 12 columns, or as the `columns` it states. The optional `designWidth` (px) sets the design width; leave it out to let the first save set it, or use `0` for no scaling.
+
 > **Note:** All interactive elements inside widget content (buttons, links, inputs) are non-clickable in Edit Mode — only the header chrome buttons (configure, duplicate, remove) remain active. This prevents accidental device control while rearranging the layout.
 
 ---
@@ -209,6 +223,7 @@ The exported JSON includes the Domoticz build revision (`domoticzRevision`) so r
 - *File* — select a `.json` file from disk
 - Choose to import as a **new dashboard** or **replace current**
 - If the imported dashboard was created on a newer Domoticz build, a warning is shown (but import still proceeds)
+- An export of a 12 column dashboard is converted to the 24 column grid on import
 
 ---
 
@@ -669,6 +684,7 @@ Embeds any single Domoticz device using its native widget (the same widget used 
 | Field | Description |
 |-------|-------------|
 | Device | Any device |
+| Compact | Show only the icon, the name and the value: no status line, last seen, selector buttons or slider. A compact widget can be made as narrow as 2 columns, which gives a nearly square tile of 2 columns by 2 rows. Switching compact off widens a narrow tile to the normal minimum of 4 columns, which can move the widgets below it down. A click on the icon still switches a light, blinds keep their buttons. For a selector or dimmer you want to control from the dashboard, use the normal widget. |
 
 The background is transparent in view mode. Live: instant WebSocket updates.
 

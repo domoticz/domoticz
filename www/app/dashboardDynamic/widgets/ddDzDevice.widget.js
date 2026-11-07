@@ -17,11 +17,14 @@ define([
         defaultW:    3,
         defaultH:    2,
         minW:        2,
+        // A compact tile (icon, name and value only) can be half as wide: 2 of 24 columns, nearly square
+        compactMinW: 1,
         minH:        2,
         maxW:        6,
         maxH:        6,
         configSchema: [
-            { key: 'deviceIdx', type: 'device-picker', label: 'Device', required: true }
+            { key: 'deviceIdx', type: 'device-picker', label: 'Device', required: true },
+            { key: 'compact',   type: 'boolean', label: 'Compact (icon, name and value only; no selector buttons or sliders, can be made smaller)', default: false }
         ]
     });
 

@@ -76,12 +76,26 @@ define([
                 }
 
                 // ── Item management ──────────────────────────────────
+                // Widget registry widths (minW, maxW, defaultW) are in 12 column units;
+                // scale them to the column count of this grid (24 since layout version 2).
+                function columnScale() {
+                    return ((scope.gridData && scope.gridData.columns) || 12) / 12;
+                }
+
+                function scaleW(w) {
+                    return Math.max(1, Math.round(w * columnScale()));
+                }
+
                 function getDescConstraints(widget) {
                     var desc = widgetRegistry.get(widget.type);
+                    var minW = (desc && desc.minW) || 2;
+                    if (desc && desc.compactMinW && widget.config && widget.config.compact) {
+                        minW = desc.compactMinW;
+                    }
                     return {
-                        minW: (desc && desc.minW) || 2,
+                        minW: scaleW(minW),
                         minH: (desc && desc.minH) || 2,
-                        maxW: (desc && desc.maxW) || 12,
+                        maxW: scaleW((desc && desc.maxW) || 12),
                         maxH: (desc && desc.maxH) || 20
                     };
                 }
@@ -92,7 +106,7 @@ define([
                     grid.addWidget(el, {
                         x:    widget.x || 0,
                         y:    widget.y || 0,
-                        w:    widget.w || 3,
+                        w:    widget.w || scaleW(3),
                         h:    widget.h || 2,
                         minW: c.minW,
                         minH: c.minH,
@@ -149,7 +163,7 @@ define([
                     var el = createWidgetElement(widget);
                     grid.addWidget(el, {
                         autoPosition: true,
-                        w:    widget.w || widget.defaultW || 3,
+                        w:    widget.w || scaleW(widget.defaultW || 3),
                         h:    widget.h || widget.defaultH || 2,
                         minW: c.minW,
                         minH: c.minH,
@@ -172,7 +186,7 @@ define([
                         console.warn('ddGrid: skipping widget with invalid id:', widget.id);
                         return null;
                     }
-                    widget.w      = widget.defaultW || 3;
+                    widget.w      = scaleW(widget.defaultW || 3);
                     widget.h      = widget.defaultH || 2;
                     widget.config = widget.config || {};
                     scope.gridData.widgets.push(widget);
@@ -246,6 +260,27 @@ define([
                         grid.enableMove(false);
                         grid.enableResize(false);
                     }
+                });
+
+                // ── Size limits that depend on the widget settings ───
+                // A Device widget switched to compact may become narrower (compactMinW).
+                scope.$watch(function() {
+                    var widgets = (scope.gridData && scope.gridData.widgets) || [];
+                    return widgets.map(function(w) {
+                        return w.id + ':' + (w.config && w.config.compact ? 1 : 0);
+                    }).join(',');
+                }, function(newVal, oldVal) {
+                    if (!grid || newVal === oldVal) return;
+                    grid.engine.nodes.forEach(function(node) {
+                        var widget = findWidget(node.id);
+                        if (!widget || !node.el) return;
+                        var c = getDescConstraints(widget);
+                        if (node.minW !== c.minW) {
+                            // Pass w as well: an update with only minW leaves w NaN in this GridStack version
+                            var w = Math.max(+node.w || +widget.w || c.minW, c.minW);
+                            grid.update(node.el, { minW: c.minW, w: w });
+                        }
+                    });
                 });
 
                 // ── Init after DOM is ready ──────────────────────────

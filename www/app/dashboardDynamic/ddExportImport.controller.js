@@ -126,7 +126,7 @@ define([
                 return;
             }
 
-            if (!payload.layout) {
+            if (!payload || !payload.layout || typeof payload.layout !== 'object' || Array.isArray(payload.layout)) {
                 $scope.importError = 'Not a valid dashboard file (missing layout key)';
                 return;
             }
@@ -171,7 +171,8 @@ define([
             if (!_parsedPayload) { return; }
             var payload = _parsedPayload;
             var replace = $scope.importTarget === 'replace';
-            var data    = angular.copy(payload.layout);
+            // An export of a 12 column layout (version 1) is converted to the 24 column grid
+            var data    = dashboardDynamicService.migrateLayout(angular.copy(payload.layout));
 
             if (data.widgets) {
                 data.widgets.forEach(function(w) {

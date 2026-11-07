@@ -485,6 +485,87 @@ body.dd-navbar-hidden .dd-toolbar {
     overflow-x: auto;
 }
 
+/* ── Design width ────────────────────────────────────────── */
+html.dd-stable-gutter {
+    scrollbar-gutter: stable;
+}
+.dd-grid-frame {
+    width: 100%;
+}
+/* Edit mode: the grid is exactly as wide as the layout was designed for */
+.dd-grid-frame--designed > .dd-grid {
+    margin: 0 auto;
+    outline: 2px dashed var(--dz-accent-color, #f5a524);
+    outline-offset: 2px;
+}
+.dd-design-bar {
+    margin: 0 0 10px;
+    padding: 8px 12px;
+    border-radius: var(--dz-widget-border-radius, 5px);
+    background: var(--dz-panel-bg);
+    border: 1px solid var(--dz-border-color, rgba(255, 255, 255, 0.08));
+    color: var(--dz-body-text);
+    font-size: 13px;
+}
+.dd-design-bar label,
+.dd-design-bar strong {
+    color: inherit;
+}
+.dd-design-bar-msg {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+.dd-design-bar-msg > span:first-of-type {
+    flex: 1 1 320px;
+}
+.dd-design-bar-actions {
+    display: flex;
+    gap: 6px;
+}
+.dd-design-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+    padding-top: 10px;
+    max-width: 560px;
+}
+.dd-design-panel label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font-weight: normal;
+}
+.dd-design-panel input[type="radio"] {
+    margin: 0;
+}
+.dd-design-panel {
+    border: 0;
+    border-top: 1px solid var(--dz-border-color, rgba(255, 255, 255, 0.08));
+    min-width: 0;
+}
+.dd-design-other-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.dd-design-panel .dd-design-other {
+    width: 90px;
+    display: inline-block;
+}
+.dd-design-note {
+    margin: 4px 0 0;
+    opacity: 0.8;
+}
+.dd-design-panel-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
 /* GridStack's bundled CSS omits top/left/right/bottom on grid-stack-item-content.
    Force it to fill the full grid cell via absolute positioning. */
 .dd-grid .grid-stack-item-content {
@@ -523,7 +604,7 @@ body.dd-navbar-hidden .dd-toolbar {
             var(--dz-dd-grid-line) 0,
             var(--dz-dd-grid-line) 1px,
             transparent 1px,
-            transparent calc(100% / 12)
+            transparent calc(100% / 24)
         );
 }
 
@@ -1249,6 +1330,67 @@ body.dd-navbar-hidden .dd-toolbar {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+/* Compact Device widget: name on top, icon and value below; the status line, last seen and
+   sliders are left out so the tile can be as small as two columns of the 24 column grid.
+   The card fills the whole tile. */
+.dd-dz-compact .dd-dz-inner {
+    align-items: stretch;
+}
+.dd-dz-compact .dd-dz-inner > [class*="span"],
+.dd-dz-compact .dd-dz-inner .item,
+.dd-dz-compact .dd-dz-inner .itemBlock {
+    height: 100% !important;
+}
+.dd-dz-compact .dd-dz-inner table[id^="itemtable"],
+.dd-dz-compact .dd-dz-inner table[id^="itemtable"] > tbody {
+    display: block !important;
+    height: 100% !important;
+}
+.dd-dz-compact .dd-dz-inner table[id^="itemtable"] tr {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: center;
+    align-content: flex-start;
+    height: 100% !important;
+    box-sizing: border-box;
+}
+.dd-dz-compact .dd-dz-inner table[id^="itemtable"] td#name {
+    flex: 0 0 100%;
+    box-sizing: border-box;
+    width: 100% !important;
+    font-size: 13px !important;
+    margin-bottom: 6px !important;
+}
+.dd-dz-compact .dd-dz-inner table[id^="itemtable"] td#img,
+.dd-dz-compact .dd-dz-inner table[id^="itemtable"] td#img2,
+.dd-dz-compact .dd-dz-inner table[id^="itemtable"] td#img3 {
+    flex: 0 0 auto;
+    float: none !important;
+    margin: 0 4px 0 2px !important;
+}
+.dd-dz-compact .dd-dz-inner table[id^="itemtable"] td#bigtext {
+    flex: 1 1 0;
+    order: 1;
+    /* With several buttons (blinds) the value gets its own line instead of a sliver */
+    min-width: 4.5em;
+    width: auto !important;
+    height: auto !important;
+    float: none !important;
+    margin: 0 4px 0 0 !important;
+    text-align: right;
+    font-size: 16px !important;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+.dd-dz-compact .dd-dz-inner table[id^="itemtable"] td#status,
+.dd-dz-compact .dd-dz-inner table[id^="itemtable"] td#lastupdate,
+.dd-dz-compact .dd-dz-inner table[id^="itemtable"] td.input {
+    display: none !important;
 }
 
 /* Unconfigured / loading / error state */

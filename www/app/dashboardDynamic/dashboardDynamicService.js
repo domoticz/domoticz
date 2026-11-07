@@ -10,6 +10,39 @@ define(['app'], function(app) {
 
         var baseUrl = 'json.htm?type=command&param=';
 
+        // Layout version 2 uses a 24 column grid. Widget registry sizes (minW, maxW, defaultW)
+        // stay in 12 column units and are scaled by the grid (see ddGrid getDescConstraints).
+        var LAYOUT_VERSION = 2;
+        var GRID_COLUMNS   = 24;
+
+        /**
+         * Bring a layout to the current version, in place. A version 1 layout (12 columns),
+         * also one a plugin writes, gets its x and w doubled. Only the loaded copy changes:
+         * the stored layout keeps its version until the user saves it again.
+         * Returns the layout.
+         */
+        function migrateLayout(data) {
+            if (!data || typeof data !== 'object') {
+                return data;
+            }
+            // Skip broken entries (a plugin may write null) so the dashboard still loads
+            data.widgets = Array.isArray(data.widgets)
+                ? data.widgets.filter(function(w) { return w && typeof w === 'object'; })
+                : [];
+            var version = parseInt(data.version, 10) || 1;
+            if (version < 2) {
+                var factor = GRID_COLUMNS / (parseInt(data.columns, 10) || 12);
+                data.widgets.forEach(function(w) {
+                    if (w.x !== undefined) { w.x = Math.round((+w.x || 0) * factor); }
+                    if (w.w !== undefined) { w.w = Math.max(1, Math.round((+w.w || 0) * factor)); }
+                    if (w.minW !== undefined) { w.minW = Math.max(1, Math.round((+w.minW || 0) * factor)); }
+                });
+                data.columns = GRID_COLUMNS;
+                data.version = LAYOUT_VERSION;
+            }
+            return data;
+        }
+
         /**
          * Return a shallow copy of the widgets array sorted in reading order:
          * top-to-bottom (y ascending), then left-to-right (x ascending).
@@ -79,6 +112,7 @@ define(['app'], function(app) {
                         layout.layout = { version: 1, widgets: [] };
                     }
                 }
+                migrateLayout(layout.layout);
                 // Migrate legacy type names
                 if (layout.layout && Array.isArray(layout.layout.widgets)) {
                     layout.layout.widgets.forEach(function(widget) {
@@ -135,7 +169,10 @@ define(['app'], function(app) {
             saveLayout:   saveLayout,
             deleteLayout: deleteLayout,
             copyLayout:   copyLayout,
-            generateId:   generateId
+            generateId:   generateId,
+            migrateLayout: migrateLayout,
+            LAYOUT_VERSION: LAYOUT_VERSION,
+            GRID_COLUMNS:  GRID_COLUMNS
         };
     }]);
 });

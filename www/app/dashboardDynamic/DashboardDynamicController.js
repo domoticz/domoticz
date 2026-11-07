@@ -212,7 +212,7 @@ define([
                     name:      full.name,
                     isDefault: full.isDefault
                 };
-                $scope.activeData = full.layout || { version: 1, widgets: [] };
+                $scope.activeData = full.layout || dashboardDynamicService.migrateLayout({ version: 1, widgets: [] });
                 refreshGrid();
                 $scope.loading = false;
             }).catch(function(err) {
@@ -225,8 +225,8 @@ define([
         function createStarterLayout() {
             var meta = { id: dashboardDynamicService.generateId(), name: 'Dashboard', isDefault: true };
             var data = {
-                version:   1,
-                columns:   12,
+                version:   dashboardDynamicService.LAYOUT_VERSION,
+                columns:   dashboardDynamicService.GRID_COLUMNS,
                 rowHeight: 60,
                 margin:    8,
                 animate:   true,
@@ -361,6 +361,7 @@ define([
             } else {
                 // Exiting edit mode — save if there are unsaved changes
                 $scope.showLibrary = false;
+                $scope.designPanel.open = false;
                 if ($scope.isDirty) {
                     $scope.saveCurrentLayout().then(function() {
                         _savedDataSnapshot = null;
@@ -384,6 +385,7 @@ define([
                 $scope.editMode    = false;
                 $scope.showLibrary = false;
                 $scope.isDirty     = false;
+                $scope.designPanel.open = false;
                 refreshGrid();
                 if (_kioskWasActive) { _kioskWasActive = false; $scope.startKiosk(); }
             }
@@ -452,11 +454,20 @@ define([
 
         $scope.saveCurrentLayout = function() {
             if (!$scope.activeLayout || !$scope.activeData) { return $q.when(); }
+            // The first save gives a layout its design width: the width it was arranged at.
+            // A window narrower than DESIGN_MIN (a phone) leaves it unset.
+            var newDesignWidth = false;
+            if ($scope.designState() === 'unset' && validDesignWidth($scope.frameWidth)) {
+                $scope.activeData.designWidth = $scope.frameWidth;
+                newDesignWidth = true;
+            }
             return dashboardDynamicService.saveLayout($scope.activeLayout, $scope.activeData)
                 .then(function() {
                     $scope.isDirty = false;
                     _savedDataSnapshot = angular.copy($scope.activeData);
-                    ddToast.success('Dashboard saved');
+                    ddToast.success(newDesignWidth
+                        ? 'Dashboard saved, designed for ' + $scope.activeData.designWidth + ' px wide'
+                        : 'Dashboard saved');
                 })
                 .catch(function(err) {
                     ddToast.error('Save failed: ' + (err || 'Unknown error'));
@@ -569,6 +580,10 @@ define([
                 $scope.$apply(function() { $scope.stopKiosk(); });
                 return;
             }
+            if (e.keyCode === 27 && $scope.editMode && $scope.designPanel.open) {
+                $scope.$apply(function() { $scope.designPanel.open = false; });
+                return;
+            }
             if (e.keyCode === 27 && $scope.editMode) {
                 $scope.cancelEdit();
             }
@@ -602,6 +617,146 @@ define([
         }
         syncNavbarHeight();
         window.addEventListener('resize', syncNavbarHeight);
+
+        // ── Design width ──────────────────────────────────────
+        // A layout stores the width it was arranged at (designWidth, in px). On a narrower
+        // screen view mode shows the whole grid at that width, zoomed out (cards, text and
+        // icons together, not lower than MIN_SCALE). On a wider screen the grid fills the
+        // window as before. Edit mode shows the grid at exactly the design width, unzoomed,
+        // because GridStack drag and resize do not work on a zoomed grid.
+        // designWidth undefined = not set yet (taken from the window on the next save), 0 = off.
+        // In kiosk mode (a wall display nobody scrolls) the floor does not apply: the whole
+        // dashboard always fits. Browsers without CSS zoom (Firefox before 126) keep today's behaviour.
+        var MIN_SCALE  = 0.6;
+        var DESIGN_MIN = 600;    // the grid's own CSS min-width
+        var DESIGN_MAX = 7680;
+        var ZOOM_OK    = typeof CSS !== 'undefined' && CSS.supports && CSS.supports('zoom', '0.5');
+        $scope.frameWidth  = 0;
+        $scope.designPanel = { open: false, choice: 'window', other: 1280 };
+
+        function validDesignWidth(v) {
+            return v >= DESIGN_MIN && v <= DESIGN_MAX;
+        }
+
+        // Out of range values (a hand-edited or imported layout) count as off
+        function getDesignWidth() {
+            var dw = $scope.activeData ? parseInt($scope.activeData.designWidth, 10) : 0;
+            return validDesignWidth(dw) ? dw : 0;
+        }
+        $scope.designWidthValue = getDesignWidth;
+
+        $scope.designState = function() {
+            if (!$scope.activeData || !$scope.frameWidth) { return ''; }
+            var v = $scope.activeData.designWidth;
+            if (v === undefined || v === null || v === '') { return 'unset'; }
+            var dw = getDesignWidth();
+            if (!dw) { return 'off'; }
+            return Math.abs($scope.frameWidth - dw) > 16 ? 'differs' : 'match';
+        };
+
+        var _lastAvail = 0, _resizeEventTimer = null;
+        function applyDesignWidth() {
+            var frame = document.querySelector('.dd-page .dd-grid-frame');
+            if (!frame) { return; }
+            var root  = document.documentElement.classList;
+            var avail = Math.round(frame.clientWidth);
+            var dw = getDesignWidth(), width = '', zoom = '';
+            var mode = dw + ($scope.kioskActive ? 'k' : '');
+            var willScale = !!(avail && dw && ZOOM_OK && !$scope.editMode && avail < dw);
+            // While scaled, keep room for the page scrollbar so it appearing or disappearing
+            // (the zoom changes the page height) does not change the available width.
+            // Switch it first and measure again, so the zoom is computed for the final width.
+            if (willScale !== root.contains('dd-stable-gutter')) {
+                root.toggle('dd-stable-gutter', willScale);
+                avail = Math.round(frame.clientWidth);
+            }
+            if (avail && avail !== $scope.frameWidth) {
+                $scope.$evalAsync(function() { $scope.frameWidth = avail; });
+            }
+            var grid = frame.querySelector('.dd-grid');
+            if (!grid || !avail) { return; }
+            if (dw && $scope.editMode) {
+                width = dw + 'px';
+            } else if (willScale) {
+                var scaled = grid.style.zoom && grid.getAttribute('data-dd-design') === mode;
+                // A zoom change can add or remove the page scrollbar, which changes the width again;
+                // ignore such small steps so the zoom does not flip back and forth.
+                if (scaled && Math.abs(avail - _lastAvail) < 20) { return; }
+                var minScale = $scope.kioskActive ? 0 : MIN_SCALE;
+                width = dw + 'px';
+                zoom  = String(Math.round(Math.max(minScale, avail / dw) * 1000) / 1000);
+            }
+            var key = width + '|' + zoom;
+            if (grid.getAttribute('data-dd-scale') === key) { return; }
+            _lastAvail = avail;
+            grid.setAttribute('data-dd-scale', key);
+            grid.setAttribute('data-dd-design', mode);
+            grid.style.width    = width;
+            grid.style.minWidth = width ? '0' : '';
+            grid.style.zoom     = zoom;
+            // Widgets that size themselves on a window resize (charts) follow the new grid width
+            if (_resizeEventTimer) { $timeout.cancel(_resizeEventTimer); }
+            _resizeEventTimer = $timeout(function() {
+                _resizeEventTimer = null;
+                window.dispatchEvent(new Event('resize'));
+            }, 50, false);
+        }
+
+        var _designTimer = null;
+        function scheduleDesignWidth() {
+            if (_designTimer) { $timeout.cancel(_designTimer); }
+            _designTimer = $timeout(function() { _designTimer = null; applyDesignWidth(); }, 0, false);
+        }
+        $scope.$watchGroup(['editMode', 'gridReady', 'loading', 'activeData', 'activeData.designWidth', 'kioskActive'], scheduleDesignWidth);
+        window.addEventListener('resize', scheduleDesignWidth);
+        var _frameObserver = null;
+        if (typeof ResizeObserver !== 'undefined') {
+            _frameObserver = new ResizeObserver(scheduleDesignWidth);
+            $timeout(function() {
+                var frame = document.querySelector('.dd-page .dd-grid-frame');
+                if (frame && _frameObserver) { _frameObserver.observe(frame); }
+            }, 0, false);
+        }
+
+        $scope.useWindowWidth = function() {
+            if (!$scope.activeData || !validDesignWidth($scope.frameWidth)) {
+                ddToast.error('The window is too narrow, the design width must be at least ' + DESIGN_MIN + ' px');
+                return;
+            }
+            $scope.activeData.designWidth = $scope.frameWidth;
+            $scope.designPanel.open = false;
+            $scope.isDirty = true;
+        };
+
+        $scope.openDesignPanel = function() {
+            var v  = $scope.activeData && $scope.activeData.designWidth;
+            var dw = getDesignWidth();
+            $scope.designPanel.choice = dw ? 'current' : (v === 0 ? 'off' : 'window');
+            $scope.designPanel.other  = dw || $scope.frameWidth || 1280;
+            $scope.designPanel.open   = true;
+        };
+
+        $scope.closeDesignPanel = function() {
+            $scope.designPanel.open = false;
+        };
+
+        $scope.applyDesignPanel = function() {
+            if (!$scope.activeData) { return; }
+            var p = $scope.designPanel, v;
+            if (p.choice === 'current') { p.open = false; return; }
+            if (p.choice === 'off') {
+                v = 0;
+            } else {
+                v = Math.round(p.choice === 'window' ? $scope.frameWidth : +p.other);
+                if (!validDesignWidth(v)) {
+                    ddToast.error('The design width must be between ' + DESIGN_MIN + ' and ' + DESIGN_MAX + ' px');
+                    return;
+                }
+            }
+            $scope.activeData.designWidth = v;
+            p.open = false;
+            $scope.isDirty = true;
+        };
 
         // ── Standby activity listeners ────────────────────────
         var _standbyActivityEvents = ['mousemove', 'touchstart', 'keydown', 'click'];
@@ -733,7 +888,8 @@ define([
             });
             var widgets = [];
             var y       = 0;
-            var COLS    = 4, W = 3, H = 2, HEADER_H = 1;
+            var GRID_W  = dashboardDynamicService.GRID_COLUMNS;
+            var COLS    = 4, W = GRID_W / COLS, H = 2, HEADER_H = 1;
 
             function addSection(label, items, widgetType, configKey) {
                 widgetType = widgetType || 'dz-device';
@@ -741,7 +897,7 @@ define([
                 if (!items.length) { return; }
                 widgets.push({
                     id: dashboardDynamicService.generateId(), type: 'text-note',
-                    x: 0, y: y, w: 12, h: HEADER_H, minH: 1,
+                    x: 0, y: y, w: GRID_W, h: HEADER_H, minH: 1,
                     config: { content: label, fontSize: 16, textAlign: 'left' }
                 });
                 y += HEADER_H;
@@ -788,7 +944,7 @@ define([
                 if (existing.length) { name = name + ' ' + (existing.length + 1); }
                 var id        = dashboardDynamicService.generateId();
                 var isFirst   = $scope.layouts.length === 0;
-                var emptyData = { version: 1, columns: 12, rowHeight: 60, margin: 8, animate: true, widgets: [] };
+                var emptyData = { version: dashboardDynamicService.LAYOUT_VERSION, columns: dashboardDynamicService.GRID_COLUMNS, rowHeight: 60, margin: 8, animate: true, widgets: [] };
                 dashboardDynamicService.saveLayout({ id: id, name: name, isDefault: isFirst }, emptyData)
                     .then(function() {
                         $scope.layouts.push({ id: id, name: name, isDefault: isFirst, updated: new Date().toISOString() });
@@ -937,6 +1093,11 @@ define([
                 document.removeEventListener(ev, resetStandbyTimer);
             });
             window.removeEventListener('resize', syncNavbarHeight);
+            window.removeEventListener('resize', scheduleDesignWidth);
+            if (_frameObserver) { _frameObserver.disconnect(); _frameObserver = null; }
+            if (_designTimer) { $timeout.cancel(_designTimer); }
+            if (_resizeEventTimer) { $timeout.cancel(_resizeEventTimer); }
+            document.documentElement.classList.remove('dd-stable-gutter');
             _body.style.removeProperty('--dd-navbar-h');
             if (_standbyTimer) { $timeout.cancel(_standbyTimer); }
             _body.classList.remove('dd-navbar-hidden');

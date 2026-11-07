@@ -145,6 +145,9 @@
                            ng-style="{'opacity': (activeLayout && activeLayout.isDefault) ? '1' : '0', 'color': 'var(--dz-accent-color)'}"></i>
                         Set as Default
                     </a></li>
+                    <li><a ng-click="openDesignPanel()">
+                        <i class="fa-solid fa-display fa-fw"></i> Design width...
+                    </a></li>
                     <li><a ng-click="toggleUppercaseLabels()">
                         <i class="fa-solid fa-fw"
                            ng-class="uppercaseLabels ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
@@ -191,15 +194,48 @@
         </div>
     </div>
 
-    <!-- Grid area: ng-if key forces full re-render on cancel -->
-    <div ng-if="gridReady"
-         class="grid-stack dd-grid"
-         dd-grid
-         grid-data="activeData"
-         edit-mode="editMode"
-         on-change="onGridChange(widgets)"
-         ng-show="!loading && activeData && activeData.widgets.length > 0">
-        <!-- GridStack populates this area programmatically via ddWidgetWrapper / ddWidgetContent -->
+    <!-- Design width: shown in edit mode when the window differs from the width the layout was made for -->
+    <div class="dd-design-bar" ng-show="editMode && activeData && (designPanel.open || designState() === 'unset' || designState() === 'differs')">
+        <div class="dd-design-bar-msg" aria-live="polite">
+            <i class="fa-solid fa-display" aria-hidden="true"></i>
+            <span ng-if="designState() === 'unset'">This dashboard has no design width yet. When you save it, it gets the width of this window (<strong>{{ frameWidth }} px</strong>) and smaller screens show it scaled down.</span>
+            <span ng-if="designState() === 'differs'">This dashboard is designed for <strong>{{ designWidthValue() }} px</strong>. Your window is {{ frameWidth }} px. Smaller screens show it scaled down.</span>
+            <span ng-if="designPanel.open && (designState() === 'off' || designState() === 'match')">Design width of this dashboard</span>
+            <span class="dd-design-bar-actions">
+                <button type="button" class="btn btn-primary btn-sm" ng-if="designState() === 'differs'" ng-click="useWindowWidth()">Use {{ frameWidth }} px</button>
+                <button type="button" class="btn btn-default btn-sm" aria-expanded="{{ designPanel.open ? 'true' : 'false' }}"
+                        ng-click="designPanel.open ? closeDesignPanel() : openDesignPanel()">Change...</button>
+            </span>
+        </div>
+        <fieldset class="dd-design-panel" ng-if="designPanel.open">
+            <legend class="sr-only">Design width</legend>
+            <label ng-if="designWidthValue()"><input type="radio" ng-model="designPanel.choice" value="current"> <strong>{{ designWidthValue() }} px</strong> (current)</label>
+            <label><input type="radio" ng-model="designPanel.choice" value="window"> <strong>This window: {{ frameWidth }} px</strong></label>
+            <span class="dd-design-other-row">
+                <label><input type="radio" ng-model="designPanel.choice" value="other"> <strong>Other</strong></label>
+                <input type="number" class="form-control input-sm dd-design-other" min="600" max="7680" step="1" aria-label="Other design width in pixels"
+                       ng-model="designPanel.other" ng-focus="designPanel.choice = 'other'"> px
+            </span>
+            <label><input type="radio" ng-model="designPanel.choice" value="off"> <strong>Off</strong>: no scaling, the grid always fills the window</label>
+            <p class="dd-design-note">On a screen narrower than the design width the whole dashboard is shown smaller (down to 60 %, below that it scrolls sideways). On a wider screen the columns get wider, as before.</p>
+            <div class="dd-design-panel-buttons">
+                <button type="button" class="btn btn-default btn-sm" ng-click="closeDesignPanel()">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm" ng-click="applyDesignPanel()">Apply</button>
+            </div>
+        </fieldset>
+    </div>
+
+    <!-- Grid area: ng-if key forces full re-render on cancel. The frame measures the available width. -->
+    <div class="dd-grid-frame" ng-class="{'dd-grid-frame--designed': editMode && designWidthValue()}">
+        <div ng-if="gridReady"
+             class="grid-stack dd-grid"
+             dd-grid
+             grid-data="activeData"
+             edit-mode="editMode"
+             on-change="onGridChange(widgets)"
+             ng-show="!loading && activeData && activeData.widgets.length > 0">
+            <!-- GridStack populates this area programmatically via ddWidgetWrapper / ddWidgetContent -->
+        </div>
     </div>
 
     <!-- Empty state: shown when widgets array is empty -->
