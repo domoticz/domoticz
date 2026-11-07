@@ -203,6 +203,15 @@ define([
         };
 
         // ── Private helpers ────────────────────────────────────
+        // Another (saved) dashboard became active while in edit mode: Cancel must restore
+        // that dashboard, not the snapshot of the one that was active when edit mode started.
+        function resetEditSnapshot() {
+            if (!$scope.editMode) { return; }
+            _savedDataSnapshot = angular.copy($scope.activeData);
+            $scope.isDirty = false;
+            $scope.designPanel.open = false;
+        }
+
         function loadLayout(id) {
             $scope.loading = true;
             $scope.error   = null;
@@ -213,6 +222,7 @@ define([
                     isDefault: full.isDefault
                 };
                 $scope.activeData = full.layout || dashboardDynamicService.migrateLayout({ version: 1, widgets: [] });
+                resetEditSnapshot();
                 refreshGrid();
                 $scope.loading = false;
             }).catch(function(err) {
@@ -542,6 +552,7 @@ define([
                             if (result.replace) {
                                 return dashboardDynamicService.saveLayout(result.meta, result.data).then(function() {
                                     $scope.activeData = result.data;
+                                    resetEditSnapshot();
                                     refreshGrid();
                                     ddToast.success('Dashboard replaced');
                                 });
@@ -550,6 +561,7 @@ define([
                                     $scope.layouts.push(result.meta);
                                     $scope.activeLayout = result.meta;
                                     $scope.activeData   = result.data;
+                                    resetEditSnapshot();
                                     refreshGrid();
                                     ddToast.success('Imported: ' + result.meta.name);
                                 });
@@ -974,6 +986,7 @@ define([
                 $scope.activeLayout = newMeta;
                 $scope.activeData   = newData;
                 $scope.isDirty      = false;
+                resetEditSnapshot();
                 try { localStorage.setItem(LS_KEY, newMeta.id); } catch(e) {}
                 refreshGrid();
                 ddToast.success('Dashboard duplicated');
