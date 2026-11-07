@@ -1022,7 +1022,7 @@ bool MainWorker::AddHardwareFromParams(
 		pHardware = new DomoticzInternal(ID);
 		break;
 	case HTYPE_OpenWebNetTCP:
-		pHardware = new COpenWebNetTCP(ID, Address, Port, Password, Mode1, Mode2);
+		pHardware = new COpenWebNetTCP(ID, Address, Port, Password, Mode1, Mode2, Mode3);
 		break;
 	case HTYPE_BleBox:
 		pHardware = new BleBox(ID, Mode1, Mode2);
@@ -13610,7 +13610,7 @@ bool MainWorker::SetSetPointInt(const std::vector<std::string>& sd, const float 
 		else if (pHardware->HwdType == HTYPE_OpenWebNetTCP)
 		{
 			COpenWebNetTCP* pGateway = dynamic_cast<COpenWebNetTCP*>(pHardware);
-			ret = pGateway->SetSetpoint(ID, TempValue);
+			ret = pGateway->SetSetpoint(ID, pGateway->UsesDimension7Heating() ? temp_celsius : TempValue);
 		}
 		else if (pHardware->HwdType == HTYPE_MQTTAutoDiscovery)
 		{

@@ -2,6 +2,8 @@
 
 #include "DomoticzHardware.h"
 #include "csocket.h"
+#include "openwebnet/EnergyTotalizer.h"
+#include <map>
 
 class bt_openwebnet;
 
@@ -47,10 +49,12 @@ class COpenWebNetTCP : public CDomoticzHardwareBase
 	};
 
       public:
-	COpenWebNetTCP(int ID, const std::string &IPAddress, unsigned short usIPPort, const std::string &ownPassword, int ownScanTime, int ownEnSync);
+	COpenWebNetTCP(int ID, const std::string &IPAddress, unsigned short usIPPort, const std::string &ownPassword, int ownScanTime, int ownEnSync, int setpointMethod = 0);
 	~COpenWebNetTCP() override = default;
 	bool WriteToHardware(const char *pdata, unsigned char length) override;
 	bool SetSetpoint(int idx, float temp);
+	/// @brief Return whether this gateway uses the optional manual-heating setpoint method.
+	bool UsesDimension7Heating() const { return m_useDimension7Heating; }
 	boost::signals2::signal<void()> sDisconnected;
 
       private:
@@ -83,6 +87,8 @@ class COpenWebNetTCP : public CDomoticzHardwareBase
 	void UpdateSetPoint(int who, int where, float fval, int iInterface, const char *devname);
 	void UpdatePower(int who, int where, double fval, int iInterface, int BatteryLevel, const char *devname);
 	void UpdateEnergy(int who, int where, double fval, int iInterface, int BatteryLevel, const char *devname);
+	void UpdateLegacyActuatorEnergy(int where, uint64_t reading, int iInterface, bool recovering, const char *devname);
+	void UpdateActuatorEnergy(int where, const std::vector<std::string> &values, int iInterface, const char *devname);
 	void UpdateSoundDiffusion(int who, int where, int what, int iInterface, int BatteryLevel, const char *devname);
 	bool GetValueMeter(int NodeID, int ChildID, double *usage, double *energy);
 	void decodeWhereAndFill(int who, const std::string &where, std::vector<std::string> whereParam, std::string *devname, int *iWhere);
@@ -97,6 +103,7 @@ class COpenWebNetTCP : public CDomoticzHardwareBase
 	void requestBurglarAlarmStatus();
 	void requestDryContactIRDetectionStatus();
 	void requestEnergyTotalizer();
+	void FlushPendingEnergy();
 	void requestAutomaticUpdatePower(int time);
 	std::string getWhereForWrite(int where);
 
@@ -106,6 +113,7 @@ class COpenWebNetTCP : public CDomoticzHardwareBase
 	std::string m_ownPassword;
 	unsigned short m_ownScanTime;
 	unsigned short m_ownSynch;
+	bool m_useDimension7Heating;
 
 	time_t LastScanTime, LastScanTimeEnergy, LastScanTimeEnergyTot, LastScanSync;
 
@@ -115,4 +123,9 @@ class COpenWebNetTCP : public CDomoticzHardwareBase
 	int m_heartbeatcntr;
 	csocket *m_pStatusSocket;
 	std::mutex readQueueMutex;
+	// Accessed under readQueueMutex by the monitor and polling threads.
+	std::map<int, OpenWebNetEnergy::Source> m_energySources;
+	std::map<int, std::string> m_remoteEnergyActuators;
+	std::map<int, OpenWebNetEnergy::Totalizer> m_pendingEnergy;
+	std::map<int, double> m_energyTotals; // Latest accepted totals in Wh, including queued writes.
 };
