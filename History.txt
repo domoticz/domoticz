@@ -47,6 +47,7 @@ Version 2026.xxxx
 - Fixed: dzVents, the YouLess counterDeliveredToday read 0 when the day total was a single digit without decimals, as a YouLess counter with the meter type Counter and no unit shows it
 - Fixed: EcoDevices, RT2 mode now reads BBRHPJR and IINST3; the XML tag names were misspelled
 - Fixed: Energy Dashboard, self-sufficiency counted solar stored in the battery twice and could show 100% on a day with grid import; it is now calculated by the server per 5 minutes from the grid, solar and battery meters, and energy the battery took from the grid counts as grid energy, also for a battery that charges and discharges on a dynamic tariff; a meter that reports late no longer inflates the house consumption (#7177)
+- Fixed: Energy Dashboard, with a kWh meter instead of a P1 meter as grid meter the house consumption of today and the self-sufficiency ignored the grid import (grid 0 kWh, self-sufficiency 100%) (#7192)
 - Fixed: Energy Dashboard, a device that no longer exists is stored as Disabled when saving the settings instead of idx 0, so a removed battery is no longer drawn at 0 Watt (#7163)
 - Fixed: Enever, an invalid provider response no longer overwrites the cached valid prices
 - Fixed: Dynamic price, a Managed Counter (like the Enever Daily Electricity Price) selected as Electricity Price Device set the gas price instead, so electricity costs stayed 0 (#7188)

@@ -221,9 +221,20 @@ namespace
 		const std::string szNext = FormatDateTime(tNext).substr(0, 16);
 		const std::string szEnd = FormatDateTime(tNext + interval * 60);
 
+		// A kWh meter can be the grid meter too (import only, like the Energy Dashboard shows it); only a P1 meter
+		// has a separate return counter. Reading the kWh counter as export as well cancels every import.
+		bool bGridIsP1 = false;
+		{
+			unsigned char dType, dSubType;
+			_eMeterType metertype;
+			float divider;
+			bGridIsP1 = GetDeviceType(idP1, dType, dSubType, metertype, divider) && (dType == pTypeP1Power);
+		}
+
 		_tCounterRows rowsImport, rowsExport, rowsSolar, rowsBatIn, rowsBatOut;
 		ReadCounterRows(idP1, false, szStart, szEnd, interval, rowsImport);
-		ReadCounterRows(idP1, true, szStart, szEnd, interval, rowsExport);
+		if (bGridIsP1)
+			ReadCounterRows(idP1, true, szStart, szEnd, interval, rowsExport);
 		if (idSolar != -1)
 			ReadCounterRows(idSolar, true, szStart, szEnd, interval, rowsSolar);
 		if (idBatIn != -1)
