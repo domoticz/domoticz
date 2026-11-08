@@ -436,21 +436,22 @@ namespace Plugins {
 						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 					}
 					// look for .dylib in /Library/Frameworks/Python.framework/Versions/*/lib
+					// (framework folders are named by version, "3.13": sLibrary is "python3.13", skip "python")
 					if (!shared_lib_)
 					{
-						library = "/Library/Frameworks/Python.framework/Versions/"+sLibrary.substr(sLibrary.size() - 3)+"/lib/lib" + sLibrary + ".dylib";
+						library = "/Library/Frameworks/Python.framework/Versions/"+sLibrary.substr(6)+"/lib/lib" + sLibrary + ".dylib";
 						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 					}
 					// look for .dylib installed by Homebrew - Intel
 					if (!shared_lib_)
 					{
-						library = "/usr/local/Frameworks/Python.framework/Versions/"+sLibrary.substr(sLibrary.size() - 3)+"/lib/lib" + sLibrary + ".dylib";
+						library = "/usr/local/Frameworks/Python.framework/Versions/"+sLibrary.substr(6)+"/lib/lib" + sLibrary + ".dylib";
 						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 					}
 					// look for .dylib installed by Homebrew - Apple Silicon
 					if (!shared_lib_)
 					{
-						library = "/opt/homebrew/Frameworks/Python.framework/Versions/"+sLibrary.substr(sLibrary.size() - 3)+"/lib/lib" + sLibrary + ".dylib";
+						library = "/opt/homebrew/Frameworks/Python.framework/Versions/"+sLibrary.substr(6)+"/lib/lib" + sLibrary + ".dylib";
 						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 					}
 				}
