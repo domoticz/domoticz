@@ -49,18 +49,22 @@ define(['app'], function (app) {
 			});
 		}
 
-		// Daily usage of a counter device as { 'YYYY-MM-DD': value }, P1 meters add their second tariff (import only)
+		// Daily usage of a counter device as { u: { 'YYYY-MM-DD': value }, p: { 'YYYY-MM-DD': cost } }.
+		// P1 meters add their second tariff (import only). p is the cost Domoticz logged for that day
+		// (with the price that applied then, also for dynamic tariffs).
 		function loadUsage(idx, year) {
 			return graph(idx, 'counter', year).then(function (rows) {
-				var out = {};
+				var out = {}, cost = {};
 				rows.forEach(function (r) {
 					// a P1 smart meter reports its first tariff as v1 (import), other meters as v
 					var v = parseFloat(typeof r.v != 'undefined' ? r.v : r.v1);
 					if (isNaN(v)) { return; }
 					var v2 = parseFloat(r.v2);
 					out[r.d] = v + (isNaN(v2) ? 0 : v2);
+					var p = parseFloat(r.p);
+					if (!isNaN(p)) { cost[r.d] = p; }
 				});
-				return out;
+				return { u: out, p: cost };
 			});
 		}
 
@@ -81,13 +85,13 @@ define(['app'], function (app) {
 			return $http.get('json.htm', { params: { type: 'command', param: 'graph', sensor: 'temp', idx: idx, range: 'day' } }).then(function (resp) {
 				var rows = (resp.data && resp.data.result) ? resp.data.result : [];
 				var prefix = todayStr() + ' ';
-				var sum = 0, n = 0, lastMin = 0;
+				var sum = 0, n = 0;
 				rows.forEach(function (r) {
-					if (typeof r.d != 'string' || r.d.indexOf(prefix) !== 0) { return; }
+					// only rows of today that carry a time of day
+					if (typeof r.d != 'string' || r.d.indexOf(prefix) !== 0 || isNaN(parseInt(r.d.substring(11, 13), 10))) { return; }
 					var v = parseFloat(r.te);
 					if (isNaN(v)) { return; }
 					sum += v; n++;
-					if (isNaN(parseInt(r.d.substring(11, 13), 10))) { n--; sum -= v; }
 				});
 				if (!n) { return null; }
 				// the part of the day that has passed, like the usage counters of today
@@ -96,7 +100,8 @@ define(['app'], function (app) {
 			}, function () { return null; });
 		}
 
-		// Loads one year. Resolves to { days: { date: { t, hdd, cdd, gas, grid, airco: {idx: v}, aircoTotal } } }
+		// Loads one year. Resolves to { days: { date: { t, hdd, cdd, gas, grid, airco: {idx: v}, aircoTotal,
+		// costGas, costAirco (logged cost of the day), frac (part of the day known), partial (true for today) } } }
 		var yearCache = {};	// settings + year -> { time, promise }, shared by every widget and the page
 		var CACHE_MS = 60000;
 
@@ -114,8 +119,8 @@ define(['app'], function (app) {
 			if (settings.idOutside < 0) { return $q.resolve({ days: {} }); }
 			var jobs = {
 				temps: loadTemps(settings.idOutside, year),
-				gas: settings.idGas >= 0 ? loadUsage(settings.idGas, year) : $q.resolve({}),
-				grid: settings.idP1 >= 0 ? loadUsage(settings.idP1, year) : $q.resolve({}),
+				gas: settings.idGas >= 0 ? loadUsage(settings.idGas, year) : $q.resolve({ u: {}, p: {} }),
+				grid: settings.idP1 >= 0 ? loadUsage(settings.idP1, year) : $q.resolve({ u: {}, p: {} }),
 				airco: $q.all(settings.idAirco.map(function (idx) { return loadUsage(idx, year); })),
 				today: (year === new Date().getFullYear()) ? loadTodayTemp(settings.idOutside) : $q.resolve(null)
 			};
@@ -141,12 +146,17 @@ define(['app'], function (app) {
 					var day = { t: t, hdd: hdd, cdd: cdd, airco: {}, aircoTotal: null };
 					day.frac = frac;
 					if (frac < 1) { day.partial = true; }
-					if (typeof r.gas[d] != 'undefined') { day.gas = r.gas[d]; }
-					if (typeof r.grid[d] != 'undefined') { day.grid = r.grid[d]; }
+					if (typeof r.gas.u[d] != 'undefined') {
+						day.gas = r.gas.u[d];
+						day.costGas = r.gas.p[d] || 0;
+					}
+					if (typeof r.grid.u[d] != 'undefined') { day.grid = r.grid.u[d]; }
+					day.costAirco = 0;
 					settings.idAirco.forEach(function (idx, i) {
-						if (typeof r.airco[i][d] != 'undefined') {
-							day.airco[idx] = r.airco[i][d];
-							day.aircoTotal = (day.aircoTotal || 0) + r.airco[i][d];
+						if (typeof r.airco[i].u[d] != 'undefined') {
+							day.airco[idx] = r.airco[i].u[d];
+							day.aircoTotal = (day.aircoTotal || 0) + r.airco[i].u[d];
+							day.costAirco += r.airco[i].p[d] || 0;
 						}
 					});
 					days[d] = day;
@@ -174,22 +184,6 @@ define(['app'], function (app) {
 				ssRes += e * e;
 			});
 			return { slope: slope, intercept: intercept, r2: ssTot > 0 ? 1 - ssRes / ssTot : 0, n: n };
-		}
-
-		// Price per m3 (gas) and per kWh (electricity, tariff 1) from the cost settings; null when not set
-		function loadPrices(settings) {
-			function costs(idx) {
-				if (idx < 0) { return $q.resolve(null); }
-				return $http.get('json.htm', { params: { type: 'command', param: 'getcosts', idx: idx } }).then(function (resp) {
-					return resp.data || null;
-				}, function () { return null; });
-			}
-			var elecIdx = settings.idAirco.length ? settings.idAirco[0] : settings.idP1;
-			return $q.all([costs(settings.idGas), costs(elecIdx)]).then(function (r) {
-				var gas = r[0] && parseFloat(r[0].CostGas) / 10000;
-				var elec = r[1] && parseFloat(r[1].CostEnergy) / 10000;
-				return { gas: gas > 0 ? gas : null, elec: elec > 0 ? elec : null };
-			});
 		}
 
 		// Years that have outside temperature data (a year without it cannot be used), newest first.
@@ -223,7 +217,6 @@ define(['app'], function (app) {
 		return {
 			weights: WEIGHTS,
 			availableYears: availableYears,
-			loadPrices: loadPrices,
 			loadSettings: loadSettings,
 			loadYear: loadYear,
 			deviceName: deviceName,

@@ -1,4 +1,4 @@
-// Developer Easter Egg Test Panel — NOT for production.
+// Developer Easter Egg Test Panel, NOT for production.
 //
 // To enable: run this once in the browser console, then reload the page:
 //   localStorage.setItem('dz_easter_eggs_dev', '1');
@@ -23,6 +23,7 @@
     }
 
     function buildPanel() {
+        if (document.getElementById('dz-dev-panel')) { return; }	// the config reload can run init again
         var eggs = [
             { id: 'easter',    label: '🥚 Easter' },
             { id: 'halloween', label: '👻 Halloween' },
@@ -30,6 +31,11 @@
             { id: 'christmas', label: '❄️ Christmas' },
             { id: 'newyear',   label: '🎉 New Year' },
             { id: 'nightowl',  label: '🌙 Night Owl' },
+            { id: 'sinterklaas', label: '🎁 Sinterklaas' },
+            { id: 'koningsdag',  label: '🧡 Koningsdag' },
+            { id: 'starwars',    label: '🚀 Star Wars Day' },
+            { id: 'piday',       label: '🥧 Pi Day' },
+            { id: 'energyweather', label: '🥶 Energy vs Weather' },
             { id: 'konami',    label: '🕹️ Konami Code' },
             { id: 'version',   label: '🔮 Version Click' },
             { id: 'console',   label: '👀 Console Msg' },

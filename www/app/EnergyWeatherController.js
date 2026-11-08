@@ -5,7 +5,6 @@ define(['app', 'energyWeather.service'], function (app) {
 		var cache = {};		// year -> loaded days
 		var unitNames = {};	// airco idx -> name
 		var currentYear = new Date().getFullYear();
-		var prices = null;	// { gas, elec } per unit, null when no cost is configured
 
 		$scope.mode = 'heat';		// heat = gas vs heating degree days, hp = heat pump / airco kWh vs heating degree days, cool = the same kWh vs cooling degree days
 		$scope.gran = 'month';		// day | week | month
@@ -34,11 +33,16 @@ define(['app', 'energyWeather.service'], function (app) {
 			return $scope.mode === 'heat' ? 'm3' : 'kWh';
 		}
 
+		// kWh per m3 of gas, the default while the field is empty
+		function gasPerM3() {
+			return $scope.gasKwh > 0 ? $scope.gasKwh : 9.77;
+		}
+
 		function usageOf(day) {
 			if ($scope.mode === 'both') {
 				// total heating energy in kWh: gas converted with its calorific value plus the heat pump / airco kWh
 				// days without a heat pump / airco reading are left out, like in the heat pump mode
-				return (typeof day.gas == 'undefined' || day.aircoTotal === null || typeof day.aircoTotal == 'undefined') ? undefined : day.gas * ($scope.gasKwh > 0 ? $scope.gasKwh : 9.77) + day.aircoTotal;
+				return (typeof day.gas == 'undefined' || day.aircoTotal === null || typeof day.aircoTotal == 'undefined') ? undefined : day.gas * gasPerM3() + day.aircoTotal;
 			}
 			return $scope.mode === 'heat' ? day.gas : day.aircoTotal;
 		}
@@ -77,13 +81,15 @@ define(['app', 'energyWeather.service'], function (app) {
 			var buckets = {};
 			list.forEach(function (it) {
 				var x = xFor(it.d);
-				var b = buckets[x] || (buckets[x] = { x: x, usage: 0, partGas: 0, partElec: 0, grid: 0, gridN: 0, dd: 0, t: 0, n: 0, nFrac: 0, units: {} });
+				var b = buckets[x] || (buckets[x] = { x: x, usage: 0, partGas: 0, partElec: 0, grid: 0, gridN: 0, dd: 0, t: 0, n: 0, nFrac: 0, costGas: 0, costElec: 0, units: {} });
 				b.usage += usageOf(it.v);
-				b.partGas += (typeof it.v.gas != 'undefined') ? it.v.gas * $scope.gasKwh : 0;
+				b.partGas += (typeof it.v.gas != 'undefined') ? it.v.gas * gasPerM3() : 0;
 				b.partElec += it.v.aircoTotal || 0;
 				b.dd += ddOf(it.v);
 				b.t += it.v.t;
 				b.n++;
+				b.costGas += it.v.costGas || 0;
+				b.costElec += it.v.costAirco || 0;
 				b.nFrac += (typeof it.v.frac != 'undefined') ? it.v.frac : 1;	// baseload of a partial day counts only the part that has passed
 				if (it.v.partial) { b.partial = true; }
 				if (typeof it.v.grid != 'undefined') { b.grid += it.v.grid; b.gridN++; }
@@ -151,19 +157,15 @@ define(['app', 'energyWeather.service'], function (app) {
 
 			var prevByX = {};
 			prevBuckets.forEach(function (b) { prevByX[b.x] = b; });
-			// cost of a bucket at the current prices of the cost settings, null when no price is set
+			// cost of a bucket: the daily cost Domoticz logged for the gas and heat pump / airco meters, null when there is none
 			function costOf(b) {
-				if (!prices || !b) { return null; }
-				if (isBoth) {
-					if (!prices.gas && !prices.elec) { return null; }
-					return (prices.gas ? b.partGas / ($scope.gasKwh > 0 ? $scope.gasKwh : 9.77) * prices.gas : 0) + (prices.elec ? b.partElec * prices.elec : 0);
-				}
-				var price = isCool ? prices.elec : prices.gas;
-				return price ? b.usage * price : null;
+				if (!b) { return null; }
+				var cost = isBoth ? b.costGas + b.costElec : (isCool ? b.costElec : b.costGas);
+				return cost > 0 ? cost : null;
 			}
 			function costLine(v) {
 				if (v === null) { return ''; }
-				return '<span style="color:#9e9e9e">●</span> ' + $.t('Cost') + ' (' + $.t('approx.') + '): <b>' + ($scope.currencySign || '') + ' ' + Highcharts.numberFormat(v, 2) + '</b><br/>';
+				return '<span style="color:#9e9e9e">●</span> ' + $.t('Cost') + ': <b>' + ($scope.currencySign || '') + ' ' + Highcharts.numberFormat(v, 2) + '</b><br/>';
 			}
 			var curByX = {};
 			buckets.forEach(function (b) { curByX[b.x] = b; });
@@ -347,10 +349,14 @@ define(['app', 'energyWeather.service'], function (app) {
 			var heat = $scope.mode === 'heat';
 			var both = $scope.mode === 'both';
 			var extras = [];
-			var price = prices ? (heat ? prices.gas : prices.elec) : null;
+			// the cost Domoticz logged per day for these meters, summed over the visible range
+			var costGasSum = c.list.reduce(function (s, it) { return s + (it.v.costGas || 0); }, 0);
+			var costElecSum = c.list.reduce(function (s, it) { return s + (it.v.costAirco || 0); }, 0);
+			var costSum = both ? costGasSum + costElecSum : (heat ? costGasSum : costElecSum);
+			var price = (costSum > 0 && c.usage > 0 && !both) ? costSum / c.usage : null;	// average price paid per unit
 			var co2f = heat ? CO2_GAS : CO2_ELEC;
 			// combined heating: cost and CO2 from the gas m3 and the airco kWh separately
-			var partGasKwh = c.list.reduce(function (s, it) { return s + (typeof it.v.gas != 'undefined' ? it.v.gas * $scope.gasKwh : 0); }, 0);
+			var partGasKwh = c.list.reduce(function (s, it) { return s + (typeof it.v.gas != 'undefined' ? it.v.gas * gasPerM3() : 0); }, 0);
 			var partElec = c.list.reduce(function (s, it) { return s + (it.v.aircoTotal || 0); }, 0);
 			var cur = $scope.currencySign || '';
 			var sumOf = function (arr, f) { return arr.reduce(function (s, it) { return s + f(it); }, 0); };
@@ -382,9 +388,9 @@ define(['app', 'energyWeather.service'], function (app) {
 
 			// cost and CO2 of the visible range
 			if (both) {
-				var gasM3 = partGasKwh / $scope.gasKwh;
-				if (prices && prices.gas && prices.elec) {
-					extras.push({ label: $.t('Cost'), value: cur + ' ' + (gasM3 * prices.gas + partElec * prices.elec).toFixed(2), sub: $.t('Gas') + ' ' + cur + ' ' + (gasM3 * prices.gas).toFixed(2) + ', ' + $.t('Heat Pump / Airco') + ' ' + cur + ' ' + (partElec * prices.elec).toFixed(2) });
+				var gasM3 = partGasKwh / gasPerM3();
+				if (costSum > 0) {
+					extras.push({ label: $.t('Cost'), value: cur + ' ' + costSum.toFixed(2), sub: $.t('Gas') + ' ' + cur + ' ' + costGasSum.toFixed(2) + ', ' + $.t('Heat Pump / Airco') + ' ' + cur + ' ' + costElecSum.toFixed(2) });
 				}
 				extras.push({ label: 'CO₂ (' + $.t('approx.') + ')', value: (gasM3 * CO2_GAS + partElec * CO2_ELEC).toFixed(0) + ' kg', sub: CO2_GAS + ' kg / m3, ' + CO2_ELEC + ' kg / kWh' });
 				if (c.usage > 0) {
@@ -392,7 +398,7 @@ define(['app', 'energyWeather.service'], function (app) {
 				}
 			} else {
 				if (price) {
-					extras.push({ label: $.t('Cost'), value: cur + ' ' + (c.usage * price).toFixed(2), sub: price.toFixed(3) + ' ' + cur + ' / ' + unit() });
+					extras.push({ label: $.t('Cost'), value: cur + ' ' + costSum.toFixed(2), sub: price.toFixed(3) + ' ' + cur + ' / ' + unit() });
 				}
 				extras.push({ label: 'CO₂ (' + $.t('approx.') + ')', value: (c.usage * co2f).toFixed(0) + ' kg', sub: co2f + ' kg / ' + unit() });
 			}
@@ -403,10 +409,22 @@ define(['app', 'energyWeather.service'], function (app) {
 				var total2 = c.sameUsage - c.prevUsage;
 				var other = total2 - weather;
 				var fmt = function (v) { return (v > 0 ? '+' : '') + v.toFixed(1) + ' ' + unit(); };
+				// the cost change is the difference of the costs Domoticz logged on the same calendar days
+				var dayCost = function (it) { return both ? (it.v.costGas || 0) + (it.v.costAirco || 0) : (heat ? (it.v.costGas || 0) : (it.v.costAirco || 0)); };
+				// only days with a logged cost in both years are compared, so a price added mid-year cannot skew it
+				var costKeys = {};
+				c.prevSame.forEach(function (it) { if (dayCost(it) > 0) { costKeys[it.d.substring(5)] = true; } });
+				var pairedSame = c.listSame.filter(function (it) { return dayCost(it) > 0 && costKeys[it.d.substring(5)]; });
+				var pairedKeys = {};
+				pairedSame.forEach(function (it) { pairedKeys[it.d.substring(5)] = true; });
+				var pairedPrev = c.prevSame.filter(function (it) { return pairedKeys[it.d.substring(5)]; });
+				var sameCost = sumOf(pairedSame, dayCost), prevCost = sumOf(pairedPrev, dayCost);
+				var costDelta = sameCost - prevCost;
+				var costText = (sameCost > 0 && prevCost > 0) ?', ' + $.t('Cost') + ' ' + (costDelta >= 0 ? '+' : '-') + cur + ' ' + Math.abs(costDelta).toFixed(2) : '';	// only when both years have a logged cost
 				extras.push({
 					label: $.t('Change vs') + ' ' + $scope.compareYear,
 					value: fmt(total2),
-					sub: $.t('Weather') + ' ' + fmt(weather) + ', ' + $.t('other') + ' ' + fmt(other) + (price && !both ? ', ' + cur + ' ' + (other * price).toFixed(2) : '')
+					sub: $.t('Weather') + ' ' + fmt(weather) + ', ' + $.t('other') + ' ' + fmt(other) + costText
 				});
 			}
 
@@ -455,9 +473,11 @@ define(['app', 'energyWeather.service'], function (app) {
 		}
 
 		var refreshSeq = 0;
+		var loadedAt = Date.now();
 		function refresh() {
 			if (!settings) { return; }
 			$scope.loading = true;
+			loadedAt = Date.now();
 			var seq = ++refreshSeq;
 			$q.all([ensureYear($scope.year), ensureYear($scope.compareYear)]).then(function () {
 				if (seq !== refreshSeq) { return; }	// a newer selection is already loading
@@ -471,15 +491,59 @@ define(['app', 'energyWeather.service'], function (app) {
 			});
 		}
 
-		// a page left open over midnight must pick up the new day
+		// a page left open must pick up the new day at midnight, and today's partial values every few minutes
 		var loadedDay = new Date().toDateString();
+		var REFRESH_MS = 5 * 60 * 1000;
 		$scope.$on('time_update', function () {
-			if (loadedDay !== new Date().toDateString()) {
-				loadedDay = new Date().toDateString();
+			var today = new Date().toDateString();
+			if (loadedDay !== today) {
+				loadedDay = today;
+				var oldYear = currentYear;
+				currentYear = new Date().getFullYear();
 				cache = {};
-				refresh();
+				if (!settings) { return; }	// still loading: the first load already uses the new day
+				if (currentYear === oldYear) { refresh(); return; }
+				// a new year: list it and follow the current year when that was the selection
+				var applyYears = function (years) {
+					$scope.years = years;
+					if ($scope.year === oldYear) { $scope.year = currentYear; }
+					if (years.indexOf($scope.compareYear) === -1) { $scope.compareYear = years.length > 1 ? years[1] : years[0]; }
+					refresh();
+				};
+				// when the probe fails the new year is added to the list we already have
+				dzEnergyWeather.availableYears(settings).then(applyYears, function () { applyYears([currentYear].concat($scope.years.filter(function (y) { return y !== currentYear; }))); });
+			} else if (Date.now() - loadedAt > REFRESH_MS && ($scope.year === currentYear || $scope.compareYear === currentYear) && cache[currentYear]) {
+				// today's partial values: fetch quietly and swap them in, the charts stay on screen and an error is ignored
+				loadedAt = Date.now();
+				var quietYear = currentYear;
+				dzEnergyWeather.loadYear(settings, quietYear).then(function (res) {
+					if (quietYear !== currentYear || loadedDay !== new Date().toDateString()) { return; }
+					cache[quietYear] = res;
+					render();
+				}, function () { /* keep what is on screen, try again after the next interval */ });
 			}
 		});
+
+		// easter egg: five quick clicks on the title show the coldest day of the year
+		var eggClicks = 0, eggTimer = null;
+		$(document).on('click.ewegg', '#energyweathercontent h1', function () {
+			eggClicks++;
+			clearTimeout(eggTimer);
+			eggTimer = setTimeout(function () { eggClicks = 0; }, 2500);
+			if (eggClicks < 5) { return; }
+			eggClicks = 0;
+			var EE = window.dzEasterEggs;
+			var data = cache[$scope.year];
+			if (!EE || !EE.isEnabled() || !data) { return; }
+			var coldest = null;
+			Object.keys(data.days).forEach(function (d) {
+				var day = data.days[d], u = usageOf(day);
+				if (day.partial || u === null || typeof u == 'undefined') { return; }
+				if (!coldest || day.t < coldest.t) { coldest = { year: $scope.year, date: d, t: day.t, usage: u, unit: unit() }; }
+			});
+			EE._triggerEnergyWeather(coldest);
+		});
+		$scope.$on('$destroy', function () { $(document).off('click.ewegg'); clearTimeout(eggTimer); });
 
 		$scope.setMode = function (m) { $scope.mode = m; render(); };
 		$scope.gasKwhChanged = function () {
@@ -505,7 +569,6 @@ define(['app', 'energyWeather.service'], function (app) {
 			var jobs = s.idAirco.map(function (idx) {
 				return dzEnergyWeather.deviceName(idx).then(function (n) { unitNames[idx] = n; });
 			});
-			jobs.push(dzEnergyWeather.loadPrices(s).then(function (p) { prices = p; }));
 			jobs.push(dzEnergyWeather.availableYears(s).then(function (years) {
 				$scope.years = years;
 				// keep the comparison year valid: the previous year when it has data, otherwise the newest older one

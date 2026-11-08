@@ -39,6 +39,90 @@ define(['app'], function (app) {
 			}
 		},
 
+		// Dutch interface language of Domoticz, or a Dutch browser language: known offline
+		isDutch: function () {
+			try {
+				var lang = '';
+				var inj = angular.element(document.body).injector();
+				if (inj) {
+					var cfg = inj.get('$rootScope').config;
+					if (cfg && typeof cfg.language === 'string') { lang = cfg.language; }
+				}
+				if (!lang) { lang = navigator.language || ''; }
+				return /^nl([-_]|$)/i.test(lang);
+			} catch (e) { return false; }
+		},
+
+		// Falling glyphs for a few seconds, one shared look for the day easter eggs
+		_shower: function (cssId, glyphs, count, size) {
+			EE.inject('dz-shower-css', [
+				'@keyframes dz-shower-fall {',
+				'  0%   { transform: translateY(-10vh) rotate(0deg); opacity: 1; }',
+				'  100% { transform: translateY(110vh) rotate(360deg); opacity: 0.3; }',
+				'}',
+				'.dz-shower {',
+				'  position: fixed;',
+				'  top: -40px;',
+				'  pointer-events: none;',
+				'  z-index: 99999;',
+				'  animation: dz-shower-fall linear forwards;',
+				'}'
+			].join(''));
+			for (var i = 0; i < count; i++) {
+				(function (idx) {
+					setTimeout(function () {
+						var span = document.createElement('span');
+						span.className = 'dz-shower';
+						span.textContent = glyphs[idx % glyphs.length];
+						span.style.fontSize = (size || 1.5) + 'rem';
+						span.style.left = (Math.random() * 95 + 2) + 'vw';
+						span.style.animationDuration = (5 + Math.random() * 5) + 's';
+						document.body.appendChild(span);
+						setTimeout(function () {
+							if (span.parentNode) span.parentNode.removeChild(span);
+						}, 12000);
+					}, idx * 300);
+				})(i);
+			}
+		},
+
+		triggerSinterklaas: function () {
+			EE._shower('dz-sinterklaas-css', ['🎁', '🍪', '🥜', '👑'], 24);
+			setTimeout(function () { EE._notify('success', '🎁 Pakjesavond! Sinterklaas left something in your shoe.', 5000); }, 600);
+		},
+
+		triggerKoningsdag: function () {
+			EE.inject('dz-koningsdag-css', [
+				'@keyframes dz-orange-glow { 0% { box-shadow: inset 0 0 0 rgba(255,106,0,0); } 40% { box-shadow: inset 0 0 120px rgba(255,106,0,0.45); } 100% { box-shadow: inset 0 0 0 rgba(255,106,0,0); } }',
+				'.dz-orange-glow { position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 99998; animation: dz-orange-glow 4s ease-in-out forwards; }'
+			].join(''));
+			var glow = document.createElement('div');
+			glow.className = 'dz-orange-glow';
+			document.body.appendChild(glow);
+			setTimeout(function () { if (glow.parentNode) glow.parentNode.removeChild(glow); }, 4200);
+			EE._shower('dz-koningsdag-fall-css', ['🧡', '👑', '🍊'], 24);
+			setTimeout(function () { EE._notify('success', '🧡 Oranje boven! Happy Kingsday!', 5000); }, 600);
+		},
+
+		triggerStarWars: function () {
+			EE._shower('dz-starwars-css', ['⭐', '✨', '🚀'], 20);
+			setTimeout(function () { EE._notify('success', '🚀 May the 4th be with your sensors.', 5000); }, 600);
+		},
+
+		triggerPiDay: function () {
+			EE._shower('dz-piday-css', ['π', '🥧'], 20, 2);
+			setTimeout(function () { EE._notify('success', '🥧 Happy Pi Day! 3.14159265358979...', 5000); }, 600);
+		},
+
+		// Energy vs Weather page: five clicks on the title show the coldest day of the year
+		_triggerEnergyWeather: function (info) {
+			if (!info) { EE._notify('info', 'No complete day with data to show yet.', 3000); return; }
+			if (info.t < 0) { EE._shower('dz-energyweather-css', ['❄️', '❅', '❆'], 20); }
+			setTimeout(function () {
+				EE._notify('success', '🥶 Coldest day of ' + info.year + ': ' + info.date + ', ' + info.t.toFixed(1) + ' degrees. You used ' + info.usage.toFixed(1) + ' ' + info.unit + ' that day.', 7000);
+			}, 400);
+		},
+
 		getEasterDate: function (year) {
 			var a = year % 19;
 			var b = Math.floor(year / 100);
@@ -98,6 +182,36 @@ define(['app'], function (app) {
 				if (!EE.wasTriggeredToday('newyear') && EE.maybe(0.5)) {
 					EE.markTriggeredToday('newyear');
 					EE.triggerNewYear();
+				}
+			}
+
+			// Dutch days: only for a Dutch interface language or browser language, no internet needed
+			if (month === 11 && day === 5 && EE.isDutch()) {
+				if (!EE.wasTriggeredToday('sinterklaas') && EE.maybe(0.5)) {
+					EE.markTriggeredToday('sinterklaas');
+					EE.triggerSinterklaas();
+				}
+			}
+
+			// Kingsday is 27 April, on 26 April (Saturday) when the 27th is a Sunday
+			if (month === 3 && ((day === 27 && dow !== 0) || (day === 26 && dow === 6)) && EE.isDutch()) {
+				if (!EE.wasTriggeredToday('koningsdag') && EE.maybe(0.5)) {
+					EE.markTriggeredToday('koningsdag');
+					EE.triggerKoningsdag();
+				}
+			}
+
+			if (month === 4 && day === 4) {
+				if (!EE.wasTriggeredToday('starwars') && EE.maybe(0.5)) {
+					EE.markTriggeredToday('starwars');
+					EE.triggerStarWars();
+				}
+			}
+
+			if (month === 2 && day === 14) {
+				if (!EE.wasTriggeredToday('piday') && EE.maybe(0.5)) {
+					EE.markTriggeredToday('piday');
+					EE.triggerPiDay();
 				}
 			}
 
@@ -504,6 +618,11 @@ define(['app'], function (app) {
 				christmas: EE.triggerChristmas,
 				newyear:   EE.triggerNewYear,
 				nightowl:  EE.triggerNightOwl,
+				sinterklaas: EE.triggerSinterklaas,
+				koningsdag:  EE.triggerKoningsdag,
+				starwars:    EE.triggerStarWars,
+				piday:       EE.triggerPiDay,
+				energyweather: function () { EE._triggerEnergyWeather({ year: new Date().getFullYear(), date: '01-01', t: -3.2, usage: 12.5, unit: 'm3' }); },
 				konami:    EE._triggerKonamiEffect,
 				version:   EE._triggerVersionDialog,
 				console:   EE.consoleMessage,
