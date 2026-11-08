@@ -371,7 +371,9 @@ namespace Plugins {
 
 #ifndef WIN32
 		private:
-			void FindLibrary(const std::string &sLibrary, bool bSimple = false)
+			// sVersion (e.g. "python3.13") is only used by the directory scan, so that a
+			// library of another Python version is never loaded for the version being probed
+			void FindLibrary(const std::string &sLibrary, bool bSimple = false, const std::string &sVersion = "")
 			{
 				std::string library;
 				if (bSimple)
@@ -388,18 +390,6 @@ namespace Plugins {
 						library = "lib" + sLibrary + "m.so";
 						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 					}
-					// look in /usr/lib directories
-					if (!shared_lib_)
-					{
-						library = "/usr/lib/" + sLibrary + "/";
-						FindLibrary(library, false);
-					}
-					// look in /usr/lib directories but 'm' variant
-					if (!shared_lib_)
-					{
-						library = "/usr/lib/" + sLibrary + "m/";
-						FindLibrary(library, false);
-					}
 					// look in /usr/local/lib directory (handles build from source)
 					if (!shared_lib_)
 					{
@@ -412,6 +402,31 @@ namespace Plugins {
 					{
 						library = "/usr/local/lib/lib" + sLibrary + "m.so";
 						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+					}
+					// versioned soname via ldconfig: the distro runtime package (e.g. libpython3.13)
+					// only ships libpythonX.Y.so.1.0, the plain .so symlink is in the -dev package.
+					// Tried after the source-build locations so those keep their precedence.
+					if (!shared_lib_)
+					{
+						library = "lib" + sLibrary + ".so.1.0";
+						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+					}
+					if (!shared_lib_)
+					{
+						library = "lib" + sLibrary + ".so.1";
+						shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+					}
+					// look in /usr/lib directories
+					if (!shared_lib_)
+					{
+						library = "/usr/lib/" + sLibrary + "/";
+						FindLibrary(library, false, sLibrary);
+					}
+					// look in /usr/lib directories but 'm' variant
+					if (!shared_lib_)
+					{
+						library = "/usr/lib/" + sLibrary + "m/";
+						FindLibrary(library, false, sLibrary);
 					}
 					// MacOS
 					// look for .dylib in /usr/local/lib
@@ -451,7 +466,7 @@ namespace Plugins {
 						}
 
 						library = sLibrary + entry + "/";
-						FindLibrary(library, false);
+						FindLibrary(library, false, sVersion);
 					}
 
 					entries.clear();
@@ -463,10 +478,11 @@ namespace Plugins {
 							break;
 						}
 
-						if (filename.length() > 12 &&
-							filename.compare(0, 11, "libpython3.") == 0 &&
-							filename.compare(filename.length() - 3, 3, ".so") == 0 &&
-							filename.compare(filename.length() - 6, 6, ".dylib") == 0)
+						const std::string sPrefix = "lib" + (sVersion.empty() ? std::string("python3.") : sVersion);
+						if (filename.length() >= sPrefix.length() + 3 &&
+							filename.compare(0, sPrefix.length(), sPrefix) == 0 &&
+							(filename.find(".so") != std::string::npos ||
+							 filename.compare(filename.length() - 6, 6, ".dylib") == 0))
 						{
 							library = sLibrary + filename;
 							shared_lib_ = dlopen(library.c_str(), RTLD_LAZY | RTLD_GLOBAL);
