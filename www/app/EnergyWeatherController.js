@@ -77,13 +77,15 @@ define(['app', 'energyWeather.service'], function (app) {
 			var buckets = {};
 			list.forEach(function (it) {
 				var x = xFor(it.d);
-				var b = buckets[x] || (buckets[x] = { x: x, usage: 0, partGas: 0, partElec: 0, grid: 0, gridN: 0, dd: 0, t: 0, n: 0, units: {} });
+				var b = buckets[x] || (buckets[x] = { x: x, usage: 0, partGas: 0, partElec: 0, grid: 0, gridN: 0, dd: 0, t: 0, n: 0, nFrac: 0, units: {} });
 				b.usage += usageOf(it.v);
 				b.partGas += (typeof it.v.gas != 'undefined') ? it.v.gas * $scope.gasKwh : 0;
 				b.partElec += it.v.aircoTotal || 0;
 				b.dd += ddOf(it.v);
 				b.t += it.v.t;
 				b.n++;
+				b.nFrac += (typeof it.v.frac != 'undefined') ? it.v.frac : 1;	// baseload of a partial day counts only the part that has passed
+				if (it.v.partial) { b.partial = true; }
 				if (typeof it.v.grid != 'undefined') { b.grid += it.v.grid; b.gridN++; }
 				Object.keys(it.v.airco).forEach(function (idx) { b.units[idx] = (b.units[idx] || 0) + it.v.airco[idx]; });
 			});
@@ -149,6 +151,22 @@ define(['app', 'energyWeather.service'], function (app) {
 
 			var prevByX = {};
 			prevBuckets.forEach(function (b) { prevByX[b.x] = b; });
+			// cost of a bucket at the current prices of the cost settings, null when no price is set
+			function costOf(b) {
+				if (!prices || !b) { return null; }
+				if (isBoth) {
+					if (!prices.gas && !prices.elec) { return null; }
+					return (prices.gas ? b.partGas / ($scope.gasKwh > 0 ? $scope.gasKwh : 9.77) * prices.gas : 0) + (prices.elec ? b.partElec * prices.elec : 0);
+				}
+				var price = isCool ? prices.elec : prices.gas;
+				return price ? b.usage * price : null;
+			}
+			function costLine(v) {
+				if (v === null) { return ''; }
+				return '<span style="color:#9e9e9e">●</span> ' + $.t('Cost') + ' (' + $.t('approx.') + '): <b>' + ($scope.currencySign || '') + ' ' + Highcharts.numberFormat(v, 2) + '</b><br/>';
+			}
+			var curByX = {};
+			buckets.forEach(function (b) { curByX[b.x] = b; });
 			var xFormat = $scope.gran === 'month' ? '%B' : '%e %B';
 			function line(color, name, v) {
 				return '<span style="color:' + color + '">\u25CF</span> ' + name + ': <b>' + (v === null || typeof v == 'undefined' || isNaN(v) ? '-' : Highcharts.numberFormat(v, 1)) + '</b><br/>';
@@ -163,14 +181,16 @@ define(['app', 'energyWeather.service'], function (app) {
 					useHTML: true,
 					formatter: function () {
 						var self = this;
-						var html = '<b>' + Highcharts.dateFormat(xFormat, self.x) + ' ' + $scope.year + '</b><br/>';
+						var html = '<b>' + Highcharts.dateFormat(xFormat, self.x) + ' ' + $scope.year + (curByX[self.x] && curByX[self.x].partial ? ' (' + $.t('so far') + ')' : '') + '</b><br/>';
 						self.points.forEach(function (pt) { html += line(pt.series.color, pt.series.name, pt.y); });
+						html += costLine(costOf(curByX[self.x]));
 						var pb = prevByX[self.x];
 						html += '<div style="border-top:1px solid rgba(128,128,128,0.6); margin:5px 0 4px 0;"></div>';
 						html += '<b>' + Highcharts.dateFormat(xFormat, self.x) + ' ' + $scope.compareYear + '</b><br/>';
 						self.points.forEach(function (pt) {
 							html += line(pt.series.color, pt.series.name, pb ? pt.series.options.ewf(pb) : null);
 						});
+						html += costLine(costOf(pb));
 						return html;
 					}
 				},
@@ -183,7 +203,7 @@ define(['app', 'energyWeather.service'], function (app) {
 		function renderEfficiency(buckets, prevBuckets) {
 			var threshold = minDD();
 			function line(list) {
-				return list.map(function (b) { return [b.x, b.dd >= threshold ? r2(b.usage / b.dd) : null]; });
+				return list.map(function (b) { return [b.x, b.dd >= threshold && !b.partial ? r2(b.usage / b.dd) : null]; });
 			}
 			$('#ewEfficiency').highcharts({
 				title: { text: unit() + ' / ' + $.t('Degree Day') },
@@ -235,7 +255,8 @@ define(['app', 'energyWeather.service'], function (app) {
 			var prevList = validDays($scope.compareYear);
 			// compare with the same calendar days last year, only days that have data in both years
 			var thisKeys = {};
-			list.forEach(function (it) { thisKeys[it.d.substring(5)] = true; });
+			// today is only partly known, so it is drawn but never compared, fitted or ranked
+			list.forEach(function (it) { if (!it.v.partial) { thisKeys[it.d.substring(5)] = true; } });
 			var prevSame = prevList.filter(function (it) { return thisKeys[it.d.substring(5)]; });
 			var prevKeys = {};
 			prevSame.forEach(function (it) { prevKeys[it.d.substring(5)] = true; });
@@ -253,7 +274,7 @@ define(['app', 'energyWeather.service'], function (app) {
 			// scatter and trend use the whole year of daily values, not just the visible month
 			var yearAll = Object.keys(cache[$scope.year].days).sort().filter(function (d) {
 				var u = usageOf(cache[$scope.year].days[d]);
-				return u !== null && typeof u != 'undefined';
+				return u !== null && typeof u != 'undefined' && !cache[$scope.year].days[d].partial;
 			}).map(function (d) { return { d: d, v: cache[$scope.year].days[d] }; });
 			var reg = dzEnergyWeather.regression(yearAll.map(function (it) { return [ddOf(it.v), usageOf(it.v)]; }));
 
@@ -282,7 +303,7 @@ define(['app', 'energyWeather.service'], function (app) {
 
 			var compareAll = Object.keys(cache[$scope.compareYear].days).sort().filter(function (d) {
 				var u = usageOf(cache[$scope.compareYear].days[d]);
-				return u !== null && typeof u != 'undefined';
+				return u !== null && typeof u != 'undefined' && !cache[$scope.compareYear].days[d].partial;
 			}).map(function (d) { return { d: d, v: cache[$scope.compareYear].days[d] }; });
 			var compareReg = dzEnergyWeather.regression(compareAll.map(function (it) { return [ddOf(it.v), usageOf(it.v)]; }));
 
@@ -314,7 +335,7 @@ define(['app', 'energyWeather.service'], function (app) {
 					{ type: 'column', name: $.t('Actual'), color: $scope.mode === 'heat' ? 'rgba(255,152,0,0.85)' : 'rgba(3,190,252,0.8)',
 					  data: buckets.map(function (b) { return [b.x, r2(b.usage)]; }) },
 					{ type: 'spline', name: $.t('Expected'), color: '#e53935', marker: { enabled: true },
-					  data: buckets.map(function (b) { return [b.x, r2(Math.max(0, reg.intercept * b.n + reg.slope * b.dd))]; }) }
+					  data: buckets.map(function (b) { return [b.x, r2(Math.max(0, reg.intercept * b.nFrac + reg.slope * b.dd))]; }) }
 				]
 			});
 		}
@@ -416,7 +437,7 @@ define(['app', 'energyWeather.service'], function (app) {
 
 			// days that used the most above what the weather explains
 			if (c.reg) {
-				$scope.outliers = c.list.map(function (it) {
+				$scope.outliers = c.list.filter(function (it) { return !it.v.partial; }).map(function (it) {
 					var exp = Math.max(0, c.reg.intercept + c.reg.slope * ddOf(it.v));
 					return { date: it.d, usage: usageOf(it.v).toFixed(1), expected: exp.toFixed(1), diff: usageOf(it.v) - exp };
 				}).filter(function (o) { return o.diff > 0; }).sort(function (a, b) { return b.diff - a.diff; }).slice(0, 5).map(function (o) {
@@ -489,7 +510,7 @@ define(['app', 'energyWeather.service'], function (app) {
 				$scope.years = years;
 				// keep the comparison year valid: the previous year when it has data, otherwise the newest older one
 				if (years.indexOf($scope.compareYear) === -1) { $scope.compareYear = years.length > 1 ? years[1] : years[0]; }
-			}));
+			}, function () { /* keep the default year list when the probe fails */ }));
 			$q.all(jobs).then(refresh);
 		}, function () {
 			$scope.problem = $.t('Failed to load data');

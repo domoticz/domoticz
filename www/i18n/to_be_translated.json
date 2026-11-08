@@ -2,6 +2,7 @@
     "Bar ranges must all go in the same direction. Use all ascending (e.g. -100 to 0) or all descending (e.g. 0 to -100).": "Bar ranges must all go in the same direction. Use all ascending (e.g. -100 to 0) or all descending (e.g. 0 to -100).",
     "Edit Camera": "Edit Camera",
     "Show": "Show",
+    "so far": "so far",
     "Gas per heating degree day": "Gas per heating degree day",
     "Heat pump / airco kWh per heating degree day": "Heat pump / airco kWh per heating degree day",
     "Heat pump / airco kWh per cooling degree day": "Heat pump / airco kWh per cooling degree day",

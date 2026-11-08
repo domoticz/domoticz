@@ -75,12 +75,33 @@ define(['app'], function (app) {
 			});
 		}
 
+		// Average temperature of today so far and the fraction of the day it covers, from the short log; null when there is none
+		function loadTodayTemp(idx) {
+			if (idx < 0) { return $q.resolve(null); }
+			return $http.get('json.htm', { params: { type: 'command', param: 'graph', sensor: 'temp', idx: idx, range: 'day' } }).then(function (resp) {
+				var rows = (resp.data && resp.data.result) ? resp.data.result : [];
+				var prefix = todayStr() + ' ';
+				var sum = 0, n = 0, lastMin = 0;
+				rows.forEach(function (r) {
+					if (typeof r.d != 'string' || r.d.indexOf(prefix) !== 0) { return; }
+					var v = parseFloat(r.te);
+					if (isNaN(v)) { return; }
+					sum += v; n++;
+					if (isNaN(parseInt(r.d.substring(11, 13), 10))) { n--; sum -= v; }
+				});
+				if (!n) { return null; }
+				// the part of the day that has passed, like the usage counters of today
+				var now = new Date();
+				return { t: sum / n, frac: Math.min(0.999, Math.max(0.02, (now.getHours() * 60 + now.getMinutes()) / 1440)) };
+			}, function () { return null; });
+		}
+
 		// Loads one year. Resolves to { days: { date: { t, hdd, cdd, gas, grid, airco: {idx: v}, aircoTotal } } }
 		var yearCache = {};	// settings + year -> { time, promise }, shared by every widget and the page
 		var CACHE_MS = 60000;
 
 		function loadYear(settings, year) {
-			var key = JSON.stringify(settings) + '|' + year;
+			var key = JSON.stringify(settings) + '|' + year + '|' + todayStr();
 			var hit = yearCache[key];
 			if (hit && (Date.now() - hit.time) < CACHE_MS) { return hit.promise; }
 			var promise = loadYearUncached(settings, year);
@@ -95,18 +116,31 @@ define(['app'], function (app) {
 				temps: loadTemps(settings.idOutside, year),
 				gas: settings.idGas >= 0 ? loadUsage(settings.idGas, year) : $q.resolve({}),
 				grid: settings.idP1 >= 0 ? loadUsage(settings.idP1, year) : $q.resolve({}),
-				airco: $q.all(settings.idAirco.map(function (idx) { return loadUsage(idx, year); }))
+				airco: $q.all(settings.idAirco.map(function (idx) { return loadUsage(idx, year); })),
+				today: (year === new Date().getFullYear()) ? loadTodayTemp(settings.idOutside) : $q.resolve(null)
 			};
 			return $q.all(jobs).then(function (r) {
 				var today = todayStr();
 				var days = {};
-				Object.keys(r.temps).forEach(function (d) {
-					if (d >= today) { return; }	// today is still incomplete
-					var t = r.temps[d];
+				var temps = r.temps;
+				var partial = {};	// today: the calendar has no row yet, so the short log of the sensor gives the average so far
+				if (r.today) {	// the short log wins over a calendar row for today, which is not final yet
+					temps = Object.assign({}, temps);
+					temps[today] = r.today.t;
+					partial[today] = r.today.frac;
+				}
+				Object.keys(temps).forEach(function (d) {
+					if (d > today) { return; }
+					if (d === today && typeof partial[d] == 'undefined') { return; }	// no short log for today: skip the day
+					var t = temps[d];
 					var month = parseInt(d.substring(5, 7), 10) - 1;
-					var hdd = Math.max(0, settings.baseHeating - t) * (settings.weighted ? WEIGHTS[month] : 1);
-					var cdd = Math.max(0, t - settings.baseCooling);
+					// a partial day only counts the degree days of the part of the day that has passed, matching the usage so far
+					var frac = (typeof partial[d] != 'undefined') ? partial[d] : 1;
+					var hdd = Math.max(0, settings.baseHeating - t) * (settings.weighted ? WEIGHTS[month] : 1) * frac;
+					var cdd = Math.max(0, t - settings.baseCooling) * frac;
 					var day = { t: t, hdd: hdd, cdd: cdd, airco: {}, aircoTotal: null };
+					day.frac = frac;
+					if (frac < 1) { day.partial = true; }
 					if (typeof r.gas[d] != 'undefined') { day.gas = r.gas[d]; }
 					if (typeof r.grid[d] != 'undefined') { day.grid = r.grid[d]; }
 					settings.idAirco.forEach(function (idx, i) {
@@ -176,10 +210,12 @@ define(['app'], function (app) {
 			function probe(year) {
 				if (settings.idOutside < 0 || year < current - 20) { return $q.resolve(years); }
 				return graph(settings.idOutside, 'temp', year).then(function (rows) {
-					if (!rows.length) { return years; }
+					// a year without data still returns one row, dated from another year
+					var own = rows.filter(function (r) { return typeof r.d == 'string' && r.d.indexOf(year + '-') === 0; });
+					if (!own.length) { return years; }
 					years.push(year);
 					return probe(year - 1);
-				}, function () { return years; });
+				}, function (e) { return $q.reject(e); });	// not cached: an incomplete list must not stick
 			}
 			return probe(current - 1);
 		}
