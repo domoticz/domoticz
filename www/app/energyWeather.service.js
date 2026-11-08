@@ -152,11 +152,13 @@ define(['app'], function (app) {
 					}
 					if (typeof r.grid.u[d] != 'undefined') { day.grid = r.grid.u[d]; }
 					day.costAirco = 0;
+					day.costUnit = {};
 					settings.idAirco.forEach(function (idx, i) {
 						if (typeof r.airco[i].u[d] != 'undefined') {
 							day.airco[idx] = r.airco[i].u[d];
 							day.aircoTotal = (day.aircoTotal || 0) + r.airco[i].u[d];
-							day.costAirco += r.airco[i].p[d] || 0;
+							day.costUnit[idx] = r.airco[i].p[d] || 0;
+							day.costAirco += day.costUnit[idx];
 						}
 					});
 					days[d] = day;

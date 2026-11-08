@@ -81,7 +81,7 @@ define(['app', 'energyWeather.service'], function (app) {
 			var buckets = {};
 			list.forEach(function (it) {
 				var x = xFor(it.d);
-				var b = buckets[x] || (buckets[x] = { x: x, usage: 0, partGas: 0, partElec: 0, grid: 0, gridN: 0, dd: 0, t: 0, n: 0, nFrac: 0, costGas: 0, costElec: 0, units: {} });
+				var b = buckets[x] || (buckets[x] = { x: x, usage: 0, partGas: 0, partElec: 0, grid: 0, gridN: 0, dd: 0, t: 0, n: 0, nFrac: 0, costGas: 0, costElec: 0, unitCost: {}, unitGap: {}, units: {} });
 				b.usage += usageOf(it.v);
 				b.partGas += (typeof it.v.gas != 'undefined') ? it.v.gas * gasPerM3() : 0;
 				b.partElec += it.v.aircoTotal || 0;
@@ -90,6 +90,12 @@ define(['app', 'energyWeather.service'], function (app) {
 				b.n++;
 				b.costGas += it.v.costGas || 0;
 				b.costElec += it.v.costAirco || 0;
+				// a day with usage but no logged cost makes cost / usage of that series meaningless
+				if (typeof it.v.gas != 'undefined' && !(it.v.costGas > 0)) { b.gasGap = true; }
+				Object.keys(it.v.airco).forEach(function (idx) {
+					if (!((it.v.costUnit || {})[idx] > 0)) { b.airGap = true; b.unitGap[idx] = true; }
+				});
+				Object.keys(it.v.costUnit || {}).forEach(function (idx) { b.unitCost[idx] = (b.unitCost[idx] || 0) + it.v.costUnit[idx]; });
 				b.nFrac += (typeof it.v.frac != 'undefined') ? it.v.frac : 1;	// baseload of a partial day counts only the part that has passed
 				if (it.v.partial) { b.partial = true; }
 				if (typeof it.v.grid != 'undefined') { b.grid += it.v.grid; b.gridN++; }
@@ -116,31 +122,36 @@ define(['app', 'energyWeather.service'], function (app) {
 			var series = [];
 			var stack = $scope.split && (isCool || isBoth) && $scope.multiAirco;
 			// every series knows how to read its value from a bucket, so the tooltip can show the compare year with the same values
-			function add(def, f) {
+			// cf reads the logged cost of the same series, unit names the unit of its values for the price per unit
+			// gf tells whether a bucket has usage without logged cost for this series (then no price per unit is shown)
+			function add(def, f, cf, unitName, gf) {
+				def.ewg = gf || null;
 				def.ewf = f;
+				def.ewc = cf || null;
+				def.ewu = unitName || '';
 				def.data = buckets.map(function (b) { var v = f(b); return [b.x, v === null ? null : r2(v)]; });
 				series.push(def);
 			}
 			function addUnits() {
 				settings.idAirco.forEach(function (idx) {
-					add({ type: 'column', name: unitNames[idx] || ('#' + idx), stacking: 'normal', yAxis: 0 }, function (b) { return b.units[idx] || 0; });
+					add({ type: 'column', name: unitNames[idx] || ('#' + idx), stacking: 'normal', yAxis: 0 }, function (b) { return b.units[idx] || 0; }, function (b) { return b.unitCost[idx] || 0; }, 'kWh', function (b) { return !!b.unitGap[idx]; });
 				});
 			}
 			if (isBoth) {
 				// stacked: gas as kWh equivalent, then the heat pump / airco (total or per unit)
-				add({ type: 'column', name: $.t('Gas') + ' (kWh)', stacking: 'normal', yAxis: 0, color: 'rgba(255,152,0,0.85)' }, function (b) { return b.partGas; });
+				add({ type: 'column', name: $.t('Gas') + ' (kWh)', stacking: 'normal', yAxis: 0, color: 'rgba(255,152,0,0.85)' }, function (b) { return b.partGas; }, function (b) { return b.costGas; }, 'kWh', function (b) { return !!b.gasGap; });
 				if (stack) {
 					addUnits();
 				} else {
-					add({ type: 'column', name: $.t('Heat Pump / Airco'), stacking: 'normal', yAxis: 0, color: 'rgba(3,190,252,0.8)' }, function (b) { return b.partElec; });
+					add({ type: 'column', name: $.t('Heat Pump / Airco') + ' (kWh)', stacking: 'normal', yAxis: 0, color: 'rgba(3,190,252,0.8)' }, function (b) { return b.partElec; }, function (b) { return b.costElec; }, 'kWh', function (b) { return !!b.airGap; });
 				}
 			} else if (stack) {
 				addUnits();
 			} else {
 				add({
-					type: 'column', name: isCool ? $.t('Heat Pump / Airco') : $.t('Gas'), yAxis: 0,
+					type: 'column', name: isCool ? $.t('Heat Pump / Airco') + ' (kWh)' : $.t('Gas') + ' (m3)', yAxis: 0,
 					color: isCool ? 'rgba(3,190,252,0.8)' : 'rgba(255,152,0,0.85)'
-				}, function (b) { return b.usage; });
+				}, function (b) { return b.usage; }, function (b) { return isCool ? b.costElec : b.costGas; }, isCool ? 'kWh' : 'm3', function (b) { return !!(isCool ? b.airGap : b.gasGap); });
 			}
 			var hasGrid = isCool && buckets.some(function (b) { return b.gridN > 0; });
 			if (hasGrid) {
@@ -170,8 +181,18 @@ define(['app', 'energyWeather.service'], function (app) {
 			var curByX = {};
 			buckets.forEach(function (b) { curByX[b.x] = b; });
 			var xFormat = $scope.gran === 'month' ? '%B' : '%e %B';
-			function line(color, name, v) {
-				return '<span style="color:' + color + '">\u25CF</span> ' + name + ': <b>' + (v === null || typeof v == 'undefined' || isNaN(v) ? '-' : Highcharts.numberFormat(v, 1)) + '</b><br/>';
+			// one tooltip line; a series with a logged cost shows it behind the value, with the price paid per unit
+			function line(color, name, v, cost, unitName) {
+				var sign = String($scope.currencySign || '').replace(/[&<>"']/g, function (c) { return '&#' + c.charCodeAt(0) + ';'; });
+				var text = (v === null || typeof v == 'undefined' || isNaN(v)) ? '-' : Highcharts.numberFormat(v, 1);
+				var costText = '';
+				if (cost > 0) {
+					costText = ' <span style="opacity:0.8">' + sign + ' ' + Highcharts.numberFormat(cost, 2);
+					if (v > 0 && unitName) { costText += ' (' + sign + ' ' + Highcharts.numberFormat(cost / v, 3) + ' / ' + unitName + ')'; }
+					costText += '</span>';
+				}
+				var safeName = String(name).replace(/[&<>"']/g, function (c) { return '&#' + c.charCodeAt(0) + ';'; });
+				return '<span style="color:' + color + '">\u25CF</span> ' + safeName + ': <b>' + text + '</b>' + costText + '<br/>';
 			}
 
 			$('#ewCombined').highcharts({
@@ -184,13 +205,17 @@ define(['app', 'energyWeather.service'], function (app) {
 					formatter: function () {
 						var self = this;
 						var html = '<b>' + Highcharts.dateFormat(xFormat, self.x) + ' ' + $scope.year + (curByX[self.x] && curByX[self.x].partial ? ' (' + $.t('so far') + ')' : '') + '</b><br/>';
-						self.points.forEach(function (pt) { html += line(pt.series.color, pt.series.name, pt.y); });
+						self.points.forEach(function (pt) {
+							var cb = curByX[self.x], o = pt.series.options;
+							html += line(pt.series.color, pt.series.name, (cb && o.ewf) ? o.ewf(cb) : pt.y, (o.ewc && cb) ? o.ewc(cb) : null, (cb && o.ewg && o.ewg(cb)) ? '' : o.ewu);
+						});
 						html += costLine(costOf(curByX[self.x]));
 						var pb = prevByX[self.x];
 						html += '<div style="border-top:1px solid rgba(128,128,128,0.6); margin:5px 0 4px 0;"></div>';
 						html += '<b>' + Highcharts.dateFormat(xFormat, self.x) + ' ' + $scope.compareYear + '</b><br/>';
 						self.points.forEach(function (pt) {
-							html += line(pt.series.color, pt.series.name, pb ? pt.series.options.ewf(pb) : null);
+							var o = pt.series.options;
+							html += line(pt.series.color, pt.series.name, pb ? o.ewf(pb) : null, (o.ewc && pb) ? o.ewc(pb) : null, (pb && o.ewg && o.ewg(pb)) ? '' : o.ewu);
 						});
 						html += costLine(costOf(pb));
 						return html;
@@ -553,6 +578,11 @@ define(['app', 'energyWeather.service'], function (app) {
 		};
 		$scope.setGran = function (g) { $scope.gran = g; render(); };
 		$scope.$watchGroup(['month', 'split'], function () { render(); });
+		// picking a year compares it with the year before it; the oldest available year has none, so it compares with itself
+		$scope.yearChanged = function () {
+			$scope.compareYear = ($scope.years.indexOf($scope.year - 1) !== -1) ? $scope.year - 1 : $scope.year;
+		};
+
 		$scope.$watchGroup(['year', 'compareYear'], function (n, o) { if (n[0] !== o[0] || n[1] !== o[1]) { refresh(); } });
 
 		dzEnergyWeather.loadSettings().then(function (s) {

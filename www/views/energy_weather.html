@@ -37,7 +37,7 @@
 				<button class="ew-pill" ng-class="{active: gran == 'month'}" ng-click="setGran('month')" data-i18n="Month">Month</button>
 			</div>
 			<div class="ew-field">
-				<select ng-model="year" ng-options="y for y in years" style="width:90px;"></select>
+				<select ng-model="year" ng-change="yearChanged()" ng-options="y for y in years" style="width:90px;"></select>
 				<select ng-show="gran == 'day'" ng-model="month" ng-options="m.id as m.name for m in months" style="width:140px;"></select>
 			</div>
 			<div class="ew-field">
