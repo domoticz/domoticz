@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <json/json.h>
 #include <algorithm>
+#include <map>
 #include "WebServer.h"
 #include "WebAssetFetch.h"
 #include "WebServerHelper.h"
@@ -1345,6 +1346,9 @@ namespace http
 			std::set<std::string> _HiddenDevices;
 			bool bAllowDeviceToBeHidden = false;
 
+			// Preserve first-result order; scenes/groups and devices have separate ID namespaces.
+			std::map<std::string, int> sceneResults;
+			std::map<std::string, int> deviceResults;
 			int ii = 0;
 			if (rfilter == "all")
 			{
@@ -1412,6 +1416,19 @@ namespace http
 								continue;
 							}
 
+							const auto existing = sceneResults.find(sd[0]);
+							if (existing != sceneResults.end())
+							{
+								auto& plans = root["result"][existing->second]["PlanIDs"];
+								const int plan = atoi(sd[9].c_str());
+								bool found = false;
+								for (const auto& value : plans)
+									found = found || value.asInt() == plan;
+								if (!found)
+									plans.append(plan);
+								continue;
+							}
+
 							if (scenetype == 0)
 							{
 								root["result"][ii]["Type"] = "Scene";
@@ -1422,21 +1439,6 @@ namespace http
 							{
 								root["result"][ii]["Type"] = "Group";
 								root["result"][ii]["TypeImg"] = "group";
-							}
-
-							// has this scene/group already been seen, now with different plan?
-							// assume results are ordered such that same device is adjacent
-							// if the idx and the Type are equal (type to prevent matching against Scene with same idx)
-							std::string thisIdx = sd[0];
-
-							if ((ii > 0) && thisIdx == root["result"][ii - 1]["idx"].asString())
-							{
-								std::string typeOfThisOne = root["result"][ii]["Type"].asString();
-								if (typeOfThisOne == root["result"][ii - 1]["Type"].asString())
-								{
-									root["result"][ii - 1]["PlanIDs"].append(atoi(sd[9].c_str()));
-									continue;
-								}
 							}
 
 							root["result"][ii]["idx"] = sd[0];
@@ -1468,6 +1470,7 @@ namespace http
 							}
 							root["result"][ii]["XOffset"] = atoi(sd[7].c_str());
 							root["result"][ii]["YOffset"] = atoi(sd[8].c_str());
+							sceneResults.emplace(sd[0], ii);
 							ii++;
 						}
 					}
@@ -1488,7 +1491,7 @@ namespace http
 						" A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2,"
 						" A.Protected, IFNULL(B.XOffset,0), IFNULL(B.YOffset,0), IFNULL(B.PlanID,0), A.Description,"
 						" A.Options, A.Color, A.Icon "
-						"FROM DeviceStatus A LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) "
+						"FROM DeviceStatus A LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) "
 						"WHERE (A.ID IN (%q))",
 						rowid.c_str());
 				}
@@ -1599,12 +1602,14 @@ namespace http
 						" A.SwitchType, A.HardwareID, A.AddjValue,"
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
-						" A.StrParam2, A.Protected, 0 as XOffset,"
-						" 0 as YOffset, 0 as PlanID, A.Description,"
+						" A.StrParam2, A.Protected, IFNULL(C.XOffset,0),"
+						" IFNULL(C.YOffset,0), IFNULL(C.PlanID,0), A.Description,"
 						" A.Options, A.Color, A.Icon "
 						"FROM DeviceStatus as A, SharedDevices as B "
-						"WHERE (B.DeviceRowID==a.ID)"
-						" AND (B.SharedUserID==%lu) AND (A.ID IN (%q))",
+						"LEFT OUTER JOIN DeviceToPlansMap as C ON (C.DeviceRowID==A.ID) AND (C.DevSceneType==0) "
+						"WHERE (B.DeviceRowID==A.ID)"
+						" AND (B.SharedUserID==%lu) AND (A.ID IN (%q))"
+						" ORDER BY A.ID",
 						m_users[iUser].ID, rowid.c_str());
 				}
 				else if ((!planID.empty()) && (planID != "0"))
@@ -1619,7 +1624,7 @@ namespace http
 						" A.Options, A.Color, A.Icon "
 						"FROM DeviceStatus as A, SharedDevices as B,"
 						" DeviceToPlansMap as C "
-						"WHERE (C.PlanID=='%q') AND (C.DeviceRowID==a.ID)"
+						"WHERE (C.PlanID=='%q') AND (C.DeviceRowID==a.ID) AND (C.DevSceneType==0)"
 						" AND (B.DeviceRowID==a.ID) "
 						"AND (B.SharedUserID==%lu) ORDER BY C.[Order]",
 						planID.c_str(), m_users[iUser].ID);
@@ -1636,7 +1641,7 @@ namespace http
 						"FROM DeviceStatus as A, SharedDevices as B,"
 						" DeviceToPlansMap as C, Plans as D "
 						"WHERE (D.FloorplanID=='%q') AND (D.ID==C.PlanID)"
-						" AND (C.DeviceRowID==a.ID) AND (B.DeviceRowID==a.ID)"
+						" AND (C.DeviceRowID==a.ID) AND (C.DevSceneType==0) AND (B.DeviceRowID==a.ID)"
 						" AND (B.SharedUserID==%lu) ORDER BY C.[Order]",
 						floorID.c_str(), m_users[iUser].ID);
 				else
@@ -1679,7 +1684,7 @@ namespace http
 						" IFNULL(C.YOffset,0), IFNULL(C.PlanID,0), A.Description,"
 						" A.Options, A.Color, A.Icon "
 						"FROM DeviceStatus as A, SharedDevices as B "
-						"LEFT OUTER JOIN DeviceToPlansMap as C  ON (C.DeviceRowID==A.ID)"
+						"LEFT OUTER JOIN DeviceToPlansMap as C  ON (C.DeviceRowID==A.ID) AND (C.DevSceneType==0) "
 						"WHERE (B.DeviceRowID==A.ID)"
 						" AND (B.SharedUserID==%lu) ORDER BY ");
 					szQuery += szOrderBy;
@@ -1832,20 +1837,19 @@ namespace http
 						}
 					}
 
-					// has this device already been seen, now with different plan?
-					// assume results are ordered such that same device is adjacent
-					// if the idx and the Type are equal (type to prevent matching against Scene with same idx)
 					std::string thisIdx = sd[0];
 					const int devIdx = atoi(thisIdx.c_str());
-
-					if ((ii > 0) && thisIdx == root["result"][ii - 1]["idx"].asString())
+					const auto existing = deviceResults.find(sd[0]);
+					if (existing != deviceResults.end())
 					{
-						std::string typeOfThisOne = RFX_Type_Desc(dType, 1);
-						if (typeOfThisOne == root["result"][ii - 1]["Type"].asString())
-						{
-							root["result"][ii - 1]["PlanIDs"].append(atoi(sd[26].c_str()));
-							continue;
-						}
+						auto& plans = root["result"][existing->second]["PlanIDs"];
+						const int plan = atoi(sd[26].c_str());
+						bool found = false;
+						for (const auto& value : plans)
+							found = found || value.asInt() == plan;
+						if (!found)
+							plans.append(plan);
+						continue;
 					}
 
 					root["result"][ii]["HardwareID"] = hardwareID;
@@ -4260,6 +4264,7 @@ namespace http
 					}
 #endif
 					root["result"][ii]["Timers"] = (bHasTimers == true) ? "true" : "false";
+					deviceResults.emplace(thisIdx, ii);
 					ii++;
 				}
 				catch (const std::exception& e)
