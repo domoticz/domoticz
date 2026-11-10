@@ -3192,22 +3192,68 @@ void MQTTAutoDiscover::handle_auto_discovery_number(_tMQTTASensor* pSensor, cons
 {
 	if (!pSensor->bEnabled_by_default)
 		return;
+	// A 'number' marked as a configuration or diagnostic entity is a tuning knob, not primary device
+	// state (Home Assistant hides these behind the device's settings). Keep those in the gateway
+	// Configuration page only and do not create a Domoticz device for them. A plain 'number' with no
+	// entity_category is a primary, controllable value (for example a TRV valve position), so it is
+	// exposed as a settable Setpoint device below.
+	if ((pSensor->entity_category == "config") || (pSensor->entity_category == "diagnostic"))
+		return;
+	if (pSensor->command_topic.empty())
+		return; //not settable, nothing to control
 	if (pSensor->last_value.empty())
 		return;
 	if (!is_number(pSensor->last_value))
 		return;
 
-	return;
-	int iValue = atoi(pSensor->last_value.c_str());
+	double dValue = atof(pSensor->last_value.c_str());
 
-	for (auto& itt : m_discovered_sensors)
+	pSensor->nValue = 0;
+	pSensor->sValue = std_format("%g", dValue);
+	pSensor->devType = pTypeSetpoint;
+	pSensor->subType = sTypeSetpoint;
+
+	const uint8_t Unit = 1;
+	std::vector<std::vector<std::string>> result = m_sql.safe_query(
+		"SELECT ID, Name, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)",
+		m_HwdID, pSensor->unique_id.c_str(), Unit, pSensor->devType, pSensor->subType);
+	if (result.empty())
 	{
-		_tMQTTASensor* pDevSensor = &itt.second;
-		if (pDevSensor->device_identifiers == pSensor->device_identifiers)
+		// Insert
+		if (!m_sql.m_bAcceptNewHardware)
 		{
-			//nothing to be done here
-			//pDevSensor->number_current = iValue;
+			Log(LOG_NORM, "Accept new hardware disabled. Ignoring new sensor %s", pSensor->name.c_str());
+			return;
 		}
+		int iUsed = (m_bEnableNewDevicesByDefault && pSensor->bEnabled_by_default) ? 1 : 0;
+		m_sql.safe_query("INSERT INTO DeviceStatus (HardwareID, OrgHardwareID, DeviceID, Unit, Type, SubType, SignalLevel, BatteryLevel, Name, Used, nValue, sValue) "
+			"VALUES (%d, %d, '%q', %d, %d, %d, %d, %d, '%q', %d, %d, '%q')",
+			m_HwdID, 0, pSensor->unique_id.c_str(), Unit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel, pSensor->name.c_str(), iUsed,
+			pSensor->nValue, pSensor->sValue.c_str());
+		result = m_sql.safe_query("SELECT ID FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)",
+			m_HwdID, pSensor->unique_id.c_str(), Unit, pSensor->devType, pSensor->subType);
+		if (result.empty())
+			return;
+		// The options string is ';'/':' delimited, so a unit carrying those characters would corrupt it.
+		std::string szUnit;
+		for (char c : pSensor->unit_of_measurement)
+			if ((c != ';') && (c != ':'))
+				szUnit += c;
+		std::string new_options = std_format("ValueStep:%g;ValueMin:%g;ValueMax:%g;ValueUnit:%s;",
+			pSensor->number_step, pSensor->number_min, pSensor->number_max, szUnit.c_str());
+		uint64_t ullidx = std::stoull(result[0][0]);
+		m_sql.SetDeviceOptions(ullidx, m_sql.BuildDeviceOptions(new_options, false));
+	}
+	else
+	{
+		// Update
+		std::string sName = result[0][1];
+		std::string old_value = result[0][2];
+		if (old_value != pSensor->sValue)
+			UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), Unit, pSensor->devType, pSensor->subType, pSensor->SignalLevel, pSensor->BatteryLevel,
+				pSensor->nValue, pSensor->sValue.c_str(), sName);
+		else
+			m_sql.UpdateLastUpdate(result[0][0]);
 	}
 }
 
@@ -7106,6 +7152,57 @@ bool MQTTAutoDiscover::SetSetpoint(const std::string& DeviceID, const uint8_t Un
 	{
 		pSensor->pending_user = user;
 		pSensor->pending_user_time = time(nullptr);
+	}
+	if (pSensor->component_type == "number")
+	{
+		// A primary 'number' entity is exposed as a Setpoint device; a change is published to its
+		// command_topic, the same topic the Configuration page uses (see UpdateNumber).
+		if (pSensor->command_topic.empty())
+			return false;
+		// Written as !(in range) so a NaN value (atof can yield it) is rejected instead of slipping through.
+		if (!(Temp >= pSensor->number_min && Temp <= pSensor->number_max))
+		{
+			Log(LOG_ERROR, "number device value out of range (%s/%s)", DeviceID.c_str(), pSensor->name.c_str());
+			return false;
+		}
+		std::string szRawValue = std_format("%g", Temp);
+		std::string szSendValue = szRawValue;
+		// Honor command_template when present (Zigbee2MQTT numbers usually wrap the value in a JSON /set payload).
+		if (!pSensor->command_template.empty())
+		{
+			std::string szSendTemplate = pSensor->command_template;
+			CleanValueTemplate(szSendTemplate);
+			if (!RenderCommandTemplate(szSendTemplate, szRawValue, szSendValue, nullptr, true))
+			{
+				std::string szKey = GetValueTemplateKey(szSendTemplate);
+				if (szKey == "value")
+					szSendValue = szRawValue; //{{ value }}: the raw number, as Home Assistant sends it
+				else if (!szKey.empty())
+				{
+					Json::Value root;
+					root[szKey] = Temp;
+					szSendValue = JSonToRawString(root);
+				}
+				else
+				{
+					Log(LOG_ERROR, "number device unhandled command_template (%s/%s)", DeviceID.c_str(), pSensor->name.c_str());
+					return false;
+				}
+			}
+		}
+		SendMessage(pSensor->command_topic, szSendValue);
+
+		// Reflect the new value right away; the device may only echo it back later, or not at all.
+		std::vector<std::vector<std::string>> numresult = m_sql.safe_query(
+			"SELECT Name FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%q') AND (Unit==%d) AND (Type==%d) AND (Subtype==%d)",
+			m_HwdID, pSensor->unique_id.c_str(), Unit, pTypeSetpoint, sTypeSetpoint);
+		if (!numresult.empty())
+		{
+			std::string sName = numresult[0][0];
+			UpdateValueInt(m_HwdID, pSensor->unique_id.c_str(), Unit, pTypeSetpoint, sTypeSetpoint, pSensor->SignalLevel, pSensor->BatteryLevel,
+				0, szRawValue.c_str(), sName, true, user);
+		}
+		return true;
 	}
 	if (pSensor->component_type != "climate")
 	{
