@@ -123,7 +123,7 @@ namespace WebAssetFetch
 			return true;
 		}
 
-		bool ParseHttpURL(const std::string& szURL, std::string& szScheme, std::string& szAuthority, std::string& szPath)
+		bool ParseHttpURL(const std::string& szURL, std::string& szScheme, std::string& szAuthority, std::string& szPath, std::string* pszRequestURL = nullptr)
 		{
 			const size_t iSchemeEnd = szURL.find("://");
 			if (iSchemeEnd == std::string::npos)
@@ -139,6 +139,7 @@ namespace WebAssetFetch
 			// (for example http://127.0.0.1:8080?@1.1.1.1/): the filter below would check 1.1.1.1 while
 			// curl connects to 127.0.0.1, so the host used for validation must match the host curl uses.
 			const size_t iAuthEnd = szURL.find_first_of("/?#", iAuthStart);
+			std::string szRest;
 			if (iAuthEnd == std::string::npos)
 			{
 				szAuthority = szURL.substr(iAuthStart);
@@ -148,11 +149,33 @@ namespace WebAssetFetch
 			{
 				szAuthority = szURL.substr(iAuthStart, iAuthEnd - iAuthStart);
 				szPath = (szURL[iAuthEnd] == '/') ? szURL.substr(iAuthEnd) : "/";
+				szRest = szURL.substr(iAuthEnd);
 			}
 			if (szAuthority.empty())
 				return false;
 			if (szAuthority.find_first_of(" \t\r\n\\") != std::string::npos)
 				return false;
+			// A non-ASCII host would be IDN-encoded to punycode by some curl builds (libidn2) but not by
+			// the getaddrinfo validation here, so the host curl connects to could differ from the one that
+			// was validated. Require the punycode form, which both sides read the same way.
+			for (const char c : szAuthority)
+				if (static_cast<unsigned char>(c) >= 0x80)
+					return false;
+
+			if (pszRequestURL != nullptr)
+			{
+				// The URL actually handed to libcurl is rebuilt from the parts parsed here, with any
+				// userinfo (the "user@" before the host) stripped, so curl parses exactly the host this
+				// code validated. Handing curl the raw string instead lets the two parsers disagree about
+				// the host (for example http://a@127.0.0.1@1.1.1.1/ or http://1.1.1.1?@127.0.0.1/), which
+				// is the classic SSRF filter bypass. Scheme is normalised to lower case; the path, query
+				// and fragment are kept byte for byte.
+				std::string szHostPort = szAuthority;
+				const size_t iAt = szHostPort.rfind('@');
+				if (iAt != std::string::npos)
+					szHostPort = szHostPort.substr(iAt + 1);
+				*pszRequestURL = szScheme + "://" + szHostPort + szRest;
+			}
 			return true;
 		}
 
@@ -489,7 +512,8 @@ namespace WebAssetFetch
 				std::string szScheme;
 				std::string szAuthority;
 				std::string szPath;
-				if (!IsCleanURL(szCurrent) || !ParseHttpURL(szCurrent, szScheme, szAuthority, szPath))
+				std::string szRequestURL;
+				if (!IsCleanURL(szCurrent) || !ParseHttpURL(szCurrent, szScheme, szAuthority, szPath, &szRequestURL))
 				{
 					szError = "Only http:// and https:// URLs are supported";
 					return false;
@@ -503,7 +527,9 @@ namespace WebAssetFetch
 				std::vector<unsigned char> vResponse;
 				std::vector<std::string> vHeaderData;
 				const std::vector<std::string> vExtraHeaders;
-				if (!HTTPClient::GETBinary(szCurrent, vExtraHeaders, vResponse, vHeaderData, WEBASSET_HTTP_TIMEOUT, false, false, szResolve))
+				// Fetch the rebuilt URL (host stripped of userinfo), not the raw szCurrent, so curl
+				// connects to the host that CheckDestination just validated and pinned.
+				if (!HTTPClient::GETBinary(szRequestURL, vExtraHeaders, vResponse, vHeaderData, WEBASSET_HTTP_TIMEOUT, false, false, szResolve))
 				{
 					_log.Log(LOG_ERROR, "%s: could not fetch %s", LOGTAG, szCurrent.c_str());
 					szError = "Could not download " + szCurrent;
