@@ -52,15 +52,19 @@ history of its forecasts, so the plugin remembers them itself: on every fetch it
 are not published yet and, once the day-ahead price of such a slot is published, it adds the real price. The last
 forecast before publication counts, because that is what a planner would have used.
 
-- **Average error (MAE)**, **bias** (forecast minus real, above zero means too high) and **RMSE** of the last 14 days.
+- **Average error (MAE)**, **bias** (forecast minus real, above zero means too high) and **RMSE** of what the chart shows.
 - **Planning regret**: per complete day, how much more the period the forecast picked as cheapest (the *Cheap period*
   length setting) cost than the really cheapest period. This is the number that matters when you plan charging.
-- A chart per day with the real price, the forecast and the error, and a table per day.
+- A chart with the real price, the forecast and the error. Pick one of the last 7 days, an older day from the drop-down,
+  or **All**. Drag on the chart to zoom and hold Shift while dragging to scroll. A wide range shows daily or hourly
+  averages and zooming in loads finer data, down to the slots of a single day, so a year of history stays fast.
+- A scrollable table per day, click a row to open that day.
 
-The comparison starts when the plugin starts, so it is empty until the first day-ahead publication (around 13:00 CET) after
-that, and meaningful after a few days. Changing the region, price unit, surcharge, tax or hourly setting starts a new
-comparison, because old forecasts can no longer be compared. The data (30 days) is kept in
-`plugins/EpexPredictor/epex-data/epex_ledger_<hardware idx>.json`.
+The comparison starts the first time the plugin runs and then continues across restarts, so it is empty until the first
+day-ahead publication (around 13:00 CET) after that, and meaningful after a few days. A file that cannot be read is
+moved aside as `epex_ledger_<hardware idx>.json.gz.bad-<time>` and never overwritten. Changing the region, price unit, surcharge, tax or hourly setting starts a new
+comparison, because old forecasts can no longer be compared. The data (one year) is kept compressed in
+`plugins/EpexPredictor/epex-data/epex_ledger_<hardware idx>.json.gz`.
 
 ## Prices for other software (Node-RED, scripts)
 

@@ -176,22 +176,56 @@ def accuracy(pairs, tz, hours):
     """
     by_day = {}
     for ts, fc, act in pairs:
-        by_day.setdefault(_local(ts, tz).date(), []).append((ts, fc, act))
+        local = _local(ts, tz)  # once per row, a year of history is 35 thousand of them
+        by_day.setdefault(local.date(), []).append((ts, fc, act, local))
     days = []
     for day in sorted(by_day):
         rows = by_day[day]
-        entry = _error_stats(rows)
+        entry = _error_stats([r[:3] for r in rows])
         entry["date"] = day.isoformat()
-        fc_slots = [(_local(ts, tz), fc) for ts, fc, _ in rows]
-        act_slots = [(_local(ts, tz), act) for ts, _, act in rows]
+        fc_slots = [(local, fc) for _, fc, _, local in rows]
+        act_slots = [(local, act) for _, _, act, local in rows]
         entry["regret"] = day_regret(fc_slots, act_slots, hours)
         days.append(entry)
+    return {"summary": range_summary(pairs, days), "days": days}
+
+
+def range_points(pairs, tz, slot, max_points):
+    """Forecast versus real price of one time range, thinned to at most max_points points where hourly averages
+    allow it. pairs are (ts, forecast, actual).
+
+    Returns {"step", "points"}: points are [ts, forecast, actual, mae]. step is the slot length when every slot is
+    returned, 3600 for hourly averages and 86400 for daily averages (a day starts at local midnight). The resolution
+    follows from the span of the pairs, so a year gives about 365 points and a single day all its slots. Daily is
+    the coarsest step: a range of more than max_points days is not thinned further (the ledger keeps a year).
+    """
+    if not pairs:
+        return {"step": slot, "points": []}
+    span = pairs[-1][0] - pairs[0][0] + slot
+    if span / slot <= max_points:
+        return {"step": slot, "points": [[ts, fc, act, abs(fc - act)] for ts, fc, act in pairs]}
+    step = 3600 if span / 3600 <= max_points else 86400
+    buckets = {}
+    for ts, fc, act in pairs:
+        key = ts - ts % 3600 if step == 3600 else _local(ts, tz).date()
+        buckets.setdefault(key, []).append((fc, act))
+    points = []
+    for key in sorted(buckets):
+        rows = buckets[key]
+        n = len(rows)
+        start = key if step == 3600 else int(datetime.combine(key, datetime.min.time(), tzinfo=tz).timestamp())
+        points.append([start, sum(r[0] for r in rows) / n, sum(r[1] for r in rows) / n, sum(abs(r[0] - r[1]) for r in rows) / n])
+    return {"step": step, "points": points}
+
+
+def range_summary(pairs, days):
+    """Summary of the pairs of a range. days are the per day entries of accuracy() for the days inside the range."""
     summary = {"n": 0, "days": len(days), "mae": None, "bias": None, "rmse": None, "regret": None}
     if pairs:
         summary.update(_error_stats(pairs))
         regrets = [d["regret"] for d in days if d["regret"] is not None]
         summary["regret"] = sum(regrets) / len(regrets) if regrets else None
-    return {"summary": summary, "days": days}
+    return summary
 
 
 def hourly_average(slots):

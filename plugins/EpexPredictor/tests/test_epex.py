@@ -250,8 +250,123 @@ class LedgerTests(unittest.TestCase):
         led = epex_ledger.Ledger("sig")
         led.update(quarter_slots([1.0, 2.0]), T0 - timedelta(minutes=15), int(T0.timestamp()))
         self.assertEqual(len(led.rows), 2)
-        self.assertTrue(led.prune(int(T0.timestamp()) + 31 * 86400))
+        self.assertFalse(led.prune(int(T0.timestamp()) + 30 * 86400))  # a year is kept
+        self.assertTrue(led.prune(int(T0.timestamp()) + 366 * 86400))
         self.assertEqual(led.rows, {})
+
+    def test_revision_changes_with_the_rows(self):
+        led = epex_ledger.Ledger("sig")
+        self.assertEqual(led.revision, 0)
+        led.update(quarter_slots([1.0, 2.0]), T0 - timedelta(minutes=15), int(T0.timestamp()))
+        first = led.revision
+        self.assertGreater(first, 0)
+        led.update(quarter_slots([1.0, 2.0]), T0 - timedelta(minutes=15), int(T0.timestamp()))  # nothing new
+        self.assertEqual(led.revision, first)
+
+    def test_gzip_save_load_and_legacy_file(self):
+        led = epex_ledger.Ledger("a")
+        led.update(quarter_slots([1.0, 2.0]), T0, 100)
+        with tempfile.TemporaryDirectory() as tmp:
+            plain = os.path.join(tmp, "l.json")
+            gz = plain + ".gz"
+            led.save(plain)  # what an older version wrote
+            loaded = epex_ledger.Ledger.load(gz, "a")
+            self.assertEqual(len(loaded.rows), 1)  # read through the .gz path
+            self.assertTrue(os.path.exists(plain))  # loading alone removes nothing
+            loaded.save(gz)
+            self.assertFalse(os.path.exists(plain))  # the plain file is gone once its rows are in the compressed one
+            with open(gz, "rb") as fh:
+                self.assertEqual(fh.read(2), b"\x1f\x8b")
+            self.assertEqual(len(epex_ledger.Ledger.load(gz, "a").rows), 1)
+            with open(gz, "wb") as fh:
+                fh.write(b"not gzip")
+            self.assertEqual(epex_ledger.Ledger.load(gz, "a").rows, {})
+
+    def test_unreadable_file_is_moved_aside_not_overwritten(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            gz = os.path.join(tmp, "l.json.gz")
+            with open(gz, "wb") as fh:
+                fh.write(b"a year of history that is damaged or locked just now")
+            led = epex_ledger.Ledger.load(gz, "a")
+            self.assertEqual(led.rows, {})
+            self.assertEqual(led.unreadable, gz)
+            led.update(quarter_slots([1.0, 2.0]), T0, 100)
+            led.save(gz)
+            kept = [n for n in os.listdir(tmp) if ".bad-" in n]
+            self.assertEqual(len(kept), 1)  # the old bytes are still there
+            with open(os.path.join(tmp, kept[0]), "rb") as fh:
+                self.assertTrue(fh.read().startswith(b"a year of history"))
+            self.assertEqual(len(epex_ledger.Ledger.load(gz, "a").rows), 1)  # and the new ledger is readable
+            self.assertFalse(os.path.exists(gz + ".tmp"))
+            self.assertIsNone(epex_ledger.Ledger.load(gz, "a").unreadable)
+            # a file that is simply missing is an empty ledger, nothing to protect
+            self.assertIsNone(epex_ledger.Ledger.load(os.path.join(tmp, "none.json.gz"), "a").unreadable)
+
+    def test_corrupt_timestamps_are_skipped(self):
+        doc = {"signature": "s", "rows": [[1.5e12, 1.0, 0, 1.0], [-5, 1.0, 0, 1.0], [0, 1.0, 0, 1.0], [1700000000, 1.0, 0, 2.0]]}
+        led = epex_ledger.Ledger.from_json(doc, "s")
+        self.assertEqual(list(led.rows), [1700000000])
+
+    def test_rows_far_in_the_future_are_pruned(self):
+        led = epex_ledger.Ledger("s")
+        now = int(T0.timestamp())
+        led.rows[now + 7 * 86400] = {"fc": 1.0, "issued": now, "act": None}   # a normal forecast horizon
+        led.rows[now + 400 * 86400] = {"fc": 1.0, "issued": now, "act": 2.0}  # corrupt
+        self.assertFalse(led.prune(now))  # prune is about old rows
+        self.assertTrue(led.drop_future(now))
+        self.assertEqual(list(led.rows), [now + 7 * 86400])
+        self.assertFalse(led.drop_future(now))
+
+    def test_nan_issued_does_not_block_saving(self):
+        doc = {"signature": "s", "rows": [[1700000000, 1.0, float("nan"), 2.0], [1700000900, 1.0, "x", None]]}
+        led = epex_ledger.Ledger.from_json(doc, "s")
+        self.assertEqual([r["issued"] for r in led.rows.values()], [0, 0])
+        with tempfile.TemporaryDirectory() as tmp:
+            led.save(os.path.join(tmp, "l.json.gz"))  # does not raise
+
+    def test_locked_file_is_never_replaced_and_is_merged_once_readable(self):
+        import unittest.mock as mock
+        led = epex_ledger.Ledger("a")
+        led.update(quarter_slots([1.0, 2.0]), T0, 100)
+        with tempfile.TemporaryDirectory() as tmp:
+            gz = os.path.join(tmp, "l.json.gz")
+            led.save(gz)
+            with open(gz, "rb") as fh:
+                good = fh.read()
+
+            def locked(*a, **k):
+                raise PermissionError("in use")
+            with mock.patch.object(epex_ledger.gzip, "open", locked):
+                fresh = epex_ledger.Ledger.load(gz, "a")  # the plugin starts while an other program holds the file
+            self.assertEqual((fresh.rows, fresh.locked, fresh.unreadable), ({}, gz, None))
+            fresh.update(quarter_slots([5.0, 6.0, 7.0]), T0 - timedelta(minutes=15), 200)  # new forecasts come in
+            with mock.patch.object(epex_ledger.gzip, "open", locked):
+                with self.assertRaises(OSError):
+                    fresh.save(gz)  # still locked: nothing is written
+            with open(gz, "rb") as fh:
+                self.assertEqual(fh.read(), good)
+            fresh.save(gz)  # the file can be read again: its rows are merged in and nothing is lost
+            self.assertEqual(os.listdir(tmp), ["l.json.gz"])
+            merged = epex_ledger.Ledger.load(gz, "a")
+            self.assertEqual(len(merged.rows), len(set(fresh.rows) | set(led.rows)))
+            self.assertIsNone(merged.locked)
+
+    def test_unusable_legacy_file_is_never_deleted(self):
+        led = epex_ledger.Ledger("old settings")
+        led.update(quarter_slots([1.0, 2.0]), T0, 100)
+        with tempfile.TemporaryDirectory() as tmp:
+            plain = os.path.join(tmp, "l.json")
+            gz = plain + ".gz"
+            led.save(plain)
+            fresh = epex_ledger.Ledger.load(gz, "new settings")  # other settings: nothing is taken over
+            self.assertEqual(fresh.rows, {})
+            fresh.update(quarter_slots([3.0]), T0, 200)
+            fresh.save(gz)
+            self.assertTrue(os.path.exists(plain))  # the old data stays on disk
+            with open(plain, "w") as fh:
+                fh.write("garbage")
+            epex_ledger.Ledger.load(gz, "new settings").save(gz)
+            self.assertTrue(os.path.exists(plain))
 
     def test_save_load_and_signature_reset(self):
         led = epex_ledger.Ledger("a")
@@ -372,6 +487,51 @@ class AccuracyTests(unittest.TestCase):
         r = epex_logic.accuracy(self.pairs_for(act, act), CET, 1)
         self.assertAlmostEqual(r["days"][0]["regret"], 0.0)
         self.assertAlmostEqual(r["summary"]["mae"], 0.0)
+
+
+class RangePointsTests(unittest.TestCase):
+    def slots(self, days):
+        t0 = int(datetime(2027, 1, 1, 0, 0, tzinfo=CET).timestamp())
+        return [(t0 + 900 * i, 10.0 + (i % 96) / 10.0, 10.0) for i in range(96 * days)]
+
+    def test_a_day_keeps_every_slot(self):
+        r = epex_logic.range_points(self.slots(1), CET, 900, 400)
+        self.assertEqual((r["step"], len(r["points"])), (900, 96))
+        ts, fc, act, mae = r["points"][10]
+        self.assertAlmostEqual(mae, abs(fc - act))
+
+    def test_a_week_is_hourly(self):
+        r = epex_logic.range_points(self.slots(7), CET, 900, 400)
+        self.assertEqual((r["step"], len(r["points"])), (3600, 168))
+        self.assertEqual(r["points"][1][0] - r["points"][0][0], 3600)
+
+    def test_a_year_is_daily_and_stays_small(self):
+        r = epex_logic.range_points(self.slots(365), CET, 900, 400)
+        self.assertEqual((r["step"], len(r["points"])), (86400, 365))
+        first, second = r["points"][0], r["points"][1]
+        self.assertEqual(second[0] - first[0], 86400)
+        self.assertAlmostEqual(first[3], sum(abs(p[1] - p[2]) for p in self.slots(1)) / 96)
+
+    def test_daily_buckets_start_at_local_midnight_across_dst(self):
+        try:
+            from zoneinfo import ZoneInfo
+            tz = ZoneInfo("Europe/Amsterdam")
+        except Exception:  # noqa: BLE001
+            self.skipTest("no time zone database")
+        t0 = int(datetime(2027, 3, 20, 0, 0, tzinfo=tz).timestamp())
+        pairs = [(t0 + 900 * i, 5.0, 5.0) for i in range(96 * 30)]
+        r = epex_logic.range_points(pairs, tz, 900, 20)
+        self.assertEqual(r["step"], 86400)
+        for ts, *_ in r["points"]:
+            self.assertEqual((datetime.fromtimestamp(ts, tz).hour, datetime.fromtimestamp(ts, tz).minute), (0, 0))
+
+    def test_empty_and_summary(self):
+        self.assertEqual(epex_logic.range_points([], CET, 900, 400), {"step": 900, "points": []})
+        s = epex_logic.range_summary([], [])
+        self.assertEqual((s["n"], s["mae"], s["regret"]), (0, None, None))
+        s = epex_logic.range_summary([(0, 10.0, 8.0)], [{"regret": 1.0}, {"regret": None}, {"regret": 3.0}])
+        self.assertEqual((s["n"], s["days"]), (1, 3))
+        self.assertAlmostEqual(s["regret"], 2.0)
 
 
 if __name__ == "__main__":

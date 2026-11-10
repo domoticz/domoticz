@@ -43,6 +43,11 @@ table.ep-t { width: 100%; border-collapse: collapse; font-size: 0.88em; }
 .ep-t tr.ep-cheap td:first-child { box-shadow: inset 3px 0 0 var(--ep-green); }
 .ep-t tr.ep-now td { background: rgba(67,164,211,0.16); font-weight: bold; }
 .ep-t tr.ep-now td:first-child { box-shadow: inset 3px 0 0 var(--ep-accent); }
+.ep-scroll { max-height: 360px; overflow-y: auto; }
+.ep-scroll thead th { position: sticky; top: 0; background: var(--dz-panel-bg, #2a3340); }
+.ep-t tr[ng-click] { cursor: pointer; }
+.ep-t tr.ep-sel td { background: rgba(67,164,211,0.16); }
+select.ep-btn { max-width: 160px; }
 .ep-bar { height: 10px; border-radius: 5px; min-width: 2px; }
 .ep-barcell { width: 40%; }
 .ep-kv { width: 100%; border-collapse: collapse; font-size: 0.88em; }
@@ -177,44 +182,53 @@ table.ep-t { width: 100%; border-collapse: collapse; font-size: 0.88em; }
       <div class="ep-cards" style="margin-top:0">
         <div class="ep-card">
           <div class="ep-label">{{ ::'Average error' | translate }} (MAE)</div>
-          <div class="ep-value">{{ fmt(acc().summary.mae) }} <small>{{s.unit}}</small></div>
-          <div class="ep-sub">{{ acc().summary.n }} {{ ::'slots' | translate }}, {{ acc().summary.days }} {{ ::'days' | translate }}</div>
+          <div class="ep-value">{{ fmt(accSum().mae) }} <small>{{s.unit}}</small></div>
+          <div class="ep-sub">{{ accSum().n }} {{ ::'slots' | translate }}, {{ accSum().days }} {{ ::'days' | translate }}</div>
         </div>
         <div class="ep-card">
           <div class="ep-label">{{ ::'Bias' | translate }}</div>
-          <div class="ep-value" ng-class="acc().summary.bias > 0 ? 'ep-red' : 'ep-green'">{{ acc().summary.bias > 0 ? '+' : '' }}{{ fmt(acc().summary.bias) }}</div>
-          <div class="ep-sub">{{ acc().summary.bias > 0 ? ('forecast too high' | translate) : ('forecast too low' | translate) }}</div>
+          <div class="ep-value" ng-class="accSum().bias > 0 ? 'ep-red' : 'ep-green'">{{ accSum().bias > 0 ? '+' : '' }}{{ fmt(accSum().bias) }}</div>
+          <div class="ep-sub">{{ accSum().bias > 0 ? ('forecast too high' | translate) : ('forecast too low' | translate) }}</div>
         </div>
         <div class="ep-card">
           <div class="ep-label">RMSE</div>
-          <div class="ep-value">{{ fmt(acc().summary.rmse) }} <small>{{s.unit}}</small></div>
+          <div class="ep-value">{{ fmt(accSum().rmse) }} <small>{{s.unit}}</small></div>
           <div class="ep-sub">{{ ::'large misses weigh more' | translate }}</div>
         </div>
-        <div class="ep-card" ng-if="acc().summary.regret !== null">
+        <div class="ep-card" ng-if="accSum().regret !== null">
           <div class="ep-label">{{ ::'Planning regret' | translate }} ({{ s.cheap_hours }} h)</div>
-          <div class="ep-value">{{ fmt(acc().summary.regret) }} <small>{{s.unit}}</small></div>
+          <div class="ep-value">{{ fmt(accSum().regret) }} <small>{{s.unit}}</small></div>
           <div class="ep-sub">{{ ::'extra cost of the forecast cheapest period' | translate }}</div>
         </div>
       </div>
       <div class="ep-section">
-        <h3>{{ ::'Forecast versus real price' | translate }} <small>{{ dayLabel(view.accDay) }}</small>
+        <h3>{{ ::'Forecast versus real price' | translate }} <small>{{ accTitle() }}</small>
           <span class="ep-seg">
-            <button class="ep-btn" ng-class="{active: view.accDay===d}" ng-repeat="d in accDays()" ng-click="setAccDay(d)">{{ dayShort(d) }}</button>
+            <button class="ep-btn" ng-class="{active: !view.accAll && view.accDay===d}" ng-repeat="d in recentAccDays()" ng-click="setAccDay(d)">{{ dayShort(d) }}</button>
+            <select class="ep-btn" ng-if="olderAccDays().length" ng-model="view.accOlder" ng-options="d as dayLabel(d) for d in olderAccDays()" ng-change="setAccDay(view.accOlder)">
+              <option value="">{{ ::'Older' | translate }}...</option>
+            </select>
+            <button class="ep-btn" ng-class="{active: view.accAll}" ng-click="setAccAll()">{{ ::'All' | translate }}</button>
           </span>
         </h3>
-        <div id="ep-chart" style="height: 340px"></div>
+        <div style="position:relative">
+          <div id="ep-chart" style="height: 340px"></div>
+          <div class="ep-help" ng-if="accLoading" style="position:absolute; top:8px; right:12px; margin:0">{{ ::'Loading...' | translate }}</div>
+        </div>
         <p class="ep-help">
           <span class="ep-blue">&#9632;</span> {{ ::'Real price' | translate }} &nbsp;
           <span class="ep-purple">&#9632;</span> {{ ::'Forecast made before publication' | translate }} &nbsp;
           <span class="ep-orange">&#9632;</span> {{ ::'Error (forecast minus real)' | translate }}
+          <br>{{ ::'Drag on the chart to zoom, hold Shift and drag to scroll. A wide range shows daily or hourly averages, zooming in loads finer data.' | translate }}
         </p>
       </div>
       <div class="ep-section">
         <h3>{{ ::'Per day' | translate }}</h3>
+        <div class="ep-scroll">
         <table class="ep-t">
           <thead><tr><th>{{ ::'Day' | translate }}</th><th class="n">MAE</th><th class="n">{{ ::'Bias' | translate }}</th><th class="n">RMSE</th><th class="n">{{ ::'Regret' | translate }}</th><th class="ep-barcell"></th></tr></thead>
           <tbody>
-            <tr ng-repeat="d in accRows()" ng-click="setAccDay(d.date)">
+            <tr ng-repeat="d in accRows()" ng-click="setAccDay(d.date)" ng-class="{'ep-sel': !view.accAll && view.accDay===d.date}">
               <td>{{ dayLabel(d.date) }}</td>
               <td class="n">{{ fmt(d.mae) }}</td>
               <td class="n">{{ d.bias > 0 ? '+' : '' }}{{ fmt(d.bias) }}</td>
@@ -224,6 +238,7 @@ table.ep-t { width: 100%; border-collapse: collapse; font-size: 0.88em; }
             </tr>
           </tbody>
         </table>
+        </div>
         <p class="ep-help">{{ ::'Bias above zero means the forecast was higher than the real price. Regret is the average extra price of the period the forecast picked as cheapest compared with the really cheapest period of that day (complete days only).' | translate }}</p>
       </div>
     </div>
@@ -281,10 +296,10 @@ app.controller('epexCtrl', function ($scope, $timeout, $interval, $element, live
 
   $scope.s = null; $scope.tab = 'overview'; $scope.toast = '';
   $scope.cur = null; $scope.nxt = null; $scope.rows = [];
-  $scope.ranges = [{ key: 'today', label: 'Today' }, { key: 'tomorrow', label: 'Tomorrow' }, { key: 'next24', label: 'Next 24 h' }, { key: 'all', label: 'All' }];
+  $scope.ranges = [{ key: 'today', label: 'Today' }, { key: 'tomorrow', label: 'Tomorrow' }, { key: 'todaytomorrow', label: 'Today + tomorrow' }, { key: 'next24', label: 'Next 24 h' }, { key: 'all', label: 'All' }];
   var STORE = 'epex.view', saved = {};
   try { saved = JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { saved = {}; }
-  $scope.view = { range: ['today', 'tomorrow', 'next24', 'all'].indexOf(saved.range) >= 0 ? saved.range : 'next24', day: null, accDay: null };
+  $scope.view = { range: $scope.ranges.some(function (r) { return r.key === saved.range; }) ? saved.range : 'next24', day: null, accDay: null, accAll: false, accOlder: null };
   function saveView() { try { localStorage.setItem(STORE, JSON.stringify({ range: $scope.view.range })); } catch (e) { /* storage not available */ } }
 
   function p2(n) { return n < 10 ? '0' + n : '' + n; }
@@ -325,7 +340,12 @@ app.controller('epexCtrl', function ($scope, $timeout, $interval, $element, live
     if (!d || !d.type) { return; }
     $scope.$evalAsync(function () {
       if (d.type === 'snapshot') { snaps[String(d.hwid)] = d; pick(); }
-      else if (d.type === 'error') { toast(d.error); }
+      else if (d.type === 'acc_range') { onAccRange(d); }
+      else if (d.type === 'error') {
+        // an error that answers an old request must not stop the loading mark of a newer one
+        if (d.req === undefined || d.req === null || d.req === accFullReq) { $scope.accLoading = false; }
+        toast(d.error);
+      }
     });
   });
   livesocket.subscribePlugin(KEY);
@@ -388,9 +408,14 @@ app.controller('epexCtrl', function ($scope, $timeout, $interval, $element, live
     var now = Date.now() / 1000, p = $scope.s.prices, today = dayKey(now), r = $scope.view.range;
     if (r === 'all') { return [p[0][0], p[p.length - 1][0] + $scope.s.slot_seconds]; }
     if (r === 'next24') { var st = (slotIndex(now) >= 0 ? p[slotIndex(now)][0] : now); return [st - 3600, st + DAY]; }
-    var from = null, to = null, want = r === 'today' ? today : null;
+    var from = null, to = null, want = r === 'today' || r === 'todaytomorrow' ? today : null, last = null;
     if (r === 'tomorrow') { var ds = $scope.days(), ix = ds.indexOf(today); want = ix >= 0 ? ds[ix + 1] : null; }
-    p.forEach(function (x) { if (dayKey(x[0]) === want) { if (from === null) { from = x[0]; } to = x[0] + $scope.s.slot_seconds; } });
+    // today and tomorrow: from the start of today to the end of the data, which is at most the end of tomorrow
+    if (r === 'todaytomorrow') { var ds2 = $scope.days(), ix2 = ds2.indexOf(today); last = ix2 >= 0 ? ds2[Math.min(ix2 + 1, ds2.length - 1)] : null; }
+    p.forEach(function (x) {
+      var k = dayKey(x[0]);
+      if (k === want || (last !== null && k >= want && k <= last)) { if (from === null) { from = x[0]; } to = x[0] + $scope.s.slot_seconds; }
+    });
     return from === null ? [now, now + DAY] : [from, to];
   }
 
@@ -432,7 +457,8 @@ app.controller('epexCtrl', function ($scope, $timeout, $interval, $element, live
     host.removeChild(probe);
     return v || fallback;
   }
-  function destroy() { if (chart) { chart.destroy(); chart = null; } }
+  var chartKind = null;
+  function destroy() { if (chart) { chart.destroy(); chart = null; } chartKind = null; }
 
   function drawChart() {
     destroy();
@@ -477,9 +503,103 @@ app.controller('epexCtrl', function ($scope, $timeout, $interval, $element, live
   }
 
   // ---------------------------------------------------------------- forecast accuracy
-  var EMPTY_ACC = { summary: { n: 0 }, days: [], slots: [] };
+  // The snapshot only holds the per day figures of the whole history. The points of the chart are asked for
+  // per range (command acc_range), so a year costs as little as a day: the plugin thins the data to about
+  // 400 points, and zooming in asks for the finer data of just that part.
+  var EMPTY_ACC = { summary: { n: 0 }, days: [] };
+  var RECENT_DAYS = 7, ACC_POINTS = 400;
   $scope.acc = function () { return ($scope.s && $scope.s.accuracy) || EMPTY_ACC; };
   $scope.accDays = function () { return $scope.acc().days.map(function (d) { return d.date; }); };
+  $scope.recentAccDays = function () { return $scope.accDays().slice(-RECENT_DAYS); };
+  $scope.olderAccDays = function () { return $scope.accDays().slice(0, -RECENT_DAYS).reverse(); };
+  $scope.accLoading = false;
+  var accSel = null, accData = null, accShown = null, accSeq = 0, accWant = 0, accFullReq = 0, accTimer = null, accLoadTimer = null, accStep = 0;
+  $scope.accSum = function () { return (accData && accData.summary) || $scope.acc().summary; };
+  $scope.accTitle = function () { return $scope.view.accAll ? 'All' : $scope.dayLabel($scope.view.accDay); };
+
+  // the inverse of wallMs: the epoch seconds of a wall clock time in the region
+  function wallToTs(ms) {
+    var g = ms / 1000;
+    g -= wallMs(g) / 1000 - g;
+    return Math.round(ms / 1000 - (wallMs(g) / 1000 - g));
+  }
+  function dayBounds(k) {
+    var a = k.split('-');
+    return [wallToTs(Date.UTC(+a[0], +a[1] - 1, +a[2])), wallToTs(Date.UTC(+a[0], +a[1] - 1, +a[2] + 1))];
+  }
+  function accRequest(start, end, full, points) {
+    accWant = ++accSeq;
+    if (full) {
+      accFullReq = accWant;
+      $scope.accLoading = true;
+      // a lost reply (socket reconnect, plugin restart) must not leave the page loading forever
+      if (accLoadTimer) { $timeout.cancel(accLoadTimer); }
+      var req = accWant;
+      accLoadTimer = $timeout(function () { accLoadTimer = null; if (accFullReq === req && $scope.accLoading) { $scope.accLoading = false; toast('No answer from the plugin'); } }, 15000);
+    }
+    send('acc_range', { hwid: $scope.s.hwid, start: Math.floor(start), end: Math.ceil(end), max_points: points || ACC_POINTS, req: accWant, full: !!full });
+  }
+  function selectAcc(start, end) {
+    // a zoom that is still waiting for its timer belongs to the old selection
+    if (accTimer) { $timeout.cancel(accTimer); accTimer = null; }
+    accSel = { start: start, end: end };
+    accData = accShown = null;
+    accRequest(start, end, true);
+  }
+  $scope.setAccDay = function (d) {
+    if (!d) { return; }
+    $scope.view.accDay = d; $scope.view.accAll = false;
+    if ($scope.recentAccDays().indexOf(d) >= 0) { $scope.view.accOlder = null; }
+    var b = dayBounds(d);
+    selectAcc(b[0], b[1]);
+  };
+  $scope.setAccAll = function () {
+    var days = $scope.accDays();
+    if (!days.length) { return; }
+    $scope.view.accAll = true; $scope.view.accOlder = null;
+    selectAcc(dayBounds(days[0])[0], dayBounds(days[days.length - 1])[1]);
+  };
+  // the first visit of the tab picks the latest day, later visits redraw what was loaded
+  function accShow() {
+    var days = $scope.accDays();
+    if (!days.length) { return; }
+    if (!accSel) {
+      if (days.indexOf($scope.view.accDay) < 0) { $scope.view.accDay = days[days.length - 1]; }
+      $scope.setAccDay($scope.view.accDay);
+    } else if (!chart && accData) {
+      drawAccChart();
+    }
+  }
+  function onAccRange(d) {
+    if ($scope.s && String(d.hwid) !== String($scope.s.hwid)) { return; }  // another hardware answered
+    // the answer to the latest request, or to the latest selection when a zoom was asked for after it
+    if (d.req !== accWant && !(d.full && d.req === accFullReq)) { return; }
+    $scope.accLoading = false;
+    if (d.full) {
+      if (accLoadTimer) { $timeout.cancel(accLoadTimer); accLoadTimer = null; }
+      accWant = d.req;  // a zoom asked for on the chart that this reply replaces is of no use any more
+      accData = accShown = d;
+      if ($scope.tab === 'accuracy') { $timeout(drawAccChart, 0); }
+    } else if (chart && $scope.tab === 'accuracy') {
+      accShown = d;
+      applyAccSeries(d, true);
+    }
+  }
+  // zoom or scroll: ask for the visible part with a margin, so a small scroll stays covered
+  function onAccExtremes(e) {
+    if (!accSel || e.min === undefined || e.max === undefined || e.min === null || e.max === null) { return; }
+    if (accTimer) { $timeout.cancel(accTimer); }
+    accTimer = $timeout(function () {
+      accTimer = null;
+      var width = e.max - e.min;
+      if (Math.abs(e.min - wallMs(accSel.start)) < 2000 && Math.abs(e.max - wallMs(accSel.end)) < 2000) {
+        // back at the selection: the data loaded for it is still there
+        if (accData && accShown !== accData && chart) { accShown = accData; accWant = ++accSeq; applyAccSeries(accData, true); }
+        return;
+      }
+      accRequest(wallToTs(e.min - width / 2), wallToTs(e.max + width / 2), false, ACC_POINTS * 2);
+    }, 250);
+  }
   var accCache = null, accRowsOut = [];
   $scope.accRows = function () {
     var acc = $scope.acc();
@@ -492,38 +612,60 @@ app.controller('epexCtrl', function ($scope, $timeout, $interval, $element, live
     }
     return accRowsOut;
   };
-  $scope.setAccDay = function (d) { $scope.view.accDay = d; $scope.viewChanged(); };
+  // points are [ts, forecast, real, mae]; a slot per point, or an hourly or daily average when the range is wide
+  function accSeries(d) {
+    var real = [], fc = [], err = [];
+    d.points.forEach(function (p) {
+      var x = wallMs(p[0]);
+      real.push([x, p[2]]); fc.push([x, p[1]]); err.push({ x: x, y: p[1] - p[2], mae: p[3] });
+    });
+    return { real: real, fc: fc, err: err };
+  }
+  function applyAccSeries(d, redraw) {
+    var data = accSeries(d), line = d.step <= $scope.s.slot_seconds ? 'left' : false;
+    accStep = d.step;
+    chart.series[0].update({ step: line }, false); chart.series[0].setData(data.real, false);
+    chart.series[1].update({ step: line }, false); chart.series[1].setData(data.fc, false);
+    chart.series[2].setData(data.err, false);
+    if (redraw) { chart.redraw(false); }
+  }
+  function accTooltip() {
+    var s = $scope.s, slot = s.slot_seconds;
+    var head = Highcharts.dateFormat(accStep >= 86400 ? '%a %d-%m-%Y' : '%a %d-%m %H:%M', this.x);
+    if (accStep > slot) { head += ' (' + (accStep >= 86400 ? 'day' : 'hour') + ' average)'; }
+    var out = '<b>' + head + '</b>';
+    this.points.forEach(function (p) {
+      out += '<br><span style="color:' + p.color + '">&#9679;</span> ' + p.series.name + ': ' + Highcharts.numberFormat(p.y, s.decimals) + ' ' + s.unit;
+      if (p.point.mae !== undefined) { out += ' (MAE ' + Highcharts.numberFormat(p.point.mae, s.decimals) + ')'; }
+    });
+    return out;
+  }
 
   function drawAccChart() {
     destroy();
-    var el = document.getElementById('ep-chart');
-    var acc = $scope.acc();
-    if (!el || typeof Highcharts === 'undefined' || !acc.slots.length) { return; }
-    var days = $scope.accDays();
-    if (days.indexOf($scope.view.accDay) < 0) { $scope.view.accDay = days[days.length - 1]; }
+    var el = document.getElementById('ep-chart'), d = accData;
+    if (!el || typeof Highcharts === 'undefined' || !d || $scope.tab !== 'accuracy') { return; }
     var s = $scope.s, MUTED = cssColor('--ep-muted', '#9ab'), GRID = 'rgba(128,128,128,0.2)';
-    var real = [], fc = [], err = [];
-    acc.slots.forEach(function (r) {
-      if (dayKey(r[0]) !== $scope.view.accDay) { return; }
-      var x = wallMs(r[0]);
-      real.push([x, r[2]]); fc.push([x, r[1]]); err.push([x, r[1] - r[2]]);
-    });
+    var data = accSeries(d), line = d.step <= s.slot_seconds ? 'left' : false;
+    accStep = d.step;
+    accShown = d;
     chart = Highcharts.chart(el, {
-      chart: { backgroundColor: 'transparent', zoomType: 'x', animation: false, spacingTop: 8 }, title: { text: null }, credits: { enabled: false },
+      chart: { backgroundColor: 'transparent', zoomType: 'x', animation: false, spacingTop: 8, panning: { enabled: true, type: 'x' }, panKey: 'shift' }, title: { text: null }, credits: { enabled: false },
       time: { useUTC: true }, legend: { enabled: false },
-      xAxis: { type: 'datetime', labels: { style: { color: MUTED, fontSize: '11px' } }, lineColor: GRID, tickColor: GRID, crosshair: true },
+      xAxis: { type: 'datetime', labels: { style: { color: MUTED, fontSize: '11px' } }, lineColor: GRID, tickColor: GRID, crosshair: true, min: wallMs(d.start), max: wallMs(d.end), events: { afterSetExtremes: onAccExtremes } },
       yAxis: [
         { title: { text: s.unit, style: { color: MUTED } }, labels: { style: { color: MUTED, fontSize: '11px' } }, gridLineColor: GRID, height: '66%' },
         { title: { text: 'error', style: { color: MUTED } }, labels: { style: { color: MUTED, fontSize: '10px' } }, gridLineColor: GRID, top: '74%', height: '26%', offset: 0, plotLines: [{ value: 0, color: 'rgba(128,128,128,0.6)', width: 1 }] }
       ],
-      tooltip: { shared: true, backgroundColor: 'rgba(20,28,40,0.95)', borderColor: 'rgba(255,255,255,0.2)', style: { color: '#e0e0e0' }, valueDecimals: s.decimals, valueSuffix: ' ' + s.unit, xDateFormat: '%a %d-%m %H:%M' },
+      tooltip: { shared: true, backgroundColor: 'rgba(20,28,40,0.95)', borderColor: 'rgba(255,255,255,0.2)', style: { color: '#e0e0e0' }, formatter: accTooltip },
       plotOptions: { series: { animation: false, marker: { enabled: false } } },
       series: [
-        { name: 'Real price', type: 'line', step: 'left', data: real, color: '#2f8cff', lineWidth: 2, yAxis: 0 },
-        { name: 'Forecast', type: 'line', step: 'left', data: fc, color: '#c8a0ff', dashStyle: 'ShortDash', lineWidth: 2, yAxis: 0 },
-        { name: 'Error', type: 'column', data: err, color: '#ffb74d', negativeColor: '#4fc3f7', pointPadding: 0, groupPadding: 0, borderWidth: 0, yAxis: 1 }
+        { name: 'Real price', type: 'line', step: line, data: data.real, color: '#2f8cff', lineWidth: 2, yAxis: 0 },
+        { name: 'Forecast', type: 'line', step: line, data: data.fc, color: '#c8a0ff', dashStyle: 'ShortDash', lineWidth: 2, yAxis: 0 },
+        { name: 'Error', type: 'column', data: data.err, color: '#ffb74d', negativeColor: '#4fc3f7', pointPadding: 0, groupPadding: 0, borderWidth: 0, yAxis: 1 }
       ]
     });
+    chartKind = 'acc';
   }
 
   var pending = null;
@@ -533,11 +675,14 @@ app.controller('epexCtrl', function ($scope, $timeout, $interval, $element, live
       pending = null;
       if (!$scope.s) { return; }
       derive();
-      var accDays = $scope.accDays();
-      if (accDays.length && accDays.indexOf($scope.view.accDay) < 0) { $scope.view.accDay = accDays[accDays.length - 1]; }
       if ($scope.tab === 'table') { buildRows(); }
       $timeout(function () {
-        if ($scope.tab === 'overview') { drawChart(); } else if ($scope.tab === 'accuracy') { drawAccChart(); } else { destroy(); }
+        if ($scope.tab === 'overview') { drawChart(); chartKind = chart ? 'overview' : null; }
+        else if ($scope.tab === 'accuracy') {
+          // a snapshot every minute must not throw the zoom of the accuracy chart away
+          if (chartKind !== 'acc') { destroy(); }
+          accShow();
+        } else { destroy(); }
       }, 0);
     }, 30);
   };
@@ -550,6 +695,9 @@ app.controller('epexCtrl', function ($scope, $timeout, $interval, $element, live
     if (off) { off(); off = null; }
     $interval.cancel(tick);
     $timeout.cancel(retry);
+    if (accTimer) { $timeout.cancel(accTimer); accTimer = null; }
+    if (accLoadTimer) { $timeout.cancel(accLoadTimer); accLoadTimer = null; }
+    if (pending) { $timeout.cancel(pending); pending = null; }
     livesocket.unsubscribePlugin(KEY);
     destroy();
   });

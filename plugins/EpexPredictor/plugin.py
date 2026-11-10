@@ -108,7 +108,8 @@ DEVICE_ID = "EPEX"
 
 (U_NOW, U_NEXT, U_AVG, U_MIN, U_MAX, U_TOMORROW, U_CHEAP, U_LEVEL, U_CHEAP_ON, U_KNOWN, U_ALERT, U_ERROR) = range(1, 13)
 DATA_DIR = os.path.join(_HERE, "epex-data")
-ACCURACY_DAYS = 14  # days of forecast versus real prices sent to the page
+RANGE_POINTS = (50, 1000)  # limits of the number of points the page may ask for in one accuracy range
+MAX_RANGE_SECONDS = 800 * 86400  # longest accuracy range the page may ask for, the ledger keeps a year
 ERROR_BACKOFF = 120  # seconds before a failed request is retried
 
 
@@ -154,6 +155,7 @@ class BasePlugin:
         self.tz_name = ""
         self.info = {}
         self.ledger = None
+        self._acc_cache = None
 
     # ------------------------------------------------------------------ logging
     def log(self, text):
@@ -188,7 +190,18 @@ class BasePlugin:
         self.client = epex_api.EpexClient(_text("ServerUrl", epex_api.DEFAULT_HOST))
         self._install_page()
         self._ensure_devices()
+        self._acc_cache = None
         self.ledger = epex_ledger.Ledger.load(self._ledger_path(), self._ledger_signature())
+        if self.ledger.unreadable:
+            Domoticz.Error("EPEX Predictor: cannot read %s, it is moved aside as .bad-<time> before the first new save" % self.ledger.unreadable)
+        elif self.ledger.locked:
+            Domoticz.Error("EPEX Predictor: %s is in use by another program, the history is not overwritten and is read again on the next save" % self.ledger.locked)
+        elif self.ledger.legacy_path:
+            # move the history of an older version to the compressed file right away, the next change may be hours away
+            try:
+                self.ledger.save(self._ledger_path())
+            except (OSError, ValueError, TypeError) as exc:
+                Domoticz.Error("EPEX Predictor: cannot save %s: %r" % (self._ledger_path(), exc))
         self.stopping = False
         self.inflight = False
         self.next_fetch = 0
@@ -309,7 +322,7 @@ class BasePlugin:
 
     # ------------------------------------------------------------------ forecast versus real prices
     def _ledger_path(self):
-        return os.path.join(DATA_DIR, "epex_ledger_%s.json" % self.hwid)
+        return os.path.join(DATA_DIR, "epex_ledger_%s.json.gz" % self.hwid)
 
     def _ledger_signature(self):
         """Forecasts made with other settings cannot be compared with the new prices, so a change starts a new ledger."""
@@ -324,27 +337,54 @@ class BasePlugin:
             self.ledger = epex_ledger.Ledger(signature)
         if self.known_until is None:
             self.dbg("the server gave no knownUntil, the forecast comparison cannot tell published prices from forecast")
-        if self.ledger.update(self.slots, self.known_until, int(time.time())):
+        dropped = self.ledger.drop_future(int(time.time()))
+        if self.ledger.update(self.slots, self.known_until, int(time.time())) or dropped:
             try:
                 self.ledger.save(self._ledger_path())
-            except OSError as exc:
+            except (OSError, ValueError, TypeError) as exc:
                 Domoticz.Error("EPEX Predictor: cannot save %s: %r" % (self._ledger_path(), exc))
-        acc = self.accuracy(self._now())
-        yesterday = (self._now().date() - timedelta(days=1)).isoformat()
-        for entry in acc["days"]:
-            if entry["date"] == yesterday:
-                self._write_unit(U_ERROR, 0, self._fmt(entry["mae"]))
+        # only yesterday is needed here, not the figures of the whole history
+        now = self._now()
+        tz = self._zone() or now.tzinfo
+        today = datetime.combine(now.date(), datetime.min.time(), tzinfo=tz)
+        pairs = self.ledger.pairs(int((today - timedelta(days=1)).timestamp()), int(today.timestamp()))
+        if pairs:
+            self._write_unit(U_ERROR, 0, self._fmt(epex_logic.range_summary(pairs, [])["mae"]))
 
     def accuracy(self, now):
-        """Forecast versus real price of the last ACCURACY_DAYS days, see epex_logic.accuracy."""
-        pairs = []
-        if self.ledger is not None:
-            first = now.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=ACCURACY_DAYS)
-            pairs = self.ledger.pairs(int(first.timestamp()))
+        """Summary and per day figures of all the history in the ledger, see epex_logic.accuracy.
+
+        Cached, because the page asks for it every minute and a year of history takes a moment to compute.
+        """
+        if self.ledger is None:
+            return {"summary": epex_logic.range_summary([], []), "days": []}
+        # the ledger itself is in the key (compared by identity), a new ledger can never match an old result
+        key = (self.ledger, self.ledger.revision, now.date(), _float("CheapHours", 3), self.tz_name)
+        if self._acc_cache and self._acc_cache[0] == key:
+            return self._acc_cache[1]
         # the real zone, not now.tzinfo (a fixed offset), so days that contain a DST switch are grouped right
-        result = epex_logic.accuracy(pairs, self._zone() or now.tzinfo, _float("CheapHours", 3))
-        result["slots"] = [[ts, round(fc, 5), round(act, 5)] for ts, fc, act in pairs]
+        result = epex_logic.accuracy(self.ledger.pairs(), self._zone() or now.tzinfo, _float("CheapHours", 3))
+        # the page gets every day on each snapshot, full float precision would only make it larger
+        for entry in [result["summary"]] + result["days"]:
+            for name in ("mae", "bias", "rmse", "regret"):
+                if entry.get(name) is not None:
+                    entry[name] = round(entry[name], 5)
+        self._acc_cache = (key, result)
         return result
+
+    def accuracy_range(self, start, end, max_points):
+        """Forecast versus real price between two unix times, thinned to about max_points points, see epex_logic.range_points."""
+        now = self._now()
+        tz = self._zone() or now.tzinfo
+        pairs = self.ledger.pairs(start, end) if self.ledger is not None else []
+        first = datetime.fromtimestamp(start, tz).date().isoformat()
+        last = datetime.fromtimestamp(max(start, end - 1), tz).date().isoformat()
+        days = [d for d in self.accuracy(now)["days"] if first <= d["date"] <= last]
+        out = epex_logic.range_points(pairs, tz, epex_logic.slot_seconds(self.slots) if self.slots else 900, max_points)
+        out["points"] = [[p[0], round(p[1], 5), round(p[2], 5), round(p[3], 5)] for p in out["points"]]
+        out["summary"] = epex_logic.range_summary(pairs, days)
+        out["start"], out["end"] = start, end
+        return out
 
     # ------------------------------------------------------------------ devices
     def _unit(self, unit):
@@ -576,26 +616,42 @@ class BasePlugin:
             "accuracy": self.accuracy(now),
         })
 
+    def _push_acc_range(self, msg):
+        try:
+            start, end = int(msg["start"]), int(msg["end"])
+            wanted = int(msg.get("max_points", 400))
+            if not (0 < start < end < epex_ledger.MAX_TS) or end - start > MAX_RANGE_SECONDS:
+                raise ValueError("range")
+            out = self.accuracy_range(start, end, max(RANGE_POINTS[0], min(RANGE_POINTS[1], wanted)))
+        except Exception as exc:  # noqa: BLE001 - whatever the page sent, it gets an answer and the plugin goes on
+            self.dbg("acc_range failed: %r" % exc)
+            self._send({"type": "error", "error": "bad range", "req": msg.get("req")})
+            return
+        out.update({"type": "acc_range", "req": msg.get("req"), "full": bool(msg.get("full"))})
+        self._send(out)
+
     def onWebSocketMessage(self, Data):
         try:
             msg = json.loads(Data) if isinstance(Data, str) else Data
-        except ValueError:
-            return
-        if not isinstance(msg, dict):
-            return
-        target = msg.get("hwid")
-        if target is not None and str(target) != self.hwid:
-            return
-        cmd = msg.get("cmd")
-        if cmd == "snapshot":
-            self._push_snapshot()
-        elif cmd == "refresh":
-            if time.time() - self.fetched_at > 60 and not self.inflight:
-                self.next_fetch = 0
-                self.error = ""
-            self._send({"type": "ack", "cmd": cmd})
-        else:
-            self._send({"type": "error", "error": "unknown command"})
+            if not isinstance(msg, dict):
+                return
+            target = msg.get("hwid")
+            if target is not None and str(target) != self.hwid:
+                return
+            cmd = msg.get("cmd")
+            if cmd == "snapshot":
+                self._push_snapshot()
+            elif cmd == "acc_range":
+                self._push_acc_range(msg)
+            elif cmd == "refresh":
+                if time.time() - self.fetched_at > 60 and not self.inflight:
+                    self.next_fetch = 0
+                    self.error = ""
+                self._send({"type": "ack", "cmd": cmd})
+            else:
+                self._send({"type": "error", "error": "unknown command"})
+        except Exception as exc:  # noqa: BLE001 - a message from a page must never break the plugin
+            self.dbg("websocket message failed: %r" % exc)
 
     # ------------------------------------------------------------------ device commands
     def onCommand(self, DeviceID, Unit, Command, Level, Color):
