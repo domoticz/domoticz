@@ -2845,6 +2845,8 @@ namespace http
 				{
 					m_users[iUser].Password = sNewPwd;
 					m_sql.safe_query("UPDATE Users SET Password='%q' WHERE (ID=%d)", sNewPwd.c_str(), m_users[iUser].ID);
+					// Log out the user's other sessions (other browsers/devices), keep the current one
+					RemoveUsersSessions(base64_encode(session.username), session);
 					LoadUsers();	// Make sure the new password is loaded in memory
 					root["status"] = "OK";
 				}
@@ -3415,7 +3417,7 @@ namespace http
 			// Keep the url content on the right of the '?'
 			std::vector<std::string> allParts;
 			StringSplit(req.uri, "?", allParts);
-			if (!allParts.empty())
+			if (allParts.size() >= 2)
 			{
 				// Split all url parts separated by a '&'
 				StringSplit(allParts[1], "&", allParameters);
@@ -4852,6 +4854,9 @@ namespace http
 				sstr >> LastUpdate;
 			}
 
+			// GetJSonDevices validates rid/hwidx/planid/floorid itself and returns an empty result for
+			// malformed input, so a bad filter yields an empty device list (the existing behaviour) and
+			// never reaches the SQL layer. No extra error path here, to keep the response shape stable.
 			root["status"] = "OK";
 			root["title"] = "Devices";
 			root["app_version"] = szAppVersion;

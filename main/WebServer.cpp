@@ -1289,24 +1289,34 @@ namespace http
 				}
 			}
 
-			char szOrderBy[50];
+			// Reject SQL injection: rowid is used as an integer id list (IN (...)), hardwareid/planID/floorID
+			// as a single integer id, and order as a column name. Anything else is not a valid request.
+			if ((!rowid.empty() && rowid.find_first_not_of("0123456789,") != std::string::npos)
+				|| (!hardwareid.empty() && hardwareid.find_first_not_of("0123456789") != std::string::npos)
+				|| (!planID.empty() && planID.find_first_not_of("0123456789") != std::string::npos)
+				|| (!floorID.empty() && floorID.find_first_not_of("0123456789") != std::string::npos))
+			{
+				return;
+			}
+
+			std::string szOrderBy;
 			std::string szQuery;
 			bool isAlpha = true;
 			const std::string orderBy = order;
 			for (char i : orderBy)
 			{
-				if (!isalpha(i))
+				if (!isalpha(static_cast<unsigned char>(i)))
 				{
 					isAlpha = false;
 				}
 			}
 			if (order.empty() || (!isAlpha))
 			{
-				strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
+				szOrderBy = "A.[Order],A.LastUpdate DESC";
 			}
 			else
 			{
-				sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
+				szOrderBy = "A.[Order],A." + order + " ASC";
 			}
 
 			unsigned char tempsign = m_sql.m_tempsign[0];
@@ -1544,10 +1554,10 @@ namespace http
 					}
 
 					if (order.empty() || (!isAlpha))
-						strcpy(szOrderBy, "A.[Order],A.LastUpdate DESC");
+						szOrderBy = "A.[Order],A.LastUpdate DESC";
 					else
 					{
-						sprintf(szOrderBy, "A.[Order],A.%s ASC", order.c_str());
+						szOrderBy = "A.[Order],A." + order + " ASC";
 					}
 					//_log.Log(LOG_STATUS, "Getting all devices: order by %s", szOrderBy);
 					if (!hardwareid.empty())
@@ -1662,11 +1672,11 @@ namespace http
 
 					if (order.empty() || (!isAlpha))
 					{
-						strcpy(szOrderBy, "B.[Order],A.LastUpdate DESC");
+						szOrderBy = "B.[Order],A.LastUpdate DESC";
 					}
 					else
 					{
-						sprintf(szOrderBy, "B.[Order],A.%s ASC", order.c_str());
+						szOrderBy = "B.[Order],A." + order + " ASC";
 					}
 					// _log.Log(LOG_STATUS, "Getting all devices for user %lu", m_users[iUser].ID);
 					szQuery = ("SELECT A.ID, A.DeviceID, A.Unit, A.Name, A.Used,"

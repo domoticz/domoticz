@@ -134,16 +134,20 @@ namespace WebAssetFetch
 				return false;
 
 			const size_t iAuthStart = iSchemeEnd + 3;
-			const size_t iPathStart = szURL.find('/', iAuthStart);
-			if (iPathStart == std::string::npos)
+			// The authority ends at the first '/', '?' or '#', the same way curl and RFC 3986 parse it.
+			// Ending it only at '/' let an attacker hide the real host behind a '?' or '#'
+			// (for example http://127.0.0.1:8080?@1.1.1.1/): the filter below would check 1.1.1.1 while
+			// curl connects to 127.0.0.1, so the host used for validation must match the host curl uses.
+			const size_t iAuthEnd = szURL.find_first_of("/?#", iAuthStart);
+			if (iAuthEnd == std::string::npos)
 			{
 				szAuthority = szURL.substr(iAuthStart);
 				szPath = "/";
 			}
 			else
 			{
-				szAuthority = szURL.substr(iAuthStart, iPathStart - iAuthStart);
-				szPath = szURL.substr(iPathStart);
+				szAuthority = szURL.substr(iAuthStart, iAuthEnd - iAuthStart);
+				szPath = (szURL[iAuthEnd] == '/') ? szURL.substr(iAuthEnd) : "/";
 			}
 			if (szAuthority.empty())
 				return false;

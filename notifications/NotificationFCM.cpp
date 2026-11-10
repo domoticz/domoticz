@@ -110,11 +110,17 @@ bool CNotificationFCM::SendMessageImplementation(
 	uint64_t AltIdx = Idx;
 	std::string sMidx, sExtraData;
 	std::vector<std::string> vExtraData;
+	bool bHasMidx = false;
 	if (!ExtraData.empty()) {
 		_log.Debug(DEBUG_EVENTSYSTEM, "FCM: ExtraData found! (%s) (deviceid %ld)", ExtraData.c_str(), static_cast<unsigned long>(Idx));
 		if (ExtraData.find("midx_") != std::string::npos) {
+			bHasMidx = true;
 			sMidx = ExtraData.substr(5);
 			stdreplace(sMidx, ";", ",");
+			// sMidx is used below as an id list in "ID IN (...)"; allow only digits, commas and spaces
+			// so a list like "1, 2" is kept as is. Do not strip spaces: that would merge "1 2" into "12".
+			if (sMidx.find_first_not_of("0123456789, ") != std::string::npos)
+				sMidx.clear();
 		}
 		else if (ExtraData.find("|") != std::string::npos) {
 			if (ExtraData.find("|Device=") == 0) {
@@ -135,6 +141,13 @@ bool CNotificationFCM::SendMessageImplementation(
 		else {
 			sExtraData = ExtraData;
 		}
+	}
+
+	// A targeted send (midx_) with an invalid or empty device list must not fall back to every
+	// active device: drop it rather than broadcasting to recipients that were not intended.
+	if (bHasMidx && sMidx.empty()) {
+		_log.Log(LOG_ERROR, "FCM: invalid device list in notification target, not sending");
+		return true;
 	}
 
 	//Get All Devices

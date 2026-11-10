@@ -22,6 +22,7 @@
 #include <openssl/evp.h>
 #include <openssl/sha.h>
 #include <openssl/err.h>
+#include <openssl/rand.h>
 
 #include <chrono>
 #include <limits.h>
@@ -1625,16 +1626,27 @@ std::string GenerateUUID() // DCE/RFC 4122
 	//uuid[19] = ' '; //N Variant 1 UUIDs (10xx N=8..b, 2 bits)
 	uuid[23] = '-';
 
-	std::random_device rd;  // a seed source for the random number engine
-	std::mt19937 gen(rd()); // mersenne_twister_engine seeded with rd()
-	std::uniform_int_distribution<> distrib_F(0, 0x0F);
-	std::uniform_int_distribution<> distrib_3(0, 0x03);
+	// Use a cryptographically secure source. These UUIDs are used for secrets such as OAuth2
+	// signing keys, refresh tokens and authorization codes, not only device ids, so the previous
+	// mt19937 seeded with a single 32-bit value did not give enough entropy.
+	uint8_t rnd[36];
+	if (RAND_bytes(rnd, sizeof(rnd)) != 1)
+	{
+		// Only if the CSPRNG is unavailable: fill from random_device directly. Seeding an mt19937
+		// from a single random_device value would cap the entropy at 2^32, the very weakness this
+		// change removes. random_device reads the OS entropy source (/dev/urandom, BCryptGenRandom)
+		// on the supported platforms.
+		std::random_device rd;
+		for (unsigned char& r : rnd)
+			r = static_cast<uint8_t>(rd() & 0xFF);
+	}
 
 	for (size_t ii = 0; ii < uuid.size(); ii++)
 	{
 		if (uuid[ii] == ' ')
 		{
-			uuid[ii] = hexCHARS[(ii == 19) ? (8 + (distrib_3(gen) & 0x03)) : distrib_F(gen) & 0x0F];
+			const uint8_t nibble = rnd[ii] & 0x0F;
+			uuid[ii] = hexCHARS[(ii == 19) ? (8 + (nibble & 0x03)) : nibble];
 		}
 	}
 	return uuid;
