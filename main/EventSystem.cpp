@@ -2772,6 +2772,9 @@ void CEventSystem::ParseActionString(const std::string &oAction_, _tActionParseR
 // Python EventModule helper functions
 bool CEventSystem::PythonScheduleEvent(const std::string &ID, const std::string &Action, const std::string &eventName)
 {
+	if (!m_bEnabled)
+		return false;
+
 	if (ID.find("Variable:") == 0) {
 		std::string variableName = ID.substr(9);
 

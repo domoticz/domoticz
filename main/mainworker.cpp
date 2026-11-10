@@ -1154,10 +1154,8 @@ bool MainWorker::Start()
 	GetSunSettings();
 	GetAvailableWebThemes();
 #ifdef ENABLE_PYTHON
-	if (m_sql.m_bEnableEventSystem)
-	{
-		m_pluginsystem.StartPluginSystem();
-	}
+	// Python plugins do not depend on the event system setting, always start the plugin system
+	m_pluginsystem.StartPluginSystem();
 #endif
 	AddAllDomoticzHardware();
 	m_fibaropush.Start();
