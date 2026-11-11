@@ -1,5 +1,6 @@
 #pragma once
 
+#include <set>
 #include <string>
 #include <libwebem/cWebem.h>
 #include <libwebem/request.h>
@@ -116,6 +117,15 @@ class CWebServer : public session_store, public std::enable_shared_from_this<CWe
 	void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID,
 			    const std::string &floorID, bool bDisplayHidden, bool bDisplayDisabled, bool bFetchFavorites, time_t LastUpdate, const std::string &username,
 			    const std::string &hardwareid = ""); // OTO
+
+	// Device visibility for callers that only know a username and rights (the MCP server).
+	// Admins see every device. Any other user sees every device when nothing is shared with
+	// them, otherwise only the shared devices. A non-admin with an empty or unknown username
+	// sees nothing. Returns true when every device is visible; otherwise visibleIdxs holds
+	// the visible device idxs (possibly none).
+	bool GetUserVisibleDevices(const std::string &username, _eUserRights rights, std::set<uint64_t> &visibleIdxs);
+	bool IsDeviceVisibleToUser(const std::string &username, _eUserRights rights, uint64_t idx);
+	bool ResolveSharedDevicesUser(const std::string &username, unsigned long &userID, bool &bAllVisible);
 
 	// SessionStore interface
 	WebEmStoredSession GetSession(const std::string &sessionId) override;

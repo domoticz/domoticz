@@ -18,6 +18,7 @@ public:
 	static CMcpPush& Instance();
 
 private:
+	void SendDeviceUpdated(uint64_t DeviceRowIdx);
 	void OnDeviceReceived(int hwdID, uint64_t DeviceRowIdx,
 	                      const std::string& DeviceName,
 	                      const unsigned char* pRXCommand);

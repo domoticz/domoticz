@@ -2769,6 +2769,14 @@ namespace http
 				return;
 			}
 
+			// "at:<id>" is the session name of access tokens, a user must not look like one
+			if (username.compare(0, 3, "at:") == 0)
+			{
+				session.reply_status = reply::bad_request;
+				root["message"] = "A user name cannot start with \"at:\"";
+				return;
+			}
+
 			if (username.length() > 128)
 			{
 				session.reply_status = reply::bad_request;

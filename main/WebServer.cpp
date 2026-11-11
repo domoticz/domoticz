@@ -864,16 +864,91 @@ namespace http
 			if (pSession->rights == 0)
 				return false; // viewer
 			// User
-			int iUser = FindUser(pSession->username.c_str());
-			if ((iUser < 0) || (iUser >= (int)m_users.size()))
+			if (Idx < 0)
 				return false;
+			return IsDeviceVisibleToUser(pSession->username, pSession->rights, static_cast<uint64_t>(Idx));
+		}
 
-			if (m_users[iUser].TotSensors == 0)
-				return true; // all sensors
+		// Resolves the account whose device shares apply to a session user. Reads the database instead of
+		// m_users: that cache belongs to one web server, is only reloaded by the server that handled a user
+		// or share change, and is not locked against callers on other threads.
+		// Returns false when the user is unknown, inactive or an expired/removed access token (fail closed).
+		// Access tokens have no device shares, so bAllVisible is set for a valid token (as for GetJSonDevices).
+		bool CWebServer::ResolveSharedDevicesUser(const std::string& username, unsigned long& userID, bool& bAllVisible)
+		{
+			userID = 0;
+			bAllVisible = false;
+			if (username.empty())
+				return false;
+			if ((username.size() > 3) && (username.compare(0, 3, "at:") == 0))
+			{
+				// Only the "at:<digits>" form the token generator writes
+				if (username.find_first_not_of("0123456789", 3) != std::string::npos)
+					return false;
+				char* pEnd = nullptr;
+				const unsigned long tokenID = std::strtoul(username.c_str() + 3, &pEnd, 10);
+				if ((pEnd == nullptr) || (*pEnd != '\0'))
+					return false;
+				CSQLHelper::_tAccessToken at;
+				if (!m_sql.GetAccessToken(tokenID, at))
+					return false;
+				if ((at.Expiry != 0) && (at.Expiry < time(nullptr)))
+					return false;
+				bAllVisible = true;
+				return true;
+			}
+			// Compare decoded names, the same way LoadUsers reads them
+			std::vector<std::vector<std::string>> result = m_sql.safe_query("SELECT ID, Username FROM Users WHERE (Active == 1)");
+			for (const auto& sd : result)
+			{
+				if (base64_decode(sd[1]) == username)
+				{
+					userID = std::strtoul(sd[0].c_str(), nullptr, 10);
+					return true;
+				}
+			}
+			return false;
+		}
 
+		bool CWebServer::GetUserVisibleDevices(const std::string& username, const _eUserRights rights, std::set<uint64_t>& visibleIdxs)
+		{
+			visibleIdxs.clear();
+			if (rights == URIGHTS_ADMIN)
+				return true;
+			unsigned long userID = 0;
+			bool bAllVisible = false;
+			if (!ResolveSharedDevicesUser(username, userID, bAllVisible))
+				return false;
+			if (bAllVisible)
+				return true;
+
+			// Read the shares from the database, not the cached TotSensors (see ResolveSharedDevicesUser)
 			std::vector<std::vector<std::string>> result =
-				m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == '%d') AND (DeviceRowID == '%d')", m_users[iUser].ID, Idx);
-			return (!result.empty());
+				m_sql.safe_query("SELECT DeviceRowID FROM SharedDevices WHERE (SharedUserID == %lu)", userID);
+			if (result.empty())
+				return true; // nothing shared means every device
+			for (const auto& sd : result)
+				visibleIdxs.insert(std::strtoull(sd[0].c_str(), nullptr, 10));
+			return false;
+		}
+
+		bool CWebServer::IsDeviceVisibleToUser(const std::string& username, const _eUserRights rights, const uint64_t idx)
+		{
+			if (rights == URIGHTS_ADMIN)
+				return true;
+			unsigned long userID = 0;
+			bool bAllVisible = false;
+			if (!ResolveSharedDevicesUser(username, userID, bAllVisible))
+				return false;
+			if (bAllVisible)
+				return true;
+
+			// Read the shares from the database, see GetUserVisibleDevices
+			std::vector<std::vector<std::string>> result =
+				m_sql.safe_query("SELECT COUNT(*), SUM(DeviceRowID == %" PRIu64 ") FROM SharedDevices WHERE (SharedUserID == %lu)", idx, userID);
+			if (result.empty() || (std::stoi(result[0][0]) == 0))
+				return true; // nothing shared means every device
+			return (std::atoi(result[0][1].c_str()) > 0);
 		}
 
 		void CWebServer::LoadUsers()

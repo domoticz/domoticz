@@ -186,6 +186,25 @@ namespace http {
 #endif
 		}
 
+		bool CWebServerHelper::GetUserVisibleDevices(const std::string &username, const _eUserRights rights, std::set<uint64_t> &visibleIdxs)
+		{
+			CWebServer *pServer = GetAnyServer();
+			if (pServer == nullptr)
+			{
+				visibleIdxs.clear();
+				return false;
+			}
+			return pServer->GetUserVisibleDevices(username, rights, visibleIdxs);
+		}
+
+		bool CWebServerHelper::IsDeviceVisibleToUser(const std::string &username, const _eUserRights rights, const uint64_t idx)
+		{
+			CWebServer *pServer = GetAnyServer();
+			if (pServer == nullptr)
+				return false;
+			return pServer->IsDeviceVisibleToUser(username, rights, idx);
+		}
+
 		void CWebServerHelper::ReloadCustomSwitchIcons()
 		{
 			for (auto &it : serverCollection)

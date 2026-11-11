@@ -3,12 +3,68 @@
 #include "../main/Logger.h"
 #include "../main/mainworker.h"
 #include "../main/json_helper.h"
+#include "../main/WebServerHelper.h"
 #include "../mcpserver/McpSessionRegistry.h"
 #include <json/json.h>
+#include <chrono>
+#include <map>
+#include <set>
 
 extern boost::signals2::signal<void(const std::string& Subject, const std::string& Text, const std::string& ExtraData, const int Priority, const std::string& Sound, const bool bFromNotification)> sOnNotificationReceived;
+extern http::server::CWebServerHelper m_webservers;
 
 CMcpPush g_McpPush;
+
+namespace
+{
+	// Per-user copy of the devices shared with that user, so that frequent device
+	// updates do not each run a SharedDevices query for every connected non-admin
+	// session. A share change takes effect within the time-to-live.
+	constexpr auto kVisibilityCacheTtl = std::chrono::seconds(2);
+
+	struct VisibleDevices
+	{
+		bool bAll = false;
+		std::set<uint64_t> idxs;
+		std::chrono::steady_clock::time_point fetchedAt;
+	};
+
+	std::mutex g_visibilityMutex;
+	std::map<std::string, VisibleDevices> g_visibilityCache;
+
+	bool IsDeviceVisibleCached(const std::string& username, const http::server::_eUserRights rights, const uint64_t idx)
+	{
+		if (rights == http::server::URIGHTS_ADMIN)
+			return true;
+		if (username.empty())
+			return false;
+
+		const auto now = std::chrono::steady_clock::now();
+		{
+			std::lock_guard<std::mutex> lock(g_visibilityMutex);
+			auto it = g_visibilityCache.find(username);
+			if ((it != g_visibilityCache.end()) && (now - it->second.fetchedAt < kVisibilityCacheTtl))
+				return it->second.bAll || (it->second.idxs.count(idx) != 0);
+		}
+
+		// Queried without the cache lock held: the SQL layer may log, and logging feeds back into MCP
+		VisibleDevices entry;
+		entry.bAll = m_webservers.GetUserVisibleDevices(username, rights, entry.idxs);
+		entry.fetchedAt = now;
+		const bool bVisible = entry.bAll || (entry.idxs.count(idx) != 0);
+
+		std::lock_guard<std::mutex> lock(g_visibilityMutex);
+		for (auto it = g_visibilityCache.begin(); it != g_visibilityCache.end();)
+		{
+			if (now - it->second.fetchedAt >= kVisibilityCacheTtl)
+				it = g_visibilityCache.erase(it);
+			else
+				++it;
+		}
+		g_visibilityCache[username] = std::move(entry);
+		return bVisible;
+	}
+} // namespace
 
 CMcpPush::CMcpPush()
 {
@@ -112,28 +168,35 @@ static std::string LogLevelToMcpLevel(const _eLogLevel level)
 	}
 }
 
+void CMcpPush::SendDeviceUpdated(const uint64_t DeviceRowIdx)
+{
+	{
+		std::unique_lock<std::recursive_mutex> lock(m_mutex);
+		if (!m_isStarted)
+			return;
+	}
+
+	// Sent without m_mutex held: the visibility check may run SQL, and a thread that logs
+	// while holding the SQL lock enters OnLogMessage, which takes m_mutex
+	std::string uri = "domoticz://devices/" + std::to_string(DeviceRowIdx);
+	Json::Value notif = MakeResourceUpdatedNotification(uri);
+	CMcpSessionRegistry::Instance().SendResourceUpdated(
+		uri, JSonToRawString(notif),
+		[DeviceRowIdx](const std::string& username, const http::server::_eUserRights rights) {
+			return IsDeviceVisibleCached(username, rights, DeviceRowIdx);
+		});
+}
+
 void CMcpPush::OnDeviceReceived(int /*hwdID*/, uint64_t DeviceRowIdx,
                                 const std::string& /*DeviceName*/,
                                 const unsigned char* /*pRXCommand*/)
 {
-	std::unique_lock<std::recursive_mutex> lock(m_mutex);
-	if (!m_isStarted)
-		return;
-
-	std::string uri = "domoticz://devices/" + std::to_string(DeviceRowIdx);
-	Json::Value notif = MakeResourceUpdatedNotification(uri);
-	CMcpSessionRegistry::Instance().SendResourceUpdated(uri, JSonToRawString(notif));
+	SendDeviceUpdated(DeviceRowIdx);
 }
 
 void CMcpPush::OnDeviceUpdate(int /*hwdID*/, uint64_t DeviceRowIdx)
 {
-	std::unique_lock<std::recursive_mutex> lock(m_mutex);
-	if (!m_isStarted)
-		return;
-
-	std::string uri = "domoticz://devices/" + std::to_string(DeviceRowIdx);
-	Json::Value notif = MakeResourceUpdatedNotification(uri);
-	CMcpSessionRegistry::Instance().SendResourceUpdated(uri, JSonToRawString(notif));
+	SendDeviceUpdated(DeviceRowIdx);
 }
 
 void CMcpPush::OnSceneChange(uint64_t SceneIdx, const std::string& /*SceneName*/)

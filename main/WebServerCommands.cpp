@@ -407,6 +407,11 @@ namespace http
 					result = m_sql.safe_query("SELECT ID, Name, Type, SubType, Used, SwitchType, Options FROM DeviceStatus ORDER BY Name COLLATE NOCASE ASC");
 					if (!result.empty())
 					{
+						// Same rule as IsIdxForUser, resolved once instead of per row
+						std::set<uint64_t> visibleIdxs;
+						bool bAllVisible = false;
+						if (session.rights != URIGHTS_VIEWER)
+							bAllVisible = GetUserVisibleDevices(session.username, session.rights, visibleIdxs);
 						int ii = 0;
 						for (const auto& sd : result)
 						{
@@ -430,8 +435,7 @@ namespace http
 							}
 							if (bdoAdd)
 							{
-								int idx = atoi(ID.c_str());
-								if (!IsIdxForUser(&session, idx))
+								if (!bAllVisible && (visibleIdxs.find(std::strtoull(ID.c_str(), nullptr, 10)) == visibleIdxs.end()))
 									continue;
 								root["result"][ii]["idx"] = ID;
 								root["result"][ii]["Name"] = Name;
@@ -3100,6 +3104,12 @@ namespace http
 						if ((senabled.empty()) || (username.empty()) || (password.empty()) || (srights.empty()) || (sRemoteSharing.empty()) || (sTabsEnabled.empty()))
 						{
 							root["message"] = "One or more expected values are empty!";
+							return false;
+						}
+						// "at:<id>" is the session name of access tokens, a user must not look like one
+						if (username.compare(0, 3, "at:") == 0)
+						{
+							root["message"] = "A user name cannot start with \"at:\"!";
 							return false;
 						}
 						if (rights != URIGHTS_ADMIN)

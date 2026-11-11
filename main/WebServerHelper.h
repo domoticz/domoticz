@@ -34,6 +34,10 @@ namespace http {
 			void GetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid, const std::string &planID,
 					    const std::string &floorID, bool bDisplayHidden, bool bDisplayDisabled, bool bFetchFavorites, time_t LastUpdate, const std::string &username,
 					    const std::string &hardwareid = "");
+			// Device visibility rule of CWebServer, for callers without a WebEmSession (MCP).
+			// Fails closed (nothing visible) when no web server is running.
+			bool GetUserVisibleDevices(const std::string &username, _eUserRights rights, std::set<uint64_t> &visibleIdxs);
+			bool IsDeviceVisibleToUser(const std::string &username, _eUserRights rights, uint64_t idx);
 			// called from CSQLHelper
 			void ReloadCustomSwitchIcons();
 			CWebServer* GetAnyServer() const

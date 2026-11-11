@@ -21,6 +21,7 @@
 #include <iostream>
 #include <cassert>
 #include <functional>
+#include <set>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -168,6 +169,35 @@ namespace mcp
 		std::string progressToken;
 	};
 	extern thread_local McpProgressCtx tl_progressCtx;
+
+	// Identity of the client whose request is being handled on this thread. Device visibility
+	// in tools, resources and completions is decided from it. The default (no request) has no
+	// username and no rights, so every device check fails closed.
+	struct McpCallerCtx
+	{
+		std::string username;
+		http::server::_eUserRights rights = http::server::URIGHTS_NONE;
+	};
+	extern thread_local McpCallerCtx tl_callerCtx;
+
+	// Sets the caller identity for the lifetime of one MCP request and clears it afterwards.
+	class McpCallerScope
+	{
+	public:
+		explicit McpCallerScope(const http::server::WebEmSession &session)
+		{
+			tl_callerCtx.username = session.username;
+			tl_callerCtx.rights = session.rights;
+		}
+		~McpCallerScope()
+		{
+			tl_callerCtx = McpCallerCtx();
+		}
+		McpCallerScope(const McpCallerScope &) = delete;
+		McpCallerScope &operator=(const McpCallerScope &) = delete;
+	};
+
+	bool McpIsDeviceVisible(uint64_t idx);
 }
 
 namespace http
@@ -217,6 +247,8 @@ namespace http
 				reply::add_header(&rep, "Access-Control-Allow-Origin", "*");
 				return;
 			}
+			// Every tool, resource read and completion below runs with this caller's device sharing
+			mcp::McpCallerScope callerScope(session);
 			if (req.method == "GET")
 			{
 				HandleMcpGet(session, req, rep);
@@ -669,7 +701,10 @@ namespace http
 				else
 				{
 					std::string uri = jsonRequest["params"]["uri"].asString();
-					if (!McpIsValidSubscriptionUri(uri))
+					// A device the caller may not see is reported like a nonexistent one
+					const bool bHiddenDevice = McpIsValidSubscriptionUri(uri) && (uri.compare(0, 19, "domoticz://devices/") == 0)
+								   && !mcp::McpIsDeviceVisible(std::strtoull(uri.c_str() + 19, nullptr, 10));
+					if (!McpIsValidSubscriptionUri(uri) || bHiddenDevice)
 					{
 						jsonRPCRep["error"]["code"] = mcp::MCP_RESOURCE_NOT_FOUND;
 						jsonRPCRep["error"]["message"] = "Unknown resource URI: " + uri;
@@ -809,6 +844,97 @@ namespace mcp		// Model Context Protocol
 	static const int kVarTypeCount = 5;
 
 	thread_local McpProgressCtx tl_progressCtx;
+	thread_local McpCallerCtx tl_callerCtx;
+
+	// Device idxs the current caller may see. bAll is true when nothing is restricted.
+	struct McpDeviceVisibility
+	{
+		bool bAll = false;
+		std::set<uint64_t> idxs;
+		bool Contains(uint64_t idx) const
+		{
+			return bAll || (idxs.find(idx) != idxs.end());
+		}
+		bool Contains(const std::string &sIdx) const
+		{
+			if (bAll)
+				return true;
+			char *pEnd = nullptr;
+			uint64_t idx = std::strtoull(sIdx.c_str(), &pEnd, 10);
+			if (sIdx.empty() || (pEnd == nullptr) || (*pEnd != '\0'))
+				return false;
+			return Contains(idx);
+		}
+	};
+
+	static McpDeviceVisibility McpGetDeviceVisibility()
+	{
+		McpDeviceVisibility vis;
+		vis.bAll = m_webservers.GetUserVisibleDevices(tl_callerCtx.username, tl_callerCtx.rights, vis.idxs);
+		return vis;
+	}
+
+	bool McpIsDeviceVisible(const uint64_t idx)
+	{
+		return m_webservers.IsDeviceVisibleToUser(tl_callerCtx.username, tl_callerCtx.rights, idx);
+	}
+
+	static bool McpIsDeviceVisible(const std::string &sIdx)
+	{
+		char *pEnd = nullptr;
+		uint64_t idx = std::strtoull(sIdx.c_str(), &pEnd, 10);
+		if (sIdx.empty() || (pEnd == nullptr) || (*pEnd != '\0'))
+			return false;
+		return McpIsDeviceVisible(idx);
+	}
+
+	// Drops the query rows whose device idx (column idxColumn) the caller may not see
+	static void McpFilterDeviceRows(std::vector<std::vector<std::string>> &rows, const size_t idxColumn)
+	{
+		const McpDeviceVisibility vis = McpGetDeviceVisibility();
+		if (vis.bAll)
+			return;
+		rows.erase(std::remove_if(rows.begin(), rows.end(),
+					  [&vis, idxColumn](const std::vector<std::string> &row) { return (row.size() <= idxColumn) || !vis.Contains(row[idxColumn]); }),
+			   rows.end());
+	}
+
+	// The only way MCP code may fetch the device list: applies the caller's device sharing.
+	// Admins get the unrestricted list (an admin username would otherwise apply the admin's own
+	// share list). Other callers get the list GetJSonDevices builds for their username, which is
+	// then filtered again by device idx so an empty, unknown or inconsistent user sees no device.
+	// Scene and group rows are not shared per user, so they are kept as GetJSonDevices returns them.
+	static void McpGetJSonDevices(Json::Value &root, const std::string &rused, const std::string &rfilter, const std::string &order, const std::string &rowid,
+				      const std::string &planID, const std::string &floorID, const bool bDisplayHidden, const bool bDisplayDisabled,
+				      const bool bFetchFavorites, const time_t LastUpdate, const std::string &hardwareid)
+	{
+		if (tl_callerCtx.rights == http::server::URIGHTS_ADMIN)
+		{
+			m_webservers.GetJSonDevices(root, rused, rfilter, order, rowid, planID, floorID, bDisplayHidden, bDisplayDisabled, bFetchFavorites, LastUpdate, "", hardwareid);
+			return;
+		}
+		const McpDeviceVisibility vis = McpGetDeviceVisibility();
+		if (tl_callerCtx.username.empty() || (!vis.bAll && vis.idxs.empty()))
+		{
+			// GetJSonDevices treats an empty or unknown username as unrestricted: never hand it one
+			return;
+		}
+		m_webservers.GetJSonDevices(root, rused, rfilter, order, rowid, planID, floorID, bDisplayHidden, bDisplayDisabled, bFetchFavorites, LastUpdate, tl_callerCtx.username, hardwareid);
+		if ((vis.bAll && hardwareid.empty()) || !root.isObject() || !root.isMember("result") || !root["result"].isArray())
+			return;
+		// The shared-devices branch of GetJSonDevices ignores the hardware filter, so apply it here
+		Json::Value filtered(Json::arrayValue);
+		for (const auto &item : root["result"])
+		{
+			const std::string sType = item.isMember("Type") ? item["Type"].asString() : "";
+			const bool bIsScene = (sType == "Scene") || (sType == "Group");
+			if (!bIsScene && !hardwareid.empty() && (!item.isMember("HardwareID") || (item["HardwareID"].asString() != hardwareid)))
+				continue;
+			if (bIsScene || vis.bAll || (item.isMember("idx") && vis.Contains(item["idx"].asString())))
+				filtered.append(item);
+		}
+		root["result"] = filtered;
+	}
 
 	static void SendProgress(const std::string& sid, const std::string& token, int progress, int total, const std::string& message)
 	{
@@ -868,6 +994,8 @@ namespace mcp		// Model Context Protocol
 				if (!esettings.isMember(role.first) || !esettings[role.first].isInt() || esettings[role.first].asInt() <= 0)
 					continue;
 				const int idx = esettings[role.first].asInt();
+				if (!McpIsDeviceVisible(static_cast<uint64_t>(idx)))
+					continue;
 				auto result = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE (ID == %d)", idx);
 				sEnergy += std::string("  ") + role.second + ": idx=" + std::to_string(idx) + " \"" + (result.empty() ? "(deleted device)" : result[0][0]) + "\"\n";
 			}
@@ -1866,7 +1994,7 @@ namespace mcp		// Model Context Protocol
 			{
 				// All devices summary
 				Json::Value jsonDevices;
-				m_webservers.GetJSonDevices(jsonDevices, "true", "", "Name", "", "", "", false, false, false, 0, "", "");
+				McpGetJSonDevices(jsonDevices, "true", "", "Name", "", "", "", false, false, false, 0, "");
 				std::string sText;
 				int iCount = 0;
 				if (jsonDevices.isObject() && jsonDevices.isMember("result"))
@@ -1907,8 +2035,10 @@ namespace mcp		// Model Context Protocol
 					jsonRPCRep["error"]["message"] = "Invalid device idx in URI";
 					return;
 				}
-				auto result = m_sql.safe_query(
-					"SELECT Name, HardwareID, DeviceID, Type, SubType, nValue, sValue, LastUpdate FROM DeviceStatus WHERE ID=%d", nIdx);
+				std::vector<std::vector<std::string>> result;
+				if (McpIsDeviceVisible(static_cast<uint64_t>(nIdx)))
+					result = m_sql.safe_query(
+						"SELECT Name, HardwareID, DeviceID, Type, SubType, nValue, sValue, LastUpdate FROM DeviceStatus WHERE ID=%d", nIdx);
 				if (result.empty())
 				{
 					_log.Debug(DEBUG_WEBSERVER, "MCP: resources/read: No device found with IDX %d", nIdx);
@@ -1976,7 +2106,7 @@ namespace mcp		// Model Context Protocol
 				}
 				std::string sRoomName = planResult[0][0];
 				Json::Value jsonDevices;
-				m_webservers.GetJSonDevices(jsonDevices, "true", "", "Name", "", std::to_string(nIdx), "", false, false, false, 0, "", "");
+				McpGetJSonDevices(jsonDevices, "true", "", "Name", "", std::to_string(nIdx), "", false, false, false, 0, "");
 				std::string sText;
 				int iCount = 0;
 				if (jsonDevices.isObject() && jsonDevices.isMember("result"))
@@ -2050,6 +2180,7 @@ namespace mcp		// Model Context Protocol
 					"SELECT a.DeviceRowID, b.Name, a.Cmd, a.Level "
 					"FROM SceneDevices a JOIN DeviceStatus b ON b.ID=a.DeviceRowID "
 					"WHERE a.SceneRowID=%d ORDER BY b.Name", nIdx);
+				McpFilterDeviceRows(devResult, 0);
 				std::string sText;
 				if (devResult.empty())
 					sText = "Scene \"" + sSceneName + "\" has no devices.";
@@ -2292,9 +2423,10 @@ namespace mcp		// Model Context Protocol
 				int iTotal = 0;
 
 				auto devTimers = m_sql.safe_query(
-					"SELECT T.ID, T.Active, T.Time, T.Type, T.Cmd, T.Level, T.Days, D.Name "
+					"SELECT T.ID, T.Active, T.Time, T.Type, T.Cmd, T.Level, T.Days, D.Name, T.DeviceRowID "
 					"FROM Timers T LEFT JOIN DeviceStatus D ON D.ID=T.DeviceRowID "
 					"ORDER BY D.Name, T.Time");
+				McpFilterDeviceRows(devTimers, 8);
 				for (const auto &row : devTimers)
 				{
 					iTotal++;
@@ -2746,12 +2878,14 @@ namespace mcp		// Model Context Protocol
 			}
 			else if (sRefName == "troubleshoot_device" && sArgName == "device")
 			{
-				auto rows = m_sql.safe_query("SELECT Name FROM DeviceStatus ORDER BY Name");
+				auto rows = m_sql.safe_query("SELECT Name, ID FROM DeviceStatus ORDER BY Name");
+				McpFilterDeviceRows(rows, 1);
 				for (const auto &row : rows)
 					candidates.push_back(row[0]);
 			}
-			else if (sRefName == "analyze_event" && sArgName == "event")
+			else if (sRefName == "analyze_event" && sArgName == "event" && tl_callerCtx.rights == http::server::URIGHTS_ADMIN)
 			{
+				// Event scripts are admin-only, so are their names
 				auto rows = m_sql.safe_query("SELECT Name FROM EventMaster ORDER BY Name");
 				for (const auto &row : rows)
 					candidates.push_back(row[0]);
@@ -2765,9 +2899,17 @@ namespace mcp		// Model Context Protocol
 		}
 		else if (sRefType == "ref/resource")
 		{
+			// User variables and events are admin-only resources, so are their names
+			if (((sRefName.find("domoticz://user-variable/") != std::string::npos) || (sRefName.find("domoticz://event/") != std::string::npos))
+				&& (tl_callerCtx.rights != http::server::URIGHTS_ADMIN))
+			{
+				emptyResult();
+				return;
+			}
 			if (sRefName.find("domoticz://device/") != std::string::npos)
 			{
 				auto rows = m_sql.safe_query("SELECT ID, Name FROM DeviceStatus ORDER BY Name");
+				McpFilterDeviceRows(rows, 0);
 				for (const auto &row : rows)
 					candidates.push_back(row[0] + " - " + row[1]);
 			}
@@ -2818,7 +2960,11 @@ namespace mcp		// Model Context Protocol
 			bool bToolHasMore = false;
 			if (sArgName == "name")
 			{
-				auto rows = m_sql.safe_query("SELECT Name FROM DeviceStatus WHERE Name LIKE '%%%q%%' ORDER BY Name LIMIT 21", sPartial.c_str());
+				// No SQL LIMIT: the share filter runs after the query, then the list is cut to 21
+				auto rows = m_sql.safe_query("SELECT Name, ID FROM DeviceStatus WHERE Name LIKE '%%%q%%' ORDER BY Name", sPartial.c_str());
+				McpFilterDeviceRows(rows, 1);
+				if (rows.size() > 21)
+					rows.resize(21);
 				bToolHasMore = loadLikeRows(rows);
 			}
 			else if (sArgName == "scene")
@@ -2962,6 +3108,9 @@ namespace mcp		// Model Context Protocol
 			sSwitchName = args["switchname"].asString();
 			bFound = getDeviceByName(sSwitchName, device);
 		}
+		// Defense in depth: never control a device the caller may not see
+		if (bFound && !McpIsDeviceVisible(device["idx"].asString()))
+			bFound = false;
 		std::string sSwitchState = "No switch exists with the name " + sSwitchName;
 		if (bFound)
 		{
@@ -3155,6 +3304,9 @@ namespace mcp		// Model Context Protocol
 			sThermostatName = args["thermostatname"].asString();
 			bFound = getDeviceByName(sThermostatName, device);
 		}
+		// Defense in depth: never control a device the caller may not see
+		if (bFound && !McpIsDeviceVisible(device["idx"].asString()))
+			bFound = false;
 		std::string sThermostatState = "No thermostat exists with the name " + sThermostatName;
 		if (bFound)
 		{
@@ -3209,7 +3361,7 @@ namespace mcp		// Model Context Protocol
 		// Device counts
 		Json::Value jsonDevices;
 		std::string sUsed = "true";
-		m_webservers.GetJSonDevices(jsonDevices, sUsed, "", "", "", "", "", false, false, false, 0, "", "");
+		McpGetJSonDevices(jsonDevices, sUsed, "", "", "", "", "", false, false, false, 0, "");
 		int iDeviceCount = 0;
 		if (jsonDevices.isObject() && jsonDevices.isMember("result"))
 			iDeviceCount = jsonDevices["result"].size();
@@ -3247,7 +3399,7 @@ namespace mcp		// Model Context Protocol
 
 		Json::Value jsonDevices;
 		std::string sUsed = "true";
-		m_webservers.GetJSonDevices(jsonDevices, sUsed, sFilter, "", "", "", "", false, false, false, 0, "", "");
+		McpGetJSonDevices(jsonDevices, sUsed, sFilter, "", "", "", "", false, false, false, 0, "");
 
 		std::string sResult;
 		int iMatchCount = 0;
@@ -3315,7 +3467,7 @@ namespace mcp		// Model Context Protocol
 	bool getDeviceByName(const std::string &sDeviceName, Json::Value &device)
 	{
 		Json::Value jsonDevices;
-		m_webservers.GetJSonDevices(jsonDevices, "true", "", "", "", "", "", false, false, false, 0, "", "");
+		McpGetJSonDevices(jsonDevices, "true", "", "", "", "", "", false, false, false, 0, "");
 
 		for (const auto &dev : jsonDevices["result"])
 		{
@@ -3330,10 +3482,12 @@ namespace mcp		// Model Context Protocol
 
 	bool getDeviceByIdx(int nIdx, Json::Value &device)
 	{
+		if ((nIdx < 0) || !McpIsDeviceVisible(static_cast<uint64_t>(nIdx)))
+			return false;
 		Json::Value jsonDevices;
 		// bDisplayDisabled=true: include disabled devices so sensor history/short-log tools
 		// can still read data for devices that are temporarily disabled.
-		m_webservers.GetJSonDevices(jsonDevices, "true", "", "", "", "", "", false, true, false, 0, "", "");
+		McpGetJSonDevices(jsonDevices, "true", "", "", "", "", "", false, true, false, 0, "");
 		for (const auto &dev : jsonDevices["result"])
 		{
 			if (dev.isObject() && dev.isMember("idx") && dev["idx"].asString() == std::to_string(nIdx))
@@ -3412,7 +3566,7 @@ namespace mcp		// Model Context Protocol
 		Json::Value jsonDevices;
 		std::string sHwIdxFilter = (nHwIdx >= 0 ? std::to_string(nHwIdx) : "");
 		// empty hardwareid = return devices from all hardware adapters
-		m_webservers.GetJSonDevices(jsonDevices, sUsed, sFilter, "Name", "", "", "", false, false, false, 0, "", sHwIdxFilter);
+		McpGetJSonDevices(jsonDevices, sUsed, sFilter, "Name", "", "", "", false, false, false, 0, sHwIdxFilter);
 
 		std::string sResult;
 		int iCount = 0;
@@ -3548,9 +3702,11 @@ namespace mcp		// Model Context Protocol
 		else
 		{
 			int nIdx = jsonAsIdx(args["idx"]);
-			auto result = m_sql.safe_query(
-				"SELECT DS.Name, DS.HardwareID, H.Name, DS.DeviceID, DS.Type, DS.SubType, DS.nValue, DS.sValue, DS.LastUpdate, DS.Used, DS.BatteryLevel, DS.SignalLevel "
-				"FROM DeviceStatus DS LEFT JOIN Hardware H ON DS.HardwareID=H.ID WHERE DS.ID=%d", nIdx);
+			std::vector<std::vector<std::string>> result;
+			if ((nIdx >= 0) && McpIsDeviceVisible(static_cast<uint64_t>(nIdx)))
+				result = m_sql.safe_query(
+					"SELECT DS.Name, DS.HardwareID, H.Name, DS.DeviceID, DS.Type, DS.SubType, DS.nValue, DS.sValue, DS.LastUpdate, DS.Used, DS.BatteryLevel, DS.SignalLevel "
+					"FROM DeviceStatus DS LEFT JOIN Hardware H ON DS.HardwareID=H.ID WHERE DS.ID=%d", nIdx);
 			if (!result.empty())
 			{
 				bFound = true;
@@ -5117,6 +5273,9 @@ namespace mcp		// Model Context Protocol
 			sSwitchName = args["switchname"].asString();
 			bFound = getDeviceByName(sSwitchName, device);
 		}
+		// Defense in depth: never control a device the caller may not see
+		if (bFound && !McpIsDeviceVisible(device["idx"].asString()))
+			bFound = false;
 		std::string sResult;
 		if (!bFound)
 		{
@@ -5164,6 +5323,9 @@ namespace mcp		// Model Context Protocol
 			sSwitchName = args["switchname"].asString();
 			bFound = getDeviceByName(sSwitchName, device);
 		}
+		// Defense in depth: never control a device the caller may not see
+		if (bFound && !McpIsDeviceVisible(device["idx"].asString()))
+			bFound = false;
 		std::string sResult;
 		if (!bFound)
 		{
@@ -5220,6 +5382,9 @@ namespace mcp		// Model Context Protocol
 			sSwitchName = args["switchname"].asString();
 			bFound = getDeviceByName(sSwitchName, device);
 		}
+		// Defense in depth: never control a device the caller may not see
+		if (bFound && !McpIsDeviceVisible(device["idx"].asString()))
+			bFound = false;
 		std::string sResult;
 		if (!bFound)
 		{
@@ -5282,6 +5447,9 @@ namespace mcp		// Model Context Protocol
 				}
 			}
 		}
+		// Defense in depth: never control a device the caller may not see
+		if (bFound && !McpIsDeviceVisible(device["idx"].asString()))
+			bFound = false;
 		std::string sResult;
 		if (!bFound)
 		{
@@ -5352,6 +5520,9 @@ namespace mcp		// Model Context Protocol
 				}
 			}
 		}
+		// Defense in depth: never control a device the caller may not see
+		if (bFound && !McpIsDeviceVisible(device["idx"].asString()))
+			bFound = false;
 		std::string sResult;
 		if (!bFound)
 		{
@@ -5526,7 +5697,7 @@ namespace mcp		// Model Context Protocol
 		{
 			std::string sPlanID = planResult[0][0];
 			Json::Value jsonDevices;
-			m_webservers.GetJSonDevices(jsonDevices, "true", "", "Name", "", sPlanID, "", false, false, false, 0, "", "");
+			McpGetJSonDevices(jsonDevices, "true", "", "Name", "", sPlanID, "", false, false, false, 0, "");
 			int iCount = 0;
 			std::string sDeviceList;
 			if (jsonDevices.isObject() && jsonDevices.isMember("result"))
@@ -6027,6 +6198,7 @@ namespace mcp		// Model Context Protocol
 				"SELECT a.DeviceRowID, b.Name, a.Cmd, a.Level "
 				"FROM SceneDevices a JOIN DeviceStatus b ON b.ID=a.DeviceRowID "
 				"WHERE a.SceneRowID=%d ORDER BY b.Name", nSceneIdx);
+			McpFilterDeviceRows(devResult, 0);
 			if (devResult.empty())
 			{
 				sResult = "Scene \"" + sSceneName + "\" has no devices assigned.";

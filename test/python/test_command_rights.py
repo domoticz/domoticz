@@ -20,6 +20,8 @@ Two things are verified:
     user get 403 on every admin command, and the viewer gets 403 on every user
     command. Only requests that must be refused are sent, so no handler runs.
     A few spot checks cover the positive side and the MCP role checks.
+    MCP also has to honor the per-user device sharing: a user with devices
+    shared sees and controls only those devices, one with none shared sees all.
 
 Usage:
     python test_command_rights.py <path-to-domoticz[.exe]>
@@ -30,7 +32,10 @@ import hashlib
 import json
 import os
 import re
+import socket
 import sys
+import threading
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -208,7 +213,12 @@ def api(d, cookie, query):
 
 def mcp_call(d, cookie, sid, payload):
     headers = {"Content-Type": "application/json",
-               "Accept": "application/json, text/event-stream", "Cookie": cookie}
+               "Accept": "application/json, text/event-stream"}
+    # An access token is passed as "Bearer <jwt>" in place of a session cookie
+    if cookie.startswith("Bearer "):
+        headers["Authorization"] = cookie
+    else:
+        headers["Cookie"] = cookie
     if sid:
         headers["Mcp-Session-Id"] = sid
     req = urllib.request.Request(d.url("/mcp"), data=json.dumps(payload).encode(), headers=headers)
@@ -224,6 +234,59 @@ def mcp_session(d, cookie):
         "protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "test", "version": "1"}}})
     mcp_call(d, cookie, sid, {"jsonrpc": "2.0", "method": "notifications/initialized"})
     return sid
+
+
+class SseStream:
+    """Collects the raw bytes of an MCP SSE stream (GET /mcp) in a background thread."""
+
+    def __init__(self, port, cookie, sid):
+        self.buf = b""
+        self.lock = threading.Lock()
+        self.sock = socket.create_connection(("127.0.0.1", port), timeout=15)
+        self.sock.sendall(("GET /mcp HTTP/1.1\r\nHost: 127.0.0.1\r\nAccept: text/event-stream\r\n"
+                           "Cookie: %s\r\nMcp-Session-Id: %s\r\n\r\n" % (cookie, sid)).encode())
+        self.thread = threading.Thread(target=self._read, daemon=True)
+        self.thread.start()
+
+    def _read(self):
+        while True:
+            try:
+                c = self.sock.recv(65536)
+            except OSError:
+                return
+            if not c:
+                return
+            with self.lock:
+                self.buf += c
+
+    def contains(self, needle):
+        with self.lock:
+            return needle in self.buf
+
+    def wait_for(self, needle, timeout=5.0):
+        end = time.time() + timeout
+        while time.time() < end:
+            if self.contains(needle):
+                return True
+            time.sleep(0.1)
+        return self.contains(needle)
+
+    def wait_for_count(self, needle, count, timeout=5.0):
+        end = time.time() + timeout
+        while time.time() < end:
+            with self.lock:
+                if self.buf.count(needle) >= count:
+                    return True
+            time.sleep(0.1)
+        with self.lock:
+            return self.buf.count(needle) >= count
+
+    def close(self):
+        try:
+            self.sock.shutdown(socket.SHUT_RDWR)
+        except OSError:
+            pass
+        self.sock.close()
 
 
 def runtime_checks(exe, regs):
@@ -319,6 +382,172 @@ def runtime_checks(exe, regs):
             _, body = mcp_call(d, admin, sid, {"jsonrpc": "2.0", "id": 2, "method": "resources/read",
                                                "params": {"uri": "domoticz://user-variables"}})
             check(b"topsecret" in body, "the admin can read the user variables resource")
+
+        mcp_shared_device_checks(d, admin)
+
+
+def mcp_tool(d, cookie, sid, rid, name, args):
+    _, body = mcp_call(d, cookie, sid, {"jsonrpc": "2.0", "id": rid, "method": "tools/call",
+                                        "params": {"name": name, "arguments": args}})
+    return body
+
+
+def tool_failed(body):
+    try:
+        res = json.loads(body)
+    except ValueError:
+        return False
+    return "error" in res or res.get("result", {}).get("isError") is True
+
+
+def mcp_shared_device_checks(d, admin):
+    """MCP honors the per-user device sharing exactly like the JSON device list."""
+    print("\n=== MCP device sharing ===")
+    code, body = api(d, admin, "param=addhardware&htype=15&name=ShareDummy&enabled=true"
+                               "&port=0&address=&username=&password=&extra=&datatimeout=0")
+    hw = json.loads(body).get("idx") if code == 200 else None
+    if not check(hw is not None, "dummy hardware added"):
+        return
+    idx = {}
+    for name in ("ShareSwitchA", "ShareSecretB"):
+        code, body = api(d, admin, "param=createdevice&idx=%s&sensorname=%s&devicetype=244&devicesubtype=73"
+                         % (hw, name))
+        idx[name] = json.loads(body).get("idx") if code == 200 else None
+        if not check(idx[name] is not None, "switch %s created" % name):
+            return
+    shared, secret = idx["ShareSwitchA"], idx["ShareSecretB"]
+
+    # sviewer and sswitch only get ShareSwitchA; nshare has nothing shared and so sees every device
+    for name, rights in (("sviewer", 0), ("sswitch", 1), ("nshare", 1)):
+        code, body = api(d, admin, urllib.parse.urlencode({
+            "param": "adduser", "enabled": "true", "username": name,
+            "password": md5(name + "pw"), "rights": rights,
+            "RemoteSharing": "false", "TabsEnabled": 0}))
+        check(code == 200 and b'"OK"' in body, "%s account created" % name)
+    code, body = api(d, admin, urllib.parse.urlencode({
+        "param": "adduser", "enabled": "true", "username": "at:7",
+        "password": md5("at7pw"), "rights": 0, "RemoteSharing": "false", "TabsEnabled": 0}))
+    check(b'"OK"' not in body and b"at:" in body, "a user name that looks like an access token is refused")
+    code, body = api(d, admin, "param=getusers")
+    users ={u.get("Username"): u.get("idx") for u in json.loads(body).get("result", [])} if code == 200 else {}
+    for name in ("sviewer", "sswitch"):
+        code, body = api(d, admin, "param=setshareduserdevices&idx=%s&devices=%s" % (users.get(name), shared))
+        check(code == 200 and b'"OK"' in body, "ShareSwitchA shared with %s" % name)
+
+    cookies = {name: login(d.port, name, md5(name + "pw")) for name in ("sviewer", "sswitch", "nshare")}
+    cookies["admin"] = admin
+    sids = {}
+    for name, cookie in cookies.items():
+        sids[name] = mcp_session(d, cookie) if cookie else ""
+        if not check(sids[name] != "", "%s MCP session initialised" % name):
+            return
+
+    def resource(name, uri):
+        _, body = mcp_call(d, cookies[name], sids[name], {"jsonrpc": "2.0", "id": 50, "method": "resources/read",
+                                                          "params": {"uri": uri}})
+        return body
+
+    for who in ("sviewer", "sswitch"):
+        body = resource(who, "domoticz://device/%s" % secret)
+        check(b"ShareSecretB" not in body and b"-32001" in body,
+              "%s gets not found reading the unshared device resource" % who)
+        body = resource(who, "domoticz://device/%s" % shared)
+        check(b"ShareSwitchA" in body, "%s reads the shared device resource" % who)
+        body = resource(who, "domoticz://devices")
+        check(b"ShareSwitchA" in body and b"ShareSecretB" not in body,
+              "%s sees only the shared device in the devices resource" % who)
+        body = mcp_tool(d, cookies[who], sids[who], 51, "get_device", {"idx": int(secret)})
+        check(tool_failed(body) and b"ShareSecretB" not in body, "%s gets not found from get_device by idx" % who)
+        body = mcp_tool(d, cookies[who], sids[who], 52, "get_device", {"name": "ShareSecretB"})
+        check(tool_failed(body) and b"No device found" in body, "%s gets not found from get_device by name" % who)
+        body = mcp_tool(d, cookies[who], sids[who], 53, "get_sensor_value", {"idx": int(secret)})
+        check(tool_failed(body) and b"ShareSecretB" not in body, "%s gets not found from get_sensor_value" % who)
+        body = mcp_tool(d, cookies[who], sids[who], 54, "search_devices", {"query": "Share"})
+        check(b"ShareSwitchA" in body and b"ShareSecretB" not in body,
+              "%s finds only the shared device with search_devices" % who)
+        body = mcp_tool(d, cookies[who], sids[who], 55, "get_all_devices", {})
+        check(b"ShareSecretB" not in body, "%s does not see the unshared device in get_all_devices" % who)
+        body = mcp_tool(d, cookies[who], sids[who], 56, "get_sensor_history", {"idx": int(secret)})
+        check(tool_failed(body) and b"ShareSecretB" not in body, "%s gets not found from get_sensor_history" % who)
+        body = mcp_tool(d, cookies[who], sids[who], 57, "get_switch_state", {"idx": int(secret)})
+        check(tool_failed(body) and b"ShareSecretB" not in body, "%s gets not found from get_switch_state" % who)
+        _, body = mcp_call(d, cookies[who], sids[who], {"jsonrpc": "2.0", "id": 58, "method": "resources/subscribe",
+                                                        "params": {"uri": "domoticz://devices/%s" % secret}})
+        check(b"-32001" in body, "%s cannot subscribe to the unshared device" % who)
+
+    body = mcp_tool(d, cookies["sswitch"], sids["sswitch"], 60, "set_switch_state", {"idx": int(secret), "state": "On"})
+    check(tool_failed(body), "the restricted switcher cannot switch the unshared device")
+    code, body = api(d, admin, "param=getdevices&rid=%s" % secret)
+    dev = (json.loads(body).get("result") or [{}])[0] if code == 200 else {}
+    check(dev.get("Status") == "Off", "the unshared device is still Off (got %r)" % dev.get("Status"))
+    body = mcp_tool(d, cookies["sswitch"], sids["sswitch"], 61, "toggle_switch_state", {"idx": int(secret)})
+    check(tool_failed(body), "the restricted switcher cannot toggle the unshared device")
+    body = mcp_tool(d, cookies["sswitch"], sids["sswitch"], 62, "set_switch_state", {"idx": int(shared), "state": "On"})
+    check(not tool_failed(body), "the restricted switcher can switch the shared device")
+
+    for who in ("admin", "nshare"):
+        body = resource(who, "domoticz://devices")
+        check(b"ShareSwitchA" in body and b"ShareSecretB" in body, "%s sees every device in the devices resource" % who)
+        body = mcp_tool(d, cookies[who], sids[who], 63, "get_device", {"idx": int(secret)})
+        check(not tool_failed(body) and b"ShareSecretB" in body, "%s reads the device with get_device" % who)
+
+    # An access token has no device shares, so like the JSON device list it sees every device
+    code, body = api(d, admin, "param=createaccesstoken&name=ShareToken&rights=0&expiry=0")
+    token = json.loads(body).get("token") if code == 200 else None
+    if check(bool(token), "viewer access token created"):
+        bearer = "Bearer " + token
+        tsid = mcp_session(d, bearer)
+        if check(tsid != "", "access token MCP session initialised"):
+            _, body = mcp_call(d, bearer, tsid, {"jsonrpc": "2.0", "id": 64, "method": "resources/read",
+                                                 "params": {"uri": "domoticz://devices"}})
+            check(b"ShareSwitchA" in body and b"ShareSecretB" in body,
+                  "the access token sees every device in the devices resource")
+            body = mcp_tool(d, bearer, tsid, 65, "get_device", {"idx": int(secret)})
+            check(not tool_failed(body) and b"ShareSecretB" in body, "the access token reads the device with get_device")
+
+    mcp_notification_checks(d, admin, cookies, sids, shared, secret)
+
+
+def mcp_notification_checks(d, admin, cookies, sids, shared, secret):
+    """SSE notifications follow the device sharing, and log lines only reach admins."""
+    print("\n=== MCP notifications ===")
+    _, body = mcp_call(d, cookies["sviewer"], sids["sviewer"], {"jsonrpc": "2.0", "id": 70,
+                       "method": "logging/setLevel", "params": {"level": "debug"}})
+    check(b'"error"' in body and b"requires admin" in body, "a non-admin cannot set the MCP log level")
+
+    streams = {who: SseStream(d.port, cookies[who], sids[who]) for who in ("admin", "sviewer", "nshare")}
+    try:
+        for who, s in streams.items():
+            if not check(s.wait_for(b"notifications/message"), "%s SSE stream connected" % who):
+                return
+        api(d, admin, "param=switchlight&idx=%s&switchcmd=On" % secret)
+        api(d, admin, "param=switchlight&idx=%s&switchcmd=Off" % shared)
+        probe = b"McpLogProbe7315"
+        api(d, admin, "param=addlogmessage&level=4&message=%s" % probe.decode())
+
+        secret_uri = b'"domoticz://devices/%s"' % str(secret).encode()
+        shared_uri = b'"domoticz://devices/%s"' % str(shared).encode()
+        check(streams["admin"].wait_for(secret_uri), "admin is notified of the unshared device update")
+        check(streams["admin"].wait_for(probe), "admin receives error log lines")
+        check(streams["nshare"].wait_for(secret_uri),
+              "a user with nothing shared is notified of every device update")
+        check(streams["sviewer"].wait_for(shared_uri), "sviewer is notified of the shared device update")
+        # A second update of the shared device is sent after the unshared update and the log line.
+        # Once a stream has it, anything leaked before it would already have arrived as well.
+        before = {}
+        for who in ("sviewer", "nshare"):
+            with streams[who].lock:
+                before[who] = streams[who].buf.count(shared_uri)
+        api(d, admin, "param=switchlight&idx=%s&switchcmd=On" % shared)
+        for who in ("sviewer", "nshare"):
+            check(streams[who].wait_for_count(shared_uri, before[who] + 1),
+                  "%s receives the later shared device update" % who)
+        check(not streams["sviewer"].contains(secret_uri), "sviewer is not notified of the unshared device update")
+        for who in ("sviewer", "nshare"):
+            check(not streams[who].contains(probe), "%s receives no log lines" % who)
+    finally:
+        for s in streams.values():
+            s.close()
 
 
 def main():

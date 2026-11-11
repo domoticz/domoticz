@@ -118,7 +118,8 @@ void CMcpSessionRegistry::SendToSession(const std::string& sessionId,
 }
 
 void CMcpSessionRegistry::SendResourceUpdated(const std::string& uri,
-                                               const std::string& notificationJson)
+                                               const std::string& notificationJson,
+                                               const ResourceVisibleFn& isVisible)
 {
 	std::vector<std::shared_ptr<CMcpSession>> active;
 	{
@@ -133,7 +134,10 @@ void CMcpSessionRegistry::SendResourceUpdated(const std::string& uri,
 				bool matched = false;
 				for (const auto& sub : s.subscribedUris)
 				{
-					if (uri == sub || uri.substr(0, sub.size()) == sub)
+					// Exact match, or sub is a parent collection of uri
+					// ("domoticz://devices/1" must not match "domoticz://devices/12")
+					if ((uri == sub)
+					    || ((uri.size() > sub.size()) && (uri.compare(0, sub.size(), sub) == 0) && (uri[sub.size()] == '/')))
 					{
 						matched = true;
 						break;
@@ -145,8 +149,23 @@ void CMcpSessionRegistry::SendResourceUpdated(const std::string& uri,
 			active.push_back(kv.second);
 		}
 	}
+
+	// Visibility is evaluated outside the registry lock because it may run SQL. The user
+	// name and rights are set once when the session is created, so they need no lock here.
+	std::map<std::string, bool> visibleByUser;
 	for (auto& s : active)
+	{
+		if (isVisible && (s->rights != http::server::URIGHTS_ADMIN))
+		{
+			const std::string& username = s->webSession.username;
+			auto it = visibleByUser.find(username);
+			if (it == visibleByUser.end())
+				it = visibleByUser.emplace(username, isVisible(username, s->rights)).first;
+			if (!it->second)
+				continue;
+		}
 		s->SendSseEvent(notificationJson);
+	}
 }
 
 void CMcpSessionRegistry::PruneExpiredSessions(int timeoutSeconds)

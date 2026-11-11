@@ -23,8 +23,14 @@ static int LogLevelToPriority(int level)
 
 void CMcpSession::SendSseEvent(const std::string& notificationJson, int logLevel)
 {
-	if (logLevel >= 0 && LogLevelToPriority(logLevel) < minLogLevel)
-		return;
+	if (logLevel >= 0)
+	{
+		// Domoticz log lines can hold device names and other admin-only data
+		if (rights != http::server::URIGHTS_ADMIN)
+			return;
+		if (LogLevelToPriority(logLevel) < minLogLevel)
+			return;
+	}
 
 	std::lock_guard<std::mutex> lock(m_sendMutex);
 

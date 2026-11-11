@@ -28,6 +28,7 @@ struct CMcpSession
 	// (cannot use _eLogLevel values directly — they are non-sequential bitmasks)
 	// MCP_LOG_LEVEL_OFF is a sentinel above all real priorities.
 	// Default is 3 (error only): Domoticz status/info/debug logs are not forwarded.
+	// Domoticz log lines only go to admin sessions, whatever this level is.
 	// MCP-specific messages (logger="mcp") are sent unconditionally via logLevel=-1.
 	static constexpr int MCP_LOG_LEVEL_OFF = 4;
 	int minLogLevel = 3;

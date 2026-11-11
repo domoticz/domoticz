@@ -3508,6 +3508,12 @@ bool CSQLHelper::OpenDatabase()
 				const char *envUsername = std::getenv("DOMOTICZ_ADMIN_USERNAME");
 				std::string username = (envUsername != nullptr && strlen(envUsername) > 0) ? envUsername : DEFAULT_ADMINUSER;
 				std::string password = envPassword;
+				// "at:<id>" is the session name of access tokens, a user must not look like one
+				if (username.compare(0, 3, "at:") == 0)
+				{
+					_log.Log(LOG_ERROR, "DOMOTICZ_ADMIN_USERNAME cannot start with \"at:\", using \"%s\" instead", DEFAULT_ADMINUSER);
+					username = DEFAULT_ADMINUSER;
+				}
 
 				safe_query("INSERT INTO Users (Active, Username, Password, Rights, TabsEnabled) VALUES (1, '%q', '%q', %d, 0x1F)",
 					base64_encode(username).c_str(), GenerateMD5Hash(password).c_str(), http::server::URIGHTS_ADMIN);
