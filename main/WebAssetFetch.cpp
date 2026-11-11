@@ -345,6 +345,10 @@ namespace WebAssetFetch
 		}
 
 		// szPinAddress stays empty for literal IPs, they carry no name that could be rebound.
+		// With no pin CheckDestination returns an empty szResolve, so the fetch keeps any configured
+		// proxy (see HTTPClient::GETBinary). That is intentional and safe: the proxy-clear exists only
+		// to stop a proxy re-resolving a pinned hostname and defeating the rebinding guard, and a literal
+		// IP has no name to re-resolve. The validated public address is the destination either way.
 		bool IsPublicHost(const std::string& szAuthority, std::string& szPinAddress)
 		{
 			szPinAddress.clear();
@@ -387,6 +391,8 @@ namespace WebAssetFetch
 				{
 					const struct sockaddr_in6* pSa6 = reinterpret_cast<const struct sockaddr_in6*>(pInfo->ai_addr);
 					bAllowed = !IsBlockedIPv6(reinterpret_cast<const uint8_t*>(&pSa6->sin6_addr));
+					// Brackets around the IPv6 address are required in a CURLOPT_RESOLVE entry (a bare
+					// IPv6 cannot be told apart from the port colons) and are accepted since curl 7.57.0.
 					if (bAllowed && szFirstAllowed.empty() && (inet_ntop(AF_INET6, &pSa6->sin6_addr, szText, sizeof(szText)) != nullptr))
 						szFirstAllowed = "[" + std::string(szText) + "]";
 				}
