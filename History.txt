@@ -38,6 +38,7 @@ Version 2026.xxxx
 - Fixed: Charts, the day graph no longer shows a sawtooth in the hour that repeats when daylight saving time ends; the points of both hours are now drawn in the right order, and the energy usage in that hour is no longer skipped (#7167)
 - Fixed: Charts, the Hourly Energy Usage chart of energy devices no longer shows 'Watt' behind every value of the y-axis; the values are Wh (#7151)
 - Fixed: Current meters, a malformed stored value no longer aborts the short log update, the record is skipped and logged
+- Fixed: Dashboard Dynamic, a Temperature + Humidity + Barometer sensor seeded from the favorites now gets a proper Barometer widget (pressure, forecast and a link to the barometer trend log) in the Weather section instead of a duplicate of its Temperature card; a standalone barometer is seeded as a Barometer widget as well (#7195)
 - Fixed: Dashboard Dynamic, switching to another dashboard (or importing or duplicating one) in edit mode and then pressing Cancel showed the previous dashboard's widgets, and saving afterwards overwrote the other dashboard with them
 - Fixed: Dashboard Dynamic, the Custom Chart labels a counter with the meter type Counter (for example the Enever daily price) with its own unit instead of kWh (#7174)
 - Fixed: Dashboard Dynamic, the Custom Chart labels the energy of the Last 24h range in Wh instead of kWh, and the power of a P1 meter in that range in W (#7152)

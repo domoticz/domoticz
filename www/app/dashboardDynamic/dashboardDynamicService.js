@@ -151,6 +151,134 @@ define(['app'], function(app) {
             return apiPost('copydashboardlayout', { id: id, newname: newName });
         }
 
+        /**
+         * Sort favorited devices into the dashboard's starter sections.
+         * A combo Temp/Hum/Baro device lands in both Temperature (its temp/hum card)
+         * and Weather (its barometer), matching the classic Favorites layout.
+         */
+        function categorizeFavorites(devices) {
+            var result = { lights: [], temperature: [], weather: [], utility: [] };
+            devices.forEach(function(d) {
+                // Skip scenes/groups, handled separately via getscenes
+                if (d.Type.indexOf('Scene') === 0 || d.Type.indexOf('Group') === 0) { return; }
+
+                if (d.Type.indexOf('Light')        === 0 || d.Type.indexOf('Security') === 0 ||
+                    d.Type.indexOf('Blind')        === 0 || d.Type.indexOf('Curtain')  === 0 ||
+                    d.Type.indexOf('Color Switch') === 0 || d.Type.indexOf('Chime')    === 0 ||
+                    d.Type.indexOf('Thermostat')   === 0 || d.Type.indexOf('Heating')  === 0 ||
+                    d.Type.indexOf('ASA')          === 0 || d.Type.indexOf('Fan')      === 0 ||
+                    d.SubType === 'Smartwares Mode' || d.SubType === 'Relay' ||
+                    (d.SubType && (d.SubType.indexOf('Itho') === 0 || d.SubType.indexOf('Lucci') === 0 ||
+                                   d.SubType.indexOf('Westinghouse') === 0 || d.SubType.indexOf('Falmec') === 0)) ||
+                    (d.Type.indexOf('Value') === 0 && typeof d.SwitchType !== 'undefined')
+                ) {
+                    result.lights.push(d);
+                } else if (typeof d.Temp !== 'undefined' || typeof d.Humidity !== 'undefined' || typeof d.Chill !== 'undefined') {
+                    result.temperature.push(d);
+                    if (typeof d.Rain !== 'undefined' || typeof d.Visibility !== 'undefined' ||
+                        typeof d.UVI  !== 'undefined' || typeof d.Radiation  !== 'undefined' ||
+                        typeof d.Direction !== 'undefined' || typeof d.Barometer !== 'undefined') {
+                        result.weather.push(d);
+                    }
+                } else if (typeof d.Rain !== 'undefined' || typeof d.Visibility !== 'undefined' ||
+                           typeof d.UVI  !== 'undefined' || typeof d.Radiation  !== 'undefined' ||
+                           typeof d.Direction !== 'undefined' || typeof d.Barometer !== 'undefined') {
+                    result.weather.push(d);
+                } else if (
+                    d.Type === 'Lux'          || d.Type === 'Air Quality'  || d.Type === 'Counter'  ||
+                    d.Type === 'Current'      || d.Type === 'Energy'       || d.Type === 'Current/Energy' ||
+                    d.Type === 'Power'        || d.Type === 'Gas'          || d.Type === 'Water'    ||
+                    d.Type === 'Weight'       || d.Type === 'Usage'        || d.Type === 'Radiator 1' ||
+                    d.Type === 'P1 Smart Meter' ||
+                    d.SubType === 'kWh'       || d.SubType === 'Percentage' || d.SubType === 'Voltage' ||
+                    d.SubType === 'Distance'  || d.SubType === 'Current'   || d.SubType === 'Text'  ||
+                    d.SubType === 'Alert'     || d.SubType === 'Pressure'  || d.SubType === 'A/D'   ||
+                    d.SubType === 'Thermostat Mode' || d.SubType === 'Thermostat Fan Mode' ||
+                    d.SubType === 'Fan'       || d.SubType === 'Smartwares' || d.SubType === 'Waterflow' ||
+                    d.SubType === 'Sound Level' || d.SubType === 'Custom Sensor' ||
+                    d.SubType === 'Thermostat Clock' || d.SubType === 'Soil Moisture' ||
+                    d.SubType === 'Leaf Wetness' ||
+                    d.SubType === 'Gas'       || d.SwitchType === 'Gas'    || d.SwitchTypeVal === 1 ||
+                    d.SubType === 'Counter Incremental' || d.SubType === 'Managed Counter' ||
+                    (d.Type === 'Setpoint' && d.SubType === 'SetPoint')
+                ) {
+                    result.utility.push(d);
+                } else {
+                    // Catch-all: any favorited device that doesn't fit a known category
+                    // goes to utility so it always appears on the dashboard
+                    result.utility.push(d);
+                }
+            });
+            return result;
+        }
+
+        /**
+         * Build the starter widget layout from the favorited devices (the layout seeded on
+         * first run and by "Reset to favorites"). Returns an array of widget descriptors.
+         */
+        function buildFavoritesWidgets(all) {
+            all = Array.isArray(all) ? all : [];
+            var cats    = categorizeFavorites(all);
+            var scenes  = all.filter(function(d) {
+                return d.Type.indexOf('Scene') === 0 || d.Type.indexOf('Group') === 0;
+            });
+            var widgets = [];
+            var y       = 0;
+            var GRID_W  = GRID_COLUMNS;
+            var COLS    = 4, W = GRID_W / COLS, H = 2, HEADER_H = 1;
+
+            // resolveType (optional) lets a section emit a different widget type per item,
+            // e.g. a Barometer device gets the dedicated 'baro' widget instead of the generic card.
+            function addSection(label, items, widgetType, configKey, resolveType) {
+                widgetType = widgetType || 'dz-device';
+                configKey  = configKey  || 'deviceIdx';
+                if (!items.length) { return; }
+                widgets.push({
+                    id: generateId(), type: 'text-note',
+                    x: 0, y: y, w: GRID_W, h: HEADER_H, minH: 1,
+                    config: { content: label, fontSize: 16, textAlign: 'left' }
+                });
+                y += HEADER_H;
+                items.forEach(function(item, i) {
+                    var type = widgetType, key = configKey;
+                    if (resolveType) {
+                        var r = resolveType(item);
+                        if (r) { type = r.type || type; key = r.configKey || key; }
+                    }
+                    var cfg = {};
+                    cfg[key] = String(item.idx);
+                    widgets.push({
+                        id: generateId(), type: type,
+                        x: (i % COLS) * W, y: y + Math.floor(i / COLS) * H,
+                        w: W, h: H, config: cfg
+                    });
+                });
+                y += Math.ceil(items.length / COLS) * H;
+            }
+
+            // A device whose only weather reading is a barometer (a Temp/Hum/Baro combo, or a
+            // standalone barometer) gets the dedicated 'baro' widget: pressure, forecast and a link
+            // to the barometer trend log. A multi-sensor weather device (rain, wind, UV, ...) keeps
+            // the generic device card so none of its other readings are dropped.
+            function weatherWidgetFor(d) {
+                var hasOtherWeather = typeof d.Rain !== 'undefined' || typeof d.Visibility !== 'undefined' ||
+                                      typeof d.UVI  !== 'undefined' || typeof d.Radiation  !== 'undefined' ||
+                                      typeof d.Direction !== 'undefined';
+                if (typeof d.Barometer !== 'undefined' && !hasOtherWeather) {
+                    return { type: 'baro', configKey: 'deviceIdx' };
+                }
+                return null;
+            }
+
+            addSection('Scenes:',          scenes,  'dz-scene', 'sceneIdx');
+            addSection('Lights/Switches:', cats.lights);
+            addSection('Temperature:',     cats.temperature);
+            addSection('Weather:',         cats.weather, 'dz-device', 'deviceIdx', weatherWidgetFor);
+            addSection('Utility:',         cats.utility);
+
+            return widgets;
+        }
+
         /** Generate a UUID (browser-native or polyfill) */
         function generateId() {
             if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -171,6 +299,7 @@ define(['app'], function(app) {
             copyLayout:   copyLayout,
             generateId:   generateId,
             migrateLayout: migrateLayout,
+            buildFavoritesWidgets: buildFavoritesWidgets,
             LAYOUT_VERSION: LAYOUT_VERSION,
             GRID_COLUMNS:  GRID_COLUMNS
         };
