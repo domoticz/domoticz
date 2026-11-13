@@ -816,7 +816,10 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		std::string index_homeid = m_ThermostatName[Home_id];
 		m_Device_types[roomNetatmoID] = mode;
 		int temp = xcmd->cmnd;
-		std::map<int, std::string> Schedule_ID = m_ScheduleID_s[_ID];
+		//store the selected schedule in our local data to avoid
+		//changing back the schedule when using away mode
+		m_selected_Schedule[index_homeid] = selectorLevel;
+		std::map<int, std::string> Schedule_ID = m_ScheduleID_s[index_homeid];
 
 		for (std::map<int, std::string>::const_iterator itt = Schedule_ID.begin(); itt != Schedule_ID.end(); ++itt)
 		{
@@ -867,11 +870,8 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 			//
 			_data = json_data.toStyledString();
 			Get_Response_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
-			return true;
+			return bRet;
 		}
-		//store the selected schedule in our local data to avoid
-		//changing back the schedule when using away mode
-		m_selected_Schedule[index_homeid] = selectorLevel;
 		//else if (mode == "away")
 		//	return SetAway(uid, 20);
 		else
@@ -2171,7 +2171,7 @@ void CNetatmo::GetHomesDataDetails()
 						{
 							//m_selectedScheduleID = index;
 							m_selected_Schedule[homeID] = index;
-							m_selected_Schedule[_ID] = index;
+							m_selected_Schedule[std::to_string(index_homeid)] = index;
 						}
 					}
 					m_ScheduleID_s[homeID] = Schedule_ID;
@@ -2179,8 +2179,8 @@ void CNetatmo::GetHomesDataDetails()
 					std::string away = "away";
 					m_ThermostatName[homeID] = std::to_string(index_homeid);
 					Schedule_ID[index] = std::to_string(index_homeid);
-					m_Schedule_Names[_ID] = away;
-					m_ScheduleID_s[_ID] = Schedule_ID;
+					m_Schedule_Names[std::to_string(index_homeid)] = away;
+					m_ScheduleID_s[std::to_string(index_homeid)] = Schedule_ID;
 				}
 				//Get the user info
 				if (!home["user"].empty())
@@ -3967,6 +3967,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						//Thermostat schedule switch (actively changing thermostat schedule)
 						std::string allSchName = "Off";
 						std::string allSchAction = "";
+						std::string SschAction = "";
 						//Store Home_ID from crcID
 						std::stringstream uid;
                         uid << crcId;
@@ -3991,17 +3992,21 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						//Debug(DEBUG_HARDWARE, "allSchName Data %s", allSchName.c_str());
 
 						//Selected Index for the dropdown list
+						std::string selected;
 						std::stringstream ssv;
 						ssv << m_selected_Schedule[home_id];
+						ssv >> selected;
+						//Debug(DEBUG_HARDWARE, "Schedule selector %s %s %s %d", selected.c_str(), roomNetatmoID.c_str(), setpoint_mode_str.c_str(), Hardware_int);
 
 						//create update / domoticz device
-						SendSelectorSwitch(Hardware_int, 2, ssv.str(), moduleName + " - Schedule", 15, true, allSchName, allSchAction, true, m_Name);   // No RF-level - Battery level visible
+						SendSelectorSwitch(Hardware_int, 2, selected, moduleName + " - Schedule", 15, true, allSchName, allSchAction, true, m_Name);   // No RF-level - Battery level visible
 
 						std::string sName = moduleName + " - mode";
+						std::string setpoint_mode_str = m_Device_types[roomNetatmoID];
 						if (setModeSwitch)
 						{
-							//Debug(DEBUG_HARDWARE, "Schedule mode %s %s %s", m_Room_mode[roomNetatmoID].c_str(), roomNetatmoID.c_str(), setpoint_mode_str.c_str());
-							SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, setpoint_mode_str, sName, 15, true, "Off|On|Away|Frost Guard", "", true, m_Name);   // No RF-level - Battery level visible
+							//Debug(DEBUG_HARDWARE, "Schedule mmode %s %s %s %s %d", m_Room_mode[roomNetatmoID].c_str(), roomNetatmoID.c_str(), selected.c_str(), setpoint_mode_str.c_str(), crcId);
+							SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, selected, sName, 15, true, "Off|On|Away|Frost Guard", SschAction, true, m_Name);   // No RF-level - Battery level visible
 						}
 						else
 							Log(LOG_ERROR, "NetatmoThermostat: Error not available!");
@@ -4011,28 +4016,48 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					}
 					if (type == "NRV")
 					{
-							//Debug(DEBUG_HARDWARE, "NRV");
-							if (setModeSwitch)
-							{
-								//Debug(DEBUG_HARDWARE, "Room mode %s %s %s", m_Device_types[roomNetatmoID].c_str(), roomNetatmoID.c_str(), room_mode_str.c_str());
+						//Debug(DEBUG_HARDWARE, "NRV");
+						if (m_Device_types[roomNetatmoID] == "home")
+						{
+							room_mode_str = "10";
+						}
+						else if (m_Device_types[roomNetatmoID] == "manual")
+						{
+							m_Device_types[roomNetatmoID] = "manual";
+							room_mode_str = "20";
+						}
+						else if (m_Device_types[roomNetatmoID] == "max")
+						{
+							m_Device_types[roomNetatmoID] = "max";
+							room_mode_str = "30";
+						}
+						else
+						{
+							// Thermostat therm_setpoint_mode: schedule / manual / max / away / hg
+							//m_Device_types[roomNetatmoID] = "home";
+							room_mode_str = "10";
+						}
+						if (setModeSwitch)
+						{
+								Debug(DEBUG_HARDWARE, "Room mode %s %s %s", m_Device_types[roomNetatmoID].c_str(), roomNetatmoID.c_str(), room_mode_str.c_str());
 								//Max mode can only be applied on thermostat room
 								// home / manual / away / frostguard mode / off
 								SendSelectorSwitch(Room_int, 16, room_mode_str, moduleName + " - Room", 15, true, "Off|Home|Manual", "", true, m_Name);   // No RF-level - Battery level visible
-							}
-							else
+						}
+						else
 								Log(LOG_ERROR, "NetatmoThermostat: Error Room Valve not available!");
 
-							int ChildID = NETATMO_PRESET_UNIT;
-							auto result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, ChildID);
+						int ChildID = NETATMO_PRESET_UNIT;
+						auto result = m_sql.safe_query("SELECT ID, nValue, sValue FROM DeviceStatus WHERE (HardwareID==%d) AND (DeviceID=='%08X') AND (Unit==%d)", m_HwdID, crcId, ChildID);
 
-							if (!result.empty())
-							{
+						if (!result.empty())
+						{
 								int uId = std::stoi(result[0][0]);
 								int nValue = std::stoi(result[0][1]);
 								std::string sValue = result[0][2];
 								//Debug(DEBUG_HARDWARE, "NRV uId %d", uId);
 								m_sql.UpdateDeviceValue("CustomImage", 36, std::to_string(uId));           //36
-							}
+						}
 					}
 
 					if (type == "NLP" || type == "NLC" || type == "NLPD" || type == "NLPO" || type == "NLPM" || type == "NLPC" || type == "NLPT" || type == "NLPS" || type == "BNCS" || type == "BNXM")
