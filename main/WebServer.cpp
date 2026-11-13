@@ -1573,8 +1573,9 @@ namespace http
 						" A.LastLevel, A.CustomImage, A.StrParam1, A.StrParam2,"
 						" A.Protected, IFNULL(B.XOffset,0), IFNULL(B.YOffset,0), IFNULL(B.PlanID,0), A.Description,"
 						" A.Options, A.Color, A.Icon "
-						"FROM DeviceStatus A LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) "
-						"WHERE (A.ID IN (%q))",
+						"FROM DeviceStatus A LEFT OUTER JOIN DeviceToPlansMap as B ON (B.DeviceRowID==a.ID) AND (B.DevSceneType==0) "
+						"WHERE (A.ID IN (%q))"
+						" ORDER BY A.ID",
 						rowid.c_str());
 				}
 				else if ((!planID.empty()) && (planID != "0"))
@@ -1684,12 +1685,14 @@ namespace http
 						" A.SwitchType, A.HardwareID, A.AddjValue,"
 						" A.AddjMulti, A.AddjValue2, A.AddjMulti2,"
 						" A.LastLevel, A.CustomImage, A.StrParam1,"
-						" A.StrParam2, A.Protected, 0 as XOffset,"
-						" 0 as YOffset, 0 as PlanID, A.Description,"
+						" A.StrParam2, A.Protected, IFNULL(C.XOffset,0),"
+						" IFNULL(C.YOffset,0), IFNULL(C.PlanID,0), A.Description,"
 						" A.Options, A.Color, A.Icon "
 						"FROM DeviceStatus as A, SharedDevices as B "
-						"WHERE (B.DeviceRowID==a.ID)"
-						" AND (B.SharedUserID==%lu) AND (A.ID IN (%q))",
+						"LEFT OUTER JOIN DeviceToPlansMap as C ON (C.DeviceRowID==A.ID) AND (C.DevSceneType==0) "
+						"WHERE (B.DeviceRowID==A.ID)"
+						" AND (B.SharedUserID==%lu) AND (A.ID IN (%q))"
+						" ORDER BY A.ID",
 						m_users[iUser].ID, rowid.c_str());
 				}
 				else if ((!planID.empty()) && (planID != "0"))
