@@ -3996,17 +3996,34 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						std::stringstream ssv;
 						ssv << m_selected_Schedule[home_id];
 						ssv >> selected;
-						//Debug(DEBUG_HARDWARE, "Schedule selector %s %s %s %d", selected.c_str(), roomNetatmoID.c_str(), setpoint_mode_str.c_str(), Hardware_int);
+						//Debug(DEBUG_HARDWARE, "Schedule selector %s %s %s %d", selected.c_str(), roomNetatmoID.c_str(), moduleName.c_str(), Hardware_int);
 
 						//create update / domoticz device
 						SendSelectorSwitch(Hardware_int, 2, selected, moduleName + " - Schedule", 15, true, allSchName, allSchAction, true, m_Name);   // No RF-level - Battery level visible
 
 						std::string sName = moduleName + " - mode";
-						std::string setpoint_mode_str = m_Device_types[roomNetatmoID];
+						std::string setpoint_mode = m_Room_mode[roomNetatmoID];
+						std::string setpoint_mode_str;
+						if (setpoint_mode == "away")
+						{
+							setpoint_mode_str = "20";
+							setpoint_mode_i = 20;
+						}
+						else if (setpoint_mode == "hg")
+						{
+							// Frost Guard mode
+							setpoint_mode_str = "30";
+							setpoint_mode_i = 30;
+						}
+						else
+						{
+							setpoint_mode_str = "10";
+							setpoint_mode_i = 10;
+						}
 						if (setModeSwitch)
 						{
 							//Debug(DEBUG_HARDWARE, "Schedule mmode %s %s %s %s %d", m_Room_mode[roomNetatmoID].c_str(), roomNetatmoID.c_str(), selected.c_str(), setpoint_mode_str.c_str(), crcId);
-							SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, selected, sName, 15, true, "Off|On|Away|Frost Guard", SschAction, true, m_Name);   // No RF-level - Battery level visible
+							SendSelectorSwitch(crcId, NETATMO_PRESET_UNIT, setpoint_mode_str, sName, 15, true, "Off|On|Away|Frost Guard", SschAction, true, m_Name);   // No RF-level - Battery level visible
 						}
 						else
 							Log(LOG_ERROR, "NetatmoThermostat: Error not available!");
