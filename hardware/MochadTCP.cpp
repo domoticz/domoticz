@@ -331,7 +331,8 @@ checkFunc:
 			m_mochadsec.SECURITY1.battery_level = 0x0f;
 
 			// parse sensor conditions, e.g. "Contact_alert_min_DS10A" or "'Contact_normal_max_low_DS10A"
-			strcpy(tempRFSECbuf, (const char *)&m_mochadbuffer[t.start + t.width + 7]);
+			strncpy(tempRFSECbuf, (const char *)&m_mochadbuffer[t.start + t.width + 7], sizeof(tempRFSECbuf) - 1);
+			tempRFSECbuf[sizeof(tempRFSECbuf) - 1] = '\0';
 			pchar = strtok(tempRFSECbuf, " _");
 			while (pchar != nullptr)
 			{
@@ -359,7 +360,8 @@ checkFunc:
 			m_mochadsec.SECURITY1.battery_level = 0x0f;
 
 			// parse remote conditions, e.g. "Panic_KR10A" "Lights_On_KR10A" "Lights_Off_KR10A" "Disarm_KR10A" "Arm_KR10A"
-			strcpy(tempRFSECbuf, (const char *)&m_mochadbuffer[t.start + t.width + 7]);
+			strncpy(tempRFSECbuf, (const char *)&m_mochadbuffer[t.start + t.width + 7], sizeof(tempRFSECbuf) - 1);
+			tempRFSECbuf[sizeof(tempRFSECbuf) - 1] = '\0';
 			pchar = strtok(tempRFSECbuf, " _");
 			while (pchar != nullptr)
 			{
@@ -384,7 +386,8 @@ checkFunc:
 			m_mochadsec.SECURITY1.battery_level = 0x0f;
 
 			// parse remote conditions, "Motion_alert_MS10A" and "Motion_normal_MS10A"
-			strcpy(tempRFSECbuf, (const char *)&m_mochadbuffer[t.start + t.width + 7]);
+			strncpy(tempRFSECbuf, (const char *)&m_mochadbuffer[t.start + t.width + 7], sizeof(tempRFSECbuf) - 1);
+			tempRFSECbuf[sizeof(tempRFSECbuf) - 1] = '\0';
 			pchar = strtok(tempRFSECbuf, " _");
 			while (pchar != nullptr)
 			{

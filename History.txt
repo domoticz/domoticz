@@ -72,6 +72,7 @@ Version 2026.xxxx
 - Fixed: Limitless, the V6 generic disco mode command was sent with the mode of the previous numbered disco command
 - Fixed: Lua, the fourth path argument of applyJsonPath was ignored
 - Fixed: MCP, a user who has only some devices shared now only sees and controls those devices through MCP, also in device update notifications, and Domoticz log lines are only sent to admin sessions
+- Fixed: Mochad TCP, a crafted or oversized RFSEC line from the Mochad server no longer overflows a 50 byte stack buffer while parsing the DS10A, KR10A and MS10A security sensors; the value is copied with a length bound (CVE-2026-71265, #7200)
 - Fixed: MQTT Auto Discovery, a light that reports brightness and color on separate state topics (e.g. a Fibaro FGRGBW via Z-Wave JS UI) dropped to level 0 on every color report while staying on, so dzVents read level 0; a color report without a brightness now keeps the stored level (#7053)
 - Fixed: MQTT Auto Discovery, a Z-Wave JS UI RGB light that was off switched back On on every color report; a light with its own state topic now keeps its on/off state when only the color is reported
 - Fixed: MQTT Auto Discovery, an energy counter for returned energy (like the Shelly 'Returned energy') showed the used power as its usage; it now shows the returned power, and the used energy counter of the same device no longer shows a negative usage while energy is returned
