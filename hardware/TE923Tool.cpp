@@ -294,6 +294,8 @@ int CTE923Tool::read_from_te923( int adr, unsigned char *rbuf )
 	{
 		usleep(150000);
 		int bytes = ( int )buf[0];
+		if ( bytes > 7 )
+			bytes = 7;
 		if (( count + bytes ) < BUFLEN )
 			memcpy( rbuf + count, buf + 1, bytes );
 		count += bytes;

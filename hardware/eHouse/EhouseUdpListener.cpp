@@ -15,6 +15,7 @@
 #include "stdafx.h"
 #include "globals.h"
 #include "status.h"
+#include <algorithm>
 
 #ifndef WIN32
 #include <unistd.h>
@@ -1546,7 +1547,7 @@ void eHouseTCP::GetStr(unsigned char *GetNamesDta)
 	memset(m_GetLine, 0, sizeof(m_GetLine));
 	while ((GetNamesDta[m_GetIndex] != 13) && (m_GetIndex < m_GetSize))
 	{
-		if (strlen(m_GetLine) < sizeof(m_GetLine))
+		if (strlen(m_GetLine) < sizeof(m_GetLine) - 1)
 			strncat(m_GetLine, (char *)&GetNamesDta[m_GetIndex], 1);
 		m_GetIndex++;
 	}
@@ -1668,7 +1669,7 @@ void eHouseTCP::GetUDPNamesRS485(unsigned char *data, int nbytes)
 #ifdef UNLIMITED_PGM
 			if (k <= 10)
 #endif
-				strcat(PGMs, tmp);
+				if (strlen(PGMs) + strlen(tmp) < sizeof(PGMs)) strcat(PGMs, tmp);
 		}
 	}
 
@@ -1813,7 +1814,7 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 #ifdef UNLIMITED_PGM
 			if (k <= 10)
 #endif
-				strcat(PGMs, tmp);
+				if (strlen(PGMs) + strlen(tmp) < sizeof(PGMs)) strcat(PGMs, tmp);
 		}
 	}
 
@@ -1840,7 +1841,7 @@ void eHouseTCP::GetUDPNamesLAN(unsigned char *data, int nbytes)
 #ifdef UNLIMITED_PGM
 			if (k <= 10)
 #endif
-				strcat(PGMs, tmp);
+				if (strlen(PGMs) + strlen(tmp) < sizeof(PGMs)) strcat(PGMs, tmp);
 		}
 	}
 	PGMs[strlen(PGMs) - 1] = 0; // remove last '|'
@@ -1963,7 +1964,7 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
 #ifdef UNLIMITED_PGM
 			if (k <= 10)
 #endif
-				strcat(PGMs, tmp);
+				if (strlen(PGMs) + strlen(tmp) < sizeof(PGMs)) strcat(PGMs, tmp);
 		}
 	}
 
@@ -1988,7 +1989,7 @@ void eHouseTCP::GetUDPNamesCM(unsigned char *data, int nbytes)
 #ifdef UNLIMITED_PGM
 			if (k <= 10)
 #endif
-				strcat(PGMs, tmp);
+				if (strlen(PGMs) + strlen(tmp) < sizeof(PGMs)) strcat(PGMs, tmp);
 		}
 	}
 	PGMs[strlen(PGMs) - 1] = 0; // remove last '|'
@@ -2122,7 +2123,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 #ifdef UNLIMITED_PGM
 			if (k <= 10)
 #endif
-				strcat(PGMs, tmp);
+				if (strlen(PGMs) + strlen(tmp) < sizeof(PGMs)) strcat(PGMs, tmp);
 
 			if (strlen(PGMs) > 400)
 				break;
@@ -2153,7 +2154,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 #ifdef UNLIMITED_PGM
 			if (k <= 10)
 #endif
-				strcat(PGMs, tmp);
+				if (strlen(PGMs) + strlen(tmp) < sizeof(PGMs)) strcat(PGMs, tmp);
 
 			if (strlen(PGMs) > 400)
 				break;
@@ -2168,7 +2169,8 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 		UpdatePGM(data[1], data[2], VISUAL_APGM, PGMs, k);
 	}
 	GetStr(data);
-	strcat(Name, "#Secu Programs Names\r\n");    // CM only
+	if (strlen(Name) + strlen("#Secu Programs Names\r\n") < sizeof(Name))
+		strcat(Name, "#Secu Programs Names\r\n"); // CM only
 	strcpy(PGMs, "SelectorStyle:1;LevelNames:"); // Add Regulation Program Selector
 	k = 0;
 	for (i = 0; i < sizeof((void *)&m_eHouseProN->SecuPrograms) / sizeof(&m_eHouseProN->SecuPrograms[0]); i++)
@@ -2186,7 +2188,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 #ifdef UNLIMITED_PGM
 			if (k <= 10)
 #endif
-				strcat(PGMs, tmp);
+				if (strlen(PGMs) + strlen(tmp) < sizeof(PGMs)) strcat(PGMs, tmp);
 
 			if (strlen(PGMs) > 400)
 				break;
@@ -2202,7 +2204,8 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 	}
 	GetStr(data);
 	k = 0;
-	strcat(Name, "#Zones Programs Names\r\n");   // CM only
+	if (strlen(Name) + strlen("#Zones Programs Names\r\n") < sizeof(Name))
+		strcat(Name, "#Zones Programs Names\r\n"); // CM only
 	strcpy(PGMs, "SelectorStyle:1;LevelNames:"); // Add Regulation Program Selector
 	for (i = 0; i < sizeof((void *)&m_eHouseProN->Zones) / sizeof(&m_eHouseProN->Zones[0]); i++)
 	{
@@ -2219,7 +2222,7 @@ void eHouseTCP::GetUDPNamesPRO(unsigned char *data, int nbytes)
 #ifdef UNLIMITED_PGM
 			if (k <= 10)
 #endif
-				strcat(PGMs, tmp);
+				if (strlen(PGMs) + strlen(tmp) < sizeof(PGMs)) strcat(PGMs, tmp);
 
 			if (strlen(PGMs) > 400)
 				break;
@@ -2650,7 +2653,7 @@ void eHouseTCP::Do_Work()
 				{ // eHouse PRO
 					if (m_ProSize == 0)
 						m_ProSize = MAXMSG;
-					nbytes += recv(m_TCPSocket, (char *)&udp_status[4], m_ProSize, 0);
+					nbytes += recv(m_TCPSocket, (char *)&udp_status[4], sizeof(udp_status) - 4, 0);
 				}
 			}
 		}
@@ -2802,7 +2805,11 @@ void eHouseTCP::Do_Work()
 					// if    (udp_status[3] == 'l')
 					if (nbytes > 6)
 				{
-					strncpy((char *)&log, (char *)&udp_status[4], nbytes - 6);
+					{
+						size_t logn = std::min((size_t)(nbytes - 6), sizeof(log) - 1);
+						strncpy((char *)&log, (char *)&udp_status[4], logn);
+						log[logn] = 0;
+					}
 					LOG(LOG_STATUS, "[%s Log] (%-3d,%-3d) - %s", LogPrefix, devaddrh, devaddrl, log);
 					if (m_IRPerform)
 					{
@@ -2827,9 +2834,9 @@ void eHouseTCP::Do_Work()
 					}
 
 					eHaloc(index, devaddrh, devaddrl);
-					if (memcmp(&m_eHn[index]->BinaryStatus[0], &udp_status, nbytes) != 0)
+					if (memcmp(&m_eHn[index]->BinaryStatus[0], &udp_status, std::min((size_t)nbytes, sizeof(m_eHn[index]->BinaryStatus))) != 0)
 						m_CloudStatusChanged = 1;
-					memcpy(&m_eHn[index]->BinaryStatus[0], udp_status, nbytes);
+					memcpy(&m_eHn[index]->BinaryStatus[0], udp_status, std::min((size_t)nbytes, sizeof(m_eHn[index]->BinaryStatus)));
 					memcpy(&m_eHRMs[index]->data[0], &udp_status, 4); // control data size,address,code 's'
 					m_eHRMs[index]->eHERM.Outs[0] = udp_status[RM_STATUS_OUT];
 					m_eHRMs[index]->eHERM.Outs[1] = udp_status[RM_STATUS_OUT + 1];
@@ -2870,7 +2877,7 @@ void eHouseTCP::Do_Work()
 					if (m_ViaCM)
 					{
 						eCMaloc(0, m_COMMANAGER_IP_HIGH, m_COMMANAGER_IP_LOW);
-						memcpy(m_ECMn->BinaryStatus, udp_status, nbytes);
+						memcpy(m_ECMn->BinaryStatus, udp_status, std::min((size_t)nbytes, sizeof(m_ECMn->BinaryStatus)));
 						m_ECMn->BinaryStatusLength = nbytes;
 						m_ECMn->TCPQuery++;
 						memcpy(&m_ECM->data[0], &udp_status[70], sizeof(m_ECM->data)); // eHouse 1 Controllers
@@ -2891,7 +2898,7 @@ void eHouseTCP::Do_Work()
 					if (IsCM(devaddrh, devaddrl)) // CommManager/Level Manager
 					{
 						eCMaloc(0, devaddrh, devaddrl);
-						memcpy(m_ECMn->BinaryStatus, udp_status, nbytes);
+						memcpy(m_ECMn->BinaryStatus, udp_status, std::min((size_t)nbytes, sizeof(m_ECMn->BinaryStatus)));
 						m_ECMn->BinaryStatusLength = nbytes;
 						m_ECMn->TCPQuery++;
 						if (memcmp(m_ECM->data, &udp_status[70], sizeof(m_ECM->data) - 70) != 0)
@@ -2920,10 +2927,10 @@ void eHouseTCP::Do_Work()
 									{
 
 										eHEaloc(eHEIndex, devaddrh, devaddrl);
-										if (memcmp(m_eHEn[eHEIndex]->BinaryStatus, udp_status, nbytes) != 0)
+										if (memcmp(m_eHEn[eHEIndex]->BinaryStatus, udp_status, std::min((size_t)nbytes, sizeof(m_eHEn[eHEIndex]->BinaryStatus))) != 0)
 											m_CloudStatusChanged = 1;
 
-										memcpy(m_eHEn[eHEIndex]->BinaryStatus, udp_status, nbytes);
+										memcpy(m_eHEn[eHEIndex]->BinaryStatus, udp_status, std::min((size_t)nbytes, sizeof(m_eHEn[eHEIndex]->BinaryStatus)));
 										m_eHEn[eHEIndex]->BinaryStatusLength = nbytes;
 										m_eHEn[eHEIndex]->TCPQuery++;
 
@@ -2959,9 +2966,9 @@ void eHouseTCP::Do_Work()
 									unsigned char eHWiFiIndex = (devaddrl - m_INITIAL_ADDRESS_WIFI) % STATUS_WIFI_ARRAYS_SIZE;
 									eHWIFIaloc(eHWiFiIndex, devaddrh, devaddrl);
 									{
-										if (memcmp(m_eHWIFIn[eHWiFiIndex]->BinaryStatus, udp_status, nbytes) != 0)
+										if (memcmp(m_eHWIFIn[eHWiFiIndex]->BinaryStatus, udp_status, std::min((size_t)nbytes, sizeof(m_eHWIFIn[eHWiFiIndex]->BinaryStatus))) != 0)
 											m_CloudStatusChanged = 1;
-										memcpy(m_eHWIFIn[eHWiFiIndex]->BinaryStatus, udp_status, nbytes);
+										memcpy(m_eHWIFIn[eHWiFiIndex]->BinaryStatus, udp_status, std::min((size_t)nbytes, sizeof(m_eHWIFIn[eHWiFiIndex]->BinaryStatus)));
 										m_eHWIFIn[eHWiFiIndex]->BinaryStatusLength = nbytes;
 										m_eHWIFIs[eHWiFiIndex]->eHWIFI.AddrH = devaddrh;
 										m_eHWIFIs[eHWiFiIndex]->eHWIFI.AddrL = devaddrl;

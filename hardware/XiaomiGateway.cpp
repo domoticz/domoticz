@@ -1109,12 +1109,12 @@ std::string XiaomiGateway::GetGatewayKey()
 
 	unsigned char key[EVP_MAX_KEY_LENGTH];
 	memset(&key, 0, sizeof(key));
-	memcpy(&key, m_GatewayPassword.c_str(), std::max((int)m_GatewayPassword.size(), EVP_MAX_KEY_LENGTH));
+	memcpy(&key, m_GatewayPassword.c_str(), std::min((int)m_GatewayPassword.size(), EVP_MAX_KEY_LENGTH));
 
 	unsigned char token[EVP_MAX_KEY_LENGTH];
 	memset(&token, 0, sizeof(token));
 	std::string sToken = XiaomiGatewayTokenManager::GetInstance().GetToken(m_GatewayIp);
-	memcpy(&token, sToken.c_str(), std::max((int)sToken.size(), EVP_MAX_KEY_LENGTH));
+	memcpy(&token, sToken.c_str(), std::min((int)sToken.size(), EVP_MAX_KEY_LENGTH));
 
 	std::vector<unsigned char> encrypted;
 	encrypted.resize(32);

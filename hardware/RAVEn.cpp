@@ -78,7 +78,7 @@ void RAVEn::readCallback(const char *indata, size_t inlen)
 #ifdef _DEBUG
     Log(LOG_NORM, "RAVEn::readCallback got %d, have %d.  Incoming: %s, Current: %s", len, m_wptr-m_buffer, data, m_buffer);
 #endif
-    if(m_wptr+len > m_buffer+MAX_BUFFER_LEN)
+    if(m_wptr+len >= m_buffer+MAX_BUFFER_LEN)
     {
         Log(LOG_ERROR, "Exceeded buffer space...resetting buffer");
         m_wptr = m_buffer;

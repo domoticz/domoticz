@@ -866,6 +866,8 @@ void MitsubishiWF::TranslateAirconStat(const std::string& szStat, _tAircoStatus&
 	}
 
 	int8_t content_byte_array[1024];
+	if (szStat.length() > sizeof(content_byte_array))
+		return;
 	memcpy(content_byte_array, szStat.c_str(), szStat.length());
 
 	//Convert to signed integers instead of bytes

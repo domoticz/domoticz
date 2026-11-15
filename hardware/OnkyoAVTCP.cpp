@@ -645,7 +645,7 @@ void OnkyoAVTCP::ParseData(const unsigned char *pData, int Len)
 			continue;
 		}
 		int data_size = static_cast<int>(ntohl(pkt->data_size));
-		if (Len < 16 + data_size)
+		if (data_size < 0 || data_size > Len - 16)
 			break;
 
 		ReceiveMessage(pkt->message, data_size - 2);

@@ -321,11 +321,17 @@ uint32_t COpenWebNetTCP::ownCalcPass(const std::string &password, const std::str
 std::string COpenWebNetTCP::decToHexStrConvert(const std::string &paramString)
 {
 	char retStr[256];
+	retStr[0] = '\0';
 	size_t idxb, idxh;
-	for (idxb = 0, idxh = 0; idxb < paramString.length(); idxb += 2, idxh++)
+	for (idxb = 0, idxh = 0; (idxb < paramString.length()) && (idxh < sizeof(retStr) - 2); idxb += 2, idxh++)
 	{
 		std::string str = paramString.substr(idxb, 2);
-		sprintf(&retStr[idxh], "%x", atoi(str.c_str()));
+		int val = atoi(str.c_str());
+		if (val < 0)
+			val = 0;
+		else if (val > 255)
+			val = 255;
+		sprintf(&retStr[idxh], "%x", val);
 	}
 	return std::string(retStr);
 }

@@ -2950,7 +2950,7 @@ void COpenZWave::UpdateValue(NodeInfo* pNode, const OpenZWave::ValueID& vID)
 				if ((vOrgIndex > ValueID_Index_Alarm::Type_Start) && (vOrgIndex < ValueID_Index_Alarm::Type_Event_Param_Previous_Event))
 				{
 					char szTmp[100];
-					sprintf(szTmp, "Alarm Type: %s %d (0x%02X)", vLabel.c_str(), vOrgIndex, vOrgIndex);
+					snprintf(szTmp, sizeof(szTmp), "Alarm Type: %s %d (0x%02X)", vLabel.c_str(), vOrgIndex, vOrgIndex);
 					SendZWaveAlarmSensor(pDevice->nodeID, pDevice->instanceID, pDevice->batValue, (uint8_t)vOrgIndex, intListValue, szListValue, szTmp);
 				}
 

@@ -781,7 +781,7 @@ void ZWaveBase::SendDevice2Domoticz(_tZWaveDevice* pDevice)
 		gDevice.intval1 = lID;
 		gDevice.intval2 = pDevice->intvalue;
 		char szTmp[100];
-		sprintf(szTmp, "Alarm Type: %s %d(0x%02X)", pDevice->label.c_str(), pDevice->Alarm_Type, pDevice->Alarm_Type);
+		snprintf(szTmp, sizeof(szTmp), "Alarm Type: %s %d(0x%02X)", pDevice->label.c_str(), pDevice->Alarm_Type, pDevice->Alarm_Type);
 		sDecodeRXMessage(this, (const unsigned char *)&gDevice, szTmp, BatLevel, nullptr);
 	}
 	else if (pDevice->devType == ZDTYPE_SENSOR_CUSTOM)
