@@ -426,11 +426,12 @@ void CHardwareMonitorUnix::FetchUnixDisk()
 		for (const auto& ittDF : _rlines)
 		{
 			char dname[200];
+			char dtype[200];
 			char suse[30];
 			char smountpoint[300];
 			int64_t numblock, usedblocks, availblocks;
-			int ret = sscanf(ittDF.c_str(), "%s\t%" PRId64 "\t%" PRId64 "\t%" PRId64 "\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
-			if (ret == 6)
+			int ret = sscanf(ittDF.c_str(), "%s\t%s\t%" PRId64 "\t%" PRId64 "\t%" PRId64 "\t%s\t%s\n", dname, dtype, &numblock, &usedblocks, &availblocks, suse, smountpoint);
+			if (ret == 7)
 			{
 				auto it = _dmounts_.find(dname);
 				if (it != _dmounts_.end())
@@ -441,7 +442,7 @@ void CHardwareMonitorUnix::FetchUnixDisk()
 					}
 				}
 #if defined(__linux__) || defined(__FreeBSD__) || defined (__OpenBSD__)
-				if (strstr(dname, "/dev") != nullptr)
+				if (strstr(dname, "/dev") != nullptr and strstr(dtype, "squashfs") == nullptr )
 #elif defined(__CYGWIN32__)
 				if (strstr(smountpoint, "/cygdrive/") != nullptr)
 #endif
@@ -579,10 +580,10 @@ void CHardwareMonitorUnix::CheckForOnboardSensors()
 #if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 	// Busybox df doesn't support -x parameter
 	int returncode = 0;
-	std::vector<std::string> ret = ExecuteCommandAndReturn("df -x nfs -x tmpfs -x devtmpfs 2> /dev/null", returncode);
+	std::vector<std::string> ret = ExecuteCommandAndReturn("df -x nfs -x tmpfs -x devtmpfs -T 2> /dev/null", returncode);
 	returncode == 0 ?
-		m_dfcommand = "df -x nfs -x tmpfs -x devtmpfs" :
-		m_dfcommand = "df";
+		m_dfcommand = "df -x nfs -x tmpfs -x devtmpfs -T" :
+		m_dfcommand = "df -T";
 #endif
 
 #if defined(__linux__) || defined(__CYGWIN32__) || defined(__FreeBSD__)
