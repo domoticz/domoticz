@@ -434,7 +434,7 @@ void CHardwareMonitorUnix::FetchUnixDisk()
 			int ret = sscanf(ittDF.c_str(), "%s\t%199s\t%" PRId64 "\t%" PRId64 "\t%" PRId64 "\t%s\t%s\n", dname, dtype, &numblock, &usedblocks, &availblocks, suse, smountpoint);
 			if (ret == 7)
 #else			
-			int ret = sscanf(ittDF.c_str(), "%s\t%" PRId64 "\t%" PRId64 "\t%" PRId64 "\t%s\t%s\n", dname, dtype, &numblock, &usedblocks, &availblocks, suse, smountpoint);
+			int ret = sscanf(ittDF.c_str(), "%s\t%" PRId64 "\t%" PRId64 "\t%" PRId64 "\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
 			if (ret == 6)
 #endif
 			{
