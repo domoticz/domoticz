@@ -884,6 +884,8 @@ void CMetOffice::FetchObservation()
 		SendTempHumSensor(NODE_OBS_TEMP, 255, temperature, humidity, "Observed TempHum");
 	else if (bHaveTemp)
 		SendTempSensor(NODE_OBS_TEMP, 255, temperature, "Observed Temperature");
+	else if (bHaveHum)
+		SendHumiditySensor(NODE_OBS_TEMP, 255, humidity, "Observed Humidity");
 
 	if (bHaveBaro && !(bHaveTemp && bHaveHum))
 		SendBaroSensor(NODE_OBS_PRESSURE, 1, 255, pressure, GetWeatherForecast(weathercode), "Observed Pressure");
