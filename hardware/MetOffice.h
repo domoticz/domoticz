@@ -54,7 +54,7 @@ class CMetOffice : public CDomoticzHardwareBase
 
 	bool ParseDailyForecast(const std::string &sData);
 	void FetchDailyForecast();
-	time_t DailyForecastSlotStart(time_t atime) const;
+	time_t FetchSlotStart(time_t atime, int interval) const;
 	void UpdateDailyForecastDevices();
 
 	bool ResolveObservationSite();
@@ -75,7 +75,7 @@ class CMetOffice : public CDomoticzHardwareBase
 	std::vector<DailyStep> m_DailyForecast;
 	time_t m_DailyForecastFetched = 0;
 	time_t m_NextDailyForecastAttempt = 0;
-	int m_DailyForecastOffset = 0;
+	int m_FetchOffset = 0;
 
 	std::string m_ObservationGeohash;
 	time_t m_NextObservationAttempt = 0;

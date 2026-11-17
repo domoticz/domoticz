@@ -32,12 +32,14 @@
 // nothing: 24 of the 55 daily calls.
 #define MetOffice_Forecast_Fetch_Interval 3600
 // The optional forecast per day comes out of the same 55 calls: 8 more,
-// which leaves 23 as headroom. The first of them is shortly after local
-// midnight, when the days move along and the new last one is not known yet.
-// Not exactly at midnight, and not at the same moment for everybody.
+// which leaves 23 as headroom.
 #define MetOffice_Daily_Forecast_Fetch_Interval (3 * 3600)
-#define MetOffice_Daily_Forecast_Min_Offset (5 * 60)
-#define MetOffice_Daily_Forecast_Offset_Spread (10 * 60)
+// Both are fetched at fixed times, counted from local midnight, so that one
+// of the daily ones follows midnight closely: that is when the days move
+// along and the new last one is not known yet. Not on the hour itself, and
+// not at the same moment for everybody: 5 to 15 minutes past.
+#define MetOffice_Fetch_Min_Offset (5 * 60)
+#define MetOffice_Fetch_Offset_Spread (10 * 60)
 // Today plus the six days after it
 #define MetOffice_Daily_Forecast_Days 7
 // Observations are hourly too, but appear some time after the hour.
@@ -206,8 +208,8 @@ CMetOffice::CMetOffice(const int ID, const std::string &ForecastAPIKey, const st
 	stdstring_trim(m_ForecastAPIKey);
 	stdstring_trim(m_ObservationAPIKey);
 	stdstring_trim(m_Location);
-	// Somewhere in the 5 to 15 minutes after midnight, the same one after a restart
-	m_DailyForecastOffset = MetOffice_Daily_Forecast_Min_Offset + static_cast<int>(std::hash<std::string>()(m_ForecastAPIKey) % MetOffice_Daily_Forecast_Offset_Spread);
+	// The same one after a restart
+	m_FetchOffset = MetOffice_Fetch_Min_Offset + static_cast<int>(std::hash<std::string>()(m_ForecastAPIKey) % MetOffice_Fetch_Offset_Spread);
 }
 
 void CMetOffice::Init()
@@ -353,7 +355,7 @@ void CMetOffice::Do_Work()
 		{
 			if (!m_ForecastAPIKey.empty())
 			{
-				if ((atime - m_ForecastFetched >= MetOffice_Forecast_Fetch_Interval) && (atime >= m_NextForecastAttempt))
+				if ((m_ForecastFetched < FetchSlotStart(atime, MetOffice_Forecast_Fetch_Interval)) && (atime >= m_NextForecastAttempt))
 				{
 					FetchForecast();
 					lastDeviceUpdate = 0;
@@ -365,7 +367,7 @@ void CMetOffice::Do_Work()
 				}
 				if (m_bAddDailyForecast)
 				{
-					if ((m_DailyForecastFetched < DailyForecastSlotStart(atime)) && (atime >= m_NextDailyForecastAttempt))
+					if ((m_DailyForecastFetched < FetchSlotStart(atime, MetOffice_Daily_Forecast_Fetch_Interval)) && (atime >= m_NextDailyForecastAttempt))
 					{
 						FetchDailyForecast();
 						lastDailyDeviceUpdate = 0;
@@ -550,7 +552,7 @@ bool CMetOffice::ParseForecast(const std::string &sData)
 void CMetOffice::FetchForecast()
 {
 	const time_t atime = mytime(nullptr);
-	// Whatever happens, wait before trying again
+	// Unless it works out, wait before trying again
 	m_NextForecastAttempt = atime + MetOffice_Retry_Interval;
 
 	std::stringstream sURL;
@@ -564,6 +566,7 @@ void CMetOffice::FetchForecast()
 		return;
 
 	m_ForecastFetched = atime;
+	m_NextForecastAttempt = 0;
 	SaveCache(CACHE_HOURLY, sResult, atime);
 }
 
@@ -692,7 +695,7 @@ bool CMetOffice::ParseDailyForecast(const std::string &sData)
 void CMetOffice::FetchDailyForecast()
 {
 	const time_t atime = mytime(nullptr);
-	// Whatever happens, wait before trying again
+	// Unless it works out, wait before trying again
 	m_NextDailyForecastAttempt = atime + MetOffice_Retry_Interval;
 
 	std::stringstream sURL;
@@ -706,13 +709,14 @@ void CMetOffice::FetchDailyForecast()
 		return;
 
 	m_DailyForecastFetched = atime;
+	m_NextDailyForecastAttempt = 0;
 	SaveCache(CACHE_DAILY, sResult, atime);
 }
 
-// The daily forecast is fetched at fixed times of the day: a little after
-// local midnight and every three hours from there. This gives the start of
+// The forecasts are fetched at fixed times of the day: a little after local
+// midnight and every 'interval' seconds from there. This gives the start of
 // the period the current time is in; a forecast from before it is due again.
-time_t CMetOffice::DailyForecastSlotStart(const time_t atime) const
+time_t CMetOffice::FetchSlotStart(const time_t atime, const int interval) const
 {
 	struct tm ltime;
 	localtime_r(&atime, &ltime);
@@ -720,10 +724,10 @@ time_t CMetOffice::DailyForecastSlotStart(const time_t atime) const
 	ltime.tm_min = 0;
 	ltime.tm_sec = 0;
 	ltime.tm_isdst = -1;
-	const time_t first = mktime(&ltime) + m_DailyForecastOffset;
+	const time_t first = mktime(&ltime) + m_FetchOffset;
 	if (atime < first)
-		return first - MetOffice_Daily_Forecast_Fetch_Interval; // the last one of yesterday
-	return first + ((atime - first) / MetOffice_Daily_Forecast_Fetch_Interval) * MetOffice_Daily_Forecast_Fetch_Interval;
+		return first - interval; // the last one of yesterday
+	return first + ((atime - first) / interval) * interval;
 }
 
 // 'Day 0' is today's date where Domoticz runs, 'Day 1' the one after and so
@@ -761,16 +765,17 @@ void CMetOffice::UpdateDailyForecastDevices()
 		if (it == m_DailyForecast.end())
 			continue;
 
+		// All of a day or nothing: a device that kept its value while the
+		// date next to it moved on would be showing it for the wrong date
+		if (std::isnan(it->maxtemp) || std::isnan(it->mintemp) || std::isnan(it->rainprobability) || (it->weathercode == -100))
+			continue;
+
 		const std::string sDay = " Day " + std::to_string(iDay);
 		SendTextSensor(NODE_DAY_DATE + iDay, 1, 255, szDate, "Date" + sDay);
-		if (!std::isnan(it->maxtemp))
-			SendTempSensor(NODE_DAY_MAXTEMP + iDay, 255, it->maxtemp, "Maximum Temperature" + sDay);
-		if (!std::isnan(it->mintemp))
-			SendTempSensor(NODE_DAY_MINTEMP + iDay, 255, it->mintemp, "Minimum Temperature" + sDay);
-		if (it->weathercode != -100)
-			SendTextSensor(NODE_DAY_WEATHER + iDay, 1, 255, GetWeatherDescription(it->weathercode), "Weather" + sDay);
-		if (!std::isnan(it->rainprobability))
-			SendPercentageSensor(NODE_DAY_RAINPROBABILITY + iDay, 1, 255, it->rainprobability, "Rain Probability" + sDay);
+		SendTempSensor(NODE_DAY_MAXTEMP + iDay, 255, it->maxtemp, "Maximum Temperature" + sDay);
+		SendTempSensor(NODE_DAY_MINTEMP + iDay, 255, it->mintemp, "Minimum Temperature" + sDay);
+		SendTextSensor(NODE_DAY_WEATHER + iDay, 1, 255, GetWeatherDescription(it->weathercode), "Weather" + sDay);
+		SendPercentageSensor(NODE_DAY_RAINPROBABILITY + iDay, 1, 255, it->rainprobability, "Rain Probability" + sDay);
 	}
 }
 
