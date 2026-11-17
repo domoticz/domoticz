@@ -501,7 +501,9 @@ void CDomoticzHardwareBase::SendRainRateSensor(const int NodeID, const int Batte
 	tsen.RAIN.id1 = (NodeID & 0xFF00) >> 8;
 	tsen.RAIN.id2 = NodeID & 0xFF;
 
-	int at10 = ground(std::abs(RainRate * 10000.0F));
+	// Two bytes of 1/10000 mm/h: more than 6.5535 mm/h does not fit, and
+	// would come out as a much lower rate if it were left to wrap
+	int at10 = std::min(ground(std::abs(RainRate * 10000.0F)), 0xFFFF);
 	tsen.RAIN.rainrateh = (BYTE)(at10 / 256);
 	at10 -= (tsen.RAIN.rainrateh * 256);
 	tsen.RAIN.rainratel = (BYTE)(at10);
