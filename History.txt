@@ -109,6 +109,7 @@ Version 2026.xxxx
 - Fixed: WebUI, changing the text of a Text device in its edit dialog now updates other open pages, MQTT and the push services (#7082)
 - Fixed: WebUI, live search no longer shifts the device cards on pages without a divider row, and clearing the search always restores the hidden cards (#7027)
 - Fixed: WebUI, on iOS/iPadOS 27 (Safari, Chrome and Edge) every page change reloaded the whole page when Domoticz is opened over http, and the Back button of the log, timers and notification pages reloaded the current page instead of going back; https was not affected
+- Fixed: WebUI, the Custom Log page no longer keeps growing wider by itself in Firefox and pushing the device list off screen; the chart column width is now fixed so the chart cannot feed its width back into the table layout (#7180)
 - Fixed: WebUI, the items of the Custom menu are sorted alphabetically; on Linux they appeared in directory order (#7171)
 - Fixed: WebUI, the lines of a multi-line Text device now line up next to the icon in the Utility widgets (#7040)
 - Fixed: Winddelen, an unknown mill ID is rejected instead of causing a division by zero
