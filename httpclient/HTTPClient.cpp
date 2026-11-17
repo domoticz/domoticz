@@ -6,8 +6,15 @@
 #include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <map>
 #include <mutex>
 #include <set>
+
+#ifdef WIN32
+#include <ws2tcpip.h>
+#else
+#include <arpa/inet.h>
+#endif
 
 #ifndef O_LARGEFILE
 	#define O_LARGEFILE 0
@@ -23,7 +30,10 @@ std::string	HTTPClient::m_sUserAgent = "domoticz/1.0";
 namespace
 {
 	std::mutex g_SelfSignedHostsMutex;
-	std::set<std::string> g_SelfSignedHosts;
+	std::map<std::string, std::set<std::string>> g_SelfSignedHosts; // by owner
+
+	// The address a request without verification first connected to
+	thread_local std::string tl_sSelfSignedAddress;
 
 	// The host of "scheme://user:pass@host:port/path", or of a bare "host" or
 	// "host:port", in lower case. An IPv6 address comes without its brackets.
@@ -49,6 +59,60 @@ namespace
 		std::transform(host.begin(), host.end(), host.begin(), [](unsigned char ch) { return static_cast<char>(::tolower(ch)); });
 		return host;
 	}
+
+	bool IsSelfSignedHost(const std::string &host)
+	{
+		std::lock_guard<std::mutex> l(g_SelfSignedHostsMutex);
+		return std::any_of(g_SelfSignedHosts.begin(), g_SelfSignedHosts.end(), [&host](const auto &owner) { return owner.second.find(host) != owner.second.end(); });
+	}
+
+	bool IsLocalIPv4(const unsigned char *a)
+	{
+		return (a[0] == 10) || (a[0] == 127) || ((a[0] == 172) && ((a[1] & 0xF0) == 16)) || ((a[0] == 192) && (a[1] == 168)) || ((a[0] == 169) && (a[1] == 254));
+	}
+
+	// Private, loopback and link-local addresses: the ones no certificate
+	// authority will issue a certificate for
+	bool IsLocalAddress(const std::string &address)
+	{
+		std::string ip = address.substr(0, address.find('%')); // without the zone of a link-local address
+		unsigned char buf[16];
+		if (inet_pton(AF_INET, ip.c_str(), buf) == 1)
+			return IsLocalIPv4(buf);
+		if (inet_pton(AF_INET6, ip.c_str(), buf) != 1)
+			return false;
+		static const unsigned char v4mapped[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF };
+		if (memcmp(buf, v4mapped, sizeof(v4mapped)) == 0)
+			return IsLocalIPv4(buf + 12);
+		static const unsigned char loopback[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
+		if (memcmp(buf, loopback, sizeof(loopback)) == 0)
+			return true;
+		return ((buf[0] & 0xFE) == 0xFC) || ((buf[0] == 0xFE) && ((buf[1] & 0xC0) == 0x80)); // fc00::/7, fe80::/10
+	}
+
+#ifdef CURL_PREREQFUNC_OK
+	// Called for every connection of a request made without verification,
+	// after connecting and before anything is sent: the first one, and that
+	// of every redirect. The name of a host says nothing about where it is,
+	// and a device can be made to redirect anywhere.
+	int SelfSignedPrereq(void * /*clientp*/, char *conn_primary_ip, char * /*conn_local_ip*/, int /*conn_primary_port*/, int /*conn_local_port*/)
+	{
+		const std::string address = (conn_primary_ip != nullptr) ? conn_primary_ip : "";
+		if (!IsLocalAddress(address))
+		{
+			_log.Log(LOG_ERROR, "HTTPClient: %s is not on the local network, not talking to it without verifying its certificate", address.c_str());
+			return CURL_PREREQFUNC_ABORT;
+		}
+		if (tl_sSelfSignedAddress.empty())
+			tl_sSelfSignedAddress = address;
+		else if (tl_sSelfSignedAddress != address)
+		{
+			_log.Log(LOG_ERROR, "HTTPClient: not following a redirect from %s to %s without verifying its certificate", tl_sSelfSignedAddress.c_str(), address.c_str());
+			return CURL_PREREQFUNC_ABORT;
+		}
+		return CURL_PREREQFUNC_OK;
+	}
+#endif
 } // namespace
 
 
@@ -136,11 +200,28 @@ void HTTPClient::SetGlobalOptions(void *curlobj, const std::string &url)
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, m_sUserAgent.c_str());
 	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, m_iConnectionTimeout);
 	curl_easy_setopt(curl, CURLOPT_TIMEOUT, m_iTimeout);
-	bool bVerify = true;
+	const std::string host = HostOf(url);
+	bool bVerify = !IsSelfSignedHost(host);
+	if (!bVerify)
 	{
-		std::lock_guard<std::mutex> l(g_SelfSignedHostsMutex);
-		if (!g_SelfSignedHosts.empty())
-			bVerify = (g_SelfSignedHosts.find(HostOf(url)) == g_SelfSignedHosts.end());
+		// A proxy would hide where the request really goes
+		curl_easy_setopt(curl, CURLOPT_PROXY, "");
+		curl_easy_setopt(curl, CURLOPT_NOPROXY, "*");
+
+		bool bHavePrereq = false;
+#ifdef CURL_PREREQFUNC_OK
+		tl_sSelfSignedAddress.clear();
+		bHavePrereq = (curl_easy_setopt(curl, CURLOPT_PREREQFUNCTION, SelfSignedPrereq) == CURLE_OK);
+#endif
+		if (!bHavePrereq)
+		{
+			// A curl too old to tell where it connected to: only an address
+			// which is local as it stands, and no redirects at all
+			if (IsLocalAddress(host))
+				curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
+			else
+				bVerify = true;
+		}
 	}
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, bVerify ? 1L : 0L);
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, bVerify ? 2L : 0L);
@@ -252,14 +333,27 @@ void HTTPClient::SetTimeout(const long timeout)
 	m_iTimeout = timeout;
 }
 
-void HTTPClient::AllowSelfSignedHost(const std::string &host)
+void HTTPClient::SetSelfSignedHosts(const std::string &owner, const std::vector<std::string> &hosts)
 {
-	const std::string sHost = HostOf(host);
-	if (sHost.empty())
-		return;
+	std::set<std::string> sHosts;
+	for (const auto &host : hosts)
+	{
+		const std::string sHost = HostOf(host);
+		if (!sHost.empty())
+			sHosts.insert(sHost);
+	}
+
 	std::lock_guard<std::mutex> l(g_SelfSignedHostsMutex);
-	if (g_SelfSignedHosts.insert(sHost).second)
-		_log.Log(LOG_STATUS, "HTTPClient: not verifying the certificate of local device %s", sHost.c_str());
+	const std::set<std::string> sPrevious = g_SelfSignedHosts[owner];
+	for (const auto &sHost : sHosts)
+	{
+		if (sPrevious.find(sHost) == sPrevious.end())
+			_log.Log(LOG_STATUS, "HTTPClient: not verifying the certificate of local device %s (%s)", sHost.c_str(), owner.c_str());
+	}
+	if (sHosts.empty())
+		g_SelfSignedHosts.erase(owner);
+	else
+		g_SelfSignedHosts[owner] = sHosts;
 }
 
 // Without this a server whose certificate is refused looks like one that is down

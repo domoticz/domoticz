@@ -185,8 +185,15 @@ bool CPhilipsHue::StartHardware()
 {
 	RequestStart();
 
+	// The bridge has a certificate which no certificate authority known to
+	// the system has signed
+	HTTPClient::SetSelfSignedHosts("PhilipsHue " + std::to_string(m_HwdID), { m_IPAddress });
+
 	if (!Init())
+	{
+		HTTPClient::SetSelfSignedHosts("PhilipsHue " + std::to_string(m_HwdID), {});
 		return false;
+	}
 
 	if (m_use_v2_sensors && m_v2sensors)
 	{
@@ -213,6 +220,7 @@ bool CPhilipsHue::StartHardware()
 
 bool CPhilipsHue::StopHardware()
 {
+	HTTPClient::SetSelfSignedHosts("PhilipsHue " + std::to_string(m_HwdID), {});
 	if (m_sse)
 	{
 		m_sse->Stop();

@@ -78,7 +78,7 @@ MitsubishiWF::MitsubishiWF(const int ID, const std::string& IPAddress, const uns
 bool MitsubishiWF::StartHardware()
 {
 	// The unit has a certificate it made itself
-	HTTPClient::AllowSelfSignedHost(m_szIPAddress);
+	HTTPClient::SetSelfSignedHosts("MitsubishiWF " + std::to_string(m_HwdID), { m_szIPAddress });
 
 	RequestStart();
 
@@ -92,6 +92,7 @@ bool MitsubishiWF::StartHardware()
 
 bool MitsubishiWF::StopHardware()
 {
+	HTTPClient::SetSelfSignedHosts("MitsubishiWF " + std::to_string(m_HwdID), {});
 	if (m_thread)
 	{
 		RequestStop();

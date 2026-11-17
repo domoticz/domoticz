@@ -270,7 +270,7 @@ EnphaseAPI::EnphaseAPI(
 bool EnphaseAPI::StartHardware()
 {
 	// The gateway has a certificate it made itself
-	HTTPClient::AllowSelfSignedHost(m_szIPAddress);
+	HTTPClient::SetSelfSignedHosts("Enphase " + std::to_string(m_HwdID), { m_szIPAddress });
 
 	RequestStart();
 
@@ -284,6 +284,7 @@ bool EnphaseAPI::StartHardware()
 
 bool EnphaseAPI::StopHardware()
 {
+	HTTPClient::SetSelfSignedHosts("Enphase " + std::to_string(m_HwdID), {});
 	if (m_thread)
 	{
 		RequestStop();

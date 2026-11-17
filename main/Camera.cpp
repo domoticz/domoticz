@@ -247,6 +247,16 @@ void CCameraHandler::ReloadCameras()
 		}
 	}
 
+	// A camera on the local network has a certificate it made itself. Named
+	// again on every reload, so one which was changed or removed is dropped.
+	std::vector<std::string> vSelfSigned;
+	for (const auto &camera : m_cameradevices)
+	{
+		if (camera.Protocol != CPROTOCOL_HTTP)
+			vSelfSigned.push_back(camera.Address);
+	}
+	HTTPClient::SetSelfSignedHosts("Cameras", vSelfSigned);
+
 	for (const auto &camera : _AddedCameras)
 	{
 		//Get Active Devices/Scenes
@@ -341,10 +351,6 @@ std::string CCameraHandler::GetCameraURL(cameraDevice *pCamera)
 	bool bHaveUPinURL = (pCamera->ImageURL.find("#USERNAME") != std::string::npos) || (pCamera->ImageURL.find("#PASSWORD") != std::string::npos);
 
 	std::string szURLPreFix = (pCamera->Protocol == CPROTOCOL_HTTP) ? "http" : "https";
-
-	// A camera on the local network has a certificate it made itself
-	if (pCamera->Protocol != CPROTOCOL_HTTP)
-		HTTPClient::AllowSelfSignedHost(pCamera->Address);
 
 	if ((!bHaveUPinURL) && ((!pCamera->Username.empty()) || (!pCamera->Password.empty())))
 		s_str << szURLPreFix << "://" << CURLEncode::URLEncode(pCamera->Username) << ":" << CURLEncode::URLEncode(pCamera->Password) << "@" << pCamera->Address << ":" << pCamera->Port;

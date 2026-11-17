@@ -43,11 +43,14 @@ class HTTPClient
 	 * address the user configured for it here, and requests to exactly	*
 	 * that host are then made without verification.			*
 	 *									*
-	 * Never use this for a service on the internet.			*
+	 * The hosts belong to an owner, and replace the ones it named before:	*
+	 * name none when the device is stopped or removed. Whatever is named,	*
+	 * such a request is only ever made to an address on the local network,	*
+	 * and a redirect is not followed to another one.			*
 	 *									*
 	 ************************************************************************/
 
-	static void AllowSelfSignedHost(const std::string &host);
+	static void SetSelfSignedHosts(const std::string &owner, const std::vector<std::string> &hosts);
 
 	/************************************************************************
 	 *									*
