@@ -495,6 +495,9 @@
     <Filter Include="Devices\OpenMeteo">
       <UniqueIdentifier>{a1b2c3d4-e5f6-7890-abcd-ef1234567890}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\MetOffice">
+      <UniqueIdentifier>{7c0e5d1a-3b64-4f0e-9a52-6d8f1b2e4c93}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Plugin Framework">
       <UniqueIdentifier>{343e8e43-c7ac-4839-a9a2-6b5f78f95b6d}</UniqueIdentifier>
     </Filter>
@@ -2161,6 +2164,9 @@
     <ClInclude Include="..\hardware\OpenMeteo.h">
       <Filter>Devices\OpenMeteo</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\MetOffice.h">
+      <Filter>Devices\MetOffice</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\serial\impl\win.h">
       <Filter>Devices\SerialTCP\Serial\impl</Filter>
     </ClInclude>
@@ -2978,6 +2984,9 @@
     </ClCompile>
     <ClCompile Include="..\hardware\OpenMeteo.cpp">
       <Filter>Devices\OpenMeteo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\MetOffice.cpp">
+      <Filter>Devices\MetOffice</Filter>
     </ClCompile>
     <ClCompile Include="..\hardware\eVehicles\TestcarApi.cpp">
       <Filter>Devices\eVehicles</Filter>

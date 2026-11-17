@@ -1095,6 +1095,39 @@ define(['app'], function (app) {
 					}
 				});
 			}
+			else if (text.indexOf("Met Office") >= 0) {
+				var forecastapikey = $("#hardwarecontent #divmetoffice #forecastapikey").val().trim();
+				var observationapikey = $("#hardwarecontent #divmetoffice #observationapikey").val().trim();
+				if ((forecastapikey == "") && (observationapikey == "")) {
+					ShowNotify($.t('Please enter an API Key!'), 2500, true);
+					return;
+				}
+				var location = $("#hardwarecontent #divmetoffice #location").val().trim();
+				if (location == "") {
+					location = "0";
+				}
+				var metofficedayforecast = $("#hardwarecontent #divmetoffice #metofficedayforecast").prop("checked") ? 1 : 0;
+				$.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&username=" + encodeURIComponent(forecastapikey) +
+					"&password=" + encodeURIComponent(observationapikey) +
+					"&extra=" + encodeURIComponent(location) +
+					"&name=" + encodeURIComponent(name) +
+					"&enabled=" + bEnabled +
+					"&idx=" + idx +
+					"&datatimeout=" + datatimeout +
+					"&Mode1=" + metofficedayforecast + "&Mode2=" + Mode2 + "&Mode3=" + Mode3 + "&Mode4=" + Mode4 + "&Mode5=" + Mode5 + "&Mode6=" + Mode6,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+			}
 			else if(text.indexOf("Meteorologisk") >= 0){
 				var location = $("#hardwarecontent #divmeteorologisk #location").val();
 				if (location == "") {
@@ -2635,6 +2668,35 @@ define(['app'], function (app) {
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
 					"&loglevel=" + logLevel +
 					"&username=" + encodeURIComponent(apikey) + "&password=" + encodeURIComponent(location) +
+					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					}
+				});
+			}
+			else if (text.indexOf("Met Office") >= 0) {
+				var forecastapikey = $("#hardwarecontent #divmetoffice #forecastapikey").val().trim();
+				var observationapikey = $("#hardwarecontent #divmetoffice #observationapikey").val().trim();
+				if ((forecastapikey == "") && (observationapikey == "")) {
+					ShowNotify($.t('Please enter an API Key!'), 2500, true);
+					return;
+				}
+				var location = $("#hardwarecontent #divmetoffice #location").val().trim();
+				if (location == "") {
+					location = "0";
+				}
+				var metofficedayforecast = $("#hardwarecontent #divmetoffice #metofficedayforecast").prop("checked") ? 1 : 0;
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&username=" + encodeURIComponent(forecastapikey) + "&password=" + encodeURIComponent(observationapikey) +
+					"&extra=" + encodeURIComponent(location) +
+					"&Mode1=" + metofficedayforecast +
 					"&name=" + encodeURIComponent(name) + "&enabled=" + bEnabled + "&datatimeout=" + datatimeout,
 					async: false,
 					dataType: 'json',
@@ -4760,6 +4822,12 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsunderground #apikey").val(data["Username"]);
 							$("#hardwarecontent #hardwareparamsunderground #location").val(data["Password"]);
 						}
+						else if (data["Type"].indexOf("Met Office") >= 0) {
+							$("#hardwarecontent #hardwareparamsmetoffice #forecastapikey").val(data["Username"]);
+							$("#hardwarecontent #hardwareparamsmetoffice #observationapikey").val(data["Password"]);
+							$("#hardwarecontent #hardwareparamsmetoffice #location").val(data["Extra"]);
+							$("#hardwarecontent #hardwareparamsmetoffice #metofficedayforecast").prop("checked", data["Mode1"] == 1);
+						}
 						else if ((data["Type"].indexOf("Meteorologisk") >= 0)) {
 							$("#hardwarecontent #hardwareparamsmeteorologisk #location").val(data["Password"]);
 						}
@@ -5518,6 +5586,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divmodeldenkovitcpdevices").hide();
 			$("#hardwarecontent #divunderground").hide();
 			$("#hardwarecontent #divopenweathermap").hide();
+			$("#hardwarecontent #divmetoffice").hide();
 			$("#hardwarecontent #divbuienradar").hide();
 			$("#hardwarecontent #divmeteorologisk").hide();
 			$("#hardwarecontent #divserial").hide();
@@ -5793,6 +5862,9 @@ define(['app'], function (app) {
 			}
 			else if ((text.indexOf("Underground") >= 0) || (text.indexOf("DarkSky") >= 0) || (text.indexOf("Visual Crossing") >= 0) || (text.indexOf("AccuWeather") >= 0)) {
 				$("#hardwarecontent #divunderground").show();
+			}
+			else if (text.indexOf("Met Office") >= 0) {
+				$("#hardwarecontent #divmetoffice").show();
 			}
 			else if(text.indexOf("Meteorologisk") >= 0){
 				$("#hardwarecontent #divmeteorologisk").show();

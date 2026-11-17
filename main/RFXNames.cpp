@@ -280,6 +280,7 @@ static const STR_TABLE_SINGLE HardwareTypeTable[] = {
 	{ HTYPE_MitsubishiWF, "Mitsubishi WF RAC Airco with LAN (HTTP) interface", "MitsubishiWF" },
 	{ HTYPE_DaikinModbus, "Daikin Altherma (Modbus TCP via Homehub)", "DaikinHH" },
 	{ HTYPE_OpenMeteo, "Open-Meteo (Weather Lookup)", "OpenMeteo" },
+	{ HTYPE_MetOffice, "Met Office DataHub (Weather Lookup)", "MetOffice" },
 	{ HTYPE_Matter, "Matter (python-matterjs-server)", "Matter" },
 	{ 0, nullptr, nullptr },
 };

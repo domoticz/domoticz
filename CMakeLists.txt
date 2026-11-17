@@ -326,6 +326,7 @@ hardware/Nest.cpp
 hardware/NestOAuthAPI.cpp
 hardware/Netatmo.cpp
 hardware/HttpPoller.cpp
+hardware/MetOffice.cpp
 hardware/OctoPrintMQTT.cpp
 hardware/OnkyoAVTCP.cpp
 hardware/OpenMeteo.cpp

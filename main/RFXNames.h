@@ -225,6 +225,7 @@ enum _eHardwareTypes {
 	HTYPE_VisualCrossing,		//127
 	HTYPE_MitsubishiWF,			//128
 	HTYPE_Matter,				//129
+	HTYPE_MetOffice,			//130
 	HTYPE_END
 };
 

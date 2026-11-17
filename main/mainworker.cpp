@@ -154,6 +154,7 @@
 #include "../hardware/OctoPrintMQTT.h"
 #include "../hardware/Meteorologisk.h"
 #include "../hardware/OpenMeteo.h"
+#include "../hardware/MetOffice.h"
 #include "../hardware/AirconWithMe.h"
 #include "../hardware/AlfenEve.h"
 #include "../hardware/Enever.h"
@@ -1088,6 +1089,9 @@ bool MainWorker::AddHardwareFromParams(
 		break;
 	case HTYPE_OpenMeteo:
 		pHardware = new COpenMeteo(ID);
+		break;
+	case HTYPE_MetOffice:
+		pHardware = new CMetOffice(ID, Username, Password, Extra, (Mode1 != 0)); // Forecast key, observation key, location, daily forecast
 		break;
 	case HTYPE_AirconWithMe:
 		pHardware = new CAirconWithMe(ID, Address, Port, Username, Password);

@@ -1015,6 +1015,37 @@
                 </tr>
             </table>
         </div>
+        <div id="divmetoffice">
+            <br>
+            <table class="display" id="hardwareparamsmetoffice" border="0" cellpadding="0" cellspacing="20">
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Global Spot API Key">Global Spot API Key</span>:</label></td>
+                    <td>
+                        <input type="text" id="forecastapikey" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all"><br>
+                        <span data-i18n="Site Specific forecast subscription (free plan: 55 calls a day, one is used every hour)">Site Specific forecast subscription (free plan: 55 calls a day, one is used every hour)</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Land Observations API Key">Land Observations API Key</span>:</label></td>
+                    <td>
+                        <input type="text" id="observationapikey" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all"><br>
+                        <span data-i18n="Measurements of the nearest observing site (optional)">Measurements of the nearest observing site (optional)</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label><span data-i18n="Location"></span>:</label></td>
+                    <td>
+                        <input type="text" id="location" style="width: 250px; padding: .2em;" class="text ui-widget-content ui-corner-all" value="0"><br>
+                        <span data-i18n="Latitude,Longitude">Latitude,Longitude</span><br>
+                        <span data-i18n="(0 = Application default)"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right" style="width:110px"><label for="metofficedayforecast"><span data-i18n="Daily forecast">Daily forecast</span>:</label></td>
+                    <td><input type="checkbox" id="metofficedayforecast">&nbsp;<label for="metofficedayforecast">&nbsp;<span data-i18n="Forecast for today and the coming 6 days (8 more forecast calls a day).">Forecast for today and the coming 6 days (8 more forecast calls a day).</span></label></td>
+                </tr>
+            </table>
+        </div>
         <div id="divopenweathermap">
             <br>
             <table class="display" id="hardwareparamsopenweathermap" border="0" cellpadding="0" cellspacing="20">

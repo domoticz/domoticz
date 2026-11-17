@@ -1535,6 +1535,12 @@ namespace http
 				if ((username.empty()) || (password.empty()))
 					return false;
 			}
+			else if (htype == HTYPE_MetOffice)
+			{
+				// Global Spot key and Land Observations key, at least one of them
+				if ((username.empty()) && (password.empty()))
+					return false;
+			}
 			else if (htype == HTYPE_SolarEdgeAPI)
 			{
 				if (username.empty())
