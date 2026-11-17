@@ -38,15 +38,16 @@ class HTTPClient
 	/************************************************************************
 	 *									*
 	 * The certificate and the host name of a https server are always	*
-	 * verified. The one exception is a device on the local network that	*
-	 * can only present a self-signed certificate: its driver names the	*
-	 * address the user configured for it here, and requests to exactly	*
-	 * that host are then made without verification.			*
+	 * verified, and a certificate which is valid is always accepted. The	*
+	 * one exception is a device on the local network that can only present	*
+	 * a self-signed certificate: its driver names the address the user	*
+	 * configured for it here. When the certificate of exactly that host	*
+	 * cannot be verified, the request is made again without verifying it,	*
+	 * but only to an address on the local network, and without following a	*
+	 * redirect to another address.						*
 	 *									*
 	 * The hosts belong to an owner, and replace the ones it named before:	*
-	 * name none when the device is stopped or removed. Whatever is named,	*
-	 * such a request is only ever made to an address on the local network,	*
-	 * and a redirect is not followed to another one.			*
+	 * name none when the device is stopped or removed.			*
 	 *									*
 	 ************************************************************************/
 
@@ -130,8 +131,8 @@ class HTTPClient
 		std::vector<std::string>& vHeaderData, long TimeOut = -1);
 
       private:
-	static void SetGlobalOptions(void *curlobj, const std::string &url);
-	static void LogTLSError(int curlcode, const std::string &url);
+	static void SetGlobalOptions(void *curlobj);
+	static int Perform(void *curlobj, const std::string &url);
 	static bool CheckIfGlobalInitDone();
 	static void LogError(long response_code);
 

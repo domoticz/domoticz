@@ -32,7 +32,7 @@ namespace
 	std::mutex g_SelfSignedHostsMutex;
 	std::map<std::string, std::set<std::string>> g_SelfSignedHosts; // by owner
 
-	// The address a request without verification first connected to
+	// The address a request made again without verification first connected to
 	thread_local std::string tl_sSelfSignedAddress;
 
 	// The host of "scheme://user:pass@host:port/path", or of a bare "host" or
@@ -75,10 +75,13 @@ namespace
 	// authority will issue a certificate for
 	bool IsLocalAddress(const std::string &address)
 	{
-		std::string ip = address.substr(0, address.find('%')); // without the zone of a link-local address
 		unsigned char buf[16];
-		if (inet_pton(AF_INET, ip.c_str(), buf) == 1)
+		if (inet_pton(AF_INET, address.c_str(), buf) == 1)
 			return IsLocalIPv4(buf);
+		// Only an IPv6 address can have a zone ("fe80::1%eth0")
+		std::string ip = address;
+		if (ip.find(':') != std::string::npos)
+			ip = ip.substr(0, ip.find('%'));
 		if (inet_pton(AF_INET6, ip.c_str(), buf) != 1)
 			return false;
 		static const unsigned char v4mapped[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF };
@@ -91,10 +94,10 @@ namespace
 	}
 
 #ifdef CURL_PREREQFUNC_OK
-	// Called for every connection of a request made without verification,
-	// after connecting and before anything is sent: the first one, and that
-	// of every redirect. The name of a host says nothing about where it is,
-	// and a device can be made to redirect anywhere.
+	// Called for every connection of a request made again without
+	// verification, after connecting and before anything is sent: the first
+	// one, and that of every redirect. The name of a host says nothing about
+	// where it is, and a device can be made to redirect anywhere.
 	int SelfSignedPrereq(void * /*clientp*/, char *conn_primary_ip, char * /*conn_local_ip*/, int /*conn_primary_port*/, int /*conn_local_port*/)
 	{
 		const std::string address = (conn_primary_ip != nullptr) ? conn_primary_ip : "";
@@ -189,7 +192,7 @@ void HTTPClient::Cleanup()
 	}
 }
 
-void HTTPClient::SetGlobalOptions(void *curlobj, const std::string &url)
+void HTTPClient::SetGlobalOptions(void *curlobj)
 {
 	CURL *curl=(CURL *)curlobj;
 	curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC | CURLAUTH_DIGEST);
@@ -200,31 +203,8 @@ void HTTPClient::SetGlobalOptions(void *curlobj, const std::string &url)
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, m_sUserAgent.c_str());
 	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, m_iConnectionTimeout);
 	curl_easy_setopt(curl, CURLOPT_TIMEOUT, m_iTimeout);
-	const std::string host = HostOf(url);
-	bool bVerify = !IsSelfSignedHost(host);
-	if (!bVerify)
-	{
-		// A proxy would hide where the request really goes
-		curl_easy_setopt(curl, CURLOPT_PROXY, "");
-		curl_easy_setopt(curl, CURLOPT_NOPROXY, "*");
-
-		bool bHavePrereq = false;
-#ifdef CURL_PREREQFUNC_OK
-		tl_sSelfSignedAddress.clear();
-		bHavePrereq = (curl_easy_setopt(curl, CURLOPT_PREREQFUNCTION, SelfSignedPrereq) == CURLE_OK);
-#endif
-		if (!bHavePrereq)
-		{
-			// A curl too old to tell where it connected to: only an address
-			// which is local as it stands, and no redirects at all
-			if (IsLocalAddress(host))
-				curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
-			else
-				bVerify = true;
-		}
-	}
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, bVerify ? 1L : 0L);
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, bVerify ? 2L : 0L);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
 #if defined(WIN32) && defined(CURLSSLOPT_NATIVE_CA)
 	// An OpenSSL build of curl has no certificates of its own on Windows
 	curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, (long)CURLSSLOPT_NATIVE_CA);
@@ -348,7 +328,7 @@ void HTTPClient::SetSelfSignedHosts(const std::string &owner, const std::vector<
 	for (const auto &sHost : sHosts)
 	{
 		if (sPrevious.find(sHost) == sPrevious.end())
-			_log.Log(LOG_STATUS, "HTTPClient: not verifying the certificate of local device %s (%s)", sHost.c_str(), owner.c_str());
+			_log.Log(LOG_STATUS, "HTTPClient: a certificate which cannot be verified will be accepted from local device %s (%s)", sHost.c_str(), owner.c_str());
 	}
 	if (sHosts.empty())
 		g_SelfSignedHosts.erase(owner);
@@ -356,14 +336,49 @@ void HTTPClient::SetSelfSignedHosts(const std::string &owner, const std::vector<
 		g_SelfSignedHosts[owner] = sHosts;
 }
 
-// Without this a server whose certificate is refused looks like one that is down
-void HTTPClient::LogTLSError(const int curlcode, const std::string &url)
+// A certificate which can be verified is accepted from any host. Only when it
+// cannot be, and the host is one a driver has named as its local device, is
+// the request made again without verifying it. Verification fails before
+// anything of the request is sent, so nothing is sent twice.
+int HTTPClient::Perform(void *curlobj, const std::string &url)
 {
+	CURL *curl = (CURL *)curlobj;
+	CURLcode res = curl_easy_perform(curl);
+
 	// 60 is CURLE_SSL_CACERT, which newer versions of curl made the same as 51
-	if ((curlcode == CURLE_PEER_FAILED_VERIFICATION) || (curlcode == 60))
-		_log.Log(LOG_ERROR, "HTTPClient: could not verify the certificate of %s (%s)", HostOf(url).c_str(), curl_easy_strerror((CURLcode)curlcode));
-	else if (curlcode == CURLE_SSL_CACERT_BADFILE)
-		_log.Log(LOG_ERROR, "HTTPClient: no usable CA certificates to verify %s with, are they installed?", HostOf(url).c_str());
+	const bool bRefused = (res == CURLE_PEER_FAILED_VERIFICATION) || (res == 60);
+	const std::string host = HostOf(url);
+	if (bRefused && IsSelfSignedHost(host))
+	{
+		bool bRetry = false;
+#ifdef CURL_PREREQFUNC_OK
+		tl_sSelfSignedAddress.clear();
+		bRetry = (curl_easy_setopt(curl, CURLOPT_PREREQFUNCTION, SelfSignedPrereq) == CURLE_OK);
+#endif
+		if (!bRetry && IsLocalAddress(host))
+		{
+			// A curl too old to tell where it connected to: only an address
+			// which is local as it stands, and no redirects at all
+			curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
+			bRetry = true;
+		}
+		if (bRetry)
+		{
+			// A proxy would hide where the request really goes
+			curl_easy_setopt(curl, CURLOPT_PROXY, "");
+			curl_easy_setopt(curl, CURLOPT_NOPROXY, "*");
+			curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+			curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+			return curl_easy_perform(curl);
+		}
+	}
+
+	// Without this a server whose certificate is refused looks like one that is down
+	if (bRefused)
+		_log.Log(LOG_ERROR, "HTTPClient: could not verify the certificate of %s (%s)", host.c_str(), curl_easy_strerror(res));
+	else if (res == CURLE_SSL_CACERT_BADFILE)
+		_log.Log(LOG_ERROR, "HTTPClient: no usable CA certificates to verify %s with, are they installed?", host.c_str());
+	return res;
 }
 
 void HTTPClient::SetUserAgent(const std::string &useragent)
@@ -389,7 +404,7 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 			return false;
 
 		CURLcode res;
-		SetGlobalOptions(curl, url);
+		SetGlobalOptions(curl);
 		if (TimeOut != -1)
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
 		if (!bFollowRedirect)
@@ -424,8 +439,7 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 		curl_easy_setopt(curl, CURLOPT_HEADERDATA, &vHeaderData);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-		res = curl_easy_perform(curl);
-		LogTLSError(res, url);
+		res = (CURLcode)Perform(curl, url);
 
 		bool bOK = false;
 		if (res == CURLE_OK)
@@ -483,7 +497,7 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 			return false;
 
 		CURLcode res;
-		SetGlobalOptions(curl, url);
+		SetGlobalOptions(curl);
 		if (TimeOut != -1)
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
 		if (!bFollowRedirect)
@@ -506,8 +520,7 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 		}
 
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postdata.c_str());
-		res = curl_easy_perform(curl);
-		LogTLSError(res, url);
+		res = (CURLcode)Perform(curl, url);
 
 		if (res != CURLE_OK)
 		{
@@ -554,7 +567,7 @@ std::vector<std::string> &vHeaderData, const long TimeOut)
 			return false;
 
 		CURLcode res;
-		SetGlobalOptions(curl, url);
+		SetGlobalOptions(curl);
 		if (TimeOut != -1)
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
 
@@ -576,8 +589,7 @@ std::vector<std::string> &vHeaderData, const long TimeOut)
 		}
 
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, putdata.c_str());
-		res = curl_easy_perform(curl);
-		LogTLSError(res, url);
+		res = (CURLcode)Perform(curl, url);
 
 		if (res != CURLE_OK)
 		{
@@ -624,7 +636,7 @@ std::vector<std::string> &vHeaderData, const long TimeOut)
 			return false;
 
 		CURLcode res;
-		SetGlobalOptions(curl, url);
+		SetGlobalOptions(curl);
 		if (TimeOut != -1)
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
 
@@ -646,8 +658,7 @@ std::vector<std::string> &vHeaderData, const long TimeOut)
 		}
 
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, putdata.c_str());
-		res = curl_easy_perform(curl);
-		LogTLSError(res, url);
+		res = (CURLcode)Perform(curl, url);
 
 		if (res != CURLE_OK)
 		{
@@ -694,7 +705,7 @@ bool HTTPClient::PatchBinary(const std::string& url, const std::string& putdata,
 			return false;
 
 		CURLcode res;
-		SetGlobalOptions(curl, url);
+		SetGlobalOptions(curl);
 		if (TimeOut != -1)
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
 
@@ -716,8 +727,7 @@ bool HTTPClient::PatchBinary(const std::string& url, const std::string& putdata,
 		}
 
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, putdata.c_str());
-		res = curl_easy_perform(curl);
-		LogTLSError(res, url);
+		res = (CURLcode)Perform(curl, url);
 
 		if (res != CURLE_OK)
 		{
@@ -776,7 +786,7 @@ bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<s
 			return false;
 
 		CURLcode res;
-		SetGlobalOptions(curl, url);
+		SetGlobalOptions(curl);
 		if (TimeOut != -1)
 		{
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
@@ -795,8 +805,7 @@ bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<s
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_curl_data_single_line);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-		res = curl_easy_perform(curl);
-		LogTLSError(res, url);
+		res = (CURLcode)Perform(curl, url);
 
 		if (
 			(res == CURLE_WRITE_ERROR) &&
@@ -999,12 +1008,11 @@ bool HTTPClient::GETBinaryToFile(const std::string &url, const std::string &outp
 			return false;
 
 		CURLcode res;
-		SetGlobalOptions(curl, url);
+		SetGlobalOptions(curl);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_curl_data_file);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&outfile);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-		res = curl_easy_perform(curl);
-		LogTLSError(res, url);
+		res = (CURLcode)Perform(curl, url);
 		curl_easy_cleanup(curl);
 
 		outfile.close();
