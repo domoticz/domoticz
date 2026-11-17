@@ -845,6 +845,7 @@ define(['app'], function (app) {
 						return;
 					}
 					Mode2 = ensynchro;
+					Mode3 = $("#hardwarecontent #ownsetpointmethod").val();
 				}
 				$.ajax({
 					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
@@ -2459,6 +2460,7 @@ define(['app'], function (app) {
 						return;
 					}
 					Mode2 = ensynchro;
+					Mode3 = $("#hardwarecontent #ownsetpointmethod").val();
 				}
 				$.ajax({
 					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
@@ -4709,6 +4711,7 @@ define(['app'], function (app) {
 									ensynchro = 5;
 								}
 								$("#hardwarecontent #hardwareparamsensynchro #ensynchro").val(ensynchro);
+								$("#hardwarecontent #ownsetpointmethod").val(parseInt(data["Mode3"]) === 7 ? "7" : "0");
 							}
 							else if (data["Type"].indexOf("eHouse") >= 0) {
 								$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
@@ -5486,6 +5489,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divratelimitp1").hide();
 			$("#hardwarecontent #divkeyp1p1").hide();
 			$("#hardwarecontent #divensynchro").hide();
+			$("#hardwarecontent #divownsetpointmethod").hide();
 			$("#hardwarecontent #divlocation").hide();
 			$("#hardwarecontent #divphilipshue").hide();
 			$("#hardwarecontent #divwinddelen").hide();
@@ -5687,6 +5691,8 @@ define(['app'], function (app) {
 						else if (text.indexOf("MyHome OpenWebNet with LAN interface") >= 0) {
 							$("#hardwarecontent #divratelimitp1").show();
 							$("#hardwarecontent #divensynchro").show();
+							$("#hardwarecontent #divownsetpointmethod").show();
+							$("#hardwarecontent #ownsetpointmethod").val("0");
 							$("#hardwarecontent #hardwareparamsremote #tcpport").val(20000);
 							$("#hardwarecontent #hardwareparamsratelimitp1 #ratelimitp1").val(0);
 							$("#hardwarecontent #hardwareparamsensynchro #ensynchro").val(0);
