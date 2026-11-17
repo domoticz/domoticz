@@ -429,11 +429,20 @@ void CHardwareMonitorUnix::FetchUnixDisk()
 			char suse[30];
 			char smountpoint[300];
 			int64_t numblock, usedblocks, availblocks;
-#if defined(__linux__)	
-			char dtype[200];
-			int ret = sscanf(ittDF.c_str(), "%s\t%199s\t%" PRId64 "\t%" PRId64 "\t%" PRId64 "\t%s\t%s\n", dname, dtype, &numblock, &usedblocks, &availblocks, suse, smountpoint);
-			if (ret == 7)
-#else			
+#if defined(__linux__)
+			// With "df -T" the filesystem type is the 2nd column (7 fields). On systems where -T
+			// is not available and we fall back to plain "df" the type column is absent (6 fields),
+			// so pick the layout from the command actually in use. A plain df line can otherwise
+			// satisfy the 7-field scan with shifted, wrong values.
+			char dtype[200] = { 0 };
+			const bool bWithType = m_dfcommand.find(" -T") != std::string::npos;
+			int ret;
+			if (bWithType)
+				ret = sscanf(ittDF.c_str(), "%s\t%199s\t%" PRId64 "\t%" PRId64 "\t%" PRId64 "\t%s\t%s\n", dname, dtype, &numblock, &usedblocks, &availblocks, suse, smountpoint);
+			else
+				ret = sscanf(ittDF.c_str(), "%s\t%" PRId64 "\t%" PRId64 "\t%" PRId64 "\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
+			if (ret == (bWithType ? 7 : 6))
+#else
 			int ret = sscanf(ittDF.c_str(), "%s\t%" PRId64 "\t%" PRId64 "\t%" PRId64 "\t%s\t%s\n", dname, &numblock, &usedblocks, &availblocks, suse, smountpoint);
 			if (ret == 6)
 #endif
