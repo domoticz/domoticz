@@ -32,8 +32,12 @@
 // nothing: 24 of the 55 daily calls.
 #define MetOffice_Forecast_Fetch_Interval 3600
 // The optional forecast per day comes out of the same 55 calls: 8 more,
-// which leaves 23 as headroom.
+// which leaves 23 as headroom. The first of them is shortly after local
+// midnight, when the days move along and the new last one is not known yet.
+// Not exactly at midnight, and not at the same moment for everybody.
 #define MetOffice_Daily_Forecast_Fetch_Interval (3 * 3600)
+#define MetOffice_Daily_Forecast_Min_Offset (5 * 60)
+#define MetOffice_Daily_Forecast_Offset_Spread (10 * 60)
 // Today plus the six days after it
 #define MetOffice_Daily_Forecast_Days 7
 // Observations are hourly too, but appear some time after the hour.
@@ -168,6 +172,14 @@ namespace
 		return -1;
 	}
 
+	// Day of the month where Domoticz runs
+	int LocalDay(const time_t atime)
+	{
+		struct tm ltime;
+		localtime_r(&atime, &ltime);
+		return ltime.tm_mday;
+	}
+
 	float Interpolate(const float a, const float b, const float fraction)
 	{
 		return a + (b - a) * fraction;
@@ -194,6 +206,8 @@ CMetOffice::CMetOffice(const int ID, const std::string &ForecastAPIKey, const st
 	stdstring_trim(m_ForecastAPIKey);
 	stdstring_trim(m_ObservationAPIKey);
 	stdstring_trim(m_Location);
+	// Somewhere in the 5 to 15 minutes after midnight, the same one after a restart
+	m_DailyForecastOffset = MetOffice_Daily_Forecast_Min_Offset + static_cast<int>(std::hash<std::string>()(m_ForecastAPIKey) % MetOffice_Daily_Forecast_Offset_Spread);
 }
 
 void CMetOffice::Init()
@@ -351,13 +365,14 @@ void CMetOffice::Do_Work()
 				}
 				if (m_bAddDailyForecast)
 				{
-					if ((atime - m_DailyForecastFetched >= MetOffice_Daily_Forecast_Fetch_Interval) && (atime >= m_NextDailyForecastAttempt))
+					if ((m_DailyForecastFetched < DailyForecastSlotStart(atime)) && (atime >= m_NextDailyForecastAttempt))
 					{
 						FetchDailyForecast();
 						lastDailyDeviceUpdate = 0;
 					}
-					// Also without new data: which day is 'Day 0' changes at midnight
-					if (atime - lastDailyDeviceUpdate >= MetOffice_Forecast_Fetch_Interval)
+					// Which day is 'Day 0' changes at midnight: move the days
+					// along right then, from what is already there.
+					if ((lastDailyDeviceUpdate == 0) || (LocalDay(atime) != LocalDay(lastDailyDeviceUpdate)) || (atime - lastDailyDeviceUpdate >= MetOffice_Forecast_Fetch_Interval))
 					{
 						lastDailyDeviceUpdate = atime;
 						UpdateDailyForecastDevices();
@@ -694,10 +709,30 @@ void CMetOffice::FetchDailyForecast()
 	SaveCache(CACHE_DAILY, sResult, atime);
 }
 
+// The daily forecast is fetched at fixed times of the day: a little after
+// local midnight and every three hours from there. This gives the start of
+// the period the current time is in; a forecast from before it is due again.
+time_t CMetOffice::DailyForecastSlotStart(const time_t atime) const
+{
+	struct tm ltime;
+	localtime_r(&atime, &ltime);
+	ltime.tm_hour = 0;
+	ltime.tm_min = 0;
+	ltime.tm_sec = 0;
+	ltime.tm_isdst = -1;
+	const time_t first = mktime(&ltime) + m_DailyForecastOffset;
+	if (atime < first)
+		return first - MetOffice_Daily_Forecast_Fetch_Interval; // the last one of yesterday
+	return first + ((atime - first) / MetOffice_Daily_Forecast_Fetch_Interval) * MetOffice_Daily_Forecast_Fetch_Interval;
+}
+
 // 'Day 0' is today's date where Domoticz runs, 'Day 1' the one after and so
 // on, so what a device is about changes at local midnight. Someone looking at
 // it from another timezone, or just around midnight, cannot tell which date
-// that is: 'Date Day 0' says it, the other days follow from that one.
+// that is, so every day has a 'Date Day N' saying which date its values are
+// for. It is only updated together with them: between midnight and the fetch
+// that follows it the last day is not known yet and still holds what is now
+// the forecast of the day before it, which shows as two days with one date.
 // The minimum temperature is the one of the night that follows the day.
 void CMetOffice::UpdateDailyForecastDevices()
 {
@@ -721,14 +756,13 @@ void CMetOffice::UpdateDailyForecastDevices()
 			continue;
 		char szDate[40];
 		snprintf(szDate, sizeof(szDate), "%04d-%02d-%02d", tday.tm_year + 1900, tday.tm_mon + 1, tday.tm_mday);
-		if (iDay == 0)
-			SendTextSensor(NODE_DAY_DATE, 1, 255, szDate, "Date Day 0");
 
 		auto it = std::find_if(m_DailyForecast.begin(), m_DailyForecast.end(), [&szDate](const DailyStep &step) { return step.date == szDate; });
 		if (it == m_DailyForecast.end())
 			continue;
 
 		const std::string sDay = " Day " + std::to_string(iDay);
+		SendTextSensor(NODE_DAY_DATE + iDay, 1, 255, szDate, "Date" + sDay);
 		if (!std::isnan(it->maxtemp))
 			SendTempSensor(NODE_DAY_MAXTEMP + iDay, 255, it->maxtemp, "Maximum Temperature" + sDay);
 		if (!std::isnan(it->mintemp))
