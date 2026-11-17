@@ -771,11 +771,12 @@ void CMetOffice::UpdateDailyForecastDevices()
 			continue;
 
 		const std::string sDay = " Day " + std::to_string(iDay);
-		SendTextSensor(NODE_DAY_DATE + iDay, 1, 255, szDate, "Date" + sDay);
 		SendTempSensor(NODE_DAY_MAXTEMP + iDay, 255, it->maxtemp, "Maximum Temperature" + sDay);
 		SendTempSensor(NODE_DAY_MINTEMP + iDay, 255, it->mintemp, "Minimum Temperature" + sDay);
 		SendTextSensor(NODE_DAY_WEATHER + iDay, 1, 255, GetWeatherDescription(it->weathercode), "Weather" + sDay);
 		SendPercentageSensor(NODE_DAY_RAINPROBABILITY + iDay, 1, 255, it->rainprobability, "Rain Probability" + sDay);
+		// The date last: once it says a date, the values are those of that date
+		SendTextSensor(NODE_DAY_DATE + iDay, 1, 255, szDate, "Date" + sDay);
 	}
 }
 
