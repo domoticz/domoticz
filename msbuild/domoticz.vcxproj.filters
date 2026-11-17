@@ -1861,6 +1861,9 @@
     <ClInclude Include="..\hardware\openwebnet\bt_openwebnet.h">
       <Filter>Devices\OpenWebNet</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\openwebnet\EnergyTotalizer.h">
+      <Filter>Devices\OpenWebNet</Filter>
+    </ClInclude>
     <ClInclude Include="..\hardware\I2C.h">
       <Filter>Devices\I2C</Filter>
     </ClInclude>

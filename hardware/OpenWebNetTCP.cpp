@@ -814,10 +814,10 @@ void COpenWebNetTCP::UpdateLegacyActuatorEnergy(const int where, const uint64_t 
 			options["OpenWebNetEnergySource"] = "51";
 			if (!m_sql.SetDeviceOptions(std::stoull(device[0][0]), options))
 				return;
-			// A delayed baseline flush must not restore the previous source.
-			m_pendingEnergy.erase((node << 8) | where);
 		}
 	}
+	// A delayed fallback flush must not overwrite a newly accepted legacy reading.
+	m_pendingEnergy.erase((node << 8) | where);
 	m_energySources[(node << 8) | where].AcceptLegacy();
 	UpdateEnergy(WHO_ENERGY_MANAGEMENT, where, (static_cast<double>(reading) + offset) / 1000., iInterface, 255, devname);
 }
@@ -891,16 +891,16 @@ void COpenWebNetTCP::UpdateActuatorEnergy(const int where, const std::vector<std
 		}
 	}
 
-	// Device creation is queued by SendKwhMeter. Retain the state until the
-	// row exists, and use it for any samples arriving before it can be saved.
+	// Publish only after the baseline is stored and read back. A new meter
+	// is first created by a power reading, keeping fallback energy pending.
 	m_pendingEnergy[key] = sample;
 	FlushPendingEnergy();
-	m_energySources[key].AcceptFallbackReading();
-	UpdateEnergy(WHO_ENERGY_MANAGEMENT, where, static_cast<double>(sample.total) / 1000., iInterface, 255, devname);
+	if (device.empty())
+		UpdatePower(WHO_ENERGY_MANAGEMENT, where, 0, iInterface, 255, devname);
 }
 
 // Called under readQueueMutex, like UpdateActuatorEnergy.
-/// @brief Persist pending reset baselines once their meter rows exist.
+/// @brief Persist and verify pending baselines before publishing their energy totals.
 /// Retain entries when the row is absent or saving fails. Caller holds readQueueMutex.
 void COpenWebNetTCP::FlushPendingEnergy()
 {
@@ -918,8 +918,21 @@ void COpenWebNetTCP::FlushPendingEnergy()
 			options["OpenWebNetEnergySource"] = "72#1";
 			if (m_sql.SetDeviceOptions(std::stoull(device[0][0]), options))
 			{
-				pending = m_pendingEnergy.erase(pending);
-				continue;
+				const auto saved = m_sql.GetDeviceOptions(device[0][0]);
+				const auto baseline = saved.find("OpenWebNetTotalizer1");
+				const auto source = saved.find("OpenWebNetEnergySource");
+				if (baseline != saved.end() && baseline->second == options["OpenWebNetTotalizer1"]
+					&& source != saved.end() && source->second == "72#1")
+				{
+					const int key = pending->first;
+					const int where = key & 0xff;
+					const int interfaceID = (key >> 16) & 0xff;
+					const std::string name = std::string(OPENWEBNET_ENERGY_MANAGEMENT) + " " + std::to_string(where);
+					m_energySources[key].AcceptFallbackReading();
+					UpdateEnergy(WHO_ENERGY_MANAGEMENT, where, static_cast<double>(state.total) / 1000., interfaceID, 255, name.c_str());
+					pending = m_pendingEnergy.erase(pending);
+					continue;
+				}
 			}
 		}
 		++pending;
