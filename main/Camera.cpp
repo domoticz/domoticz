@@ -342,6 +342,10 @@ std::string CCameraHandler::GetCameraURL(cameraDevice *pCamera)
 
 	std::string szURLPreFix = (pCamera->Protocol == CPROTOCOL_HTTP) ? "http" : "https";
 
+	// A camera on the local network has a certificate it made itself
+	if (pCamera->Protocol != CPROTOCOL_HTTP)
+		HTTPClient::AllowSelfSignedHost(pCamera->Address);
+
 	if ((!bHaveUPinURL) && ((!pCamera->Username.empty()) || (!pCamera->Password.empty())))
 		s_str << szURLPreFix << "://" << CURLEncode::URLEncode(pCamera->Username) << ":" << CURLEncode::URLEncode(pCamera->Password) << "@" << pCamera->Address << ":" << pCamera->Port;
 	else

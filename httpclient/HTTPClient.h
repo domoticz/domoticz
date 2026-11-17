@@ -34,7 +34,20 @@ class HTTPClient
 	static void SetConnectionTimeout(long timeout);
 	static void SetTimeout(long timeout);
 	static void SetUserAgent(const std::string &useragent);
-	static void SetSecurityOptions(bool verifypeer, bool verifyhost);
+
+	/************************************************************************
+	 *									*
+	 * The certificate and the host name of a https server are always	*
+	 * verified. The one exception is a device on the local network that	*
+	 * can only present a self-signed certificate: its driver names the	*
+	 * address the user configured for it here, and requests to exactly	*
+	 * that host are then made without verification.			*
+	 *									*
+	 * Never use this for a service on the internet.			*
+	 *									*
+	 ************************************************************************/
+
+	static void AllowSelfSignedHost(const std::string &host);
 
 	/************************************************************************
 	 *									*
@@ -114,14 +127,13 @@ class HTTPClient
 		std::vector<std::string>& vHeaderData, long TimeOut = -1);
 
       private:
-	static void SetGlobalOptions(void *curlobj);
+	static void SetGlobalOptions(void *curlobj, const std::string &url);
+	static void LogTLSError(int curlcode, const std::string &url);
 	static bool CheckIfGlobalInitDone();
 	static void LogError(long response_code);
 
       private:
 	static bool m_bCurlGlobalInitialized;
-	static bool m_bVerifyHost;
-	static bool m_bVerifyPeer;
 	static long m_iConnectionTimeout;
 	static long m_iTimeout;
 	static std::string m_sUserAgent;

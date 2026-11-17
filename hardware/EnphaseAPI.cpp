@@ -269,6 +269,9 @@ EnphaseAPI::EnphaseAPI(
 
 bool EnphaseAPI::StartHardware()
 {
+	// The gateway has a certificate it made itself
+	HTTPClient::AllowSelfSignedHost(m_szIPAddress);
+
 	RequestStart();
 
 	//Start worker thread

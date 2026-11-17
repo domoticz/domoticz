@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <mutex>
+#include <set>
 
 #ifndef O_LARGEFILE
 	#define O_LARGEFILE 0
@@ -14,11 +16,40 @@
 extern std::string szUserDataFolder;
 
 bool		HTTPClient::m_bCurlGlobalInitialized = false;
-bool		HTTPClient::m_bVerifyHost = false;
-bool		HTTPClient::m_bVerifyPeer = false;
 long		HTTPClient::m_iConnectionTimeout = 10;
 long		HTTPClient::m_iTimeout = 90; //max, time that a download has to be finished?
 std::string	HTTPClient::m_sUserAgent = "domoticz/1.0";
+
+namespace
+{
+	std::mutex g_SelfSignedHostsMutex;
+	std::set<std::string> g_SelfSignedHosts;
+
+	// The host of "scheme://user:pass@host:port/path", or of a bare "host" or
+	// "host:port", in lower case. An IPv6 address comes without its brackets.
+	std::string HostOf(const std::string &url)
+	{
+		std::string host = url;
+		size_t pos = host.find("://");
+		if (pos != std::string::npos)
+			host = host.substr(pos + 3);
+		pos = host.find_first_of("/?#");
+		if (pos != std::string::npos)
+			host = host.substr(0, pos);
+		pos = host.rfind('@');
+		if (pos != std::string::npos)
+			host = host.substr(pos + 1);
+		if (!host.empty() && (host[0] == '['))
+		{
+			pos = host.find(']');
+			host = (pos != std::string::npos) ? host.substr(1, pos - 1) : host.substr(1);
+		}
+		else if (std::count(host.begin(), host.end(), ':') == 1)
+			host = host.substr(0, host.find(':'));
+		std::transform(host.begin(), host.end(), host.begin(), [](unsigned char ch) { return static_cast<char>(::tolower(ch)); });
+		return host;
+	}
+} // namespace
 
 
 /************************************************************************
@@ -94,7 +125,7 @@ void HTTPClient::Cleanup()
 	}
 }
 
-void HTTPClient::SetGlobalOptions(void *curlobj)
+void HTTPClient::SetGlobalOptions(void *curlobj, const std::string &url)
 {
 	CURL *curl=(CURL *)curlobj;
 	curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC | CURLAUTH_DIGEST);
@@ -105,8 +136,18 @@ void HTTPClient::SetGlobalOptions(void *curlobj)
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, m_sUserAgent.c_str());
 	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, m_iConnectionTimeout);
 	curl_easy_setopt(curl, CURLOPT_TIMEOUT, m_iTimeout);
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, m_bVerifyPeer ? 1L : 0);
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, m_bVerifyHost ? 2L : 0); //allow self signed certificates
+	bool bVerify = true;
+	{
+		std::lock_guard<std::mutex> l(g_SelfSignedHostsMutex);
+		if (!g_SelfSignedHosts.empty())
+			bVerify = (g_SelfSignedHosts.find(HostOf(url)) == g_SelfSignedHosts.end());
+	}
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, bVerify ? 1L : 0L);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, bVerify ? 2L : 0L);
+#if defined(WIN32) && defined(CURLSSLOPT_NATIVE_CA)
+	// An OpenSSL build of curl has no certificates of its own on Windows
+	curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, (long)CURLSSLOPT_NATIVE_CA);
+#endif
 	curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
 	std::string domocookie = szUserDataFolder + "domocookie.txt";
 	curl_easy_setopt(curl, CURLOPT_COOKIEFILE, domocookie.c_str());
@@ -211,10 +252,24 @@ void HTTPClient::SetTimeout(const long timeout)
 	m_iTimeout = timeout;
 }
 
-void HTTPClient::SetSecurityOptions(const bool verifypeer, const bool verifyhost)
+void HTTPClient::AllowSelfSignedHost(const std::string &host)
 {
-	m_bVerifyPeer = verifypeer;
-	m_bVerifyHost = verifyhost;
+	const std::string sHost = HostOf(host);
+	if (sHost.empty())
+		return;
+	std::lock_guard<std::mutex> l(g_SelfSignedHostsMutex);
+	if (g_SelfSignedHosts.insert(sHost).second)
+		_log.Log(LOG_STATUS, "HTTPClient: not verifying the certificate of local device %s", sHost.c_str());
+}
+
+// Without this a server whose certificate is refused looks like one that is down
+void HTTPClient::LogTLSError(const int curlcode, const std::string &url)
+{
+	// 60 is CURLE_SSL_CACERT, which newer versions of curl made the same as 51
+	if ((curlcode == CURLE_PEER_FAILED_VERIFICATION) || (curlcode == 60))
+		_log.Log(LOG_ERROR, "HTTPClient: could not verify the certificate of %s (%s)", HostOf(url).c_str(), curl_easy_strerror((CURLcode)curlcode));
+	else if (curlcode == CURLE_SSL_CACERT_BADFILE)
+		_log.Log(LOG_ERROR, "HTTPClient: no usable CA certificates to verify %s with, are they installed?", HostOf(url).c_str());
 }
 
 void HTTPClient::SetUserAgent(const std::string &useragent)
@@ -240,7 +295,7 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 			return false;
 
 		CURLcode res;
-		SetGlobalOptions(curl);
+		SetGlobalOptions(curl, url);
 		if (TimeOut != -1)
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
 		if (!bFollowRedirect)
@@ -276,6 +331,7 @@ bool HTTPClient::GETBinary(const std::string &url, const std::vector<std::string
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 		res = curl_easy_perform(curl);
+		LogTLSError(res, url);
 
 		bool bOK = false;
 		if (res == CURLE_OK)
@@ -333,7 +389,7 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 			return false;
 
 		CURLcode res;
-		SetGlobalOptions(curl);
+		SetGlobalOptions(curl, url);
 		if (TimeOut != -1)
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
 		if (!bFollowRedirect)
@@ -357,6 +413,7 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postdata.c_str());
 		res = curl_easy_perform(curl);
+		LogTLSError(res, url);
 
 		if (res != CURLE_OK)
 		{
@@ -403,7 +460,7 @@ std::vector<std::string> &vHeaderData, const long TimeOut)
 			return false;
 
 		CURLcode res;
-		SetGlobalOptions(curl);
+		SetGlobalOptions(curl, url);
 		if (TimeOut != -1)
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
 
@@ -426,6 +483,7 @@ std::vector<std::string> &vHeaderData, const long TimeOut)
 
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, putdata.c_str());
 		res = curl_easy_perform(curl);
+		LogTLSError(res, url);
 
 		if (res != CURLE_OK)
 		{
@@ -472,7 +530,7 @@ std::vector<std::string> &vHeaderData, const long TimeOut)
 			return false;
 
 		CURLcode res;
-		SetGlobalOptions(curl);
+		SetGlobalOptions(curl, url);
 		if (TimeOut != -1)
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
 
@@ -495,6 +553,7 @@ std::vector<std::string> &vHeaderData, const long TimeOut)
 
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, putdata.c_str());
 		res = curl_easy_perform(curl);
+		LogTLSError(res, url);
 
 		if (res != CURLE_OK)
 		{
@@ -541,7 +600,7 @@ bool HTTPClient::PatchBinary(const std::string& url, const std::string& putdata,
 			return false;
 
 		CURLcode res;
-		SetGlobalOptions(curl);
+		SetGlobalOptions(curl, url);
 		if (TimeOut != -1)
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
 
@@ -564,6 +623,7 @@ bool HTTPClient::PatchBinary(const std::string& url, const std::string& putdata,
 
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, putdata.c_str());
 		res = curl_easy_perform(curl);
+		LogTLSError(res, url);
 
 		if (res != CURLE_OK)
 		{
@@ -622,7 +682,7 @@ bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<s
 			return false;
 
 		CURLcode res;
-		SetGlobalOptions(curl);
+		SetGlobalOptions(curl, url);
 		if (TimeOut != -1)
 		{
 			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
@@ -642,6 +702,7 @@ bool HTTPClient::GETBinarySingleLine(const std::string &url, const std::vector<s
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&response);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 		res = curl_easy_perform(curl);
+		LogTLSError(res, url);
 
 		if (
 			(res == CURLE_WRITE_ERROR) &&
@@ -844,11 +905,12 @@ bool HTTPClient::GETBinaryToFile(const std::string &url, const std::string &outp
 			return false;
 
 		CURLcode res;
-		SetGlobalOptions(curl);
+		SetGlobalOptions(curl, url);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_curl_data_file);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&outfile);
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 		res = curl_easy_perform(curl);
+		LogTLSError(res, url);
 		curl_easy_cleanup(curl);
 
 		outfile.close();
