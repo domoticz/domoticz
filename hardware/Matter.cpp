@@ -1657,7 +1657,25 @@ void CMatter::_DetectAndSend(int nodeId, int endpointId)
 		SendGeneralSwitchInt(domoticzID, CHILD_LOCK, battery, state.locked ? 1 : 0, 0, state.label, STYPE_DoorLock);
 
 	if (state.hasBlind)
-		SendPercentageSensor(domoticzID, CHILD_BLIND, battery, (float)state.blind_pct, state.label);
+	{
+		// Matter WindowCovering is a controllable Blinds device (position plus stop) on its own unit.
+		// state.blind_pct is the open percentage (the Matter position 0=open..10000=closed is inverted
+		// when read), which is the Domoticz blind level in the non-reversed convention, so no inversion
+		// is needed here. The unit differs from the battery percentage sensor (unit 1), so the two no
+		// longer share a row as they did when the blind was a read-only percentage sensor.
+		uint8_t level = (uint8_t)std::max(0.0, std::min(100.0, std::round(state.blind_pct)));
+		uint8_t cmnd  = (level >= 100) ? gswitch_sOpen : (level == 0 ? gswitch_sClose : gswitch_sSetLevel);
+
+		char szDevID[16];
+		snprintf(szDevID, sizeof(szDevID), "%08X", (unsigned int)domoticzID);
+		bool isNew = m_sql.safe_query(
+			"SELECT ID FROM DeviceStatus WHERE HardwareID=%d AND DeviceID='%q' AND Unit=%d AND Type=%d AND SubType=%d",
+			m_HwdID, szDevID, CHILD_BLIND, pTypeGeneralSwitch, sSwitchGeneralSwitch).empty();
+		if (isNew)
+			CreateBlindSwitch(domoticzID, CHILD_BLIND, STYPE_BlindsPercentageWithStop, true, false, false, cmnd, level, state.label, m_Name, battery, 12);
+		else
+			SendBlindSwitch(domoticzID, CHILD_BLIND, cmnd, level, state.label, m_Name, battery, 12);
+	}
 
 	if (state.hasSystemMode)
 	{
@@ -2336,6 +2354,43 @@ bool CMatter::WriteToHardware(const char* pdata, unsigned char length)
 		levelMin = ep.levelMinLevel;
 		levelMax = ep.levelMaxLevel;
 		hasRvc_OperationalState=ep.hasRvc_OperationalState;
+	}
+
+	if (pSwitch->unitcode == CHILD_BLIND)
+	{
+		// Matter WindowCovering commands. The Domoticz blind level is the open percentage;
+		// Matter lift percent is the closed percentage (0=open, 10000=closed), so it is inverted.
+		Json::Value args;
+		args["node_id"]     = nodeId;
+		args["endpoint_id"] = endpointId;
+		args["cluster_id"]  = CLUSTER_WINDOW_COVERING;
+		if (cmnd == gswitch_sSetLevel)
+		{
+			int liftClosed = std::max(0, std::min(100, 100 - (int)pSwitch->level));
+			args["command_name"] = "GoToLiftPercentage";
+			Json::Value payload;
+			payload["liftPercent100thsValue"] = liftClosed * 100;
+			args["payload"] = payload;
+		}
+		else if (cmnd == gswitch_sStop)
+		{
+			args["command_name"] = "StopMotion";
+			args["payload"] = Json::Value(Json::objectValue);
+		}
+		else if (cmnd == gswitch_sOpen)
+		{
+			args["command_name"] = "UpOrOpen";
+			args["payload"] = Json::Value(Json::objectValue);
+		}
+		else if (cmnd == gswitch_sClose)
+		{
+			args["command_name"] = "DownOrClose";
+			args["payload"] = Json::Value(Json::objectValue);
+		}
+		else
+			return false;
+		SendCommand("device_command", args);
+		return true;
 	}
 
 	if (cmnd == gswitch_sSetLevel)

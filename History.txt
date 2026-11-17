@@ -128,6 +128,7 @@ This release contains important security fixes in the web server, the API and th
 - Added: Matter, support for the AirQuality, TVOC, Ozone, Formaldehyde, PM1 and Radon concentration clusters
 - Added: Matter, support for the SmokeCoAlarm cluster; smoke and CO alarm states are now created as smoke detector devices (#6935)
 - Added: Matter, water leak, rain and freeze detectors reported via BooleanState are now identified via the Descriptor DeviceTypeList and created as distinct devices instead of door contacts
+- Added: Matter, a window covering (blind) is now created as a controllable Blinds device (open, close, stop and set position) instead of a read-only percentage sensor; an existing read-only device from an earlier version can be deleted (#7203)
 - Added: Python plugins, plugins can now set the bar ranges drawn on Utility, Temperature and Weather device cards through the Unit or Device Color field; that field accepted color switch state only and silently discarded anything else, so a plugin could create a device whose card supports bars but never fill the bands in
 - Added: Python plugins, on Windows the plugin system also finds a Python installed with the Python install manager (PyManager) or the classic per-user installer when the interpreter folder is not on PATH
 - Added: Settings, the reverse proxy header that Domoticz reads the client address from is now selectable (None, X-Forwarded-For, X-Real-IP or Forwarded) instead of being fixed to X-Forwarded-For, under Settings - Security
