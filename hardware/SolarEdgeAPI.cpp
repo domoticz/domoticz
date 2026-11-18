@@ -24,6 +24,9 @@
 #include <fstream>
 #include <regex>
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "solaredge.com" };
+
 #ifdef _WIN32
 #define gmtime_r(timep, result) gmtime_s(result, timep)
 #endif

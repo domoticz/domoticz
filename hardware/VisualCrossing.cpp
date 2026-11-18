@@ -13,6 +13,9 @@
 #include "../main/Logger.h"
 #include "../main/SQLHelper.h"
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "visualcrossing.com" };
+
 #ifdef _DEBUG
 //#define DEBUG_VisualCrossingR
 //#define DEBUG_VisualCrossingW

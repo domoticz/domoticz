@@ -19,6 +19,9 @@ bool IsValidMeasurement(const Json::Value& value)
 #include "../main/RFXtrx.h"
 #include "../main/mainworker.h"
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "accuweather.com" };
+
 #ifdef _DEBUG
 	//#define DEBUG_AccuWeatherR
 	//#define DEBUG_AccuWeatherW

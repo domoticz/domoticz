@@ -11,6 +11,9 @@
 #include "../main/json_helper.h"
 #include <libwebem/Base64.h>
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "honeywellhome.com" };
+
 constexpr auto HONEYWELL_DEFAULT_APIKEY = "atD3jtzXC5z4X8WPbzvo0CBqWi7S81Nh";
 constexpr auto HONEYWELL_DEFAULT_APISECRET = "TXDzy2aHpAJw6YiO";
 constexpr auto HONEYWELL_LOCATIONS_PATH = "https://api.honeywellhome.com/v2/locations?apikey=[apikey]";

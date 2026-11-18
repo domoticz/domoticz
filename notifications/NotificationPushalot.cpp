@@ -3,6 +3,9 @@
 #include "../httpclient/HTTPClient.h"
 #include "../main/Logger.h"
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "pushalot.com" };
+
 CNotificationPushalot::CNotificationPushalot() : CNotificationBase(std::string("pushalot"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
 {
 	SetupConfig(std::string("PushALotEnabled"), &m_IsEnabled);

@@ -9,6 +9,9 @@
 #include "../main/mainworker.h"
 #include "../main/json_helper.h"
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "icy.nl" };
+
 //#define DEBUG_ICYThermostat
 
 #define ICY_LOGIN_URL "https://portal.icy.nl/login"

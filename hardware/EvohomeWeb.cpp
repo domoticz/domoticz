@@ -21,6 +21,9 @@
 #include <inttypes.h>
 #include "../httpclient/HTTPClient.h"
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "resideo.com" };
+
 #define LOGONFAILTRESHOLD 3
 #define MINPOLINTERVAL 10
 #define MAXPOLINTERVAL 3600

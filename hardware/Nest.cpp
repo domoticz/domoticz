@@ -9,6 +9,9 @@
 #include "../main/mainworker.h"
 #include "../main/json_helper.h"
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "nest.com" };
+
 const std::string NEST_LOGIN_PATH = "https://home.nest.com/user/login";
 const std::string NEST_GET_STATUS = "/v2/mobile/user.";
 const std::string NEST_SET_SHARED = "/v2/put/shared.";

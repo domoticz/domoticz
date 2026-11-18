@@ -16,6 +16,9 @@
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "enever.nl" };
+
 //See https://enever.nl/prijzenfeeds
 //We are able to do 5 requests per day, so we need to cache the results!
 //New Electricity prices are available at 15:00 (but to be safe it is better to get them later... at 16:00)

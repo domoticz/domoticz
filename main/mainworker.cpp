@@ -148,6 +148,7 @@
 #include "../hardware/EnphaseAPI.h"
 #include "../hardware/eHouseTCP.h"
 #include "../hardware/EcoCompteur.h"
+
 #include "../hardware/Honeywell.h"
 #include "../hardware/TTNMQTT.h"
 #include "../hardware/Buienradar.h"
@@ -181,6 +182,9 @@
 #include "mainstructs.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
+
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "domoticz.com" };
 
 #ifdef _DEBUG
 //#define PARSE_RFXCOM_DEVICE_LOG
@@ -1194,6 +1198,9 @@ bool MainWorker::Start()
 	{
 		m_webservers.SetAllowPlainBasicAuth(static_cast<bool>(nValue));
 	}
+	nValue = 0;
+	m_sql.GetPreferencesVar("VerifyCloudCertificates", nValue);
+	HTTPClient::SetVerifyCloudHosts(nValue != 0);
 	std::string sValue;
 	if (m_sql.GetPreferencesVar("WebTheme", sValue))
 	{

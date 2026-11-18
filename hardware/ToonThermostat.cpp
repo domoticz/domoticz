@@ -9,6 +9,9 @@
 #include "../main/SQLHelper.h"
 #include "../main/json_helper.h"
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "quby.nl", "eneco.nl" };
+
 #ifdef _DEBUG
 //	#define DEBUG_ToonThermostat
 //	#define DEBUG_ToonThermostatW

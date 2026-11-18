@@ -6,6 +6,9 @@
 #include <json/json.h>
 #include <libwebem/Base64.h>
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "ifttt.com" };
+
 bool IFTTT::Send_IFTTT_Trigger(const std::string &eventid, const std::string &svalue1, const std::string &svalue2, const std::string &svalue3)
 {
 	int n2Value;

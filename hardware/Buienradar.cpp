@@ -13,6 +13,9 @@
 #include <iomanip>
 #include <locale>
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "buienradar.nl" };
+
 #define BUIENRADAR_URL "https://data.buienradar.nl/2.0/feed/json"
 #define BUIENRADAR_ACTUAL_URL "https://observations.buienradar.nl/1.0/actual/weatherstation/" //station_id
 #define BUIENRADAR_GRAFIEK_URL "https://www.buienradar.nl/nederland/weerbericht/weergrafieken/" //station_id
