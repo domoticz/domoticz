@@ -10,6 +10,9 @@
 #include <filesystem>
 #include <cinttypes>                    //PRIu64
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "netatmo.com" };
+
 #define NETATMO_API_URI "https://api.netatmo.com/"
 #define NETATMO_PRESET_UNIT 10
 #define NETATMO_USER_AGENT_STRING "User-Agent: Domoticz/Version 1.10"

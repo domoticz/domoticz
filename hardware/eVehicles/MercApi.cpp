@@ -22,6 +22,9 @@ License: Public domain
 #include <sstream>
 #include <iomanip>
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "mercedes-benz.com", "corpinter.net" };
+
 // based on API's as described on https://developer.mercedes-benz.com/products
 // Assumes that one has a registered Mercedes ME account and using the MB developer portal
 // registers for the following BYOCAR (Bring Your Own CAR) API's:

@@ -14,6 +14,9 @@
 #include "hardwaretypes.h"
 #include <iostream>
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "enphaseenergy.com" };
+
 //https://enphase.com/en-us/products-and-services/envoy
 
 #ifdef _DEBUG

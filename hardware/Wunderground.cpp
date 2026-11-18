@@ -10,6 +10,9 @@
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "weather.com", "wunderground.com" };
+
 #ifdef _DEBUG
 	//#define DEBUG_WUNDERGROUNDR
 	//#define DEBUG_WUNDERGROUNDW

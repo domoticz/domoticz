@@ -17,6 +17,9 @@
 #include <string>
 #include <set>
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "amazon.com" };
+
 extern CLogger _log;
 
 namespace http {

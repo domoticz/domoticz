@@ -15,6 +15,9 @@
 #include "../main/json_helper.h"
 #include <libwebem/Base64.h>
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "nest.com" };
+
 // Base URL of API including trailing slash
 const std::string NEST_OAUTHAPI_BASE = "https://developer-api.nest.com/";
 const std::string NEST_OAUTHAPI_OAUTH_ACCESSTOKENURL = "https://api.home.nest.com/oauth2/access_token";

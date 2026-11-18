@@ -22,6 +22,9 @@
 #include <libwebem/Base64.h>
 #include "Tado.h"
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "tado.com" };
+
 #define TADO_CLIENT_ID "1bb50063-6b0c-4d11-bd99-387f4a91cc46"
 #define TADO_API_DEVICE_AUTHORIZE "https://login.tado.com/oauth2/device_authorize"
 #define TADO_API_ENVIRONMENT_URL "https://app.tado.com/env.js"

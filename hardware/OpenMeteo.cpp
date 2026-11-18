@@ -11,6 +11,9 @@
 #include <cerrno>
 #include <iomanip>
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "open-meteo.com" };
+
 #ifdef _DEBUG
 //#define DEBUG_OpenMeteoR
 //#define DEBUG_OpenMeteoW

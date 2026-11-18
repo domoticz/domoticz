@@ -7,6 +7,9 @@
 #include <libwebem/Base64.h>
 #include "../main/Helper.h"
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "pushsafer.com" };
+
 CNotificationPushsafer::CNotificationPushsafer() : CNotificationBase(std::string("pushsafer"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
 {
 	SetupConfig(std::string("PushsaferEnabled"), &m_IsEnabled);

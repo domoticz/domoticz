@@ -8,6 +8,9 @@
 #include "../main/mainworker.h"
 #include "../main/json_helper.h"
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "windcentrale.nl" };
+
 #define WINDDELEN_POLL_INTERVAL 30
 
 #ifdef _DEBUG

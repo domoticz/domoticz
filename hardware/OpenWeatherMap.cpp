@@ -10,6 +10,9 @@
 #include "../main/mainworker.h"
 #include "../main/SQLHelper.h"
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "openweathermap.org" };
+
 #ifdef _DEBUG
 	//#define DEBUG_OPENWEATHERMAP
 	//#define DEBUG_OPENWEATHERMAP_WRITE

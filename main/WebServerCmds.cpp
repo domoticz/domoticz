@@ -3919,6 +3919,11 @@ namespace http
 				m_webservers.SetAllowPlainBasicAuth(AllowPlainBasicAuth);
 				cntSettings++;
 
+				bool VerifyCloudCertificates = (request::findValue(&req, "VerifyCloudCertificates") == "on" ? 1 : 0);
+				m_sql.UpdatePreferencesVar("VerifyCloudCertificates", VerifyCloudCertificates);
+				HTTPClient::SetVerifyCloudHosts(VerifyCloudCertificates);
+				cntSettings++;
+
 				std::string WebLocalNetworks = CURLEncode::URLDecode(request::findValue(&req, "WebLocalNetworks"));
 				m_sql.UpdatePreferencesVar("WebLocalNetworks", WebLocalNetworks);
 				m_webservers.ReloadTrustedNetworks();
@@ -6918,6 +6923,10 @@ namespace http
 				else if (Key == "AllowPlainBasicAuth")
 				{
 					root["AllowPlainBasicAuth"] = nValue;
+				}
+				else if (Key == "VerifyCloudCertificates")
+				{
+					root["VerifyCloudCertificates"] = nValue;
 				}
 				else if (Key == "ReleaseChannel")
 				{

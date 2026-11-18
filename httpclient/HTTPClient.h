@@ -38,6 +38,34 @@ class HTTPClient
 
 	/************************************************************************
 	 *									*
+	 * Certificates are not verified by default, because of all the	*
+	 * devices on a local network that can only have a self-signed one.	*
+	 * A service on the internet does have a certificate which can be	*
+	 * verified: the code using one says which hosts those are, and their	*
+	 * certificate and host name are verified when the user has asked for	*
+	 * that in the settings.						*
+	 *									*
+	 * A host stands for its subdomains too: "example.com" is also		*
+	 * "api.example.com".							*
+	 *									*
+	 ************************************************************************/
+
+	static void AddCloudHost(const std::string &host);
+	static void SetVerifyCloudHosts(bool verify);
+
+	// For a declaration at file scope, next to the URLs of the service:
+	//   static const HTTPClient::CloudHosts s_CloudHosts{ "example.com" };
+	struct CloudHosts
+	{
+		CloudHosts(std::initializer_list<const char *> hosts)
+		{
+			for (const char *host : hosts)
+				AddCloudHost(host);
+		}
+	};
+
+	/************************************************************************
+	 *									*
 	 * simple access methods						*
 	 *   - use for unprotected sites					*
 	 *									*
@@ -114,7 +142,8 @@ class HTTPClient
 		std::vector<std::string>& vHeaderData, long TimeOut = -1);
 
       private:
-	static void SetGlobalOptions(void *curlobj);
+	static void SetGlobalOptions(void *curlobj, const std::string &url);
+	static void LogCertificateError(int curlcode, const std::string &url);
 	static bool CheckIfGlobalInitDone();
 	static void LogError(long response_code);
 

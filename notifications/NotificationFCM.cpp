@@ -9,6 +9,9 @@
 #include <jwt-cpp/traits/open-source-parsers-jsoncpp/defaults.h>
 #include <libwebem/Base64.h>
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "googleapis.com" };
+
 #define GAPI_FCM_POST_URL_BASE "https://fcm.googleapis.com/v1/projects/##PROJECTID##/messages:send"
 #define GAPI_FCM_SCOPE "https://www.googleapis.com/auth/firebase.messaging"
 #define GAPI_OAUTH2_TOKEN_URL "https://oauth2.googleapis.com/token"

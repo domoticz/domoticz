@@ -6,6 +6,9 @@
 #include "../main/json_helper.h"
 #include "../httpclient/UrlEncode.h"
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "telegram.org" };
+
 CNotificationTelegram::CNotificationTelegram() : CNotificationBase(std::string("telegram"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
 {
 	SetupConfig(std::string("TelegramEnabled"), &m_IsEnabled);

@@ -838,6 +838,9 @@ define(['app'], function (app) {
 					if (typeof data.AllowPlainBasicAuth != 'undefined') {
 						$("#webtable #AllowPlainBasicAuth").prop('checked', data.AllowPlainBasicAuth == 1);
 					}
+					if (typeof data.VerifyCloudCertificates != 'undefined') {
+						$("#webtable #VerifyCloudCertificates").prop('checked', data.VerifyCloudCertificates == 1);
+					}
 					if (typeof data.ReleaseChannel != 'undefined') {
 						$("#autoupdatetable #comboReleaseChannel").val(data.ReleaseChannel);
 					}

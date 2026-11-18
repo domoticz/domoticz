@@ -10,6 +10,9 @@
 #include "../main/mainworker.h"
 #include "../main/json_helper.h"
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "atag-one.com" };
+
 extern http::server::CWebServerHelper m_webservers;
 
 //Inspidred by https://github.com/kozmoz/atag-one-api

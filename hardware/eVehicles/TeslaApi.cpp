@@ -24,6 +24,9 @@ License: Public domain
 #include <sstream>
 #include <iomanip>
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "teslamotors.com", "tesla.com" };
+
 // based on TESLA API as described on https://tesla-api.timdorr.com/
 #define TESLA_URL "https://owner-api.teslamotors.com"
 #define TESLA_API "/api/1/vehicles"

@@ -5,6 +5,9 @@
 #include "../main/json_helper.h"
 #include "../httpclient/UrlEncode.h"
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "pushbullet.com" };
+
 CNotificationPushbullet::CNotificationPushbullet() : CNotificationBase(std::string("pushbullet"), OPTIONS_URL_SUBJECT | OPTIONS_URL_BODY | OPTIONS_URL_PARAMS)
 {
 	SetupConfig(std::string("PushbulletEnabled"), &m_IsEnabled);

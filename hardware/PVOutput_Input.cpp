@@ -9,6 +9,9 @@
 #include "../httpclient/HTTPClient.h"
 #include "../main/mainworker.h"
 
+// Verified when the user has asked for that in the settings
+static const HTTPClient::CloudHosts s_CloudHosts{ "pvoutput.org" };
+
 //#define DEBUG_PVOutputInput
 
 CPVOutputInput::CPVOutputInput(const int ID, const std::string& SID, const std::string& Key) :
