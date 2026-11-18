@@ -693,8 +693,9 @@ void COpenWebNetTCP::UpdateSetPoint(const int who, const int where, float fval, 
 }
 
 /**
-Get last Meter Usage
-**/
+ * @brief Read the last measured power and energy, rejecting metadata-only rows.
+ * @return False when the meter is absent or its power/energy fields are incomplete.
+ */
 bool COpenWebNetTCP::GetValueMeter(const int NodeID, const int ChildID, double *usage, double *energy)
 {
 	int dID = (NodeID << 8) | ChildID;
@@ -706,20 +707,16 @@ bool COpenWebNetTCP::GetValueMeter(const int NodeID, const int ChildID, double *
 		m_HwdID, szTmp, int(pTypeGeneral), int(sTypeKwh));
 	if (!result.empty())
 	{
-		std::string sup, sValue = result[0][0];
+		const std::string &sValue = result[0][0];
+		const size_t pos = sValue.find(';');
+		if (pos == std::string::npos || pos == 0 || pos + 1 == sValue.size())
+			return false; // A metadata-only row has no measured counter yet.
 
 		if (usage)
 			*usage = (float)atof(sValue.c_str());
 
 		if (energy)
-		{
-			size_t pos = sValue.find(';', 0);
-			if (pos >= 0)
-			{
-				sup = sValue.substr(pos + 1);
-				*energy = (float)atof(sup.c_str());
-			}
-		}
+			*energy = atof(sValue.substr(pos + 1).c_str());
 
 		return true;
 	}
@@ -727,7 +724,7 @@ bool COpenWebNetTCP::GetValueMeter(const int NodeID, const int ChildID, double *
 }
 
 /**
- * @brief Publish instantaneous power with the latest accepted energy total.
+ * @brief Publish power with an accepted total, or reserve an unmeasured meter row.
  * Prefer the in-memory total over the database, which can lag queued writes.
  * Caller holds readQueueMutex.
  */
@@ -743,8 +740,17 @@ void COpenWebNetTCP::UpdatePower(const int who, const int where, double fval, co
 	const auto total = m_energyTotals.find((NodeId << 8) | where);
 	if (total != m_energyTotals.end())
 		energy = total->second;
-	else
-		GetValueMeter(NodeId, where, nullptr, &energy);
+	else if (!GetValueMeter(NodeId, where, nullptr, &energy))
+	{
+		// Reserve the device identity without reporting a measured counter.
+		// UpdateMeter skips this empty sValue until the verified total arrives.
+		char deviceID[30];
+		snprintf(deviceID, sizeof(deviceID), "%08X", (NodeId << 8) | where);
+		std::string name = devname;
+		if (m_sql.GetDeviceIndex(m_HwdID, 0, deviceID, 1, pTypeGeneral, sTypeKwh, name) == std::numeric_limits<uint64_t>::max())
+			m_sql.InsertDevice(m_HwdID, 0, deviceID, 1, pTypeGeneral, sTypeKwh, 0, 0, "", name, 12, BatteryLevel);
+		return;
+	}
 	SendKwhMeter(NodeId, where, BatteryLevel, fval, (energy / 1000.), devname);
 }
 
@@ -820,10 +826,10 @@ void COpenWebNetTCP::UpdateLegacyActuatorEnergy(const int where, const uint64_t 
 			options["OpenWebNetEnergySource"] = "51";
 			if (!m_sql.SetDeviceOptions(std::stoull(device[0][0]), options))
 				return;
-			// A delayed baseline flush must not restore the previous source.
-			m_pendingEnergy.erase((node << 8) | where);
 		}
 	}
+	// A delayed fallback flush must not overwrite a newly accepted legacy reading.
+	m_pendingEnergy.erase((node << 8) | where);
 	m_energySources[(node << 8) | where].AcceptLegacy();
 	UpdateEnergy(WHO_ENERGY_MANAGEMENT, where, (static_cast<double>(reading) + offset) / 1000., iInterface, 255, devname);
 }
@@ -885,8 +891,8 @@ void COpenWebNetTCP::UpdateActuatorEnergy(const int where, const std::vector<std
 			double total = 0;
 			if (latest != m_energyTotals.end())
 				total = latest->second;
-			else if (!GetValueMeter(node, where, nullptr, &total))
-				return;
+			else
+				GetValueMeter(node, where, nullptr, &total);
 			if (!std::isfinite(total) || total < 0 || total >= static_cast<double>(std::numeric_limits<uint64_t>::max()))
 				return;
 			// A zero database total alone may be a power-only placeholder.
@@ -897,16 +903,16 @@ void COpenWebNetTCP::UpdateActuatorEnergy(const int where, const std::vector<std
 		}
 	}
 
-	// Device creation is queued by SendKwhMeter. Retain the state until the
-	// row exists, and use it for any samples arriving before it can be saved.
+	// Publish only after the baseline is stored and read back. The power
+	// path reserves an empty meter row without logging a placeholder counter.
 	m_pendingEnergy[key] = sample;
 	FlushPendingEnergy();
-	m_energySources[key].AcceptFallbackReading();
-	UpdateEnergy(WHO_ENERGY_MANAGEMENT, where, static_cast<double>(sample.total) / 1000., iInterface, 255, devname);
+	if (device.empty())
+		UpdatePower(WHO_ENERGY_MANAGEMENT, where, 0, iInterface, 255, devname);
 }
 
 // Called under readQueueMutex, like UpdateActuatorEnergy.
-/// @brief Persist pending reset baselines once their meter rows exist.
+/// @brief Persist and verify pending baselines before publishing their energy totals.
 /// Retain entries when the row is absent or saving fails. Caller holds readQueueMutex.
 void COpenWebNetTCP::FlushPendingEnergy()
 {
@@ -924,8 +930,21 @@ void COpenWebNetTCP::FlushPendingEnergy()
 			options["OpenWebNetEnergySource"] = "72#1";
 			if (m_sql.SetDeviceOptions(std::stoull(device[0][0]), options))
 			{
-				pending = m_pendingEnergy.erase(pending);
-				continue;
+				const auto saved = m_sql.GetDeviceOptions(device[0][0]);
+				const auto baseline = saved.find("OpenWebNetTotalizer1");
+				const auto source = saved.find("OpenWebNetEnergySource");
+				if (baseline != saved.end() && baseline->second == options["OpenWebNetTotalizer1"]
+					&& source != saved.end() && source->second == "72#1")
+				{
+					const int key = pending->first;
+					const int where = key & 0xff;
+					const int interfaceID = (key >> 16) & 0xff;
+					const std::string name = std::string(OPENWEBNET_ENERGY_MANAGEMENT) + " " + std::to_string(where);
+					m_energySources[key].AcceptFallbackReading();
+					UpdateEnergy(WHO_ENERGY_MANAGEMENT, where, static_cast<double>(state.total) / 1000., interfaceID, 255, name.c_str());
+					pending = m_pendingEnergy.erase(pending);
+					continue;
+				}
 			}
 		}
 		++pending;

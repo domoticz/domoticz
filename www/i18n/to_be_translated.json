@@ -1,4 +1,8 @@
 {
+    "Setpoint method": "Setpoint method",
+    "Standard (dimension 14)": "Standard (dimension 14)",
+    "KW4691 manual heating (dimension 7)": "KW4691 manual heating (dimension 7)",
+    "Applies to all thermostats on this hardware. Dimension 7 supports manual heating on the local bus only.": "Applies to all thermostats on this hardware. Dimension 7 supports manual heating on the local bus only.",
     "Bar ranges must all go in the same direction. Use all ascending (e.g. -100 to 0) or all descending (e.g. 0 to -100).": "Bar ranges must all go in the same direction. Use all ascending (e.g. -100 to 0) or all descending (e.g. 0 to -100).",
     "Edit Camera": "Edit Camera",
     "Show": "Show",

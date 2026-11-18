@@ -674,6 +674,7 @@
     <ClInclude Include="..\hardware\OpenWebNetTCP.h" />
     <ClInclude Include="..\hardware\OpenWebNetUSB.h" />
     <ClInclude Include="..\hardware\openwebnet\bt_openwebnet.h" />
+    <ClInclude Include="..\hardware\openwebnet\EnergyTotalizer.h" />
     <ClInclude Include="..\hardware\OTGWBase.h" />
     <ClInclude Include="..\hardware\OTGWSerial.h" />
     <ClInclude Include="..\hardware\OTGWTCP.h" />
