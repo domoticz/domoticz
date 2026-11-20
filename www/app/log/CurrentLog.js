@@ -227,7 +227,7 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 									isShortLogChart: false,
 									yAxes: [{
 										title: {
-											text: $.t('Current') + ' (' + self.device.getUnit() + ')'
+											text: currentChartLabel(self.device) + ' (' + self.device.getUnit() + ')'
 										}
 									}],
 									extendDataRequest: function (dataRequest) {
@@ -276,19 +276,25 @@ define(['app', 'lodash', 'RefreshingChart', 'DataLoader', 'ChartLoader', 'log/Ch
 			}
 		});
 
+		function currentChartLabel(device) {
+			// Current/Energy (CM180i) and Current (CM113) report amps, but show watts when the
+			// OWL display type is set to Watt; the device JSON carries displaytype (0 = Ampere).
+			return device.displaytype ? $.t('Power') : $.t('Current');
+		}
+
 		function chartParams(domoticzGlobals, ctrl, isShortLogChart, timestampFromDataItem, seriesSuppliers) {
 			return {
 				ctrl: ctrl,
 				range: ctrl.range,
 				device: ctrl.device,
 				sensorType: 'counter',
-				chartName: $.t('Current'),
+				chartName: currentChartLabel(ctrl.device),
 				autoRefreshIsEnabled: function() { return ctrl.logCtrl.autoRefresh; },
 				dataSupplier: {
 					yAxes: [
 						{
 							title: {
-								text: $.t('Current') + ' (' + ctrl.device.getUnit() + ')'
+								text: currentChartLabel(ctrl.device) + ' (' + ctrl.device.getUnit() + ')'
 							},
 							labels: {
 								formatter: function () {

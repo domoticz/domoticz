@@ -157,7 +157,7 @@ define(['app', 'log/Chart', 'log/TextLog', 'log/TemperatureLog', 'log/LightLog',
 			if (!vm.device) {
 				return undefined;
 			}
-			return (vm.device.Type === 'Current');
+			return (vm.device.Type === 'Current' || vm.device.Type === 'Current/Energy');
 		}
 
         function isP1EnergyLog() {
