@@ -863,7 +863,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 			mode = "off";
 
 		Debug(DEBUG_HARDWARE, "Selector Hardware_int %08X (%d) %s Home %s Type %s macID %s mode %s %d", uid, uid, roomNetatmoID.c_str(), Home_id.c_str(), Type.c_str(), macID.c_str(), mode.c_str(), selectorLevel);
-		m_Room_mode[Home_id] = mode
+		m_Room_mode[Home_id] = mode;
 
 		if (mode != "off" && mode != "away")
 		{
