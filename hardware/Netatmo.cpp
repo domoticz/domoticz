@@ -708,7 +708,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 	Json::Value root;
 	std::string sResult;
 	bool ret = false;
-	bool bRet;              //Parsing status
+	bool bRet = false;              //Parsing status
 	std::stringstream sstr;
 	std::stringstream bstr;
 	std::string macID;
@@ -908,13 +908,43 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 			// FrostGuard is set on the home
 			// https://api.netatmo.com/api/setthermmode?home_id=xxxxxxxxxxxxx&mode=hg
 			std::string frostguard = "hg";
-			return SetHomeMode(uid, frostguard);
+			ret = SetHomeMode(uid, frostguard);
+			// When setting to away mode we must also update the other devices in that home.
+			//https://api.netatmo.com/api/homestatus?home_id=xxxxxxxx
+			_data = "home_id=" + Home_id;
+
+			if (ret)
+			{
+				Get_Response_API(NETYPE_STATUS, sResult, _data, bRet, root, "");
+				//Parse API response
+				bRet = ParseHomeStatus(sResult, root, Home_id);
+				if (!bRet)
+				{
+					Log(LOG_ERROR, "NetatmoThermostat: Error setting FrostGuard state!");
+					return false;
+				}
+			}
 		}
 		else if (mode == "away")
 		{
 			// Away is set on the home
 			// https://api.netatmo.com/api/setthermmode?home_id=xxxxxxxxxxxxx&mode=away
-			return SetHomeMode(uid, mode);
+			ret = SetHomeMode(uid, frostguard);
+			// When setting to away mode we must also update the other devices in that home.
+			//https://api.netatmo.com/api/homestatus?home_id=xxxxxxxx
+			_data = "home_id=" + Home_id;
+
+			if (ret)
+			{
+				Get_Response_API(NETYPE_STATUS, sResult, _data, bRet, root, "");
+				//Parse API response
+				bRet = ParseHomeStatus(sResult, root, Home_id);
+				if (!bRet)
+				{
+					Log(LOG_ERROR, "NetatmoThermostat: Error setting away state!");
+					return false;
+				}
+			}
 		}
 		else if (mode == "off")
 		{
@@ -1033,7 +1063,7 @@ bool CNetatmo::SetHomeMode(const int id, std::string& mode)
 	int uid = id;
 	Json::Value root;
 	std::string sResult;
-	bool bRet;              //Parsing status
+	bool bRet = false;              //Parsing status
 	std::string home_data;
 	std::string module_id = m_DeviceModuleID[uid];
 	std::string roomNetatmoID = m_RoomIDs[module_id];
@@ -1076,7 +1106,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	std::stringstream d;
 	d << newState;
 	d >> _state;
-	bool bRet;              //Parsing status
+	bool bRet = false;              //Parsing status
 	bool bHaveDevice;
 	std::string module_id = m_DeviceModuleID[uid];            // mac-adres
 	std::string type_module = m_Device_types[module_id];
@@ -1464,7 +1494,7 @@ bool CNetatmo::SetDimmerState(const int uid, const int newState)
 	std::stringstream d;
 	d << newState;
 	d >> _state;
-	bool bRet;              //Parsing status
+	bool bRet = false;              //Parsing status
 	bool bHaveDevice;
 	std::string module_id = m_DeviceModuleID[uid];            // mac-adres
 	std::string type_module = m_Device_types[module_id];
@@ -1584,7 +1614,7 @@ void CNetatmo::SetSetpoint(unsigned long ID, const float temp)
 	std::stringstream bstr;
 	std::string home_data;
 	bool ret = false;
-	bool bRet;              //Parsing status
+	bool bRet = false;              //Parsing status
 
 	if (m_energyType != NETYPE_ENERGY)
 	{
@@ -1724,7 +1754,8 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 	Json::Value root;       // root JSON object
 	std::string _data;
 	std::string scheduleState;
-	bool bRet;              //Parsing status
+	bool Ret = false;
+	bool bRet = false;              //Parsing status
 
 	int state = 10;             //Forcing Thermostat to follow the selected weekly schedule
 	// home / manual / away / frostguard mode / off
@@ -1747,7 +1778,7 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 			return false;
 	}
 
-	SetHomeMode(uId, scheduleState);
+	Ret = SetHomeMode(uId, scheduleState);
 	Json::Value json_data;
 	//json_data {"body":{"home":{"id":
 	//json_data["home"]["id"] = Home_id;
@@ -1755,8 +1786,8 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 	_data = json_data.toStyledString();
 	//https://api.netatmo.com/api/switchhomeschedule?home_id=xxxxxxxx&schedule_id=xxxxxxxx
 	std::string home_data = "home_id=" + Home_id + "&schedule_id=" + schedule_Id;
-
-	Get_Response_API(NETYPE_SWITCHHOMESCHEDULE, sResult, home_data, bRet, root, _data);
+	if (Ret)
+		Get_Response_API(NETYPE_SWITCHHOMESCHEDULE, sResult, home_data, bRet, root, _data);
 
 	if (!bRet)
 	{
@@ -1999,7 +2030,7 @@ void CNetatmo::GetHomesDataDetails()
 	std::string sResult;  // text returned by API
 	std::string home_data = "&get_favorites=true&";
 	std::string homeID;
-	bool bRet;            //Parsing status
+	bool bRet = false;            //Parsing status
 	Json::Value root;     // root JSON object
 	Log(LOG_STATUS, "Get HomesData Details ");
 
@@ -2290,7 +2321,7 @@ void CNetatmo::GetHomecoachDetails()
 		//Locals
 		std::string sResult; // text returned by API
 		std::string home_data = "&get_favorites=true&";
-		bool bRet;           //Parsing status
+		bool bRet = false;           //Parsing status
 		Json::Value root;    // root JSON object
 		Debug(DEBUG_HARDWARE, "Poll Get Homecoach (%d)", m_bFirstTimeWeatherData);
 
@@ -2313,7 +2344,7 @@ void CNetatmo::GetHomeStatusDetails()
 
 	//Locals
 	std::string sResult;                   // text returned by API
-	bool bRet;                             //Parsing status
+	bool bRet = false;                             //Parsing status
 	Json::Value root;                      // root JSON object
 	std::string device_types;
 	std::string event_id;
@@ -2413,7 +2444,7 @@ void CNetatmo::Get_Measure(std::string gateway, std::string module_id, std::stri
 	//// max_temp // min_temp // gustangle // guststrength // windangle // windstrength // rain // noise // pressure // co2 // humidity
 
 	std::string home_data = "device_id=" + gateway + "&module_id=" + module_id + "&scale=" + scale + "&type=" + type + "boileron" + "&date_begin=" + date_begin + "&date_end=" + date_end + "&limit=" + limit  + "&optimize=" + "false" + "&real_time="  + "false" ;
-	bool bRet;           //Parsing status
+	bool bRet = false;           //Parsing status
 
 	Get_Response_API(NETYPE_MEASURE, sResult, home_data, bRet, root, "");
 
@@ -2452,7 +2483,7 @@ void CNetatmo::Get_RoomMeasure(std::string& home_id, std::string& room_id, std::
 	// https://api.netatmo.com/api/getroommeasure
 	Debug(DEBUG_HARDWARE, "Get_RoomMeasure Status %s Room %s device %s |", home_id.c_str(), room_id.c_str(), device_id.c_str());
 	home_data = "home_id=" + home_id + "&room_id=" + room_id + "&scale=" + "30min" + "&type=" + "temperature&type=sp_temperature" + "&date_begin=" + "" + "&date_end=" + "" + "&limit=" + "1" + "&optimize=" + "false" + "&real_time=" + "false";
-	bool bRet;           //Parsing status
+	bool bRet = false;           //Parsing status
 	std::string roomName = m_RoomNames[room_id];
 
 	Get_Response_API(NETYPE_ROOMMEASURE, sResult, home_data, bRet, root, "");
@@ -2498,7 +2529,7 @@ void CNetatmo::Get_Events(std::string home_id, std::string device_types, std::st
 	else
 		home_events_data = home_id + "&";
 
-	bool bRet;           //Parsing status
+	bool bRet = false;           //Parsing status
 
 	Get_Response_API(NETYPE_EVENTS, sResult, home_events_data, bRet, root, "");
 
@@ -2530,7 +2561,7 @@ void CNetatmo::Get_Scenarios(std::string& home_id, Json::Value& scenarios)
 	// https://api.netatmo.com/api/getscenarios
 	Debug(DEBUG_HARDWARE, "Get_Scenarios Status %s device %s |", home_id.c_str(), m_DeviceBridge[home_id].c_str());
 	std::string home_data = "home_id=" + home_id;
-	bool bRet;           //Parsing status
+	bool bRet = false;           //Parsing status
 
 	Get_Response_API(NETYPE_SCENARIOS, sResult, home_data, bRet, root, "");
 
