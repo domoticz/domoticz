@@ -929,7 +929,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 		{
 			// Away is set on the home
 			// https://api.netatmo.com/api/setthermmode?home_id=xxxxxxxxxxxxx&mode=away
-			ret = SetHomeMode(uid, frostguard);
+			ret = SetHomeMode(uid, mode);
 			// When setting to away mode we must also update the other devices in that home.
 			//https://api.netatmo.com/api/homestatus?home_id=xxxxxxxx
 			_data = "home_id=" + Home_id;
