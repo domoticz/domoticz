@@ -377,6 +377,7 @@ void CMatter::HandleServerInfo(const Json::Value& msg)
 {
 	if (!msg.isMember("schema_version") || !msg.isMember("min_supported_schema_version")) {
 		Log(LOG_ERROR, "Missing schema fields in ServerInfo");
+		m_bConnected = false;
 		disconnectWS();
 		return;
 	}
@@ -386,6 +387,7 @@ void CMatter::HandleServerInfo(const Json::Value& msg)
 	{
 		Log(LOG_ERROR, "incompatible schema server=%d (min %d), we support up to %d",
 		    schema, minSchema, OUR_SCHEMA);
+		m_bConnected = false;
 		disconnectWS();
 		return;
 	}

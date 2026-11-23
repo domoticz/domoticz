@@ -528,6 +528,9 @@
     <Filter Include="Devices\Matter">
       <UniqueIdentifier>{6d18ba19-ca77-4fda-91aa-76a44b6a3bd2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Devices\Shelly">
+      <UniqueIdentifier>{3f6b1c7e-52a4-4d9b-8e0a-7c41b9d2a6f5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CMakeLists.txt">
@@ -2293,6 +2296,42 @@
     <ClInclude Include="..\hardware\Matter.h">
       <Filter>Devices\Matter</Filter>
     </ClInclude>
+    <ClInclude Include="..\hardware\Shelly.h">
+      <Filter>Devices\Shelly</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ShellyConnection.h">
+      <Filter>Devices\Shelly</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ShellyCoap.h">
+      <Filter>Devices\Shelly</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ShellyGen1.h">
+      <Filter>Devices\Shelly</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ShellyGen1Coiot.h">
+      <Filter>Devices\Shelly</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ShellyGen2.h">
+      <Filter>Devices\Shelly</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ShellyGen2Push.h">
+      <Filter>Devices\Shelly</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ShellyHttp.h">
+      <Filter>Devices\Shelly</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ShellyIdentify.h">
+      <Filter>Devices\Shelly</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ShellyMapping.h">
+      <Filter>Devices\Shelly</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ShellyScan.h">
+      <Filter>Devices\Shelly</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware\ShellyTypes.h">
+      <Filter>Devices\Shelly</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\tcpserver\TCPClient.cpp">
@@ -3128,6 +3167,39 @@
     </ClCompile>
     <ClCompile Include="..\hardware\Matter.cpp">
       <Filter>Devices\Matter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\Shelly.cpp">
+      <Filter>Devices\Shelly</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ShellyConnection.cpp">
+      <Filter>Devices\Shelly</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ShellyCoap.cpp">
+      <Filter>Devices\Shelly</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ShellyGen1.cpp">
+      <Filter>Devices\Shelly</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ShellyGen1Coiot.cpp">
+      <Filter>Devices\Shelly</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ShellyGen2.cpp">
+      <Filter>Devices\Shelly</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ShellyGen2Push.cpp">
+      <Filter>Devices\Shelly</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ShellyHttp.cpp">
+      <Filter>Devices\Shelly</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ShellyIdentify.cpp">
+      <Filter>Devices\Shelly</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ShellyMapping.cpp">
+      <Filter>Devices\Shelly</Filter>
+    </ClCompile>
+    <ClCompile Include="..\hardware\ShellyScan.cpp">
+      <Filter>Devices\Shelly</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

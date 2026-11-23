@@ -1,0 +1,58 @@
+{
+  "shelly": {
+    "type": "SHEM",
+    "mac": "C45BBE0A0101",
+    "auth": false,
+    "fw": "20230913-114150/v1.14.0-gcb84623",
+    "longid": 1,
+    "num_outputs": 1,
+    "num_meters": 2
+  },
+  "settings": {
+    "device": {
+      "type": "SHEM",
+      "mac": "C45BBE0A0101",
+      "hostname": "shellyem-0A0101",
+      "num_outputs": 1,
+      "num_meters": 2
+    },
+    "wifi_sta": { "enabled": true, "ssid": "test", "ipv4_method": "dhcp", "ip": null, "gw": null, "mask": null, "dns": null },
+    "fw": "20230913-114150/v1.14.0-gcb84623",
+    "build_info": { "build_id": "20230913-114150/v1.14.0-gcb84623", "build_timestamp": "2023-09-13T11:41:50Z", "build_version": "1.0" },
+    "mode": "relay",
+    "name": "Test EM",
+    "relays": [
+      { "name": null, "appliance_type": "General", "ison": false, "overpower": false, "default_state": "off", "btn_type": "momentary", "btn_reverse": 0, "auto_on": 0.0, "auto_off": 0.0, "max_power": 0 }
+    ],
+    "emeters": [
+      { "appliance_type": "General", "max_power": 0 },
+      { "appliance_type": "General", "max_power": 0 }
+    ]
+  },
+  "status": {
+    "wifi_sta": { "connected": true, "ssid": "test", "ip": "192.0.2.10", "rssi": -58 },
+    "cloud": { "enabled": false, "connected": false },
+    "mqtt": { "connected": false },
+    "time": "12:00",
+    "unixtime": 1763800000,
+    "serial": 1,
+    "has_update": false,
+    "mac": "C45BBE0A0101",
+    "relays": [
+      { "ison": false, "has_timer": false, "timer_started": 0, "timer_duration": 0, "timer_remaining": 0, "overpower": false, "is_valid": true, "source": "input" }
+    ],
+    "meters": [
+      { "power": 0.0, "overpower": 0.0, "is_valid": true, "timestamp": 1763800000, "counters": [0.0, 0.0, 0.0], "total": 0 }
+    ],
+    "emeters": [
+      { "power": 412.35, "reactive": 20.1, "pf": 0.98, "voltage": 231.4, "is_valid": true, "total": 53210.5, "total_returned": 120.3 },
+      { "power": 105.2, "reactive": 5.5, "pf": 0.95, "voltage": 231.1, "is_valid": true, "total": 18840.0, "total_returned": 0.0 }
+    ],
+    "update": { "status": "idle", "has_update": false, "new_version": "20230913-114150/v1.14.0-gcb84623", "old_version": "20230913-114150/v1.14.0-gcb84623" },
+    "ram_total": 51064,
+    "ram_free": 38800,
+    "fs_size": 233681,
+    "fs_free": 164800,
+    "uptime": 86400
+  }
+}

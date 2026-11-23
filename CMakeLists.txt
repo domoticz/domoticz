@@ -367,6 +367,17 @@ hardware/S0MeterSerial.cpp
 hardware/S0MeterTCP.cpp
 hardware/SatelIntegra.cpp
 hardware/SBFSpot.cpp
+hardware/Shelly.cpp
+hardware/ShellyCoap.cpp
+hardware/ShellyConnection.cpp
+hardware/ShellyGen1.cpp
+hardware/ShellyGen1Coiot.cpp
+hardware/ShellyGen2.cpp
+hardware/ShellyGen2Push.cpp
+hardware/ShellyHttp.cpp
+hardware/ShellyIdentify.cpp
+hardware/ShellyMapping.cpp
+hardware/ShellyScan.cpp
 hardware/serial/serial.cpp
 hardware/serial/impl/unix.cpp
 hardware/SolarEdgeAPI.cpp

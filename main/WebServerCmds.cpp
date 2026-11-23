@@ -83,6 +83,8 @@
 #include "../hardware/SolarEdgeAPI.h"
 #include "../hardware/AlfenEve.h"
 #include "../hardware/Matter.h"
+#include "../hardware/ShellyConnection.h"
+#include "../hardware/ShellyIdentify.h"
 #include "../hardware/RFLinkBase.h"
 #ifdef WITH_OPENZWAVE
 #include "../hardware/OpenZWave.h"
@@ -1473,7 +1475,7 @@ namespace http
 
 		static bool ValidateHardware(const _eHardwareTypes &htype, const std::string &sport, const std::string &address, const int port, const std::string &username, const std::string &password,
 									const std::string &smode1, const std::string &smode2, const std::string &smode3, const std::string &smode4, const std::string &smode5, const std::string &smode6,
-									const std::string &extra, const std::string idx = "")
+									const std::string &extra, const std::string idx = "", std::string *error = nullptr)
 		{
 			int mode1 = !smode1.empty() ? atoi(smode1.c_str()) : -1;
 			int mode2 = !smode2.empty() ? atoi(smode2.c_str()) : -1;
@@ -1492,6 +1494,29 @@ namespace http
 				// USB/System
 				if (sport.empty())
 					return false; // need to have a serial port
+			}
+			else if (htype == HTYPE_Shelly)
+			{
+				// Address, Port, Mode2 and Mode3 only configure the optional Gen1 CoIoT push and may all be empty.
+				// The CoIoT address is a peer host:port target, so an IPv6 literal (which has ':') is refused here as at start.
+				if (!address.empty() && (!ShellyIsValidHost(address) || address.find(':') != std::string::npos))
+				{
+					if (error)
+						*error = "Invalid CoIoT address: use an IPv4 address or a host name (no port, no IPv6)";
+					return false;
+				}
+				if ((port != 0) && !ShellyIsValidPort(port))
+				{
+					if (error)
+						*error = "Invalid CoIoT port: use 1..65535";
+					return false;
+				}
+				if (((mode3 > 0) && !ShellyIsValidPort(mode3)) || (mode3 < -1))
+				{
+					if (error)
+						*error = "Invalid CoIoT peer port: use 1..65535";
+					return false;
+				}
 			}
 			else if (IsNetworkDevice(htype))
 			{
@@ -1803,8 +1828,17 @@ namespace http
 				mode6 = atoi(mode6Str.c_str());
 			}
 
-			if (!ValidateHardware(htype, sport, address, port, username, password, mode1Str, mode2Str, mode3Str, mode4Str, mode5Str, mode6Str, extra))
+			std::string validationError;
+			if (!ValidateHardware(htype, sport, address, port, username, password, mode1Str, mode2Str, mode3Str, mode4Str, mode5Str, mode6Str, extra, "", &validationError))
+			{
+				if (!validationError.empty())
+				{
+					root["status"] = "ERR";
+					root["title"] = "AddHardware";
+					root["message"] = validationError;
+				}
 				return;
+			}
 
 			root["status"] = "OK";
 			root["title"] = "AddHardware";
@@ -1856,6 +1890,13 @@ namespace http
 			{
 				mode1 = 60;
 				mode2 = 0;
+			}
+			else if (htype == HTYPE_Shelly)
+			{
+				if (mode1 <= 0)
+					mode1 = 30;
+				mode2 = ShellyClampCoiotPeriod(mode2);
+				extra.clear(); // the managed device list is only written by the driver
 			}
 
 			if (htype == HTYPE_HTTPPOLLER)
@@ -1956,16 +1997,30 @@ namespace http
 
 			bool bIsSerial = false;
 
-			if (!ValidateHardware(htype, sport, address, port, username, password, mode1Str, mode2Str, mode3Str, mode4Str, mode5Str, mode6Str, extra, idx))
+			std::string validationError;
+			if (!ValidateHardware(htype, sport, address, port, username, password, mode1Str, mode2Str, mode3Str, mode4Str, mode5Str, mode6Str, extra, idx, &validationError))
+			{
+				if (!validationError.empty())
+				{
+					root["status"] = "ERR";
+					root["title"] = "UpdateHardware";
+					root["message"] = validationError;
+				}
 				return;
+			}
 
 
 			root["status"] = "OK";
 			root["title"] = "UpdateHardware";
 
-			if (htype == HTYPE_Netatmo && extra == "") {
-				//Extra contains  private data (client sectret), and is not sent to the front-end because of security reason
-				//Avoid overwriting existing datas
+			if (htype == HTYPE_Shelly)
+			{
+				// Extra holds the managed device list, which only the driver writes: it is left out of the UPDATE below
+				extra.clear();
+			}
+			else if (htype == HTYPE_Netatmo && extra == "") {
+				//Extra contains private data (Netatmo client secret) and is not sent to the front-end.
+				//Avoid overwriting existing data when the client sent none
 				std::vector<std::vector<std::string>> result;
 				result = m_sql.safe_query("SELECT Extra FROM Hardware WHERE ID=%q", idx.c_str());
 				if (!result.empty())
@@ -2016,6 +2071,28 @@ namespace http
 						name.c_str(), (senabled == "true") ? 1 : 0, htype, iLogLevelEnabled, address.c_str(), port, sport.c_str(), username.c_str(), password.c_str(),
 						extra.c_str(), mode1Str.c_str(), mode2Str.c_str(), mode3Str.c_str(), mode4Str.c_str(), mode5Str.c_str(), mode6Str.c_str(), iDataTimeout,
 						settings.c_str(), idx.c_str());
+				}
+				else if (htype == HTYPE_Shelly)
+				{
+					if (mode1 <= 0)
+						mode1 = 30;
+					mode2 = ShellyClampCoiotPeriod(mode2);
+					// Keep the stored password when the submitted value is empty, unless clearing it was asked for explicitly.
+					if (request::findValue(&req, "clearpassword") == "true")
+					{
+						password.clear();
+					}
+					else if (password.empty() && !idx.empty() && std::all_of(idx.begin(), idx.end(), [](unsigned char c) { return std::isdigit(c) != 0; }))
+					{
+						std::vector<std::vector<std::string>> storedPwd = m_sql.safe_query("SELECT Password FROM Hardware WHERE (ID == '%q')", idx.c_str());
+						if (!storedPwd.empty())
+							password = storedPwd[0][0];
+					}
+					// No Extra column here: the driver owns the managed device list
+					m_sql.safe_query("UPDATE Hardware SET Name='%q', Enabled=%d, Type=%d, LogLevel=%d, Address='%q', Port=%d, SerialPort='%q', Username='%q', Password='%q', "
+						"Mode1=%d, Mode2=%d, Mode3=%d, Mode4=%d, Mode5=%d, Mode6=%d, DataTimeout=%d WHERE (ID == '%q')",
+						name.c_str(), (bEnabled == true) ? 1 : 0, htype, iLogLevelEnabled, address.c_str(), port, sport.c_str(), username.c_str(), password.c_str(),
+						mode1, mode2, mode3, mode4, mode5, mode6, iDataTimeout, idx.c_str());
 				}
 				else if ((htype == HTYPE_RFXtrx433) || (htype == HTYPE_RFXtrx868))
 				{
@@ -4670,8 +4747,8 @@ namespace http
 					root["result"][ii]["SerialPort"] = sd[6];
 					root["result"][ii]["Username"] = sd[7];
 					root["result"][ii]["Password"] = sd[8];
-					if (hType == HTYPE_Netatmo) {
-						root["result"][ii]["Extra"] = "";	//Don't pass the refresh token to the front-end because of security reasons
+					if (hType == HTYPE_Netatmo || hType == HTYPE_Shelly) {
+						root["result"][ii]["Extra"] = "";	//Don't pass the refresh token (Netatmo) or the managed device list (Shelly) to the front-end
 					}
 					else {
 						root["result"][ii]["Extra"] = sd[9];

@@ -1,4 +1,4 @@
-define(['app'], function (app) {
+define(['app', 'hardware/setup/ShellyCoiot'], function (app, ShellyCoiot) {
 
 	/**
 	 * Table of hardware using the new structure.
@@ -190,6 +190,10 @@ define(['app'], function (app) {
 			}
 			return true;
 		}
+
+		// Optional Gen1 CoIoT push settings of a Shelly hardware, as the query string tail for add/updatehardware (null when invalid).
+		// The reading and validation is shared with the Shelly setup page: hardware/setup/ShellyCoiot.js.
+		ShellyGetCoiotQuery = ShellyCoiot.getQuery;
 
 		GetStdFields = function(data) {
 			data["Name"] = encodeURIComponent($("#hardwarecontent #hardwareparamstable #hardwarename").val());
@@ -1728,6 +1732,44 @@ define(['app'], function (app) {
 					}
 				});
 			}
+			else if (text.indexOf("Shelly devices") >= 0) {
+				var username = $("#hardwarecontent #divlogin #username").val();
+				var password = $("#hardwarecontent #divlogin #password").val();
+				var shellyClearPassword = $("#hardwarecontent #hardwareparamsshelly #shellyclearpassword").is(":checked");
+				var Mode1 = parseInt($("#hardwarecontent #hardwareparamsshelly #shellypollinterval").val());
+				if (!Mode1 || Mode1 < 1) Mode1 = 30;
+				var coiotQuery = ShellyGetCoiotQuery(
+					$("#hardwarecontent #hardwareparamsshelly #shellycoiotport").val(),
+					$("#hardwarecontent #hardwareparamsshelly #shellycoiotaddress").val(),
+					$("#hardwarecontent #hardwareparamsshelly #shellycoiotperiod").val(),
+					$("#hardwarecontent #hardwareparamsshelly #shellycoiotpeerport").val());
+				if (coiotQuery === null)
+					return;
+				$.ajax({
+					url: "json.htm?type=command&param=updatehardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&name=" + encodeURIComponent(name) +
+					"&username=" + encodeURIComponent(username) +
+					"&password=" + encodeURIComponent(shellyClearPassword ? "" : password) +
+					(shellyClearPassword ? "&clearpassword=true" : "") +
+					"&enabled=" + bEnabled +
+					"&idx=" + idx +
+					"&datatimeout=" + datatimeout +
+					"&Mode1=" + Mode1 + coiotQuery,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						if (data.status == "ERR") {
+							ShowNotify(($.t('Problem updating hardware!')) + (data.message ? " " + $("<span>").text(data.message).html() : ""), 2500, true);
+							return;
+						}
+							RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem updating hardware!'), 2500, true);
+					}
+				});
+			}
 			else if (text.indexOf("Matter") >= 0) {
 				var address = $("#hardwarecontent #divremote #tcpaddress").val();
 				if (address == "") {
@@ -3207,6 +3249,41 @@ define(['app'], function (app) {
 					}
 				});
 			}
+			else if (text.indexOf("Shelly devices") >= 0) {
+				var username = $("#hardwarecontent #divlogin #username").val();
+				var password = $("#hardwarecontent #divlogin #password").val();
+				var Mode1 = parseInt($("#hardwarecontent #hardwareparamsshelly #shellypollinterval").val());
+				if (!Mode1 || Mode1 < 1) Mode1 = 30;
+				var coiotQuery = ShellyGetCoiotQuery(
+					$("#hardwarecontent #hardwareparamsshelly #shellycoiotport").val(),
+					$("#hardwarecontent #hardwareparamsshelly #shellycoiotaddress").val(),
+					$("#hardwarecontent #hardwareparamsshelly #shellycoiotperiod").val(),
+					$("#hardwarecontent #hardwareparamsshelly #shellycoiotpeerport").val());
+				if (coiotQuery === null)
+					return;
+				$.ajax({
+					url: "json.htm?type=command&param=addhardware&htype=" + hardwaretype +
+					"&loglevel=" + logLevel +
+					"&name=" + encodeURIComponent(name) +
+					"&username=" + encodeURIComponent(username) +
+					"&password=" + encodeURIComponent(password) +
+					"&enabled=" + bEnabled +
+					"&datatimeout=" + datatimeout +
+					"&Mode1=" + Mode1 + coiotQuery,
+					async: false,
+					dataType: 'json',
+					success: function (data) {
+						if (data.status == "ERR") {
+							ShowNotify(($.t('Problem adding hardware!')) + (data.message ? " " + $("<span>").text(data.message).html() : ""), 2500, true);
+							return;
+						}
+							RefreshHardwareTable();
+					},
+					error: function () {
+						ShowNotify($.t('Problem adding hardware!'), 2500, true);
+					}
+				});
+			}
 			else if (text.indexOf("Matter") >= 0) {
 				var address = $("#hardwarecontent #divremote #tcpaddress").val();
 				if (address == "") {
@@ -4289,6 +4366,9 @@ define(['app'], function (app) {
 							else if (HwTypeStr.indexOf("BleBox") >= 0) {
 								HwTypeStr += ' ' + hardwareSetupLink;
 							}
+							else if (HwTypeStr.indexOf("Shelly devices") >= 0) {
+								HwTypeStr += ' ' + hardwareSetupLink;
+							}
 							else if (HwTypeStr.indexOf("MQTT Client") >= 0) {
 								HwTypeStr += ' ' + hardwareSetupLink;
 							}
@@ -4548,6 +4628,7 @@ define(['app'], function (app) {
 
 						UpdateHardwareParamControls();
 
+						$("#hardwarecontent #divlogin #password").removeAttr("placeholder");
 						$('#hardwarecontent #hardwareparamstable #enabled').prop('checked', (data["Enabled"] == "true"));
 						$('#hardwarecontent #hardwareparamstable #loglevelInfo').prop('checked', ((data["LogLevel"] & 1)!=0));
 						$('#hardwarecontent #hardwareparamstable #loglevelStatus').prop('checked', ((data["LogLevel"] & 2)!=0));
@@ -4860,6 +4941,22 @@ define(['app'], function (app) {
 							$("#hardwarecontent #hardwareparamsmercedes #defaultinterval").val(data["Mode1"]);
 							$("#hardwarecontent #hardwareparamsmercedes #activeinterval").val(data["Mode2"]);
 							$("#hardwarecontent #hardwareparamsmercedes #comboallowwakeup").val(data["Mode3"]);
+						}
+						else if (data["Type"].indexOf("Shelly devices") >= 0) {
+							var shellyPoll = parseInt(data["Mode1"]);
+							if (!shellyPoll || shellyPoll < 1) shellyPoll = 30;
+							$("#hardwarecontent #hardwareparamsshelly #shellypollinterval").val(shellyPoll);
+							var shellyPeriod = parseInt(data["Mode2"]);
+							$("#hardwarecontent #hardwareparamsshelly #shellycoiotport").val(parseInt(data["Port"]) || 0);
+							$("#hardwarecontent #hardwareparamsshelly #shellycoiotaddress").val(data["Address"] || '');
+							$("#hardwarecontent #hardwareparamsshelly #shellycoiotperiod").val(shellyPeriod > 0 ? shellyPeriod : ShellyCoiot.DEFAULT_PERIOD);
+							$("#hardwarecontent #hardwareparamsshelly #shellycoiotpeerport").val(parseInt(data["Mode3"]) || 0);
+							$("#hardwarecontent #divlogin #username").val(data["Username"]);
+							$("#hardwarecontent #divlogin #password").val('');
+							if (data["Password"]) {
+								$("#hardwarecontent #divlogin #password").attr("placeholder", $.t("(stored)"));
+							}
+							$("#hardwarecontent #hardwareparamsshelly #shellyclearpassword").prop("checked", false);
 						}
 						else if (data["Type"].indexOf("Satel Integra") >= 0) {
 							$("#hardwarecontent #hardwareparamspollinterval #pollinterval").val(data["Mode1"]);
@@ -5527,6 +5624,7 @@ define(['app'], function (app) {
 			$("#hardwarecontent #divlogin").hide();
 			$("#hardwarecontent #divhttppoller").hide();
 			$("#hardwarecontent #divenocean").hide();
+			$("#hardwarecontent #divshelly").hide();
 
 			// Handle plugins 1st because all the text indexof logic below will have unpredictable impacts for plugins
 			// Python Plugins have the plugin name, not the hardware type id, as the value
@@ -5851,6 +5949,19 @@ define(['app'], function (app) {
 				$("#hardwarecontent #divlogin #username").val("operator")
 				$("#hardwarecontent #divlogin #password").val("operator")
 				$("#hardwarecontent #divlogin").show();
+			}
+			else if (text.indexOf("Shelly devices") >= 0) {
+				$("#hardwarecontent #divlogin").show();
+				$("#hardwarecontent #divshelly").show();
+				var shellypoll = parseInt($("#hardwarecontent #hardwareparamsshelly #shellypollinterval").val());
+				if (!shellypoll || shellypoll < 1) {
+					$("#hardwarecontent #hardwareparamsshelly #shellypollinterval").val(30);
+				}
+				$("#hardwarecontent #hardwareparamsshelly #shellycoiotport").val(0);
+				$("#hardwarecontent #hardwareparamsshelly #shellycoiotaddress").val("");
+				$("#hardwarecontent #hardwareparamsshelly #shellycoiotperiod").val(15);
+				$("#hardwarecontent #hardwareparamsshelly #shellycoiotpeerport").val(0);
+				$("#hardwarecontent #hardwareparamsshelly #shellyclearpassword").prop("checked", false);
 			}
 			else if (text.indexOf("Matter") >= 0) {
 				$("#hardwarecontent #divremote").show();

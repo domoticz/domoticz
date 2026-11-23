@@ -1,14 +1,21 @@
 #pragma once
 
 #include <stddef.h>
+#include <atomic>
+#include <cstdint>
 #include <deque>
+#include <boost/asio/executor_work_guard.hpp>
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/ssl/stream.hpp>
 #include <exception>
+#include <memory>
 #include <optional>
+#include <string>
+#include <thread>
 
 #define ASYNCTCP_THREAD_NAME "ASyncTCP"
 #define DEFAULT_RECONNECT_TIME 30
@@ -37,10 +44,13 @@ protected:
 	virtual void OnData(const uint8_t* pData, size_t length) = 0;
 	virtual void OnError(const boost::system::error_code& error) = 0;
 
+	// When a write fails, drop the failed frame instead of resending it after the reconnect. Default: keep it.
+	virtual bool DropFailedWriteOnError() const { return false; }
+
 	boost::asio::io_context m_io_context; // protected to allow derived classes to attach timers etc.
 private:
-	void handle_resolve(const boost::system::error_code& ec, const boost::asio::ip::tcp::resolver::results_type &results);
-	void handle_connect(const boost::system::error_code& error, const boost::asio::ip::tcp::endpoint& endpoint);
+	void handle_resolve(const boost::system::error_code& ec, const boost::asio::ip::tcp::resolver::results_type &results, uint64_t generation);
+	void handle_connect(const boost::system::error_code& error, const boost::asio::ip::tcp::endpoint& endpoint, uint64_t generation);
 #ifdef WWW_ENABLE_SSL
 	void cb_handshake_done(const boost::system::error_code& error);
 #endif
@@ -57,19 +67,26 @@ private:
 	void do_read_start();
 	void cb_read_done(const boost::system::error_code& error, size_t bytes_transferred);
 
-	void cb_write_queue(const std::string& msg);
+	void cb_write_queue(std::shared_ptr<const std::string> msg);
 	void do_write_start();
 	void cb_write_done(const boost::system::error_code& error, size_t length);
 
 	void process_connection();
 	void process_error(const boost::system::error_code& error);
 
-	bool m_bIsConnected = false;
-	bool m_bIsReconnecting = false;
-	bool m_bIsTerminating = false;
+	// Written by the caller's thread (terminate/disconnect) and the I/O thread.
+	std::atomic<bool> m_bIsConnected{ false };
+	std::atomic<bool> m_bIsReconnecting{ false };
+	std::atomic<bool> m_bIsTerminating{ false };
+	// Bumped by do_close() and terminate(). Handlers capture it when they are started and return early when it
+	// changed, so a late completion of a closed session cannot act on the next one.
+	std::atomic<uint64_t> m_ConnGeneration{ 0 };
 
 	boost::asio::io_context::strand m_SendStrand;
-	std::deque<std::string> m_WriteQ; // we need a write queue to allow concurrent writes
+	bool m_bWriteInFlight{ false }; // I/O thread only: m_WriteQ.front() is owned by a pending async_write
+	// we need a write queue to allow concurrent writes. Entries are shared with the completion handler of the
+	// pending write, so dropping the front entry in do_close() cannot free a buffer that is still in use.
+	std::deque<std::shared_ptr<const std::string>> m_WriteQ;
 
 	uint8_t* m_pRXBuffer = nullptr;
 

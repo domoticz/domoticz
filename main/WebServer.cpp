@@ -463,6 +463,15 @@ namespace http
 			RegisterCommandCode("bleboxautosearchingnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_BleBoxAutoSearchingNodes(session, req, root); }, URIGHTS_ADMIN);
 			RegisterCommandCode("bleboxupdatefirmware", [this](auto&& session, auto&& req, auto&& root) { Cmd_BleBoxUpdateFirmware(session, req, root); }, URIGHTS_ADMIN);
 
+			RegisterCommandCode("shellygetnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_ShellyGetNodes(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("shellyaddnode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ShellyAddNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("shellyremovenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ShellyRemoveNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("shellyrenamenode", [this](auto&& session, auto&& req, auto&& root) { Cmd_ShellyRenameNode(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("shellyclearnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_ShellyClearNodes(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("shellyscan", [this](auto&& session, auto&& req, auto&& root) { Cmd_ShellyScan(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("shellyscanstatus", [this](auto&& session, auto&& req, auto&& root) { Cmd_ShellyScanStatus(session, req, root); }, URIGHTS_ADMIN);
+			RegisterCommandCode("shellyscancancel", [this](auto&& session, auto&& req, auto&& root) { Cmd_ShellyScanCancel(session, req, root); }, URIGHTS_ADMIN);
+
 			RegisterCommandCode("lmssetmode", [this](auto&& session, auto&& req, auto&& root) { Cmd_LMSSetMode(session, req, root); }, URIGHTS_ADMIN);
 			RegisterCommandCode("lmsgetnodes", [this](auto&& session, auto&& req, auto&& root) { Cmd_LMSGetNodes(session, req, root); }, URIGHTS_ADMIN);
 			RegisterCommandCode("lmsgetplaylists", [this](auto&& session, auto&& req, auto&& root) { Cmd_LMSGetPlaylists(session, req, root); }, URIGHTS_SWITCHER);

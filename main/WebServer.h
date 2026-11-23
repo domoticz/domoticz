@@ -358,6 +358,15 @@ private:
 	void Cmd_BleBoxAutoSearchingNodes(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_BleBoxUpdateFirmware(WebEmSession & session, const request& req, Json::Value &root);
 
+	void Cmd_ShellyGetNodes(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ShellyAddNode(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ShellyRemoveNode(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ShellyRenameNode(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ShellyClearNodes(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ShellyScan(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ShellyScanStatus(WebEmSession & session, const request& req, Json::Value &root);
+	void Cmd_ShellyScanCancel(WebEmSession & session, const request& req, Json::Value &root);
+
 	void Cmd_GetTimerPlans(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_AddTimerPlan(WebEmSession & session, const request& req, Json::Value &root);
 	void Cmd_UpdateTimerPlan(WebEmSession & session, const request& req, Json::Value &root);

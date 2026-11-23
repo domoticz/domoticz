@@ -608,7 +608,7 @@ void CDomoticzHardwareBase::SendKwhMeter(const int NodeID, const int ChildID, co
 	}
 	_tGeneralDevice gdevice;
 	gdevice.subtype = sTypeKwh;
-	gdevice.intval1 = (NodeID << 8) | ChildID;
+	gdevice.intval1 = static_cast<int>((static_cast<uint32_t>(NodeID) << 8) | static_cast<uint32_t>(ChildID));
 	gdevice.floatval1 = (float)musage;
 	gdevice.floatval2 = (float)(mtotal * 1000.0);
 	gdevice.rssi = RssiLevel;
@@ -617,7 +617,7 @@ void CDomoticzHardwareBase::SendKwhMeter(const int NodeID, const int ChildID, co
 
 double CDomoticzHardwareBase::GetKwhMeter(const int NodeID, const int ChildID, bool& bExists)
 {
-	int dID = (NodeID << 8) | ChildID;
+	const uint32_t dID = (static_cast<uint32_t>(NodeID) << 8) | static_cast<uint32_t>(ChildID);
 	std::string sTmp = std_format("%08X", dID);
 
 	std::vector<std::vector<std::string> > result;
@@ -821,7 +821,7 @@ void CDomoticzHardwareBase::SendVoltageSensor(const int NodeID, const uint32_t C
 	_tGeneralDevice gDevice;
 	gDevice.subtype = sTypeVoltage;
 	gDevice.id = ChildID;
-	gDevice.intval1 = (NodeID << 8) | ChildID;
+	gDevice.intval1 = static_cast<int>((static_cast<uint32_t>(NodeID) << 8) | ChildID);
 	gDevice.floatval1 = Volt;
 	sDecodeRXMessage(this, (const unsigned char *)&gDevice, defaultname.c_str(), BatteryLevel, nullptr);
 }
@@ -904,7 +904,7 @@ void CDomoticzHardwareBase::SendCustomSensor(const int NodeID, const uint8_t Chi
 	gDevice.id = ChildID;
 	gDevice.battery_level = BatteryLevel;
 	gDevice.rssi = RssiLevel;
-	gDevice.intval1 = (NodeID << 8) | ChildID;
+	gDevice.intval1 = static_cast<int>((static_cast<uint32_t>(NodeID) << 8) | static_cast<uint32_t>(ChildID));
 	gDevice.floatval1 = CustomValue;
 
 	std::string sTmp = std_format("%08X", gDevice.intval1);

@@ -92,7 +92,7 @@ void CRFLinkTCP::Do_Work()
 		if ((m_bDoRestart) && (sec_counter % 30 == 0))
 		{
 			Log(LOG_STATUS, "Trying to connect to %s:%d", m_szIPAddress.c_str(), m_usIPPort);
-			disconnect();
+			terminate();
 			connect(m_szIPAddress, m_usIPPort);
 		}
 	}

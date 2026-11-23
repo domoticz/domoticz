@@ -11,6 +11,7 @@ define([
     'hardware/setup/MQTT',
     'hardware/setup/ZWave',
     'hardware/setup/Matter',
+    'hardware/setup/Shelly',
 ], function (app) {
     app.controller('HardwareSetupController', function ($routeParams, domoticzApi) {
         var vm = this;

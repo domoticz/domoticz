@@ -1,0 +1,120 @@
+<div id="hardwarecontent" class="container">
+    <div class="page-header-small">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td><h1 data-i18n="Nodes">Nodes</h1></td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="overflow-x:auto; padding-bottom:0;">
+        <table class="display" id="shellynodestable" border="0" cellpadding="0" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th width="60" align="center" data-i18n="ID">ID</th>
+                    <th width="150" align="left" data-i18n="Name">Name</th>
+                    <th width="150" align="left" data-i18n="IP Address">IP Address</th>
+                    <th width="50" align="left" data-i18n="Gen">Gen</th>
+                    <th width="130" align="left" data-i18n="Model">Model</th>
+                    <th width="100" align="left" data-i18n="Firmware">Firmware</th>
+                    <th align="left" data-i18n="Flags">Flags</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <input type="hidden" id="idx" name="idx" value="-1">
+
+    <table id="shellyupdelclr" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+            <td>
+                <a class="btnstyle3-dis" id="shellynodedelete" role="button" tabindex="0" data-i18n="Delete selected">Delete selected</a>
+            </td>
+            <td align="right">
+                <a class="btnstyle3" id="shellyclearall" role="button" tabindex="0" onclick="ShellyClearNodes();" data-i18n="Clear all nodes">Clear all nodes</a>
+            </td>
+        </tr>
+    </table>
+
+    <br>
+
+    <div style="overflow-x:auto;">
+    <table class="display" id="shellynodeparamstable" border="0" cellpadding="0" cellspacing="20" style="min-width:280px;">
+        <tr>
+            <td align="right" style="white-space:nowrap; padding-right:8px;"><label for="shellynodename"><span data-i18n="Name"></span>:</label></td>
+            <td><input type="text" id="shellynodename" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all"></td>
+        </tr>
+        <tr>
+            <td align="right" style="white-space:nowrap; padding-right:8px;"><label for="shellynodeip"><span data-i18n="IP Address">IP Address</span>:</label></td>
+            <td><input type="text" id="shellynodeip" style="width: 200px; padding: .2em;" class="text ui-widget-content ui-corner-all" placeholder="192.168.1.100"></td>
+        </tr>
+        <tr>
+            <td align="right" style="white-space:nowrap; padding-right:8px;"><label for="shellynodeport"><span data-i18n="Port"></span>:</label></td>
+            <td><input type="text" id="shellynodeport" style="width: 80px; padding: .2em;" class="text ui-widget-content ui-corner-all" placeholder="80"></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a class="btnstyle3" id="shellyaddnodebtn" onclick="ShellyAddNode();" role="button" tabindex="0">Add</a></td>
+        </tr>
+    </table>
+    </div>
+
+    <div class="page-header-small" style="margin-top:16px;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td><h1 data-i18n="Scan subnet">Scan subnet</h1></td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="display" id="shellyscanparamstable" border="0" cellpadding="0" cellspacing="20">
+        <tr>
+            <td align="right" style="width:170px"><label for="shellyscanrange"><span data-i18n="Scan range">Scan range</span>:</label></td>
+            <td>
+                <input type="text" id="shellyscanrange" style="width: 240px; padding: .2em;" class="text ui-widget-content ui-corner-all" placeholder="192.168.1.0/24">
+                <br>
+                <span class="text-muted" style="font-size:0.9em;" data-i18n="CIDR (192.168.1.0/24), range (192.168.1.10-50) or single IP. Max 1024 addresses.">CIDR (192.168.1.0/24), range (192.168.1.10-50) or single IP. Max 1024 addresses.</span>
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>
+                <div class="alert alert-warning" style="padding:6px 10px; margin:4px 0; font-size:0.9em; display:inline-block; max-width:400px;" data-i18n="Use the LAN range, not the Docker bridge range (172.x). The bridge subnet is not routed to Shelly devices.">Use the LAN range, not the Docker bridge range (172.x). The bridge subnet is not routed to Shelly devices.</div>
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>
+                <a class="btnstyle3" id="shellyscanstartstop" onclick="ShellyToggleScan();" role="button" tabindex="0" data-i18n="Start Scan">Start Scan</a>
+            </td>
+        </tr>
+    </table>
+
+    <div id="shellyscanprogress" aria-live="polite" style="display:none; margin-top:8px; margin-left:20px;">
+        <span data-i18n="Scanning...">Scanning...</span>
+        <span id="shellyscanprogresstext"></span>
+    </div>
+
+    <div id="shellyscanresults" style="display:none; margin-top:8px;">
+        <div class="page-header-small">
+            <h2 data-i18n="Scan Results">Scan Results</h2>
+        </div>
+        <div style="overflow-x:auto;">
+            <table class="display" id="shellyscanresultstable" border="0" cellpadding="0" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th width="150" align="left" data-i18n="IP Address">IP Address</th>
+                        <th width="50"  align="left" data-i18n="Gen">Gen</th>
+                        <th width="130" align="left" data-i18n="Model">Model</th>
+                        <th width="130" align="left" data-i18n="Name">Name</th>
+                        <th width="100" align="left" data-i18n="Firmware">Firmware</th>
+                        <th align="left" data-i18n="Flags">Flags</th>
+                        <th width="80"  align="center" data-i18n="Action">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="shellyscanresultsbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,5 +1,10 @@
 #pragma once
 
+#include <cstddef>
+#include <initializer_list>
+#include <string>
+#include <vector>
+
 class HTTPClient
 {
 	// give MainWorker acces to the protected Cleanup() function
@@ -141,7 +146,29 @@ class HTTPClient
 	static bool PatchBinary(const std::string& url, const std::string& putdata, const std::vector<std::string>& ExtraHeaders, std::vector<unsigned char>& response,
 		std::vector<std::string>& vHeaderData, long TimeOut = -1);
 
+	/************************************************************************
+	 *									*
+	 * binary methods with a bound on what is accepted from the peer	*
+	 *									*
+	 ************************************************************************/
+
+	// A value of 0 means unbounded. The transfer is aborted as soon as a bound is crossed (nothing beyond it is buffered),
+	// limitExceeded is then set and the call returns false.
+	struct Limits
+	{
+		size_t maxBodyBytes = 0;   // total body bytes
+		size_t maxHeaderLines = 0; // header lines of all responses of the transfer (redirects included)
+		size_t maxHeaderBytes = 0; // bytes of all those lines
+	};
+
+	static bool GETBinaryLimited(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData,
+				     const Limits &limits, bool &limitExceeded, long TimeOut = -1, bool bFollowRedirect = true);
+	static bool POSTBinaryLimited(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response,
+				      std::vector<std::string> &vHeaderData, const Limits &limits, bool &limitExceeded, long TimeOut = -1, bool bFollowRedirect = true);
+
       private:
+	static bool PerformLimited(const std::string &url, const std::string *postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response,
+				   std::vector<std::string> &vHeaderData, const Limits &limits, bool &limitExceeded, long TimeOut, bool bFollowRedirect);
 	static void SetGlobalOptions(void *curlobj, const std::string &url);
 	static void LogCertificateError(int curlcode, const std::string &url);
 	static bool CheckIfGlobalInitDone();

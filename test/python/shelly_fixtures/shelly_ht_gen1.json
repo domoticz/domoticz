@@ -1,0 +1,44 @@
+{
+  "shelly": {
+    "type": "SHHT-1",
+    "mac": "C45BBE0A0102",
+    "auth": false,
+    "fw": "20230913-112003/v1.14.0-gcb84623",
+    "num_outputs": 0
+  },
+  "settings": {
+    "device": {
+      "type": "SHHT-1",
+      "mac": "C45BBE0A0102",
+      "hostname": "shellyht-0A0102",
+      "num_outputs": 0
+    },
+    "fw": "20230913-112003/v1.14.0-gcb84623",
+    "name": "Test HT",
+    "sleep_mode": { "period": 12, "unit": "h" },
+    "temperature_offset": 0.0,
+    "humidity_offset": 0.0,
+    "temperature_threshold": 1.0,
+    "humidity_threshold": 5.0
+  },
+  "status": {
+    "wifi_sta": { "connected": true, "ssid": "test", "ip": "192.0.2.11", "rssi": -64 },
+    "cloud": { "enabled": false, "connected": false },
+    "mqtt": { "connected": false },
+    "time": "12:00",
+    "unixtime": 1763800000,
+    "serial": 1,
+    "has_update": false,
+    "mac": "C45BBE0A0102",
+    "tmp": { "value": 22.5, "units": "C", "tC": 22.5, "tF": 72.5, "is_valid": true },
+    "hum": { "value": 45.0, "is_valid": true },
+    "bat": { "value": 98, "voltage": 2.93 },
+    "act_reasons": ["periodic"],
+    "update": { "status": "idle", "has_update": false, "new_version": "20230913-112003/v1.14.0-gcb84623", "old_version": "20230913-112003/v1.14.0-gcb84623" },
+    "ram_total": 52688,
+    "ram_free": 40120,
+    "fs_size": 233681,
+    "fs_free": 168200,
+    "uptime": 120
+  }
+}

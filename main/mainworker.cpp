@@ -123,6 +123,7 @@
 #include "../hardware/DenkoviTCPDevices.h"
 #include "../hardware/AccuWeather.h"
 #include "../hardware/BleBox.h"
+#include "../hardware/Shelly.h"
 #include "../hardware/Ec3kMeterTCP.h"
 #include "../hardware/OpenWeatherMap.h"
 #include "../hardware/Daikin.h"
@@ -1116,6 +1117,21 @@ bool MainWorker::AddHardwareFromParams(
 		{
 			uint16_t matterPort = (Port == 0) ? 5580 : static_cast<uint16_t>(Port);
 			pHardware = new CMatter(ID, Address, matterPort);
+		}
+		break;
+
+	case HTYPE_Shelly:
+		{
+			// Optional Gen1 CoIoT push, kept in existing columns: Port = UDP listen port (0 = off, REST polling only),
+			// Address = this host as the Shelly devices see it (empty = devices are not configured), Mode2 = update
+			// period in seconds, Mode3 = port written to the device when it differs from the listen port (0 = same).
+			ShellyCoiotOptions coiot;
+			coiot.enabled = (Port != 0);
+			coiot.listenPort = Port;
+			coiot.peerHost = Address;
+			coiot.peerPort = (Mode3 > 0 && Mode3 <= 65535) ? Mode3 : 0;
+			coiot.updatePeriodSec = ShellyClampCoiotPeriod(Mode2);
+			pHardware = new CShelly(ID, Username, Password, Mode1, coiot);
 		}
 		break;
 

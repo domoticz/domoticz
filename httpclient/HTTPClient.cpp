@@ -5,7 +5,10 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cctype>
 #include <iostream>
+#include <memory>
+#include <sstream>
 #include <fstream>
 #include <mutex>
 #include <set>
@@ -476,6 +479,144 @@ bool HTTPClient::POSTBinary(const std::string &url, const std::string &postdata,
 		}
 
 		return (res == CURLE_OK);
+	}
+	catch (...)
+	{
+		return false;
+	}
+}
+
+namespace
+{
+	struct LimitedTransfer
+	{
+		std::vector<unsigned char> *body = nullptr;
+		std::vector<std::string> *headers = nullptr;
+		size_t maxBodyBytes = 0;
+		size_t maxHeaderLines = 0;
+		size_t maxHeaderBytes = 0;
+		size_t headerLines = 0;
+		size_t headerBytes = 0;
+		bool exceeded = false;
+	};
+
+	size_t write_curl_data_limited(void *contents, size_t size, size_t nmemb, void *userp)
+	{
+		const size_t realsize = size * nmemb;
+		LimitedTransfer *transfer = static_cast<LimitedTransfer *>(userp);
+		if (transfer->maxBodyBytes != 0 && (realsize > transfer->maxBodyBytes || transfer->body->size() > transfer->maxBodyBytes - realsize))
+		{
+			transfer->exceeded = true;
+			return 0; // aborts the transfer
+		}
+		transfer->body->insert(transfer->body->end(), (unsigned char *)contents, (unsigned char *)contents + realsize);
+		return realsize;
+	}
+
+	size_t write_curl_headerdata_limited(void *contents, size_t size, size_t nmemb, void *userp)
+	{
+		const size_t realsize = size * nmemb;
+		LimitedTransfer *transfer = static_cast<LimitedTransfer *>(userp);
+		transfer->headerLines++;
+		transfer->headerBytes += realsize;
+		if ((transfer->maxHeaderLines != 0 && transfer->headerLines > transfer->maxHeaderLines) || (transfer->maxHeaderBytes != 0 && transfer->headerBytes > transfer->maxHeaderBytes))
+		{
+			transfer->exceeded = true;
+			return 0; // aborts the transfer
+		}
+		transfer->headers->push_back(std::string((unsigned char *)contents, (std::find((unsigned char *)contents, (unsigned char *)contents + realsize, '\r'))));
+		return realsize;
+	}
+} // namespace
+
+bool HTTPClient::GETBinaryLimited(const std::string &url, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response, std::vector<std::string> &vHeaderData,
+				  const Limits &limits, bool &limitExceeded, const long TimeOut, const bool bFollowRedirect)
+{
+	return PerformLimited(url, nullptr, ExtraHeaders, response, vHeaderData, limits, limitExceeded, TimeOut, bFollowRedirect);
+}
+
+bool HTTPClient::POSTBinaryLimited(const std::string &url, const std::string &postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response,
+				   std::vector<std::string> &vHeaderData, const Limits &limits, bool &limitExceeded, const long TimeOut, const bool bFollowRedirect)
+{
+	return PerformLimited(url, &postdata, ExtraHeaders, response, vHeaderData, limits, limitExceeded, TimeOut, bFollowRedirect);
+}
+
+bool HTTPClient::PerformLimited(const std::string &url, const std::string *postdata, const std::vector<std::string> &ExtraHeaders, std::vector<unsigned char> &response,
+				std::vector<std::string> &vHeaderData, const Limits &limits, bool &limitExceeded, const long TimeOut, const bool bFollowRedirect)
+{
+	limitExceeded = false;
+	try
+	{
+		if (!CheckIfGlobalInitDone())
+			return false;
+		// Declared in this order so that the handle is released before the header list it points at.
+		std::unique_ptr<curl_slist, decltype(&curl_slist_free_all)> headers(nullptr, &curl_slist_free_all);
+		std::unique_ptr<CURL, decltype(&curl_easy_cleanup)> curlHandle(curl_easy_init(), &curl_easy_cleanup);
+		CURL *curl = curlHandle.get();
+		if (!curl)
+			return false;
+
+		SetGlobalOptions(curl, url);
+		if (TimeOut != -1)
+			curl_easy_setopt(curl, CURLOPT_TIMEOUT, TimeOut);
+		if (!bFollowRedirect)
+			curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
+
+		LimitedTransfer transfer;
+		transfer.body = &response;
+		transfer.headers = &vHeaderData;
+		transfer.maxBodyBytes = limits.maxBodyBytes;
+		transfer.maxHeaderLines = limits.maxHeaderLines;
+		transfer.maxHeaderBytes = limits.maxHeaderBytes;
+
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_curl_data_limited);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&transfer);
+		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, write_curl_headerdata_limited);
+		curl_easy_setopt(curl, CURLOPT_HEADERDATA, (void *)&transfer);
+		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+		for (const auto &header : ExtraHeaders)
+		{
+			curl_slist *appended = curl_slist_append(headers.get(), header.c_str());
+			if (appended == nullptr)
+				return false; // out of memory, the list built so far is still owned by `headers`
+			headers.release(); // `appended` is the list head and already owns the old nodes, so only the pointer moves
+			headers.reset(appended);
+		}
+		if (headers)
+			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers.get());
+
+		if (postdata != nullptr)
+		{
+			curl_easy_setopt(curl, CURLOPT_POST, 1);
+			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postdata->c_str());
+		}
+
+		const CURLcode res = curl_easy_perform(curl);
+		LogCertificateError(res, url);
+
+		bool bOK = false;
+		if (res == CURLE_OK)
+		{
+			long http_code = 0;
+			curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+			bOK = (http_code != 0) && (http_code < 400);
+			if (!bOK)
+				LogError(http_code);
+		}
+		else if (transfer.exceeded)
+		{
+			limitExceeded = true;
+		}
+		else if (res != CURLE_HTTP_RETURNED_ERROR)
+		{
+			// A header, not a status line: a curl code of 100 or more must not be readable as an HTTP status.
+			std::stringstream ss;
+			ss << "X-Transport-Error: " << static_cast<int>(res) << " " << curl_easy_strerror(res);
+			vHeaderData.push_back(ss.str());
+		}
+
+		return bOK;
 	}
 	catch (...)
 	{

@@ -12,6 +12,7 @@
 
 ASyncWebsocket::ASyncWebsocket(bool secure)
     : ASyncTCP(secure)
+    , m_wsSecure(secure)
 {
 }
 
@@ -20,7 +21,8 @@ void ASyncWebsocket::connectWS(const std::string& host, uint16_t port,
                                 const std::vector<std::string>& extra_headers)
 {
     m_sHost            = host;
-    m_sPath            = path;
+    m_wsPort           = port;
+    m_sPath           = path;
     m_extraHeaders     = extra_headers;
     m_wsState          = WSState::Disconnected;
     m_bWSHandshakeDone = false;
@@ -32,6 +34,20 @@ void ASyncWebsocket::disconnectWS()
     m_bWSHandshakeDone = false;
     m_wsState          = WSState::Disconnected;
     disconnect();
+}
+
+void ASyncWebsocket::dropConnection()
+{
+    // disconnect() clears the connected flag, so the TCP layer will not report this close to the subclass.
+    // The subclass only learns about the websocket through OnWebsocketConnected(), so it is told about the
+    // disconnect only when that happened. A failed upgrade is reported through OnWebsocketUpgradeFailed().
+    const bool upgraded = m_bWSHandshakeDone;
+    const bool wasUp = upgraded && isConnected();
+    disconnectWS();
+    if (wasUp)
+        OnDisconnect();
+    else if (!upgraded)
+        OnWebsocketUpgradeFailed();
 }
 
 std::string ASyncWebsocket::GenerateWebSocketKey()
@@ -57,9 +73,16 @@ std::string ASyncWebsocket::ComputeAcceptKey(const std::string& key)
 
 std::string ASyncWebsocket::BuildUpgradeRequest() const
 {
+    // RFC 7230 5.4: an IPv6 literal is bracketed and a port other than the scheme default is part of the Host value.
+    std::string hostHeader = m_sHost;
+    if (hostHeader.find(':') != std::string::npos && hostHeader.front() != '[')
+        hostHeader = "[" + hostHeader + "]";
+    if (m_wsPort != 0 && m_wsPort != (m_wsSecure ? 443 : 80))
+        hostHeader += ":" + std::to_string(m_wsPort);
+
     std::ostringstream ss;
     ss << "GET " << m_sPath << " HTTP/1.1\r\n"
-       << "Host: " << m_sHost << "\r\n"
+       << "Host: " << hostHeader << "\r\n"
        << "Upgrade: websocket\r\n"
        << "Connection: Upgrade\r\n"
        << "Sec-WebSocket-Key: " << m_sWSKey << "\r\n"
@@ -76,10 +99,11 @@ bool ASyncWebsocket::ParseUpgradeResponse(const std::string& response)
 
     auto hasHeader = [&](const std::string& name, const std::string& value) {
         std::string lower = response;
-        std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+        const auto toLower = [](const unsigned char c) { return static_cast<char>(std::tolower(c)); };
+        std::transform(lower.begin(), lower.end(), lower.begin(), toLower);
         std::string lname = name, lval = value;
-        std::transform(lname.begin(), lname.end(), lname.begin(), ::tolower);
-        std::transform(lval.begin(),  lval.end(),  lval.begin(),  ::tolower);
+        std::transform(lname.begin(), lname.end(), lname.begin(), toLower);
+        std::transform(lval.begin(),  lval.end(),  lval.begin(),  toLower);
         auto pos = lower.find(lname);
         if (pos == std::string::npos) return false;
         return lower.find(lval, pos) != std::string::npos;
@@ -121,14 +145,14 @@ std::vector<uint8_t> ASyncWebsocket::EncodeFrame(WSOpcode opcode,
                                                    const uint8_t* payload,
                                                    size_t length)
 {
-    std::vector<uint8_t> frame;
-    frame.reserve(length + 14);
-
-    // RFC 6455: 64-bit length MSB must be 0
-    if (length > 0x7FFFFFFFFFFFFFFF) {
+    // RFC 6455: 64-bit length MSB must be 0. Checked before reserve() so that length + 14 cannot wrap.
+    if (static_cast<uint64_t>(length) > 0x7FFFFFFFFFFFFFFFULL) {
         _log.Log(LOG_ERROR, "ASyncWebsocket: payload exceeds RFC 6455 maximum");
         return {};
     }
+
+    std::vector<uint8_t> frame;
+    frame.reserve(length + 14);
 
     frame.push_back(0x80 | static_cast<uint8_t>(opcode));
 
@@ -145,14 +169,16 @@ std::vector<uint8_t> ASyncWebsocket::EncodeFrame(WSOpcode opcode,
     }
 
     uint32_t maskKey = GenerateMaskingKey();
-    frame.push_back(static_cast<uint8_t>((maskKey >> 24) & 0xFF));
-    frame.push_back(static_cast<uint8_t>((maskKey >> 16) & 0xFF));
-    frame.push_back(static_cast<uint8_t>((maskKey >>  8) & 0xFF));
-    frame.push_back(static_cast<uint8_t>( maskKey        & 0xFF));
-    const uint8_t* pMask = &frame[frame.size() - 4];
+    const uint8_t mask[4] = {
+        static_cast<uint8_t>((maskKey >> 24) & 0xFF),
+        static_cast<uint8_t>((maskKey >> 16) & 0xFF),
+        static_cast<uint8_t>((maskKey >>  8) & 0xFF),
+        static_cast<uint8_t>( maskKey        & 0xFF)
+    };
+    frame.insert(frame.end(), mask, mask + 4);
 
     for (size_t i = 0; i < length; ++i)
-        frame.push_back(payload[i] ^ pMask[i % 4]);
+        frame.push_back(payload[i] ^ mask[i % 4]);
 
     return frame;
 }
@@ -163,6 +189,7 @@ void ASyncWebsocket::SendWebsocketMessage(const std::string& msg, bool binary)
     auto frame = EncodeFrame(binary ? WSOpcode::Binary : WSOpcode::Text,
                              reinterpret_cast<const uint8_t*>(msg.data()),
                              msg.size());
+    if (frame.empty()) return;
     write(frame.data(), frame.size());
 }
 
@@ -170,15 +197,18 @@ void ASyncWebsocket::SendWebsocketMessage(const uint8_t* pData, size_t length, b
 {
     if (!m_bWSHandshakeDone) return;
     auto frame = EncodeFrame(binary ? WSOpcode::Binary : WSOpcode::Text, pData, length);
+    if (frame.empty()) return;
     write(frame.data(), frame.size());
 }
 
 void ASyncWebsocket::SendWebsocketPing(const std::string& payload)
 {
     if (!m_bWSHandshakeDone) return;
+    // RFC 6455 5.5: a control frame carries at most 125 bytes of payload.
     auto frame = EncodeFrame(WSOpcode::Ping,
                              reinterpret_cast<const uint8_t*>(payload.data()),
-                             payload.size());
+                             std::min<size_t>(payload.size(), 125));
+    if (frame.empty()) return;
     write(frame.data(), frame.size());
 }
 
@@ -193,6 +223,7 @@ void ASyncWebsocket::SendWebsocketClose(uint16_t code, const std::string& reason
     for (size_t i = 0; i < maxReasonLen; ++i)
         payload.push_back(static_cast<uint8_t>(reason[i]));
     auto frame = EncodeFrame(WSOpcode::Close, payload.data(), payload.size());
+    if (frame.empty()) return;
     write(frame.data(), frame.size());
 }
 
@@ -252,6 +283,14 @@ bool ASyncWebsocket::ProcessFrame(size_t& startOffset)
         iOffset += 4;
     }
 
+    if (lPayloadLength > m_maxInboundBytes) {
+        _log.Log(LOG_ERROR, "ASyncWebsocket: inbound frame of %llu bytes exceeds the limit, dropping connection",
+                 static_cast<unsigned long long>(lPayloadLength));
+        startOffset = buf.size();
+        dropConnection();
+        return false;
+    }
+
     if (buf.size() - startOffset < iOffset + lPayloadLength) return false;
 
     std::vector<uint8_t> vPayload(buf.begin() + startOffset + iOffset,
@@ -268,6 +307,15 @@ bool ASyncWebsocket::ProcessFrame(size_t& startOffset)
             startOffset = buf.size();
             return false;
         }
+        if (m_fragmentBuffer.size() > m_maxInboundBytes
+            || vPayload.size() > m_maxInboundBytes - m_fragmentBuffer.size()) {
+            _log.Log(LOG_ERROR, "ASyncWebsocket: fragmented message exceeds the limit, dropping connection");
+            m_fragmentBuffer.clear();
+            m_fragmentOpCode = -1;
+            startOffset = buf.size();
+            dropConnection();
+            return false;
+        }
         m_fragmentBuffer.insert(m_fragmentBuffer.end(), vPayload.begin(), vPayload.end());
         if (!bFin) return true;
         vPayload         = std::move(m_fragmentBuffer);
@@ -275,7 +323,7 @@ bool ASyncWebsocket::ProcessFrame(size_t& startOffset)
         m_fragmentBuffer.clear();
         m_fragmentOpCode = -1;
     } else if (!bFin && iOpCode < 0x08) {
-        m_fragmentBuffer = vPayload;
+        m_fragmentBuffer = std::move(vPayload);
         m_fragmentOpCode = iOpCode;
         return true;
     }
@@ -295,8 +343,17 @@ bool ASyncWebsocket::ProcessFrame(size_t& startOffset)
         break;
     case 0x09:
         {
+            // RFC 6455 5.5: control frames carry at most 125 payload bytes, so a longer ping is a protocol error.
+            if (vPayload.size() > 125)
+            {
+                _log.Log(LOG_ERROR, "ASyncWebsocket: ping payload exceeds 125 bytes, closing");
+                SendWebsocketClose(1002);
+                m_wsState = WSState::Closing;
+                break;
+            }
             auto pong = EncodeFrame(WSOpcode::Pong, vPayload.data(), vPayload.size());
-            write(pong.data(), pong.size());
+            if (!pong.empty())
+                write(pong.data(), pong.size());
         }
         break;
     case 0x0A:
@@ -316,7 +373,14 @@ void ASyncWebsocket::OnData(const uint8_t* pData, size_t length)
         m_httpBuffer.append(reinterpret_cast<const char*>(pData), length);
         {
             auto pos = m_httpBuffer.find("\r\n\r\n");
-            if (pos == std::string::npos) return;
+            if (pos == std::string::npos) {
+                if (m_httpBuffer.size() > MAX_UPGRADE_RESPONSE_BYTES) {
+                    _log.Log(LOG_ERROR, "ASyncWebsocket: upgrade response too large, dropping connection");
+                    m_httpBuffer.clear();
+                    dropConnection();
+                }
+                return;
+            }
 
             std::string httpResp = m_httpBuffer.substr(0, pos + 4);
             std::string leftover = m_httpBuffer.substr(pos + 4);
@@ -324,7 +388,7 @@ void ASyncWebsocket::OnData(const uint8_t* pData, size_t length)
 
             if (!ParseUpgradeResponse(httpResp)) {
                 _log.Log(LOG_ERROR, "ASyncWebsocket: WebSocket upgrade failed");
-                disconnectWS();
+                dropConnection();
                 return;
             }
             m_wsState          = WSState::Connected;

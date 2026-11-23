@@ -176,6 +176,30 @@ When a command is added or its level changes, set the level on its
 `python/command_rights.json` (`viewer`, `user` or `admin`), so the change shows
 up in review.
 
+### Shelly (native integration)
+
+`python/mini_shelly_server.py` is a stdlib-only mock Shelly device that replays a recorded device (a fixture in
+`python/shelly_fixtures/`): Gen2+ RPC over HTTP and WebSocket (with `NotifyStatus` push and optional SHA-256
+digest auth), and Gen1 REST (optional basic auth). It can run on its own
+(`python test/python/mini_shelly_server.py 2pm_gen3_cover --port 8099 -v`, `--list` shows the fixtures) and is
+used by two pytest files:
+
+```
+pytest test/python/test_shelly_fixtures.py       # fixtures and mock only, needs no Domoticz
+pytest test/python/test_shelly_integration.py    # scratch Domoticz + mocks, about one minute
+```
+
+The integration test starts its own Domoticz on port 8097 (`SHELLY_TEST_PORT`) with a throwaway database, adds
+Shelly hardware and the mock devices (all on 127.0.0.1, no real device is contacted) and checks the created
+devices, a command reaching the mock, a pushed and a polled status update, authentication (right and wrong
+password) and the stability of the devices across a restart. It finds `msbuild/x64/Debug/domoticz.exe` itself or
+uses `DOMOTICZ_EXE`, and skips when there is no executable. Tests marked `xfail` record known gaps of the driver.
+
+The Gen2+ fixtures `2pm_gen3_cover`, `pro_3em`, `duo_bulb_gen3`, `wall_display_xl`, `presence_gen4` and
+`st802_gen3` are copied unchanged from the Home Assistant Shelly test fixtures (Apache License 2.0). The Gen1
+fixtures (`shelly_em_gen1`, `shelly_ht_gen1`, `shelly_1pm_gen1`, `rgbw2`) are hand written from the Gen1 API
+documentation. A fixture is `{"config", "shelly", "status"}` (Gen2+) or `{"shelly", "settings", "status"}` (Gen1).
+
 ## Unit testing
 
 For _dzVents_ quite some unit-tests are available (_code-coverage above 80%_) testing many aspects of 'dzVents' ensuring that functionality does not change or break when changes are made.
