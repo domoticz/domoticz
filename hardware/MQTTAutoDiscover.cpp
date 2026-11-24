@@ -2868,9 +2868,18 @@ bool MQTTAutoDiscover::GuessSensorTypeValue(_tMQTTASensor* pSensor, uint8_t& dev
 		|| (szUnit == "\xB0" "c")
 		|| (szUnit == "c")
 		|| (szUnit == "?c")
-		|| (pSensor->object_id == "temperature")
-		|| (pSensor->value_template.find("temperature") != std::string::npos)
-		|| (pSensor->state_topic.find("temperature") != std::string::npos)
+		|| (
+			// The name/topic hints only apply when the entity is not clearly a percentage or a
+			// humidity value, so a humidity entity on a device whose name (and therefore its
+			// state topic) contains the word "temperature" is not classified as a temperature.
+			(szUnit != "%")
+			&& (pSensor->device_class.find("humidity") == std::string::npos)
+			&& (
+				(pSensor->object_id == "temperature")
+				|| (pSensor->value_template.find("temperature") != std::string::npos)
+				|| (pSensor->state_topic.find("temperature") != std::string::npos)
+				)
+			)
 		)
 	{
 		devType = pTypeTEMP;

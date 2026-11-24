@@ -84,6 +84,7 @@ Version 2026.xxxx
 - Fixed: MQTT Auto Discovery, motion, door/window, water leak and other on/off sensors from Zigbee2MQTT 2.14.3 and newer no longer changed state (battery and illuminance kept updating); their templates now check that the value is present, and the result True/False did not match the expected true/false (#7182)
 - Fixed: MQTT Auto Discovery, the humidity of a combined climate thermostat device stayed at 50%, and the heating and cooling setpoints of such a device could not be set
 - Fixed: MQTT Auto Discovery, value templates with a simple calculation, such as {{ value_json.humidity / 100 }} or {{ value_json.x | float * 1000 }}, are now applied; the message was dropped or the unscaled value was used (#7034)
+- Fixed: MQTT Auto Discovery, a humidity sensor was shown as a separate Temperature device in °C and the Temp + Humidity device no longer merged when the Zigbee2MQTT device name contained the word 'temperature'; a percentage or a humidity entity is no longer classified as a temperature based on its name or state topic (#7210)
 - Fixed: MQTT, org_hwid in the device info message repeated hwid instead of the original hardware id
 - Fixed: Nefit Easy, switching the hot water mode sent its second request to a malformed URL
 - Fixed: Netatmo, an error response from Netatmo (like 'Service temporarily unavailable') while refreshing the access token stopped Domoticz; the error is logged and the hardware retries later, and any other unexpected response is handled the same way (#7184)
