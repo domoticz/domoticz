@@ -143,6 +143,12 @@ private:
 	bool HandleCommandParam(const std::string &cparam, WebEmSession & session, const request& req, Json::Value &root);
 
 	bool IsIdxForUser(const WebEmSession *pSession, int Idx);
+	// Device share check for handlers that take a device idx: admins pass, every other user
+	// needs the device to be visible to them (Setup > Users > Set Devices). Viewers are
+	// limited to their shared devices instead of being refused. The string form fails
+	// closed for anything but digits. On failure the reply status is set to forbidden.
+	bool CheckIdxAccess(WebEmSession &session, uint64_t Idx);
+	bool CheckIdxAccess(WebEmSession &session, const std::string &Idx);
 
 	//OAuth2/OIDC support functions
 	std::string GenerateOAuth2RefreshToken(const std::string &username, const int refreshexptime);

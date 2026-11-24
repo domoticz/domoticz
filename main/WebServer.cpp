@@ -878,6 +878,28 @@ namespace http
 			return IsDeviceVisibleToUser(pSession->username, pSession->rights, static_cast<uint64_t>(Idx));
 		}
 
+		bool CWebServer::CheckIdxAccess(WebEmSession& session, const uint64_t Idx)
+		{
+			if (IsDeviceVisibleToUser(session.username, session.rights, Idx))
+				return true;
+			session.reply_status = reply::forbidden;
+			return false;
+		}
+
+		bool CWebServer::CheckIdxAccess(WebEmSession& session, const std::string& Idx)
+		{
+			if (session.rights == URIGHTS_ADMIN)
+				return true;
+			// The handler parses the same string afterwards, so accept digits only: a value
+			// that parses differently here than there must not slip past the share check.
+			if (Idx.empty() || (Idx.size() > 18) || (Idx.find_first_not_of("0123456789") != std::string::npos))
+			{
+				session.reply_status = reply::forbidden;
+				return false;
+			}
+			return CheckIdxAccess(session, static_cast<uint64_t>(std::strtoull(Idx.c_str(), nullptr, 10)));
+		}
+
 		// Resolves the account whose device shares apply to a session user. Reads the database instead of
 		// m_users: that cache belongs to one web server, is only reloaded by the server that handled a user
 		// or share change, and is not locked against callers on other threads.

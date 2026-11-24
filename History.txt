@@ -103,6 +103,7 @@ Version 2026.xxxx
 - Fixed: Tado, memory was leaked on every API request
 - Fixed: TE923, the wind sensor now reports the battery state of the sensor instead of always OK
 - Fixed: Themes, getconfig now returns the active theme name as WebTheme; getsettings is admin only, so a theme that read the theme name from it failed to start for users without admin rights
+- Fixed: Users, a User or Viewer limited to certain devices (Set Devices) could still read the history, costs and logs of other devices, and a User could change their setpoint, thermostat state, color and level; these commands now only work for the devices shared with the user
 - Fixed: Visual Crossing, values reported as N/A are no longer stored as 0, and snow depth is no longer added to the rain rate (#7065)
 - Fixed: Voltcraft CO-20, a failed USB open is now detected
 - Fixed: Weather Underground, the forecast link was two URLs glued together and exposed the API key; it is now a single wunderground.com link

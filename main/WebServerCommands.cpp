@@ -121,6 +121,31 @@ constexpr inline std::array<std::string_view,24> sSwitcherCommands = {
 	"whitelight"
 };
 
+// Commands that take the idx of a device in the "idx" parameter. switchlight is not listed:
+// it makes the share check itself after it has looked the device up.
+constexpr inline std::array<std::string_view,20> sDeviceIdxCommands = {
+	"getsubdevices",
+	"switchmodal",
+	"setcolbrightnessvalue",
+	"setkelvinlevel",
+	"brightnessup",
+	"brightnessdown",
+	"discomodenum",
+	"discomode",
+	"discoup",
+	"discodown",
+	"speedup",
+	"speeduplong",
+	"speeddown",
+	"speedmin",
+	"speedmax",
+	"warmer",
+	"cooler",
+	"fulllight",
+	"nightlight",
+	"whitelight"
+};
+
 constexpr inline uint64_t djb2hash(char const * str, int h = 0)
 {
 	return (!str[h] ? 5381 : (djb2hash(str, h+1)*33) ^ str[h] );
@@ -186,6 +211,15 @@ namespace http
 
 			if (!bFoundAndAllowed)
 				return false;
+
+			// Commands that act on, or list the children of, a device idx supplied by the caller
+			// must respect the devices shared with the user (Setup > Users > Set Devices)
+			if (std::find(sDeviceIdxCommands.begin(), sDeviceIdxCommands.end(), cparam) != sDeviceIdxCommands.end())
+			{
+				const std::string didx = request::findValue(&req, "idx");
+				if (!didx.empty() && !CheckIdxAccess(session, didx))
+					return false;
+			}
 
 			_log.Debug(DEBUG_WEBSERVER, "Valid API WebServerCommand received! (%s) for user (%s) with rights (%d)", cparam.c_str(), Username.c_str(), urights);
 
@@ -3483,6 +3517,10 @@ namespace http
 					_log.Debug(DEBUG_WEBSERVER, "CWebServer::HandleCommand() : switchlight idx:%s switchcmd:%s level:%s", idx.c_str(), switchcmd.c_str(), level.c_str());
 					std::string passcode = request::findValue(&req, "passcode");
 					if ((idx.empty()) || (switchcmd.empty()) || ((switchcmd == "Set Level") && (level.empty())))
+						return false;
+					// The protection lookup below, the share check and the switch itself must all
+					// resolve the same device, which a value like "1e1" would not guarantee
+					if (idx.find_first_not_of("0123456789") != std::string::npos)
 						return false;
 
 					result = m_sql.safe_query("SELECT [Protected],[Name] FROM DeviceStatus WHERE (ID = '%q')", idx.c_str());

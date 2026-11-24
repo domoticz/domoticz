@@ -42,6 +42,11 @@ namespace http
 				return;
 			}
 
+			// Check the raw idx string: Cmd_GetCosts and the graph queries read it again, and
+			// a value that parses differently there must not pass the share check.
+			if (!CheckIdxAccess(session, request::findValue(&req, "idx")))
+				return;
+
 			GraphContext ctx;
 			std::string reason;
 			if (!BuildGraphContext(req, m_sql, ctx, &reason))

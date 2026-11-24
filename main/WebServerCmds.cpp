@@ -3410,7 +3410,10 @@ namespace http
 
 			std::string idx = request::findValue(&req, "idx");
 
-			if (!IsIdxForUser(&session, atoi(idx.c_str())))
+			// With an idx the device is looked up from the raw string below, so check that exact
+			// string (digits only). Without one (hid/did/dunit form) the rights check applies.
+			const bool bAllowed = idx.empty() ? IsIdxForUser(&session, 0) : CheckIdxAccess(session, idx);
+			if (!bAllowed)
 			{
 				_log.Log(LOG_ERROR, "User: %s tried to update an Unauthorized device!", session.username.c_str());
 				session.reply_status = reply::forbidden;
@@ -3559,6 +3562,8 @@ namespace http
 				}
 			}
 			if (urights < 1)
+				return;
+			if (!CheckIdxAccess(session, idx))
 				return;
 
 			root["status"] = "OK";
@@ -3716,6 +3721,8 @@ namespace http
 
 			std::string idx = request::findValue(&req, "idx");
 			if (idx.empty())
+				return;
+			if (!CheckIdxAccess(session, idx))
 				return;
 
 			char szTmp[100];
@@ -5326,6 +5333,8 @@ namespace http
 			std::string idx = request::findValue(&req, "idx");
 			std::string setpoint = request::findValue(&req, "setpoint");
 			if ((idx.empty()) || (setpoint.empty()))
+				return;
+			if (!CheckIdxAccess(session, idx))
 				return;
 			root["status"] = "OK";
 			root["title"] = "SetSetpoint";
@@ -7345,6 +7354,8 @@ namespace http
 			{
 				idx = std::stoull(request::findValue(&req, "idx"));
 			}
+			if (!CheckIdxAccess(session, idx))
+				return;
 			std::vector<std::vector<std::string>> result;
 			// First get Device Type/SubType
 			result = m_sql.safe_query("SELECT Type, SubType, SwitchType, Options FROM DeviceStatus WHERE (ID == %" PRIu64 ")", idx);
@@ -7462,6 +7473,8 @@ namespace http
 			{
 				idx = std::stoull(request::findValue(&req, "idx"));
 			}
+			if (!CheckIdxAccess(session, idx))
+				return;
 			std::vector<std::vector<std::string>> result;
 
 			root["status"] = "OK";
@@ -7626,6 +7639,8 @@ namespace http
 			if (request::findValue(&req, "idx").empty())
 				return;
 			uint64_t idx = std::stoull(request::findValue(&req, "idx"));
+			if (!CheckIdxAccess(session, idx))
+				return;
 
 			Json::Value result;
 			CKWHStats::GetJSONStats(idx, result);
