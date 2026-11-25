@@ -885,7 +885,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 					localtime_r(&now, &etime);
 			}
 		}
-		if (mode == "home" || mode == "manual")
+		if ((mode == "home") || (mode == "manual"))
 		{
 			Json::Value json_data;
 			//json_data {"body":{"home":{"id":
@@ -903,7 +903,7 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 			Get_Response_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
 			return bRet;
 		}
-		else if (mode == "frostguard")
+		else if ((mode == "off") || (mode == "frostguard"))
 		{
 			// FrostGuard is set on the home
 			// https://api.netatmo.com/api/setthermmode?home_id=xxxxxxxxxxxxx&mode=hg
@@ -945,22 +945,6 @@ bool CNetatmo::WriteToHardware(const char* pdata, const unsigned char /*length*/
 					return false;
 				}
 			}
-		}
-		else if (mode == "off")
-		{
-			//
-			Json::Value json_data;
-			//json_data {"body":{"home":{"id":
-			json_data["home"]["id"] = Home_id;
-			json_data["home"]["rooms"][0]["id"] = roomNetatmoID;
-			//json_data["home"]["rooms"][0]["cooling_setpoint_end_time"] = end_time;  //Optional
-			// off home manual frostguard away
-			json_data["home"]["rooms"][0]["cooling_setpoint_mode"] = "off";
-			home_data = "&";
-			//
-			_data = json_data.toStyledString();
-			Get_Response_API(NETYPE_SETSTATE, sResult, home_data, bRet, root, _data);
-			return bRet;
 		}
 		else
 			return SetSchedule(uid, selectorLevel);
@@ -1152,7 +1136,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 		}
 		bHaveDevice = true;
 		// Energy        {NAPlug, OTH, BNS}
-		// Home+control  {NLG,    OTH, BNS, NBG,              BNMH     , NTE, NVE}
+		// Home+control  {NLG,    OTH, BNS, NBG,              BNMH     , NTE, NVE, OTM}
 		// Home+security {NACamera, NOC, NDB, NSD, NCO, BNCX, BNMH, NPC}
 
 		// NTE = Netatmo Original Thermostat
@@ -1189,7 +1173,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 
 	if(!m_PowerDeviceID[uid].empty())
 	{
-		// Home+control  {NLG,    OTH, BNS, NBG,              BNMH, NLF, NLP, NLPO, NLM, NTE, NVE}
+		// Home+control  {NLG,    OTH, BNS, NBG,              BNMH, NLF, NLP, NLPO, NLM, NTE, NVE, OTM}
 		// Home+security {NACamera, NOC, NDB, NSD, NCO, BNCX, BNMH, NPC}
 		//Debug(DEBUG_HARDWARE, "Set Program State MAC = %s - %d", module_id.c_str(), newState);
 		std::string _data;
@@ -1624,7 +1608,7 @@ void CNetatmo::SetSetpoint(unsigned long ID, const float temp)
 			Log(LOG_ERROR, "NetatmoThermostat : No thermostat found in online devices!");
 			return;
 		}
-		if ((Type == "NTE") || (Type == "NVE"))
+		if ((Type == "NTE") || (Type == "NVE") || (Type == "OTM"))
 		{
 			//Thermolink Thermostat - NTDC
 			Json::Value json_data;
