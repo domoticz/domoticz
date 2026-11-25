@@ -2173,7 +2173,7 @@ void CNetatmo::GetHomesDataDetails()
 					std::string schedule_mode = home["therm_mode"].asString();
 					//Debug(DEBUG_HARDWARE, "Home therm_mode %s", schedule_mode.c_str());
 					// Manual / Max / Home
-					m_Room_mode[roomNetatmoID] = schedule_mode;
+					m_Room_mode[homeID] = schedule_mode;
 				}
 				if (!home["therm_setpoint_default_duration"].empty())
 				{
@@ -2262,7 +2262,12 @@ void CNetatmo::GetHomesDataDetails()
 						{
 							//m_selectedScheduleID = index;
 							m_selected_Schedule[homeID] = index;
-							m_selected_Schedule[std::to_string(index_homeid)] = index;
+							if (m_Room_mode[homeID] == "hg")
+								m_selected_Schedule[std::to_string(index_homeid)] = 0;
+							else if (m_Room_mode[homeID] == "away")
+								m_selected_Schedule[std::to_string(index_homeid)] = (index + 10);
+							else
+								m_selected_Schedule[std::to_string(index_homeid)] = index;
 						}
 					}
 					m_ScheduleID_s[homeID] = Schedule_ID;
@@ -3869,8 +3874,8 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 						std::string index_homeid = m_ThermostatName[home_id];
 						std::string home_mode = m_Room_mode[home_id];
 
-						//Room Selector Switch
-						//Debug(DEBUG_HARDWARE, "Schedule Selector Switch %s Room %s device %s | %s %s Bridge %s", room_mode.c_str(), roomName.c_str(), roomNetatmoID.c_str(), module_id.c_str(), module_name.c_str(), bridge.c_str());
+						//integrated Selector Switch
+						//Debug(DEBUG_HARDWARE, "integrated Switch %s Room %s device %s | %s %s Bridge %s Home %s index %s mode %s", room_mode.c_str(), roomName.c_str(), roomNetatmoID.c_str(), module_id.c_str(), module_name.c_str(), bridge.c_str(), home_id.c_str(), index_homeid.c_str(), home_mode.c_str());
 						
 						//int Room_int = stoi(roomNetatmoID); // std::__throw_out_of_range
 						m_DeviceModuleID[Room_int] = roomNetatmoID;            // mac-adres
@@ -3905,7 +3910,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 							SendThermostatSensor(crcId, (uint8_t)((crcId & 0x00FF0000) >> 16), (crcId & 0XFF00) >> 8, crcId & 0XFF, Unit, batteryLevel, SP_temp, Temp, moduleName);
 						}
 						//Thermostat mode switch (actively changing thermostat schedule)
-						std::string allSchName = "Off";
+						std::string allSchName = "Off - Frost Guard";
 						std::string allSchAction = "";
 						//Store Home_ID from crcID
 						std::stringstream uid;
