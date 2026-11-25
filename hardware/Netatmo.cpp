@@ -1742,8 +1742,10 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 	{
 		//Debug(DEBUG_HARDWARE, "Data itt %d %s", itt->first, itt->second.c_str());
 		if (itt->first == selected)
+		{
 			schedule_Id = itt->second;
 			schedule_Name = m_Schedule_Names[schedule_Id];
+		}
 	}
 
 	std::string module_type = m_Device_types[module_id];
@@ -1818,7 +1820,7 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 		Log(LOG_ERROR, "NetatmoThermostat: Error setting setpoint state!");
 		return false;
 	}
-	return true;
+	return bRet;
 }
 
 
@@ -2158,9 +2160,9 @@ void CNetatmo::GetHomesDataDetails()
 							m_ModuleIDs[moduleID] = crcId;
 
 							//Store thermostate name for later naming switch / sensor
-							if (type == "NAPlug")
+							if ((type == "NAPlug") || (type == "OTH"))
 								m_ModuleNames[homeID] = macID;
-							if ((module["type"] == "NATherm1") || (module["type"] == "NRV") || (module["type"] == "NTE") || (module["type"] == "NVE"))
+							if ((module["type"] == "NATherm1") || (module["type"] == "NRV") || (module["type"] == "NTE") || (module["type"] == "NVE") || (module["type"] == "OTM"))
 								m_ThermostatName[macID] = module["name"].asString();
 							if ((module["type"] == "NTDC"))
 							{
@@ -3864,7 +3866,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 					}
 					Debug(DEBUG_HARDWARE, "Type = %s", type.c_str());
 
-					if ((type == "NTE") || (type == "NVE"))
+					if ((type == "NTE") || (type == "NVE") || (type == "OTM"))
 					{
 						int ChildID = 17;
 						const uint8_t Unit = 7;
