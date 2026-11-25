@@ -1107,7 +1107,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	d << newState;
 	d >> _state;
 	bool bRet = false;              //Parsing status
-	bool bHaveDevice;
+	bool bHaveDevice = false;
 	std::string module_id = m_DeviceModuleID[uid];            // mac-adres
 	std::string type_module = m_Device_types[module_id];
 	std::string module_MAC  = m_thermostatModuleID[uid];
@@ -1495,7 +1495,7 @@ bool CNetatmo::SetDimmerState(const int uid, const int newState)
 	d << newState;
 	d >> _state;
 	bool bRet = false;              //Parsing status
-	bool bHaveDevice;
+	bool bHaveDevice = false;
 	std::string module_id = m_DeviceModuleID[uid];            // mac-adres
 	std::string type_module = m_Device_types[module_id];
 	std::string module_MAC  = m_thermostatModuleID[uid];
@@ -3126,7 +3126,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 	int setpoint_mode_i;
 	int iDevIndex = 0;
 	bool setModeSwitch = false;
-	bool roomReachable;
+	bool roomReachable = false;
 	std::vector<m_tNetatmoDevice> m_netatmo_devices;
 	m_tNetatmoDevice nDevice;
 	m_bPollGetEvents = false;
@@ -3272,7 +3272,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				float wifi_status = 0;
 				int moduleIndex = iModuleIndex;
 				int crcId = 0;
-				bool bIsActive;
+				bool bIsActive = false;
 
 				bool bHaveTemp = false;
 				bool bHaveHum = false;
@@ -3346,7 +3346,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				ID4 = std::to_string(crcId & 0xFFFF);	// ID.substr(ID.length()-4, 4);
 				std::string sValue;
 				sValue = module_id;
-				bool reachable;
+				bool reachable = false;
 				bool connected = true;
 				std::time_t tNetatmoLastUpdate = 0;
 				std::time_t tNow = time(nullptr);
@@ -4525,8 +4525,8 @@ bool CNetatmo::ParseScenarios(const std::string& sResult, Json::Value& scenarios
 	std::string id_mod;
 	std::string scenario_index;
 	std::string scenario_SchName;
-	bool status_mod;
-	bool target_position;
+	bool status_mod = false;
+	bool target_position = false;
 	std::map<int, std::string> _data;
 	int index = 0;
 	if (!scenarios.isObject())
@@ -4581,9 +4581,9 @@ bool CNetatmo::ParseScenarios(const std::string& sResult, Json::Value& scenarios
 			{
 				std::string scenario_id;
 				std::string scenario_name;
-				bool scenario_custom;
-				bool scenario_edit;
-				bool scenario_del;
+				bool scenario_custom = false;
+				bool scenario_edit = false;
+				bool scenario_del = false;
 
 				if (scenarioss["category"].empty())
 				{
