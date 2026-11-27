@@ -290,6 +290,35 @@ void stdlower(std::wstring& inoutstring)
 	std::transform(inoutstring.begin(), inoutstring.end(), inoutstring.begin(), ::towlower);
 }
 
+#if !defined WIN32
+// A port can have a name of our own, which stays the same when the ports are numbered
+// differently: a link to it, such as a udev or hotplug rule makes. List those too.
+static void AddSerialPortLinks(const std::string& szDir, std::vector<std::string>& ports)
+{
+	DIR* d = opendir(szDir.c_str());
+	if (d == nullptr)
+		return;
+	std::vector<std::string> links;
+	struct dirent* de = nullptr;
+	while ((de = readdir(d)))
+	{
+		if (de->d_type != DT_LNK)
+			continue;
+		std::string szLink = szDir + "/" + de->d_name;
+		if (std::find(ports.begin(), ports.end(), szLink) != ports.end())
+			continue;
+		char szTarget[PATH_MAX];
+		if (realpath(szLink.c_str(), szTarget) == nullptr)
+			continue;
+		if (std::find(ports.begin(), ports.end(), std::string(szTarget)) != ports.end())
+			links.push_back(szLink);
+	}
+	closedir(d);
+	std::sort(links.begin(), links.end());
+	ports.insert(ports.end(), links.begin(), links.end());
+}
+#endif
+
 std::vector<std::string> GetSerialPorts(bool& bUseDirectPath)
 {
 	bUseDirectPath = false;
@@ -527,6 +556,7 @@ std::vector<std::string> GetSerialPorts(bool& bUseDirectPath)
 		}
 		closedir(d);
 	}
+	AddSerialPortLinks("/dev", ret);
 	//also scan in /dev/usb
 	d = opendir("/dev/usb");
 	if (d != nullptr)
