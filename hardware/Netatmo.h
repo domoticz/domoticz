@@ -48,7 +48,7 @@ class CNetatmo : public CDomoticzHardwareBase
         bool WriteToHardware(const char *, unsigned char) override;
         void SetSetpoint(unsigned long ID, const float temp);
         bool SetProgramState(const int uid, const int newState);
-	bool SetDimmerState(const int uid, const int newState);
+        bool SetDimmerState(const int uid, const int newState);
         void Get_Response_API(const m_eNetatmoType& NType, std::string& sResult, std::string& home_id, bool& bRet, Json::Value& root, std::string extra_data);
 
       private:
@@ -118,7 +118,7 @@ class CNetatmo : public CDomoticzHardwareBase
 	bool ParseHomeStatus(const std::string& sResult, Json::Value& root, std::string& home_id);
 	bool ParseEvents(const std::string& sResult, Json::Value& root );
 
-	bool SetAway(int idx, bool bIsAway);
+	bool SetHomeMode(const int id, std::string& mode);
 	bool SetSchedule(int scheduleId, int state);
 
 	bool Login();
