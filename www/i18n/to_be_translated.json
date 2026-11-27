@@ -1,4 +1,13 @@
 {
+	"The device was removed while it was being added": "The device was removed while it was being added",
+	"The device could not be added, check the address and the log": "The device could not be added, check the address and the log",
+	"The stored device list could not be read, see the log": "The stored device list could not be read, see the log",
+	"Invalid device address or port": "Invalid device address or port",
+	"Accepting new hardware devices is disabled. Enable it in Setup > Settings > Hardware/Devices (or use Allow for 5 Minutes) and add the device again.": "Accepting new hardware devices is disabled. Enable it in Setup > Settings > Hardware/Devices (or use Allow for 5 Minutes) and add the device again.",
+	"The address did not answer as a Shelly device, check the address, the port and the log": "The address did not answer as a Shelly device, check the address, the port and the log",
+	"The hardware is not running": "The hardware is not running",
+	"The connection to the device could not be started, see the log": "The connection to the device could not be started, see the log",
+	"The device id clashes with an already added device, see the log": "The device id clashes with an already added device, see the log",
 	"Its Domoticz devices will be deleted too.": "Its Domoticz devices will be deleted too.",
 	"Nothing changed": "Nothing changed",
 	"Problem updating node!": "Problem updating node!",

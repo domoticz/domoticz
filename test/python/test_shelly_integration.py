@@ -612,3 +612,32 @@ def test_removing_a_node_deletes_its_temperature_sensor(env):
     assert wait_for(lambda: not env.domo.node_devices(hw, "TGHT"), timeout=20), env.domo.node_devices(hw, "TGHT")
     left = {d["idx"] for d in env.domo.devices(hw)}
     assert not (set(temperature_ids) & left), "the temperature device of TGHT is still there"
+
+
+# Keep this test last: it leaves "Accept new Hardware Devices" disabled in the scratch instance.
+def test_adding_a_new_node_explains_that_new_hardware_is_disabled(env):
+    hw = env.hardware["open"]
+    env.domo.stop()
+    con = sqlite3.connect(env.domo.db)
+    try:
+        assert con.execute("UPDATE Preferences SET nValue=0 WHERE Key='AcceptNewHardware'").rowcount == 1
+        con.commit()
+    finally:
+        con.close()
+    env.domo.start()
+    env.domo.login()
+    mock = MiniShellyServer("shelly_1pm_gen1", mac="0A1B2C0A0F0F")
+    mock.start()
+    try:
+        res = {}
+
+        def refused():
+            nonlocal res
+            res = env.domo.cmd("type=command&param=shellyaddnode&idx=%d&ip=127.0.0.1&port=%d&name=TNEW" % (hw, mock.port))
+            return res.get("message", "").startswith("Accepting new hardware devices is disabled")
+        assert wait_for(refused, timeout=30), res
+        assert res.get("status") == "ERR"
+        nodes = env.domo.cmd("type=command&param=shellygetnodes&idx=%d" % hw).get("result") or []
+        assert "TNEW" not in [n["name"] for n in nodes]
+    finally:
+        mock.stop()

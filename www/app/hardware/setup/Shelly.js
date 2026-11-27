@@ -150,6 +150,15 @@ define(['app'], function (app) {
             ShellySendAddNode(ip, port, name, false);
         };
 
+        // The reason is shown in a dialog: it can be long and usually needs an action by the user
+        function ShellyShowAddError(message) {
+            var text = $('<div>').text($.t('Problem Adding Node!')).html();
+            if (message) {
+                text += '<br><br>' + $('<div>').text($.t(message)).html();
+            }
+            bootbox.alert(text);
+        }
+
         // refreshOnError: the list is reloaded even when the request fails (a rename was already applied)
         function ShellySendAddNode(ip, port, name, refreshOnError) {
             var url = 'json.htm?type=command&param=shellyaddnode&idx=' + $.devIdx + '&ip=' + encodeURIComponent(ip);
@@ -166,8 +175,7 @@ define(['app'], function (app) {
                 dataType: 'json',
                 success: function (data) {
                     if (data.status === 'ERR') {
-                        var msg = $('<span>').text(data.message || '').html();
-                        ShowNotify($.t('Problem Adding Node!') + (msg ? ' ' + msg : ''), 2500, true);
+                        ShellyShowAddError(data.message);
                         if (refreshOnError) {
                             ShellyRefreshNodeTable();
                         }
@@ -505,8 +513,7 @@ define(['app'], function (app) {
                 dataType: 'json',
                 success: function (data) {
                     if (data.status === 'ERR') {
-                        var msg = $('<span>').text(data.message || '').html();
-                        ShowNotify($.t('Problem Adding Node!') + (msg ? ' ' + msg : ''), 2500, true);
+                        ShellyShowAddError(data.message);
                     } else {
                         ShellyRefreshNodeTable();
                         ShellyPollScanStatus();

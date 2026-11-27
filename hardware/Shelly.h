@@ -78,7 +78,7 @@ class CShelly : public CDomoticzHardwareBase, public IShellyEventSink
 	// anything that has no client for its generation, and anything whose connection cannot be started.
 	// Network I/O never happens under the driver lock. The address is intentionally not restricted to private
 	// ranges (admin only, host names allowed, no redirects followed, fixed request path), unlike the scan.
-	bool AddNode(const std::string& ip, int port, const std::string& name);
+	bool AddNode(const std::string& ip, int port, const std::string& name, std::string* error = nullptr);
 	bool RemoveNode(const std::string& nodeId);
 	bool RenameNode(const std::string& nodeId, const std::string& newName);
 	void RemoveAllNodes();

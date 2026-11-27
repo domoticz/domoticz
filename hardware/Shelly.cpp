@@ -512,11 +512,18 @@ void CShelly::SaveNodes()
 
 // The address is deliberately not limited to private ranges (unlike the scan): the command is admin only, host
 // names are allowed, the probe follows no redirects and requests one fixed path.
-bool CShelly::AddNode(const std::string& ip, const int port, const std::string& name)
+bool CShelly::AddNode(const std::string& ip, const int port, const std::string& name, std::string* error)
 {
+	// The reason of a failure, for the caller to show to the user
+	const auto setError = [error](const char* reason) {
+		if (error != nullptr)
+			*error = reason;
+	};
+
 	if (!ShellyIsValidHost(ip) || !ShellyIsValidPort(port))
 	{
 		Log(LOG_ERROR, "Invalid device address or port");
+		setError("Invalid device address or port");
 		return false;
 	}
 
@@ -525,11 +532,13 @@ bool CShelly::AddNode(const std::string& ip, const int port, const std::string& 
 		if (!m_bRunning)
 		{
 			Log(LOG_ERROR, "The hardware is not running, unable to add %s", ip.c_str());
+			setError("The hardware is not running");
 			return false;
 		}
 		if (m_bLoadFailed)
 		{
 			Log(LOG_ERROR, "The stored device list could not be read, not adding %s. Delete and re-add this hardware to clear the list", ip.c_str());
+			setError("The stored device list could not be read, see the log");
 			return false;
 		}
 	}
@@ -541,6 +550,7 @@ bool CShelly::AddNode(const std::string& ip, const int port, const std::string& 
 	if (!probe || !identity.IsValid())
 	{
 		Log(LOG_ERROR, "%s did not answer as a Shelly device (%s)", ip.c_str(), probe.error.c_str());
+		setError("The address did not answer as a Shelly device, check the address, the port and the log");
 		return false;
 	}
 
@@ -551,6 +561,7 @@ bool CShelly::AddNode(const std::string& ip, const int port, const std::string& 
 		if (!m_bRunning)
 		{
 			Log(LOG_ERROR, "The hardware is not running, unable to add %s", ip.c_str());
+			setError("The hardware is not running");
 			return false;
 		}
 
@@ -576,6 +587,7 @@ bool CShelly::AddNode(const std::string& ip, const int port, const std::string& 
 		else if (!m_sql.m_bAcceptNewHardware)
 		{
 			Log(LOG_NORM, "Accept new hardware disabled. Ignoring new device %s", ip.c_str());
+			setError("Accepting new hardware devices is disabled. Enable it in Setup > Settings > Hardware/Devices (or use Allow for 5 Minutes) and add the device again.");
 			return false;
 		}
 	}
@@ -586,6 +598,7 @@ bool CShelly::AddNode(const std::string& ip, const int port, const std::string& 
 	if (!connection)
 	{
 		Log(LOG_ERROR, "Unable to add %s: %s", ip.c_str(), failure.c_str());
+		setError("The connection to the device could not be started, see the log");
 		return false;
 	}
 
@@ -635,9 +648,17 @@ bool CShelly::AddNode(const std::string& ip, const int port, const std::string& 
 	{
 		connection->Stop();
 		if (removedMeanwhile)
+		{
+			setError("The device was removed while it was being added");
 			Log(LOG_NORM, "%s was removed while it was being added, not adding it again", ip.c_str());
+		}
 		else if (!clashingName.empty())
+		{
+			setError("The device id clashes with an already added device, see the log");
 			Log(LOG_ERROR, "Unable to add %s: its device id clashes with the already added device '%s'", ip.c_str(), clashingName.c_str());
+		}
+		else
+			setError("The hardware is not running");
 		return false;
 	}
 	Log(LOG_STATUS, "Added %s (%s, model %s, generation %d)", node.name.c_str(), node.ip.c_str(), node.model.c_str(), node.gen);
@@ -2337,9 +2358,10 @@ namespace http {
 				return;
 			}
 
-			if (!hardware->AddNode(ip, port, name))
+			std::string reason;
+			if (!hardware->AddNode(ip, port, name, &reason))
 			{
-				SetShellyError(root, title, "The device could not be added, check the address and the log");
+				SetShellyError(root, title, reason.empty() ? "The device could not be added, check the address and the log" : reason);
 				return;
 			}
 			root["status"] = "OK";

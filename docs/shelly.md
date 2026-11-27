@@ -148,6 +148,16 @@ Gen1 devices are polled over REST. For lower latency you can enable unicast CoIo
 
 When Address is set, Domoticz configures each Gen1 device through its settings so that it sends CoIoT to `<Address>:<Mode3 or Port>`. The address must be a host name or IPv4 address (an IPv6 literal is refused). All Gen1 nodes of the process share one listen port.
 
+## Several clients on one Shelly
+
+A Shelly can be used by more than one client at the same time, for example two Domoticz instances or Domoticz and another home automation system.
+
+* **Polling and commands** (HTTP, REST on Gen1 and RPC on Gen2+) work for any number of clients. A command from one client is simply followed by the next command of another one.
+* **Gen2+ WebSocket push**: every client opens its own WebSocket to the device. A Shelly may limit the number of WebSocket clients. A client that is refused still works through polling, but its updates arrive later.
+* **Gen1 CoIoT push**: a Gen1 device has a single CoIoT target address. When the hardware has an address configured, Domoticz writes it into the settings of each Gen1 device, so a second client that does the same replaces the first one and only the last client receives push. Enable the CoIoT address on one instance per device and leave it empty on the others, which then poll.
+* Every client needs the password of the device when it is protected (see [Authentication](#authentication)).
+* Do not add the same Shelly to two hardware entries of one Domoticz, and do not use the native hardware and MQTT Auto Discovery for the same device, see [Relationship to MQTT Auto Discovery](#relationship-to-mqtt-auto-discovery). Both create duplicate devices.
+
 ## Docker
 
 * mDNS does not cross the default Docker bridge network, so there is no automatic discovery. Use the subnet scan with your **LAN** CIDR (for example `192.168.1.0/24`), not the container's own subnet. The scan is outbound unicast and works from a bridged container.
