@@ -391,8 +391,15 @@
 								{{item.Status}}
 							</span>
 
+							<!-- Evohome controller: its mode, which is the button for the menu to change it -->
+							<span ng-if="item.Type == 'Heating' && item.SubType == 'Evohome'">
+								<button class="btn btn-mini btn-info"
+										type="button"
+										ng-click="showEvohomeModes(item)">{{evohomeModeText(item.Status)}}</button>
+							</span>
+
 							<!-- Default switch (everything not matched above) -->
-							<span ng-if="item.SwitchType != 'Doorbell' && item.SwitchType != 'Push On Button' && item.SwitchType != 'Push Off Button' && item.SwitchType != 'Door Contact' && item.SwitchType != 'Door Lock' && item.SwitchType != 'Door Lock Inverted' && item.SwitchType != 'X10 Siren' && item.SwitchType != 'Contact' && item.SwitchType != 'Motion Sensor' && item.SwitchType != 'Smoke Detector' && item.SwitchType != 'Dusk Sensor' && (item.SwitchType || '').indexOf('Blind') < 0 && (item.SwitchType || '').indexOf('blind') < 0 && item.SwitchType != 'Selector' && item.SwitchType != 'Dimmer' && item.SwitchType != 'TPI' && (item.SubType || '').indexOf('Itho') < 0 && (item.SubType || '').indexOf('Lucci Air DC') < 0 && (item.SubType || '').indexOf('Lucci') < 0 && (item.SubType || '').indexOf('Westinghouse') < 0 && (item.SubType || '').indexOf('Falmec') < 0 && item.Type != 'Security'">
+							<span ng-if="item.SwitchType != 'Doorbell' && item.SwitchType != 'Push On Button' && item.SwitchType != 'Push Off Button' && item.SwitchType != 'Door Contact' && item.SwitchType != 'Door Lock' && item.SwitchType != 'Door Lock Inverted' && item.SwitchType != 'X10 Siren' && item.SwitchType != 'Contact' && item.SwitchType != 'Motion Sensor' && item.SwitchType != 'Smoke Detector' && item.SwitchType != 'Dusk Sensor' && (item.SwitchType || '').indexOf('Blind') < 0 && (item.SwitchType || '').indexOf('blind') < 0 && item.SwitchType != 'Selector' && item.SwitchType != 'Dimmer' && item.SwitchType != 'TPI' && (item.SubType || '').indexOf('Itho') < 0 && (item.SubType || '').indexOf('Lucci Air DC') < 0 && (item.SubType || '').indexOf('Lucci') < 0 && (item.SubType || '').indexOf('Westinghouse') < 0 && (item.SubType || '').indexOf('Falmec') < 0 && item.Type != 'Security' && item.SubType != 'Evohome'">
 								<button class="btn btn-mini"
 										ng-class="{'btn-info': item.Status == 'On' || item.Status == 'Chime' || item.Status == 'Group On' || (item.Status || '').indexOf('Down') != -1 || (item.Status || '').indexOf('Up') != -1 || (item.Status || '').indexOf('Set ') === 0}"
 										type="button"
