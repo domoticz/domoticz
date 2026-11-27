@@ -147,8 +147,14 @@
                             {{ctrl.getStatusText()}}
                         </span>
 
+                        <!-- Evohome controller: its mode, which is the button for the menu to change it -->
+                        <span ng-if="ctrl.isEvohome()">
+                            <button class="btn btn-mini btn-info"
+                                    ng-click="ctrl.showEvohomeModal()">{{ctrl.getStatusText()}}</button>
+                        </span>
+
                         <!-- Standard On/Off -->
-                        <span ng-if="!ctrl.isDimmer() && !ctrl.isBlinds() && !ctrl.isSelector() && !ctrl.isSecurityType() && ctrl.device.SwitchType != 'Push On Button' && ctrl.device.SwitchType != 'Push Off Button' && ctrl.device.SwitchType != 'Door Contact' && ctrl.device.SwitchType != 'Door Lock' && ctrl.device.SwitchType != 'Motion Sensor' && ctrl.device.SwitchType != 'Smoke Detector' && ctrl.device.SwitchType != 'Doorbell'">
+                        <span ng-if="!ctrl.isEvohome() && !ctrl.isDimmer() && !ctrl.isBlinds() && !ctrl.isSelector() && !ctrl.isSecurityType() && ctrl.device.SwitchType != 'Push On Button' && ctrl.device.SwitchType != 'Push Off Button' && ctrl.device.SwitchType != 'Door Contact' && ctrl.device.SwitchType != 'Door Lock' && ctrl.device.SwitchType != 'Motion Sensor' && ctrl.device.SwitchType != 'Smoke Detector' && ctrl.device.SwitchType != 'Doorbell'">
                             {{ctrl.getStatusText()}}
                         </span>
                     </div>

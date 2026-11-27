@@ -665,6 +665,22 @@ define([
 				ShowSetpointPopup($event, idx, isProtected, currentvalue, ismobile, step, min, max);
 			};
 
+			// The Evohome controller in the mobile template: the name of its mode, and the menu to change it
+			$scope.evohomeModeText = function(status) {
+				return $.t(dashboardService.getEvohomeDisplayText(status));
+			};
+			$scope.showEvohomeModes = function(item) {
+				var modes = ['Auto', 'AutoWithEco', 'Away', 'DayOff', 'Custom', 'HeatingOff'];
+				var modalContent = '<ul class="ui-listview ui-listview-inset ui-corner-all ui-shadow">';
+				modalContent += '<li class="ui-li-divider ui-bar-inherit ui-first-child">' + $.t('Choose an action') + '</li>';
+				modes.forEach(function (mode) {
+					var name = dashboardService.getEvohomeDisplayText(mode);
+					modalContent += '<li><a href="#" class="ui-btn ui-btn-icon-right ui-icon-' + mode + '" onclick="SwitchModal(\'' + item.idx + '\',\'' + name + '\',\'' + mode + '\');return false;">' + $.t(name) + '</a></li>';
+				});
+				modalContent += '</ul>';
+				bootbox.alert(modalContent);
+			};
+
 			/**
 			 * Get selector levels for a device (used by mobile template).
 			 * Cached per device to avoid creating new objects on every digest cycle.
