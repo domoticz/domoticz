@@ -1099,7 +1099,7 @@ bool CNetatmo::SetProgramState(const int uid, const int newState)
 	std::string Device_bridge = m_DeviceBridge[module_id];
 	std::string roomNetatmoID = m_RoomIDs[module_id];
 	std::string Home_id = m_DeviceHomeID[roomNetatmoID];      // Home_ID
-	//Debug(DEBUG_HARDWARE, "SetProgramState - Device MAC %s - Type %s Bridge %s State: %d", module_id.c_str(), type_module.c_str(), Device_bridge.c_str(), newState);
+	Debug(DEBUG_HARDWARE, "SetProgramState - Device MAC %s - Type %s Bridge %s State: %d", module_id.c_str(), type_module.c_str(), Device_bridge.c_str(), newState);
 
 	//Log(LOG_STATUS, "SetProgramState - Device MAC %s - Type %s State: %d", module_id.c_str(), type_module.c_str(), newState);
 
@@ -1566,7 +1566,7 @@ void CNetatmo::SetSetpoint(unsigned long ID, const float temp)
 	//Debug(DEBUG_HARDWARE, "Netatmo Thermostat MAC; %s in Room ID = %s in Home: %s", module_id.c_str(), roomNetatmoID.c_str(), Home_id.c_str());
 	// mode of Room "manual" / "max" / "home"
 	std::string Mode = "manual";
-	//Debug(DEBUG_HARDWARE, "setsetpoint Id %s %s Room %s mode %s %s", id.c_str(), roomName.c_str(), Mode_room.c_str(), mode.c_str(), Mode.c_str());
+	Debug(DEBUG_HARDWARE, "setsetpoint Id %s %s Room %s mode %s %s", id.c_str(), roomName.c_str(), Mode_room.c_str(), mode.c_str(), Mode.c_str());
 	//Temp to set
 	float tempDest = temp;
 	unsigned char tSign = m_sql.m_tempsign[0];
@@ -1734,7 +1734,7 @@ bool CNetatmo::SetSchedule(int uId, int selected)
 
 	std::string module_type = m_Device_types[module_id];
 
-	//Debug(DEBUG_HARDWARE, "Module Type %s Schedule id = %s %d Name %s %s HomeId %s level = %d", module_type.c_str(), schedule_Id.c_str(), uId, schedule_Name.c_str(), module_id.c_str(), Home_id.c_str(), selected);
+	Debug(DEBUG_HARDWARE, "Module Type %s Schedule id = %s %d Name %s %s HomeId %s level = %d", module_type.c_str(), schedule_Id.c_str(), uId, schedule_Name.c_str(), module_id.c_str(), Home_id.c_str(), selected);
 	std::stringstream bstr;
 	std::string sResult;
 	Json::Value root;       // root JSON object
@@ -2035,7 +2035,7 @@ void CNetatmo::GetHomesDataDetails()
 				//Debug(DEBUG_HARDWARE, "Get Home ID %s", homeID.c_str());
 
 				//*****************************************************************************//
-				//SaveJson2Disk(home, std::string("./jsoncreated/HomesData_" + m_Name + "-" + homeID + ".txt"));
+				SaveJson2Disk(home, std::string("./jsoncreated/HomesData_" + m_Name + "-" + homeID + ".txt"));
 				//*****************************************************************************//
 
 				std::stringstream stream_homeid;
@@ -2665,7 +2665,7 @@ bool CNetatmo::ParseStationData(const std::string& sResult, const bool bIsThermo
 				name = "UNKNOWN NAME";
 
 			//*****************************************************************************//
-			//SaveJson2Disk(device, std::string("./jsoncreated/" + name + ".txt"));
+			SaveJson2Disk(device, std::string("./jsoncreated/" + name + ".txt"));
 			//*****************************************************************************//
 
 			//get Home ID from Weatherstation
@@ -3127,7 +3127,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 		Json::Value mRoot = root["body"]["home"]["rooms"];
 
 		//*****************************************************************************//
-		//SaveJson2Disk(root, std::string("./jsoncreated/HomeStatus_" + m_Name + "_:_" + home_id + ".txt")); //Save HOMESTATUS
+		SaveJson2Disk(root, std::string("./jsoncreated/HomeStatus_" + m_Name + "_:_" + home_id + ".txt")); //Save HOMESTATUS
 		//*****************************************************************************//
 
 		for (auto room : mRoot)
@@ -3316,7 +3316,7 @@ bool CNetatmo::ParseHomeStatus(const std::string& sResult, Json::Value& root, st
 				std::string type = module["type"].asString();
 				m_Device_types[module_id] = type;
 				//*****************************************************************************//
-				//SaveJson2Disk(module, std::string("./jsoncreated/") + moduleName.c_str() + ".txt");
+				SaveJson2Disk(module, std::string("./jsoncreated/") + moduleName.c_str() + ".txt");
 				//*****************************************************************************//
 
 				nDevice.ID = crcId;
