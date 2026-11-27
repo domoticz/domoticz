@@ -4677,7 +4677,17 @@ define(['app', 'hardware/setup/ShellyCoiot'], function (app, ShellyCoiot) {
 							$("#hardwarecontent #hardwareparamssysfsgpio #sysfsdebounce").val(data["Mode2"]);
 						}
 						else if (data["Type"].indexOf("USB") >= 0 || data["Type"] == "Teleinfo EDF") {
-							$("#hardwarecontent #hardwareparamsserial #comboserialport").val(data["IntPort"]);
+							// The port this is set to may not be there to be listed just now, or may be one
+							// which we don't list. Offer it all the same: with none selected, saving sends
+							// an empty port, which the server either stores or refuses without saying so.
+							var serialCombo = $("#hardwarecontent #hardwareparamsserial #comboserialport");
+							var serialValue = data["IntPort"];
+							serialCombo.find("option.missingport").remove();
+							if (serialValue < 0 && data["Port"]) {
+								serialValue = "missing";
+								serialCombo.append($('<option />').addClass("missingport").attr('value', serialValue).text(data["Port"]));
+							}
+							serialCombo.val(serialValue);
 							if (data["Type"].indexOf("Evohome") >= 0) {
 								$("#hardwarecontent #divevohome #combobaudrateevohome").val(data["Mode1"]);
 								$("#hardwarecontent #divevohome #controllerid").val(data["Extra"]);
