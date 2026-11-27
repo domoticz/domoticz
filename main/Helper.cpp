@@ -298,6 +298,14 @@ static void AddSerialPortLinks(const std::string& szDir, std::vector<std::string
 	DIR* d = opendir(szDir.c_str());
 	if (d == nullptr)
 		return;
+	// Where each port really is: one which was found can be a link too
+	std::vector<std::string> targets;
+	for (const auto& port : ports)
+	{
+		char szTarget[PATH_MAX];
+		if (realpath(port.c_str(), szTarget) != nullptr)
+			targets.push_back(szTarget);
+	}
 	std::vector<std::string> links;
 	struct dirent* de = nullptr;
 	while ((de = readdir(d)))
@@ -310,7 +318,7 @@ static void AddSerialPortLinks(const std::string& szDir, std::vector<std::string
 		char szTarget[PATH_MAX];
 		if (realpath(szLink.c_str(), szTarget) == nullptr)
 			continue;
-		if (std::find(ports.begin(), ports.end(), std::string(szTarget)) != ports.end())
+		if (std::find(targets.begin(), targets.end(), std::string(szTarget)) != targets.end())
 			links.push_back(szLink);
 	}
 	closedir(d);
@@ -556,7 +564,6 @@ std::vector<std::string> GetSerialPorts(bool& bUseDirectPath)
 		}
 		closedir(d);
 	}
-	AddSerialPortLinks("/dev", ret);
 	//also scan in /dev/usb
 	d = opendir("/dev/usb");
 	if (d != nullptr)
@@ -594,6 +601,8 @@ std::vector<std::string> GetSerialPorts(bool& bUseDirectPath)
 	}
 
 #endif
+	// Last, so as to have the links to any of the ports above
+	AddSerialPortLinks("/dev", ret);
 #endif
 	return ret;
 }
