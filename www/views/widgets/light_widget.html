@@ -18,7 +18,7 @@
                 <!-- Main Icon (single toggling icon) -->
                 <td id="img">
                     <!-- Evohome -->
-                    <div ng-if="ctrl.isEvohome()" ng-class="ctrl.device.Status == 'Auto' ? 'evoimgnorm' : 'evoimg'" data-i18n="[title]Quick Actions">
+                    <div ng-if="ctrl.isEvohome()" class="evomini" ng-class="ctrl.device.Status == 'Auto' ? 'evoimgnorm' : 'evoimg'" data-i18n="[title]Quick Actions">
                         <img ng-src="images/evohome/{{ctrl.device.Status}}.png"
                              class="lcursor" ng-click="ctrl.showEvohomeModal()" height="40" width="40">
                     </div>

@@ -106,7 +106,9 @@ define(['app', 'domoticz.api', 'livesocket'], function(app) {
                         (typeof item.SubType !== 'undefined' && item.SubType.indexOf('Lucci') === 0) ||
                         (typeof item.SubType !== 'undefined' && item.SubType.indexOf('Westinghouse') === 0) ||
                         (typeof item.SubType !== 'undefined' && item.SubType.indexOf('Falmec') === 0) ||
-                        (item.Type.indexOf('Value') === 0 && typeof item.SwitchType !== 'undefined')
+                        (item.Type.indexOf('Value') === 0 && typeof item.SwitchType !== 'undefined') ||
+                        // The Evohome controller, which the light widget draws with its mode
+                        (item.Type === 'Heating' && item.SubType === 'Evohome')
                     ) {
                         categorized.lights.push(item);
                     }
