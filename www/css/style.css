@@ -1963,6 +1963,13 @@ table.table-details.table-details-lg > tbody > tr > td:first-child {
 		transform: translateY(-50%);
 	}
 
+	/* The hover of #img img sets a transform of its own, which would undo the vertical centring */
+	#img .evoimg img:hover, #img .evoimgnorm img:hover {
+		-webkit-transform: translateY(-50%) scale(1.1);
+		-ms-transform: translateY(-50%) scale(1.1);
+		transform: translateY(-50%) scale(1.1);
+	}
+
 	.evoimg.evomini, .evoimgnorm.evomini {
 		width: 40px;
 		height: 40px;
